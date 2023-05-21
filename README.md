@@ -11,5 +11,7 @@ SoundFont2 based MIDI synthetizer and visualizer written in JavaScript
 ## Installation
 **Requires a server (for now)**
 1. Put your files on the server
-2. Navigate to `index.html`
-3. Enjoy.
+2. Change the path to your .sf2 files in `midi.js` (line 26)
+3. Get some soundfonts.
+4. Navigate to `index.html`
+5. Enjoy.
