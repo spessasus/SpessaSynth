@@ -151,7 +151,7 @@ document.body.onclick = () =>
 titleMessage.innerText = "Downloading soundfont...";
 
 // gm.sf2, soundfont.sf2, FluidR3_GM.sf2
-fetchFont("soundfont.sf2", percent => progressBar.style.width = `${(percent / 100) * titleMessage.offsetWidth}px`)
+fetchFont("zunfont.sf2", percent => progressBar.style.width = `${(percent / 100) * titleMessage.offsetWidth}px`)
     .then(data => {
         titleMessage.innerText = "Parsing soundfont...";
         setTimeout(() => {
