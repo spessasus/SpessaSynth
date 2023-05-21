@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpessaSynth</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="top_part">
+  <div id="title_wrapper">
+    <div id="progress_bar"></div>
+    <h1 id="title">SpessaSynth: MIDI Soundfont2 Player</h1>
+  </div>
+
+  <label for="preset_selector">Presets:
+    <select id="preset_selector">
+      <option value="-1" disabled selected>No preset selected</option>
+    </select>
+  </label>
+
+  <label id="file_upload"> Upload a MIDI file
+    <input type="file" accept="audio/parsedMidi" id="midi_file_input"><br/>
+  </label>
+</div>
+
+  <canvas id="note_canvas"></canvas>
+  <table id="keyboard_table">
+    <tr id="keyboard"></tr>
+    <tr>
+      <td id="keyboard_text" colspan="128"></td>
+    </tr>
+  </table>
+
+<div class="bottom_part">
+  <input class="slider" type="range" min="0" max="1000">
+  <h2 id="text_event"></h2>
+  <button id="note_killer">Kill all notes</button>
+</div>
+
+<script src="midi.js" type="module"></script> <!-- Here the magic happens ;) -->
+</body>
+</html>
