@@ -1,5 +1,8 @@
 # SpessaSynth
 SoundFont2 based MIDI synthetizer and visualizer written in JavaScript
+![SpessaSynth in action](https://github.com/spessasus/SpessaSynth/assets/95608008/5f6c4fd4-d7b3-45ab-b041-1f1ad9cd2094)
+
+
 
 ## Features
 - Limited SoundFont2 Generator Support
