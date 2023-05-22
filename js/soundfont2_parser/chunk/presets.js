@@ -2,7 +2,7 @@ import {RiffChunk} from "./riff_chunk.js";
 import {PresetZone} from "./zones.js";
 import {readBytesAsString, readBytesAsUintLittleEndian} from "../../utils/byte_functions.js";
 import {Sample} from "./samples.js";
-import {Generator, getGeneratorValueType} from "./generators.js";
+import {Generator} from "./generators.js";
 
 export class Preset {
     /**
@@ -118,11 +118,15 @@ export class Preset {
                 if(instrumentZone.isGlobal) continue;
                 let sampleGenerators = Array.from(instrumentZone.generators);
 
-                // sum the global preset gens to the zone gens
-                presetZoneGenerators.push(...globalPresetGenerators.filter(g => !presetZoneGenerators.includes(g)));
+                // add the unique global preset gen types
+                presetZoneGenerators.push(...globalPresetGenerators.filter(
+                    gen => presetZoneGenerators.find(existingGen => existingGen.generatorType === gen.generatorType) === undefined
+                ));
 
-                // sum the global instrument gens to the sample ones
-                sampleGenerators.push(...globalInstrumentGenerators.filter(g => !sampleGenerators.includes(g)));
+                // add the unique global instrument gen types
+                sampleGenerators.push(...globalInstrumentGenerators.filter(
+                    gen => sampleGenerators.find(existingGen => existingGen.generatorType === gen.generatorType) === undefined
+                ));
                 // console.log(presetZoneGenerators, sampleGenerators);
                 // //debugger;
                 // for(let gen of sampleGenerators)
