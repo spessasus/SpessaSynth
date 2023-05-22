@@ -1,7 +1,9 @@
-import {MidiSynthetizer} from "../midi_player/midi_synthetizer.js";
+import {MidiSequencer} from "../midi_player/sequencer/midi_sequencer.js";
+import {MidiSynthetizer} from "../midi_player/synthetizer/midi_synthetizer.js";
 import {formatTime} from "../utils/text_formatting.js";
 
 const SMOOTHING_CONSTANT = 0.8;
+const CHANNEL_ANALYSER_FFT = 128;
 export class MidiRenderer
 {
     /**
@@ -14,6 +16,11 @@ export class MidiRenderer
 
         this.renderNotes = true;
         this.channelColors = channelColors;
+
+        /**
+         * @type {AnalyserNode[]}
+         */
+        this.channelAnalysers = [];
         this.analyser = analyser;
         this.analyser.fftSize = 1024;
         /**
@@ -30,10 +37,37 @@ export class MidiRenderer
 
     /**
      * Start rendering the track for given synth
+     * @param seq {MidiSequencer}
      * @param synth {MidiSynthetizer}
      */
-    startSynthRendering(synth) {
-        this.synthToRender = synth;
+    startSynthRendering(seq, synth) {
+        this.sequencerToRender = seq;
+        this.connectChannelAnalysers(synth);
+    }
+
+    /**
+     * Connect the 16 channels to their respective analysers
+     * @param synth {MidiSynthetizer}
+     */
+    connectChannelAnalysers(synth)
+    {
+        // disconnect the analysers from earlier
+        for(const analyser of this.channelAnalysers)
+        {
+            analyser.disconnect();
+            this.channelAnalysers.splice(0, 1);
+        }
+        this.channelAnalysers = [];
+        for(const channel of synth.midiChannels)
+        {
+            // create the analyser
+            const analyser = new AnalyserNode(channel.ctx, {
+                fftSize: CHANNEL_ANALYSER_FFT
+            });
+            // connect the channel's output to the analyser
+            channel.gainController.connect(analyser);
+            this.channelAnalysers.push(analyser);
+        }
     }
 
     /**
@@ -50,33 +84,30 @@ export class MidiRenderer
         }
         this.drawingContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
+        // draw main analyser
         let waveform = new Uint8Array(this.analyser.frequencyBinCount);
         this.analyser.getByteFrequencyData(waveform);
+        this.drawMainWaveform(waveform);
 
-        // draw the line
-        this.drawingContext.strokeStyle = "#ccc";
-        let x = 0;
-        let step = this.canvas.width / this.analyser.frequencyBinCount;
-
-        let waveRange = this.canvas.height + 5;
-
-        this.drawingContext.beginPath();
-        this.drawingContext.moveTo(0, waveRange - ((waveform[0] / 255) * waveRange));
-        for(let i = 0; i < waveform.length; i++)
+        // draw the individual analysers
+        let i = 0;
+        for(const analyser of this.channelAnalysers)
         {
-            let val = waveform[i] / 255;
-            this.drawingContext.lineTo(x, waveRange - (val * waveRange));
-            x += step;
+            const waveform = new Float32Array(analyser.frequencyBinCount);
+            analyser.getFloatTimeDomainData(waveform);
+            this.drawChannelWaveform(waveform,
+                i % 4,
+                Math.floor(i / 4), i);
+            i++;
         }
-        this.drawingContext.stroke();
-        this.drawingContext.closePath();
 
-        if(this.synthToRender) {
+        // draw the notes
+        if(this.sequencerToRender) {
             let notesToPlay = [];
 
-            let currentTime = this.synthToRender.currentTime;
-            for (let trackNumber = 0; trackNumber < this.synthToRender.midiData.tracksAmount; trackNumber++) {
-                let track = this.synthToRender.midiData.decodedTracks[trackNumber];
+            let currentTime = this.sequencerToRender.currentTime;
+            for (let trackNumber = 0; trackNumber < this.sequencerToRender.midiData.tracksAmount; trackNumber++) {
+                let track = this.sequencerToRender.midiData.decodedTracks[trackNumber];
 
                 let i = (track.lastNoteId ? track.lastNoteId : 0);
                 let first = true;
@@ -89,7 +120,7 @@ export class MidiRenderer
                     }
 
                     let noteTime = event.msLength;
-                    let currentDeltaMs = this.synthToRender.getDeltaAsMs(event.deltaTotal);
+                    let currentDeltaMs = this.sequencerToRender.getDeltaAsMs(event.deltaTotal);
 
                     if (currentDeltaMs > (currentTime * 1000) + this.noteFallingSpeed + noteTime) {
                         break;
@@ -114,7 +145,7 @@ export class MidiRenderer
                         noteTime = 30;
                     }
                     let noteColor = this.channelColors[event.channel];
-                    let currentDeltaMs = this.synthToRender.getDeltaAsMs(event.deltaTotal);
+                    let currentDeltaMs = this.sequencerToRender.getDeltaAsMs(event.deltaTotal);
 
                     // make notes that are about to play darker
                     if (currentDeltaMs > (currentTime * 1000)) {
@@ -140,7 +171,7 @@ export class MidiRenderer
 
             let timeSinceLastFrame = performance.now() - this.frameTimeStart;
             let fps = 1000 / timeSinceLastFrame;
-            callback(`FPS: ${Math.round(fps)} ${formatTime(Math.round(currentTime)).time}/${formatTime(this.synthToRender.duration).time}`);
+            callback(`FPS: ${Math.round(fps)} ${formatTime(Math.round(currentTime)).time}/${formatTime(this.sequencerToRender.duration).time}`);
             let smoothing = (1 - timeSinceLastFrame) * SMOOTHING_CONSTANT;
             if(smoothing > 0 && smoothing < 1)
             {
@@ -151,5 +182,61 @@ export class MidiRenderer
         requestAnimationFrame(() => {
             this.render(callback);
         });
+    }
+
+    /**
+     * Draws the channel waveforms
+     * @param waveform {Float32Array}
+     * @param x {number} from 0 to 3
+     * @param y {number} from 0 to 3
+     * @param channelNumber {number} 0-15
+     */
+    drawChannelWaveform(waveform, x, y, channelNumber)
+    {
+        const waveWidth = this.canvas.width / 4;
+        const waveHeight = this.canvas.height / 4
+        const relativeX = waveWidth * x;
+        const relativeY = waveHeight * y;
+        const yRange = waveHeight;
+        const xStep = waveWidth / waveform.length;
+
+        this.drawingContext.moveTo(
+            relativeX,
+            relativeY
+        )
+        this.drawingContext.strokeStyle = this.channelColors[channelNumber];
+        this.drawingContext.beginPath();
+        for(let i = 0; i < waveform.length; i++)
+        {
+            const currentData = waveform[i];
+            this.drawingContext.lineTo(
+                relativeX + (i * xStep),
+                relativeY + (currentData * yRange) + yRange / 2)
+        }
+        this.drawingContext.stroke();
+        this.drawingContext.closePath();
+    }
+
+    /**
+     * Draws the main waveform
+     * @param waveform {Uint8Array}
+     */
+    drawMainWaveform(waveform)
+    {
+        this.drawingContext.strokeStyle = "#ccc";
+        let x = 0;
+        let step = this.canvas.width / this.analyser.frequencyBinCount;
+
+        let waveRange = this.canvas.height + 5;
+        this.drawingContext.beginPath();
+        this.drawingContext.moveTo(0, waveRange - ((waveform[0] / 255) * waveRange));
+        for(let i = 0; i < waveform.length; i++)
+        {
+            let val = waveform[i] / 255;
+            this.drawingContext.lineTo(x, waveRange - (val * waveRange));
+            x += step;
+        }
+        this.drawingContext.stroke();
+        this.drawingContext.closePath();
     }
 }

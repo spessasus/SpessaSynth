@@ -1,5 +1,5 @@
 import {MidiParser} from "./midi_parser/midi_parser.js";
-import {MidiManager} from "./midi_visualizer/midi_manager.js";
+import {MidiManager} from "./midi_manager.js";
 
 import {SoundFont2Parser} from "./soundfont2_parser/soundfont_parser.js";
 import {ShiftableUint8Array} from "./utils/shiftable_array.js";
@@ -154,8 +154,7 @@ document.body.onclick = () =>
 
 titleMessage.innerText = "Downloading soundfont...";
 
-// gm.sf2, soundfont.sf2, FluidR3_GM.sf2
-fetchFont("zunfont.sf2", percent => progressBar.style.width = `${(percent / 100) * titleMessage.offsetWidth}px`)
+fetchFont("soundfont.sf2", percent => progressBar.style.width = `${(percent / 100) * titleMessage.offsetWidth}px`)
     .then(data => {
         titleMessage.innerText = "Parsing soundfont...";
         setTimeout(() => {

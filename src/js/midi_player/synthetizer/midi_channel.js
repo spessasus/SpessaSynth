@@ -1,5 +1,5 @@
-import {PresetNote} from "../midi_player/notes/preset_note.js";
-import {Preset} from "../soundfont2_parser/chunk/presets.js";
+import {PresetNote} from "./notes/preset_note.js";
+import {Preset} from "../../soundfont2_parser/chunk/presets.js";
 // import {OscillatorNote} from "../midi_player/notes/oscillator_node.js";
 
 const CHANNEL_LOUDNESS = 1.0;
@@ -12,9 +12,11 @@ export class MidiChannel {
      */
     constructor(targetNode, defaultPreset, debug= false) {
         this.ctx = targetNode.context;
+        this.outputNode = targetNode;
         this.channelVolume = 1;
         this.channelExpression = 1;
         this.preset = defaultPreset;
+        this.bank = this.preset.midiBankNumber;
         this.panner = this.ctx.createStereoPanner();
         this.debug = debug;
         this.NRPN_MSB = 0;
@@ -29,7 +31,7 @@ export class MidiChannel {
 
         this.gainController =this.ctx.createGain();
         this.panner.connect(this.gainController);
-        this.gainController.connect(targetNode);
+        this.gainController.connect(this.outputNode);
         this.gainController.gain.value = this.getGain();
 
         /**
@@ -54,6 +56,11 @@ export class MidiChannel {
         setInterval(() => {this.ReplaceInactiveNotes()}, 1200);
 
          */
+    }
+
+    get program()
+    {
+        return this.preset.midiPresetNumber;
     }
 
     createNote(midiNote)

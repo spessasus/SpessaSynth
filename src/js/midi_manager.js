@@ -1,12 +1,13 @@
-import {MidiKeyboard} from "./midi_keyboard.js";
-import {MidiSynthetizer} from "../midi_player/midi_synthetizer.js";
-import {MidiRenderer} from "./midi_renderer.js";
-import {MidiParser} from "../midi_parser/midi_parser.js";
-import "../midi_parser/events/midi_event.js";
-import "../midi_parser/events/meta_event.js";
-import "../midi_parser/events/sysex_event.js";
+import {MidiKeyboard} from "./midi_visualizer/midi_keyboard.js";
+import {MidiSynthetizer} from "./midi_player/synthetizer/midi_synthetizer.js";
+import {MidiRenderer} from "./midi_visualizer/midi_renderer.js";
+import {MidiParser} from "./midi_parser/midi_parser.js";
+import {MidiSequencer} from "./midi_player/sequencer/midi_sequencer.js";
+import "./midi_parser/events/midi_event.js";
+import "./midi_parser/events/meta_event.js";
+import "./midi_parser/events/sysex_event.js";
 
-import {SoundFont2Parser} from "../soundfont2_parser/soundfont_parser.js";
+import {SoundFont2Parser} from "./soundfont2_parser/soundfont_parser.js";
 
 export class MidiManager
 {
@@ -37,8 +38,10 @@ export class MidiManager
     constructor(context, soundFont) {
         this.analyser = context.createAnalyser();
         this.analyser.connect(context.destination);
-        // set up synth, keyboard and renderer
+
+        // set up sequencer synth, keyboard and renderer
         this.soundFont = soundFont;
+
         this.synth = new MidiSynthetizer(this.analyser, this.soundFont);
 
         this.keyboard = new MidiKeyboard(this.channelColors);
@@ -57,10 +60,11 @@ export class MidiManager
         this.synth.onNoteOn = (note, chan, vel, vol, exp) => this.keyboard.pressNote(note, chan, vel, vol, exp);
         this.synth.onNoteOff = note => this.keyboard.releaseNote(note);
 
-        document.getElementById("preset_selector").onchange = e => {
+        document.getElementById("preset_selector").
+        addEventListener("change", e => {
             this.synth.userChannel.changePreset(this.soundFont.getPresetByName(e.target.value));
             console.log("Changing user preset to:", e.target.value);
-        }
+        });
     }
 
     /**
@@ -71,8 +75,9 @@ export class MidiManager
      */
     play(parsedMidi, resetTime= false, debugMode= false)
     {
-        this.synth.play(parsedMidi, resetTime, debugMode).then(() => {
-            this.renderer.startSynthRendering(this.synth);
+        const seq = new MidiSequencer(parsedMidi, this.synth);
+        seq.play(resetTime, debugMode).then(() => {
+            this.renderer.startSynthRendering(seq, this.synth);
         })
     }
 }

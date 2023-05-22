@@ -1,5 +1,5 @@
-import {Generator} from "../../soundfont2_parser/chunk/generators.js";
-import {Sample} from "../../soundfont2_parser/chunk/samples.js";
+import {Generator} from "../../../soundfont2_parser/chunk/generators.js";
+import {Sample} from "../../../soundfont2_parser/chunk/samples.js";
 
 export class PresetNoteModifiers{
     /**
