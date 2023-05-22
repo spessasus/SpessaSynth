@@ -1,5 +1,4 @@
 import {Sample} from "../../soundfont2_parser/chunk/samples.js";
-import {Preset} from "../../soundfont2_parser/chunk/presets.js";
 
 export class BufferNote {
     /**
