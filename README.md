@@ -16,9 +16,7 @@ SoundFont2 based MIDI synthetizer and visualizer written in JavaScript
 - Max 2 Samples per note. It's probably my bad coding or it's too much for the browser. Either way, it may cause problems with some instruments, but the program tries to find the samples that matter the most.
 
 ## Installation
-**Requires a server (for now)**
-1. Put your files on the server
-2. Change the path to your .sf2 files in `midi.js` (line 26)
-3. Get some soundfonts.
-4. Navigate to `index.html`
-5. Enjoy.
+1. Download the code as zip or use `git clone`
+2. Put some soundfonts into the `soundfonts` folder
+3. Double click the `start.bat`
+4. Enjoy!

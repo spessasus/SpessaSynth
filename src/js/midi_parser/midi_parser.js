@@ -177,7 +177,7 @@ export class MidiParser
             messageCallback(`Starting to parse track ${i}`);
 
             trackWorkers.push(new Promise(resolve =>{
-                let w = new Worker("midi_parser/track_loader_worker.js",
+                let w = new Worker("/js/midi_parser/track_loader_worker.js",
                     /*{type: "module"}*/);
                 w.onmessage = e =>
                 {

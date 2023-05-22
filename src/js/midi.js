@@ -23,8 +23,12 @@ async function parseMidi(midiFile)
  */
 async function fetchFont(fileName, callback)
 {
-    let url = `http://localhost:80/other/soundfonts/${fileName}`;
-    let response = await fetch(url);
+    let response = await fetch(`http://${location.host}/${fileName}`);
+    if(!response.ok)
+    {
+        titleMessage.innerText = "Error downloading soundfont!";
+        throw response;
+    }
     let size = response.headers.get("content-length");
     let reader = await (await response.body).getReader();
     let done = false;
