@@ -36,17 +36,15 @@ export class MidiManager
      * @param soundFont {SoundFont2Parser}
      */
     constructor(context, soundFont) {
-        this.analyser = context.createAnalyser();
-        this.analyser.connect(context.destination);
 
         // set up sequencer synth, keyboard and renderer
         this.soundFont = soundFont;
 
-        this.synth = new MidiSynthetizer(this.analyser, this.soundFont);
+        this.synth = new MidiSynthetizer(context.destination, this.soundFont);
 
         this.keyboard = new MidiKeyboard(this.channelColors);
 
-        this.renderer = new MidiRenderer(this.channelColors, this.analyser);
+        this.renderer = new MidiRenderer(this.channelColors);
         this.renderer.render(t => document.getElementById("title").innerText = t)
 
         // connect the keyboard to synth
@@ -60,10 +58,15 @@ export class MidiManager
         this.synth.onNoteOn = (note, chan, vel, vol, exp) => this.keyboard.pressNote(note, chan, vel, vol, exp);
         this.synth.onNoteOff = note => this.keyboard.releaseNote(note);
 
-        document.getElementById("preset_selector").
-        addEventListener("change", e => {
-            this.synth.userChannel.changePreset(this.soundFont.getPresetByName(e.target.value));
-            console.log("Changing user preset to:", e.target.value);
+        /**
+         * @type {HTMLSelectElement}
+         */
+        const presetSelector = document.getElementById("preset_selector");
+        presetSelector.
+        addEventListener("change", () => {
+            const val = presetSelector.value;
+            this.synth.userChannel.changePreset(this.soundFont.getPresetByName(val));
+            console.log("Changing user preset to:", val);
         });
     }
 
@@ -75,9 +78,9 @@ export class MidiManager
      */
     play(parsedMidi, resetTime= false, debugMode= false)
     {
-        const seq = new MidiSequencer(parsedMidi, this.synth);
-        seq.play(resetTime, debugMode).then(() => {
-            this.renderer.startSynthRendering(seq, this.synth);
+        this.seq = new MidiSequencer(parsedMidi, this.synth);
+        this.seq.play(resetTime, debugMode).then(() => {
+            this.renderer.startSynthRendering(this.seq, this.synth);
         })
     }
 }

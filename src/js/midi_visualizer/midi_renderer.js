@@ -2,16 +2,14 @@ import {MidiSequencer} from "../midi_player/sequencer/midi_sequencer.js";
 import {MidiSynthetizer} from "../midi_player/synthetizer/midi_synthetizer.js";
 import {formatTime} from "../utils/text_formatting.js";
 
-const SMOOTHING_CONSTANT = 0.8;
 const CHANNEL_ANALYSER_FFT = 128;
 export class MidiRenderer
 {
     /**
      * Creates a new midi renderer for rendering notes visually.
      * @param channelColors {Array<string>}
-     * @param analyser {AnalyserNode}
      */
-    constructor(channelColors, analyser) {
+    constructor(channelColors) {
         this.noteFallingSpeed = 1000;
 
         this.renderNotes = true;
@@ -21,8 +19,6 @@ export class MidiRenderer
          * @type {AnalyserNode[]}
          */
         this.channelAnalysers = [];
-        this.analyser = analyser;
-        this.analyser.fftSize = 1024;
         /**
          * @type {HTMLCanvasElement}
          */
@@ -85,9 +81,9 @@ export class MidiRenderer
         this.drawingContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         // draw main analyser
-        let waveform = new Uint8Array(this.analyser.frequencyBinCount);
-        this.analyser.getByteFrequencyData(waveform);
-        this.drawMainWaveform(waveform);
+        // let waveform = new Uint8Array(this.analyser.frequencyBinCount);
+        // this.analyser.getByteFrequencyData(waveform);
+        // this.drawMainWaveform(waveform);
 
         // draw the individual analysers
         let i = 0;
@@ -172,11 +168,6 @@ export class MidiRenderer
             let timeSinceLastFrame = performance.now() - this.frameTimeStart;
             let fps = 1000 / timeSinceLastFrame;
             callback(`FPS: ${Math.round(fps)} ${formatTime(Math.round(currentTime)).time}/${formatTime(this.sequencerToRender.duration).time}`);
-            let smoothing = (1 - timeSinceLastFrame) * SMOOTHING_CONSTANT;
-            if(smoothing > 0 && smoothing < 1)
-            {
-                this.analyser.smoothingTimeConstant = smoothing;
-            }
             this.frameTimeStart = performance.now();
         }
         requestAnimationFrame(() => {
@@ -193,6 +184,8 @@ export class MidiRenderer
      */
     drawChannelWaveform(waveform, x, y, channelNumber)
     {
+        const WAVE_MULTIPLIER = 2;
+
         const waveWidth = this.canvas.width / 4;
         const waveHeight = this.canvas.height / 4
         const relativeX = waveWidth * x;
@@ -208,33 +201,10 @@ export class MidiRenderer
         this.drawingContext.beginPath();
         for(let i = 0; i < waveform.length; i++)
         {
-            const currentData = waveform[i];
+            const currentData = waveform[i] * WAVE_MULTIPLIER;
             this.drawingContext.lineTo(
                 relativeX + (i * xStep),
                 relativeY + (currentData * yRange) + yRange / 2)
-        }
-        this.drawingContext.stroke();
-        this.drawingContext.closePath();
-    }
-
-    /**
-     * Draws the main waveform
-     * @param waveform {Uint8Array}
-     */
-    drawMainWaveform(waveform)
-    {
-        this.drawingContext.strokeStyle = "#ccc";
-        let x = 0;
-        let step = this.canvas.width / this.analyser.frequencyBinCount;
-
-        let waveRange = this.canvas.height + 5;
-        this.drawingContext.beginPath();
-        this.drawingContext.moveTo(0, waveRange - ((waveform[0] / 255) * waveRange));
-        for(let i = 0; i < waveform.length; i++)
-        {
-            let val = waveform[i] / 255;
-            this.drawingContext.lineTo(x, waveRange - (val * waveRange));
-            x += step;
         }
         this.drawingContext.stroke();
         this.drawingContext.closePath();
