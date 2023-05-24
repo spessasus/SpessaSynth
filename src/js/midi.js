@@ -154,7 +154,7 @@ document.body.onclick = () =>
 
 titleMessage.innerText = "Downloading soundfont...";
 
-fetchFont("soundfont.sf2", percent => progressBar.style.width = `${(percent / 100) * titleMessage.offsetWidth}px`)
+fetchFont("zunfont.sf2", percent => progressBar.style.width = `${(percent / 100) * titleMessage.offsetWidth}px`)
     .then(data => {
         titleMessage.innerText = "Parsing soundfont...";
         setTimeout(() => {
@@ -175,8 +175,8 @@ fetchFont("soundfont.sf2", percent => progressBar.style.width = `${(percent / 10
             }
 
             if(!fileInput.files[0]) {
-                fileInput.onchange = e => {
-                    if (!e.target.files[0]) {
+                fileInput.onchange = () => {
+                    if (!fileInput.files[0]) {
                         return;
                     }
                     startMidi(fileInput.files[0]);
@@ -196,6 +196,5 @@ fetchFont("soundfont.sf2", percent => progressBar.style.width = `${(percent / 10
             }
             // prepare midi interface
             window.manager = new MidiManager(audioContextMain, soundFontParser);
-
         });
     });

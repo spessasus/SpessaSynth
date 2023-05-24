@@ -138,7 +138,7 @@ export class Sample{
     }
 
     /**
-     * creates an audio buffer and stores it for reuse
+     * creates an audio source and stores it for reuse
      * @param context {BaseAudioContext}
      * @returns {AudioBuffer}
      */

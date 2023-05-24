@@ -5,6 +5,7 @@ import {readGenerators, Generator} from "./chunk/generators.js";
 import {readInstrumentZones, InstrumentZone, readPresetZones} from "./chunk/zones.js";
 import {Preset, readPresets} from "./chunk/presets.js";
 import {readInstruments, Instrument} from "./chunk/instruments.js";
+import {readModulators, Modulator} from "./chunk/modulators.js";
 
 export class SoundFont2Parser
 {
@@ -87,11 +88,11 @@ export class SoundFont2Parser
          */
         let instrumentGenerators = readGenerators(this.presetInstrumentGeneratorsChunk);
 
-        // /**
-        //  * read all the instrument modulators
-        //  * @type {Modulator[]}
-        //  */
-        // let instrumentModulators = readModulators(this.presetInstrumentModulatorsChunk);
+        /**
+         * read all the instrument modulators
+         * @type {Modulator[]}
+         */
+        let instrumentModulators = readModulators(this.presetInstrumentModulatorsChunk);
 
         /**
          * read all the instrument zones
@@ -99,6 +100,7 @@ export class SoundFont2Parser
          */
         let instrumentZones = readInstrumentZones(this.presetInstrumentZonesChunk,
             instrumentGenerators,
+            instrumentModulators,
             samples);
 
         /**
@@ -113,7 +115,13 @@ export class SoundFont2Parser
          */
         let presetGenerators = readGenerators(this.presetGeneratorsChunk);
 
-        let presetZones = readPresetZones(this.presetZonesChunk, presetGenerators, instruments);
+        /**
+         * Read all the preset modulatorrs
+         * @type {Modulator[]}
+         */
+        let presetModulators = readModulators(this.presetModulatorsChunk);
+
+        let presetZones = readPresetZones(this.presetZonesChunk, presetGenerators, presetModulators, instruments);
 
         /**
          * Finally, read all the presets
@@ -123,52 +131,7 @@ export class SoundFont2Parser
         console.log("Parsing finished!");
         console.log("Presets:", this.presets);
 
-        this.presets.sort((a, b) => (a.midiPresetNumber - b.midiPresetNumber) + (a.midiBankNumber - b.midiBankNumber))
-
-        // let audioContextMain = new AudioContext();
-        // let presetI = 0;
-        // let src, srcStop, testSample;
-        // let sampleText = () => {
-        //     // sample test
-        //     clearTimeout(srcStop);
-        //     testSample = this.presets[presetI];
-        //     console.log(testSample);
-        //     src = testSample.getSampleAndGenerators(60, audioContextMain);
-        //     window.buffer = src;
-        //     window.sample = testSample;
-        //     for(let b of src)
-        //     {
-        //         b.connect(audioContextMain.destination);
-        //         b.start();
-        //     }
-        //     srcStop = setTimeout(() => {for(let b of src) {b.stop()}}, 1000);
-        //     //setTimeout(sampleText, (testlet sampleData.length / testlet sampleRate) * 1000);
-        // }
-        //
-        // document.body.addEventListener("keypress", e =>
-        // {
-        //     if(e.key.toLowerCase() === "i")
-        //     {
-        //         for(let b of src) {
-        //             b.stop();
-        //             b.disconnect(audioContextMain.destination);
-        //         }
-        //         presetI++;
-        //         sampleText();
-        //     }
-        //     else if(e.key.toLowerCase() === "u")
-        //     {
-        //         for(let b of src) {
-        //             b.stop();
-        //             b.disconnect(audioContextMain.destination);
-        //         }
-        //         presetI--;
-        //         sampleText();
-        //     }
-        //
-        // })
-        //
-        // sampleText();
+        this.presets.sort((a, b) => (a.midiPresetNumber - b.midiPresetNumber) + (a.midiBankNumber - b.midiBankNumber));
     }
 
     /**

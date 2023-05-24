@@ -1,10 +1,12 @@
+import {MidiSynthetizer} from "../midi_player/synthetizer/midi_synthetizer.js";
 export class MidiKeyboard
 {
     /**
      * Creates a new midi keyboard(keyboard)
      * @param channelColors {Array<string>}
+     * @param synth {MidiSynthetizer}
      */
-    constructor(channelColors) {
+    constructor(channelColors, synth) {
         this.mouseHeld = false;
         this.heldKeys = [];
 
@@ -19,14 +21,14 @@ export class MidiKeyboard
             for(let key of this.heldKeys)
             {
                 this.releaseNote(key);
-                this.onNoteRelased(key);
+                this.synth.NoteOff(this.channel, key);
             }
         }
 
         document.addEventListener("keydown", e =>{
             if(e.key === "Shift")
             {
-                this.onHoldPressed();
+                this.synth.controllerChange(this.channel, "Sustain Pedal", 127);
                 document.getElementById("keyboard_text").innerText = "Hold pedal on";
             }
         });
@@ -34,10 +36,13 @@ export class MidiKeyboard
         document.addEventListener("keyup", e => {
             if(e.key === "Shift")
             {
-                this.onHoldReleased();
+                this.synth.controllerChange(this.channel, "Sustain Pedal", 0);
                 document.getElementById("keyboard_text").innerText = "";
             }
         });
+
+        this.synth = synth;
+        this.channel = 0;
 
         this.channelColors = channelColors;
         if (!this.keyboard.childNodes.length) {
@@ -54,21 +59,21 @@ export class MidiKeyboard
                         return
                     }
                     this.heldKeys.push(midiNote);
-                    this.pressNote(midiNote, 0, 127, 1, 1);
-                    this.onNotePressed(midiNote, 127);
+                    this.pressNote(midiNote, this.channel, 127, 1, 1);
+                    this.synth.NoteOn(this.channel, midiNote, 127);
                 }
 
                 noteElement.onmousedown = () =>
                 {
                     this.heldKeys.push(midiNote);
-                    this.pressNote(midiNote, 0, 127, 1, 1);
-                    this.onNotePressed(midiNote, 127);
+                    this.pressNote(midiNote, this.channel, 127, 1, 1);
+                    this.synth.NoteOn(this.channel, midiNote, 127);
                 }
 
                 noteElement.onmouseout = () => {
                     this.heldKeys.splice(this.heldKeys.indexOf(midiNote), 1);
                     this.releaseNote(midiNote);
-                    this.onNoteRelased(midiNote);
+                    this.synth.NoteOff(this.channel, midiNote);
                 };
                 noteElement.onmouseleave = noteElement.onmouseup;
                 let isBlack = isBlackNoteNumber(midiNote);
@@ -121,31 +126,13 @@ export class MidiKeyboard
     }
 
     /**
-     * Triggers when user presses a key
-     * @type {function}
-     * @param midiNote {number}
-     * @param velocity {number}
+     * Selects the channel from synth
+     * @param channel {number} 0-15
      */
-    onNotePressed;
-
-    /**
-     * Triggers when user relases a key
-     * @type {function}
-     * @param midiNote {number}
-     */
-    onNoteRelased;
-
-    /**
-     * Triggers when user presses the hold pedal
-     * @type {function(): void}
-     */
-    onHoldPressed;
-
-    /**
-     * Triggers when user releases the hold pedal
-     * @type {function(): void}
-     */
-    onHoldReleased;
+    selectChannel(channel)
+    {
+        this.channel = 0;
+    }
 
     /**
      * presses a midi note visually

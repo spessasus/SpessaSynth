@@ -1,5 +1,6 @@
 import {Preset} from "../../../soundfont2_parser/chunk/presets.js";
-import {PresetNoteModifiers} from "./preset_note_modifiers.js";
+import {PresetNoteModifiers} from "./preset_note/preset_note_modifiers.js";
+import {SampleNode} from "./preset_note/sample_node.js";
 
 export class PresetNote
 {
@@ -18,18 +19,19 @@ export class PresetNote
         this.preset = preset;
 
         if(vibratoOptions.rate > 0) {
-            this.vibratoOscTest = new OscillatorNode(this.ctx, {
+            this.vibratoWave = new OscillatorNode(this.ctx, {
                 frequency: vibratoOptions.rate
             });
-            this.vibratoGainTest = new GainNode(this.ctx, {
+            this.vibratoDepth = new GainNode(this.ctx, {
                 gain: vibratoOptions.depth
             });
-            this.vibratoOscTest.connect(this.vibratoGainTest);
+            this.vibratoWave.connect(this.vibratoDepth);
             this.vibratoDelay = vibratoOptions.delay;
         }
 
         let samples = preset.getSampleAndGenerators(midiNote);
-        // cap the samples... it's probably my shitty code, or maybe browser cant handle that.
+
+        // cap the samples amount... it's probably my shitty code, or maybe browser can't handle that.
         if(samples.length > this.SAMPLE_CAP)
         {
             // sort by longes samples if there are 150ms or shorter samples.
@@ -65,13 +67,12 @@ export class PresetNote
 
         this.sampleOptions = samples.map(s => new PresetNoteModifiers(s));
 
-        this.gainNode = new GainNode(this.ctx, {
+        this.noteVolumeController = new GainNode(this.ctx, {
             gain: 0
         });
-        // this.isPercussion = preset.midiBankNumber === 128;
 
         /**
-         * @type {{attenuation: GainNode, buffer: AudioBufferSourceNode}[]}
+         * @type {SampleNode[]}
          */
         this.sampleNodes = this.sampleOptions.map(sampleOptions => {
             let sample = sampleOptions.sample;
@@ -80,79 +81,36 @@ export class PresetNote
             });
             bufferSource.channelCount = 2;
 
-            if(this.vibratoGainTest) {
-                this.vibratoGainTest.connect(bufferSource.detune);
+            if(this.vibratoDepth) {
+                this.vibratoDepth.connect(bufferSource.detune);
             }
 
-            // correct pitch
-            this.applyPitch(bufferSource, sampleOptions, midiNote);
+            // correct playback rate
+            bufferSource.playbackRate.value = sampleOptions.getPlaybackRate(midiNote);
 
-            // calculate loop
-            this.calculateLoop(bufferSource, sampleOptions);
+            // set up loop
+            this.applyLoopIndexes(bufferSource, sampleOptions);
 
             // create attenuation
-            let attenuationNode = this.createAttenuation();
+            let volumeControl = new GainNode(this.ctx);
+            volumeControl.connect(this.noteVolumeController);
 
-            // percussion has fadeout time of 30s sometimes for some reason
-            //if (this.preset.midiBankNumber === 128) {
-                // -3986 ~ 0.1s
-                // 0 = 1s
-                // if (sampleOptions.getReleaseTime() > 5) {
-                //     sampleOptions.releaseTime = 0;
-                // }
-            // }
-
-            // apply pan
-            // let panNode = node.context.createStereoPanner();
-            // panNode.connect(attenuationNode);
-            // this.setValueNow(panNode.pan, sampleOptions.getPan());
-
-            bufferSource.connect(attenuationNode);
-            return {buffer: bufferSource, attenuation: attenuationNode/*, pan: panNode*/};
+            bufferSource.connect(volumeControl);
+            return new SampleNode(bufferSource, volumeControl);
         });
-        this.gainNode.connect(node);
-    }
-
-    /**
-     * sets the target at time, but in seconds
-     * @param param {AudioParam}
-     * @param value {number}
-     * @param timeInSeconds {number}
-     * @param relativeStartTime {number} in seconds
-     */
-    targetAtTime(param, value, timeInSeconds, relativeStartTime = 0)
-    {
-        if(value === 0)
-        {
-            value = 0.0001;
-        }
-        param.setValueAtTime(param.value, this.ctx.currentTime + 0.00001 + relativeStartTime);
-        param.exponentialRampToValueAtTime(value, this.ctx.currentTime + 0.001 + relativeStartTime + timeInSeconds)
-        //const timeConstant = timeInSeconds / Math.log(9);
-        // const timeConstant = timeInSeconds / (Math.log(1 / 0.01));
-        // param.setTargetAtTime(value, this.ctx.currentTime + 0.0001 + relativeStartTime, timeConstant);
-    }
-
-    /**
-     * @param bufferSource {AudioBufferSourceNode}
-     * @param sampleOptions {PresetNoteModifiers}
-     * @param midiNote {number}
-     */
-    applyPitch(bufferSource, sampleOptions, midiNote)
-    {
-        let playback = sampleOptions.getPlaybackRate(midiNote);
-        this.setValueNow(bufferSource.playbackRate, playback);
+        this.noteVolumeController.connect(node);
     }
 
     /**
      * @param bufferSource {AudioBufferSourceNode}
      * @param sampleOptions {PresetNoteModifiers}
      */
-    calculateLoop(bufferSource, sampleOptions)
+    applyLoopIndexes(bufferSource, sampleOptions)
     {
         if (sampleOptions.sample.sampleLoopStartIndex !== sampleOptions.sample.sampleLoopEndIndex &&
             (sampleOptions.loopingMode === 1 || sampleOptions.loopingMode === 3)) {
 
+            // (lsI - sI) / (sr * 2)
             bufferSource.loopStart =
                 (sampleOptions.sample.sampleLoopStartIndex - sampleOptions.sample.sampleStartIndex) / (sampleOptions.sample.sampleRate * 2);
             bufferSource.loopEnd =
@@ -161,34 +119,12 @@ export class PresetNote
         }
     }
 
-    createAttenuation()
-    {
-        let attenuationNode = new GainNode(this.ctx);
-        attenuationNode.connect(this.gainNode);
-        // if (this.isPercussion) {
-        //     this.setValueNow(attenuationNode.gain, 2);
-        //     attenuationNode.gain.value = 2;
-        // }
-        return attenuationNode;
-    }
-
-    /**
-     * setValueAtTime but it adds 0.0001 for chromium compability...
-     * @param param {AudioParam}
-     * @param value {number}
-     */
-    setValueNow(param, value)
-    {
-        param.value = value;
-        param.setValueAtTime(value, this.ctx.currentTime + 0.0001);
-    }
-
     displayDebugTable()
     {
         for(let sampleOption of this.sampleOptions)
         {
             /**
-             *  create a nice keyboard
+             *  create a nice info table
              *  @type {Option[]}
              */
 
@@ -232,15 +168,15 @@ export class PresetNote
             this.displayDebugTable();
         }
         let gain = velocity / 127;
-        // if(!this.isPercussion) {
         // lower the gain if a lot of notes
         gain = gain / (this.sampleNodes.length < 1 ? 1 : this.sampleNodes.length + 1);
         //}
-        this.setValueNow(this.gainNode.gain, gain);
+        this.noteVolumeController.gain.value = gain;
 
-        if(this.vibratoOscTest)
+        // activate vibrato
+        if(this.vibratoWave)
         {
-            this.vibratoOscTest.start(this.ctx.currentTime + this.vibratoDelay);
+            this.vibratoWave.start(this.ctx.currentTime + this.vibratoDelay);
         }
 
         let exclusives = [];
@@ -257,12 +193,13 @@ export class PresetNote
             }
 
             // sample.attenuation.gain.value = sampleOptions.getAttenuation() / this.sampleNodes.length;
-            sample.buffer.start(0.01);
-            this.setValueNow(sample.attenuation.gain, sampleOptions.getAttenuation());
 
-            // start fading to sustain in decay time, after hold (whew, that's a lot)
-            this.targetAtTime(sample.attenuation.gain, sampleOptions.getSustainLevel(),
-                sampleOptions.getDecayTime(), sampleOptions.getHoldTime());
+            sample.startSample({
+                initialAttenuation: sampleOptions.getAttenuation(),
+                holdTime: sampleOptions.getHoldTime(),
+                decayTime: sampleOptions.getDecayTime(),
+                sustainLevel: sampleOptions.getSustainLevel()
+            });
         }
         return exclusives;
     }
@@ -280,11 +217,10 @@ export class PresetNote
             let sampleNode = this.sampleNodes[i];
             if(sampleOptions.getLoopingMode() === 3)
             {
-                sampleNode.buffer.loop = false;
+                sampleNode.source.loop = false;
             }
             let fadeout = sampleOptions.getReleaseTime();
-            sampleNode.attenuation.gain.cancelScheduledValues(0);
-            this.targetAtTime(sampleNode.attenuation.gain, 0.0001, fadeout);
+            sampleNode.stopSample(fadeout);
 
             if(fadeout > maxFadeout) maxFadeout = fadeout;
         }
@@ -293,55 +229,36 @@ export class PresetNote
         return true;
     }
 
-    /**
-     * kills the note in 0.1s
-     */
-    async killNote()
-    {
-        for(let i = 0; i < this.sampleOptions.length; i++)
-        {
-            let sampleOptions = this.sampleOptions[i];
-            let sampleNode = this.sampleNodes[i];
-            // start the fadeout...
-            this.setValueNow(sampleNode.attenuation.gain, sampleOptions.getAttenuation());
-
-            this.sampleNodes[i].attenuation.gain.linearRampToValueAtTime(0.001,
-                this.ctx.currentTime + 0.1);
-
-        }
-        await new Promise(r => setTimeout(r, 110));
-    }
-
     disconnectNote(){
-        if(!this.gainNode)
+        if(!this.noteVolumeController)
         {
             return;
         }
         for(let sample of this.sampleNodes) {
-            if(!sample.buffer || !sample.attenuation /*|| !sample.pan*/)
+            if(!sample.source || !sample.volumeController /*|| !sample.pan*/)
             {
                 continue;
             }
-            sample.buffer.stop();
-            sample.buffer.disconnect();
-            sample.attenuation.disconnect(this.gainNode);
+            sample.disconnectSample();
             /*sample.pan.disconnect(sample.attenuation);*/
-            delete sample.buffer;
-            delete sample.attenuation;
+            delete sample.source;
+            delete sample.volumeController;
             /*delete sample.pan;*/
             sample = undefined;
         }
-        if(this.vibratoGainTest) {
-            this.vibratoGainTest.disconnect();
-            this.vibratoOscTest.stop();
-            this.vibratoOscTest.disconnect();
-            delete this.vibratoOscTest;
-            delete this.vibratoGainTest;
+
+        // apply vibrato if needed
+        if(this.vibratoDepth) {
+            this.vibratoDepth.disconnect();
+            this.vibratoWave.stop();
+            this.vibratoWave.disconnect();
+            delete this.vibratoWave;
+            delete this.vibratoDepth;
         }
 
         this.sampleNodes = [];
-        this.gainNode.disconnect();
-        delete this.gainNode;
+        this.noteVolumeController.disconnect();
+        delete this.noteVolumeController;
     }
 
     /**
@@ -356,8 +273,8 @@ export class PresetNote
             let sampleNode = this.sampleNodes[i];
 
             const newPlayback = sampleOptions.getPlaybackRate(this.midiNote) * Math.pow(2, bendRatio);
-            this.setValueNow(sampleNode.buffer.playbackRate, newPlayback);
-            //sampleNode.buffer.playbackRate.setTargetAtTime(newPlayback, this.drawingContext.currentTime, 0.1);
+            sampleNode.setPlaybackRate(newPlayback);
+            //sampleNode.source.playbackRate.setTargetAtTime(newPlayback, this.drawingContext.currentTime, 0.1);
         }
     }
 }

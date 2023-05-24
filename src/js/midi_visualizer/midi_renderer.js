@@ -8,8 +8,9 @@ export class MidiRenderer
     /**
      * Creates a new midi renderer for rendering notes visually.
      * @param channelColors {Array<string>}
+     * @param synth {MidiSynthetizer}
      */
-    constructor(channelColors) {
+    constructor(channelColors, synth) {
         this.noteFallingSpeed = 1000;
 
         this.renderNotes = true;
@@ -19,6 +20,8 @@ export class MidiRenderer
          * @type {AnalyserNode[]}
          */
         this.channelAnalysers = [];
+        this.connectChannelAnalysers(synth);
+
         /**
          * @type {HTMLCanvasElement}
          */
@@ -32,13 +35,11 @@ export class MidiRenderer
     }
 
     /**
-     * Start rendering the track for given synth
+     * Start rendering the track for given sequencer
      * @param seq {MidiSequencer}
-     * @param synth {MidiSynthetizer}
      */
-    startSynthRendering(seq, synth) {
+    startSequencerRendering(seq) {
         this.sequencerToRender = seq;
-        this.connectChannelAnalysers(synth);
     }
 
     /**

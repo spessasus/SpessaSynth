@@ -13,31 +13,34 @@ export class MidiSynthetizer {
         this.outputNode = targetNode;
         this.soundFont = soundFont;
 
-        this.userChannel = new MidiChannel(this.outputNode, this.soundFont.presets[0], true);
-
         console.log("Preparing channels");
         /**
          * @type {MidiChannel[]}
          */
         this.midiChannels = [];
 
+        const defaultPreset = this.soundFont.getPreset(0, 0);
+        const percussionPreset = this.soundFont.getPreset(128, 0);
+
         // create 16 channels
         for (let j = 0; j < 16; j++) {
-            if(j === 9)
-            {
-                // default to percussion
-                this.midiChannels[j] = new MidiChannel(this.outputNode, this.soundFont.getPreset(128, 0));
-            }
-            else {
-                // default to the first preset
-                this.midiChannels[j] = new MidiChannel(this.outputNode, this.soundFont.presets[0]);
-            }
+            // default to the first preset
+            this.midiChannels[j] = new MidiChannel(this.outputNode, defaultPreset);
         }
+
+        // change percussion channel to the percussion preset
+        this.midiChannels[9].changePreset(percussionPreset);
     }
 
-    NoteOn(trackNumber, channel, midiNote, velocity) {
+    /**
+     * MIDI NoteOn Event
+     * @param channel {number} 0-15
+     * @param midiNote {number} 0-127
+     * @param velocity {number} 0-127
+     */
+    NoteOn(channel, midiNote, velocity) {
         if (velocity === 0) {
-            this.NoteOff(trackNumber, channel, midiNote, 0);
+            this.NoteOff(channel, midiNote);
             return;
         }
         let chan = this.midiChannels[channel];
@@ -45,7 +48,12 @@ export class MidiSynthetizer {
         this.onNoteOn(midiNote, channel, velocity, chan.channelVolume, chan.channelExpression);
     }
 
-    NoteOff(trackNumber, channel, midiNote) {
+    /**
+     * MIDI NoteOff event
+     * @param channel {number} 0-15
+     * @param midiNote {number} 0-127
+     */
+    NoteOff(channel, midiNote) {
         this.midiChannels[channel].stopNote(midiNote);
         this.onNoteOff(midiNote);
     }
@@ -65,19 +73,6 @@ export class MidiSynthetizer {
      * @param midiNote {number} 0-127
      */
     onNoteOff;
-
-    /**
-     * Plays a note on the user's channel
-     * @param midiNote {number}
-     * @param velocity {number}
-     */
-    playUserNote = (midiNote, velocity) => this.userChannel.playNote(midiNote, velocity);
-
-    /**
-     * Stops a note on the user's channel
-     * @param midiNote {number}
-     */
-    stopuserNote = midiNote => this.userChannel.stopNote(midiNote, 0);
 
     /**
      * @param event {MidiEvent|MetaEvent|SysexEvent}

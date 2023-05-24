@@ -1,6 +1,5 @@
 import {PresetNote} from "./notes/preset_note.js";
 import {Preset} from "../../soundfont2_parser/chunk/presets.js";
-// import {OscillatorNote} from "../midi_player/notes/oscillator_node.js";
 
 const CHANNEL_LOUDNESS = 1.0;
 export class MidiChannel {
@@ -44,23 +43,6 @@ export class MidiChannel {
          * @type {PresetNote[]}
          */
         this.stoppingNotes = [];
-
-        /*
-        // initialize oscillators
-        this.notes = [];
-
-        for (let i = 0; i < 128; i++) {
-            this.notes[i] = this.createNote(i);
-        }
-
-        setInterval(() => {this.ReplaceInactiveNotes()}, 1200);
-
-         */
-    }
-
-    get program()
-    {
-        return this.preset.midiPresetNumber;
     }
 
     createNote(midiNote)
@@ -117,25 +99,6 @@ export class MidiChannel {
             this.stopNote(midiNote, 127);
             return;
         }
-        /*
-        let note = this.notes[midiNote];
-
-        // calculate gain
-        let gain = (velocity / 128) * 0.15 * this.channelVolume * this.channelExpression;
-
-        note.gainNode.gain.value = 0;
-        note.gainNode.gain
-            .setTargetAtTime(gain, this.audioCtx.currentTime, 0.1);
-
-        // start the note
-        try
-        {
-            note.oscillatorNode.start();
-        }
-        catch(Error)
-        {
-            // note already started
-        }*/
 
         let note = this.createNote(midiNote);
 
@@ -160,13 +123,6 @@ export class MidiChannel {
         for (let note of this.playingNotes) {
             note.bendNote(bend);
         }
-        /*
-        for (let i = 0; i < 128; i++) {
-            let note = this.notes[i];
-            note.oscillatorNode.frequency
-                .value = this.getFrequency(i, bend);
-        }
-         */
     }
 
     /**
@@ -228,7 +184,7 @@ export class MidiChannel {
                         }
                         addDefaultVibrato();
                         console.log("Vibrato rate", dataValue);
-                        this.vibrato.rate = dataValue;
+                        this.vibrato.rate = (dataValue / 64) * 8;
                         break;
 
                     case 9:
@@ -250,52 +206,8 @@ export class MidiChannel {
                         console.log("Vibrato delay", dataValue);
                         this.vibrato.delay = 40 / dataValue
                         break;
-
-                    // case 32:
-                    //     console.log("TVF Cutoff frequency", dataValue);
-                    //     break;
-                    //
-                    // case 33:
-                    //     console.log("TVF resonance", dataValue);
-                    //     break;
-                    //
-                    // case 99:
-                    //     console.log("TVF&TVA Envelope Attack Time", dataValue);
-                    //     break;
-                    //
-                    // case 100:
-                    //     console.log("TVF&TVA Envelope Decay Time", dataValue);
-                    //     break;
-                    //
-                    // case 102:
-                    //     console.log("TVF&TVA Envelope Release Time", dataValue);
-                    //     break;
                 }
                 break;
-
-            // case 24:
-            //     console.log("Drum Instrument Pitch Coarse", dataValue);
-            //     break;
-            //
-            // case 26:
-            //     console.log("Drum Instrument TVA Level", dataValue);
-            //     break;
-            //
-            // case 28:
-            //     console.log("Drum Instrument Pan", dataValue);
-            //     break;
-            //
-            // case 29:
-            //     console.log("Drum Instrument Reverb Send Level", dataValue);
-            //     break;
-            //
-            // case 30:
-            //     console.log("Drum Instrument Chorus Send Level", dataValue);
-            //     break;
-            //
-            // case 31:
-            //     console.log("Drum Instrument Delay Send Level", dataValue);
-            //     break;
         }
     }
 
@@ -307,13 +219,6 @@ export class MidiChannel {
     }
 
     stopNote(midiNote) {
-        /*
-        let note = this.notes[midiNote];
-        // smoothly fade out
-        note.gainNode.gain
-            .setTargetAtTime(0, this.audioCtx.currentTime, 0.1);
-         */
-
         // TODO: fix holdPedal
         if(this.holdPedal)
         {
@@ -349,26 +254,4 @@ export class MidiChannel {
             this.stopNote(midiNote, 64);
         }
     }
-
-    // ReplaceInactiveNotes(){
-    //     for(let i = 0; i < 128; i++)
-    //     {
-    //         let note = this.notes[i];
-    //         if(!note.gainNode.gain.value < 0.01)
-    //         {
-    //             continue;
-    //         }
-    //         try {
-    //             note.oscillatorNode.stop();
-    //         }
-    //         catch(Error)
-    //         {
-    //             continue;
-    //         }
-    //         note.oscillatorNode = this.audioCtx.createOscillator();
-    //         note.oscillatorNode.frequency.value = this.getFrequency(i);
-    //         note.oscillatorNode.connect(note.gainNode);
-    //         note.oscillatorNode.type = "triangle";
-    //     }
-    // }
 }

@@ -37,22 +37,18 @@ export class MidiManager
      */
     constructor(context, soundFont) {
 
-        // set up sequencer synth, keyboard and renderer
+        // set up soundfont
         this.soundFont = soundFont;
 
+        // set up synthetizer
         this.synth = new MidiSynthetizer(context.destination, this.soundFont);
 
-        this.keyboard = new MidiKeyboard(this.channelColors);
+        // set up keyboard
+        this.keyboard = new MidiKeyboard(this.channelColors, this.synth);
 
-        this.renderer = new MidiRenderer(this.channelColors);
+        // set up renderer
+        this.renderer = new MidiRenderer(this.channelColors, this.synth);
         this.renderer.render(t => document.getElementById("title").innerText = t)
-
-        // connect the keyboard to synth
-        this.keyboard.onNotePressed = (note, vel) => this.synth.playUserNote(note, vel);
-        this.keyboard.onNoteRelased = note => this.synth.stopuserNote(note);
-
-        this.keyboard.onHoldPressed = () => this.synth.userChannel.pressHoldPedal();
-        this.keyboard.onHoldReleased = () => this.synth.userChannel.releaseHoldPedal();
 
         // connect the synth to keyboard
         this.synth.onNoteOn = (note, chan, vel, vol, exp) => this.keyboard.pressNote(note, chan, vel, vol, exp);
@@ -65,7 +61,9 @@ export class MidiManager
         presetSelector.
         addEventListener("change", () => {
             const val = presetSelector.value;
-            this.synth.userChannel.changePreset(this.soundFont.getPresetByName(val));
+            const chan = this.synth.midiChannels[this.keyboard.channel];
+
+            chan.changePreset(this.soundFont.getPresetByName(val));
             console.log("Changing user preset to:", val);
         });
     }
@@ -80,7 +78,7 @@ export class MidiManager
     {
         this.seq = new MidiSequencer(parsedMidi, this.synth);
         this.seq.play(resetTime, debugMode).then(() => {
-            this.renderer.startSynthRendering(this.seq, this.synth);
+            this.renderer.startSequencerRendering(this.seq);
         })
     }
 }

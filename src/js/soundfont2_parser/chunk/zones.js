@@ -4,6 +4,7 @@ import {RiffChunk} from "./riff_chunk.js";
 import {Generator} from "./generators.js";
 import {Sample} from "./samples.js";
 import {Instrument} from "./instruments.js";
+import {Modulator} from "./modulators.js";
 
 export class InstrumentZone {
     /**
@@ -21,6 +22,10 @@ export class InstrumentZone {
          * @type {Generator[]}
          */
         this.generators = [];
+        /**
+         * @type {Modulator[]}
+         */
+        this.modulators = [];
     }
 
     setZoneSize(modulatorZoneSize, generatorZoneSize)
@@ -38,6 +43,18 @@ export class InstrumentZone {
         for(let i = this.generatorZoneStartIndex; i < this.generatorZoneStartIndex + this.generatorZoneSize; i++)
         {
             this.generators.push(generators[i]);
+        }
+    }
+
+    /**
+     * grab the modulators
+     * @param modulators {Modulator[]}
+     */
+    getModulators(modulators)
+    {
+        for(let i = this.modulatorZoneStartIndex; i < this.modulatorZoneStartIndex + this.modulatorZoneSize; i++)
+        {
+            this.modulators.push(modulators[i]);
         }
     }
 
@@ -72,10 +89,11 @@ export class InstrumentZone {
  * Reads the given instrument zone chunk
  * @param zonesChunk {RiffChunk}
  * @param instrumentGenerators {Generator[]}
+ * @param instrumentModulators {Modulator[]}
  * @param instrumentSamples {Sample[]}
  * @returns {InstrumentZone[]}
  */
-export function readInstrumentZones(zonesChunk, instrumentGenerators, instrumentSamples)
+export function readInstrumentZones(zonesChunk, instrumentGenerators, instrumentModulators, instrumentSamples)
 {
     let zones = [];
     while(zonesChunk.chunkData.length > zonesChunk.chunkData.currentIndex)
@@ -87,6 +105,7 @@ export function readInstrumentZones(zonesChunk, instrumentGenerators, instrument
             let generatorZoneSize = zone.generatorZoneStartIndex - zones[zones.length - 1].generatorZoneStartIndex;
             zones[zones.length - 1].setZoneSize(modulatorZoneSize, generatorZoneSize);
             zones[zones.length - 1].getGenerators(instrumentGenerators);
+            zones[zones.length - 1].getModulators(instrumentModulators);
             zones[zones.length - 1].getSample(instrumentSamples);
             zones[zones.length - 1].getKeyRange();
         }
@@ -111,6 +130,10 @@ export class PresetZone {
          * @type {Generator[]}
          */
         this.generators = [];
+        /**
+         * @type {Modulator[]}
+         */
+        this.modulators = [];
     }
 
     setZoneSize(modulatorZoneSize, generatorZoneSize)
@@ -128,6 +151,18 @@ export class PresetZone {
         for(let i = this.generatorZoneStartIndex; i < this.generatorZoneStartIndex + this.generatorZoneSize; i++)
         {
             this.generators.push(generators[i]);
+        }
+    }
+
+    /**
+     * grab the modulators
+     * @param modulators {Modulator[]}
+     */
+    getModulators(modulators)
+    {
+        for(let i = this.modulatorZoneStartIndex; i < this.modulatorZoneStartIndex + this.modulatorZoneSize; i++)
+        {
+            this.modulators.push(modulators[i]);
         }
     }
 
@@ -163,9 +198,10 @@ export class PresetZone {
  * @param zonesChunk {RiffChunk}
  * @param presetGenerators {Generator[]}
  * @param instruments {Instrument[]}
+ * @param presetModulators {Modulator[]}
  * @returns {PresetZone[]}
  */
-export function readPresetZones(zonesChunk, presetGenerators, instruments)
+export function readPresetZones(zonesChunk, presetGenerators, presetModulators, instruments)
 {
     let zones = [];
     while(zonesChunk.chunkData.length > zonesChunk.chunkData.currentIndex)
@@ -177,6 +213,7 @@ export function readPresetZones(zonesChunk, presetGenerators, instruments)
             let generatorZoneSize = zone.generatorZoneStartIndex - zones[zones.length - 1].generatorZoneStartIndex;
             zones[zones.length - 1].setZoneSize(modulatorZoneSize, generatorZoneSize);
             zones[zones.length - 1].getGenerators(presetGenerators);
+            zones[zones.length - 1].getModulators(presetModulators);
             zones[zones.length - 1].getInstrument(instruments);
             zones[zones.length - 1].getKeyRange();
         }

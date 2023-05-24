@@ -195,14 +195,14 @@ export class MidiSequencer{
                     case "Note On":
                         // set a noteOn for the set delta
                         this.timeout(() => {
-                            this.synth.NoteOn(trackNumber, event.channel, event.data[0], event.data[1]);
+                            this.synth.NoteOn(event.channel, event.data[0], event.data[1]);
                         }, currentDeltaMs);
                         break;
 
                     case "Note Off":
                         // set a noteOff for the set delta
                         this.timeout(() => {
-                            this.synth.NoteOff(trackNumber, event.channel, event.data[0]);
+                            this.synth.NoteOff(event.channel, event.data[0]);
                         }, currentDeltaMs);
                         break;
 
