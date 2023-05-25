@@ -58,7 +58,7 @@ export class SampleNode
     {
         if(value === 0)
         {
-            value = 0.0001;
+            value = 0.000001;
         }
         param.setValueAtTime(param.value, this.currentTime + relativeStartTime);
         param.exponentialRampToValueAtTime(value, this.currentTime + 0.00001 + relativeStartTime + timeInSeconds);

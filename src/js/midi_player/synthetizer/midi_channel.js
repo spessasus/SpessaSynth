@@ -7,17 +7,15 @@ export class MidiChannel {
      * creates a midi channel
      * @param targetNode {AudioNode}
      * @param defaultPreset {Preset}
-     * @param debug {boolean}
      */
-    constructor(targetNode, defaultPreset, debug= false) {
+    constructor(targetNode, defaultPreset) {
         this.ctx = targetNode.context;
         this.outputNode = targetNode;
         this.channelVolume = 1;
         this.channelExpression = 1;
         this.preset = defaultPreset;
-        this.bank = this.preset.midiBankNumber;
+        this.bank = this.preset.bank;
         this.panner = this.ctx.createStereoPanner();
-        this.debug = debug;
         this.NRPN_MSB = 0;
         this.NRPN_LSB = 0;
         this.vibrato = {depth: 0, rate: 0, delay: 0};
@@ -90,13 +88,19 @@ export class MidiChannel {
             this.ctx.currentTime + 0.0001);
     }
 
-    playNote(midiNote, velocity) {
+    /**
+     * @param midiNote {number} 0-127
+     * @param velocity {number} 0-127
+     * @param debugInfo {boolean} for debugging set to true
+     */
+    playNote(midiNote, velocity, debugInfo = false) {
         if(!velocity)
         {
             throw "No velocity given!";
         }
         if (velocity === 0) {
-            this.stopNote(midiNote, 127);
+            // stop if velocity 0
+            this.stopNote(midiNote);
             return;
         }
 
@@ -105,14 +109,14 @@ export class MidiChannel {
         // calculate gain
         //let gain = (velocity / 127) * this.channelVolume * this.channelExpression;
 
-        let exclusives = note.startNote(velocity, this.debug);
+        /*let exclusives =*/ note.startNote(velocity, debugInfo);
 
-        if(exclusives.length > 0)
-        {
-            for(let id of exclusives) {
-                this.stopExclusiveNotes(id);
-            }
-        }
+        // if(exclusives.length > 0)
+        // {
+        //     for(let id of exclusives) {
+        //         this.stopExclusiveNotes(id);
+        //     }
+        // }
 
         this.playingNotes.push(note);
     }
@@ -128,17 +132,17 @@ export class MidiChannel {
     /**
      * kills the notes with exclusiveclass
      * @param exclusiveId {number}
+     * TODO: fix
      */
     stopExclusiveNotes(exclusiveId)
     {
-        for(let note of this.playingNotes)
+        let playingNotesToStop =this.playingNotes.filter(n => n.preset.exclusiveClasses.includes(exclusiveId))
+        // for every note that has the exclusive preset (playing and fading)
+        for(let note of playingNotesToStop)
         {
-            if(note.preset.exclusiveClasses.includes(exclusiveId) && note.preset !== this.preset)
-            {
-                note.disconnectNote();
+            note.killNote().then(() => {
                 delete this.playingNotes.splice(this.playingNotes.indexOf(note), 1);
-                console.log("killing", note);
-            }
+            });
         }
     }
 
@@ -160,7 +164,7 @@ export class MidiChannel {
             {
                 this.vibrato.depth = 64;
                 this.vibrato.rate = 8;
-                this.vibrato.delay = 1;
+                this.vibrato.delay = 2;
             }
         }
         //https://cdn.roland.com/assets/media/pdf/SC-88PRO_OM.pdf
@@ -183,8 +187,8 @@ export class MidiChannel {
                             return;
                         }
                         addDefaultVibrato();
-                        console.log("Vibrato rate", dataValue);
                         this.vibrato.rate = (dataValue / 64) * 8;
+                        console.log("Vibrato rate", dataValue, "=>", this.vibrato.rate);
                         break;
 
                     case 9:
@@ -193,8 +197,8 @@ export class MidiChannel {
                             return;
                         }
                         addDefaultVibrato();
-                        console.log("Vibrato depth", dataValue);
                         this.vibrato.depth = dataValue / 2;
+                        console.log("Vibrato depth", dataValue, "=>", this.vibrato.depth);
                         break;
 
                     case 10:
@@ -203,8 +207,8 @@ export class MidiChannel {
                             return;
                         }
                         addDefaultVibrato();
-                        console.log("Vibrato delay", dataValue);
-                        this.vibrato.delay = 40 / dataValue
+                        this.vibrato.delay = (64 / dataValue) * 0.61;
+                        console.log("Vibrato delay", dataValue, "=>", this.vibrato.delay);
                         break;
                 }
                 break;

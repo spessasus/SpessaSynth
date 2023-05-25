@@ -30,7 +30,7 @@ app.get("/soundfonts", (req, res) => {
 
 app.listen(PORT,  HOST, undefined, () =>{
     let url = `http://${HOST}:${PORT}`;
-    open(url).then(() => {
+    open(url, {app: {name: 'chrome'}}).then(() => {
         console.log(`Running on ${url}. A browser window should open.`);
     });
 })

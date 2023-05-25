@@ -11,8 +11,8 @@ export class Preset {
      */
     constructor(presetChunk) {
         this.presetName = readBytesAsString(presetChunk.chunkData, 20).trim();
-        this.midiPresetNumber = readBytesAsUintLittleEndian(presetChunk.chunkData, 2);
-        this.midiBankNumber = readBytesAsUintLittleEndian(presetChunk.chunkData, 2);
+        this.program = readBytesAsUintLittleEndian(presetChunk.chunkData, 2);
+        this.bank = readBytesAsUintLittleEndian(presetChunk.chunkData, 2);
         this.presetZoneStartIndex = readBytesAsUintLittleEndian(presetChunk.chunkData, 2);
         this.presetZonesAmount = 0;
         /**

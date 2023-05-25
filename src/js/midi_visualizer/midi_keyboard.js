@@ -20,11 +20,13 @@ export class MidiKeyboard
             this.mouseHeld = false;
             for(let key of this.heldKeys)
             {
+                // user note off
                 this.releaseNote(key);
                 this.synth.NoteOff(this.channel, key);
             }
         }
 
+        // hold pedal on
         document.addEventListener("keydown", e =>{
             if(e.key === "Shift")
             {
@@ -33,6 +35,7 @@ export class MidiKeyboard
             }
         });
 
+        // hold pedal off
         document.addEventListener("keyup", e => {
             if(e.key === "Shift")
             {
@@ -58,19 +61,23 @@ export class MidiKeyboard
                     {
                         return
                     }
+
+                    // user note on
                     this.heldKeys.push(midiNote);
                     this.pressNote(midiNote, this.channel, 127, 1, 1);
-                    this.synth.NoteOn(this.channel, midiNote, 127);
+                    this.synth.NoteOn(this.channel, midiNote, 127, true);
                 }
 
                 noteElement.onmousedown = () =>
                 {
+                    // user note on
                     this.heldKeys.push(midiNote);
                     this.pressNote(midiNote, this.channel, 127, 1, 1);
-                    this.synth.NoteOn(this.channel, midiNote, 127);
+                    this.synth.NoteOn(this.channel, midiNote, 127, true);
                 }
 
                 noteElement.onmouseout = () => {
+                    // user note off
                     this.heldKeys.splice(this.heldKeys.indexOf(midiNote), 1);
                     this.releaseNote(midiNote);
                     this.synth.NoteOff(this.channel, midiNote);
@@ -123,6 +130,54 @@ export class MidiKeyboard
                 this.keyboard.appendChild(noteElement);
             }
         }
+
+        /**
+         * Preset selector
+         * @type {HTMLSelectElement}
+         */
+        const presetSelector = document.getElementById("preset_selector");
+        presetSelector.
+        addEventListener("change", () => {
+            // find the preset's bank and program number
+            const presetName = presetSelector.value;
+            const preset = this.synth.soundFont.getPresetByName(presetName);
+            const bank = preset.bank;
+            const program = preset.program;
+
+            // change bank
+            this.synth.controllerChange(this.channel, "Bank Select", bank);
+            this.synth.programChange(this.channel, program);
+            console.log("Changing user preset to:", presetName);
+        });
+
+        /**
+         * Channel selector
+         * @type {HTMLSelectElement}
+         */
+        const channelSelector = document.getElementById("channel_selector");
+
+        let channelNumber = 0;
+        /**
+         * @type {HTMLOptionElement[]}
+         */
+        const options = [];
+        for(const channel of this.synth.midiChannels)
+        {
+            const option = document.createElement("option");
+            option.value = channelNumber.toString();
+            option.innerText = `Channel ${channelNumber}: ${channel.preset.presetName}`;
+            channelSelector.appendChild(option);
+            channelNumber++;
+            options.push(option);
+        }
+        channelSelector.onchange = () => {
+            this.selectChannel(parseInt(channelSelector.value));
+        }
+
+        // update on program change
+        this.synth.onProgramChange = (ch, p) => {
+            options[ch].text = `Channel ${ch}: ${p}`;
+        }
     }
 
     /**
@@ -131,14 +186,13 @@ export class MidiKeyboard
      */
     selectChannel(channel)
     {
-        this.channel = 0;
+        this.channel = channel;
     }
 
     /**
      * presses a midi note visually
      * @param midiNote {number} 0-127
-     * @param channel {number} 0-15
-     * @param volume {number} 0-1
+     * @param channel {number} 0-15     * @param volume {number} 0-1
      * @param expression {number} 0-1
      * @param velocity {number} 0-127
      */

@@ -19,24 +19,27 @@ input[type="file"] {
     display: none;
 }
 
-label[for="preset_selector"]
+.keyboard_selector
 {
     position: absolute;
     top: 0;
     right: 0;
 }
 
-option
+.keyboard_selector select option
 {
     background-color: black;
+    text-align: center;
 }
 
-#preset_selector
+.keyboard_selector select
 {
-    display: inline;
+    display: block;
     border: none;
     font-size: 15px;
     background: black;
+    text-align: center;
+    width: 100%;
 }
 
 #title_wrapper

@@ -30,6 +30,7 @@ export class MidiSynthetizer {
 
         // change percussion channel to the percussion preset
         this.midiChannels[9].changePreset(percussionPreset);
+        this.midiChannels[9].bank = 128;
     }
 
     /**
@@ -37,14 +38,15 @@ export class MidiSynthetizer {
      * @param channel {number} 0-15
      * @param midiNote {number} 0-127
      * @param velocity {number} 0-127
+     * @param enableDebugging {boolean} set to true to log stuff to console
      */
-    NoteOn(channel, midiNote, velocity) {
+    NoteOn(channel, midiNote, velocity, enableDebugging = false) {
         if (velocity === 0) {
             this.NoteOff(channel, midiNote);
             return;
         }
         let chan = this.midiChannels[channel];
-        chan.playNote(midiNote, velocity);
+        chan.playNote(midiNote, velocity, enableDebugging);
         this.onNoteOn(midiNote, channel, velocity, chan.channelVolume, chan.channelExpression);
     }
 
@@ -194,12 +196,26 @@ export class MidiSynthetizer {
         this.midiChannels[channel].setPitchBend(MSB, LSB);
     }
 
+    /**
+     * Calls on program change(channel number, preset name)
+     * @type {function(number, string)}
+     */
+    onProgramChange;
+
+    /**
+     * @param channel {number} 0-15
+     * @param programNumber {number} 0-127
+     */
     programChange(channel, programNumber)
     {
         const channelObj = this.midiChannels[channel];
-        let preset = this.soundFont.getPreset(channelObj.bank, programNumber);
+        // always 128 for channel 10
+        const bank = (channel === 9 ? 128 : channelObj.bank);
+
+        let preset = this.soundFont.getPreset(bank, programNumber);
         channelObj.changePreset(preset);
         console.log("changing channel", channel, "to bank:", channelObj.bank,
             "preset:", programNumber, preset.presetName);
+        this.onProgramChange(channel, preset.presetName);
     }
 }

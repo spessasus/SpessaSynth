@@ -14,11 +14,16 @@
     <h1 id="title">SpessaSynth: MIDI Soundfont2 Player</h1>
   </div>
 
-  <label for="preset_selector">Presets:
-    <select id="preset_selector">
-      <option value="-1" disabled selected>No preset selected</option>
-    </select>
-  </label>
+  <div class="keyboard_selector">
+    <label for="preset_selector">Presets:
+      <select id="preset_selector">
+        <option value="-1" disabled selected>No preset selected</option>
+      </select>
+      <select id="channel_selector">
+        <option value="-1" disabled selected>No channel selected</option>
+      </select>
+    </label>
+  </div>
 
   <label id="file_upload"> Upload a MIDI file
     <input type="file" accept="audio/parsedMidi" id="midi_file_input"><br/>

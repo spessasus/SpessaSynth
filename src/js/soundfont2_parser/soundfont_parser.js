@@ -131,7 +131,7 @@ export class SoundFont2Parser
         console.log("Parsing finished!");
         console.log("Presets:", this.presets);
 
-        this.presets.sort((a, b) => (a.midiPresetNumber - b.midiPresetNumber) + (a.midiBankNumber - b.midiBankNumber));
+        this.presets.sort((a, b) => (a.program - b.program) + (a.bank - b.bank));
     }
 
     /**
@@ -141,13 +141,13 @@ export class SoundFont2Parser
      * @returns {Preset}
      */
     getPreset(bankNr, presetNr) {
-        let preset = this.presets.find(p => p.midiBankNumber === bankNr && p.midiPresetNumber === presetNr);
+        let preset = this.presets.find(p => p.bank === bankNr && p.program === presetNr);
         if (!preset)
         {
-            preset = this.presets.find(p => p.midiPresetNumber === presetNr && p.midiBankNumber !== 128);
+            preset = this.presets.find(p => p.program === presetNr && p.bank !== 128);
             if(bankNr === 128)
             {
-                preset = this.presets.find(p => p.midiBankNumber === 128);
+                preset = this.presets.find(p => p.bank === 128);
             }
         }
         if(!preset)

@@ -53,19 +53,6 @@ export class MidiManager
         // connect the synth to keyboard
         this.synth.onNoteOn = (note, chan, vel, vol, exp) => this.keyboard.pressNote(note, chan, vel, vol, exp);
         this.synth.onNoteOff = note => this.keyboard.releaseNote(note);
-
-        /**
-         * @type {HTMLSelectElement}
-         */
-        const presetSelector = document.getElementById("preset_selector");
-        presetSelector.
-        addEventListener("change", () => {
-            const val = presetSelector.value;
-            const chan = this.synth.midiChannels[this.keyboard.channel];
-
-            chan.changePreset(this.soundFont.getPresetByName(val));
-            console.log("Changing user preset to:", val);
-        });
     }
 
     /**

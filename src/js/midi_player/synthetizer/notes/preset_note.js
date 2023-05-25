@@ -79,7 +79,6 @@ export class PresetNote
             let bufferSource = new AudioBufferSourceNode(this.ctx, {
                 buffer: sample.getBuffer(this.ctx)
             });
-            bufferSource.channelCount = 2;
 
             if(this.vibratoDepth) {
                 this.vibratoDepth.connect(bufferSource.detune);
@@ -168,10 +167,8 @@ export class PresetNote
             this.displayDebugTable();
         }
         let gain = velocity / 127;
-        // lower the gain if a lot of notes
-        gain = gain / (this.sampleNodes.length < 1 ? 1 : this.sampleNodes.length + 1);
-        //}
-        this.noteVolumeController.gain.value = gain;
+        // lower the gain if a lot of notes (or not...?)
+        this.noteVolumeController.gain.value = gain / 2; /*/ Math.sqrt(this.sampleNodes.length + 1);*/
 
         // activate vibrato
         if(this.vibratoWave)
@@ -276,5 +273,19 @@ export class PresetNote
             sampleNode.setPlaybackRate(newPlayback);
             //sampleNode.source.playbackRate.setTargetAtTime(newPlayback, this.drawingContext.currentTime, 0.1);
         }
+    }
+
+    /**
+     * Stops the note in 0.2s
+     * @returns {Promise<boolean>}
+     */
+    async killNote()
+    {
+        for (let node of this.sampleNodes)
+        {
+            node.stopSample(0.2);
+        }
+        await new Promise(r => setTimeout(r, 200));
+        return true;
     }
 }
