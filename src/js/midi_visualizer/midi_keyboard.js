@@ -194,6 +194,7 @@ export class MidiKeyboard
      * @param midiNote {number} 0-127
      * @param channel {number} 0-15     * @param volume {number} 0-1
      * @param expression {number} 0-1
+     * @param volume {number} 0-1
      * @param velocity {number} 0-127
      */
     pressNote(midiNote, channel, velocity, volume, expression)
