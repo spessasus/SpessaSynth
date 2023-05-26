@@ -14,15 +14,7 @@
     <h1 id="title">SpessaSynth: MIDI Soundfont2 Player</h1>
   </div>
 
-  <div class="keyboard_selector">
-    <label for="preset_selector">Presets:
-      <select id="preset_selector">
-        <option value="-1" disabled selected>No preset selected</option>
-      </select>
-      <select id="channel_selector">
-        <option value="-1" disabled selected>No channel selected</option>
-      </select>
-    </label>
+  <div id="keyboard_selector">
   </div>
 
   <label id="file_upload"> Upload a MIDI file
@@ -39,7 +31,7 @@
   </table>
 
 <div class="bottom_part">
-  <input class="slider" type="range" min="0" max="1000">
+  <div id="sequencer_controls"></div>
   <h2 id="text_event"></h2>
   <button id="note_killer">Kill all notes</button>
 </div>

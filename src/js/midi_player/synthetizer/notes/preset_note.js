@@ -166,9 +166,8 @@ export class PresetNote
         {
             this.displayDebugTable();
         }
-        let gain = velocity / 127;
         // lower the gain if a lot of notes (or not...?)
-        this.noteVolumeController.gain.value = gain / 2; /*/ Math.sqrt(this.sampleNodes.length + 1);*/
+        this.noteVolumeController.gain.value = velocity / 2; /*/ Math.sqrt(this.sampleNodes.length + 1);*/
 
         // activate vibrato
         if(this.vibratoWave)

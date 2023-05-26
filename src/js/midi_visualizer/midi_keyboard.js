@@ -1,4 +1,5 @@
 import {MidiSynthetizer} from "../midi_player/synthetizer/midi_synthetizer.js";
+
 export class MidiKeyboard
 {
     /**
@@ -48,94 +49,105 @@ export class MidiKeyboard
         this.channel = 0;
 
         this.channelColors = channelColors;
-        if (!this.keyboard.childNodes.length) {
-            function isBlackNoteNumber(noteNumber) {
+
+        // create keyboard
+        function isBlackNoteNumber(noteNumber) {
                 let pitchClass = noteNumber % 12;
                 return pitchClass === 1 || pitchClass === 3 || pitchClass === 6 || pitchClass === 8 || pitchClass === 10;
+        }
+        for (let midiNote = 0; midiNote < 128; midiNote++) {
+            let noteElement = (document.createElement("td"));
+            noteElement.id = `note${midiNote}`;
+            noteElement.onmouseover = () => {
+                if(!this.mouseHeld)
+                {
+                    return
+                }
+
+                // user note on
+                this.heldKeys.push(midiNote);
+                this.pressNote(midiNote, this.channel, 127, 1, 1);
+                this.synth.NoteOn(this.channel, midiNote, 127, true);
             }
-            for (let midiNote = 0; midiNote < 128; midiNote++) {
-                let noteElement = (document.createElement("td"));
-                noteElement.id = `note${midiNote}`;
-                noteElement.onmouseover = () => {
-                    if(!this.mouseHeld)
-                    {
-                        return
-                    }
 
-                    // user note on
-                    this.heldKeys.push(midiNote);
-                    this.pressNote(midiNote, this.channel, 127, 1, 1);
-                    this.synth.NoteOn(this.channel, midiNote, 127, true);
-                }
-
-                noteElement.onmousedown = () =>
-                {
-                    // user note on
-                    this.heldKeys.push(midiNote);
-                    this.pressNote(midiNote, this.channel, 127, 1, 1);
-                    this.synth.NoteOn(this.channel, midiNote, 127, true);
-                }
-
-                noteElement.onmouseout = () => {
-                    // user note off
-                    this.heldKeys.splice(this.heldKeys.indexOf(midiNote), 1);
-                    this.releaseNote(midiNote);
-                    this.synth.NoteOff(this.channel, midiNote);
-                };
-                noteElement.onmouseleave = noteElement.onmouseup;
-                let isBlack = isBlackNoteNumber(midiNote);
-                let transform;
-                if(isBlack)
-                {
-                    // short note
-                    noteElement.style.backgroundColor = "black";
-                    noteElement.style.transformOrigin = "top";
-                    //noteElement.style.border = "black 1px solid";
-                    transform = "scale(1, 0.7)";
-                    noteElement.style.zIndex = "10";
-                }
-                else
-                {
-                    // long note
-                    noteElement.style.backgroundColor = (isBlackNoteNumber(midiNote) ? "black" : "white");
-                    noteElement.style.zIndex = "1";
-                    let blackNoteLeft = false;
-                    let blackNoteRight = false;
-                    if(midiNote >= 0)
-                    {
-                        blackNoteLeft = isBlackNoteNumber(midiNote - 1);
-                    }
-                    if(midiNote < 127) {
-                        blackNoteRight = isBlackNoteNumber(midiNote + 1);
-                    }
-
-                    if(blackNoteRight && blackNoteLeft)
-                    {
-                        transform = "scale(2, 1)";
-                    }
-                    else if(blackNoteLeft)
-                    {
-                        transform = "scale(1.5, 1) translateX(-15%)";
-                    }
-                    else if(blackNoteRight)
-                    {
-                        transform = "scale(1.5, 1) translateX(15%)";
-                    }
-
-
-                }
-                noteElement.style.transform = transform;
-                noteElement.setAttribute("initial-transform", transform);
-                noteElement.setAttribute("colors", `["${noteElement.style.backgroundColor}"]`);
-                this.keyboard.appendChild(noteElement);
+            noteElement.onmousedown = () =>
+            {
+                // user note on
+                this.heldKeys.push(midiNote);
+                this.pressNote(midiNote, this.channel, 127, 1, 1);
+                this.synth.NoteOn(this.channel, midiNote, 127, true);
             }
+
+            noteElement.onmouseout = () => {
+                // user note off
+                this.heldKeys.splice(this.heldKeys.indexOf(midiNote), 1);
+                this.releaseNote(midiNote);
+                this.synth.NoteOff(this.channel, midiNote);
+            };
+            noteElement.onmouseleave = noteElement.onmouseup;
+            let isBlack = isBlackNoteNumber(midiNote);
+            let transform;
+            if(isBlack)
+            {
+                // short note
+                noteElement.style.backgroundColor = "black";
+                noteElement.style.transformOrigin = "top";
+                //noteElement.style.border = "black 1px solid";
+                transform = "scale(1, 0.7)";
+                noteElement.style.zIndex = "10";
+            }
+            else
+            {
+                // long note
+                noteElement.style.backgroundColor = (isBlackNoteNumber(midiNote) ? "black" : "white");
+                noteElement.style.zIndex = "1";
+                let blackNoteLeft = false;
+                let blackNoteRight = false;
+                if(midiNote >= 0)
+                {
+                    blackNoteLeft = isBlackNoteNumber(midiNote - 1);
+                }
+                if(midiNote < 127) {
+                    blackNoteRight = isBlackNoteNumber(midiNote + 1);
+                }
+
+                if(blackNoteRight && blackNoteLeft)
+                {
+                    transform = "scale(2, 1)";
+                }
+                else if(blackNoteLeft)
+                {
+                    transform = "scale(1.5, 1) translateX(-15%)";
+                }
+                else if(blackNoteRight)
+                {
+                    transform = "scale(1.5, 1) translateX(15%)";
+                }
+
+
+            }
+            noteElement.style.transform = transform;
+            noteElement.setAttribute("initial-transform", transform);
+            noteElement.setAttribute("colors", `["${noteElement.style.backgroundColor}"]`);
+            this.keyboard.appendChild(noteElement);
         }
 
-        /**
-         * Preset selector
-         * @type {HTMLSelectElement}
-         */
-        const presetSelector = document.getElementById("preset_selector");
+        const selectorMenu = document.getElementById("keyboard_selector");
+
+        // preset selector
+        const presetSelector = document.createElement("select");
+
+        // load the preset names
+        let pNames = this.synth.soundFont.presets.map(p => p.presetName);
+        pNames.sort();
+        for(let pName of pNames)
+        {
+            let option = document.createElement("option");
+            option.value = pName;
+            option.innerText = pName;
+            presetSelector.appendChild(option);
+        }
+
         presetSelector.
         addEventListener("change", () => {
             // find the preset's bank and program number
@@ -149,12 +161,10 @@ export class MidiKeyboard
             this.synth.programChange(this.channel, program);
             console.log("Changing user preset to:", presetName);
         });
+        selectorMenu.appendChild(presetSelector);
 
-        /**
-         * Channel selector
-         * @type {HTMLSelectElement}
-         */
-        const channelSelector = document.getElementById("channel_selector");
+        // channel selector
+        const channelSelector = document.createElement("select");
 
         let channelNumber = 0;
         /**
@@ -164,19 +174,27 @@ export class MidiKeyboard
         for(const channel of this.synth.midiChannels)
         {
             const option = document.createElement("option");
+
             option.value = channelNumber.toString();
-            option.innerText = `Channel ${channelNumber}: ${channel.preset.presetName}`;
+            option.innerText = `Channel ${channelNumber + 1}: ${channel.preset.presetName}`;
+
+            option.style.backgroundColor = channelColors[channelNumber];
+            option.style.color = "rgb(0, 0, 0)";
+
             channelSelector.appendChild(option);
             channelNumber++;
             options.push(option);
         }
         channelSelector.onchange = () => {
+            presetSelector.value = this.synth.midiChannels[channelSelector.value].preset.presetName;
             this.selectChannel(parseInt(channelSelector.value));
         }
 
+        selectorMenu.appendChild(channelSelector);
+
         // update on program change
         this.synth.onProgramChange = (ch, p) => {
-            options[ch].text = `Channel ${ch}: ${p}`;
+            options[ch].text = `Channel ${ch + 1}: ${p}`;
         }
     }
 

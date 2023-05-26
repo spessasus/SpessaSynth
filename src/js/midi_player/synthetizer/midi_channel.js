@@ -84,8 +84,7 @@ export class MidiChannel {
     setExpression(val)
     {
         this.channelExpression = val;
-        this.gainController.gain.setValueAtTime(this.getGain(),
-            this.ctx.currentTime + 0.0001);
+        this.gainController.gain.value = this.getGain();
     }
 
     /**
@@ -107,9 +106,9 @@ export class MidiChannel {
         let note = this.createNote(midiNote);
 
         // calculate gain
-        //let gain = (velocity / 127) * this.channelVolume * this.channelExpression;
+        let gain = (velocity / 127);
 
-        /*let exclusives =*/ note.startNote(velocity, debugInfo);
+        /*let exclusives =*/ note.startNote(gain, debugInfo);
 
         // if(exclusives.length > 0)
         // {

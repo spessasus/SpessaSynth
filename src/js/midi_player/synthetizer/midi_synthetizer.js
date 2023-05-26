@@ -1,7 +1,4 @@
 import {MidiChannel} from "./midi_channel.js";
-import "../../midi_parser/events/midi_event.js";
-import "../../midi_parser/events/meta_event.js";
-import "../../midi_parser/events/sysex_event.js";
 import {SoundFont2Parser} from "../../soundfont2_parser/soundfont_parser.js";
 
 export class MidiSynthetizer {
@@ -76,28 +73,6 @@ export class MidiSynthetizer {
      */
     onNoteOff;
 
-    /**
-     * @param event {MidiEvent|MetaEvent|SysexEvent}
-     */
-    textEvent(event) {
-        const td = new TextDecoder("windows-1250");
-        let decodedText = td.decode(new Uint8Array(event.data)).replace("\n", "");
-        if(event.type === "Lyrics")
-        {
-            let text = decodedText;
-            if(this.lastLyricsText)
-            {
-                text = this.lastLyricsText + " " + decodedText;
-            }
-            this.lastLyricsText = decodedText
-            document.getElementById("text_event").innerText = text;
-        }
-        else {
-            document.getElementById("text_event").innerText =
-                `${event.type}: ${decodedText}`;
-        }
-    }
-
     resetAll() {
         for (let channel of this.midiChannels) {
             channel.stopAll();
@@ -149,6 +124,12 @@ export class MidiSynthetizer {
             case "Expression Controller":
                 this.midiChannels[channel]
                     .setExpression(controllerValue / 127);
+                break;
+
+
+            case "LSB for Control 11 (Expression Controller)":
+                const expression = (this.midiChannels[channel].channelExpression << 7 ) | controllerValue;
+                this.midiChannels[channel].setExpression(expression);
                 break;
 
             case "Bank Select":

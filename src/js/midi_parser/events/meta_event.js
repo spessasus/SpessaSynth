@@ -41,7 +41,7 @@ const types =
         0x58: "Time Signature",
         0x59: "Key Signature"
     };
-class MetaEvent
+export class MetaEvent
 {
     /**
      * @param array {Array}

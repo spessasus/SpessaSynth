@@ -154,7 +154,7 @@ document.body.onclick = () =>
 
 titleMessage.innerText = "Downloading soundfont...";
 
-fetchFont("zunfont.sf2", percent => progressBar.style.width = `${(percent / 100) * titleMessage.offsetWidth}px`)
+fetchFont("soundfont.sf2", percent => progressBar.style.width = `${(percent / 100) * titleMessage.offsetWidth}px`)
     .then(data => {
         titleMessage.innerText = "Parsing soundfont...";
         setTimeout(() => {
@@ -162,17 +162,6 @@ fetchFont("zunfont.sf2", percent => progressBar.style.width = `${(percent / 100)
 
             titleMessage.innerText = "SpessaSynth: MIDI Soundfont2 Player";
             progressBar.style.width = "0";
-
-            // prepare the preset selector
-            let pNames = soundFontParser.presets.map(p => p.presetName);
-            pNames.sort();
-            for(let pName of pNames)
-            {
-                let option = document.createElement("option");
-                option.value = pName;
-                option.innerText = pName;
-                document.getElementById("preset_selector").appendChild(option);
-            }
 
             if(!fileInput.files[0]) {
                 fileInput.onchange = () => {

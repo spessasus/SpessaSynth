@@ -138,7 +138,7 @@ const statusCodes =
         0xFF: ["System Reset", 0]
     };
 
-class MidiEvent
+export class MidiEvent
 {
     constructor(array, delta, runningStatusByte= 0) {
         this.delta = delta;

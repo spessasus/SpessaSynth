@@ -1,6 +1,6 @@
 import {MidiSequencer} from "../midi_player/sequencer/midi_sequencer.js";
 import {MidiSynthetizer} from "../midi_player/synthetizer/midi_synthetizer.js";
-import {formatTime} from "../utils/text_formatting.js";
+import {formatTime} from "../utils/other.js";
 
 const CHANNEL_ANALYSER_FFT = 128;
 export class MidiRenderer

@@ -1,6 +1,6 @@
 import {MidiParser} from "../../midi_parser/midi_parser.js";
 import {MidiSynthetizer} from "../synthetizer/midi_synthetizer.js";
-import {formatTime} from "../../utils/text_formatting.js";
+import {formatTime} from "../../utils/other.js";
 
 export class MidiSequencer{
     /**
@@ -11,6 +11,8 @@ export class MidiSequencer{
     constructor(parsedMidi, synth) {
         this.synth = synth;
         this.midiData = parsedMidi;
+        this.controls = document.getElementById("sequencer_controls");
+
         if(!this.midiData.decodedTracks)
         {
             throw "No tracks supplied!";
@@ -61,6 +63,21 @@ export class MidiSequencer{
             let playingNotes = []
             let playingNotesTimes = []
 
+            const calculateNoteTime = event =>
+            {
+                for(let note of playingNotes)
+                {
+                    if(note.channel === event.channel && event.data[0] === note.data[0])
+                    {
+                        let index = playingNotes.indexOf(note);
+                        playingNotes.splice(index, 1);
+                        note.msLength = this.getDeltaAsMs(event.deltaTotal) - playingNotesTimes[index];
+                        playingNotesTimes.splice(index, 1);
+                        break;
+                    }
+                }
+            }
+
             for (let event of track) {
                 if(event.type === "Note On")
                 {
@@ -79,32 +96,12 @@ export class MidiSequencer{
                     }
                     else
                     {
-                        for(let note of playingNotes)
-                        {
-                            if(note.channel === event.channel && event.data[0] === note.data[0])
-                            {
-                                let index = playingNotes.indexOf(note);
-                                playingNotes.splice(index, 1);
-                                note.msLength = this.getDeltaAsMs(event.deltaTotal) - playingNotesTimes[index];
-                                playingNotesTimes.splice(index, 1);
-                                break;
-                            }
-                        }
+                        calculateNoteTime(event);
                     }
                 }
                 else if(event.type === "Note Off")
                 {
-                    for(let note of playingNotes)
-                    {
-                        if(note.channel === event.channel && event.data[0] === note.data[0])
-                        {
-                            let index = playingNotes.indexOf(note);
-                            playingNotes.splice(index, 1);
-                            note.msLength = this.getDeltaAsMs(event.deltaTotal) - playingNotesTimes[index];
-                            playingNotesTimes.splice(index, 1);
-                            break;
-                        }
-                    }
+                    calculateNoteTime(event);
                 }
             }
         }
@@ -140,20 +137,30 @@ export class MidiSequencer{
     }
 
     createSlider() {
-        this.slider = document.getElementsByClassName("slider")[0];
-        this.slider.style.visibility = "visible";
-        this.slider.onchange = e => {
-            clearInterval(this.sliderUpdater);
+        this.slider = document.createElement("div")
+        this.slider.id = "note_progress";
+        this.slider.min = (0).toString();
+        this.slider.max =  this.duration.toString()
+        // this.slider.onchange = () => {
+        //     clearInterval(this.sliderInterval);
+        //
+        //     this.currentTime = (this.slider.value / this.slider.max) * this.duration;
+        //
+        //     this.sliderInterval = setInterval(() => {
+        //         this.slider.value = ((this.currentTime / this.duration) * this.slider.max).toString();
+        //     }, 200);
+        // };
+        //
+        // this.sliderInterval = setInterval(() => {
+        //     this.slider.value = ((this.currentTime / this.duration) * this.slider.max).toString();
+        // }, 100);
 
-            this.currentTime = (e.target.value / e.target.max) * this.duration;
+        this.controls.appendChild(this.slider);
+    }
 
-            this.sliderUpdater = setInterval(() => {
-                this.slider.value = ((this.currentTime / this.duration) * this.slider.max).toString();
-            }, 200);
-        };
-
-        this.sliderUpdater = setInterval(() => {
-            this.slider.value = ((this.currentTime / this.duration) * this.slider.max).toString();
+    setSliderInterval(){
+        this.sliderInterval = setInterval(() => {
+            this.slider.style.width = `${(this.currentTime / this.duration) * 100}%`;
         }, 100);
     }
 
@@ -211,7 +218,7 @@ export class MidiSequencer{
                             console.log("Finished Track", trackNumber);
                             this.finishedTracks++;
                             if (this.finishedTracks >= this.midiData.tracksAmount) {
-                                // clearInterval(this.sliderUpdater);
+                                clearInterval(this.sliderInterval);
                                 console.log("Song ended!");
                                 this.synth.resetAll();
                                 if(this.onended) {
@@ -225,14 +232,33 @@ export class MidiSequencer{
                         }
                         break;
 
-                    case "Text Event":
-                    case "Copyright":
-                    case "Track Name":
-                    case "Lyrics":
-                        this.timeout(() => {
-                            this.synth.textEvent(event);
-                        }, currentDeltaMs);
-                        break;
+                    // case "Text Event":
+                    // case "Copyright":
+                    // case "Track Name":
+                    // case "Lyrics":
+                    //     this.timeout(() => {
+                    //         this.synth.textEvent(event);
+                    //     }, currentDeltaMs);
+                    //     break;
+                        /*
+                        textEvent(event) {
+                        const td = new TextDecoder("windows-1250");
+                        let decodedText = td.decode(new Uint8Array(event.data)).replace("\n", "");
+                        if(event.type === "Lyrics")
+                        {
+                            let text = decodedText;
+                            if(this.lastLyricsText)
+                            {
+                                text = this.lastLyricsText + " " + decodedText;
+                            }
+                            this.lastLyricsText = decodedText
+                            document.getElementById("text_event").innerText = text;
+                        }
+                        else {
+                            document.getElementById("text_event").innerText =
+                                `${event.type}: ${decodedText}`;
+                        }
+                    }*/
 
                     case "Pitch Wheel":
                         this.timeout(() => {
@@ -269,6 +295,7 @@ export class MidiSequencer{
                 }
             }
         }
+        this.setSliderInterval();
         return true;
     }
 
@@ -291,6 +318,7 @@ export class MidiSequencer{
         for (let t of this.timeouts) {
             clearTimeout(t);
         }
+        clearInterval(this.sliderInterval);
         this.synth.resetAll();
     }
 

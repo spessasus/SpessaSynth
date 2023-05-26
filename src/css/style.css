@@ -19,20 +19,20 @@ input[type="file"] {
     display: none;
 }
 
-.keyboard_selector
+#keyboard_selector
 {
     position: absolute;
     top: 0;
     right: 0;
 }
 
-.keyboard_selector select option
+#keyboard_selector select option
 {
     background-color: black;
     text-align: center;
 }
 
-.keyboard_selector select
+#keyboard_selector select
 {
     display: block;
     border: none;
@@ -109,13 +109,26 @@ input[type="file"] {
 }
 
 /*Bottom*/
-.slider
+#sequencer_controls
 {
     width: 80%;
-    visibility: hidden;
-    appearance: none;
-    background-color: white;
-    height: 1px;
+    position: relative;
+    margin: auto;
+}
+
+#sequencer_controls #note_progress
+{
+    border-radius: 10px;
+    background-color: #fff;
+    height: 20px;
+    transition: all 100ms linear;
+    position: absolute;
+}
+
+#sequencer_controls #note_progress_background
+{
+    border-radius: 10px;
+    background-color: #222;
 }
 
 #note_killer

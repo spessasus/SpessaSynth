@@ -1,6 +1,6 @@
-import "./events/midi_event.js";
-import "./events/meta_event.js";
-import "./events/sysex_event.js";
+import {SysexEvent} from "./events/sysex_event.js";
+import {MidiEvent} from "./events/midi_event.js";
+import {MetaEvent} from "./events/meta_event.js";
 
 export class MidiParser
 {
@@ -56,7 +56,7 @@ export class MidiParser
             return chunk;
         }
 
-        /*this.readVariableLengthQuantity = dataArray =>
+        this.readVariableLengthQuantity = dataArray =>
         {
             let out = 0;
             while(dataArray)
@@ -72,7 +72,7 @@ export class MidiParser
                 }
             }
             return out;
-        };*/
+        };
     }
 
     /**
@@ -107,8 +107,6 @@ export class MidiParser
         console.log("Type: ", firstChunk.type,
             "Format:", this.format, "Tracks:", this.tracksAmount, "Time division:", this.timeDivision);
 
-        /*
-        synchronous code
         // create the main array
         this.decodedTracks = [];
 
@@ -120,7 +118,7 @@ export class MidiParser
 
             // read the track and validate the chunk type
             let trackChunk = this.readChunk(midiFileData);
-            if(trackChunk.type.bytesToString() !== "MTrk")
+            if(trackChunk.type !== "MTrk")
             {
                 throw new Error("Invalid track header!");
             }
@@ -164,8 +162,8 @@ export class MidiParser
 
             }
             console.log("Finished loading track", i);
-        }*/
-
+        }
+        /*
         let trackWorkers = [];
 
         // loop through all the tracks
@@ -177,8 +175,7 @@ export class MidiParser
             messageCallback(`Starting to parse track ${i}`);
 
             trackWorkers.push(new Promise(resolve =>{
-                let w = new Worker("/js/midi_parser/track_loader_worker.js",
-                    /*{type: "module"}*/);
+                let w = new Worker("/js/midi_parser/track_loader_worker.js");
                 w.onmessage = e =>
                 {
                     console.log("Finished loading track", i);
@@ -187,12 +184,11 @@ export class MidiParser
                 }
                 w.postMessage(track);
             }));
-        }
-
-        /**
+             /**
          * @type {ParsedMidi}
-         */
+         *
         this.decodedTracks = await Promise.all(trackWorkers);
+        }*/
         return this;
     }
 }

@@ -1,4 +1,4 @@
-class SysexEvent
+export class SysexEvent
 {
     constructor(dataArray, delta) {
         // skip 0xF0 or 0xF7
