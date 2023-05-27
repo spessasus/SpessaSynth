@@ -52,10 +52,11 @@ async function fetchFont(fileName, callback)
  */
 function startMidi(midiFile)
 {
-
+    titleMessage.innerText = `Parsing ${midiFile.name}`;
+    document.getElementById("file_upload").innerText = midiFile.name;
     parseMidi(midiFile).then(parsedMid => {
+        titleMessage.innerText = "SpessaSynth: MIDI Soundfont2 Player";
         manager.play(parsedMid, true, true);
-        document.getElementById("file_upload").innerText = midiFile.name;
     });
 }
 

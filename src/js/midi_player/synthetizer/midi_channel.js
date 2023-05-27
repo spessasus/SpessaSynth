@@ -152,7 +152,7 @@ export class MidiChannel {
     }
 
     /**
-     * Executes a data entry for an NRPN for a sc88pro
+     * Executes a data entry for an NRPN for a sc88pro NRPN (because touhou yes)
      * @param dataValue {number} dataEntry MSB
      */
     dataEntry(dataValue)
@@ -163,7 +163,7 @@ export class MidiChannel {
             {
                 this.vibrato.depth = 64;
                 this.vibrato.rate = 8;
-                this.vibrato.delay = 2;
+                this.vibrato.delay = 1;
             }
         }
         //https://cdn.roland.com/assets/media/pdf/SC-88PRO_OM.pdf
@@ -187,7 +187,7 @@ export class MidiChannel {
                         }
                         addDefaultVibrato();
                         this.vibrato.rate = (dataValue / 64) * 8;
-                        console.log("Vibrato rate", dataValue, "=>", this.vibrato.rate);
+                        console.log("Vibrato rate", dataValue, "=>", this.vibrato.rate, "total:", this.vibrato);
                         break;
 
                     case 9:
@@ -197,7 +197,7 @@ export class MidiChannel {
                         }
                         addDefaultVibrato();
                         this.vibrato.depth = dataValue / 2;
-                        console.log("Vibrato depth", dataValue, "=>", this.vibrato.depth);
+                        console.log("Vibrato depth", dataValue, "=>", this.vibrato.depth, "total:", this.vibrato);
                         break;
 
                     case 10:
@@ -206,8 +206,8 @@ export class MidiChannel {
                             return;
                         }
                         addDefaultVibrato();
-                        this.vibrato.delay = (64 / dataValue) * 0.61;
-                        console.log("Vibrato delay", dataValue, "=>", this.vibrato.delay);
+                        this.vibrato.delay = (64 / dataValue) / 2;
+                        console.log("Vibrato delay", dataValue, "=>", this.vibrato.delay, "total:", this.vibrato);
                         break;
                 }
                 break;

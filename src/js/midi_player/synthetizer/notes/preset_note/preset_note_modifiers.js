@@ -19,8 +19,9 @@ export class PresetNoteModifiers{
         // overrideRootKey
         this.rootKey = this.getGeneratorValue("overridingRootKey", this.sample.samplePitch);
 
-        // initialAttenuation (dB)
-        this.attenuation = (this.sumGeneratorValue("initialAttenuation", 0)) / 10 * 0.4;
+        // initialAttenuation (dB) its acutally not summing god damnit
+        //this.attenuation = (this.sumGeneratorValue("initialAttenuation", 0)) / 10 * 0.4;
+        this.attenuation = this.getGeneratorValue("initialAttenuation", 0) / 10 * 0.4;
 
         // sampleModes
         this.loopingMode = this.getGeneratorValue("sampleModes", 0) & 3;
@@ -65,25 +66,25 @@ export class PresetNoteModifiers{
         return val;
     }
 
-    /**
-     * @param generatorType {generatorType}
-     * @param defaultValue {number}
-     * @returns {number}
-     */
-    sumGeneratorValue(generatorType, defaultValue)
-    {
-        let gens = this.generators.filter(g => g.generatorType === generatorType);
-        if(gens.length < 1)
-        {
-            return defaultValue;
-        }
-        let val = 0
-        for(let gen of gens)
-        {
-            val += gen.generatorValue;
-        }
-        return val;
-    }
+    // /**
+    //  * @param generatorType {generatorType}
+    //  * @param defaultValue {number}
+    //  * @returns {number}
+    //  */
+    // sumGeneratorValue(generatorType, defaultValue)
+    // {
+    //     let gens = this.generators.filter(g => g.generatorType === generatorType);
+    //     if(gens.length < 1)
+    //     {
+    //         return defaultValue;
+    //     }
+    //     let val = 0
+    //     for(let gen of gens)
+    //     {
+    //         val += gen.generatorValue;
+    //     }
+    //     return val;
+    // }
 
     /**
      * @param timecents {number} timecents

@@ -129,7 +129,7 @@ export class SoundFont2Parser
          */
         this.presets = readPresets(this.presetHeadersChunk, presetZones);
         console.log("Parsing finished!");
-        console.log("Presets:", this.presets);
+        console.log("Presets:", this.presets.length);
 
         this.presets.sort((a, b) => (a.program - b.program) + (a.bank - b.bank));
     }

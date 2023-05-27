@@ -161,8 +161,10 @@ export class MidiParser
                 this.decodedTracks[i].push(new MidiEvent(trackChunk.chunkData, delta));
 
             }
+            messageCallback(`Parsed track ${i}/${this.tracksAmount}`);
             console.log("Finished loading track", i);
         }
+        messageCallback("Parsed midi!");
         /*
         let trackWorkers = [];
 

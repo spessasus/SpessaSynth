@@ -12,7 +12,11 @@ html, body {
 /*Top*/
 .top_part
 {
+    --top-color: #101010;
     position: relative;
+    background-color: var(--top-color);
+    border-radius: 0 0 15px 15px;
+    padding: 3px;
 }
 
 input[type="file"] {
@@ -28,7 +32,7 @@ input[type="file"] {
 
 #keyboard_selector select option
 {
-    background-color: black;
+    background-color: var(--top-color);
     text-align: center;
 }
 
@@ -37,7 +41,7 @@ input[type="file"] {
     display: block;
     border: none;
     font-size: 15px;
-    background: black;
+    background: var(--top-color);
     text-align: center;
     width: 100%;
 }
@@ -82,7 +86,7 @@ input[type="file"] {
     padding: 6px 12px;
     border-radius: 5px;
     cursor: pointer;
-    background-color: #111;
+    background-color: #222;
     font-weight: bolder;
 }
 
@@ -113,22 +117,54 @@ input[type="file"] {
 {
     width: 80%;
     position: relative;
-    margin: auto;
+    margin: auto auto 2px;
+
+    --progress-bar-height: 1.4em;
 }
 
 #sequencer_controls #note_progress
 {
-    border-radius: 10px;
-    background-color: #fff;
-    height: 20px;
+    border-radius: var(--progress-bar-height);
+    background-color: #406;
+    height: var(--progress-bar-height);
     transition: all 100ms linear;
     position: absolute;
 }
 
+#sequencer_controls #note_time
+{
+    position: relative;
+    z-index: 5;
+    font-size: var(--progress-bar-height);
+    text-align: center;
+    color: #ccc;
+    margin: auto;
+    width: 100%;
+}
+
+#sequencer_controls #note_time:hover{
+    cursor: pointer;
+}
+
+#sequencer_controls .control_buttons
+{
+    position: relative;
+    display: inline-block;
+    transition: all 0.1s ease;
+}
+
+#sequencer_controls .control_buttons:hover{
+    cursor: pointer;
+    transform: scale(1.2);
+}
+
 #sequencer_controls #note_progress_background
 {
-    border-radius: 10px;
-    background-color: #222;
+    border-radius: var(--progress-bar-height);
+    background-color: #343434;
+    height: var(--progress-bar-height);
+    position: absolute;
+    width: 100%;
 }
 
 #note_killer

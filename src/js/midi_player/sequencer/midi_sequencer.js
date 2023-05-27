@@ -11,7 +11,7 @@ export class MidiSequencer{
     constructor(parsedMidi, synth) {
         this.synth = synth;
         this.midiData = parsedMidi;
-        this.controls = document.getElementById("sequencer_controls");
+        this.pauseTime = 0;
 
         if(!this.midiData.decodedTracks)
         {
@@ -108,12 +108,6 @@ export class MidiSequencer{
         console.log("Min note:", this.minNote, "Max note:", this.maxNote)
 
         this.timeouts = [];
-        /**
-         * @type {HTMLInputElement}
-         */
-
-        // prepare the slider
-        this.createSlider();
 
         console.log(`TOTAL TIME: ${formatTime(maxTime).time}`);
         this.absoluteStartTimeMs = performance.now();
@@ -136,34 +130,24 @@ export class MidiSequencer{
         return this.getDeltaAsMs(deltaTicks - timeSinceLastTempo) + (timeSinceLastTempo * 60000) / (tempo.tempo * ticksPerBeat);
     }
 
-    createSlider() {
-        this.slider = document.createElement("div")
-        this.slider.id = "note_progress";
-        this.slider.min = (0).toString();
-        this.slider.max =  this.duration.toString()
-        // this.slider.onchange = () => {
-        //     clearInterval(this.sliderInterval);
-        //
-        //     this.currentTime = (this.slider.value / this.slider.max) * this.duration;
-        //
-        //     this.sliderInterval = setInterval(() => {
-        //         this.slider.value = ((this.currentTime / this.duration) * this.slider.max).toString();
-        //     }, 200);
-        // };
-        //
-        // this.sliderInterval = setInterval(() => {
-        //     this.slider.value = ((this.currentTime / this.duration) * this.slider.max).toString();
-        // }, 100);
-
-        this.controls.appendChild(this.slider);
+    pause()
+    {
+        if(this.paused)
+        {
+            console.warn("Already paused");
+            return;
+        }
+        this.stop();
+        this.pauseTime = this.currentTime;
     }
 
-    setSliderInterval(){
-        this.sliderInterval = setInterval(() => {
-            this.slider.style.width = `${(this.currentTime / this.duration) * 100}%`;
-        }, 100);
+    /**
+     * @returns {boolean}
+     */
+    get paused()
+    {
+        return this.pauseTime !== undefined;
     }
-
 
     /**
      * Starts playing the track
@@ -172,11 +156,16 @@ export class MidiSequencer{
      * @return {Promise<boolean>}
      */
     async play( resetTime = false, logEverything = false) {
+        // resume
+        if(this.pauseTime !== undefined)
+        {
+            this.absoluteStartTimeMs = performance.now() - (this.pauseTime * 1000);
+            this.pauseTime = undefined;
+        }
         this.finishedTracks = 0;
 
         if (resetTime) {
             this.absoluteStartTimeMs = performance.now();
-            this.slider.value = "0";
         }
         //play the track
         for (let trackNumber = 0; trackNumber < this.midiData.tracksAmount; trackNumber++) {
@@ -218,7 +207,6 @@ export class MidiSequencer{
                             console.log("Finished Track", trackNumber);
                             this.finishedTracks++;
                             if (this.finishedTracks >= this.midiData.tracksAmount) {
-                                clearInterval(this.sliderInterval);
                                 console.log("Song ended!");
                                 this.synth.resetAll();
                                 if(this.onended) {
@@ -295,7 +283,6 @@ export class MidiSequencer{
                 }
             }
         }
-        this.setSliderInterval();
         return true;
     }
 
@@ -306,6 +293,10 @@ export class MidiSequencer{
     }
 
     get currentTime() {
+        if(this.pauseTime)
+        {
+            return this.pauseTime;
+        }
         let time = (performance.now() - this.absoluteStartTimeMs) / 1000;
         if (time > this.duration) {
             return this.duration
@@ -318,7 +309,6 @@ export class MidiSequencer{
         for (let t of this.timeouts) {
             clearTimeout(t);
         }
-        clearInterval(this.sliderInterval);
         this.synth.resetAll();
     }
 

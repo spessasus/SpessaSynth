@@ -1,6 +1,5 @@
 import {MidiSequencer} from "../midi_player/sequencer/midi_sequencer.js";
 import {MidiSynthetizer} from "../midi_player/synthetizer/midi_synthetizer.js";
-import {formatTime} from "../utils/other.js";
 
 const CHANNEL_ANALYSER_FFT = 128;
 export class MidiRenderer
@@ -67,15 +66,12 @@ export class MidiRenderer
         }
     }
 
-    /**
-     * @param callback {function(time: string)}
-     */
-    render(callback)
+    render()
     {
         if(!this.renderNotes)
         {
             requestAnimationFrame(() => {
-                this.render(callback);
+                this.render();
             });
             return;
         }
@@ -165,14 +161,20 @@ export class MidiRenderer
                     this.drawingContext.fillRect(xPos + 1, yPos, this.canvas.width / 128 - 2, noteHeightPx - 4);
                 }
             }
-
-            let timeSinceLastFrame = performance.now() - this.frameTimeStart;
-            let fps = 1000 / timeSinceLastFrame;
-            callback(`FPS: ${Math.round(fps)} ${formatTime(Math.round(currentTime)).time}/${formatTime(this.sequencerToRender.duration).time}`);
-            this.frameTimeStart = performance.now();
         }
+
+        let timeSinceLastFrame = performance.now() - this.frameTimeStart;
+        let fps = 1000 / timeSinceLastFrame;
+
+        this.drawingContext.fillStyle = "#ccc";
+        this.drawingContext.textAlign = "start";
+        this.drawingContext.font = "16px Courier new";
+        this.drawingContext.fillText(Math.round(fps).toString(), 0, 16);
+
+        this.frameTimeStart = performance.now();
+
         requestAnimationFrame(() => {
-            this.render(callback);
+            this.render();
         });
     }
 
