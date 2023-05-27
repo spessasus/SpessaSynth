@@ -97,7 +97,7 @@ export class Preset {
         for(let zone of presetZonesInRange)
         {
             if(zone.isGlobal) continue;
-            let presetZoneGenerators = zone.generators;
+            let presetGenerators = zone.generators;
             /**
              * @type {Generator[]}
              */
@@ -116,34 +116,41 @@ export class Preset {
             for(let instrumentZone of instrumentZonesInRange)
             {
                 if(instrumentZone.isGlobal) continue;
-                let sampleGenerators = Array.from(instrumentZone.generators);
+                let instrumentGenerators = Array.from(instrumentZone.generators);
 
-                // add the unique global preset gen types
-                presetZoneGenerators.push(...globalPresetGenerators.filter(
-                    gen => presetZoneGenerators.find(existingGen => existingGen.generatorType === gen.generatorType) === undefined
-                ));
+                // // add the unique global preset gen types
+                // presetGenerators.push(...globalPresetGenerators.filter(
+                //     gen => presetGenerators.find(existingGen => existingGen.generatorType === gen.generatorType) === undefined
+                // ));
+                //
+                // // add the unique global instrument gen types
+                // instrumentGenerators.push(...globalInstrumentGenerators.filter(
+                //     gen => instrumentGenerators.find(existingGen => existingGen.generatorType === gen.generatorType) === undefined
+                // ));
 
-                // add the unique global instrument gen types
-                sampleGenerators.push(...globalInstrumentGenerators.filter(
-                    gen => sampleGenerators.find(existingGen => existingGen.generatorType === gen.generatorType) === undefined
-                ));
-                // console.log(presetZoneGenerators, sampleGenerators);
-                // //debugger;
-                // for(let gen of sampleGenerators)
-                // {
-                //     if(getGeneratorValueType(gen.generatorType) === "value")
-                //     {
-                //         console.log(gen.generatorType)
-                //         // if theres one in the preset zone, sum it
-                //         let presetGen = presetZoneGenerators.find(g => g.generatorType === gen.generatorType);
-                //         if(presetGen) {
-                //             gen.generatorValue += presetGen.generatorValue;
-                //         }
-                //     }
-                // }
+                // replace the global preset gens with global instrument gens
+                const globalGenerators = globalInstrumentGenerators;
+                for(const globalPresetGenerator of globalPresetGenerators)
+                {
+                    if(globalGenerators.find(g => g.generatorType === globalPresetGenerator.generatorType) === undefined)
+                    {
+                        globalGenerators.push(globalPresetGenerator);
+                    }
+                }
 
+                // replace the preset gens with instrument gens
+                const generators = instrumentGenerators;
+                for(let presetGenerator of presetGenerators)
+                {
+                    if(generators.find(g => g.generatorType === presetGenerator.generatorType) === undefined)
+                    {
+                        generators.push(presetGenerator);
+                    }
+                }
+
+                // combine both generators and add to the final result
                 parsedGeneratorsAndSamples.push({
-                    generators: /*sampleGenerators,*/ sampleGenerators.concat(presetZoneGenerators),
+                    generators: generators.concat(globalGenerators),
                     sample: instrumentZone.sample
                 });
             }

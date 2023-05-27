@@ -1,5 +1,5 @@
 import {PresetNote} from "./notes/preset_note.js";
-import {Preset} from "../../soundfont2_parser/chunk/presets.js";
+import {Preset} from "../../soundfont/chunk/presets.js";
 
 const CHANNEL_LOUDNESS = 1.0;
 export class MidiChannel {

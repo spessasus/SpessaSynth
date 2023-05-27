@@ -1,4 +1,4 @@
-import {Preset} from "../../../soundfont2_parser/chunk/presets.js";
+import {Preset} from "../../../soundfont/chunk/presets.js";
 import {PresetNoteModifiers} from "./preset_note/preset_note_modifiers.js";
 import {SampleNode} from "./preset_note/sample_node.js";
 

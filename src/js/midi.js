@@ -1,7 +1,7 @@
 import {MidiParser} from "./midi_parser/midi_parser.js";
 import {MidiManager} from "./midi_manager.js";
 
-import {SoundFont2Parser} from "./soundfont2_parser/soundfont_parser.js";
+import {SoundFont2} from "./soundfont/soundfont_parser.js";
 import {ShiftableUint8Array} from "./utils/shiftable_array.js";
 
 /**
@@ -87,7 +87,7 @@ function startMidi(midiFile)
 //         let bytesRange = [startIndex, startIndex + thisChunkSize - 1];
 //         let loaderWorker = new Promise(resolve =>
 //         {
-//             let w = new Worker("soundfont2_parser/soundfont_loader_worker.js");
+//             let w = new Worker("soundfont/soundfont_loader_worker.js");
 //
 //             w.onmessage = d => {
 //                 callback(`Downloading Soundfont... (${++loadedWorkersAmount}/${chunksAmount})`);
@@ -159,7 +159,7 @@ fetchFont("soundfont.sf2", percent => progressBar.style.width = `${(percent / 10
     .then(data => {
         titleMessage.innerText = "Parsing soundfont...";
         setTimeout(() => {
-            window.soundFontParser = new SoundFont2Parser(data, m => titleMessage.innerText = m);
+            window.soundFontParser = new SoundFont2(data, m => titleMessage.innerText = m);
 
             titleMessage.innerText = "SpessaSynth: MIDI Soundfont2 Player";
             progressBar.style.width = "0";

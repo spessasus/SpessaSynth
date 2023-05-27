@@ -1,5 +1,5 @@
 import {ShiftableUint8Array} from "./shiftable_array.js";
-import {RiffChunk} from "../soundfont2_parser/chunk/riff_chunk.js";
+import {RiffChunk} from "../soundfont/chunk/riff_chunk.js";
 
 /**
  * @param dataArray {ShiftableUint8Array}

@@ -7,7 +7,7 @@ import "./midi_parser/events/midi_event.js";
 import "./midi_parser/events/meta_event.js";
 import "./midi_parser/events/sysex_event.js";
 
-import {SoundFont2Parser} from "./soundfont2_parser/soundfont_parser.js";
+import {SoundFont2} from "./soundfont/soundfont_parser.js";
 import {SequencerUI} from "./ui/sequencer_ui.js";
 
 export class MidiManager
@@ -34,7 +34,7 @@ export class MidiManager
     /**
      * Creates a new midi user interface.
      * @param context {BaseAudioContext}
-     * @param soundFont {SoundFont2Parser}
+     * @param soundFont {SoundFont2}
      */
     constructor(context, soundFont) {
 

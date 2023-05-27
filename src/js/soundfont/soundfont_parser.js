@@ -7,7 +7,7 @@ import {Preset, readPresets} from "./chunk/presets.js";
 import {readInstruments, Instrument} from "./chunk/instruments.js";
 import {readModulators, Modulator} from "./chunk/modulators.js";
 
-export class SoundFont2Parser
+export class SoundFont2
 {
     /**
      * Initializes a new SoundFont2 Parser and parses the given data array
