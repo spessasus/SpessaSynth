@@ -1,4 +1,4 @@
-import {ShiftableUint8Array} from "../../utils/shiftable_array.js";
+import {ShiftableByteArray} from "../../utils/shiftable_array.js";
 import {RiffChunk} from "./riff_chunk.js";
 import {signedInt16, readByte} from "../../utils/byte_functions.js";
 
@@ -127,7 +127,7 @@ export function getGeneratorValueType(generatortype)
 export class Generator{
     /**
      * Creates a generator
-     * @param dataArray {ShiftableUint8Array}
+     * @param dataArray {ShiftableByteArray}
      */
     constructor(dataArray) {
         // 4 bytes:

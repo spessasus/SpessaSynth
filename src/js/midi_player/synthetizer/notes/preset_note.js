@@ -147,15 +147,11 @@ export class PresetNote
                     this.CalculatedData = calculated
                 }
             }
-            dataTable.push(new Option("initialAttenuation", sampleOption.attenuation, sampleOption.getAttenuation()));
+            dataTable.push(new Option("AudioEnvelope", sampleOption.getVolumeEnvelope(), null));
             dataTable.push(new Option("pan", sampleOption.pan, sampleOption.getPan()));
             dataTable.push(new Option("rootKey", sampleOption.rootKey, null));
-            dataTable.push(new Option("sustainLevel", sampleOption.sustainLowerAmount, sampleOption.getSustainLevel()));
-            dataTable.push(new Option("decayTime", sampleOption.decayTime, sampleOption.getDecayTime()));
             dataTable.push(new Option("loopingMode", sampleOption.loopingMode, sampleOption.getLoopingMode()));
-            dataTable.push(new Option("releaseTime", sampleOption.releaseTime, sampleOption.getReleaseTime()));
             dataTable.push(new Option("ScaleTuning", sampleOption.scaleTune, sampleOption.getScaleTuneInfluence()));
-            dataTable.push(new Option("holdTime", sampleOption.holdTime, sampleOption.getHoldTime()));
             dataTable.push(new Option("AddressOffsets", sampleOption.getAddressOffsets(), null));
 
             let generatorsString = sampleOption.generators.map(g => `${g.generatorType}: ${g.generatorValue}`).join("\n");
@@ -199,12 +195,7 @@ export class PresetNote
 
             // sample.attenuation.gain.value = sampleOptions.getAttenuation() / this.sampleNodes.length;
 
-            sample.startSample({
-                initialAttenuation: sampleOptions.getAttenuation(),
-                holdTime: sampleOptions.getHoldTime(),
-                decayTime: sampleOptions.getDecayTime(),
-                sustainLevel: sampleOptions.getSustainLevel()
-            });
+            sample.startSample(sampleOptions.getVolumeEnvelope());
         }
         return exclusives;
     }
@@ -224,10 +215,9 @@ export class PresetNote
             {
                 sampleNode.source.loop = false;
             }
-            let fadeout = sampleOptions.getReleaseTime();
-            sampleNode.stopSample(fadeout);
+            sampleNode.stopSample();
 
-            if(fadeout > maxFadeout) maxFadeout = fadeout;
+            if(sampleNode.releaseTime > maxFadeout) maxFadeout = sampleNode.releaseTime;
         }
         // so .then() can be added to delete the note after it finished
         await new Promise(r => setTimeout(r, maxFadeout * 1000));

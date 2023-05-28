@@ -1,5 +1,5 @@
 import {readBytesAsUintLittleEndian} from "../../utils/byte_functions.js";
-import {ShiftableUint8Array} from "../../utils/shiftable_array.js";
+import {ShiftableByteArray} from "../../utils/shiftable_array.js";
 import {RiffChunk} from "./riff_chunk.js";
 import {Generator} from "./generators.js";
 import {Sample} from "./samples.js";
@@ -9,7 +9,7 @@ import {Modulator} from "./modulators.js";
 export class InstrumentZone {
     /**
      * Creates a zone (presetinstrument)
-     * @param dataArray {ShiftableUint8Array}
+     * @param dataArray {ShiftableByteArray}
      */
     constructor(dataArray) {
         this.generatorZoneStartIndex = readBytesAsUintLittleEndian(dataArray, 2);
@@ -117,7 +117,7 @@ export function readInstrumentZones(zonesChunk, instrumentGenerators, instrument
 export class PresetZone {
     /**
      * Creates a zone (preset)
-     * @param dataArray {ShiftableUint8Array}
+     * @param dataArray {ShiftableByteArray}
      */
     constructor(dataArray) {
         this.generatorZoneStartIndex = readBytesAsUintLittleEndian(dataArray, 2);

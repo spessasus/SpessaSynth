@@ -2,11 +2,27 @@ import {MidiParser} from "./midi_parser/midi_parser.js";
 import {MidiManager} from "./midi_manager.js";
 
 import {SoundFont2} from "./soundfont/soundfont_parser.js";
-import {ShiftableUint8Array} from "./utils/shiftable_array.js";
+import {ShiftableByteArray} from "./utils/shiftable_array.js";
+import {MIDI} from "./midi_parser/midi_loader.js";
+
+/**
+ * @type {HTMLHeadingElement}
+ */
+let titleMessage = document.getElementById("title");
+/**
+ * @type {HTMLDivElement}
+ */
+let progressBar = document.getElementById("progress_bar");
+/**
+ * @type {HTMLInputElement}
+ */
+let fileInput = document.getElementById("midi_file_input");
+// remove the old files
+fileInput.value = "";
+fileInput.focus();
 
 /**
  * Parses the midi file (kinda)
- *
  * @param {File} midiFile
  */
 async function parseMidi(midiFile)
@@ -17,9 +33,18 @@ async function parseMidi(midiFile)
 }
 
 /**
+ * @param midiFile {File}
+ */
+async function parseMidiNew(midiFile)
+{
+    const buffer = await midiFile.arrayBuffer();
+    return new MIDI(new ShiftableByteArray(buffer));
+}
+
+/**
  * @param fileName {"soundfont.sf2"|"gm.sf2"|"Touhou.sf2"|"FluidR3_GM.sf2"|"alex_gm.sf2"|"zunpet.sf2"|"pc98.sf2"|"zunfont.sf2"}
  * @param callback {function(number)}
- * @returns {Promise<ShiftableUint8Array>}
+ * @returns {Promise<ShiftableByteArray>}
  */
 async function fetchFont(fileName, callback)
 {
@@ -32,7 +57,7 @@ async function fetchFont(fileName, callback)
     let size = response.headers.get("content-length");
     let reader = await (await response.body).getReader();
     let done = false;
-    let dataArray = new ShiftableUint8Array(size);
+    let dataArray = new ShiftableByteArray(size);
     let offset = 0;
     do{
         let readData = await reader.read();
@@ -59,85 +84,6 @@ function startMidi(midiFile)
         manager.play(parsedMid, true, true);
     });
 }
-
-/**
- * @param url {string}
- * @param callback {function(string)}
- * @returns {Promise<ShiftableUint8Array>}
- */
-// async function fetchFontHeaderManipulation(url, callback) {
-//     // 50MB
-//     const chunkSize = 1024 * 1024 * 50;
-//     const fileSize = (await fetch(url, {method: "HEAD"})).headers.get("content-length");
-//     const chunksAmount = Math.ceil(fileSize / chunkSize);
-//     /**
-//      * @type {Promise[]}
-//      */
-//     let loaderWorkers = [];
-//     let startIndex = 0;
-//     let loadedWorkersAmount = 0;
-//     for (let i = 0; i < chunksAmount; i++)
-//     {
-//         let thisChunkSize =
-//             fileSize < startIndex + chunkSize ?
-//                 fileSize - startIndex
-//             :
-//                 chunkSize;
-//
-//         let bytesRange = [startIndex, startIndex + thisChunkSize - 1];
-//         let loaderWorker = new Promise(resolve =>
-//         {
-//             let w = new Worker("soundfont/soundfont_loader_worker.js");
-//
-//             w.onmessage = d => {
-//                 callback(`Downloading Soundfont... (${++loadedWorkersAmount}/${chunksAmount})`);
-//                 resolve(d.data);
-//             }
-//
-//             w.postMessage({
-//                 range: bytesRange,
-//                 url: window.location.href + url
-//             });
-//         });
-//         loaderWorkers.push(loaderWorker);
-//         startIndex += thisChunkSize
-//     }
-//     /**
-//      * @type {Uint8Array[]}
-//      */
-//     let data = await Promise.all(loaderWorkers);
-//     let joinedData = new ShiftableUint8Array(fileSize);
-//     let index = 0;
-//     let totalDatalen = 0;
-//     for(let arr of data)
-//     {
-//         totalDatalen += arr.length;
-//     }
-//     for(let arr of data)
-//     {
-//         joinedData.set(arr, index);
-//         index += arr.length;
-//     }
-//     return joinedData;
-// }
-
-document.getElementById("midi_file_input").focus();
-
-/**
- * @type {HTMLHeadingElement}
- */
-let titleMessage = document.getElementById("title");
-/**
- * @type {HTMLDivElement}
- */
-let progressBar = document.getElementById("progress_bar");
-/**
- * @type {HTMLInputElement}
- */
-let fileInput = document.getElementById("midi_file_input");
-
-// remove the old files
-fileInput.value = "";
 
 document.body.onclick = () =>
 {
@@ -184,7 +130,7 @@ fetchFont("soundfont.sf2", percent => progressBar.style.width = `${(percent / 10
                 titleMessage.innerText = "Press anywhere to start the app";
                 return;
             }
-            // prepare midi interface
+            // prepare the manager
             window.manager = new MidiManager(audioContextMain, soundFontParser);
         });
     });

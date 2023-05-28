@@ -1,9 +1,10 @@
-import {ShiftableUint8Array} from "../utils/shiftable_array.js";
+import {ShiftableByteArray} from "../utils/shiftable_array.js";
+import {readByte, readVariableLengthQuantity} from "../utils/byte_functions.js";
 
 /**
  * @type {Object<string, controllerNames>}
  */
-const midiControllers = {
+export const midiControllers = {
     0: 'Bank Select',
     1: 'Modulation Wheel',
     2: 'Breath Controller',
@@ -76,35 +77,178 @@ const midiControllers = {
 export class MidiMessage
 {
     /**
-     * @param type {"MIDI"|"Meta"|"System Exclusive"}
      * @param delta {number}
      * @param name {MessageName}
-     * @param data {ShiftableUint8Array}
+     * @param data {ShiftableByteArray}
      * @param channel {number}
      */
-    constructor(type, delta, name, data, channel = undefined) {
+    constructor(delta, name, data, channel = undefined) {
         this.deltaTime = delta;
-        this.messageType = type;
         this.messageName = name;
         this.messageData = data;
         if(channel)
         {
             this.channel = channel;
         }
-        if(this.messageName === "Controller Change")
+        else
         {
-            this.controllerName = midiControllers[data[1]];
+            this.channel = -1;
         }
     }
 }
 
 /**
- * @param dataArray {ShiftableUint8Array}
- * @returns {MidiMessage}
+ * Read midi message from the midi file array
+ * @param dataArray {ShiftableByteArray}
+ * @param runningByte {number}
+ * @returns {{message: MidiMessage, statusByte: number}}
  */
-export function readMessage(dataArray)
+export function readMidiMessage(dataArray, runningByte = undefined)
 {
+    const deltaTick = readVariableLengthQuantity(dataArray);
 
+    // check if the status byte is valid (IE. larger than 127)
+    const statusByteCheck = dataArray[dataArray.currentIndex];
+
+    let statusByte;
+    // if we have a running byte and the status byte isn't valid
+    if(runningByte && statusByteCheck < 0x80)
+    {
+        statusByte = runningByte;
+    }
+    else if(!runningByte && statusByteCheck < 0x80)
+    {
+        // if we don't have a running byte and the status byte isn't valid, it's an error.
+        throw `Unexpected byte with no running byte. (${statusByteCheck})`;
+    }
+    else
+    {
+        // if the status byte is valid, just use that
+        statusByte = readByte(dataArray);
+    }
+    const statusByteData = getEvent(runningByte);
+
+    /**
+     * @type {ShiftableByteArray}
+     */
+    let eventData;
+    let eventDataLength;
+    // check if midi or sysex/meta
+    if(statusByteData.channel === -1)
+    {
+        // read the meta/sysex length
+        eventDataLength = readVariableLengthQuantity(dataArray)
+    }
+    else
+    {
+        // get the midi message length
+        eventDataLength = dataBytesAmount[statusByteData.name];
+    }
+    eventData = new ShiftableByteArray(eventDataLength);
+    // put the event data into the array
+    eventData.set(dataArray.subarray(dataArray.currentIndex, dataArray.currentIndex + eventDataLength));
+    dataArray.currentIndex += eventDataLength;
+
+    const message = new MidiMessage(deltaTick, statusByteData.name, eventData, statusByteData.channel);
+    return {message: message, statusByte: statusByte};
+
+}
+
+/**
+ * @type {{"Note Off": number, "Program Change": number, Aftertouch: number, "Control Change": number, "Pitch Bend": number, "Channel Pressure": number, "Note On": number}}
+ */
+const dataBytesAmount = {
+    "Note Off": 2,
+    "Note On": 2,
+    "Aftertouch": 2,
+    "Control Change": 2,
+    "Program Change": 1,
+    "Channel Pressure": 1,
+    "Pitch Bend": 2
+};
+
+/**
+ *
+ * @param statusByte
+ * @returns {{name: MessageName, channel: number}}
+ */
+function getEvent(statusByte) {
+    let eventName;
+    let eventType = statusByte >> 4;
+    let channel = statusByte & 0x0F;
+
+    switch (eventType) {
+        case 0x8:
+            eventName = "Note Off";
+            break;
+        case 0x9:
+            eventName = "Note On";
+            break;
+        case 0xA:
+            eventName = "Aftertouch";
+            break;
+        case 0xB:
+            eventName = "Control Change";
+            break;
+        case 0xC:
+            eventName = "Program Change";
+            break;
+        case 0xD:
+            eventName = "Channel Pressure";
+            break;
+        case 0xE:
+            eventName = "Pitch Bend";
+            break;
+        case 0xF:
+            channel = -1;
+            switch (statusByte) {
+                case 0xF0:
+                    eventName = "System Exclusive";
+                    break;
+                case 0xF1:
+                    eventName = "Time Code Quarter Frame";
+                    break;
+                case 0xF2:
+                    eventName = "Song Position Pointer";
+                    break;
+                case 0xF3:
+                    eventName = "Song Select";
+                    break;
+                case 0xF6:
+                    eventName = "Tune Request";
+                    break;
+                case 0xF8:
+                    eventName = "Timing Clock";
+                    break;
+                case 0xFA:
+                    eventName = "Start";
+                    break;
+                case 0xFB:
+                    eventName = "Continue";
+                    break;
+                case 0xFC:
+                    eventName = "Stop";
+                    break;
+                case 0xFE:
+                    eventName = "Active Sensing";
+                    break;
+                case 0xFF:
+                    eventName = "System Reset";
+                    break;
+                default:
+                    eventName = "Unknown";
+                    break;
+            }
+            break;
+        default:
+            eventName = "Unknown";
+            break;
+    }
+
+    return {
+        name: eventName,
+        channel: channel
+    };
 }
 
 /**
@@ -114,18 +258,20 @@ export function readMessage(dataArray)
  *           "Controller Change"|
  *           "Program Change"|
  *           "Channel Aftertouch"|
- *           "Pitch Wheel"|
+ *           "Pitch Bend"|
  *           "System Exclusive"|
- *           "MIDI Quarter Framme"|
- *           "Song Position"|
+ *
+ *           "Time Code Quarter Framme"|
+ *           "Song Position Pointer"|
  *           "Song Select"|
  *           "Tune Request"|
- *           "MIDI Clock"|
- *           "MIDI Start"|
- *           "MIDI Continue"|
- *           "MIDI Stop"|
+ *           "Timing Clock"|
+ *           "Start"|
+ *           "Continue"|
+ *           "Stop"|
  *           "Active Sense"|
  *           "System Reset"|
+ *
  *           "Sequence Number"|
  *           "Text Event"|
  *           "Copyright"|

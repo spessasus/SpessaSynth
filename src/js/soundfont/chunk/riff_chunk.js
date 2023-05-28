@@ -1,4 +1,4 @@
-import {ShiftableUint8Array} from "../../utils/shiftable_array.js";
+import {ShiftableByteArray} from "../../utils/shiftable_array.js";
 export class RiffChunk
 {
     /**
@@ -6,7 +6,7 @@ export class RiffChunk
      * @constructor
      * @param header {string}
      * @param size {number}
-     * @param data {ShiftableUint8Array}
+     * @param data {ShiftableByteArray}
      */
     constructor(header, size, data) {
         this.header = header;

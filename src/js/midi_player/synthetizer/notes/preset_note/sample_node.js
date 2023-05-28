@@ -1,4 +1,3 @@
-
 export class SampleNode
 {
     /**
@@ -13,38 +12,46 @@ export class SampleNode
 
     /**
      * Starts the sample
-     * @param audioEnvelope {{initialAttenuation: number,
-     * holdTime: number,
-     * decayTime: number,
-     * sustainLevel: number}}
+     * @param audioEnvelope {volumeEnvelope}
      */
-    startSample(audioEnvelope)
-    {
+    startSample(audioEnvelope) {
+        this.setValueNow(this.volumeController.gain, 0.0001);
 
-        // initialAttenuation
-        this.setValueNow(this.volumeController.gain, audioEnvelope.initialAttenuation);
+        if (audioEnvelope.delayTime < 0.002 && audioEnvelope.attackTime < 0.002) {
+            this.setValueNow(this.volumeController.gain, audioEnvelope.attenuation)
+        }
+        else
+        {
+            // delayTime, attackTime, initialAttenuation
+            this.rampToValue(
+                this.volumeController.gain,
+                audioEnvelope.attenuation,
+                audioEnvelope.attackTime,
+                audioEnvelope.delayTime,
+            )
+        }
 
         // holdTime, decayTime, sustainLevel
-        this.targetAtTime(
+        this.rampToValue(
             this.volumeController.gain,
             audioEnvelope.sustainLevel,
             audioEnvelope.decayTime,
-            audioEnvelope.holdTime);
+            audioEnvelope.holdTime + audioEnvelope.delayTime + audioEnvelope.attackTime);
 
         this.source.start();
+        this.releaseTime = audioEnvelope.releaseTime;
     }
 
     /**
      * Stops the sample
-     * @param releaseTime {number} seconds
      */
-    stopSample(releaseTime)
+    stopSample()
     {
         // stop the audio envelope
         this.volumeController.gain.cancelScheduledValues(this.currentTime);
 
         // begin release phase
-        this.targetAtTime(this.volumeController.gain, 0, releaseTime);
+        this.rampToValue(this.volumeController.gain, 0, this.releaseTime);
     }
 
     /**
@@ -54,7 +61,7 @@ export class SampleNode
      * @param timeInSeconds {number}
      * @param relativeStartTime {number} in seconds
      */
-    targetAtTime(param, value, timeInSeconds, relativeStartTime = 0)
+    rampToValue(param, value, timeInSeconds, relativeStartTime = 0)
     {
         if(value === 0)
         {

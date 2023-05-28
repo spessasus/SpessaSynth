@@ -1,4 +1,4 @@
-export class ShiftableUint8Array extends Uint8Array
+export class ShiftableByteArray extends Uint8Array
 {
     constructor(size) {
         super(size);

@@ -1,6 +1,6 @@
-import {ShiftableUint8Array} from "../utils/shiftable_array.js";
+import {ShiftableByteArray} from "../utils/shiftable_array.js";
 import {readSamples, Sample} from "./chunk/samples.js";
-import {readChunk, readBytesAsString} from "../utils/byte_functions.js";
+import {readRIFFChunk, readBytesAsString} from "../utils/byte_functions.js";
 import {readGenerators, Generator} from "./chunk/generators.js";
 import {readInstrumentZones, InstrumentZone, readPresetZones} from "./chunk/zones.js";
 import {Preset, readPresets} from "./chunk/presets.js";
@@ -11,7 +11,7 @@ export class SoundFont2
 {
     /**
      * Initializes a new SoundFont2 Parser and parses the given data array
-     * @param dataArray {ShiftableUint8Array}
+     * @param dataArray {ShiftableByteArray}
      * @param progressCallback {function(string)}
      */
     constructor(dataArray, progressCallback = undefined) {
@@ -22,7 +22,7 @@ export class SoundFont2
         }
 
         // read the main chunk
-        let firstChunk = readChunk(this.dataArray, false);
+        let firstChunk = readRIFFChunk(this.dataArray, false);
         if(firstChunk.header !== "RIFF")
         {
             throw new Error("Invalid RIFF header!");
@@ -35,7 +35,7 @@ export class SoundFont2
 
         // INFO
         progressCallback("Reading INFO chunk...");
-        let infoChunk = readChunk(this.dataArray);
+        let infoChunk = readRIFFChunk(this.dataArray);
         readBytesAsString(infoChunk.chunkData, 4);
 
         /**
@@ -44,7 +44,7 @@ export class SoundFont2
         this.soundFontInfo = [];
 
         while(infoChunk.chunkData.length > infoChunk.chunkData.currentIndex) {
-            let chunk = readChunk(infoChunk.chunkData);
+            let chunk = readRIFFChunk(infoChunk.chunkData);
             let text = readBytesAsString(chunk.chunkData, chunk.chunkData.length);
             console.log(chunk.header, text);
             this.soundFontInfo.push({chunk: chunk.header, infoText: text});
@@ -52,29 +52,29 @@ export class SoundFont2
 
         // SDTA
         progressCallback("Reading sample data chunk...");
-        readChunk(this.dataArray, false);
+        readRIFFChunk(this.dataArray, false);
         readBytesAsString(this.dataArray, 4);
 
         // smpl
-        let sampleDataChunk = readChunk(this.dataArray, false);
+        let sampleDataChunk = readRIFFChunk(this.dataArray, false);
         this.sampleDataStartIndex = dataArray.currentIndex;
         dataArray.currentIndex += sampleDataChunk.size;
 
         // PDTA
         progressCallback("Reading preset data chunk...");
-        let presetChunk = readChunk(this.dataArray);
+        let presetChunk = readRIFFChunk(this.dataArray);
         readBytesAsString(presetChunk.chunkData, 4);
 
         // read the hydra chunks
-        this.presetHeadersChunk = readChunk(presetChunk.chunkData);
-        this.presetZonesChunk = readChunk(presetChunk.chunkData);
-        this.presetModulatorsChunk = readChunk(presetChunk.chunkData);
-        this.presetGeneratorsChunk = readChunk(presetChunk.chunkData);
-        this.presetInstrumentsChunk = readChunk(presetChunk.chunkData);
-        this.presetInstrumentZonesChunk = readChunk(presetChunk.chunkData);
-        this.presetInstrumentModulatorsChunk = readChunk(presetChunk.chunkData);
-        this.presetInstrumentGeneratorsChunk = readChunk(presetChunk.chunkData);
-        this.presetSamplesChunk = readChunk(presetChunk.chunkData);
+        this.presetHeadersChunk = readRIFFChunk(presetChunk.chunkData);
+        this.presetZonesChunk = readRIFFChunk(presetChunk.chunkData);
+        this.presetModulatorsChunk = readRIFFChunk(presetChunk.chunkData);
+        this.presetGeneratorsChunk = readRIFFChunk(presetChunk.chunkData);
+        this.presetInstrumentsChunk = readRIFFChunk(presetChunk.chunkData);
+        this.presetInstrumentZonesChunk = readRIFFChunk(presetChunk.chunkData);
+        this.presetInstrumentModulatorsChunk = readRIFFChunk(presetChunk.chunkData);
+        this.presetInstrumentGeneratorsChunk = readRIFFChunk(presetChunk.chunkData);
+        this.presetSamplesChunk = readRIFFChunk(presetChunk.chunkData);
 
         /**
          * read all the sampleOptions

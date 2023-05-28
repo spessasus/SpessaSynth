@@ -1,5 +1,6 @@
 import {MidiParser} from "../../midi_parser/midi_parser.js";
 import {MidiSynthetizer} from "../synthetizer/midi_synthetizer.js";
+import {MidiRenderer} from "../../ui/midi_renderer.js";
 import {formatTime} from "../../utils/other.js";
 
 export class MidiSequencer{
@@ -12,6 +13,7 @@ export class MidiSequencer{
         this.synth = synth;
         this.midiData = parsedMidi;
         this.pauseTime = 0;
+        this.playbackOffsetMs = 0;
 
         if(!this.midiData.decodedTracks)
         {
@@ -52,60 +54,60 @@ export class MidiSequencer{
         maxTime = Math.round(this.duration);
 
         // calculate notes' length and lowest and highest note
-        this.maxNote = 0;
-        this.minNote = 127;
-
-        console.log("Loading notes' length")
-        for (let trackNumber = 0; trackNumber < this.midiData.tracksAmount; trackNumber++) {
-            let track = this.midiData.decodedTracks[trackNumber];
-            console.log("for track", trackNumber);
-
-            let playingNotes = []
-            let playingNotesTimes = []
-
-            const calculateNoteTime = event =>
-            {
-                for(let note of playingNotes)
-                {
-                    if(note.channel === event.channel && event.data[0] === note.data[0])
-                    {
-                        let index = playingNotes.indexOf(note);
-                        playingNotes.splice(index, 1);
-                        note.msLength = this.getDeltaAsMs(event.deltaTotal) - playingNotesTimes[index];
-                        playingNotesTimes.splice(index, 1);
-                        break;
-                    }
-                }
-            }
-
-            for (let event of track) {
-                if(event.type === "Note On")
-                {
-                    if(event.data[1] !== 0)
-                    {
-                        playingNotes.push(event);
-                        playingNotesTimes.push(this.getDeltaAsMs(event.deltaTotal));
-                        if(event.data[0] > this.maxNote)
-                        {
-                            this.maxNote = event.data[0];
-                        }
-                        else if(event.data[0] < this.minNote)
-                        {
-                            this.minNote = event.data[0];
-                        }
-                    }
-                    else
-                    {
-                        calculateNoteTime(event);
-                    }
-                }
-                else if(event.type === "Note Off")
-                {
-                    calculateNoteTime(event);
-                }
-            }
-        }
-        console.log("Min note:", this.minNote, "Max note:", this.maxNote)
+        // this.maxNote = 0;
+        // this.minNote = 127;
+        //
+        // console.log("Loading notes' length")
+        // for (let trackNumber = 0; trackNumber < this.midiData.tracksAmount; trackNumber++) {
+        //     let track = this.midiData.decodedTracks[trackNumber];
+        //     console.log("for track", trackNumber);
+        //
+        //     let playingNotes = []
+        //     let playingNotesTimes = []
+        //
+        //     const calculateNoteTime = event =>
+        //     {
+        //         for(let note of playingNotes)
+        //         {
+        //             if(note.channel === event.channel && event.data[0] === note.data[0])
+        //             {
+        //                 let index = playingNotes.indexOf(note);
+        //                 playingNotes.splice(index, 1);
+        //                 note.msLength = this.getDeltaAsMs(event.deltaTotal) - playingNotesTimes[index];
+        //                 playingNotesTimes.splice(index, 1);
+        //                 break;
+        //             }
+        //         }
+        //     }
+        //
+        //     for (let event of track) {
+        //         if(event.type === "Note On")
+        //         {
+        //             if(event.data[1] !== 0)
+        //             {
+        //                 playingNotes.push(event);
+        //                 playingNotesTimes.push(this.getDeltaAsMs(event.deltaTotal));
+        //                 if(event.data[0] > this.maxNote)
+        //                 {
+        //                     this.maxNote = event.data[0];
+        //                 }
+        //                 else if(event.data[0] < this.minNote)
+        //                 {
+        //                     this.minNote = event.data[0];
+        //                 }
+        //             }
+        //             else
+        //             {
+        //                 calculateNoteTime(event);
+        //             }
+        //         }
+        //         else if(event.type === "Note Off")
+        //         {
+        //             calculateNoteTime(event);
+        //         }
+        //     }
+        // }
+        // console.log("Min note:", this.minNote, "Max note:", this.maxNote)
 
         this.timeouts = [];
 
@@ -128,6 +130,16 @@ export class MidiSequencer{
         }
         let timeSinceLastTempo = deltaTicks - tempo.deltaTicks;
         return this.getDeltaAsMs(deltaTicks - timeSinceLastTempo) + (timeSinceLastTempo * 60000) / (tempo.tempo * ticksPerBeat);
+    }
+
+    /**
+     * Connects a midi renderer
+     * @param renderer {MidiRenderer}
+     */
+    connectRenderer(renderer)
+    {
+        this.renderer = renderer;
+        this.playbackOffsetMs = renderer.noteFallingSpeed;
     }
 
     pause()
@@ -172,9 +184,6 @@ export class MidiSequencer{
             let track = this.midiData.decodedTracks[trackNumber];
             console.log("preparing track", trackNumber, "to play")
 
-            // for startRendering()
-            track.lastNoteId = undefined;
-
             for (let event of track) {
                 // add the event's delta
                 let currentDeltaMs = this.getDeltaAsMs(event.deltaTotal) - (performance.now() - this.absoluteStartTimeMs);
@@ -187,19 +196,47 @@ export class MidiSequencer{
                     }
                     currentDeltaMs = 0;
                 }
+                currentDeltaMs += this.playbackOffsetMs;
                 switch (event.type) {
                     case "Note On":
                         // set a noteOn for the set delta
-                        this.timeout(() => {
-                            this.synth.NoteOn(event.channel, event.data[0], event.data[1]);
-                        }, currentDeltaMs);
+                        const velocity = event.data[1];
+                        if(velocity > 0) {
+                            this.timeout(() => {
+                                if (this.renderer) {
+                                    this.renderer.startNoteFall(event.data[0], event.channel);
+                                }
+                                this.timeout(() => {
+                                    this.synth.NoteOn(event.channel, event.data[0], velocity);
+                                }, this.playbackOffsetMs);
+                            }, currentDeltaMs - this.playbackOffsetMs);
+                        }
+                        else
+                        {
+                            // set a noteOff for the set delta
+                            this.timeout(() => {
+                                if(this.renderer)
+                                {
+                                    this.renderer.stopNoteFall(event.data[0], event.channel);
+                                }
+                                this.timeout(() => {
+                                    this.synth.NoteOff(event.channel, event.data[0]);
+                                }, this.playbackOffsetMs);
+                            }, currentDeltaMs - this.playbackOffsetMs);
+                        }
                         break;
 
                     case "Note Off":
                         // set a noteOff for the set delta
                         this.timeout(() => {
-                            this.synth.NoteOff(event.channel, event.data[0]);
-                        }, currentDeltaMs);
+                            if(this.renderer)
+                            {
+                                this.renderer.stopNoteFall(event.data[0], event.channel);
+                            }
+                            this.timeout(() => {
+                                this.synth.NoteOff(event.channel, event.data[0]);
+                            }, this.playbackOffsetMs);
+                        }, currentDeltaMs - this.playbackOffsetMs);
                         break;
 
                     case "End Of Track":
@@ -308,6 +345,10 @@ export class MidiSequencer{
     stop() {
         for (let t of this.timeouts) {
             clearTimeout(t);
+        }
+        if(this.renderer)
+        {
+            this.renderer.stopAllNoteFalls();
         }
         this.synth.resetAll();
     }

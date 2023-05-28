@@ -73,9 +73,10 @@ export class MidiManager
         // connect to the UI
         this.seqUI.connectSequencer(this.seq);
 
+        // connect to the renderer;
+        this.seq.connectRenderer(this.renderer);
+
         // play the midi
-        this.seq.play(resetTime, debugMode).then(() => {
-            this.renderer.startSequencerRendering(this.seq);
-        })
+        this.seq.play(resetTime, debugMode).then();
     }
 }

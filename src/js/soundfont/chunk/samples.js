@@ -1,5 +1,5 @@
 import {RiffChunk} from "./riff_chunk.js";
-import {ShiftableUint8Array} from "../../utils/shiftable_array.js";
+import {ShiftableByteArray} from "../../utils/shiftable_array.js";
 import {readByte, readBytesAsUintLittleEndian, readBytesAsString, signedInt16, signedInt8} from "../../utils/byte_functions.js";
 import {SoundFont2} from "../soundfont_parser.js";
 /**
@@ -19,7 +19,7 @@ export function readSamples(sampleHeadersChunk)
 
 /**
  * Reads it into a sample
- * @param sampleHeaderData {ShiftableUint8Array}
+ * @param sampleHeaderData {ShiftableByteArray}
  * @returns {Sample}
  */
 function readSample(sampleHeaderData) {
