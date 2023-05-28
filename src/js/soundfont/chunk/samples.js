@@ -1,6 +1,7 @@
 import {RiffChunk} from "./riff_chunk.js";
 import {ShiftableUint8Array} from "../../utils/shiftable_array.js";
 import {readByte, readBytesAsUintLittleEndian, readBytesAsString, signedInt16, signedInt8} from "../../utils/byte_functions.js";
+import {SoundFont2} from "../soundfont_parser.js";
 /**
  * Reads the sampleOptions from the shdr chunk
  * @param sampleHeadersChunk {RiffChunk}
@@ -138,52 +139,72 @@ export class Sample{
     }
 
     /**
-     * creates an audio source and stores it for reuse
+     * creates an audio buffer and stores it for reuse
      * @param context {BaseAudioContext}
+     * @param startAddr {number}
+     * @param endAddr {number}
      * @returns {AudioBuffer}
      */
-    getBuffer(context)
+    getBuffer(context, startAddr, endAddr)
     {
-        if(!this.sampleAudioData)
+        if(!this.buffer)
         {
-            let soundfontFileArray = window.soundFontParser.dataArray;
-            // read the sample data
-            this.sampleAudioData = new Float32Array(((this.sampleEndIndex - this.sampleStartIndex) / 2) + 1);
-            soundfontFileArray.currentIndex = window.soundFontParser.sampleDataStartIndex;
-            for(let i = this.sampleStartIndex; i < this.sampleEndIndex; i += 2)
-            {
-                // convert 2 uint8 bytes to singed int16
-                const byte1 = soundfontFileArray[soundfontFileArray.currentIndex + i];
-                const byte2 = soundfontFileArray[soundfontFileArray.currentIndex + i + 1];
-
-                this.sampleAudioData[(i - this.sampleStartIndex) / 2] = signedInt16(byte1, byte2) / 32768;
-            }
-            this.sampleAudioData[this.sampleAudioData.length - 1] = 0;
+            this.buffer = this.getDefaultBuffer(context, window.soundFontParser, 0, 0);
         }
-        if(this.buffer)
+        // if no offset, return saved buffer
+        if(this.buffer && startAddr === 0 && endAddr === 0)
         {
             return this.buffer;
         }
+
+        return this.getDefaultBuffer(context, window.soundFontParser, startAddr, endAddr);
+    }
+
+    /**
+     * Creates audio buffer
+     * @param context {BaseAudioContext}
+     * @param soundFont {SoundFont2}
+     * @param startOffset {number}
+     * @param endOffset {number}
+     * @returns {AudioBuffer}
+     */
+    getDefaultBuffer(context, soundFont, startOffset, endOffset)
+    {
+        const soundfontFileArray = soundFont.dataArray;
+        // read the sample data
+        const audioData =  new Float32Array(((this.sampleEndIndex - this.sampleStartIndex) / 2) + 1);
+        soundfontFileArray.currentIndex = window.soundFontParser.sampleDataStartIndex;
+
+        for(let i = this.sampleStartIndex + startOffset * 2; i < this.sampleEndIndex + endOffset * 2; i += 2)
+        {
+            // convert 2 uint8 bytes to singed int16
+            const byte1 = soundfontFileArray[soundfontFileArray.currentIndex + i];
+            const byte2 = soundfontFileArray[soundfontFileArray.currentIndex + i + 1];
+
+            audioData[(i - this.sampleStartIndex) / 2] = signedInt16(byte1, byte2) / 32768;
+        }
+
+        let buffer;
         switch(this.sampleType)
         {
             case "leftSample":
             case "RomLeftSample":
-                this.buffer = context.createBuffer(2, this.sampleAudioData.length, this.sampleRate);
-                this.buffer.getChannelData(0).set(this.sampleAudioData);
+                buffer = context.createBuffer(2, audioData.length, this.sampleRate);
+                buffer.getChannelData(0).set(audioData);
                 break;
 
             case "rightSample":
             case "RomRightSample":
-                this.buffer = context.createBuffer(2, this.sampleAudioData.length, this.sampleRate);
-                this.buffer.getChannelData(1).set(this.sampleAudioData);
+                buffer = context.createBuffer(2, audioData.length, this.sampleRate);
+                buffer.getChannelData(1).set(audioData);
                 break;
 
             default:
-                this.buffer = context.createBuffer(1, this.sampleAudioData.length, this.sampleRate);
-                this.buffer.getChannelData(0).set(this.sampleAudioData);
+                buffer = context.createBuffer(1, audioData.length, this.sampleRate);
+                buffer.getChannelData(0).set(audioData);
                 break;
         }
-        return this.buffer;
+        return buffer;
     }
 
     /**

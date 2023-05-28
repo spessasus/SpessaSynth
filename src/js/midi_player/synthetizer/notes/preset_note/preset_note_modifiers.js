@@ -33,7 +33,7 @@ export class PresetNoteModifiers{
         this.decayTime = this.getGeneratorValue("decayVolEnv", -12000);
 
         // sustainVolEnv (dB)
-        this.sustainLowerAmount = (this.getGeneratorValue("sustainVolEnv", 0) / 10);
+        this.sustainLowerAmount = this.sumGeneratorValue("sustainVolEnv", 0) / 10;
 
         // scaleTuning
         this.scaleTune = this.getGeneratorValue("scaleTuning", 100);
@@ -47,7 +47,17 @@ export class PresetNoteModifiers{
         // holdVolEnv
         this.holdTime = this.getGeneratorValue("holdVolEnv", -12000);
 
-        //TODO: add tuning (coarse and fine) and address offsets
+        // offsets
+        this.startOffset = this.getGeneratorValue("startAddrsOffset", 0);
+        this.endOffset = this.getGeneratorValue("endAddrOffset", 0);
+        this.startLoopOffset = this.getGeneratorValue("startloopAddrsOffset", 0);
+        this.endLoopOffset = this.getGeneratorValue("endloopAddrsOffset", 0);
+
+        // coarseTune
+        this.semitoneTune = this.getGeneratorValue("coarseTune", 0);
+
+        // fineTune
+        this.centTune = this.getGeneratorValue("fineTune", 0);
     }
 
     /**
@@ -101,9 +111,13 @@ export class PresetNoteModifiers{
      */
     getPlaybackRate(midiNote)
     {
-        let notePlayback = this.sample.getPlaybackRate(midiNote, this.getRootKey());
+        const semitones = this.semitoneTune + (this.centTune / 100); // calculate both to semitones
+        const tune = Math.pow(2, semitones / 12);
+
+        let notePlayback = this.sample.getPlaybackRate(midiNote, this.getRootKey()) * tune;
+
         // correct with scaleTuning
-        return 1 + (notePlayback -1) * this.getScaleTuneInfluence();
+        return 1 + (notePlayback - 1) * this.getScaleTuneInfluence();
     }
 
     /**
@@ -196,5 +210,18 @@ export class PresetNoteModifiers{
     getLoopingMode()
     {
         return this.loopingMode;
+    }
+
+    /**
+     * @returns {{start: number, end:number, startLoop: number, endLoop: number}} all the address offsets
+     */
+    getAddressOffsets()
+    {
+        return {
+            start: this.startOffset,
+            end: this.endOffset,
+            startLoop: this.startLoopOffset,
+            endLoop: this.endLoopOffset
+        }
     }
 }

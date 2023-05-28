@@ -75,9 +75,13 @@ export class PresetNote
          * @type {SampleNode[]}
          */
         this.sampleNodes = this.sampleOptions.map(sampleOptions => {
-            let sample = sampleOptions.sample;
-            let bufferSource = new AudioBufferSourceNode(this.ctx, {
-                buffer: sample.getBuffer(this.ctx)
+            const sample = sampleOptions.sample;
+
+            const bufferSource = new AudioBufferSourceNode(this.ctx, {
+                buffer: sample.getBuffer(
+                    this.ctx,
+                    sampleOptions.getAddressOffsets().start,
+                    sampleOptions.getAddressOffsets().end)
             });
 
             if(this.vibratoDepth) {
@@ -110,10 +114,14 @@ export class PresetNote
             (sampleOptions.loopingMode === 1 || sampleOptions.loopingMode === 3)) {
 
             // (lsI - sI) / (sr * 2)
-            bufferSource.loopStart =
-                (sampleOptions.sample.sampleLoopStartIndex - sampleOptions.sample.sampleStartIndex) / (sampleOptions.sample.sampleRate * 2);
-            bufferSource.loopEnd =
-                (sampleOptions.sample.sampleLoopEndIndex - sampleOptions.sample.sampleStartIndex) / (sampleOptions.sample.sampleRate * 2);
+            const loopStartIndex = (sampleOptions.sample.sampleLoopStartIndex - sampleOptions.sample.sampleStartIndex)
+                + sampleOptions.getAddressOffsets().startLoop * 2;
+            bufferSource.loopStart = loopStartIndex / (sampleOptions.sample.sampleRate * 2);
+
+            const loopEndIndex = (sampleOptions.sample.sampleLoopEndIndex - sampleOptions.sample.sampleStartIndex)
+                + sampleOptions.getAddressOffsets().endLoop * 2;
+            bufferSource.loopEnd = loopEndIndex / (sampleOptions.sample.sampleRate * 2);
+
             bufferSource.loop = true;
         }
     }
@@ -148,6 +156,7 @@ export class PresetNote
             dataTable.push(new Option("releaseTime", sampleOption.releaseTime, sampleOption.getReleaseTime()));
             dataTable.push(new Option("ScaleTuning", sampleOption.scaleTune, sampleOption.getScaleTuneInfluence()));
             dataTable.push(new Option("holdTime", sampleOption.holdTime, sampleOption.getHoldTime()));
+            dataTable.push(new Option("AddressOffsets", sampleOption.getAddressOffsets(), null));
 
             let generatorsString = sampleOption.generators.map(g => `${g.generatorType}: ${g.generatorValue}`).join("\n");
             dataTable.push(new Option("SampleAndGenerators", sampleOption.sample, generatorsString));
