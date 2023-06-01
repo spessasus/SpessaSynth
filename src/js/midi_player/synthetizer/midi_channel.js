@@ -128,21 +128,9 @@ export class MidiChannel {
         }
     }
 
-    /**
-     * kills the notes with exclusiveclass
-     * @param exclusiveId {number}
-     * TODO: fix
-     */
-    stopExclusiveNotes(exclusiveId)
+    get voicesAmount()
     {
-        let playingNotesToStop =this.playingNotes.filter(n => n.preset.exclusiveClasses.includes(exclusiveId))
-        // for every note that has the exclusive preset (playing and fading)
-        for(let note of playingNotesToStop)
-        {
-            note.killNote().then(() => {
-                delete this.playingNotes.splice(this.playingNotes.indexOf(note), 1);
-            });
-        }
+        return this.playingNotes.length + this.stoppingNotes.length + this.heldNotes.length;
     }
 
     setVolume(volume) {
@@ -162,7 +150,7 @@ export class MidiChannel {
             if(this.vibrato.delay === 0 && this.vibrato.rate === 0 && this.vibrato.depth === 0)
             {
                 this.vibrato.depth = 64;
-                this.vibrato.rate = 8;
+                this.vibrato.rate = 7;
                 this.vibrato.delay = 1;
             }
         }

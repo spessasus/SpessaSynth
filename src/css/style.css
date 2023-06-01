@@ -1,5 +1,10 @@
+@font-face {
+    font-family: "Sans";
+    src: url("../OpenSans-Light.ttf");
+}
+
 * {
-    font-family: "Courier New", Courier, monospace;
+    font-family: "Sans", serif;
     color: #ccc;
     text-align: center;
     margin: 0;
@@ -8,6 +13,7 @@ html, body {
     height: 100%;
     width: 100%;
     background-color: black;
+    overflow-y: hidden;
 }
 /*Top*/
 .top_part
@@ -19,47 +25,26 @@ html, body {
     padding: 3px;
 }
 
-input[type="file"] {
-    display: none;
-}
-
-#keyboard_selector
-{
-    position: absolute;
-    top: 0;
-    right: 0;
-}
-
-#keyboard_selector select option
-{
-    background-color: var(--top-color);
-    text-align: center;
-    padding: 1em;
-}
-
-#keyboard_selector select
-{
-    display: block;
-    border: none;
-    font-size: 15px;
-    background: var(--top-color);
-    text-align: center;
-    width: 100%;
-}
-
 #title_wrapper
 {
-    height: 2.25em;
+    display: inline-block;
+    width: fit-content;
+}
+
+input[type="file"] {
+    display: none;
 }
 
 #title
 {
     position: relative;
     z-index: 1;
-    margin: auto;
+    margin: 0.2em;
     width: max-content;
     display: block;
-    line-height: normal;
+    line-height: 100%;
+    font-weight: lighter;
+    font-size: 2.1em;
 }
 
 #progress_bar
@@ -72,6 +57,9 @@ input[type="file"] {
     border-radius: 10px;
     margin-left: auto;
     margin-right: auto;
+    margin-top: 0.4em;
+    padding-top: 5px;
+    padding-bottom: 5px;
     top: 0;
     left: 0;
     right: 0;
@@ -96,77 +84,10 @@ input[type="file"] {
 {
     width: 100%;
     height: 70%;
-    display: block;
-}
-#keyboard_table
-{
-    width: 100%;
-    height: 15%;
-    border-spacing: 1px;
-}
-#keyboard td
-{
-    transition: transform 0.1s ease;
-    border-radius: 4px;
-    height: 100%;
-    position: relative;
-    user-select: none;
+    display: table-cell;
 }
 
 /*Bottom*/
-#sequencer_controls
-{
-    width: 80%;
-    position: relative;
-    margin: auto auto 2px;
-
-    --progress-bar-height: 1.4em;
-}
-
-#sequencer_controls #note_progress
-{
-    border-radius: var(--progress-bar-height);
-    background-color: #406;
-    height: var(--progress-bar-height);
-    transition: all 100ms linear;
-    position: absolute;
-}
-
-#sequencer_controls #note_time
-{
-    position: relative;
-    z-index: 5;
-    font-size: var(--progress-bar-height);
-    text-align: center;
-    color: #ccc;
-    margin: auto;
-    width: 100%;
-}
-
-#sequencer_controls #note_time:hover{
-    cursor: pointer;
-}
-
-#sequencer_controls .control_buttons
-{
-    position: relative;
-    display: inline-block;
-    transition: all 0.1s ease;
-}
-
-#sequencer_controls .control_buttons:hover{
-    cursor: pointer;
-    transform: scale(1.2);
-}
-
-#sequencer_controls #note_progress_background
-{
-    border-radius: var(--progress-bar-height);
-    background-color: #343434;
-    height: var(--progress-bar-height);
-    position: absolute;
-    width: 100%;
-}
 
 #note_killer
 {

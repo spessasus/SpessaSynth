@@ -180,7 +180,9 @@ export function readPresets(presetChunk, presetZones)
             presets[presets.length - 1].getPresetZones(presetZonesAmount, presetZones);
             presets[presets.length - 1].getExclusiveClasses()
         }
-        presets.push(preset);
+        if(preset.presetName !== 'EOP') {
+            presets.push(preset);
+        }
     }
     return presets;
 }

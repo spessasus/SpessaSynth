@@ -6,20 +6,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SpessaSynth</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/sequencer_ui.css">
+  <link rel="stylesheet" href="css/keyboard_ui.css">
+  <link rel="stylesheet" href="css/synthesizer_ui.css">
+  <link rel="stylesheet" href="css/keyboard.css">
 </head>
 <body>
 <div class="top_part">
+  <div id="synthetizer_controls"></div>
+
   <div id="title_wrapper">
     <div id="progress_bar"></div>
     <h1 id="title">SpessaSynth: MIDI Soundfont2 Player</h1>
+    <label id="file_upload"> Upload a MIDI file
+      <input type="file" accept="audio/parsedMidi" id="midi_file_input"><br/>
+    </label>
   </div>
 
   <div id="keyboard_selector">
   </div>
-
-  <label id="file_upload"> Upload a MIDI file
-    <input type="file" accept="audio/parsedMidi" id="midi_file_input"><br/>
-  </label>
 </div>
 
   <canvas id="note_canvas"></canvas>

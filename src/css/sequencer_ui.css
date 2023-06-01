@@ -1,0 +1,55 @@
+#sequencer_controls
+{
+    width: 80%;
+    position: relative;
+    margin: auto auto 2px;
+
+    --progress-bar-height: 1.4em;
+}
+
+#sequencer_controls #note_progress
+{
+    border-radius: var(--progress-bar-height);
+    background-color: #406;
+    height: var(--progress-bar-height);
+    padding: 5px;
+    transition: all 100ms linear;
+    position: absolute;
+}
+
+#sequencer_controls #note_time
+{
+    position: relative;
+    z-index: 5;
+    font-size: var(--progress-bar-height);
+    text-align: center;
+    color: #ccc;
+    margin: auto;
+    width: 100%;
+}
+
+#sequencer_controls #note_time:hover{
+    cursor: pointer;
+}
+
+#sequencer_controls .control_buttons
+{
+    position: relative;
+    display: inline-block;
+    transition: all 0.1s ease;
+}
+
+#sequencer_controls .control_buttons:hover{
+    cursor: pointer;
+    transform: scale(1.2);
+}
+
+#sequencer_controls #note_progress_background
+{
+    border-radius: var(--progress-bar-height);
+    background-color: #343434;
+    height: var(--progress-bar-height);
+    position: absolute;
+    padding: 5px;
+    width: 100%;
+}

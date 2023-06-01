@@ -57,6 +57,7 @@ export class MidiKeyboard
         }
         for (let midiNote = 0; midiNote < 128; midiNote++) {
             let noteElement = (document.createElement("td"));
+            noteElement.classList.add("key");
             noteElement.id = `note${midiNote}`;
             noteElement.onmouseover = () => {
                 if(!this.mouseHeld)
@@ -86,20 +87,16 @@ export class MidiKeyboard
             };
             noteElement.onmouseleave = noteElement.onmouseup;
             let isBlack = isBlackNoteNumber(midiNote);
-            let transform;
             if(isBlack)
             {
                 // short note
-                noteElement.style.backgroundColor = "black";
-                noteElement.style.transformOrigin = "top";
-                //noteElement.style.border = "black 1px solid";
-                transform = "scale(1, 0.7)";
-                noteElement.style.zIndex = "10";
+                noteElement.classList.add("sharp_key");
             }
             else
             {
                 // long note
-                noteElement.style.backgroundColor = (isBlackNoteNumber(midiNote) ? "black" : "white");
+                noteElement.classList.add("flat_key");
+                noteElement.style.backgroundColor = "white";
                 noteElement.style.zIndex = "1";
                 let blackNoteLeft = false;
                 let blackNoteRight = false;
@@ -113,21 +110,19 @@ export class MidiKeyboard
 
                 if(blackNoteRight && blackNoteLeft)
                 {
-                    transform = "scale(2, 1)";
+                    noteElement.classList.add("between_sharps");
                 }
                 else if(blackNoteLeft)
                 {
-                    transform = "scale(1.5, 1) translateX(-15%)";
+                    noteElement.classList.add("left_sharp");
                 }
                 else if(blackNoteRight)
                 {
-                    transform = "scale(1.5, 1) translateX(15%)";
+                    noteElement.classList.add("right_sharp");
                 }
 
 
             }
-            noteElement.style.transform = transform;
-            noteElement.setAttribute("initial-transform", transform);
             noteElement.setAttribute("colors", `["${noteElement.style.backgroundColor}"]`);
             this.keyboard.appendChild(noteElement);
         }
@@ -217,12 +212,13 @@ export class MidiKeyboard
      */
     pressNote(midiNote, channel, velocity, volume, expression)
     {
+        /**
+         * @type {HTMLTableCellElement}
+         */
         let key = this.keyboard.childNodes[midiNote];
-        key.style.transformOrigin = "top";
-        key.style.transform =
-            "matrix3d(1,0,0.00,0,0.00,1,0.00,0.0007,0,0,1,0,0,0,0,1) " + key.getAttribute("initial-transform");
+        key.classList.add("pressed");
 
-        let isSharp = key.getAttribute("initial-transform") === "scale(1, 0.7)";
+        let isSharp = key.classList.contains("sharp_key");
         let brightness = expression * volume * (velocity / 127);
         let rgbaValues = this.channelColors[channel].match(/\d+(\.\d+)?/g).map(parseFloat);
 
@@ -256,8 +252,7 @@ export class MidiKeyboard
          * @type {HTMLTableCellElement}
          */
         let key = this.keyboard.childNodes[midiNote];
-        key.style.filter = "";
-        key.style.transform = this.keyboard.childNodes[midiNote].getAttribute("initial-transform");
+        key.classList.remove("pressed");
         /**
          * @type {string[]}
          */

@@ -1,6 +1,7 @@
 import {MidiParser} from "../../midi_parser/midi_parser.js";
 import {MidiSynthetizer} from "../synthetizer/midi_synthetizer.js";
 import {MidiRenderer} from "../../ui/midi_renderer.js";
+import {MidiEvent} from "../../midi_parser/events/midi_event.js";
 import {formatTime} from "../../utils/other.js";
 
 export class MidiSequencer{
@@ -53,62 +54,6 @@ export class MidiSequencer{
         this.duration = this.getDeltaAsMs(maxTime) / 1000;
         maxTime = Math.round(this.duration);
 
-        // calculate notes' length and lowest and highest note
-        // this.maxNote = 0;
-        // this.minNote = 127;
-        //
-        // console.log("Loading notes' length")
-        // for (let trackNumber = 0; trackNumber < this.midiData.tracksAmount; trackNumber++) {
-        //     let track = this.midiData.decodedTracks[trackNumber];
-        //     console.log("for track", trackNumber);
-        //
-        //     let playingNotes = []
-        //     let playingNotesTimes = []
-        //
-        //     const calculateNoteTime = event =>
-        //     {
-        //         for(let note of playingNotes)
-        //         {
-        //             if(note.channel === event.channel && event.data[0] === note.data[0])
-        //             {
-        //                 let index = playingNotes.indexOf(note);
-        //                 playingNotes.splice(index, 1);
-        //                 note.msLength = this.getDeltaAsMs(event.deltaTotal) - playingNotesTimes[index];
-        //                 playingNotesTimes.splice(index, 1);
-        //                 break;
-        //             }
-        //         }
-        //     }
-        //
-        //     for (let event of track) {
-        //         if(event.type === "Note On")
-        //         {
-        //             if(event.data[1] !== 0)
-        //             {
-        //                 playingNotes.push(event);
-        //                 playingNotesTimes.push(this.getDeltaAsMs(event.deltaTotal));
-        //                 if(event.data[0] > this.maxNote)
-        //                 {
-        //                     this.maxNote = event.data[0];
-        //                 }
-        //                 else if(event.data[0] < this.minNote)
-        //                 {
-        //                     this.minNote = event.data[0];
-        //                 }
-        //             }
-        //             else
-        //             {
-        //                 calculateNoteTime(event);
-        //             }
-        //         }
-        //         else if(event.type === "Note Off")
-        //         {
-        //             calculateNoteTime(event);
-        //         }
-        //     }
-        // }
-        // console.log("Min note:", this.minNote, "Max note:", this.maxNote)
-
         this.timeouts = [];
 
         console.log(`TOTAL TIME: ${formatTime(maxTime).time}`);
@@ -149,8 +94,16 @@ export class MidiSequencer{
             console.warn("Already paused");
             return;
         }
-        this.stop();
+
+        if(this.renderer)
+        {
+            this.renderer.pause();
+        }
+        // prevent playingnotes from beign erased
+        const pN = this.playingNotes;
+        this.stop(false);
         this.pauseTime = this.currentTime;
+        this.playingNotes = pN;
     }
 
     /**
@@ -162,12 +115,81 @@ export class MidiSequencer{
     }
 
     /**
+     * @param event {MidiEvent}
+     * @param timeMs {number}
+     */
+    sendNoteOn(event, timeMs)
+    {
+        // main note (skip if 0 to prevent burst of notes when resuming as we aren't skipping the notes because of rendering.)
+        if(timeMs > 0) {
+            this.timeout(() => {
+                this.synth.NoteOn(event.channel, event.data[0], event.data[1]);
+            }, timeMs);
+        }
+
+        if(!this.renderer)
+        {
+            return;
+        }
+
+        // 500 = 500 ms later, -500 = 500 ms earlier
+        const offset = timeMs - this.playbackOffsetMs;
+        if(offset < 0)
+        {
+            // the note should be -offset miliseconds early
+            this.renderer.startNoteFall(event.data[0], event.channel, -offset);
+        }
+        else {
+            // the note should be offset miliseconds late
+            this.timeout(() => {
+                this.renderer.startNoteFall(event.data[0], event.channel);
+            }, offset);
+        }
+    }
+
+    /**
+     * @param event {MidiEvent}
+     * @param timeMs {number}
+     */
+    sendnoteOff(event, timeMs)
+    {
+        // set a noteOff for the set delta
+        // main note (skip if 0 to prevent burst of notes when resuming as we aren't skipping the notes because of rendering.)
+        if(timeMs > 0) {
+            this.timeout(() => {
+                this.synth.NoteOff(event.channel, event.data[0]);
+            }, timeMs);
+        }
+
+        if(!this.renderer)
+        {
+            return;
+        }
+
+        // 500 = 500 ms later, -500 = 500 ms earlier
+        const offset = timeMs - this.playbackOffsetMs;
+        if(offset < 0)
+        {
+            // the note should be -offset miliseconds early
+            this.renderer.stopNoteFall(event.data[0], event.channel, -offset);
+        }
+        else
+        {
+            // the note should be offset miliseconds late
+            this.timeout(() => {
+                this.renderer.stopNoteFall(event.data[0], event.channel);
+            }, offset);
+        }
+    }
+
+    /**
      * Starts playing the track
      * @param resetTime {boolean}
      * @param logEverything {boolean}
+     * @param playbackOffsetMs {number} in miliseconds, specifies the delay before the playback begins
      * @return {Promise<boolean>}
      */
-    async play( resetTime = false, logEverything = false) {
+    async play(resetTime = false, logEverything = false, playbackOffsetMs = 0) {
         // resume
         if(this.pauseTime !== undefined)
         {
@@ -179,6 +201,13 @@ export class MidiSequencer{
         if (resetTime) {
             this.absoluteStartTimeMs = performance.now();
         }
+
+        if(this.renderer)
+        {
+            this.playbackOffsetMs = this.renderer.noteFallingSpeed;
+            this.renderer.stopAllNoteFalls();
+        }
+
         //play the track
         for (let trackNumber = 0; trackNumber < this.midiData.tracksAmount; trackNumber++) {
             let track = this.midiData.decodedTracks[trackNumber];
@@ -186,57 +215,32 @@ export class MidiSequencer{
 
             for (let event of track) {
                 // add the event's delta
-                let currentDeltaMs = this.getDeltaAsMs(event.deltaTotal) - (performance.now() - this.absoluteStartTimeMs);
-                if (currentDeltaMs < 0) {
+                let eventTimeMs = this.getDeltaAsMs(event.deltaTotal) - (performance.now() - this.absoluteStartTimeMs);
+                eventTimeMs += playbackOffsetMs;
+                if (eventTimeMs < 0) {
                     // skip the not necessary events
                     if (!(event.type === "Controller Change" ||
                         event.type === "Program Change" ||
-                        event.type === "End Of Track") && !resetTime) {
+                        event.type === "End Of Track")) {
                         continue;
                     }
-                    currentDeltaMs = 0;
+                    eventTimeMs = 0;
                 }
-                currentDeltaMs += this.playbackOffsetMs;
                 switch (event.type) {
                     case "Note On":
                         // set a noteOn for the set delta
                         const velocity = event.data[1];
                         if(velocity > 0) {
-                            this.timeout(() => {
-                                if (this.renderer) {
-                                    this.renderer.startNoteFall(event.data[0], event.channel);
-                                }
-                                this.timeout(() => {
-                                    this.synth.NoteOn(event.channel, event.data[0], velocity);
-                                }, this.playbackOffsetMs);
-                            }, currentDeltaMs - this.playbackOffsetMs);
+                            this.sendNoteOn(event, eventTimeMs);
                         }
                         else
                         {
-                            // set a noteOff for the set delta
-                            this.timeout(() => {
-                                if(this.renderer)
-                                {
-                                    this.renderer.stopNoteFall(event.data[0], event.channel);
-                                }
-                                this.timeout(() => {
-                                    this.synth.NoteOff(event.channel, event.data[0]);
-                                }, this.playbackOffsetMs);
-                            }, currentDeltaMs - this.playbackOffsetMs);
+                            this.sendnoteOff(event, eventTimeMs);
                         }
                         break;
 
                     case "Note Off":
-                        // set a noteOff for the set delta
-                        this.timeout(() => {
-                            if(this.renderer)
-                            {
-                                this.renderer.stopNoteFall(event.data[0], event.channel);
-                            }
-                            this.timeout(() => {
-                                this.synth.NoteOff(event.channel, event.data[0]);
-                            }, this.playbackOffsetMs);
-                        }, currentDeltaMs - this.playbackOffsetMs);
+                        this.sendnoteOff(event, eventTimeMs);
                         break;
 
                     case "End Of Track":
@@ -251,80 +255,57 @@ export class MidiSequencer{
                                 }
                                 setTimeout(() => this.currentTime = 0, 500);
                             }
-                        }, currentDeltaMs);
-                        if (currentDeltaMs > this.maxTime) {
-                            this.maxTime = currentDeltaMs;
+                        }, eventTimeMs);
+                        if (eventTimeMs > this.maxTime) {
+                            this.maxTime = eventTimeMs;
                         }
                         break;
-
-                    // case "Text Event":
-                    // case "Copyright":
-                    // case "Track Name":
-                    // case "Lyrics":
-                    //     this.timeout(() => {
-                    //         this.synth.textEvent(event);
-                    //     }, currentDeltaMs);
-                    //     break;
-                        /*
-                        textEvent(event) {
-                        const td = new TextDecoder("windows-1250");
-                        let decodedText = td.decode(new Uint8Array(event.data)).replace("\n", "");
-                        if(event.type === "Lyrics")
-                        {
-                            let text = decodedText;
-                            if(this.lastLyricsText)
-                            {
-                                text = this.lastLyricsText + " " + decodedText;
-                            }
-                            this.lastLyricsText = decodedText
-                            document.getElementById("text_event").innerText = text;
-                        }
-                        else {
-                            document.getElementById("text_event").innerText =
-                                `${event.type}: ${decodedText}`;
-                        }
-                    }*/
 
                     case "Pitch Wheel":
                         this.timeout(() => {
                             this.synth.pitchWheel(event.channel, event.data[1], event.data[0]);
-                        }, currentDeltaMs);
+                        }, eventTimeMs);
                         break;
 
                     case "Controller Change":
                         this.timeout(() => {
                             this.synth.controllerChange(event.channel, event.controllerName, event.data[1]);
-                        }, currentDeltaMs);
+                        }, eventTimeMs);
                         break;
 
                     case "Program Change":
                         this.timeout(() =>{
                             this.synth.programChange(event.channel, event.data[0]);
-                        }, currentDeltaMs);
+                        }, eventTimeMs);
                         break;
 
                     case "System Reset":
                         this.timeout(() => {
                             this.synth.resetAll();
                             console.log("System Reset");
-                        }, currentDeltaMs);
+                        }, eventTimeMs);
                         break;
 
                     default:
                         if (logEverything) {
                             this.timeout(() => {
                                 console.log("Ignoring Event:", event.type);
-                            }, currentDeltaMs);
+                            }, eventTimeMs);
                         }
                         break;
                 }
             }
         }
+
+        if(this.renderer)
+        {
+            this.renderer.resume();
+        }
         return true;
     }
 
     set currentTime(time) {
-        this.stop();
+        this.stop(true);
         this.absoluteStartTimeMs = performance.now() - (time * 1000);
         this.play(false).then();
     }
@@ -342,11 +323,15 @@ export class MidiSequencer{
         }
     }
 
-    stop() {
+    /**
+     * Stops the playback. To pause, use pause()
+     * @param clearRenderer {boolean} if the seq should clear the notes from the connected renderer's screen. Defaults to true.
+     */
+    stop(clearRenderer = true) {
         for (let t of this.timeouts) {
             clearTimeout(t);
         }
-        if(this.renderer)
+        if(this.renderer && clearRenderer)
         {
             this.renderer.stopAllNoteFalls();
         }

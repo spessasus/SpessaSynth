@@ -18,17 +18,16 @@ export class SampleNode
         this.setValueNow(this.volumeController.gain, 0.0001);
 
         if (audioEnvelope.delayTime < 0.002 && audioEnvelope.attackTime < 0.002) {
-            this.setValueNow(this.volumeController.gain, audioEnvelope.attenuation)
+            this.setValueNow(this.volumeController.gain, audioEnvelope.attenuation);
         }
-        else
-        {
+        else {
             // delayTime, attackTime, initialAttenuation
             this.rampToValue(
                 this.volumeController.gain,
                 audioEnvelope.attenuation,
                 audioEnvelope.attackTime,
                 audioEnvelope.delayTime,
-            )
+            );
         }
 
         // holdTime, decayTime, sustainLevel
@@ -48,6 +47,7 @@ export class SampleNode
     stopSample()
     {
         // stop the audio envelope
+        clearTimeout(this.timeout);
         this.volumeController.gain.cancelScheduledValues(this.currentTime);
 
         // begin release phase
@@ -67,13 +67,15 @@ export class SampleNode
         {
             value = 0.000001;
         }
-        param.setValueAtTime(param.value, this.currentTime + relativeStartTime);
-        param.exponentialRampToValueAtTime(value, this.currentTime + 0.00001 + relativeStartTime + timeInSeconds);
+        this.timeout = setTimeout(() => {
+            param.setValueAtTime(param.value, this.currentTime);
+            param.exponentialRampToValueAtTime(value, this.currentTime + 0.001 + timeInSeconds);
+        }, relativeStartTime * 1000);
     }
 
     get currentTime()
     {
-        return this.source.context.currentTime;
+        return this.source.context.currentTime + 0.0001;
     }
 
     /**

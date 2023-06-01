@@ -199,4 +199,11 @@ export class MidiSynthetizer {
             "preset:", programNumber, preset.presetName);
         this.onProgramChange(channel, preset.presetName);
     }
+
+    get voicesAmount()
+    {
+        let v = 0;
+        this.midiChannels.forEach(c => v += c.voicesAmount);
+        return v;
+    }
 }

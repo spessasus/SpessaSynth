@@ -14,7 +14,8 @@
  *          "Set Tempo"|
  *          "SMPTE Offset"|
  *          "Time Signature"|
- *          "Key Signature"} MetaTypes
+ *          "Key Signature"|
+ *          "Unknown"} MetaTypes
  */
 
 /**
@@ -65,7 +66,7 @@ export class MetaEvent
         }
         else
         {
-            throw "Unknown Meta Event type!";
+            this.type = "Unknown";
         }
 
         // read the length and read all the bytes

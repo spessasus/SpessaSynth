@@ -147,7 +147,11 @@ export class PresetNote
                     this.CalculatedData = calculated
                 }
             }
-            dataTable.push(new Option("AudioEnvelope", sampleOption.getVolumeEnvelope(), null));
+            const env = sampleOption.getVolumeEnvelope();
+            for(const name in env)
+            {
+                dataTable.push(new Option(name, env[name], null));
+            }
             dataTable.push(new Option("pan", sampleOption.pan, sampleOption.getPan()));
             dataTable.push(new Option("rootKey", sampleOption.rootKey, null));
             dataTable.push(new Option("loopingMode", sampleOption.loopingMode, sampleOption.getLoopingMode()));

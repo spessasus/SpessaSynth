@@ -2,7 +2,7 @@ import {MidiSynthetizer} from "../midi_player/synthetizer/midi_synthetizer.js";
 
 const CHANNEL_ANALYSER_FFT = 128;
 const NOTE_MARGIN = 1;
-const MIN_NOTE_TIME_MS = 30;
+const MIN_NOTE_TIME_MS = 50;
 export class MidiRenderer
 {
     /**
@@ -15,6 +15,12 @@ export class MidiRenderer
 
         this.renderNotes = true;
         this.channelColors = channelColors;
+        this.notesOnScreen = 0;
+        /**
+         * If undefined, it's not paused
+         * @type {number}
+         */
+        this.pauseTime = undefined;
         /**
          * @type {{midiNote: number, channel: number, startMs: number, timeMs: number}[]}
          */
@@ -31,7 +37,7 @@ export class MidiRenderer
          */
         this.canvas = document.getElementById("note_canvas");
         this.canvas.width = window.innerWidth;
-        this.canvas.height = 800;
+        this.canvas.height = window.innerHeight;
         /**
          * @type {CanvasRenderingContext2D}
          */
@@ -74,9 +80,9 @@ export class MidiRenderer
         this.fallingNotes.push({
             midiNote: midiNote,
             channel: channel,
-            timeMs: -1,
-            startMs: performance.now() + timeOffsetMs
-        })
+            timeMs: Infinity,
+            startMs: performance.now() - timeOffsetMs
+        });
     };
 
     /**
@@ -90,16 +96,57 @@ export class MidiRenderer
         for(const note of this.fallingNotes.filter(note =>
             note.midiNote === midiNote &&
             note.channel === channel &&
-            note.timeMs === -1))
+            note.timeMs === Infinity))
         {
-            note.timeMs = performance.now() + timeOffsetMs - note.startMs;
+            // random to prevent notes having the same time and flashing
+            note.timeMs = performance.now() - timeOffsetMs - note.startMs;
             if(note.timeMs < MIN_NOTE_TIME_MS) note.timeMs = MIN_NOTE_TIME_MS;
         }
+        //this.fallingNotes.sort((na, nb) => (nb.timeMs - na.timeMs) + (na.channel - nb.channel));
     }
 
     stopAllNoteFalls()
     {
         this.fallingNotes = [];
+    }
+
+    /**
+     * Gets absolute time
+     * @returns {number}
+     */
+    getCurrentTime()
+    {
+        if(this.pauseTime === undefined)
+        {
+            return performance.now();
+        }
+        else
+        {
+            return this.pauseTime;
+        }
+    }
+
+    /**
+     * Pauses the falling notes
+     */
+    pause()
+    {
+        if(this.pauseTime !== undefined)
+        {
+            console.warn("Renderer already paused");
+            return;
+        }
+        this.pauseTime = this.getCurrentTime();
+    }
+
+    resume()
+    {
+        if(this.pauseTime === undefined)
+        {
+            console.warn("Renderer not paused");
+            return;
+        }
+        this.pauseTime = undefined;
     }
 
     render()
@@ -112,11 +159,6 @@ export class MidiRenderer
             return;
         }
         this.drawingContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-        // draw main analyser
-        // let waveform = new Uint8Array(this.analyser.frequencyBinCount);
-        // this.analyser.getByteFrequencyData(waveform);
-        // this.drawMainWaveform(waveform);
 
         // draw the individual analysers
         let i = 0;
@@ -131,13 +173,14 @@ export class MidiRenderer
         }
 
         // draw the notes
+        this.notesOnScreen = 0;
         const noteWidth = this.canvas.width / 128 - (NOTE_MARGIN * 2);
         for(const note of this.fallingNotes)
         {
-            const yPos = ((performance.now() - note.startMs) / this.noteFallingSpeed) * this.canvas.height;
+            const yPos = ((this.getCurrentTime() - note.startMs) / this.noteFallingSpeed) * this.canvas.height;
             const xPos = (this.canvas.width / 128) * note.midiNote;
             let noteHeight;
-            if(note.timeMs === -1)
+            if(note.timeMs === Infinity)
             {
                 noteHeight = yPos;
             }
@@ -158,88 +201,34 @@ export class MidiRenderer
             }
             this.drawingContext.fillStyle = noteColor;
             this.drawingContext.fillRect(xPos + NOTE_MARGIN, yPos - noteHeight, noteWidth, noteHeight - (NOTE_MARGIN * 2));
+
+            if(yPos - noteHeight <= this.canvas.height)
+            {
+                this.notesOnScreen++;
+            }
+
+            // delete note if out of range (double height
+            if(yPos - noteHeight > this.canvas.height * 2)
+            {
+                this.fallingNotes.splice(this.fallingNotes.indexOf(note), 1);
+            }
         }
 
-        // // draw the notes
-        // if(this.sequencerToRender) {
-        //     let notesToPlay = [];
-        //
-        //     let currentTime = this.sequencerToRender.currentTime;
-        //     for (let trackNumber = 0; trackNumber < this.sequencerToRender.midiData.tracksAmount; trackNumber++) {
-        //         let track = this.sequencerToRender.midiData.decodedTracks[trackNumber];
-        //
-        //         let i = (track.lastNoteId ? track.lastNoteId : 0);
-        //         let first = true;
-        //
-        //         for (; i < track.length; i++) {
-        //             let event = track[i];
-        //             // must be a note on and velocity larger than 0
-        //             if (event.type !== "Note On" || event.data[1] === 0) {
-        //                 continue;
-        //             }
-        //
-        //             let noteTime = event.msLength;
-        //             let currentDeltaMs = this.sequencerToRender.getDeltaAsMs(event.deltaTotal);
-        //
-        //             if (currentDeltaMs > (currentTime * 1000) + this.noteFallingSpeed + noteTime) {
-        //                 break;
-        //             }
-        //             if (currentDeltaMs < (currentTime * 1000) - noteTime) {
-        //                 continue;
-        //             }
-        //             if (first) {
-        //                 first = false;
-        //                 track.lastNoteId = i;
-        //             }
-        //             notesToPlay.push(event);
-        //         }
-        //
-        //         // sort the notes to play the shortest last
-        //         notesToPlay.sort((note1, note2) => note2.msLength - note1.msLength);
-        //
-        //         for (let event of notesToPlay) {
-        //             let noteTime = event.msLength;
-        //             if (noteTime < 30) {
-        //                 // make percussion visible
-        //                 noteTime = 30;
-        //             }
-        //             let noteColor = this.channelColors[event.channel];
-        //             let currentDeltaMs = this.sequencerToRender.getDeltaAsMs(event.deltaTotal);
-        //
-        //             // make notes that are about to play darker
-        //             if (currentDeltaMs > (currentTime * 1000)) {
-        //                 if (!noteColor) {
-        //                     console.error(event.channel);
-        //                 }
-        //                 let rgbaValues = noteColor.match(/\d+(\.\d+)?/g).map(parseFloat);
-        //
-        //                 // multiply the rgb values by 0.5 (50% brighntess)
-        //                 let newRGBValues = rgbaValues.slice(0, 3).map(value => value * 0.5);
-        //
-        //                 // create the new color
-        //                 noteColor = `rgba(${newRGBValues.join(", ")}, ${rgbaValues[3]})`;
-        //             }
-        //
-        //             let noteHeightPx = (noteTime / this.noteFallingSpeed) * this.canvas.height;
-        //             let xPos = (this.canvas.width / 128) * event.data[0];
-        //             let yPos = this.canvas.height - (this.canvas.height * ((currentDeltaMs - (currentTime * 1000)) / this.noteFallingSpeed)) - noteHeightPx + NOTE_MARGIN;
-        //
-        //             this.drawingContext.fillStyle = noteColor;
-        //             this.drawingContext.fillRect(xPos + NOTE_MARGIN, yPos, noteWidth, noteHeightPx - (NOTE_MARGIN * 2));
-        //         }
-        //     }
-        // }
-
+        // calculate fps
         let timeSinceLastFrame = performance.now() - this.frameTimeStart;
         let fps = 1000 / timeSinceLastFrame;
 
+        // draw FPS
         this.drawingContext.fillStyle = "#ccc";
         this.drawingContext.textAlign = "start";
-        this.drawingContext.font = "16px Courier new";
+        this.drawingContext.font = "16px Sans";
         this.drawingContext.fillText(Math.round(fps).toString(), 0, 16);
 
-        this.frameTimeStart = performance.now();
+        // draw note count
+        this.drawingContext.textAlign = "end";
+        this.drawingContext.fillText(`${this.notesOnScreen} notes`, this.canvas.width, 16);
 
+        this.frameTimeStart = performance.now();
         requestAnimationFrame(() => {
             this.render();
         });

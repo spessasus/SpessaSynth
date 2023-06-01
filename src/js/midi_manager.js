@@ -9,6 +9,7 @@ import "./midi_parser/events/sysex_event.js";
 
 import {SoundFont2} from "./soundfont/soundfont_parser.js";
 import {SequencerUI} from "./ui/sequencer_ui.js";
+import {SynthetizerUI} from "./ui/synthetizer_ui.js";
 
 export class MidiManager
 {
@@ -55,6 +56,10 @@ export class MidiManager
         this.synth.onNoteOn = (note, chan, vel, vol, exp) => this.keyboard.pressNote(note, chan, vel, vol, exp);
         this.synth.onNoteOff = note => this.keyboard.releaseNote(note);
 
+        // set up synth UI
+        this.synthUI = new SynthetizerUI(this.channelColors);
+        this.synthUI.connectSynth(this.synth);
+
         // create an UI for sequencer
         this.seqUI = new SequencerUI();
     }
@@ -77,6 +82,6 @@ export class MidiManager
         this.seq.connectRenderer(this.renderer);
 
         // play the midi
-        this.seq.play(resetTime, debugMode).then();
+        this.seq.play(resetTime, debugMode, 100).then();
     }
 }

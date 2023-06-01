@@ -29,19 +29,20 @@ export class PresetNoteModifiers{
         // initialAttenuation (dB)
         this.attenuation = this.sumGeneratorValue("initialAttenuation", 0) / 10 * 0.4;
         // delayVolEnv
-        this.delayTime = this.getGeneratorValue("delayVolEnv", -12000)
+        this.delayTime = this.sumGeneratorValue("delayVolEnv", -12000)
         // attackVolEnv
-        this.attackTime = this.getGeneratorValue("attackVolEnv", -12000);
+        this.attackTime = this.sumGeneratorValue("attackVolEnv", -12000);
         // holdVolEnv
-        this.holdTime = this.getGeneratorValue("holdVolEnv", -12000);
+        this.holdTime = this.sumGeneratorValue("holdVolEnv", -12000);
         // decayVolEnv
-        this.decayTime = this.getGeneratorValue("decayVolEnv", -12000);
+        this.decayTime = this.sumGeneratorValue("decayVolEnv", -12000);
         // sustainVolEnv (dB)
         this.sustainLowerAmount = this.sumGeneratorValue("sustainVolEnv", 0) / 10;
+        // releaseVolEnv (timecents) defaults to 5s
+        this.releaseTime = this.sumGeneratorValue("releaseVolEnv", 2786);
+
         // scaleTuning
         this.scaleTune = this.getGeneratorValue("scaleTuning", 100);
-        // releaseVolEnv (timecents) defaults to 5s
-        this.releaseTime = this.getGeneratorValue("releaseVolEnv", 2786);
 
         // exclusiveClass
         this.exclusiveClass = this.getGeneratorValue("exclusiveClass", 0);
@@ -128,7 +129,11 @@ export class PresetNoteModifiers{
         const holdTime = this.timecentsToSeconds(this.holdTime);
         const decayTime = this.timecentsToSeconds(this.decayTime);
         const sustainLevel = this._getSustainLevel();
-        const releaseTime = this.timecentsToSeconds(this.releaseTime);
+        let releaseTime = this.timecentsToSeconds(this.releaseTime);
+        if(releaseTime > 5)
+        {
+            releaseTime = 5
+        }
         return {
             attenuation: attenuation,
             delayTime: delayTime,

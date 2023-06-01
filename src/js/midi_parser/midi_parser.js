@@ -171,7 +171,7 @@ export class MidiParser
         // loop through all the tracks
         for (let i = 0; i < this.tracksAmount; i++)
         {
-            let track = this.readChunk(midiFileData);
+            let track = this.readRIFFChunk(midiFileData);
 
             console.log("Starting to load track", i);
             messageCallback(`Starting to parse track ${i}`);

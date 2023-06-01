@@ -1,0 +1,66 @@
+#synthetizer_controls
+{
+    position: absolute;
+    display: inline-block;
+    top: 0;
+    left: 0;
+    height: 100%;
+    --voice-meter-height: 2em;
+    width: 20em;
+}
+
+#synthetizer_controls:hover{
+    cursor: pointer;
+}
+
+#synthetizer_controls .wrapper{
+    height: 80%;
+    padding: 2%;
+}
+
+#synthetizer_controls .voice_meter{
+    position: relative;
+    height: var(--voice-meter-height);
+}
+
+#synthetizer_controls .voice_meter .voice_meter_bar{
+    position: relative;
+    display: block;
+    height: 100%;
+    border-radius: 5px;
+    margin-top: auto;
+    background-color: #406;
+    transition: all 0.1s ease;
+}
+
+#synthetizer_controls .voice_meter .voice_meter_text{
+    position: absolute;
+    z-index: 1;
+    height: var(--voice-meter-height);
+    line-height: var(--voice-meter-height);
+    top: 0;
+    width: 100%;
+    text-align: center;
+}
+
+#synthetizer_controls .channels_dropdown{
+    transform: scale(1, 0);
+    transform-origin: top;
+    transition: transform 500ms ease;
+    left: 0;
+    display: block;
+    position: absolute;
+    background-color: #111;
+    padding: 1em;
+    border-radius: 15px;
+    width: 20em;
+}
+
+#synthetizer_controls .channel_controller{
+    margin-bottom: 5px;
+    margin-top: 5px;
+}
+
+#synthetizer_controls:hover .channels_dropdown{
+    transform: scale(1);
+}
