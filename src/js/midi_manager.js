@@ -1,5 +1,5 @@
 import {MidiKeyboard} from "./ui/midi_keyboard.js";
-import {MidiSynthetizer} from "./midi_player/synthetizer/midi_synthetizer.js";
+import {Synthetizer} from "./midi_player/synthetizer/synthetizer.js";
 import {MidiRenderer} from "./ui/midi_renderer.js";
 import {Sequencer} from "./midi_player/sequencer/realtime_sequencer.js";
 import {MIDI} from "./midi_parser/midi_loader.js";
@@ -40,7 +40,7 @@ export class MidiManager
         this.soundFont = soundFont;
 
         // set up synthetizer
-        this.synth = new MidiSynthetizer(context.destination, this.soundFont);
+        this.synth = new Synthetizer(context.destination, this.soundFont);
 
         // set up keyboard
         this.keyboard = new MidiKeyboard(this.channelColors, this.synth);
@@ -65,9 +65,8 @@ export class MidiManager
      * starts playing and rendering the midi file
      * @param parsedMidi {MIDI}
      * @param resetTime {boolean}
-     * @param debugMode {boolean}
      */
-    play(parsedMidi, resetTime = false, debugMode= false)
+    play(parsedMidi, resetTime = false)
     {
         // create a new sequencer
         this.seq = new Sequencer(parsedMidi, this.synth);

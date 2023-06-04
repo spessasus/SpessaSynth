@@ -1,4 +1,4 @@
-import {MidiSynthetizer} from "../midi_player/synthetizer/midi_synthetizer.js";
+import {Synthetizer} from "../midi_player/synthetizer/synthetizer.js";
 import {MidiChannel} from "../midi_player/synthetizer/midi_channel.js";
 
 /**
@@ -22,7 +22,7 @@ export class SynthetizerUI
 
     /**
      * Connects the synth to UI
-     * @param synth {MidiSynthetizer}
+     * @param synth {Synthetizer}
      */
     connectSynth(synth)
     {

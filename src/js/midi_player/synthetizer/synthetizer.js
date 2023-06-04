@@ -1,7 +1,7 @@
 import {MidiChannel} from "./midi_channel.js";
 import {SoundFont2} from "../../soundfont/soundfont_parser.js";
 
-export class MidiSynthetizer {
+export class Synthetizer {
     /**
      * @param targetNode {AudioNode}
      * @param soundFont {SoundFont2}

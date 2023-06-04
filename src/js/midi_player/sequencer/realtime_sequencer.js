@@ -1,5 +1,5 @@
 import {MIDI} from "../../midi_parser/midi_loader.js";
-import {MidiSynthetizer} from "../synthetizer/midi_synthetizer.js";
+import {Synthetizer} from "../synthetizer/synthetizer.js";
 import {MidiRenderer} from "../../ui/midi_renderer.js";
 import {getEvent, midiControllers, MidiMessage} from "../../midi_parser/midi_message.js";
 import {formatTime} from "../../utils/other.js";
@@ -8,7 +8,7 @@ export class Sequencer {
     /**
      * Creates a new Midi sequencer for playing back MIDI file
      * @param parsedMidi {MIDI} The parsed midi
-     * @param synth {MidiSynthetizer} synth to send events to
+     * @param synth {Synthetizer} synth to send events to
      */
     constructor(parsedMidi, synth)
     {
@@ -182,6 +182,10 @@ export class Sequencer {
         this.playbackInterval = setInterval(this._processTick.bind(this));
     }
 
+    /**
+     * Processes a single tick
+     * @private
+     */
     _processTick()
     {
         let event = this.events[this.eventIndex];
@@ -201,18 +205,20 @@ export class Sequencer {
 
         if(this.renderer)
         {
+            if(this.rendererEventIndex >= this.events.length)
+            {
+                return;
+            }
             let event = this.events[this.rendererEventIndex];
             while(this.ticksToSeconds(event.ticks) <= this.currentTime + this.renderer.noteFallingSpeed / 1000)
             {
                 this.rendererEventIndex++;
-                if(this.rendererEventIndex >= this.events.length)
-                {
-                    return;
-                }
+                event = this.events[this.rendererEventIndex - 1];
+
                 const eventType = event.messageStatusByte >> 4;
                 if(eventType !== 0x8 && eventType !== 0x9)
                 {
-                    return;
+                    continue;
                 }
 
                 const channel = event.messageStatusByte & 0x0F;
@@ -225,8 +231,6 @@ export class Sequencer {
                 {
                     this.renderer.stopNoteFall(event.messageData[0], channel, offset * 1000);
                 }
-
-                event = this.events[this.rendererEventIndex];
             }
         }
     }
@@ -283,8 +287,8 @@ export class Sequencer {
      */
     stop()
     {
-        this.synth.stopAll();
         clearInterval(this.playbackInterval);
         this.playbackInterval = undefined;
+        this.synth.stopAll();
     }
 }

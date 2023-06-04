@@ -1,11 +1,11 @@
-import {MidiSynthetizer} from "../midi_player/synthetizer/midi_synthetizer.js";
+import {Synthetizer} from "../midi_player/synthetizer/synthetizer.js";
 
 export class MidiKeyboard
 {
     /**
      * Creates a new midi keyboard(keyboard)
      * @param channelColors {Array<string>}
-     * @param synth {MidiSynthetizer}
+     * @param synth {Synthetizer}
      */
     constructor(channelColors, synth) {
         this.mouseHeld = false;

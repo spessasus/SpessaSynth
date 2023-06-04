@@ -1,9 +1,8 @@
-import {MidiParser} from "./midi_parser/midi_parser.js";
 import {MidiManager} from "./midi_manager.js";
+import {MIDI} from "./midi_parser/midi_loader.js";
 
 import {SoundFont2} from "./soundfont/soundfont_parser.js";
 import {ShiftableByteArray} from "./utils/shiftable_array.js";
-import {MIDI} from "./midi_parser/midi_loader.js";
 
 /**
  * @type {HTMLHeadingElement}
@@ -21,21 +20,11 @@ let fileInput = document.getElementById("midi_file_input");
 fileInput.value = "";
 fileInput.focus();
 
-/**
- * Parses the midi file (kinda)
- * @param {File} midiFile
- */
-async function parseMidi(midiFile)
-{
-    let buffer = await midiFile.arrayBuffer();
-    let p = new MidiParser();
-    return await p.parse(Array.from(new Uint8Array(buffer)), t => titleMessage.innerText = t);
-}
 
 /**
  * @param midiFile {File}
  */
-async function parseMidiNew(midiFile)
+async function parseMidi(midiFile)
 {
     const buffer = await midiFile.arrayBuffer();
     return new MIDI(new ShiftableByteArray(buffer));
@@ -57,7 +46,7 @@ async function fetchFont(fileName, callback)
     let size = response.headers.get("content-length");
     let reader = await (await response.body).getReader();
     let done = false;
-    let dataArray = new ShiftableByteArray(size);
+    let dataArray = new ShiftableByteArray(parseInt(size));
     let offset = 0;
     do{
         let readData = await reader.read();
@@ -79,7 +68,7 @@ function startMidi(midiFile)
 {
     titleMessage.innerText = `Parsing ${midiFile.name}`;
     document.getElementById("file_upload").innerText = midiFile.name;
-    parseMidiNew(midiFile).then(parsedMidi => {
+    parseMidi(midiFile).then(parsedMidi => {
         titleMessage.innerText = "SpessaSynth: MIDI Soundfont2 Player";
         manager.play(parsedMidi, true, true);
     });

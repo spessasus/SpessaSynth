@@ -2,7 +2,7 @@ export class ShiftableByteArray extends Uint8Array
 {
     /**
      * Creates a new instance of an Uint8Array with Array.shift() function
-     * @param size {number} - The array's size
+     * @param size {number || ArrayBufferLike} - The array's size
      */
     constructor(size) {
         super(size);

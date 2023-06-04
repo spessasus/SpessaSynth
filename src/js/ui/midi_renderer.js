@@ -1,14 +1,14 @@
-import {MidiSynthetizer} from "../midi_player/synthetizer/midi_synthetizer.js";
+import {Synthetizer} from "../midi_player/synthetizer/synthetizer.js";
 
 const CHANNEL_ANALYSER_FFT = 128;
 const NOTE_MARGIN = 1;
-const MIN_NOTE_TIME_MS = 50;
+const MIN_NOTE_TIME_MS = 20;
 export class MidiRenderer
 {
     /**
      * Creates a new midi renderer for rendering notes visually.
      * @param channelColors {Array<string>}
-     * @param synth {MidiSynthetizer}
+     * @param synth {Synthetizer}
      */
     constructor(channelColors, synth) {
         this.noteFallingSpeed = 1000;
@@ -47,7 +47,7 @@ export class MidiRenderer
 
     /**
      * Connect the 16 channels to their respective analysers
-     * @param synth {MidiSynthetizer}
+     * @param synth {Synthetizer}
      */
     connectChannelAnalysers(synth)
     {
