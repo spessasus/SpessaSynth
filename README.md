@@ -17,6 +17,6 @@ SoundFont2 based realtime synthetizer and MIDI visualizer written in JavaScript
 ## Installation
 **Requires Node.js**
 1. Download the code as zip or use `git clone`
-2. Put some soundfonts into the `soundfonts` folder
+2. Put your file named `soundfont.sf2` into the `soundfonts` folder. (SoundFont selection coming soon)
 3. Double click the `start.bat`
 4. Enjoy!
