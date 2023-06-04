@@ -216,7 +216,7 @@ export class MidiRenderer
         }
 
         // calculate fps
-        let timeSinceLastFrame = this.getCurrentTime()- this.frameTimeStart;
+        let timeSinceLastFrame = performance.now() - this.frameTimeStart;
         let fps = 1000 / timeSinceLastFrame;
 
         // draw FPS
@@ -229,7 +229,7 @@ export class MidiRenderer
         this.drawingContext.textAlign = "end";
         this.drawingContext.fillText(`${this.notesOnScreen} notes`, this.canvas.width, 16);
 
-        this.frameTimeStart = this.getCurrentTime();
+        this.frameTimeStart = performance.now();
         requestAnimationFrame(() => {
             this.render();
         });

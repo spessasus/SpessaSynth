@@ -129,7 +129,7 @@ export class SynthetizerUI
     /**
      * Creates a new channel controller ui
      * @param channel {MidiChannel}
-     * @param channelNumber {string}
+     * @param channelNumber {number}
      * @returns {{
      *     controller: HTMLDivElement,
      *     voiceMeter: VoiceMeter
