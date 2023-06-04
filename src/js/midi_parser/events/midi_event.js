@@ -140,8 +140,8 @@ const statusCodes =
 
 export class MidiEvent
 {
-    constructor(array, delta, runningStatusByte= 0) {
-        this.delta = delta;
+    constructor(array, ticks, runningStatusByte= 0) {
+        this.ticks = ticks;
         this.controllerName = undefined;
 
         let statusByte;

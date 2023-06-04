@@ -209,7 +209,12 @@ export class MidiChannel {
         return CHANNEL_LOUDNESS * this.channelVolume * this.channelExpression;
     }
 
-    stopNote(midiNote) {
+    /**
+     * Stops the note
+     * @param midiNote {number} 0-127
+     * @param force {boolean} if set to true, the note will be silenced in 50ms
+     */
+    stopNote(midiNote, force=false) {
         // TODO: fix holdPedal
         if(this.holdPedal)
         {
@@ -231,10 +236,19 @@ export class MidiChannel {
             // and remove it from the main array
             this.playingNotes.splice(this.playingNotes.indexOf(note), 1);
 
-            note.stopNote().then(() => {
-                note.disconnectNote();
-                delete this.stoppingNotes.splice(this.stoppingNotes.indexOf(note), 1);
-            });
+            if(force)
+            {
+                note.killNote().then(() => {
+                    note.disconnectNote();
+                    delete this.stoppingNotes.splice(this.stoppingNotes.indexOf(note), 1);
+                });
+            }
+            else {
+                note.stopNote().then(() => {
+                    note.disconnectNote();
+                    delete this.stoppingNotes.splice(this.stoppingNotes.indexOf(note), 1);
+                });
+            }
         }
     }
 

@@ -1,11 +1,8 @@
 import {MidiKeyboard} from "./ui/midi_keyboard.js";
 import {MidiSynthetizer} from "./midi_player/synthetizer/midi_synthetizer.js";
 import {MidiRenderer} from "./ui/midi_renderer.js";
-import {MidiParser} from "./midi_parser/midi_parser.js";
-import {MidiSequencer} from "./midi_player/sequencer/midi_sequencer.js";
-import "./midi_parser/events/midi_event.js";
-import "./midi_parser/events/meta_event.js";
-import "./midi_parser/events/sysex_event.js";
+import {Sequencer} from "./midi_player/sequencer/realtime_sequencer.js";
+import {MIDI} from "./midi_parser/midi_loader.js";
 
 import {SoundFont2} from "./soundfont/soundfont_parser.js";
 import {SequencerUI} from "./ui/sequencer_ui.js";
@@ -66,14 +63,14 @@ export class MidiManager
 
     /**
      * starts playing and rendering the midi file
-     * @param parsedMidi {MidiParser}
+     * @param parsedMidi {MIDI}
      * @param resetTime {boolean}
      * @param debugMode {boolean}
      */
-    play(parsedMidi, resetTime= false, debugMode= false)
+    play(parsedMidi, resetTime = false, debugMode= false)
     {
         // create a new sequencer
-        this.seq = new MidiSequencer(parsedMidi, this.synth);
+        this.seq = new Sequencer(parsedMidi, this.synth);
 
         // connect to the UI
         this.seqUI.connectSequencer(this.seq);
@@ -82,6 +79,6 @@ export class MidiManager
         this.seq.connectRenderer(this.renderer);
 
         // play the midi
-        this.seq.play(resetTime, debugMode, 100).then();
+        this.seq.play(resetTime);
     }
 }

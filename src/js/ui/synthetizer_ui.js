@@ -29,6 +29,11 @@ export class SynthetizerUI
         this.synth = synth;
         this.createMainVoiceMeter();
         this.createChannelControllers();
+
+        // reset button
+        let resetButton = document.getElementById("note_killer");
+        resetButton.style.display = "block";
+        resetButton.onclick = () => synth.stopAll();
     }
 
     /**
@@ -64,8 +69,16 @@ export class SynthetizerUI
 
         this.uiDiv.appendChild(this.voiceMeter.div);
 
-        const desc = document.createElement("p");
-        desc.innerText = "Synthetizer controls";
+        const desc = document.createElement("label");
+        desc.innerText = "High performance mode:";
+
+        const highPerfToggle = document.createElement("input");
+        highPerfToggle.type = "checkbox";
+        highPerfToggle.onchange = () => {
+            this.synth.highPerformanceMode = highPerfToggle.checked;
+        }
+
+        desc.appendChild(highPerfToggle);
         this.uiDiv.appendChild(desc);
     }
 
@@ -105,7 +118,7 @@ export class SynthetizerUI
         let num = 0;
         for(const chan of this.synth.midiChannels)
         {
-            const controller = this.createChannelController(chan, this.channelColors[num]);
+            const controller = this.createChannelController(chan, num);
             this.controllers.push(controller);
             dropdownDiv.appendChild(controller.controller);
             num++;
@@ -116,18 +129,21 @@ export class SynthetizerUI
     /**
      * Creates a new channel controller ui
      * @param channel {MidiChannel}
-     * @param channelColor {string}
+     * @param channelNumber {string}
      * @returns {{
      *     controller: HTMLDivElement,
      *     voiceMeter: VoiceMeter
      * }}
      */
-    createChannelController(channel, channelColor)
+    createChannelController(channel, channelNumber)
     {
         const controller = document.createElement("div");
         controller.classList.add("channel_controller");
-        const voiceMeter = this.createMeter(channelColor);
+        const voiceMeter = this.createMeter(this.channelColors[channelNumber]);
         controller.appendChild(voiceMeter.div);
+
+        const instrumentPreset = document.createElement("select");
+
 
         return {
             controller: controller,

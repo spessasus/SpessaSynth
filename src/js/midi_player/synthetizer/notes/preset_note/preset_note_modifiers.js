@@ -4,7 +4,11 @@ import {Sample} from "../../../../soundfont/chunk/samples.js";
 export class PresetNoteModifiers{
     /**
      * Creates options for the sample
-     * @param sampleAndGenerators {{generators: Generator[], sample: Sample}}
+     * @param sampleAndGenerators {{
+     *  instrumentGenerators: Generator[],
+     *  presetGenerators: Generator[],
+     *  sample: Sample
+     * }}}
      */
     constructor(sampleAndGenerators) {
         /**
@@ -14,7 +18,8 @@ export class PresetNoteModifiers{
          */
 
         this.sample = sampleAndGenerators.sample;
-        this.generators = sampleAndGenerators.generators;
+        this.presetGenerators = sampleAndGenerators.presetGenerators;
+        this.instrumentGenerators = sampleAndGenerators.instrumentGenerators;
 
         // overridingRootKey
         this.rootKey = this.getGeneratorValue("overridingRootKey", this.sample.samplePitch);
@@ -68,7 +73,22 @@ export class PresetNoteModifiers{
     getGeneratorValue(generatorType, defaultValue)
     {
         let val = defaultValue;
-        let searchedVal = this.generators.find(g => g.generatorType === generatorType)
+        let searchedVal = this.instrumentGenerators.find(g => g.generatorType === generatorType)
+        if(searchedVal)
+        {
+            return searchedVal.generatorValue;
+        }
+        return val;
+    }
+
+    /**
+     * @param generatorType {generatorType}
+     * @returns {number}
+     */
+    _getPresetGenerator(generatorType)
+    {
+        let val = 0;
+        let searchedVal = this.presetGenerators.find(g => g.generatorType === generatorType)
         if(searchedVal)
         {
             return searchedVal.generatorValue;
@@ -83,17 +103,13 @@ export class PresetNoteModifiers{
      */
     sumGeneratorValue(generatorType, defaultValue)
     {
-        let gens = this.generators.filter(g => g.generatorType === generatorType);
-        if(gens.length < 1)
+        const preset = this._getPresetGenerator(generatorType);
+        let gen = this.instrumentGenerators.find(g => g.generatorType === generatorType);
+        if(gen)
         {
-            return defaultValue;
+            return gen.generatorValue + preset;
         }
-        let val = 0
-        for(let gen of gens)
-        {
-            val += gen.generatorValue;
-        }
-        return val;
+        return defaultValue + preset;
     }
 
     /**

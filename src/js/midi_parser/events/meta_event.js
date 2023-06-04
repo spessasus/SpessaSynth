@@ -46,10 +46,10 @@ export class MetaEvent
 {
     /**
      * @param array {Array}
-     * @param delta {number}
+     * @param eventTicks {number}
      */
-    constructor(array, delta) {
-        this.delta = delta;
+    constructor(array, eventTicks) {
+        this.ticks = eventTicks;
 
         // skip the 0xFF
         array.shift();

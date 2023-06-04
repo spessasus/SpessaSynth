@@ -252,13 +252,16 @@ export class MidiKeyboard
          * @type {HTMLTableCellElement}
          */
         let key = this.keyboard.childNodes[midiNote];
-        key.classList.remove("pressed");
         /**
          * @type {string[]}
          */
         let pressedColors = JSON.parse(key.getAttribute("colors"));
         if(pressedColors.length > 1) {
             pressedColors.pop();
+        }
+        if(pressedColors.length === 1)
+        {
+            key.classList.remove("pressed");
         }
         key.setAttribute("colors", JSON.stringify(pressedColors));
         key.style.backgroundColor = pressedColors[pressedColors.length - 1];

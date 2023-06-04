@@ -158,7 +158,7 @@ export class PresetNote
             dataTable.push(new Option("ScaleTuning", sampleOption.scaleTune, sampleOption.getScaleTuneInfluence()));
             dataTable.push(new Option("AddressOffsets", sampleOption.getAddressOffsets(), null));
 
-            let generatorsString = sampleOption.generators.map(g => `${g.generatorType}: ${g.generatorValue}`).join("\n");
+            let generatorsString = sampleOption.instrumentGenerators.map(g => `${g.generatorType}: ${g.generatorValue}`).join("\n");
             dataTable.push(new Option("SampleAndGenerators", sampleOption.sample, generatorsString));
 
             console.table(dataTable);
@@ -278,16 +278,17 @@ export class PresetNote
     }
 
     /**
-     * Stops the note in 0.2s
+     * Stops the note in 0.05s
      * @returns {Promise<boolean>}
      */
     async killNote()
     {
         for (let node of this.sampleNodes)
         {
-            node.stopSample(0.2);
+            node.releaseTime = 0.05;
+            node.stopSample();
         }
-        await new Promise(r => setTimeout(r, 200));
+        await new Promise(r => setTimeout(r, 50));
         return true;
     }
 }

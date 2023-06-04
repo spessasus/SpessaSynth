@@ -1,6 +1,6 @@
 export class SysexEvent
 {
-    constructor(dataArray, delta) {
+    constructor(dataArray, ticks) {
         // skip 0xF0 or 0xF7
         dataArray.shift();
 
@@ -22,7 +22,7 @@ export class SysexEvent
             data.push(dataArray.shift());
         }
         this.type = "System Exclusive";
-        this.delta = delta;
+        this.ticks = ticks;
         this.data = data;
     }
 }

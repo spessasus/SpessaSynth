@@ -107,7 +107,20 @@ export class MidiParser
         console.log("Type: ", firstChunk.type,
             "Format:", this.format, "Tracks:", this.tracksAmount, "Time division:", this.timeDivision);
 
-        // create the main array
+
+        /**
+         * Contains all the tempo changes
+         * @type {{
+         *     ticks: number,
+         *     tempo: number
+         * }[]}
+         */
+        this.tempoChanges = [{ticks: 0, tempo: 120}];
+
+        /**
+         * create the main array
+         * @type {(MidiEvent || MetaEvent || SysexEvent)[][]}
+          */
         this.decodedTracks = [];
 
         // loop through all the tracks
@@ -124,21 +137,30 @@ export class MidiParser
             }
 
             let runningByte = 0;
+            let ticks = 0;
             while(trackChunk.chunkData.length) {
 
-                // delta always first
-                let delta = this.readVariableLengthQuantity(trackChunk.chunkData);
+                // ticks always first
+                ticks += this.readVariableLengthQuantity(trackChunk.chunkData);
 
                 let byteCheck = trackChunk.chunkData[0];
 
                 // check for metaEvent
                 if(byteCheck === 0xFF) {
-                    this.decodedTracks[i].push(new MetaEvent(trackChunk.chunkData, delta));
+                    const meta = new MetaEvent(trackChunk.chunkData, ticks)
+                    this.decodedTracks[i].push(meta);
+                    if(meta.type === "Set Tempo")
+                    {
+                        this.tempoChanges.push({
+                            ticks: ticks,
+                            tempo: 60000000 / this.readBytesAsNumber(meta.data, 3)
+                        });
+                    }
                     continue;
                 }
                 // check for system exclusive
                 else if(byteCheck === 0xF0 || byteCheck === 0xF7) {
-                    this.decodedTracks[i].push(new SysexEvent(trackChunk.chunkData, delta));
+                    this.decodedTracks[i].push(new SysexEvent(trackChunk.chunkData, ticks));
                     continue;
                 }
 
@@ -152,13 +174,13 @@ export class MidiParser
                         continue;
                     }
 
-                    this.decodedTracks[i].push(new MidiEvent(trackChunk.chunkData, delta, runningByte));
+                    this.decodedTracks[i].push(new MidiEvent(trackChunk.chunkData, ticks, runningByte));
                     continue;
                 }
 
                 // read the MIDI event;
                 runningByte = trackChunk.chunkData[0];
-                this.decodedTracks[i].push(new MidiEvent(trackChunk.chunkData, delta));
+                this.decodedTracks[i].push(new MidiEvent(trackChunk.chunkData, ticks));
 
             }
             messageCallback(`Parsed track ${i}/${this.tracksAmount}`);
@@ -191,6 +213,7 @@ export class MidiParser
          *
         this.decodedTracks = await Promise.all(trackWorkers);
         }*/
+        this.tempoChanges.reverse();
         return this;
     }
 }

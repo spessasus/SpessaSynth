@@ -1,4 +1,4 @@
-import {MidiSequencer} from "../midi_player/sequencer/midi_sequencer.js";
+import {Sequencer} from "../midi_player/sequencer/realtime_sequencer.js";
 import {formatTime} from "../utils/other.js";
 import {getPauseSvg, getPlaySvg} from "./icons.js";
 
@@ -14,7 +14,7 @@ export class SequencerUI{
 
     /**
      *
-     * @param sequencer {MidiSequencer} the sequencer to be used
+     * @param sequencer {Sequencer} the sequencer to be used
      */
     connectSequencer(sequencer)
     {
@@ -29,15 +29,11 @@ export class SequencerUI{
         this.progressTime.id = "note_time";
         // it'll always be on top
         this.progressTime.onclick = event => {
-
-            clearInterval(this.sliderInterval);
             const barPosition = progressBarBg.getBoundingClientRect();
             const x = event.clientX - barPosition.left;
             const width = barPosition.width;
 
             this.seq.currentTime = (x / width) * this.seq.duration;
-
-            this.setSliderInterval();
         };
 
         // background bar
@@ -45,7 +41,7 @@ export class SequencerUI{
         progressBarBg.id = "note_progress_background";
 
         // foreground bar
-        this.progressBar = document.createElement("div")
+        this.progressBar = document.createElement("div");
         this.progressBar.id = "note_progress";
         this.progressBar.min = (0).toString();
         this.progressBar.max =  this.seq.duration.toString();
@@ -61,9 +57,8 @@ export class SequencerUI{
             if(this.seq.paused)
             {
                 console.log("playing");
-                this.seq.play().then(() =>{
-                    playPauseButton.innerHTML = getPauseSvg(ICON_SIZE);
-                });
+                this.seq.play();
+                playPauseButton.innerHTML = getPauseSvg(ICON_SIZE);
             }
             else
             {
@@ -91,11 +86,11 @@ export class SequencerUI{
     }
 
     setSliderInterval(){
-        this.sliderInterval = setInterval(() => {
+        setInterval(() => {
             this.progressBar.style.width = `${(this.seq.currentTime / this.seq.duration) * 100}%`;
             const time = formatTime(this.seq.currentTime);
             const total = formatTime(this.seq.duration);
-            this.progressTime.innerText = `${time.time}/${total.time}`;
+            this.progressTime.innerText = `${time.time} / ${total.time}`;
         }, 100);
     }
 }

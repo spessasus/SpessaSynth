@@ -10,6 +10,12 @@ export class MidiSynthetizer {
         this.outputNode = targetNode;
         this.soundFont = soundFont;
 
+        /**
+         * For Black MIDI's - forces release time to 50ms
+         * @type {boolean}
+         */
+        this.highPerformanceMode = false;
+
         console.log("Preparing channels");
         /**
          * @type {MidiChannel[]}
@@ -42,6 +48,7 @@ export class MidiSynthetizer {
             this.NoteOff(channel, midiNote);
             return;
         }
+
         let chan = this.midiChannels[channel];
         chan.playNote(midiNote, velocity, enableDebugging);
         this.onNoteOn(midiNote, channel, velocity, chan.channelVolume, chan.channelExpression);
@@ -53,8 +60,13 @@ export class MidiSynthetizer {
      * @param midiNote {number} 0-127
      */
     NoteOff(channel, midiNote) {
-        this.midiChannels[channel].stopNote(midiNote);
         this.onNoteOff(midiNote);
+        if(this.highPerformanceMode)
+        {
+            this.midiChannels[channel].stopNote(midiNote, true);
+            return;
+        }
+        this.midiChannels[channel].stopNote(midiNote);
     }
 
     /**
@@ -73,7 +85,7 @@ export class MidiSynthetizer {
      */
     onNoteOff;
 
-    resetAll() {
+    stopAll() {
         for (let channel of this.midiChannels) {
             channel.stopAll();
         }
@@ -118,7 +130,7 @@ export class MidiSynthetizer {
 
             case "All Notes Off":
             case "All Sound Off":
-                this.resetAll();
+                this.stopAll();
                 break;
 
             case "Expression Controller":
@@ -198,6 +210,14 @@ export class MidiSynthetizer {
         console.log("changing channel", channel, "to bank:", channelObj.bank,
             "preset:", programNumber, preset.presetName);
         this.onProgramChange(channel, preset.presetName);
+    }
+
+    /**
+     * @returns {number}
+     */
+    get currentTime()
+    {
+        return this.outputNode.context.currentTime;
     }
 
     get voicesAmount()

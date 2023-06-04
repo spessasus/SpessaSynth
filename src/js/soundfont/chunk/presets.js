@@ -70,7 +70,11 @@ export class Preset {
     /**
      * Returns sampleOptions and generators for given note
      * @param midiNote {number}
-     * @returns {{generators: Generator[], sample: Sample}[]}
+     * @returns {{
+     *  instrumentGenerators: Generator[],
+     *  presetGenerators: Generator[],
+     *  sample: Sample
+     * }[]}
      */
     getSampleAndGenerators(midiNote)
     {
@@ -78,7 +82,11 @@ export class Preset {
             return number >= min && number <= max;
         }
         /**
-         * @type {{generators: Generator[], sample: Sample}[]}
+         * @type {{
+         *  instrumentGenerators: Generator[],
+         *  presetGenerators: Generator[],
+         *  sample: Sample
+         * }[]}
          */
         let parsedGeneratorsAndSamples = [];
         let presetZonesInRange = this.presetZones.filter(zone => isInRange(zone.keyRange.min, zone.keyRange.max, midiNote));
@@ -118,39 +126,40 @@ export class Preset {
                 if(instrumentZone.isGlobal) continue;
                 let instrumentGenerators = Array.from(instrumentZone.generators);
 
-                // // add the unique global preset gen types
-                // presetGenerators.push(...globalPresetGenerators.filter(
-                //     gen => presetGenerators.find(existingGen => existingGen.generatorType === gen.generatorType) === undefined
-                // ));
-                //
-                // // add the unique global instrument gen types
-                // instrumentGenerators.push(...globalInstrumentGenerators.filter(
-                //     gen => instrumentGenerators.find(existingGen => existingGen.generatorType === gen.generatorType) === undefined
-                // ));
+                // add the unique global preset gen types
+                presetGenerators.push(...globalPresetGenerators.filter(
+                    gen => presetGenerators.find(existingGen => existingGen.generatorType === gen.generatorType) === undefined
+                ));
+
+                // add the unique global instrument gen types
+                instrumentGenerators.push(...globalInstrumentGenerators.filter(
+                    gen => instrumentGenerators.find(existingGen => existingGen.generatorType === gen.generatorType) === undefined
+                ));
 
                 // replace the global preset gens with global instrument gens
-                const globalGenerators = globalInstrumentGenerators;
-                for(const globalPresetGenerator of globalPresetGenerators)
-                {
-                    if(globalGenerators.find(g => g.generatorType === globalPresetGenerator.generatorType) === undefined)
-                    {
-                        globalGenerators.push(globalPresetGenerator);
-                    }
-                }
-
-                // replace the preset gens with instrument gens
-                const generators = instrumentGenerators;
-                for(let presetGenerator of presetGenerators)
-                {
-                    if(generators.find(g => g.generatorType === presetGenerator.generatorType) === undefined)
-                    {
-                        generators.push(presetGenerator);
-                    }
-                }
+                // const globalGenerators = globalInstrumentGenerators;
+                // for(const globalPresetGenerator of globalPresetGenerators)
+                // {
+                //     if(globalGenerators.find(g => g.generatorType === globalPresetGenerator.generatorType) === undefined)
+                //     {
+                //         globalGenerators.push(globalPresetGenerator);
+                //     }
+                // }
+                //
+                // // replace the preset gens with instrument gens
+                // const generators = instrumentGenerators;
+                // for(let presetGenerator of presetGenerators)
+                // {
+                //     if(generators.find(g => g.generatorType === presetGenerator.generatorType) === undefined)
+                //     {
+                //         generators.push(presetGenerator);
+                //     }
+                // }
 
                 // combine both generators and add to the final result
                 parsedGeneratorsAndSamples.push({
-                    generators: generators.concat(globalGenerators),
+                    instrumentGenerators: instrumentGenerators,
+                    presetGenerators: presetGenerators,
                     sample: instrumentZone.sample
                 });
             }

@@ -39,7 +39,7 @@ input[type="file"] {
 {
     position: relative;
     z-index: 1;
-    margin: 0.2em;
+    margin: 0.2em auto;
     width: max-content;
     display: block;
     line-height: 100%;
@@ -84,7 +84,7 @@ input[type="file"] {
 {
     width: 100%;
     height: 70%;
-    display: table-cell;
+    display: block;
 }
 
 /*Bottom*/

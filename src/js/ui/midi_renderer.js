@@ -15,6 +15,7 @@ export class MidiRenderer
 
         this.renderNotes = true;
         this.channelColors = channelColors;
+        this.synth = synth;
         this.notesOnScreen = 0;
         /**
          * If undefined, it's not paused
@@ -81,7 +82,7 @@ export class MidiRenderer
             midiNote: midiNote,
             channel: channel,
             timeMs: Infinity,
-            startMs: performance.now() - timeOffsetMs
+            startMs: this.getCurrentTime() - timeOffsetMs
         });
     };
 
@@ -99,13 +100,13 @@ export class MidiRenderer
             note.timeMs === Infinity))
         {
             // random to prevent notes having the same time and flashing
-            note.timeMs = performance.now() - timeOffsetMs - note.startMs;
+            note.timeMs = this.getCurrentTime() - timeOffsetMs - note.startMs;
             if(note.timeMs < MIN_NOTE_TIME_MS) note.timeMs = MIN_NOTE_TIME_MS;
         }
         //this.fallingNotes.sort((na, nb) => (nb.timeMs - na.timeMs) + (na.channel - nb.channel));
     }
 
-    stopAllNoteFalls()
+    clearNotes()
     {
         this.fallingNotes = [];
     }
@@ -118,7 +119,7 @@ export class MidiRenderer
     {
         if(this.pauseTime === undefined)
         {
-            return performance.now();
+            return this.synth.currentTime * 1000;
         }
         else
         {
@@ -215,7 +216,7 @@ export class MidiRenderer
         }
 
         // calculate fps
-        let timeSinceLastFrame = performance.now() - this.frameTimeStart;
+        let timeSinceLastFrame = this.getCurrentTime()- this.frameTimeStart;
         let fps = 1000 / timeSinceLastFrame;
 
         // draw FPS
@@ -228,7 +229,7 @@ export class MidiRenderer
         this.drawingContext.textAlign = "end";
         this.drawingContext.fillText(`${this.notesOnScreen} notes`, this.canvas.width, 16);
 
-        this.frameTimeStart = performance.now();
+        this.frameTimeStart = this.getCurrentTime();
         requestAnimationFrame(() => {
             this.render();
         });

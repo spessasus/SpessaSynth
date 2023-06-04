@@ -79,9 +79,9 @@ function startMidi(midiFile)
 {
     titleMessage.innerText = `Parsing ${midiFile.name}`;
     document.getElementById("file_upload").innerText = midiFile.name;
-    parseMidi(midiFile).then(parsedMid => {
+    parseMidiNew(midiFile).then(parsedMidi => {
         titleMessage.innerText = "SpessaSynth: MIDI Soundfont2 Player";
-        manager.play(parsedMid, true, true);
+        manager.play(parsedMidi, true, true);
     });
 }
 

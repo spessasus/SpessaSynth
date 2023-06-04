@@ -1,5 +1,210 @@
 import {ShiftableByteArray} from "../utils/shiftable_array.js";
-import {readByte, readVariableLengthQuantity} from "../utils/byte_functions.js";
+
+
+export class MidiMessage
+{
+    /**
+     * @param ticks {number}
+     * @param byte {number} the message status byte
+     * @param data {ShiftableByteArray}
+     */
+    constructor(ticks, byte, data) {
+        // absolute ticks from the start
+        this.ticks = ticks;
+        this.messageStatusByte = byte;
+        this.messageData = data;
+    }
+}
+
+/**
+ * Gets the status byte's channel
+ * @param statusByte
+ * @returns {number} channel is -1 for system messages -2 for meta and -3 for sysex
+ */
+export function getChannel(statusByte) {
+    const eventType = statusByte & 0xF0;
+    const channel = statusByte & 0x0F;
+
+    let name;
+    let resultChannel = channel;
+
+    switch (eventType) {
+        // midi (and meta and sysex headers)
+        case 0x80:
+        case 0x90:
+        case 0xA0:
+        case 0xB0:
+        case 0xC0:
+        case 0xD0:
+        case 0xE0:
+            break;
+
+        case 0xF0:
+            switch (channel) {
+                case 0x0:
+                    resultChannel = -3;
+                    break;
+
+                case 0x1:
+                case 0x2:
+                case 0x3:
+                case 0x4:
+                case 0x5:
+                case 0x6:
+                case 0x7:
+                case 0x8:
+                case 0x9:
+                case 0xA:
+                case 0xB:
+                case 0xC:
+                case 0xD:
+                case 0xE:
+                    resultChannel = -1;
+                    break;
+
+                case 0xF:
+                    name = 'Meta Event';
+                    resultChannel = -2;
+                    break;
+            }
+            break;
+
+        default:
+            name = 'Unknown';
+            resultChannel = -1;
+    }
+
+    return resultChannel;
+}
+
+/**
+ * Gets the event's name and channel from the status byte
+ * @param statusByte {number} the status byte
+ * @returns {{name: MessageName, channel: number}} channel will be -1 for
+ */
+export function getEvent(statusByte) {
+    const status = statusByte & 0xF0;
+    const channel = statusByte & 0x0F;
+
+    let eventName;
+    let eventChannel = -1;
+
+    if (status >= 0x80 && status <= 0xE0) {
+        eventChannel = channel;
+        switch (status) {
+            case 0x80:
+                eventName = "Note Off";
+                break;
+            case 0x90:
+                eventName = "Note On";
+                break;
+            case 0xA0:
+                eventName = "Note Aftertouch";
+                break;
+            case 0xB0:
+                eventName = "Controller Change";
+                break;
+            case 0xC0:
+                eventName = "Program Change";
+                break;
+            case 0xD0:
+                eventName = "Channel Aftertouch";
+                break;
+            case 0xE0:
+                eventName = "Pitch Bend";
+                break;
+        }
+    } else {
+        switch (statusByte) {
+            case 0x00:
+                eventName = "Sequence Number";
+                break;
+            case 0x01:
+                eventName = "Text Event";
+                break;
+            case 0x02:
+                eventName = "Copyright Notice";
+                break;
+            case 0x03:
+                eventName = "Track Name";
+                break;
+            case 0x04:
+                eventName = "Instrument Name";
+                break;
+            case 0x05:
+                eventName = "Lyrics";
+                break;
+            case 0x06:
+                eventName = "Marker";
+                break;
+            case 0x07:
+                eventName = "Cue Point";
+                break;
+            case 0x20:
+                eventName = "Channel Prefix";
+                break;
+            case 0x2F:
+                eventName = "End of Track";
+                break;
+            case 0x51:
+                eventName = "Set Tempo";
+                break;
+            case 0x54:
+                eventName = "SMPTE Offset";
+                break;
+            case 0x58:
+                eventName = "Time Signature";
+                break;
+            case 0x59:
+                eventName = "Key Signature";
+                break;
+            case 0x7F:
+                eventName = "Sequencer-Specific Meta-event";
+                break;
+            case 0xF0:
+                eventName = "System Exclusive";
+                break;
+            case 0xF1:
+                eventName = "Time Code Quarter Framme";
+                break;
+            case 0xF2:
+                eventName = "Song Position Pointer";
+                break;
+            case 0xF3:
+                eventName  ="Song Select";
+                break;
+            case 0xF6:
+                eventName = "Tune Request";
+                break;
+            case 0xF8:
+                eventName = "Timing Clock";
+                break;
+            case 0xFA:
+                eventName = "Start";
+                break;
+            case 0xFB:
+                eventName = "Continue";
+                break
+            case 0xFC:
+                eventName = "Stop";
+                break;
+            case 0xFE:
+                eventName = "Active Sense";
+                break;
+            case 0xFF:
+                eventName = "System Reset";
+                break;
+            default:
+                eventName = "Unknown";
+        }
+    }
+
+    return {
+        name: eventName,
+        channel: eventChannel
+    };
+}
+
 
 /**
  * @type {Object<string, controllerNames>}
@@ -74,182 +279,19 @@ export const midiControllers = {
     126: 'Mono Mode On',
     127: 'Poly Mode On'
 };
-export class MidiMessage
-{
-    /**
-     * @param delta {number}
-     * @param name {MessageName}
-     * @param data {ShiftableByteArray}
-     * @param channel {number}
-     */
-    constructor(delta, name, data, channel = undefined) {
-        this.deltaTime = delta;
-        this.messageName = name;
-        this.messageData = data;
-        if(channel)
-        {
-            this.channel = channel;
-        }
-        else
-        {
-            this.channel = -1;
-        }
-    }
-}
 
 /**
- * Read midi message from the midi file array
- * @param dataArray {ShiftableByteArray}
- * @param runningByte {number}
- * @returns {{message: MidiMessage, statusByte: number}}
+ * @type {{"11": number, "12": number, "13": number, "14": number, "8": number, "9": number, "10": number}}
  */
-export function readMidiMessage(dataArray, runningByte = undefined)
-{
-    const deltaTick = readVariableLengthQuantity(dataArray);
-
-    // check if the status byte is valid (IE. larger than 127)
-    const statusByteCheck = dataArray[dataArray.currentIndex];
-
-    let statusByte;
-    // if we have a running byte and the status byte isn't valid
-    if(runningByte && statusByteCheck < 0x80)
-    {
-        statusByte = runningByte;
-    }
-    else if(!runningByte && statusByteCheck < 0x80)
-    {
-        // if we don't have a running byte and the status byte isn't valid, it's an error.
-        throw `Unexpected byte with no running byte. (${statusByteCheck})`;
-    }
-    else
-    {
-        // if the status byte is valid, just use that
-        statusByte = readByte(dataArray);
-    }
-    const statusByteData = getEvent(runningByte);
-
-    /**
-     * @type {ShiftableByteArray}
-     */
-    let eventData;
-    let eventDataLength;
-    // check if midi or sysex/meta
-    if(statusByteData.channel === -1)
-    {
-        // read the meta/sysex length
-        eventDataLength = readVariableLengthQuantity(dataArray)
-    }
-    else
-    {
-        // get the midi message length
-        eventDataLength = dataBytesAmount[statusByteData.name];
-    }
-    eventData = new ShiftableByteArray(eventDataLength);
-    // put the event data into the array
-    eventData.set(dataArray.subarray(dataArray.currentIndex, dataArray.currentIndex + eventDataLength));
-    dataArray.currentIndex += eventDataLength;
-
-    const message = new MidiMessage(deltaTick, statusByteData.name, eventData, statusByteData.channel);
-    return {message: message, statusByte: statusByte};
-
-}
-
-/**
- * @type {{"Note Off": number, "Program Change": number, Aftertouch: number, "Control Change": number, "Pitch Bend": number, "Channel Pressure": number, "Note On": number}}
- */
-const dataBytesAmount = {
-    "Note Off": 2,
-    "Note On": 2,
-    "Aftertouch": 2,
-    "Control Change": 2,
-    "Program Change": 1,
-    "Channel Pressure": 1,
-    "Pitch Bend": 2
+export const dataBytesAmount = {
+    0x8: 2, // note off
+    0x9: 2, // note on
+    0xA: 2, // note at
+    0xB: 2, // cc change
+    0xC: 1, // pg change
+    0xD: 1, // channel aftertouch
+    0xE: 2  // pitch wheel
 };
-
-/**
- *
- * @param statusByte
- * @returns {{name: MessageName, channel: number}}
- */
-function getEvent(statusByte) {
-    let eventName;
-    let eventType = statusByte >> 4;
-    let channel = statusByte & 0x0F;
-
-    switch (eventType) {
-        case 0x8:
-            eventName = "Note Off";
-            break;
-        case 0x9:
-            eventName = "Note On";
-            break;
-        case 0xA:
-            eventName = "Aftertouch";
-            break;
-        case 0xB:
-            eventName = "Control Change";
-            break;
-        case 0xC:
-            eventName = "Program Change";
-            break;
-        case 0xD:
-            eventName = "Channel Pressure";
-            break;
-        case 0xE:
-            eventName = "Pitch Bend";
-            break;
-        case 0xF:
-            channel = -1;
-            switch (statusByte) {
-                case 0xF0:
-                    eventName = "System Exclusive";
-                    break;
-                case 0xF1:
-                    eventName = "Time Code Quarter Frame";
-                    break;
-                case 0xF2:
-                    eventName = "Song Position Pointer";
-                    break;
-                case 0xF3:
-                    eventName = "Song Select";
-                    break;
-                case 0xF6:
-                    eventName = "Tune Request";
-                    break;
-                case 0xF8:
-                    eventName = "Timing Clock";
-                    break;
-                case 0xFA:
-                    eventName = "Start";
-                    break;
-                case 0xFB:
-                    eventName = "Continue";
-                    break;
-                case 0xFC:
-                    eventName = "Stop";
-                    break;
-                case 0xFE:
-                    eventName = "Active Sensing";
-                    break;
-                case 0xFF:
-                    eventName = "System Reset";
-                    break;
-                default:
-                    eventName = "Unknown";
-                    break;
-            }
-            break;
-        default:
-            eventName = "Unknown";
-            break;
-    }
-
-    return {
-        name: eventName,
-        channel: channel
-    };
-}
 
 /**
  * @typedef {"Note Off"|
@@ -259,6 +301,7 @@ function getEvent(statusByte) {
  *           "Program Change"|
  *           "Channel Aftertouch"|
  *           "Pitch Bend"|
+ *
  *           "System Exclusive"|
  *
  *           "Time Code Quarter Framme"|
@@ -287,7 +330,9 @@ function getEvent(statusByte) {
  *           "Set Tempo"|
  *           "SMPTE Offset"|
  *           "Time Signature"|
- *           "Key Signature"} MessageName
+ *           "Key Signature"|
+ *           "Sequencer-Specific Meta-event"|
+ *           "Unknown"} MessageName
  */
 
 /**

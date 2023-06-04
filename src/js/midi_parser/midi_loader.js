@@ -1,6 +1,11 @@
-import {MidiMessage, readMidiMessage} from "./midi_message.js";
+import {dataBytesAmount, getChannel, MidiMessage} from "./midi_message.js";
 import {ShiftableByteArray} from "../utils/shiftable_array.js";
-import {readBytesAsString, readBytesAsUintBigEndian} from "../utils/byte_functions.js";
+import {
+    readByte,
+    readBytesAsString,
+    readBytesAsUintBigEndian,
+    readVariableLengthQuantity
+} from "../utils/byte_functions.js";
 export class MIDI{
     /**
      * Parses a given midi file
@@ -25,7 +30,17 @@ export class MIDI{
         // time division
         this.timeDivision = readBytesAsUintBigEndian(headerChunk.data, 2);
 
-        console.log("Starting to parse");
+        console.log("Tracks:", this.tracksAmount, "Time division:", this.timeDivision);
+
+        /**
+         * Contains all the tempo changes in the file. (Ordered from last to first)
+         * @type {{
+         *     ticks: number,
+         *     tempo: number
+         * }[]}
+         */
+        this.tempoChanges = [{ticks: 0, tempo: 120}];
+
         /**
          * Read all the tracks
          * @type {MidiMessage[][]}
@@ -50,15 +65,86 @@ export class MIDI{
              */
             let runningByte = undefined;
 
+            let totalTicks = 0;
             // loop until we reach the end of track
             while(trackChunk.data.currentIndex < trackChunk.size)
             {
-                const message = readMidiMessage(trackChunk.data, runningByte);
-                runningByte = message.statusByte;
-                track.push(message.message);
+                totalTicks += readVariableLengthQuantity(trackChunk.data);
+
+                // check if the status byte is valid (IE. larger than 127)
+                const statusByteCheck = trackChunk.data[trackChunk.data.currentIndex];
+
+                let statusByte;
+                // if we have a running byte and the status byte isn't valid
+                if(runningByte !== undefined && statusByteCheck < 0x80)
+                {
+                    statusByte = runningByte;
+                }
+                else if(!runningByte && statusByteCheck < 0x80)
+                {
+                    // if we don't have a running byte and the status byte isn't valid, it's an error.
+                    throw `Unexpected byte with no running byte. (${statusByteCheck})`;
+                }
+                else
+                {
+                    // if the status byte is valid, just use that
+                    statusByte = readByte(trackChunk.data);
+                }
+                const statusByteChannel = getChannel(statusByte);
+
+                let eventDataLength;
+
+                // determine the message's length;
+                switch(statusByteChannel)
+                {
+                    case -1:
+                        // system common/realtime (no length)
+                        eventDataLength = 0;
+                        break;
+                    case -2:
+                        // meta (the next is the actual status byte)
+                        statusByte = readByte(trackChunk.data);
+                        eventDataLength = readVariableLengthQuantity(trackChunk.data);
+                        break;
+                    case -3:
+                        // sysex
+                        eventDataLength = readVariableLengthQuantity(trackChunk.data);
+                        break;
+                    default:
+                        // get the midi message length
+                        eventDataLength = dataBytesAmount[statusByte >> 4];
+                        break;
+                }
+
+                // put the event data into the array
+                const eventData = new ShiftableByteArray(eventDataLength);
+                const messageData = trackChunk.data.slice(trackChunk.data.currentIndex, trackChunk.data.currentIndex + eventDataLength);
+                trackChunk.data.currentIndex += eventDataLength;
+                eventData.set(messageData, 0);
+
+                runningByte = statusByte;
+
+                const message = new MidiMessage(totalTicks, statusByte, eventData);
+                track.push(message);
+
+                // check for tempo change
+                if(statusByte === 0x51)
+                {
+                    this.tempoChanges.push({
+                        ticks: totalTicks,
+                        tempo: 60000000 / readBytesAsUintBigEndian(messageData, 3)
+                    });
+                }
             }
             this.tracks.push(track);
+            console.log("Parsed", this.tracks.length, "/", this.tracksAmount);
         }
+
+        this.lastEventTick = Math.max(...this.tracks.map(t => t[t.length - 1].ticks));
+        console.log("MIDI file parsed. Total tick time:", this.lastEventTick);
+
+        // reverse the tempo changes
+        this.tempoChanges.reverse();
     }
 
     /**
@@ -75,8 +161,7 @@ export class MIDI{
         // data
         chunk.data = new ShiftableByteArray(chunk.size);
         const dataSlice = fileByteArray.slice(fileByteArray.currentIndex, fileByteArray.currentIndex + chunk.size);
-        console.log(chunk.data, dataSlice);
-        chunk.data.set(dataSlice);
+        chunk.data.set(dataSlice, 0);
         fileByteArray.currentIndex += chunk.size;
         return chunk;
     }

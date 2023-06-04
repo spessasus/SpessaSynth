@@ -22,34 +22,8 @@ export class MidiSequencer{
         }
         // default time sig is 4/4
         this.beatsPerMeasure = 4;
-        let resetButton = document.getElementById("note_killer");
-        resetButton.style.display = "block";
-        resetButton.onclick = () => synth.resetAll();
 
-        // find all tempos and total time, also calculate absolute delta total
-        this.tempoChanges = [{deltaTicks: 0, tempo: 120}];
-
-        let maxTime = 0;
-        console.log("Loading time and deltas");
-        for (let trackNumber = 0; trackNumber < this.midiData.tracksAmount; trackNumber++) {
-            let track = this.midiData.decodedTracks[trackNumber];
-
-            let deltaTotal = 0;
-            for (let event of track) {
-                deltaTotal += event.delta;
-                if (event.type === "Set Tempo") {
-                    this.tempoChanges.push({
-                        deltaTicks: deltaTotal,
-                        tempo: 60000000 / this.midiData.readBytesAsNumber(Array.from(event.data), event.data.length)
-                    })
-                }
-                event.deltaTotal = deltaTotal;
-
-            }
-            if (deltaTotal > maxTime) {
-                maxTime = deltaTotal;
-            }
-        }
+        let maxTime = Math.max(...this.midiData.decodedTracks.map(t => t[t.length - 1].ticks));
         // ms -> s
         this.duration = this.getDeltaAsMs(maxTime) / 1000;
         maxTime = Math.round(this.duration);
@@ -66,14 +40,9 @@ export class MidiSequencer{
         }
         let ticksPerBeat = this.midiData.timeDivision * (4 / this.beatsPerMeasure);
         // find the nearest tempo
-        let tempo;
-        for (let t of this.tempoChanges) {
-            if (t.deltaTicks >= deltaTicks) {
-                break;
-            }
-            tempo = t;
-        }
-        let timeSinceLastTempo = deltaTicks - tempo.deltaTicks;
+        let tempo = this.midiData.tempoChanges.find(v => v.ticks < deltaTicks);
+
+        let timeSinceLastTempo = deltaTicks - tempo.ticks;
         return this.getDeltaAsMs(deltaTicks - timeSinceLastTempo) + (timeSinceLastTempo * 60000) / (tempo.tempo * ticksPerBeat);
     }
 
@@ -153,7 +122,7 @@ export class MidiSequencer{
      */
     sendnoteOff(event, timeMs)
     {
-        // set a noteOff for the set delta
+        // set a noteOff for the set ticks
         // main note (skip if 0 to prevent burst of notes when resuming as we aren't skipping the notes because of rendering.)
         if(timeMs > 0) {
             this.timeout(() => {
@@ -182,14 +151,14 @@ export class MidiSequencer{
         }
     }
 
+
     /**
      * Starts playing the track
      * @param resetTime {boolean}
      * @param logEverything {boolean}
      * @param playbackOffsetMs {number} in miliseconds, specifies the delay before the playback begins
-     * @return {Promise<boolean>}
      */
-    async play(resetTime = false, logEverything = false, playbackOffsetMs = 0) {
+    play(resetTime = false, logEverything = false, playbackOffsetMs = 100) {
         // resume
         if(this.pauseTime !== undefined)
         {
@@ -205,7 +174,7 @@ export class MidiSequencer{
         if(this.renderer)
         {
             this.playbackOffsetMs = this.renderer.noteFallingSpeed;
-            this.renderer.stopAllNoteFalls();
+            this.renderer.clearNotes();
         }
 
         //play the track
@@ -214,8 +183,8 @@ export class MidiSequencer{
             console.log("preparing track", trackNumber, "to play")
 
             for (let event of track) {
-                // add the event's delta
-                let eventTimeMs = this.getDeltaAsMs(event.deltaTotal) - (performance.now() - this.absoluteStartTimeMs);
+                // add the event's ticks
+                let eventTimeMs = this.getDeltaAsMs(event.ticks) - (performance.now() - this.absoluteStartTimeMs);
                 eventTimeMs += playbackOffsetMs;
                 if (eventTimeMs < 0) {
                     // skip the not necessary events
@@ -228,7 +197,7 @@ export class MidiSequencer{
                 }
                 switch (event.type) {
                     case "Note On":
-                        // set a noteOn for the set delta
+                        // set a noteOn for the set ticks
                         const velocity = event.data[1];
                         if(velocity > 0) {
                             this.sendNoteOn(event, eventTimeMs);
@@ -249,16 +218,13 @@ export class MidiSequencer{
                             this.finishedTracks++;
                             if (this.finishedTracks >= this.midiData.tracksAmount) {
                                 console.log("Song ended!");
-                                this.synth.resetAll();
+                                this.synth.stopAll();
                                 if(this.onended) {
                                     this.onended();
                                 }
                                 setTimeout(() => this.currentTime = 0, 500);
                             }
                         }, eventTimeMs);
-                        if (eventTimeMs > this.maxTime) {
-                            this.maxTime = eventTimeMs;
-                        }
                         break;
 
                     case "Pitch Wheel":
@@ -281,7 +247,7 @@ export class MidiSequencer{
 
                     case "System Reset":
                         this.timeout(() => {
-                            this.synth.resetAll();
+                            this.synth.stopAll();
                             console.log("System Reset");
                         }, eventTimeMs);
                         break;
@@ -301,7 +267,6 @@ export class MidiSequencer{
         {
             this.renderer.resume();
         }
-        return true;
     }
 
     set currentTime(time) {
@@ -333,9 +298,9 @@ export class MidiSequencer{
         }
         if(this.renderer && clearRenderer)
         {
-            this.renderer.stopAllNoteFalls();
+            this.renderer.clearNotes();
         }
-        this.synth.resetAll();
+        this.synth.stopAll();
     }
 
     timeout(call, time) {
