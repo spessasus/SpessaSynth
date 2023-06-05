@@ -15,10 +15,10 @@ SoundFont2 based realtime synthetizer and MIDI visualizer written in JavaScript
 - Max 2 Samples per note. It's probably my bad coding or it's too much for the browser. Either way, it may cause problems with some instruments, but the program tries to find the samples that matter the most.
 
 ## Installation
-***Chrome is higly recommended!***
+***Chrome is highly recommended!***
 
 **Requires Node.js**
-1. Download the code as zip or use `git clone`
+1. Download the code as zip
 2. Put your file named `soundfont.sf2` into the `soundfonts` folder. (SoundFont selection coming soon)
 3. Double click the `start.bat`
 4. Enjoy!
