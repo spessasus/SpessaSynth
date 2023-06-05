@@ -10,13 +10,16 @@ export class PresetNote
      * @param node {AudioNode}
      * @param preset {Preset}
      * @param vibratoOptions {{depth: number, rate: number, delay: number}}
+     * @param tuningRatio {number} the note's initial tuning ratio
+     * @param bendRange {number} RPN Pitch bend range
      */
-    constructor(midiNote, node, preset, vibratoOptions = {delay: 0, depth: 0, rate: 0}) {
+    constructor(midiNote, node, preset, vibratoOptions, tuningRatio, bendRange) {
         this.midiNote = midiNote;
         this.targetNode = node;
         this.SAMPLE_CAP = 2;
         this.ctx = this.targetNode.context;
-        this.preset = preset;
+        this.tuningRatio = tuningRatio;
+        this.bendRange = bendRange;
 
         if(vibratoOptions.rate > 0) {
             this.vibratoWave = new OscillatorNode(this.ctx, {
@@ -89,7 +92,7 @@ export class PresetNote
             }
 
             // correct playback rate
-            bufferSource.playbackRate.value = sampleOptions.getPlaybackRate(midiNote);
+            bufferSource.playbackRate.value = sampleOptions.getPlaybackRate(midiNote) * this.tuningRatio;
 
             // set up loop
             this.applyLoopIndexes(bufferSource, sampleOptions);
@@ -190,8 +193,6 @@ export class PresetNote
             let sample = this.sampleNodes[i];
             let sampleOptions = this.sampleOptions[i];
 
-
-            // TODO: fix the exclusive class to finally fix that damn percussion
             if(sampleOptions.getExclusiveclass() !== 0)
             {
                 exclusives.push(sampleOptions.getExclusiveclass());
@@ -265,13 +266,13 @@ export class PresetNote
      */
     bendNote(pitchBend){
         // calculate normal playback rate
-        const bendRatio = pitchBend / 8192 / 2;
+        const bendRatio = pitchBend / 8192 / this.bendRange;
         for(let i = 0; i < this.sampleOptions.length; i++)
         {
             let sampleOptions = this.sampleOptions[i];
             let sampleNode = this.sampleNodes[i];
 
-            const newPlayback = sampleOptions.getPlaybackRate(this.midiNote) * Math.pow(2, bendRatio);
+            const newPlayback = sampleOptions.getPlaybackRate(this.midiNote) * Math.pow(2, bendRatio) * this.tuningRatio;
             sampleNode.setPlaybackRate(newPlayback);
             //sampleNode.source.playbackRate.setTargetAtTime(newPlayback, this.drawingContext.currentTime, 0.1);
         }

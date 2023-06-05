@@ -2,25 +2,34 @@ import {PresetNote} from "./notes/preset_note.js";
 import {Preset} from "../../soundfont/chunk/presets.js";
 
 const CHANNEL_LOUDNESS = 1.0;
+
+const dataEntryStates = {
+    Idle: "Idle",
+    RPCoarse: "RPCoarse",
+    RPFine: "RPFine",
+    NRPCoarse: "NRPCoarse",
+    NRPFine: "NRPFine",
+    DataCoarse: "DataCoarse",
+    DataFine: "DataFine"
+};
+
 export class MidiChannel {
     /**
      * creates a midi channel
      * @param targetNode {AudioNode}
      * @param defaultPreset {Preset}
+     * @param channelNumber {number}
      */
-    constructor(targetNode, defaultPreset) {
+    constructor(targetNode, defaultPreset, channelNumber = -1) {
         this.ctx = targetNode.context;
         this.outputNode = targetNode;
-        this.channelVolume = 1;
-        this.channelExpression = 1;
+        this.channelNumber = channelNumber;
+
         this.preset = defaultPreset;
         this.bank = this.preset.bank;
         this.panner = this.ctx.createStereoPanner();
-        this.NRPN_MSB = 0;
-        this.NRPN_LSB = 0;
-        this.vibrato = {depth: 0, rate: 0, delay: 0};
 
-        this.holdPedal = false;
+        this.resetControllers();
         /**
          * @type {number[]}
          */
@@ -45,7 +54,7 @@ export class MidiChannel {
 
     createNote(midiNote)
     {
-        return new PresetNote(midiNote, this.panner, this.preset, this.vibrato);
+        return new PresetNote(midiNote, this.panner, this.preset, this.vibrato, this.channelTuningRatio, this.channelPitchBendRange);
     }
 
     pressHoldPedal()
@@ -58,7 +67,7 @@ export class MidiChannel {
         this.holdPedal = false;
         for(let note of this.heldNotes)
         {
-            this.stopNote(note, 0);
+            this.stopNote(note);
         }
         this.heldNotes = [];
     }
@@ -139,11 +148,35 @@ export class MidiChannel {
             this.ctx.currentTime + 0.0001);
     }
 
+    setRPCoarse(value)
+    {
+        this.RPValue = value;
+        this.dataEntryState = dataEntryStates.RPCoarse;
+    }
+
+    setRPFine(value)
+    {
+        this.RPValue = this.RPValue << 7 | value;
+        this.dataEntryState = dataEntryStates.RPFine;
+    }
+
+    setNRPCoarse(value)
+    {
+        this.NRPCoarse = value;
+        this.dataEntryState = dataEntryStates.NRPCoarse;
+    }
+
+    setNRPFine(value)
+    {
+        this.NRPFine = value;
+        this.dataEntryState = dataEntryStates.NRPFine;
+    }
+
     /**
-     * Executes a data entry for an NRPN for a sc88pro NRPN (because touhou yes)
-     * @param dataValue {number} dataEntry MSB
+     * Executes a data entry for an NRP for a sc88pro NRP (because touhou yes) and RPN tuning
+     * @param dataValue {number} dataEntryCoarse MSB
      */
-    dataEntry(dataValue)
+    dataEntryCoarse(dataValue)
     {
         let addDefaultVibrato = () =>
         {
@@ -154,51 +187,89 @@ export class MidiChannel {
                 this.vibrato.delay = 1;
             }
         }
-        //https://cdn.roland.com/assets/media/pdf/SC-88PRO_OM.pdf
-        switch(this.NRPN_MSB)
+
+        switch(this.dataEntryState)
         {
             default:
-                // console.log("Ignoring NRPN:", this.NRPN_MSB, this.NRPN_LSB);
+            case dataEntryStates.Idle:
                 break;
 
-            case 1:
-                switch(this.NRPN_LSB)
+            //https://cdn.roland.com/assets/media/pdf/SC-88PRO_OM.pdf
+            case dataEntryStates.NRPFine:
+                switch(this.NRPCoarse)
                 {
                     default:
-                        // console.log("Ignoring NRPN:", this.NRPN_MSB, this.NRPN_LSB);
                         break;
 
-                    case 8:
-                        if(dataValue === 64)
+                    case 1:
+                        switch(this.NRPFine)
                         {
-                            return;
-                        }
-                        addDefaultVibrato();
-                        this.vibrato.rate = (dataValue / 64) * 8;
-                        console.log("Vibrato rate", dataValue, "=>", this.vibrato.rate, "total:", this.vibrato);
-                        break;
+                            default:
+                                break;
 
-                    case 9:
-                        if(dataValue === 64)
-                        {
-                            return;
-                        }
-                        addDefaultVibrato();
-                        this.vibrato.depth = dataValue / 2;
-                        console.log("Vibrato depth", dataValue, "=>", this.vibrato.depth, "total:", this.vibrato);
-                        break;
+                            // vibrato rate
+                            case 8:
+                                if(dataValue === 64)
+                                {
+                                    return;
+                                }
+                                addDefaultVibrato();
+                                this.vibrato.rate = (dataValue / 64) * 8;
+                                console.log(`Vibrato rate for ${this.channelNumber}:`, dataValue, "=>", this.vibrato.rate, "total:", this.vibrato);
+                                break;
 
-                    case 10:
-                        if(dataValue === 64)
-                        {
-                            return;
+                            // vibrato depth
+                            case 9:
+                                if(dataValue === 64)
+                                {
+                                    return;
+                                }
+                                addDefaultVibrato();
+                                this.vibrato.depth = dataValue / 2;
+                                console.log(`Vibrato depth for ${this.channelNumber}:`, dataValue, "=>", this.vibrato.depth, "total:", this.vibrato);
+                                break;
+
+                            // vibrato delay
+                            case 10:
+                                if(dataValue === 64)
+                                {
+                                    return;
+                                }
+                                addDefaultVibrato();
+                                this.vibrato.delay = (64 / dataValue) / 2;
+                                console.log(`Vibrato delay for ${this.channelNumber}`, dataValue, "=>", this.vibrato.delay, "total:", this.vibrato);
+                                break;
                         }
-                        addDefaultVibrato();
-                        this.vibrato.delay = (64 / dataValue) / 2;
-                        console.log("Vibrato delay", dataValue, "=>", this.vibrato.delay, "total:", this.vibrato);
                         break;
                 }
                 break;
+
+            case dataEntryStates.RPCoarse:
+            case dataEntryStates.RPFine:
+                switch(this.RPValue)
+                {
+                    default:
+                        break;
+
+                    // pitch bend range
+                    case 0x0000:
+                        this.channelPitchBendRange = dataValue / 6;
+                        console.log(`Channel ${this.channelNumber} bend range. Semitones:`, dataValue / 6);
+                        break;
+
+                    // coarse and fine tuning
+                    case 0x0001:
+                    case 0x0002:
+                        this.channelTuningRatio = Math.pow(2,  (dataValue - 64) / 12);
+                        console.log(`Channel ${this.channelNumber} tuning. Type:`, this.RPValue, "Value:", dataValue);
+                        break;
+
+                    case 0x3FFF:
+                        this.resetParameters();
+                        break;
+
+                }
+
         }
     }
 
@@ -256,7 +327,39 @@ export class MidiChannel {
     {
         for(let midiNote = 0; midiNote < 128; midiNote++)
         {
-            this.stopNote(midiNote, 64);
+            this.stopNote(midiNote);
         }
+    }
+
+    resetControllers()
+    {
+        this.channelVolume = 1;
+        this.channelExpression = 1;
+        this.channelTuningRatio = 1;
+        this.channelPitchBendRange = 2;
+        this.holdPedal = false;
+
+        this.vibrato = {depth: 0, rate: 0, delay: 0};
+        this.resetParameters();
+    }
+
+    resetParameters()
+    {
+        /**
+         * @type {number}
+         */
+        this.NRPCoarse = 0;
+        /**
+         * @type {number}
+         */
+        this.NRPFine = 0;
+        /**
+         * @type {number}
+         */
+        this.RPValue = 0;
+        /**
+         * @type {string}
+         */
+        this.dataEntryState = dataEntryStates.Idle;
     }
 }

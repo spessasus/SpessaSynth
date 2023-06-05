@@ -32,19 +32,46 @@ export class PresetNoteModifiers{
 
         // audio envelope
         // initialAttenuation (dB)
-        this.attenuation = this.sumGeneratorValue("initialAttenuation", 0) / 10 * 0.4;
+        this.attenuation = this.sumGeneratorValue("initialAttenuation",
+            0,
+            0,
+            1440) / 10 * 0.4;
+
         // delayVolEnv
-        this.delayTime = this.sumGeneratorValue("delayVolEnv", -12000)
+        this.delayTime = this.sumGeneratorValue("delayVolEnv",
+            -12000,
+            -12000,
+            8000);
+
         // attackVolEnv
-        this.attackTime = this.sumGeneratorValue("attackVolEnv", -12000);
+        this.attackTime = this.sumGeneratorValue("attackVolEnv",
+            -12000,
+            -12000,
+            8000);
+
         // holdVolEnv
-        this.holdTime = this.sumGeneratorValue("holdVolEnv", -12000);
+        this.holdTime = this.sumGeneratorValue("holdVolEnv",
+            -12000,
+            -12000,
+            5000);
+
         // decayVolEnv
-        this.decayTime = this.sumGeneratorValue("decayVolEnv", -12000);
+        this.decayTime = this.sumGeneratorValue("decayVolEnv",
+            -12000,
+            -12000,
+            8000);
+
         // sustainVolEnv (dB)
-        this.sustainLowerAmount = this.sumGeneratorValue("sustainVolEnv", 0) / 10;
+        this.sustainLowerAmount = this.sumGeneratorValue("sustainVolEnv",
+            0,
+            0,
+            1440) / 10;
+
         // releaseVolEnv (timecents) defaults to 5s
-        this.releaseTime = this.sumGeneratorValue("releaseVolEnv", 2786);
+        this.releaseTime = this.sumGeneratorValue("releaseVolEnv",
+            2786,
+            -12000,
+            8000);
 
         // scaleTuning
         this.scaleTune = this.getGeneratorValue("scaleTuning", 100);
@@ -82,6 +109,7 @@ export class PresetNoteModifiers{
     }
 
     /**
+     * Gets generator from the preset level (defaults to 0)
      * @param generatorType {generatorType}
      * @returns {number}
      */
@@ -98,18 +126,37 @@ export class PresetNoteModifiers{
 
     /**
      * @param generatorType {generatorType}
-     * @param defaultValue {number}
+     * @param defaultValue {number} - will default to this if no generator is found or out of range
+     * @param minAllowed {number}
+     * @param maxAllowed {number}
      * @returns {number}
      */
-    sumGeneratorValue(generatorType, defaultValue)
+    sumGeneratorValue(generatorType, defaultValue, minAllowed, maxAllowed)
     {
         const preset = this._getPresetGenerator(generatorType);
         let gen = this.instrumentGenerators.find(g => g.generatorType === generatorType);
         if(gen)
         {
-            return gen.generatorValue + preset;
+            const val = gen.generatorValue + preset;
+            if(minAllowed <= val && val <= maxAllowed)
+            {
+                return val;
+            }
+            else
+            {
+                return defaultValue;
+            }
         }
-        return defaultValue + preset;
+
+        const val = defaultValue + preset;
+        if(minAllowed <= val && val <= maxAllowed)
+        {
+            return val;
+        }
+        else
+        {
+            return defaultValue;
+        }
     }
 
     /**

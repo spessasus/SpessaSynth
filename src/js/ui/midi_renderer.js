@@ -39,6 +39,12 @@ export class MidiRenderer
         this.canvas = document.getElementById("note_canvas");
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
+
+        window.addEventListener("resize", () => {
+            this.canvas.width = window.innerWidth;
+            this.canvas.height = window.innerHeight;
+        });
+
         /**
          * @type {CanvasRenderingContext2D}
          */

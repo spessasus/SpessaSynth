@@ -1,4 +1,4 @@
-import {Sequencer} from "../midi_player/sequencer/realtime_sequencer.js";
+import {Sequencer} from "../midi_player/sequencer/sequencer.js";
 import {formatTime} from "../utils/other.js";
 import {getPauseSvg, getPlaySvg} from "./icons.js";
 

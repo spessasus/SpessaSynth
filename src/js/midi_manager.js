@@ -1,7 +1,7 @@
 import {MidiKeyboard} from "./ui/midi_keyboard.js";
 import {Synthetizer} from "./midi_player/synthetizer/synthetizer.js";
 import {MidiRenderer} from "./ui/midi_renderer.js";
-import {Sequencer} from "./midi_player/sequencer/realtime_sequencer.js";
+import {Sequencer} from "./midi_player/sequencer/sequencer.js";
 import {MIDI} from "./midi_parser/midi_loader.js";
 
 import {SoundFont2} from "./soundfont/soundfont_parser.js";

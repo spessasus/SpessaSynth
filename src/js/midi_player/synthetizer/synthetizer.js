@@ -28,7 +28,7 @@ export class Synthetizer {
         // create 16 channels
         for (let j = 0; j < 16; j++) {
             // default to the first preset
-            this.midiChannels[j] = new MidiChannel(this.outputNode, defaultPreset);
+            this.midiChannels[j] = new MidiChannel(this.outputNode, defaultPreset, j + 1);
         }
 
         // change percussion channel to the percussion preset
@@ -162,19 +162,43 @@ export class Synthetizer {
                 break;
 
             case "Non-Registered Parameter Number MSB":
-                this.midiChannels[channel].NRPN_MSB = controllerValue;
+                this.midiChannels[channel].setNRPCoarse(controllerValue);
                 break;
 
             case "Non-Registered Parameter Number LSB":
-                this.midiChannels[channel].NRPN_LSB = controllerValue;
+                this.midiChannels[channel].setNRPFine(controllerValue);
+                break;
+
+            case "Registered Parameter Number MSB":
+                this.midiChannels[channel].setRPCoarse(controllerValue);
+                break;
+
+            case "Registered Parameter Number LSB":
+                this.midiChannels[channel].setRPFine(controllerValue);
                 break;
 
             case "Data Entry MSB":
-                this.midiChannels[channel].dataEntry(controllerValue);
+                this.midiChannels[channel].dataEntryCoarse(controllerValue);
+                break;
+
+
+            case "Reset All Controllers":
+                this.midiChannels[channel].resetControllers();
                 break;
 
             default:
                 break;
+        }
+    }
+
+    /**
+     * Resets all controllers
+     */
+    resetControllers()
+    {
+        for(const ch of this.midiChannels)
+        {
+            ch.resetControllers();
         }
     }
 

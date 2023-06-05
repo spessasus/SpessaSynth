@@ -27,7 +27,9 @@ fileInput.focus();
 async function parseMidi(midiFile)
 {
     const buffer = await midiFile.arrayBuffer();
-    return new MIDI(new ShiftableByteArray(buffer));
+    const arr = new ShiftableByteArray(buffer);
+    console.log(arr);
+    return new MIDI(arr);
 }
 
 /**
@@ -70,7 +72,7 @@ function startMidi(midiFile)
     document.getElementById("file_upload").innerText = midiFile.name;
     parseMidi(midiFile).then(parsedMidi => {
         titleMessage.innerText = "SpessaSynth: MIDI Soundfont2 Player";
-        manager.play(parsedMidi, true, true);
+        manager.play(parsedMidi, true);
     });
 }
 
