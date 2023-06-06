@@ -71,7 +71,16 @@ function startMidi(midiFile)
     titleMessage.innerText = `Parsing ${midiFile.name}`;
     document.getElementById("file_upload").innerText = midiFile.name;
     parseMidi(midiFile).then(parsedMidi => {
-        titleMessage.innerText = "SpessaSynth: MIDI Soundfont2 Player";
+        if(parsedMidi.midiName.trim().length > 0)
+        {
+            titleMessage.style.fontStyle = "italic";
+            titleMessage.innerText = parsedMidi.midiName;
+        }
+        else
+        {
+            titleMessage.innerText = "SpessaSynth: MIDI Soundfont2 Player";
+        }
+
         manager.play(parsedMidi, true);
     });
 }

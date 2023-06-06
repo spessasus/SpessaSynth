@@ -143,6 +143,13 @@ export class MIDI{
         this.lastEventTick = Math.max(...this.tracks.map(t => t[t.length - 1].ticks));
         console.log("MIDI file parsed. Total tick time:", this.lastEventTick);
 
+        // get track name
+        this.midiName = "";
+        if(this.tracks[0][0].messageStatusByte === 0x03) {
+            const decoder = new TextDecoder('shift-jis');
+            this.midiName = decoder.decode(this.tracks[0][0].messageData);
+        }
+
         // reverse the tempo changes
         this.tempoChanges.reverse();
     }

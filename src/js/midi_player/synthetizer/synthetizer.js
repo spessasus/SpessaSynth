@@ -1,5 +1,10 @@
 import {MidiChannel} from "./midi_channel.js";
 import {SoundFont2} from "../../soundfont/soundfont_parser.js";
+import {ShiftableByteArray} from "../../utils/shiftable_array.js";
+
+const HI_PERF_NOTES_ON = 300;
+const HI_PERF_NOTES_OFF = 50;
+const VOICES_CAP = 815;
 
 export class Synthetizer {
     /**
@@ -34,6 +39,15 @@ export class Synthetizer {
         // change percussion channel to the percussion preset
         this.midiChannels[9].changePreset(percussionPreset);
         this.midiChannels[9].bank = 128;
+
+        // // set reverb
+        // fetch("other/reverb_impulse.wav").then(async r => {
+        //     const buff = await this.outputNode.context.decodeAudioData(await r.arrayBuffer());
+        //     for(const chan of this.midiChannels)
+        //     {
+        //         chan.setReverbBuffer(buff);
+        //     }
+        // });
     }
 
     /**
@@ -49,9 +63,39 @@ export class Synthetizer {
             return;
         }
 
+        if(this.voicesAmount > VOICES_CAP)
+        {
+            return;
+        }
+
         let chan = this.midiChannels[channel];
         chan.playNote(midiNote, velocity, enableDebugging);
         this.onNoteOn(midiNote, channel, velocity, chan.channelVolume, chan.channelExpression);
+
+        if(this.highPerformanceMode)
+        {
+            if(this.voicesAmount < HI_PERF_NOTES_OFF)
+            {
+                this.highPerformanceMode = false;
+                console.log("High performance off");
+                if(this.onHighToggle)
+                {
+                    this.onHighToggle(this.highPerformanceMode);
+                }
+            }
+        }
+        else
+        {
+            if(this.voicesAmount > HI_PERF_NOTES_ON)
+            {
+                this.highPerformanceMode = true;
+                console.log("High performance on");
+                if(this.onHighToggle)
+                {
+                    this.onHighToggle(this.highPerformanceMode);
+                }
+            }
+        }
     }
 
     /**
@@ -84,6 +128,12 @@ export class Synthetizer {
      * @param midiNote {number} 0-127
      */
     onNoteOff;
+
+    /**
+     * Calls on high performance toggle
+     * @type {function(boolean): void}
+     */
+    onHighToggle;
 
     stopAll() {
         for (let channel of this.midiChannels) {
@@ -234,6 +284,15 @@ export class Synthetizer {
         console.log("changing channel", channel, "to bank:", channelObj.bank,
             "preset:", programNumber, preset.presetName);
         this.onProgramChange(channel, preset.presetName);
+    }
+
+    /**
+     * Sends a sysex
+     * @param messageData {ShiftableByteArray} the message's data
+     */
+    systemExclusive(messageData)
+    {
+        console.log(messageData);
     }
 
     /**

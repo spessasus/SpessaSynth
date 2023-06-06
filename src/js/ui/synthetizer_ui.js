@@ -78,6 +78,8 @@ export class SynthetizerUI
             this.synth.highPerformanceMode = highPerfToggle.checked;
         }
 
+        this.synth.onHighToggle = status => highPerfToggle.checked = status;
+
         desc.appendChild(highPerfToggle);
         this.uiDiv.appendChild(desc);
     }

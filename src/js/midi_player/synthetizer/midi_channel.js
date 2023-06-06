@@ -27,16 +27,21 @@ export class MidiChannel {
 
         this.preset = defaultPreset;
         this.bank = this.preset.bank;
-        this.panner = this.ctx.createStereoPanner();
 
-        this.resetControllers();
         /**
          * @type {number[]}
          */
         this.heldNotes = [];
 
+        this.panner = this.ctx.createStereoPanner();
         this.gainController =this.ctx.createGain();
+
+        this.resetControllers();
+
+        // note -> panner -> gain -> out
+
         this.panner.connect(this.gainController);
+
         this.gainController.connect(this.outputNode);
         this.gainController.gain.value = this.getGain();
 
@@ -50,11 +55,31 @@ export class MidiChannel {
          * @type {PresetNote[]}
          */
         this.stoppingNotes = [];
+
     }
+
+    // /**
+    //  * Sets the reverb impulse
+    //  * @param buffer {AudioBuffer}
+    //  */
+    // setReverbBuffer(buffer)
+    // {
+    //     this.reverb.buffer = buffer;
+    // }
+
+    // /**
+    //  * Sets reverb
+    //  * @param value {number} reverb amount. 0-127
+    //  */
+    // setReverb(value)
+    // {
+    //     console.log(`Reverb for ${this.channelNumber}:`, (value / 127) * 100, "%");
+    //     this.reverbWet.gain.value = value / 127;
+    // }
 
     createNote(midiNote)
     {
-        return new PresetNote(midiNote, this.panner, this.preset, this.vibrato, this.channelTuningRatio, this.channelPitchBendRange);
+        return new PresetNote(midiNote, this.panner, this.preset, this.vibrato, this.channelTuningRatio);
     }
 
     pressHoldPedal()
@@ -131,9 +156,10 @@ export class MidiChannel {
 
     setPitchBend(bendMSB, bendLSB) {
         // bend all the notes
-        let bend = (bendLSB + (bendMSB << 7)) - 8192;
+        const bend = (bendLSB | (bendMSB << 7)) - 8192;
+        const bendRatio = (bend / 8192) * this.channelPitchBendRange;
         for (let note of this.playingNotes) {
-            note.bendNote(bend);
+            note.bendNote(bendRatio);
         }
     }
 
@@ -253,8 +279,8 @@ export class MidiChannel {
 
                     // pitch bend range
                     case 0x0000:
-                        this.channelPitchBendRange = dataValue / 6;
-                        console.log(`Channel ${this.channelNumber} bend range. Semitones:`, dataValue / 6);
+                        this.channelPitchBendRange = dataValue;
+                        console.log(`Channel ${this.channelNumber} bend range. Semitones:`, dataValue);
                         break;
 
                     // coarse and fine tuning
@@ -336,8 +362,10 @@ export class MidiChannel {
         this.channelVolume = 1;
         this.channelExpression = 1;
         this.channelTuningRatio = 1;
-        this.channelPitchBendRange = 2;
+        this.channelPitchBendRange = 12;
         this.holdPedal = false;
+        this.gainController.gain.value = 1;
+        this.panner.pan.value = 0;
 
         this.vibrato = {depth: 0, rate: 0, delay: 0};
         this.resetParameters();

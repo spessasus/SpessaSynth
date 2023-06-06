@@ -149,7 +149,7 @@ export class Sample{
     {
         if(!this.buffer)
         {
-            this.buffer = this.getDefaultBuffer(context, window.soundFontParser, 0, 0);
+            this.buffer = this.getOffsetBuffer(context, window.soundFontParser, 0, 0);
         }
         // if no offset, return saved buffer
         if(this.buffer && startAddr === 0 && endAddr === 0)
@@ -157,7 +157,7 @@ export class Sample{
             return this.buffer;
         }
 
-        return this.getDefaultBuffer(context, window.soundFontParser, startAddr, endAddr);
+        return this.getOffsetBuffer(context, window.soundFontParser, startAddr, endAddr);
     }
 
     /**
@@ -168,7 +168,7 @@ export class Sample{
      * @param endOffset {number}
      * @returns {AudioBuffer}
      */
-    getDefaultBuffer(context, soundFont, startOffset, endOffset)
+    getOffsetBuffer(context, soundFont, startOffset, endOffset)
     {
         const soundfontFileArray = soundFont.dataArray;
         // read the sample data
@@ -181,7 +181,7 @@ export class Sample{
             const byte1 = soundfontFileArray[soundfontFileArray.currentIndex + i];
             const byte2 = soundfontFileArray[soundfontFileArray.currentIndex + i + 1];
 
-            audioData[(i - this.sampleStartIndex) / 2] = signedInt16(byte1, byte2) / 32768;
+            audioData[(i - this.sampleStartIndex - startOffset * 2) / 2] = signedInt16(byte1, byte2) / 32768;
         }
 
         let buffer;

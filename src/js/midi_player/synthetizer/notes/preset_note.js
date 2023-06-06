@@ -11,15 +11,13 @@ export class PresetNote
      * @param preset {Preset}
      * @param vibratoOptions {{depth: number, rate: number, delay: number}}
      * @param tuningRatio {number} the note's initial tuning ratio
-     * @param bendRange {number} RPN Pitch bend range
      */
-    constructor(midiNote, node, preset, vibratoOptions, tuningRatio, bendRange) {
+    constructor(midiNote, node, preset, vibratoOptions, tuningRatio) {
         this.midiNote = midiNote;
         this.targetNode = node;
         this.SAMPLE_CAP = 2;
         this.ctx = this.targetNode.context;
         this.tuningRatio = tuningRatio;
-        this.bendRange = bendRange;
 
         if(vibratoOptions.rate > 0) {
             this.vibratoWave = new OscillatorNode(this.ctx, {
@@ -262,17 +260,15 @@ export class PresetNote
     }
 
     /**
-     * @param pitchBend {number}
+     * @param bendRatio {number}
      */
-    bendNote(pitchBend){
-        // calculate normal playback rate
-        const bendRatio = pitchBend / 8192 / this.bendRange;
+    bendNote(bendRatio){
         for(let i = 0; i < this.sampleOptions.length; i++)
         {
             let sampleOptions = this.sampleOptions[i];
             let sampleNode = this.sampleNodes[i];
 
-            const newPlayback = sampleOptions.getPlaybackRate(this.midiNote) * Math.pow(2, bendRatio) * this.tuningRatio;
+            const newPlayback = sampleOptions.getPlaybackRate(this.midiNote) * Math.pow(2, bendRatio / 12) * this.tuningRatio;
             sampleNode.setPlaybackRate(newPlayback);
             //sampleNode.source.playbackRate.setTargetAtTime(newPlayback, this.drawingContext.currentTime, 0.1);
         }

@@ -4,6 +4,7 @@ import {MidiRenderer} from "../../ui/midi_renderer.js";
 import {getEvent, midiControllers, MidiMessage} from "../../midi_parser/midi_message.js";
 import {formatTime} from "../../utils/other.js";
 
+
 export class Sequencer {
     /**
      * Creates a new Midi sequencer for playing back MIDI file
@@ -76,7 +77,7 @@ export class Sequencer {
         {
             return this.pausedTime;
         }
-        return this.synth.currentTime - this.absoluteStartTime;
+        return (this.synth.currentTime - this.absoluteStartTime) * this.playbackRate;
     }
 
     set currentTime(time)
@@ -84,8 +85,8 @@ export class Sequencer {
         this.stop();
         this.playingNotes = [];
         this.pausedTime = undefined;
-        this.eventIndex = this.events.findIndex(e => this.ticksToSeconds(e.ticks) >= time);
-        this.absoluteStartTime = this.synth.currentTime - time;
+        this.eventIndex = this.events.findIndex(e => this.ticksToSeconds(e.ticks) >= time / this.playbackRate);
+        this.absoluteStartTime = this.synth.currentTime - time / this.playbackRate;
         this.play();
     }
 
@@ -136,7 +137,7 @@ export class Sequencer {
         let tempo = this.midiData.tempoChanges.find(v => v.ticks < ticks);
 
         let timeSinceLastTempo = ticks - tempo.ticks;
-        return this.ticksToSeconds(ticks - timeSinceLastTempo) + (timeSinceLastTempo * 60) / (tempo.tempo * this.midiData.timeDivision) * (1 / this.playbackRate);
+        return this.ticksToSeconds(ticks - timeSinceLastTempo) + (timeSinceLastTempo * 60) / (tempo.tempo * this.midiData.timeDivision);
     }
 
     /**
@@ -223,6 +224,7 @@ export class Sequencer {
             }
 
             event = this.events[this.eventIndex];
+
         }
 
         if(this.renderer)
@@ -232,7 +234,7 @@ export class Sequencer {
                 return;
             }
             let event = this.events[this.rendererEventIndex];
-            while(this.ticksToSeconds(event.ticks) <= this.currentTime + this.renderer.noteFallingSpeed / 1000)
+            while(this.ticksToSeconds(event.ticks) <= this.currentTime + (this.renderer.noteFallingSpeed / 1000)  * this.playbackRate)
             {
                 this.rendererEventIndex++;
                 event = this.events[this.rendererEventIndex - 1];
@@ -244,7 +246,7 @@ export class Sequencer {
                 }
 
                 const channel = event.messageStatusByte & 0x0F;
-                const offset = this.renderer.noteFallingSpeed / 1000 -  (this.ticksToSeconds(event.ticks) - this.currentTime);
+                const offset = (this.renderer.noteFallingSpeed / 1000) * this.playbackRate -  (this.ticksToSeconds(event.ticks) - this.currentTime);
                 if(eventType === 0x9 && event.messageData[1] > 0)
                 {
                     this.renderer.startNoteFall(event.messageData[0], channel, offset * 1000);
@@ -301,6 +303,18 @@ export class Sequencer {
 
             case "Program Change":
                 this.synth.programChange(statusByteData.channel, event.messageData[0]);
+                break;
+
+            case "System Exclusive":
+                this.synth.systemExclusive(event.messageData);
+                break;
+
+            case "Text Event":
+            case "Lyrics":
+            case "Copyright":
+            case "Track Name":
+                const dec = new TextDecoder("shift-jis");
+                console.log(dec.decode(event.messageData));
                 break;
 
             case "System Reset":

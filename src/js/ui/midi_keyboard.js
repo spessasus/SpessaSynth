@@ -189,7 +189,7 @@ export class MidiKeyboard
 
         // update on program change
         this.synth.onProgramChange = (ch, p) => {
-            options[ch].text = `Channel ${ch + 1}: ${p}`;
+            options[ch].innerText = `Channel ${ch + 1}: ${p}`;
         }
     }
 
