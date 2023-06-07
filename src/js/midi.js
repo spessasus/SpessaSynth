@@ -28,7 +28,6 @@ async function parseMidi(midiFile)
 {
     const buffer = await midiFile.arrayBuffer();
     const arr = new ShiftableByteArray(buffer);
-    console.log(arr);
     return new MIDI(arr);
 }
 

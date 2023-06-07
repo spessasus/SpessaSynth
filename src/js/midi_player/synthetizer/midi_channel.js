@@ -19,11 +19,13 @@ export class MidiChannel {
      * @param targetNode {AudioNode}
      * @param defaultPreset {Preset}
      * @param channelNumber {number}
+     * @param percussionChannel {boolean}
      */
-    constructor(targetNode, defaultPreset, channelNumber = -1) {
+    constructor(targetNode, defaultPreset, channelNumber = -1, percussionChannel = false) {
         this.ctx = targetNode.context;
         this.outputNode = targetNode;
-        this.channelNumber = channelNumber;
+        this.channelNumber = channelNumber
+        this.percussionChannel = percussionChannel;
 
         this.preset = defaultPreset;
         this.bank = this.preset.bank;

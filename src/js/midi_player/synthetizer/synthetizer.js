@@ -33,10 +33,11 @@ export class Synthetizer {
         // create 16 channels
         for (let j = 0; j < 16; j++) {
             // default to the first preset
-            this.midiChannels[j] = new MidiChannel(this.outputNode, defaultPreset, j + 1);
+            this.midiChannels[j] = new MidiChannel(this.outputNode, defaultPreset, j + 1, false);
         }
 
         // change percussion channel to the percussion preset
+        this.midiChannels[9].percussionChannel = true;
         this.midiChannels[9].changePreset(percussionPreset);
         this.midiChannels[9].bank = 128;
 
@@ -197,12 +198,12 @@ export class Synthetizer {
             case "Bank Select":
                 let bankNr = controllerValue;
                 const channelObject = this.midiChannels[channel];
-                if(channel === 9)
+                if(channelObject.percussionChannel)
                 {
                     // 128 for percussion channel
                     bankNr = 128
                 }
-                if(bankNr === 128 && channel !== 9)
+                if(bankNr === 128 && !channelObject.percussionChannel)
                 {
                     // if channel is not for percussion, default to bank current
                     bankNr = channelObject.bank;
@@ -288,11 +289,32 @@ export class Synthetizer {
 
     /**
      * Sends a sysex
-     * @param messageData {ShiftableByteArray} the message's data
+     * @param messageData {ShiftableByteArray} the message's data (after F0)
      */
     systemExclusive(messageData)
     {
-        console.log(messageData);
+        const type = messageData[0];
+        switch (type)
+        {
+            default:
+                break;
+
+            // roland
+            // http://www.bandtrax.com.au/sysex.htm
+            case 0x41:
+                // gs
+                if(messageData[2] === 0x42 && messageData[3] === 0x12 && messageData[4] === 0x40)
+                {
+                    // 0 means channel 10 (default), 1 means 1 etc.
+                    const channel =[9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15][messageData[5] & 0x0F]; // for example 1A means A = 11
+                    if(messageData[6] === 0x15) // drum channel
+                    {
+                        this.midiChannels[channel].percussionChannel = messageData[7] > 0;
+                        console.log("Drum channel", channel, messageData[7] > 0);
+                    }
+                }
+
+        }
     }
 
     /**
