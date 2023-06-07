@@ -2,6 +2,7 @@
   "name": "SpessaSynth",
   "version": "1.0.0",
   "dependencies": {
+    "@types/webmidi": "^2.0.7",
     "express": "^4.18.2",
     "nodemon": "^2.0.22",
     "open": "^9.1.0",

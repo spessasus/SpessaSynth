@@ -1,4 +1,6 @@
 import {Synthetizer} from "../midi_player/synthetizer/synthetizer.js";
+import {getEvent, midiControllers} from "../midi_parser/midi_message.js";
+import {ShiftableByteArray} from "../utils/shiftable_array.js";
 
 export class MidiKeyboard
 {
@@ -127,7 +129,7 @@ export class MidiKeyboard
             this.keyboard.appendChild(noteElement);
         }
 
-        const selectorMenu = document.getElementById("keyboard_selector");
+        this.selectorMenu = document.getElementById("keyboard_selector");
 
         // preset selector
         const presetSelector = document.createElement("select");
@@ -156,7 +158,7 @@ export class MidiKeyboard
             this.synth.programChange(this.channel, program);
             console.log("Changing user preset to:", presetName);
         });
-        selectorMenu.appendChild(presetSelector);
+        this.selectorMenu.appendChild(presetSelector);
 
         // channel selector
         const channelSelector = document.createElement("select");
@@ -185,11 +187,96 @@ export class MidiKeyboard
             this.selectChannel(parseInt(channelSelector.value));
         }
 
-        selectorMenu.appendChild(channelSelector);
+        this.selectorMenu.appendChild(channelSelector);
 
         // update on program change
         this.synth.onProgramChange = (ch, p) => {
             options[ch].innerText = `Channel ${ch + 1}: ${p}`;
+        }
+
+        // prepare the midi access
+        navigator.requestMIDIAccess({sysex: true, software: true}).then(access => {
+            this.createMIDIDeviceHandler(access);
+        },
+        message => {
+            console.log(`Could not get MIDI Devices:`, message);
+        });
+    }
+
+    /**
+     * @param midiAccess {WebMidi.MIDIAccess}
+     */
+    createMIDIDeviceHandler(midiAccess)
+    {
+        this.midiAccess = midiAccess;
+        const deviceSelector = document.createElement("select");
+        deviceSelector.innerHTML = "<option value='-1' selected>No device selected</option>";
+        for(const device of this.midiAccess.inputs)
+        {
+            const option = document.createElement("option");
+            option.innerText = device[1].name;
+            option.value = device[0];
+            deviceSelector.appendChild(option);
+        }
+        this.selectorMenu.appendChild(deviceSelector);
+
+        deviceSelector.onchange = () => {
+            for(const dev of this.midiAccess.inputs)
+            {
+                dev[1].onmidimessage = undefined;
+            }
+
+            if(deviceSelector.value === "-1")
+            {
+                return;
+            }
+
+            this.midiAccess.inputs.get(deviceSelector.value).onmidimessage = event => {
+                const statusByteData = getEvent(event.data[0]);
+                // process the event
+                switch (statusByteData.name) {
+                    case "Note On":
+                        const velocity = event.data[2];
+                        if(velocity > 0) {
+                            this.synth.NoteOn(statusByteData.channel, event.data[1], velocity);
+                        }
+                        else
+                        {
+                            this.synth.NoteOff(statusByteData.channel, event.data[1]);
+                        }
+                        break;
+
+                    case "Note Off":
+                        this.synth.NoteOff(statusByteData.channel, event.data[1]);
+                        break;
+
+                    case "Pitch Bend":
+                        this.synth.pitchWheel(statusByteData.channel, event.data[2], event.data[1]);
+                        break;
+
+                    case "Controller Change":
+                        this.synth.controllerChange(statusByteData.channel, midiControllers[event.data[1]], event.data[2]);
+                        break;
+
+                    case "Program Change":
+                        this.synth.programChange(statusByteData.channel, event.data[1]);
+                        break;
+
+                    case "System Exclusive":
+                        this.synth.systemExclusive(new ShiftableByteArray(event.data.slice(1)));
+                        break;
+
+                    case "System Reset":
+                        this.synth.stopAll();
+                        this.synth.resetControllers();
+                        console.log("System Reset");
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+            console.log("hooked to", deviceSelector.value);
         }
     }
 
