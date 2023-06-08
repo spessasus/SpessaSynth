@@ -100,7 +100,7 @@ document.body.onclick = () =>
 
 titleMessage.innerText = "Downloading soundfont...";
 
-fetchFont("zunfont.sf2", percent => progressBar.style.width = `${(percent / 100) * titleMessage.offsetWidth}px`)
+fetchFont("soundfont.sf2", percent => progressBar.style.width = `${(percent / 100) * titleMessage.offsetWidth}px`)
     .then(data => {
         titleMessage.innerText = "Parsing soundfont...";
         setTimeout(() => {
