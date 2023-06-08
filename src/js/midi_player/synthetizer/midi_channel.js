@@ -79,9 +79,9 @@ export class MidiChannel {
     //     this.reverbWet.gain.value = value / 127;
     // }
 
-    createNote(midiNote)
+    createNote(midiNote, hP)
     {
-        return new PresetNote(midiNote, this.panner, this.preset, this.vibrato, this.channelTuningRatio);
+        return new PresetNote(midiNote, this.panner, this.preset, this.vibrato, this.channelTuningRatio, hP);
     }
 
     pressHoldPedal()
@@ -127,8 +127,9 @@ export class MidiChannel {
      * @param midiNote {number} 0-127
      * @param velocity {number} 0-127
      * @param debugInfo {boolean} for debugging set to true
+     * @param highPerf {boolean} if set to true, note is limeted to 2 samples max
      */
-    playNote(midiNote, velocity, debugInfo = false) {
+    playNote(midiNote, velocity, debugInfo = false, highPerf = false) {
         if(!velocity)
         {
             throw "No velocity given!";
@@ -139,7 +140,7 @@ export class MidiChannel {
             return;
         }
 
-        let note = this.createNote(midiNote);
+        let note = this.createNote(midiNote, highPerf);
 
         // calculate gain
         let gain = (velocity / 127);
@@ -311,9 +312,9 @@ export class MidiChannel {
     /**
      * Stops the note
      * @param midiNote {number} 0-127
-     * @param force {boolean} if set to true, the note will be silenced in 50ms
+     * @param highPerf {boolean} if set to true, the note will be silenced in 50ms
      */
-    stopNote(midiNote, force=false) {
+    stopNote(midiNote, highPerf=false) {
         // TODO: fix holdPedal
         if(this.holdPedal)
         {
@@ -335,7 +336,7 @@ export class MidiChannel {
             // and remove it from the main array
             this.playingNotes.splice(this.playingNotes.indexOf(note), 1);
 
-            if(force)
+            if(highPerf)
             {
                 note.killNote().then(() => {
                     note.disconnectNote();

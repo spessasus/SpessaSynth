@@ -11,11 +11,12 @@ export class PresetNote
      * @param preset {Preset}
      * @param vibratoOptions {{depth: number, rate: number, delay: number}}
      * @param tuningRatio {number} the note's initial tuning ratio
+     * @param highPerf {boolean} limit notes to 2 samples
      */
-    constructor(midiNote, node, preset, vibratoOptions, tuningRatio) {
+    constructor(midiNote, node, preset, vibratoOptions, tuningRatio, highPerf) {
         this.midiNote = midiNote;
         this.targetNode = node;
-        this.SAMPLE_CAP = 2;
+        this.SAMPLE_CAP = 6;
         this.ctx = this.targetNode.context;
         this.tuningRatio = tuningRatio;
 
@@ -32,8 +33,8 @@ export class PresetNote
 
         let samples = preset.getSampleAndGenerators(midiNote);
 
-        // cap the samples amount... it's probably my shitty code, or maybe browser can't handle that.
-        if(samples.length > this.SAMPLE_CAP)
+        // cap samples to 2
+        if(highPerf)
         {
             // sort by longes samples if there are 150ms or shorter samples.
             // We don't want any additional instrument effects, just the actual samples.
@@ -49,7 +50,7 @@ export class PresetNote
             if(!leftSample)
             {
                 // cap normally
-                samples = samples.slice(0, this.SAMPLE_CAP);
+                samples = samples.slice(0, 2);
             }
             else
             {
@@ -57,13 +58,17 @@ export class PresetNote
                 if(!rightSample)
                 {
                     // cap normally
-                    samples = samples.slice(0, this.SAMPLE_CAP);
+                    samples = samples.slice(0, 2);
                 }
                 else
                 {
                     samples = [leftSample, rightSample];
                 }
             }
+        }
+        else if(samples.length > this.SAMPLE_CAP)
+        {
+            samples = samples.slice(0, this.SAMPLE_CAP);
         }
 
         this.sampleOptions = samples.map(s => new PresetNoteModifiers(s));
@@ -177,7 +182,10 @@ export class PresetNote
             this.displayDebugTable();
         }
         // lower the gain if a lot of notes (or not...?)
-        this.noteVolumeController.gain.value = velocity / 2; /*/ Math.sqrt(this.sampleNodes.length + 1);*/
+        this.noteVolumeController.gain.value = velocity / 2;
+        //if(this.sampleNodes.length > 10) {
+           this.noteVolumeController.gain.value /= Math.pow(2, (this.sampleNodes.length / 4) + 0.75);
+        //}
 
         // activate vibrato
         if(this.vibratoWave)

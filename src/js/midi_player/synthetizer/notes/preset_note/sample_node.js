@@ -49,6 +49,7 @@ export class SampleNode
         // stop the audio envelope
         clearTimeout(this.timeout);
         this.volumeController.gain.cancelScheduledValues(this.currentTime);
+        this.source.stop(this.source.context.currentTime + this.releaseTime);
 
         // begin release phase
         this.rampToValue(this.volumeController.gain, 0, this.releaseTime);

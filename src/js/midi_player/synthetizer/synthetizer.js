@@ -2,9 +2,7 @@ import {MidiChannel} from "./midi_channel.js";
 import {SoundFont2} from "../../soundfont/soundfont_parser.js";
 import {ShiftableByteArray} from "../../utils/shiftable_array.js";
 
-const HI_PERF_NOTES_ON = 300;
-const HI_PERF_NOTES_OFF = 50;
-const VOICES_CAP = 815;
+const VOICES_CAP = 1815;
 
 export class Synthetizer {
     /**
@@ -70,33 +68,8 @@ export class Synthetizer {
         }
 
         let chan = this.midiChannels[channel];
-        chan.playNote(midiNote, velocity, enableDebugging);
+        chan.playNote(midiNote, velocity, enableDebugging, this.highPerformanceMode);
         this.onNoteOn(midiNote, channel, velocity, chan.channelVolume, chan.channelExpression);
-
-        if(this.highPerformanceMode)
-        {
-            if(this.voicesAmount < HI_PERF_NOTES_OFF)
-            {
-                this.highPerformanceMode = false;
-                console.log("High performance off");
-                if(this.onHighToggle)
-                {
-                    this.onHighToggle(this.highPerformanceMode);
-                }
-            }
-        }
-        else
-        {
-            if(this.voicesAmount > HI_PERF_NOTES_ON)
-            {
-                this.highPerformanceMode = true;
-                console.log("High performance on");
-                if(this.onHighToggle)
-                {
-                    this.onHighToggle(this.highPerformanceMode);
-                }
-            }
-        }
     }
 
     /**
@@ -129,12 +102,6 @@ export class Synthetizer {
      * @param midiNote {number} 0-127
      */
     onNoteOff;
-
-    /**
-     * Calls on high performance toggle
-     * @type {function(boolean): void}
-     */
-    onHighToggle;
 
     stopAll() {
         for (let channel of this.midiChannels) {
