@@ -11,12 +11,11 @@ export class PresetNote
      * @param preset {Preset}
      * @param vibratoOptions {{depth: number, rate: number, delay: number}}
      * @param tuningRatio {number} the note's initial tuning ratio
-     * @param highPerf {boolean} limit notes to 2 samples
      */
-    constructor(midiNote, node, preset, vibratoOptions, tuningRatio, highPerf) {
+    constructor(midiNote, node, preset, vibratoOptions, tuningRatio) {
         this.midiNote = midiNote;
         this.targetNode = node;
-        this.SAMPLE_CAP = 6;
+        this.SAMPLE_CAP = 2;
         this.ctx = this.targetNode.context;
         this.tuningRatio = tuningRatio;
 
@@ -33,42 +32,29 @@ export class PresetNote
 
         let samples = preset.getSampleAndGenerators(midiNote);
 
-        // cap samples to 2
-        if(highPerf)
-        {
+        if(samples.length > this.SAMPLE_CAP) {
             // sort by longes samples if there are 150ms or shorter samples.
             // We don't want any additional instrument effects, just the actual samples.
-            if(samples.find(s => (s.sample.sampleLength / s.sample.sampleRate) < 0.15))
-            {
+            if (samples.find(s => (s.sample.sampleLength / s.sample.sampleRate) < 0.15)) {
                 samples.sort((sample1, sample2) => {
-                    return sample2.sample.sampleLength - sample1.sample.sampleLength;
-                }
+                        return sample2.sample.sampleLength - sample1.sample.sampleLength;
+                    }
                 );
             }
 
             let leftSample = samples.find(s => s.sample.sampleType === "leftSample");
-            if(!leftSample)
-            {
+            if (!leftSample) {
                 // cap normally
                 samples = samples.slice(0, 2);
-            }
-            else
-            {
+            } else {
                 let rightSample = samples.find(s => s.sample.sampleType === "rightSample");
-                if(!rightSample)
-                {
+                if (!rightSample) {
                     // cap normally
                     samples = samples.slice(0, 2);
-                }
-                else
-                {
+                } else {
                     samples = [leftSample, rightSample];
                 }
             }
-        }
-        else if(samples.length > this.SAMPLE_CAP)
-        {
-            samples = samples.slice(0, this.SAMPLE_CAP);
         }
 
         this.sampleOptions = samples.map(s => new PresetNoteModifiers(s));
@@ -184,7 +170,7 @@ export class PresetNote
         // lower the gain if a lot of notes (or not...?)
         this.noteVolumeController.gain.value = velocity / 2;
         //if(this.sampleNodes.length > 10) {
-           this.noteVolumeController.gain.value /= Math.pow(2, (this.sampleNodes.length / 4) + 0.75);
+          // this.noteVolumeController.gain.value /= Math.pow(2, (this.sampleNodes.length / 4) + 0.75);
         //}
 
         // activate vibrato
