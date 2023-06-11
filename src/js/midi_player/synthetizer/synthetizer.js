@@ -2,7 +2,8 @@ import {MidiChannel} from "./midi_channel.js";
 import {SoundFont2} from "../../soundfont/soundfont_parser.js";
 import {ShiftableByteArray} from "../../utils/shiftable_array.js";
 
-const VOICES_CAP = 1815;
+const VOICES_CAP = 1000;
+export const HIGH_PERF_CAP = 400;
 
 export class Synthetizer {
     /**
@@ -25,18 +26,18 @@ export class Synthetizer {
          */
         this.midiChannels = [];
 
-        const defaultPreset = this.soundFont.getPreset(0, 0);
-        const percussionPreset = this.soundFont.getPreset(128, 0);
+        this.defaultPreset = this.soundFont.getPreset(0, 0);
+        this.percussionPreset = this.soundFont.getPreset(128, 0);
 
         // create 16 channels
         for (let j = 0; j < 16; j++) {
             // default to the first preset
-            this.midiChannels[j] = new MidiChannel(this.outputNode, defaultPreset, j + 1, false);
+            this.midiChannels[j] = new MidiChannel(this.outputNode, this.defaultPreset, j + 1, false);
         }
 
         // change percussion channel to the percussion preset
         this.midiChannels[9].percussionChannel = true;
-        this.midiChannels[9].changePreset(percussionPreset);
+        this.midiChannels[9].changePreset(this.percussionPreset);
         this.midiChannels[9].bank = 128;
 
         // // set reverb
@@ -63,6 +64,10 @@ export class Synthetizer {
         }
 
         if(this.voicesAmount > VOICES_CAP)
+        {
+            return;
+        }
+        else if(this.highPerformanceMode && this.voicesAmount > HIGH_PERF_CAP)
         {
             return;
         }
@@ -217,7 +222,11 @@ export class Synthetizer {
         for(const ch of this.midiChannels)
         {
             ch.resetControllers();
+            ch.changePreset(this.defaultPreset);
+            ch.percussionChannel = false;
         }
+        this.midiChannels[9].changePreset(this.percussionPreset);
+        this.midiChannels[9].percussionChannel = true;
     }
 
     /**
@@ -244,8 +253,8 @@ export class Synthetizer {
     programChange(channel, programNumber)
     {
         const channelObj = this.midiChannels[channel];
-        // always 128 for channel 10
-        const bank = (channel === 9 ? 128 : channelObj.bank);
+        // always 128 for percussion
+        const bank = (channelObj.percussionChannel ? 128 : channelObj.bank);
 
         let preset = this.soundFont.getPreset(bank, programNumber);
         channelObj.changePreset(preset);

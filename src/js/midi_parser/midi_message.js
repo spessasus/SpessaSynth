@@ -80,7 +80,7 @@ export function getChannel(statusByte) {
 /**
  * Gets the event's name and channel from the status byte
  * @param statusByte {number} the status byte
- * @returns {{name: MessageName, channel: number}} channel will be -1 for
+ * @returns {{name: MessageName, channel: number}} channel will be -1 for sysex and meta
  */
 export function getEvent(statusByte) {
     const status = statusByte & 0xF0;

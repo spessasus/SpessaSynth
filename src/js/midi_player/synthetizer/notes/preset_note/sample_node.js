@@ -17,25 +17,25 @@ export class SampleNode
     startSample(audioEnvelope) {
         this.setValueNow(this.volumeController.gain, 0.0001);
 
-        if (audioEnvelope.delayTime < 0.002 && audioEnvelope.attackTime < 0.002) {
+        // if (audioEnvelope.delayTime < 0.002 && audioEnvelope.attackTime < 0.002) {
             this.setValueNow(this.volumeController.gain, audioEnvelope.attenuation);
-        }
-        else {
-            // delayTime, attackTime, initialAttenuation
-            this.rampToValue(
-                this.volumeController.gain,
-                audioEnvelope.attenuation,
-                audioEnvelope.attackTime,
-                audioEnvelope.delayTime,
-            );
-        }
+        // }
+        // else {
+        //     // delayTime, attackTime, initialAttenuation
+        //     this.rampToValue(
+        //         this.volumeController.gain,
+        //         audioEnvelope.attenuation,
+        //         audioEnvelope.attackTime,
+        //         audioEnvelope.delayTime,
+        //     );
+        // }
 
         // holdTime, decayTime, sustainLevel
         this.rampToValue(
             this.volumeController.gain,
             audioEnvelope.sustainLevel,
             audioEnvelope.decayTime,
-            audioEnvelope.holdTime + audioEnvelope.delayTime + audioEnvelope.attackTime);
+            audioEnvelope.holdTime /*+ audioEnvelope.delayTime + audioEnvelope.attackTime*/);
 
         this.source.start();
         this.releaseTime = audioEnvelope.releaseTime;

@@ -228,15 +228,18 @@ export class Sequencer {
         }
 
         if(this.renderer)
+        {if(this.rendererEventIndex >= this.events.length)
         {
-            if(this.rendererEventIndex >= this.events.length)
-            {
-                return;
-            }
+            return;
+        }
             let event = this.events[this.rendererEventIndex];
             while(this.ticksToSeconds(event.ticks) <= this.currentTime + (this.renderer.noteFallingSpeed / 1000)  * this.playbackRate)
             {
                 this.rendererEventIndex++;
+                if(this.rendererEventIndex >= this.events.length)
+                {
+                    return;
+                }
                 event = this.events[this.rendererEventIndex - 1];
 
                 const eventType = event.messageStatusByte >> 4;

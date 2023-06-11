@@ -79,9 +79,9 @@ export class MidiChannel {
     //     this.reverbWet.gain.value = value / 127;
     // }
 
-    createNote(midiNote, hP)
+    createNote(midiNote)
     {
-        return new PresetNote(midiNote, this.panner, this.preset, this.vibrato, this.channelTuningRatio, hP);
+        return new PresetNote(midiNote, this.panner, this.preset, this.vibrato, this.channelTuningRatio);
     }
 
     pressHoldPedal()
@@ -114,7 +114,7 @@ export class MidiChannel {
      */
     changePan(pan)
     {
-        this.panner.pan.setValueAtTime(pan, 0);
+        this.panner.pan.value = pan;
     }
 
     setExpression(val)
@@ -127,9 +127,8 @@ export class MidiChannel {
      * @param midiNote {number} 0-127
      * @param velocity {number} 0-127
      * @param debugInfo {boolean} for debugging set to true
-     * @param highPerf {boolean} if set to true, note is limeted to 2 samples max
      */
-    playNote(midiNote, velocity, debugInfo = false, highPerf = false) {
+    playNote(midiNote, velocity, debugInfo = false) {
         if(!velocity)
         {
             throw "No velocity given!";
@@ -140,12 +139,14 @@ export class MidiChannel {
             return;
         }
 
-        let note = this.createNote(midiNote, highPerf);
+        let note = this.createNote(midiNote);
 
         // calculate gain
         let gain = (velocity / 127);
 
         /*let exclusives =*/ note.startNote(gain, debugInfo);
+        const bendRatio = (this.pitchBend / 8192) * this.channelPitchBendRange;
+        note.bendNote(bendRatio);
 
         // if(exclusives.length > 0)
         // {
@@ -160,6 +161,7 @@ export class MidiChannel {
     setPitchBend(bendMSB, bendLSB) {
         // bend all the notes
         const bend = (bendLSB | (bendMSB << 7)) - 8192;
+        this.pitchBend = bend;
         const bendRatio = (bend / 8192) * this.channelPitchBendRange;
         for (let note of this.playingNotes) {
             note.bendNote(bendRatio);
@@ -365,10 +367,11 @@ export class MidiChannel {
         this.channelVolume = 1;
         this.channelExpression = 1;
         this.channelTuningRatio = 1;
-        this.channelPitchBendRange = 12;
+        this.channelPitchBendRange = 2;
         this.holdPedal = false;
         this.gainController.gain.value = 1;
         this.panner.pan.value = 0;
+        this.pitchBend = 0;
 
         this.vibrato = {depth: 0, rate: 0, delay: 0};
         this.resetParameters();

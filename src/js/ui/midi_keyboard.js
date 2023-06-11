@@ -1,4 +1,4 @@
-import {Synthetizer} from "../midi_player/synthetizer/synthetizer.js";
+import {Synthetizer, HIGH_PERF_CAP} from "../midi_player/synthetizer/synthetizer.js";
 import {getEvent, midiControllers} from "../midi_parser/midi_message.js";
 import {ShiftableByteArray} from "../utils/shiftable_array.js";
 
@@ -12,11 +12,6 @@ export class MidiKeyboard
     constructor(channelColors, synth) {
         this.mouseHeld = false;
         this.heldKeys = [];
-
-        /**
-         * @type {HTMLTableRowElement}
-         */
-        this.keyboard = document.getElementById("keyboard");
 
         document.onmousedown = () => this.mouseHeld = true;
         document.onmouseup = () => {
@@ -52,13 +47,18 @@ export class MidiKeyboard
 
         this.channelColors = channelColors;
 
+        /**
+         * @type {HTMLTableRowElement}
+         */
+        this.keyboard = document.getElementById("keyboard");
+
         // create keyboard
         function isBlackNoteNumber(noteNumber) {
                 let pitchClass = noteNumber % 12;
                 return pitchClass === 1 || pitchClass === 3 || pitchClass === 6 || pitchClass === 8 || pitchClass === 10;
         }
         for (let midiNote = 0; midiNote < 128; midiNote++) {
-            let noteElement = (document.createElement("td"));
+            let noteElement = document.createElement("td");
             noteElement.classList.add("key");
             noteElement.id = `note${midiNote}`;
             noteElement.onmouseover = () => {
@@ -232,6 +232,15 @@ export class MidiKeyboard
             }
 
             this.midiAccess.inputs.get(deviceSelector.value).onmidimessage = event => {
+                // discard as soon as possible if high perf
+                if(this.synth.highPerformanceMode)
+                {
+                    // noteon
+                    if(event.data[0] >> 4 === 0x9 && this.synth.voicesAmount > HIGH_PERF_CAP)
+                    {
+                        return;
+                    }
+                }
                 const statusByteData = getEvent(event.data[0]);
                 // process the event
                 switch (statusByteData.name) {
