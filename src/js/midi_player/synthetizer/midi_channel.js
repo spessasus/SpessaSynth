@@ -159,6 +159,11 @@ export class MidiChannel {
     }
 
     setPitchBend(bendMSB, bendLSB) {
+        if(this.percussionChannel)
+        {
+            this.pitchBend = 0;
+            return;
+        }
         // bend all the notes
         const bend = (bendLSB | (bendMSB << 7)) - 8192;
         this.pitchBend = bend;
@@ -190,6 +195,8 @@ export class MidiChannel {
         this.RPValue = this.RPValue << 7 | value;
         this.dataEntryState = dataEntryStates.RPFine;
     }
+
+
 
     setNRPCoarse(value)
     {

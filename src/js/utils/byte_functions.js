@@ -41,7 +41,7 @@ export function readByte(dataArray){
 /**
  * @param dataArray {ShiftableByteArray}
  * @param bytes {number}
- * @param encoding {string} the text encoding
+ * @param encoding {string} the textElement encoding
  * @returns {string}
  */
 export function readBytesAsString(dataArray, bytes, encoding=undefined){

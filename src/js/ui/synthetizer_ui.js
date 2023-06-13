@@ -4,7 +4,7 @@ import {MidiChannel} from "../midi_player/synthetizer/midi_channel.js";
 /**
  * @typedef {{div: HTMLDivElement,
  * bar: HTMLDivElement,
- * text: HTMLParagraphElement,
+ * textElement: HTMLParagraphElement,
  * meterText: string,
  * max: number,
  * min: number}} Meter
@@ -83,10 +83,11 @@ export class SynthetizerUI
                 throw "No editable function given!";
             }
             mainDiv.onclick = e => {
-                const relativeLeft = e.currentTarget.getBoundingClientRect().left;
+                const bounds = e.currentTarget.getBoundingClientRect();
+                const relativeLeft = bounds.left;
+                const width = bounds.width;
                 const relative = e.clientX - relativeLeft;
-                const percentage = relative / relativeLeft;
-                console.log(relative, relativeLeft)
+                const percentage =  Math.max(0, Math.min(1, relative / width));
                 editCallback(percentage * (max - min) + min);
             };
             mainDiv.classList.add("editable");
@@ -95,7 +96,7 @@ export class SynthetizerUI
         return {
             div: mainDiv,
             bar: bar,
-            text: text,
+            textElement: text,
             meterText: meterText,
             max: max,
             min: min
@@ -150,7 +151,7 @@ export class SynthetizerUI
     {
         const percentage = Math.max(0, Math.min((value - meter.min) / (meter.max - meter.min), 1));
         meter.bar.style.width = `${percentage * 100}%`;
-        meter.text.innerText = meter.meterText + (Math.round(value * 100) / 100).toString();
+        meter.textElement.innerText = meter.meterText + (Math.round(value * 100) / 100).toString();
     }
 
     createChannelControllers()
@@ -206,7 +207,12 @@ export class SynthetizerUI
             8192,
             true,
             val => {
-                console.log(val)});
+                val = Math.round(val) + 8192;
+                // get bend values
+                const msb = val >> 7;
+                const lsb = val & 0x7F;
+                this.synth.midiChannels[channelNumber].setPitchBend(msb, lsb);
+        });
 
         controller.appendChild(pitchWheel.div);
 
@@ -214,7 +220,11 @@ export class SynthetizerUI
             "30%",
             "Pan: ",
             -1,
-            1);
+            1,
+            true,
+            val => {
+                this.synth.midiChannels[channelNumber].changePan(val);
+            });
         controller.appendChild(pan.div);
 
 

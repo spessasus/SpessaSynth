@@ -184,6 +184,10 @@ export class Synthetizer {
                 channelObject.bank = bankNr;
                 break;
 
+            case "LSB for Control 0 (Bank Select)":
+                // prevent unrecognized error as we always have up to 128 banks
+                break;
+
             case "Non-Registered Parameter Number MSB":
                 this.midiChannels[channel].setNRPCoarse(controllerValue);
                 break;
@@ -210,6 +214,7 @@ export class Synthetizer {
                 break;
 
             default:
+                console.log("Unrecognized controller:", controllerName);
                 break;
         }
     }

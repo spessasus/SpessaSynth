@@ -1,3 +1,37 @@
+@keyframes synth-control-dropdown-hide {
+    100%{
+        transform: scale(0);
+    }
+    99%{
+        transform: scale(0.01, 0.01);
+    }
+
+    50%{
+        transform: scale(1, 0.01);
+    }
+
+    0%{
+        transform: scale(1, 1);
+    }
+}
+
+@keyframes synth-control-dropdown-show {
+    0%{
+        transform: scale(0);
+    }
+    1%{
+        transform: scale(0.01, 0.01);
+    }
+
+    50%{
+        transform: scale(1, 0.01);
+    }
+
+    100%{
+        transform: scale(1, 1);
+    }
+}
+
 #synthetizer_controls
 {
     position: absolute;
@@ -48,16 +82,14 @@
 }
 
 #synthetizer_controls .channels_dropdown{
-    transform: scale(1, 0);
-    transform-origin: top;
-    transition: transform 500ms ease;
+    animation: synth-control-dropdown-hide forwards 500ms;
     left: 0;
     display: block;
-    position: absolute;
-    background-color: #111;
+    position: fixed;
+    backdrop-filter: blur(2px);
     padding: 1em;
     border-radius: 15px;
-    width: 40em;
+    width: 50%;
 }
 
 #synthetizer_controls .channels_dropdown .voice_meter{
@@ -72,5 +104,5 @@
 }
 
 #synthetizer_controls:hover .channels_dropdown{
-    transform: scale(1);
+    animation: synth-control-dropdown-show 500ms;
 }

@@ -22,3 +22,12 @@ Recommended soundfont: https://musical-artifacts.com/artifacts/1176
 2. Put your file named `soundfont.sf2` into the `soundfonts` folder. (SoundFont selection coming soon)
 3. Double click the `start.bat`
 4. Enjoy!
+
+### Some notes about the implementation
+The program is divided into parts:
+- Soundfont2 parser - parses the soundfont file into an object readable by synth
+- MIDI file parser - parses the midi file into an object readable by sequencer
+- Sequencer - plays back the parsed MIDI file. Must be connected to a synthetizer. Can be connected to a renderer
+- Renderer - renders the waveforms of the channels and the falling notes. Must be connected to a synthetizer
+- Synthetizer - generates the sound using the given preset
+- UI classes - used for user interface, connect to their respective parts (eg. synth, sequencer, keyboard etc)
