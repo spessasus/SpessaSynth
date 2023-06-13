@@ -151,7 +151,6 @@ export class SoundFont2
                 if(!preset)
                 {
                     preset = this.presets.find(p => p.bank === 128);
-                    console.warn("Percussion preset not found. Defaulting to:", preset.presetName);
                 }
             }
         }

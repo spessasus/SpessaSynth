@@ -194,7 +194,7 @@ export class Sequencer {
             {
                 this.renderer.startNoteFall(n.midiNote, n.channel, this.renderer.noteFallingSpeed);
             }
-            this.synth.NoteOn(n.channel, n.midiNote, n.velocity);
+            this.synth.noteOn(n.channel, n.midiNote, n.velocity);
         });
 
         this.playbackInterval = setInterval(this._processTick.bind(this));
@@ -275,7 +275,7 @@ export class Sequencer {
             case "Note On":
                 const velocity = event.messageData[1];
                 if(velocity > 0) {
-                    this.synth.NoteOn(statusByteData.channel, event.messageData[0], velocity);
+                    this.synth.noteOn(statusByteData.channel, event.messageData[0], velocity);
                     this.playingNotes.push({
                         midiNote: event.messageData[0],
                         channel: statusByteData.channel,
@@ -284,14 +284,14 @@ export class Sequencer {
                 }
                 else
                 {
-                    this.synth.NoteOff(statusByteData.channel, event.messageData[0]);
+                    this.synth.noteOff(statusByteData.channel, event.messageData[0]);
                     this.playingNotes.splice(this.playingNotes.findIndex(n =>
                         n.midiNote === event.messageData[0] && n.channel === statusByteData.channel), 1);
                 }
                 break;
 
             case "Note Off":
-                this.synth.NoteOff(statusByteData.channel, event.messageData[0]);
+                this.synth.noteOff(statusByteData.channel, event.messageData[0]);
                 this.playingNotes.splice(this.playingNotes.findIndex(n =>
                     n.midiNote === event.messageData[0] && n.channel === statusByteData.channel), 1);
                 break;

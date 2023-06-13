@@ -51,15 +51,15 @@ export class Synthetizer {
     }
 
     /**
-     * MIDI NoteOn Event
+     * MIDI noteOn Event
      * @param channel {number} 0-15
      * @param midiNote {number} 0-127
      * @param velocity {number} 0-127
      * @param enableDebugging {boolean} set to true to log stuff to console
      */
-    NoteOn(channel, midiNote, velocity, enableDebugging = false) {
+    noteOn(channel, midiNote, velocity, enableDebugging = false) {
         if (velocity === 0) {
-            this.NoteOff(channel, midiNote);
+            this.noteOff(channel, midiNote);
             return;
         }
 
@@ -73,16 +73,16 @@ export class Synthetizer {
         }
 
         let chan = this.midiChannels[channel];
-        chan.playNote(midiNote, velocity, enableDebugging, this.highPerformanceMode);
+        chan.playNote(midiNote, velocity, enableDebugging);
         this.onNoteOn(midiNote, channel, velocity, chan.channelVolume, chan.channelExpression);
     }
 
     /**
-     * MIDI NoteOff event
+     * MIDI noteOff event
      * @param channel {number} 0-15
      * @param midiNote {number} 0-127
      */
-    NoteOff(channel, midiNote) {
+    noteOff(channel, midiNote) {
         this.onNoteOff(midiNote);
         if(this.highPerformanceMode)
         {
@@ -96,7 +96,7 @@ export class Synthetizer {
      * Plays when the midi note goes on
      * @param midiNote {number} 0-127
      * @param channel {number} 0-15
-     * @param velocty {number} 0-127
+     * @param velocity {number} 0-127
      * @param volume {number} 0-1
      * @param expression {number} 0-1
      */

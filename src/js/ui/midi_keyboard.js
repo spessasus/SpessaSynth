@@ -20,7 +20,7 @@ export class MidiKeyboard
             {
                 // user note off
                 this.releaseNote(key);
-                this.synth.NoteOff(this.channel, key);
+                this.synth.noteOff(this.channel, key);
             }
         }
 
@@ -70,7 +70,7 @@ export class MidiKeyboard
                 // user note on
                 this.heldKeys.push(midiNote);
                 this.pressNote(midiNote, this.channel, 127, 1, 1);
-                this.synth.NoteOn(this.channel, midiNote, 127, true);
+                this.synth.noteOn(this.channel, midiNote, 127, true);
             }
 
             noteElement.onmousedown = () =>
@@ -78,14 +78,14 @@ export class MidiKeyboard
                 // user note on
                 this.heldKeys.push(midiNote);
                 this.pressNote(midiNote, this.channel, 127, 1, 1);
-                this.synth.NoteOn(this.channel, midiNote, 127, true);
+                this.synth.noteOn(this.channel, midiNote, 127, true);
             }
 
             noteElement.onmouseout = () => {
                 // user note off
                 this.heldKeys.splice(this.heldKeys.indexOf(midiNote), 1);
                 this.releaseNote(midiNote);
-                this.synth.NoteOff(this.channel, midiNote);
+                this.synth.noteOff(this.channel, midiNote);
             };
             noteElement.onmouseleave = noteElement.onmouseup;
             let isBlack = isBlackNoteNumber(midiNote);
@@ -247,16 +247,16 @@ export class MidiKeyboard
                     case "Note On":
                         const velocity = event.data[2];
                         if(velocity > 0) {
-                            this.synth.NoteOn(statusByteData.channel, event.data[1], velocity);
+                            this.synth.noteOn(statusByteData.channel, event.data[1], velocity);
                         }
                         else
                         {
-                            this.synth.NoteOff(statusByteData.channel, event.data[1]);
+                            this.synth.noteOff(statusByteData.channel, event.data[1]);
                         }
                         break;
 
                     case "Note Off":
-                        this.synth.NoteOff(statusByteData.channel, event.data[1]);
+                        this.synth.noteOff(statusByteData.channel, event.data[1]);
                         break;
 
                     case "Pitch Bend":
