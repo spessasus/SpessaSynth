@@ -18,7 +18,7 @@ SoundFont2 based realtime synthetizer and MIDI visualizer written in JavaScript
 Recommended soundfont: https://musical-artifacts.com/artifacts/1176
 
 **Requires Node.js**
-1. Download the code as zip
+1. Download the code as zip and extract or use `git clone https://github.com/spessasus/SpessaSynth`
 2. Put your file named `soundfont.sf2` into the `soundfonts` folder. (SoundFont selection coming soon)
 3. Double click the `start.bat`
 4. Enjoy!
