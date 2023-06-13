@@ -161,7 +161,6 @@ export class Synthetizer {
                     .setExpression(controllerValue / 127);
                 break;
 
-
             case "LSB for Control 11 (Expression Controller)":
                 const expression = (this.midiChannels[channel].channelExpression << 7 ) | controllerValue;
                 this.midiChannels[channel].setExpression(expression);
@@ -207,7 +206,6 @@ export class Synthetizer {
             case "Data Entry MSB":
                 this.midiChannels[channel].dataEntryCoarse(controllerValue);
                 break;
-
 
             case "Reset All Controllers":
                 this.midiChannels[channel].resetControllers();

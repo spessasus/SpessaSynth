@@ -29,5 +29,5 @@ The program is divided into parts:
 - MIDI file parser - parses the midi file into an object readable by sequencer
 - Sequencer - plays back the parsed MIDI file. Must be connected to a synthetizer. Can be connected to a renderer
 - Renderer - renders the waveforms of the channels and the falling notes. Must be connected to a synthetizer
-- Synthetizer - generates the sound using the given preset
+- (Synthetizer)[wiki/Synthetizer-Class] - generates the sound using the given preset
 - UI classes - used for user interface, connect to their respective parts (eg. synth, sequencer, keyboard etc)
