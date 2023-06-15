@@ -1,4 +1,4 @@
-import {MidiManager} from "./midi_manager.js";
+import {Manager} from "./manager.js";
 import {MIDI} from "./midi_parser/midi_loader.js";
 
 import {SoundFont2} from "./soundfont/soundfont_parser.js";
@@ -92,7 +92,7 @@ document.body.onclick = () =>
         if(window.soundFontParser) {
             titleMessage.innerText = "SpessaSynth: MIDI Soundfont2 Player";
             // prepare midi interface
-            window.manager = new MidiManager(audioContextMain, soundFontParser);
+            window.manager = new Manager(audioContextMain, soundFontParser);
         }
     }
     document.body.onclick = null;
@@ -130,6 +130,6 @@ fetchFont("soundfont.sf2", percent => progressBar.style.width = `${(percent / 10
                 return;
             }
             // prepare the manager
-            window.manager = new MidiManager(audioContextMain, soundFontParser);
+            window.manager = new Manager(audioContextMain, soundFontParser);
         });
     });

@@ -1,6 +1,6 @@
 import {MIDI} from "../../midi_parser/midi_loader.js";
 import {Synthetizer} from "../synthetizer/synthetizer.js";
-import {Renderer} from "../../ui/midi_renderer.js";
+import {Renderer} from "../../ui/renderer.js";
 import {getEvent, midiControllers, MidiMessage} from "../../midi_parser/midi_message.js";
 import {formatTime} from "../../utils/other.js";
 
@@ -191,7 +191,7 @@ export class Sequencer {
         this.playingNotes.forEach(n => {
             if(this.renderer)
             {
-                this.renderer.startNoteFall(n.midiNote, n.channel, this.renderer.noteFallingSpeed);
+                this.renderer.startNoteFall(n.midiNote, n.channel, this.renderer.noteFallingTimeMs);
             }
             this.synth.noteOn(n.channel, n.midiNote, n.velocity);
         });
@@ -232,7 +232,7 @@ export class Sequencer {
             return;
         }
             let event = this.events[this.rendererEventIndex];
-            while(this.ticksToSeconds(event.ticks) <= this.currentTime + (this.renderer.noteFallingSpeed / 1000)  * this.playbackRate)
+            while(this.ticksToSeconds(event.ticks) <= this.currentTime + (this.renderer.noteFallingTimeMs / 1000)  * this.playbackRate)
             {
                 this.rendererEventIndex++;
                 if(this.rendererEventIndex >= this.events.length)
@@ -248,7 +248,7 @@ export class Sequencer {
                 }
 
                 const channel = event.messageStatusByte & 0x0F;
-                const offset = (this.renderer.noteFallingSpeed / 1000) * this.playbackRate -  (this.ticksToSeconds(event.ticks) - this.currentTime);
+                const offset = (this.renderer.noteFallingTimeMs / 1000) * this.playbackRate -  (this.ticksToSeconds(event.ticks) - this.currentTime);
                 if(eventType === 0x9 && event.messageData[1] > 0)
                 {
                     this.renderer.startNoteFall(event.messageData[0], channel, offset * 1000);

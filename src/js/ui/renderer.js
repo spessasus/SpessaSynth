@@ -11,7 +11,7 @@ export class Renderer
      * @param synth {Synthetizer}
      */
     constructor(channelColors, synth) {
-        this.noteFallingSpeed = 1000;
+        this.noteFallingTimeMs = 1000;
 
         this.renderNotes = true;
         this.channelColors = channelColors;
@@ -184,7 +184,7 @@ export class Renderer
         const noteWidth = this.canvas.width / 128 - (NOTE_MARGIN * 2);
         for(const note of this.fallingNotes)
         {
-            const yPos = ((this.getCurrentTime() - note.startMs) / this.noteFallingSpeed) * this.canvas.height;
+            const yPos = ((this.getCurrentTime() - note.startMs) / this.noteFallingTimeMs) * this.canvas.height;
             const xPos = (this.canvas.width / 128) * note.midiNote;
             let noteHeight;
             if(note.timeMs === Infinity)
@@ -193,7 +193,7 @@ export class Renderer
             }
             else
             {
-                noteHeight = (note.timeMs / this.noteFallingSpeed) * this.canvas.height;
+                noteHeight = (note.timeMs / this.noteFallingTimeMs) * this.canvas.height;
             }
             let noteColor = this.channelColors[note.channel]
             //make notes that are about to play darker

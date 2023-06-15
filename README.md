@@ -24,10 +24,12 @@ Recommended soundfont: https://musical-artifacts.com/artifacts/1176
 4. Enjoy!
 
 ### Some notes about the implementation
+*Note: some links might not work as the wiki is under construction.*
+
 The program is divided into parts:
-- Soundfont2 parser - parses the soundfont file into an object readable by synth
-- MIDI file parser - parses the midi file into an object readable by sequencer
-- Sequencer - plays back the parsed MIDI file. Must be connected to a synthetizer. Can be connected to a renderer
-- Renderer - renders the waveforms of the channels and the falling notes. Must be connected to a synthetizer
+- [Soundfont2 parser](../../wiki/SoundFont2-Class) - parses the soundfont file into an object readable by synth
+- [MIDI file parser](../../wiki/MIDI-Class) - parses the midi file into an object readable by sequencer
+- [Sequencer](../../wiki/Sequencer-Class) - plays back the parsed MIDI file. Must be connected to a synthetizer. Can be connected to a renderer
+- [Renderer](../../wiki/Renderer-Class) - renders the waveforms of the channels and the falling notes. Must be connected to a synthetizer
 - [Synthetizer](../../wiki/Synthetizer-Class) - generates the sound using the given preset
 - UI classes - used for user interface, connect to their respective parts (eg. synth, sequencer, keyboard etc)
