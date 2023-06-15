@@ -3,10 +3,14 @@ SoundFont2 based realtime synthetizer and MIDI visualizer written in JavaScript.
 ![image](https://github.com/spessasus/SpessaSynth/assets/95608008/1beb1691-0454-47ec-826a-a603eed7dd5e)
 
 ## Features
-- Limited SoundFont2 Generator Support
-- Limited MIDI Controller Support
+- SoundFont2 Generator Support
+- MIDI Controller Support
 - Visualization of the played file
 - Playable keyboard with preset selection
+- Integrated controller for the synthetizer
+- Uses `Web MIDI API` for connecting to actual physical MIDI devices (such as keyboards)
+- Modular
+- Can be used as a library ([learn more here](../../wiki/Home#simple-demo))
 - Written in pure JavaScript using WebAudio API (Express.js is only used for the file server)
 
 ## Limitations
