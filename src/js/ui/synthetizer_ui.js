@@ -8,6 +8,11 @@ import {MidiChannel} from "../midi_player/synthetizer/midi_channel.js";
  * meterText: string,
  * max: number,
  * min: number}} Meter
+ *
+ * @typedef {{
+ *     div: HTMLDivElement,
+ *     options: HTMLDivElement
+ * }} Selector
  */
 
 const MAX_VOICE_METER = 200;
@@ -48,8 +53,7 @@ export class SynthetizerUI
 
     /**
      * Creates a new meter
-     * @param color {string} the color
-     * @param width {string} width of the meter as css
+     * @param color {string} the color in css
      * @param meterText {string}
      * @param max {number}
      * @param min {number}
@@ -58,7 +62,6 @@ export class SynthetizerUI
      * @returns {Meter}
      */
     createMeter(color = "initial",
-                width = "initial",
                 meterText="Voices: ",
                 min = 0,
                 max = 100,
@@ -67,7 +70,8 @@ export class SynthetizerUI
     {
         const mainDiv = document.createElement("div");
         mainDiv.classList.add("voice_meter");
-        mainDiv.style.width = width;
+        mainDiv.style.border = "1px solid "+ color;
+
         const bar = document.createElement("div");
         bar.classList.add("voice_meter_bar");
         bar.style.background = color;
@@ -103,11 +107,35 @@ export class SynthetizerUI
         };
     }
 
+    /**
+     * Creates a new selector
+     * @param elements {{text: string, value: string}[]}
+     * @param editCallback {function(string)}
+     * @returns {Selector}
+     */
+    createSelector(elements,
+                   editCallback)
+    {
+        const mainDiv = document.createElement("div");
+        mainDiv.innerHTML = elements[0].text + "  &#9660;";
+        mainDiv.classList.add("voice_selector");
+
+        const optionsDiv = document.createElement("div");
+        optionsDiv.classList.add("selector_options");
+        optionsDiv.innerText = "aaa";
+        mainDiv.appendChild(optionsDiv);
+
+        return {
+            div: mainDiv,
+            options: optionsDiv
+        };
+    }
+
     createMainVoiceMeter()
     {
-        this.voiceMeter = this.createMeter("#206", "initial", "Voices: ", 0, MAX_VOICE_METER);
+        this.voiceMeter = this.createMeter("#206", "Voices: ", 0, MAX_VOICE_METER);
 
-        setInterval(this.updateData.bind(this));
+        setInterval(this.updateData.bind(this), 100);
 
         this.uiDiv.appendChild(this.voiceMeter.div);
 
@@ -140,6 +168,12 @@ export class SynthetizerUI
 
             // pan
             this.updateMeter(this.controllers[i].pan, this.synth.midiChannels[i].panner.pan.value);
+
+            // expression
+            this.updateMeter(this.controllers[i].expression, this.synth.midiChannels[i].channelExpression * 127);
+
+            // volume
+            this.updateMeter(this.controllers[i].volume, this.synth.midiChannels[i].channelVolume * 127);
         }
     }
 
@@ -156,8 +190,21 @@ export class SynthetizerUI
 
     createChannelControllers()
     {
+        this.instrumentList = soundFontParser.presets.filter(p => p.bank !== 128).map(p => {
+            return {text: p.presetName, value: p.presetName};
+        });
+
+        this.percussionList = soundFontParser.presets.filter(p => p.bank === 128).map(p => {
+            return {text: p.presetName, value: p.presetName};
+        });
+
         const dropdownDiv = document.createElement("div");
         dropdownDiv.classList.add("channels_dropdown");
+
+        const title = document.createElement("h4");
+        title.innerText = "Synthetizer controller";
+        dropdownDiv.appendChild(title);
+
         this.uiDiv.appendChild(dropdownDiv);
         /**
          * @type {ChannelController[]}
@@ -179,7 +226,8 @@ export class SynthetizerUI
      *     controller: HTMLDivElement,
      *     voiceMeter: Meter,
      *     pitchWheel: Meter,
-     *     pan: Meter
+     *     pan: Meter,
+     *     expression: Meter
      * }} ChannelController
      */
 
@@ -194,14 +242,12 @@ export class SynthetizerUI
         const controller = document.createElement("div");
         controller.classList.add("channel_controller");
         const voiceMeter = this.createMeter(this.channelColors[channelNumber],
-            "30%",
             "Voices: ",
             0,
             MAX_VOICE_METER);
         controller.appendChild(voiceMeter.div);
 
         const pitchWheel = this.createMeter(this.channelColors[channelNumber],
-            "30%",
             "Pitch Wheel: ",
             -8192,
             8192,
@@ -213,26 +259,49 @@ export class SynthetizerUI
                 const lsb = val & 0x7F;
                 this.synth.midiChannels[channelNumber].setPitchBend(msb, lsb);
         });
-
         controller.appendChild(pitchWheel.div);
 
         const pan = this.createMeter(this.channelColors[channelNumber],
-            "30%",
             "Pan: ",
             -1,
             1,
             true,
             val => {
-                this.synth.midiChannels[channelNumber].changePan(val);
+                this.synth.midiChannels[channelNumber].setPan(val);
             });
         controller.appendChild(pan.div);
+
+        const expression = this.createMeter(this.channelColors[channelNumber],
+            "Expression: ",
+            0,
+            127,
+            true,
+            val => {
+                this.synth.midiChannels[channelNumber].setExpression(val / 127);
+            });
+        controller.appendChild(expression.div);
+
+        const volume = this.createMeter(this.channelColors[channelNumber],
+            "Volume: ",
+            0,
+            127,
+            true,
+            val => {
+            this.synth.midiChannels[channelNumber].setVolume(val);
+            });
+        controller.appendChild(volume.div);
+
+        //const instrument = this.createSelector(this.instrumentList);
+        //controller.appendChild(instrument.div);
 
 
         return {
             controller: controller,
             voiceMeter: voiceMeter,
             pitchWheel: pitchWheel,
-            pan: pan
+            pan: pan,
+            expression: expression,
+            volume: volume
         };
 
     }

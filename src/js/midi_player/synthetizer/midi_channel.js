@@ -103,7 +103,7 @@ export class MidiChannel {
      * Changes preset
      * @param preset {Preset}
      */
-    changePreset(preset)
+    setPreset(preset)
     {
         this.preset = preset
     }
@@ -112,7 +112,7 @@ export class MidiChannel {
      * Changes audio pan
      * @param pan {number}
      */
-    changePan(pan)
+    setPan(pan)
     {
         this.panner.pan.value = pan;
     }
@@ -159,11 +159,6 @@ export class MidiChannel {
     }
 
     setPitchBend(bendMSB, bendLSB) {
-        if(this.percussionChannel)
-        {
-            this.pitchBend = 0;
-            return;
-        }
         // bend all the notes
         const bend = (bendLSB | (bendMSB << 7)) - 8192;
         this.pitchBend = bend;
@@ -195,8 +190,6 @@ export class MidiChannel {
         this.RPValue = this.RPValue << 7 | value;
         this.dataEntryState = dataEntryStates.RPFine;
     }
-
-
 
     setNRPCoarse(value)
     {

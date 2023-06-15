@@ -83,6 +83,18 @@ export class SequencerUI{
         this.controls.appendChild(this.progressBar);
         this.controls.appendChild(this.progressTime);
         this.controls.appendChild(controlsDiv);
+
+        // add number controls
+        document.addEventListener("keypress", e => {
+            if(!isNaN(parseFloat(e.key)))
+            {
+                const num = parseInt(e.key);
+                if(0 <= num && num <= 9)
+                {
+                    this.seq.currentTime = this.seq.duration * (num / 9);
+                }
+            }
+        })
     }
 
     setSliderInterval(){

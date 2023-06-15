@@ -3,7 +3,7 @@ import {Synthetizer} from "../midi_player/synthetizer/synthetizer.js";
 const CHANNEL_ANALYSER_FFT = 128;
 const NOTE_MARGIN = 1;
 const MIN_NOTE_TIME_MS = 20;
-export class MidiRenderer
+export class Renderer
 {
     /**
      * Creates a new midi renderer for rendering notes visually.

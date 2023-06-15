@@ -1,6 +1,6 @@
 import {MIDI} from "../../midi_parser/midi_loader.js";
 import {Synthetizer} from "../synthetizer/synthetizer.js";
-import {MidiRenderer} from "../../ui/midi_renderer.js";
+import {Renderer} from "../../ui/midi_renderer.js";
 import {getEvent, midiControllers, MidiMessage} from "../../midi_parser/midi_message.js";
 import {formatTime} from "../../utils/other.js";
 
@@ -92,7 +92,7 @@ export class Sequencer {
 
     /**
      * Connects a midi renderer
-     * @param renderer {MidiRenderer}
+     * @param renderer {Renderer}
      */
     connectRenderer(renderer)
     {
@@ -155,13 +155,6 @@ export class Sequencer {
      */
     play(resetTime = false)
     {
-        // unpause if paused
-        if(this.paused)
-        {
-            // adjust the start time
-            this.absoluteStartTime = this.synth.currentTime - this.pausedTime;
-            this.pausedTime = undefined;
-        }
 
         // reset the time if necesarry
         if(resetTime) {
@@ -175,18 +168,24 @@ export class Sequencer {
             this.rendererEventIndex = this.eventIndex;
         }
 
-        this.synth.resetControllers();
-
-        // process every non note message from the start
-        for(let i = 0; i < this.eventIndex + 1; i++)
+        // unpause if paused
+        if(this.paused)
         {
-            const event = this.events[i];
-            const type = event.messageStatusByte >> 4;
-            if(type === 0x8 || type === 0x9)
-            {
-                continue;
+            // adjust the start time
+            this.absoluteStartTime = this.synth.currentTime - this.pausedTime;
+            this.pausedTime = undefined;
+        }
+        else {
+            // process every non note message from the start
+            this.synth.resetControllers();
+            for (let i = 0; i < this.eventIndex + 1; i++) {
+                const event = this.events[i];
+                const type = event.messageStatusByte >> 4;
+                if (type === 0x8 || type === 0x9) {
+                    continue;
+                }
+                this._processEvent(event);
             }
-            this._processEvent(event);
         }
 
         this.playingNotes.forEach(n => {

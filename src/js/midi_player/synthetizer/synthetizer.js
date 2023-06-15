@@ -37,7 +37,7 @@ export class Synthetizer {
 
         // change percussion channel to the percussion preset
         this.midiChannels[9].percussionChannel = true;
-        this.midiChannels[9].changePreset(this.percussionPreset);
+        this.midiChannels[9].setPreset(this.percussionPreset);
         this.midiChannels[9].bank = 128;
 
         // // set reverb
@@ -148,7 +148,7 @@ export class Synthetizer {
 
             case "Pan":
                 let pan = (controllerValue - 64) / 64;
-                this.midiChannels[channel].changePan(pan);
+                this.midiChannels[channel].setPan(pan);
                 break;
 
             case "All Notes Off":
@@ -225,10 +225,10 @@ export class Synthetizer {
         for(const ch of this.midiChannels)
         {
             ch.resetControllers();
-            ch.changePreset(this.defaultPreset);
+            ch.setPreset(this.defaultPreset);
             ch.percussionChannel = false;
         }
-        this.midiChannels[9].changePreset(this.percussionPreset);
+        this.midiChannels[9].setPreset(this.percussionPreset);
         this.midiChannels[9].percussionChannel = true;
     }
 
@@ -260,7 +260,7 @@ export class Synthetizer {
         const bank = (channelObj.percussionChannel ? 128 : channelObj.bank);
 
         let preset = this.soundFont.getPreset(bank, programNumber);
-        channelObj.changePreset(preset);
+        channelObj.setPreset(preset);
         console.log("changing channel", channel, "to bank:", channelObj.bank,
             "preset:", programNumber, preset.presetName);
         this.onProgramChange(channel, preset.presetName);

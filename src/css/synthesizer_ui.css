@@ -53,6 +53,8 @@
     height: var(--voice-meter-height);
     width: 100%;
     cursor: not-allowed;
+    border-radius: 5px;
+    border: solid 1px rgba(1, 1, 1, 0.5);
 }
 
 #synthetizer_controls .voice_meter.editable{
@@ -63,7 +65,7 @@
     position: relative;
     display: block;
     height: 100%;
-    border-radius: 5px;
+    border-radius: 3px;
     margin-top: auto;
     background-color: #406;
     transition: all 100ms ease-out;
@@ -87,22 +89,38 @@
     display: block;
     position: fixed;
     backdrop-filter: blur(2px);
-    padding: 1em;
+    background-color: rgba(3, 3, 3, 0.3);
+    top: 6em;
     border-radius: 15px;
-    width: 50%;
+    width: 100%;
 }
 
 #synthetizer_controls .channels_dropdown .voice_meter{
-    width: 50%;
-    float: left;
-    display: inline-block;
+    margin: 2px;
 }
 
 #synthetizer_controls .channel_controller{
-    clear: both;
-    padding: 5px;
+    display: flex;
+    align-items: stretch;
 }
 
 #synthetizer_controls:hover .channels_dropdown{
     animation: synth-control-dropdown-show 500ms;
+}
+
+#synthetizer_controls .voice_selector{
+    position: relative;
+    height: var(--voice-meter-height);
+    width: 100%;
+    border-radius: 5px;
+}
+
+#synthetizer_controls .voice_selector .selector_options
+{
+    display: none;
+    background-color: #000;
+}
+
+#synthetizer_controls .voice_selector:hover .selector_options{
+    display: block;
 }

@@ -1,6 +1,6 @@
 import {MidiKeyboard} from "./ui/midi_keyboard.js";
 import {Synthetizer} from "./midi_player/synthetizer/synthetizer.js";
-import {MidiRenderer} from "./ui/midi_renderer.js";
+import {Renderer} from "./ui/midi_renderer.js";
 import {Sequencer} from "./midi_player/sequencer/sequencer.js";
 import {MIDI} from "./midi_parser/midi_loader.js";
 
@@ -46,7 +46,7 @@ export class MidiManager
         this.keyboard = new MidiKeyboard(this.channelColors, this.synth);
 
         // set up renderer
-        this.renderer = new MidiRenderer(this.channelColors, this.synth);
+        this.renderer = new Renderer(this.channelColors, this.synth);
         this.renderer.render(t => document.getElementById("title").innerText = t)
 
         // connect the synth to keyboard
