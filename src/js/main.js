@@ -104,7 +104,7 @@ fetchFont("soundfont.sf2", percent => progressBar.style.width = `${(percent / 10
     .then(data => {
         titleMessage.innerText = "Parsing soundfont...";
         setTimeout(() => {
-            window.soundFontParser = new SoundFont2(data, m => titleMessage.innerText = m);
+            window.soundFontParser = new SoundFont2(data);
 
             titleMessage.innerText = "SpessaSynth: MIDI Soundfont2 Player";
             progressBar.style.width = "0";

@@ -12,9 +12,8 @@ export class SoundFont2
     /**
      * Initializes a new SoundFont2 Parser and parses the given data array
      * @param dataArray {ShiftableByteArray}
-     * @param progressCallback {function(string)}
      */
-    constructor(dataArray, progressCallback = undefined) {
+    constructor(dataArray) {
         this.dataArray = dataArray;
         if(!this.dataArray)
         {
@@ -34,7 +33,6 @@ export class SoundFont2
         }
 
         // INFO
-        progressCallback("Reading INFO chunk...");
         let infoChunk = readRIFFChunk(this.dataArray);
         readBytesAsString(infoChunk.chunkData, 4);
 
@@ -51,7 +49,6 @@ export class SoundFont2
         }
 
         // SDTA
-        progressCallback("Reading sample data chunk...");
         readRIFFChunk(this.dataArray, false);
         readBytesAsString(this.dataArray, 4);
 
@@ -61,7 +58,6 @@ export class SoundFont2
         dataArray.currentIndex += sampleDataChunk.size;
 
         // PDTA
-        progressCallback("Reading preset data chunk...");
         let presetChunk = readRIFFChunk(this.dataArray);
         readBytesAsString(presetChunk.chunkData, 4);
 

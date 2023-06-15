@@ -32,7 +32,7 @@ export class Synthetizer {
         // create 16 channels
         for (let j = 0; j < 16; j++) {
             // default to the first preset
-            this.midiChannels[j] = new MidiChannel(this.outputNode, this.defaultPreset, j + 1, false);
+            this.midiChannels[j] = new MidiChannel(this.outputNode, this.defaultPreset, soundFont, j + 1, false);
         }
 
         // change percussion channel to the percussion preset
@@ -74,7 +74,9 @@ export class Synthetizer {
 
         let chan = this.midiChannels[channel];
         chan.playNote(midiNote, velocity, enableDebugging);
-        this.onNoteOn(midiNote, channel, velocity, chan.channelVolume, chan.channelExpression);
+        if(this.onNoteOn) {
+            this.onNoteOn(midiNote, channel, velocity, chan.channelVolume, chan.channelExpression);
+        }
     }
 
     /**
@@ -83,7 +85,9 @@ export class Synthetizer {
      * @param midiNote {number} 0-127
      */
     noteOff(channel, midiNote) {
-        this.onNoteOff(midiNote);
+        if(this.onNoteOff) {
+            this.onNoteOff(midiNote);
+        }
         if(this.highPerformanceMode)
         {
             this.midiChannels[channel].stopNote(midiNote, true);
@@ -111,6 +115,10 @@ export class Synthetizer {
     stopAll() {
         for (let channel of this.midiChannels) {
             channel.stopAll();
+        }
+        if(!this.onNoteOff)
+        {
+            return;
         }
         for(let i = 0; i < 128; i++)
         {
@@ -263,7 +271,9 @@ export class Synthetizer {
         channelObj.setPreset(preset);
         console.log("changing channel", channel, "to bank:", channelObj.bank,
             "preset:", programNumber, preset.presetName);
-        this.onProgramChange(channel, preset.presetName);
+        if(this.onProgramChange) {
+            this.onProgramChange(channel, preset.presetName);
+        }
     }
 
     /**

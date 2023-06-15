@@ -1,6 +1,7 @@
 import {Preset} from "../../../soundfont/chunk/presets.js";
 import {PresetNoteModifiers} from "./preset_note/preset_note_modifiers.js";
 import {SampleNode} from "./preset_note/sample_node.js";
+import {SoundFont2} from "../../../soundfont/soundfont_parser.js";
 
 export class PresetNote
 {
@@ -8,11 +9,12 @@ export class PresetNote
      * Create a note
      * @param midiNote {number}
      * @param node {AudioNode}
+     * @param soundFont {SoundFont2}
      * @param preset {Preset}
      * @param vibratoOptions {{depth: number, rate: number, delay: number}}
      * @param tuningRatio {number} the note's initial tuning ratio
      */
-    constructor(midiNote, node, preset, vibratoOptions, tuningRatio) {
+    constructor(midiNote, node, soundFont, preset, vibratoOptions, tuningRatio) {
         this.midiNote = midiNote;
         this.targetNode = node;
         this.SAMPLE_CAP = 2;
@@ -72,6 +74,7 @@ export class PresetNote
             const bufferSource = new AudioBufferSourceNode(this.ctx, {
                 buffer: sample.getBuffer(
                     this.ctx,
+                    soundFont,
                     sampleOptions.getAddressOffsets().start,
                     sampleOptions.getAddressOffsets().end)
             });

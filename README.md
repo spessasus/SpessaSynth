@@ -1,5 +1,5 @@
 # SpessaSynth
-SoundFont2 based realtime synthetizer and MIDI visualizer written in JavaScript
+SoundFont2 based realtime synthetizer and MIDI visualizer written in JavaScript. Can also be used as a library.
 ![image](https://github.com/spessasus/SpessaSynth/assets/95608008/1beb1691-0454-47ec-826a-a603eed7dd5e)
 
 ## Features
@@ -15,7 +15,7 @@ SoundFont2 based realtime synthetizer and MIDI visualizer written in JavaScript
 ## Installation
 ***Chrome is highly recommended!***
 
-Recommended soundfont: https://musical-artifacts.com/artifacts/1176
+### [Recommended SoundFont](https://musical-artifacts.com/artifacts/1176)
 
 **Requires Node.js**
 1. Download the code as zip and extract or use `git clone https://github.com/spessasus/SpessaSynth`
@@ -23,7 +23,8 @@ Recommended soundfont: https://musical-artifacts.com/artifacts/1176
 3. Double click the `start.bat`
 4. Enjoy!
 
-### Some notes about the implementation
+## Some notes about the implementation
+### [Check out the wiki!](../../wiki/Home)
 *Note: some links might not work as the wiki is under construction.*
 
 The program is divided into parts:

@@ -1,5 +1,6 @@
 import {PresetNote} from "./notes/preset_note.js";
 import {Preset} from "../../soundfont/chunk/presets.js";
+import {SoundFont2} from "../../soundfont/soundfont_parser.js";
 
 const CHANNEL_LOUDNESS = 1.0;
 
@@ -18,10 +19,11 @@ export class MidiChannel {
      * creates a midi channel
      * @param targetNode {AudioNode}
      * @param defaultPreset {Preset}
+     * @param soundFont {SoundFont2}
      * @param channelNumber {number}
      * @param percussionChannel {boolean}
      */
-    constructor(targetNode, defaultPreset, channelNumber = -1, percussionChannel = false) {
+    constructor(targetNode, defaultPreset, soundFont, channelNumber = -1, percussionChannel = false) {
         this.ctx = targetNode.context;
         this.outputNode = targetNode;
         this.channelNumber = channelNumber
@@ -29,6 +31,7 @@ export class MidiChannel {
 
         this.preset = defaultPreset;
         this.bank = this.preset.bank;
+        this.sf = soundFont;
 
         /**
          * @type {number[]}
@@ -81,7 +84,7 @@ export class MidiChannel {
 
     createNote(midiNote)
     {
-        return new PresetNote(midiNote, this.panner, this.preset, this.vibrato, this.channelTuningRatio);
+        return new PresetNote(midiNote, this.panner, this.sf, this.preset, this.vibrato, this.channelTuningRatio);
     }
 
     pressHoldPedal()
