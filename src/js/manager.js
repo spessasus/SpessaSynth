@@ -46,7 +46,7 @@ export class Manager
         this.keyboard = new MidiKeyboard(this.channelColors, this.synth);
 
         // set up renderer
-        this.renderer = new Renderer(this.channelColors, this.synth);
+        this.renderer = new Renderer(this.channelColors, this.synth, document.getElementById("note_canvas"));
         this.renderer.render(t => document.getElementById("title").innerText = t)
 
         // connect the synth to keyboard

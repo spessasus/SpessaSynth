@@ -1,8 +1,10 @@
 @keyframes synth-control-dropdown-hide {
-    100%{
+    100% {
+        display: none;
         transform: scale(0);
     }
     99%{
+        display: block;
         transform: scale(0.01, 0.01);
     }
 
@@ -17,9 +19,11 @@
 
 @keyframes synth-control-dropdown-show {
     0%{
+        display: none;
         transform: scale(0);
     }
     1%{
+        display: block;
         transform: scale(0.01, 0.01);
     }
 

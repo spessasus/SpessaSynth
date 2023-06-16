@@ -91,7 +91,7 @@ export class SequencerUI{
                 const num = parseInt(e.key);
                 if(0 <= num && num <= 9)
                 {
-                    this.seq.currentTime = this.seq.duration * (num / 9);
+                    this.seq.currentTime = this.seq.duration * (num / 10);
                 }
             }
         })

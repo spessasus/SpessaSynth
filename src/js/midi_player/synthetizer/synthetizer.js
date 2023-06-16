@@ -114,15 +114,14 @@ export class Synthetizer {
 
     stopAll() {
         for (let channel of this.midiChannels) {
+            if(this.onNoteOff)
+            {
+                for(const note of channel.playingNotes)
+                {
+                    this.onNoteOff(note.midiNote);
+                }
+            }
             channel.stopAll();
-        }
-        if(!this.onNoteOff)
-        {
-            return;
-        }
-        for(let i = 0; i < 128; i++)
-        {
-            this.onNoteOff(i);
         }
     }
 

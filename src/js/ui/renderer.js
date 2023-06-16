@@ -9,8 +9,9 @@ export class Renderer
      * Creates a new midi renderer for rendering notes visually.
      * @param channelColors {Array<string>}
      * @param synth {Synthetizer}
+     * @param canvas {HTMLCanvasElement}
      */
-    constructor(channelColors, synth) {
+    constructor(channelColors, synth, canvas) {
         this.noteFallingTimeMs = 1000;
 
         this.renderNotes = true;
@@ -36,7 +37,7 @@ export class Renderer
         /**
          * @type {HTMLCanvasElement}
          */
-        this.canvas = document.getElementById("note_canvas");
+        this.canvas = canvas;
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
 
@@ -156,16 +157,24 @@ export class Renderer
         this.pauseTime = undefined;
     }
 
-    render()
+    /**
+     * Renders a single frame
+     * @param auto {boolean} if set to false, the renderer won't clear the screen or request an animation frame. Defaults to true.
+     */
+    render(auto = true)
     {
         if(!this.renderNotes)
         {
-            requestAnimationFrame(() => {
-                this.render();
-            });
+            if(auto) {
+                requestAnimationFrame(() => {
+                    this.render();
+                });
+            }
             return;
         }
-        this.drawingContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        if(auto) {
+            this.drawingContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
 
         // draw the individual analysers
         let i = 0;
@@ -236,9 +245,11 @@ export class Renderer
         this.drawingContext.fillText(`${this.notesOnScreen} notes`, this.canvas.width, 16);
 
         this.frameTimeStart = performance.now();
-        requestAnimationFrame(() => {
-            this.render();
-        });
+        if(auto) {
+            requestAnimationFrame(() => {
+                this.render();
+            });
+        }
     }
 
     /**
