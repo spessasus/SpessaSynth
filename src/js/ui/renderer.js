@@ -13,6 +13,7 @@ export class Renderer
      */
     constructor(channelColors, synth, canvas) {
         this.noteFallingTimeMs = 1000;
+        this.noteAfterTriggerTimeMs = 0;
 
         this.renderNotes = true;
         this.channelColors = channelColors;
@@ -193,7 +194,7 @@ export class Renderer
         const noteWidth = this.canvas.width / 128 - (NOTE_MARGIN * 2);
         for(const note of this.fallingNotes)
         {
-            const yPos = ((this.getCurrentTime() - note.startMs) / this.noteFallingTimeMs) * this.canvas.height;
+            const yPos = ((this.getCurrentTime() - note.startMs) / (this.noteFallingTimeMs + this.noteAfterTriggerTimeMs)) * this.canvas.height;
             const xPos = (this.canvas.width / 128) * note.midiNote;
             let noteHeight;
             if(note.timeMs === Infinity)
@@ -202,11 +203,12 @@ export class Renderer
             }
             else
             {
-                noteHeight = (note.timeMs / this.noteFallingTimeMs) * this.canvas.height;
+                noteHeight = (note.timeMs / (this.noteFallingTimeMs + this.noteAfterTriggerTimeMs)) * this.canvas.height;
             }
             let noteColor = this.channelColors[note.channel]
-            //make notes that are about to play darker
-            if (yPos < this.canvas.height) {
+            // make notes that are about to play or after being played, darker
+            if (this.getCurrentTime() - note.startMs < this.noteFallingTimeMs ||
+                this.getCurrentTime() - note.startMs - note.timeMs > this.noteFallingTimeMs) {
                 let rgbaValues = noteColor.match(/\d+(\.\d+)?/g).map(parseFloat);
 
                 // multiply the rgb values by 0.5 (50% brighntess)
