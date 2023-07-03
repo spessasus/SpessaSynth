@@ -1,5 +1,5 @@
 import {Preset} from "../../../soundfont/chunk/presets.js";
-import {PresetNoteModifiers} from "./preset_note/preset_note_modifiers.js";
+import {GeneratorTranslator} from "./preset_note/generator_translator.js";
 import {SampleNode} from "./preset_note/sample_node.js";
 import {SoundFont2} from "../../../soundfont/soundfont_parser.js";
 
@@ -17,7 +17,7 @@ export class PresetNote
     constructor(midiNote, node, soundFont, preset, vibratoOptions, tuningRatio) {
         this.midiNote = midiNote;
         this.targetNode = node;
-        this.SAMPLE_CAP = 2;
+        this.SAMPLE_CAP = 4;
         this.ctx = this.targetNode.context;
         this.tuningRatio = tuningRatio;
 
@@ -32,34 +32,9 @@ export class PresetNote
             this.vibratoDelay = vibratoOptions.delay;
         }
 
-        let samples = preset.getSampleAndGenerators(midiNote);
+        let samples = this.limitSamples(preset.getSampleAndGenerators(midiNote));
 
-        if(samples.length > this.SAMPLE_CAP) {
-            // sort by longes samples if there are 150ms or shorter samples.
-            // We don't want any additional instrument effects, just the actual samples.
-            if (samples.find(s => (s.sample.sampleLength / s.sample.sampleRate) < 0.15)) {
-                samples.sort((sample1, sample2) => {
-                        return sample2.sample.sampleLength - sample1.sample.sampleLength;
-                    }
-                );
-            }
-
-            let leftSample = samples.find(s => s.sample.sampleType === "leftSample");
-            if (!leftSample) {
-                // cap normally
-                samples = samples.slice(0, 2);
-            } else {
-                let rightSample = samples.find(s => s.sample.sampleType === "rightSample");
-                if (!rightSample) {
-                    // cap normally
-                    samples = samples.slice(0, 2);
-                } else {
-                    samples = [leftSample, rightSample];
-                }
-            }
-        }
-
-        this.sampleOptions = samples.map(s => new PresetNoteModifiers(s));
+        this.sampleOptions = samples.map(s => new GeneratorTranslator(s));
 
         this.noteVolumeController = new GainNode(this.ctx, {
             gain: 0
@@ -100,8 +75,58 @@ export class PresetNote
     }
 
     /**
+     *
+     * @param samples {{
+     *  instrumentGenerators: Generator[],
+     *  presetGenerators: Generator[],
+     *  sample: Sample
+     * }[]}
+     * @return {{
+     *  instrumentGenerators: Generator[],
+     *  presetGenerators: Generator[],
+     *  sample: Sample
+     * }[]}
+     */
+    limitSamples(samples)
+    {
+        if(samples.length > this.SAMPLE_CAP) {
+            // sort by longes samples if there are 150ms or shorter samples.
+            // We don't want any additional instrument effects, just the actual samples.
+            if (samples.find(s => (s.sample.sampleLength / s.sample.sampleRate) < 0.15)) {
+                samples.sort((sample1, sample2) => {
+                        return sample2.sample.sampleLength - sample1.sample.sampleLength;
+                    }
+                );
+            }
+
+            if(this.SAMPLE_CAP === 2)
+            {
+                let leftSample = samples.find(s => s.sample.sampleType === "leftSample");
+                if (!leftSample) {
+                    // cap normally
+                    samples = samples.slice(0, this.SAMPLE_CAP);
+                } else {
+                    let rightSample = samples.find(s => s.sample.sampleType === "rightSample");
+                    if (!rightSample) {
+                        // cap normally
+                        samples = samples.slice(0, this.SAMPLE_CAP);
+                    } else {
+                        samples = [leftSample, rightSample];
+                    }
+                }
+            }
+            else
+            {
+                // cap normally
+                samples = samples.slice(0, this.SAMPLE_CAP);
+            }
+        }
+        return samples;
+    }
+
+    /**
      * @param bufferSource {AudioBufferSourceNode}
-     * @param sampleOptions {PresetNoteModifiers}
+     * @param sampleOptions {GeneratorTranslator}
      */
     applyLoopIndexes(bufferSource, sampleOptions)
     {
@@ -143,10 +168,14 @@ export class PresetNote
                 }
             }
             const env = sampleOption.getVolumeEnvelope();
-            for(const name in env)
-            {
-                dataTable.push(new Option(name, env[name], null));
-            }
+            dataTable.push(new Option("initialAttenuation", sampleOption.attenuation, env.attenuation));
+            dataTable.push(new Option("delayTime", sampleOption.delayTime, env.delayTime));
+            dataTable.push(new Option("attackTime", sampleOption.attackTime, env.attackTime));
+            dataTable.push(new Option("holdTime", sampleOption.holdTime, env.holdTime));
+            dataTable.push(new Option("sustainLevel", sampleOption.sustainLowerAmount, env.sustainLevel));
+            dataTable.push(new Option("decayTime", sampleOption.decayTime, env.decayTime));
+            dataTable.push(new Option("releaseTime", sampleOption.releaseTime, env.releaseTime));
+
             dataTable.push(new Option("pan", sampleOption.pan, sampleOption.getPan()));
             dataTable.push(new Option("rootKey", sampleOption.rootKey, null));
             dataTable.push(new Option("loopingMode", sampleOption.loopingMode, sampleOption.getLoopingMode()));
@@ -173,7 +202,7 @@ export class PresetNote
         // lower the gain if a lot of notes (or not...?)
         this.noteVolumeController.gain.value = velocity / 2;
         //if(this.sampleNodes.length > 10) {
-          // this.noteVolumeController.gain.value /= Math.pow(2, (this.sampleNodes.length / 4) + 0.75);
+            this.noteVolumeController.gain.value /= (this.sampleNodes.length > 1 ? this.sampleNodes.length : 2);
         //}
 
         // activate vibrato
@@ -182,6 +211,9 @@ export class PresetNote
             this.vibratoWave.start(this.ctx.currentTime + this.vibratoDelay);
         }
 
+        /**
+         * @type {number[]}
+         */
         let exclusives = [];
         for(let i = 0; i < this.sampleOptions.length; i++)
         {
@@ -197,6 +229,7 @@ export class PresetNote
 
             sample.startSample(sampleOptions.getVolumeEnvelope());
         }
+        this.exclusives = exclusives;
         return exclusives;
     }
 

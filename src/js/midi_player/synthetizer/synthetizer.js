@@ -285,6 +285,7 @@ export class Synthetizer {
         switch (type)
         {
             default:
+                console.log("Unrecognized SysEx:", messageData);
                 break;
 
             // roland
@@ -300,6 +301,10 @@ export class Synthetizer {
                         this.midiChannels[channel].percussionChannel = messageData[7] > 0;
                         console.log("Drum channel", channel, messageData[7] > 0);
                     }
+                }
+                else
+                {
+                    console.log("Unrecognizer Roland SysEx:", messageData);
                 }
 
         }

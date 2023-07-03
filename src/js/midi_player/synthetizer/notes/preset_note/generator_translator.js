@@ -1,9 +1,9 @@
 import {Generator} from "../../../../soundfont/chunk/generators.js";
 import {Sample} from "../../../../soundfont/chunk/samples.js";
 
-export class PresetNoteModifiers{
+export class GeneratorTranslator {
     /**
-     * Creates options for the sample
+     * Translates the generators to values for the sample node
      * @param sampleAndGenerators {{
      *  instrumentGenerators: Generator[],
      *  presetGenerators: Generator[],
@@ -32,10 +32,12 @@ export class PresetNoteModifiers{
 
         // audio envelope
         // initialAttenuation (dB)
+        // this.attenuation = (this._getPresetGenerator("initialAttenuation") / 10) +
+        //     (this.getGeneratorValue("initialAttenuation", 0) / 10);
         this.attenuation = this.sumGeneratorValue("initialAttenuation",
             0,
             0,
-            1440) / 10 * 0.4;
+            1440) / 25;
 
         // delayVolEnv
         this.delayTime = this.sumGeneratorValue("delayVolEnv",
@@ -57,9 +59,9 @@ export class PresetNoteModifiers{
 
         // decayVolEnv
         this.decayTime = this.sumGeneratorValue("decayVolEnv",
-            -12000,
-            -12000,
-            8000);
+             -12000,
+             -12000,
+              8000);
 
         // sustainVolEnv (dB)
         this.sustainLowerAmount = this.sumGeneratorValue("sustainVolEnv",
@@ -69,7 +71,7 @@ export class PresetNoteModifiers{
 
         // releaseVolEnv (timecents) defaults to 5s
         this.releaseTime = this.sumGeneratorValue("releaseVolEnv",
-            2786,
+            -12000,
             -12000,
             8000);
 
@@ -165,7 +167,7 @@ export class PresetNoteModifiers{
      */
     timecentsToSeconds(timecents)
     {
-        return Math.pow(2, timecents / 1288);
+        return Math.pow(2, timecents / 1200);
     }
 
     /**

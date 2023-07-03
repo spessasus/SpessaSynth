@@ -16,6 +16,13 @@ export class Renderer
         this.noteAfterTriggerTimeMs = 0;
 
         this.renderNotes = true;
+
+        this.noteFieldWidth = canvas.width;
+        this.noteFieldHeight = canvas.height;
+        this.noteFieldTopOffset = 0;
+        this.noteFieldLeftOffset = 0;
+        this.noteFieldAngle = 0;
+
         this.channelColors = channelColors;
         this.synth = synth;
         this.notesOnScreen = 0;
@@ -39,13 +46,6 @@ export class Renderer
          * @type {HTMLCanvasElement}
          */
         this.canvas = canvas;
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
-
-        window.addEventListener("resize", () => {
-            this.canvas.width = window.innerWidth;
-            this.canvas.height = window.innerHeight;
-        });
 
         /**
          * @type {CanvasRenderingContext2D}
@@ -190,12 +190,17 @@ export class Renderer
         }
 
         // draw the notes
+        this.drawingContext.save();
+        this.drawingContext.translate(this.noteFieldWidth / 2 + this.noteFieldLeftOffset, this.noteFieldHeight / 2 + this.noteFieldTopOffset);
+        this.drawingContext.rotate(this.noteFieldAngle * Math.PI / 180);
+        this.drawingContext.translate(this.noteFieldWidth / -2, this.noteFieldHeight / -2);
+
         this.notesOnScreen = 0;
-        const noteWidth = this.canvas.width / 128 - (NOTE_MARGIN * 2);
+        const noteWidth = this.noteFieldWidth / 128 - (NOTE_MARGIN * 2);
         for(const note of this.fallingNotes)
         {
-            const yPos = ((this.getCurrentTime() - note.startMs) / (this.noteFallingTimeMs + this.noteAfterTriggerTimeMs)) * this.canvas.height;
-            const xPos = (this.canvas.width / 128) * note.midiNote;
+            const yPos = ((this.getCurrentTime() - note.startMs) / (this.noteFallingTimeMs + this.noteAfterTriggerTimeMs)) * this.noteFieldHeight;
+            const xPos = (this.noteFieldWidth / 128) * note.midiNote;
             let noteHeight;
             if(note.timeMs === Infinity)
             {
@@ -203,9 +208,10 @@ export class Renderer
             }
             else
             {
-                noteHeight = (note.timeMs / (this.noteFallingTimeMs + this.noteAfterTriggerTimeMs)) * this.canvas.height;
+                noteHeight = (note.timeMs / (this.noteFallingTimeMs + this.noteAfterTriggerTimeMs)) * this.noteFieldHeight;
             }
             let noteColor = this.channelColors[note.channel]
+
             // make notes that are about to play or after being played, darker
             if (this.getCurrentTime() - note.startMs < this.noteFallingTimeMs ||
                 this.getCurrentTime() - note.startMs - note.timeMs > this.noteFallingTimeMs) {
@@ -217,20 +223,25 @@ export class Renderer
                 // create the new color
                 noteColor = `rgba(${newRGBValues.join(", ")}, ${rgbaValues[3]})`;
             }
-            this.drawingContext.fillStyle = noteColor;
-            this.drawingContext.fillRect(xPos + NOTE_MARGIN, yPos - noteHeight, noteWidth, noteHeight - (NOTE_MARGIN * 2));
+            const xFinal = xPos + NOTE_MARGIN;
+            const yFinal = yPos - noteHeight;
+            const hFinal = noteHeight - (NOTE_MARGIN * 2);
 
-            if(yPos - noteHeight <= this.canvas.height)
+            this.drawingContext.fillStyle = noteColor;
+            this.drawingContext.fillRect(xFinal, yFinal, noteWidth, hFinal);
+
+            if(yPos - noteHeight <= this.noteFieldHeight)
             {
                 this.notesOnScreen++;
             }
 
             // delete note if out of range (double height
-            if(yPos - noteHeight > this.canvas.height * 2)
+            if(yPos - noteHeight > this.noteFieldHeight)
             {
                 this.fallingNotes.splice(this.fallingNotes.indexOf(note), 1);
             }
         }
+        this.drawingContext.restore();
 
         // calculate fps
         let timeSinceLastFrame = performance.now() - this.frameTimeStart;
@@ -244,7 +255,7 @@ export class Renderer
 
         // draw note count
         this.drawingContext.textAlign = "end";
-        this.drawingContext.fillText(`${this.notesOnScreen} notes`, this.canvas.width, 16);
+        this.drawingContext.fillText(`${this.notesOnScreen} notes`, this.canvas.width + this.noteFieldLeftOffset, 16);
 
         this.frameTimeStart = performance.now();
         if(auto) {

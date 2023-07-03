@@ -147,16 +147,30 @@ export class MidiChannel {
         // calculate gain
         let gain = (velocity / 127);
 
-        /*let exclusives =*/ note.startNote(gain, debugInfo);
+        let exclusives = note.startNote(gain, debugInfo);
         const bendRatio = (this.pitchBend / 8192) * this.channelPitchBendRange;
         note.bendNote(bendRatio);
 
-        // if(exclusives.length > 0)
-        // {
-        //     for(let id of exclusives) {
-        //         this.stopExclusiveNotes(id);
-        //     }
-        // }
+        if(exclusives.length > 0)
+        {
+            for(let id of exclusives) {
+                for(let note of this.playingNotes.filter(n => n.exclusives.find(e => e === id)))
+                {
+                    //note.killNote().then(() =>{
+                        note.disconnectNote();
+                        delete this.playingNotes.splice(this.playingNotes.indexOf(note), 1);
+                    //});
+                }
+
+                for(let note of this.stoppingNotes.filter(n => n.exclusives.find(e => e === id)))
+                {
+                    //note.killNote().then(() =>{
+                        note.disconnectNote();
+                        delete this.stoppingNotes.splice(this.stoppingNotes.indexOf(note), 1);
+                    //});
+                }
+            }
+        }
 
         this.playingNotes.push(note);
     }

@@ -46,8 +46,20 @@ export class Manager
         this.keyboard = new MidiKeyboard(this.channelColors, this.synth);
 
         // set up renderer
-        this.renderer = new Renderer(this.channelColors, this.synth, document.getElementById("note_canvas"));
-        this.renderer.render(t => document.getElementById("title").innerText = t)
+        const canvas = document.getElementById("note_canvas");
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        window.addEventListener("resize", () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            this.renderer.noteFieldHeight = window.innerHeight;
+            this.renderer.noteFieldWidth = window.innerWidth;
+        });
+
+        this.renderer = new Renderer(this.channelColors, this.synth, canvas);
+        this.renderer.render(true);
 
         // connect the synth to keyboard
         this.synth.onNoteOn = (note, chan, vel, vol, exp) => this.keyboard.pressNote(note, chan, vel, vol, exp);

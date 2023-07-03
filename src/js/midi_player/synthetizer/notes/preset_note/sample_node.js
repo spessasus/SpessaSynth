@@ -69,7 +69,7 @@ export class SampleNode
             value = 0.000001;
         }
         this.timeout = setTimeout(() => {
-            param.setValueAtTime(param.value, this.currentTime);
+            param.setValueAtTime(param.value, this.currentTime + 0.00001);
             param.exponentialRampToValueAtTime(value, this.currentTime + 0.001 + timeInSeconds);
         }, relativeStartTime * 1000);
     }
@@ -99,6 +99,7 @@ export class SampleNode
 
     disconnectSample()
     {
+        clearTimeout(this.timeout);
         this.source.stop();
         this.source.disconnect();
         this.volumeController.disconnect();
