@@ -190,20 +190,19 @@ export class PresetNote
     }
 
     /**
-     * @param velocity {number}
+     * @param gain {number} 0-1
      * @param debug {boolean}
      * @returns {number[]} exclusiveClass numbers
      */
-    startNote(velocity, debug=false){
+    startNote(gain, debug=false){
         if(debug)
         {
             this.displayDebugTable();
         }
         // lower the gain if a lot of notes (or not...?)
-        this.noteVolumeController.gain.value = velocity / 2;
-        //if(this.sampleNodes.length > 10) {
-            this.noteVolumeController.gain.value /= (this.sampleNodes.length > 1 ? this.sampleNodes.length : 2);
-        //}
+        this.noteVolumeController.gain.value = gain / 2;
+
+        //this.noteVolumeController.gain.value /= Math.pow(2, Math.max(this.sampleNodes.length, 2));
 
         // activate vibrato
         if(this.vibratoWave)

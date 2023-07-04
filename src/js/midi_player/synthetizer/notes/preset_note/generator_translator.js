@@ -1,6 +1,8 @@
 import {Generator} from "../../../../soundfont/chunk/generators.js";
 import {Sample} from "../../../../soundfont/chunk/samples.js";
 
+const EMU_ATTENUATION_CORRECTION = 0.4;
+
 export class GeneratorTranslator {
     /**
      * Translates the generators to values for the sample node
@@ -37,7 +39,7 @@ export class GeneratorTranslator {
         this.attenuation = this.sumGeneratorValue("initialAttenuation",
             0,
             0,
-            1440) / 25;
+            1440) / 10 * EMU_ATTENUATION_CORRECTION;
 
         // delayVolEnv
         this.delayTime = this.sumGeneratorValue("delayVolEnv",
@@ -170,6 +172,11 @@ export class GeneratorTranslator {
         return Math.pow(2, timecents / 1200);
     }
 
+    decibelsToGain(decibels)
+    {
+        return Math.pow(10, decibels / 20);
+    }
+
     /**
      * @typedef {{
      *     attenuation: number,
@@ -188,7 +195,7 @@ export class GeneratorTranslator {
      */
     getVolumeEnvelope()
     {
-        const attenuation = Math.pow(10, (this.attenuation * -1) / 20);
+        const attenuation = this.decibelsToGain(this.attenuation * -1)//Math.pow(10, (this.attenuation * -1) / 20);
         const delayTime = this.timecentsToSeconds(this.delayTime);
         const attackTime = this.timecentsToSeconds(this.attackTime);
         const holdTime = this.timecentsToSeconds(this.holdTime);
@@ -275,7 +282,7 @@ export class GeneratorTranslator {
      */
     _getSustainLevel()
     {
-        let sustain = Math.pow(10,  -1 * (this.sustainLowerAmount + this.attenuation) / 20);
+        let sustain = this.decibelsToGain(this.attenuation * -1) * this.decibelsToGain(this.sustainLowerAmount * -1)
         if(sustain <= 0)
         {
             return 0.001;

@@ -158,7 +158,7 @@ export class MidiChannel {
                 {
                     //note.killNote().then(() =>{
                         note.disconnectNote();
-                        delete this.playingNotes.splice(this.playingNotes.indexOf(note), 1);
+                        this.playingNotes.splice(this.playingNotes.indexOf(note), 1);
                     //});
                 }
 
@@ -166,7 +166,7 @@ export class MidiChannel {
                 {
                     //note.killNote().then(() =>{
                         note.disconnectNote();
-                        delete this.stoppingNotes.splice(this.stoppingNotes.indexOf(note), 1);
+                        this.stoppingNotes.splice(this.stoppingNotes.indexOf(note), 1);
                     //});
                 }
             }

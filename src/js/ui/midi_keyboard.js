@@ -1,4 +1,4 @@
-import {Synthetizer, HIGH_PERF_CAP} from "../midi_player/synthetizer/synthetizer.js";
+import {Synthetizer} from "../midi_player/synthetizer/synthetizer.js";
 import {getEvent, midiControllers} from "../midi_parser/midi_message.js";
 import {ShiftableByteArray} from "../utils/shiftable_array.js";
 
@@ -233,14 +233,6 @@ export class MidiKeyboard
 
             this.midiAccess.inputs.get(deviceSelector.value).onmidimessage = event => {
                 // discard as soon as possible if high perf
-                if(this.synth.highPerformanceMode)
-                {
-                    // noteon
-                    if(event.data[0] >> 4 === 0x9 && this.synth.voicesAmount > HIGH_PERF_CAP)
-                    {
-                        return;
-                    }
-                }
                 const statusByteData = getEvent(event.data[0]);
                 // process the event
                 switch (statusByteData.name) {

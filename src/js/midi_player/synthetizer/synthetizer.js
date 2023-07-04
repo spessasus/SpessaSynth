@@ -3,7 +3,6 @@ import {SoundFont2} from "../../soundfont/soundfont_parser.js";
 import {ShiftableByteArray} from "../../utils/shiftable_array.js";
 
 const VOICES_CAP = 1000;
-export const HIGH_PERF_CAP = 400;
 
 export class Synthetizer {
     /**
@@ -64,10 +63,6 @@ export class Synthetizer {
         }
 
         if(this.voicesAmount > VOICES_CAP)
-        {
-            return;
-        }
-        else if(this.highPerformanceMode && this.voicesAmount > HIGH_PERF_CAP)
         {
             return;
         }
