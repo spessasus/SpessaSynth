@@ -15,6 +15,7 @@ SoundFont2 based realtime synthetizer and MIDI visualizer written in JavaScript.
 
 ## Limitations
 - Max 4 Samples per note. It's probably my bad coding or it's too much for the browser. Either way, it may cause problems with some instruments, but the program tries to find the samples that matter the most. I might consider writing custom AudioWorklet to get around this.
+- The program currently supports a limited amount of generators and no modulators. There are some problems with the volume balancing. This program is still in it's early development, so it might not sound as good as other synthetizers (e.g. FluidSynth)
 
 ## Installation
 ***Chrome is highly recommended!***
