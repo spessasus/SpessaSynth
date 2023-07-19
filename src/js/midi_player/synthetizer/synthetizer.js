@@ -9,9 +9,9 @@ export class Synthetizer {
      * @param targetNode {AudioNode}
      * @param soundFont {SoundFont2}
      */
-    constructor(targetNode, soundFont) {
-        this.outputNode = targetNode;
+     constructor(targetNode, soundFont) {
         this.soundFont = soundFont;
+        this.outputNode = targetNode;
 
         /**
          * For Black MIDI's - forces release time to 50ms
@@ -68,7 +68,7 @@ export class Synthetizer {
         }
 
         let chan = this.midiChannels[channel];
-        chan.playNote(midiNote, velocity, enableDebugging);
+        chan.playNote(midiNote, velocity, enableDebugging, this.highPerformanceMode);
         if(this.onNoteOn) {
             this.onNoteOn(midiNote, channel, velocity, chan.channelVolume, chan.channelExpression);
         }
@@ -157,6 +157,11 @@ export class Synthetizer {
             case "All Sound Off":
                 this.stopAll();
                 break;
+
+            // case "Effects 1 Depth":
+            //     // reverb
+            //     this.midiChannels[channel].setReverb(controllerValue);
+            //     break;
 
             case "Expression Controller":
                 this.midiChannels[channel]

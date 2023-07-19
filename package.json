@@ -2,12 +2,10 @@
   "name": "SpessaSynth",
   "version": "1.0.0",
   "dependencies": {
+    "@types/webaudioapi": "^0.0.27",
     "@types/webmidi": "^2.0.7",
     "express": "^4.18.2",
-    "nodemon": "^2.0.22",
-    "open": "^9.1.0",
-    "puppeteer": "^20.3.0",
-    "spdy": "^4.0.2"
+    "open": "^9.1.0"
   },
   "type": "module"
 }

@@ -1,6 +1,7 @@
-import {PresetNote} from "./notes/preset_note.js";
+import {Voice} from "./voice.js";
 import {Preset} from "../../soundfont/chunk/presets.js";
 import {SoundFont2} from "../../soundfont/soundfont_parser.js";
+import {Voice2} from "./voice2.js";
 
 const CHANNEL_LOUDNESS = 1.0;
 
@@ -39,39 +40,41 @@ export class MidiChannel {
         this.heldNotes = [];
 
         this.panner = this.ctx.createStereoPanner();
-        this.gainController =this.ctx.createGain();
+        this.gainController = this.ctx.createGain();
+        // this.reverbController = new GainNode(this.ctx, {
+        //     gain: 0
+        // });
+
+        // this.reverbCreator = this.ctx.createConvolver();
+        // fetch("other/impulse.wav").then(async r => {
+        //     this.reverbCreator.buffer = await this.ctx.decodeAudioData(await r.arrayBuffer());
+        // })
 
         this.resetControllers();
 
         // note -> panner -> gain -> out
 
         this.panner.connect(this.gainController);
+       // this.panner.connect(this.reverbController);
 
+        //this.reverbController.connect(this.reverbCreator);
+
+        //this.reverbCreator.connect(this.outputNode);
         this.gainController.connect(this.outputNode);
         this.gainController.gain.value = this.getGain();
 
         /**
          * Current playing notes
-         * @type {PresetNote[]}
+         * @type {Voice[]}
          */
         this.playingNotes = [];
         /**
          * Notes that are stopping and are about to get deleted
-         * @type {PresetNote[]}
+         * @type {Voice[]}
          */
         this.stoppingNotes = [];
 
     }
-
-    // /**
-    //  * Sets the reverb impulse
-    //  * @param buffer {AudioBuffer}
-    //  */
-    // setReverbBuffer(buffer)
-    // {
-    //     this.reverb.buffer = buffer;
-    // }
-
     // /**
     //  * Sets reverb
     //  * @param value {number} reverb amount. 0-127
@@ -79,13 +82,8 @@ export class MidiChannel {
     // setReverb(value)
     // {
     //     console.log(`Reverb for ${this.channelNumber}:`, (value / 127) * 100, "%");
-    //     this.reverbWet.gain.value = value / 127;
+    //     this.reverbController.gain.value = value / 127;
     // }
-
-    createNote(midiNote)
-    {
-        return new PresetNote(midiNote, this.panner, this.sf, this.preset, this.vibrato, this.channelTuningRatio);
-    }
 
     pressHoldPedal()
     {
@@ -117,7 +115,7 @@ export class MidiChannel {
      */
     setPan(pan)
     {
-        this.panner.pan.value = pan;
+        this.panner.pan.setTargetAtTime(pan, this.outputNode.context.currentTime, 0.001);
     }
 
     setExpression(val)
@@ -130,8 +128,9 @@ export class MidiChannel {
      * @param midiNote {number} 0-127
      * @param velocity {number} 0-127
      * @param debugInfo {boolean} for debugging set to true
+     * @param highPerf {boolean}
      */
-    playNote(midiNote, velocity, debugInfo = false) {
+    playNote(midiNote, velocity, debugInfo = false, highPerf = false) {
         if(!velocity)
         {
             throw "No velocity given!";
@@ -142,7 +141,7 @@ export class MidiChannel {
             return;
         }
 
-        let note = this.createNote(midiNote);
+        let note = new Voice(midiNote, this.panner, this.sf, this.preset, this.vibrato, this.channelTuningRatio, (highPerf ? 2 : 4));
 
         // calculate gain
         let gain = (velocity / 127);
@@ -192,8 +191,9 @@ export class MidiChannel {
 
     setVolume(volume) {
         this.channelVolume = volume / 127;
-        this.gainController.gain.setValueAtTime(this.getGain(),
-            this.ctx.currentTime + 0.0001);
+        this.gainController.gain.value = this.getGain();
+        //this.gainController.gain.setValueAtTime(this.getGain(),
+            //this.ctx.currentTime + 0.0001);
     }
 
     setRPCoarse(value)

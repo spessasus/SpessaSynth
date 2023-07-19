@@ -7,6 +7,8 @@ import {MIDI} from "./midi_parser/midi_loader.js";
 import {SoundFont2} from "./soundfont/soundfont_parser.js";
 import {SequencerUI} from "./ui/sequencer_ui.js";
 import {SynthetizerUI} from "./ui/synthetizer_ui.js";
+import {VoiceWorklet} from "./midi_player/synthetizer/voice/voice_worklet.js"
+import {GeneratorTranslator} from "./midi_player/synthetizer/voice/generator_translator.js";
 
 export class Manager
 {
@@ -35,42 +37,101 @@ export class Manager
      * @param soundFont {SoundFont2}
      */
     constructor(context, soundFont) {
+        context.audioWorklet.addModule("js/midi_player/synthetizer/voice/voice_processor.js").then(() => {
+            // set up soundfont
+            this.soundFont = soundFont;
 
-        // set up soundfont
-        this.soundFont = soundFont;
+            // set up synthetizer
+            this.synth = new Synthetizer(context.destination, this.soundFont);
 
-        // set up synthetizer
-        this.synth = new Synthetizer(context.destination, this.soundFont);
+            // set up keyboard
+            this.keyboard = new MidiKeyboard(this.channelColors, this.synth);
 
-        // set up keyboard
-        this.keyboard = new MidiKeyboard(this.channelColors, this.synth);
+            // set up renderer
+            const canvas = document.getElementById("note_canvas");
 
-        // set up renderer
-        const canvas = document.getElementById("note_canvas");
-
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        window.addEventListener("resize", () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            this.renderer.noteFieldHeight = window.innerHeight;
-            this.renderer.noteFieldWidth = window.innerWidth;
-        });
 
-        this.renderer = new Renderer(this.channelColors, this.synth, canvas);
-        this.renderer.render(true);
+            window.addEventListener("resize", () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                this.renderer.noteFieldHeight = window.innerHeight;
+                this.renderer.noteFieldWidth = window.innerWidth;
+            });
 
-        // connect the synth to keyboard
-        this.synth.onNoteOn = (note, chan, vel, vol, exp) => this.keyboard.pressNote(note, chan, vel, vol, exp);
-        this.synth.onNoteOff = note => this.keyboard.releaseNote(note);
+            this.renderer = new Renderer(this.channelColors, this.synth, canvas);
+            this.renderer.render(true);
 
-        // set up synth UI
-        this.synthUI = new SynthetizerUI(this.channelColors);
-        this.synthUI.connectSynth(this.synth);
+            // connect the synth to keyboard
+            this.synth.onNoteOn = (note, chan, vel, vol, exp) => this.keyboard.pressNote(note, chan, vel, vol, exp);
+            this.synth.onNoteOff = note => this.keyboard.releaseNote(note);
 
-        // create an UI for sequencer
-        this.seqUI = new SequencerUI();
+            // set up synth UI
+            this.synthUI = new SynthetizerUI(this.channelColors);
+            this.synthUI.connectSynth(this.synth);
+
+            // create an UI for sequencer
+            this.seqUI = new SequencerUI();
+
+            return
+
+            // THIS IS A TEST
+
+            const testWorklet = new VoiceWorklet(context);
+            testWorklet.connect(this.renderer.channelAnalysers[0]);
+            testWorklet.connect(context.destination);
+            // const buffers = [];
+            // for(const samandgen of soundFont.getPresetByName("Strings Essemble").getSampleAndGenerators(64))
+            // {
+            //     buffers.push(samandgen.sample.getBuffer(context, soundFont, 0, 0));
+            // }
+            let i = 0;
+            let interval = setInterval(() => {
+                const samandgens = soundFont.presets[i].getSampleAndGenerators(50);
+                console.log(soundFont.presets[i].presetName)
+                if(samandgens.length < 1)
+                {
+                    i++;
+                    return;
+                }
+
+                /**
+                 * @type {VoiceMessage[]}
+                 */
+                const buffersData = [];
+                for(const samandgen of samandgens)
+                {
+                    const gentrans = new GeneratorTranslator(samandgen);
+                    buffersData.push({
+                        buffer: samandgen.sample.getBuffer(soundFont, 0, 0),
+                        startLoop: (samandgen.sample.sampleLoopStartIndex - samandgen.sample.sampleStartIndex) / 2,
+                        endLoop: (samandgen.sample.sampleLoopEndIndex - samandgen.sample.sampleStartIndex) / 2,
+                        sampleRate: samandgen.sample.sampleRate,
+                        playbackRate: gentrans.getPlaybackRate(50),
+                        gain: gentrans.getVolumeEnvelope().attenuation,
+                        pan: gentrans.getPan()
+                    });
+                    //console.log(samandgen.sample.sampleName)
+                }
+
+                testWorklet.startBuffer(buffersData);
+
+                // testWorklet.startBuffer(samandgen.sample.getBuffer(context, soundFont, 0, 0).getChannelData(0),
+                //     (samandgen.sample.sampleLoopStartIndex - samandgen.sample.sampleStartIndex) / 2,
+                //     (samandgen.sample.sampleLoopEndIndex - samandgen.sample.sampleStartIndex) / 2,
+                //     samandgen.sample.sampleRate,
+                //     gentrans.getPlaybackRate(note),
+                //     gentrans.getVolumeEnvelope().attenuation,
+                //     gentrans.getPan());
+                // console.log(samandgen.sample.sampleName);
+                i++;
+                if(i > soundFont.presets.length)
+                {
+                    clearInterval(interval);
+                }
+            }, 500);
+        })
     }
 
     /**

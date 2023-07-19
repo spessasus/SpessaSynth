@@ -192,6 +192,10 @@ export class MidiKeyboard
         // update on program change
         this.synth.onProgramChange = (ch, p) => {
             options[ch].innerText = `Channel ${ch + 1}: ${p}`;
+            if(ch.toString() === channelSelector.value)
+            {
+                presetSelector.value = p;
+            }
         }
 
         // prepare the midi access
@@ -278,6 +282,7 @@ export class MidiKeyboard
                 }
             }
             console.log("hooked to", deviceSelector.value);
+            this.synth.resetControllers();
         }
     }
 
@@ -336,6 +341,10 @@ export class MidiKeyboard
 
     releaseNote(midiNote)
     {
+        if(midiNote > 127 || midiNote < 0)
+        {
+            return;
+        }
         /**
          * @type {HTMLTableCellElement}
          */

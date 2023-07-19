@@ -94,7 +94,7 @@
     position: fixed;
     backdrop-filter: blur(2px);
     background-color: rgba(3, 3, 3, 0.3);
-    top: 6em;
+    top: 5em;
     border-radius: 15px;
     width: 100%;
 }

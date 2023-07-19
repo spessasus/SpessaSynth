@@ -1,9 +1,9 @@
-import {Preset} from "../../../soundfont/chunk/presets.js";
-import {GeneratorTranslator} from "./preset_note/generator_translator.js";
-import {SampleNode} from "./preset_note/sample_node.js";
-import {SoundFont2} from "../../../soundfont/soundfont_parser.js";
+import {Preset} from "../../soundfont/chunk/presets.js";
+import {GeneratorTranslator} from "./voice/generator_translator.js";
+import {SampleNode} from "./voice/sample_node.js";
+import {SoundFont2} from "../../soundfont/soundfont_parser.js";
 
-export class PresetNote
+export class Voice
 {
     /**
      * Create a note
@@ -13,13 +13,18 @@ export class PresetNote
      * @param preset {Preset}
      * @param vibratoOptions {{depth: number, rate: number, delay: number}}
      * @param tuningRatio {number} the note's initial tuning ratio
+     * @param sampleCap {number}
      */
-    constructor(midiNote, node, soundFont, preset, vibratoOptions, tuningRatio) {
+    constructor(midiNote, node, soundFont, preset, vibratoOptions, tuningRatio, sampleCap = 4) {
         this.midiNote = midiNote;
         this.targetNode = node;
-        this.SAMPLE_CAP = 4;
+        this.SAMPLE_CAP = sampleCap;
         this.ctx = this.targetNode.context;
+
         this.tuningRatio = tuningRatio;
+
+        let leftSamples = 0;
+        let rightSamples = 0;
 
         if(vibratoOptions.rate > 0) {
             this.vibratoWave = new OscillatorNode(this.ctx, {
@@ -46,12 +51,40 @@ export class PresetNote
         this.sampleNodes = this.sampleOptions.map(sampleOptions => {
             const sample = sampleOptions.sample;
 
+            const audioData = sample.getBuffer(
+                soundFont,
+                sampleOptions.getAddressOffsets().start,
+                sampleOptions.getAddressOffsets().end);
+            /**
+             * @type {AudioBuffer}
+             */
+            let buffer;
+            switch(sample.sampleType)
+            {
+                case "leftSample":
+                case "RomLeftSample":
+                    buffer = this.ctx.createBuffer(2, audioData.length, sample.sampleRate);
+                    buffer.getChannelData(0).set(audioData);
+                    leftSamples++;
+                    break;
+
+                case "rightSample":
+                case "RomRightSample":
+                    buffer = this.ctx.createBuffer(2, audioData.length, sample.sampleRate);
+                    buffer.getChannelData(1).set(audioData);
+                    rightSamples++;
+                    break;
+
+                default:
+                    buffer = this.ctx.createBuffer(1, audioData.length, sample.sampleRate);
+                    buffer.getChannelData(0).set(audioData);
+                    leftSamples++;
+                    rightSamples++;
+                    break;
+            }
+
             const bufferSource = new AudioBufferSourceNode(this.ctx, {
-                buffer: sample.getBuffer(
-                    this.ctx,
-                    soundFont,
-                    sampleOptions.getAddressOffsets().start,
-                    sampleOptions.getAddressOffsets().end)
+                buffer: buffer
             });
 
             if(this.vibratoDepth) {
@@ -72,6 +105,7 @@ export class PresetNote
             return new SampleNode(bufferSource, volumeControl);
         });
         this.noteVolumeController.connect(node);
+        this.gainDivider = Math.max(leftSamples, rightSamples);
     }
 
     /**
@@ -202,7 +236,13 @@ export class PresetNote
         // lower the gain if a lot of notes (or not...?)
         this.noteVolumeController.gain.value = gain / 2;
 
-        //this.noteVolumeController.gain.value /= Math.pow(2, Math.max(this.sampleNodes.length, 2));
+        // if(this.SAMPLE_CAP > 2) {
+        if(this.gainDivider < 1)
+        {
+            console.warn("No samples for the given note!");
+        }
+             this.noteVolumeController.gain.value /= Math.max(1, this.gainDivider)//Math.max(1, this.sampleNodes.length / 2) //Math.max(this.sampleNodes.length, this.SAMPLE_CAP / 2); //Math.pow(2, Math.max(this.sampleNodes.length, 2));
+        // }
 
         // activate vibrato
         if(this.vibratoWave)

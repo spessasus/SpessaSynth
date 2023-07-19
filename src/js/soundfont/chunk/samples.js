@@ -139,18 +139,17 @@ export class Sample{
     }
 
     /**
-     * creates an audio buffer and stores it for reuse
-     * @param context {BaseAudioContext}
+     * creates a sample buffer and stores it for reuse
      * @param soundFont {SoundFont2}
      * @param startAddr {number}
      * @param endAddr {number}
-     * @returns {AudioBuffer}
+     * @returns {Float32Array}
      */
-    getBuffer(context, soundFont, startAddr, endAddr)
+    getBuffer(soundFont, startAddr = 0, endAddr = 0)
     {
         if(!this.buffer)
         {
-            this.buffer = this.getOffsetBuffer(context, soundFont, 0, 0);
+            this.buffer = this.getOffsetBuffer(soundFont, 0, 0);
         }
         // if no offset, return saved buffer
         if(this.buffer && startAddr === 0 && endAddr === 0)
@@ -158,18 +157,17 @@ export class Sample{
             return this.buffer;
         }
 
-        return this.getOffsetBuffer(context, soundFont, startAddr, endAddr);
+        return this.getOffsetBuffer(soundFont, startAddr, endAddr);
     }
 
     /**
-     * Creates audio buffer
-     * @param context {BaseAudioContext}
+     * Creates a sample buffer
      * @param soundFont {SoundFont2}
      * @param startOffset {number}
      * @param endOffset {number}
-     * @returns {AudioBuffer}
+     * @returns {Float32Array}
      */
-    getOffsetBuffer(context, soundFont, startOffset, endOffset)
+    getOffsetBuffer(soundFont, startOffset, endOffset)
     {
         const soundfontFileArray = soundFont.dataArray;
         // read the sample data
@@ -185,27 +183,7 @@ export class Sample{
             audioData[(i - this.sampleStartIndex - startOffset * 2) / 2] = signedInt16(byte1, byte2) / 32768;
         }
 
-        let buffer;
-        switch(this.sampleType)
-        {
-            case "leftSample":
-            case "RomLeftSample":
-                buffer = context.createBuffer(2, audioData.length, this.sampleRate);
-                buffer.getChannelData(0).set(audioData);
-                break;
-
-            case "rightSample":
-            case "RomRightSample":
-                buffer = context.createBuffer(2, audioData.length, this.sampleRate);
-                buffer.getChannelData(1).set(audioData);
-                break;
-
-            default:
-                buffer = context.createBuffer(1, audioData.length, this.sampleRate);
-                buffer.getChannelData(0).set(audioData);
-                break;
-        }
-        return buffer;
+        return audioData;
     }
 
     /**

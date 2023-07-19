@@ -325,7 +325,11 @@ export class Sequencer {
                 console.log("System Reset");
                 break;
 
+            case "Set Tempo":
+                break;
+
             default:
+                console.log("Unrecognized Event:", statusByteData.name);
                 break;
         }
     }

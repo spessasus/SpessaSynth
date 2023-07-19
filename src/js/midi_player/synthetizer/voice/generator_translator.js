@@ -1,5 +1,5 @@
-import {Generator} from "../../../../soundfont/chunk/generators.js";
-import {Sample} from "../../../../soundfont/chunk/samples.js";
+import {Generator} from "../../../soundfont/chunk/generators.js";
+import {Sample} from "../../../soundfont/chunk/samples.js";
 
 const EMU_ATTENUATION_CORRECTION = 0.4;
 
