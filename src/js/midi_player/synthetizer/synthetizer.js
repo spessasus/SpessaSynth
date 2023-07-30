@@ -277,6 +277,8 @@ export class Synthetizer {
 
     reloadSoundFont()
     {
+        this.defaultPreset = this.soundFont.getPreset(0, 0);
+        this.percussionPreset = this.soundFont.getPreset(128, 0);
         for(let i = 0; i < 16; i++)
         {
             this.programChange(i, this.midiChannels[i].preset.program);

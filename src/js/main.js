@@ -20,6 +20,11 @@ let fileInput = document.getElementById("midi_file_input");
 fileInput.value = "";
 fileInput.focus();
 
+/**
+ * @type {{name: string, sf: SoundFont2}[]}
+ */
+window.loadedSoundfonts = [];
+
 
 /**
  * @param midiFile {File}
@@ -90,6 +95,42 @@ function startMidi(midiFile)
  */
 function replaceFont(fontName)
 {
+    function replaceSf()
+    {
+        titleMessage.innerText = "SpessaSynth: MIDI Soundfont2 Player";
+
+        // prompt the user to click if needed
+        if(!window.audioContextMain)
+        {
+            titleMessage.innerText = "Press anywhere to start the app";
+            return;
+        }
+
+        if(!window.manager) {
+            // prepare the manager
+            window.manager = new Manager(audioContextMain, soundFontParser);
+        }
+        else
+        {
+            window.manager.synth.soundFont = window.soundFontParser;
+            window.manager.synth.reloadSoundFont();
+            window.manager.keyboard.reloadSelectors();
+
+            if(window.manager.seq)
+            {
+                // resets controllers
+                window.manager.seq.currentTime -= 0.1;
+            }
+        }
+    }
+
+    console.log(window.loadedSoundfonts)
+    if(window.loadedSoundfonts.find(sf => sf.name === fontName))
+    {
+        window.soundFontParser = window.loadedSoundfonts.find(sf => sf.name === fontName).sf;
+        replaceSf();
+        return;
+    }
     titleMessage.innerText = "Downloading soundfont...";
     fetchFont(fontName, percent => progressBar.style.width = `${(percent / 100) * titleMessage.offsetWidth}px`)
         .then(data => {
@@ -103,31 +144,8 @@ function replaceFont(fontName)
                     titleMessage.innerText = "No presets in the soundfont! Check your file?"
                     return;
                 }
-                titleMessage.innerText = "SpessaSynth: MIDI Soundfont2 Player";
-
-                // prompt the user to click if needed
-                if(!window.audioContextMain)
-                {
-                    titleMessage.innerText = "Press anywhere to start the app";
-                    return;
-                }
-
-                if(!window.manager) {
-                    // prepare the manager
-                    window.manager = new Manager(audioContextMain, soundFontParser);
-                }
-                else
-                {
-                    window.manager.synth.soundFont = window.soundFontParser;
-                    window.manager.synth.reloadSoundFont();
-                    window.manager.keyboard.reloadSelectors();
-
-                    if(window.manager.seq)
-                    {
-                        // resets controllers
-                        window.manager.seq.currentTime -= 0.1;
-                    }
-                }
+                window.loadedSoundfonts.push({name: fontName, sf: window.soundFontParser})
+                replaceSf();
             });
         });
 }
@@ -163,16 +181,25 @@ fetch("soundfonts").then(async r => {
         sfSelector.appendChild(option);
     }
 
-    sfSelector.onchange = e => {
+    sfSelector.onchange = () => {
         if(window.manager.seq)
         {
             window.manager.seq.pause();
         }
-        replaceFont(e.target.value);
+        replaceFont(sfSelector.value);
+
+        if(window.manager.seq)
+        {
+            titleMessage.innerText = window.manager.seq.midiData.midiName;
+        }
+
+        fetch(`/setlastsf2?sfname=${encodeURIComponent(sfSelector.value)}`);
     }
 
-    // fetch the smallest sf2 first...
-    replaceFont(soundFonts[0].name)
+    // fetch the first sf2
+    replaceFont(soundFonts[0].name);
+
+    // start midi if already uploaded
     if(!fileInput.files[0]) {
         fileInput.onchange = () => {
             if (!fileInput.files[0]) {

@@ -3,6 +3,7 @@ import {Synthetizer} from "../midi_player/synthetizer/synthetizer.js";
 const CHANNEL_ANALYSER_FFT = 128;
 const NOTE_MARGIN = 1;
 const MIN_NOTE_TIME_MS = 20;
+const FONT_SIZE = 16;
 export class Renderer
 {
     /**
@@ -177,6 +178,11 @@ export class Renderer
             this.drawingContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
         }
 
+        this.drawingContext.textAlign = "start";
+        this.drawingContext.textBaseline = "hanging";
+        this.drawingContext.fillStyle = "#ccc";
+        this.drawingContext.font = `${FONT_SIZE}px Sans`;
+
         // draw the individual analysers
         let i = 0;
         for(const analyser of this.channelAnalysers)
@@ -247,15 +253,10 @@ export class Renderer
         let timeSinceLastFrame = performance.now() - this.frameTimeStart;
         let fps = 1000 / timeSinceLastFrame;
 
-        // draw FPS
-        this.drawingContext.fillStyle = "#ccc";
-        this.drawingContext.textAlign = "start";
-        this.drawingContext.font = "16px Sans";
-        this.drawingContext.fillText(Math.round(fps).toString(), 0, 16);
-
-        // draw note count
+        // draw note count and fps
         this.drawingContext.textAlign = "end";
-        this.drawingContext.fillText(`${this.notesOnScreen} notes`, this.canvas.width + this.noteFieldLeftOffset, 16);
+        this.drawingContext.fillText(`${this.notesOnScreen} notes`, this.canvas.width + this.noteFieldLeftOffset, FONT_SIZE + 5);
+        this.drawingContext.fillText(Math.round(fps).toString() + " FPS", this.canvas.width + this.noteFieldLeftOffset, 5);
 
         this.frameTimeStart = performance.now();
         if(auto) {
@@ -275,7 +276,6 @@ export class Renderer
     drawChannelWaveform(waveform, x, y, channelNumber)
     {
         const WAVE_MULTIPLIER = 2;
-
         const waveWidth = this.canvas.width / 4;
         const waveHeight = this.canvas.height / 4
         const relativeX = waveWidth * x;
@@ -283,11 +283,13 @@ export class Renderer
         const yRange = waveHeight;
         const xStep = waveWidth / waveform.length;
 
+        // draw
+        this.drawingContext.strokeStyle = this.channelColors[channelNumber];
+
         this.drawingContext.moveTo(
             relativeX,
             relativeY
         )
-        this.drawingContext.strokeStyle = this.channelColors[channelNumber];
         this.drawingContext.beginPath();
         for(let i = 0; i < waveform.length; i++)
         {
