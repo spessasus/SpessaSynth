@@ -14,12 +14,10 @@ export class Voice
      * @param preset {Preset}
      * @param vibratoOptions {{depth: number, rate: number, delay: number}}
      * @param tuningRatio {number} the note's initial tuning ratio
-     * @param sampleCap {number}
      */
-    constructor(midiNote, targetVelocity, node, soundFont, preset, vibratoOptions, tuningRatio, sampleCap = 4) {
+    constructor(midiNote, targetVelocity, node, soundFont, preset, vibratoOptions, tuningRatio) {
         this.midiNote = midiNote;
         this.targetNode = node;
-        //this.SAMPLE_CAP = sampleCap;
         this.ctx = this.targetNode.context;
 
         this.tuningRatio = tuningRatio;
@@ -99,56 +97,6 @@ export class Voice
         this.noteVolumeController.connect(node);
     }
 
-    // /**
-    //  *
-    //  * @param samples {{
-    //  *  instrumentGenerators: Generator[],
-    //  *  presetGenerators: Generator[],
-    //  *  sample: Sample
-    //  * }[]}
-    //  * @return {{
-    //  *  instrumentGenerators: Generator[],
-    //  *  presetGenerators: Generator[],
-    //  *  sample: Sample
-    //  * }[]}
-    //  */
-    // limitSamples(samples)
-    // {
-    //     if(samples.length > this.SAMPLE_CAP) {
-    //         // sort by longes samples if there are 150ms or shorter samples.
-    //         // We don't want any additional instrument effects, just the actual samples.
-    //         if (samples.find(s => (s.sample.sampleLength / s.sample.sampleRate) < 0.15)) {
-    //             samples.sort((sample1, sample2) => {
-    //                     return sample2.sample.sampleLength - sample1.sample.sampleLength;
-    //                 }
-    //             );
-    //         }
-    //
-    //         if(this.SAMPLE_CAP === 2)
-    //         {
-    //             let leftSample = samples.find(s => s.sample.sampleType === "leftSample");
-    //             if (!leftSample) {
-    //                 // cap normally
-    //                 samples = samples.slice(0, this.SAMPLE_CAP);
-    //             } else {
-    //                 let rightSample = samples.find(s => s.sample.sampleType === "rightSample");
-    //                 if (!rightSample) {
-    //                     // cap normally
-    //                     samples = samples.slice(0, this.SAMPLE_CAP);
-    //                 } else {
-    //                     samples = [leftSample, rightSample];
-    //                 }
-    //             }
-    //         }
-    //         else
-    //         {
-    //             // cap normally
-    //             samples = samples.slice(0, this.SAMPLE_CAP);
-    //         }
-    //     }
-    //     return samples;
-    // }
-
     /**
      * @param bufferSource {AudioBufferSourceNode}
      * @param sampleOptions {GeneratorTranslator}
@@ -222,7 +170,7 @@ export class Voice
     startNote(gain, debug=false){
         if(debug)
         {
-            this.displayDebugTable();
+            //this.displayDebugTable();
         }
         // lower the gain if a lot of notes (or not...?)
         this.noteVolumeController.gain.value = gain / 2;

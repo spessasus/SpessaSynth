@@ -90,8 +90,10 @@ export class Preset {
          * }[]}
          */
         let parsedGeneratorsAndSamples = [];
-        let presetZonesInRange = this.presetZones.filter(zone => isInRange(zone.keyRange.min, zone.keyRange.max, midiNote)
-            && isInRange(zone.velRange.min, zone.velRange.max, velocity));
+        let presetZonesInRange = this.presetZones.filter(currentZone =>
+            isInRange(currentZone.keyRange.min, currentZone.keyRange.max, midiNote)
+            && isInRange(currentZone.velRange.min, currentZone.velRange.max, velocity));
+
         /**
          * @type {Generator[]}
          */
@@ -113,11 +115,12 @@ export class Preset {
              */
             let globalInstrumentGenerators = [];
 
-            let instrumentZonesInRange = zone.instrument.instrumentZones.filter(z =>
-                isInRange(z.keyRange.min, z.keyRange.max, midiNote)
-                && isInRange(zone.velRange.min, zone.velRange.max, velocity));
+            let instrumentZonesInRange = zone.instrument.instrumentZones.filter(currentZone =>
+                isInRange(currentZone.keyRange.min, currentZone.keyRange.max, midiNote)
+                && isInRange(currentZone.velRange.min, currentZone.velRange.max, velocity));
 
             for(let instrumentZone of instrumentZonesInRange) {
+                console.log(instrumentZone.velRange)
                 if (instrumentZone.isGlobal) {
                     // global zone
                     globalInstrumentGenerators.push(...instrumentZone.generators);
