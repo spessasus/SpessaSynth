@@ -74,9 +74,10 @@ export class SoundFont2
 
         /**
          * read all the sampleOptions
-         * @type {Sample[]}
+         * (the current index points to start of the smpl chunk
          */
-        let samples = readSamples(this.presetSamplesChunk);
+        this.dataArray.currentIndex = this.sampleDataStartIndex
+        let samples = readSamples(this.presetSamplesChunk, this.dataArray);
 
         /**
          * read all the instrument generators

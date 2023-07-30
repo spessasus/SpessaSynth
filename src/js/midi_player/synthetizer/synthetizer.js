@@ -275,6 +275,14 @@ export class Synthetizer {
         }
     }
 
+    reloadSoundFont()
+    {
+        for(let i = 0; i < 16; i++)
+        {
+            this.programChange(i, this.midiChannels[i].preset.program);
+        }
+    }
+
     /**
      * Sends a sysex
      * @param messageData {ShiftableByteArray} the message's data (after F0)

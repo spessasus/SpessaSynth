@@ -17,6 +17,7 @@ export class InstrumentZone {
         this.modulatorZoneSize = 0;
         this.generatorZoneSize = 0;
         this.keyRange = {min: 0, max: 127};
+        this.velRange = {min: 0, max: 127}
         this.isGlobal = true;
         /**
          * @type {Generator[]}
@@ -83,6 +84,19 @@ export class InstrumentZone {
             this.keyRange.max = (range.generatorValue >> 8) & 0x7F;
         }
     }
+
+    /**
+     * reads the velolicty range of the zone
+     */
+    getVelRange()
+    {
+        let range = this.generators.find(g => g.generatorType === "velRange");
+        if(range)
+        {
+            this.velRange.min = range.generatorValue & 0x7F;
+            this.velRange.max = (range.generatorValue >> 8) & 0x7F;
+        }
+    }
 }
 
 /**
@@ -95,6 +109,9 @@ export class InstrumentZone {
  */
 export function readInstrumentZones(zonesChunk, instrumentGenerators, instrumentModulators, instrumentSamples)
 {
+    /**
+     * @type {InstrumentZone[]}
+     */
     let zones = [];
     while(zonesChunk.chunkData.length > zonesChunk.chunkData.currentIndex)
     {
@@ -108,6 +125,7 @@ export function readInstrumentZones(zonesChunk, instrumentGenerators, instrument
             zones[zones.length - 1].getModulators(instrumentModulators);
             zones[zones.length - 1].getSample(instrumentSamples);
             zones[zones.length - 1].getKeyRange();
+            zones[zones.length - 1].getVelRange();
         }
         zones.push(zone);
     }
@@ -125,6 +143,7 @@ export class PresetZone {
         this.modulatorZoneSize = 0;
         this.generatorZoneSize = 0;
         this.keyRange = {min: 0, max: 127};
+        this.velRange = {min: 0, max: 127}
         this.isGlobal = true;
         /**
          * @type {Generator[]}
@@ -191,6 +210,19 @@ export class PresetZone {
             this.keyRange.max = (range.generatorValue >> 8) & 0x7F;
         }
     }
+
+    /**
+     * reads the velolicty range of the zone
+     */
+    getVelRange()
+    {
+        let range = this.generators.find(g => g.generatorType === "velRange");
+        if(range)
+        {
+            this.velRange.min = range.generatorValue & 0x7F;
+            this.velRange.max = (range.generatorValue >> 8) & 0x7F;
+        }
+    }
 }
 
 /**
@@ -203,6 +235,9 @@ export class PresetZone {
  */
 export function readPresetZones(zonesChunk, presetGenerators, presetModulators, instruments)
 {
+    /**
+     * @type {PresetZone[]}
+     */
     let zones = [];
     while(zonesChunk.chunkData.length > zonesChunk.chunkData.currentIndex)
     {
@@ -216,6 +251,7 @@ export function readPresetZones(zonesChunk, presetGenerators, presetModulators, 
             zones[zones.length - 1].getModulators(presetModulators);
             zones[zones.length - 1].getInstrument(instruments);
             zones[zones.length - 1].getKeyRange();
+            zones[zones.length - 1].getVelRange();
         }
         zones.push(zone);
     }

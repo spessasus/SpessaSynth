@@ -58,6 +58,8 @@ class VoiceWorkletProcessor extends AudioWorkletProcessor
         for (let i = 0; i < BUFFER_SIZE; i++) {
             let outputLeft = 0;
             let outputRight = 0;
+            let dividerLeft = 0;
+            let dividerRight = 0;
             for(let bufI = 0; bufI < this.buffers.length; bufI++) {
                 const bufferData = this.buffers[bufI];
 
@@ -66,18 +68,24 @@ class VoiceWorkletProcessor extends AudioWorkletProcessor
                     continue;
                 }
 
-                //const x1 = bufferData.buffer[(index + 1) % bufferData.buffer.length];
+                //const x1 = bufferData.sampleData[(index + 1) % bufferData.sampleData.length];
 
-                const samplePoint = bufferData.buffer[Math.floor(this.cursors[bufI]) % bufferData.buffer.length] * bufferData.gain / Math.max(this.buffers.length, 2);
+                const samplePoint = bufferData.buffer[Math.floor(this.cursors[bufI]) % bufferData.buffer.length] * bufferData.gain // Math.max(this.buffers.length, 2);
                 // left channel
-                const leftSamplePoint = samplePoint * Math.min(1, 1 - bufferData.pan);
+                let panGainLeft =Math.min(1, 1 - bufferData.pan);
+                dividerLeft += panGainLeft
+                const leftSamplePoint = samplePoint * panGainLeft;
                 outputLeft += leftSamplePoint //+ outputLeft - (leftSamplePoint * outputLeft);
 
                 // right channel
-                const rightSamplePoint = samplePoint * Math.min(1, bufferData.pan + 1);
+                let panGainRight = Math.min(1, bufferData.pan + 1);
+                dividerRight += panGainRight
+                const rightSamplePoint = samplePoint * panGainRight;
                 outputRight += rightSamplePoint //+ outputRight - (rightSamplePoint * outputRight);
 
                 this.cursors[bufI] += bufferData.sampleRate / sampleRate * bufferData.playbackRate * this.bendRatio;
+
+                // loop
                 if (this.cursors[bufI] >= bufferData.endLoop && bufferData.loop) {
                     if (bufferData.startLoop === 0) {
                         this.cursors[bufI] = 0;
@@ -87,8 +95,8 @@ class VoiceWorkletProcessor extends AudioWorkletProcessor
                 }
             }
 
-            output[0][i] = outputLeft;
-            output[1][i] = outputRight;
+            output[0][i] = outputLeft / dividerLeft;
+            output[1][i] = outputRight / dividerRight;
         }
         return true;
     }

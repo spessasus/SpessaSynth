@@ -1,13 +1,13 @@
 /**
  * @typedef {{
- * buffer: Float32Array,
+ * sampleData: Float32Array,
  * startLoop: number,
  * endLoop: number,
  * sampleRate: number,
  * playbackRate: number,
  * gain: number,
  * pan: number,
- * loop: boolean
+ * loop: boolean,
  * }} VoiceMessage
  */
 

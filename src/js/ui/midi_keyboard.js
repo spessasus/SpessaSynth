@@ -2,6 +2,8 @@ import {Synthetizer} from "../midi_player/synthetizer/synthetizer.js";
 import {getEvent, midiControllers} from "../midi_parser/midi_message.js";
 import {ShiftableByteArray} from "../utils/shiftable_array.js";
 
+const KEYBOARD_VELOCITY = 126;
+
 export class MidiKeyboard
 {
     /**
@@ -69,16 +71,16 @@ export class MidiKeyboard
 
                 // user note on
                 this.heldKeys.push(midiNote);
-                this.pressNote(midiNote, this.channel, 127, 1, 1);
-                this.synth.noteOn(this.channel, midiNote, 127, true);
+                this.pressNote(midiNote, this.channel, KEYBOARD_VELOCITY, 1, 1);
+                this.synth.noteOn(this.channel, midiNote, KEYBOARD_VELOCITY, true);
             }
 
             noteElement.onmousedown = () =>
             {
                 // user note on
                 this.heldKeys.push(midiNote);
-                this.pressNote(midiNote, this.channel, 127, 1, 1);
-                this.synth.noteOn(this.channel, midiNote, 127, true);
+                this.pressNote(midiNote, this.channel, KEYBOARD_VELOCITY, 1, 1);
+                this.synth.noteOn(this.channel, midiNote, KEYBOARD_VELOCITY, true);
             }
 
             noteElement.onmouseout = () => {
@@ -133,6 +135,7 @@ export class MidiKeyboard
 
         // preset selector
         const presetSelector = document.createElement("select");
+        presetSelector.id = "preset_selector";
 
         // load the preset names
         let pNames = this.synth.soundFont.presets.map(p => p.presetName);
@@ -145,8 +148,7 @@ export class MidiKeyboard
             presetSelector.appendChild(option);
         }
 
-        presetSelector.
-        addEventListener("change", () => {
+        presetSelector.onchange = () => {
             // find the preset's bank and program number
             const presetName = presetSelector.value;
             const preset = this.synth.soundFont.getPresetByName(presetName);
@@ -157,7 +159,7 @@ export class MidiKeyboard
             this.synth.controllerChange(this.channel, "Bank Select", bank);
             this.synth.programChange(this.channel, program);
             console.log("Changing user preset to:", presetName);
-        });
+        };
         this.selectorMenu.appendChild(presetSelector);
 
         // channel selector
@@ -205,6 +207,35 @@ export class MidiKeyboard
         message => {
             console.log(`Could not get MIDI Devices:`, message);
         });
+    }
+
+    reloadSelectors()
+    {
+        const presetSelector = document.getElementById("preset_selector");
+        presetSelector.innerHTML = "";
+        // load the preset names
+        let pNames = this.synth.soundFont.presets.map(p => p.presetName);
+        pNames.sort();
+        for(let pName of pNames)
+        {
+            let option = document.createElement("option");
+            option.value = pName;
+            option.innerText = pName;
+            presetSelector.appendChild(option);
+        }
+
+        presetSelector.onchange = () => {
+            // find the preset's bank and program number
+            const presetName = presetSelector.value;
+            const preset = this.synth.soundFont.getPresetByName(presetName);
+            const bank = preset.bank;
+            const program = preset.program;
+
+            // change bank
+            this.synth.controllerChange(this.channel, "Bank Select", bank);
+            this.synth.programChange(this.channel, program);
+            console.log("Changing user preset to:", presetName);
+        };
     }
 
     /**

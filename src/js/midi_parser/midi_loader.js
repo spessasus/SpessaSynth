@@ -41,6 +41,9 @@ export class MIDI{
          */
         this.tempoChanges = [{ticks: 0, tempo: 120}];
 
+        let loopStart = null;
+        let loopEnd = null;
+
         /**
          * Read all the tracks
          * @type {MidiMessage[][]}
@@ -135,6 +138,38 @@ export class MIDI{
                         tempo: 60000000 / readBytesAsUintBigEndian(messageData, 3)
                     });
                 }
+
+                // check for loop (CC 2/4)
+                if((statusByte & 0xF0) === 0xB0)
+                {
+                    // loop start
+                    if(eventData[0] === 2)
+                    {
+                        if(loopStart === null)
+                        {
+                            loopStart = totalTicks;
+                        }
+                        else
+                        {
+                            // this controller has occured more than once, this means that it doesnt indicate the loop
+                            loopStart = 0;
+                        }
+                    }
+
+                    // loop end
+                    if(eventData[0] === 4)
+                    {
+                        if(loopEnd === null)
+                        {
+                            loopEnd = totalTicks;
+                        }
+                        else
+                        {
+                            // this controller has occured more than once, this means that it doesnt indicate the loop
+                            loopEnd = 0;
+                        }
+                    }
+                }
             }
             this.tracks.push(track);
             console.log("Parsed", this.tracks.length, "/", this.tracksAmount);
@@ -142,6 +177,14 @@ export class MIDI{
 
         this.lastEventTick = Math.max(...this.tracks.map(t => t[t.length - 1].ticks));
         console.log("MIDI file parsed. Total tick time:", this.lastEventTick);
+
+        if(loopStart === null || loopEnd === null || loopEnd === 0)
+        {
+            loopStart = 0;
+            loopEnd = this.lastEventTick
+        }
+        this.loop = {start: loopStart, end: loopEnd};
+        console.log("loop", this.loop);
 
         // get track name
         this.midiName = "";

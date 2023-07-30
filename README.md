@@ -14,8 +14,7 @@ SoundFont2 based realtime synthetizer and MIDI visualizer written in JavaScript.
 - Written in pure JavaScript using WebAudio API (Express.js is only used for the file server)
 
 ## Limitations
-- Max 4 Samples per note. It's probably my bad coding or it's too much for the browser. Either way, it may cause problems with some instruments, but the program tries to find the samples that matter the most. I might consider writing custom AudioWorklet to get around this.
-- The program currently supports a limited amount of generators and no modulators. There are some problems with the volume balancing. This program is still in it's early development, so it might not sound as good as other synthetizers (e.g. FluidSynth)
+- The program currently supports a limited amount of generators and no modulators. This program is still in it's early development, so it might not sound as good as other synthetizers (e.g. FluidSynth)
 
 ## Installation
 ***Chrome is highly recommended!***
@@ -24,7 +23,7 @@ SoundFont2 based realtime synthetizer and MIDI visualizer written in JavaScript.
 
 **Requires Node.js**
 1. Download the code as zip and extract or use `git clone https://github.com/spessasus/SpessaSynth`
-2. Put your file named `soundfont.sf2` into the `soundfonts` folder. (SoundFont selection coming soon)
+2. Put your soundfonts into the `soundfonts` folder. (you can select soundfonts in the program)
 3. Double click the `start.bat`
 4. Enjoy!
 

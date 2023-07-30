@@ -18,9 +18,13 @@
   <div id="title_wrapper">
     <div id="progress_bar"></div>
     <h1 id="title">SpessaSynth: MIDI Soundfont2 Player</h1>
-    <label id="file_upload"> Upload a MIDI file
-      <input type="file" accept="audio/parsedMidi" id="midi_file_input"><br/>
-    </label>
+    <div class="midi_and_sf_controller">
+      <label id="file_upload"> Upload a MIDI file
+        <input type="file" accept="audio/parsedMidi" id="midi_file_input"><br/>
+      </label>
+      <select id="sf_selector">
+      </select>
+    </div>
   </div>
 
   <div id="keyboard_selector">

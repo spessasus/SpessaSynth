@@ -30,7 +30,7 @@ export class GeneratorTranslator {
         this.loopingMode = this.getGeneratorValue("sampleModes", 0) & 3;
 
         // pan (raw)
-        this.pan = this.getGeneratorValue("pan", 0);
+        this.pan = this.sumGeneratorValue("pan", 0, -500, 500);
 
         // audio envelope
         // initialAttenuation (dB)
@@ -142,25 +142,29 @@ export class GeneratorTranslator {
         if(gen)
         {
             const val = gen.generatorValue + preset;
-            if(minAllowed <= val && val <= maxAllowed)
-            {
-                return val;
-            }
-            else
-            {
-                return defaultValue;
-            }
+            return this.limitValue(val, minAllowed, maxAllowed)
         }
 
         const val = defaultValue + preset;
-        if(minAllowed <= val && val <= maxAllowed)
+        return this.limitValue(val, minAllowed, maxAllowed);
+    }
+
+    /**
+     * @param val {number}
+     * @param minAllowed {number}
+     * @param maxAllowed {number}
+     * @return {number}
+     */
+    limitValue(val, minAllowed, maxAllowed)
+    {
+        if(val < minAllowed)
         {
-            return val;
+            return minAllowed;
         }
-        else
-        {
-            return defaultValue;
+        else if(val > maxAllowed) {
+            return maxAllowed;
         }
+        return val
     }
 
     /**

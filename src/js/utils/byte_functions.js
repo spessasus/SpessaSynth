@@ -90,12 +90,12 @@ export function readRIFFChunk(dataArray, readData = true){
  * @returns {number}
  */
 export function signedInt16(byte1, byte2){
-    let sign = byte2 & (1 << 7);
-    let int16 = (((byte2 & 0xFF) << 8) | (byte1 & 0xFF));
-    if (sign) {
-        int16 = 0xFFFF0000 | int16;
+    let val = (byte2 << 8) | byte1;
+    if(val > 32767)
+    {
+        return val - 65536;
     }
-    return int16;
+    return val;
 }
 
 /**

@@ -70,13 +70,14 @@ export class Preset {
     /**
      * Returns sampleOptions and generators for given note
      * @param midiNote {number}
+     * @param velocity {number}
      * @returns {{
      *  instrumentGenerators: Generator[],
      *  presetGenerators: Generator[],
      *  sample: Sample
      * }[]}
      */
-    getSampleAndGenerators(midiNote)
+    getSampleAndGenerators(midiNote, velocity)
     {
         function isInRange(min, max, number) {
             return number >= min && number <= max;
@@ -89,7 +90,8 @@ export class Preset {
          * }[]}
          */
         let parsedGeneratorsAndSamples = [];
-        let presetZonesInRange = this.presetZones.filter(zone => isInRange(zone.keyRange.min, zone.keyRange.max, midiNote));
+        let presetZonesInRange = this.presetZones.filter(zone => isInRange(zone.keyRange.min, zone.keyRange.max, midiNote)
+            && isInRange(zone.velRange.min, zone.velRange.max, velocity));
         /**
          * @type {Generator[]}
          */
@@ -112,7 +114,8 @@ export class Preset {
             let globalInstrumentGenerators = [];
 
             let instrumentZonesInRange = zone.instrument.instrumentZones.filter(z =>
-                isInRange(z.keyRange.min, z.keyRange.max, midiNote));
+                isInRange(z.keyRange.min, z.keyRange.max, midiNote)
+                && isInRange(zone.velRange.min, zone.velRange.max, velocity));
 
             for(let instrumentZone of instrumentZonesInRange) {
                 if (instrumentZone.isGlobal) {

@@ -84,6 +84,54 @@ function startMidi(midiFile)
     });
 }
 
+/**
+ * Fetches and replaces the current manager's font
+ * @param fontName {string}
+ */
+function replaceFont(fontName)
+{
+    titleMessage.innerText = "Downloading soundfont...";
+    fetchFont(fontName, percent => progressBar.style.width = `${(percent / 100) * titleMessage.offsetWidth}px`)
+        .then(data => {
+            titleMessage.innerText = "Parsing soundfont...";
+            setTimeout(() => {
+                window.soundFontParser = new SoundFont2(data);
+                progressBar.style.width = "0";
+
+                if(window.soundFontParser.presets.length < 1)
+                {
+                    titleMessage.innerText = "No presets in the soundfont! Check your file?"
+                    return;
+                }
+                titleMessage.innerText = "SpessaSynth: MIDI Soundfont2 Player";
+
+                // prompt the user to click if needed
+                if(!window.audioContextMain)
+                {
+                    titleMessage.innerText = "Press anywhere to start the app";
+                    return;
+                }
+
+                if(!window.manager) {
+                    // prepare the manager
+                    window.manager = new Manager(audioContextMain, soundFontParser);
+                }
+                else
+                {
+                    window.manager.synth.soundFont = window.soundFontParser;
+                    window.manager.synth.reloadSoundFont();
+                    window.manager.keyboard.reloadSelectors();
+
+                    if(window.manager.seq)
+                    {
+                        // resets controllers
+                        window.manager.seq.currentTime -= 0.1;
+                    }
+                }
+            });
+        });
+}
+
 document.body.onclick = () =>
 {
     // user has clicked, we can create the ui
@@ -98,38 +146,44 @@ document.body.onclick = () =>
     document.body.onclick = null;
 }
 
-titleMessage.innerText = "Downloading soundfont...";
+/**
+ * @type {{name: string, size: number}[]}
+ */
+let soundFonts = [];
 
-fetchFont("soundfont.sf2", percent => progressBar.style.width = `${(percent / 100) * titleMessage.offsetWidth}px`)
-    .then(data => {
-        titleMessage.innerText = "Parsing soundfont...";
-        setTimeout(() => {
-            window.soundFontParser = new SoundFont2(data);
+// load the list of soundfonts
+fetch("soundfonts").then(async r => {
+    const sfSelector = document.getElementById("sf_selector");
 
-            titleMessage.innerText = "SpessaSynth: MIDI Soundfont2 Player";
-            progressBar.style.width = "0";
+    soundFonts = JSON.parse(await r.text());
+    for(let sf of soundFonts)
+    {
+        const option = document.createElement("option");
+        option.innerText = sf.name;
+        sfSelector.appendChild(option);
+    }
 
-            if(!fileInput.files[0]) {
-                fileInput.onchange = () => {
-                    if (!fileInput.files[0]) {
-                        return;
-                    }
-                    startMidi(fileInput.files[0]);
-                    fileInput.onchange = null;
-                };
-            }
-            else
-            {
-                startMidi(fileInput.files[0]);
-            }
+    sfSelector.onchange = e => {
+        if(window.manager.seq)
+        {
+            window.manager.seq.pause();
+        }
+        replaceFont(e.target.value);
+    }
 
-            // prompt the user to click if needed
-            if(!window.audioContextMain)
-            {
-                titleMessage.innerText = "Press anywhere to start the app";
+    // fetch the smallest sf2 first...
+    replaceFont(soundFonts[0].name)
+    if(!fileInput.files[0]) {
+        fileInput.onchange = () => {
+            if (!fileInput.files[0]) {
                 return;
             }
-            // prepare the manager
-            window.manager = new Manager(audioContextMain, soundFontParser);
-        });
-    });
+            startMidi(fileInput.files[0]);
+            fileInput.onchange = null;
+        };
+    }
+    else
+    {
+        startMidi(fileInput.files[0]);
+    }
+})

@@ -47,7 +47,7 @@ export class MidiChannel {
 
         // this.reverbCreator = this.ctx.createConvolver();
         // fetch("other/impulse.wav").then(async r => {
-        //     this.reverbCreator.buffer = await this.ctx.decodeAudioData(await r.arrayBuffer());
+        //     this.reverbCreator.sampleData = await this.ctx.decodeAudioData(await r.arrayBuffer());
         // })
 
         this.resetControllers();
@@ -84,6 +84,24 @@ export class MidiChannel {
     //     console.log(`Reverb for ${this.channelNumber}:`, (value / 127) * 100, "%");
     //     this.reverbController.gain.value = value / 127;
     // }
+
+    /**
+     * Transposes the channel by given octaves
+     * @param octaves {number} can be positive and negative
+     */
+    transposeChannel(octaves)
+    {
+        function GetTransposeFrequencyMultiplier(transpose) {
+            if (transpose === 0) {
+                return 1;
+            } else if (transpose > 0) {
+                return 2 ** transpose;
+            } else if (transpose < 0) {
+                return 1 / (2 ** Math.abs(transpose));
+            }
+        }
+
+    }
 
     pressHoldPedal()
     {
@@ -141,7 +159,7 @@ export class MidiChannel {
             return;
         }
 
-        let note = new Voice(midiNote, this.panner, this.sf, this.preset, this.vibrato, this.channelTuningRatio, (highPerf ? 2 : 4));
+        let note = new Voice(midiNote, velocity, this.panner, this.sf, this.preset, this.vibrato, this.channelTuningRatio, (highPerf ? 2 : 4));
 
         // calculate gain
         let gain = (velocity / 127);
@@ -389,6 +407,8 @@ export class MidiChannel {
         this.gainController.gain.value = 1;
         this.panner.pan.value = 0;
         this.pitchBend = 0;
+
+        this.trasposeMultiplier = 1;
 
         this.vibrato = {depth: 0, rate: 0, delay: 0};
         this.resetParameters();

@@ -1,18 +1,23 @@
 import {RiffChunk} from "./riff_chunk.js";
 import {ShiftableByteArray} from "../../utils/shiftable_array.js";
-import {readByte, readBytesAsUintLittleEndian, readBytesAsString, signedInt16, signedInt8} from "../../utils/byte_functions.js";
+import {readByte, readBytesAsUintLittleEndian, readBytesAsString, signedInt8} from "../../utils/byte_functions.js";
 import {SoundFont2} from "../soundfont_parser.js";
 /**
  * Reads the sampleOptions from the shdr chunk
  * @param sampleHeadersChunk {RiffChunk}
+ * @param smplChunkData {ShiftableByteArray}
  * @returns {Sample[]}
  */
-export function readSamples(sampleHeadersChunk)
+export function readSamples(sampleHeadersChunk, smplChunkData)
 {
+    /**
+     * @type {Sample[]}
+     */
     let samples = [];
     while(sampleHeadersChunk.chunkData.length > sampleHeadersChunk.chunkData.currentIndex)
     {
         samples.push(readSample(sampleHeadersChunk.chunkData));
+        samples[samples.length - 1].loadBufferData(smplChunkData);
     }
     return samples;
 }
@@ -139,7 +144,7 @@ export class Sample{
     }
 
     /**
-     * creates a sample buffer and stores it for reuse
+     * creates a sample sampleData and stores it for reuse
      * @param soundFont {SoundFont2}
      * @param startAddr {number}
      * @param endAddr {number}
@@ -147,43 +152,70 @@ export class Sample{
      */
     getBuffer(soundFont, startAddr = 0, endAddr = 0)
     {
-        if(!this.buffer)
+        if(!this.sampleData)
         {
-            this.buffer = this.getOffsetBuffer(soundFont, 0, 0);
+            throw "Sample not loaded!!! sample chunk missing?";
         }
-        // if no offset, return saved buffer
-        if(this.buffer && startAddr === 0 && endAddr === 0)
+        // if no offset, return saved sampleData
+        if(this.sampleData && startAddr === 0 && endAddr === 0)
         {
-            return this.buffer;
+            return this.sampleData;
         }
 
         return this.getOffsetBuffer(soundFont, startAddr, endAddr);
     }
 
     /**
-     * Creates a sample buffer
-     * @param soundFont {SoundFont2}
+     * @param smplArr {ShiftableByteArray}
+     */
+    loadBufferData(smplArr)
+    {
+        console.log('getting sampleData for', this.sampleName)
+        // read the sample data
+        const audioData =  new Float32Array(((this.sampleEndIndex - this.sampleStartIndex) / 2) + 1);
+        const dataStartIndex = smplArr.currentIndex
+
+        for(let i = this.sampleStartIndex; i < this.sampleEndIndex; i += 2)
+        {
+            // convert 2 uint8 bytes to singed int16
+            let val  = (smplArr[dataStartIndex + i + 1] << 8) | smplArr[dataStartIndex + i];
+            if(val > 32767)
+            {
+                val -= 65536
+            }
+
+            audioData[(i - this.sampleStartIndex) / 2] = val / 32768;
+        }
+        this.sampleData = audioData;
+    }
+
+    /**
+     * Creates a sample sampleData
      * @param startOffset {number}
      * @param endOffset {number}
      * @returns {Float32Array}
      */
-    getOffsetBuffer(soundFont, startOffset, endOffset)
+    getOffsetBuffer(startOffset, endOffset)
     {
-        const soundfontFileArray = soundFont.dataArray;
-        // read the sample data
-        const audioData =  new Float32Array(((this.sampleEndIndex - this.sampleStartIndex) / 2) + 1);
-        soundfontFileArray.currentIndex = soundFont.sampleDataStartIndex;
+        console.log("offset", startOffset, endOffset);
+        // const soundfontFileArray = soundFont.dataArray;
+        // // read the sample data
+        // const audioData =  new Float32Array(((this.sampleEndIndex - this.sampleStartIndex) / 2) + 1);
+        // soundfontFileArray.currentIndex = soundFont.sampleDataStartIndex;
+        //
+        // for(let i = this.sampleStartIndex + startOffset * 2; i < this.sampleEndIndex + endOffset * 2; i += 2)
+        // {
+        //     // convert 2 uint8 bytes to singed int16
+        //     let val  = (soundfontFileArray[soundfontFileArray.currentIndex + i + 1] << 8) | soundfontFileArray[soundfontFileArray.currentIndex + i];
+        //     if(val > 32767)
+        //     {
+        //         val -= 65536
+        //     }
+        //
+        //     audioData[(i - this.sampleStartIndex - startOffset * 2) / 2] = val / 32768;
+        // }
 
-        for(let i = this.sampleStartIndex + startOffset * 2; i < this.sampleEndIndex + endOffset * 2; i += 2)
-        {
-            // convert 2 uint8 bytes to singed int16
-            const byte1 = soundfontFileArray[soundfontFileArray.currentIndex + i];
-            const byte2 = soundfontFileArray[soundfontFileArray.currentIndex + i + 1];
-
-            audioData[(i - this.sampleStartIndex - startOffset * 2) / 2] = signedInt16(byte1, byte2) / 32768;
-        }
-
-        return audioData;
+        return this.sampleData.subarray(startOffset, this.sampleData.length + endOffset + 1);
     }
 
     /**

@@ -8,6 +8,7 @@ export class Voice
     /**
      * Create a note
      * @param midiNote {number}
+     * @param targetVelocity {number}
      * @param node {AudioNode}
      * @param soundFont {SoundFont2}
      * @param preset {Preset}
@@ -15,16 +16,13 @@ export class Voice
      * @param tuningRatio {number} the note's initial tuning ratio
      * @param sampleCap {number}
      */
-    constructor(midiNote, node, soundFont, preset, vibratoOptions, tuningRatio, sampleCap = 4) {
+    constructor(midiNote, targetVelocity, node, soundFont, preset, vibratoOptions, tuningRatio, sampleCap = 4) {
         this.midiNote = midiNote;
         this.targetNode = node;
-        this.SAMPLE_CAP = sampleCap;
+        //this.SAMPLE_CAP = sampleCap;
         this.ctx = this.targetNode.context;
 
         this.tuningRatio = tuningRatio;
-
-        let leftSamples = 0;
-        let rightSamples = 0;
 
         if(vibratoOptions.rate > 0) {
             this.vibratoWave = new OscillatorNode(this.ctx, {
@@ -37,7 +35,7 @@ export class Voice
             this.vibratoDelay = vibratoOptions.delay;
         }
 
-        let samples = this.limitSamples(preset.getSampleAndGenerators(midiNote));
+        let samples = preset.getSampleAndGenerators(midiNote, targetVelocity);
 
         this.sampleOptions = samples.map(s => new GeneratorTranslator(s));
 
@@ -59,28 +57,22 @@ export class Voice
              * @type {AudioBuffer}
              */
             let buffer;
-            switch(sample.sampleType)
+
+            // panning
+            if(sampleOptions.getPan() > 0.8)
             {
-                case "leftSample":
-                case "RomLeftSample":
-                    buffer = this.ctx.createBuffer(2, audioData.length, sample.sampleRate);
-                    buffer.getChannelData(0).set(audioData);
-                    leftSamples++;
-                    break;
-
-                case "rightSample":
-                case "RomRightSample":
-                    buffer = this.ctx.createBuffer(2, audioData.length, sample.sampleRate);
-                    buffer.getChannelData(1).set(audioData);
-                    rightSamples++;
-                    break;
-
-                default:
-                    buffer = this.ctx.createBuffer(1, audioData.length, sample.sampleRate);
-                    buffer.getChannelData(0).set(audioData);
-                    leftSamples++;
-                    rightSamples++;
-                    break;
+                buffer = this.ctx.createBuffer(2, audioData.length, sample.sampleRate);
+                buffer.getChannelData(1).set(audioData);
+            }
+            else if (sampleOptions.getPan() < -0.8)
+            {
+                buffer = this.ctx.createBuffer(2, audioData.length, sample.sampleRate);
+                buffer.getChannelData(0).set(audioData);
+            }
+            else
+            {
+                buffer = this.ctx.createBuffer(1, audioData.length, sample.sampleRate);
+                buffer.getChannelData(0).set(audioData);
             }
 
             const bufferSource = new AudioBufferSourceNode(this.ctx, {
@@ -105,58 +97,57 @@ export class Voice
             return new SampleNode(bufferSource, volumeControl);
         });
         this.noteVolumeController.connect(node);
-        this.gainDivider = Math.max(leftSamples, rightSamples);
     }
 
-    /**
-     *
-     * @param samples {{
-     *  instrumentGenerators: Generator[],
-     *  presetGenerators: Generator[],
-     *  sample: Sample
-     * }[]}
-     * @return {{
-     *  instrumentGenerators: Generator[],
-     *  presetGenerators: Generator[],
-     *  sample: Sample
-     * }[]}
-     */
-    limitSamples(samples)
-    {
-        if(samples.length > this.SAMPLE_CAP) {
-            // sort by longes samples if there are 150ms or shorter samples.
-            // We don't want any additional instrument effects, just the actual samples.
-            if (samples.find(s => (s.sample.sampleLength / s.sample.sampleRate) < 0.15)) {
-                samples.sort((sample1, sample2) => {
-                        return sample2.sample.sampleLength - sample1.sample.sampleLength;
-                    }
-                );
-            }
-
-            if(this.SAMPLE_CAP === 2)
-            {
-                let leftSample = samples.find(s => s.sample.sampleType === "leftSample");
-                if (!leftSample) {
-                    // cap normally
-                    samples = samples.slice(0, this.SAMPLE_CAP);
-                } else {
-                    let rightSample = samples.find(s => s.sample.sampleType === "rightSample");
-                    if (!rightSample) {
-                        // cap normally
-                        samples = samples.slice(0, this.SAMPLE_CAP);
-                    } else {
-                        samples = [leftSample, rightSample];
-                    }
-                }
-            }
-            else
-            {
-                // cap normally
-                samples = samples.slice(0, this.SAMPLE_CAP);
-            }
-        }
-        return samples;
-    }
+    // /**
+    //  *
+    //  * @param samples {{
+    //  *  instrumentGenerators: Generator[],
+    //  *  presetGenerators: Generator[],
+    //  *  sample: Sample
+    //  * }[]}
+    //  * @return {{
+    //  *  instrumentGenerators: Generator[],
+    //  *  presetGenerators: Generator[],
+    //  *  sample: Sample
+    //  * }[]}
+    //  */
+    // limitSamples(samples)
+    // {
+    //     if(samples.length > this.SAMPLE_CAP) {
+    //         // sort by longes samples if there are 150ms or shorter samples.
+    //         // We don't want any additional instrument effects, just the actual samples.
+    //         if (samples.find(s => (s.sample.sampleLength / s.sample.sampleRate) < 0.15)) {
+    //             samples.sort((sample1, sample2) => {
+    //                     return sample2.sample.sampleLength - sample1.sample.sampleLength;
+    //                 }
+    //             );
+    //         }
+    //
+    //         if(this.SAMPLE_CAP === 2)
+    //         {
+    //             let leftSample = samples.find(s => s.sample.sampleType === "leftSample");
+    //             if (!leftSample) {
+    //                 // cap normally
+    //                 samples = samples.slice(0, this.SAMPLE_CAP);
+    //             } else {
+    //                 let rightSample = samples.find(s => s.sample.sampleType === "rightSample");
+    //                 if (!rightSample) {
+    //                     // cap normally
+    //                     samples = samples.slice(0, this.SAMPLE_CAP);
+    //                 } else {
+    //                     samples = [leftSample, rightSample];
+    //                 }
+    //             }
+    //         }
+    //         else
+    //         {
+    //             // cap normally
+    //             samples = samples.slice(0, this.SAMPLE_CAP);
+    //         }
+    //     }
+    //     return samples;
+    // }
 
     /**
      * @param bufferSource {AudioBufferSourceNode}
@@ -236,14 +227,10 @@ export class Voice
         // lower the gain if a lot of notes (or not...?)
         this.noteVolumeController.gain.value = gain / 2;
 
-        // if(this.SAMPLE_CAP > 2) {
-        if(this.gainDivider < 1)
+        if(this.sampleOptions.length < 1)
         {
             console.warn("No samples for the given note!");
         }
-             this.noteVolumeController.gain.value /= Math.max(1, this.gainDivider)//Math.max(1, this.sampleNodes.length / 2) //Math.max(this.sampleNodes.length, this.SAMPLE_CAP / 2); //Math.pow(2, Math.max(this.sampleNodes.length, 2));
-        // }
-
         // activate vibrato
         if(this.vibratoWave)
         {

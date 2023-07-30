@@ -84,8 +84,18 @@ export class SequencerUI{
         this.controls.appendChild(this.progressTime);
         this.controls.appendChild(controlsDiv);
 
-        // add number controls
-        document.addEventListener("keypress", e => {
+        // add number and arrow controls
+        document.addEventListener("keydown", e => {
+
+            if(e.key.toLowerCase() === "arrowleft")
+            {
+                this.seq.currentTime -= 5
+            }
+            else if(e.key.toLowerCase() === "arrowright")
+            {
+                this.seq.currentTime += 5
+            }
+
             if(!isNaN(parseFloat(e.key)))
             {
                 const num = parseInt(e.key);

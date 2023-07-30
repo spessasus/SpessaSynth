@@ -82,6 +82,10 @@ export class Sequencer {
 
     set currentTime(time)
     {
+        if(time < 0 || time > this.duration)
+        {
+            time = 0;
+        }
         this.stop();
         this.playingNotes = [];
         this.pausedTime = undefined;
@@ -216,9 +220,15 @@ export class Sequencer {
             this._processEvent(event);
             ++this.eventIndex;
 
-            if(this.eventIndex >= this.events.length)
+            // loop
+            if(this.eventIndex >= this.events.length || this.midiData.loop.end <= event.ticks)
             {
-                this.currentTime = 0;
+                this.stop();
+                this.playingNotes = [];
+                this.pausedTime = undefined;
+                this.eventIndex = this.events.findIndex(e => e.ticks >= this.midiData.loop.start);
+                this.absoluteStartTime = this.synth.currentTime - this.ticksToSeconds(this.events[this.eventIndex].ticks) / this.playbackRate;
+                this.play();
                 return;
             }
 
@@ -238,6 +248,7 @@ export class Sequencer {
                 if(this.rendererEventIndex >= this.events.length)
                 {
                     return;
+                    //this.rendererEventIndex = this.events.findIndex(e => e.ticks >= this.midiData.loop.start);
                 }
                 event = this.events[this.rendererEventIndex - 1];
 

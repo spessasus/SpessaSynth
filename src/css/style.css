@@ -67,16 +67,37 @@ input[type="file"] {
     transition: width ease 0.5s;
 }
 
-#file_upload {
+.midi_and_sf_controller {
     position: relative;
     display: block;
     width: fit-content;
     margin: auto;
-    padding: 6px 12px;
+}
+
+#file_upload
+{
+    padding: 6px 0;
     border-radius: 5px;
     cursor: pointer;
     background-color: #222;
     font-weight: bolder;
+}
+
+#sf_selector option
+{
+    background-color: var(--top-color);
+    text-align: center;
+}
+
+#sf_selector
+{
+    display: block;
+    border: none;
+    font-size: 15px;
+    background: var(--top-color);
+    text-align: center;
+    width: 100%;
+    margin-top: 5px;
 }
 
 /*Center*/
