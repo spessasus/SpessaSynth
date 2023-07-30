@@ -146,9 +146,8 @@ export class MidiChannel {
      * @param midiNote {number} 0-127
      * @param velocity {number} 0-127
      * @param debugInfo {boolean} for debugging set to true
-     * @param highPerf {boolean}
      */
-    playNote(midiNote, velocity, debugInfo = false, highPerf = false) {
+    playNote(midiNote, velocity, debugInfo = false) {
         if(!velocity)
         {
             throw "No velocity given!";
@@ -159,7 +158,7 @@ export class MidiChannel {
             return;
         }
 
-        let note = new Voice(midiNote, velocity, this.panner, this.sf, this.preset, this.vibrato, this.channelTuningRatio, (highPerf ? 2 : 4));
+        let note = new Voice(midiNote, velocity, this.panner, this.sf, this.preset, this.vibrato, this.channelTuningRatio);
 
         // calculate gain
         let gain = (velocity / 127);

@@ -68,7 +68,7 @@ export class Synthetizer {
         }
 
         let chan = this.midiChannels[channel];
-        chan.playNote(midiNote, velocity, enableDebugging, this.highPerformanceMode);
+        chan.playNote(midiNote, velocity, enableDebugging);
         if(this.onNoteOn) {
             this.onNoteOn(midiNote, channel, velocity, chan.channelVolume, chan.channelExpression);
         }

@@ -1,11 +1,12 @@
 import {ShiftableByteArray} from "../utils/shiftable_array.js";
-import {readSamples, Sample} from "./chunk/samples.js";
+import {readSamples} from "./chunk/samples.js";
 import {readRIFFChunk, readBytesAsString} from "../utils/byte_functions.js";
 import {readGenerators, Generator} from "./chunk/generators.js";
 import {readInstrumentZones, InstrumentZone, readPresetZones} from "./chunk/zones.js";
 import {Preset, readPresets} from "./chunk/presets.js";
 import {readInstruments, Instrument} from "./chunk/instruments.js";
 import {readModulators, Modulator} from "./chunk/modulators.js";
+import {RiffChunk} from "./chunk/riff_chunk.js";
 
 export class SoundFont2
 {
@@ -22,10 +23,7 @@ export class SoundFont2
 
         // read the main chunk
         let firstChunk = readRIFFChunk(this.dataArray, false);
-        if(firstChunk.header !== "RIFF")
-        {
-            throw new Error("Invalid RIFF header!");
-        }
+        this.verifyHeader(firstChunk, "riff");
 
         if(readBytesAsString(this.dataArray, 4) !== "sfbk")
         {
@@ -34,6 +32,7 @@ export class SoundFont2
 
         // INFO
         let infoChunk = readRIFFChunk(this.dataArray);
+        this.verifyHeader(infoChunk, "list");
         readBytesAsString(infoChunk.chunkData, 4);
 
         /**
@@ -49,16 +48,21 @@ export class SoundFont2
         }
 
         // SDTA
-        readRIFFChunk(this.dataArray, false);
+        const sdtaChunk = readRIFFChunk(this.dataArray, false);
+        this.verifyHeader(sdtaChunk, "list")
         readBytesAsString(this.dataArray, 4);
 
         // smpl
+        console.log("Verifying smpl chunk...")
         let sampleDataChunk = readRIFFChunk(this.dataArray, false);
+        this.verifyHeader(sampleDataChunk, "smpl");
         this.sampleDataStartIndex = dataArray.currentIndex;
-        dataArray.currentIndex += sampleDataChunk.size;
+        dataArray.currentIndex += sdtaChunk.size - 12;
 
         // PDTA
+        console.log("Loading preset data chunk...")
         let presetChunk = readRIFFChunk(this.dataArray);
+        this.verifyHeader(presetChunk, "list");
         readBytesAsString(presetChunk.chunkData, 4);
 
         // read the hydra chunks
@@ -73,8 +77,8 @@ export class SoundFont2
         this.presetSamplesChunk = readRIFFChunk(presetChunk.chunkData);
 
         /**
-         * read all the sampleOptions
-         * (the current index points to start of the smpl chunk
+         * read all the samples
+         * (the current index points to start of the smpl chunk)
          */
         this.dataArray.currentIndex = this.sampleDataStartIndex
         let samples = readSamples(this.presetSamplesChunk, this.dataArray);
@@ -129,6 +133,18 @@ export class SoundFont2
         console.log("Presets:", this.presets.length);
 
         this.presets.sort((a, b) => (a.program - b.program) + (a.bank - b.bank));
+    }
+
+    /**
+     * @param chunk {RiffChunk}
+     * @param expected {string}
+     */
+    verifyHeader(chunk, expected)
+    {
+        if(chunk.header.toLowerCase() !== expected.toLowerCase())
+        {
+            throw `Invalid chunk header! Expected "${expected}" got "${chunk.header}"`;
+        }
     }
 
     /**
