@@ -60,21 +60,18 @@ export class Voice
             if(sampleOptions.getPan() > 0.6)
             {
                 // right
-                console.log("rigth")
                 buffer = this.ctx.createBuffer(2, audioData.length, sample.sampleRate);
                 buffer.getChannelData(1).set(audioData);
             }
             else if (sampleOptions.getPan() < -0.6)
             {
                 // left
-                console.log("left")
                 buffer = this.ctx.createBuffer(2, audioData.length, sample.sampleRate);
                 buffer.getChannelData(0).set(audioData);
             }
             else
             {
                 // mono
-                console.log("mono")
                 buffer = this.ctx.createBuffer(1, audioData.length, sample.sampleRate);
                 buffer.getChannelData(0).set(audioData);
             }
