@@ -120,7 +120,6 @@ export class Preset {
                 && isInRange(currentZone.velRange.min, currentZone.velRange.max, velocity));
 
             for(let instrumentZone of instrumentZonesInRange) {
-                console.log(instrumentZone.velRange)
                 if (instrumentZone.isGlobal) {
                     // global zone
                     globalInstrumentGenerators.push(...instrumentZone.generators);
