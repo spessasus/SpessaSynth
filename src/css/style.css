@@ -16,6 +16,11 @@ html, body {
     overflow-x: clip;
 }
 
+a{
+    text-decoration: none;
+    color: #546fff;
+}
+
 ::-webkit-scrollbar{
     background-color: transparent;
     width: 0.3em;
@@ -82,6 +87,8 @@ input[type="file"] {
     display: flex;
     width: fit-content;
     margin: auto auto 5px;
+    flex-wrap: wrap;
+    justify-content: space-around;
 }
 
 .midi_and_sf_controller label

@@ -19,11 +19,20 @@
     <div id="progress_bar"></div>
     <h1 id="title">SpessaSynth: SoundFont2 Javascript Synthetizer Online Demo</h1>
     <div class="midi_and_sf_controller">
-      <label id="file_upload"> Upload a MIDI file
+      <label id="file_upload"> Upload the MIDI file
         <input type="file" accept=".mid" id="midi_file_input"><br/>
       </label>
-      <label id="sf_upload"> Upload your soundfont
+
+      <label id="sf_upload"> Upload the soundfont
         <input type="file" accept=".sf2" id="sf_file_input"><br/>
+      </label>
+
+      <label>
+        <a href='https://github.com/spessasus/SpessaSynth' target='_blank'>Project's page</a>
+      </label>
+
+      <label>
+        <a href='https://musical-artifacts.com/artifacts/1176' target='_blank'>Recommended SoundFont</a>
       </label>
     </div>
   </div>
@@ -65,11 +74,9 @@
    * @type {HTMLInputElement}
    */
   let fileInput = document.getElementById("midi_file_input");
-  fileInput.onchange = e => {
-    if (e.target.files[0]) {
-      document.getElementById("file_upload").innerText = e.target.files[0].name;
-    }
-    fileInput.onchange = undefined;
+  fileInput.onclick = e => {
+    e.preventDefault();
+    titleMessage.innerText = "You need to upload a SoundFont first";
   }
 
 
@@ -140,6 +147,7 @@
     }
     else
     {
+      fileInput.onclick = undefined;
       fileInput.onchange = e => {
         if(e.target.files[0])
         {
