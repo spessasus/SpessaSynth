@@ -84,7 +84,7 @@ input[type="file"] {
     margin: auto auto 5px;
 }
 
-#file_upload
+.midi_and_sf_controller label
 {
     padding: 6px;
     border-radius: 5px;

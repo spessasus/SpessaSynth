@@ -41,7 +41,7 @@ async function parseMidi(midiFile)
 }
 
 /**
- * @param fileName {"soundfont.sf2"|"gm.sf2"|"Touhou.sf2"|"FluidR3_GM.sf2"|"alex_gm.sf2"|"zunpet.sf2"|"pc98.sf2"|"zunfont.sf2"}
+ * @param fileName {string}
  * @param callback {function(number)}
  * @returns {Promise<ShiftableByteArray>}
  */

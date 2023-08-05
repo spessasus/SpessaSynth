@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpessaSynth</title>
+  <link rel="stylesheet" href="src/css/style.css">
+  <link rel="stylesheet" href="src/css/sequencer_ui.css">
+  <link rel="stylesheet" href="src/css/keyboard_ui.css">
+  <link rel="stylesheet" href="src/css/synthesizer_ui.css">
+  <link rel="stylesheet" href="src/css/keyboard.css">
+</head>
+<body>
+<div class="top_part">
+  <div id="synthetizer_controls"></div>
+
+  <div id="title_wrapper">
+    <div id="progress_bar"></div>
+    <h1 id="title">SpessaSynth: SoundFont2 Javascript Synthetizer Online Demo</h1>
+    <div class="midi_and_sf_controller">
+      <label id="file_upload"> Upload a MIDI file
+        <input type="file" accept=".mid" id="midi_file_input"><br/>
+      </label>
+      <label id="sf_upload"> Upload your soundfont
+        <input type="file" accept=".sf2" id="sf_file_input"><br/>
+      </label>
+    </div>
+  </div>
+
+  <div id="keyboard_selector">
+  </div>
+</div>
+<canvas id="note_canvas"></canvas>
+<table id="keyboard_table">
+  <tr id="keyboard"></tr>
+  <tr>
+    <td id="keyboard_text" colspan="128"></td>
+  </tr>
+</table>
+
+<div class="bottom_part">
+  <div id="sequencer_controls"></div>
+  <h2 id="text_event"></h2>
+  <button id="note_killer">Kill all notes</button>
+</div>
+
+<script type="module">
+  "use strict"
+
+  import {Manager} from "./src/js/website/manager.js";
+  import {MIDI} from "./src/js/midi_parser/midi_loader.js";
+
+  import {SoundFont2} from "./src/js/soundfont/soundfont_parser.js";
+  import {ShiftableByteArray} from "./src/js/utils/shiftable_array.js";
+
+  const TITLE = "SpessaSynth: SoundFont2 Javascript Synthetizer Online Demo";
+
+  /**
+   * @type {HTMLHeadingElement}
+   */
+  let titleMessage = document.getElementById("title");
+
+  /**
+   * @type {HTMLInputElement}
+   */
+  let fileInput = document.getElementById("midi_file_input");
+
+  let sfInput = document.getElementById("sf_file_input");
+  // remove the old files
+  fileInput.value = "";
+  fileInput.focus();
+
+
+  /**
+   * @param midiFile {File}
+   */
+  async function parseMidi(midiFile)
+  {
+    const buffer = await midiFile.arrayBuffer();
+    const arr = new ShiftableByteArray(buffer);
+    return new MIDI(arr);
+  }
+
+  /**
+   * @param midiFile {File}
+   */
+  function startMidi(midiFile)
+  {
+    titleMessage.innerText = `Parsing ${midiFile.name}`;
+    document.getElementById("file_upload").innerText = midiFile.name;
+    parseMidi(midiFile).then(parsedMidi => {
+      if(parsedMidi.midiName.trim().length > 0)
+      {
+        titleMessage.style.fontStyle = "italic";
+        titleMessage.innerText = parsedMidi.midiName;
+      }
+      else
+      {
+        titleMessage.innerText = TITLE;
+      }
+
+      manager.play(parsedMidi, true);
+    });
+  }
+
+  sfInput.onchange = async e => {
+    if(!e.target.files[0])
+    {
+      return;
+    }
+    /**
+     * @type {File}
+     */
+    const file = e.target.files[0];
+
+    e.target.onchange = undefined;
+    document.getElementById("sf_upload").innerText = file.name;
+    titleMessage.innerText = "Parsing SoundFont...";
+
+    const arr = await file.arrayBuffer();
+    window.soundFontParser = new SoundFont2(new ShiftableByteArray(arr));
+    titleMessage.innerText = TITLE;
+
+    window.audioContextMain = new AudioContext({sampleRate: 44100});
+
+    // prepare midi interface
+    window.manager = new Manager(audioContextMain, soundFontParser);
+
+    if(fileInput.files[0])
+    {
+      startMidi(fileInput.files[0]);
+    }
+    else
+    {
+      fileInput.onchange = e => {
+        if(e.target.files[0])
+        {
+          startMidi(fileInput.files[0]);
+        }
+    }
+    }
+  }
+
+
+
+</script>
+</body>
+</html>
