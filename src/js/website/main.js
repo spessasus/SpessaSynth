@@ -1,8 +1,12 @@
-import {Manager} from "./manager.js";
-import {MIDI} from "./midi_parser/midi_loader.js";
+"use strict"
 
-import {SoundFont2} from "./soundfont/soundfont_parser.js";
-import {ShiftableByteArray} from "./utils/shiftable_array.js";
+import {Manager} from "./manager.js";
+import {MIDI} from "../midi_parser/midi_loader.js";
+
+import {SoundFont2} from "../soundfont/soundfont_parser.js";
+import {ShiftableByteArray} from "../utils/shiftable_array.js";
+
+const TITLE = "SpessaSynth: SoundFont2 Javascript Synthetizer";
 
 /**
  * @type {HTMLHeadingElement}
@@ -82,7 +86,7 @@ function startMidi(midiFile)
         }
         else
         {
-            titleMessage.innerText = "SpessaSynth: MIDI Soundfont2 Player";
+            titleMessage.innerText = TITLE;
         }
 
         manager.play(parsedMidi, true);
@@ -97,7 +101,7 @@ function replaceFont(fontName)
 {
     function replaceSf()
     {
-        titleMessage.innerText = "SpessaSynth: MIDI Soundfont2 Player";
+        titleMessage.innerText = TITLE;
 
         // prompt the user to click if needed
         if(!window.audioContextMain)
@@ -114,7 +118,6 @@ function replaceFont(fontName)
         {
             window.manager.synth.soundFont = window.soundFontParser;
             window.manager.synth.reloadSoundFont();
-            window.manager.keyboard.reloadSelectors();
 
             if(window.manager.seq)
             {
@@ -154,9 +157,9 @@ document.body.onclick = () =>
 {
     // user has clicked, we can create the ui
     if(!window.audioContextMain) {
-        window.audioContextMain = new AudioContext();
+        window.audioContextMain = new AudioContext({sampleRate: 44100});
         if(window.soundFontParser) {
-            titleMessage.innerText = "SpessaSynth: MIDI Soundfont2 Player";
+            titleMessage.innerText = TITLE;
             // prepare midi interface
             window.manager = new Manager(audioContextMain, soundFontParser);
         }
@@ -171,6 +174,11 @@ let soundFonts = [];
 
 // load the list of soundfonts
 fetch("soundfonts").then(async r => {
+    if(!r.ok)
+    {
+        titleMessage.innerText = "Error fetching soundfonts!";
+        throw r.statusText;
+    }
     const sfSelector = document.getElementById("sf_selector");
 
     soundFonts = JSON.parse(await r.text());
@@ -182,6 +190,7 @@ fetch("soundfonts").then(async r => {
     }
 
     sfSelector.onchange = () => {
+        fetch(`/setlastsf2?sfname=${encodeURIComponent(sfSelector.value)}`);
         if(window.manager.seq)
         {
             window.manager.seq.pause();
@@ -190,10 +199,9 @@ fetch("soundfonts").then(async r => {
 
         if(window.manager.seq)
         {
-            titleMessage.innerText = window.manager.seq.midiData.midiName;
+            titleMessage.innerText = window.manager.seq.midiData.midiName || TITLE;
         }
 
-        fetch(`/setlastsf2?sfname=${encodeURIComponent(sfSelector.value)}`);
     }
 
     // fetch the first sf2

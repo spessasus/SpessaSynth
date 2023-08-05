@@ -1,50 +1,8 @@
-@keyframes synth-control-dropdown-hide {
-    100% {
-        display: none;
-        transform: scale(0);
-    }
-    99%{
-        display: block;
-        transform: scale(0.01, 0.01);
-    }
-
-    50%{
-        transform: scale(1, 0.01);
-    }
-
-    0%{
-        transform: scale(1, 1);
-    }
-}
-
-@keyframes synth-control-dropdown-show {
-    0%{
-        display: none;
-        transform: scale(0);
-    }
-    1%{
-        display: block;
-        transform: scale(0.01, 0.01);
-    }
-
-    50%{
-        transform: scale(1, 0.01);
-    }
-
-    100%{
-        transform: scale(1, 1);
-    }
-}
-
 #synthetizer_controls
 {
-    position: absolute;
-    display: inline-block;
-    top: 0;
-    left: 0;
     height: 100%;
-    --voice-meter-height: 2em;
-    width: 20em;
+    --voice-meter-height: 2.5em;
+    flex: 1;
 }
 
 #synthetizer_controls .wrapper{
@@ -72,7 +30,10 @@
     border-radius: 3px;
     margin-top: auto;
     background-color: #406;
-    transition: all 100ms ease-out;
+}
+
+.voice_meter_bar_smooth{
+    transition: width ease-in-out 100ms;
 }
 
 #synthetizer_controls .voice_meter .voice_meter_text{
@@ -88,15 +49,15 @@
 }
 
 #synthetizer_controls .channels_dropdown{
-    animation: synth-control-dropdown-hide forwards 500ms;
     left: 0;
-    display: block;
+    display: none;
     position: fixed;
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px) brightness(0.5);
     background-color: rgba(3, 3, 3, 0.3);
-    top: 5em;
+    top: 6em;
     border-radius: 15px;
     width: 100%;
+    z-index: 127;
 }
 
 #synthetizer_controls .channels_dropdown .voice_meter{
@@ -109,7 +70,7 @@
 }
 
 #synthetizer_controls:hover .channels_dropdown{
-    animation: synth-control-dropdown-show 500ms;
+    display: block;
 }
 
 #synthetizer_controls .voice_selector{
@@ -117,15 +78,31 @@
     height: var(--voice-meter-height);
     width: 100%;
     border-radius: 5px;
+    border: #777 1px solid;
+    margin: 2px;
+    line-height: var(--voice-meter-height);
+    background-color: rgba(1, 1, 1, 0.5);
+    font-size: 16px;
+    font-weight: bold;
 }
 
-#synthetizer_controls .voice_selector .selector_options
+#synthetizer_controls .voice_selector .selector_option{
+    padding: 5px;
+    background-color: #111;
+    text-align: left;
+}
+
+#synthetizer_controls .voice_selector .selector_option:hover
 {
-    display: none;
-    background-color: #000;
+    background-color: #222;
+    cursor: pointer;
 
 }
 
 #synthetizer_controls .voice_selector:hover .selector_options{
+    display: block;
+}
+
+#synthetizer_controls .selector_options:hover{
     display: block;
 }

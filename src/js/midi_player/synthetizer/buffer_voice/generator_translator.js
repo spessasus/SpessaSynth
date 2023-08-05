@@ -78,7 +78,7 @@ export class GeneratorTranslator {
             8000);
 
         // scaleTuning
-        this.scaleTune = this.getGeneratorValue("scaleTuning", 100);
+        this.scaleTune = this.sumGeneratorValue("scaleTuning", 100, 0, 1200);
 
         // exclusiveClass
         this.exclusiveClass = this.getGeneratorValue("exclusiveClass", 0);
@@ -90,10 +90,10 @@ export class GeneratorTranslator {
         this.endLoopOffset = this.getGeneratorValue("endloopAddrsOffset", 0);
 
         // coarseTune
-        this.semitoneTune = this.getGeneratorValue("coarseTune", 0);
+        this.semitoneTune = this.sumGeneratorValue("coarseTune", 0, -120, 120);
 
         // fineTune
-        this.centTune = this.getGeneratorValue("fineTune", 0);
+        this.centTune = this.sumGeneratorValue("fineTune", 0, -99, 99);
     }
 
     /**
@@ -145,8 +145,7 @@ export class GeneratorTranslator {
             return this.limitValue(val, minAllowed, maxAllowed)
         }
 
-        const val = defaultValue + preset;
-        return this.limitValue(val, minAllowed, maxAllowed);
+        return defaultValue + preset; // this.limitValue(val, minAllowed, maxAllowed);
     }
 
     /**
@@ -208,7 +207,7 @@ export class GeneratorTranslator {
         let releaseTime = this.timecentsToSeconds(this.releaseTime);
         if(releaseTime > 5)
         {
-            releaseTime = 5
+            releaseTime = 5;
         }
         return {
             attenuation: attenuation,

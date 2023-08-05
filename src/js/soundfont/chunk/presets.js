@@ -77,7 +77,7 @@ export class Preset {
      *  sample: Sample
      * }[]}
      */
-    getSampleAndGenerators(midiNote, velocity)
+    getSamplesAndGenerators(midiNote, velocity)
     {
         function isInRange(min, max, number) {
             return number >= min && number <= max;
@@ -90,76 +90,60 @@ export class Preset {
          * }[]}
          */
         let parsedGeneratorsAndSamples = [];
-        let presetZonesInRange = this.presetZones.filter(currentZone =>
-            isInRange(currentZone.keyRange.min, currentZone.keyRange.max, midiNote)
-            && isInRange(currentZone.velRange.min, currentZone.velRange.max, velocity));
 
         /**
+         * global zone is always first, so it or nothing
          * @type {Generator[]}
          */
-        let globalPresetGenerators = [];
-        for(let presetZone of presetZonesInRange)
+        let globalPresetGenerators = this.presetZones[0].isGlobal ? [...this.presetZones[0].generators] : [];
+
+        // find the preset zones in range
+        let presetZonesInRange = this.presetZones.filter(currentZone =>
+            (
+                isInRange(currentZone.keyRange.min, currentZone.keyRange.max, midiNote)
+                &&
+                isInRange(currentZone.velRange.min, currentZone.velRange.max, velocity)
+            ) && !currentZone.isGlobal);
+
+        presetZonesInRange.forEach(zone =>
         {
-            if(presetZone.isGlobal)
-            {
-                // global zone
-                globalPresetGenerators.push(...presetZone.generators);
-            }
-        }
-        for(let zone of presetZonesInRange)
-        {
-            if(zone.isGlobal) continue;
             let presetGenerators = zone.generators;
             /**
+             * global zone is always first, so it or nothing
              * @type {Generator[]}
              */
-            let globalInstrumentGenerators = [];
+            let globalInstrumentGenerators = zone.instrument.instrumentZones[0].isGlobal ? [...zone.instrument.instrumentZones[0].generators] : [];
 
-            let instrumentZonesInRange = zone.instrument.instrumentZones.filter(currentZone =>
-                isInRange(currentZone.keyRange.min, currentZone.keyRange.max, midiNote)
-                && isInRange(currentZone.velRange.min, currentZone.velRange.max, velocity));
+            let instrumentZonesInRange = zone.instrument.instrumentZones
+                .filter(currentZone =>
+                    (
+                        isInRange(currentZone.keyRange.min,
+                        currentZone.keyRange.max,
+                        midiNote)
+                    &&
+                    isInRange(currentZone.velRange.min,
+                        currentZone.velRange.max,
+                        velocity)
+                    ) && !currentZone.isGlobal
+                );
 
-            for(let instrumentZone of instrumentZonesInRange) {
-                if (instrumentZone.isGlobal) {
-                    // global zone
-                    globalInstrumentGenerators.push(...instrumentZone.generators);
-                }
-            }
-
-            for(let instrumentZone of instrumentZonesInRange)
+            instrumentZonesInRange.forEach(instrumentZone =>
             {
-                if(instrumentZone.isGlobal) continue;
-                let instrumentGenerators = Array.from(instrumentZone.generators);
+                let instrumentGenerators = [...instrumentZone.generators];
 
-                // add the unique global preset gen types
+                // add the unique global preset generators (local replace global(
                 presetGenerators.push(...globalPresetGenerators.filter(
-                    gen => presetGenerators.find(existingGen => existingGen.generatorType === gen.generatorType) === undefined
-                ));
+                    gen => presetGenerators.find(existingGen =>
+                        existingGen.generatorType === gen.generatorType) === undefined
+                    )
+                );
 
-                // add the unique global instrument gen types
+                // add the unique global instrument generators (local replace global)
                 instrumentGenerators.push(...globalInstrumentGenerators.filter(
-                    gen => instrumentGenerators.find(existingGen => existingGen.generatorType === gen.generatorType) === undefined
-                ));
-
-                // replace the global preset gens with global instrument gens
-                // const globalGenerators = globalInstrumentGenerators;
-                // for(const globalPresetGenerator of globalPresetGenerators)
-                // {
-                //     if(globalGenerators.find(g => g.generatorType === globalPresetGenerator.generatorType) === undefined)
-                //     {
-                //         globalGenerators.push(globalPresetGenerator);
-                //     }
-                // }
-                //
-                // // replace the preset gens with instrument gens
-                // const generators = instrumentGenerators;
-                // for(let presetGenerator of presetGenerators)
-                // {
-                //     if(generators.find(g => g.generatorType === presetGenerator.generatorType) === undefined)
-                //     {
-                //         generators.push(presetGenerator);
-                //     }
-                // }
+                    gen => instrumentGenerators.find(
+                        existingGen => existingGen.generatorType === gen.generatorType) === undefined
+                    )
+                );
 
                 // combine both generators and add to the final result
                 parsedGeneratorsAndSamples.push({
@@ -167,7 +151,11 @@ export class Preset {
                     presetGenerators: presetGenerators,
                     sample: instrumentZone.sample
                 });
-            }
+            });
+        });
+        if(parsedGeneratorsAndSamples.length < 1)
+        {
+            console.warn(`No samples found for note ${midiNote} velocity ${velocity} for preset "${this.presetName}"`)
         }
         return parsedGeneratorsAndSamples;
     }
@@ -194,9 +182,11 @@ export function readPresets(presetChunk, presetZones)
             presets[presets.length - 1].getPresetZones(presetZonesAmount, presetZones);
             presets[presets.length - 1].getExclusiveClasses()
         }
-        if(preset.presetName !== 'EOP') {
-            presets.push(preset);
-        }
+        presets.push(preset);
+    }
+    // remove EOP
+    if (presets.length > 1) {
+        presets.pop();
     }
     return presets;
 }

@@ -1,9 +1,9 @@
 import {MIDI} from "../../midi_parser/midi_loader.js";
 import {Synthetizer} from "../synthetizer/synthetizer.js";
 import {Renderer} from "../../ui/renderer.js";
-import {getEvent, midiControllers, MidiMessage} from "../../midi_parser/midi_message.js";
+import {getEvent, messageTypes, midiControllers, MidiMessage} from "../../midi_parser/midi_message.js";
 import {formatTime} from "../../utils/other.js";
-
+import {readBytesAsUintBigEndian} from "../../utils/byte_functions.js";
 
 export class Sequencer {
     /**
@@ -22,6 +22,11 @@ export class Sequencer {
 
         // event's number in this.events
         this.eventIndex = 0;
+
+        this.oneTickToSeconds = 60 / (120 * this.midiData.timeDivision)
+
+        // tracks the time that we have already played
+        this.playedTime = 0;
 
         /**
          * The (relative) time when the sequencer was paused. If it's not paused then it's undefined.
@@ -89,9 +94,15 @@ export class Sequencer {
         this.stop();
         this.playingNotes = [];
         this.pausedTime = undefined;
-        this.eventIndex = this.events.findIndex(e => this.ticksToSeconds(e.ticks) >= time / this.playbackRate);
+        this._playTo(time);
         this.absoluteStartTime = this.synth.currentTime - time / this.playbackRate;
         this.play();
+        if(this.renderer)
+        {
+            this.rendererEventIndex = this.eventIndex;
+            this.renderedTime = this.playedTime - (this.renderer.noteAfterTriggerTimeMs / 1000);
+            this.rendererOTTS = this.oneTickToSeconds;
+        }
     }
 
     /**
@@ -107,6 +118,11 @@ export class Sequencer {
          * @type {number}
          */
         this.rendererEventIndex = 0;
+
+        // for the renderer
+        this.renderedTime = this.playedTime;
+
+        this.rendererOTTS = this.oneTickToSeconds;
     }
 
     /**
@@ -154,6 +170,88 @@ export class Sequencer {
     }
 
     /**
+     * plays from start to the target time, excluding note messages (to get the synth to the correct state)
+     * @private
+     * @param time {number} in seconds
+     * @param ticks {number} optional MIDI ticks, when given is used instead of time
+     */
+    _playTo(time, ticks = undefined)
+    {
+        this.playedTime = 0;
+        this.eventIndex = 0;
+        this.oneTickToSeconds = 60 / (120 * this.midiData.timeDivision);
+        // process every non note message from the start
+        this.synth.resetControllers();
+
+        // optimize to call pitchwheels 16 times only
+        const pitches = new Uint16Array(16);
+
+        // optimize program changes to call 16 times only
+        const programs = new Uint8Array(16);
+
+        for(let i = 0; i < 16; i++)
+        {
+            pitches[i] = 8192;
+        }
+        let event = this.events[this.eventIndex];
+        while(true) {
+            const type = event.messageStatusByte >> 4;
+            const channel = event.messageStatusByte & 0x0F;
+            if (type === 0x8 || type === 0x9) {
+                this.eventIndex++;
+                this.playedTime += this.oneTickToSeconds * (this.events[this.eventIndex].ticks - event.ticks);
+                event = this.events[this.eventIndex];
+            }
+            else
+            // pitch wheel
+            if(type === 0xE)
+            {
+                pitches[channel] = (event.messageData[1] << 7 ) | event.messageData[0];
+                this.eventIndex++;
+                this.playedTime += this.oneTickToSeconds * (this.events[this.eventIndex].ticks - event.ticks);
+                event = this.events[this.eventIndex];
+            }
+            else
+            // program change
+            if(type === 0xC)
+            {
+                programs[channel] = event.messageData[0];
+                this.eventIndex++;
+                this.playedTime += this.oneTickToSeconds * (this.events[this.eventIndex].ticks - event.ticks);
+                event = this.events[this.eventIndex];
+            }
+            else {
+                this._processEvent(event);
+
+                this.eventIndex++;
+                this.playedTime += this.oneTickToSeconds * (this.events[this.eventIndex].ticks - event.ticks);
+                event = this.events[this.eventIndex];
+            }
+
+            if(ticks !== undefined)
+            {
+                if(event.ticks >= ticks)
+                {
+                    break;
+                }
+            }
+            else
+            {
+                if(this.playedTime >= time)
+                {
+                    break;
+                }
+            }
+        }
+
+        for(let i = 0; i < 16; i++)
+        {
+            this.synth.pitchWheel(i, pitches[i] >> 7, pitches[i] & 0x7F);
+            this.synth.programChange(i, programs[i]);
+        }
+    }
+
+    /**
      * Starts the playback
      * @param resetTime {boolean} If true, time is set to 0
      */
@@ -170,6 +268,7 @@ export class Sequencer {
         {
             this.renderer.clearNotes();
             this.rendererEventIndex = this.eventIndex;
+            this.renderedTime = this.playedTime;
         }
 
         // unpause if paused
@@ -178,18 +277,6 @@ export class Sequencer {
             // adjust the start time
             this.absoluteStartTime = this.synth.currentTime - this.pausedTime;
             this.pausedTime = undefined;
-        }
-        else {
-            // process every non note message from the start
-            this.synth.resetControllers();
-            for (let i = 0; i < this.eventIndex + 1; i++) {
-                const event = this.events[i];
-                const type = event.messageStatusByte >> 4;
-                if (type === 0x8 || type === 0x9) {
-                    continue;
-                }
-                this._processEvent(event);
-            }
         }
 
         this.playingNotes.forEach(n => {
@@ -201,11 +288,6 @@ export class Sequencer {
         });
 
         this.playbackInterval = setInterval(this._processTick.bind(this));
-
-        if(this.renderer)
-        {
-            this.renderer.resume();
-        }
     }
 
     /**
@@ -215,7 +297,7 @@ export class Sequencer {
     _processTick()
     {
         let event = this.events[this.eventIndex];
-        while(this.ticksToSeconds(event.ticks) <= this.currentTime)
+        while(this.playedTime <= this.currentTime)
         {
             this._processEvent(event);
             ++this.eventIndex;
@@ -226,50 +308,71 @@ export class Sequencer {
                 this.stop();
                 this.playingNotes = [];
                 this.pausedTime = undefined;
-                this.eventIndex = this.events.findIndex(e => e.ticks >= this.midiData.loop.start);
-                this.absoluteStartTime = this.synth.currentTime - this.ticksToSeconds(this.events[this.eventIndex].ticks) / this.playbackRate;
+                this._playTo(0, this.midiData.loop.start);
+                this.absoluteStartTime = this.synth.currentTime - this.playedTime / this.playbackRate;
                 this.play();
+                if(this.renderer)
+                {
+                    this.rendererEventIndex = this.eventIndex;
+                    this.renderedTime = this.playedTime - (this.renderer.noteAfterTriggerTimeMs / 1000);
+                    this.rendererOTTS = this.oneTickToSeconds;
+                }
                 return;
             }
 
+            this.playedTime += this.oneTickToSeconds * (this.events[this.eventIndex].ticks - event.ticks);
             event = this.events[this.eventIndex];
-
         }
 
         if(this.renderer)
-        {if(this.rendererEventIndex >= this.events.length)
         {
-            return;
-        }
-            let event = this.events[this.rendererEventIndex];
-            while(this.ticksToSeconds(event.ticks) <= this.currentTime + (this.renderer.noteFallingTimeMs / 1000)  * this.playbackRate)
+            if(this.rendererEventIndex >= this.events.length)
             {
-                this.rendererEventIndex++;
+                return;
+            }
+
+            let event = this.events[this.rendererEventIndex];
+            while(this.renderedTime <= this.currentTime + (this.renderer.noteFallingTimeMs / 1000))
+            {
+
                 if(this.rendererEventIndex >= this.events.length)
                 {
                     return;
-                    //this.rendererEventIndex = this.events.findIndex(e => e.ticks >= this.midiData.loop.start);
                 }
-                event = this.events[this.rendererEventIndex - 1];
+
+                this.rendererEventIndex++;
+
+                if(event.messageStatusByte === 0x51)
+                {
+                    this.rendererOTTS = 60 / (this.getTempo(event) * this.midiData.timeDivision);
+                }
 
                 const eventType = event.messageStatusByte >> 4;
-                if(eventType !== 0x8 && eventType !== 0x9)
-                {
-                    continue;
+                if(eventType === 0x8 || eventType === 0x9) {
+                    const channel = event.messageStatusByte & 0x0F;
+                    const offset = (this.renderer.noteFallingTimeMs / 1000) - (this.renderedTime - this.currentTime);
+                    if (eventType === 0x9 && event.messageData[1] > 0) {
+                        this.renderer.startNoteFall(event.messageData[0], channel, offset * 1000);
+                    } else {
+                        this.renderer.stopNoteFall(event.messageData[0], channel, offset * 1000);
+                    }
                 }
-
-                const channel = event.messageStatusByte & 0x0F;
-                const offset = (this.renderer.noteFallingTimeMs / 1000) * this.playbackRate -  (this.ticksToSeconds(event.ticks) - this.currentTime);
-                if(eventType === 0x9 && event.messageData[1] > 0)
-                {
-                    this.renderer.startNoteFall(event.messageData[0], channel, offset * 1000);
-                }
-                else
-                {
-                    this.renderer.stopNoteFall(event.messageData[0], channel, offset * 1000);
-                }
+                this.renderedTime += this.rendererOTTS * (this.events[this.rendererEventIndex].ticks - event.ticks);
+                event = this.events[this.rendererEventIndex];
             }
+            this.renderer.resume();
         }
+    }
+
+    /**
+     * gets tempo from the midi message
+     * @param event {MidiMessage}
+     * @return {number} the tempo in bpm
+     */
+    getTempo(event)
+    {
+        event.messageData.currentIndex = 0;
+        return 60000000 / readBytesAsUintBigEndian(event.messageData, 3);
     }
 
     /**
@@ -281,8 +384,21 @@ export class Sequencer {
     {
         const statusByteData = getEvent(event.messageStatusByte);
         // process the event
-        switch (statusByteData.name) {
-            case "Note On":
+        switch (statusByteData.status) {
+            case messageTypes.setTempo:
+                this.oneTickToSeconds = 60 / (this.getTempo(event) * this.midiData.timeDivision);
+                if(this.oneTickToSeconds === 0)
+                {
+                    this.oneTickToSeconds = 60 / (120 * this.midiData.timeDivision);
+                    console.warn("invalid tempo! falling back to 120 BPM");
+                }
+                break;
+
+            default:
+                console.log("Unrecognized Event:", event.messageStatusByte, "status byte:", statusByteData.status);
+                break;
+
+            case messageTypes.noteOn:
                 const velocity = event.messageData[1];
                 if(velocity > 0) {
                     this.synth.noteOn(statusByteData.channel, event.messageData[0], velocity);
@@ -300,50 +416,44 @@ export class Sequencer {
                 }
                 break;
 
-            case "Note Off":
+            case messageTypes.noteOff:
                 this.synth.noteOff(statusByteData.channel, event.messageData[0]);
                 this.playingNotes.splice(this.playingNotes.findIndex(n =>
                     n.midiNote === event.messageData[0] && n.channel === statusByteData.channel), 1);
                 break;
 
-            case "Pitch Bend":
+            case messageTypes.pitchBend:
                 this.synth.pitchWheel(statusByteData.channel, event.messageData[1], event.messageData[0]);
                 break;
 
-            case "Controller Change":
+            case messageTypes.controllerChange:
                 this.synth.controllerChange(statusByteData.channel, midiControllers[event.messageData[0]], event.messageData[1]);
                 break;
 
-            case "Program Change":
+            case messageTypes.programChange:
                 this.synth.programChange(statusByteData.channel, event.messageData[0]);
                 break;
 
-            case "System Exclusive":
+            case messageTypes.systemExclusive:
                 this.synth.systemExclusive(event.messageData);
                 break;
 
-            case "Text Event":
-            case "Lyrics":
-            case "Copyright":
-            case "Track Name":
+            case messageTypes.text:
+            case messageTypes.lyric:
+            case messageTypes.copyright:
+            case messageTypes.trackName:
                 const dec = new TextDecoder("shift-jis");
                 console.log(dec.decode(event.messageData));
                 break;
 
-            case "System Reset":
+            case messageTypes.reset:
                 this.synth.stopAll();
                 this.synth.resetControllers();
                 console.log("System Reset");
                 break;
-
-            case "Set Tempo":
-                break;
-
-            default:
-                console.log("Unrecognized Event:", statusByteData.name);
-                break;
         }
     }
+
 
     /**
      * Stops the playback

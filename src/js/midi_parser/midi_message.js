@@ -11,6 +11,7 @@ export class MidiMessage
     constructor(ticks, byte, data) {
         // absolute ticks from the start
         this.ticks = ticks;
+        // message status byte (for meta it's the second byte)
         this.messageStatusByte = byte;
         this.messageData = data;
     }
@@ -25,7 +26,6 @@ export function getChannel(statusByte) {
     const eventType = statusByte & 0xF0;
     const channel = statusByte & 0x0F;
 
-    let name;
     let resultChannel = channel;
 
     switch (eventType) {
@@ -63,144 +63,75 @@ export function getChannel(statusByte) {
                     break;
 
                 case 0xF:
-                    name = 'Meta Event';
                     resultChannel = -2;
                     break;
             }
             break;
 
         default:
-            name = 'Unknown';
             resultChannel = -1;
     }
 
     return resultChannel;
 }
 
+// all the midi statuses dictionary
+export const messageTypes = {
+    noteOff: 0x80,
+    noteOn: 0x90,
+    noteAftertouch: 0xA0,
+    controllerChange: 0xB0,
+    programChange: 0xC0,
+    channelAftertouch: 0xD0,
+    pitchBend: 0xE0,
+    systemExclusive: 0xF0,
+    timecode: 0xF1,
+    songPosition: 0xF2,
+    songSelect: 0xF3,
+    tuneRequest: 0xF6,
+    clock: 0xF8,
+    start: 0xFA,
+    continue: 0xFB,
+    stop: 0xFC,
+    activeSensing: 0xFE,
+    reset: 0xFF,
+    sequenceNumber: 0x00,
+    text: 0x01,
+    copyright: 0x02,
+    trackName: 0x03,
+    instrumentName: 0x04,
+    lyric: 0x05,
+    marker: 0x06,
+    cuePoint: 0x07,
+    midiChannelPrefix: 0x20,
+    endOfTrack: 0x2F,
+    setTempo: 0x51,
+    smpteOffset: 0x54,
+    timeSignature: 0x58,
+    keySignature: 0x59,
+    sequenceSpecific: 0x7F
+};
+
+
 /**
- * Gets the event's name and channel from the status byte
+ * Gets the event's status and channel from the status byte
  * @param statusByte {number} the status byte
- * @returns {{name: MessageName, channel: number}} channel will be -1 for sysex and meta
+ * @returns {{channel: number, status: number}} channel will be -1 for sysex and meta
  */
 export function getEvent(statusByte) {
     const status = statusByte & 0xF0;
     const channel = statusByte & 0x0F;
 
-    let eventName;
     let eventChannel = -1;
+    let eventStatus = statusByte;
 
     if (status >= 0x80 && status <= 0xE0) {
         eventChannel = channel;
-        switch (status) {
-            case 0x80:
-                eventName = "Note Off";
-                break;
-            case 0x90:
-                eventName = "Note On";
-                break;
-            case 0xA0:
-                eventName = "Note Aftertouch";
-                break;
-            case 0xB0:
-                eventName = "Controller Change";
-                break;
-            case 0xC0:
-                eventName = "Program Change";
-                break;
-            case 0xD0:
-                eventName = "Channel Aftertouch";
-                break;
-            case 0xE0:
-                eventName = "Pitch Bend";
-                break;
-        }
-    } else {
-        switch (statusByte) {
-            case 0x00:
-                eventName = "Sequence Number";
-                break;
-            case 0x01:
-                eventName = "Text Event";
-                break;
-            case 0x02:
-                eventName = "Copyright Notice";
-                break;
-            case 0x03:
-                eventName = "Track Name";
-                break;
-            case 0x04:
-                eventName = "Instrument Name";
-                break;
-            case 0x05:
-                eventName = "Lyrics";
-                break;
-            case 0x06:
-                eventName = "Marker";
-                break;
-            case 0x07:
-                eventName = "Cue Point";
-                break;
-            case 0x20:
-                eventName = "Channel Prefix";
-                break;
-            case 0x2F:
-                eventName = "End of Track";
-                break;
-            case 0x51:
-                eventName = "Set Tempo";
-                break;
-            case 0x54:
-                eventName = "SMPTE Offset";
-                break;
-            case 0x58:
-                eventName = "Time Signature";
-                break;
-            case 0x59:
-                eventName = "Key Signature";
-                break;
-            case 0x7F:
-                eventName = "Sequencer-Specific Meta-event";
-                break;
-            case 0xF0:
-                eventName = "System Exclusive";
-                break;
-            case 0xF1:
-                eventName = "Time Code Quarter Framme";
-                break;
-            case 0xF2:
-                eventName = "Song Position Pointer";
-                break;
-            case 0xF3:
-                eventName  ="Song Select";
-                break;
-            case 0xF6:
-                eventName = "Tune Request";
-                break;
-            case 0xF8:
-                eventName = "Timing Clock";
-                break;
-            case 0xFA:
-                eventName = "Start";
-                break;
-            case 0xFB:
-                eventName = "Continue";
-                break
-            case 0xFC:
-                eventName = "Stop";
-                break;
-            case 0xFE:
-                eventName = "Active Sense";
-                break;
-            case 0xFF:
-                eventName = "System Reset";
-                break;
-            default:
-                eventName = "Unknown";
-        }
+        eventStatus = status;
     }
 
     return {
-        name: eventName,
+        status: eventStatus,
         channel: eventChannel
     };
 }

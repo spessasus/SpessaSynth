@@ -1,18 +1,17 @@
-import {Voice} from "./voice.js";
+import {Voice} from "./buffer_voice/voice.js";
 import {Preset} from "../../soundfont/chunk/presets.js";
-import {SoundFont2} from "../../soundfont/soundfont_parser.js";
-import {Voice2} from "./voice2.js";
+import {Voice2} from "./worklet_voice/voice2.js";
 
-const CHANNEL_LOUDNESS = 1.0;
+const CHANNEL_LOUDNESS = 0.5;
 
 const dataEntryStates = {
-    Idle: "Idle",
-    RPCoarse: "RPCoarse",
-    RPFine: "RPFine",
-    NRPCoarse: "NRPCoarse",
-    NRPFine: "NRPFine",
-    DataCoarse: "DataCoarse",
-    DataFine: "DataFine"
+    Idle: 0,
+    RPCoarse: 1,
+    RPFine: 2,
+    NRPCoarse: 3,
+    NRPFine: 4,
+    DataCoarse: 5,
+    DataFine: 6
 };
 
 export class MidiChannel {
@@ -20,11 +19,10 @@ export class MidiChannel {
      * creates a midi channel
      * @param targetNode {AudioNode}
      * @param defaultPreset {Preset}
-     * @param soundFont {SoundFont2}
      * @param channelNumber {number}
      * @param percussionChannel {boolean}
      */
-    constructor(targetNode, defaultPreset, soundFont, channelNumber = -1, percussionChannel = false) {
+    constructor(targetNode, defaultPreset, channelNumber = -1, percussionChannel = false) {
         this.ctx = targetNode.context;
         this.outputNode = targetNode;
         this.channelNumber = channelNumber
@@ -32,7 +30,6 @@ export class MidiChannel {
 
         this.preset = defaultPreset;
         this.bank = this.preset.bank;
-        this.sf = soundFont;
 
         /**
          * @type {number[]}
@@ -74,33 +71,18 @@ export class MidiChannel {
          */
         this.stoppingNotes = [];
 
-    }
-    // /**
-    //  * Sets reverb
-    //  * @param value {number} reverb amount. 0-127
-    //  */
-    // setReverb(value)
-    // {
-    //     console.log(`Reverb for ${this.channelNumber}:`, (value / 127) * 100, "%");
-    //     this.reverbController.gain.value = value / 127;
-    // }
 
-    /**
-     * Transposes the channel by given octaves
-     * @param octaves {number} can be positive and negative
-     */
-    transposeChannel(octaves)
-    {
-        function GetTransposeFrequencyMultiplier(transpose) {
-            if (transpose === 0) {
-                return 1;
-            } else if (transpose > 0) {
-                return 2 ** transpose;
-            } else if (transpose < 0) {
-                return 1 / (2 ** Math.abs(transpose));
-            }
-        }
+        /**
+         * In semitones, does not get affected by resetControllers()
+         * @type {number}
+         */
+        this.channelTranspose = 0;
 
+        /**
+         * Controls if the channel will be affected by progam change
+         * @type {boolean}
+         */
+        this.lockPreset = false;
     }
 
     pressHoldPedal()
@@ -124,7 +106,20 @@ export class MidiChannel {
      */
     setPreset(preset)
     {
-        this.preset = preset
+        if(this.lockPreset)
+        {
+            return;
+        }
+        this.preset = preset;
+        if(this.preset.bank === 128)
+        {
+            this.percussionChannel = true;
+            this.channelTranspose = 0;
+        }
+        else
+        {
+            this.percussionChannel = false;
+        }
     }
 
     /**
@@ -158,14 +153,11 @@ export class MidiChannel {
             return;
         }
 
-        let note = new Voice(midiNote, velocity, this.panner, this.sf, this.preset, this.vibrato, this.channelTuningRatio);
+        let note = new Voice(midiNote, velocity, this.panner, this.preset, this.vibrato, this.channelTuningRatio);
 
-        // calculate gain
-        let gain = (velocity / 127);
-
-        let exclusives = note.startNote(gain, debugInfo);
+        let exclusives = note.startNote(debugInfo);
         const bendRatio = (this.pitchBend / 8192) * this.channelPitchBendRange;
-        note.bendNote(bendRatio);
+        note.bendNote(bendRatio + this.channelTranspose);
 
         if(exclusives.length > 0)
         {
@@ -193,11 +185,10 @@ export class MidiChannel {
 
     setPitchBend(bendMSB, bendLSB) {
         // bend all the notes
-        const bend = (bendLSB | (bendMSB << 7)) - 8192;
-        this.pitchBend = bend;
-        const bendRatio = (bend / 8192) * this.channelPitchBendRange;
+        this.pitchBend = (bendLSB | (bendMSB << 7)) - 8192;
+        const semitones = (this.pitchBend / 8192) * this.channelPitchBendRange;
         for (let note of this.playingNotes) {
-            note.bendNote(bendRatio);
+            note.bendNote(semitones + this.channelTranspose);
         }
     }
 
@@ -280,7 +271,7 @@ export class MidiChannel {
                                 }
                                 addDefaultVibrato();
                                 this.vibrato.rate = (dataValue / 64) * 8;
-                                console.log(`Vibrato rate for ${this.channelNumber}:`, dataValue, "=>", this.vibrato.rate, "total:", this.vibrato);
+                                //console.log(`Vibrato rate for ${this.channelNumber}:`, dataValue, "=>", this.vibrato.rate, "total:", this.vibrato);
                                 break;
 
                             // vibrato depth
@@ -291,7 +282,7 @@ export class MidiChannel {
                                 }
                                 addDefaultVibrato();
                                 this.vibrato.depth = dataValue / 2;
-                                console.log(`Vibrato depth for ${this.channelNumber}:`, dataValue, "=>", this.vibrato.depth, "total:", this.vibrato);
+                                //console.log(`Vibrato depth for ${this.channelNumber}:`, dataValue, "=>", this.vibrato.depth, "total:", this.vibrato);
                                 break;
 
                             // vibrato delay
@@ -302,7 +293,7 @@ export class MidiChannel {
                                 }
                                 addDefaultVibrato();
                                 this.vibrato.delay = (64 / dataValue) / 2;
-                                console.log(`Vibrato delay for ${this.channelNumber}`, dataValue, "=>", this.vibrato.delay, "total:", this.vibrato);
+                                //console.log(`Vibrato delay for ${this.channelNumber}`, dataValue, "=>", this.vibrato.delay, "total:", this.vibrato);
                                 break;
                         }
                         break;
@@ -319,14 +310,14 @@ export class MidiChannel {
                     // pitch bend range
                     case 0x0000:
                         this.channelPitchBendRange = dataValue;
-                        console.log(`Channel ${this.channelNumber} bend range. Semitones:`, dataValue);
+                        //console.log(`Channel ${this.channelNumber} bend range. Semitones:`, dataValue);
                         break;
 
-                    // coarse and fine tuning
-                    case 0x0001:
+                    // coarse tuning
                     case 0x0002:
+                        // semitones
                         this.channelTuningRatio = Math.pow(2,  (dataValue - 64) / 12);
-                        console.log(`Channel ${this.channelNumber} tuning. Type:`, this.RPValue, "Value:", dataValue);
+                        //console.log(`Channel ${this.channelNumber} coarse tuning. Type:`, this.RPValue, "Value:", dataValue);
                         break;
 
                     case 0x3FFF:
@@ -407,10 +398,21 @@ export class MidiChannel {
         this.panner.pan.value = 0;
         this.pitchBend = 0;
 
-        this.trasposeMultiplier = 1;
-
         this.vibrato = {depth: 0, rate: 0, delay: 0};
         this.resetParameters();
+    }
+
+    transposeChannel(semitones)
+    {
+        if(this.percussionChannel)
+        {
+            return;
+        }
+        this.channelTranspose = semitones;
+        const semi = (this.pitchBend / 8192) * this.channelPitchBendRange;
+        for (let note of this.playingNotes) {
+            note.bendNote(semi + this.channelTranspose);
+        }
     }
 
     resetParameters()

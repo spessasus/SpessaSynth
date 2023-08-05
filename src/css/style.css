@@ -13,8 +13,20 @@ html, body {
     height: 100%;
     width: 100%;
     background-color: black;
-    overflow-y: hidden;
+    overflow-x: clip;
 }
+
+::-webkit-scrollbar{
+    background-color: transparent;
+    width: 0.3em;
+}
+
+::-webkit-scrollbar-thumb{
+    background-color: #ccc;
+    border-radius: 50px;
+}
+
+
 /*Top*/
 .top_part
 {
@@ -23,12 +35,11 @@ html, body {
     background-color: var(--top-color);
     border-radius: 0 0 15px 15px;
     padding: 3px;
-}
-
-#title_wrapper
-{
-    display: inline-block;
-    width: fit-content;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: space-around;
+    justify-content: space-around;
+    align-items: center;
 }
 
 input[type="file"] {
@@ -40,7 +51,6 @@ input[type="file"] {
     position: relative;
     z-index: 1;
     margin: 0.2em auto;
-    width: max-content;
     display: block;
     line-height: 100%;
     font-weight: lighter;
@@ -69,18 +79,19 @@ input[type="file"] {
 
 .midi_and_sf_controller {
     position: relative;
-    display: block;
+    display: flex;
     width: fit-content;
-    margin: auto;
+    margin: auto auto 5px;
 }
 
 #file_upload
 {
-    padding: 6px 0;
+    padding: 6px;
     border-radius: 5px;
     cursor: pointer;
     background-color: #222;
     font-weight: bolder;
+    margin: 5px;
 }
 
 #sf_selector option
@@ -94,17 +105,19 @@ input[type="file"] {
     display: block;
     border: none;
     font-size: 15px;
-    background: var(--top-color);
+    background: #222;
     text-align: center;
-    width: 100%;
-    margin-top: 5px;
+    margin: 5px;
+    padding: 6px;
+    border-radius: 5px;
+    font-weight: bolder;
 }
 
 /*Center*/
 #note_canvas
 {
     width: 100%;
-    height: 70%;
+    height: 65%;
     display: block;
 }
 

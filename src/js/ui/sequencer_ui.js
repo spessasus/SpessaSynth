@@ -34,6 +34,7 @@ export class SequencerUI{
             const width = barPosition.width;
 
             this.seq.currentTime = (x / width) * this.seq.duration;
+            playPauseButton.innerHTML = getPauseSvg(ICON_SIZE);
         };
 
         // background bar
@@ -56,13 +57,11 @@ export class SequencerUI{
         {
             if(this.seq.paused)
             {
-                console.log("playing");
                 this.seq.play();
                 playPauseButton.innerHTML = getPauseSvg(ICON_SIZE);
             }
             else
             {
-                console.log("pausing");
                 this.seq.pause();
                 playPauseButton.innerHTML = getPlaySvg(ICON_SIZE);
             }
@@ -89,11 +88,13 @@ export class SequencerUI{
 
             if(e.key.toLowerCase() === "arrowleft")
             {
-                this.seq.currentTime -= 5
+                this.seq.currentTime -= 5;
+                playPauseButton.innerHTML = getPauseSvg(ICON_SIZE);
             }
             else if(e.key.toLowerCase() === "arrowright")
             {
-                this.seq.currentTime += 5
+                this.seq.currentTime += 5;
+                playPauseButton.innerHTML = getPauseSvg(ICON_SIZE);
             }
 
             if(!isNaN(parseFloat(e.key)))
@@ -102,6 +103,7 @@ export class SequencerUI{
                 if(0 <= num && num <= 9)
                 {
                     this.seq.currentTime = this.seq.duration * (num / 10);
+                    playPauseButton.innerHTML = getPauseSvg(ICON_SIZE);
                 }
             }
         })

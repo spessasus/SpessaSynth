@@ -18,6 +18,11 @@ export function readSamples(sampleHeadersChunk, smplChunkData)
     {
         samples.push(readSample(sampleHeadersChunk.chunkData));
         samples[samples.length - 1].loadBufferData(smplChunkData);
+
+        if(samples.length % 1000 === 0)
+        {
+            console.log(`Loaded ${samples.length} samples...`);
+        }
     }
     return samples;
 }
@@ -145,24 +150,23 @@ export class Sample{
 
     /**
      * creates a sample sampleData and stores it for reuse
-     * @param soundFont {SoundFont2}
-     * @param startAddr {number}
-     * @param endAddr {number}
+     * @param startAddrOffset {number}
+     * @param endAddrOffset {number}
      * @returns {Float32Array}
      */
-    getBuffer(soundFont, startAddr = 0, endAddr = 0)
+    getAudioData(startAddrOffset = 0, endAddrOffset = 0)
     {
         if(!this.sampleData)
         {
             throw "Sample not loaded!!! sample chunk missing?";
         }
         // if no offset, return saved sampleData
-        if(this.sampleData && startAddr === 0 && endAddr === 0)
+        if(this.sampleData && startAddrOffset === 0 && endAddrOffset === 0)
         {
             return this.sampleData;
         }
 
-        return this.getOffsetBuffer(soundFont, startAddr, endAddr);
+        return this.getOffsetBuffer(startAddrOffset, endAddrOffset);
     }
 
     /**
@@ -170,7 +174,6 @@ export class Sample{
      */
     loadBufferData(smplArr)
     {
-        console.log('getting sampleData for', this.sampleName)
         // read the sample data
         const audioData =  new Float32Array(((this.sampleEndIndex - this.sampleStartIndex) / 2) + 1);
         const dataStartIndex = smplArr.currentIndex
@@ -186,7 +189,27 @@ export class Sample{
 
             audioData[(i - this.sampleStartIndex) / 2] = val / 32768;
         }
+
         this.sampleData = audioData;
+        // // resample
+        // const rateRatio = 44100 / this.sampleRate;
+        // const outputLength = Math.floor(this.sampleLength * rateRatio);
+        // const outputData = new Float32Array(outputLength);
+        //
+        //
+        // for (let i = 0; i < outputLength; i++) {
+        //     const inputIndex = i / rateRatio;
+        //     const floor = Math.floor(inputIndex);
+        //     const ceil = Math.ceil(inputIndex);
+        //     const fraction = inputIndex - floor;
+        //
+        //     const lowerSample = audioData[floor];
+        //     const upperSample = audioData[ceil];
+        //
+        //     outputData[i] = lowerSample + (upperSample - lowerSample) * fraction;
+        // }
+        // this.sampleData = outputData;
+        // this.sampleRate = 44100;
     }
 
     /**
@@ -197,7 +220,6 @@ export class Sample{
      */
     getOffsetBuffer(startOffset, endOffset)
     {
-        console.log("offset", startOffset, endOffset);
         // const soundfontFileArray = soundFont.dataArray;
         // // read the sample data
         // const audioData =  new Float32Array(((this.sampleEndIndex - this.sampleStartIndex) / 2) + 1);
@@ -215,7 +237,7 @@ export class Sample{
         //     audioData[(i - this.sampleStartIndex - startOffset * 2) / 2] = val / 32768;
         // }
 
-        return this.sampleData.subarray(startOffset, this.sampleData.length + endOffset + 1);
+        return this.sampleData.subarray(startOffset, this.sampleData.length - endOffset + 1);
     }
 
     /**

@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="JavaScriptLibraryMappings">
-    <file url="file://$PROJECT_DIR$" libraries="{SpessaSynth/node_modules}" />
-    <file url="PROJECT" libraries="{@types/audio-context, SpessaSynth/node_modules}" />
+    <file url="PROJECT" libraries="{Lib es6}" />
     <includedPredefinedLibrary name="HTTP Pre-Request and Response Handler" />
     <includedPredefinedLibrary name="Node.js Core" />
   </component>

@@ -15,7 +15,7 @@ export class SampleNode
      * @param audioEnvelope {volumeEnvelope}
      */
     startSample(audioEnvelope) {
-        this.setValueNow(this.volumeController.gain, 0.0001);
+        //this.setValueNow(this.volumeController.gain, 0.0001);
 
         // if (audioEnvelope.delayTime < 0.002 && audioEnvelope.attackTime < 0.002) {
             this.setValueNow(this.volumeController.gain, audioEnvelope.attenuation);

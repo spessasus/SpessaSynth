@@ -1,7 +1,6 @@
-import {Preset} from "../../soundfont/chunk/presets.js";
-import {GeneratorTranslator} from "./voice/generator_translator.js";
-import {SampleNode} from "./voice/sample_node.js";
-import {SoundFont2} from "../../soundfont/soundfont_parser.js";
+import {Preset} from "../../../soundfont/chunk/presets.js";
+import {GeneratorTranslator} from "./generator_translator.js";
+import {SampleNode} from "./sample_node.js";
 
 export class Voice
 {
@@ -10,12 +9,11 @@ export class Voice
      * @param midiNote {number}
      * @param targetVelocity {number}
      * @param node {AudioNode}
-     * @param soundFont {SoundFont2}
      * @param preset {Preset}
      * @param vibratoOptions {{depth: number, rate: number, delay: number}}
      * @param tuningRatio {number} the note's initial tuning ratio
      */
-    constructor(midiNote, targetVelocity, node, soundFont, preset, vibratoOptions, tuningRatio) {
+    constructor(midiNote, targetVelocity, node, preset, vibratoOptions, tuningRatio) {
         this.midiNote = midiNote;
         this.targetNode = node;
         this.ctx = this.targetNode.context;
@@ -33,12 +31,12 @@ export class Voice
             this.vibratoDelay = vibratoOptions.delay;
         }
 
-        let samples = preset.getSampleAndGenerators(midiNote, targetVelocity);
+        let samples = preset.getSamplesAndGenerators(midiNote, targetVelocity);
 
         this.sampleOptions = samples.map(s => new GeneratorTranslator(s));
 
         this.noteVolumeController = new GainNode(this.ctx, {
-            gain: 0
+            gain: targetVelocity / 127
         });
 
         /**
@@ -47,8 +45,7 @@ export class Voice
         this.sampleNodes = this.sampleOptions.map(sampleOptions => {
             const sample = sampleOptions.sample;
 
-            const audioData = sample.getBuffer(
-                soundFont,
+            const audioData = sample.getAudioData(
                 sampleOptions.getAddressOffsets().start,
                 sampleOptions.getAddressOffsets().end);
             /**
@@ -154,11 +151,11 @@ export class Voice
 
             dataTable.push(new Option("pan", sampleOption.pan, sampleOption.getPan()));
             dataTable.push(new Option("rootKey", sampleOption.rootKey, null));
-            dataTable.push(new Option("loopingMode", sampleOption.loopingMode, sampleOption.getLoopingMode()));
+            dataTable.push(new Option("isLooped", sampleOption.loopingMode, sampleOption.getLoopingMode()));
             dataTable.push(new Option("ScaleTuning", sampleOption.scaleTune, sampleOption.getScaleTuneInfluence()));
             dataTable.push(new Option("AddressOffsets", sampleOption.getAddressOffsets(), null));
 
-            let generatorsString = sampleOption.instrumentGenerators.map(g => `${g.generatorType}: ${g.generatorValue}`).join("\n");
+            let generatorsString = sampleOption.instrumentGenerators.map(g => `${g.generatorType}: ${g.generatorValue}`).join("\n") + "\nPreset generators:" + sampleOption.presetGenerators.map(g => `${g.generatorType}: ${g.generatorValue}`).join("\n");
             dataTable.push(new Option("SampleAndGenerators", sampleOption.sample, generatorsString));
 
             console.table(dataTable);
@@ -166,22 +163,15 @@ export class Voice
     }
 
     /**
-     * @param gain {number} 0-1
      * @param debug {boolean}
      * @returns {number[]} exclusiveClass numbers
      */
-    startNote(gain, debug=false){
+    startNote(debug=false){
         if(debug)
         {
             this.displayDebugTable();
         }
-        // lower the gain if a lot of notes (or not...?)
-        this.noteVolumeController.gain.value = gain / 2;
 
-        if(this.sampleOptions.length < 1)
-        {
-            console.warn("No samples for the given note!");
-        }
         // activate vibrato
         if(this.vibratoWave)
         {

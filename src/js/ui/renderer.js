@@ -143,7 +143,6 @@ export class Renderer
     {
         if(this.pauseTime !== undefined)
         {
-            console.warn("Renderer already paused");
             return;
         }
         this.pauseTime = this.getCurrentTime();
@@ -153,9 +152,10 @@ export class Renderer
     {
         if(this.pauseTime === undefined)
         {
-            console.warn("Renderer not paused");
             return;
         }
+        const diff = this.pauseTime - this.synth.currentTime * 1000;
+        this.fallingNotes.forEach(n => n.startMs -= diff);
         this.pauseTime = undefined;
     }
 

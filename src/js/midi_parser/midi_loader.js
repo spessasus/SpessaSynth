@@ -145,15 +145,7 @@ export class MIDI{
                     // loop start
                     if(eventData[0] === 2)
                     {
-                        if(loopStart === null)
-                        {
-                            loopStart = totalTicks;
-                        }
-                        else
-                        {
-                            // this controller has occured more than once, this means that it doesnt indicate the loop
-                            loopStart = 0;
-                        }
+                        loopStart = totalTicks;
                     }
 
                     // loop end
@@ -183,6 +175,10 @@ export class MIDI{
             loopStart = 0;
             loopEnd = this.lastEventTick
         }
+        /**
+         *
+         * @type {{start: number, end: number}}
+         */
         this.loop = {start: loopStart, end: loopEnd};
         console.log("loop", this.loop);
 

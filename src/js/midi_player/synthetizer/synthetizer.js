@@ -3,6 +3,7 @@ import {SoundFont2} from "../../soundfont/soundfont_parser.js";
 import {ShiftableByteArray} from "../../utils/shiftable_array.js";
 
 const VOICES_CAP = 1000;
+const DEFAULT_PERCUSSION = 9;
 
 export class Synthetizer {
     /**
@@ -11,7 +12,12 @@ export class Synthetizer {
      */
      constructor(targetNode, soundFont) {
         this.soundFont = soundFont;
-        this.outputNode = targetNode;
+        this.context = targetNode.context;
+
+        this.volumeController = new GainNode(targetNode.context, {
+            gain: 1
+        });
+        this.volumeController.connect(targetNode)
 
         /**
          * For Black MIDI's - forces release time to 50ms
@@ -31,13 +37,13 @@ export class Synthetizer {
         // create 16 channels
         for (let j = 0; j < 16; j++) {
             // default to the first preset
-            this.midiChannels[j] = new MidiChannel(this.outputNode, this.defaultPreset, soundFont, j + 1, false);
+            this.midiChannels[j] = new MidiChannel(this.volumeController, this.defaultPreset, /*soundFont,*/ j + 1, false);
         }
 
         // change percussion channel to the percussion preset
-        this.midiChannels[9].percussionChannel = true;
-        this.midiChannels[9].setPreset(this.percussionPreset);
-        this.midiChannels[9].bank = 128;
+        this.midiChannels[DEFAULT_PERCUSSION].percussionChannel = true;
+        this.midiChannels[DEFAULT_PERCUSSION].setPreset(this.percussionPreset);
+        this.midiChannels[DEFAULT_PERCUSSION].bank = 128;
 
         // // set reverb
         // fetch("other/reverb_impulse.wav").then(async r => {
@@ -108,6 +114,7 @@ export class Synthetizer {
     onNoteOff;
 
     stopAll() {
+        console.log("stopping everything!");
         for (let channel of this.midiChannels) {
             if(this.onNoteOff)
             {
@@ -219,8 +226,12 @@ export class Synthetizer {
                 break;
 
             default:
-                console.log("Unrecognized controller:", controllerName);
+                console.log(`Unrecognized controller: ${controllerName} set to: ${controllerValue}`);
                 break;
+        }
+        if(this.onControllerChange)
+        {
+            this.onControllerChange(channel, controllerName, controllerValue);
         }
     }
 
@@ -231,30 +242,82 @@ export class Synthetizer {
     {
         for(const ch of this.midiChannels)
         {
+            // reset
             ch.resetControllers();
             ch.setPreset(this.defaultPreset);
             ch.percussionChannel = false;
+
+            // call all the event listeners
+            const chNr = ch.channelNumber - 1;
+            if(this.onProgramChange)
+            {
+                this.onProgramChange(chNr, chNr === DEFAULT_PERCUSSION ? this.percussionPreset : this.defaultPreset);
+            }
+            if(this.onControllerChange)
+            {
+                this.onControllerChange(chNr, "Main Volume", 127);
+                this.onControllerChange(chNr, "Pan", 64);
+                this.onControllerChange(chNr, "Expression Controller", 127);
+            }
+            if(this.onPitchWheel)
+            {
+                this.onPitchWheel(ch.channelNumber - 1, 64, 0);
+            }
         }
-        this.midiChannels[9].setPreset(this.percussionPreset);
-        this.midiChannels[9].percussionChannel = true;
+        this.midiChannels[DEFAULT_PERCUSSION].setPreset(this.percussionPreset);
+        this.midiChannels[DEFAULT_PERCUSSION].percussionChannel = true;
     }
 
     /**
      * Sets the pitch
-     * @param channel {number} 0-126
+     * @param channel {number} 0-16
      * @param MSB {number} SECOND byte
      * @param LSB {number} FIRST byte
      */
     pitchWheel(channel, MSB, LSB)
     {
         this.midiChannels[channel].setPitchBend(MSB, LSB);
+        if(this.onPitchWheel)
+        {
+            this.onPitchWheel(channel, MSB, LSB);
+        }
     }
 
     /**
-     * Calls on program change(channel number, preset name)
-     * @type {function(number, string)}
+     * Transposes the synthetizer's pitch by given semitones amount (percussion channels do not get affected)
+     * @param semitones {number}
+     */
+    transpose(semitones)
+    {
+        this.midiChannels.forEach(c => c.transposeChannel(semitones));
+    }
+
+    /**
+     * Sets the main volume
+     * @param volume {number} 0-1
+     */
+    setMainVolume(volume)
+    {
+        this.volumeController.gain.value = volume;
+    }
+
+    /**
+     * Calls on program change(channel number, preset)
+     * @type {function(number, Preset)}
      */
     onProgramChange;
+
+    /**
+     * Calls on controller change(channel number, controller name, controller value)
+     * @type {function(number, controllerNames, number)}
+     */
+    onControllerChange;
+
+    /**
+     * Calls on pitch wheel change (channel, msb, lsb)
+     * @type {function(number, number, number)}
+     */
+    onPitchWheel;
 
     /**
      * @param channel {number} 0-15
@@ -266,12 +329,13 @@ export class Synthetizer {
         // always 128 for percussion
         const bank = (channelObj.percussionChannel ? 128 : channelObj.bank);
 
+        // find the preset
         let preset = this.soundFont.getPreset(bank, programNumber);
         channelObj.setPreset(preset);
-        console.log("changing channel", channel, "to bank:", channelObj.bank,
-            "preset:", programNumber, preset.presetName);
+        // console.log("changing channel", channel, "to bank:", channelObj.bank,
+        //     "preset:", programNumber, preset.presetName);
         if(this.onProgramChange) {
-            this.onProgramChange(channel, preset.presetName);
+            this.onProgramChange(channel, preset);
         }
     }
 
@@ -295,7 +359,7 @@ export class Synthetizer {
         switch (type)
         {
             default:
-                console.log("Unrecognized SysEx:", messageData);
+                //console.log("Unrecognized SysEx:", messageData);
                 break;
 
             // roland
@@ -325,7 +389,7 @@ export class Synthetizer {
      */
     get currentTime()
     {
-        return this.outputNode.context.currentTime;
+        return this.context.currentTime;
     }
 
     get voicesAmount()

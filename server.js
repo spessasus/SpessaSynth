@@ -12,7 +12,7 @@ app.use(express.static("soundfonts"));
 fs.writeFile("config.json", "{}", {flag: "wx"}, () => {});
 
 app.get("/soundfonts", (req, res) => {
-    const fileNames = fs.readdirSync("soundfonts").filter(fName => fName.slice(-3) === "sf2");
+    const fileNames = fs.readdirSync("soundfonts").filter(fName => fName.slice(-3).toLowerCase() === "sf2");
 
     // check for last used soundfont
     const config = JSON.parse(fs.readFileSync("config.json", "utf-8"));
@@ -23,7 +23,6 @@ app.get("/soundfonts", (req, res) => {
             // make the last used soundfont appear first, so the js will load it first
             fileNames.splice(fileNames.indexOf(config['lastUsedSf2']), 1);
             fileNames.unshift(config['lastUsedSf2']);
-            console.log(fileNames)
         }
     }
     else

@@ -1,8 +1,5 @@
-#keyboard_selector
-{
-    position: absolute;
-    top: 0;
-    right: 0;
+#keyboard_selector{
+    flex: 1;
 }
 
 #keyboard_selector select option
@@ -14,10 +11,11 @@
 
 #keyboard_selector select
 {
+    font-size: 20px;
     display: block;
     border: none;
-    font-size: 15px;
     background: var(--top-color);
     text-align: center;
     width: 100%;
+    margin: 5px;
 }
