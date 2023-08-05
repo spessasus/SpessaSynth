@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="Lib es6" type="javaScript">
+    <properties>
+      <sourceFilesUrls>
+        <item url="file://$APPLICATION_HOME_DIR$/plugins/javascript-impl/jsLanguageServicesImpl/external/lib.es6.d.ts" />
+      </sourceFilesUrls>
+    </properties>
+    <CLASSES>
+      <root url="file://$APPLICATION_HOME_DIR$/plugins/javascript-impl/jsLanguageServicesImpl/external/lib.es6.d.ts" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
