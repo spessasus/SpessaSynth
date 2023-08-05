@@ -56,6 +56,9 @@ export class Sequencer {
          */
         this.playingNotes = [];
 
+        // controls if the sequencer loops (defaults to true)
+        this.loop = true;
+
         /**
          * merge the tracks
          * @type {MidiMessage[]}
@@ -264,6 +267,13 @@ export class Sequencer {
             return;
         }
 
+        if(this.currentTime >= this.duration)
+        {
+            console.log("reset")
+            this.currentTime = 0;
+            return;
+        }
+
         if(this.renderer)
         {
             this.renderer.clearNotes();
@@ -296,6 +306,11 @@ export class Sequencer {
      */
     _processTick()
     {
+        if(this.eventIndex >= this.events.length)
+        {
+            this.pause();
+            return;
+        }
         let event = this.events[this.eventIndex];
         while(this.playedTime <= this.currentTime)
         {
@@ -303,7 +318,7 @@ export class Sequencer {
             ++this.eventIndex;
 
             // loop
-            if(this.eventIndex >= this.events.length || this.midiData.loop.end <= event.ticks)
+            if((this.eventIndex >= this.events.length || this.midiData.loop.end <= event.ticks) && this.loop)
             {
                 this.stop();
                 this.playingNotes = [];
@@ -317,6 +332,12 @@ export class Sequencer {
                     this.renderedTime = this.playedTime - (this.renderer.noteAfterTriggerTimeMs / 1000);
                     this.rendererOTTS = this.oneTickToSeconds;
                 }
+                return;
+            }
+
+            if(this.eventIndex >= this.events.length)
+            {
+                this.pause();
                 return;
             }
 
@@ -334,13 +355,11 @@ export class Sequencer {
             let event = this.events[this.rendererEventIndex];
             while(this.renderedTime <= this.currentTime + (this.renderer.noteFallingTimeMs / 1000))
             {
-
+                this.rendererEventIndex++;
                 if(this.rendererEventIndex >= this.events.length)
                 {
                     return;
                 }
-
-                this.rendererEventIndex++;
 
                 if(event.messageStatusByte === 0x51)
                 {
@@ -349,11 +368,15 @@ export class Sequencer {
 
                 const eventType = event.messageStatusByte >> 4;
                 if(eventType === 0x8 || eventType === 0x9) {
+
                     const channel = event.messageStatusByte & 0x0F;
                     const offset = (this.renderer.noteFallingTimeMs / 1000) - (this.renderedTime - this.currentTime);
-                    if (eventType === 0x9 && event.messageData[1] > 0) {
+
+                    if(eventType === 0x9 && event.messageData[1] > 0) {
                         this.renderer.startNoteFall(event.messageData[0], channel, offset * 1000);
-                    } else {
+                    }
+                    else
+                    {
                         this.renderer.stopNoteFall(event.messageData[0], channel, offset * 1000);
                     }
                 }

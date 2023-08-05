@@ -16,6 +16,5 @@
     border: none;
     background: var(--top-color);
     text-align: center;
-    width: 100%;
-    margin: 5px;
+    margin: auto;
 }

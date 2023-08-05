@@ -145,7 +145,7 @@ export class GeneratorTranslator {
             return this.limitValue(val, minAllowed, maxAllowed)
         }
 
-        return defaultValue + preset; // this.limitValue(val, minAllowed, maxAllowed);
+        return this.limitValue(defaultValue + preset, minAllowed, maxAllowed); // this.limitValue(val, minAllowed, maxAllowed);
     }
 
     /**

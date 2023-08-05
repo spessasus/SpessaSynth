@@ -198,7 +198,7 @@ export class WorkletGeneratorHandler
             return this.limitValue(val, minAllowed, maxAllowed)
         }
 
-        return defaultValue + preset;// this.limitValue(defaultValue + preset, minAllowed, maxAllowed);
+        return this.limitValue(defaultValue + preset, minAllowed, maxAllowed);
     }
 
     /**

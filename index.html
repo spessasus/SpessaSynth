@@ -65,6 +65,13 @@
    * @type {HTMLInputElement}
    */
   let fileInput = document.getElementById("midi_file_input");
+  fileInput.onchange = e => {
+    if (e.target.files[0]) {
+      document.getElementById("file_upload").innerText = e.target.files[0].name;
+    }
+    fileInput.onchange = undefined;
+  }
+
 
   let sfInput = document.getElementById("sf_file_input");
   // remove the old files
@@ -138,7 +145,7 @@
         {
           startMidi(fileInput.files[0]);
         }
-    }
+      }
     }
   }
 
