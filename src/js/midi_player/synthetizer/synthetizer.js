@@ -285,6 +285,7 @@ export class Synthetizer {
         }
         this.midiChannels[DEFAULT_PERCUSSION].setPreset(this.percussionPreset);
         this.midiChannels[DEFAULT_PERCUSSION].percussionChannel = true;
+        this.system = "gm2";
     }
 
     /**
@@ -410,7 +411,7 @@ export class Synthetizer {
                 if(messageData[2] === 0x42 && messageData[3] === 0x12)
                 {
                     // GS reset
-                    if(messageData[7] === 0x00)
+                    if(messageData[7] === 0x00 && messageData[6] === 0x7F)
                     {
                         console.log("GS system on");
                         this.system = "gs";
