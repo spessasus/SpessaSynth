@@ -3,6 +3,7 @@ import {SoundFont2} from "../../soundfont/soundfont_parser.js";
 import {ShiftableByteArray} from "../../utils/shiftable_array.js";
 import { arrayToHexString } from '../../utils/other.js'
 
+// i mean come on
 const VOICES_CAP = 1000;
 const DEFAULT_PERCUSSION = 9;
 
@@ -365,6 +366,7 @@ export class Synthetizer {
         this.percussionPreset = this.soundFont.getPreset(128, 0);
         for(let i = 0; i < 16; i++)
         {
+            this.midiChannels[i].lockPreset = false;
             this.programChange(i, this.midiChannels[i].preset.program);
         }
     }
