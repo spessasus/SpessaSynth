@@ -14,6 +14,8 @@ SoundFont2 based realtime synthetizer and MIDI visualizer written in JavaScript.
 - Modular
 - Can be used as a library ([learn more here](../../wiki/Home#simple-demo))
 - Written in pure JavaScript using WebAudio API (Express.js is only used for the file server)
+- No dependencies for the core library
+- Comes bundled with the [GeneralUser GS](https://schristiancollins.com/generaluser.php) soundFont
 
 ## Limitations
 - The program currently supports a limited amount of generators and no modulators. This program is still in it's early development, so it might not sound as good as other synthetizers (e.g. FluidSynth)
