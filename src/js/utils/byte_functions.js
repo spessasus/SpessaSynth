@@ -49,7 +49,8 @@ export function readBytesAsString(dataArray, bytes, encoding=undefined){
         let string = "";
         for (let i = 0; i < bytes; i++) {
             let byte = readByte(dataArray);
-            if (byte === 0) {
+            if(byte < 32 || byte > 127)
+            {
                 continue;
             }
             string += String.fromCharCode(byte);

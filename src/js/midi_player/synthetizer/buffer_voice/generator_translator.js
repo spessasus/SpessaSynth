@@ -145,7 +145,7 @@ export class GeneratorTranslator {
             return this.limitValue(val, minAllowed, maxAllowed)
         }
 
-        return this.limitValue(defaultValue + preset, minAllowed, maxAllowed); // this.limitValue(val, minAllowed, maxAllowed);
+        return defaultValue + preset; // this.limitValue(val, minAllowed, maxAllowed);
     }
 
     /**
@@ -285,6 +285,10 @@ export class GeneratorTranslator {
      */
     _getSustainLevel()
     {
+        if(this.sustainLowerAmount < 0)
+        {
+            return this.decibelsToGain(this.attenuation * -1);
+        }
         let sustain = this.decibelsToGain(this.attenuation * -1) * this.decibelsToGain(this.sustainLowerAmount * -1)
         if(sustain <= 0)
         {

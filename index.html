@@ -184,7 +184,6 @@
      */
     const file = e.target.files[0];
 
-    e.target.onchange = undefined;
     document.getElementById("sf_upload").innerText = file.name;
     titleMessage.innerText = "Parsing SoundFont...";
 
@@ -210,6 +209,8 @@
     // prepare midi interface
     window.manager = new Manager(audioContextMain, soundFontParser);
 
+    sfInput.onchange = undefined;
+    document.getElementById("bundled_sf").onclick = undefined;
     if(fileInput.files[0])
     {
       startMidi(fileInput.files[0]);
