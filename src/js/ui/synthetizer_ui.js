@@ -10,7 +10,7 @@ import {MidiChannel} from "../midi_player/synthetizer/midi_channel.js";
  * min: number}} Meter
  */
 
-const MAX_VOICE_METER = 200;
+const MAX_VOICE_METER = 400;
 export class SynthetizerUI
 {
     /**

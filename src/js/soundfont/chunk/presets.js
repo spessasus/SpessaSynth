@@ -24,6 +24,16 @@ export class Preset {
          */
         this.presetZones = [];
 
+        /**
+         * Stores already found getSamplesAndGenerators for reuse
+         * @type {SampleAndGenerators[][][]}
+         */
+        this.foundSamplesAndGenerators = [];
+        for(let i = 0; i < 128; i++)
+        {
+            this.foundSamplesAndGenerators[i] = [];
+        }
+
         // skip the DWORDs (4bytes times 3)
         readBytesAsUintLittleEndian(presetChunk.chunkData, 12);
     }
@@ -68,17 +78,27 @@ export class Preset {
     }
 
     /**
-     * Returns sampleOptions and generators for given note
-     * @param midiNote {number}
-     * @param velocity {number}
-     * @returns {{
+     * @typedef {{
      *  instrumentGenerators: Generator[],
      *  presetGenerators: Generator[],
      *  sample: Sample
-     * }[]}
+     * }} SampleAndGenerators
+     */
+
+    /**
+     * Returns sampleOptions and generators for given note
+     * @param midiNote {number}
+     * @param velocity {number}
+     * @returns {SampleAndGenerators[]}
      */
     getSamplesAndGenerators(midiNote, velocity)
     {
+        const memorized = this.foundSamplesAndGenerators[midiNote][velocity];
+        if(memorized)
+        {
+            return memorized;
+        }
+
         function isInRange(min, max, number) {
             return number >= min && number <= max;
         }
@@ -153,10 +173,13 @@ export class Preset {
                 });
             });
         });
-        if(parsedGeneratorsAndSamples.length < 1)
-        {
-            console.warn(`No samples found for note ${midiNote} velocity ${velocity} for preset "${this.presetName}"`)
-        }
+        // if(parsedGeneratorsAndSamples.length < 1)
+        // {
+        //     console.warn(`No samples found for note ${midiNote} velocity ${velocity} for preset "${this.presetName}"`)
+        // }
+
+        // save and return
+        this.foundSamplesAndGenerators[midiNote][velocity] = parsedGeneratorsAndSamples;
         return parsedGeneratorsAndSamples;
     }
 }
@@ -180,7 +203,7 @@ export function readPresets(presetChunk, presetZones)
         {
             let presetZonesAmount = preset.presetZoneStartIndex - presets[presets.length - 1].presetZoneStartIndex;
             presets[presets.length - 1].getPresetZones(presetZonesAmount, presetZones);
-            presets[presets.length - 1].getExclusiveClasses()
+            presets[presets.length - 1].getExclusiveClasses();
         }
         presets.push(preset);
     }

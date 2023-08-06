@@ -1,7 +1,6 @@
 import {RiffChunk} from "./riff_chunk.js";
 import {ShiftableByteArray} from "../../utils/shiftable_array.js";
 import {readByte, readBytesAsUintLittleEndian, readBytesAsString, signedInt8} from "../../utils/byte_functions.js";
-import {SoundFont2} from "../soundfont_parser.js";
 /**
  * Reads the sampleOptions from the shdr chunk
  * @param sampleHeadersChunk {RiffChunk}
@@ -166,7 +165,31 @@ export class Sample{
             return this.sampleData;
         }
 
-        return this.getOffsetBuffer(startAddrOffset, endAddrOffset);
+        return this.getOffsetData(startAddrOffset, endAddrOffset);
+    }
+
+    /**
+     * Creates an audioBuffer for later reuse
+     * @param context {BaseAudioContext}
+     * @param startAddrOffset {number}
+     * @param endAddrOffset {number}
+     * @returns {AudioBuffer}
+     */
+    getAudioBuffer(context, startAddrOffset, endAddrOffset)
+    {
+        if(startAddrOffset === 0 && endAddrOffset === 0)
+        {
+            if(!this.buffer)
+            {
+                this.buffer = context.createBuffer(1, this.sampleData.length, this.sampleRate);
+                this.buffer.getChannelData(0).set(this.getAudioData());
+            }
+            return this.buffer;
+        }
+        const data = this.getOffsetData(startAddrOffset, endAddrOffset);
+        const buff = context.createBuffer(1, data.length, this.sampleRate);
+        buff.getChannelData(0).set(data);
+        return buff;
     }
 
     /**
@@ -218,7 +241,7 @@ export class Sample{
      * @param endOffset {number}
      * @returns {Float32Array}
      */
-    getOffsetBuffer(startOffset, endOffset)
+    getOffsetData(startOffset, endOffset)
     {
         // const soundfontFileArray = soundFont.dataArray;
         // // read the sample data

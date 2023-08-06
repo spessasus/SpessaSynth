@@ -16,6 +16,9 @@ export class Voice
     constructor(midiNote, targetVelocity, node, preset, vibratoOptions, tuningRatio) {
         this.midiNote = midiNote;
         this.targetNode = node;
+        /**
+         * @type {BaseAudioContext}
+         */
         this.ctx = this.targetNode.context;
 
         this.tuningRatio = tuningRatio;
@@ -45,36 +48,41 @@ export class Voice
         this.sampleNodes = this.sampleOptions.map(sampleOptions => {
             const sample = sampleOptions.sample;
 
-            const audioData = sample.getAudioData(
-                sampleOptions.getAddressOffsets().start,
-                sampleOptions.getAddressOffsets().end);
-            /**
-             * @type {AudioBuffer}
-             */
-            let buffer;
+            const offsets = sampleOptions.getAddressOffsets();
 
-            // panning
-            if(sampleOptions.getPan() > 0.6)
-            {
-                // right
-                buffer = this.ctx.createBuffer(2, audioData.length, sample.sampleRate);
-                buffer.getChannelData(1).set(audioData);
-            }
-            else if (sampleOptions.getPan() < -0.6)
-            {
-                // left
-                buffer = this.ctx.createBuffer(2, audioData.length, sample.sampleRate);
-                buffer.getChannelData(0).set(audioData);
-            }
-            else
-            {
-                // mono
-                buffer = this.ctx.createBuffer(1, audioData.length, sample.sampleRate);
-                buffer.getChannelData(0).set(audioData);
-            }
+            // const audioData = sample.getAudioData(
+            //     sampleOptions.getAddressOffsets().start,
+            //     sampleOptions.getAddressOffsets().end);
+            // /**
+            //  * @type {AudioBuffer}
+            //  */
+            // let buffer = this.ctx.createBuffer(1, audioData.length, sample.sampleRate);
+            // buffer.getChannelData(0).set(audioData);
+
+            // const pan = sampleOptions.getPan();
+            //
+            // // panning
+            // if(pan > 0.6)
+            // {
+            //     // right
+            //     buffer = this.ctx.createBuffer(2, audioData.length, sample.sampleRate);
+            //     buffer.getChannelData(1).set(audioData);
+            // }
+            // else if (pan < -0.6)
+            // {
+            //     // left
+            //     buffer = this.ctx.createBuffer(2, audioData.length, sample.sampleRate);
+            //     buffer.getChannelData(0).set(audioData);
+            // }
+            // else
+            // {
+            //     // mono
+            //     buffer = this.ctx.createBuffer(1, audioData.length, sample.sampleRate);
+            //     buffer.getChannelData(0).set(audioData);
+            // }
 
             const bufferSource = new AudioBufferSourceNode(this.ctx, {
-                buffer: buffer
+                buffer: sample.getAudioBuffer(this.ctx, offsets.start, offsets.end)
             });
 
             if(this.vibratoDepth) {
@@ -91,7 +99,14 @@ export class Voice
             let volumeControl = new GainNode(this.ctx);
             volumeControl.connect(this.noteVolumeController);
 
-            bufferSource.connect(volumeControl);
+            // create panner =
+            let panner = new StereoPannerNode(this.ctx ,{
+                pan:  sampleOptions.getPan()
+            });
+
+            bufferSource.connect(panner);
+            panner.connect(volumeControl);
+
             return new SampleNode(bufferSource, volumeControl);
         });
         this.noteVolumeController.connect(node);
@@ -103,8 +118,7 @@ export class Voice
      */
     applyLoopIndexes(bufferSource, sampleOptions)
     {
-        if (sampleOptions.sample.sampleLoopStartIndex !== sampleOptions.sample.sampleLoopEndIndex &&
-            (sampleOptions.loopingMode === 1 || sampleOptions.loopingMode === 3)) {
+        if (sampleOptions.loopingMode === 1 || sampleOptions.loopingMode === 3) {
 
             // (lsI - sI) / (sr * 2)
             const loopStartIndex = (sampleOptions.sample.sampleLoopStartIndex - sampleOptions.sample.sampleStartIndex)
