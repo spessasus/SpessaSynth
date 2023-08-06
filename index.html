@@ -10,6 +10,12 @@
   <link rel="stylesheet" href="src/css/keyboard_ui.css">
   <link rel="stylesheet" href="src/css/synthesizer_ui.css">
   <link rel="stylesheet" href="src/css/keyboard.css">
+
+  <style>
+    a{
+      color: yellowgreen;
+    }
+  </style>
 </head>
 <body>
 <div class="top_part">
@@ -31,8 +37,8 @@
         <a href='https://github.com/spessasus/SpessaSynth' target='_blank'>Project's page</a>
       </label>
 
-      <label>
-        <a href='https://musical-artifacts.com/artifacts/1176' target='_blank'>Recommended SoundFont</a>
+      <label id='bundled_sf'>
+        Download and use the bundled SoundFont (30MB)
       </label>
     </div>
   </div>
@@ -63,6 +69,7 @@
   import {SoundFont2} from "./src/js/soundfont/soundfont_parser.js";
   import {ShiftableByteArray} from "./src/js/utils/shiftable_array.js";
 
+
   const TITLE = "SpessaSynth: SoundFont2 Javascript Synthetizer Online Demo";
 
   /**
@@ -85,6 +92,47 @@
   fileInput.value = "";
   fileInput.focus();
 
+  async function fetchFont(url, callback)
+  {
+    let response = await fetch(url);
+    if(!response.ok)
+    {
+      titleMessage.innerText = "Error downloading soundfont!";
+      throw response;
+    }
+    let size = response.headers.get("content-length");
+    let reader = await (await response.body).getReader();
+    let done = false;
+    let dataArray = new ShiftableByteArray(parseInt(size));
+    let offset = 0;
+    do{
+      let readData = await reader.read();
+      if(readData.value) {
+        dataArray.set(readData.value, offset);
+        offset += readData.value.length;
+      }
+      done = readData.done;
+      let percent = Math.round((offset / size) * 100);
+      callback(percent);
+    }while(!done);
+    return dataArray;
+  }
+
+  document.getElementById("bundled_sf").onclick = () => {
+    fetchFont("soundfonts/GeneralUser_GS.sf2", percent => titleMessage.innerText = `Downloading SF2: ${percent}%`).then(arr => {
+      try {
+        window.soundFontParser = new SoundFont2(arr);
+      }
+      catch (e)
+      {
+        titleMessage.innerText = "Error parsing soundfont! Check console for more info";
+        console.log(e);
+        return;
+      }
+      prepareUI();
+    })
+  }
+
 
   /**
    * @param midiFile {File}
@@ -93,7 +141,15 @@
   {
     const buffer = await midiFile.arrayBuffer();
     const arr = new ShiftableByteArray(buffer);
-    return new MIDI(arr);
+    try
+    {
+      return new MIDI(arr);
+    }
+    catch (e)
+    {
+      titleMessage.innerText = "Error parsing MIDI! Check console for more info";
+      throw e;
+    }
   }
 
   /**
@@ -133,7 +189,20 @@
     titleMessage.innerText = "Parsing SoundFont...";
 
     const arr = await file.arrayBuffer();
-    window.soundFontParser = new SoundFont2(new ShiftableByteArray(arr));
+    try {
+      window.soundFontParser = new SoundFont2(new ShiftableByteArray(arr));
+    }
+    catch (e)
+    {
+      titleMessage.innerText = "Error parsing soundfont! Check console for more info";
+      console.log(e);
+      return;
+    }
+    prepareUI();
+  }
+
+  function prepareUI()
+  {
     titleMessage.innerText = TITLE;
 
     window.audioContextMain = new AudioContext({sampleRate: 44100});
@@ -156,7 +225,6 @@
       }
     }
   }
-
 
 
 </script>
