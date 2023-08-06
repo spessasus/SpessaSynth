@@ -20,3 +20,20 @@ export function calculateRGB(rgbString, operation)
     let rgbValues = rgbString.replace(/[^\d,]/g, '').split(',');
     return `rgb(${operation(parseInt(rgbValues[0]))}, ${operation(parseInt(rgbValues[1]))}, ${operation(parseInt(rgbValues[2]))})`;
 }
+
+/**
+ * Does what it says
+ * @param arr {ShiftableByteArray}
+ * @returns {string}
+ */
+export function arrayToHexString(arr) {
+    let hexString = '';
+
+    for (let i = 0; i < arr.length; i++) {
+        const hex = arr[i].toString(16).padStart(2, '0').toUpperCase();
+        hexString += hex;
+        hexString += ' ';
+    }
+
+    return hexString;
+}

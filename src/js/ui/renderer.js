@@ -1,4 +1,5 @@
 import {Synthetizer} from "../midi_player/synthetizer/synthetizer.js";
+import { calculateRGB } from '../utils/other.js'
 
 const CHANNEL_ANALYSER_FFT = 128;
 const NOTE_MARGIN = 1;
@@ -108,7 +109,6 @@ export class Renderer
             note.channel === channel &&
             note.timeMs === Infinity))
         {
-            // random to prevent notes having the same time and flashing
             note.timeMs = this.getCurrentTime() - timeOffsetMs - note.startMs;
             if(note.timeMs < MIN_NOTE_TIME_MS) note.timeMs = MIN_NOTE_TIME_MS;
         }
@@ -183,6 +183,7 @@ export class Renderer
         this.drawingContext.fillStyle = "#ccc";
         this.drawingContext.font = `${FONT_SIZE}px Sans`;
 
+
         // draw the individual analysers
         let i = 0;
         for(const analyser of this.channelAnalysers)
@@ -203,7 +204,7 @@ export class Renderer
 
         this.notesOnScreen = 0;
         const noteWidth = this.noteFieldWidth / 128 - (NOTE_MARGIN * 2);
-        for(const note of this.fallingNotes)
+        this.fallingNotes.forEach(note =>
         {
             const yPos = ((this.getCurrentTime() - note.startMs) / (this.noteFallingTimeMs + this.noteAfterTriggerTimeMs)) * this.noteFieldHeight;
             const xPos = (this.noteFieldWidth / 128) * note.midiNote;
@@ -221,13 +222,9 @@ export class Renderer
             // make notes that are about to play or after being played, darker
             if (this.getCurrentTime() - note.startMs < this.noteFallingTimeMs ||
                 this.getCurrentTime() - note.startMs - note.timeMs > this.noteFallingTimeMs) {
-                let rgbaValues = noteColor.match(/\d+(\.\d+)?/g).map(parseFloat);
-
-                // multiply the rgb values by 0.5 (50% brighntess)
-                let newRGBValues = rgbaValues.slice(0, 3).map(value => value * 0.5);
 
                 // create the new color
-                noteColor = `rgba(${newRGBValues.join(", ")}, ${rgbaValues[3]})`;
+                noteColor = calculateRGB(noteColor, v => v * 0.5);
             }
             const xFinal = xPos + NOTE_MARGIN;
             const yFinal = yPos - noteHeight;
@@ -246,7 +243,7 @@ export class Renderer
             {
                 this.fallingNotes.splice(this.fallingNotes.indexOf(note), 1);
             }
-        }
+        });
         this.drawingContext.restore();
 
         // calculate fps

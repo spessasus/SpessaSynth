@@ -1,6 +1,7 @@
 import {MidiChannel} from "./midi_channel.js";
 import {SoundFont2} from "../../soundfont/soundfont_parser.js";
 import {ShiftableByteArray} from "../../utils/shiftable_array.js";
+import { arrayToHexString } from '../../utils/other.js'
 
 const VOICES_CAP = 1000;
 const DEFAULT_PERCUSSION = 9;
@@ -24,6 +25,12 @@ export class Synthetizer {
          * @type {boolean}
          */
         this.highPerformanceMode = false;
+
+        /**
+         * Controls the system
+         * @type {"gm"|"gm2"|"gs"|"xg"}
+         */
+        this.system = "gm2";
 
         console.log("Preparing channels");
         /**
@@ -181,6 +188,11 @@ export class Synthetizer {
                 break;
 
             case "Bank Select":
+                if(this.system === "gm")
+                {
+                    // gm ignores bank select
+                    return;
+                }
                 let bankNr = controllerValue;
                 const channelObject = this.midiChannels[channel];
                 if(channelObject.percussionChannel)
@@ -198,7 +210,14 @@ export class Synthetizer {
                 break;
 
             case "LSB for Control 0 (Bank Select)":
-                // prevent unrecognized error as we always have up to 128 banks
+                if(this.system === 'xg')
+                {
+                    if(this.midiChannels[channel].bank === 127)
+                    {
+                        this.midiChannels[channel].percussionChannel = true;
+                    }
+                    this.midiChannels[channel].bank = controllerValue;
+                }
                 break;
 
             case "Non-Registered Parameter Number MSB":
@@ -359,27 +378,79 @@ export class Synthetizer {
         switch (type)
         {
             default:
-                //console.log("Unrecognized SysEx:", messageData);
+                console.log("Unrecognized SysEx:", arrayToHexString(messageData));
+                break;
+
+            case 0x7E:
+                // gm system
+                if(messageData[2] === 0x09)
+                {
+                    if(messageData[3] === 0x01)
+                    {
+                        console.log("GM system on");
+                        this.system = "gm";
+                    }
+                    else if(messageData[3] === 0x03)
+                    {
+                        console.log("GM2 system on");
+                        this.system = "gm2";
+                    }
+                    else
+                    {
+                        console.log("GM system off, defaulting to GS");
+                        this.system = "gs";
+                    }
+                }
                 break;
 
             // roland
             // http://www.bandtrax.com.au/sysex.htm
             case 0x41:
                 // gs
-                if(messageData[2] === 0x42 && messageData[3] === 0x12 && messageData[4] === 0x40)
+                if(messageData[2] === 0x42 && messageData[3] === 0x12)
                 {
-                    // 0 means channel 10 (default), 1 means 1 etc.
-                    const channel = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15][messageData[5] & 0x0F]; // for example 1A means A = 11
-                    if(messageData[6] === 0x15) // drum channel
+                    // GS reset
+                    if(messageData[7] === 0x00)
                     {
+                        console.log("GS system on");
+                        this.system = "gs";
+                        return;
+                    }
+
+                    // Use for Drum Part
+                    if(messageData[6] === 0x15)
+                    {
+                        // 0 means channel 10 (default), 1 means 1 etc.
+                        const channel = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15][messageData[5] & 0x0F]; // for example 1A means A = 11
                         this.midiChannels[channel].percussionChannel = messageData[7] > 0;
                         console.log("Drum channel", channel, messageData[7] > 0);
+                    }
+                    else
+                    {
+                        console.log(new ShiftableByteArray([0x10, 0x42, 0x12, 0x40, 0x00, 0x7F, 0x00]), messageData.slice(1, 8));
+                        console.log("Unrecognized Roland GS SyEx:", arrayToHexString(messageData));
                     }
                 }
                 else
                 {
-                    console.log("Unrecognizer Roland SysEx:", messageData);
+                    console.log("Unrecognized Roland SysEx:", arrayToHexString(messageData));
                 }
+                break;
+
+            // yamaha
+            case 0x43:
+                // XG on
+                if(messageData[2] === 0x4C && messageData[5] === 0x7E && messageData[6] === 0x00)
+                {
+                    console.log("XG system on");
+                    this.system = "xg";
+                }
+                else
+                {
+                    console.log("Unrecognizer Yamaha SysEx:", arrayToHexString(messageData));
+                }
+                break;
+
 
         }
     }
