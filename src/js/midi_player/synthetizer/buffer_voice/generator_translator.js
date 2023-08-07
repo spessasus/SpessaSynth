@@ -254,31 +254,6 @@ export class GeneratorTranslator {
         return this.exclusiveClass;
     }
 
-    // /**
-    //  * @returns {number} fadeout time in seconds
-    //  */
-    // getReleaseTime()
-    // {
-    //     // -3986 ~ 0.1s
-    //     //if(seconds > 5) seconds = 5;
-    //     return this.timecentsToSeconds(this.releaseTime);
-    // }
-    //
-    // /**
-    //  * @returns {number} time to sustain value in seconds
-    //  */
-    // getDecayTime()
-    // {
-    //     return this.timecentsToSeconds(this.decayTime);
-    // }
-    //
-    // /**
-    //  * @returns {number} time to hold the note at initialAttenuation in seconds
-    //  */
-    // getHoldTime()
-    // {
-    //     return this.timecentsToSeconds(this.holdTime);
-    // }
 
     /**
      * @returns {number} the sustaing gain level (0 to inf)

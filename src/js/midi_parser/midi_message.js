@@ -225,48 +225,6 @@ export const dataBytesAmount = {
 };
 
 /**
- * @typedef {"Note Off"|
- *           "Note On"|
- *           "Note Aftertouch"|
- *           "Controller Change"|
- *           "Program Change"|
- *           "Channel Aftertouch"|
- *           "Pitch Bend"|
- *
- *           "System Exclusive"|
- *
- *           "Time Code Quarter Framme"|
- *           "Song Position Pointer"|
- *           "Song Select"|
- *           "Tune Request"|
- *           "Timing Clock"|
- *           "Start"|
- *           "Continue"|
- *           "Stop"|
- *           "Active Sense"|
- *           "System Reset"|
- *
- *           "Sequence Number"|
- *           "Text Event"|
- *           "Copyright"|
- *           "Track Name"|
- *           "Instrument Name"|
- *           "Lyrics"|
- *           "Marker"|
- *           "Cue Point"|
- *           "Device Port"|
- *           "Channel Prefix"|
- *           "Midi Port"|
- *           "End Of Track"|
- *           "Set Tempo"|
- *           "SMPTE Offset"|
- *           "Time Signature"|
- *           "Key Signature"|
- *           "Sequencer-Specific Meta-event"|
- *           "Unknown"} MessageName
- */
-
-/**
  * @typedef {"Bank Select" | "Modulation Wheel" | "Breath Controller" | "Foot Controller" |
  *  "Portamento Time" | "Data Entry MSB" | "Main Volume" | "Balance" | "Pan" | "Expression Controller" |
  *  "Effect Control 1" | "Effect Control 2" | "General Purpose Controller 1" | "General Purpose Controller 2" |
