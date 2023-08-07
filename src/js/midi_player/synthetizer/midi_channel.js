@@ -2,7 +2,10 @@ import {Voice} from "./buffer_voice/voice.js";
 import {Preset} from "../../soundfont/chunk/presets.js";
 import {Voice2} from "./worklet_voice/voice2.js";
 
-const CHANNEL_LOUDNESS = 0.5;
+const CHANNEL_LOUDNESS = 0.25;
+
+const BRIGHTNESS_MAX_FREQ = 20000;
+const BRIGHTNESS_MIN_FREQ = 300;
 
 const dataEntryStates = {
     Idle: 0,
@@ -36,29 +39,26 @@ export class MidiChannel {
          */
         this.heldNotes = [];
 
-        this.panner = this.ctx.createStereoPanner();
-        this.gainController = this.ctx.createGain();
-        // this.reverbController = new GainNode(this.ctx, {
-        //     gain: 0
-        // });
+        this.panner = new StereoPannerNode(this.ctx);
 
-        // this.reverbCreator = this.ctx.createConvolver();
-        // fetch("other/impulse.wav").then(async r => {
-        //     this.reverbCreator.sampleData = await this.ctx.decodeAudioData(await r.arrayBuffer());
-        // })
+        this.gainController = new GainNode(this.ctx, {
+            gain: 1
+        });
+
+        this.brightnessController = new BiquadFilterNode(this.ctx, {
+            type: "lowpass",
+            frequency: BRIGHTNESS_MAX_FREQ
+        });
 
         this.resetControllers();
 
-        // note -> panner -> gain -> out
+        // note -> panner -> gain -> brightness -> out
 
         this.panner.connect(this.gainController);
-       // this.panner.connect(this.reverbController);
+        this.gainController.connect(this.brightnessController);
+        this.brightnessController.connect(this.outputNode)
 
-        //this.reverbController.connect(this.reverbCreator);
 
-        //this.reverbCreator.connect(this.outputNode);
-        this.gainController.connect(this.outputNode);
-        this.gainController.gain.value = this.getGain();
 
         /**
          * Current playing notes
@@ -195,6 +195,15 @@ export class MidiChannel {
     get voicesAmount()
     {
         return this.playingNotes.length + this.stoppingNotes.length + this.heldNotes.length;
+    }
+
+    /**
+     * @param brightness {number} 0-127
+     */
+    setBrightness(brightness)
+    {
+        this.brightness = brightness;
+        this.brightnessController.frequency.value = (this.brightness / 127) * (BRIGHTNESS_MAX_FREQ - BRIGHTNESS_MIN_FREQ) + BRIGHTNESS_MIN_FREQ;
     }
 
     setVolume(volume) {
@@ -397,6 +406,8 @@ export class MidiChannel {
         this.gainController.gain.value = 1;
         this.panner.pan.value = 0;
         this.pitchBend = 0;
+        this.brightness = 127;
+        this.brightnessController.frequency.value = BRIGHTNESS_MAX_FREQ;
 
         this.vibrato = {depth: 0, rate: 0, delay: 0};
         this.resetParameters();

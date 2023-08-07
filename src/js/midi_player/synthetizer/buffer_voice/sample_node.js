@@ -4,10 +4,12 @@ export class SampleNode
      * Creates a SampleNode, it holds a single sample and it's volume controller
      * @param bufferSrc {AudioBufferSourceNode}
      * @param attenuationNode {GainNode}
+     * @param panner {StereoPannerNode}
      */
-    constructor(bufferSrc, attenuationNode) {
+    constructor(bufferSrc, attenuationNode, panner) {
         this.source = bufferSrc;
         this.volumeController = attenuationNode;
+        this.panner = panner;
     }
 
     /**
@@ -103,5 +105,11 @@ export class SampleNode
         this.source.stop();
         this.source.disconnect();
         this.volumeController.disconnect();
+        this.panner.disconnect();
+
+        delete this.source;
+        delete this.volumeController;
+        delete this.panner;
+        delete this;
     }
 }

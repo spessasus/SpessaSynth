@@ -236,7 +236,8 @@ export class SynthetizerUI
                 .padStart(3, "0")} ${p.presetName}`;
         }
 
-        this.synth.onControllerChange = (channel, controller, value) => {
+        this.synth.onControllerChange = (channel, controller, value) =>
+        {
             switch (controller)
             {
                 default:
@@ -255,8 +256,13 @@ export class SynthetizerUI
                 case "Pan":
                     // pan
                     this.updateMeter(this.controllers[channel].pan, (value - 63) / 64);
+                    break;
+
+                case "Brightness":
+                    // brightness
+                    this.updateMeter(this.controllers[channel].brightness, value);
             }
-        };
+        }
 
         this.synth.onPitchWheel = (channel, MSB, LSB) => {
             const val = (MSB << 7) | LSB;
@@ -272,6 +278,7 @@ export class SynthetizerUI
      *     pitchWheel: Meter,
      *     pan: Meter,
      *     expression: Meter,
+     *     brightness: Meter,
      *     preset: HTMLSelectElement
      * }} ChannelController
      */
@@ -341,6 +348,17 @@ export class SynthetizerUI
         this.updateMeter(volume, 127);
         controller.appendChild(volume.div);
 
+        const brightness = this.createMeter(this.channelColors[channelNumber],
+            "Brightness: ",
+            0,
+            127,
+            true,
+            val => {
+                this.synth.controllerChange(channelNumber, "Brightness", val);
+            });
+        this.updateMeter(brightness, 127);
+        controller.appendChild(brightness.div);
+
         const presetSelector = this.createSelector((
             this.synth.midiChannels[channelNumber].percussionChannel ? this.percussionList : this.instrumentList
         ),
@@ -364,6 +382,7 @@ export class SynthetizerUI
             pan: pan,
             expression: expression,
             volume: volume,
+            brightness: brightness,
             preset: presetSelector
         };
 

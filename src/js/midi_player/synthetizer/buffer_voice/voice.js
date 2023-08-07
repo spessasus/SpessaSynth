@@ -105,23 +105,23 @@ export class Voice
             });
             bufferSource.connect(panner);
 
-            if(sampleOptions.filterCutoff > 13400)
-            {
+            // if(sampleOptions.filterCutoff > 13400)
+            // {
                 panner.connect(volumeControl);
-            }
-            else {
+            // }
+            // else {
+            //
+            //     // create lowpass filter
+            //     let filter = new BiquadFilterNode(this.ctx, {
+            //         frequency: sampleOptions.getFilterCutoffHz(),
+            //         type: "lowpass",
+            //     });
+            //
+            //     panner.connect(filter);
+            //     filter.connect(volumeControl);
+            // }
 
-                // create lowpass filter
-                let filter = new BiquadFilterNode(this.ctx, {
-                    frequency: sampleOptions.getFilterCutoffHz(),
-                    type: "lowpass",
-                });
-
-                panner.connect(filter);
-                filter.connect(volumeControl);
-            }
-
-            return new SampleNode(bufferSource, volumeControl);
+            return new SampleNode(bufferSource, volumeControl, panner);
         });
         this.noteVolumeController.connect(node);
     }

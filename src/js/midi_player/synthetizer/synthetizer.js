@@ -81,6 +81,14 @@ export class Synthetizer {
             return;
         }
 
+        if(this.highPerformanceMode && this.voicesAmount > VOICES_CAP * 0.7)
+        {
+            if(velocity < 30)
+            {
+                return;
+            }
+        }
+
         let chan = this.midiChannels[channel];
         chan.playNote(midiNote, velocity, enableDebugging);
         if(this.onNoteOn) {
@@ -166,6 +174,10 @@ export class Synthetizer {
             case "Pan":
                 let pan = (controllerValue - 64) / 64;
                 this.midiChannels[channel].setPan(pan);
+                break;
+
+            case "Brightness":
+                this.midiChannels[channel].setBrightness(controllerValue);
                 break;
 
             case "All Notes Off":

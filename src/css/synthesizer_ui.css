@@ -13,10 +13,11 @@
 #synthetizer_controls .voice_meter{
     position: relative;
     height: var(--voice-meter-height);
-    width: 100%;
+    flex: 1;
     cursor: not-allowed;
     border-radius: 5px;
     border: solid 1px rgba(1, 1, 1, 0.5);
+    min-width: 7em;
 }
 
 #synthetizer_controls .voice_meter.editable{
@@ -51,7 +52,7 @@
 #synthetizer_controls .channels_dropdown{
     left: 0;
     display: none;
-    position: fixed;
+    position: absolute;
     backdrop-filter: blur(2px) brightness(0.5);
     background-color: rgba(3, 3, 3, 0.3);
     top: 6em;
@@ -67,6 +68,7 @@
 #synthetizer_controls .channel_controller{
     display: flex;
     align-items: stretch;
+    flex-wrap: wrap;
 }
 
 #synthetizer_controls:hover .channels_dropdown{
@@ -76,7 +78,7 @@
 #synthetizer_controls .voice_selector{
     position: relative;
     height: var(--voice-meter-height);
-    width: 100%;
+    flex: 1;
     border-radius: 5px;
     border: #777 1px solid;
     margin: 2px;
