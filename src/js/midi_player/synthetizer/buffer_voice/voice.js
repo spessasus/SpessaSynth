@@ -203,7 +203,7 @@ export class Voice
 
             if(sampleOptions.getExclusiveclass() !== 0)
             {
-                if(exclusives.find(sampleOptions.getExclusiveclass) === undefined) {
+                if(exclusives.find(v => v === sampleOptions.getExclusiveclass()) === undefined) {
                     exclusives.push(sampleOptions.getExclusiveclass());
                 }
             }
