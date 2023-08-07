@@ -16,6 +16,7 @@ export class SoundFont2
      */
     constructor(dataArray) {
         this.dataArray = dataArray;
+        console.group("Parsing SoundFont...");
         if(!this.dataArray)
         {
             throw new Error("No data!");
@@ -129,10 +130,10 @@ export class SoundFont2
          * @type {Preset[]}
          */
         this.presets = readPresets(this.presetHeadersChunk, presetZones);
+        this.presets.sort((a, b) => (a.program - b.program) + (a.bank - b.bank));
         console.log("Parsing finished!");
         console.log("Presets:", this.presets.length);
-
-        this.presets.sort((a, b) => (a.program - b.program) + (a.bank - b.bank));
+        console.groupEnd();
     }
 
     /**

@@ -164,18 +164,18 @@ export class MidiChannel {
             for(let id of exclusives) {
                 for(let note of this.playingNotes.filter(n => n.exclusives.find(e => e === id)))
                 {
-                    //note.killNote().then(() =>{
+                    note.killNote().then(() =>{
                         note.disconnectNote();
                         this.playingNotes.splice(this.playingNotes.indexOf(note), 1);
-                    //});
+                    });
                 }
 
                 for(let note of this.stoppingNotes.filter(n => n.exclusives.find(e => e === id)))
                 {
-                    //note.killNote().then(() =>{
+                    note.killNote().then(() =>{
                         note.disconnectNote();
                         this.stoppingNotes.splice(this.stoppingNotes.indexOf(note), 1);
-                    //});
+                    });
                 }
             }
         }
@@ -240,7 +240,7 @@ export class MidiChannel {
             {
                 this.vibrato.depth = 64;
                 this.vibrato.rate = 7;
-                this.vibrato.delay = 1;
+                this.vibrato.delay = 0.3;
             }
         }
 
@@ -271,7 +271,7 @@ export class MidiChannel {
                                 }
                                 addDefaultVibrato();
                                 this.vibrato.rate = (dataValue / 64) * 8;
-                                //console.log(`Vibrato rate for ${this.channelNumber}:`, dataValue, "=>", this.vibrato.rate, "total:", this.vibrato);
+                                console.log(`Vibrato rate for ${this.channelNumber}:`, dataValue, "=>", this.vibrato.rate, "total:", this.vibrato);
                                 break;
 
                             // vibrato depth
@@ -282,7 +282,7 @@ export class MidiChannel {
                                 }
                                 addDefaultVibrato();
                                 this.vibrato.depth = dataValue / 2;
-                                //console.log(`Vibrato depth for ${this.channelNumber}:`, dataValue, "=>", this.vibrato.depth, "total:", this.vibrato);
+                                console.log(`Vibrato depth for ${this.channelNumber}:`, dataValue, "=>", this.vibrato.depth, "total:", this.vibrato);
                                 break;
 
                             // vibrato delay
@@ -292,8 +292,8 @@ export class MidiChannel {
                                     return;
                                 }
                                 addDefaultVibrato();
-                                this.vibrato.delay = (64 / dataValue) / 2;
-                                //console.log(`Vibrato delay for ${this.channelNumber}`, dataValue, "=>", this.vibrato.delay, "total:", this.vibrato);
+                                this.vibrato.delay = (dataValue / 64) / 3;
+                                console.log(`Vibrato delay for ${this.channelNumber}`, dataValue, "=>", this.vibrato.delay, "total:", this.vibrato);
                                 break;
                         }
                         break;

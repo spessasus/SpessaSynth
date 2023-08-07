@@ -203,7 +203,9 @@ export class Voice
 
             if(sampleOptions.getExclusiveclass() !== 0)
             {
-                exclusives.push(sampleOptions.getExclusiveclass());
+                if(exclusives.find(sampleOptions.getExclusiveclass) === undefined) {
+                    exclusives.push(sampleOptions.getExclusiveclass());
+                }
             }
 
             // sample.attenuation.gain.value = sampleOptions.getAttenuation() / this.sampleNodes.length;
