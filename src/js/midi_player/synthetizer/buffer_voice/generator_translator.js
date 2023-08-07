@@ -38,7 +38,7 @@ export class GeneratorTranslator {
         //     (this.getGeneratorValue("initialAttenuation", 0) / 10);
         this.attenuation = this.sumGeneratorValue("initialAttenuation",
             0,
-            0,
+            -100 / EMU_ATTENUATION_CORRECTION,
             1440) / 10 * EMU_ATTENUATION_CORRECTION;
 
         // delayVolEnv
@@ -148,7 +148,7 @@ export class GeneratorTranslator {
             return this.limitValue(val, minAllowed, maxAllowed)
         }
 
-        return defaultValue + preset; // this.limitValue(val, minAllowed, maxAllowed);
+        return this.limitValue(preset + defaultValue, minAllowed, maxAllowed);
     }
 
     /**
