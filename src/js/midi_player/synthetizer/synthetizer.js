@@ -442,7 +442,6 @@ export class Synthetizer {
                     }
                     else
                     {
-                        console.log(new ShiftableByteArray([0x10, 0x42, 0x12, 0x40, 0x00, 0x7F, 0x00]), messageData.slice(1, 8));
                         console.log("Unrecognized Roland GS SyEx:", arrayToHexString(messageData));
                     }
                 }

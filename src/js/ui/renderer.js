@@ -3,9 +3,12 @@ import { calculateRGB } from '../utils/other.js'
 
 const CHANNEL_ANALYSER_FFT = 512;
 const DRUMS_ANALYSER_FFT = 2048;
+
 const NOTE_MARGIN = 1;
 const MIN_NOTE_TIME_MS = 20;
 const FONT_SIZE = 16;
+
+const WAVE_MULTIPLIER = 2;
 export class Renderer
 {
     /**
@@ -18,7 +21,8 @@ export class Renderer
         this.noteFallingTimeMs = 1000;
         this.noteAfterTriggerTimeMs = 0;
 
-        this.renderNotes = true;
+        this.renderBool = true;
+        this.renderAnalysers = true;
 
         this.noteFieldWidth = canvas.width;
         this.noteFieldHeight = canvas.height;
@@ -166,7 +170,7 @@ export class Renderer
      */
     render(auto = true)
     {
-        if(!this.renderNotes)
+        if(!this.renderBool)
         {
             if(auto) {
                 requestAnimationFrame(() => {
@@ -185,21 +189,21 @@ export class Renderer
         this.drawingContext.font = `${FONT_SIZE}px Sans`;
 
 
-        // draw the individual analysers
-        this.channelAnalysers.forEach((analyser, i ) => {
-            if(this.synth.midiChannels[i].percussionChannel)
-            {
-                if(analyser.fftSize !== DRUMS_ANALYSER_FFT)
-                {
-                    analyser.fftSize = DRUMS_ANALYSER_FFT;
+        if(this.renderAnalysers) {
+            // draw the individual analysers
+            this.channelAnalysers.forEach((analyser, i) => {
+                if (this.synth.midiChannels[i].percussionChannel) {
+                    if (analyser.fftSize !== DRUMS_ANALYSER_FFT) {
+                        analyser.fftSize = DRUMS_ANALYSER_FFT;
+                    }
                 }
-            }
 
-            this.drawChannelWaveform(analyser,
-                i % 4,
-                Math.floor(i / 4), i);
-            i++;
-        });
+                this.drawChannelWaveform(analyser,
+                    i % 4,
+                    Math.floor(i / 4), i);
+                i++;
+            });
+        }
 
 
         // draw the notes
@@ -280,7 +284,6 @@ export class Renderer
     {
         const waveform = new Float32Array(analyser.frequencyBinCount);
         analyser.getFloatTimeDomainData(waveform);
-        const WAVE_MULTIPLIER = 2;
         const waveWidth = this.canvas.width / 4;
         const waveHeight = this.canvas.height / 4
         const relativeX = waveWidth * x;
