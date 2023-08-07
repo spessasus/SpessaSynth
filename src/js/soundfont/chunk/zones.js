@@ -1,7 +1,7 @@
 import {readBytesAsUintLittleEndian} from "../../utils/byte_functions.js";
 import {ShiftableByteArray} from "../../utils/shiftable_array.js";
 import {RiffChunk} from "./riff_chunk.js";
-import {Generator} from "./generators.js";
+import {Generator, generatorTypes} from "./generators.js";
 import {Sample} from "./samples.js";
 import {Instrument} from "./instruments.js";
 import {Modulator} from "./modulators.js";
@@ -64,7 +64,7 @@ export class InstrumentZone {
      * @param samples {Sample[]}
      */
     getSample(samples) {
-        let sampleID = this.generators.find(g => g.generatorType === "sampleID");
+        let sampleID = this.generators.find(g => g.generatorType === generatorTypes.sampleID);
         if (sampleID)
         {
             this.sample = samples[sampleID.generatorValue];
@@ -77,7 +77,7 @@ export class InstrumentZone {
      */
     getKeyRange()
     {
-        let range = this.generators.find(g => g.generatorType === "keyRange");
+        let range = this.generators.find(g => g.generatorType === generatorTypes.keyRange);
         if(range)
         {
             this.keyRange.min = range.generatorValue & 0x7F;
@@ -90,7 +90,7 @@ export class InstrumentZone {
      */
     getVelRange()
     {
-        let range = this.generators.find(g => g.generatorType === "velRange");
+        let range = this.generators.find(g => g.generatorType === generatorTypes.velRange);
         if(range)
         {
             this.velRange.min = range.generatorValue & 0x7F;
@@ -191,7 +191,7 @@ export class PresetZone {
      */
     getInstrument(instruments)
     {
-        let instrumentID = this.generators.find(g => g.generatorType === "instrument");
+        let instrumentID = this.generators.find(g => g.generatorType === generatorTypes.instrument);
         if(instrumentID) {
             this.instrument = instruments[instrumentID.generatorValue];
             this.isGlobal = false;
@@ -203,7 +203,7 @@ export class PresetZone {
      */
     getKeyRange()
     {
-        let range = this.generators.find(g => g.generatorType === "keyRange");
+        let range = this.generators.find(g => g.generatorType === generatorTypes.keyRange);
         if(range)
         {
             this.keyRange.min = range.generatorValue & 0x7F;
@@ -216,7 +216,7 @@ export class PresetZone {
      */
     getVelRange()
     {
-        let range = this.generators.find(g => g.generatorType === "velRange");
+        let range = this.generators.find(g => g.generatorType === generatorTypes.velRange);
         if(range)
         {
             this.velRange.min = range.generatorValue & 0x7F;

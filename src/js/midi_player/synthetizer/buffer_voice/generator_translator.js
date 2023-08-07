@@ -1,4 +1,4 @@
-import {Generator} from "../../../soundfont/chunk/generators.js";
+import {Generator, generatorTypes} from "../../../soundfont/chunk/generators.js";
 import {Sample} from "../../../soundfont/chunk/samples.js";
 
 const EMU_ATTENUATION_CORRECTION = 0.4;
@@ -24,83 +24,83 @@ export class GeneratorTranslator {
         this.instrumentGenerators = sampleAndGenerators.instrumentGenerators;
 
         // overridingRootKey
-        this.rootKey = this.getGeneratorValue("overridingRootKey", this.sample.samplePitch);
+        this.rootKey = this.getGeneratorValue(generatorTypes.overridingRootKey, this.sample.samplePitch);
 
         // sampleModes
-        this.loopingMode = this.getGeneratorValue("sampleModes", 0) & 3;
+        this.loopingMode = this.getGeneratorValue(generatorTypes.sampleModes, 0) & 3;
 
         // pan (raw)
-        this.pan = this.sumGeneratorValue("pan", 0, -500, 500);
+        this.pan = this.sumGeneratorValue(generatorTypes.pan, 0, -500, 500);
 
         // audio envelope
         // initialAttenuation (dB)
         // this.attenuation = (this._getPresetGenerator("initialAttenuation") / 10) +
         //     (this.getGeneratorValue("initialAttenuation", 0) / 10);
-        this.attenuation = this.sumGeneratorValue("initialAttenuation",
+        this.attenuation = this.sumGeneratorValue(generatorTypes.initialAttenuation,
             0,
             -100 / EMU_ATTENUATION_CORRECTION,
             1440) / 10 * EMU_ATTENUATION_CORRECTION;
 
         // delayVolEnv
-        this.delayTime = this.sumGeneratorValue("delayVolEnv",
+        this.delayTime = this.sumGeneratorValue(generatorTypes.delayVolEnv,
             -12000,
             -12000,
             8000);
 
         // attackVolEnv
-        this.attackTime = this.sumGeneratorValue("attackVolEnv",
+        this.attackTime = this.sumGeneratorValue(generatorTypes.attackVolEnv,
             -12000,
             -12000,
             8000);
 
         // holdVolEnv
-        this.holdTime = this.sumGeneratorValue("holdVolEnv",
+        this.holdTime = this.sumGeneratorValue(generatorTypes.holdVolEnv,
             -12000,
             -12000,
             5000);
 
         // decayVolEnv
-        this.decayTime = this.sumGeneratorValue("decayVolEnv",
+        this.decayTime = this.sumGeneratorValue(generatorTypes.decayVolEnv,
              -12000,
              -12000,
               8000);
 
         // sustainVolEnv (dB)
-        this.sustainLowerAmount = this.sumGeneratorValue("sustainVolEnv",
+        this.sustainLowerAmount = this.sumGeneratorValue(generatorTypes.sustainVolEnv,
             0,
             0,
             1440) / 10;
 
         // releaseVolEnv (timecents) defaults to 5s
-        this.releaseTime = this.sumGeneratorValue("releaseVolEnv",
+        this.releaseTime = this.sumGeneratorValue(generatorTypes.releaseVolEnv,
             -12000,
             -12000,
             8000);
 
         // scaleTuning
-        this.scaleTune = this.sumGeneratorValue("scaleTuning", 100, 0, 1200);
+        this.scaleTune = this.sumGeneratorValue(generatorTypes.scaleTuning, 100, 0, 1200);
 
         // exclusiveClass
-        this.exclusiveClass = this.getGeneratorValue("exclusiveClass", 0);
+        this.exclusiveClass = this.getGeneratorValue(generatorTypes.exclusiveClass, 0);
 
         // offsets
-        this.startOffset = this.getGeneratorValue("startAddrsOffset", 0);
-        this.endOffset = this.getGeneratorValue("endAddrOffset", 0);
-        this.startLoopOffset = this.getGeneratorValue("startloopAddrsOffset", 0);
-        this.endLoopOffset = this.getGeneratorValue("endloopAddrsOffset", 0);
+        this.startOffset = this.getGeneratorValue(generatorTypes.startAddrsOffset, 0);
+        this.endOffset = this.getGeneratorValue(generatorTypes.endAddrOffset, 0);
+        this.startLoopOffset = this.getGeneratorValue(generatorTypes.startloopAddrsOffset, 0);
+        this.endLoopOffset = this.getGeneratorValue(generatorTypes.endloopAddrsOffset, 0);
 
         // coarseTune
-        this.semitoneTune = this.sumGeneratorValue("coarseTune", 0, -120, 120);
+        this.semitoneTune = this.sumGeneratorValue(generatorTypes.coarseTune, 0, -120, 120);
 
         // fineTune
-        this.centTune = this.sumGeneratorValue("fineTune", 0, -99, 99);
+        this.centTune = this.sumGeneratorValue(generatorTypes.fineTune, 0, -99, 99);
 
         // initialFilterFc
-        this.filterCutoff = this.sumGeneratorValue("initialFilterFc", 13500, 1500, 13500);
+        this.filterCutoff = this.sumGeneratorValue(generatorTypes.initialFilterFc, 13500, 1500, 13500);
     }
 
     /**
-     * @param generatorType {generatorType}
+     * @param generatorType {number}
      * @param defaultValue {number}
      * @returns {number}
      */
@@ -117,7 +117,7 @@ export class GeneratorTranslator {
 
     /**
      * Gets generator from the preset level (defaults to 0)
-     * @param generatorType {generatorType}
+     * @param generatorType {number}
      * @returns {number}
      */
     _getPresetGenerator(generatorType)
@@ -132,7 +132,7 @@ export class GeneratorTranslator {
     }
 
     /**
-     * @param generatorType {generatorType}
+     * @param generatorType {number}
      * @param defaultValue {number} - will default to this if no generator is found or out of range
      * @param minAllowed {number}
      * @param maxAllowed {number}

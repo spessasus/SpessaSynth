@@ -2,7 +2,7 @@ import {RiffChunk} from "./riff_chunk.js";
 import {PresetZone} from "./zones.js";
 import {readBytesAsString, readBytesAsUintLittleEndian} from "../../utils/byte_functions.js";
 import {Sample} from "./samples.js";
-import {Generator} from "./generators.js";
+import {Generator, generatorTypes} from "./generators.js";
 
 export class Preset {
     /**
@@ -63,7 +63,7 @@ export class Preset {
             }
             for(let instrumentZone of presetZone.instrument.instrumentZones)
             {
-                let exclusiveClass = instrumentZone.generators.find(g => g.generatorType === "exclusiveClass");
+                let exclusiveClass = instrumentZone.generators.find(g => g.generatorType === generatorTypes.exclusiveClass);
                 if(exclusiveClass)
                 {
                     if(exclusiveClass.generatorValue !== 0)
