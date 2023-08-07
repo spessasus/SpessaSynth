@@ -94,6 +94,9 @@ export class GeneratorTranslator {
 
         // fineTune
         this.centTune = this.sumGeneratorValue("fineTune", 0, -99, 99);
+
+        // initialFilterFc
+        this.filterCutoff = this.sumGeneratorValue("initialFilterFc", 13500, 1500, 13500);
     }
 
     /**
@@ -317,5 +320,13 @@ export class GeneratorTranslator {
             startLoop: this.startLoopOffset,
             endLoop: this.endLoopOffset
         }
+    }
+
+    /**
+     * @returns {number} filter cutoff in hertz
+     */
+    getFilterCutoffHz()
+    {
+        return 440 * Math.pow(2, (this.filterCutoff - 6900) / 1200);
     }
 }

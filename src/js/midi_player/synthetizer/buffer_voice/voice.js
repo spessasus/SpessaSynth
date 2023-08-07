@@ -99,13 +99,27 @@ export class Voice
             let volumeControl = new GainNode(this.ctx);
             volumeControl.connect(this.noteVolumeController);
 
-            // create panner =
+            // create panner
             let panner = new StereoPannerNode(this.ctx ,{
                 pan:  sampleOptions.getPan()
             });
-
             bufferSource.connect(panner);
-            panner.connect(volumeControl);
+
+            if(sampleOptions.filterCutoff > 13400)
+            {
+                panner.connect(volumeControl);
+            }
+            else {
+
+                // create lowpass filter
+                let filter = new BiquadFilterNode(this.ctx, {
+                    frequency: sampleOptions.getFilterCutoffHz(),
+                    type: "lowpass",
+                });
+
+                panner.connect(filter);
+                filter.connect(volumeControl);
+            }
 
             return new SampleNode(bufferSource, volumeControl);
         });
@@ -168,6 +182,7 @@ export class Voice
             dataTable.push(new Option("isLooped", sampleOption.loopingMode, sampleOption.getLoopingMode()));
             dataTable.push(new Option("ScaleTuning", sampleOption.scaleTune, sampleOption.getScaleTuneInfluence()));
             dataTable.push(new Option("AddressOffsets", sampleOption.getAddressOffsets(), null));
+            dataTable.push(new Option("InitialFilterFc", sampleOption.filterCutoff, sampleOption.getFilterCutoffHz()));
 
             let generatorsString = sampleOption.instrumentGenerators.map(g => `${g.generatorType}: ${g.generatorValue}`).join("\n") + "\nPreset generators:" + sampleOption.presetGenerators.map(g => `${g.generatorType}: ${g.generatorValue}`).join("\n");
             dataTable.push(new Option("SampleAndGenerators", sampleOption.sample, generatorsString));

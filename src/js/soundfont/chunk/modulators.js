@@ -1,11 +1,12 @@
 import {signedInt16, readByte, readBytesAsUintLittleEndian} from "../../utils/byte_functions.js";
 import {generators} from "./generators.js";
+import { ShiftableByteArray } from '../../utils/shiftable_array.js'
 
 
 export class Modulator{
     /**
      * Creates a modulator
-     * @param dataArray {ShiftableUint8Array}
+     * @param dataArray {ShiftableByteArray}
      */
     constructor(dataArray) {
         this.modulatorSource = readBytesAsUintLittleEndian(dataArray, 2);
