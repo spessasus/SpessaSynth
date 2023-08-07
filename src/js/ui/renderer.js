@@ -1,7 +1,8 @@
 import {Synthetizer} from "../midi_player/synthetizer/synthetizer.js";
 import { calculateRGB } from '../utils/other.js'
 
-const CHANNEL_ANALYSER_FFT = 128;
+const CHANNEL_ANALYSER_FFT = 512;
+const DRUMS_ANALYSER_FFT = 2048;
 const NOTE_MARGIN = 1;
 const MIN_NOTE_TIME_MS = 20;
 const FONT_SIZE = 16;
@@ -185,16 +186,21 @@ export class Renderer
 
 
         // draw the individual analysers
-        let i = 0;
-        for(const analyser of this.channelAnalysers)
-        {
-            const waveform = new Float32Array(analyser.frequencyBinCount);
-            analyser.getFloatTimeDomainData(waveform);
-            this.drawChannelWaveform(waveform,
+        this.channelAnalysers.forEach((analyser, i ) => {
+            if(this.synth.midiChannels[i].percussionChannel)
+            {
+                if(analyser.fftSize !== DRUMS_ANALYSER_FFT)
+                {
+                    analyser.fftSize = DRUMS_ANALYSER_FFT;
+                }
+            }
+
+            this.drawChannelWaveform(analyser,
                 i % 4,
                 Math.floor(i / 4), i);
             i++;
-        }
+        });
+
 
         // draw the notes
         this.drawingContext.save();
@@ -265,13 +271,15 @@ export class Renderer
 
     /**
      * Draws the channel waveforms
-     * @param waveform {Float32Array}
+     * @param analyser {AnalyserNode}
      * @param x {number} from 0 to 3
      * @param y {number} from 0 to 3
      * @param channelNumber {number} 0-15
      */
-    drawChannelWaveform(waveform, x, y, channelNumber)
+    drawChannelWaveform(analyser, x, y, channelNumber)
     {
+        const waveform = new Float32Array(analyser.frequencyBinCount);
+        analyser.getFloatTimeDomainData(waveform);
         const WAVE_MULTIPLIER = 2;
         const waveWidth = this.canvas.width / 4;
         const waveHeight = this.canvas.height / 4

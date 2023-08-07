@@ -126,6 +126,44 @@ export class Sequencer {
         this.renderedTime = this.playedTime;
 
         this.rendererOTTS = this.oneTickToSeconds;
+
+        // /**
+        //  *
+        //  * @type {{
+        //  *     midiNote: number,
+        //  *     channel: number,
+        //  *     start: number,
+        //  *     length: number
+        //  * }[]}
+        //  */
+        // const noteTimes = [];
+        // let elapsedTime = 0;
+        // let oneTickToSeconds = 60 / (120 * this.midiData.timeDivision);
+        // let eventIndex = 0;
+        // while(eventIndex < this.events.length)
+        // {
+        //     const event = this.events[eventIndex];
+        //
+        //     // note off
+        //     if(event.messageStatusByte >> 4 === 0x8)
+        //     {
+        //
+        //     }
+        //     // note on
+        //     else if(event.messageStatusByte >> 4 === 0x9)
+        //     {
+        //
+        //     }
+        //     // set tempo
+        //     else if(event.messageStatusByte === 0x51)
+        //     {
+        //         oneTickToSeconds = 60 / (this.getTempo(event) * this.midiData.timeDivision);
+        //     }
+        //
+        //     if(++eventIndex >= this.events.length) break;
+        //
+        //     elapsedTime += oneTickToSeconds * (this.events[eventIndex].ticks - event.ticks);
+        // }
     }
 
     /**
