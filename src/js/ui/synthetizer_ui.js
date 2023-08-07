@@ -139,12 +139,22 @@ export class SynthetizerUI
         this.voiceMeter = this.createMeter("#206", "Voices: ", 0, MAX_VOICE_METER);
         this.voiceMeter.bar.classList.add("voice_meter_bar_smooth");
 
+        this.volumeController = this.createMeter("#206", "Main Volume: ", 0, 100, true, v => {
+            this.synth.setMainVolume(Math.round(v) / 100);
+        });
+        this.volumeController.bar.classList.add("voice_meter_bar_smooth");
+
         setInterval(this.updateVoicesAmount.bind(this), 100);
 
-        this.uiDiv.appendChild(this.voiceMeter.div);
+        let controlsWrapper = document.createElement("div");
+        controlsWrapper.classList.add("controls_wrapper")
+
+        controlsWrapper.appendChild(this.voiceMeter.div);
+        controlsWrapper.appendChild(this.volumeController.div);
+        this.uiDiv.appendChild(controlsWrapper);
 
         const desc = document.createElement("label");
-        desc.innerText = "Synthetizer controller (hover)" +
+        desc.innerText = "Synthesizer controller (hover)" +
             "\nToggle Black MIDI mode:";
 
         const highPerfToggle = document.createElement("input");
@@ -168,6 +178,7 @@ export class SynthetizerUI
             // worklet_voice
             this.updateMeter(this.controllers[i].voiceMeter, this.synth.midiChannels[i].voicesAmount);
         }
+        this.updateMeter(this.volumeController, this.synth.volumeController.gain.value * 100);
     }
 
     /**

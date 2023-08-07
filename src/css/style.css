@@ -130,6 +130,10 @@ input[type="file"] {
 
 /*Bottom*/
 
+.bottom_part{
+    margin-top: 5px;
+}
+
 #note_killer
 {
     background: #000;

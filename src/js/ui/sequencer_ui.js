@@ -1,6 +1,6 @@
 import {Sequencer} from "../midi_player/sequencer/sequencer.js";
 import {formatTime} from "../utils/other.js";
-import {getPauseSvg, getPlaySvg} from "./icons.js";
+import { getLoopSvg, getPauseSvg, getPlaySvg } from './icons.js'
 
 const ICON_SIZE = 32;
 
@@ -50,6 +50,7 @@ export class SequencerUI{
         // control buttons
         const controlsDiv = document.createElement("div");
 
+        // play pause
         const playPauseButton = document.createElement("div");
         playPauseButton.classList.add("control_buttons");
         playPauseButton.innerHTML = getPauseSvg(ICON_SIZE);
@@ -68,14 +69,49 @@ export class SequencerUI{
         }
         playPauseButton.onclick = togglePlayback;
 
-        document.addEventListener("keypress", event => {
-            if(event.key === " ")
+        // loop button
+        const loopButton = document.createElement("div");
+        loopButton.classList.add("control_buttons");
+        loopButton.innerHTML = getLoopSvg(ICON_SIZE);
+        const toggleLoop = () => {
+            if(this.seq.loop)
             {
-                togglePlayback();
+                this.seq.loop = false;
+            }
+            else
+            {
+                this.seq.loop = true;
+                if(this.seq.currentTime >= this.seq.duration)
+                {
+                    this.seq.currentTime = 0;
+                }
+            }
+            console.log(loopButton.firstElementChild);
+            loopButton.firstElementChild.setAttribute("fill", (this.seq.loop ? "#ccc" : "#555"));
+        }
+
+        loopButton.onclick = toggleLoop;
+
+        document.addEventListener("keypress", event => {
+            switch(event.key.toLowerCase())
+            {
+                case " ":
+                    event.preventDefault();
+                    togglePlayback();
+                    break;
+
+                case "l":
+                    event.preventDefault();
+                    toggleLoop();
+                    break;
+
+                default:
+                    break;
             }
         })
 
         controlsDiv.appendChild(playPauseButton);
+        controlsDiv.appendChild(loopButton);
 
         // add everything
         this.controls.appendChild(progressBarBg);

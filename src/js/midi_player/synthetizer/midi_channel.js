@@ -2,7 +2,7 @@ import {Voice} from "./buffer_voice/voice.js";
 import {Preset} from "../../soundfont/chunk/presets.js";
 import {Voice2} from "./worklet_voice/voice2.js";
 
-const CHANNEL_LOUDNESS = 0.25;
+const CHANNEL_LOUDNESS = 0.4;
 
 const BRIGHTNESS_MAX_FREQ = 20000;
 const BRIGHTNESS_MIN_FREQ = 300;
