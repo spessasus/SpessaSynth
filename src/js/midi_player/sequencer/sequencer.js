@@ -461,6 +461,10 @@ export class Sequencer {
 
             case messageTypes.noteOn:
                 const velocity = event.messageData[1];
+                if(this.synth.highPerformanceMode && this.synth.voicesAmount > this.synth.voiceCap * 0.7 && velocity < 30)
+                {
+                    return;
+                }
                 if(velocity > 0) {
                     this.synth.noteOn(statusByteData.channel, event.messageData[0], velocity);
                     this.playingNotes.push({

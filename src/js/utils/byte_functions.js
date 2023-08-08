@@ -46,11 +46,13 @@ export function readByte(dataArray){
  */
 export function readBytesAsString(dataArray, bytes, encoding=undefined){
     if(!encoding) {
+        let finished = false;
         let string = "";
         for (let i = 0; i < bytes; i++) {
             let byte = readByte(dataArray);
-            if(byte < 32 || byte > 127)
+            if(byte < 32 || byte > 127 || finished)
             {
+                finished = true;
                 continue;
             }
             string += String.fromCharCode(byte);

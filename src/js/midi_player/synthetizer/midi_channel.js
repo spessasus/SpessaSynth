@@ -4,7 +4,7 @@ import {Voice2} from "./worklet_voice/voice2.js";
 
 const CHANNEL_LOUDNESS = 0.5;
 
-const BRIGHTNESS_MAX_FREQ = 20000;
+const BRIGHTNESS_MAX_FREQ = 25000;
 const BRIGHTNESS_MIN_FREQ = 300;
 
 const dataEntryStates = {
@@ -52,11 +52,11 @@ export class MidiChannel {
 
         this.resetControllers();
 
-        // note -> panner -> gain -> brightness -> out
+        // note -> panner -> brightness -> gain -> out
 
-        this.panner.connect(this.gainController);
-        this.gainController.connect(this.brightnessController);
-        this.brightnessController.connect(this.outputNode)
+        this.panner.connect(this.brightnessController);
+        this.brightnessController.connect(this.gainController)
+        this.gainController.connect(this.outputNode);
 
 
 

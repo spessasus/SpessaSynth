@@ -13,6 +13,7 @@ export class Synthetizer {
      * @param soundFont {SoundFont2}
      */
      constructor(targetNode, soundFont) {
+        this.voiceCap = VOICES_CAP;
         this.soundFont = soundFont;
         this.context = targetNode.context;
 
@@ -76,17 +77,9 @@ export class Synthetizer {
             return;
         }
 
-        if(this.voicesAmount > VOICES_CAP)
+        if(this.voicesAmount > this.voiceCap)
         {
             return;
-        }
-
-        if(this.highPerformanceMode && this.voicesAmount > VOICES_CAP * 0.7)
-        {
-            if(velocity < 30)
-            {
-                return;
-            }
         }
 
         let chan = this.midiChannels[channel];
@@ -290,6 +283,7 @@ export class Synthetizer {
                 this.onControllerChange(chNr, "Main Volume", 127);
                 this.onControllerChange(chNr, "Pan", 64);
                 this.onControllerChange(chNr, "Expression Controller", 127);
+                this.onControllerChange(chNr, "Brightness", 127);
             }
             if(this.onPitchWheel)
             {
