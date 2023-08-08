@@ -133,20 +133,3 @@ input[type="file"] {
 .bottom_part{
     margin-top: 5px;
 }
-
-#note_killer
-{
-    background: #000;
-    position: absolute;
-    left: 5px;
-    bottom: 5px;
-    border: 1px #333 solid;
-    padding: 5px;
-    border-radius: 5px;
-    font-size: 16px;
-    display: none;
-}
-#note_killer:hover
-{
-    cursor: pointer;
-}

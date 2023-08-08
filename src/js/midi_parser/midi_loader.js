@@ -1,4 +1,4 @@
-import {dataBytesAmount, getChannel, MidiMessage} from "./midi_message.js";
+import { dataBytesAmount, getChannel, messageTypes, MidiMessage } from './midi_message.js'
 import {ShiftableByteArray} from "../utils/shiftable_array.js";
 import {
     readByte,
@@ -131,16 +131,30 @@ export class MIDI{
                 track.push(message);
 
                 // check for tempo change
-                if(statusByte === 0x51)
+                if(statusByte === messageTypes.setTempo)
                 {
                     this.tempoChanges.push({
                         ticks: totalTicks,
                         tempo: 60000000 / readBytesAsUintBigEndian(messageData, 3)
                     });
                 }
+                else
+                // check for loop start (Marker "start")
 
+                if(statusByte === messageTypes.marker)
+                {
+                    const text = readBytesAsString(eventData, eventData.length).trim().toLowerCase();
+                    if(text === "start")
+                    {
+                        loopStart = totalTicks;
+                    }
+                    console.log(text);
+                    eventData.currentIndex = 0;
+
+                }
+                else
                 // check for loop (CC 2/4)
-                if((statusByte & 0xF0) === 0xB0)
+                if((statusByte & 0xF0) === messageTypes.controllerChange)
                 {
                     // loop start
                     if(eventData[0] === 2)
@@ -168,13 +182,29 @@ export class MIDI{
         }
 
         this.lastEventTick = Math.max(...this.tracks.map(t => t[t.length - 1].ticks));
+        const firstNoteOns = [];
+        for(const t of this.tracks)
+        {
+            const firstNoteOn = t.find(e => (e.messageStatusByte & 0xF0) === messageTypes.noteOn);
+            if(firstNoteOn)
+            {
+                firstNoteOns.push(firstNoteOn.ticks);
+            }
+        }
+        this.firstNoteOn = Math.min(...firstNoteOns);
+
         console.log("MIDI file parsed. Total tick time:", this.lastEventTick);
 
-        if(loopStart === null || loopEnd === null || loopEnd === 0)
+        if(loopStart === null )
         {
-            loopStart = 0;
-            loopEnd = this.lastEventTick
+            loopStart = this.firstNoteOn;
         }
+
+        if(loopEnd === null || loopEnd === 0)
+        {
+            loopEnd = this.lastEventTick;
+        }
+
         /**
          *
          * @type {{start: number, end: number}}

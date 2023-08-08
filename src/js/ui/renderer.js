@@ -23,6 +23,7 @@ export class Renderer
 
         this.renderBool = true;
         this.renderAnalysers = true;
+        this.renderNotes = true;
 
         this.noteFieldWidth = canvas.width;
         this.noteFieldHeight = canvas.height;
@@ -93,12 +94,14 @@ export class Renderer
      */
     startNoteFall(midiNote, channel, timeOffsetMs = 0)
     {
-        this.fallingNotes.push({
-            midiNote: midiNote,
-            channel: channel,
-            timeMs: Infinity,
-            startMs: this.getCurrentTime() - timeOffsetMs
-        });
+        if(this.renderNotes) {
+            this.fallingNotes.push({
+                midiNote: midiNote,
+                channel: channel,
+                timeMs: Infinity,
+                startMs: this.getCurrentTime() - timeOffsetMs
+            });
+        }
     };
 
     /**
@@ -168,18 +171,16 @@ export class Renderer
      * Renders a single frame
      * @param auto {boolean} if set to false, the renderer won't clear the screen or request an animation frame. Defaults to true.
      */
-    render(auto = true)
-    {
-        if(!this.renderBool)
-        {
-            if(auto) {
+    render(auto = true) {
+        if (!this.renderBool) {
+            if (auto) {
                 requestAnimationFrame(() => {
                     this.render();
                 });
             }
             return;
         }
-        if(auto) {
+        if (auto) {
             this.drawingContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
         }
 
@@ -189,7 +190,7 @@ export class Renderer
         this.drawingContext.font = `${FONT_SIZE}px Sans`;
 
 
-        if(this.renderAnalysers) {
+        if (this.renderAnalysers) {
             // draw the individual analysers
             this.channelAnalysers.forEach((analyser, i) => {
                 if (this.synth.midiChannels[i].percussionChannel) {
@@ -205,56 +206,53 @@ export class Renderer
             });
         }
 
+        if (this.renderNotes) {
 
-        // draw the notes
-        this.drawingContext.save();
-        this.drawingContext.translate(this.noteFieldWidth / 2 + this.noteFieldLeftOffset, this.noteFieldHeight / 2 + this.noteFieldTopOffset);
-        this.drawingContext.rotate(this.noteFieldAngle * Math.PI / 180);
-        this.drawingContext.translate(this.noteFieldWidth / -2, this.noteFieldHeight / -2);
 
-        this.notesOnScreen = 0;
-        const noteWidth = this.noteFieldWidth / 128 - (NOTE_MARGIN * 2);
-        this.fallingNotes.forEach(note =>
-        {
-            const yPos = ((this.getCurrentTime() - note.startMs) / (this.noteFallingTimeMs + this.noteAfterTriggerTimeMs)) * this.noteFieldHeight;
-            const xPos = (this.noteFieldWidth / 128) * note.midiNote;
-            let noteHeight;
-            if(note.timeMs === Infinity)
-            {
-                noteHeight = yPos;
-            }
-            else
-            {
-                noteHeight = (note.timeMs / (this.noteFallingTimeMs + this.noteAfterTriggerTimeMs)) * this.noteFieldHeight;
-            }
-            let noteColor = this.channelColors[note.channel]
+            // draw the notes
+            this.drawingContext.save();
+            this.drawingContext.translate(this.noteFieldWidth / 2 + this.noteFieldLeftOffset, this.noteFieldHeight / 2 + this.noteFieldTopOffset);
+            this.drawingContext.rotate(this.noteFieldAngle * Math.PI / 180);
+            this.drawingContext.translate(this.noteFieldWidth / -2, this.noteFieldHeight / -2);
 
-            // make notes that are about to play or after being played, darker
-            if (this.getCurrentTime() - note.startMs < this.noteFallingTimeMs ||
-                this.getCurrentTime() - note.startMs - note.timeMs > this.noteFallingTimeMs) {
+            this.notesOnScreen = 0;
+            const noteWidth = this.noteFieldWidth / 128 - (NOTE_MARGIN * 2);
+            this.fallingNotes.forEach(note => {
+                const yPos = ((this.getCurrentTime() - note.startMs) / (this.noteFallingTimeMs + this.noteAfterTriggerTimeMs)) * this.noteFieldHeight;
+                const xPos = (this.noteFieldWidth / 128) * note.midiNote;
+                let noteHeight;
+                if (note.timeMs === Infinity) {
+                    noteHeight = yPos;
+                } else {
+                    noteHeight = (note.timeMs / (this.noteFallingTimeMs + this.noteAfterTriggerTimeMs)) * this.noteFieldHeight;
+                }
+                let noteColor = this.channelColors[note.channel]
 
-                // create the new color
-                noteColor = calculateRGB(noteColor, v => v * 0.5);
-            }
-            const xFinal = xPos + NOTE_MARGIN;
-            const yFinal = yPos - noteHeight;
-            const hFinal = noteHeight - (NOTE_MARGIN * 2);
+                // make notes that are about to play or after being played, darker
+                if (this.getCurrentTime() - note.startMs < this.noteFallingTimeMs ||
+                    this.getCurrentTime() - note.startMs - note.timeMs > this.noteFallingTimeMs) {
 
-            this.drawingContext.fillStyle = noteColor;
-            this.drawingContext.fillRect(xFinal, yFinal, noteWidth, hFinal);
+                    // create the new color
+                    noteColor = calculateRGB(noteColor, v => v * 0.5);
+                }
+                const xFinal = xPos + NOTE_MARGIN;
+                const yFinal = yPos - noteHeight;
+                const hFinal = noteHeight - (NOTE_MARGIN * 2);
 
-            if(yPos - noteHeight <= this.noteFieldHeight)
-            {
-                this.notesOnScreen++;
-            }
+                this.drawingContext.fillStyle = noteColor;
+                this.drawingContext.fillRect(xFinal, yFinal, noteWidth, hFinal);
 
-            // delete note if out of range (double height
-            if(yPos - noteHeight > this.noteFieldHeight)
-            {
-                this.fallingNotes.splice(this.fallingNotes.indexOf(note), 1);
-            }
-        });
-        this.drawingContext.restore();
+                if (yPos - noteHeight <= this.noteFieldHeight) {
+                    this.notesOnScreen++;
+                }
+
+                // delete note if out of range (double height
+                if (yPos - noteHeight > this.noteFieldHeight) {
+                    this.fallingNotes.splice(this.fallingNotes.indexOf(note), 1);
+                }
+            });
+            this.drawingContext.restore();
+        }
 
         // calculate fps
         let timeSinceLastFrame = performance.now() - this.frameTimeStart;

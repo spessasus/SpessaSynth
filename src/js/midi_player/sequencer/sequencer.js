@@ -294,7 +294,7 @@ export class Sequencer {
 
     /**
      * Starts the playback
-     * @param resetTime {boolean} If true, time is set to 0
+     * @param resetTime {boolean} If true, time is set to 0s
      */
     play(resetTime = false)
     {
@@ -338,6 +338,22 @@ export class Sequencer {
         this.playbackInterval = setInterval(this._processTick.bind(this));
     }
 
+    setTimeTicks(ticks)
+    {
+        this.stop();
+        this.playingNotes = [];
+        this.pausedTime = undefined;
+        this._playTo(0, ticks);
+        this.absoluteStartTime = this.synth.currentTime - this.playedTime / this.playbackRate;
+        this.play();
+        if(this.renderer)
+        {
+            this.rendererEventIndex = this.eventIndex;
+            this.renderedTime = this.playedTime - (this.renderer.noteAfterTriggerTimeMs / 1000);
+            this.rendererOTTS = this.oneTickToSeconds;
+        }
+    }
+
     /**
      * Processes a single tick
      * @private
@@ -358,18 +374,7 @@ export class Sequencer {
             // loop
             if((this.eventIndex >= this.events.length || this.midiData.loop.end <= event.ticks) && this.loop)
             {
-                this.stop();
-                this.playingNotes = [];
-                this.pausedTime = undefined;
-                this._playTo(0, this.midiData.loop.start);
-                this.absoluteStartTime = this.synth.currentTime - this.playedTime / this.playbackRate;
-                this.play();
-                if(this.renderer)
-                {
-                    this.rendererEventIndex = this.eventIndex;
-                    this.renderedTime = this.playedTime - (this.renderer.noteAfterTriggerTimeMs / 1000);
-                    this.rendererOTTS = this.oneTickToSeconds;
-                }
+                this.setTimeTicks(this.midiData.loop.start);
                 return;
             }
 
@@ -507,8 +512,19 @@ export class Sequencer {
             case messageTypes.lyric:
             case messageTypes.copyright:
             case messageTypes.trackName:
+            case messageTypes.marker:
+            case messageTypes.cuePoint:
+            case messageTypes.instrumentName:
+                let type = "";
+                for (const key in messageTypes) {
+                    if (messageTypes[key] === statusByteData.status) {
+                        type = key;
+                        break;
+                    }
+                }
+
                 const dec = new TextDecoder("shift-jis");
-                console.log(dec.decode(event.messageData));
+                console.log(`${type.toUpperCase()}:`, dec.decode(event.messageData));
                 break;
 
             case messageTypes.reset:

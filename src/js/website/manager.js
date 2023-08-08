@@ -77,9 +77,8 @@ export class Manager
     /**
      * starts playing and rendering the midi file
      * @param parsedMidi {MIDI}
-     * @param resetTime {boolean}
      */
-    play(parsedMidi, resetTime = false)
+    play(parsedMidi)
     {
         if (!this.synth)
         {
@@ -95,6 +94,6 @@ export class Manager
         this.seq.connectRenderer(this.renderer);
 
         // play the midi
-        this.seq.play(resetTime);
+        this.seq.play(true);
     }
 }

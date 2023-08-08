@@ -89,7 +89,7 @@ function startMidi(midiFile)
             titleMessage.innerText = TITLE;
         }
 
-        manager.play(parsedMidi, true);
+        manager.play(parsedMidi);
     });
 }
 
@@ -118,6 +118,7 @@ function replaceFont(fontName)
         {
             window.manager.synth.soundFont = window.soundFontParser;
             window.manager.synth.reloadSoundFont();
+            window.manager.synthUI.reloadSelectors();
 
             if(window.manager.seq)
             {

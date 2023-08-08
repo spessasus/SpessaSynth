@@ -5,7 +5,7 @@ import { arrayToHexString } from '../../utils/other.js'
 
 // i mean come on
 const VOICES_CAP = 1000;
-const DEFAULT_PERCUSSION = 9;
+export const DEFAULT_PERCUSSION = 9;
 
 export class Synthetizer {
     /**

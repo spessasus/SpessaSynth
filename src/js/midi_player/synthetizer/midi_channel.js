@@ -1,10 +1,9 @@
 import {Voice} from "./buffer_voice/voice.js";
 import {Preset} from "../../soundfont/chunk/presets.js";
-import {Voice2} from "./worklet_voice/voice2.js";
 
 const CHANNEL_LOUDNESS = 0.5;
 
-const BRIGHTNESS_MAX_FREQ = 25000;
+const BRIGHTNESS_MAX_FREQ = 22050;
 const BRIGHTNESS_MIN_FREQ = 300;
 
 const dataEntryStates = {

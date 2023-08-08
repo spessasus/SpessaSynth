@@ -9,7 +9,7 @@
 {
     flex: 1;
     transition: transform 0.1s ease;
-    border-radius: 0 0 4px 4px;
+    border-radius: 0 0 0.4vmin 0.4vmin;
     height: 100%;
     position: relative;
     user-select: none;
