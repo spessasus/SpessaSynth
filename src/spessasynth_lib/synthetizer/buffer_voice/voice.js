@@ -15,6 +15,7 @@ export class Voice
      */
     constructor(midiNote, targetVelocity, node, preset, vibratoOptions, tuningRatio) {
         this.midiNote = midiNote;
+        this.velocity = targetVelocity;
         this.targetNode = node;
         /**
          * @type {BaseAudioContext}
@@ -38,9 +39,10 @@ export class Voice
 
         this.sampleOptions = samples.map(s => new GeneratorTranslator(s));
 
-        this.noteVolumeController = new GainNode(this.ctx, {
-            gain: targetVelocity / 127
-        });
+        /**
+         * @type {Set<number>}
+         */
+        this.exclusives = new Set();
 
         /**
          * @type {SampleNode[]}
@@ -50,54 +52,24 @@ export class Voice
 
             const offsets = sampleOptions.getAddressOffsets();
 
-            // const audioData = sample.getAudioData(
-            //     sampleOptions.getAddressOffsets().start,
-            //     sampleOptions.getAddressOffsets().end);
-            // /**
-            //  * @type {AudioBuffer}
-            //  */
-            // let buffer = this.ctx.createBuffer(1, audioData.length, sample.sampleRate);
-            // buffer.getChannelData(0).set(audioData);
-
-            // const pan = sampleOptions.getPan();
-            //
-            // // panning
-            // if(pan > 0.6)
-            // {
-            //     // right
-            //     buffer = this.ctx.createBuffer(2, audioData.length, sample.sampleRate);
-            //     buffer.getChannelData(1).set(audioData);
-            // }
-            // else if (pan < -0.6)
-            // {
-            //     // left
-            //     buffer = this.ctx.createBuffer(2, audioData.length, sample.sampleRate);
-            //     buffer.getChannelData(0).set(audioData);
-            // }
-            // else
-            // {
-            //     // mono
-            //     buffer = this.ctx.createBuffer(1, audioData.length, sample.sampleRate);
-            //     buffer.getChannelData(0).set(audioData);
-            // }
-
             const bufferSource = new AudioBufferSourceNode(this.ctx, {
-                buffer: sample.getAudioBuffer(this.ctx, offsets.start, offsets.end)
+                buffer: sample.getAudioBuffer(this.ctx, offsets.start, offsets.end),
+                playbackRate: sampleOptions.getPlaybackRate(midiNote) * this.tuningRatio,
+                loop: sampleOptions.getLoopingMode() !== 0
             });
 
             if(this.vibratoDepth) {
                 this.vibratoDepth.connect(bufferSource.detune);
             }
 
-            // correct playback rate
-            bufferSource.playbackRate.value = sampleOptions.getPlaybackRate(midiNote) * this.tuningRatio;
-
             // set up loop
             this.applyLoopIndexes(bufferSource, sampleOptions);
 
-            // create attenuation
-            let volumeControl = new GainNode(this.ctx);
-            volumeControl.connect(this.noteVolumeController);
+            // create volume control
+            let volumeControl = new GainNode(this.ctx, {
+                gain: 0
+            });
+            volumeControl.connect(node);
 
             // create panner
             let panner = new StereoPannerNode(this.ctx ,{
@@ -105,25 +77,12 @@ export class Voice
             });
             bufferSource.connect(panner);
 
-            // if(sampleOptions.filterCutoff > 13400)
-            // {
-                panner.connect(volumeControl);
-            // }
-            // else {
-            //
-            //     // create lowpass filter
-            //     let filter = new BiquadFilterNode(this.ctx, {
-            //         frequency: sampleOptions.getFilterCutoffHz(),
-            //         type: "lowpass",
-            //     });
-            //
-            //     panner.connect(filter);
-            //     filter.connect(volumeControl);
-            // }
+            panner.connect(volumeControl);
+
+            this.exclusives.add(sampleOptions.getExclusiveclass());
 
             return new SampleNode(bufferSource, volumeControl, panner);
         });
-        this.noteVolumeController.connect(node);
     }
 
     /**
@@ -132,18 +91,18 @@ export class Voice
      */
     applyLoopIndexes(bufferSource, sampleOptions)
     {
-        if (sampleOptions.loopingMode === 1 || sampleOptions.loopingMode === 3) {
-
-            // (lsI - sI) / (sr * 2)
+        if (sampleOptions.loopingMode !== 0)
+        {
+            const offsets = sampleOptions.getAddressOffsets();
+            // lsI / (sr * 2)
             const loopStartIndex = sampleOptions.sample.sampleLoopStartIndex
-                + sampleOptions.getAddressOffsets().startLoop * 2;
-            bufferSource.loopStart = loopStartIndex / (sampleOptions.sample.sampleRate * 2);
+                + offsets.startLoop * 2;
 
             const loopEndIndex = sampleOptions.sample.sampleLoopEndIndex
-                + sampleOptions.getAddressOffsets().endLoop * 2;
-            bufferSource.loopEnd = loopEndIndex / (sampleOptions.sample.sampleRate * 2);
+                + offsets.endLoop * 2;
 
-            bufferSource.loop = true;
+            bufferSource.loopStart = loopStartIndex / (sampleOptions.sample.sampleRate * 2);
+            bufferSource.loopEnd = loopEndIndex / (sampleOptions.sample.sampleRate * 2);
         }
     }
 
@@ -168,7 +127,7 @@ export class Voice
                     this.CalculatedData = calculated
                 }
             }
-            const env = sampleOption.getVolumeEnvelope();
+            const env = sampleOption.getVolumeEnvelope(this.velocity);
             dataTable.push(new Option("initialAttenuation", sampleOption.attenuation, env.attenuation));
             dataTable.push(new Option("delayTime", sampleOption.delayTime, env.delayTime));
             dataTable.push(new Option("attackTime", sampleOption.attackTime, env.attackTime));
@@ -193,12 +152,12 @@ export class Voice
 
     /**
      * @param debug {boolean}
-     * @returns {number[]} exclusiveClass numbers
+     * @returns {Set<number>} exclusiveClass numbers
      */
     startNote(debug=false){
         if(debug)
         {
-            this.displayDebugTable();
+            //this.displayDebugTable();
         }
 
         // activate vibrato
@@ -207,28 +166,14 @@ export class Voice
             this.vibratoWave.start(this.ctx.currentTime + this.vibratoDelay);
         }
 
-        /**
-         * @type {number[]}
-         */
-        let exclusives = [];
         for(let i = 0; i < this.sampleOptions.length; i++)
         {
             let sample = this.sampleNodes[i];
             let sampleOptions = this.sampleOptions[i];
 
-            if(sampleOptions.getExclusiveclass() !== 0)
-            {
-                if(exclusives.find(v => v === sampleOptions.getExclusiveclass()) === undefined) {
-                    exclusives.push(sampleOptions.getExclusiveclass());
-                }
-            }
-
-            // sample.attenuation.gain.value = sampleOptions.getAttenuation() / this.sampleNodes.length;
-
-            sample.startSample(sampleOptions.getVolumeEnvelope());
+            sample.startSample(sampleOptions.getVolumeEnvelope(this.velocity));
         }
-        this.exclusives = exclusives;
-        return exclusives;
+        return this.exclusives;
     }
 
 
@@ -256,7 +201,7 @@ export class Voice
     }
 
     disconnectNote(){
-        if(!this.noteVolumeController)
+        if(!this.sampleNodes)
         {
             return;
         }
@@ -266,10 +211,8 @@ export class Voice
                 continue;
             }
             sample.disconnectSample();
-            /*sample.pan.disconnect(sample.attenuation);*/
             delete sample.source;
             delete sample.volumeController;
-            /*delete sample.pan;*/
             sample = undefined;
         }
 
@@ -283,8 +226,7 @@ export class Voice
         }
 
         this.sampleNodes = [];
-        this.noteVolumeController.disconnect();
-        delete this.noteVolumeController;
+        delete this.sampleNodes;
     }
 
     /**

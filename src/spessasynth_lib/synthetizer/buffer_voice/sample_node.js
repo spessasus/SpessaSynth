@@ -21,8 +21,6 @@ export class SampleNode
         const hold = attack + audioEnvelope.holdTime;
         const decay = hold + audioEnvelope.decayTime;
 
-        this.setValueNow(this.volumeController.gain, 0);
-
         if(audioEnvelope.attackTime + audioEnvelope.delayTime < 0.01)
         {
             // skip because sometimes browser is too slow lmao
@@ -96,16 +94,6 @@ export class SampleNode
     get currentTime()
     {
         return this.source.context.currentTime + 0.0001;
-    }
-
-    /**
-     * @param param {AudioParam}
-     * @param value {number}
-     */
-    setValueNow(param, value)
-    {
-        param.value = value;
-        // param.setValueAtTime(value, this.ctx.currentTime + 0.0001);
     }
 
     /**

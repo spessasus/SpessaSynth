@@ -197,16 +197,18 @@ export class GeneratorTranslator {
 
     /**
      * Returns the complete volume envelope
+     * @param velocity {number}
      * @returns {volumeEnvelope}
      */
-    getVolumeEnvelope()
+    getVolumeEnvelope(velocity)
     {
-        const attenuation = this.decibelsToGain(this.attenuation * -1)//Math.pow(10, (this.attenuation * -1) / 20);
+        const velocityGain = velocity / 127;
+        const attenuation = this.decibelsToGain(this.attenuation * -1) * velocityGain;
         const delayTime = this.timecentsToSeconds(this.delayTime);
         const attackTime = this.timecentsToSeconds(this.attackTime);
         const holdTime = this.timecentsToSeconds(this.holdTime);
         const decayTime = this.timecentsToSeconds(this.decayTime);
-        const sustainLevel = this._getSustainLevel();
+        const sustainLevel = this._getSustainLevel() * velocityGain;
         let releaseTime = this.timecentsToSeconds(this.releaseTime);
         if(releaseTime > 5)
         {
