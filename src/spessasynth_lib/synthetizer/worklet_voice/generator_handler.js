@@ -26,6 +26,7 @@
  * finished: boolean,
  * envelope: WorkletVolumeEnvelope}} WorkletVoice
  */
+import { generatorTypes } from '../../soundfont/chunk/generators.js'
 
 const EMU_ATTENUATION_CORRECTION = 0.4;
 
@@ -55,14 +56,14 @@ export class WorkletGeneratorHandler
     getWorkletVoiceData(midiNote, velocity, tuningRatio)
     {
         const velocityGain = velocity / 127;
-        const attenuationdB = this.sumGeneratorValue("initialAttenuation", 0, 0, 1440) / 10 * EMU_ATTENUATION_CORRECTION;
+        const attenuationdB = this.sumGeneratorValue(generatorTypes.initialAttenuation, 0, 0, 1440) / 10 * EMU_ATTENUATION_CORRECTION;
         const attenuation = this.decibelsToGain(-1 * attenuationdB);
 
-        const sustaindB = this.sumGeneratorValue("sustainVolEnv", 0, 0, 1440) / 10;
+        const sustaindB = this.sumGeneratorValue(generatorTypes.sustainVolEnv, 0, 0, 1440) / 10;
         const sustain = this.decibelsToGain(-1 * (sustaindB + attenuationdB));
 
         // cap release time to 5s
-        let release = this.timecentsToSeconds(this.getLimitedGeneratorValue("releaseVolEnv", -12000, -7200, 8000));
+        let release = this.timecentsToSeconds(this.getLimitedGeneratorValue(generatorTypes.releaseVolEnv, -12000, -7200, 8000));
         if(release > 5)
         {
             release = 5;
@@ -72,11 +73,11 @@ export class WorkletGeneratorHandler
          * @type {WorkletVolumeEnvelope}
          */
         const envelope = {
-            delaySecs: this.timecentsToSeconds(this.getLimitedGeneratorValue("delayVolEnv", -12000, -12000, 5000)),
-            attackSecs: this.timecentsToSeconds(this.getLimitedGeneratorValue("attackVolEnv", -12000, -12000, 8000)),
+            delaySecs: this.timecentsToSeconds(this.getLimitedGeneratorValue(generatorTypes.delayVolEnv, -12000, -12000, 5000)),
+            attackSecs: this.timecentsToSeconds(this.getLimitedGeneratorValue(generatorTypes.attackVolEnv, -12000, -12000, 8000)),
             attenuationGain: attenuation * velocityGain,
-            holdSecs: this.timecentsToSeconds(this.getLimitedGeneratorValue("holdVolEnv", -12000, -12000, 5000)),
-            decaySecs: this.timecentsToSeconds(this.getLimitedGeneratorValue("decayVolEnv", -12000, -12000, 8000)),
+            holdSecs: this.timecentsToSeconds(this.getLimitedGeneratorValue(generatorTypes.holdVolEnv, -12000, -12000, 5000)),
+            decaySecs: this.timecentsToSeconds(this.getLimitedGeneratorValue(generatorTypes.decayVolEnv, -12000, -12000, 8000)),
             sustainAbsoluteGain: sustain * velocityGain,
             releaseSecs: release,
             currentGain: 0
@@ -86,28 +87,28 @@ export class WorkletGeneratorHandler
          * @type {WorkletSample}
          */
         const sample= {
-            sampleData: this.sample.getAudioData(this.getGeneratorValue("startAddrsOffset", 0), this.getGeneratorValue("endAddrOffset", 0)),
+            sampleData: this.sample.getAudioData(this.getGeneratorValue(generatorTypes.startAddrsOffset, 0), this.getGeneratorValue(generatorTypes.endloopAddrsOffset, 0)),
             sampleRate: this.sample.sampleRate,
             loopStart: (this.sample.sampleLoopStartIndex - this.sample.sampleStartIndex) / 2
-                + this.getGeneratorValue("startloopAddrsOffset", 0),
+                + this.getGeneratorValue(generatorTypes.startloopAddrsOffset, 0),
 
             loopEnd: (this.sample.sampleLoopEndIndex - this.sample.sampleStartIndex) / 2
-                + this.getGeneratorValue("endloopAddrsOffset", 0),
+                + this.getGeneratorValue(generatorTypes.endloopAddrsOffset, 0),
             playbackStep: 0
         };
 
         // coarseTune
-        const semitoneTune = this.sumGeneratorValue("coarseTune", 0, -120, 120);
+        const semitoneTune = this.sumGeneratorValue(generatorTypes.coarseTune, 0, -120, 120);
 
         // fineTune
-        const centTune = this.sumGeneratorValue("fineTune", 0, -99, 99);
+        const centTune = this.sumGeneratorValue(generatorTypes.fineTune, 0, -99, 99);
 
         const semitones = semitoneTune + (centTune / 100); // calculate both to semitones
         const tune = Math.pow(2, semitones / 12);
 
-        let notePlayback = this.sample.getPlaybackRate(midiNote, this.getGeneratorValue("overridingRootKey", this.sample.samplePitch)) * tune;
+        let notePlayback = this.sample.getPlaybackRate(midiNote, this.getGeneratorValue(generatorTypes.overridingRootKey, this.sample.samplePitch)) * tune;
 
-        let scaleTune = this.sumGeneratorValue("scaleTuning", 100, 0, 1200);
+        let scaleTune = this.sumGeneratorValue(generatorTypes.scaleTuning, 100, 0, 1200);
         if(scaleTune < 0)
         {
             scaleTune = 1;
@@ -117,12 +118,12 @@ export class WorkletGeneratorHandler
         // correct with scaleTuning
         const playbackRate =  1 + (notePlayback - 1) * scaleTune;
 
-        const pan = this.sumGeneratorValue("pan", 0, -500, 500) / 500; // -1 to 1
+        const pan = this.sumGeneratorValue(generatorTypes.pan, 0, -500, 500) / 500; // -1 to 1
 
         return {
             sample: sample,
             envelope: envelope,
-            isLooped: this.getGeneratorValue("sampleModes", 0) !== 0,
+            isLooped: this.getGeneratorValue(generatorTypes.sampleModes, 0) !== 0,
             panGainLeft:  Math.min(1, 1 - pan),
             panGainRight: Math.min(1, pan + 1),
             playbackRate: playbackRate,
@@ -132,7 +133,7 @@ export class WorkletGeneratorHandler
     }
 
     /**
-     * @param generatorType {generatorType}
+     * @param generatorType {number}
      * @param defaultValue {number}
      * @returns {number}
      */
@@ -148,7 +149,7 @@ export class WorkletGeneratorHandler
     }
 
     /**
-     * @param generatorType {generatorType}
+     * @param generatorType {number}
      * @param defaultValue {number} - will default to this if no generator is found or out of range
      * @param minAllowed {number}
      * @param maxAllowed {number}
@@ -167,7 +168,7 @@ export class WorkletGeneratorHandler
 
     /**
      * Gets generator from the preset level (defaults to 0)
-     * @param generatorType {generatorType}
+     * @param generatorType {number}
      * @returns {number}
      */
     _getPresetGenerator(generatorType)
@@ -182,7 +183,7 @@ export class WorkletGeneratorHandler
     }
 
     /**
-     * @param generatorType {generatorType}
+     * @param generatorType {number}
      * @param defaultValue {number} - will default to this if no generator is found or out of range
      * @param minAllowed {number}
      * @param maxAllowed {number}

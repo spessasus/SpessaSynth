@@ -7,6 +7,9 @@ import {readByte, readBytesAsUintLittleEndian, readBytesAsString, signedInt8} fr
  * @param smplChunkData {ShiftableByteArray}
  * @returns {Sample[]}
  */
+
+const FIX_SAMPLERATE = 9000;
+
 export function readSamples(sampleHeadersChunk, smplChunkData)
 {
     /**
@@ -145,6 +148,7 @@ export class Sample{
         this.sampleLink = sampleLink;
         this.sampleType = sampleType;
         this.sampleLength = this.sampleEndIndex - this.sampleStartIndex;
+        this.indexRatio = 1;
     }
 
     /**
@@ -196,13 +200,13 @@ export class Sample{
      */
     loadBufferData(smplArr)
     {
-        if(this.sampleRate < 3000)
+        if(this.sampleEndIndex - this.sampleStartIndex < 1)
         {
             // eos, do not do anything
             return;
         }
         // read the sample data
-        const audioData =  new Float32Array(((this.sampleEndIndex - this.sampleStartIndex) / 2) + 1);
+        let audioData =  new Float32Array(((this.sampleEndIndex - this.sampleStartIndex) / 2) + 1);
         const dataStartIndex = smplArr.currentIndex
 
         for(let i = this.sampleStartIndex; i < this.sampleEndIndex; i += 2)
@@ -218,10 +222,38 @@ export class Sample{
         }
 
         this.sampleData = audioData;
-        this.buffer = new AudioBuffer({
-            length: this.sampleData.length,
-            sampleRate: this.sampleRate
-        });
+        try {
+            this.buffer = new AudioBuffer({
+                length: this.sampleData.length,
+                sampleRate: this.sampleRate
+            });
+        }
+        catch (e) {
+            console.warn("Error creating an audio buffer! Resampling the sample to fix...");
+
+            const lengthRatio = this.sampleRate / FIX_SAMPLERATE;
+            const outputLength = Math.round(audioData.length / lengthRatio);
+            const outputData = new Float32Array(outputLength);
+
+            for (let i = 0; i < outputLength; i++) {
+                const index = i * lengthRatio;
+                const indexPrev = Math.floor(index);
+                const indexNext = Math.min(indexPrev + 1, audioData.length - 1);
+                const fraction = index - indexPrev;
+
+                outputData[i] = (1 - fraction) * audioData[indexPrev] + fraction * audioData[indexNext];
+            }
+            this.sampleData = outputData;
+            console.log(`Resampled from ${this.sampleRate}Hz to ${FIX_SAMPLERATE}Hz`);
+            this.sampleRate = FIX_SAMPLERATE;
+            this.indexRatio = lengthRatio;
+
+            this.buffer = new AudioBuffer({
+                length: this.sampleData.length,
+                sampleRate: this.sampleRate
+            });
+
+        }
         this.buffer.getChannelData(0).set(audioData);
     }
 
