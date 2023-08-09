@@ -1,9 +1,11 @@
 import {MIDI} from "../midi_parser/midi_loader.js";
-import {Synthetizer} from "../synthetizer/synthetizer.js";
+import { DEFAULT_PERCUSSION, Synthetizer } from '../synthetizer/synthetizer.js'
 import {Renderer} from "../../website/ui/renderer.js";
 import {getEvent, messageTypes, midiControllers, MidiMessage} from "../midi_parser/midi_message.js";
 import {formatTime} from "../utils/other.js";
 import {readBytesAsUintBigEndian} from "../utils/byte_functions.js";
+
+const MIN_NOTE_TIME = 0.02;
 
 export class Sequencer {
     /**
@@ -105,7 +107,14 @@ export class Sequencer {
             this.rendererEventIndex = this.eventIndex;
             this.renderedTime = this.playedTime - (this.renderer.noteAfterTriggerTimeMs / 1000);
             this.rendererOTTS = this.oneTickToSeconds;
+            this.renderer.noteStartTime = this.absoluteStartTime;
+            this.resetRendererIndexes();
         }
+    }
+
+    resetRendererIndexes()
+    {
+        this.renderer.noteTimes.forEach(n => n.renderStartIndex = 0);
     }
 
     /**
@@ -127,43 +136,83 @@ export class Sequencer {
 
         this.rendererOTTS = this.oneTickToSeconds;
 
-        // /**
-        //  *
-        //  * @type {{
-        //  *     midiNote: number,
-        //  *     channel: number,
-        //  *     start: number,
-        //  *     length: number
-        //  * }[]}
-        //  */
-        // const noteTimes = [];
-        // let elapsedTime = 0;
-        // let oneTickToSeconds = 60 / (120 * this.midiData.timeDivision);
-        // let eventIndex = 0;
-        // while(eventIndex < this.events.length)
-        // {
-        //     const event = this.events[eventIndex];
-        //
-        //     // note off
-        //     if(event.messageStatusByte >> 4 === 0x8)
-        //     {
-        //
-        //     }
-        //     // note on
-        //     else if(event.messageStatusByte >> 4 === 0x9)
-        //     {
-        //
-        //     }
-        //     // set tempo
-        //     else if(event.messageStatusByte === 0x51)
-        //     {
-        //         oneTickToSeconds = 60 / (this.getTempo(event) * this.midiData.timeDivision);
-        //     }
-        //
-        //     if(++eventIndex >= this.events.length) break;
-        //
-        //     elapsedTime += oneTickToSeconds * (this.events[eventIndex].ticks - event.ticks);
-        // }
+        /**
+         * an array of 16 arrays (channels) and the notes are stored there
+         * @typedef {
+         * {
+         *      notes: {
+         *          midiNote: number,
+         *          start: number,
+         *          length: number
+         *      }[],
+         *      renderStartIndex: number
+         * }[]
+         * } NoteTimes
+         */
+
+        /**
+         *
+         * @type {NoteTimes}
+         */
+        const noteTimes = [];
+        for (let i = 0; i < 16; i++)
+        {
+            noteTimes.push({renderStartIndex: 0, notes: []});
+        }
+        let elapsedTime = 0;
+        let oneTickToSeconds = 60 / (120 * this.midiData.timeDivision);
+        let eventIndex = 0;
+
+        console.log("loading note times");
+        while(eventIndex < this.events.length)
+        {
+            const event = this.events[eventIndex];
+
+            const status = event.messageStatusByte >> 4;
+            const channel = event.messageStatusByte & 0x0F;
+
+            // note off
+            if(status === 0x8)
+            {
+                const note = noteTimes[channel].notes.findLast(n => n.midiNote === event.messageData[0] && n.length === -1)
+                if(note) {
+                    const time = elapsedTime - note.start;
+                    note.length = (time < MIN_NOTE_TIME && channel === DEFAULT_PERCUSSION ? MIN_NOTE_TIME : time);
+                }
+            }
+            // note on
+            else if(status === 0x9)
+            {
+                if(event.messageData[1] === 0)
+                {
+                    // nevermind, its note off
+                    const note = noteTimes[channel].notes.findLast(n => n.midiNote === event.messageData[0] && n.length === -1)
+                    if(note) {
+                        const time = elapsedTime - note.start;
+                        note.length = (time < MIN_NOTE_TIME && channel === DEFAULT_PERCUSSION ? MIN_NOTE_TIME : time);
+                    }
+                }
+                else {
+                    noteTimes[event.messageStatusByte & 0x0F].notes.push({
+                        midiNote: event.messageData[0],
+                        start: elapsedTime,
+                        length: -1
+                    });
+                }
+            }
+            // set tempo
+            else if(event.messageStatusByte === 0x51)
+            {
+                oneTickToSeconds = 60 / (this.getTempo(event) * this.midiData.timeDivision);
+            }
+
+            if(++eventIndex >= this.events.length) break;
+
+            elapsedTime += oneTickToSeconds * (this.events[eventIndex].ticks - event.ticks);
+        }
+
+        console.log("finished loading note times", noteTimes);
+        renderer.connectSequencer(noteTimes, this);
     }
 
     /**
@@ -328,10 +377,10 @@ export class Sequencer {
         }
 
         this.playingNotes.forEach(n => {
-            if(this.renderer)
-            {
-                this.renderer.startNoteFall(n.midiNote, n.channel, this.renderer.noteFallingTimeMs);
-            }
+            // if(this.renderer)
+            // {
+            //     this.renderer.startNoteFall(n.midiNote, n.channel, this.renderer.noteFallingTimeMs);
+            // }
             this.synth.noteOn(n.channel, n.midiNote, n.velocity);
         });
 
@@ -351,6 +400,8 @@ export class Sequencer {
             this.rendererEventIndex = this.eventIndex;
             this.renderedTime = this.playedTime - (this.renderer.noteAfterTriggerTimeMs / 1000);
             this.rendererOTTS = this.oneTickToSeconds;
+            this.renderer.noteStartTime = this.absoluteStartTime;
+            this.resetRendererIndexes();
         }
     }
 
@@ -388,46 +439,46 @@ export class Sequencer {
             event = this.events[this.eventIndex];
         }
 
-        if(this.renderer)
-        {
-            if(this.rendererEventIndex >= this.events.length)
-            {
-                return;
-            }
-
-            let event = this.events[this.rendererEventIndex];
-            while(this.renderedTime <= this.currentTime + (this.renderer.noteFallingTimeMs / 1000))
-            {
-                this.rendererEventIndex++;
-                if(this.rendererEventIndex >= this.events.length)
-                {
-                    return;
-                }
-
-                if(event.messageStatusByte === 0x51)
-                {
-                    this.rendererOTTS = 60 / (this.getTempo(event) * this.midiData.timeDivision);
-                }
-
-                const eventType = event.messageStatusByte >> 4;
-                if(eventType === 0x8 || eventType === 0x9) {
-
-                    const channel = event.messageStatusByte & 0x0F;
-                    const offset = (this.renderer.noteFallingTimeMs / 1000) - (this.renderedTime - this.currentTime);
-
-                    if(eventType === 0x9 && event.messageData[1] > 0) {
-                        this.renderer.startNoteFall(event.messageData[0], channel, offset * 1000);
-                    }
-                    else
-                    {
-                        this.renderer.stopNoteFall(event.messageData[0], channel, offset * 1000);
-                    }
-                }
-                this.renderedTime += this.rendererOTTS * (this.events[this.rendererEventIndex].ticks - event.ticks);
-                event = this.events[this.rendererEventIndex];
-            }
-            this.renderer.resume();
-        }
+        // if(this.renderer)
+        // {
+        //     if(this.rendererEventIndex >= this.events.length)
+        //     {
+        //         return;
+        //     }
+        //
+        //     let event = this.events[this.rendererEventIndex];
+        //     while(this.renderedTime <= this.currentTime + (this.renderer.noteFallingTimeMs / 1000))
+        //     {
+        //         this.rendererEventIndex++;
+        //         if(this.rendererEventIndex >= this.events.length)
+        //         {
+        //             return;
+        //         }
+        //
+        //         if(event.messageStatusByte === 0x51)
+        //         {
+        //             this.rendererOTTS = 60 / (this.getTempo(event) * this.midiData.timeDivision);
+        //         }
+        //
+        //         const eventType = event.messageStatusByte >> 4;
+        //         if(eventType === 0x8 || eventType === 0x9) {
+        //
+        //             const channel = event.messageStatusByte & 0x0F;
+        //             const offset = (this.renderer.noteFallingTimeMs / 1000) - (this.renderedTime - this.currentTime);
+        //
+        //             if(eventType === 0x9 && event.messageData[1] > 0) {
+        //                 this.renderer.startNoteFall(event.messageData[0], channel, offset * 1000);
+        //             }
+        //             else
+        //             {
+        //                 this.renderer.stopNoteFall(event.messageData[0], channel, offset * 1000);
+        //             }
+        //         }
+        //         this.renderedTime += this.rendererOTTS * (this.events[this.rendererEventIndex].ticks - event.ticks);
+        //         event = this.events[this.rendererEventIndex];
+        //     }
+        //     this.renderer.resume();
+        // }
     }
 
     /**
@@ -460,8 +511,17 @@ export class Sequencer {
                 }
                 break;
 
+            case messageTypes.endOfTrack:
+            case messageTypes.midiChannelPrefix:
+            case messageTypes.timeSignature:
+            case messageTypes.songPosition:
+            case messageTypes.activeSensing:
+            case messageTypes.keySignature:
+            case messageTypes.midiPort:
+                break;
+
             default:
-                console.log("Unrecognized Event:", event.messageStatusByte, "status byte:", statusByteData.status);
+                console.log("Unrecognized Event:", event.messageStatusByte, "status byte:", Object.keys(messageTypes).find(k => messageTypes[k] === statusByteData.status));
                 break;
 
             case messageTypes.noteOn:

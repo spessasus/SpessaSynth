@@ -157,7 +157,7 @@ export class Voice
     startNote(debug=false){
         if(debug)
         {
-            //this.displayDebugTable();
+            this.displayDebugTable();
         }
 
         // activate vibrato

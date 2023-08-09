@@ -104,6 +104,7 @@ export const messageTypes = {
     marker: 0x06,
     cuePoint: 0x07,
     midiChannelPrefix: 0x20,
+    midiPort: 0x21,
     endOfTrack: 0x2F,
     setTempo: 0x51,
     smpteOffset: 0x54,

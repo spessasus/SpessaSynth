@@ -38,7 +38,7 @@ export class SampleNode
         this.volumeController.gain.setValueAtTime(audioEnvelope.attenuation, this.currentTime + hold);
 
         // decay
-        this.volumeController.gain.linearRampToValueAtTime(audioEnvelope.sustainLevel, this.currentTime + decay);
+        this.volumeController.gain.exponentialRampToValueAtTime(audioEnvelope.sustainLevel, this.currentTime + decay);
 
         // holdTime, decayTime, sustainLevel
         // this.rampToValue(

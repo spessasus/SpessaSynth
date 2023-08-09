@@ -208,10 +208,6 @@ export class MidiKeyboard
             this.midiAccess.inputs.get(deviceSelector.value).onmidimessage = event => {
                 // discard as soon as possible if high perf
                 const statusByteData = getEvent(event.data[0]);
-                if(this.synth.voicesAmount > 200 && this.synth.highPerformanceMode && statusByteData.status === messageTypes.noteOn)
-                {
-                    return;
-                }
 
 
                 // process the event

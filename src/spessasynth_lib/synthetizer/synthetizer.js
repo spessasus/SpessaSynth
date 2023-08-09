@@ -78,14 +78,19 @@ export class Synthetizer {
             return;
         }
 
-        if(midiNote > 127 || midiNote < 0)
+        if(this.voicesAmount > this.voiceCap)
         {
-            console.warn(`Received a noteOn for note`, midiNote);
             return;
         }
 
-        if(this.voicesAmount > this.voiceCap)
+        if(this.highPerformanceMode && this.voicesAmount > this.voiceCap * 0.7 && velocity < 40)
         {
+            return;
+        }
+
+        if(midiNote > 127 || midiNote < 0)
+        {
+            console.warn(`Received a noteOn for note`, midiNote);
             return;
         }
 
@@ -263,7 +268,7 @@ export class Synthetizer {
                 break;
 
             default:
-                console.log(`Unrecognized controller: ${controllerName} set to: ${controllerValue}`);
+                console.log(`Unrecognized controller: ${controllerName} set to: ${controllerValue} on channel:`, channel);
                 break;
         }
         if(this.onControllerChange)
