@@ -23,11 +23,18 @@ export class SampleNode
 
         this.setValueNow(this.volumeController.gain, 0);
 
-        // delay
-        this.volumeController.gain.setValueAtTime(0.0001, this.currentTime + audioEnvelope.delayTime);
+        if(audioEnvelope.attackTime + audioEnvelope.delayTime < 0.01)
+        {
+            // skip because sometimes browser is too slow lmao
+            this.volumeController.gain.value = audioEnvelope.attenuation;
+        }
+        else {
+            // delay
+            this.volumeController.gain.setValueAtTime(0.0001, this.currentTime + audioEnvelope.delayTime);
 
-        // attack
-        this.volumeController.gain.linearRampToValueAtTime(audioEnvelope.attenuation, this.currentTime + attack);
+            // attack
+            this.volumeController.gain.linearRampToValueAtTime(audioEnvelope.attenuation, this.currentTime + attack);
+        }
 
         // hold
         this.volumeController.gain.setValueAtTime(audioEnvelope.attenuation, this.currentTime + hold);
