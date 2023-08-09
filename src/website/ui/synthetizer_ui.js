@@ -1,5 +1,5 @@
-import {Synthetizer} from "../midi_player/synthetizer/synthetizer.js";
-import {MidiChannel} from "../midi_player/synthetizer/midi_channel.js";
+import {Synthetizer} from "../../spessasynth_lib/synthetizer/synthetizer.js";
+import {MidiChannel} from "../../spessasynth_lib/synthetizer/midi_channel.js";
 import { getLoopSvg } from './icons.js'
 
 /**

@@ -16,7 +16,7 @@
  * voiceData: WorkletVoice[]}} WorkletVoiceMessage
  */
 
-import {Preset} from "../../../soundfont/chunk/presets.js";
+import {Preset} from "../../soundfont/chunk/presets.js";
 import {WorkletGeneratorHandler} from "./generator_handler.js";
 
 export class Voice2 extends AudioWorkletNode{

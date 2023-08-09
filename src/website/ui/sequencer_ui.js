@@ -1,5 +1,5 @@
-import {Sequencer} from "../midi_player/sequencer/sequencer.js";
-import {formatTime} from "../utils/other.js";
+import {Sequencer} from "../../spessasynth_lib/sequencer/sequencer.js";
+import {formatTime} from "../../spessasynth_lib/utils/other.js";
 import { getLoopSvg, getPauseSvg, getPlaySvg } from './icons.js'
 
 const ICON_SIZE = 32;

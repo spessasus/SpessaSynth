@@ -1,4 +1,4 @@
-import {Preset} from "../../../soundfont/chunk/presets.js";
+import {Preset} from "../../soundfont/chunk/presets.js";
 import {GeneratorTranslator} from "./generator_translator.js";
 import {SampleNode} from "./sample_node.js";
 

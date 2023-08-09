@@ -1,9 +1,9 @@
-import {MIDI} from "../../midi_parser/midi_loader.js";
+import {MIDI} from "../midi_parser/midi_loader.js";
 import {Synthetizer} from "../synthetizer/synthetizer.js";
-import {Renderer} from "../../ui/renderer.js";
-import {getEvent, messageTypes, midiControllers, MidiMessage} from "../../midi_parser/midi_message.js";
-import {formatTime} from "../../utils/other.js";
-import {readBytesAsUintBigEndian} from "../../utils/byte_functions.js";
+import {Renderer} from "../../website/ui/renderer.js";
+import {getEvent, messageTypes, midiControllers, MidiMessage} from "../midi_parser/midi_message.js";
+import {formatTime} from "../utils/other.js";
+import {readBytesAsUintBigEndian} from "../utils/byte_functions.js";
 
 export class Sequencer {
     /**
@@ -466,10 +466,6 @@ export class Sequencer {
 
             case messageTypes.noteOn:
                 const velocity = event.messageData[1];
-                if(this.synth.highPerformanceMode && this.synth.voicesAmount > this.synth.voiceCap * 0.7 && velocity < 30)
-                {
-                    return;
-                }
                 if(velocity > 0) {
                     this.synth.noteOn(statusByteData.channel, event.messageData[0], velocity);
                     this.playingNotes.push({

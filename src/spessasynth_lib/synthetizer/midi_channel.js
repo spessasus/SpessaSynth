@@ -1,5 +1,5 @@
 import {Voice} from "./buffer_voice/voice.js";
-import {Preset} from "../../soundfont/chunk/presets.js";
+import {Preset} from "../soundfont/chunk/presets.js";
 
 const CHANNEL_LOUDNESS = 0.5;
 

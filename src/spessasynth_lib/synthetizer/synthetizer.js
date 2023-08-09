@@ -1,7 +1,7 @@
 import {MidiChannel} from "./midi_channel.js";
-import {SoundFont2} from "../../soundfont/soundfont_parser.js";
-import {ShiftableByteArray} from "../../utils/shiftable_array.js";
-import { arrayToHexString } from '../../utils/other.js'
+import {SoundFont2} from "../soundfont/soundfont_parser.js";
+import {ShiftableByteArray} from "../utils/shiftable_array.js";
+import { arrayToHexString } from '../utils/other.js'
 
 // i mean come on
 const VOICES_CAP = 1000;
@@ -16,6 +16,7 @@ export class Synthetizer {
         this.voiceCap = VOICES_CAP;
         this.soundFont = soundFont;
         this.context = targetNode.context;
+        this.context.audioWorklet.addModule("spessasynth_lib/synthetizer/worklet_voice/voice_processor.js").then(() => {});
 
         this.volumeController = new GainNode(targetNode.context, {
             gain: 1
@@ -269,8 +270,8 @@ export class Synthetizer {
         {
             // reset
             ch.resetControllers();
-            ch.setPreset(this.defaultPreset);
             ch.percussionChannel = false;
+            ch.setPreset(this.defaultPreset);
 
             // call all the event listeners
             const chNr = ch.channelNumber - 1;
@@ -290,8 +291,9 @@ export class Synthetizer {
                 this.onPitchWheel(ch.channelNumber - 1, 64, 0);
             }
         }
-        this.midiChannels[DEFAULT_PERCUSSION].setPreset(this.percussionPreset);
+
         this.midiChannels[DEFAULT_PERCUSSION].percussionChannel = true;
+        this.midiChannels[DEFAULT_PERCUSSION].setPreset(this.percussionPreset);
         this.system = "gm2";
     }
 
@@ -425,9 +427,9 @@ export class Synthetizer {
                         this.system = "gs";
                         return;
                     }
-
+                    else
                     // Use for Drum Part
-                    if(messageData[6] === 0x15)
+                    if(messageData[6] === 0x15 && messageData[4] === 0x40)
                     {
                         // 0 means channel 10 (default), 1 means 1 etc.
                         const channel = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15][messageData[5] & 0x0F]; // for example 1A means A = 11

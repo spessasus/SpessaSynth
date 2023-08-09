@@ -1,15 +1,26 @@
 import open from "open";
 import express from "express";
 import fs from "fs";
+import path from 'path';
+import {fileURLToPath} from 'url';
 
 const app = express();
 const PORT = 81;
 const HOST = "localhost";
+5
+// 👇️ "/home/borislav/Desktop/javascript/index.js"
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 
 app.use(express.static("src"));
 app.use(express.static("soundfonts"));
 
 fs.writeFile("config.json", "{}", {flag: "wx"}, () => {});
+
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "src", "website", "index.html"));
+})
 
 app.get("/soundfonts", (req, res) => {
     const fileNames = fs.readdirSync("soundfonts").filter(fName => fName.slice(-3).toLowerCase() === "sf2");

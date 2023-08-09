@@ -1,5 +1,5 @@
-import {Synthetizer} from "../midi_player/synthetizer/synthetizer.js";
-import { calculateRGB } from '../utils/other.js'
+import {Synthetizer} from "../../spessasynth_lib/synthetizer/synthetizer.js";
+import { calculateRGB } from '../../spessasynth_lib/utils/other.js'
 
 const CHANNEL_ANALYSER_FFT = 512;
 const DRUMS_ANALYSER_FFT = 2048;

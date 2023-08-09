@@ -1,6 +1,6 @@
-import {Synthetizer} from "../midi_player/synthetizer/synthetizer.js";
-import {getEvent, midiControllers, messageTypes} from "../midi_parser/midi_message.js";
-import {ShiftableByteArray} from "../utils/shiftable_array.js";
+import {Synthetizer} from "../../spessasynth_lib/synthetizer/synthetizer.js";
+import {getEvent, midiControllers, messageTypes} from "../../spessasynth_lib/midi_parser/midi_message.js";
+import {ShiftableByteArray} from "../../spessasynth_lib/utils/shiftable_array.js";
 
 const KEYBOARD_VELOCITY = 126;
 

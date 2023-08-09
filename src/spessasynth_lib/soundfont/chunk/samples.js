@@ -181,8 +181,7 @@ export class Sample{
         {
             if(!this.buffer)
             {
-                this.buffer = context.createBuffer(1, this.sampleData.length, this.sampleRate);
-                this.buffer.getChannelData(0).set(this.getAudioData());
+                throw "AudioBuffer missing! Check smpl chunk??";
             }
             return this.buffer;
         }
@@ -197,6 +196,11 @@ export class Sample{
      */
     loadBufferData(smplArr)
     {
+        if(this.sampleRate < 3000)
+        {
+            // eos, do not do anything
+            return;
+        }
         // read the sample data
         const audioData =  new Float32Array(((this.sampleEndIndex - this.sampleStartIndex) / 2) + 1);
         const dataStartIndex = smplArr.currentIndex
@@ -214,25 +218,11 @@ export class Sample{
         }
 
         this.sampleData = audioData;
-        // // resample
-        // const rateRatio = 44100 / this.sampleRate;
-        // const outputLength = Math.floor(this.sampleLength * rateRatio);
-        // const outputData = new Float32Array(outputLength);
-        //
-        //
-        // for (let i = 0; i < outputLength; i++) {
-        //     const inputIndex = i / rateRatio;
-        //     const floor = Math.floor(inputIndex);
-        //     const ceil = Math.ceil(inputIndex);
-        //     const fraction = inputIndex - floor;
-        //
-        //     const lowerSample = audioData[floor];
-        //     const upperSample = audioData[ceil];
-        //
-        //     outputData[i] = lowerSample + (upperSample - lowerSample) * fraction;
-        // }
-        // this.sampleData = outputData;
-        // this.sampleRate = 44100;
+        this.buffer = new AudioBuffer({
+            length: this.sampleData.length,
+            sampleRate: this.sampleRate
+        });
+        this.buffer.getChannelData(0).set(audioData);
     }
 
     /**
@@ -271,11 +261,6 @@ export class Sample{
      */
     getPlaybackRate(midiNote, overridingRootKey=undefined)
     {
-        // const diff = midiNote - this.samplePitch;
-        // return 1 + diff / 128;
-        // const baseDetune = 100 * this.samplePitch// + this.samplePitchCorrection;// this breaks it for some fucking reason
-        // const cents = midiNote * 100 - baseDetune;
-        // return Math.pow(2, cents / 1200);
         let pitch = this.samplePitch;
         if(overridingRootKey)
         {

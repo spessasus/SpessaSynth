@@ -1,10 +1,10 @@
 "use strict"
 
 import {Manager} from "./manager.js";
-import {MIDI} from "../midi_parser/midi_loader.js";
+import {MIDI} from "../spessasynth_lib/midi_parser/midi_loader.js";
 
-import {SoundFont2} from "../soundfont/soundfont_parser.js";
-import {ShiftableByteArray} from "../utils/shiftable_array.js";
+import {SoundFont2} from "../spessasynth_lib/soundfont/soundfont_parser.js";
+import {ShiftableByteArray} from "../spessasynth_lib/utils/shiftable_array.js";
 
 const TITLE = "SpessaSynth: SoundFont2 Javascript Synthetizer";
 

@@ -144,11 +144,19 @@ export class MIDI{
                 if(statusByte === messageTypes.marker)
                 {
                     const text = readBytesAsString(eventData, eventData.length).trim().toLowerCase();
-                    if(text === "start")
+                    switch (text)
                     {
-                        loopStart = totalTicks;
+                        default:
+                            break;
+
+                        case "start":
+                        case "loopstart":
+                            loopStart = totalTicks;
+                            break;
+
+                        case "loopend":
+                            loopEnd = totalTicks;
                     }
-                    console.log(text);
                     eventData.currentIndex = 0;
 
                 }
@@ -156,24 +164,25 @@ export class MIDI{
                 // check for loop (CC 2/4)
                 if((statusByte & 0xF0) === messageTypes.controllerChange)
                 {
-                    // loop start
-                    if(eventData[0] === 2)
+                    switch(eventData[0])
                     {
-                        loopStart = totalTicks;
-                    }
+                        case 2:
+                        case 116:
+                            loopStart = totalTicks;
+                            break;
 
-                    // loop end
-                    if(eventData[0] === 4)
-                    {
-                        if(loopEnd === null)
-                        {
-                            loopEnd = totalTicks;
-                        }
-                        else
-                        {
-                            // this controller has occured more than once, this means that it doesnt indicate the loop
-                            loopEnd = 0;
-                        }
+                        case 4:
+                        case 117:
+                            if(loopEnd === null)
+                            {
+                                loopEnd = totalTicks;
+                            }
+                            else
+                            {
+                                // this controller has occured more than once, this means that it doesnt indicate the loop
+                                loopEnd = 0;
+                            }
+                            break;
                     }
                 }
             }

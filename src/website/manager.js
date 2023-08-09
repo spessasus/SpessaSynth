@@ -1,12 +1,12 @@
-import {MidiKeyboard} from "../ui/midi_keyboard.js";
-import {Synthetizer} from "../midi_player/synthetizer/synthetizer.js";
-import {Renderer} from "../ui/renderer.js";
-import {Sequencer} from "../midi_player/sequencer/sequencer.js";
-import {MIDI} from "../midi_parser/midi_loader.js";
+import {MidiKeyboard} from "./ui/midi_keyboard.js";
+import {Synthetizer} from "../spessasynth_lib/synthetizer/synthetizer.js";
+import {Renderer} from "./ui/renderer.js";
+import {Sequencer} from "../spessasynth_lib/sequencer/sequencer.js";
+import {MIDI} from "../spessasynth_lib/midi_parser/midi_loader.js";
 
-import {SoundFont2} from "../soundfont/soundfont_parser.js";
-import {SequencerUI} from "../ui/sequencer_ui.js";
-import {SynthetizerUI} from "../ui/synthetizer_ui.js";
+import {SoundFont2} from "../spessasynth_lib/soundfont/soundfont_parser.js";
+import {SequencerUI} from "./ui/sequencer_ui.js";
+import {SynthetizerUI} from "./ui/synthetizer_ui.js";
 
 export class Manager
 {
@@ -35,7 +35,6 @@ export class Manager
      * @param soundFont {SoundFont2}
      */
     constructor(context, soundFont) {
-        context.audioWorklet.addModule("js/midi_player/synthetizer/worklet_voice/voice_processor.js").then(() => {});
         // set up soundfont
         this.soundFont = soundFont;
 
