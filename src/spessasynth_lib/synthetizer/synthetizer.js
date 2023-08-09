@@ -78,6 +78,12 @@ export class Synthetizer {
             return;
         }
 
+        if(midiNote > 127 || midiNote < 0)
+        {
+            console.warn(`Received a noteOn for note`, midiNote);
+            return;
+        }
+
         if(this.voicesAmount > this.voiceCap)
         {
             return;
@@ -96,6 +102,11 @@ export class Synthetizer {
      * @param midiNote {number} 0-127
      */
     noteOff(channel, midiNote) {
+        if(midiNote > 127 || midiNote < 0)
+        {
+            console.warn(`Received a noteOn for note`, midiNote);
+            return;
+        }
         if(this.onNoteOff) {
             this.onNoteOff(midiNote);
         }

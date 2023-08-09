@@ -17,27 +17,30 @@ export class SampleNode
      * @param audioEnvelope {volumeEnvelope}
      */
     startSample(audioEnvelope) {
-        //this.setValueNow(this.volumeController.gain, 0.0001);
+        const attack = audioEnvelope.attackTime + audioEnvelope.delayTime;
+        const hold = attack + audioEnvelope.holdTime;
+        const decay = hold + audioEnvelope.decayTime;
 
-        // if (audioEnvelope.delayTime < 0.002 && audioEnvelope.attackTime < 0.002) {
-            this.setValueNow(this.volumeController.gain, audioEnvelope.attenuation);
-        // }
-        // else {
-        //     // delayTime, attackTime, initialAttenuation
-        //     this.rampToValue(
-        //         this.volumeController.gain,
-        //         audioEnvelope.attenuation,
-        //         audioEnvelope.attackTime,
-        //         audioEnvelope.delayTime,
-        //     );
-        // }
+        this.setValueNow(this.volumeController.gain, 0);
+
+        // delay
+        this.volumeController.gain.setValueAtTime(0.0001, this.currentTime + audioEnvelope.delayTime);
+
+        // attack
+        this.volumeController.gain.linearRampToValueAtTime(audioEnvelope.attenuation, this.currentTime + attack);
+
+        // hold
+        this.volumeController.gain.setValueAtTime(audioEnvelope.attenuation, this.currentTime + hold);
+
+        // decay
+        this.volumeController.gain.linearRampToValueAtTime(audioEnvelope.sustainLevel, this.currentTime + decay);
 
         // holdTime, decayTime, sustainLevel
-        this.rampToValue(
-            this.volumeController.gain,
-            audioEnvelope.sustainLevel,
-            audioEnvelope.decayTime,
-            audioEnvelope.holdTime /*+ audioEnvelope.delayTime + audioEnvelope.attackTime*/);
+        // this.rampToValue(
+        //     this.volumeController.gain,
+        //     audioEnvelope.sustainLevel,
+        //     audioEnvelope.decayTime,
+        //     audioEnvelope.holdTime /*+ audioEnvelope.delayTime + audioEnvelope.attackTime*/);
 
         this.source.start();
         this.releaseTime = audioEnvelope.releaseTime;
