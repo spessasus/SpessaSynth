@@ -135,11 +135,11 @@ export class Voice
         if (sampleOptions.loopingMode === 1 || sampleOptions.loopingMode === 3) {
 
             // (lsI - sI) / (sr * 2)
-            const loopStartIndex = (sampleOptions.sample.sampleLoopStartIndex - sampleOptions.sample.sampleStartIndex)
+            const loopStartIndex = sampleOptions.sample.sampleLoopStartIndex
                 + sampleOptions.getAddressOffsets().startLoop * 2;
             bufferSource.loopStart = loopStartIndex / (sampleOptions.sample.sampleRate * 2);
 
-            const loopEndIndex = (sampleOptions.sample.sampleLoopEndIndex - sampleOptions.sample.sampleStartIndex)
+            const loopEndIndex = sampleOptions.sample.sampleLoopEndIndex
                 + sampleOptions.getAddressOffsets().endLoop * 2;
             bufferSource.loopEnd = loopEndIndex / (sampleOptions.sample.sampleRate * 2);
 

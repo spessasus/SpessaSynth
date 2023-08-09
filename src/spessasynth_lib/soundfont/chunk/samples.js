@@ -8,7 +8,7 @@ import {readByte, readBytesAsUintLittleEndian, readBytesAsString, signedInt8} fr
  * @returns {Sample[]}
  */
 
-const FIX_SAMPLERATE = 9000;
+const FIX_SAMPLERATE = 44100    ;
 
 export function readSamples(sampleHeadersChunk, smplChunkData)
 {
@@ -140,8 +140,8 @@ export class Sample{
         this.sampleName = sampleName
         this.sampleStartIndex = sampleStartIndex;
         this.sampleEndIndex = sampleEndIndex;
-        this.sampleLoopStartIndex = sampleLoopStartIndex;
-        this.sampleLoopEndIndex = sampleLoopEndIndex;
+        this.sampleLoopStartIndex = sampleLoopStartIndex - sampleStartIndex;
+        this.sampleLoopEndIndex = sampleLoopEndIndex - sampleStartIndex;
         this.sampleRate = sampleRate;
         this.samplePitch = samplePitch;
         this.samplePitchCorrection = samplePitchCorrection;
@@ -229,7 +229,7 @@ export class Sample{
             });
         }
         catch (e) {
-            console.warn("Error creating an audio buffer! Resampling the sample to fix...");
+            console.warn(`Error creating an audio buffer for ${this.sampleName}! Resampling the sample from ${this.sampleRate} to ${FIX_SAMPLERATE} to fix...`);
 
             const lengthRatio = this.sampleRate / FIX_SAMPLERATE;
             const outputLength = Math.round(audioData.length / lengthRatio);
@@ -243,10 +243,13 @@ export class Sample{
 
                 outputData[i] = (1 - fraction) * audioData[indexPrev] + fraction * audioData[indexNext];
             }
+
+            // change every property correctly
             this.sampleData = outputData;
-            console.log(`Resampled from ${this.sampleRate}Hz to ${FIX_SAMPLERATE}Hz`);
             this.sampleRate = FIX_SAMPLERATE;
-            this.indexRatio = lengthRatio;
+            this.indexRatio = 1 / lengthRatio;
+            this.sampleLoopStartIndex = Math.round(this.indexRatio * this.sampleLoopStartIndex);
+            this.sampleLoopEndIndex = Math.round(this.indexRatio * this.sampleLoopEndIndex);
 
             this.buffer = new AudioBuffer({
                 length: this.sampleData.length,
@@ -254,7 +257,7 @@ export class Sample{
             });
 
         }
-        this.buffer.getChannelData(0).set(audioData);
+        this.buffer.getChannelData(0).set(this.sampleData);
     }
 
     /**

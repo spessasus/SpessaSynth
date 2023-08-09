@@ -315,10 +315,10 @@ export class GeneratorTranslator {
     getAddressOffsets()
     {
         return {
-            start: this.startOffset,
-            end: this.endOffset,
-            startLoop: this.startLoopOffset,
-            endLoop: this.endLoopOffset
+            start: Math.round(this.sample.indexRatio * this.startOffset),
+            end: Math.round(this.sample.indexRatio * this.endOffset),
+            startLoop: Math.round(this.sample.indexRatio * this.startLoopOffset),
+            endLoop: Math.round(this.sample.indexRatio * this.endLoopOffset)
         }
     }
 
