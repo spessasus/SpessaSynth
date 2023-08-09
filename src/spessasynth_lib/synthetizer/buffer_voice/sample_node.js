@@ -50,7 +50,14 @@ export class SampleNode
     {
         // stop the audio envelope
         clearTimeout(this.timeout);
-        this.volumeController.gain.cancelScheduledValues(this.currentTime);
+        if(this.volumeController.gain.cancelAndHoldAtTime) {
+            this.volumeController.gain.cancelAndHoldAtTime(this.currentTime);
+        }
+        else
+        {
+            // firefox >:(
+            this.volumeController.gain.cancelScheduledValues(this.currentTime + 0.000001);
+        }
         this.source.stop(this.source.context.currentTime + this.releaseTime);
 
         // begin release phase
