@@ -37,15 +37,6 @@ export class Renderer
         this.darkerColors = this.channelColors.map(c => calculateRGB(c, v => v * DARKER_MULTIPLIER));
         this.synth = synth;
         this.notesOnScreen = 0;
-        /**
-         * If undefined, it's not paused
-         * @type {number}
-         */
-        this.pauseTime = undefined;
-        /**
-         * @type {{midiNote: number, channel: number, startMs: number, timeMs: number}[]}
-         */
-        this.fallingNotes = [];
 
         /**
          * @type {AnalyserNode[]}
@@ -97,50 +88,6 @@ export class Renderer
     {
         this.noteTimes = noteTimes;
         this.seq = sequencer;
-    }
-
-    clearNotes()
-    {
-        this.fallingNotes = [];
-    }
-
-    /**
-     * Gets absolute time
-     * @returns {number}
-     */
-    getCurrentTime()
-    {
-        if(this.pauseTime === undefined)
-        {
-            return this.synth.currentTime * 1000;
-        }
-        else
-        {
-            return this.pauseTime;
-        }
-    }
-
-    /**
-     * Pauses the falling notes
-     */
-    pause()
-    {
-        if(this.pauseTime !== undefined)
-        {
-            return;
-        }
-        this.pauseTime = this.getCurrentTime();
-    }
-
-    resume()
-    {
-        if(this.pauseTime === undefined)
-        {
-            return;
-        }
-        const diff = this.pauseTime - this.synth.currentTime * 1000;
-        this.fallingNotes.forEach(n => n.startMs -= diff);
-        this.pauseTime = undefined;
     }
 
     /**
@@ -201,6 +148,7 @@ export class Renderer
             const fallingTimeSeconds = fallingTime + afterTime;
             const currentEndTime = currentStartTime + fallingTimeSeconds;
             const minNoteHeight = MIN_NOTE_HEIGHT_PX / fallingTimeSeconds;
+            const heightMinusMargin = NOTE_MARGIN * 2;
 
             this.noteTimes.forEach((channel, channelNumder) => {
 
@@ -224,8 +172,8 @@ export class Renderer
                     const noteSum = note.start + note.length
 
                     // if the note is out of range, append the render start index
-                    if(noteSum > currentStartTime) {
-                        const height = (note.length / fallingTimeSeconds) * this.canvas.height - (NOTE_MARGIN * 2);
+                    if(noteSum > currentStartTime || note.length < 0) {
+                        const height = (note.length / fallingTimeSeconds) * this.canvas.height - heightMinusMargin;
 
                         // height less than that can be ommitted (come on)
                         if(height > minNoteHeight) {
