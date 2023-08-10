@@ -16,7 +16,7 @@ export class Synthetizer {
         this.voiceCap = VOICES_CAP;
         this.soundFont = soundFont;
         this.context = targetNode.context;
-        this.context.audioWorklet.addModule("spessasynth_lib/synthetizer/worklet_voice/voice_processor.js").then(() => {});
+        // this.context.audioWorklet.addModule("spessasynth_lib/synthetizer/worklet_voice/voice_processor.js").then(() => {});
 
         this.volumeController = new GainNode(targetNode.context, {
             gain: 1

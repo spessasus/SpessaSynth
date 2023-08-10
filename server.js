@@ -6,7 +6,7 @@ import {fileURLToPath} from 'url';
 
 const app = express();
 const PORT = 81;
-const HOST = "localhost";
+const HOST = "192.168.0.12";
 5
 // 👇️ "/home/borislav/Desktop/javascript/index.js"
 const __filename = fileURLToPath(import.meta.url);

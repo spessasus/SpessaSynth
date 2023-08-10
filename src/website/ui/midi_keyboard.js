@@ -167,13 +167,15 @@ export class MidiKeyboard
 
         this.selectorMenu.appendChild(channelSelector);
 
-        // prepare the midi access
-        navigator.requestMIDIAccess({sysex: true, software: true}).then(access => {
-            this.createMIDIDeviceHandler(access);
-        },
-        message => {
-            console.log(`Could not get MIDI Devices:`, message);
-        });
+        if(navigator.requestMIDIAccess) {
+            // prepare the midi access
+            navigator.requestMIDIAccess({ sysex: true, software: true }).then(access => {
+                    this.createMIDIDeviceHandler(access);
+                },
+                message => {
+                    console.log(`Could not get MIDI Devices:`, message);
+                });
+        }
     }
 
 

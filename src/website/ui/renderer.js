@@ -239,7 +239,7 @@ export class Renderer
         const waveHeight = this.canvas.height / 4
         const relativeX = waveWidth * x;
         const relativeY = waveHeight * y + waveHeight / 2;
-        const step = waveform.length / waveWidth;
+        const step = waveWidth / waveform.length;
         const multiplier = WAVE_MULTIPLIER * waveHeight;
 
         // draw
@@ -249,15 +249,14 @@ export class Renderer
         path.moveTo(relativeX, relativeY + waveform[0] * multiplier);
 
 
-        let index = 0;
-        for(let xPos = 0; xPos < waveWidth; xPos++)
-        {
+        let xPos = relativeX;
+        waveform.forEach((val)  => {
             path.lineTo(
-                relativeX + xPos,
-                relativeY + waveform[Math.round(index)] * multiplier);
-            index += step;
+                xPos,
+                relativeY + val * multiplier);
+            xPos += step;
 
-        }
+        });
         this.drawingContext.stroke(path);
     }
 }
