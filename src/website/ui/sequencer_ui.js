@@ -131,7 +131,9 @@ export class SequencerUI{
 
         this.controls.appendChild(mainLyricsDiv);
 
-        setInterval(() => this.lyricsElement.text.innerText = this.text, 100);
+        setInterval(() => {
+            if(this.lyricsElement.text.innerText !== this.text) this.lyricsElement.text.innerText = this.text;
+        }, 100);
 
         // background bar
         const progressBarBg = document.createElement("div");
