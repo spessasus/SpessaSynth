@@ -104,9 +104,6 @@ export class Sequencer {
         this.play();
         if(this.renderer)
         {
-            this.rendererEventIndex = this.eventIndex;
-            this.renderedTime = this.playedTime - (this.renderer.noteAfterTriggerTimeMs / 1000);
-            this.rendererOTTS = this.oneTickToSeconds;
             this.renderer.noteStartTime = this.absoluteStartTime;
             this.resetRendererIndexes();
         }
@@ -125,16 +122,6 @@ export class Sequencer {
     {
         this.renderer = renderer;
 
-        /**
-         * Offset by rendere's note falling time
-         * @type {number}
-         */
-        this.rendererEventIndex = 0;
-
-        // for the renderer
-        this.renderedTime = this.playedTime;
-
-        this.rendererOTTS = this.oneTickToSeconds;
 
         /**
          * an array of 16 arrays (channels) and the notes are stored there
@@ -151,7 +138,6 @@ export class Sequencer {
          */
 
         /**
-         *
          * @type {NoteTimes}
          */
         const noteTimes = [];
@@ -364,8 +350,6 @@ export class Sequencer {
         if(this.renderer)
         {
             this.renderer.clearNotes();
-            this.rendererEventIndex = this.eventIndex;
-            this.renderedTime = this.playedTime;
         }
 
         // unpause if paused
@@ -397,9 +381,6 @@ export class Sequencer {
         this.play();
         if(this.renderer)
         {
-            this.rendererEventIndex = this.eventIndex;
-            this.renderedTime = this.playedTime - (this.renderer.noteAfterTriggerTimeMs / 1000);
-            this.rendererOTTS = this.oneTickToSeconds;
             this.renderer.noteStartTime = this.absoluteStartTime;
             this.resetRendererIndexes();
         }
@@ -502,28 +483,6 @@ export class Sequencer {
         const statusByteData = getEvent(event.messageStatusByte);
         // process the event
         switch (statusByteData.status) {
-            case messageTypes.setTempo:
-                this.oneTickToSeconds = 60 / (this.getTempo(event) * this.midiData.timeDivision);
-                if(this.oneTickToSeconds === 0)
-                {
-                    this.oneTickToSeconds = 60 / (120 * this.midiData.timeDivision);
-                    console.warn("invalid tempo! falling back to 120 BPM");
-                }
-                break;
-
-            case messageTypes.endOfTrack:
-            case messageTypes.midiChannelPrefix:
-            case messageTypes.timeSignature:
-            case messageTypes.songPosition:
-            case messageTypes.activeSensing:
-            case messageTypes.keySignature:
-            case messageTypes.midiPort:
-                break;
-
-            default:
-                console.log("Unrecognized Event:", event.messageStatusByte, "status byte:", Object.keys(messageTypes).find(k => messageTypes[k] === statusByteData.status));
-                break;
-
             case messageTypes.noteOn:
                 const velocity = event.messageData[1];
                 if(velocity > 0) {
@@ -546,6 +505,28 @@ export class Sequencer {
                 this.synth.noteOff(statusByteData.channel, event.messageData[0]);
                 this.playingNotes.splice(this.playingNotes.findIndex(n =>
                     n.midiNote === event.messageData[0] && n.channel === statusByteData.channel), 1);
+                break;
+
+            case messageTypes.setTempo:
+                this.oneTickToSeconds = 60 / (this.getTempo(event) * this.midiData.timeDivision);
+                if(this.oneTickToSeconds === 0)
+                {
+                    this.oneTickToSeconds = 60 / (120 * this.midiData.timeDivision);
+                    console.warn("invalid tempo! falling back to 120 BPM");
+                }
+                break;
+
+            case messageTypes.endOfTrack:
+            case messageTypes.midiChannelPrefix:
+            case messageTypes.timeSignature:
+            case messageTypes.songPosition:
+            case messageTypes.activeSensing:
+            case messageTypes.keySignature:
+            case messageTypes.midiPort:
+                break;
+
+            default:
+                console.log("Unrecognized Event:", event.messageStatusByte, "status byte:", Object.keys(messageTypes).find(k => messageTypes[k] === statusByteData.status));
                 break;
 
             case messageTypes.pitchBend:

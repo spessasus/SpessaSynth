@@ -53,8 +53,6 @@ export class Manager
         window.addEventListener("resize", () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            this.renderer.noteFieldHeight = window.innerHeight;
-            this.renderer.noteFieldWidth = window.innerWidth;
         });
 
         this.renderer = new Renderer(this.channelColors, this.synth, canvas);

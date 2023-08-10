@@ -13,9 +13,8 @@ const NOTE_MARGIN = 1;
 const FONT_SIZE = 16;
 
 // limits
-const MIN_NOTE_HEIGHT_PX = 7;
+const MIN_NOTE_HEIGHT_PX = 5;
 const MAX_NOTES = 81572;
-const MIN_NOTE_TIME_MS = 20;
 
 
 export class Renderer
@@ -33,7 +32,6 @@ export class Renderer
         this.renderBool = true;
         this.renderAnalysers = true;
         this.renderNotes = true;
-        this.noteCap = MAX_NOTES * (this.noteFallingTimeMs + this.noteAfterTriggerTimeMs) / 1000;
 
         this.channelColors = channelColors;
         this.darkerColors = this.channelColors.map(c => calculateRGB(c, v => v * DARKER_MULTIPLIER));
@@ -89,47 +87,6 @@ export class Renderer
             channel.gainController.connect(analyser);
             this.channelAnalysers.push(analyser);
         }
-    }
-
-    /**
-     * Creates a new note that starts falling
-     * @param midiNote {number}
-     * @param channel {number}
-     * @param timeOffsetMs {number} in miliseconds, how low should the note start. 0 means it starts falling from the top
-     */
-    startNoteFall(midiNote, channel, timeOffsetMs = 0)
-    {
-        if(this.noteCap < this.fallingNotes.length)
-        {
-            return;
-        }
-        if(this.renderNotes) {
-            this.fallingNotes.push({
-                midiNote: midiNote,
-                channel: channel,
-                timeMs: Infinity,
-                startMs: this.getCurrentTime() - timeOffsetMs
-            });
-        }
-    };
-
-    /**
-     * Ends the falling note
-     * @param midiNote {number}
-     * @param channel {number}
-     * @param timeOffsetMs {number} in miliseconds, how low should the note cut off. 0 means it cuts off from the top
-     */
-    stopNoteFall(midiNote, channel, timeOffsetMs = 0)
-    {
-        for(const note of this.fallingNotes.filter(note =>
-            note.midiNote === midiNote &&
-            note.channel === channel &&
-            note.timeMs === Infinity))
-        {
-            note.timeMs = this.getCurrentTime() - timeOffsetMs - note.startMs;
-            if(note.timeMs < MIN_NOTE_TIME_MS) note.timeMs = MIN_NOTE_TIME_MS;
-        }
-        //this.fallingNotes.sort((na, nb) => (nb.timeMs - na.timeMs) + (na.channel - nb.channel));
     }
 
     /**
@@ -203,8 +160,6 @@ export class Renderer
             this.drawingContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
         }
 
-        this.noteCap = MAX_NOTES * (this.noteFallingTimeMs + this.noteAfterTriggerTimeMs) / 1000;
-
         this.drawingContext.textAlign = "start";
         this.drawingContext.textBaseline = "hanging";
         this.drawingContext.fillStyle = "#ccc";
@@ -245,6 +200,7 @@ export class Renderer
             const currentStartTime = currentSeqTime - afterTime;
             const fallingTimeSeconds = fallingTime + afterTime;
             const currentEndTime = currentStartTime + fallingTimeSeconds;
+            const minNoteHeight = MIN_NOTE_HEIGHT_PX / fallingTimeSeconds;
 
             this.noteTimes.forEach((channel, channelNumder) => {
 
@@ -254,27 +210,29 @@ export class Renderer
                 const notes = channel.notes;
                 let note = notes[noteIndex];
 
+                let firstNoteIndex = -1;
+
                 // while the note start is in range
                 while(note.start <= currentEndTime){
                     noteIndex++;
                     // cap notes
                     if(this.notesOnScreen > MAX_NOTES)
                     {
-                        return;
+                        break;
                     }
 
                     const noteSum = note.start + note.length
 
                     // if the note is out of range, append the render start index
-                    if(noteSum < currentStartTime)
-                    {
-                        channel.renderStartIndex = noteIndex - 1;
-                    }
-                    else {
+                    if(noteSum > currentStartTime) {
                         const height = (note.length / fallingTimeSeconds) * this.canvas.height - (NOTE_MARGIN * 2);
 
                         // height less than that can be ommitted (come on)
-                        if(height > MIN_NOTE_HEIGHT_PX) {
+                        if(height > minNoteHeight) {
+                            if(firstNoteIndex === -1)
+                            {
+                                firstNoteIndex = noteIndex - 1;
+                            }
                             const yPos = this.canvas.height - height
                                 - (((note.start - currentStartTime) / fallingTimeSeconds) * this.canvas.height + NOTE_MARGIN);
 
@@ -294,11 +252,12 @@ export class Renderer
 
                     if(noteIndex >= notes.length)
                     {
-                        return;
+                        break;
                     }
 
                     note = notes[noteIndex];
                 }
+                if(firstNoteIndex > -1) channel.renderStartIndex = firstNoteIndex;
             })
 
 
