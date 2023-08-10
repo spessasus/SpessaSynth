@@ -9,11 +9,12 @@ import {RiffChunk} from "../soundfont/chunk/riff_chunk.js";
  */
 export function readBytesAsUintLittleEndian(dataArray, bytesAmount){
     let out = 0;
-    for(let i = 0; i <= 8 * (bytesAmount - 1); i += 8)
+    for(let i = 0; i < bytesAmount; i++)
     {
-        out |= (readByte(dataArray) << i);
+        out |= (readByte(dataArray) << i * 8);
     }
-    return out;
+    // make sure it stays unsigned
+    return out >>> 0;
 }
 
 /**
@@ -27,7 +28,7 @@ export function readBytesAsUintBigEndian(dataArray, bytesAmount){
     for (let i = 8 * (bytesAmount - 1); i >= 0; i -= 8) {
         out |= (readByte(dataArray) << i);
     }
-    return out;
+    return out >>> 0;
 }
 
 /**

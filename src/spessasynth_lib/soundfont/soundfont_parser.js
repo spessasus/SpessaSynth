@@ -26,10 +26,7 @@ export class SoundFont2
         let firstChunk = readRIFFChunk(this.dataArray, false);
         this.verifyHeader(firstChunk, "riff");
 
-        if(readBytesAsString(this.dataArray, 4) !== "sfbk")
-        {
-            throw new Error("Invalid soundFont header!");
-        }
+        this.verifyText(readBytesAsString(this.dataArray,4), "sfbk");
 
         // INFO
         let infoChunk = readRIFFChunk(this.dataArray);
@@ -51,13 +48,15 @@ export class SoundFont2
         // SDTA
         const sdtaChunk = readRIFFChunk(this.dataArray, false);
         this.verifyHeader(sdtaChunk, "list")
-        readBytesAsString(this.dataArray, 4);
+        this.verifyText(readBytesAsString(this.dataArray, 4), "sdta");
 
         // smpl
         console.log("Verifying smpl chunk...")
         let sampleDataChunk = readRIFFChunk(this.dataArray, false);
         this.verifyHeader(sampleDataChunk, "smpl");
         this.sampleDataStartIndex = dataArray.currentIndex;
+
+        console.log("Skipping sample chunk, length:", sdtaChunk.size - 12);
         dataArray.currentIndex += sdtaChunk.size - 12;
 
         // PDTA
@@ -67,40 +66,57 @@ export class SoundFont2
         readBytesAsString(presetChunk.chunkData, 4);
 
         // read the hydra chunks
-        this.presetHeadersChunk = readRIFFChunk(presetChunk.chunkData);
-        this.presetZonesChunk = readRIFFChunk(presetChunk.chunkData);
-        this.presetModulatorsChunk = readRIFFChunk(presetChunk.chunkData);
-        this.presetGeneratorsChunk = readRIFFChunk(presetChunk.chunkData);
-        this.presetInstrumentsChunk = readRIFFChunk(presetChunk.chunkData);
-        this.presetInstrumentZonesChunk = readRIFFChunk(presetChunk.chunkData);
-        this.presetInstrumentModulatorsChunk = readRIFFChunk(presetChunk.chunkData);
-        this.presetInstrumentGeneratorsChunk = readRIFFChunk(presetChunk.chunkData);
-        this.presetSamplesChunk = readRIFFChunk(presetChunk.chunkData);
+        const presetHeadersChunk = readRIFFChunk(presetChunk.chunkData);
+        this.verifyHeader(presetHeadersChunk, "phdr");
+
+        const presetZonesChunk = readRIFFChunk(presetChunk.chunkData);
+        this.verifyHeader(presetZonesChunk, "pbag");
+
+        const presetModulatorsChunk = readRIFFChunk(presetChunk.chunkData);
+        this.verifyHeader(presetModulatorsChunk, "pmod");
+
+        const presetGeneratorsChunk = readRIFFChunk(presetChunk.chunkData);
+        this.verifyHeader(presetGeneratorsChunk, "pgen");
+
+        const presetInstrumentsChunk = readRIFFChunk(presetChunk.chunkData);
+        this.verifyHeader(presetInstrumentsChunk, "inst");
+
+        const presetInstrumentZonesChunk = readRIFFChunk(presetChunk.chunkData);
+        this.verifyHeader(presetInstrumentZonesChunk, "ibag");
+
+        const presetInstrumentModulatorsChunk = readRIFFChunk(presetChunk.chunkData);
+        this.verifyHeader(presetInstrumentModulatorsChunk, "imod");
+
+        const presetInstrumentGeneratorsChunk = readRIFFChunk(presetChunk.chunkData);
+        this.verifyHeader(presetInstrumentGeneratorsChunk, "igen");
+
+        const presetSamplesChunk = readRIFFChunk(presetChunk.chunkData);
+        this.verifyHeader(presetSamplesChunk, "shdr");
 
         /**
          * read all the samples
          * (the current index points to start of the smpl chunk)
          */
         this.dataArray.currentIndex = this.sampleDataStartIndex
-        let samples = readSamples(this.presetSamplesChunk, this.dataArray);
+        let samples = readSamples(presetSamplesChunk, this.dataArray);
 
         /**
          * read all the instrument generators
          * @type {Generator[]}
          */
-        let instrumentGenerators = readGenerators(this.presetInstrumentGeneratorsChunk);
+        let instrumentGenerators = readGenerators(presetInstrumentGeneratorsChunk);
 
         /**
          * read all the instrument modulators
          * @type {Modulator[]}
          */
-        let instrumentModulators = readModulators(this.presetInstrumentModulatorsChunk);
+        let instrumentModulators = readModulators(presetInstrumentModulatorsChunk);
 
         /**
          * read all the instrument zones
          * @type {InstrumentZone[]}
          */
-        let instrumentZones = readInstrumentZones(this.presetInstrumentZonesChunk,
+        let instrumentZones = readInstrumentZones(presetInstrumentZonesChunk,
             instrumentGenerators,
             instrumentModulators,
             samples);
@@ -109,27 +125,27 @@ export class SoundFont2
          * read all the instruments
          * @type {Instrument[]}
          */
-        let instruments = readInstruments(this.presetInstrumentsChunk, instrumentZones);
+        let instruments = readInstruments(presetInstrumentsChunk, instrumentZones);
 
         /**
          * read all the preset generators
          * @type {Generator[]}
          */
-        let presetGenerators = readGenerators(this.presetGeneratorsChunk);
+        let presetGenerators = readGenerators(presetGeneratorsChunk);
 
         /**
          * Read all the preset modulatorrs
          * @type {Modulator[]}
          */
-        let presetModulators = readModulators(this.presetModulatorsChunk);
+        let presetModulators = readModulators(presetModulatorsChunk);
 
-        let presetZones = readPresetZones(this.presetZonesChunk, presetGenerators, presetModulators, instruments);
+        let presetZones = readPresetZones(presetZonesChunk, presetGenerators, presetModulators, instruments);
 
         /**
          * Finally, read all the presets
          * @type {Preset[]}
          */
-        this.presets = readPresets(this.presetHeadersChunk, presetZones);
+        this.presets = readPresets(presetHeadersChunk, presetZones);
         this.presets.sort((a, b) => (a.program - b.program) + (a.bank - b.bank));
         console.log("Parsing finished!");
         console.log("Presets:", this.presets.length);
@@ -144,7 +160,19 @@ export class SoundFont2
     {
         if(chunk.header.toLowerCase() !== expected.toLowerCase())
         {
-            throw `Invalid chunk header! Expected "${expected}" got "${chunk.header}"`;
+            throw `Invalid chunk header! Expected "${expected.toLowerCase()}" got "${chunk.header.toLowerCase()}"`;
+        }
+    }
+
+    /**
+     * @param text {string}
+     * @param expected {string}
+     */
+    verifyText(text, expected)
+    {
+        if(text.toLowerCase() !== expected.toLowerCase())
+        {
+            throw `Invalid soundFont! Expected "${expected.toLowerCase()}" got "${text.toLowerCase()}"`;
         }
     }
 
