@@ -170,7 +170,7 @@ export class Renderer
                     const noteSum = note.start + note.length
 
                     // if the note is out of range, append the render start index
-                    if(noteSum > currentStartTime || note.length < 0) {
+                    if(noteSum > currentStartTime && note.length > 0) {
                         const height = (note.length / fallingTimeSeconds) * this.canvas.height - heightMinusMargin;
 
                         // height less than that can be ommitted (come on)

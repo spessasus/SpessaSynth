@@ -41,7 +41,7 @@
 
 #sequencer_controls .control_buttons:hover{
     cursor: pointer;
-    transform: scale(1.2);
+    filter: brightness(1.5);
 }
 
 #sequencer_controls #note_progress_background
@@ -52,4 +52,43 @@
     position: absolute;
     padding: 5px;
     width: 100%;
+}
+
+#sequencer_controls .lyrics{
+    position: fixed;
+    top:0;
+    right: 0;
+    width: min-content;
+    min-width: 30%;
+    height: 50%;
+    z-index: 256;
+    display: block;
+    opacity: 0;
+    backdrop-filter: blur(2px) brightness(0.5);
+    background-color: rgba(3, 3, 3, 0.3);
+    transition: opacity 100ms ease-in-out;
+    scroll-behavior: smooth;
+    overflow: scroll;
+    border-radius: 10px;
+}
+
+.lyrics_title{
+    position: sticky;
+    top: 2px;
+    background-color: rgba(3, 3, 3);
+    border-radius: 10px;
+}
+
+.lyrics_selector{
+    position: sticky;
+    top: 2em;
+    background-color: rgba(3, 3, 3);
+    width: 100%;
+    border: none;
+    font-size: 16px;
+    padding: 5px;
+}
+
+.lyrics_show{
+    opacity: 1 !important;
 }

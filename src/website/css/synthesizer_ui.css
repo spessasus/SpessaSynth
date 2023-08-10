@@ -138,12 +138,12 @@
 {
     background: #000;
     border: 1px #333 solid;
-    padding: 5px;
+    margin: 2px;
     border-radius: 5px;
     font-size: 16px;
     display: block;
     flex: 1;
-    height: var(--voice-meter-height);
+    min-height: var(--voice-meter-height);
     white-space: nowrap;
 }
 .note_killer:hover

@@ -2,7 +2,6 @@ import { ShiftableByteArray } from '../../utils/shiftable_array.js'
 import { RiffChunk } from './riff_chunk.js'
 import { readByte, signedInt16 } from '../../utils/byte_functions.js'
 
-//
 export const generatorTypes = {
     startAddrsOffset: 0,                // sample control - moves sample start point
     endAddrOffset: 1,                   // sample control - moves sample end point
@@ -66,8 +65,6 @@ export const generatorTypes = {
     unused5: 59,
     endOper: 60                         // end marker
 };
-
-
 
 export class Generator{
     /**

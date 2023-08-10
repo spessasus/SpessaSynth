@@ -15,6 +15,7 @@ export class Sequencer {
      */
     constructor(parsedMidi, synth)
     {
+        this.ignoreEvents = false;
         this.synth = synth;
         this.midiData = parsedMidi;
 
@@ -92,6 +93,10 @@ export class Sequencer {
 
     set currentTime(time)
     {
+        if(this.onTimeChange)
+        {
+            this.onTimeChange(time);
+        }
         if(time < 0 || time > this.duration)
         {
             time = 0;
@@ -375,6 +380,10 @@ export class Sequencer {
             this.renderer.noteStartTime = this.absoluteStartTime;
             this.resetRendererIndexes();
         }
+        if(this.onTimeChange)
+        {
+            this.onTimeChange(this.currentTime);
+        }
     }
 
     /**
@@ -410,47 +419,6 @@ export class Sequencer {
             this.playedTime += this.oneTickToSeconds * (this.events[this.eventIndex].ticks - event.ticks);
             event = this.events[this.eventIndex];
         }
-
-        // if(this.renderer)
-        // {
-        //     if(this.rendererEventIndex >= this.events.length)
-        //     {
-        //         return;
-        //     }
-        //
-        //     let event = this.events[this.rendererEventIndex];
-        //     while(this.renderedTime <= this.currentTime + (this.renderer.noteFallingTimeMs / 1000))
-        //     {
-        //         this.rendererEventIndex++;
-        //         if(this.rendererEventIndex >= this.events.length)
-        //         {
-        //             return;
-        //         }
-        //
-        //         if(event.messageStatusByte === 0x51)
-        //         {
-        //             this.rendererOTTS = 60 / (this.getTempo(event) * this.midiData.timeDivision);
-        //         }
-        //
-        //         const eventType = event.messageStatusByte >> 4;
-        //         if(eventType === 0x8 || eventType === 0x9) {
-        //
-        //             const channel = event.messageStatusByte & 0x0F;
-        //             const offset = (this.renderer.noteFallingTimeMs / 1000) - (this.renderedTime - this.currentTime);
-        //
-        //             if(eventType === 0x9 && event.messageData[1] > 0) {
-        //                 this.renderer.startNoteFall(event.messageData[0], channel, offset * 1000);
-        //             }
-        //             else
-        //             {
-        //                 this.renderer.stopNoteFall(event.messageData[0], channel, offset * 1000);
-        //             }
-        //         }
-        //         this.renderedTime += this.rendererOTTS * (this.events[this.rendererEventIndex].ticks - event.ticks);
-        //         event = this.events[this.rendererEventIndex];
-        //     }
-        //     this.renderer.resume();
-        // }
     }
 
     /**
@@ -471,6 +439,7 @@ export class Sequencer {
      */
     _processEvent(event)
     {
+        if(this.ignoreEvents) return;
         const statusByteData = getEvent(event.messageStatusByte);
         // process the event
         switch (statusByteData.status) {
@@ -543,16 +512,10 @@ export class Sequencer {
             case messageTypes.marker:
             case messageTypes.cuePoint:
             case messageTypes.instrumentName:
-                let type = "";
-                for (const key in messageTypes) {
-                    if (messageTypes[key] === statusByteData.status) {
-                        type = key;
-                        break;
-                    }
+                if(this.onTextEvent)
+                {
+                    this.onTextEvent(event.messageData, statusByteData.status);
                 }
-
-                const dec = new TextDecoder("shift-jis");
-                console.log(`${type.toUpperCase()}:`, dec.decode(event.messageData));
                 break;
 
             case messageTypes.reset:
@@ -573,4 +536,17 @@ export class Sequencer {
         this.playbackInterval = undefined;
         this.synth.stopAll();
     }
+
+    /**
+     * Fires on text event
+     * @param data {ShiftableByteArray} the data text
+     * @param type {number} the status byte of the message (the meta status byte)
+     */
+    onTextEvent;
+
+    /**
+     * Fires when CurrentTime changes
+     * @param time {number} the time that was changed to
+     */
+    onTimeChange;
 }
