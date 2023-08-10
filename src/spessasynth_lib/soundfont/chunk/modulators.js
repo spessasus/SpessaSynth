@@ -1,5 +1,4 @@
 import {signedInt16, readByte, readBytesAsUintLittleEndian} from "../../utils/byte_functions.js";
-import {generators} from "./generators.js";
 import { ShiftableByteArray } from '../../utils/shiftable_array.js'
 
 
@@ -10,7 +9,7 @@ export class Modulator{
      */
     constructor(dataArray) {
         this.modulatorSource = readBytesAsUintLittleEndian(dataArray, 2);
-        this.modulatorDestination = generators[readBytesAsUintLittleEndian(dataArray, 2)];
+        this.modulatorDestination = readBytesAsUintLittleEndian(dataArray, 2);
         this.modulationAmount = signedInt16(readByte(dataArray), readByte(dataArray));
         this.modulationDegree = readBytesAsUintLittleEndian(dataArray, 2);
         this.transformType = readBytesAsUintLittleEndian(dataArray, 2);

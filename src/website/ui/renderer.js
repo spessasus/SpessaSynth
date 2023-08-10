@@ -13,7 +13,7 @@ const NOTE_MARGIN = 1;
 const FONT_SIZE = 16;
 
 // limits
-const MIN_NOTE_HEIGHT_PX = 5;
+const MIN_NOTE_HEIGHT_PX = 2;
 const MAX_NOTES = 81572;
 
 
@@ -97,9 +97,7 @@ export class Renderer
     render(auto = true) {
         if (!this.renderBool) {
             if (auto) {
-                requestAnimationFrame(() => {
-                    this.render();
-                });
+                requestAnimationFrame(this.render.bind(this));
             }
             return;
         }
@@ -184,7 +182,7 @@ export class Renderer
                             const yPos = this.canvas.height - height
                                 - (((note.start - currentStartTime) / fallingTimeSeconds) * this.canvas.height + NOTE_MARGIN);
 
-                            const xPos = keyStep * note.midiNote;
+                            const xPos = keyStep * note.midiNote + NOTE_MARGIN;
 
                             // determine if the note should be darker or not
                             if (note.start > currentSeqTime || noteSum < currentSeqTime) {
@@ -207,42 +205,6 @@ export class Renderer
                 }
                 if(firstNoteIndex > -1) channel.renderStartIndex = firstNoteIndex;
             })
-
-
-            // this.fallingNotes.forEach(note => {
-            //     const yPos = ((this.getCurrentTime() - note.startMs) / (this.noteFallingTimeMs + this.noteAfterTriggerTimeMs));
-            //     const xPos = (this.canvas.width / 128) * note.midiNote;
-            //     let noteHeight;
-            //     if (note.timeMs === Infinity) {
-            //         noteHeight = yPos;
-            //     } else {
-            //         noteHeight = (note.timeMs / (this.noteFallingTimeMs + this.noteAfterTriggerTimeMs));
-            //     }
-            //     let noteColor = this.channelColors[note.channel]
-            //
-            //     // make notes that are about to play or after being played, darker
-            //     if (this.getCurrentTime() - note.startMs < this.noteFallingTimeMs ||
-            //         this.getCurrentTime() - note.startMs - note.timeMs > this.noteFallingTimeMs) {
-            //
-            //         // create the new color
-            //         noteColor = calculateRGB(noteColor, v => v * 0.5);
-            //     }
-            //     const xFinal = xPos + NOTE_MARGIN;
-            //     const yFinal = yPos - noteHeight;
-            //     const hFinal = noteHeight - (NOTE_MARGIN * 2);
-            //
-            //     this.drawingContext.fillStyle = noteColor;
-            //     this.drawingContext.fillRect(xFinal, yFinal, noteWidth, hFinal);
-            //
-            //     if (yPos - noteHeight <= this.canvas.height) {
-            //         this.notesOnScreen++;
-            //     }
-            //
-            //     // delete note if out of range (double height
-            //     if (yPos - noteHeight > this.canvas.height) {
-            //         this.fallingNotes.splice(this.fallingNotes.indexOf(note), 1);
-            //     }
-            // });
         }
 
         this.drawingContext.restore();
@@ -258,9 +220,7 @@ export class Renderer
 
         this.frameTimeStart = performance.now();
         if(auto) {
-            requestAnimationFrame(() => {
-                this.render();
-            });
+            requestAnimationFrame(this.render.bind(this));
         }
     }
 
@@ -278,26 +238,26 @@ export class Renderer
         const waveWidth = this.canvas.width / 4;
         const waveHeight = this.canvas.height / 4
         const relativeX = waveWidth * x;
-        const relativeY = waveHeight * y;
-        const yRange = waveHeight;
-        const xStep = waveWidth / waveform.length;
+        const relativeY = waveHeight * y + waveHeight / 2;
+        const step = waveform.length / waveWidth;
+        const multiplier = WAVE_MULTIPLIER * waveHeight;
 
         // draw
         this.drawingContext.strokeStyle = this.channelColors[channelNumber];
 
-        this.drawingContext.moveTo(
-            relativeX,
-            relativeY
-        )
-        this.drawingContext.beginPath();
-        for(let i = 0; i < waveform.length; i++)
+        const path = new Path2D();
+        path.moveTo(relativeX, relativeY + waveform[0] * multiplier);
+
+
+        let index = 0;
+        for(let xPos = 0; xPos < waveWidth; xPos++)
         {
-            const currentData = waveform[i] * WAVE_MULTIPLIER;
-            this.drawingContext.lineTo(
-                relativeX + (i * xStep),
-                relativeY + (currentData * yRange) + yRange / 2)
+            path.lineTo(
+                relativeX + xPos,
+                relativeY + waveform[Math.round(index)] * multiplier);
+            index += step;
+
         }
-        this.drawingContext.stroke();
-        this.drawingContext.closePath();
+        this.drawingContext.stroke(path);
     }
 }

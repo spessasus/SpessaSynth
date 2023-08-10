@@ -206,10 +206,6 @@ export class Sequencer {
      */
     pause()
     {
-        if(this.renderer)
-        {
-            this.renderer.pause();
-        }
         if(this.paused)
         {
             console.warn("Already paused");
@@ -345,11 +341,6 @@ export class Sequencer {
             console.log("reset")
             this.currentTime = 0;
             return;
-        }
-
-        if(this.renderer)
-        {
-            this.renderer.clearNotes();
         }
 
         // unpause if paused

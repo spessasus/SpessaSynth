@@ -83,7 +83,7 @@ export class Synthetizer {
             return;
         }
 
-        if(this.highPerformanceMode && this.voicesAmount > this.voiceCap * 0.7 && velocity < 40)
+        if(this.highPerformanceMode && this.voicesAmount > this.voiceCap * 0.5 && velocity < 40)
         {
             return;
         }
