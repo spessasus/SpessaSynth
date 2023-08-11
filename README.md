@@ -33,8 +33,6 @@ SoundFont2 based realtime synthetizer and MIDI visualizer written in JavaScript.
 3. Double click the `start.bat` (for linux, type `call npm install` into terminal when in the project's folder)
 4. Enjoy!
 
-Note: you need to create the `soundfonts` folder yourself. The folder should be located in the same folder where the `src` is.
-
 ## Some notes about the implementation
 ### [Check out the wiki!](../../wiki/Home)
 *Note: some links might not work as the wiki is under construction.*
