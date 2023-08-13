@@ -10,7 +10,10 @@ export class Preset {
      * @param presetChunk {RiffChunk}
      */
     constructor(presetChunk) {
-        this.presetName = readBytesAsString(presetChunk.chunkData, 20).trim();
+        this.presetName = readBytesAsString(presetChunk.chunkData, 20)
+            .trim()
+            .replace(/\d{3}:\d{3}/, ""); // remove those pesky "000:001"
+
         this.program = readBytesAsUintLittleEndian(presetChunk.chunkData, 2);
         this.bank = readBytesAsUintLittleEndian(presetChunk.chunkData, 2);
         this.presetZoneStartIndex = readBytesAsUintLittleEndian(presetChunk.chunkData, 2);

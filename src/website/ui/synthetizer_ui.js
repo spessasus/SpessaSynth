@@ -145,8 +145,11 @@ export class SynthetizerUI
         for(const elementName of elements)
         {
             const element = document.createElement("option");
+            const bank = parseInt(elementName.substring(0, 3));
+            const program = parseInt(elementName.substring(4, 7));
             element.classList.add("selector_option");
             element.innerText = elementName;
+            element.value = JSON.stringify([bank, program]);
             mainDiv.appendChild(element);
         }
 
@@ -164,9 +167,12 @@ export class SynthetizerUI
         selector.innerHTML = "";
         for(const elementName of elements)
         {
+            const bank = parseInt(elementName.substring(0, 3));
+            const program = parseInt(elementName.substring(4, 7));
             const element = document.createElement("option");
             element.classList.add("selector_option");
             element.innerText = elementName;
+            element.value = JSON.stringify([bank, program]);
             selector.appendChild(element);
         }
 
@@ -301,11 +307,7 @@ export class SynthetizerUI
             {
                 return;
             }
-            this.controllers[channel].preset.value = `${p.bank
-                .toString()
-                .padStart(3, "0")}:${p.program
-                .toString()
-                .padStart(3, "0")} ${p.presetName}`;
+            this.controllers[channel].preset.value = JSON.stringify([p.bank, p.program]);
         }
 
         this.synth.onControllerChange = (channel, controller, value) =>
@@ -448,15 +450,12 @@ export class SynthetizerUI
             this.synth.midiChannels[channelNumber].percussionChannel ? this.percussionList : this.instrumentList
         ),
             presetName => {
-            const bank = parseInt(presetName.substring(0, 3));
-            const program = parseInt(presetName.substring(4, 7));
+            const data = JSON.parse(presetName);
             this.synth.midiChannels[channelNumber].lockPreset = false;
-            this.synth.controllerChange(channelNumber, "Bank Select", bank);
-            this.synth.programChange(channelNumber, program);
+            this.synth.controllerChange(channelNumber, "Bank Select", data[0]);
+            this.synth.programChange(channelNumber, data[1]);
             presetSelector.classList.add("locked_selector");
-            //presetSelector.style.color = "red";
             this.synth.midiChannels[channelNumber].lockPreset = true;
-            //presetReset.style.display = "inherit";
         }
         );
         controller.appendChild(presetSelector);

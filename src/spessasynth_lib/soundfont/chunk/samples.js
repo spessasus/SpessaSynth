@@ -211,13 +211,13 @@ export class Sample{
      */
     getAudioBuffer(context, startAddrOffset, endAddrOffset)
     {
+        if(!this.sampleData)
+        {
+            this.sampleData = this.loadBufferData(this.sampleDataArray);
+            this.buffer.getChannelData(0).set(this.sampleData);
+        }
         if(startAddrOffset === 0 && endAddrOffset === 0)
         {
-            if(!this.sampleData)
-            {
-                this.sampleData = this.loadBufferData(this.sampleDataArray);
-                this.buffer.getChannelData(0).set(this.sampleData);
-            }
             return this.buffer;
         }
         const data = this.getOffsetData(startAddrOffset, endAddrOffset);
@@ -308,7 +308,7 @@ export class Sample{
         //
         //     audioData[(i - this.sampleStartIndex - startOffset * 2) / 2] = val / 32768;
         // }
-
+        console.log(startOffset, endOffset);
         return this.sampleData.subarray(startOffset, this.sampleData.length - endOffset + 1);
     }
 
