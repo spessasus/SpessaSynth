@@ -97,7 +97,7 @@ function startMidi(midiFile)
  * Fetches and replaces the current manager's font
  * @param fontName {string}
  */
-function replaceFont(fontName)
+async function replaceFont(fontName)
 {
     function replaceSf()
     {
@@ -136,22 +136,21 @@ function replaceFont(fontName)
         return;
     }
     titleMessage.innerText = "Downloading soundfont...";
-    fetchFont(fontName, percent => progressBar.style.width = `${(percent / 100) * titleMessage.offsetWidth}px`)
-        .then(data => {
-            titleMessage.innerText = "Parsing soundfont...";
-            setTimeout(() => {
-                window.soundFontParser = new SoundFont2(data);
-                progressBar.style.width = "0";
+    const data = await fetchFont(fontName, percent => progressBar.style.width = `${(percent / 100) * titleMessage.offsetWidth}px`);
 
-                if(window.soundFontParser.presets.length < 1)
-                {
-                    titleMessage.innerText = "No presets in the soundfont! Check your file?"
-                    return;
-                }
-                window.loadedSoundfonts.push({name: fontName, sf: window.soundFontParser})
-                replaceSf();
-            });
-        });
+    titleMessage.innerText = "Parsing soundfont...";
+    setTimeout(() => {
+        window.soundFontParser = new SoundFont2(data);
+        progressBar.style.width = "0";
+
+        if(window.soundFontParser.presets.length < 1)
+        {
+            titleMessage.innerText = "No presets in the soundfont! Check your file?"
+            return;
+        }
+        window.loadedSoundfonts.push({name: fontName, sf: window.soundFontParser})
+        replaceSf();
+    });
 }
 
 document.body.onclick = () =>
@@ -206,7 +205,7 @@ fetch("soundfonts").then(async r => {
     }
 
     // fetch the first sf2
-    replaceFont(soundFonts[0].name);
+    await replaceFont(soundFonts[0].name);
 
     // start midi if already uploaded
     if(!fileInput.files[0]) {
