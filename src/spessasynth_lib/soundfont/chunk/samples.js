@@ -18,8 +18,8 @@ export function readSamples(sampleHeadersChunk, smplChunkData)
     let samples = [];
     while(sampleHeadersChunk.chunkData.length > sampleHeadersChunk.chunkData.currentIndex)
     {
-        samples.push(readSample(sampleHeadersChunk.chunkData));
-        samples[samples.length - 1].loadBufferData(smplChunkData);
+        const sample = readSample(sampleHeadersChunk.chunkData, smplChunkData);
+        samples.push(sample);
 
         if(samples.length % 1000 === 0)
         {
@@ -32,9 +32,10 @@ export function readSamples(sampleHeadersChunk, smplChunkData)
 /**
  * Reads it into a sample
  * @param sampleHeaderData {ShiftableByteArray}
+ * @param smplArrayData {ShiftableByteArray}
  * @returns {Sample}
  */
-function readSample(sampleHeaderData) {
+function readSample(sampleHeaderData, smplArrayData) {
 
     // read the sample name
     let sampleName = readBytesAsString(sampleHeaderData, 20);
@@ -102,7 +103,8 @@ function readSample(sampleHeaderData) {
         samplePitch,
         samplePitchCorrection,
         sampleLink,
-        sampleType);
+        sampleType,
+        smplArrayData);
 }
 
 export class Sample{
@@ -126,6 +128,7 @@ export class Sample{
      * "RomRightSample"|
      * "RomLeftSample"|
      * "RomLinkedSample"}
+     * @param smplArr {ShiftableByteArray}
      */
     constructor(sampleName,
                 sampleStartIndex,
@@ -136,7 +139,8 @@ export class Sample{
                 samplePitch,
                 samplePitchCorrection,
                 sampleLink,
-                sampleType) {
+                sampleType,
+                smplArr) {
         this.sampleName = sampleName
         this.sampleStartIndex = sampleStartIndex;
         this.sampleEndIndex = sampleEndIndex;
@@ -149,6 +153,32 @@ export class Sample{
         this.sampleType = sampleType;
         this.sampleLength = this.sampleEndIndex - this.sampleStartIndex;
         this.indexRatio = 1;
+        this.sampleDataArray = smplArr;
+
+        if(this.sampleLength < 1 || this.sampleName.substring(0, 3).toLowerCase() === "eos")
+        {
+            return;
+        }
+
+
+        // try to create an audioBuffer, if unable to, resample the sample now, otherwise just load it dynamically
+        try {
+            this.buffer = new AudioBuffer({
+                length: this.sampleLength / 2 + 1,
+                sampleRate: this.sampleRate
+            });
+        }
+        catch (e) {
+            console.warn(`Error creating an audio buffer for ${this.sampleName}! Resampling the sample from ${this.sampleRate} to ${FIX_SAMPLERATE} to fix...`);
+            const arr = this.loadBufferData(smplArr);
+            this.sampleData = this.resampleData(arr);
+
+            this.buffer = new AudioBuffer({
+                length: this.sampleData.length,
+                sampleRate: FIX_SAMPLERATE
+            });
+            this.buffer.getChannelData(0).set(this.sampleData);
+        }
     }
 
     /**
@@ -161,7 +191,7 @@ export class Sample{
     {
         if(!this.sampleData)
         {
-            throw "Sample not loaded!!! sample chunk missing?";
+            this.sampleData = this.loadBufferData(this.sampleDataArray);
         }
         // if no offset, return saved sampleData
         if(this.sampleData && startAddrOffset === 0 && endAddrOffset === 0)
@@ -183,9 +213,10 @@ export class Sample{
     {
         if(startAddrOffset === 0 && endAddrOffset === 0)
         {
-            if(!this.buffer)
+            if(!this.sampleData)
             {
-                throw "AudioBuffer missing! Check smpl chunk??";
+                this.sampleData = this.loadBufferData(this.sampleDataArray);
+                this.buffer.getChannelData(0).set(this.sampleData);
             }
             return this.buffer;
         }
@@ -196,17 +227,47 @@ export class Sample{
     }
 
     /**
+     *
+     * @param audioData {Float32Array}
+     * @returns {Float32Array}
+     */
+    resampleData(audioData)
+    {
+        const lengthRatio = this.sampleRate / FIX_SAMPLERATE;
+        const outputLength = Math.round(audioData.length / lengthRatio);
+        const outputData = new Float32Array(outputLength);
+
+        for (let i = 0; i < outputLength; i++) {
+            const index = i * lengthRatio;
+            const indexPrev = Math.floor(index);
+            const indexNext = Math.min(indexPrev + 1, audioData.length - 1);
+            const fraction = index - indexPrev;
+
+            outputData[i] = (1 - fraction) * audioData[indexPrev] + fraction * audioData[indexNext];
+        }
+
+        // change every property correctly
+        this.sampleData = outputData;
+        this.sampleRate = FIX_SAMPLERATE;
+        this.indexRatio = 1 / lengthRatio;
+        this.sampleLoopStartIndex = Math.round(this.indexRatio * this.sampleLoopStartIndex);
+        this.sampleLoopEndIndex = Math.round(this.indexRatio * this.sampleLoopEndIndex);
+        return outputData;
+    }
+
+    /**
      * @param smplArr {ShiftableByteArray}
+     * @returns {Float32Array}
      */
     loadBufferData(smplArr)
     {
-        if(this.sampleEndIndex - this.sampleStartIndex < 1)
+        if(this.sampleLength < 1)
         {
             // eos, do not do anything
-            return;
+            return new Float32Array(1);
         }
         // read the sample data
-        let audioData =  new Float32Array(((this.sampleEndIndex - this.sampleStartIndex) / 2) + 1);
+        let audioData =  new Float32Array(this.sampleLength / 2 + 1);
         const dataStartIndex = smplArr.currentIndex
 
         for(let i = this.sampleStartIndex; i < this.sampleEndIndex; i += 2)
@@ -220,44 +281,7 @@ export class Sample{
 
             audioData[(i - this.sampleStartIndex) / 2] = val / 32768;
         }
-
-        this.sampleData = audioData;
-        try {
-            this.buffer = new AudioBuffer({
-                length: this.sampleData.length,
-                sampleRate: this.sampleRate
-            });
-        }
-        catch (e) {
-            console.warn(`Error creating an audio buffer for ${this.sampleName}! Resampling the sample from ${this.sampleRate} to ${FIX_SAMPLERATE} to fix...`);
-
-            const lengthRatio = this.sampleRate / FIX_SAMPLERATE;
-            const outputLength = Math.round(audioData.length / lengthRatio);
-            const outputData = new Float32Array(outputLength);
-
-            for (let i = 0; i < outputLength; i++) {
-                const index = i * lengthRatio;
-                const indexPrev = Math.floor(index);
-                const indexNext = Math.min(indexPrev + 1, audioData.length - 1);
-                const fraction = index - indexPrev;
-
-                outputData[i] = (1 - fraction) * audioData[indexPrev] + fraction * audioData[indexNext];
-            }
-
-            // change every property correctly
-            this.sampleData = outputData;
-            this.sampleRate = FIX_SAMPLERATE;
-            this.indexRatio = 1 / lengthRatio;
-            this.sampleLoopStartIndex = Math.round(this.indexRatio * this.sampleLoopStartIndex);
-            this.sampleLoopEndIndex = Math.round(this.indexRatio * this.sampleLoopEndIndex);
-
-            this.buffer = new AudioBuffer({
-                length: this.sampleData.length,
-                sampleRate: this.sampleRate
-            });
-
-        }
-        this.buffer.getChannelData(0).set(this.sampleData);
+        return audioData;
     }
 
     /**
