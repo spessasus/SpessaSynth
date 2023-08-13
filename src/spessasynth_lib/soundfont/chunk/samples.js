@@ -308,7 +308,6 @@ export class Sample{
         //
         //     audioData[(i - this.sampleStartIndex - startOffset * 2) / 2] = val / 32768;
         // }
-        console.log(startOffset, endOffset);
         return this.sampleData.subarray(startOffset, this.sampleData.length - endOffset + 1);
     }
 
