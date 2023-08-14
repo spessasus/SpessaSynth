@@ -88,15 +88,15 @@ export class WorkletGeneratorHandler
          */
         const sample= {
             sampleData: this.sample.getAudioData(
-                this.getGeneratorValue(Math.round(this.sample.indexRatio * generatorTypes.startAddrsOffset), 0),
-                this.getGeneratorValue(Math.round(this.sample.indexRatio * generatorTypes.endloopAddrsOffset), 0)
+                this.getGeneratorValue(Math.round(this.sample.indexRatio * generatorTypes.startAddrsOffset), 0) + (32768 * this.getGeneratorValue(generatorTypes.startAddrsCoarseOffset, 0)),
+                this.getGeneratorValue(Math.round(this.sample.indexRatio * generatorTypes.endAddrOffset), 0) + (32768 * this.getGeneratorValue(generatorTypes.endAddrsCoarseOffset, 0))
             ),
             sampleRate: this.sample.sampleRate,
             loopStart: this.sample.sampleLoopStartIndex / 2
-                + this.getGeneratorValue(Math.round(this.sample.indexRatio * generatorTypes.startloopAddrsOffset), 0),
+                + this.getGeneratorValue(Math.round(this.sample.indexRatio * generatorTypes.startloopAddrsOffset), 0) + (32768 * this.getGeneratorValue(generatorTypes.startloopAddrsCoarseOffset, 0)),
 
             loopEnd: this.sample.sampleLoopEndIndex / 2
-                + this.getGeneratorValue(Math.round(this.sample.indexRatio * generatorTypes.endloopAddrsOffset), 0),
+                + this.getGeneratorValue(Math.round(this.sample.indexRatio * generatorTypes.endloopAddrsOffset), 0) + (32768 * this.getGeneratorValue(generatorTypes.endloopAddrsCoarseOffset, 0)),
             playbackStep: 0
         };
 

@@ -84,10 +84,10 @@ export class GeneratorTranslator {
         this.exclusiveClass = this.getGeneratorValue(generatorTypes.exclusiveClass, 0);
 
         // offsets
-        this.startOffset = this.getGeneratorValue(generatorTypes.startAddrsOffset, 0);
-        this.endOffset = this.getGeneratorValue(generatorTypes.endAddrOffset, 0);
-        this.startLoopOffset = this.getGeneratorValue(generatorTypes.startloopAddrsOffset, 0);
-        this.endLoopOffset = this.getGeneratorValue(generatorTypes.endloopAddrsOffset, 0);
+        this.startOffset = this.getGeneratorValue(generatorTypes.startAddrsOffset, 0) + (32768 * this.getGeneratorValue(generatorTypes.startAddrsCoarseOffset, 0));
+        this.endOffset = this.getGeneratorValue(generatorTypes.endAddrOffset, 0) + (32768 * this.getGeneratorValue(generatorTypes.endAddrsCoarseOffset, 0));
+        this.startLoopOffset = this.getGeneratorValue(generatorTypes.startloopAddrsOffset, 0) + (32768 * this.getGeneratorValue(generatorTypes.startloopAddrsCoarseOffset, 0));
+        this.endLoopOffset = this.getGeneratorValue(generatorTypes.endloopAddrsOffset, 0) + (32768 * this.getGeneratorValue(generatorTypes.endloopAddrsCoarseOffset, 0));
 
         // coarseTune
         this.semitoneTune = this.sumGeneratorValue(generatorTypes.coarseTune, 0, -120, 120);
