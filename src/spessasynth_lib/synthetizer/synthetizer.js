@@ -195,10 +195,11 @@ export class Synthetizer {
                 this.stopAll();
                 break;
 
-            // case "Effects 1 Depth":
-            //     // reverb
-            //     this.midiChannels[channel].setReverb(controllerValue);
-            //     break;
+            case "Effects 1 Depth":
+                // reverb
+                this.midiChannels[channel].setReverb(controllerValue);
+                console.log("Reverb for", channel, ":", controllerValue);
+                break;
 
             case "Expression Controller":
                 this.midiChannels[channel]
@@ -301,6 +302,7 @@ export class Synthetizer {
                 this.onControllerChange(chNr, "Pan", 64);
                 this.onControllerChange(chNr, "Expression Controller", 127);
                 this.onControllerChange(chNr, "Brightness", 127);
+                this.onControllerChange(chNr, "Effects 1 Depth", 0);
             }
             if(this.onPitchWheel)
             {
@@ -449,8 +451,8 @@ export class Synthetizer {
                     {
                         // 0 means channel 10 (default), 1 means 1 etc.
                         const channel = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15][messageData[5] & 0x0F]; // for example 1A means A = 11
-                        this.midiChannels[channel].percussionChannel = messageData[7] > 0;
-                        console.log("Drum channel", channel, messageData[7] > 0);
+                        this.midiChannels[channel].percussionChannel = (messageData[7] > 0 && messageData[5] >> 4);
+                        console.log("Drum channel", channel, this.midiChannels[channel].percussionChannel, arrayToHexString(messageData));
                     }
                     else
                     {

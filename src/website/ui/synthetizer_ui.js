@@ -335,6 +335,12 @@ export class SynthetizerUI
                 case "Brightness":
                     // brightness
                     this.updateMeter(this.controllers[channel].brightness, value);
+                    break;
+
+                case "Effects 1 Depth":
+                    // reverb
+                    this.updateMeter(this.controllers[channel].reverb, value);
+                    break;
             }
         }
 
@@ -353,6 +359,7 @@ export class SynthetizerUI
      *     pan: Meter,
      *     expression: Meter,
      *     brightness: Meter,
+     *     reverb: Meter,
      *     preset: HTMLSelectElement,
      *     presetReset: HTMLDivElement
      * }} ChannelController
@@ -442,6 +449,18 @@ export class SynthetizerUI
         this.updateMeter(brightness, 127);
         controller.appendChild(brightness.div);
 
+        // reverb controller
+        const reverb = this.createMeter(this.channelColors[channelNumber],
+            "Reverb: ",
+            0,
+            127,
+            true,
+            val => {
+                this.synth.controllerChange(channelNumber, "Effects 1 Depth", val);
+            });
+        this.updateMeter(reverb, 0);
+        controller.appendChild(reverb.div);
+
         // create it here so we can use it in the callback function
         const presetReset = document.createElement("div");
 
@@ -481,6 +500,7 @@ export class SynthetizerUI
             volume: volume,
             brightness: brightness,
             preset: presetSelector,
+            reverb: reverb,
             presetReset: presetReset
         };
 

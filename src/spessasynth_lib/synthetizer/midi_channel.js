@@ -5,6 +5,7 @@ const CHANNEL_LOUDNESS = 0.5;
 
 const BRIGHTNESS_MAX_FREQ = 22050;
 const BRIGHTNESS_MIN_FREQ = 300;
+const REVERB_TIME_S = 1;
 
 const dataEntryStates = {
     Idle: 0,
@@ -49,14 +50,44 @@ export class MidiChannel {
             frequency: BRIGHTNESS_MAX_FREQ
         });
 
-        this.resetControllers();
+        const revLength = Math.round(this.ctx.sampleRate * REVERB_TIME_S);
+        const revbuff = new AudioBuffer({
+            numberOfChannels: 2,
+            sampleRate: this.ctx.sampleRate,
+            length: revLength
+        });
 
-        // note -> panner -> brightness -> gain -> out
+        const revLeft = revbuff.getChannelData(0);
+        const revRight = revbuff.getChannelData(1);
+        for(let i = 0; i < revLength; i++)
+        {
+            // clever reverb algorithm from here:
+            // https://github.com/g200kg/webaudio-tinysynth/blob/master/webaudio-tinysynth.js#L1342
+            if(i / revLength < Math.random())
+            {
+                revLeft[i] = Math.exp(-3 * i / revLength) * (Math.random() - 0.5) / 2;
+                revRight[i] = Math.exp(-3 * i / revLength) * (Math.random() - 0.5) / 2;
+            }
+        }
 
+        this.convolver = new ConvolverNode(this.ctx, {
+            buffer: revbuff
+        });
+        this.reverb = new GainNode(this.ctx, {
+            gain: 0
+        });
+
+        // note -> panner   -> brightness -> gain -> out
+        //           \-> conv -> rev -/
+        this.panner.connect(this.convolver);
         this.panner.connect(this.brightnessController);
-        this.brightnessController.connect(this.gainController)
-        this.gainController.connect(this.outputNode);
 
+        this.convolver.connect(this.reverb);
+        this.reverb.connect(this.brightnessController);
+
+        this.brightnessController.connect(this.gainController);
+        this.gainController.connect(this.outputNode)
+        this.resetControllers();
 
 
         /**
@@ -97,6 +128,25 @@ export class MidiChannel {
             this.stopNote(note);
         }
         this.heldNotes = [];
+    }
+
+    /**
+     * @param reverb {number} reverb amount, ranges from 0 to 127
+     */
+    setReverb(reverb)
+    {
+        this.reverb.gain.value = reverb / 64;
+        if(reverb === 0)
+        {
+            try {
+                this.panner.disconnect(this.convolver);
+            }
+            catch {}
+        }
+        else
+        {
+            this.panner.connect(this.convolver);
+        }
     }
 
     /**
@@ -212,8 +262,6 @@ export class MidiChannel {
     setVolume(volume) {
         this.channelVolume = volume / 127;
         this.gainController.gain.value = this.getGain();
-        //this.gainController.gain.setValueAtTime(this.getGain(),
-            //this.ctx.currentTime + 0.0001);
     }
 
     setRPCoarse(value)
@@ -411,6 +459,7 @@ export class MidiChannel {
         this.pitchBend = 0;
         this.brightness = 127;
         this.brightnessController.frequency.value = BRIGHTNESS_MAX_FREQ;
+        this.reverb.gain.value = 0;
 
         this.vibrato = {depth: 0, rate: 0, delay: 0};
         this.resetParameters();
