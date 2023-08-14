@@ -9,7 +9,7 @@ SoundFont2 based realtime synthetizer and MIDI visualizer written in JavaScript.
 ## Features
 - SoundFont2 Generator Support
 - MIDI Controller Support
-- Support for muptiple drums via GS or XG
+- Support for multiple drums via GS or XG
 - High performance mode for playing black MIDIs (Don't go too crazy with the amount of notes though)
 - Visualization of the played file
 - Playable keyboard with preset selection
