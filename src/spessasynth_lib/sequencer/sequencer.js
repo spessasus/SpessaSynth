@@ -1,6 +1,5 @@
 import {MIDI} from "../midi_parser/midi_loader.js";
-import { DEFAULT_PERCUSSION, Synthetizer } from '../synthetizer/synthetizer.js'
-import {Renderer} from "../../website/ui/renderer.js";
+import { DEFAULT_PERCUSSION, Synthetizer } from '../synthetizer/synthetizer.js';
 import {getEvent, messageTypes, midiControllers, MidiMessage} from "../midi_parser/midi_message.js";
 import {formatTime} from "../utils/other.js";
 import {readBytesAsUintBigEndian} from "../utils/byte_functions.js";

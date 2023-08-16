@@ -494,7 +494,7 @@ export class Synthetizer {
     get voicesAmount()
     {
         let v = 0;
-        this.midiChannels.forEach(c => v += c.voicesAmount);
+        this.midiChannels.forEach(prev =>  v += prev.notes.size);
         return v;
     }
 }

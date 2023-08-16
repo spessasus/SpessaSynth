@@ -33,6 +33,10 @@ export class MidiChannel {
 
         this.preset = defaultPreset;
         this.bank = this.preset.bank;
+        /**
+         * @type {Set<number>}
+         */
+        this.notes = new Set();
 
         /**
          * @type {number[]}
@@ -73,6 +77,7 @@ export class MidiChannel {
         this.convolver = new ConvolverNode(this.ctx, {
             buffer: revbuff
         });
+        this.convolver.normalize = false;
         this.reverb = new GainNode(this.ctx, {
             gain: 0
         });
@@ -86,7 +91,21 @@ export class MidiChannel {
         this.reverb.connect(this.brightnessController);
 
         this.brightnessController.connect(this.gainController);
-        this.gainController.connect(this.outputNode)
+        this.gainController.connect(this.outputNode);
+
+        // chorus test
+        // const delay = new DelayNode(this.ctx, {
+        //     delayTime: 0.02
+        // });
+        // this.gainController.connect(delay);
+        // delay.connect(this.outputNode);
+        //
+        // const delay2 = new DelayNode(this.ctx, {
+        //     delayTime: 0.03
+        // });
+        // this.gainController.connect(delay2);
+        // delay2.connect(this.outputNode);
+
         this.resetControllers();
 
 
@@ -126,6 +145,7 @@ export class MidiChannel {
         for(let note of this.heldNotes)
         {
             this.stopNote(note);
+            this.notes.delete(note);
         }
         this.heldNotes = [];
     }
@@ -202,6 +222,7 @@ export class MidiChannel {
             return;
         }
 
+        this.notes.add(midiNote);
         let note = new Voice(midiNote, velocity, this.panner, this.preset, this.vibrato, this.channelTuningRatio);
 
         let exclusives = note.startNote(debugInfo);
@@ -247,7 +268,7 @@ export class MidiChannel {
 
     get voicesAmount()
     {
-        return this.playingNotes.length + this.stoppingNotes.length + this.heldNotes.length;
+        return this.notes.size;
     }
 
     /**
@@ -409,6 +430,7 @@ export class MidiChannel {
             return;
         }
 
+        this.notes.delete(midiNote);
 
         let notes = this.playingNotes.filter(n => n.midiNote === midiNote);
         if(notes.length < 1)
@@ -460,6 +482,9 @@ export class MidiChannel {
         this.brightness = 127;
         this.brightnessController.frequency.value = BRIGHTNESS_MAX_FREQ;
         this.reverb.gain.value = 0;
+        try {
+            this.panner.disconnect(this.convolver);
+        } catch {}
 
         this.vibrato = {depth: 0, rate: 0, delay: 0};
         this.resetParameters();
