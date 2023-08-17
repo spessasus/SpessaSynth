@@ -73,8 +73,8 @@ export class GeneratorTranslator {
 
         // releaseVolEnv (timecents) defaults to 5s
         this.releaseTime = this.sumGeneratorValue(generatorTypes.releaseVolEnv,
-            -12000,
-            -12000,
+            -7200,
+            -7200,
             8000);
 
         // scaleTuning

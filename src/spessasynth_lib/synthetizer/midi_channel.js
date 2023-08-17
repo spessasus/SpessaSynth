@@ -430,8 +430,6 @@ export class MidiChannel {
             return;
         }
 
-        this.notes.delete(midiNote);
-
         let notes = this.playingNotes.filter(n => n.midiNote === midiNote);
         if(notes.length < 1)
         {
@@ -448,12 +446,14 @@ export class MidiChannel {
             if(highPerf)
             {
                 note.killNote().then(() => {
+                    this.notes.delete(midiNote);
                     note.disconnectNote();
                     delete this.stoppingNotes.splice(this.stoppingNotes.indexOf(note), 1);
                 });
             }
             else {
                 note.stopNote().then(() => {
+                    this.notes.delete(midiNote);
                     note.disconnectNote();
                     delete this.stoppingNotes.splice(this.stoppingNotes.indexOf(note), 1);
                 });

@@ -206,6 +206,19 @@ export class Sequencer {
     }
 
     /**
+     * @param output {MIDIOutput}
+     */
+    connectMidiOutput(output)
+    {
+        if(this.MIDIout)
+        {
+            this.MIDIout.send([messageTypes.reset]);
+        }
+        this.MIDIout = output;
+        this.currentTime -= 0.1;
+    }
+
+    /**
      * Pauses the playback
      */
     pause()
@@ -258,6 +271,10 @@ export class Sequencer {
         this.oneTickToSeconds = 60 / (120 * this.midiData.timeDivision);
         // process every non note message from the start
         this.synth.resetControllers();
+        if(this.MIDIout)
+        {
+            this.MIDIout.send([messageTypes.reset]);
+        }
 
         // optimize to call pitchwheels 16 times only
         const pitches = new Uint16Array(16);
@@ -322,8 +339,16 @@ export class Sequencer {
 
         for(let i = 0; i < 16; i++)
         {
-            this.synth.pitchWheel(i, pitches[i] >> 7, pitches[i] & 0x7F);
-            this.synth.programChange(i, programs[i]);
+            if(this.MIDIout)
+            {
+                this.MIDIout.send([messageTypes.pitchBend | i, pitches[i] & 0x7F, pitches[i] >> 7]);
+                this.MIDIout.send([messageTypes.programChange | i, programs[i]]);
+            }
+            else
+            {
+                this.synth.pitchWheel(i, pitches[i] >> 7, pitches[i] & 0x7F);
+                this.synth.programChange(i, programs[i]);
+            }
         }
     }
 
@@ -439,6 +464,13 @@ export class Sequencer {
     _processEvent(event)
     {
         if(this.ignoreEvents) return;
+        if(this.MIDIout)
+        {
+            if(event.messageStatusByte >= 0x80) {
+                this.MIDIout.send([event.messageStatusByte, ...event.messageData]);
+                return;
+            }
+        }
         const statusByteData = getEvent(event.messageStatusByte);
         // process the event
         switch (statusByteData.status) {
@@ -534,6 +566,10 @@ export class Sequencer {
         clearInterval(this.playbackInterval);
         this.playbackInterval = undefined;
         this.synth.stopAll();
+        if(this.MIDIout)
+        {
+            this.MIDIout.send([messageTypes.reset]);
+        }
     }
 
     /**

@@ -1,6 +1,5 @@
 import {Synthetizer} from "../../spessasynth_lib/synthetizer/synthetizer.js";
-import {getEvent, midiControllers, messageTypes} from "../../spessasynth_lib/midi_parser/midi_message.js";
-import {ShiftableByteArray} from "../../spessasynth_lib/utils/shiftable_array.js";
+import { MIDIDeviceHandler } from '../../spessasynth_lib/midi_handler/midi_device_handler.js'
 
 const KEYBOARD_VELOCITY = 126;
 
@@ -10,8 +9,9 @@ export class MidiKeyboard
      * Creates a new midi keyboard(keyboard)
      * @param channelColors {Array<string>}
      * @param synth {Synthetizer}
+     * @param handler {MIDIDeviceHandler}
      */
-    constructor(channelColors, synth) {
+    constructor(channelColors, synth, handler) {
         this.mouseHeld = false;
         this.heldKeys = [];
 
@@ -164,100 +164,62 @@ export class MidiKeyboard
         channelSelector.onchange = () => {
             this.selectChannel(parseInt(channelSelector.value));
         }
-
         this.selectorMenu.appendChild(channelSelector);
 
-        if(navigator.requestMIDIAccess) {
-            // prepare the midi access
-            navigator.requestMIDIAccess({ sysex: true, software: true }).then(access => {
-                    this.createMIDIDeviceHandler(access);
-                },
-                message => {
-                    console.log(`Could not get MIDI Devices:`, message);
-                });
-        }
-    }
-
-
-    /**
-     * @param midiAccess {WebMidi.MIDIAccess}
-     */
-    createMIDIDeviceHandler(midiAccess)
-    {
-        this.midiAccess = midiAccess;
-        const deviceSelector = document.createElement("select");
-        deviceSelector.innerHTML = "<option value='-1' selected>No device selected</option>";
-        for(const device of this.midiAccess.inputs)
-        {
-            const option = document.createElement("option");
-            option.innerText = device[1].name;
-            option.value = device[0];
-            deviceSelector.appendChild(option);
-        }
-        this.selectorMenu.appendChild(deviceSelector);
-
-        deviceSelector.onchange = () => {
-            for(const dev of this.midiAccess.inputs)
+        this.handler = handler;
+        handler.createMIDIDeviceHandler().then(() => {
+            // input selector
+            const inputSelector = document.createElement("select");
+            // no device
+            inputSelector.innerHTML = "<option value='-1' selected>No input selected</option>";
+            for(const input of handler.inputs)
             {
-                dev[1].onmidimessage = undefined;
+                const option = document.createElement("option");
+                option.value = input[0];
+                option.innerText = input[1].name;
+                inputSelector.appendChild(option);
             }
-
-            if(deviceSelector.value === "-1")
-            {
-                return;
-            }
-
-            this.midiAccess.inputs.get(deviceSelector.value).onmidimessage = event => {
-                // discard as soon as possible if high perf
-                const statusByteData = getEvent(event.data[0]);
-
-
-                // process the event
-                switch (statusByteData.status) {
-                    case messageTypes.noteOn:
-                        const velocity = event.data[2];
-                        if(velocity > 0) {
-                            this.synth.noteOn(statusByteData.channel, event.data[1], velocity);
-                        }
-                        else
-                        {
-                            this.synth.noteOff(statusByteData.channel, event.data[1]);
-                        }
-                        break;
-
-                    case messageTypes.noteOff:
-                        this.synth.noteOff(statusByteData.channel, event.data[1]);
-                        break;
-
-                    case messageTypes.pitchBend:
-                        this.synth.pitchWheel(statusByteData.channel, event.data[2], event.data[1]);
-                        break;
-
-                    case messageTypes.controllerChange:
-                        this.synth.controllerChange(statusByteData.channel, midiControllers[event.data[1]], event.data[2]);
-                        break;
-
-                    case messageTypes.programChange:
-                        this.synth.programChange(statusByteData.channel, event.data[1]);
-                        break;
-
-                    case messageTypes.systemExclusive:
-                        this.synth.systemExclusive(new ShiftableByteArray(event.data.slice(1)));
-                        break;
-
-                    case messageTypes.reset:
-                        this.synth.stopAll();
-                        this.synth.resetControllers();
-                        console.log("System Reset");
-                        break;
-
-                    default:
-                        break;
+            inputSelector.onchange = () => {
+                if(inputSelector.value === "-1")
+                {
+                    handler.disconnectAllDevicesFromSynth();
+                }
+                else
+                {
+                    handler.connectDeviceToSynth(handler.inputs.get(inputSelector.value), this.synth);
                 }
             }
-            console.log("hooked to", deviceSelector.value);
-            this.synth.resetControllers();
+
+            this.selectorMenu.appendChild(inputSelector);
+        });
+    }
+
+    createMIDIOutputSelector(seq)
+    {
+        // output selector
+        const outputSelector = document.createElement("select");
+        // no device
+        outputSelector.innerHTML = "<option value='-1' selected>No output selected</option>";
+        for(const output of this.handler.outputs)
+        {
+            const option = document.createElement("option");
+            option.value = output[0];
+            option.innerText = output[1].name;
+            outputSelector.appendChild(option);
         }
+
+        outputSelector.onchange = () => {
+            if(outputSelector.value === "-1")
+            {
+                this.handler.disconnectSeqFromMIDI(seq);
+            }
+            else
+            {
+                this.handler.connectMIDIOutputToSeq(this.handler.outputs.get(outputSelector.value), seq);
+            }
+        }
+
+        this.selectorMenu.appendChild(outputSelector);
     }
 
     /**

@@ -57,7 +57,6 @@ export class SampleNode
     stopSample()
     {
         // stop the audio envelope
-        clearTimeout(this.timeout);
         if(this.volumeController.gain.cancelAndHoldAtTime) {
             this.volumeController.gain.cancelAndHoldAtTime(this.currentTime);
         }
@@ -68,27 +67,10 @@ export class SampleNode
         }
         this.source.stop(this.source.context.currentTime + this.releaseTime);
 
-        // begin release phase
-        this.rampToValue(this.volumeController.gain, 0, this.releaseTime);
-    }
 
-    /**
-     * sets the target at time, but in seconds
-     * @param param {AudioParam}
-     * @param value {number}
-     * @param timeInSeconds {number}
-     * @param relativeStartTime {number} in seconds
-     */
-    rampToValue(param, value, timeInSeconds, relativeStartTime = 0)
-    {
-        if(value === 0)
-        {
-            value = 0.000001;
-        }
-        this.timeout = setTimeout(() => {
-            param.setValueAtTime(param.value, this.currentTime + 0.00001);
-            param.exponentialRampToValueAtTime(value, this.currentTime + 0.001 + timeInSeconds);
-        }, relativeStartTime * 1000);
+        // begin release phase
+        this.volumeController.gain.setValueAtTime(this.volumeController.gain.value, this.currentTime);
+        this.volumeController.gain.exponentialRampToValueAtTime(0.00001, this.currentTime + this.releaseTime);
     }
 
     get currentTime()
@@ -106,7 +88,6 @@ export class SampleNode
 
     disconnectSample()
     {
-        clearTimeout(this.timeout);
         this.source.stop();
         this.source.disconnect();
         this.volumeController.disconnect();

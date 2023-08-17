@@ -7,6 +7,7 @@ import {MIDI} from "../spessasynth_lib/midi_parser/midi_loader.js";
 import {SoundFont2} from "../spessasynth_lib/soundfont/soundfont_parser.js";
 import {SequencerUI} from "./ui/sequencer_ui.js";
 import {SynthetizerUI} from "./ui/synthetizer_ui.js";
+import { MIDIDeviceHandler } from '../spessasynth_lib/midi_handler/midi_device_handler.js'
 
 export class Manager
 {
@@ -41,8 +42,11 @@ export class Manager
         // set up synthetizer
         this.synth = new Synthetizer(context.destination, this.soundFont);
 
+        // set up midi access
+        this.midHandler = new MIDIDeviceHandler();
+
         // set up keyboard
-        this.keyboard = new MidiKeyboard(this.channelColors, this.synth);
+        this.keyboard = new MidiKeyboard(this.channelColors, this.synth, this.midHandler);
 
         // set up renderer
         const canvas = document.getElementById("note_canvas");
@@ -92,5 +96,6 @@ export class Manager
 
         // play the midi
         this.seq.play(true);
+        this.keyboard.createMIDIOutputSelector(this.seq);
     }
 }
