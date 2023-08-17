@@ -128,7 +128,6 @@ async function replaceFont(fontName)
         }
     }
 
-    console.log(window.loadedSoundfonts)
     if(window.loadedSoundfonts.find(sf => sf.name === fontName))
     {
         window.soundFontParser = window.loadedSoundfonts.find(sf => sf.name === fontName).sf;
