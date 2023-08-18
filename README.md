@@ -27,7 +27,7 @@
 This program is still in it's early development, so it might not sound as good as other synthetizers (e.g. FluidSynth or BASSMIDI)
 
 ## Installation
-***Chrome is highly recommended, unless you're loading a large (>4GB) SoundFont***
+***Chromium based browser is highly recommended, unless you're loading a large (>4GB) SoundFont (then use Firefox, because chromium has a 4GB memory limit)***
 
 ### [Recommended and tested SoundFont](https://musical-artifacts.com/artifacts/1176)
 
