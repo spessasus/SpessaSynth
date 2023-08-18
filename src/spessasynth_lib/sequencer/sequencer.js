@@ -212,7 +212,6 @@ export class Sequencer {
     {
         if(this.MIDIout)
         {
-            this.MIDIout.send([messageTypes.reset]);
             for (let i = 0; i < 16; i++) {
                 this.MIDIout.send([messageTypes.controllerChange | i, 120, 0]); // all notes off
                 this.MIDIout.send([messageTypes.controllerChange | i, 123, 0]); // all sound off
@@ -572,7 +571,6 @@ export class Sequencer {
         this.synth.stopAll();
         if(this.MIDIout)
         {
-            this.MIDIout.send([messageTypes.reset]);
             for (let c = 0; c < 16; c++)
             {
                 this.MIDIout.send([messageTypes.controllerChange | c, 120, 0]); // all notes off

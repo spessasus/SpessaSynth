@@ -21,7 +21,13 @@ export class Synthetizer {
         this.volumeController = new GainNode(targetNode.context, {
             gain: 1
         });
-        this.volumeController.connect(targetNode)
+
+        this.panController = new StereoPannerNode(targetNode.context, {
+            pan: 0
+        });
+
+        this.volumeController.connect(this.panController);
+        this.panController.connect(targetNode);
 
         /**
          * For Black MIDI's - forces release time to 50ms
@@ -313,6 +319,8 @@ export class Synthetizer {
         this.midiChannels[DEFAULT_PERCUSSION].percussionChannel = true;
         this.midiChannels[DEFAULT_PERCUSSION].setPreset(this.percussionPreset);
         this.system = "gm2";
+        this.volumeController.gain.value = 1;
+        this.panController.pan.value = 0;
     }
 
     /**
@@ -432,35 +440,62 @@ export class Synthetizer {
                 }
                 break;
 
-            // roland
+            case 0x7F:
+                // main volume
+                if (messageData[2] === 0x04 && messageData[3] === 0x01)
+                {
+                    const vol = messageData[5] << 7 | messageData[4];
+                    this.volumeController.gain.value = vol / 16383;
+                }
+                break;
+
+            // this is a roland sysex
             // http://www.bandtrax.com.au/sysex.htm
             case 0x41:
-                // gs
+                // messagedata[1] is device id (ignore as we're everything >:) )
                 if(messageData[2] === 0x42 && messageData[3] === 0x12)
                 {
-                    // GS reset
+                    // this is a GS sysex
+
                     if(messageData[7] === 0x00 && messageData[6] === 0x7F)
                     {
+                        // this is a GS reset
                         console.log("GS system on");
                         this.system = "gs";
                         return;
                     }
                     else
-                    // Use for Drum Part
                     if(messageData[6] === 0x15 && messageData[4] === 0x40)
                     {
-                        // 0 means channel 10 (default), 1 means 1 etc.
+                        // this is the Use for Drum Part sysex (multiple drums)
+                        // determine the channel 0 means channel 10 (default), 1 means 1 etc.
                         const channel = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15][messageData[5] & 0x0F]; // for example 1A means A = 11
-                        this.midiChannels[channel].percussionChannel = (messageData[7] > 0 && messageData[5] >> 4);
+                        this.midiChannels[channel].percussionChannel = (messageData[7] > 0 && messageData[5] >> 4); // if set to other than 0, is a drum channel
                         console.log("Drum channel", channel, this.midiChannels[channel].percussionChannel, arrayToHexString(messageData));
                     }
                     else
+                    if(messageData[4] === 0x40 && messageData[6] === 0x06)
                     {
+                        // roland master pan
+                        console.log("Roland Master Pan:", messageData[7]);
+                        this.panController.pan.value = (messageData[7] - 64) / 64;
+                    }
+                    else
+                    {
+                        // this is some other GS sysex...
                         console.log("Unrecognized Roland GS SyEx:", arrayToHexString(messageData));
                     }
                 }
                 else
+                if(messageData[2] === 0x16 && messageData[3] === 0x12 && messageData[4] === 0x10)
                 {
+                    // this is a roland master volume message
+                    this.volumeController.gain.value = messageData[7] / 100;
+                    console.log("Roland Master Volume control:", messageData[7]);
+                }
+                else
+                {
+                    // this is something else...
                     console.log("Unrecognized Roland SysEx:", arrayToHexString(messageData));
                 }
                 break;
