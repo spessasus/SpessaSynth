@@ -7,6 +7,7 @@ import {Preset, readPresets} from "./chunk/presets.js";
 import {readInstruments, Instrument} from "./chunk/instruments.js";
 import {readModulators, Modulator} from "./chunk/modulators.js";
 import {RiffChunk} from "./chunk/riff_chunk.js";
+import { consoleColors } from '../utils/other.js'
 
 export class SoundFont2
 {
@@ -16,10 +17,10 @@ export class SoundFont2
      */
     constructor(dataArray) {
         this.dataArray = dataArray;
-        console.group("Parsing SoundFont...");
+        console.group("%cParsing SoundFont...", consoleColors.info);
         if(!this.dataArray)
         {
-            throw new Error("No data!");
+            throw "No data!";
         }
 
         // read the main chunk
@@ -34,15 +35,17 @@ export class SoundFont2
         readBytesAsString(infoChunk.chunkData, 4);
 
         /**
-         * @type {{chunk: string, infoText: string}[]}
+         * @type {Object<string, string>}
          */
-        this.soundFontInfo = [];
+        this.soundFontInfo = {};
 
         while(infoChunk.chunkData.length > infoChunk.chunkData.currentIndex) {
             let chunk = readRIFFChunk(infoChunk.chunkData);
             let text = readBytesAsString(chunk.chunkData, chunk.chunkData.length);
-            console.log(chunk.header, text);
-            this.soundFontInfo.push({chunk: chunk.header, infoText: text});
+            console.log(`%c"${chunk.header}": %c"${text}"`,
+                consoleColors.info,
+                consoleColors.recognized);
+            this.soundFontInfo[chunk.header] = text;
         }
 
         // SDTA
@@ -51,16 +54,18 @@ export class SoundFont2
         this.verifyText(readBytesAsString(this.dataArray, 4), "sdta");
 
         // smpl
-        console.log("Verifying smpl chunk...")
+        console.log("%cVerifying smpl chunk...", consoleColors.warn)
         let sampleDataChunk = readRIFFChunk(this.dataArray, false);
         this.verifyHeader(sampleDataChunk, "smpl");
         this.sampleDataStartIndex = dataArray.currentIndex;
 
-        console.log("Skipping sample chunk, length:", sdtaChunk.size - 12);
+        console.log(`%cSkipping sample chunk, length: %c${sdtaChunk.size - 12}`,
+            consoleColors.info,
+            consoleColors.value);
         dataArray.currentIndex += sdtaChunk.size - 12;
 
         // PDTA
-        console.log("Loading preset data chunk...")
+        console.log("%cLoading preset data chunk...", consoleColors.warn)
         let presetChunk = readRIFFChunk(this.dataArray);
         this.verifyHeader(presetChunk, "list");
         readBytesAsString(presetChunk.chunkData, 4);
@@ -147,9 +152,19 @@ export class SoundFont2
          */
         this.presets = readPresets(presetHeadersChunk, presetZones);
         this.presets.sort((a, b) => (a.program - b.program) + (a.bank - b.bank));
-        console.log("Parsing finished!");
-        console.log("Presets:", this.presets.length);
+        console.log(`%cParsing finished! %c"${this.soundFontInfo["INAM"]}"%c has %c${this.presets.length} %cpresets,
+        %c${instruments.length}%c instruments and %c${samples.length}%c samples.`,
+            consoleColors.info,
+            consoleColors.recognized,
+            consoleColors.info,
+            consoleColors.recognized,
+            consoleColors.info,
+            consoleColors.recognized,
+            consoleColors.info,
+            consoleColors.recognized,
+            consoleColors.info);
         console.groupEnd();
+        console.log("\n")
     }
 
     /**

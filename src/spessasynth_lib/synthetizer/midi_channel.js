@@ -1,5 +1,6 @@
 import {Voice} from "./buffer_voice/voice.js";
 import {Preset} from "../soundfont/chunk/presets.js";
+import { consoleColors } from '../utils/other.js'
 
 const CHANNEL_LOUDNESS = 0.5;
 
@@ -156,16 +157,21 @@ export class MidiChannel {
     setReverb(reverb)
     {
         this.reverb.gain.value = reverb / 64;
-        if(reverb === 0)
+        if(reverb < 1)
         {
-            try {
-                this.panner.disconnect(this.convolver);
-            }
-            catch {}
+            this.panner.disconnect();
+            this.panner.connect(this.brightnessController);
+            this.convolver.disconnect();
+            console.log(`%cDisconnecting the reverb node as the reverb is set to %c0%c, for channel %c ${this.channelNumber}`,
+                consoleColors.info,
+                consoleColors.value,
+                consoleColors.info,
+                consoleColors.recognized);
         }
         else
         {
             this.panner.connect(this.convolver);
+            this.convolver.connect(this.reverb);
         }
     }
 
@@ -352,7 +358,12 @@ export class MidiChannel {
                                 }
                                 addDefaultVibrato();
                                 this.vibrato.rate = (dataValue / 64) * 8;
-                                console.log(`Vibrato rate for ${this.channelNumber}:`, dataValue, "=>", this.vibrato.rate, "total:", this.vibrato);
+                                console.log(`%cVibrato rate for channel %c${this.channelNumber}%c is now set to %c${this.vibrato.rate}%cHz.`,
+                                    consoleColors.info,
+                                    consoleColors.recognized,
+                                    consoleColors.info,
+                                    consoleColors.value,
+                                    consoleColors.info);
                                 break;
 
                             // vibrato depth
@@ -363,7 +374,12 @@ export class MidiChannel {
                                 }
                                 addDefaultVibrato();
                                 this.vibrato.depth = dataValue / 2;
-                                console.log(`Vibrato depth for ${this.channelNumber}:`, dataValue, "=>", this.vibrato.depth, "total:", this.vibrato);
+                                console.log(`%cVibrato depth for %c${this.channelNumber}%c is now set to %c${this.vibrato.depth} %ccents range of detune.`,
+                                    consoleColors.info,
+                                    consoleColors.recognized,
+                                    consoleColors.info,
+                                    consoleColors.value,
+                                    consoleColors.info);
                                 break;
 
                             // vibrato delay
@@ -374,7 +390,12 @@ export class MidiChannel {
                                 }
                                 addDefaultVibrato();
                                 this.vibrato.delay = (dataValue / 64) / 3;
-                                console.log(`Vibrato delay for ${this.channelNumber}`, dataValue, "=>", this.vibrato.delay, "total:", this.vibrato);
+                                console.log(`%cVibrato delay for %c${this.channelNumber}%c is now set to %c${this.vibrato.delay} %cseconds.`,
+                                    consoleColors.info,
+                                    consoleColors.recognized,
+                                    consoleColors.info,
+                                    consoleColors.value,
+                                    consoleColors.info);
                                 break;
                         }
                         break;
@@ -484,6 +505,7 @@ export class MidiChannel {
         this.reverb.gain.value = 0;
         try {
             this.panner.disconnect(this.convolver);
+            this.convolver.disconnect();
         } catch {}
 
         this.vibrato = {depth: 0, rate: 0, delay: 0};

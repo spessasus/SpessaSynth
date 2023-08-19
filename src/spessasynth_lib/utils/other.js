@@ -38,6 +38,14 @@ export function arrayToHexString(arr) {
     return hexString;
 }
 
+export const consoleColors = {
+    warn: "color: orange;",
+    unrecognized: "color: red;",
+    info: "color: aqua;",
+    recognized: "color: lime",
+    value: "color: yellow; background-color: black;"
+}
+
 /**
  * @type {string[]}
  */

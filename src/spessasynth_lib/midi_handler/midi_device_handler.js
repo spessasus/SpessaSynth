@@ -1,6 +1,7 @@
 import { getEvent, messageTypes, midiControllers } from '../midi_parser/midi_message.js'
 import { Synthetizer } from '../synthetizer/synthetizer.js'
 import { ShiftableByteArray } from '../utils/shiftable_array.js'
+import { consoleColors } from '../utils/other.js'
 
 
 export class MIDIDeviceHandler
@@ -16,10 +17,10 @@ export class MIDIDeviceHandler
                 const response = await navigator.requestMIDIAccess({ sysex: true, software: true });
                 this.inputs = response.inputs;
                 this.outputs = response.outputs;
-                console.log("MIDI handler created!");
+                console.log("%cMIDI handler created!", consoleColors.recognized);
             }
             catch (e) {
-                console.log(`Could not get MIDI Devices:`, e);
+                console.warn(`Could not get MIDI Devices:`, e);
                 this.inputs = [];
                 this.outputs = [];
             }
@@ -39,7 +40,9 @@ export class MIDIDeviceHandler
     connectMIDIOutputToSeq(output, seq)
     {
         seq.connectMidiOutput(output);
-        console.log("Playing MIDI to", output.name);
+        console.log(`%cPlaying MIDI to %c${output.name}`,
+            consoleColors.info,
+            consoleColors.recognized);
     }
 
     /**
@@ -49,7 +52,8 @@ export class MIDIDeviceHandler
     disconnectSeqFromMIDI(seq)
     {
         seq.connectMidiOutput(undefined);
-        console.log("Disconnected from MIDI out");
+        console.log("%cDisconnected from MIDI out.",
+            consoleColors.info);
     }
 
     /**
@@ -107,7 +111,9 @@ export class MIDIDeviceHandler
                     break;
             }
         }
-        console.log("listening for messages on", input.name);
+        console.log(`%cListening for messages on %c${input.name}`,
+            consoleColors.info,
+            consoleColors.recognized);
     }
 
     /**
@@ -116,7 +122,9 @@ export class MIDIDeviceHandler
     disconnectDeviceFromSynth(input)
     {
         input.onmidimessage = undefined;
-        console.log("Disconnected from", input.name);
+        console.log(`%cDisconnected from %c${input.name}`,
+            consoleColors.info,
+            consoleColors.recognized);
     }
 
     disconnectAllDevicesFromSynth()

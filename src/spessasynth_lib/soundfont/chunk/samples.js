@@ -20,11 +20,6 @@ export function readSamples(sampleHeadersChunk, smplChunkData)
     {
         const sample = readSample(sampleHeadersChunk.chunkData, smplChunkData);
         samples.push(sample);
-
-        if(samples.length % 1000 === 0)
-        {
-            console.log(`Loaded ${samples.length} samples...`);
-        }
     }
     return samples;
 }

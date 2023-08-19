@@ -1,7 +1,7 @@
 import {MIDI} from "../midi_parser/midi_loader.js";
 import { DEFAULT_PERCUSSION, Synthetizer } from '../synthetizer/synthetizer.js';
 import {getEvent, messageTypes, midiControllers, MidiMessage} from "../midi_parser/midi_message.js";
-import {formatTime} from "../utils/other.js";
+import { consoleColors, formatTime } from '../utils/other.js'
 import {readBytesAsUintBigEndian} from "../utils/byte_functions.js";
 
 const MIN_NOTE_TIME = 0.02;
@@ -153,7 +153,7 @@ export class Sequencer {
         let oneTickToSeconds = 60 / (120 * this.midiData.timeDivision);
         let eventIndex = 0;
 
-        console.log("loading note times");
+        console.log("%cLoading note times for note rendering...", consoleColors.warn);
         while(eventIndex < this.events.length)
         {
             const event = this.events[eventIndex];
@@ -201,7 +201,7 @@ export class Sequencer {
             elapsedTime += oneTickToSeconds * (this.events[eventIndex].ticks - event.ticks);
         }
 
-        console.log("finished loading note times", noteTimes);
+        console.log("%cFinished loading note times and ready to render the sequence!", consoleColors.info);
         renderer.connectSequencer(noteTimes, this);
     }
 
@@ -370,7 +370,6 @@ export class Sequencer {
 
         if(this.currentTime >= this.duration)
         {
-            console.log("reset")
             this.currentTime = 0;
             return;
         }
@@ -520,7 +519,11 @@ export class Sequencer {
                 break;
 
             default:
-                console.log("Unrecognized Event:", event.messageStatusByte, "status byte:", Object.keys(messageTypes).find(k => messageTypes[k] === statusByteData.status));
+                console.log(`%cUnrecognized Event: %c${event.messageStatusByte}%c status byte: %c${Object.keys(messageTypes).find(k => messageTypes[k] === statusByteData.status)}`,
+                    consoleColors.warn,
+                    consoleColors.unrecognized,
+                    consoleColors.warn,
+                    consoleColors.value);
                 break;
 
             case messageTypes.pitchBend:
@@ -555,7 +558,6 @@ export class Sequencer {
             case messageTypes.reset:
                 this.synth.stopAll();
                 this.synth.resetControllers();
-                console.log("System Reset");
                 break;
         }
     }

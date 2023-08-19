@@ -2,7 +2,7 @@ import {RiffChunk} from "./riff_chunk.js";
 import {PresetZone} from "./zones.js";
 import {readBytesAsString, readBytesAsUintLittleEndian} from "../../utils/byte_functions.js";
 import {Sample} from "./samples.js";
-import {Generator, generatorTypes} from "./generators.js";
+import {Generator} from "./generators.js";
 
 export class Preset {
     /**
@@ -18,10 +18,6 @@ export class Preset {
         this.bank = readBytesAsUintLittleEndian(presetChunk.chunkData, 2);
         this.presetZoneStartIndex = readBytesAsUintLittleEndian(presetChunk.chunkData, 2);
         this.presetZonesAmount = 0;
-        /**
-         * @type {number[]}
-         */
-        this.exclusiveClasses = [];
         /**
          * @type {PresetZone[]}
          */
@@ -50,33 +46,6 @@ export class Preset {
         this.presetZonesAmount = amount;
         for (let i = this.presetZoneStartIndex; i < this.presetZonesAmount + this.presetZoneStartIndex; i++) {
             this.presetZones.push(zones[i]);
-        }
-    }
-
-    /**
-     * Searches for all exclusive classes within the preset
-     */
-    getExclusiveClasses()
-    {
-        for(let presetZone of this.presetZones)
-        {
-            if(!presetZone.instrument)
-            {
-                continue;
-            }
-            for(let instrumentZone of presetZone.instrument.instrumentZones)
-            {
-                let exclusiveClass = instrumentZone.generators.find(g => g.generatorType === generatorTypes.exclusiveClass);
-                if(exclusiveClass)
-                {
-                    if(exclusiveClass.generatorValue !== 0)
-                    {
-                        if(!this.exclusiveClasses.includes(exclusiveClass.generatorValue)) {
-                            this.exclusiveClasses.push(exclusiveClass.generatorValue);
-                        }
-                    }
-                }
-            }
         }
     }
 
@@ -206,7 +175,6 @@ export function readPresets(presetChunk, presetZones)
         {
             let presetZonesAmount = preset.presetZoneStartIndex - presets[presets.length - 1].presetZoneStartIndex;
             presets[presets.length - 1].getPresetZones(presetZonesAmount, presetZones);
-            presets[presets.length - 1].getExclusiveClasses();
         }
         presets.push(preset);
     }
