@@ -17,7 +17,7 @@
 }
 
 #keyboard .flat_key{
-    background-color: #fff;
+    background: linear-gradient(90deg, #bbb, white);
     z-index: 1;
     --flat-half-width: 1.4;
     --flat-half-translate: 18%;
@@ -27,7 +27,7 @@
     --sharp-transform: scale(1, 0.7);
     transform: var(--sharp-transform);
     z-index: 10;
-    background-color: #000;
+    background: linear-gradient(140deg, #222, black);
 }
 
 #keyboard .flat_key.between_sharps{

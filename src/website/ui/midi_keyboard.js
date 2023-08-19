@@ -111,8 +111,6 @@ export class MidiKeyboard
             {
                 // long note
                 keyElement.classList.add("flat_key");
-                keyElement.style.backgroundColor = "white";
-                keyElement.style.zIndex = "1";
                 let blackNoteLeft = false;
                 let blackNoteRight = false;
                 if(midiNote >= 0)
@@ -138,7 +136,7 @@ export class MidiKeyboard
 
 
             }
-            this.keyColors.push([keyElement.style.backgroundColor]);
+            this.keyColors.push([keyElement.style.background]);
             this.keyboard.appendChild(keyElement);
             this.keys.push(keyElement);
         }
@@ -155,7 +153,7 @@ export class MidiKeyboard
             option.value = channelNumber.toString();
             option.innerText = `Channel ${channelNumber + 1}`;
 
-            option.style.backgroundColor = channelColors[channelNumber];
+            option.style.background = channelColors[channelNumber];
             option.style.color = "rgb(0, 0, 0)";
 
             channelSelector.appendChild(option);
@@ -254,7 +252,7 @@ export class MidiKeyboard
             let newRGBValues = rgbaValues.slice(0, 3).map(value => 255 - (255 - value) * brightness);
 
             // create the new color
-            key.style.backgroundColor = `rgba(${newRGBValues.join(", ")}, ${rgbaValues[3]})`;
+            key.style.background = `rgba(${newRGBValues.join(", ")}, ${rgbaValues[3]})`;
         }
         else
         {
@@ -262,7 +260,7 @@ export class MidiKeyboard
             let newRGBValues = rgbaValues.slice(0, 3).map(value => value * brightness);
 
             // create the new color
-            key.style.backgroundColor = `rgba(${newRGBValues.join(", ")}, ${rgbaValues[3]})`;
+            key.style.background = `rgba(${newRGBValues.join(", ")}, ${rgbaValues[3]})`;
         }
         /**
          * @type {string[]}
@@ -284,11 +282,12 @@ export class MidiKeyboard
         let pressedColors = this.keyColors[midiNote];
         if(pressedColors.length > 1) {
             pressedColors.pop();
+            key.style.background = pressedColors[pressedColors.length - 1];
         }
         if(pressedColors.length === 1)
         {
             key.classList.remove("pressed");
+            key.style.background = "";
         }
-        key.style.backgroundColor = pressedColors[pressedColors.length - 1];
     }
 }

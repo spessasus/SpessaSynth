@@ -1,6 +1,6 @@
 import {Synthetizer} from "../../spessasynth_lib/synthetizer/synthetizer.js";
-import { calculateRGB } from '../../spessasynth_lib/utils/other.js'
-import { Sequencer } from '../../spessasynth_lib/sequencer/sequencer.js'
+import { calculateRGB } from '../../spessasynth_lib/utils/other.js';
+import { Sequencer } from '../../spessasynth_lib/sequencer/sequencer.js';
 
 // analysers
 const CHANNEL_ANALYSER_FFT = 512;
@@ -9,8 +9,10 @@ const WAVE_MULTIPLIER = 2;
 
 // note rendering
 const DARKER_MULTIPLIER = 0.6;
-const NOTE_MARGIN = 1;
+const GRADIENT_DARKEN = 0.5;
+const NOTE_MARGIN = 2;
 const FONT_SIZE = 16;
+const STROKE_COLOR = "#000";
 
 // limits
 const MIN_NOTE_HEIGHT_PX = 2;
@@ -26,25 +28,17 @@ export class Renderer
      * @param canvas {HTMLCanvasElement}
      */
     constructor(channelColors, synth, canvas) {
+        // variables
         this.noteFallingTimeMs = 1000;
         this.noteAfterTriggerTimeMs = 0;
 
+        // booleans
         this.renderBool = true;
         this.renderAnalysers = true;
         this.renderNotes = true;
 
-        this.channelColors = channelColors;
-        this.darkerColors = this.channelColors.map(c => calculateRGB(c, v => v * DARKER_MULTIPLIER));
-        this.synth = synth;
-        this.notesOnScreen = 0;
-
         /**
-         * @type {AnalyserNode[]}
-         */
-        this.channelAnalysers = [];
-        this.connectChannelAnalysers(synth);
-
-        /**
+         * canvas
          * @type {HTMLCanvasElement}
          */
         this.canvas = canvas;
@@ -53,6 +47,35 @@ export class Renderer
          * @type {CanvasRenderingContext2D}
          */
         this.drawingContext = this.canvas.getContext("2d");
+
+        // note colors
+        this.plainColors = channelColors;
+
+        this.channelColors = channelColors.map(c => {
+            const gradient = this.drawingContext.createLinearGradient(0, 0,
+                this.canvas.width / 128, 0);
+            gradient.addColorStop(0, calculateRGB(c, v => v * GRADIENT_DARKEN)); // darker color
+            gradient.addColorStop(1, c); // brighter color
+            return gradient;
+        });
+        this.darkerColors = channelColors.map(c => {
+            const gradient = this.drawingContext.createLinearGradient(0, 0,
+                this.canvas.width / 128, 0);
+
+            gradient.addColorStop(0, calculateRGB(c, v => v * GRADIENT_DARKEN * DARKER_MULTIPLIER)); // darker color
+            gradient.addColorStop(1, calculateRGB(c, v => v * DARKER_MULTIPLIER)); // brighter color
+            return gradient;
+        });
+
+        // synth and analysers
+        this.synth = synth;
+        this.notesOnScreen = 0;
+
+        /**
+         * @type {AnalyserNode[]}
+         */
+        this.channelAnalysers = [];
+        this.connectChannelAnalysers(synth);
     }
 
     /**
@@ -136,7 +159,6 @@ export class Renderer
             // math
             this.notesOnScreen = 0;
             const keyStep = this.canvas.width / 128;
-            const noteWidth = keyStep - (NOTE_MARGIN * 2);
 
             const fallingTime = this.noteFallingTimeMs / 1000
             const afterTime = this.noteAfterTriggerTimeMs / 1000;
@@ -146,7 +168,6 @@ export class Renderer
             const fallingTimeSeconds = fallingTime + afterTime;
             const currentEndTime = currentStartTime + fallingTimeSeconds;
             const minNoteHeight = MIN_NOTE_HEIGHT_PX / fallingTimeSeconds;
-            const heightMinusMargin = NOTE_MARGIN * 2;
 
             this.noteTimes.forEach((channel, channelNumder) => {
 
@@ -171,7 +192,7 @@ export class Renderer
 
                     // if the note is out of range, append the render start index
                     if(noteSum > currentStartTime && note.length > 0) {
-                        const height = (note.length / fallingTimeSeconds) * this.canvas.height - heightMinusMargin;
+                        const height = (note.length / fallingTimeSeconds) * this.canvas.height;
 
                         // height less than that can be ommitted (come on)
                         if(height > minNoteHeight) {
@@ -180,18 +201,36 @@ export class Renderer
                                 firstNoteIndex = noteIndex - 1;
                             }
                             const yPos = this.canvas.height - height
-                                - (((note.start - currentStartTime) / fallingTimeSeconds) * this.canvas.height + NOTE_MARGIN);
+                                - (((note.start - currentStartTime) / fallingTimeSeconds) * this.canvas.height);
 
-                            const xPos = keyStep * note.midiNote + NOTE_MARGIN;
+                            const xPos = keyStep * note.midiNote
 
-                            // determine if the note should be darker or not
-                            if (note.start > currentSeqTime || noteSum < currentSeqTime) {
-                                this.drawingContext.fillStyle = this.darkerColors[channelNumder];
-                            } else {
-                                this.drawingContext.fillStyle = this.channelColors[channelNumder];
+                            // determine if the note should be darker or not (or flat if black midi mode is on
+                            if(this.synth.highPerformanceMode)
+                            {
+                                this.drawingContext.fillStyle = this.plainColors[channelNumder];
+                                this.drawingContext.fillRect(xPos + NOTE_MARGIN,
+                                    yPos + NOTE_MARGIN,
+                                    keyStep - (NOTE_MARGIN * 2),
+                                    height - (NOTE_MARGIN * 2));
                             }
+                            else {
+                                if (note.start > currentSeqTime || noteSum < currentSeqTime) {
+                                    this.drawingContext.fillStyle = this.darkerColors[channelNumder];
+                                } else {
+                                    this.drawingContext.fillStyle = this.channelColors[channelNumder];
+                                }
 
-                            this.drawingContext.fillRect(xPos, yPos, noteWidth, height);
+                                this.drawingContext.save();
+                                this.drawingContext.translate(xPos, yPos);
+
+                                this.drawingContext.fillRect(0, 0, keyStep, height);
+                                this.drawingContext.restore();
+
+                                this.drawingContext.strokeStyle = STROKE_COLOR;
+                                this.drawingContext.lineWidth = NOTE_MARGIN;
+                                this.drawingContext.strokeRect(xPos, yPos, keyStep, height);
+                            }
                             this.notesOnScreen++;
                         }
                     }
