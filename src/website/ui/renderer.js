@@ -10,7 +10,7 @@ const WAVE_MULTIPLIER = 2;
 // note rendering
 const DARKER_MULTIPLIER = 0.6;
 const GRADIENT_DARKEN = 0.5;
-const NOTE_MARGIN = 2;
+const NOTE_MARGIN = 1;
 const FONT_SIZE = 16;
 const STROKE_COLOR = "#000";
 
@@ -195,7 +195,7 @@ export class Renderer
                         const height = (note.length / fallingTimeSeconds) * this.canvas.height;
 
                         // height less than that can be ommitted (come on)
-                        if(height > minNoteHeight) {
+                        if(height > minNoteHeight || this.notesOnScreen < 1000) {
                             if(firstNoteIndex === -1)
                             {
                                 firstNoteIndex = noteIndex - 1;
