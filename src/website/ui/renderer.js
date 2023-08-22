@@ -10,6 +10,7 @@ const WAVE_MULTIPLIER = 2;
 // note rendering
 const DARKER_MULTIPLIER = 0.6;
 const GRADIENT_DARKEN = 0.5;
+const STROKE_THICKNESS = 0.5;
 const NOTE_MARGIN = 1;
 const FONT_SIZE = 16;
 const STROKE_COLOR = "#000";
@@ -152,13 +153,16 @@ export class Renderer
 
         if (this.renderNotes && this.noteTimes) {
 
-            this.drawingContext.save();
-
             // draw the notes
+            /**
+             * @type {{x: number, y: number, h: number, c: CanvasGradient}[]}
+             */
+            const notesToDraw = [];
 
             // math
             this.notesOnScreen = 0;
             const keyStep = this.canvas.width / 128;
+            const noteWidth = keyStep - (NOTE_MARGIN * 2);
 
             const fallingTime = this.noteFallingTimeMs / 1000
             const afterTime = this.noteAfterTriggerTimeMs / 1000;
@@ -192,7 +196,7 @@ export class Renderer
 
                     // if the note is out of range, append the render start index
                     if(noteSum > currentStartTime && note.length > 0) {
-                        const height = (note.length / fallingTimeSeconds) * this.canvas.height;
+                        const height = ((note.length / fallingTimeSeconds) * this.canvas.height) - (NOTE_MARGIN * 2);
 
                         // height less than that can be ommitted (come on)
                         if(height > minNoteHeight || this.notesOnScreen < 1000) {
@@ -201,35 +205,37 @@ export class Renderer
                                 firstNoteIndex = noteIndex - 1;
                             }
                             const yPos = this.canvas.height - height
-                                - (((note.start - currentStartTime) / fallingTimeSeconds) * this.canvas.height);
+                                - (((note.start - currentStartTime) / fallingTimeSeconds) * this.canvas.height) + NOTE_MARGIN;
 
-                            const xPos = keyStep * note.midiNote
+                            const xPos = keyStep * note.midiNote + NOTE_MARGIN;
 
                             // determine if the note should be darker or not (or flat if black midi mode is on
                             if(this.synth.highPerformanceMode)
                             {
+                                // draw them right away, we don't care about the order
                                 this.drawingContext.fillStyle = this.plainColors[channelNumder];
-                                this.drawingContext.fillRect(xPos + NOTE_MARGIN,
-                                    yPos + NOTE_MARGIN,
-                                    keyStep - (NOTE_MARGIN * 2),
-                                    height - (NOTE_MARGIN * 2));
+                                this.drawingContext.fillRect(xPos + STROKE_THICKNESS + NOTE_MARGIN,
+                                    yPos + STROKE_THICKNESS,
+                                    noteWidth - (STROKE_THICKNESS * 2),
+                                    height - (STROKE_THICKNESS * 2));
                             }
                             else {
+                                // save the notes to draw
                                 if (note.start > currentSeqTime || noteSum < currentSeqTime) {
-                                    this.drawingContext.fillStyle = this.darkerColors[channelNumder];
+                                    notesToDraw.push({
+                                        x: xPos,
+                                        y: yPos,
+                                        h: height,
+                                        c: this.darkerColors[channelNumder]
+                                    })
                                 } else {
-                                    this.drawingContext.fillStyle = this.channelColors[channelNumder];
+                                    notesToDraw.push({
+                                        x: xPos,
+                                        y: yPos,
+                                        h: height,
+                                        c: this.channelColors[channelNumder]
+                                    })
                                 }
-
-                                this.drawingContext.save();
-                                this.drawingContext.translate(xPos, yPos);
-
-                                this.drawingContext.fillRect(0, 0, keyStep, height);
-                                this.drawingContext.restore();
-
-                                this.drawingContext.strokeStyle = STROKE_COLOR;
-                                this.drawingContext.lineWidth = NOTE_MARGIN;
-                                this.drawingContext.strokeRect(xPos, yPos, keyStep, height);
                             }
                             this.notesOnScreen++;
                         }
@@ -243,10 +249,26 @@ export class Renderer
                     note = notes[noteIndex];
                 }
                 if(firstNoteIndex > -1) channel.renderStartIndex = firstNoteIndex;
-            })
-        }
+            });
 
-        this.drawingContext.restore();
+            // draw the notes from longest to shortest (non black midi mode)
+            if(!this.synth.highPerformanceMode)
+            {
+                notesToDraw.sort((n1, n2) => n2.h - n1.h);
+                notesToDraw.forEach(n => {
+                    this.drawingContext.save();
+                    this.drawingContext.fillStyle = n.c;
+                    this.drawingContext.translate(n.x, n.y);
+
+                    this.drawingContext.fillRect(0, 0, noteWidth, n.h);
+                    this.drawingContext.restore();
+
+                    this.drawingContext.strokeStyle = STROKE_COLOR;
+                    this.drawingContext.lineWidth = STROKE_THICKNESS;
+                    this.drawingContext.strokeRect(n.x, n.y, noteWidth, n.h);
+                })
+            }
+        }
 
         // calculate fps
         let timeSinceLastFrame = performance.now() - this.frameTimeStart;

@@ -319,6 +319,7 @@ export class Sample{
         {
             pitch = overridingRootKey
         }
-        return Math.pow(2, (1/12) * (midiNote - pitch)) * Math.pow(2, this.samplePitchCorrection / 1200);
+        const semitones = (midiNote - pitch) + (this.samplePitchCorrection / 100);
+        return Math.pow(2,  semitones/ 12);
     }
 }
