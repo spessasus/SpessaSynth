@@ -16,6 +16,12 @@ html, body {
     overflow-x: clip;
 }
 
+.spessasynth_main{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
 a{
     text-decoration: none;
     color: #546fff;
@@ -127,6 +133,7 @@ input[type="file"] {
     height: 65%;
     display: block;
     filter: saturate(1.23);
+    flex: 1;
 }
 
 /*Bottom*/

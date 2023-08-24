@@ -174,6 +174,7 @@ export class Sample{
             });
             this.buffer.getChannelData(0).set(this.sampleData);
         }
+
     }
 
     /**

@@ -1,6 +1,5 @@
 #synthetizer_controls
 {
-    height: 100%;
     --voice-meter-height: 2.5em;
     flex: 1;
 }

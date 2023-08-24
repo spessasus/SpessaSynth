@@ -262,7 +262,7 @@ export class SynthetizerUI
 
         for(let i = 0; i < this.controllers.length; i++)
         {
-            // worklet_voice
+            // worklet_channel
             this.updateMeter(this.controllers[i].voiceMeter, this.synth.midiChannels[i].voicesAmount);
         }
         this.updateMeter(this.volumeController, this.synth.volumeController.gain.value * 100);

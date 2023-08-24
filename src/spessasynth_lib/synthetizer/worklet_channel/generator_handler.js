@@ -4,6 +4,7 @@
  * loopEnd: number,
  * sampleRate: number,
  * playbackStep: number,
+ * loopMode: number,
  * }} WorkletSample
  *
  * @typedef {{
@@ -17,14 +18,16 @@
  *     currentGain: number,
  * }} WorkletVolumeEnvelope
  *
- * @typedef {{sample: WorkletSample,
+ * @typedef {{
+ * sample: WorkletSample,
  * panGainLeft: number,
  * panGainRight: number,
- * isLooped: boolean,
  * playbackRate: number,
  * tuningRatio: number,
  * finished: boolean,
- * envelope: WorkletVolumeEnvelope}} WorkletVoice
+ * envelope: WorkletVolumeEnvelope,
+ * midiNote: number
+ * }} WorkletVoice
  */
 import { generatorTypes } from '../../soundfont/chunk/generators.js'
 
@@ -97,7 +100,8 @@ export class WorkletGeneratorHandler
 
             loopEnd: this.sample.sampleLoopEndIndex / 2
                 + this.getGeneratorValue(Math.round(this.sample.indexRatio * generatorTypes.endloopAddrsOffset), 0) + (32768 * this.getGeneratorValue(generatorTypes.endloopAddrsCoarseOffset, 0)),
-            playbackStep: 0
+            playbackStep: 0,
+            loopMode: this.getGeneratorValue(generatorTypes.sampleModes, 0)
         };
 
         // coarseTune
@@ -126,12 +130,12 @@ export class WorkletGeneratorHandler
         return {
             sample: sample,
             envelope: envelope,
-            isLooped: this.getGeneratorValue(generatorTypes.sampleModes, 0) !== 0,
             panGainLeft:  Math.min(1, 1 - pan),
             panGainRight: Math.min(1, pan + 1),
             playbackRate: playbackRate,
             tuningRatio: tuningRatio,
-            finished: false
+            finished: false,
+            midiNote: midiNote
         };
     }
 

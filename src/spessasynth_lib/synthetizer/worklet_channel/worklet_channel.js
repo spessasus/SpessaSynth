@@ -1,6 +1,6 @@
-import {Voice} from "./buffer_voice/voice.js";
-import {Preset} from "../soundfont/chunk/presets.js";
-import { consoleColors } from '../utils/other.js'
+
+import {Preset} from "../../soundfont/chunk/presets.js";
+import { consoleColors } from '../../utils/other.js'
 
 const CHANNEL_LOUDNESS = 0.5;
 
@@ -18,7 +18,50 @@ const dataEntryStates = {
     DataFine: 6
 };
 
-export class MidiChannel {
+/**
+ * @type {{presetChange: number, noteOff: number, noteOn: number, pitchBend: number, killNote: number}}
+ */
+export const workletMessageType = {
+    noteOff: 0,
+    noteOn: 1,
+    pitchBend: 2,
+    presetChange: 3,
+    killNote: 4
+};
+
+/**
+ * @typedef {{
+ *     messageType: (0|1|2|3|4),
+ *     messageData: (number[]|Preset|number)
+ * }} WorkletMessage
+ * Message types:
+ * 0 - noteOff            -> midiNote<number>
+ * 1 - noteOn             -> [midiNote<number>, velocity<number>]
+ * 2 - pitch bend         -> tuning<number>
+ * 3 - program change     -> preset<Preset>
+ * 4 - note off instantly -> midiNote<number>
+ */
+
+// Serialize class and methods
+function serializeClass(classObj) {
+    // Convert methods to string representation (simplified)
+    const serializedMethods = Object.getOwnPropertyNames(classObj.prototype)
+        .filter(prop => typeof classObj.prototype[prop] === 'function')
+        .reduce((acc, methodName) => {
+            acc[methodName] = classObj.prototype[methodName].toString();
+            return acc;
+        }, {});
+
+    return JSON.stringify({
+        constructor: classObj.toString(),
+        methods: serializedMethods
+    });
+}
+
+
+
+
+export class WorkletChannel {
     /**
      * creates a midi channel
      * @param targetNode {AudioNode}
@@ -34,22 +77,18 @@ export class MidiChannel {
 
         this.preset = defaultPreset;
         this.bank = this.preset.bank;
-
         /**
-         * The recevied notes (always deleted on nofe off(
-         * @type {Set<number>}
-         */
-        this.receivedNotes = new Set();
-        /**
-         * holds the actual amount of currently plaing notes (removed only when actual samples stop playing)
          * @type {Set<number>}
          */
         this.notes = new Set();
 
-        /**
-         * @type {number[]}
-         */
-        this.heldNotes = [];
+        this.worklet = new AudioWorkletNode(this.ctx, "worklet-channel-processor", {
+            channelCount: 2,
+        });
+        this.worklet.port.postMessage({
+            messageType: workletMessageType.presetChange,
+            messageData: serializeClass(this.preset)
+        });
 
         this.panner = new StereoPannerNode(this.ctx);
 
@@ -90,8 +129,9 @@ export class MidiChannel {
             gain: 0
         });
 
-        // note -> panner   -> brightness -> gain -> out
+        // worklet -> panner   -> brightness -> gain -> out
         //           \-> conv -> rev -/
+        this.worklet.connect(this.panner);
         this.panner.connect(this.convolver);
         this.panner.connect(this.brightnessController);
 
@@ -101,32 +141,7 @@ export class MidiChannel {
         this.brightnessController.connect(this.gainController);
         this.gainController.connect(this.outputNode);
 
-        // chorus test
-        // const delay = new DelayNode(this.ctx, {
-        //     delayTime: 0.02
-        // });
-        // this.gainController.connect(delay);
-        // delay.connect(this.outputNode);
-        //
-        // const delay2 = new DelayNode(this.ctx, {
-        //     delayTime: 0.03
-        // });
-        // this.gainController.connect(delay2);
-        // delay2.connect(this.outputNode);
-
         this.resetControllers();
-
-
-        /**
-         * Current playing notes
-         * @type {Voice[]}
-         */
-        this.playingNotes = [];
-        /**
-         * Notes that are stopping and are about to get deleted
-         * @type {Voice[]}
-         */
-        this.stoppingNotes = [];
 
 
         /**
@@ -149,13 +164,6 @@ export class MidiChannel {
 
     releaseHoldPedal()
     {
-        this.holdPedal = false;
-        for(let note of this.heldNotes)
-        {
-            this.stopNote(note);
-            this.notes.delete(note);
-        }
-        this.heldNotes = [];
     }
 
     /**
@@ -202,6 +210,10 @@ export class MidiChannel {
         {
             this.percussionChannel = false;
         }
+        this.worklet.port.postMessage({
+            messageType: workletMessageType.presetChange,
+            messageData: preset
+        });
     }
 
     /**
@@ -224,7 +236,7 @@ export class MidiChannel {
      * @param velocity {number} 0-127
      * @param debugInfo {boolean} for debugging set to true
      */
-    playNote(midiNote, velocity, debugInfo = false) {
+    playNote(midiNote, velocity) {
         if(!velocity)
         {
             throw "No velocity given!";
@@ -234,50 +246,43 @@ export class MidiChannel {
             this.stopNote(midiNote);
             return;
         }
+        /**
+         * @type {WorkletMessage}
+         */
+        const mes = {
+            messageType: workletMessageType.noteOn,
+            messageData: [midiNote, velocity]
+        };
+
+        this.worklet.port.postMessage(mes);
 
         this.notes.add(midiNote);
-        this.receivedNotes.add(midiNote);
-        let note = new Voice(midiNote, velocity, this.panner, this.preset, this.vibrato, this.channelTuningRatio);
+    }
 
-        let exclusives = note.startNote(debugInfo);
-        const bendRatio = (this.pitchBend / 8192) * this.channelPitchBendRange;
-        note.bendNote(bendRatio + this.channelTranspose);
-
-        for(const exclusive of exclusives)
+    /**
+     * Stops the note
+     * @param midiNote {number} 0-127
+     * @param highPerf {boolean} if set to true, the note will be silenced in 50ms
+     */
+    stopNote(midiNote, highPerf=false) {
+        // TODO: fix holdPedal
+        if(this.holdPedal)
         {
-            if(exclusive === 0)
-            {
-                continue;
-            }
-            // playing notes
-            this.playingNotes.forEach(n => {
-                if(n.exclusives.has(exclusive))
-                {
-                    n.disconnectNote();
-                    this.playingNotes.splice(this.playingNotes.indexOf(n), 1);
-                }
-            });
-
-            // stopping notes
-            this.stoppingNotes.forEach(n => {
-                if(n.exclusives.has(exclusive))
-                {
-                    n.disconnectNote();
-                    this.stoppingNotes.splice(this.stoppingNotes.indexOf(n), 1);
-                }
-            });
+            return;
         }
 
-        this.playingNotes.push(note);
+        this.worklet.port.postMessage({
+            messageType: workletMessageType.noteOff,
+            messageData: midiNote
+        });
+
+        this.notes.delete(midiNote);
     }
 
     setPitchBend(bendMSB, bendLSB) {
         // bend all the notes
         this.pitchBend = (bendLSB | (bendMSB << 7)) - 8192;
         const semitones = (this.pitchBend / 8192) * this.channelPitchBendRange;
-        for (let note of this.playingNotes) {
-            note.bendNote(semitones + this.channelTranspose);
-        }
     }
 
     get voicesAmount()
@@ -446,51 +451,6 @@ export class MidiChannel {
         return CHANNEL_LOUDNESS * this.channelVolume * this.channelExpression;
     }
 
-    /**
-     * Stops the note
-     * @param midiNote {number} 0-127
-     * @param highPerf {boolean} if set to true, the note will be silenced in 50ms
-     */
-    stopNote(midiNote, highPerf=false) {
-        this.receivedNotes.delete(midiNote);
-        // TODO: fix holdPedal
-        if(this.holdPedal)
-        {
-            this.heldNotes.push(midiNote);
-            return;
-        }
-
-        let notes = this.playingNotes.filter(n => n.midiNote === midiNote);
-        if(notes.length < 1)
-        {
-            return
-        }
-        for(let note of notes) {
-
-            // add note as a fading one
-            this.stoppingNotes.push(note);
-
-            // and remove it from the main array
-            this.playingNotes.splice(this.playingNotes.indexOf(note), 1);
-
-            if(highPerf)
-            {
-                note.killNote().then(() => {
-                    this.notes.delete(midiNote);
-                    note.disconnectNote();
-                    delete this.stoppingNotes.splice(this.stoppingNotes.indexOf(note), 1);
-                });
-            }
-            else {
-                note.stopNote().then(() => {
-                    this.notes.delete(midiNote);
-                    note.disconnectNote();
-                    delete this.stoppingNotes.splice(this.stoppingNotes.indexOf(note), 1);
-                });
-            }
-        }
-    }
-
     stopAll()
     {
         for(let midiNote = 0; midiNote < 128; midiNote++)
@@ -528,10 +488,6 @@ export class MidiChannel {
             return;
         }
         this.channelTranspose = semitones;
-        const semi = (this.pitchBend / 8192) * this.channelPitchBendRange;
-        for (let note of this.playingNotes) {
-            note.bendNote(semi + this.channelTranspose);
-        }
     }
 
     resetParameters()

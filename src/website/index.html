@@ -12,31 +12,33 @@
   <link rel="stylesheet" href='website/css/keyboard.css'>
 </head>
 <body>
-<div class="top_part">
-  <div id="synthetizer_controls"></div>
+  <div class='spessasynth_main'>
+    <div class="top_part">
+      <div id="synthetizer_controls"></div>
 
-  <div id="title_wrapper">
-    <div id="progress_bar"></div>
-    <h1 id="title">SpessaSynth: SoundFont2 Javascript Synthetizer</h1>
-    <div class="midi_and_sf_controller">
-      <label id="file_upload"> Upload a MIDI file
-        <input type="file" accept=".mid" id="midi_file_input"><br/>
-      </label>
+      <div id="title_wrapper">
+        <div id="progress_bar"></div>
+        <h1 id="title">SpessaSynth: SoundFont2 Javascript Synthetizer</h1>
+        <div class="midi_and_sf_controller">
+          <label id="file_upload"> Upload a MIDI file
+            <input type="file" accept=".mid" id="midi_file_input"><br/>
+          </label>
 
-      <select id="sf_selector"></select>
+          <select id="sf_selector"></select>
+        </div>
+      </div>
+
+      <div id="keyboard_selector">
+      </div>
+    </div>
+    <canvas id="note_canvas"></canvas>
+    <div id='keyboard'></div>
+
+    <div class="bottom_part">
+      <div id="sequencer_controls"></div>
     </div>
   </div>
 
-  <div id="keyboard_selector">
-  </div>
-</div>
-  <canvas id="note_canvas"></canvas>
-  <div id='keyboard'></div>
-
-<div class="bottom_part">
-  <div id="sequencer_controls"></div>
-</div>
-
-<script src='website/main.js' type="module"></script> <!-- Here the magic happens ;) -->
+  <script src='website/main.js' type="module"></script> <!-- Here the magic happens ;) -->
 </body>
 </html>

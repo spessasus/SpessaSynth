@@ -1,13 +1,4 @@
-/**
- * @typedef {{
- *     messageType: (0|1|2|3),
- *     messageData: (number|WorkletVoiceMessage)
- * }} WorkletMessage
- * 0 - start
- * 1 - stop
- * 2 - bend
- * 3 - kill
- */
+
 
 
 /**
@@ -30,7 +21,7 @@ export class Voice2 extends AudioWorkletNode{
      * @param tuningRatio {number} the note's initial tuning ratio
      */
     constructor(midiNote, targetVelocity, node, preset, vibratoOptions, tuningRatio) {
-        super(node.context,"worklet_voice-processor" , {
+        super(node.context,"worklet_channel-processor" , {
             outputChannelCount: [2]
         });
         this.midiNote = midiNote;

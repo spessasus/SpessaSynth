@@ -2,6 +2,7 @@ import {MidiChannel} from "./midi_channel.js";
 import {SoundFont2} from "../soundfont/soundfont_parser.js";
 import {ShiftableByteArray} from "../utils/shiftable_array.js";
 import { arrayToHexString, consoleColors } from '../utils/other.js'
+import { WorkletChannel } from './worklet_channel/worklet_channel.js'
 
 // i mean come on
 const VOICES_CAP = 1000;
@@ -17,7 +18,6 @@ export class Synthetizer {
         this.voiceCap = VOICES_CAP;
         this.soundFont = soundFont;
         this.context = targetNode.context;
-        // this.context.audioWorklet.addModule("spessasynth_lib/synthetizer/worklet_voice/voice_processor.js").then(() => {});
 
         this.volumeController = new GainNode(targetNode.context, {
             gain: 1
@@ -41,6 +41,12 @@ export class Synthetizer {
          * @type {"gm"|"gm2"|"gs"|"xg"}
          */
         this.system = "gm2";
+    }
+
+    async initalizeSynth()
+    {
+        console.log("%cAdding Worklet Module...", consoleColors.info);
+        await this.context.audioWorklet.addModule("spessasynth_lib/synthetizer/worklet_channel/channel_processor.js");
 
         /**
          * @type {MidiChannel[]}
@@ -53,7 +59,7 @@ export class Synthetizer {
         // create 16 channels
         for (let j = 0; j < 16; j++) {
             // default to the first preset
-            this.midiChannels[j] = new MidiChannel(this.volumeController, this.defaultPreset, /*soundFont,*/ j + 1, false);
+            this.midiChannels[j] = new MidiChannel(this.volumeController, this.defaultPreset, j + 1, false);
         }
 
         // change percussion channel to the percussion preset

@@ -1,60 +1,89 @@
-class VoiceWorkletProcessor extends AudioWorkletProcessor {
+import { workletMessageType } from './worklet_channel.js'
+import { WorkletGeneratorHandler } from './generator_handler.js'
+
+// Deserialize data and reconstruct class
+function deserializeAndReconstruct(serializedData) {
+    const parsedData = JSON.parse(serializedData);
+    const constructorFn = new Function(`return ${parsedData.constructor}`)();
+
+    class ReconstructedClass extends constructorFn {
+        constructor(...args) {
+            super(...args);
+            for (const methodName in parsedData.methods) {
+                this[methodName] = new Function(parsedData.methods[methodName]);
+            }
+        }
+    }
+
+    return ReconstructedClass;
+}
+
+class ChannelProcessor extends AudioWorkletProcessor {
     constructor() {
         super();
+
+        /**
+         * @type {Preset}
+         */
+        this.preset = undefined;
+
+        this.tuningRatio = 1;
+
+        /**
+         * @type {WorkletVoice[]}
+         */
+        this.playingVoices = [];
+
+        /*
+         * @type {WorkletVoice[]}
+         */
+        this.stoppingVoices = [];
+
         /**
          * @param e {{data: WorkletMessage}}
          */
         this.port.onmessage = e => {
+            console.log(e.data);
+            /**
+             * @type {number[]|Preset|number}
+             */
+            const data = e.data.messageData;
             switch (e.data.messageType) {
                 default:
                     break;
 
-                case 2:
-                    this.voice.voiceData.forEach(vc => {
-                        vc.tuningRatio = e.data.messageData;
-                        vc.sample.playbackStep = (vc.sample.sampleRate / sampleRate) * vc.playbackRate * vc.tuningRatio;
-                    }
-                    );
-                    break;
-
-                case 0:
-                    // prepare the cursors
-                    this.cursors = new Float64Array(e.data.messageData.voiceData.length);
-
-                    /**
-                     * @type {WorkletVoiceMessage}
-                     */
-                    this.voice = e.data.messageData;
-
-                    // calculate playback steps and apply current gain for now
-                    this.voice.voiceData.forEach(vc => {
-                        vc.sample.playbackStep = vc.sample.sampleRate / sampleRate * vc.playbackRate * vc.tuningRatio;
-                        vc.envelope.currentGain = vc.envelope.attenuationGain;
+                // note off
+                case workletMessageType.noteOff:
+                    // remove the given voices from playing and add them to stopping
+                    const playing = [];
+                    this.playingVoices.forEach(v => {
+                        if(v.midiNote === data)
+                        {
+                            this.stoppingVoices.push(v);
+                            return;
+                        }
+                        playing.push(v);
                     });
+                    this.playingVoices = playing;
                     break;
 
-                case 1:
-                    this.voice.startTime = currentTime;
-                    this.status = 1;
+                case workletMessageType.noteOn:
+                    const midiNote = data[0];
+                    const velocity = data[1];
+                    this.playingVoices.push(...this.preset
+                        .getSamplesAndGenerators(midiNote, velocity)
+                        .map(s =>
+                            new WorkletGeneratorHandler(s)
+                                .getWorkletVoiceData(midiNote, velocity, this.tuningRatio)
+                        ));
                     break;
 
-                case 3:
-                    this.status = 2;
-                    return;
-
+                case workletMessageType.presetChange:
+                    this.preset = deserializeAndReconstruct(data);
+                    console.log(this.preset);
+                    break;
             }
         }
-
-        /**
-         * 0 - playing
-         * 1 - releasing
-         * 2 - finished
-         * @type {number}
-         */
-        this.status = 0;
-
-        // another one for stopping
-        this.finishedSamples = 0;
     }
 
     /**
@@ -63,22 +92,8 @@ class VoiceWorkletProcessor extends AudioWorkletProcessor {
      * @returns {boolean}
      */
     process(inputs, outputs) {
-        if(!this.voice)
-        {
-            return true;
-        }
-        if(this.finishedSamples >= this.voice.voiceData.length)
-        {
-            this.status = 2;
-        }
-        if(this.status === 2)
-        {
-            delete this.voice;
-            delete this.cursors;
-            return false;
-        }
         const output = outputs[0];
-        this.renderVoice(output[0], output[1]);
+        //this.renderVoice(output[0], output[1]);
         return true;
     }
 
@@ -92,7 +107,7 @@ class VoiceWorkletProcessor extends AudioWorkletProcessor {
         if(this.status === 1) {
             this.voice.voiceData.forEach(vcData => {
                 // webaudio equation (going from 1 to 0
-                const releaseGain = Math.pow(0.00000001, (currentTime - this.voice.startTime) / vcData.envelope.releaseSecs)//1 - ((currentTime - this.worklet_voice.startTime) / vcData.envelope.releaseSecs);
+                const releaseGain = Math.pow(0.00000001, (currentTime - this.voice.startTime) / vcData.envelope.releaseSecs)//1 - ((currentTime - this.worklet_channel.startTime) / vcData.envelope.releaseSecs);
                 // find the correct attenuation for release time
                 if (releaseGain <= 0) {
                     this.status = 2;
@@ -190,5 +205,5 @@ class VoiceWorkletProcessor extends AudioWorkletProcessor {
 }
 
 
-registerProcessor("worklet_voice-processor", VoiceWorkletProcessor);
+registerProcessor("worklet-channel-processor", ChannelProcessor);
 console.log("Processor succesfully registered!");
