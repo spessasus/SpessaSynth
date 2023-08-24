@@ -4,9 +4,6 @@ import { consoleColors } from '../utils/other.js'
 
 const CHANNEL_LOUDNESS = 0.5;
 
-const BRIGHTNESS_MAX_FREQ = 22050;
-const BRIGHTNESS_MIN_FREQ = 300;
-const REVERB_TIME_S = 1;
 
 const dataEntryStates = {
     Idle: 0,
@@ -57,48 +54,9 @@ export class MidiChannel {
             gain: 1
         });
 
-        this.brightnessController = new BiquadFilterNode(this.ctx, {
-            type: "lowpass",
-            frequency: BRIGHTNESS_MAX_FREQ
-        });
 
-        const revLength = Math.round(this.ctx.sampleRate * REVERB_TIME_S);
-        const revbuff = new AudioBuffer({
-            numberOfChannels: 2,
-            sampleRate: this.ctx.sampleRate,
-            length: revLength
-        });
-
-        const revLeft = revbuff.getChannelData(0);
-        const revRight = revbuff.getChannelData(1);
-        for(let i = 0; i < revLength; i++)
-        {
-            // clever reverb algorithm from here:
-            // https://github.com/g200kg/webaudio-tinysynth/blob/master/webaudio-tinysynth.js#L1342
-            if(i / revLength < Math.random())
-            {
-                revLeft[i] = Math.exp(-3 * i / revLength) * (Math.random() - 0.5) / 2;
-                revRight[i] = Math.exp(-3 * i / revLength) * (Math.random() - 0.5) / 2;
-            }
-        }
-
-        this.convolver = new ConvolverNode(this.ctx, {
-            buffer: revbuff
-        });
-        this.convolver.normalize = false;
-        this.reverb = new GainNode(this.ctx, {
-            gain: 0
-        });
-
-        // note -> panner   -> brightness -> gain -> out
-        //           \-> conv -> rev -/
-        this.panner.connect(this.convolver);
-        this.panner.connect(this.brightnessController);
-
-        this.convolver.connect(this.reverb);
-        this.reverb.connect(this.brightnessController);
-
-        this.brightnessController.connect(this.gainController);
+        // note -> panner -> gain -> out
+        this.panner.connect(this.gainController);
         this.gainController.connect(this.outputNode);
 
         // chorus test
@@ -156,30 +114,6 @@ export class MidiChannel {
             this.notes.delete(note);
         }
         this.heldNotes = [];
-    }
-
-    /**
-     * @param reverb {number} reverb amount, ranges from 0 to 127
-     */
-    setReverb(reverb)
-    {
-        this.reverb.gain.value = reverb / 64;
-        if(reverb < 1)
-        {
-            this.panner.disconnect();
-            this.panner.connect(this.brightnessController);
-            this.convolver.disconnect();
-            console.log(`%cDisconnecting the reverb node as the reverb is set to %c0%c, for channel %c ${this.channelNumber}`,
-                consoleColors.info,
-                consoleColors.value,
-                consoleColors.info,
-                consoleColors.recognized);
-        }
-        else
-        {
-            this.panner.connect(this.convolver);
-            this.convolver.connect(this.reverb);
-        }
     }
 
     /**
@@ -283,15 +217,6 @@ export class MidiChannel {
     get voicesAmount()
     {
         return this.notes.size;
-    }
-
-    /**
-     * @param brightness {number} 0-127
-     */
-    setBrightness(brightness)
-    {
-        this.brightness = brightness;
-        this.brightnessController.frequency.value = (this.brightness / 127) * (BRIGHTNESS_MAX_FREQ - BRIGHTNESS_MIN_FREQ) + BRIGHTNESS_MIN_FREQ;
     }
 
     setVolume(volume) {
@@ -509,13 +434,6 @@ export class MidiChannel {
         this.gainController.gain.value = 1;
         this.panner.pan.value = 0;
         this.pitchBend = 0;
-        this.brightness = 127;
-        this.brightnessController.frequency.value = BRIGHTNESS_MAX_FREQ;
-        this.reverb.gain.value = 0;
-        try {
-            this.panner.disconnect(this.convolver);
-            this.convolver.disconnect();
-        } catch {}
 
         this.vibrato = {depth: 0, rate: 0, delay: 0};
         this.resetParameters();

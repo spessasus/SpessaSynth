@@ -331,16 +331,6 @@ export class SynthetizerUI
                     // pan
                     this.updateMeter(this.controllers[channel].pan, (value - 63) / 64);
                     break;
-
-                case "Brightness":
-                    // brightness
-                    this.updateMeter(this.controllers[channel].brightness, value);
-                    break;
-
-                case "Effects 1 Depth":
-                    // reverb
-                    this.updateMeter(this.controllers[channel].reverb, value);
-                    break;
             }
         }
 
@@ -358,8 +348,6 @@ export class SynthetizerUI
      *     pitchWheel: Meter,
      *     pan: Meter,
      *     expression: Meter,
-     *     brightness: Meter,
-     *     reverb: Meter,
      *     preset: HTMLSelectElement,
      *     presetReset: HTMLDivElement
      * }} ChannelController
@@ -437,30 +425,6 @@ export class SynthetizerUI
         this.updateMeter(volume, 127);
         controller.appendChild(volume.div);
 
-        // brightness controller
-        const brightness = this.createMeter(this.channelColors[channelNumber],
-            "Brightness: ",
-            0,
-            127,
-            true,
-            val => {
-                this.synth.controllerChange(channelNumber, "Brightness", val);
-            });
-        this.updateMeter(brightness, 127);
-        controller.appendChild(brightness.div);
-
-        // reverb controller
-        const reverb = this.createMeter(this.channelColors[channelNumber],
-            "Reverb: ",
-            0,
-            127,
-            true,
-            val => {
-                this.synth.controllerChange(channelNumber, "Effects 1 Depth", val);
-            });
-        this.updateMeter(reverb, 0);
-        controller.appendChild(reverb.div);
-
         // create it here so we can use it in the callback function
         const presetReset = document.createElement("div");
 
@@ -498,9 +462,7 @@ export class SynthetizerUI
             pan: pan,
             expression: expression,
             volume: volume,
-            brightness: brightness,
             preset: presetSelector,
-            reverb: reverb,
             presetReset: presetReset
         };
 

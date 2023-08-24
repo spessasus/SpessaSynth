@@ -1,8 +1,7 @@
 import {MidiChannel} from "./midi_channel.js";
 import {SoundFont2} from "../soundfont/soundfont_parser.js";
 import {ShiftableByteArray} from "../utils/shiftable_array.js";
-import { arrayToHexString, consoleColors } from '../utils/other.js'
-import { WorkletChannel } from './worklet_channel/worklet_channel.js'
+import { arrayToHexString, consoleColors } from '../utils/other.js';
 
 // i mean come on
 const VOICES_CAP = 1000;
@@ -41,25 +40,6 @@ export class Synthetizer {
          * @type {"gm"|"gm2"|"gs"|"xg"}
          */
         this.system = "gm2";
-    }
-
-    async initalizeSynth()
-    {
-        const workletPaths = [
-            "src/spessasynth_lib/synthetizer/worklet_channel/channel_processor.js",
-            "spessasynth_lib/synthetizer/worklet_channel/channel_processor.js"
-        ]
-        console.log("%cAdding Worklet Module...", consoleColors.info);
-
-        for (const workletPath of workletPaths) {
-            try {
-                await this.context.audioWorklet.addModule(workletPath);
-                break;
-            } catch (error) {
-                // Module loading failed, continue to the next path
-            }
-        }
-        console.log("aaa")
 
         /**
          * @type {MidiChannel[]}
@@ -204,23 +184,9 @@ export class Synthetizer {
                 this.midiChannels[channel].setPan(pan);
                 break;
 
-            case "Brightness":
-                this.midiChannels[channel].setBrightness(controllerValue);
-                break;
-
             case "All Notes Off":
             case "All Sound Off":
                 this.stopAll();
-                break;
-
-            case "Effects 1 Depth":
-                // reverb
-                this.midiChannels[channel].setReverb(controllerValue);
-                console.log(`%cReverb effect for channel %c${channel}%c is set to %c${controllerValue}`,
-                    consoleColors.info,
-                    consoleColors.recognized,
-                    consoleColors.info,
-                    consoleColors.value)
                 break;
 
             case "Expression Controller":

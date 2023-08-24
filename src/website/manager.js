@@ -41,39 +41,37 @@ export class Manager
 
         // set up synthetizer
         this.synth = new Synthetizer(context.destination, this.soundFont);
-        this.synth.initalizeSynth().then(() => {
-            console.log("abba")
-            // set up midi access
-            this.midHandler = new MIDIDeviceHandler();
 
-            // set up keyboard
-            this.keyboard = new MidiKeyboard(this.channelColors, this.synth, this.midHandler);
+        // set up midi access
+        this.midHandler = new MIDIDeviceHandler();
 
-            // set up renderer
-            const canvas = document.getElementById("note_canvas");
+        // set up keyboard
+        this.keyboard = new MidiKeyboard(this.channelColors, this.synth, this.midHandler);
 
+        // set up renderer
+        const canvas = document.getElementById("note_canvas");
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        window.addEventListener("resize", () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-
-            window.addEventListener("resize", () => {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            });
-
-            this.renderer = new Renderer(this.channelColors, this.synth, canvas);
-            this.renderer.render(true);
-
-            // connect the synth to keyboard
-            this.synth.onNoteOn = (note, chan, vel, vol, exp) => this.keyboard.pressNote(note, chan, vel, vol, exp);
-            this.synth.onNoteOff = note => this.keyboard.releaseNote(note);
-
-            // set up synth UI
-            this.synthUI = new SynthetizerUI(this.channelColors);
-            this.synthUI.connectSynth(this.synth);
-
-            // create an UI for sequencer
-            this.seqUI = new SequencerUI();
         });
+
+        this.renderer = new Renderer(this.channelColors, this.synth, canvas);
+        this.renderer.render(true);
+
+        // connect the synth to keyboard
+        this.synth.onNoteOn = (note, chan, vel, vol, exp) => this.keyboard.pressNote(note, chan, vel, vol, exp);
+        this.synth.onNoteOff = note => this.keyboard.releaseNote(note);
+
+        // set up synth UI
+        this.synthUI = new SynthetizerUI(this.channelColors);
+        this.synthUI.connectSynth(this.synth);
+
+        // create an UI for sequencer
+        this.seqUI = new SequencerUI();
     }
 
     /**
