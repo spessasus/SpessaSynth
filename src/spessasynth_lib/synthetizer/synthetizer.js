@@ -45,8 +45,21 @@ export class Synthetizer {
 
     async initalizeSynth()
     {
+        const workletPaths = [
+            "src/spessasynth_lib/synthetizer/worklet_channel/channel_processor.js",
+            "spessasynth_lib/synthetizer/worklet_channel/channel_processor.js"
+        ]
         console.log("%cAdding Worklet Module...", consoleColors.info);
-        await this.context.audioWorklet.addModule("spessasynth_lib/synthetizer/worklet_channel/channel_processor.js");
+
+        for (const workletPath of workletPaths) {
+            try {
+                await this.context.audioWorklet.addModule(workletPath);
+                break;
+            } catch (error) {
+                // Module loading failed, continue to the next path
+            }
+        }
+        console.log("aaa")
 
         /**
          * @type {MidiChannel[]}

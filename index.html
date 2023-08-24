@@ -18,39 +18,42 @@
   </style>
 </head>
 <body>
-<div class="top_part">
-  <div id="synthetizer_controls"></div>
+<div class='spessasynth_main'>
+  <div class="top_part">
+    <div id="synthetizer_controls"></div>
 
-  <div id="title_wrapper">
-    <div id="progress_bar"></div>
-    <h1 id="title">SpessaSynth: SoundFont2 Javascript Synthetizer Online Demo</h1>
-    <div class="midi_and_sf_controller">
-      <label id="file_upload"> Upload the MIDI file
-        <input type="file" accept=".mid" id="midi_file_input"><br/>
-      </label>
+    <div id="title_wrapper">
+      <div id="progress_bar"></div>
+      <h1 id="title">SpessaSynth: SoundFont2 Javascript Synthetizer Online Demo</h1>
 
-      <label id="sf_upload"> Upload the soundfont
-        <input type="file" accept=".sf2" id="sf_file_input"><br/>
-      </label>
+      <div class="midi_and_sf_controller">
+        <label id="file_upload"> Upload the MIDI file
+          <input type="file" accept=".mid" id="midi_file_input"><br/>
+        </label>
 
-      <label>
-        <a href='https://github.com/spessasus/SpessaSynth' target='_blank'>Project's page</a>
-      </label>
+        <label id="sf_upload"> Upload the soundfont
+          <input type="file" accept=".sf2" id="sf_file_input"><br/>
+        </label>
 
-      <label id='bundled_sf'>
-        Download and use the bundled SoundFont (30MB)
-      </label>
+        <label>
+          <a href='https://github.com/spessasus/SpessaSynth' target='_blank'>Project's page</a>
+        </label>
+
+        <label id='bundled_sf'>
+          Download and use the bundled SoundFont (30MB)
+        </label>
+      </div>
+    </div>
+
+    <div id="keyboard_selector">
     </div>
   </div>
+  <canvas id="note_canvas"></canvas>
+  <div id='keyboard'></div>
 
-  <div id="keyboard_selector">
+  <div class="bottom_part">
+    <div id="sequencer_controls"></div>
   </div>
-</div>
-<canvas id="note_canvas"></canvas>
-<div id='keyboard'></div>
-
-<div class="bottom_part">
-  <div id="sequencer_controls"></div>
 </div>
 
 <script type="module">

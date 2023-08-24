@@ -42,6 +42,7 @@ export class Manager
         // set up synthetizer
         this.synth = new Synthetizer(context.destination, this.soundFont);
         this.synth.initalizeSynth().then(() => {
+            console.log("abba")
             // set up midi access
             this.midHandler = new MIDIDeviceHandler();
 
