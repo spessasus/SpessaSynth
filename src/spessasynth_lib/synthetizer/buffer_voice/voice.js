@@ -37,7 +37,7 @@ export class Voice
 
         let samples = preset.getSamplesAndGenerators(midiNote, targetVelocity);
 
-        this.sampleOptions = samples.map(s => new GeneratorTranslator(s));
+        this.sampleOptions = samples.map(s => new GeneratorTranslator(s, midiNote));
 
         /**
          * @type {Set<number>}
@@ -54,7 +54,7 @@ export class Voice
 
             const bufferSource = new AudioBufferSourceNode(this.ctx, {
                 buffer: sample.getAudioBuffer(this.ctx, offsets.start, offsets.end),
-                playbackRate: sampleOptions.getPlaybackRate(midiNote) * this.tuningRatio,
+                playbackRate: sampleOptions.getPlaybackRate() * this.tuningRatio,
                 loop: sampleOptions.getLoopingMode() !== 0
             });
 
@@ -210,6 +210,7 @@ export class Voice
             {
                 continue;
             }
+            sample.source.stop();
             sample.disconnectSample();
             delete sample.source;
             delete sample.volumeController;
@@ -238,7 +239,7 @@ export class Voice
             let sampleOptions = this.sampleOptions[i];
             let sampleNode = this.sampleNodes[i];
 
-            const newPlayback = sampleOptions.getPlaybackRate(this.midiNote) * Math.pow(2, bendRatio / 12) * this.tuningRatio;
+            const newPlayback = sampleOptions.getPlaybackRate() * Math.pow(2, bendRatio / 12) * this.tuningRatio;
             sampleNode.setPlaybackRate(newPlayback);
             //sampleNode.source.playbackRate.setTargetAtTime(newPlayback, this.drawingContext.currentTime, 0.1);
         }

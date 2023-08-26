@@ -19,7 +19,7 @@ html, body {
 .spessasynth_main{
     display: flex;
     flex-direction: column;
-    height: 100%;
+    height: 99%; /*i cant believe i have to do this crap*/
 }
 
 a{

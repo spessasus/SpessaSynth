@@ -58,7 +58,7 @@ export class Preset {
      */
 
     /**
-     * Returns sampleOptions and generators for given note
+     * Returns generatorTranslator and generators for given note
      * @param midiNote {number}
      * @param velocity {number}
      * @returns {SampleAndGenerators[]}

@@ -12,6 +12,8 @@
 .controls_wrapper{
     display: flex;
     flex-wrap: wrap;
+    align-items: stretch;
+    justify-content: center;
 }
 
 .controller_element
@@ -59,26 +61,26 @@
     white-space: nowrap;
 }
 
-.channels_dropdown{
+.synthui_controller{
     left: 0;
     display: none;
     position: absolute;
     backdrop-filter: blur(2px) brightness(0.5);
     background-color: rgba(3, 3, 3, 0.3);
-    top: 6em;
+    top: 100%;
     border-radius: 15px;
     width: 100%;
     z-index: 127;
+}
+
+.synthui_controller_show{
+    display: block !important;
 }
 
 .channel_controller{
     display: flex;
     align-items: stretch;
     flex-wrap: wrap;
-}
-
-.wrapper:hover .channels_dropdown{
-    display: block;
 }
 
 .voice_selector{
@@ -133,7 +135,7 @@
     min-width: var(--voice-meter-height);
 }
 
-.note_killer
+.synthui_button
 {
     background: #000;
     border: 1px #333 solid;
@@ -141,11 +143,14 @@
     border-radius: 5px;
     font-size: 16px;
     display: block;
-    flex: 1;
     min-height: var(--voice-meter-height);
     white-space: nowrap;
+    color: #ccc;
+    padding: 9px;
 }
-.note_killer:hover
+.synthui_button:hover
 {
     cursor: pointer;
+    background: #111;
+    color: #fff;
 }

@@ -183,6 +183,7 @@ export class MidiChannel {
             {
                 continue;
             }
+
             // playing notes
             this.playingNotes.forEach(n => {
                 if(n.exclusives.has(exclusive))

@@ -135,7 +135,7 @@ export class Renderer
         this.drawingContext.font = `${FONT_SIZE}px Sans`;
 
 
-        if (this.renderAnalysers) {
+        if (this.renderAnalysers && !this.synth.highPerformanceMode) {
             // draw the individual analysers
             this.channelAnalysers.forEach((analyser, i) => {
                 if (this.synth.midiChannels[i].percussionChannel) {

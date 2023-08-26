@@ -12,7 +12,7 @@ export class GeneratorTranslator {
      *  sample: Sample
      * }}}
      */
-    constructor(sampleAndGenerators) {
+    constructor(sampleAndGenerators, midiNote) {
         /**
          * @param set {Set}
          * @param cb {any}
@@ -22,6 +22,7 @@ export class GeneratorTranslator {
         this.sample = sampleAndGenerators.sample;
         this.presetGenerators = sampleAndGenerators.presetGenerators;
         this.instrumentGenerators = sampleAndGenerators.instrumentGenerators;
+        this.midiNote = midiNote;
 
         // overridingRootKey
         this.rootKey = this.getGeneratorValue(generatorTypes.overridingRootKey, this.sample.samplePitch);
@@ -159,14 +160,7 @@ export class GeneratorTranslator {
      */
     limitValue(val, minAllowed, maxAllowed)
     {
-        if(val < minAllowed)
-        {
-            return minAllowed;
-        }
-        else if(val > maxAllowed) {
-            return maxAllowed;
-        }
-        return val
+        return Math.max(minAllowed, Math.min(maxAllowed, val));
     }
 
     /**
@@ -226,15 +220,14 @@ export class GeneratorTranslator {
     }
 
     /**
-     * @param midiNote {number} Midi note (0-127)
      * @returns {number} playback rate (0 to inf)
      */
-    getPlaybackRate(midiNote)
+    getPlaybackRate()
     {
         const semitones = this.semitoneTune + (this.centTune / 100); // calculate both to semitones
         const tune = Math.pow(2, semitones / 12);
 
-        let notePlayback = this.sample.getPlaybackRate(midiNote, this.getRootKey()) * tune;
+        let notePlayback = this.sample.getPlaybackRate(this.midiNote, this.getRootKey()) * tune;
 
         // correct with scaleTuning
         return 1 + (notePlayback - 1) * this.getScaleTuneInfluence();

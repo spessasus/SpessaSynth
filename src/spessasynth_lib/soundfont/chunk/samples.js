@@ -2,7 +2,7 @@ import {RiffChunk} from "./riff_chunk.js";
 import {ShiftableByteArray} from "../../utils/shiftable_array.js";
 import {readByte, readBytesAsUintLittleEndian, readBytesAsString, signedInt8} from "../../utils/byte_functions.js";
 /**
- * Reads the sampleOptions from the shdr chunk
+ * Reads the generatorTranslator from the shdr chunk
  * @param sampleHeadersChunk {RiffChunk}
  * @param smplChunkData {ShiftableByteArray}
  * @returns {Sample[]}
