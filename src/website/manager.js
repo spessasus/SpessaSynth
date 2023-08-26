@@ -55,8 +55,8 @@ export class Manager
         canvas.height = window.innerHeight;
 
         window.addEventListener("resize", () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            canvas.width = window.innerWidth * window.devicePixelRatio;
+            canvas.height = window.innerHeight * window.devicePixelRatio;
         });
 
         this.renderer = new Renderer(this.channelColors, this.synth, canvas);
@@ -72,6 +72,24 @@ export class Manager
 
         // create an UI for sequencer
         this.seqUI = new SequencerUI();
+
+        document.addEventListener("keypress", e => {
+            if(e.key.toLowerCase() !== "c")
+            {
+                return;
+            }
+
+            const response = window.prompt("Cinematic mode activated!\n Paste the link to the image for canvas (leave blank to disable)", "");
+
+            if(response === null)
+            {
+                return;
+            }
+            canvas.style.background = `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), center center / cover url("${response}")`;
+            document.getElementsByClassName("top_part")[0].style.display = "none";
+            document.getElementsByClassName("bottom_part")[0].style.display = "none";
+            document.body.requestFullscreen().then();
+        })
     }
 
     /**

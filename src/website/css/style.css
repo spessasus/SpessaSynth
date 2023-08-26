@@ -134,6 +134,7 @@ input[type="file"] {
     display: block;
     filter: saturate(1.23);
     flex: 1;
+    background-size: cover;
 }
 
 /*Bottom*/

@@ -218,7 +218,7 @@ export class SynthetizerUI
          * Volume controller
          * @type {Meter}
          */
-        this.volumeController = this.createMeter("#206", "Main Volume: ", 0, 100, true, v => {
+        this.volumeController = this.createMeter("#206", "Volume: ", 0, 100, true, v => {
             this.synth.setMainVolume(Math.round(v) / 100);
         });
         this.volumeController.bar.classList.add("voice_meter_bar_smooth");
@@ -375,7 +375,7 @@ export class SynthetizerUI
 
         // pitch wheel
         const pitchWheel = this.createMeter(this.channelColors[channelNumber],
-            "Pitch Wheel: ",
+            "Pitch: ",
             -8192,
             8192,
             true,
