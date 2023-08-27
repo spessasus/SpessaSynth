@@ -71,17 +71,23 @@ export class Voice
             });
             volumeControl.connect(node);
 
+            // lowpass filter
+            let lowpassFilter = new BiquadFilterNode(this.ctx, {
+                type: "lowpass"
+            });
+
             // create panner
             let panner = new StereoPannerNode(this.ctx ,{
                 pan:  sampleOptions.getPan()
             });
-            bufferSource.connect(panner);
+            bufferSource.connect(lowpassFilter);
 
+            lowpassFilter.connect(panner);
             panner.connect(volumeControl);
 
             this.exclusives.add(sampleOptions.getExclusiveclass());
 
-            return new SampleNode(bufferSource, volumeControl, panner);
+            return new SampleNode(bufferSource, volumeControl, panner, lowpassFilter);
         });
     }
 
@@ -141,7 +147,7 @@ export class Voice
             dataTable.push(new Option("isLooped", sampleOption.loopingMode, sampleOption.getLoopingMode()));
             dataTable.push(new Option("ScaleTuning", sampleOption.scaleTune, sampleOption.getScaleTuneInfluence()));
             dataTable.push(new Option("AddressOffsets", sampleOption.getAddressOffsets(), null));
-            dataTable.push(new Option("InitialFilterFc", sampleOption.filterCutoff, sampleOption.getFilterCutoffHz()));
+            dataTable.push(new Option("FilterEnv", sampleOption.filterCutoff, sampleOption.getFilterEnvelope()));
 
             let generatorsString = sampleOption.instrumentGenerators.map(g => `${g.generatorType}: ${g.generatorValue}`).join("\n") + "\nPreset generators:" + sampleOption.presetGenerators.map(g => `${g.generatorType}: ${g.generatorValue}`).join("\n");
             dataTable.push(new Option("SampleAndGenerators", sampleOption.sample, generatorsString));
@@ -171,7 +177,7 @@ export class Voice
             let sample = this.sampleNodes[i];
             let sampleOptions = this.sampleOptions[i];
 
-            sample.startSample(sampleOptions.getVolumeEnvelope(this.velocity));
+            sample.startSample(sampleOptions.getVolumeEnvelope(this.velocity), sampleOptions.getFilterEnvelope());
         }
         return this.exclusives;
     }
@@ -214,6 +220,8 @@ export class Voice
             sample.disconnectSample();
             delete sample.source;
             delete sample.volumeController;
+            delete sample.panner;
+            delete sample.lowpass;
             sample = undefined;
         }
 

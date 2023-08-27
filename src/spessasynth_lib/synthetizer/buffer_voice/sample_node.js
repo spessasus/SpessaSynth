@@ -5,18 +5,21 @@ export class SampleNode
      * @param bufferSrc {AudioBufferSourceNode}
      * @param attenuationNode {GainNode}
      * @param panner {StereoPannerNode}
+     * @param lowpass {BiquadFilterNode}
      */
-    constructor(bufferSrc, attenuationNode, panner) {
+    constructor(bufferSrc, attenuationNode, panner, lowpass) {
         this.source = bufferSrc;
         this.volumeController = attenuationNode;
         this.panner = panner;
+        this.lowpass = lowpass;
     }
 
     /**
      * Starts the sample
      * @param audioEnvelope {volumeEnvelope}
+     * @param filterEnvelope {filterEnvelope}
      */
-    startSample(audioEnvelope) {
+    startSample(audioEnvelope, filterEnvelope) {
         const attack = audioEnvelope.attackTime + audioEnvelope.delayTime;
         const hold = attack + audioEnvelope.holdTime;
         const decay = hold + audioEnvelope.decayTime;
@@ -40,15 +43,26 @@ export class SampleNode
         // decay
         this.volumeController.gain.exponentialRampToValueAtTime(audioEnvelope.sustainLevel, this.currentTime + decay);
 
-        // holdTime, decayTime, sustainLevel
-        // this.rampToValue(
-        //     this.volumeController.gain,
-        //     audioEnvelope.sustainLevel,
-        //     audioEnvelope.decayTime,
-        //     audioEnvelope.holdTime /*+ audioEnvelope.delayTime + audioEnvelope.attackTime*/);
+        // filter
+        const freq = this.lowpass.frequency;
+        // delay
+        freq.value = filterEnvelope.startHz;
+        freq.setValueAtTime(filterEnvelope.startHz, this.currentTime + filterEnvelope.delayTime);
+
+        // attack
+        const attackFinish = this.currentTime + filterEnvelope.delayTime + filterEnvelope.attackTime;
+        freq.linearRampToValueAtTime(filterEnvelope.peakHz, attackFinish);
+
+        // hold
+        freq.setValueAtTime(filterEnvelope.peakHz, attackFinish + filterEnvelope.holdTime);
+
+        // decay, sustain
+        freq.exponentialRampToValueAtTime(filterEnvelope.sustainHz, attackFinish + filterEnvelope.holdTime + filterEnvelope.decayTime);
 
         this.source.start();
         this.releaseTime = audioEnvelope.releaseTime;
+        this.endHz = filterEnvelope.endHz;
+        this.filterRelease = filterEnvelope.releaseTime;
     }
 
     /**
@@ -59,11 +73,13 @@ export class SampleNode
         // stop the audio envelope
         if(this.volumeController.gain.cancelAndHoldAtTime) {
             this.volumeController.gain.cancelAndHoldAtTime(this.currentTime);
+            this.lowpass.frequency.cancelAndHoldAtTime(this.currentTime);
         }
         else
         {
             // firefox >:(
             this.volumeController.gain.cancelScheduledValues(this.currentTime + 0.000001);
+            this.lowpass.frequency.cancelScheduledValues(this.currentTime + 0.000001);
         }
         this.source.stop(this.source.context.currentTime + this.releaseTime);
 
@@ -71,6 +87,10 @@ export class SampleNode
         // begin release phase
         this.volumeController.gain.setValueAtTime(this.volumeController.gain.value, this.currentTime);
         this.volumeController.gain.exponentialRampToValueAtTime(0.00001, this.currentTime + this.releaseTime);
+
+        // filter too
+        this.lowpass.frequency.setValueAtTime(this.lowpass.frequency.value, this.currentTime);
+        this.lowpass.frequency.linearRampToValueAtTime(this.endHz, this.currentTime + this.filterRelease);
     }
 
     get currentTime()
@@ -92,10 +112,12 @@ export class SampleNode
         this.source.disconnect();
         this.volumeController.disconnect();
         this.panner.disconnect();
+        this.lowpass.disconnect();
 
         delete this.source;
         delete this.volumeController;
         delete this.panner;
+        delete this.lowpass;
         delete this;
     }
 }

@@ -2,6 +2,8 @@ import {Generator, generatorTypes} from "../../soundfont/chunk/generators.js";
 import {Sample} from "../../soundfont/chunk/samples.js";
 
 const EMU_ATTENUATION_CORRECTION = 0.4;
+const FREQ_MIN = 0;
+const FREQ_MAX = 22050;
 
 export class GeneratorTranslator {
     /**
@@ -11,6 +13,7 @@ export class GeneratorTranslator {
      *  presetGenerators: Generator[],
      *  sample: Sample
      * }}}
+     * @param midiNote {number}
      */
     constructor(sampleAndGenerators, midiNote) {
         /**
@@ -98,6 +101,17 @@ export class GeneratorTranslator {
 
         // initialFilterFc
         this.filterCutoff = this.sumGeneratorValue(generatorTypes.initialFilterFc, 13500, 1500, 13500);
+
+        // modEnvToFilterFc
+        this.modFilterInfluence = this.sumGeneratorValue(generatorTypes.modEnvToFilterFc, 0, -12000, 12000);
+
+        // modEnvelope
+        this.modDelay = this.sumGeneratorValue(generatorTypes.delayModEnv, -12000, -12000, 5000);
+        this.modAttack = this.sumGeneratorValue(generatorTypes.attackModEnv, -12000, -12000, 8000);
+        this.modHold = this.sumGeneratorValue(generatorTypes.holdModEnv, -12000, -12000, 5000);
+        this.modDecay = this.sumGeneratorValue(generatorTypes.decayModEnv, -12000, -12000, 8000);
+        this.modSustain = this.sumGeneratorValue(generatorTypes.sustainModEnv, 0, 0, 999); // to prevent getting 0 passed to the exponentialRamp
+        this.modRelease = this.sumGeneratorValue(generatorTypes.releaseModEnv, -12000, -12000, 12000);
     }
 
     /**
@@ -179,6 +193,18 @@ export class GeneratorTranslator {
 
     /**
      * @typedef {{
+     *     startHz: number,
+     *     delayTime: number,
+     *     attackTime: number,
+     *     holdTime: number,
+     *     peakHz: number,
+     *     decayTime: number,
+     *     sustainHz: number,
+     *     releaseTime: number
+     *     endHz: number
+     * }} filterEnvelope
+     *
+     * @typedef {{
      *     attenuation: number,
      *     delayTime: number,
      *     attackTime: number,
@@ -218,6 +244,34 @@ export class GeneratorTranslator {
             releaseTime: releaseTime
         };
     }
+
+    /**
+     * Returns the complete filter envelope
+     * @returns {filterEnvelope}
+     */
+    getFilterEnvelope()
+    {
+        const attackHz = this.limitValue(this.absCentsToHz(this.filterCutoff), FREQ_MIN, FREQ_MAX);
+        const peakHz = this.limitValue(this.absCentsToHz(this.filterCutoff + this.modFilterInfluence), FREQ_MIN, FREQ_MAX);
+        const delayTime = this.timecentsToSeconds(this.modDelay);
+        const attackTime = this.timecentsToSeconds(this.modAttack);
+        const holdTime = this.timecentsToSeconds(this.modHold);
+        const decayTime = this.timecentsToSeconds(this.modDecay);
+        const sustainHz = this.limitValue(peakHz * (1 - (this.modSustain / 1000)), FREQ_MIN, FREQ_MAX);
+        const releaseTime = this.timecentsToSeconds(this.modRelease);
+        return {
+            startHz: attackHz,
+            delayTime: delayTime,
+            attackTime: attackTime,
+            holdTime: holdTime,
+            peakHz: peakHz,
+            decayTime: decayTime,
+            sustainHz: sustainHz,
+            releaseTime: releaseTime,
+            endHz: attackHz
+        };
+    }
+
 
     /**
      * @returns {number} playback rate (0 to inf)
@@ -318,10 +372,11 @@ export class GeneratorTranslator {
     }
 
     /**
-     * @returns {number} filter cutoff in hertz
+     * @param val {number}
+     * @returns {number} hertz
      */
-    getFilterCutoffHz()
+    absCentsToHz(val)
     {
-        return 440 * Math.pow(2, (this.filterCutoff - 6900) / 1200);
+        return 440 * Math.pow(2, (val - 6900) / 1200);
     }
 }

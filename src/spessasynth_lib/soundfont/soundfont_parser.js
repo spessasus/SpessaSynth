@@ -13,9 +13,15 @@ export class SoundFont2
 {
     /**
      * Initializes a new SoundFont2 Parser and parses the given data array
-     * @param dataArray {ShiftableByteArray}
+     * @param dataArray {ShiftableByteArray|{presets: Preset[], info: Object<string, string>}}
      */
     constructor(dataArray) {
+        if(dataArray.presets)
+        {
+            this.presets = dataArray.presets;
+            this.soundFontInfo = dataArray.info;
+            return;
+        }
         this.dataArray = dataArray;
         console.group("%cParsing SoundFont...", consoleColors.info);
         if(!this.dataArray)
@@ -233,5 +239,34 @@ export class SoundFont2
             preset = this.presets[0];
         }
         return preset;
+    }
+
+
+    /**
+     * Merges soundfonts with the given order. Keep in mind that the info chunk is copied from the first one
+     * @param soundfonts {...SoundFont2} the soundfonts to merge, the first overwrites the last
+     * @returns {SoundFont2}
+     */
+    static mergeSoundfonts(...soundfonts)
+    {
+        const mainSf = soundfonts.shift();
+        /**
+         * @type {Preset[]}
+         */
+        const presets = mainSf.presets;
+        while(soundfonts.length)
+        {
+            const newPresets = soundfonts.shift().presets;
+            newPresets.forEach(newPreset => {
+                if(
+                    presets.find(existingPreset => existingPreset.bank === newPreset.bank && existingPreset.program === newPreset.program) === undefined
+                )
+                {
+                    presets.push(newPreset);
+                }
+            })
+        }
+
+        return new SoundFont2({presets: presets, info: mainSf.soundFontInfo});
     }
 }
