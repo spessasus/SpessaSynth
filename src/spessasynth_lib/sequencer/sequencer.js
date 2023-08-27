@@ -5,6 +5,7 @@ import { consoleColors, formatTime } from '../utils/other.js'
 import {readBytesAsUintBigEndian} from "../utils/byte_functions.js";
 
 const MIN_NOTE_TIME = 0.02;
+const MAX_NOTEONS_PER_S = 200;
 
 export class Sequencer {
     /**
@@ -60,6 +61,8 @@ export class Sequencer {
 
         // controls if the sequencer loops (defaults to true)
         this.loop = true;
+
+        this.noteOnsPerS = 0;
 
         /**
          * merge the tracks
@@ -391,6 +394,7 @@ export class Sequencer {
         });
 
         this.playbackInterval = setInterval(this._processTick.bind(this));
+        this.noteCounterClearInterval = setInterval( () =>this.noteOnsPerS = 0, 100);
     }
 
     setTimeTicks(ticks)
@@ -479,6 +483,11 @@ export class Sequencer {
             case messageTypes.noteOn:
                 const velocity = event.messageData[1];
                 if(velocity > 0) {
+                    if(this.synth.highPerformanceMode && (this.noteOnsPerS > MAX_NOTEONS_PER_S && velocity < 40) || this.noteOnsPerS > MAX_NOTEONS_PER_S * 2)
+                    {
+                        return;
+                    }
+                    this.noteOnsPerS++;
                     this.synth.noteOn(statusByteData.channel, event.messageData[0], velocity);
                     this.playingNotes.push({
                         midiNote: event.messageData[0],

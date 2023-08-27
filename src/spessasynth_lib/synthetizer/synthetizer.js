@@ -137,7 +137,11 @@ export class Synthetizer {
      */
     onNoteOff;
 
-    stopAll() {
+    /**
+     * Stops all notes
+     * @param force {boolean} if we should instantly kill the note, defaults to false
+     */
+    stopAll(force=false) {
         console.log("%cStop all received!", consoleColors.info);
         for (let channel of this.midiChannels) {
             if(this.onNoteOff)
@@ -147,7 +151,7 @@ export class Synthetizer {
                     this.onNoteOff(note.midiNote);
                 }
             }
-            channel.stopAll();
+            channel.stopAll(force);
         }
     }
 

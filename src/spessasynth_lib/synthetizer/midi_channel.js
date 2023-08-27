@@ -417,11 +417,18 @@ export class MidiChannel {
         }
     }
 
-    stopAll()
+    stopAll(force=false)
     {
         for(let midiNote = 0; midiNote < 128; midiNote++)
         {
             this.stopNote(midiNote);
+        }
+        if(force)
+        {
+            this.stoppingNotes.forEach(n => {
+                n.disconnectNote();
+            })
+            this.stoppingNotes = [];
         }
     }
 

@@ -65,7 +65,7 @@ export class SynthetizerUI
         let resetButton = document.createElement("button");
         resetButton.innerText = "MIDI Panic";
         resetButton.classList.add("synthui_button");
-        resetButton.onclick = () => this.synth.stopAll();
+        resetButton.onclick = () => this.synth.stopAll(true);
 
         // create the main controller now, to give the button a variable to work with
         let controller = document.createElement("div");
@@ -340,6 +340,26 @@ export class SynthetizerUI
 
         this.createMainSynthController();
         this.createChannelControllers();
+
+        document.addEventListener("keydown", e => {
+            switch (e.key.toLowerCase())
+            {
+                case "s":
+                    e.preventDefault();
+                    this.uiDiv.getElementsByClassName("synthui_controller")[0].classList.toggle("synthui_controller_show");
+                    break;
+
+                case "b":
+                    e.preventDefault();
+                    this.synth.highPerformanceMode = !this.synth.highPerformanceMode;
+                    break;
+
+                case "backspace":
+                    e.preventDefault();
+                    this.synth.stopAll(true);
+                    break;
+            }
+        })
     }
 
     /**
