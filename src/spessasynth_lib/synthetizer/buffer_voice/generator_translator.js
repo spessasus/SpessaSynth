@@ -251,13 +251,14 @@ export class GeneratorTranslator {
      */
     getFilterEnvelope()
     {
+        const sustainGain = (1 - (this.modSustain / 1000)); // 600 means 60% below so 40% so 0.4 etc.
         const attackHz = this.limitValue(this.absCentsToHz(this.filterCutoff), FREQ_MIN, FREQ_MAX);
         const peakHz = this.limitValue(this.absCentsToHz(this.filterCutoff + this.modFilterInfluence), FREQ_MIN, FREQ_MAX);
         const delayTime = this.timecentsToSeconds(this.modDelay);
         const attackTime = this.timecentsToSeconds(this.modAttack);
         const holdTime = this.timecentsToSeconds(this.modHold);
         const decayTime = this.timecentsToSeconds(this.modDecay);
-        const sustainHz = this.limitValue(peakHz * (1 - (this.modSustain / 1000)), FREQ_MIN, FREQ_MAX);
+        const sustainHz = this.limitValue(((peakHz - attackHz) * sustainGain) + attackHz, FREQ_MIN, FREQ_MAX);
         const releaseTime = this.timecentsToSeconds(this.modRelease);
         return {
             startHz: attackHz,

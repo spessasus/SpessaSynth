@@ -43,15 +43,23 @@ export class SampleNode
         // decay
         this.volumeController.gain.exponentialRampToValueAtTime(audioEnvelope.sustainLevel, this.currentTime + decay);
 
-        // filter
-        const freq = this.lowpass.frequency;
-        // delay
-        freq.value = filterEnvelope.startHz;
-        freq.setValueAtTime(filterEnvelope.startHz, this.currentTime + filterEnvelope.delayTime);
+        /*==================
+        * FILTER ENVELOPE
+        * ==================*/
 
-        // attack
+        const freq = this.lowpass.frequency;
         const attackFinish = this.currentTime + filterEnvelope.delayTime + filterEnvelope.attackTime;
-        freq.linearRampToValueAtTime(filterEnvelope.peakHz, attackFinish);
+        if(filterEnvelope.attackTime + filterEnvelope.delayTime < 0.01) {
+            freq.value = filterEnvelope.peakHz;
+        }
+        else {
+            // delay
+            freq.value = filterEnvelope.startHz;
+            freq.setValueAtTime(filterEnvelope.startHz, this.currentTime + filterEnvelope.delayTime);
+
+            // attack
+            freq.linearRampToValueAtTime(filterEnvelope.peakHz, attackFinish);
+        }
 
         // hold
         freq.setValueAtTime(filterEnvelope.peakHz, attackFinish + filterEnvelope.holdTime);
