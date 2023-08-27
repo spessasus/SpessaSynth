@@ -21,7 +21,7 @@ export class SynthetizerUI
         setTimeout(() => this.uiDiv.style.visibility = "visible", 500);
     }
 
-    createMainVoiceMeter()
+    createMainSynthController()
     {
         /**
          * Voice meter
@@ -48,6 +48,18 @@ export class SynthetizerUI
             this.synth.systemExclusive(new ShiftableByteArray([0x41, 0x10, 0x42, 0x12, 0x40, 0x00, 0x06, ((v + 1) / 2) * 127]));
         });
         this.panController.bar.classList.add("voice_meter_bar_smooth");
+
+        /**
+         * Transpose controller
+         * @type {Meter}
+         */
+        this.transposeController = new Meter("#206", "Transpose: ", -12, 12, true, v => {
+            // use roland gs master pan
+            this.synth.transpose(Math.round(v));
+            this.transposeController.update(Math.round(v))
+        });
+        this.transposeController.bar.classList.add("voice_meter_bar_smooth");
+        this.transposeController.update(0);
 
         // note killer
         let resetButton = document.createElement("button");
@@ -81,6 +93,8 @@ export class SynthetizerUI
         controlsWrapper.appendChild(this.voiceMeter.div);
         controlsWrapper.appendChild(this.volumeController.div);
         controlsWrapper.appendChild(this.panController.div);
+        controlsWrapper.appendChild(this.transposeController.div);
+
         controlsWrapper.appendChild(resetButton);
         controlsWrapper.appendChild(showControllerButton);
         controlsWrapper.appendChild(highPerfToggle);
@@ -324,7 +338,7 @@ export class SynthetizerUI
                 .toString()
                 .padStart(3, "0")} ${p.presetName}`);
 
-        this.createMainVoiceMeter();
+        this.createMainSynthController();
         this.createChannelControllers();
     }
 

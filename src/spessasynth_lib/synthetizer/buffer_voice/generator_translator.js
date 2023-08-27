@@ -102,6 +102,9 @@ export class GeneratorTranslator {
         // initialFilterFc
         this.filterCutoff = this.sumGeneratorValue(generatorTypes.initialFilterFc, 13500, 1500, 13500);
 
+        // initialFilterQ
+        this.filterQ = this.sumGeneratorValue(generatorTypes.initialFilterQ, 0, 0, 960);
+
         // modEnvToFilterFc
         this.modFilterInfluence = this.sumGeneratorValue(generatorTypes.modEnvToFilterFc, 0, -12000, 12000);
 
@@ -271,6 +274,14 @@ export class GeneratorTranslator {
             releaseTime: releaseTime,
             endHz: attackHz
         };
+    }
+
+    /**
+     * @returns {number} the filter reasonance in dB
+     */
+    getFilterQdB()
+    {
+        return this.filterQ / 10;
     }
 
 

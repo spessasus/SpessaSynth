@@ -71,18 +71,25 @@ export class Voice
             });
             volumeControl.connect(node);
 
-            // lowpass filter
-            let lowpassFilter = new BiquadFilterNode(this.ctx, {
-                type: "lowpass"
-            });
-
             // create panner
             let panner = new StereoPannerNode(this.ctx ,{
                 pan:  sampleOptions.getPan()
             });
-            bufferSource.connect(lowpassFilter);
 
-            lowpassFilter.connect(panner);
+            // lowpass filter (only if needed)
+            let lowpassFilter = undefined;
+            if(sampleOptions.filterCutoff < 13490) {
+                lowpassFilter = new BiquadFilterNode(this.ctx, {
+                    type: "lowpass",
+                    Q: sampleOptions.getFilterQdB()
+                });
+                bufferSource.connect(lowpassFilter);
+                lowpassFilter.connect(panner);
+            }
+            else
+            {
+                bufferSource.connect(panner);
+            }
             panner.connect(volumeControl);
 
             this.exclusives.add(sampleOptions.getExclusiveclass());

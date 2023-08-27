@@ -46,26 +46,28 @@ export class SampleNode
         /*==================
         * FILTER ENVELOPE
         * ==================*/
+        if(this.lowpass) // can be undefined when filter freq is above 13490
+        {
+            const freq = this.lowpass.frequency;
+            const attackFinish = this.currentTime + filterEnvelope.delayTime + filterEnvelope.attackTime;
+            if(filterEnvelope.attackTime + filterEnvelope.delayTime < 0.01) {
+                freq.value = filterEnvelope.peakHz;
+            }
+            else {
+                // delay
+                freq.value = filterEnvelope.startHz;
+                freq.setValueAtTime(filterEnvelope.startHz, this.currentTime + filterEnvelope.delayTime);
 
-        const freq = this.lowpass.frequency;
-        const attackFinish = this.currentTime + filterEnvelope.delayTime + filterEnvelope.attackTime;
-        if(filterEnvelope.attackTime + filterEnvelope.delayTime < 0.01) {
-            freq.value = filterEnvelope.peakHz;
+                // attack
+                freq.linearRampToValueAtTime(filterEnvelope.peakHz, attackFinish);
+            }
+
+            // hold
+            freq.setValueAtTime(filterEnvelope.peakHz, attackFinish + filterEnvelope.holdTime);
+
+            // decay, sustain
+            freq.linearRampToValueAtTime(filterEnvelope.sustainHz, attackFinish + filterEnvelope.holdTime + filterEnvelope.decayTime);
         }
-        else {
-            // delay
-            freq.value = filterEnvelope.startHz;
-            freq.setValueAtTime(filterEnvelope.startHz, this.currentTime + filterEnvelope.delayTime);
-
-            // attack
-            freq.linearRampToValueAtTime(filterEnvelope.peakHz, attackFinish);
-        }
-
-        // hold
-        freq.setValueAtTime(filterEnvelope.peakHz, attackFinish + filterEnvelope.holdTime);
-
-        // decay, sustain
-        freq.exponentialRampToValueAtTime(filterEnvelope.sustainHz, attackFinish + filterEnvelope.holdTime + filterEnvelope.decayTime);
 
         this.source.start();
         this.releaseTime = audioEnvelope.releaseTime;
@@ -81,13 +83,18 @@ export class SampleNode
         // stop the audio envelope
         if(this.volumeController.gain.cancelAndHoldAtTime) {
             this.volumeController.gain.cancelAndHoldAtTime(this.currentTime);
-            this.lowpass.frequency.cancelAndHoldAtTime(this.currentTime);
+            if(this.lowpass) {
+                this.lowpass.frequency.cancelAndHoldAtTime(this.currentTime);
+            }
         }
         else
         {
             // firefox >:(
             this.volumeController.gain.cancelScheduledValues(this.currentTime + 0.000001);
-            this.lowpass.frequency.cancelScheduledValues(this.currentTime + 0.000001);
+
+            if(this.lowpass) {
+                this.lowpass.frequency.cancelScheduledValues(this.currentTime + 0.000001);
+            }
         }
         this.source.stop(this.source.context.currentTime + this.releaseTime);
 
@@ -97,8 +104,10 @@ export class SampleNode
         this.volumeController.gain.exponentialRampToValueAtTime(0.00001, this.currentTime + this.releaseTime);
 
         // filter too
-        this.lowpass.frequency.setValueAtTime(this.lowpass.frequency.value, this.currentTime);
-        this.lowpass.frequency.linearRampToValueAtTime(this.endHz, this.currentTime + this.filterRelease);
+        if(this.lowpass) {
+            this.lowpass.frequency.setValueAtTime(this.lowpass.frequency.value, this.currentTime);
+            this.lowpass.frequency.linearRampToValueAtTime(this.endHz, this.currentTime + this.filterRelease);
+        }
     }
 
     get currentTime()
@@ -120,12 +129,14 @@ export class SampleNode
         this.source.disconnect();
         this.volumeController.disconnect();
         this.panner.disconnect();
-        this.lowpass.disconnect();
+        if(this.lowpass) {
+            this.lowpass.disconnect();
+            delete this.lowpass;
+        }
 
         delete this.source;
         delete this.volumeController;
         delete this.panner;
-        delete this.lowpass;
         delete this;
     }
 }
