@@ -81,7 +81,7 @@ export class Voice
             if(sampleOptions.filterCutoff < 13490) {
                 lowpassFilter = new BiquadFilterNode(this.ctx, {
                     type: "lowpass",
-                    Q: sampleOptions.getFilterQdB()
+                    Q: sampleOptions.getFilterQ()
                 });
                 bufferSource.connect(lowpassFilter);
                 lowpassFilter.connect(panner);

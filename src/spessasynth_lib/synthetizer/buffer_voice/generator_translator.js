@@ -277,11 +277,11 @@ export class GeneratorTranslator {
     }
 
     /**
-     * @returns {number} the filter reasonance in dB
+     * @returns {number} the filter reasonance
      */
-    getFilterQdB()
+    getFilterQ()
     {
-        return this.filterQ / 10;
+        return this.decibelsToGain(this.filterQ / 10);
     }
 
 

@@ -100,7 +100,7 @@ export class SampleNode
 
 
         // begin release phase
-        this.volumeController.gain.setValueAtTime(this.volumeController.gain.value, this.currentTime);
+        this.volumeController.gain.setValueAtTime(this.volumeController.gain.value + 0.00001, this.currentTime); // if it's 0 for some reason then it won't be zero anymore ;)
         this.volumeController.gain.exponentialRampToValueAtTime(0.00001, this.currentTime + this.releaseTime);
 
         // filter too

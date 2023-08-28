@@ -130,11 +130,11 @@ input[type="file"] {
 #note_canvas
 {
     width: 100%;
-    height: 65%;
     display: block;
     filter: saturate(1.23);
     flex: 1;
     background-size: cover;
+    height: 1px; /*I have absolutely no idea how this works but whatever ¯\_(ツ)_/¯*/
 }
 
 /*Bottom*/
