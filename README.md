@@ -10,18 +10,19 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 # [Live demo](https://spessasus.github.io/SpessaSynth/)
 
 ## Features
-- SoundFont2 Generator Support
+- SoundFont2 Generator Support (currently supported generators are: all address offsets, panning, tuning, full volume envelope, filterFc envelope)
 - MIDI Controller Support
-- Support for multiple drums via Roland GS or Yamaha XG
+- Supports some Roland and Yamaha XG sysex messages
 - High performance mode for playing black MIDIs (Don't go too crazy with the amount of notes though)
 - Visualization of the played sequence
 - Playable keyboard with preset selection
 - Integrated controller for the synthetizer
-- Uses `Web MIDI API` for connecting to actual physical MIDI devices (such as keyboards or external synhesizers)
+- `Web MIDI API` support (Enables physical MIDI devices to be used with the program)
+- [WebMidiLink](https://www.g200kg.com/en/docs/webmidilink/) support
 - Can be used as a library ([learn more here](../../wiki/Home#simple-demo))
 - Modular design allows easy integrations into other projects
 - Written in pure JavaScript using WebAudio API (Every modern browser supports it)
-- No dependencies (Node.js is only required for the app, the core library needs no dependencies)
+- No dependencies (Node.js is only required for the app, the core synth and sequencer library needs no dependencies)
 - Comes bundled with a small [GeneralUser GS](https://schristiancollins.com/generaluser.php) soundFont to get you started
 
 ## Limitations
