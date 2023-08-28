@@ -8,6 +8,7 @@ import {SoundFont2} from "../spessasynth_lib/soundfont/soundfont_parser.js";
 import {SequencerUI} from "./ui/sequencer_ui.js";
 import {SynthetizerUI} from "./ui/synthetizer_ui.js";
 import { MIDIDeviceHandler } from '../spessasynth_lib/midi_handler/midi_device_handler.js'
+import { WebMidiLinkHandler } from '../spessasynth_lib/midi_handler/web_midi_link.js'
 
 export class Manager
 {
@@ -44,6 +45,9 @@ export class Manager
 
         // set up midi access
         this.midHandler = new MIDIDeviceHandler();
+
+        // set up web midi link
+        this.wml = new WebMidiLinkHandler(this.synth);
 
         // set up keyboard
         this.keyboard = new MidiKeyboard(this.channelColors, this.synth, this.midHandler);
