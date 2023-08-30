@@ -14,18 +14,18 @@ export class GeneratorTranslator {
      *  sample: Sample
      * }}}
      * @param midiNote {number}
+     * @param velocity {number}
      */
-    constructor(sampleAndGenerators, midiNote) {
-        /**
-         * @param set {Set}
-         * @param cb {any}
-         * @returns {undefined|*}
-         */
+    constructor(sampleAndGenerators, midiNote, velocity) {
 
         this.sample = sampleAndGenerators.sample;
         this.presetGenerators = sampleAndGenerators.presetGenerators;
         this.instrumentGenerators = sampleAndGenerators.instrumentGenerators;
-        this.midiNote = midiNote;
+        // override midi key
+        this.midiNote = this.getGeneratorValue(generatorTypes.keyNum, midiNote);
+
+        // override velocity
+        this.velocity = this.getGeneratorValue(generatorTypes.velocity, velocity);
 
         // overridingRootKey
         this.rootKey = this.getGeneratorValue(generatorTypes.overridingRootKey, this.sample.samplePitch);
@@ -120,6 +120,12 @@ export class GeneratorTranslator {
         this.vibratoFreq = this.sumGeneratorValue(generatorTypes.freqVibLFO, 0, -16000, 45000);
         this.vibratoDepth = this.sumGeneratorValue(generatorTypes.vibLfoToPitch, 0, -12000, 12000);
         this.vibratoDelay = this.sumGeneratorValue(generatorTypes.delayVibLFO, -12000, -12000, 5000);
+
+        // key to time
+        this.keyToVolDecay = this.sumGeneratorValue(generatorTypes.keyNumToVolEnvDecay, 0, -1200, 1200);
+        this.keyToVolHold = this.sumGeneratorValue(generatorTypes.keyNumToVolEnvHold, 0, -1200, 1200);
+        this.keyToModDecay = this.sumGeneratorValue(generatorTypes.keyNumToModEnvDecay, 0, -1200, 1200);
+        this.keyToModHold = this.sumGeneratorValue(generatorTypes.keyNumToModEnvHold, 0, -1200, 1200);
     }
 
     /**
@@ -225,17 +231,16 @@ export class GeneratorTranslator {
 
     /**
      * Returns the complete volume envelope
-     * @param velocity {number}
      * @returns {volumeEnvelope}
      */
-    getVolumeEnvelope(velocity)
+    getVolumeEnvelope()
     {
-        const velocityGain = velocity / 127;
+        const velocityGain = this.velocity / 127;
         const attenuation = this.decibelsToGain(this.attenuation * -1) * velocityGain;
         const delayTime = this.timecentsToSeconds(this.delayTime);
         const attackTime = this.timecentsToSeconds(this.attackTime);
-        const holdTime = this.timecentsToSeconds(this.holdTime);
-        const decayTime = this.timecentsToSeconds(this.decayTime);
+        const holdTime = this.timecentsToSeconds(this.holdTime + ((60 - this.midiNote) * this.keyToVolHold));
+        const decayTime = this.timecentsToSeconds(this.decayTime  + ((60 - this.midiNote) * this.keyToVolDecay));
         const sustainLevel = this._getSustainLevel() * velocityGain;
         let releaseTime = this.timecentsToSeconds(this.releaseTime);
         if(releaseTime > 5)
@@ -264,8 +269,8 @@ export class GeneratorTranslator {
         const peakHz = this.limitValue(this.absCentsToHz(this.filterCutoff + this.modFilterInfluence), FREQ_MIN, FREQ_MAX);
         const delayTime = this.timecentsToSeconds(this.modDelay);
         const attackTime = this.timecentsToSeconds(this.modAttack);
-        const holdTime = this.timecentsToSeconds(this.modHold);
-        const decayTime = this.timecentsToSeconds(this.modDecay);
+        const holdTime = this.timecentsToSeconds(this.modHold  + ((60 - this.midiNote) * this.keyToModHold));
+        const decayTime = this.timecentsToSeconds(this.modDecay  + ((60 - this.midiNote) * this.keyToModDecay));
         const sustainHz = this.limitValue((this.absCentsToHz(this.filterCutoff + (this.modFilterInfluence * sustainGain)) - attackHz) + attackHz, FREQ_MIN, FREQ_MAX);
         const releaseTime = this.timecentsToSeconds(this.modRelease);
         return {
@@ -335,7 +340,6 @@ export class GeneratorTranslator {
         return this.exclusiveClass;
     }
 
-
     /**
      * @returns {number} the sustaing gain level (0 to inf)
      */
@@ -368,16 +372,6 @@ export class GeneratorTranslator {
     {
         return this.rootKey;
     }
-
-    // /**
-    //  * @returns {number} attenuation as gain (0 to inf)
-    //  */
-    // getAttenuation()
-    // {
-    //     // return 1;
-    //     // NO KURWA JA PIERDOLE WYSTARCZYLO * -1 DODAC ZEBY TO GOWNO ZACZELO KURWA DZIALAC AAAAHAHGDIFGSDGHDGHSDFKGJSHD
-    //     return Math.pow(10, (this.attenuation * -1) / 20);
-    // }
 
     /**
      * @returns {number} 0 - no loop 1 - loop, 2 - reserved, 3 - loop and stop when fading

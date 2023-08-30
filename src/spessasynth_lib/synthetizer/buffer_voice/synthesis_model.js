@@ -19,7 +19,7 @@ export class SynthesisModel
         this.looping = synthesisOptions.getLoopingMode();
         this.synthesisOptions = synthesisOptions;
         this.velocity = velocity;
-        this.volEnv = synthesisOptions.getVolumeEnvelope(velocity);
+        this.volEnv = synthesisOptions.getVolumeEnvelope();
         this.filEnv = synthesisOptions.getFilterEnvelope();
         this.vibrato = synthesisOptions.getVibrato();
 

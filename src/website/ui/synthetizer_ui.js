@@ -3,6 +3,7 @@ import {MidiChannel} from "../../spessasynth_lib/synthetizer/midi_channel.js";
 import { getLoopSvg } from './icons.js';
 import { ShiftableByteArray } from '../../spessasynth_lib/utils/shiftable_array.js';
 import { Meter } from './synthui_meter.js'
+import { midiPatchNames } from '../../spessasynth_lib/utils/other.js'
 
 const MAX_VOICE_METER = 400;
 export class SynthetizerUI
@@ -402,7 +403,7 @@ export class SynthetizerUI
                 {
                     isInGroup = true;
                     currentGroup = document.createElement("optgroup");
-                    currentGroup.label = `${lastProgram.toString()}. ${preset.name}`;
+                    currentGroup.label = `${lastProgram}. ${midiPatchNames[lastProgram]}`;
                     selector.appendChild(currentGroup);
                 }
                 else

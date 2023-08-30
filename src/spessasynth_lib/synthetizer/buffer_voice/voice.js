@@ -47,7 +47,14 @@ export class Voice
          * @type {SynthesisModel[]}
          */
         this.sampleNodes = samples.map(samAndGen => {
-            const sm =  new SynthesisModel(new GeneratorTranslator(samAndGen, midiNote), node, this.tuningRatio, this.velocity, (modulation / 128) * 50);
+            const sm =  new SynthesisModel(
+                new GeneratorTranslator(samAndGen, midiNote, targetVelocity),
+                node,
+                this.tuningRatio,
+                this.velocity,
+                (modulation / 128) * 50
+            );
+
             if(vibratoOptions.rate > 0)
             {
                 this.vibratoDepth.connect(sm.wavetableOscillator.detune);
