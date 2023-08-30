@@ -11,7 +11,7 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 
 ## Features
 - SoundFont2 Generator Support (Specifcally [here](#currently-supported-generators))
-- MIDI Controller Support (Currently supported controllers can be found [here](./../wiki/Synthetizer-Class#supported-controllers))
+- MIDI Controller Support (Currently supported controllers can be found [here](../../wiki/Synthetizer-Class#supported-controllers))
 - Supports some Roland and Yamaha XG sysex messages
 - High performance mode for playing black MIDIs (Don't go too crazy with the amount of notes though)
 - Visualization of the played sequence
@@ -19,7 +19,7 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 - Integrated controller for the synthetizer
 - `Web MIDI API` support (Enables physical MIDI devices to be used with the program)
 - [WebMidiLink](https://www.g200kg.com/en/docs/webmidilink/) support
-- Can be used as a library ([learn more here](../../wiki/Home#simple-demo))
+- Can be used as a library ([learn more here](../../wiki/Usage-As-Library))
 - Modular design allows easy integrations into other projects
 - Written in pure JavaScript using WebAudio API (Every modern browser supports it)
 - No dependencies (Node.js is only required for the app, the core synth and sequencer library needs no dependencies)
