@@ -171,7 +171,7 @@ export class MidiChannel {
 
         this.notes.add(midiNote);
         this.receivedNotes.add(midiNote);
-        let note = new Voice(midiNote, velocity, this.panner, this.preset, this.vibrato, this.channelTuningRatio);
+        let note = new Voice(midiNote, velocity, this.panner, this.preset, this.vibrato, this.channelTuningRatio, this.modulation);
 
         let exclusives = note.startNote(debugInfo);
         const bendRatio = (this.pitchBend / 8192) * this.channelPitchBendRange;
@@ -213,6 +213,21 @@ export class MidiChannel {
         for (let note of this.playingNotes) {
             note.bendNote(semitones + this.channelTranspose);
         }
+    }
+
+    /**
+     * @param value {number} 0-127
+     */
+    setModulation(value)
+    {
+        this.modulation = value;
+        const cents = (value / 128) * 50; // sf default modulator
+        // change vibrato depth
+        this.playingNotes.forEach(n => {
+            n.sampleNodes.forEach(s => {
+                s.vibratoDepth.gain.value = cents
+            })
+        });
     }
 
     get voicesAmount()
@@ -446,6 +461,7 @@ export class MidiChannel {
         this.gainController.gain.value = 1;
         this.panner.pan.value = 0;
         this.pitchBend = 0;
+        this.modulation = 0;
 
         this.vibrato = {depth: 0, rate: 0, delay: 0};
         this.resetParameters();

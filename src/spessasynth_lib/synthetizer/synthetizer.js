@@ -164,6 +164,10 @@ export class Synthetizer {
     controllerChange(channel, controllerName, controllerValue)
     {
         switch (controllerName) {
+            case "Modulation Wheel":
+                this.midiChannels[channel].setModulation(controllerValue);
+                break;
+
             case "Main Volume":
                 this.midiChannels[channel].setVolume(controllerValue);
                 break;

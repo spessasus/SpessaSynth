@@ -78,7 +78,7 @@ export class GeneratorTranslator {
         // releaseVolEnv (timecents) defaults to 5s
         this.releaseTime = this.sumGeneratorValue(generatorTypes.releaseVolEnv,
             -7200,
-            -7200,
+            -7200, // shorter to prevent clicks
             8000);
 
         // scaleTuning
@@ -115,6 +115,11 @@ export class GeneratorTranslator {
         this.modDecay = this.sumGeneratorValue(generatorTypes.decayModEnv, -12000, -12000, 8000);
         this.modSustain = this.sumGeneratorValue(generatorTypes.sustainModEnv, 0, 0, 999); // to prevent getting 0 passed to the exponentialRamp
         this.modRelease = this.sumGeneratorValue(generatorTypes.releaseModEnv, -12000, -12000, 12000);
+
+        // vibrato LFO
+        this.vibratoFreq = this.sumGeneratorValue(generatorTypes.freqVibLFO, 0, -16000, 45000);
+        this.vibratoDepth = this.sumGeneratorValue(generatorTypes.vibLfoToPitch, 0, -12000, 12000);
+        this.vibratoDelay = this.sumGeneratorValue(generatorTypes.delayVibLFO, -12000, -12000, 5000);
     }
 
     /**
@@ -282,6 +287,18 @@ export class GeneratorTranslator {
     getFilterQ()
     {
         return this.decibelsToGain(this.filterQ / 10);
+    }
+
+    /**
+     * @returns {{freqHz: number, delayS: number, depthCents; number}}
+     */
+    getVibrato()
+    {
+        return {
+            freqHz: this.absCentsToHz(this.vibratoFreq),
+            delayS: this.timecentsToSeconds(this.vibratoDelay),
+            depthCents: this.vibratoDepth
+        }
     }
 
 

@@ -144,8 +144,7 @@ export class SynthetizerUI
             this.controllers[channel].preset.value = JSON.stringify([p.bank, p.program]);
         }
 
-        this.synth.onControllerChange = (channel, controller, value) =>
-        {
+        this.synth.onControllerChange = (channel, controller, value) => {
             switch (controller)
             {
                 default:
@@ -164,6 +163,11 @@ export class SynthetizerUI
                 case "Pan":
                     // pan
                     this.controllers[channel].pan.update((value - 63) / 64);
+                    break;
+
+                case "Modulation Wheel":
+                    // mod wheel
+                    this.controllers[channel].mod.update(value);
                     break;
             }
         }
@@ -184,6 +188,7 @@ export class SynthetizerUI
      *     pitchWheel: Meter,
      *     pan: Meter,
      *     expression: Meter,
+     *     mod: Meter,
      *     preset: HTMLSelectElement,
      *     presetReset: HTMLDivElement
      * }} ChannelController
@@ -261,6 +266,18 @@ export class SynthetizerUI
         volume.update(127);
         controller.appendChild(volume.div);
 
+        // modulation wheel
+        const modulation = new Meter(this.channelColors[channelNumber],
+            "Mod Wheel: ",
+            0,
+            127,
+            true,
+            val => {
+                this.synth.controllerChange(channelNumber, "Modulation Wheel", val);
+            });
+        modulation.update(0);
+        controller.appendChild(modulation.div);
+
         // create it here so we can use it in the callback function
         const presetReset = document.createElement("div");
 
@@ -298,6 +315,7 @@ export class SynthetizerUI
             pan: pan,
             expression: expression,
             volume: volume,
+            mod: modulation,
             preset: presetSelector,
             presetReset: presetReset
         };
