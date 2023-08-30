@@ -274,9 +274,9 @@ export class MidiChannel {
         {
             if(this.vibrato.delay === 0 && this.vibrato.rate === 0 && this.vibrato.depth === 0)
             {
-                this.vibrato.depth = 64;
-                this.vibrato.rate = 7;
-                this.vibrato.delay = 0.3;
+                this.vibrato.depth = 30;
+                this.vibrato.rate = 6;
+                this.vibrato.delay = 0.6;
             }
         }
 

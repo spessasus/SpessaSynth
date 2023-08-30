@@ -10,7 +10,7 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 # [Live demo](https://spessasus.github.io/SpessaSynth/)
 
 ## Features
-- SoundFont2 Generator Support (currently supported generators are: all address offsets, panning, tuning, full volume envelope, filterFc envelope)
+- SoundFont2 Generator Support
 - MIDI Controller Support
 - Supports some Roland and Yamaha XG sysex messages
 - High performance mode for playing black MIDIs (Don't go too crazy with the amount of notes though)
@@ -26,7 +26,7 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 - Comes bundled with a small [GeneralUser GS](https://schristiancollins.com/generaluser.php) soundFont to get you started
 
 ## Limitations
-- The program currently supports a limited amount of generators and no modulators. 
+- The program currently supports no modulators and no modulation LFO. 
 This program is still in it's early development, so it might not sound as good as other synthetizers (e.g. FluidSynth or BASSMIDI)
 
 ## Installation
