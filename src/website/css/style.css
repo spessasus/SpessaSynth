@@ -28,12 +28,12 @@ a{
 }
 
 ::-webkit-scrollbar{
-    background-color: transparent;
+    background-color: #000;
     width: 0.3em;
 }
 
 ::-webkit-scrollbar-thumb{
-    background-color: #ccc;
+    background-color: #777;
     border-radius: 50px;
 }
 

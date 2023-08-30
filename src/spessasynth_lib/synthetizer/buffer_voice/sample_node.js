@@ -66,7 +66,7 @@ export class SampleNode
             freq.setValueAtTime(filterEnvelope.peakHz, attackFinish + filterEnvelope.holdTime);
 
             // decay, sustain
-            freq.linearRampToValueAtTime(filterEnvelope.sustainHz, attackFinish + filterEnvelope.holdTime + filterEnvelope.decayTime);
+            freq.exponentialRampToValueAtTime(filterEnvelope.sustainHz, attackFinish + filterEnvelope.holdTime + filterEnvelope.decayTime);
         }
 
         this.source.start();

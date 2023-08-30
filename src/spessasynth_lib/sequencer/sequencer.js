@@ -579,7 +579,7 @@ export class Sequencer {
     {
         clearInterval(this.playbackInterval);
         this.playbackInterval = undefined;
-        this.synth.stopAll();
+        this.synth.stopAll(true);
         if(this.MIDIout)
         {
             for (let c = 0; c < 16; c++)

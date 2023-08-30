@@ -78,21 +78,32 @@ export class Manager
         this.seqUI = new SequencerUI();
 
         document.addEventListener("keypress", e => {
-            if(e.key.toLowerCase() !== "c")
+            switch(e.key.toLowerCase())
             {
-                return;
-            }
+                case "c":
+                    e.preventDefault();
+                    const response = window.prompt("Cinematic mode activated!\n Paste the link to the image for canvas (leave blank to disable)", "");
 
-            const response = window.prompt("Cinematic mode activated!\n Paste the link to the image for canvas (leave blank to disable)", "");
+                    if(response === null)
+                    {
+                        return;
+                    }
+                    canvas.style.background = `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), center center / cover url("${response}")`;
+                    document.getElementsByClassName("top_part")[0].style.display = "none";
+                    document.getElementsByClassName("bottom_part")[0].style.display = "none";
+                    document.body.requestFullscreen().then();
+                    break;
 
-            if(response === null)
-            {
-                return;
+                case "n":
+                    // secret
+                    for (let i = 0; i < 16; i++)
+                    {
+                        this.synth.midiChannels[i].lockPreset = false;
+                        this.synth.programChange(i, (this.synth.midiChannels[i].preset.program + 1) % 127);
+                        this.synth.midiChannels[i].lockPreset = true;
+                    }
+                    break;
             }
-            canvas.style.background = `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), center center / cover url("${response}")`;
-            document.getElementsByClassName("top_part")[0].style.display = "none";
-            document.getElementsByClassName("bottom_part")[0].style.display = "none";
-            document.body.requestFullscreen().then();
         })
     }
 

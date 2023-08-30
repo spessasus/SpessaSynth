@@ -81,6 +81,7 @@ export class SequencerUI{
         this.progressTime.id = "note_time";
         // it'll always be on top
         this.progressTime.onclick = event => {
+            event.preventDefault();
             const barPosition = progressBarBg.getBoundingClientRect();
             const x = event.clientX - barPosition.left;
             const width = barPosition.width;
@@ -239,17 +240,20 @@ export class SequencerUI{
 
             if(e.key.toLowerCase() === "arrowleft")
             {
+                e.preventDefault();
                 this.seq.currentTime -= 5;
                 playPauseButton.innerHTML = getPauseSvg(ICON_SIZE);
             }
             else if(e.key.toLowerCase() === "arrowright")
             {
+                e.preventDefault();
                 this.seq.currentTime += 5;
                 playPauseButton.innerHTML = getPauseSvg(ICON_SIZE);
             }
 
             if(!isNaN(parseFloat(e.key)))
             {
+                e.preventDefault();
                 const num = parseInt(e.key);
                 if(0 <= num && num <= 9)
                 {

@@ -266,7 +266,7 @@ export class SynthetizerUI
 
         // preset controller
         const presetSelector = this.createSelector((
-            this.synth.midiChannels[channelNumber].percussionChannel ? this.percussionList : this.instrumentList
+            channel.percussionChannel ? this.percussionList : this.instrumentList
         ),
             presetName => {
             const data = JSON.parse(presetName);
@@ -312,31 +312,7 @@ export class SynthetizerUI
     {
         this.synth = synth;
 
-        /**
-         * @type {string[]}
-         */
-        this.instrumentList = this.synth.soundFont.presets.filter(p => p.bank !== 128)
-            .sort((a, b) => {
-                if(a.bank === b.bank)
-                {
-                    return a.program - b.program;
-                }
-                return a.bank - b.bank;
-            })
-            .map(p => `${p.bank
-                .toString()
-                .padStart(3, "0")}:${p.program
-                .toString()
-                .padStart(3, "0")} ${p.presetName}`);
-
-        /**
-         * @type {string[]}
-         */
-        this.percussionList = this.synth.soundFont.presets.filter(p => p.bank === 128)
-            .sort((a, b) => a.program - b.program)
-            .map(p => `128:${p.program
-                .toString()
-                .padStart(3, "0")} ${p.presetName}`);
+        this.getInstrumentList();
 
         this.createMainSynthController();
         this.createChannelControllers();
@@ -364,7 +340,7 @@ export class SynthetizerUI
 
     /**
      * Creates a new selector
-     * @param elements {string[]}
+     * @param elements  {{name: string, program: number, bank: number}[]}
      * @param editCallback {function(string)}
      * @returns {HTMLSelectElement}
      */
@@ -372,20 +348,10 @@ export class SynthetizerUI
                    editCallback)
     {
         const mainDiv = document.createElement("select");
-        mainDiv.innerHTML = elements[0];
         mainDiv.classList.add("voice_selector");
         mainDiv.classList.add("controller_element");
 
-        for(const elementName of elements)
-        {
-            const element = document.createElement("option");
-            const bank = parseInt(elementName.substring(0, 3));
-            const program = parseInt(elementName.substring(4, 7));
-            element.classList.add("selector_option");
-            element.innerText = elementName;
-            element.value = JSON.stringify([bank, program]);
-            mainDiv.appendChild(element);
-        }
+        this.reloadSelector(mainDiv, elements);
 
         mainDiv.onchange = () => editCallback(mainDiv.value);
 
@@ -394,46 +360,94 @@ export class SynthetizerUI
 
     /**
      * @param selector {HTMLSelectElement}
-     * @param elements {string[]}
+     * @param elements {{name: string, program: number, bank: number}[]}
      */
     reloadSelector(selector, elements)
     {
         selector.innerHTML = "";
-        for(const elementName of elements)
+        let lastProgram = -20;
+
+        let currentGroup; // current group (optgroup element) or if single preset for program, the select element
+        let isInGroup = false; // controls how we should format the preset name
+
+        for(const preset of elements)
         {
-            const bank = parseInt(elementName.substring(0, 3));
-            const program = parseInt(elementName.substring(4, 7));
+            const bank = preset.bank;
+            const program = preset.program;
+
+            // create a new group
+            if(program !== lastProgram)
+            {
+                lastProgram = program;
+                // unless there's only 1 preset for this program
+                if(elements.filter(e => e.program === lastProgram).length > 1)
+                {
+                    isInGroup = true;
+                    currentGroup = document.createElement("optgroup");
+                    currentGroup.label = `${lastProgram.toString()}. ${preset.name}`;
+                    selector.appendChild(currentGroup);
+                }
+                else
+                {
+                    isInGroup = false;
+                    currentGroup = selector;
+                }
+            }
+
             const element = document.createElement("option");
             element.classList.add("selector_option");
-            element.innerText = elementName;
+            if(isInGroup)
+            {
+                element.innerText = `${preset.program}.${preset.bank}. ${preset.name}`;
+            }
+            else
+            {
+                element.innerText = `${preset.program}. ${preset.name}`;
+            }
             element.value = JSON.stringify([bank, program]);
-            selector.appendChild(element);
+            currentGroup.appendChild(element);
         }
 
     }
 
-    reloadSelectors()
+    getInstrumentList()
     {
+        /**
+         * @type {{name: string, program: number, bank: number}[]}
+         */
         this.instrumentList = this.synth.soundFont.presets.filter(p => p.bank !== 128)
             .sort((a, b) => {
-                if(a.bank === b.bank)
+                if(a.program === b.program)
                 {
-                    return a.program - b.program;
+                    return a.bank - b.bank;
                 }
-                return a.bank - b.bank;
+                return a.program - b.program;
             })
-            .map(p => `${p.bank
-                .toString()
-                .padStart(3, "0")}:${p.program
-                .toString()
-                .padStart(3, "0")} ${p.presetName}`);
+            .map(p => {
+                return {
+                    name: p.presetName,
+                    bank: p.bank,
+                    program: p.program
+                };
+            });
 
+        /**
+         * @type {{name: string, program: number, bank: number}[]}
+         */
         this.percussionList = this.synth.soundFont.presets.filter(p => p.bank === 128)
             .sort((a, b) => a.program - b.program)
-            .map(p => `128:${p.program
-                .toString()
-                .padStart(3, "0")} ${p.presetName}`);
+            .map(p => {
+                return {
+                    name: p.presetName,
+                    bank: p.bank,
+                    program: p.program
+                };
+            })
+    }
 
+    reloadSelectors()
+    {
+        this.getInstrumentList();
         this.controllers.forEach((controller, i) => {
             this.reloadSelector(controller.preset, this.synth.midiChannels[i].percussionChannel ? this.percussionList : this.instrumentList);
         })

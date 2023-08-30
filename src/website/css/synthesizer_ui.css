@@ -98,6 +98,12 @@
     text-align: left;
 }
 
+.voice_selector optgroup{
+    font-weight: bolder;
+    background-color: #141414;
+    text-align: left;
+}
+
 .voice_selector .selector_option:hover
 {
     background-color: #222;

@@ -261,7 +261,7 @@ export class GeneratorTranslator {
         const attackTime = this.timecentsToSeconds(this.modAttack);
         const holdTime = this.timecentsToSeconds(this.modHold);
         const decayTime = this.timecentsToSeconds(this.modDecay);
-        const sustainHz = this.limitValue(((peakHz - attackHz) * sustainGain) + attackHz, FREQ_MIN, FREQ_MAX);
+        const sustainHz = this.limitValue((this.absCentsToHz(this.filterCutoff + (this.modFilterInfluence * sustainGain)) - attackHz) + attackHz, FREQ_MIN, FREQ_MAX);
         const releaseTime = this.timecentsToSeconds(this.modRelease);
         return {
             startHz: attackHz,

@@ -419,6 +419,10 @@ export class MidiChannel {
 
     stopAll(force=false)
     {
+        if(force)
+        {
+            this.holdPedal = false;
+        }
         for(let midiNote = 0; midiNote < 128; midiNote++)
         {
             this.stopNote(midiNote);
