@@ -57,11 +57,9 @@ export class SynthesisModel
             type: "sine",
             frequency: this.vibrato.freqHz
         });
-        this.vibratoDepth = new GainNode(context, {
-            gain: this.vibrato.depthCents + vibratoDepth
-        });
+        this.vibratoDepth = new GainNode(context);
 
-        this.vibratoLfo.connect(this.vibratoDepth);
+        this.setVibratoDepth(this.vibrato.depthCents + vibratoDepth)
         this.vibratoDepth.connect(this.wavetableOscillator.detune);
 
         /*
@@ -104,6 +102,19 @@ export class SynthesisModel
         this.panner.connect(outputNode);
 
         this.exclusive = synthesisOptions.getExclusiveclass();
+    }
+
+    setVibratoDepth(depth)
+    {
+        if(depth > 0)
+        {
+            this.vibratoLfo.connect(this.vibratoDepth);
+            this.vibratoDepth.gain.value = depth;
+        }
+        else
+        {
+            this.vibratoLfo.disconnect();
+        }
     }
 
     get now()

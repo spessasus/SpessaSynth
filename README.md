@@ -10,8 +10,8 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 # [Live demo](https://spessasus.github.io/SpessaSynth/)
 
 ## Features
-- SoundFont2 Generator Support
-- MIDI Controller Support
+- SoundFont2 Generator Support (Specifcally [here](#currently-supported-generators))
+- MIDI Controller Support (Currently supported controllers can be found [here](./../wiki/Synthetizer-Class#supported-controllers))
 - Supports some Roland and Yamaha XG sysex messages
 - High performance mode for playing black MIDIs (Don't go too crazy with the amount of notes though)
 - Visualization of the played sequence
@@ -25,9 +25,9 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 - No dependencies (Node.js is only required for the app, the core synth and sequencer library needs no dependencies)
 - Comes bundled with a small [GeneralUser GS](https://schristiancollins.com/generaluser.php) soundFont to get you started
 
-## Limitations
-- The program currently supports no modulators and no modulation LFO. 
-This program is still in it's early development, so it might not sound as good as other synthetizers (e.g. FluidSynth or BASSMIDI)
+### Limitations
+- The program currently supports no modulators and no reverb nor chorus. 
+- It might not sound as good as other synthetizers (e.g. FluidSynth or BASSMIDI)
 
 ## Installation
 ***Chromium based browser is highly recommended, unless you're loading a large (>4GB) SoundFont (then use Firefox, because chromium has a 4GB memory limit)***
@@ -51,3 +51,17 @@ The program is divided into parts:
 - [Renderer](../../wiki/Renderer-Class) - renders the waveforms of the channels and the falling notes. Must be connected to a synthetizer
 - [Synthetizer](../../wiki/Synthetizer-Class) - generates the sound using the given preset
 - UI classes - used for user interface, connect to their respective parts (eg. synth, sequencer, keyboard etc)
+
+
+## Currently supported generators
+- Full volume envelope
+- All address offsets
+- Looping modes
+- FilterFc and FilterQ
+- Modulation envelope for the low-pass filter (attack is linear instead of convex)
+- KeyNumTo ModEnv hold and decay, same for volEnv
+- Overriding root key, keynum and velocity
+- Vibrato LFO (freq, depth and delay) **Including the Mod wheel support!**
+- Scale tuning, fine tune and coarse tune
+- exclusive class (although sometimes broken)
+- pan

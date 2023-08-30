@@ -225,7 +225,7 @@ export class MidiChannel {
         // change vibrato depth
         this.playingNotes.forEach(n => {
             n.sampleNodes.forEach(s => {
-                s.vibratoDepth.gain.value = cents
+                s.setVibratoDepth(cents);
             })
         });
     }
