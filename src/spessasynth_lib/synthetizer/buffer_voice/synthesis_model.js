@@ -187,7 +187,7 @@ export class SynthesisModel
         }
 
         // start both wavetable and lfo (only if needed to)
-        if(this.vibrato.depthCents > 0) {
+        if(this.vibrato.depthCents > 0 && !this.vibratoStarted) {
             this.vibratoLfo.start(this.now + this.vibrato.delayS);
             this.vibratoStarted = true;
         }

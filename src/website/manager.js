@@ -55,8 +55,8 @@ export class Manager
         // set up renderer
         const canvas = document.getElementById("note_canvas");
 
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        canvas.width = window.innerWidth * window.devicePixelRatio;
+        canvas.height = window.innerHeight * window.devicePixelRatio;
 
         window.addEventListener("resize", () => {
             canvas.width = window.innerWidth * window.devicePixelRatio;
