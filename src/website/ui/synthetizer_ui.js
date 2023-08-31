@@ -4,6 +4,7 @@ import { getLoopSvg } from './icons.js';
 import { ShiftableByteArray } from '../../spessasynth_lib/utils/shiftable_array.js';
 import { Meter } from './synthui_meter.js'
 import { midiPatchNames } from '../../spessasynth_lib/utils/other.js'
+import { midiControllers } from '../../spessasynth_lib/midi_parser/midi_message.js'
 
 const MAX_VOICE_METER = 400;
 export class SynthetizerUI
@@ -151,22 +152,22 @@ export class SynthetizerUI
                 default:
                     break;
 
-                case "Expression Controller":
+                case midiControllers.expressionController:
                     // expression
                     this.controllers[channel].expression.update(value);
                     break;
 
-                case "Main Volume":
+                case midiControllers.mainVolume:
                     // volume
                     this.controllers[channel].volume.update(value);
                     break;
 
-                case "Pan":
+                case midiControllers.pan:
                     // pan
                     this.controllers[channel].pan.update((value - 63) / 64);
                     break;
 
-                case "Modulation Wheel":
+                case midiControllers.modulationWheel:
                     // mod wheel
                     this.controllers[channel].mod.update(value);
                     break;
@@ -238,7 +239,7 @@ export class SynthetizerUI
             1,
             true,
             val => {
-                this.synth.controllerChange(channelNumber, "Pan", (val / 2 + 0.5) * 127);
+                this.synth.controllerChange(channelNumber, midiControllers.pan, (val / 2 + 0.5) * 127);
             });
         pan.update(0);
         controller.appendChild(pan.div);
@@ -250,7 +251,7 @@ export class SynthetizerUI
             127,
             true,
             val => {
-                this.synth.controllerChange(channelNumber, "Expression Controller", val);
+                this.synth.controllerChange(channelNumber, midiControllers.expressionController, val);
             });
         expression.update(127);
         controller.appendChild(expression.div);
@@ -262,9 +263,9 @@ export class SynthetizerUI
             127,
             true,
             val => {
-            this.synth.controllerChange(channelNumber, "Main Volume", val);
+            this.synth.controllerChange(channelNumber, midiControllers.mainVolume, val);
             });
-        volume.update(127);
+        volume.update(100);
         controller.appendChild(volume.div);
 
         // modulation wheel
@@ -274,7 +275,7 @@ export class SynthetizerUI
             127,
             true,
             val => {
-                this.synth.controllerChange(channelNumber, "Modulation Wheel", val);
+                this.synth.controllerChange(channelNumber, midiControllers.modulationWheel, val);
             });
         modulation.update(0);
         controller.appendChild(modulation.div);
@@ -289,7 +290,7 @@ export class SynthetizerUI
             presetName => {
             const data = JSON.parse(presetName);
             this.synth.midiChannels[channelNumber].lockPreset = false;
-            this.synth.controllerChange(channelNumber, "Bank Select", data[0]);
+            this.synth.controllerChange(channelNumber, midiControllers.bankSelect, data[0]);
             this.synth.programChange(channelNumber, data[1]);
             presetSelector.classList.add("locked_selector");
             this.synth.midiChannels[channelNumber].lockPreset = true;

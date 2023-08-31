@@ -104,7 +104,7 @@ export class MIDIDeviceHandler
                 break;
 
             case messageTypes.controllerChange:
-                synth.controllerChange(statusByteData.channel, midiControllers[msg[1]], msg[2]);
+                synth.controllerChange(statusByteData.channel, msg[1], msg[2]);
                 break;
 
             case messageTypes.programChange:

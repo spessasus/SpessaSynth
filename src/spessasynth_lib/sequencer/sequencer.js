@@ -540,7 +540,7 @@ export class Sequencer {
                 break;
 
             case messageTypes.controllerChange:
-                this.synth.controllerChange(statusByteData.channel, midiControllers[event.messageData[0]], event.messageData[1]);
+                this.synth.controllerChange(statusByteData.channel, event.messageData[0], event.messageData[1]);
                 break;
 
             case messageTypes.programChange:

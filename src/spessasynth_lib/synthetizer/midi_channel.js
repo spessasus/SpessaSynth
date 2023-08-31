@@ -453,7 +453,7 @@ export class MidiChannel {
 
     resetControllers()
     {
-        this.channelVolume = 1;
+        this.channelVolume = 100 / 127; // per midi spec
         this.channelExpression = 1;
         this.channelTuningRatio = 1;
         this.channelPitchBendRange = 2;

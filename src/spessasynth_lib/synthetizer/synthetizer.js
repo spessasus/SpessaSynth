@@ -2,6 +2,7 @@ import {MidiChannel} from "./midi_channel.js";
 import {SoundFont2} from "../soundfont/soundfont_parser.js";
 import {ShiftableByteArray} from "../utils/shiftable_array.js";
 import { arrayToHexString, consoleColors } from '../utils/other.js';
+import { midiControllers } from '../midi_parser/midi_message.js'
 
 // i mean come on
 const VOICES_CAP = 1000;
@@ -158,26 +159,26 @@ export class Synthetizer {
     /**
      * Changes the given controller
      * @param channel {number} 0-15
-     * @param controllerName {controllerNames}
+     * @param controllerNumber {number} 0-127
      * @param controllerValue {number} 0-127
      */
-    controllerChange(channel, controllerName, controllerValue)
+    controllerChange(channel, controllerNumber, controllerValue)
     {
-        switch (controllerName) {
-            case "Modulation Wheel":
+        switch (controllerNumber) {
+            case midiControllers.modulationWheel:
                 this.midiChannels[channel].setModulation(controllerValue);
                 break;
 
-            case "Main Volume":
+            case midiControllers.mainVolume:
                 this.midiChannels[channel].setVolume(controllerValue);
                 break;
 
-            case "LSB for Control 7 (Main Volume)":
+            case midiControllers.lsbForControl7MainVolume:
                 let nevVol = (this.midiChannels[channel].channelVolume << 7) | controllerValue;
                 this.midiChannels[channel].setVolume(nevVol);
                 break;
 
-            case "Sustain Pedal":
+            case midiControllers.sustainPedal:
                 if(controllerValue < 64) {
                     this.midiChannels[channel].releaseHoldPedal();
                 }
@@ -187,27 +188,27 @@ export class Synthetizer {
                 }
                 break;
 
-            case "Pan":
+            case midiControllers.pan:
                 let pan = (controllerValue - 64) / 64;
                 this.midiChannels[channel].setPan(pan);
                 break;
 
-            case "All Notes Off":
-            case "All Sound Off":
+            case midiControllers.allNotesOff:
+            case midiControllers.allSoundOff:
                 this.stopAll();
                 break;
 
-            case "Expression Controller":
+            case midiControllers.expressionController:
                 this.midiChannels[channel]
                     .setExpression(controllerValue / 127);
                 break;
 
-            case "LSB for Control 11 (Expression Controller)":
+            case midiControllers.lsbForControl11ExpressionController:
                 const expression = (this.midiChannels[channel].channelExpression << 7 ) | controllerValue;
                 this.midiChannels[channel].setExpression(expression);
                 break;
 
-            case "Bank Select":
+            case midiControllers.bankSelect:
                 if(this.system === "gm")
                 {
                     // gm ignores bank select
@@ -230,7 +231,7 @@ export class Synthetizer {
                 channelObject.bank = bankNr;
                 break;
 
-            case "LSB for Control 0 (Bank Select)":
+            case midiControllers.lsbForControl0BankSelect:
                 if(this.system === 'xg')
                 {
                     if(this.midiChannels[channel].bank === 127)
@@ -241,32 +242,32 @@ export class Synthetizer {
                 }
                 break;
 
-            case "Non-Registered Parameter Number MSB":
+            case midiControllers.NRPNMsb:
                 this.midiChannels[channel].setNRPCoarse(controllerValue);
                 break;
 
-            case "Non-Registered Parameter Number LSB":
+            case midiControllers.NRPNLsb:
                 this.midiChannels[channel].setNRPFine(controllerValue);
                 break;
 
-            case "Registered Parameter Number MSB":
+            case midiControllers.RPNMsb:
                 this.midiChannels[channel].setRPCoarse(controllerValue);
                 break;
 
-            case "Registered Parameter Number LSB":
+            case midiControllers.RPNLsb:
                 this.midiChannels[channel].setRPFine(controllerValue);
                 break;
 
-            case "Data Entry MSB":
+            case midiControllers.dataEntryMsb:
                 this.midiChannels[channel].dataEntryCoarse(controllerValue);
                 break;
 
-            case "Reset All Controllers":
+            case midiControllers.resetAllControllers:
                 this.midiChannels[channel].resetControllers();
                 break;
 
             default:
-                console.log(`%cUnrecognized controller: %c"${controllerName}"%c set to: %c${controllerValue}%c on channel: %c${channel}`,
+                console.log(`%cUnrecognized controller: %c${Object.keys(midiControllers).find(v => midiControllers[v] === controllerNumber)}%c set to: %c${controllerValue}%c on channel: %c${channel}`,
                     consoleColors.warn,
                     consoleColors.unrecognized,
                     consoleColors.warn,
@@ -277,7 +278,7 @@ export class Synthetizer {
         }
         if(this.onControllerChange)
         {
-            this.onControllerChange(channel, controllerName, controllerValue);
+            this.onControllerChange(channel, controllerNumber, controllerValue);
         }
     }
 
@@ -302,11 +303,10 @@ export class Synthetizer {
             }
             if(this.onControllerChange)
             {
-                this.onControllerChange(chNr, "Main Volume", 127);
-                this.onControllerChange(chNr, "Pan", 64);
-                this.onControllerChange(chNr, "Expression Controller", 127);
-                this.onControllerChange(chNr, "Brightness", 127);
-                this.onControllerChange(chNr, "Effects 1 Depth", 0);
+                this.onControllerChange(chNr, midiControllers.mainVolume, 100);
+                this.onControllerChange(chNr, midiControllers.pan, 64);
+                this.onControllerChange(chNr, midiControllers.expressionController, 127);
+                this.onControllerChange(chNr, midiControllers.modulationWheel, 0);
             }
             if(this.onPitchWheel)
             {
@@ -361,8 +361,8 @@ export class Synthetizer {
     onProgramChange;
 
     /**
-     * Calls on controller change(channel number, controller name, controller value)
-     * @type {function(number, controllerNames, number)}
+     * Calls on controller change(channel number, cc, controller value)
+     * @type {function(number, number, number)}
      */
     onControllerChange;
 

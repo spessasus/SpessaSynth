@@ -139,78 +139,79 @@ export function getEvent(statusByte) {
 
 
 /**
- * @type {Object<string, controllerNames>}
+ * @type {{timbreHarmonicContent: number, omniModeOn: number, polyModeOn: number, localControlOnOff: number, NRPNLsb: number, allNotesOff: number, footController: number, effects2Depth: number, lsbForControl7MainVolume: number, expressionController: number, monoModeOn: number, balance: number, effectControl1: number, effectControl2: number, modulationWheel: number, lsbForControl1ModulationWheel: number, allSoundOff: number, pan: number, effects1Depth: number, effects3Depth: number, attackTime: number, dataEntryMsb: number, portamentoControl: number, sostenutoPedal: number, lsbForControl5PortamentoTime: number, RPNLsb: number, bankSelect: number, portamentoTime: number, mainVolume: number, hold2Pedal: number, releaseTime: number, dataDecrement: number, NRPNMsb: number, legatoFootswitch: number, sustainPedal: number, portamentoOnOff: number, lsbForControl0BankSelect: number, lsbForControl13EffectControl2: number, effects5Depth: number, generalPurposeController2: number, lsbForControl6DataEntry: number, resetAllControllers: number, generalPurposeController3: number, generalPurposeController4: number, generalPurposeController5: number, softPedal: number, generalPurposeController6: number, lsbForControl4FootController: number, lsbForControl12EffectControl1: number, generalPurposeController7: number, generalPurposeController8: number, effects4Depth: number, lsbForControl8Balance: number, soundController9: number, soundVariation: number, soundController8: number, soundController7: number, soundController6: number, soundController10: number, dataIncrement: number, generalPurposeController1: number, lsbForControl2BreathController: number, lsbForControl11ExpressionController: number, brightness: number, lsbForControl10Pan: number, RPNMsb: number, breathController: number, omniModeOff: number}}
  */
 export const midiControllers = {
-    0: 'Bank Select',
-    1: 'Modulation Wheel',
-    2: 'Breath Controller',
-    4: 'Foot Controller',
-    5: 'Portamento Time',
-    6: 'Data Entry MSB',
-    7: 'Main Volume',
-    8: 'Balance',
-    10: 'Pan',
-    11: 'Expression Controller',
-    12: 'Effect Control 1',
-    13: 'Effect Control 2',
-    16: 'General Purpose Controller 1',
-    17: 'General Purpose Controller 2',
-    18: 'General Purpose Controller 3',
-    19: 'General Purpose Controller 4',
-    32: 'LSB for Control 0 (Bank Select)',
-    33: 'LSB for Control 1 (Modulation Wheel)',
-    34: 'LSB for Control 2 (Breath Controller)',
-    36: 'LSB for Control 4 (Foot Controller)',
-    37: 'LSB for Control 5 (Portamento Time)',
-    38: 'LSB for Control 6 (Data Entry)',
-    39: 'LSB for Control 7 (Main Volume)',
-    40: 'LSB for Control 8 (Balance)',
-    42: 'LSB for Control 10 (Pan)',
-    43: 'LSB for Control 11 (Expression Controller)',
-    44: 'LSB for Control 12 (Effect control 1)',
-    45: 'LSB for Control 13 (Effect control 2)',
-    64: 'Sustain Pedal',
-    65: 'Portamento On/Off',
-    66: 'Sostenuto Pedal',
-    67: 'Soft Pedal',
-    68: 'Legato Footswitch',
-    69: 'Hold 2 Pedal',
-    70: 'Sound Variation',
-    71: 'Timbre/Harmonic Content',
-    72: 'Release Time',
-    73: 'Attack Time',
-    74: 'Brightness',
-    75: 'Sound Controller 6',
-    76: 'Sound Controller 7',
-    77: 'Sound Controller 8',
-    78: 'Sound Controller 9',
-    79: 'Sound Controller 10',
-    80: 'General Purpose Controller 5',
-    81: 'General Purpose Controller 6',
-    82: 'General Purpose Controller 7',
-    83: 'General Purpose Controller 8',
-    84: 'Portamento Control',
-    91: 'Effects 1 Depth',
-    92: 'Effects 2 Depth',
-    93: 'Effects 3 Depth',
-    94: 'Effects 4 Depth',
-    95: 'Effects 5 Depth',
-    96: 'Data Increment',
-    97: 'Data Decrement',
-    98: 'Non-Registered Parameter Number LSB',
-    99: 'Non-Registered Parameter Number MSB',
-    100: 'Registered Parameter Number LSB',
-    101: 'Registered Parameter Number MSB',
-    120: 'All Sound Off',
-    121: 'Reset All Controllers',
-    122: 'Local Control On/Off',
-    123: 'All Notes Off',
-    124: 'Omni Mode Off',
-    125: 'Omni Mode On',
-    126: 'Mono Mode On',
-    127: 'Poly Mode On'
+    bankSelect: 0,
+    modulationWheel: 1,
+    breathController: 2,
+    footController: 4,
+    portamentoTime: 5,
+    dataEntryMsb: 6,
+    mainVolume: 7,
+    balance: 8,
+    pan: 10,
+    expressionController: 11,
+    effectControl1: 12,
+    effectControl2: 13,
+    generalPurposeController1: 16,
+    generalPurposeController2: 17,
+    generalPurposeController3: 18,
+    generalPurposeController4: 19,
+    lsbForControl0BankSelect: 32,
+    lsbForControl1ModulationWheel: 33,
+    lsbForControl2BreathController: 34,
+    lsbForControl4FootController: 36,
+    lsbForControl5PortamentoTime: 37,
+    lsbForControl6DataEntry: 38,
+    lsbForControl7MainVolume: 39,
+    lsbForControl8Balance: 40,
+    lsbForControl10Pan: 42,
+    lsbForControl11ExpressionController: 43,
+    lsbForControl12EffectControl1: 44,
+    lsbForControl13EffectControl2: 45,
+    sustainPedal: 64,
+    portamentoOnOff: 65,
+    sostenutoPedal: 66,
+    softPedal: 67,
+    legatoFootswitch: 68,
+    hold2Pedal: 69,
+    soundVariation: 70,
+    timbreHarmonicContent: 71,
+    releaseTime: 72,
+    attackTime: 73,
+    brightness: 74,
+    soundController6: 75,
+    soundController7: 76,
+    soundController8: 77,
+    soundController9: 78,
+    soundController10: 79,
+    generalPurposeController5: 80,
+    generalPurposeController6: 81,
+    generalPurposeController7: 82,
+    generalPurposeController8: 83,
+    portamentoControl: 84,
+    effects1Depth: 91,
+    effects2Depth: 92,
+    effects3Depth: 93,
+    effects4Depth: 94,
+    effects5Depth: 95,
+    dataIncrement: 96,
+    dataDecrement: 97,
+    NRPNLsb: 98,
+    NRPNMsb: 99,
+    RPNLsb: 100,
+    RPNMsb: 101,
+    allSoundOff: 120,
+    resetAllControllers: 121,
+    localControlOnOff: 122,
+    allNotesOff: 123,
+    omniModeOff: 124,
+    omniModeOn: 125,
+    monoModeOn: 126,
+    polyModeOn: 127
 };
+
 
 /**
  * @type {{"11": number, "12": number, "13": number, "14": number, "8": number, "9": number, "10": number}}
@@ -224,25 +225,3 @@ export const dataBytesAmount = {
     0xD: 1, // channel aftertouch
     0xE: 2  // pitch wheel
 };
-
-/**
- * @typedef {"Bank Select" | "Modulation Wheel" | "Breath Controller" | "Foot Controller" |
- *  "Portamento Time" | "Data Entry MSB" | "Main Volume" | "Balance" | "Pan" | "Expression Controller" |
- *  "Effect Control 1" | "Effect Control 2" | "General Purpose Controller 1" | "General Purpose Controller 2" |
- *  "General Purpose Controller 3" | "General Purpose Controller 4" | "LSB for Control 0 (Bank Select)" |
- *  "LSB for Control 1 (Modulation Wheel)" | "LSB for Control 2 (Breath Controller)" |
- *  "LSB for Control 4 (Foot Controller)" | "LSB for Control 5 (Portamento Time)" |
- *  "LSB for Control 6 (Data Entry)" | "LSB for Control 7 (Main Volume)" | "LSB for Control 8 (Balance)" |
- *  "LSB for Control 10 (Pan)" | "LSB for Control 11 (Expression Controller)" |
- *  "LSB for Control 12 (Effect control 1)" | "LSB for Control 13 (Effect control 2)" |
- *  "Sustain Pedal" | "Portamento On/Off" | "Sostenuto Pedal" | "Soft Pedal" | "Legato Footswitch" |
- *  "Hold 2 Pedal" | "Sound Variation" | "Timbre/Harmonic Content" | "Release Time" | "Attack Time" |
- *  "Brightness" | "Sound Controller 6" | "Sound Controller 7" | "Sound Controller 8" |
- *  "Sound Controller 9" | "Sound Controller 10" | "General Purpose Controller 5" |
- *  "General Purpose Controller 6" | "General Purpose Controller 7" | "General Purpose Controller 8" |
- *  "Portamento Control" | "Effects 1 Depth" | "Effects 2 Depth" | "Effects 3 Depth" | "Effects 4 Depth" |
- *  "Effects 5 Depth" | "Data Increment" | "Data Decrement" | "Non-Registered Parameter Number LSB" |
- *  "Non-Registered Parameter Number MSB" | "Registered Parameter Number LSB" | "Registered Parameter Number MSB" |
- *  "All Sound Off" | "Reset All Controllers" | "Local Control On/Off" | "All Notes Off" | "Omni Mode Off" |
- *  "Omni Mode On" | "Mono Mode On" | "Poly Mode On"} controllerNames
- */
