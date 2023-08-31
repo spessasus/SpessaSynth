@@ -7,7 +7,7 @@ import {MIDI} from "../spessasynth_lib/midi_parser/midi_loader.js";
 import {SoundFont2} from "../spessasynth_lib/soundfont/soundfont_parser.js";
 import {SequencerUI} from "./ui/sequencer_ui.js";
 import {SynthetizerUI} from "./ui/synthetizer_ui.js";
-import { MIDIDeviceHandler } from '../spessasynth_lib/midi_handler/midi_device_handler.js'
+import { MIDIDeviceHandler } from '../spessasynth_lib/midi_handler/midi_handler.js'
 import { WebMidiLinkHandler } from '../spessasynth_lib/midi_handler/web_midi_link.js'
 
 export class Manager

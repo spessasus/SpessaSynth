@@ -1,6 +1,6 @@
 import {MIDI} from "../midi_parser/midi_loader.js";
 import { DEFAULT_PERCUSSION, Synthetizer } from '../synthetizer/synthetizer.js';
-import {getEvent, messageTypes, midiControllers, MidiMessage} from "../midi_parser/midi_message.js";
+import {getEvent, messageTypes, MidiMessage} from "../midi_parser/midi_message.js";
 import { consoleColors, formatTime } from '../utils/other.js'
 import {readBytesAsUintBigEndian} from "../utils/byte_functions.js";
 
@@ -17,16 +17,9 @@ export class Sequencer {
     {
         this.ignoreEvents = false;
         this.synth = synth;
-        this.midiData = parsedMidi;
-
-        if (!this.midiData.tracks) {
-            throw "No tracks supplied!";
-        }
 
         // event's number in this.events
         this.eventIndex = 0;
-
-        this.oneTickToSeconds = 60 / (120 * this.midiData.timeDivision)
 
         // tracks the time that we have already played
         this.playedTime = 0;
@@ -64,20 +57,7 @@ export class Sequencer {
 
         this.noteOnsPerS = 0;
 
-        /**
-         * merge the tracks
-         * @type {MidiMessage[]}
-         */
-        this.events = this.midiData.tracks.flat();
-        this.events.sort((e1, e2) => e1.ticks - e2.ticks);
-
-        /**
-         * Same as Audio.duration (seconds)
-         * @type {number}
-         */
-        this.duration =this.ticksToSeconds(this.events[this.events.length - 1].ticks);
-
-        console.log(`TOTAL TIME: ${formatTime(Math.round(this.duration)).time}`);
+        this.loadNewSequence(parsedMidi);
     }
 
     /**
@@ -128,8 +108,48 @@ export class Sequencer {
     connectRenderer(renderer)
     {
         this.renderer = renderer;
+        this.calculateNoteTimes();
+    }
 
+    /**
+     * Loads a new sequence
+     * @param parsedMidi {MIDI}
+     */
+    loadNewSequence(parsedMidi)
+    {
+        if (!parsedMidi.tracks) {
+            throw "No tracks supplied!";
+        }
 
+        this.oneTickToSeconds = 60 / (120 * parsedMidi.timeDivision)
+
+        this.midiData = parsedMidi;
+
+        /**
+         * merge the tracks
+         * @type {MidiMessage[]}
+         */
+        this.events = this.midiData.tracks.flat();
+        this.events.sort((e1, e2) => e1.ticks - e2.ticks);
+
+        /**
+         * Same as Audio.duration (seconds)
+         * @type {number}
+         */
+        this.duration = this.ticksToSeconds(this.events[this.events.length - 1].ticks);
+
+        console.log(`TOTAL TIME: ${formatTime(Math.round(this.duration)).time}`);
+
+        if(this.renderer)
+        {
+            this.calculateNoteTimes();
+        }
+
+        this.synth.resetControllers();
+    }
+
+    calculateNoteTimes()
+    {
         /**
          * an array of 16 arrays (channels) and the notes are stored there
          * @typedef {
@@ -205,7 +225,7 @@ export class Sequencer {
         }
 
         console.log("%cFinished loading note times and ready to render the sequence!", consoleColors.info);
-        renderer.connectSequencer(noteTimes, this);
+        this.renderer.connectSequencer(noteTimes, this);
     }
 
     /**

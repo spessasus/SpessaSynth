@@ -129,12 +129,7 @@ export class MidiChannel {
         this.preset = preset;
         if(this.preset.bank === 128)
         {
-            this.percussionChannel = true;
             this.channelTranspose = 0;
-        }
-        else
-        {
-            this.percussionChannel = false;
         }
     }
 

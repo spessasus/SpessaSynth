@@ -1,6 +1,6 @@
 import { Synthetizer } from '../synthetizer/synthetizer.js'
 import { consoleColors } from '../utils/other.js'
-import { MIDIDeviceHandler } from './midi_device_handler.js'
+import { MIDIDeviceHandler } from './midi_handler.js'
 export class WebMidiLinkHandler
 {
     /**

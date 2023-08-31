@@ -293,6 +293,7 @@ export class Synthetizer {
             // reset
             ch.resetControllers();
             ch.percussionChannel = false;
+            ch.bank = 0;
             ch.setPreset(this.defaultPreset);
 
             // call all the event listeners

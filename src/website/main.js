@@ -76,8 +76,17 @@ async function fetchFont(fileName, callback)
  */
 function startMidi(midiFile)
 {
-    titleMessage.innerText = `Parsing ${midiFile.name}`;
-    document.getElementById("file_upload").innerText = midiFile.name;
+    let fName = "";
+    if(midiFile.name.length > 20)
+    {
+        fName = midiFile.name.substring(0, 21) + "...";
+    }
+    else
+    {
+        fName = midiFile.name;
+    }
+    titleMessage.innerText = `Parsing ${fName}`;
+    document.getElementById("file_upload").innerText = fName;
     parseMidi(midiFile).then(parsedMidi => {
         if(parsedMidi.midiName.trim().length > 0)
         {
@@ -89,7 +98,14 @@ function startMidi(midiFile)
             titleMessage.innerText = TITLE;
         }
 
-        manager.play(parsedMidi);
+        if(manager.seq)
+        {
+            manager.seq.loadNewSequence(parsedMidi);
+            manager.seq.currentTime = 0;
+        }
+        else {
+            manager.play(parsedMidi);
+        }
     });
 }
 
@@ -207,17 +223,15 @@ fetch("soundfonts").then(async r => {
     await replaceFont(soundFonts[0].name);
 
     // start midi if already uploaded
-    if(!fileInput.files[0]) {
-        fileInput.onchange = () => {
-            if (!fileInput.files[0]) {
-                return;
-            }
-            startMidi(fileInput.files[0]);
-            fileInput.onchange = null;
-        };
-    }
-    else
-    {
+    if(fileInput.files[0]) {
         startMidi(fileInput.files[0]);
     }
+
+    // and add the event listener
+    fileInput.onchange = () => {
+        if (!fileInput.files[0]) {
+            return;
+        }
+        startMidi(fileInput.files[0]);
+    };
 })
