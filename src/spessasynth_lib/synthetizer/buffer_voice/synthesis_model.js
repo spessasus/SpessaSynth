@@ -113,6 +113,7 @@ export class SynthesisModel
             this.vibratoDepth.gain.value = depth;
             if(!this.vibratoStarted)
             {
+                this.vibratoStarted = true;
                 this.vibratoLfo.start();
             }
         }
