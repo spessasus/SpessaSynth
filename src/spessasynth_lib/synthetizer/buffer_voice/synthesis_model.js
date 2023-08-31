@@ -22,6 +22,7 @@ export class SynthesisModel
         this.volEnv = synthesisOptions.getVolumeEnvelope();
         this.filEnv = synthesisOptions.getFilterEnvelope();
         this.vibrato = synthesisOptions.getVibrato();
+        this.vibratoStarted = false;
 
         /*
         ====================
@@ -110,6 +111,10 @@ export class SynthesisModel
         {
             this.vibratoLfo.connect(this.vibratoDepth);
             this.vibratoDepth.gain.value = depth;
+            if(!this.vibratoStarted)
+            {
+                this.vibratoLfo.start();
+            }
         }
         else
         {
@@ -180,8 +185,11 @@ export class SynthesisModel
             freq.exponentialRampToValueAtTime(this.filEnv.sustainHz, attackFinish + this.filEnv.holdTime + this.filEnv.decayTime);
         }
 
-        // start both wavetable and lfo
-        this.vibratoLfo.start(this.now + this.vibrato.delayS);
+        // start both wavetable and lfo (only if needed to)
+        if(this.vibrato.depthCents > 0) {
+            this.vibratoLfo.start(this.now + this.vibrato.delayS);
+            this.vibratoStarted = true;
+        }
         this.wavetableOscillator.start();
     }
 
@@ -235,7 +243,9 @@ export class SynthesisModel
         this.panner.disconnect();
         delete this.panner;
 
-        this.vibratoLfo.stop();
+        if(this.vibratoStarted) {
+            this.vibratoLfo.stop();
+        }
         this.vibratoLfo.disconnect();
         this.vibratoDepth.disconnect();
         delete this.vibrato;
