@@ -166,10 +166,21 @@
         titleMessage.innerText = TITLE;
       }
 
-      manager.play(parsedMidi, true);
+      if(manager.seq)
+      {
+        manager.seq.loadNewSequence(parsedMidi);
+        manager.seq.currentTime = 0;
+      }
+      else {
+        manager.play(parsedMidi);
+      }
     });
   }
 
+  /**
+   * @param e {{target: HTMLInputElement}}
+   * @return {Promise<void>}
+   */
   sfInput.onchange = async e => {
     if(!e.target.files[0])
     {
