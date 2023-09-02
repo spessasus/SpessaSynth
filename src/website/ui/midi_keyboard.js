@@ -1,5 +1,7 @@
 import {Synthetizer} from "../../spessasynth_lib/synthetizer/synthetizer.js";
 import { MIDIDeviceHandler } from '../../spessasynth_lib/midi_handler/midi_handler.js'
+import { modulatorCurveTypes } from '../../spessasynth_lib/soundfont/chunk/modulators.js'
+import { midiControllers } from '../../spessasynth_lib/midi_parser/midi_message.js'
 
 const KEYBOARD_VELOCITY = 126;
 
@@ -30,7 +32,7 @@ export class MidiKeyboard
         document.addEventListener("keydown", e =>{
             if(e.key === "Shift")
             {
-                this.synth.controllerChange(this.channel, "Sustain Pedal", 127);
+                this.synth.controllerChange(this.channel, midiControllers.sustainPedal, 127);
                 this.keyboard.style.filter = "brightness(0.5)";
             }
         });
@@ -39,7 +41,7 @@ export class MidiKeyboard
         document.addEventListener("keyup", e => {
             if(e.key === "Shift")
             {
-                this.synth.controllerChange(this.channel, "Sustain Pedal", 0);
+                this.synth.controllerChange(this.channel, midiControllers.sustainPedal, 0);
                 this.keyboard.style.filter = "";
             }
         });
