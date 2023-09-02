@@ -1,6 +1,5 @@
 import {Synthetizer} from "../../spessasynth_lib/synthetizer/synthetizer.js";
 import { MIDIDeviceHandler } from '../../spessasynth_lib/midi_handler/midi_handler.js'
-import { modulatorCurveTypes } from '../../spessasynth_lib/soundfont/chunk/modulators.js'
 import { midiControllers } from '../../spessasynth_lib/midi_parser/midi_message.js'
 
 const KEYBOARD_VELOCITY = 126;
