@@ -66,6 +66,105 @@ export const generatorTypes = {
     endOper: 60                         // end marker
 };
 
+/**
+ * @type {{min: number, max: number, def: number}[]}
+ */
+export const generatorLimits = [];
+// offsets
+generatorLimits[generatorTypes.startAddrsOffset] = {min: 0, max: 32768, def: 0};
+generatorLimits[generatorTypes.endAddrOffset] = {min: 0, max: 32768, def: 0};
+generatorLimits[generatorTypes.startloopAddrsOffset] = {min: 0, max: 32768, def: 0};
+generatorLimits[generatorTypes.endloopAddrsOffset] = {min: 0, max: 32768, def: 0};
+generatorLimits[generatorTypes.startAddrsCoarseOffset] = {min: 0, max: 32768, def: 0};
+
+// pitch influence
+generatorLimits[generatorTypes.modLfoToPitch] = {min: -12000, max: 12000, def: 0};
+generatorLimits[generatorTypes.vibLfoToPitch] = {min: -12000, max: 12000, def: 0};
+generatorLimits[generatorTypes.modEnvToPitch] = {min: -12000, max: 12000, def: 0};
+
+// lowpass
+generatorLimits[generatorTypes.initialFilterFc] = {min: 1500, max: 13500, def: 13500};
+generatorLimits[generatorTypes.initialFilterQ] = {min: 0, max: 960, def: 0};
+generatorLimits[generatorTypes.modLfoToFilterFc] = {min: -12000, max: 12000, def: 0};
+generatorLimits[generatorTypes.modEnvToFilterFc] = {min: -12000, max: 12000, def: 0};
+
+generatorLimits[generatorTypes.endAddrsCoarseOffset] = {min: 0, max: 32768, def: 0};
+
+generatorLimits[generatorTypes.modLfoToVolume] = {min: -960, max: 960, def: 0};
+
+// effects, pan
+generatorLimits[generatorTypes.chorusEffectsSend] = {min: 0, max: 1000, def: 0};
+generatorLimits[generatorTypes.reverbEffectsSend] = {min: 0, max: 1000, def: 0};
+generatorLimits[generatorTypes.pan] = {min: -500, max: 500, def: 0};
+
+// lfo
+generatorLimits[generatorTypes.delayModLFO] = {min: -12000, max: 5000, def: -12000};
+generatorLimits[generatorTypes.freqModLFO] = {min: -16000, max: 4500, def: 0};
+generatorLimits[generatorTypes.delayVibLFO] = {min: -12000, max: 5000, def: -12000};
+generatorLimits[generatorTypes.freqVibLFO] = {min: -16000, max: 4500, def: 0};
+
+// mod env
+generatorLimits[generatorTypes.delayModEnv] = {min: -12000, max: 5000, def: -12000};
+generatorLimits[generatorTypes.attackModEnv] = {min: -12000, max: 8000, def: -12000};
+generatorLimits[generatorTypes.holdModEnv] = {min: -12000, max: 5000, def: -12000};
+generatorLimits[generatorTypes.decayModEnv] = {min: -12000, max: 8000, def: -12000};
+generatorLimits[generatorTypes.sustainModEnv] = {min: 0, max: 1000, def: 0};
+generatorLimits[generatorTypes.releaseModEnv] = {min: -12000, max: 8000, def: -12000};
+// keynum to mod env
+generatorLimits[generatorTypes.keyNumToModEnvHold] = {min: -1200, max: 1200, def: 0};
+generatorLimits[generatorTypes.keyNumToModEnvDecay] = {min: -1200, max: 1200, def: 0};
+
+// vol env
+generatorLimits[generatorTypes.delayVolEnv] = {min: -12000, max: 5000, def: -12000};
+generatorLimits[generatorTypes.attackVolEnv] = {min: -12000, max: 8000, def: -12000};
+generatorLimits[generatorTypes.holdVolEnv] = {min: -12000, max: 5000, def: -12000};
+generatorLimits[generatorTypes.decayVolEnv] = {min: -12000, max: 8000, def: -12000};
+generatorLimits[generatorTypes.sustainVolEnv] = {min: 0, max: 1440, def: 0};
+generatorLimits[generatorTypes.releaseVolEnv] = {min: -7200, max: 8000, def: -7200}; // prevent clicks
+// keynum to vol env
+generatorLimits[generatorTypes.keyNumToVolEnvHold] = {min: -1200, max: 1200, def: 0};
+generatorLimits[generatorTypes.keyNumToVolEnvDecay] = {min: -1200, max: 1200, def: 0};
+
+generatorLimits[generatorTypes.startloopAddrsCoarseOffset] = {min: 0, max: 32768, def: 0};
+generatorLimits[generatorTypes.keyNum] = {min: -1, max: 127, def: -1};
+generatorLimits[generatorTypes.velocity] = {min: -1, max: 127, def: -1};
+
+generatorLimits[generatorTypes.initialAttenuation] = {min: -100, max: 1440, def: 0}; // soundblaster allows 10dB of gain
+
+generatorLimits[generatorTypes.endloopAddrsCoarseOffset] = {min: 0, max: 32768, def: 0};
+
+generatorLimits[generatorTypes.coarseTune] = {min: -120, max: 120, def: 0};
+generatorLimits[generatorTypes.fineTune] = {min: -99, max: 99, def: 0};
+generatorLimits[generatorTypes.scaleTuning] = {min: 0, max: 1200, def: 100};
+generatorLimits[generatorTypes.exclusiveClass] = {min: 0, max: 99999, def: 0};
+generatorLimits[generatorTypes.overridingRootKey] = {min: 0-1, max: 127, def: -1};
+
+
+/**
+ * @param generatorType {number}
+ * @param presetGens {Generator[]}
+ * @param instrumentGens {Generator[]}
+ */
+export function addAndClampGenerator(generatorType, presetGens, instrumentGens)
+{
+    const limits = generatorLimits[generatorType] || {min: 0, max: 32768, def: 0};
+    let presetGen = presetGens.find(g => g.generatorType === generatorType);
+    let presetValue = 0;
+    if(presetGen)
+    {
+        presetValue = presetGen.generatorValue;
+    }
+
+    let instruGen = instrumentGens.find(g => g.generatorType === generatorType);
+    let instruValue = limits.def;
+    if(instruGen)
+    {
+        instruValue = instruGen.generatorValue;
+    }
+    return Math.max(limits.min, Math.min(limits.max, instruValue + presetValue));
+}
+
+
 export class Generator{
     /**
      * Creates a generator

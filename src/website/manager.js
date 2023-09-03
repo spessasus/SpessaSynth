@@ -37,74 +37,73 @@ export class Manager
      * @param soundFont {SoundFont2}
      */
     constructor(context, soundFont) {
-        // set up soundfont
-        this.soundFont = soundFont;
+        context.audioWorklet.addModule("/spessasynth_lib/synthetizer/worklet_channel/channel_processor.js").then(() => {
+            // set up soundfont
+            this.soundFont = soundFont;
 
-        // set up synthetizer
-        this.synth = new Synthetizer(context.destination, this.soundFont);
+            // set up synthetizer
+            this.synth = new Synthetizer(context.destination, this.soundFont);
 
-        // set up midi access
-        this.midHandler = new MIDIDeviceHandler();
+            // set up midi access
+            this.midHandler = new MIDIDeviceHandler();
 
-        // set up web midi link
-        this.wml = new WebMidiLinkHandler(this.synth);
+            // set up web midi link
+            this.wml = new WebMidiLinkHandler(this.synth);
 
-        // set up keyboard
-        this.keyboard = new MidiKeyboard(this.channelColors, this.synth, this.midHandler);
+            // set up keyboard
+            this.keyboard = new MidiKeyboard(this.channelColors, this.synth, this.midHandler);
 
-        // set up renderer
-        const canvas = document.getElementById("note_canvas");
+            // set up renderer
+            const canvas = document.getElementById("note_canvas");
 
-        canvas.width = window.innerWidth * window.devicePixelRatio;
-        canvas.height = window.innerHeight * window.devicePixelRatio;
-
-        window.addEventListener("resize", () => {
             canvas.width = window.innerWidth * window.devicePixelRatio;
             canvas.height = window.innerHeight * window.devicePixelRatio;
+
+            window.addEventListener("resize", () => {
+                canvas.width = window.innerWidth * window.devicePixelRatio;
+                canvas.height = window.innerHeight * window.devicePixelRatio;
+            });
+
+            this.renderer = new Renderer(this.channelColors, this.synth, canvas);
+            this.renderer.render(true);
+
+            // connect the synth to keyboard
+            this.synth.onNoteOn = (note, chan, vel, vol, exp) => this.keyboard.pressNote(note, chan, vel, vol, exp);
+            this.synth.onNoteOff = note => this.keyboard.releaseNote(note);
+
+            // set up synth UI
+            this.synthUI = new SynthetizerUI(this.channelColors);
+            this.synthUI.connectSynth(this.synth);
+
+            // create an UI for sequencer
+            this.seqUI = new SequencerUI();
+
+            document.addEventListener("keypress", e => {
+                switch (e.key.toLowerCase()) {
+                    case "c":
+                        e.preventDefault();
+                        const response = window.prompt("Cinematic mode activated!\n Paste the link to the image for canvas (leave blank to disable)", "");
+
+                        if (response === null) {
+                            return;
+                        }
+                        canvas.style.background = `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), center center / cover url("${response}")`;
+                        document.getElementsByClassName("top_part")[0].style.display = "none";
+                        document.getElementsByClassName("bottom_part")[0].style.display = "none";
+                        document.body.requestFullscreen().then();
+                        break;
+
+                    case "n":
+                        // secret
+                        for (let i = 0; i < 16; i++) {
+                            this.synth.midiChannels[i].lockPreset = false;
+                            this.synth.programChange(i, (this.synth.midiChannels[i].preset.program + 1) % 127);
+                            this.synth.midiChannels[i].lockPreset = true;
+                        }
+                        break;
+                }
+            });
         });
-
-        this.renderer = new Renderer(this.channelColors, this.synth, canvas);
-        this.renderer.render(true);
-
-        // connect the synth to keyboard
-        this.synth.onNoteOn = (note, chan, vel, vol, exp) => this.keyboard.pressNote(note, chan, vel, vol, exp);
-        this.synth.onNoteOff = note => this.keyboard.releaseNote(note);
-
-        // set up synth UI
-        this.synthUI = new SynthetizerUI(this.channelColors);
-        this.synthUI.connectSynth(this.synth);
-
-        // create an UI for sequencer
-        this.seqUI = new SequencerUI();
-
-        document.addEventListener("keypress", e => {
-            switch(e.key.toLowerCase())
-            {
-                case "c":
-                    e.preventDefault();
-                    const response = window.prompt("Cinematic mode activated!\n Paste the link to the image for canvas (leave blank to disable)", "");
-
-                    if(response === null)
-                    {
-                        return;
-                    }
-                    canvas.style.background = `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), center center / cover url("${response}")`;
-                    document.getElementsByClassName("top_part")[0].style.display = "none";
-                    document.getElementsByClassName("bottom_part")[0].style.display = "none";
-                    document.body.requestFullscreen().then();
-                    break;
-
-                case "n":
-                    // secret
-                    for (let i = 0; i < 16; i++)
-                    {
-                        this.synth.midiChannels[i].lockPreset = false;
-                        this.synth.programChange(i, (this.synth.midiChannels[i].preset.program + 1) % 127);
-                        this.synth.midiChannels[i].lockPreset = true;
-                    }
-                    break;
-            }
-        })
     }
 
     /**

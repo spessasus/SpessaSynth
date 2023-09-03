@@ -110,6 +110,7 @@ export class SoundFont2
          */
         this.dataArray.currentIndex = this.sampleDataStartIndex
         let samples = readSamples(presetSamplesChunk, this.dataArray);
+        this.samples = samples;
 
         /**
          * read all the instrument generators

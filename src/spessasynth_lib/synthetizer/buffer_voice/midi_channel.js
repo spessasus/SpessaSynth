@@ -1,6 +1,7 @@
-import {Voice} from "./buffer_voice/voice.js";
-import {Preset} from "../soundfont/chunk/presets.js";
-import { consoleColors } from '../utils/other.js'
+import {Voice} from "./voice.js";
+import {Preset} from "../../soundfont/chunk/presets.js";
+import { consoleColors } from '../../utils/other.js'
+import { midiControllers } from '../../midi_parser/midi_message.js'
 
 const CHANNEL_LOUDNESS = 0.5;
 
@@ -98,6 +99,86 @@ export class MidiChannel {
          * @type {boolean}
          */
         this.lockPreset = false;
+    }
+
+    /**
+     * @param number {number}
+     * @param value
+     */
+    controllerChange(number, value)
+    {
+        switch (number)
+        {
+            case midiControllers.pan:
+                this.setPan((value - 64) / 64);
+                break;
+
+            case midiControllers.modulationWheel:
+                this.setModulation(value);
+                break;
+
+            case midiControllers.mainVolume:
+                this.setVolume(value);
+                break;
+
+            case midiControllers.lsbForControl7MainVolume:
+                let nevVol = (this.channelVolume << 7) | value;
+                this.setVolume(nevVol);
+                break;
+
+            case midiControllers.sustainPedal:
+                if(value < 64) {
+                    this.releaseHoldPedal();
+                }
+                else
+                {
+                    this.pressHoldPedal();
+                }
+                break;
+
+            case midiControllers.expressionController:
+                this.setExpression(value / 127);
+                break;
+
+            case midiControllers.lsbForControl11ExpressionController:
+                const expression = (this.channelExpression << 7) | value;
+                this.setExpression(expression)
+                break;
+
+            case midiControllers.NRPNMsb:
+                this.setNRPCoarse(value);
+                break;
+
+            case midiControllers.NRPNLsb:
+                this.setNRPFine(value);
+                break;
+
+            case midiControllers.RPNMsb:
+                this.setRPCoarse(value);
+                break;
+
+            case midiControllers.RPNLsb:
+                this.setRPFine(value);
+                break;
+
+            case midiControllers.dataEntryMsb:
+                this.dataEntryCoarse(value);
+                break;
+
+            case midiControllers.resetAllControllers:
+                this.resetControllers();
+                break;
+
+            default:
+                console.log(`%cUnrecognized controller: %c${Object.keys(midiControllers).find(v => midiControllers[v] === number)}%c set to: %c${value}%c on channel: %c${this.channelNumber}`,
+                    consoleColors.warn,
+                    consoleColors.unrecognized,
+                    consoleColors.warn,
+                    consoleColors.value,
+                    consoleColors.warn,
+                    consoleColors.recognized);
+                break;
+        }
     }
 
     pressHoldPedal()
@@ -356,14 +437,14 @@ export class MidiChannel {
                     // pitch bend range
                     case 0x0000:
                         this.channelPitchBendRange = dataValue;
-                        //console.log(`Channel ${this.channelNumber} bend range. Semitones:`, dataValue);
+                        console.log(`Channel ${this.channelNumber} bend range. Semitones:`, dataValue);
                         break;
 
                     // coarse tuning
                     case 0x0002:
                         // semitones
                         this.channelTuningRatio = Math.pow(2,  (dataValue - 64) / 12);
-                        //console.log(`Channel ${this.channelNumber} coarse tuning. Type:`, this.RPValue, "Value:", dataValue);
+                        console.log(`Channel ${this.channelNumber} coarse tuning. Semitones:`, dataValue - 64);
                         break;
 
                     case 0x3FFF:

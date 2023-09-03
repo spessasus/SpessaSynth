@@ -2,7 +2,8 @@ import {RiffChunk} from "./riff_chunk.js";
 import {PresetZone} from "./zones.js";
 import {readBytesAsString, readBytesAsUintLittleEndian} from "../../utils/byte_functions.js";
 import {Sample} from "./samples.js";
-import {Generator} from "./generators.js";
+import { Generator, generatorTypes } from './generators.js'
+import { defaultModulators } from './modulators.js'
 
 export class Preset {
     /**
@@ -53,7 +54,9 @@ export class Preset {
      * @typedef {{
      *  instrumentGenerators: Generator[],
      *  presetGenerators: Generator[],
-     *  sample: Sample
+     *  modulators: Modulator[],
+     *  sample: Sample,
+     *  sampleID: number,
      * }} SampleAndGenerators
      */
 
@@ -74,12 +77,40 @@ export class Preset {
         function isInRange(min, max, number) {
             return number >= min && number <= max;
         }
+
         /**
-         * @type {{
-         *  instrumentGenerators: Generator[],
-         *  presetGenerators: Generator[],
-         *  sample: Sample
-         * }[]}
+         * @param mod1 {Modulator}
+         * @param mod2 {Modulator}
+         * @returns {boolean}
+         */
+        function identicalMod(mod1, mod2)
+        {
+            return (mod1.modulatorSource === mod2.modulatorSource)
+                && (mod1.modulatorDestination === mod2.modulatorDestination)
+                && (mod1.modulationSecondarySrc === mod2.modulationSecondarySrc)
+                && (mod1.transformType === mod2.transformType);
+        }
+
+        /**
+         * @param main {Generator[]}
+         * @param adder {Generator[]}
+         */
+        function addUnique(main, adder)
+        {
+            main.push(...adder.filter(g => !main.find(mg => mg.generatorType === g.generatorType)));
+        }
+
+        /**
+         * @param main {Modulator[]}
+         * @param adder {Modulator[]}
+         */
+        function addUniqueMods(main, adder)
+        {
+            main.push(...adder.filter(m => !main.find(mm => identicalMod(m, mm))));
+        }
+
+        /**
+         * @type {SampleAndGenerators[]}
          */
         let parsedGeneratorsAndSamples = [];
 
@@ -88,6 +119,8 @@ export class Preset {
          * @type {Generator[]}
          */
         let globalPresetGenerators = this.presetZones[0].isGlobal ? [...this.presetZones[0].generators] : [];
+
+        let globalPresetModulators = this.presetZones[0].isGlobal ? [...this.presetZones[0].modulators] : [];
 
         // find the preset zones in range
         let presetZonesInRange = this.presetZones.filter(currentZone =>
@@ -100,11 +133,13 @@ export class Preset {
         presetZonesInRange.forEach(zone =>
         {
             let presetGenerators = zone.generators;
+            let presetModulators = zone.modulators;
             /**
              * global zone is always first, so it or nothing
              * @type {Generator[]}
              */
             let globalInstrumentGenerators = zone.instrument.instrumentZones[0].isGlobal ? [...zone.instrument.instrumentZones[0].generators] : [];
+            let globalInstrumentModulators = zone.instrument.instrumentZones[0].isGlobal ? [...zone.instrument.instrumentZones[0].modulators] : [];
 
             let instrumentZonesInRange = zone.instrument.instrumentZones
                 .filter(currentZone =>
@@ -122,33 +157,50 @@ export class Preset {
             instrumentZonesInRange.forEach(instrumentZone =>
             {
                 let instrumentGenerators = [...instrumentZone.generators];
+                let instrumentModulators = [...instrumentZone.modulators];
 
+                addUnique(presetGenerators, globalPresetGenerators);
                 // add the unique global preset generators (local replace global(
-                presetGenerators.push(...globalPresetGenerators.filter(
-                    gen => presetGenerators.find(existingGen =>
-                        existingGen.generatorType === gen.generatorType) === undefined
-                    )
-                );
+
 
                 // add the unique global instrument generators (local replace global)
-                instrumentGenerators.push(...globalInstrumentGenerators.filter(
-                    gen => instrumentGenerators.find(
-                        existingGen => existingGen.generatorType === gen.generatorType) === undefined
-                    )
-                );
+                addUnique(instrumentGenerators, globalInstrumentGenerators);
+
+                addUniqueMods(presetModulators, globalPresetModulators);
+                addUniqueMods(instrumentModulators, globalInstrumentModulators);
+
+                // default mods
+                addUniqueMods(instrumentModulators, defaultModulators);
+
+                /**
+                 * sum preset modulators to instruments (amount) sf spec page 54
+                 * @type {Modulator[]}
+                 */
+                const finalModulatorList = [...instrumentModulators];
+                presetModulators.forEach(mod => {
+                    const identicalInstrumentModulator = presetModulators.find(m => identicalMod(mod, m));
+                    if(identicalInstrumentModulator)
+                    {
+                        // sum the amounts
+                        identicalInstrumentModulator.modulationAmount += mod.modulationAmount;
+                    }
+                    else
+                    {
+                        finalModulatorList.push(mod);
+                    }
+                })
+
 
                 // combine both generators and add to the final result
                 parsedGeneratorsAndSamples.push({
                     instrumentGenerators: instrumentGenerators,
                     presetGenerators: presetGenerators,
-                    sample: instrumentZone.sample
+                    modulators: finalModulatorList,
+                    sample: instrumentZone.sample,
+                    sampleID: instrumentZone.generators.find(g => g.generatorType === generatorTypes.sampleID).generatorValue
                 });
             });
         });
-        // if(parsedGeneratorsAndSamples.length < 1)
-        // {
-        //     console.warn(`No samples found for note ${midiNote} velocity ${velocity} for preset "${this.presetName}"`)
-        // }
 
         // save and return
         this.foundSamplesAndGenerators[midiNote][velocity] = parsedGeneratorsAndSamples;

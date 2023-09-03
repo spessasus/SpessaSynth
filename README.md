@@ -26,7 +26,7 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 - Comes bundled with a small [GeneralUser GS](https://schristiancollins.com/generaluser.php) soundFont to get you started
 
 ### Limitations
-- The program currently supports no modulators and no reverb nor chorus. 
+- The program currently supports no modulators (Work in progress) and no reverb nor chorus. 
 - It might not sound as good as other synthetizers (e.g. FluidSynth or BASSMIDI)
 
 ## Installation

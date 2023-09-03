@@ -1,8 +1,9 @@
-import {MidiChannel} from "./midi_channel.js";
+import {MidiChannel} from "./buffer_voice/midi_channel.js";
 import {SoundFont2} from "../soundfont/soundfont_parser.js";
 import {ShiftableByteArray} from "../utils/shiftable_array.js";
 import { arrayToHexString, consoleColors } from '../utils/other.js';
 import { midiControllers } from '../midi_parser/midi_message.js'
+import { WorkletChannel } from './worklet_channel/worklet_channel.js'
 
 // i mean come on
 const VOICES_CAP = 1000;
@@ -43,7 +44,7 @@ export class Synthetizer {
         this.system = "gm2";
 
         /**
-         * @type {MidiChannel[]}
+         * @type {WorkletChannel[]}
          */
         this.midiChannels = [];
 
@@ -147,9 +148,9 @@ export class Synthetizer {
         for (let channel of this.midiChannels) {
             if(this.onNoteOff)
             {
-                for(const note of channel.playingNotes)
+                for(const note of channel.notes)
                 {
-                    this.onNoteOff(note.midiNote);
+                    this.onNoteOff(note);
                 }
             }
             channel.stopAll(force);
@@ -165,47 +166,9 @@ export class Synthetizer {
     controllerChange(channel, controllerNumber, controllerValue)
     {
         switch (controllerNumber) {
-            case midiControllers.modulationWheel:
-                this.midiChannels[channel].setModulation(controllerValue);
-                break;
-
-            case midiControllers.mainVolume:
-                this.midiChannels[channel].setVolume(controllerValue);
-                break;
-
-            case midiControllers.lsbForControl7MainVolume:
-                let nevVol = (this.midiChannels[channel].channelVolume << 7) | controllerValue;
-                this.midiChannels[channel].setVolume(nevVol);
-                break;
-
-            case midiControllers.sustainPedal:
-                if(controllerValue < 64) {
-                    this.midiChannels[channel].releaseHoldPedal();
-                }
-                else
-                {
-                    this.midiChannels[channel].pressHoldPedal();
-                }
-                break;
-
-            case midiControllers.pan:
-                let pan = (controllerValue - 64) / 64;
-                this.midiChannels[channel].setPan(pan);
-                break;
-
             case midiControllers.allNotesOff:
             case midiControllers.allSoundOff:
                 this.stopAll();
-                break;
-
-            case midiControllers.expressionController:
-                this.midiChannels[channel]
-                    .setExpression(controllerValue / 127);
-                break;
-
-            case midiControllers.lsbForControl11ExpressionController:
-                const expression = (this.midiChannels[channel].channelExpression << 7 ) | controllerValue;
-                this.midiChannels[channel].setExpression(expression);
                 break;
 
             case midiControllers.bankSelect:
@@ -242,38 +205,9 @@ export class Synthetizer {
                 }
                 break;
 
-            case midiControllers.NRPNMsb:
-                this.midiChannels[channel].setNRPCoarse(controllerValue);
-                break;
-
-            case midiControllers.NRPNLsb:
-                this.midiChannels[channel].setNRPFine(controllerValue);
-                break;
-
-            case midiControllers.RPNMsb:
-                this.midiChannels[channel].setRPCoarse(controllerValue);
-                break;
-
-            case midiControllers.RPNLsb:
-                this.midiChannels[channel].setRPFine(controllerValue);
-                break;
-
-            case midiControllers.dataEntryMsb:
-                this.midiChannels[channel].dataEntryCoarse(controllerValue);
-                break;
-
-            case midiControllers.resetAllControllers:
-                this.midiChannels[channel].resetControllers();
-                break;
 
             default:
-                console.log(`%cUnrecognized controller: %c${Object.keys(midiControllers).find(v => midiControllers[v] === controllerNumber)}%c set to: %c${controllerValue}%c on channel: %c${channel}`,
-                    consoleColors.warn,
-                    consoleColors.unrecognized,
-                    consoleColors.warn,
-                    consoleColors.value,
-                    consoleColors.warn,
-                    consoleColors.recognized);
+                this.midiChannels[channel].controllerChange(controllerNumber, controllerValue);
                 break;
         }
         if(this.onControllerChange)

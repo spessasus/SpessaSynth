@@ -1,12 +1,37 @@
+/**
+ * @typedef {{sampleID: number,
+ * playbackStep: number,
+ * cursor: number,
+ * rootKey: number,
+ * loopStart: number,
+ * loopEnd: number,
+ * }} WorkletSample
+ *
+ * @typedef {{
+ * sample: WorkletSample,
+ * generators: Int16Array,
+ * modulators: WorkletModulator[],
+ * modulatorResults: Int16Array
+ * finished: boolean,
+ * isInRelease: boolean,
+ * velocity: number,
+ * currentGain: number,
+ * volEnvGain: number,
+ * startTime: number,
+ * midiNote: number,
+ * releaseStartTime: number,
+ * }} WorkletVoice
+ */
 
-import {Preset} from "../../soundfont/chunk/presets.js";
+import { Preset } from '../../soundfont/chunk/presets.js'
 import { consoleColors } from '../../utils/other.js'
+import { modulatorSources } from '../../soundfont/chunk/modulators.js'
+import { addAndClampGenerator, generatorTypes } from '../../soundfont/chunk/generators.js'
+import { midiControllers } from '../../midi_parser/midi_message.js'
 
-const CHANNEL_LOUDNESS = 0.5;
+const CHANNEL_GAIN = 0.5;
 
-const BRIGHTNESS_MAX_FREQ = 22050;
-const BRIGHTNESS_MIN_FREQ = 300;
-const REVERB_TIME_S = 1;
+export const NON_CC_INDEX_OFFSET = 128;
 
 const dataEntryStates = {
     Idle: 0,
@@ -18,47 +43,37 @@ const dataEntryStates = {
     DataFine: 6
 };
 
-/**
- * @type {{presetChange: number, noteOff: number, noteOn: number, pitchBend: number, killNote: number}}
- */
 export const workletMessageType = {
     noteOff: 0,
     noteOn: 1,
-    pitchBend: 2,
-    presetChange: 3,
-    killNote: 4
+    ccChange: 2,
+    sampleDump: 3,
+    killNote: 4,
+    ccReset: 5,
+    setChannelVibrato: 6,
 };
 
 /**
  * @typedef {{
- *     messageType: (0|1|2|3|4),
- *     messageData: (number[]|Preset|number)
+ *     messageType: 0|1|2|3|4|5|6,
+ *     messageData: (
+ *     number[]
+ *     |WorkletVoice[]
+ *     |number
+ *     |{sampleData: Float32Array, sampleID: number}
+ *     |{rate: number, depth: number, delay: number}
+ *     )
  * }} WorkletMessage
  * Message types:
  * 0 - noteOff            -> midiNote<number>
- * 1 - noteOn             -> [midiNote<number>, velocity<number>]
- * 2 - pitch bend         -> tuning<number>
- * 3 - program change     -> preset<Preset>
+ * 1 - noteOn             -> [midiNote<number>, ...generators]
+ * 2 - ccChange         -> [ccNumber<number>, ccValue<number>]
+ * 2 - postCCbuffer -> SharedArrayBuffer // damn you CORS
+ * 3 - sample dump -> {sampleData: Float32Array, sampleID: number}
  * 4 - note off instantly -> midiNote<number>
+ * 5 - cc reset
+ * 6 - channel vibrato -> {frequencyHz: number, depthCents: number, delaySeconds: number}
  */
-
-// Serialize class and methods
-function serializeClass(classObj) {
-    // Convert methods to string representation (simplified)
-    const serializedMethods = Object.getOwnPropertyNames(classObj.prototype)
-        .filter(prop => typeof classObj.prototype[prop] === 'function')
-        .reduce((acc, methodName) => {
-            acc[methodName] = classObj.prototype[methodName].toString();
-            return acc;
-        }, {});
-
-    return JSON.stringify({
-        constructor: classObj.toString(),
-        methods: serializedMethods
-    });
-}
-
-
 
 
 export class WorkletChannel {
@@ -75,70 +90,37 @@ export class WorkletChannel {
         this.channelNumber = channelNumber
         this.percussionChannel = percussionChannel;
 
+        // shared
+        this.shared = new ArrayBuffer(292)
+
+        // contains all the midi controllers and their values (and the source enum controller palettes
+        this.midiControllers = new Int16Array(this.shared); // 127 controllers + sf2 spec 8.2.1 + other things
+
         this.preset = defaultPreset;
         this.bank = this.preset.bank;
+        this.channelVolume = 1;
+        this.channelExpression = 1;
+
         /**
          * @type {Set<number>}
          */
         this.notes = new Set();
 
         this.worklet = new AudioWorkletNode(this.ctx, "worklet-channel-processor", {
-            channelCount: 2,
-        });
-        this.worklet.port.postMessage({
-            messageType: workletMessageType.presetChange,
-            messageData: serializeClass(this.preset)
+            outputChannelCount: [2]
         });
 
-        this.panner = new StereoPannerNode(this.ctx);
-
+        // for the renderer
         this.gainController = new GainNode(this.ctx, {
-            gain: 1
+            gain: CHANNEL_GAIN
         });
 
-        this.brightnessController = new BiquadFilterNode(this.ctx, {
-            type: "lowpass",
-            frequency: BRIGHTNESS_MAX_FREQ
-        });
+        /**
+         * @type {Set<number>}
+         */
+        this.dumpedSamples = new Set();
 
-        const revLength = Math.round(this.ctx.sampleRate * REVERB_TIME_S);
-        const revbuff = new AudioBuffer({
-            numberOfChannels: 2,
-            sampleRate: this.ctx.sampleRate,
-            length: revLength
-        });
-
-        const revLeft = revbuff.getChannelData(0);
-        const revRight = revbuff.getChannelData(1);
-        for(let i = 0; i < revLength; i++)
-        {
-            // clever reverb algorithm from here:
-            // https://github.com/g200kg/webaudio-tinysynth/blob/master/webaudio-tinysynth.js#L1342
-            if(i / revLength < Math.random())
-            {
-                revLeft[i] = Math.exp(-3 * i / revLength) * (Math.random() - 0.5) / 2;
-                revRight[i] = Math.exp(-3 * i / revLength) * (Math.random() - 0.5) / 2;
-            }
-        }
-
-        this.convolver = new ConvolverNode(this.ctx, {
-            buffer: revbuff
-        });
-        this.convolver.normalize = false;
-        this.reverb = new GainNode(this.ctx, {
-            gain: 0
-        });
-
-        // worklet -> panner   -> brightness -> gain -> out
-        //           \-> conv -> rev -/
-        this.worklet.connect(this.panner);
-        this.panner.connect(this.convolver);
-        this.panner.connect(this.brightnessController);
-
-        this.convolver.connect(this.reverb);
-        this.reverb.connect(this.brightnessController);
-
-        this.brightnessController.connect(this.gainController);
+        this.worklet.connect(this.gainController);
         this.gainController.connect(this.outputNode);
 
         this.resetControllers();
@@ -157,36 +139,47 @@ export class WorkletChannel {
         this.lockPreset = false;
     }
 
-    pressHoldPedal()
+    /**
+     * @param data {WorkletMessage}
+     */
+    post(data)
     {
-        this.holdPedal = true;
-    }
-
-    releaseHoldPedal()
-    {
+        this.worklet.port.postMessage(data);
     }
 
     /**
-     * @param reverb {number} reverb amount, ranges from 0 to 127
+     * @param cc {number}
+     * @param val {number}
      */
-    setReverb(reverb)
+    controllerChange(cc, val)
     {
-        this.reverb.gain.value = reverb / 64;
-        if(reverb < 1)
-        {
-            this.panner.disconnect();
-            this.panner.connect(this.brightnessController);
-            this.convolver.disconnect();
-            console.log(`%cDisconnecting the reverb node as the reverb is set to %c0%c, for channel %c ${this.channelNumber}`,
-                consoleColors.info,
-                consoleColors.value,
-                consoleColors.info,
-                consoleColors.recognized);
-        }
-        else
-        {
-            this.panner.connect(this.convolver);
-            this.convolver.connect(this.reverb);
+        switch (cc) {
+            default:
+                this.midiControllers[cc] = val << 7;
+                this.post({
+                    messageType: workletMessageType.ccChange,
+                    messageData: [cc, val << 7]
+                });
+                break;
+
+            case midiControllers.RPNLsb:
+                this.setRPFine(val);
+                break;
+
+            case midiControllers.RPNMsb:
+                this.setRPCoarse(val);
+                break;
+
+            case midiControllers.NRPNMsb:
+                this.setNRPCoarse(val);
+                break;
+
+            case midiControllers.NRPNLsb:
+                this.setNRPFine(val);
+                break;
+
+            case midiControllers.dataEntryMsb:
+                this.dataEntryCoarse(val);
         }
     }
 
@@ -201,40 +194,12 @@ export class WorkletChannel {
             return;
         }
         this.preset = preset;
-        if(this.preset.bank === 128)
-        {
-            this.percussionChannel = true;
-            this.channelTranspose = 0;
-        }
-        else
-        {
-            this.percussionChannel = false;
-        }
-        this.worklet.port.postMessage({
-            messageType: workletMessageType.presetChange,
-            messageData: preset
-        });
     }
 
-    /**
-     * Changes audio pan
-     * @param pan {number}
-     */
-    setPan(pan)
-    {
-        this.panner.pan.setTargetAtTime(pan, this.outputNode.context.currentTime, 0.001);
-    }
-
-    setExpression(val)
-    {
-        this.channelExpression = val;
-        this.gainController.gain.value = this.getGain();
-    }
 
     /**
      * @param midiNote {number} 0-127
      * @param velocity {number} 0-127
-     * @param debugInfo {boolean} for debugging set to true
      */
     playNote(midiNote, velocity) {
         if(!velocity)
@@ -246,15 +211,85 @@ export class WorkletChannel {
             this.stopNote(midiNote);
             return;
         }
-        /**
-         * @type {WorkletMessage}
-         */
-        const mes = {
-            messageType: workletMessageType.noteOn,
-            messageData: [midiNote, velocity]
-        };
 
-        this.worklet.port.postMessage(mes);
+        /**
+         *
+         * @type {WorkletVoice[]}
+         * @returns {WorkletVoice}
+         */
+        const workletVoices = this.preset.getSamplesAndGenerators(midiNote, velocity).map(sampleAndGenerators => {
+
+            // dump the sample if haven't already
+            if(!this.dumpedSamples.has(sampleAndGenerators.sampleID))
+            {
+                this.dumpedSamples.add(sampleAndGenerators.sampleID);
+                this.post({
+                    messageType: workletMessageType.sampleDump,
+                    messageData: {sampleID: sampleAndGenerators.sampleID, sampleData: sampleAndGenerators.sample.getAudioData()}
+                });
+            }
+
+            /**
+             * create the worklet sample
+             * @type {WorkletSample}
+             */
+            const workletSample = {
+                sampleID: sampleAndGenerators.sampleID,
+                playbackStep: (sampleAndGenerators.sample.sampleRate / this.ctx.sampleRate) * Math.pow(2, sampleAndGenerators.sample.samplePitchCorrection / 1200),// cent tuning
+                cursor: 0,
+                rootKey: sampleAndGenerators.sample.samplePitch,
+                loopStart: sampleAndGenerators.sample.sampleLoopStartIndex / 2,
+                loopEnd: sampleAndGenerators.sample.sampleLoopEndIndex / 2
+            };
+
+            // create the generator list
+            const generators = new Int16Array(60);
+            // apply and sum the gens
+            for (let i = 0; i < 60; i++) {
+                generators[i] = addAndClampGenerator(i, sampleAndGenerators.presetGenerators, sampleAndGenerators.instrumentGenerators);
+            }
+
+            /**
+             * @type {WorkletModulator[]}
+             */
+            const modulators = sampleAndGenerators.modulators.map(mod => {
+                return {
+                    transformAmount: mod.modulationAmount,
+                    destination: mod.modulatorDestination,
+                    transformType: mod.transformType,
+
+                    sourceIndex: mod.sourceIndex,
+                    sourceUsesCC: mod.sourceUsesCC,
+                    sourceTransformed: mod.sourceTransformed,
+
+                    secondarySrcIndex: mod.secSrcIndex,
+                    secondarySrcUsesCC: mod.secSrcUsesCC,
+                    secondarySrcTransformed: mod.secondarySrcTransformed
+                }
+            });
+
+            return {
+                generators: generators,
+                sample: workletSample,
+                modulators: modulators,
+                modulatorResults: new Int16Array(60),
+                finished: false,
+                velocity: velocity,
+                currentGain: 0,
+                volEnvGain: 0,
+                midiNote: midiNote,
+                startTime: this.ctx.currentTime,
+                isInRelease: false,
+                releaseStartTime: 0
+            };
+
+        });
+
+        this.post({
+            messageType: workletMessageType.noteOn,
+            messageData: workletVoices
+        });
+
 
         this.notes.add(midiNote);
     }
@@ -281,27 +316,16 @@ export class WorkletChannel {
 
     setPitchBend(bendMSB, bendLSB) {
         // bend all the notes
-        this.pitchBend = (bendLSB | (bendMSB << 7)) - 8192;
-        const semitones = (this.pitchBend / 8192) * this.channelPitchBendRange;
+        this.pitchBend = (bendLSB | (bendMSB << 7)) ;
+        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel] = this.pitchBend;
+        this.post({
+            messageType: workletMessageType.ccChange,
+            messageData: [NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel, this.pitchBend]
+        });
     }
 
-    get voicesAmount()
-    {
+    get voicesAmount() {
         return this.notes.size;
-    }
-
-    /**
-     * @param brightness {number} 0-127
-     */
-    setBrightness(brightness)
-    {
-        this.brightness = brightness;
-        this.brightnessController.frequency.value = (this.brightness / 127) * (BRIGHTNESS_MAX_FREQ - BRIGHTNESS_MIN_FREQ) + BRIGHTNESS_MIN_FREQ;
-    }
-
-    setVolume(volume) {
-        this.channelVolume = volume / 127;
-        this.gainController.gain.value = this.getGain();
     }
 
     setRPCoarse(value)
@@ -338,9 +362,9 @@ export class WorkletChannel {
         {
             if(this.vibrato.delay === 0 && this.vibrato.rate === 0 && this.vibrato.depth === 0)
             {
-                this.vibrato.depth = 64;
-                this.vibrato.rate = 7;
-                this.vibrato.delay = 0.3;
+                this.vibrato.depth = 30;
+                this.vibrato.rate = 6;
+                this.vibrato.delay = 0.6;
             }
         }
 
@@ -377,6 +401,11 @@ export class WorkletChannel {
                                     consoleColors.info,
                                     consoleColors.value,
                                     consoleColors.info);
+
+                                this.post({
+                                    messageType: workletMessageType.setChannelVibrato,
+                                    messageData: this.vibrato
+                                });
                                 break;
 
                             // vibrato depth
@@ -393,6 +422,11 @@ export class WorkletChannel {
                                     consoleColors.info,
                                     consoleColors.value,
                                     consoleColors.info);
+
+                                this.post({
+                                    messageType: workletMessageType.setChannelVibrato,
+                                    messageData: this.vibrato
+                                });
                                 break;
 
                             // vibrato delay
@@ -409,6 +443,11 @@ export class WorkletChannel {
                                     consoleColors.info,
                                     consoleColors.value,
                                     consoleColors.info);
+
+                                this.post({
+                                    messageType: workletMessageType.setChannelVibrato,
+                                    messageData: this.vibrato
+                                });
                                 break;
                         }
                         break;
@@ -425,14 +464,24 @@ export class WorkletChannel {
                     // pitch bend range
                     case 0x0000:
                         this.channelPitchBendRange = dataValue;
-                        //console.log(`Channel ${this.channelNumber} bend range. Semitones:`, dataValue);
+                        console.log(`Channel ${this.channelNumber} bend range. Semitones:`, dataValue);
+                        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] = this.channelPitchBendRange << 7;
+                        this.post({
+                            messageType: workletMessageType.ccChange,
+                            messageData: [NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange, this.channelPitchBendRange << 7]
+                        });
                         break;
 
                     // coarse tuning
                     case 0x0002:
                         // semitones
-                        this.channelTuningRatio = Math.pow(2,  (dataValue - 64) / 12);
-                        //console.log(`Channel ${this.channelNumber} coarse tuning. Type:`, this.RPValue, "Value:", dataValue);
+                        this.channelTuningSemitones = dataValue - 64;
+                        console.log("tuning", this.channelTuningSemitones, "for", this.channelNumber);
+                        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning] = this.channelTuningSemitones + this.channelTranspose << 7;
+                        this.post({
+                            messageType: workletMessageType.ccChange,
+                            messageData: [NON_CC_INDEX_OFFSET + modulatorSources.channelTuning, this.channelTuningSemitones + this.channelTranspose << 7]
+                        });
                         break;
 
                     case 0x3FFF:
@@ -444,41 +493,12 @@ export class WorkletChannel {
         }
     }
 
-    /**
-     * @returns {number}
-     */
-    getGain(){
-        return CHANNEL_LOUDNESS * this.channelVolume * this.channelExpression;
-    }
-
     stopAll()
     {
         for(let midiNote = 0; midiNote < 128; midiNote++)
         {
             this.stopNote(midiNote);
         }
-    }
-
-    resetControllers()
-    {
-        this.channelVolume = 1;
-        this.channelExpression = 1;
-        this.channelTuningRatio = 1;
-        this.channelPitchBendRange = 2;
-        this.holdPedal = false;
-        this.gainController.gain.value = 1;
-        this.panner.pan.value = 0;
-        this.pitchBend = 0;
-        this.brightness = 127;
-        this.brightnessController.frequency.value = BRIGHTNESS_MAX_FREQ;
-        this.reverb.gain.value = 0;
-        try {
-            this.panner.disconnect(this.convolver);
-            this.convolver.disconnect();
-        } catch {}
-
-        this.vibrato = {depth: 0, rate: 0, delay: 0};
-        this.resetParameters();
     }
 
     transposeChannel(semitones)
@@ -488,6 +508,39 @@ export class WorkletChannel {
             return;
         }
         this.channelTranspose = semitones;
+        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning] = this.channelTuningSemitones + this.channelTranspose << 7;
+        this.post({
+            messageType: workletMessageType.ccChange,
+            messageData: [NON_CC_INDEX_OFFSET + modulatorSources.channelTuning, this.channelTuningSemitones + this.channelTranspose << 7]
+        });
+    }
+
+    resetControllers()
+    {
+        // Create an Int16Array with 127 elements
+        this.midiControllers.forEach((v, i) => {
+            this.midiControllers[i] = 0;
+        })
+        this.midiControllers[midiControllers.mainVolume] = 100 << 7;
+        this.midiControllers[midiControllers.expressionController] = 127 << 7;
+        this.midiControllers[midiControllers.pan] = 64 << 7;
+
+        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel] = 8192;
+        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] = 2 << 7;
+        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelPressure] = 127 << 7;
+        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning] = 0;
+
+        this.channelPitchBendRange = 2;
+        this.holdPedal = false;
+
+        // this.post({
+        //     messageType: workletMessageType.ccReset,
+        //     messageData: 0
+        // })
+
+        this.vibrato = {depth: 0, rate: 0, delay: 0};
+
+        this.resetParameters();
     }
 
     resetParameters()

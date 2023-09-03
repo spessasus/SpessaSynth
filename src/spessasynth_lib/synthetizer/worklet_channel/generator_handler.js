@@ -1,34 +1,3 @@
-/**
- * @typedef {{sampleData: Float32Array,
- * loopStart: number,
- * loopEnd: number,
- * sampleRate: number,
- * playbackStep: number,
- * loopMode: number,
- * }} WorkletSample
- *
- * @typedef {{
- *     delaySecs: number,
- *     attackSecs: number,
- *     attenuationGain: number,
- *     holdSecs: number,
- *     decaySecs: number,
- *     sustainAbsoluteGain, number,
- *     releaseSecs: number,
- *     currentGain: number,
- * }} WorkletVolumeEnvelope
- *
- * @typedef {{
- * sample: WorkletSample,
- * panGainLeft: number,
- * panGainRight: number,
- * playbackRate: number,
- * tuningRatio: number,
- * finished: boolean,
- * envelope: WorkletVolumeEnvelope,
- * midiNote: number
- * }} WorkletVoice
- */
 import { generatorTypes } from '../../soundfont/chunk/generators.js'
 
 const EMU_ATTENUATION_CORRECTION = 0.4;
