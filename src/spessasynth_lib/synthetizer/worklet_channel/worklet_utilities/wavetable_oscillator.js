@@ -38,7 +38,9 @@ export function getOscillatorValue(voice, sampleData, playbackRate, startI, endI
     {
         if(voice.sample.cursor >= loopEnd)
         {
+            // FIXME: CALLIOPE LEAD
             voice.sample.cursor -= loopEnd - loopStart;
+            //voice.sample.cursor = (voice.sample.cursor - loopStart) % loopEnd
         }
     }
 

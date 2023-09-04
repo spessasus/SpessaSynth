@@ -312,13 +312,11 @@ export class GeneratorTranslator {
      */
     getPlaybackRate()
     {
-        const semitones = this.semitoneTune + (this.centTune / 100); // calculate both to semitones
-        const tune = Math.pow(2, semitones / 12);
+        const semitones = (this.midiNote - this.getRootKey()) * this.getScaleTuneInfluence() // tune by key
+            + this.semitoneTune // tune by semitones
+            + (this.centTune + this.sample.samplePitchCorrection) / 100; // tune by cents and sample
 
-        let notePlayback = this.sample.getPlaybackRate(this.midiNote, this.getRootKey()) * tune;
-
-        // correct with scaleTuning
-        return 1 + (notePlayback - 1) * this.getScaleTuneInfluence();
+        return Math.pow(2, semitones / 12)
     }
 
     /**

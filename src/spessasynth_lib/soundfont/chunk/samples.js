@@ -102,7 +102,7 @@ function readSample(sampleHeaderData, smplArrayData) {
         smplArrayData);
 }
 
-export class Sample{
+export class Sample {
     /**
      * Creates a sample
      * @param sampleName {string}
@@ -150,8 +150,7 @@ export class Sample{
         this.indexRatio = 1;
         this.sampleDataArray = smplArr;
 
-        if(this.sampleLength < 1 || this.sampleName.substring(0, 3).toLowerCase() === "eos")
-        {
+        if (this.sampleLength < 1 || this.sampleName.substring(0, 3).toLowerCase() === "eos") {
             return;
         }
 
@@ -162,8 +161,7 @@ export class Sample{
                 length: this.sampleLength / 2 + 1,
                 sampleRate: this.sampleRate
             });
-        }
-        catch (e) {
+        } catch (e) {
             console.warn(`Error creating an audio buffer for ${this.sampleName}! Resampling the sample from ${this.sampleRate} to ${FIX_SAMPLERATE} to fix...`);
             const arr = this.loadBufferData(smplArr);
             this.sampleData = this.resampleData(arr);
@@ -183,15 +181,12 @@ export class Sample{
      * @param endAddrOffset {number}
      * @returns {Float32Array}
      */
-    getAudioData(startAddrOffset = 0, endAddrOffset = 0)
-    {
-        if(!this.sampleData)
-        {
+    getAudioData(startAddrOffset = 0, endAddrOffset = 0) {
+        if (!this.sampleData) {
             this.sampleData = this.loadBufferData(this.sampleDataArray);
         }
         // if no offset, return saved sampleData
-        if(this.sampleData && startAddrOffset === 0 && endAddrOffset === 0)
-        {
+        if (this.sampleData && startAddrOffset === 0 && endAddrOffset === 0) {
             return this.sampleData;
         }
 
@@ -205,15 +200,12 @@ export class Sample{
      * @param endAddrOffset {number}
      * @returns {AudioBuffer}
      */
-    getAudioBuffer(context, startAddrOffset, endAddrOffset)
-    {
-        if(!this.sampleData)
-        {
+    getAudioBuffer(context, startAddrOffset, endAddrOffset) {
+        if (!this.sampleData) {
             this.sampleData = this.loadBufferData(this.sampleDataArray);
             this.buffer.getChannelData(0).set(this.sampleData);
         }
-        if(startAddrOffset === 0 && endAddrOffset === 0)
-        {
+        if (startAddrOffset === 0 && endAddrOffset === 0) {
             return this.buffer;
         }
         const data = this.getOffsetData(startAddrOffset, endAddrOffset);
@@ -227,8 +219,7 @@ export class Sample{
      * @param audioData {Float32Array}
      * @returns {Float32Array}
      */
-    resampleData(audioData)
-    {
+    resampleData(audioData) {
         const lengthRatio = this.sampleRate / FIX_SAMPLERATE;
         const outputLength = Math.round(audioData.length / lengthRatio);
         const outputData = new Float32Array(outputLength);
@@ -255,23 +246,19 @@ export class Sample{
      * @param smplArr {ShiftableByteArray}
      * @returns {Float32Array}
      */
-    loadBufferData(smplArr)
-    {
-        if(this.sampleLength < 1)
-        {
+    loadBufferData(smplArr) {
+        if (this.sampleLength < 1) {
             // eos, do not do anything
             return new Float32Array(1);
         }
         // read the sample data
-        let audioData =  new Float32Array(this.sampleLength / 2 + 1);
+        let audioData = new Float32Array(this.sampleLength / 2 + 1);
         const dataStartIndex = smplArr.currentIndex
 
-        for(let i = this.sampleStartIndex; i < this.sampleEndIndex; i += 2)
-        {
+        for (let i = this.sampleStartIndex; i < this.sampleEndIndex; i += 2) {
             // convert 2 uint8 bytes to singed int16
-            let val  = (smplArr[dataStartIndex + i + 1] << 8) | smplArr[dataStartIndex + i];
-            if(val > 32767)
-            {
+            let val = (smplArr[dataStartIndex + i + 1] << 8) | smplArr[dataStartIndex + i];
+            if (val > 32767) {
                 val -= 65536
             }
 
@@ -286,8 +273,7 @@ export class Sample{
      * @param endOffset {number}
      * @returns {Float32Array}
      */
-    getOffsetData(startOffset, endOffset)
-    {
+    getOffsetData(startOffset, endOffset) {
         // const soundfontFileArray = soundFont.dataArray;
         // // read the sample data
         // const audioData =  new Float32Array(((this.sampleEndIndex - this.sampleStartIndex) / 2) + 1);
@@ -305,22 +291,5 @@ export class Sample{
         //     audioData[(i - this.sampleStartIndex - startOffset * 2) / 2] = val / 32768;
         // }
         return this.sampleData.subarray(startOffset, this.sampleData.length - endOffset + 1);
-    }
-
-    /**
-     * calculates the playback rate
-     * @param midiNote {number}
-     * @param overridingRootKey {number}
-     * @returns {number}
-     */
-    getPlaybackRate(midiNote, overridingRootKey=undefined)
-    {
-        let pitch = this.samplePitch;
-        if(overridingRootKey)
-        {
-            pitch = overridingRootKey
-        }
-        const semitones = (midiNote - pitch) + (this.samplePitchCorrection / 100);
-        return Math.pow(2,  semitones/ 12);
     }
 }

@@ -75,6 +75,11 @@ export class Modulator{
         this.sourceTransformed = new Float32Array(MOD_PRECOMPUTED_LENGTH);
         this.secondarySrcTransformed = new Float32Array(MOD_PRECOMPUTED_LENGTH);
 
+        if(this.modulationAmount < 1)
+        {
+            return;
+        }
+
         for (let i = 0; i < MOD_PRECOMPUTED_LENGTH; i++) {
             this.sourceTransformed[i] = getModulatorValue(
                 this.sourceDirection,

@@ -11,57 +11,6 @@ export const volumeEnvelopePhases = {
     release: 4
 }
 
-/**
- * @param voice {WorkletVoice}
- * @param phase {number}
- */
-export function getVolEnvSeconds(voice, phase)
-{
-    let timecents;
-    switch (phase)
-    {
-        case volumeEnvelopePhases.delay:
-            timecents = getModulated(voice, generatorTypes.delayVolEnv);
-            if(timecents < -11990)
-            {
-                return 0;
-            }
-            return timecentsToSeconds(timecents);
-
-        case volumeEnvelopePhases.attack:
-            timecents = getModulated(voice, generatorTypes.attackVolEnv);
-            if(timecents < -11990)
-            {
-                return 0;
-            }
-            return timecentsToSeconds(timecents);
-
-        case volumeEnvelopePhases.hold:
-            return timecentsToSeconds(getModulated(voice, generatorTypes.holdVolEnv) + ((60 - voice.midiNote) * getModulated(voice, generatorTypes.keyNumToVolEnvHold)));
-
-        case volumeEnvelopePhases.decay:
-            return timecentsToSeconds(getModulated(voice, generatorTypes.decayVolEnv) + ((60 - voice.midiNote) * getModulated(voice, generatorTypes.keyNumToVolEnvDecay)));
-
-        case volumeEnvelopePhases.release:
-            return timecentsToSeconds(getModulated(voice, generatorTypes.releaseVolEnv));
-        default:
-            return 0;
-    }
-}
-
-/**
- * @param startTime {number}
- * @param endTime {number}
- * @param startVal {number}
- * @param endVal {number}
- * @param currentTime {number}
- * @returns {number}
- */
-function getExpo(startTime, endTime, startVal, endVal, currentTime)
-{
-    return startVal * Math.pow(endVal / startVal, (currentTime - startTime) / (endTime - startTime))
-}
-
 const releaseExpoLookupTable = new Float32Array(1001);
 for (let i = 0; i < 1001; i++) {
     releaseExpoLookupTable[i] = Math.pow(0.000001, (i / 1000));
@@ -74,7 +23,8 @@ for (let i = 0; i < 1001; i++) {
  */
 export function getVolEnvReleaseMultiplier(releaseTime, elapsed)
 {
-    const gain = releaseExpoLookupTable[~~((elapsed / releaseTime) * 1000)];
+    const gain = releaseExpoLookupTable[Math.trunc((elapsed / releaseTime) * 1000)];
+    //const gain = (1 - elapsed / (releaseTime * 0.2))
     return gain > MIN_AUDIBLE_GAIN ? gain : -1;
 }
 
@@ -111,7 +61,7 @@ export function getVolumeEnvelopeValue(delay, attack, peak, hold, sustain, decay
     // decay time
     else if (currentTime < decayEnd && (peak !== sustain)) {
         // exponential
-        const gain = getExpo(holdEnd, decayEnd, peak, sustain, currentTime);
+        const gain = releaseExpoLookupTable[Math.trunc(((currentTime - holdEnd) / decay) * 1000)] * (peak - sustain) + sustain
         if (gain < MIN_AUDIBLE_GAIN) {
             return -1;
         }

@@ -129,7 +129,7 @@ generatorLimits[generatorTypes.startloopAddrsCoarseOffset] = {min: 0, max: 32768
 generatorLimits[generatorTypes.keyNum] = {min: -1, max: 127, def: -1};
 generatorLimits[generatorTypes.velocity] = {min: -1, max: 127, def: -1};
 
-generatorLimits[generatorTypes.initialAttenuation] = {min: -100, max: 1440, def: 0}; // soundblaster allows 10dB of gain
+generatorLimits[generatorTypes.initialAttenuation] = {min: -250, max: 1440, def: 0}; // soundblaster allows 10dB of gain
 
 generatorLimits[generatorTypes.endloopAddrsCoarseOffset] = {min: 0, max: 32768, def: 0};
 

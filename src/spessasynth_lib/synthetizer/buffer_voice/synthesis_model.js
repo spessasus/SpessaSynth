@@ -55,7 +55,7 @@ export class SynthesisModel
         ===========
          */
         this.vibratoLfo = new OscillatorNode(context, {
-            type: "sine",
+            type: "triangle",
             frequency: this.vibrato.freqHz
         });
         this.vibratoDepth = new GainNode(context);

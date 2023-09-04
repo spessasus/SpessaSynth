@@ -51,11 +51,12 @@ export const workletMessageType = {
     killNote: 4,
     ccReset: 5,
     setChannelVibrato: 6,
+    clearSamples: 7
 };
 
 /**
  * @typedef {{
- *     messageType: 0|1|2|3|4|5|6,
+ *     messageType: 0|1|2|3|4|5|6|7,
  *     messageData: (
  *     number[]
  *     |WorkletVoice[]
@@ -67,12 +68,12 @@ export const workletMessageType = {
  * Message types:
  * 0 - noteOff            -> midiNote<number>
  * 1 - noteOn             -> [midiNote<number>, ...generators]
- * 2 - ccChange         -> [ccNumber<number>, ccValue<number>]
- * 2 - postCCbuffer -> SharedArrayBuffer // damn you CORS
+ * 2 - controller change         -> [ccNumber<number>, ccValue<number>]
  * 3 - sample dump -> {sampleData: Float32Array, sampleID: number}
  * 4 - note off instantly -> midiNote<number>
- * 5 - cc reset
+ * 5 - controllers reset
  * 6 - channel vibrato -> {frequencyHz: number, depthCents: number, delaySeconds: number}
+ * 7 - clear samples
  */
 
 
@@ -90,16 +91,34 @@ export class WorkletChannel {
         this.channelNumber = channelNumber
         this.percussionChannel = percussionChannel;
 
-        // shared
-        this.shared = new ArrayBuffer(292)
+        /**
+         * index 1: midi note, index 2: velocity (the 3rd array is the group of worklet voices
+         * @type {WorkletVoice[][][]}
+         */
+        this.cachedWorkletVoices = [];
+        for (let i = 0; i < 128; i++) {
+            this.cachedWorkletVoices.push([]);
+        }
+
 
         // contains all the midi controllers and their values (and the source enum controller palettes
-        this.midiControllers = new Int16Array(this.shared); // 127 controllers + sf2 spec 8.2.1 + other things
+        this.midiControllers = new Int16Array(146); // 127 controllers + sf2 spec 8.2.1 + other things
 
         this.preset = defaultPreset;
         this.bank = this.preset.bank;
         this.channelVolume = 1;
-        this.channelExpression = 1;
+        this.channelExpression = 1
+
+        /**
+         * @type {number[]}
+         */
+        this.actualVoices = [];
+
+        this.holdPedal = false;
+        /**
+         * @type {number[]}
+         */
+        this.sustainedNotes = [];
 
         /**
          * @type {Set<number>}
@@ -178,6 +197,21 @@ export class WorkletChannel {
                 this.setNRPFine(val);
                 break;
 
+            case midiControllers.sustainPedal:
+                if(val > 64)
+                {
+                    this.holdPedal = true;
+                }
+                else
+                {
+                    this.holdPedal = false;
+                    this.sustainedNotes.forEach(n => {
+                        this.stopNote(n);
+                    })
+                    this.sustainedNotes = [];
+                }
+                break;
+
             case midiControllers.dataEntryMsb:
                 this.dataEntryCoarse(val);
         }
@@ -194,14 +228,19 @@ export class WorkletChannel {
             return;
         }
         this.preset = preset;
+        this.cachedWorkletVoices = [];
+        for (let i = 0; i < 128; i++) {
+            this.cachedWorkletVoices.push([]);
+        }
     }
 
 
     /**
      * @param midiNote {number} 0-127
      * @param velocity {number} 0-127
+     * @param debug {boolean}
      */
-    playNote(midiNote, velocity) {
+    playNote(midiNote, velocity, debug = false) {
         if(!velocity)
         {
             throw "No velocity given!";
@@ -213,77 +252,100 @@ export class WorkletChannel {
         }
 
         /**
-         *
          * @type {WorkletVoice[]}
-         * @returns {WorkletVoice}
          */
-        const workletVoices = this.preset.getSamplesAndGenerators(midiNote, velocity).map(sampleAndGenerators => {
+        let workletVoices;
 
-            // dump the sample if haven't already
-            if(!this.dumpedSamples.has(sampleAndGenerators.sampleID))
-            {
-                this.dumpedSamples.add(sampleAndGenerators.sampleID);
-                this.post({
-                    messageType: workletMessageType.sampleDump,
-                    messageData: {sampleID: sampleAndGenerators.sampleID, sampleData: sampleAndGenerators.sample.getAudioData()}
-                });
-            }
-
+        const cached = this.cachedWorkletVoices[midiNote][velocity];
+        if(cached)
+        {
+            workletVoices = cached;
+            workletVoices.forEach(v => {
+                v.startTime = this.ctx.currentTime;
+            })
+        }
+        else
+        {
             /**
-             * create the worklet sample
-             * @type {WorkletSample}
+             * @returns {WorkletVoice}
              */
-            const workletSample = {
-                sampleID: sampleAndGenerators.sampleID,
-                playbackStep: (sampleAndGenerators.sample.sampleRate / this.ctx.sampleRate) * Math.pow(2, sampleAndGenerators.sample.samplePitchCorrection / 1200),// cent tuning
-                cursor: 0,
-                rootKey: sampleAndGenerators.sample.samplePitch,
-                loopStart: sampleAndGenerators.sample.sampleLoopStartIndex / 2,
-                loopEnd: sampleAndGenerators.sample.sampleLoopEndIndex / 2
-            };
+            workletVoices = this.preset.getSamplesAndGenerators(midiNote, velocity).map(sampleAndGenerators => {
 
-            // create the generator list
-            const generators = new Int16Array(60);
-            // apply and sum the gens
-            for (let i = 0; i < 60; i++) {
-                generators[i] = addAndClampGenerator(i, sampleAndGenerators.presetGenerators, sampleAndGenerators.instrumentGenerators);
-            }
-
-            /**
-             * @type {WorkletModulator[]}
-             */
-            const modulators = sampleAndGenerators.modulators.map(mod => {
-                return {
-                    transformAmount: mod.modulationAmount,
-                    destination: mod.modulatorDestination,
-                    transformType: mod.transformType,
-
-                    sourceIndex: mod.sourceIndex,
-                    sourceUsesCC: mod.sourceUsesCC,
-                    sourceTransformed: mod.sourceTransformed,
-
-                    secondarySrcIndex: mod.secSrcIndex,
-                    secondarySrcUsesCC: mod.secSrcUsesCC,
-                    secondarySrcTransformed: mod.secondarySrcTransformed
+                // dump the sample if haven't already
+                if(!this.dumpedSamples.has(sampleAndGenerators.sampleID))
+                {
+                    this.dumpedSamples.add(sampleAndGenerators.sampleID);
+                    this.post({
+                        messageType: workletMessageType.sampleDump,
+                        messageData: {sampleID: sampleAndGenerators.sampleID, sampleData: sampleAndGenerators.sample.getAudioData()}
+                    });
                 }
+
+                /**
+                 * create the worklet sample
+                 * @type {WorkletSample}
+                 */
+                const workletSample = {
+                    sampleID: sampleAndGenerators.sampleID,
+                    playbackStep: (sampleAndGenerators.sample.sampleRate / this.ctx.sampleRate) * Math.pow(2, sampleAndGenerators.sample.samplePitchCorrection / 1200),// cent tuning
+                    cursor: 0,
+                    rootKey: sampleAndGenerators.sample.samplePitch,
+                    loopStart: sampleAndGenerators.sample.sampleLoopStartIndex / 2,
+                    loopEnd: sampleAndGenerators.sample.sampleLoopEndIndex / 2
+                };
+
+                // create the generator list
+                const generators = new Int16Array(60);
+                // apply and sum the gens
+                for (let i = 0; i < 60; i++) {
+                    generators[i] = addAndClampGenerator(i, sampleAndGenerators.presetGenerators, sampleAndGenerators.instrumentGenerators);
+                }
+
+                /**
+                 * @type {WorkletModulator[]}
+                 */
+                const modulators = sampleAndGenerators.modulators.map(mod => {
+                    return {
+                        transformAmount: mod.modulationAmount,
+                        destination: mod.modulatorDestination,
+                        transformType: mod.transformType,
+
+                        sourceIndex: mod.sourceIndex,
+                        sourceUsesCC: mod.sourceUsesCC,
+                        sourceTransformed: mod.sourceTransformed,
+
+                        secondarySrcIndex: mod.secSrcIndex,
+                        secondarySrcUsesCC: mod.secSrcUsesCC,
+                        secondarySrcTransformed: mod.secondarySrcTransformed
+                    }
+                });
+
+                this.actualVoices.push(midiNote);
+                return {
+                    generators: generators,
+                    sample: workletSample,
+                    modulators: modulators,
+                    modulatorResults: new Int16Array(60),
+                    finished: false,
+                    velocity: velocity,
+                    currentGain: 0,
+                    volEnvGain: 0,
+                    midiNote: midiNote,
+                    startTime: this.ctx.currentTime,
+                    isInRelease: false,
+                    releaseStartTime: 0
+                };
+
             });
+        }
 
-            return {
-                generators: generators,
-                sample: workletSample,
-                modulators: modulators,
-                modulatorResults: new Int16Array(60),
-                finished: false,
-                velocity: velocity,
-                currentGain: 0,
-                volEnvGain: 0,
-                midiNote: midiNote,
-                startTime: this.ctx.currentTime,
-                isInRelease: false,
-                releaseStartTime: 0
-            };
+        if(debug)
+        {
+            console.log(workletVoices)
+        }
 
-        });
+        // cache the voice
+        this.cachedWorkletVoices[midiNote][velocity] = workletVoices;
 
         this.post({
             messageType: workletMessageType.noteOn,
@@ -303,13 +365,25 @@ export class WorkletChannel {
         // TODO: fix holdPedal
         if(this.holdPedal)
         {
+            this.sustainedNotes.push(midiNote);
             return;
         }
 
-        this.worklet.port.postMessage({
-            messageType: workletMessageType.noteOff,
-            messageData: midiNote
-        });
+        if(highPerf)
+        {
+            this.worklet.port.postMessage({
+                messageType: workletMessageType.killNote,
+                messageData: midiNote
+            });
+        }
+        else {
+            this.worklet.port.postMessage({
+                messageType: workletMessageType.noteOff,
+                messageData: midiNote
+            });
+        }
+
+        this.actualVoices = this.actualVoices.filter(v => v !== midiNote);
 
         this.notes.delete(midiNote);
     }
@@ -325,7 +399,7 @@ export class WorkletChannel {
     }
 
     get voicesAmount() {
-        return this.notes.size;
+        return this.actualVoices.length;
     }
 
     setRPCoarse(value)
@@ -511,7 +585,7 @@ export class WorkletChannel {
         this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning] = this.channelTuningSemitones + this.channelTranspose << 7;
         this.post({
             messageType: workletMessageType.ccChange,
-            messageData: [NON_CC_INDEX_OFFSET + modulatorSources.channelTuning, this.channelTuningSemitones + this.channelTranspose << 7]
+            messageData: [NON_CC_INDEX_OFFSET + modulatorSources.channelTuning, (this.channelTuningSemitones + this.channelTranspose) << 7]
         });
     }
 
@@ -561,5 +635,17 @@ export class WorkletChannel {
          * @type {string}
          */
         this.dataEntryState = dataEntryStates.Idle;
+    }
+
+    resetSamples()
+    {
+        this.post({
+            messageType: workletMessageType.clearSamples
+        });
+        this.dumpedSamples.clear();
+        this.cachedWorkletVoices = [];
+        for (let i = 0; i < 128; i++) {
+            this.cachedWorkletVoices.push([]);
+        }
     }
 }

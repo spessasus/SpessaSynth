@@ -9,7 +9,8 @@ export function getLFOValue(startTime, frequency, currentTime) {
         return 0;
     }
 
-    const timeElapsed = currentTime - startTime;
-    const angularFrequency = 2 * Math.PI * frequency;
-    return Math.sin(angularFrequency * timeElapsed);
+    const xVal = (currentTime - startTime) / (1 / frequency);
+
+    // triangle, not sine
+    return Math.abs(xVal - ~~(xVal + 0.5)) * 4 - 1;
 }

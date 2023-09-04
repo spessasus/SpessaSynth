@@ -333,6 +333,10 @@ export class Synthetizer {
         this.percussionPreset = this.soundFont.getPreset(128, 0);
         for(let i = 0; i < 16; i++)
         {
+            if(this.midiChannels[i].resetSamples)
+            {
+                this.midiChannels[i].resetSamples();
+            }
             this.midiChannels[i].lockPreset = false;
             this.programChange(i, this.midiChannels[i].preset.program);
         }
@@ -487,8 +491,6 @@ export class Synthetizer {
 
     get voicesAmount()
     {
-        let v = 0;
-        this.midiChannels.forEach(prev =>  v += prev.notes.size);
-        return v;
+        return this.midiChannels.reduce((amt, chan) => amt += chan.voicesAmount, 0);
     }
 }

@@ -6,7 +6,6 @@ import { modulatorSources } from '../../soundfont/chunk/modulators.js';
 import { computeModulators, getModulated } from './worklet_utilities/worklet_modulator.js'
 import {
     getVolEnvReleaseMultiplier,
-    getVolEnvSeconds,
     getVolumeEnvelopeValue,
     volumeEnvelopePhases,
 } from './worklet_utilities/volume_envelope.js'
@@ -95,6 +94,10 @@ class ChannelProcessor extends AudioWorkletProcessor {
 
                 case workletMessageType.setChannelVibrato:
                     this.channelVibrato = data;
+                    break;
+
+                case workletMessageType.clearSamples:
+                    this.samples = [];
             }
         }
     }
@@ -126,24 +129,27 @@ class ChannelProcessor extends AudioWorkletProcessor {
      */
     renderVoice(voice, outputLeft, outputRight)
     {
+        if(!this.samples[voice.sample.sampleID])
+        {
+            voice.finished = true;
+            return;
+        }
+
+
         // MODULATORS
         computeModulators(voice, this.midiControllers);
 
         // TUNING
         // get the root key
-        let key;
+        let key = voice.sample.rootKey;
         const overrideKey = getModulated(voice, generatorTypes.overridingRootKey);
         if(overrideKey !== -1)
         {
-            key = overrideKey
-        }
-        else
-        {
-            key = voice.sample.rootKey;
+            key = overrideKey;
         }
         // calculate tuning
-        let semitones = getModulated(voice, generatorTypes.coarseTune) + parseFloat(this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning] >> 7);
         let cents = getModulated(voice, generatorTypes.fineTune);
+        let semitones = getModulated(voice, generatorTypes.coarseTune) + parseFloat(this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning] >> 7);
 
         // calculate tuning by key
         cents += (voice.midiNote - key) * getModulated(voice, generatorTypes.scaleTuning);
@@ -187,20 +193,21 @@ class ChannelProcessor extends AudioWorkletProcessor {
         }
 
         // finally calculate the playback rate
-        const playbackRate = Math.pow(2, (semitones + cents / 100) / 12);
+        const playbackRate = Math.pow(2,(cents + semitones * 100) / 1200);
 
         // VOLUME ENVELOPE
-        const attenuation =  decibelAttenuationToGain((getModulated(voice, generatorTypes.initialAttenuation) / 25) + modLfoCentibels);
-        const sustain = attenuation * decibelAttenuationToGain(getModulated(voice, generatorTypes.sustainVolEnv) / 10);
-        const delay = getVolEnvSeconds(voice, volumeEnvelopePhases.delay);
-        const attack = getVolEnvSeconds(voice, volumeEnvelopePhases.attack)
-        const hold = getVolEnvSeconds(voice, volumeEnvelopePhases.hold);
-        const decay = getVolEnvSeconds(voice, volumeEnvelopePhases.decay);
-        const release = getVolEnvSeconds(voice, volumeEnvelopePhases.release);
-
-        if(delay + attack === 0)
+        let attenuation, sustain, delay, attack, hold, decay, release;
+        attenuation = decibelAttenuationToGain((getModulated(voice, generatorTypes.initialAttenuation) / 25) + modLfoCentibels);
+        if(voice.isInRelease)
         {
-            voice.currentGain = attenuation;
+            release = timecentsToSeconds(getModulated(voice, generatorTypes.releaseVolEnv));
+        }
+        else {
+            sustain = attenuation * decibelAttenuationToGain(getModulated(voice, generatorTypes.sustainVolEnv) / 10);
+            delay = timecentsToSeconds(getModulated(voice, generatorTypes.delayVolEnv));
+            attack = timecentsToSeconds(getModulated(voice, generatorTypes.attackVolEnv));
+            hold = timecentsToSeconds(getModulated(voice, generatorTypes.holdVolEnv) + ((60 - voice.midiNote) * getModulated(voice, generatorTypes.keyNumToVolEnvHold)));
+            decay = timecentsToSeconds(getModulated(voice, generatorTypes.decayVolEnv) + ((60 - voice.midiNote) * getModulated(voice, generatorTypes.keyNumToVolEnvDecay)));
         }
 
         // WAVETABLE OSCILLATOR
@@ -213,7 +220,7 @@ class ChannelProcessor extends AudioWorkletProcessor {
         const loop = mode === 1 || (mode === 3 && !voice.isInRelease);
 
         // PANNING
-        const pan = (Math.max(-500, Math.min(500, getModulated(voice, generatorTypes.pan))) / 1000) + 0.5; // 0 to 1
+        const pan = ( (Math.max(-500, Math.min(500, getModulated(voice, generatorTypes.pan) )) + 500) / 1000) ; // 0 to 1
         const panLeft = Math.cos(HALF_PI * pan);
         const panRight = Math.sin(HALF_PI * pan);
 
@@ -235,10 +242,10 @@ class ChannelProcessor extends AudioWorkletProcessor {
             // apply the volenv
             if(voice.isInRelease)
             {
-                voice.volEnvGain = getVolEnvReleaseMultiplier(release, actualTime - voice.releaseStartTime);
+                voice.volEnvGain = attenuation * getVolEnvReleaseMultiplier(release, actualTime - voice.releaseStartTime);
             }
             else {
-                voice.volEnvGain = getVolumeEnvelopeValue(
+                voice.currentGain = getVolumeEnvelopeValue(
                     delay,
                     attack,
                     attenuation,
@@ -246,18 +253,17 @@ class ChannelProcessor extends AudioWorkletProcessor {
                     sustain,
                     decay,
                     voice.startTime,
-                    actualTime
-                );
-                voice.currentGain = voice.volEnvGain;
-                voice.volEnvGain = 1;
+                    actualTime);
+
+                voice.volEnvGain = voice.currentGain;
             }
-            if(voice.volEnvGain === -1)
+            if(voice.volEnvGain < 0)
             {
                 voice.finished = true;
-                return -1;
+                return;
             }
 
-            sample *= voice.volEnvGain * voice.currentGain;
+            sample *= voice.volEnvGain;
 
             // pan the voice and write out
             outputLeft[outputSampleIndex] += sample * panLeft;
