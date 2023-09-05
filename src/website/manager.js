@@ -4,7 +4,7 @@ import {Renderer} from "./ui/renderer.js";
 import {Sequencer} from "../spessasynth_lib/sequencer/sequencer.js";
 import {MIDI} from "../spessasynth_lib/midi_parser/midi_loader.js";
 
-import {SoundFont2} from "../spessasynth_lib/soundfont/soundfont_parser.js";
+import {SoundFont2} "../spessasynth_lib/soundfont/soundfont_parser.js";
 import {SequencerUI} from "./ui/sequencer_ui.js";
 import {SynthetizerUI} from "./ui/synthetizer_ui.js";
 import { MIDIDeviceHandler } from '../spessasynth_lib/midi_handler/midi_handler.js'
@@ -37,7 +37,7 @@ export class Manager
      * @param soundFont {SoundFont2}
      */
     constructor(context, soundFont) {
-        context.audioWorklet.addModule("/spessasynth_lib/synthetizer/worklet_channel/channel_processor.js").then(() => {
+        //context.audioWorklet.addModule("/spessasynth_lib/synthetizer/worklet_channel/channel_processor.js").then(() => {
             // set up soundfont
             this.soundFont = soundFont;
 
@@ -103,7 +103,7 @@ export class Manager
                         break;
                 }
             });
-        });
+        //});
     }
 
     /**
