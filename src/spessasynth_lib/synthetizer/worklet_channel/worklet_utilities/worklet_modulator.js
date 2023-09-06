@@ -1,12 +1,10 @@
 import { NON_CC_INDEX_OFFSET } from '../worklet_channel.js'
 import { modulatorSources } from '../../../soundfont/chunk/modulators.js'
-import { generatorLimits } from '../../../soundfont/chunk/generators.js'
 
 /**
  * @typedef {{
  *     transformAmount: number,
  *     transformType: 0|2,
- *     destination: number,
  *
  *     sourceTransformed: Float32Array
  *     sourceIndex: number,
@@ -107,29 +105,21 @@ export function computeWorkletModulator(controllerTable, modulator, midiNote, ve
     return computedValue;
 }
 
-const emptyArr = new Int16Array(60);
-
-/**
- * Here's how it works:
- * we compute all the modulators and put their results into an array filled with zeros
- * and if we want to get a generator, we sum the generators + modulatorResults
- * @param voice {WorkletVoice}
- * @param controllerTable {Int16Array}
- */
-export function computeModulators(voice, controllerTable)
-{
-    voice.modulatorResults.set(emptyArr);
-    voice.modulators.forEach(mod => {
-        voice.modulatorResults[mod.destination] += computeWorkletModulator(controllerTable, mod, voice.midiNote, voice.velocity);
-    });
-}
-
 /**
  * @param voice {WorkletVoice}
  * @param generatorType {number}
+ * @param controllerTable {Int16Array}
  * @returns {number} the computed number
  */
-export function getModulated(voice, generatorType)
+export function getModulated(voice, generatorType, controllerTable)
 {
-    return voice.generators[generatorType] + voice.modulatorResults[generatorType];
+    const genVal = voice.generators[generatorType];
+    if(!voice.modulators[generatorType].length)
+    {
+        // if no mods, just return gen
+        return genVal;
+    }
+    // if mods, sum them
+    return genVal + voice.modulators[generatorType]
+        .reduce((value, mod) => value + computeWorkletModulator(controllerTable, mod, voice.midiNote, voice.velocity), 0);
 }

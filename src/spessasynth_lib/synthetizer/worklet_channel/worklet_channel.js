@@ -10,8 +10,7 @@
  * @typedef {{
  * sample: WorkletSample,
  * generators: Int16Array,
- * modulators: WorkletModulator[],
- * modulatorResults: Int16Array
+ * modulators: WorkletModulator[][],
  * finished: boolean,
  * isInRelease: boolean,
  * velocity: number,
@@ -26,8 +25,8 @@
 import { Preset } from '../../soundfont/chunk/presets.js'
 import { consoleColors } from '../../utils/other.js'
 import { modulatorSources } from '../../soundfont/chunk/modulators.js'
-import { addAndClampGenerator, generatorTypes } from '../../soundfont/chunk/generators.js'
 import { midiControllers } from '../../midi_parser/midi_message.js'
+import { addAndClampGenerator, generatorTypes } from '../../soundfont/chunk/generators.js'
 
 const CHANNEL_GAIN = 0.5;
 
@@ -51,7 +50,7 @@ export const workletMessageType = {
     killNote: 4,
     ccReset: 5,
     setChannelVibrato: 6,
-    clearSamples: 7
+    clearCache: 7,
 };
 
 /**
@@ -73,7 +72,7 @@ export const workletMessageType = {
  * 4 - note off instantly -> midiNote<number>
  * 5 - controllers reset
  * 6 - channel vibrato -> {frequencyHz: number, depthCents: number, delaySeconds: number}
- * 7 - clear samples
+ * 7 - clear cached samples
  */
 
 
@@ -234,7 +233,6 @@ export class WorkletChannel {
         }
     }
 
-
     /**
      * @param midiNote {number} 0-127
      * @param velocity {number} 0-127
@@ -302,12 +300,16 @@ export class WorkletChannel {
                 }
 
                 /**
-                 * @type {WorkletModulator[]}
+                 * grouped by destination
+                 * @type {WorkletModulator[][]}
                  */
-                const modulators = sampleAndGenerators.modulators.map(mod => {
-                    return {
+                const modulators = []
+                for (let i = 0; i < 60; i++) {
+                    modulators.push([]);
+                }
+                sampleAndGenerators.modulators.forEach(mod => {
+                    modulators[mod.modulatorDestination].push({
                         transformAmount: mod.modulationAmount,
-                        destination: mod.modulatorDestination,
                         transformType: mod.transformType,
 
                         sourceIndex: mod.sourceIndex,
@@ -317,7 +319,7 @@ export class WorkletChannel {
                         secondarySrcIndex: mod.secSrcIndex,
                         secondarySrcUsesCC: mod.secSrcUsesCC,
                         secondarySrcTransformed: mod.secondarySrcTransformed
-                    }
+                    });
                 });
 
                 this.actualVoices.push(midiNote);
@@ -325,7 +327,6 @@ export class WorkletChannel {
                     generators: generators,
                     sample: workletSample,
                     modulators: modulators,
-                    modulatorResults: new Int16Array(60),
                     finished: false,
                     velocity: velocity,
                     currentGain: 0,
@@ -591,26 +592,7 @@ export class WorkletChannel {
 
     resetControllers()
     {
-        // Create an Int16Array with 127 elements
-        this.midiControllers.forEach((v, i) => {
-            this.midiControllers[i] = 0;
-        })
-        this.midiControllers[midiControllers.mainVolume] = 100 << 7;
-        this.midiControllers[midiControllers.expressionController] = 127 << 7;
-        this.midiControllers[midiControllers.pan] = 64 << 7;
-
-        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel] = 8192;
-        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] = 2 << 7;
-        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelPressure] = 127 << 7;
-        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning] = 0;
-
-        this.channelPitchBendRange = 2;
         this.holdPedal = false;
-
-        // this.post({
-        //     messageType: workletMessageType.ccReset,
-        //     messageData: 0
-        // })
 
         this.vibrato = {depth: 0, rate: 0, delay: 0};
 
@@ -640,7 +622,8 @@ export class WorkletChannel {
     resetSamples()
     {
         this.post({
-            messageType: workletMessageType.clearSamples
+            messageType: workletMessageType.clearCache,
+            messageData: undefined
         });
         this.dumpedSamples.clear();
         this.cachedWorkletVoices = [];

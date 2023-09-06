@@ -72,9 +72,9 @@ export const generatorTypes = {
 export const generatorLimits = [];
 // offsets
 generatorLimits[generatorTypes.startAddrsOffset] = {min: 0, max: 32768, def: 0};
-generatorLimits[generatorTypes.endAddrOffset] = {min: 0, max: 32768, def: 0};
-generatorLimits[generatorTypes.startloopAddrsOffset] = {min: 0, max: 32768, def: 0};
-generatorLimits[generatorTypes.endloopAddrsOffset] = {min: 0, max: 32768, def: 0};
+generatorLimits[generatorTypes.endAddrOffset] = {min: -32768, max: 32768, def: 0};
+generatorLimits[generatorTypes.startloopAddrsOffset] = {min: -32768, max: 32768, def: 0};
+generatorLimits[generatorTypes.endloopAddrsOffset] = {min: -32768, max: 32768, def: 0};
 generatorLimits[generatorTypes.startAddrsCoarseOffset] = {min: 0, max: 32768, def: 0};
 
 // pitch influence
@@ -88,7 +88,7 @@ generatorLimits[generatorTypes.initialFilterQ] = {min: 0, max: 960, def: 0};
 generatorLimits[generatorTypes.modLfoToFilterFc] = {min: -12000, max: 12000, def: 0};
 generatorLimits[generatorTypes.modEnvToFilterFc] = {min: -12000, max: 12000, def: 0};
 
-generatorLimits[generatorTypes.endAddrsCoarseOffset] = {min: 0, max: 32768, def: 0};
+generatorLimits[generatorTypes.endAddrsCoarseOffset] = {min: -32768, max: 32768, def: 0};
 
 generatorLimits[generatorTypes.modLfoToVolume] = {min: -960, max: 960, def: 0};
 
@@ -125,13 +125,13 @@ generatorLimits[generatorTypes.releaseVolEnv] = {min: -7200, max: 8000, def: -72
 generatorLimits[generatorTypes.keyNumToVolEnvHold] = {min: -1200, max: 1200, def: 0};
 generatorLimits[generatorTypes.keyNumToVolEnvDecay] = {min: -1200, max: 1200, def: 0};
 
-generatorLimits[generatorTypes.startloopAddrsCoarseOffset] = {min: 0, max: 32768, def: 0};
+generatorLimits[generatorTypes.startloopAddrsCoarseOffset] = {min: -32768, max: 32768, def: 0};
 generatorLimits[generatorTypes.keyNum] = {min: -1, max: 127, def: -1};
 generatorLimits[generatorTypes.velocity] = {min: -1, max: 127, def: -1};
 
 generatorLimits[generatorTypes.initialAttenuation] = {min: -250, max: 1440, def: 0}; // soundblaster allows 10dB of gain
 
-generatorLimits[generatorTypes.endloopAddrsCoarseOffset] = {min: 0, max: 32768, def: 0};
+generatorLimits[generatorTypes.endloopAddrsCoarseOffset] = {min: -32768, max: 32768, def: 0};
 
 generatorLimits[generatorTypes.coarseTune] = {min: -120, max: 120, def: 0};
 generatorLimits[generatorTypes.fineTune] = {min: -99, max: 99, def: 0};

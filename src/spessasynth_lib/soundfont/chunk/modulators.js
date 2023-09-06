@@ -5,6 +5,7 @@ import {
     MOD_PRECOMPUTED_LENGTH,
 } from '../../synthetizer/worklet_channel/worklet_utilities/modulator_curves.js'
 import { generatorTypes } from './generators.js'
+import { consoleColors } from '../../utils/other.js'
 
 export const modulatorSources = {
     noController: 0,
@@ -113,7 +114,7 @@ export const defaultModulators = [
     new Modulator({srcEnum: 0x058B, dest: generatorTypes.initialAttenuation, amt: 1440, secSrcEnum: 0x0, transform: 0}) // expression to attenuation
 ]
 
-console.log(defaultModulators)
+console.log("%cDefault Modulators:", consoleColors.recognized, defaultModulators)
 
 /**
  * Reads the modulator chunk

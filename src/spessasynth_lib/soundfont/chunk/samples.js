@@ -224,6 +224,7 @@ export class Sample {
         const outputLength = Math.round(audioData.length / lengthRatio);
         const outputData = new Float32Array(outputLength);
 
+
         for (let i = 0; i < outputLength; i++) {
             const index = i * lengthRatio;
             const indexPrev = Math.floor(index);
@@ -253,16 +254,26 @@ export class Sample {
         }
         // read the sample data
         let audioData = new Float32Array(this.sampleLength / 2 + 1);
-        const dataStartIndex = smplArr.currentIndex
+        const dataStartIndex = smplArr.currentIndex;
 
-        for (let i = this.sampleStartIndex; i < this.sampleEndIndex; i += 2) {
-            // convert 2 uint8 bytes to singed int16
-            let val = (smplArr[dataStartIndex + i + 1] << 8) | smplArr[dataStartIndex + i];
-            if (val > 32767) {
-                val -= 65536
+        if((this.sampleType & 0x10) > 0)
+        {
+            const buff = smplArr.slice(this.sampleStartIndex, this.sampleEndIndex + 1).buffer;
+            this.b = buff
+            console.log("COMP", this.b);
+            audioData = new AudioContext().decodeAudioData(buff);
+        }
+
+        else {
+            for (let i = this.sampleStartIndex; i < this.sampleEndIndex; i += 2) {
+                // convert 2 uint8 bytes to singed int16
+                let val = (smplArr[dataStartIndex + i + 1] << 8) | smplArr[dataStartIndex + i];
+                if (val > 32767) {
+                    val -= 65536
+                }
+
+                audioData[(i - this.sampleStartIndex) / 2] = val / 32768;
             }
-
-            audioData[(i - this.sampleStartIndex) / 2] = val / 32768;
         }
         return audioData;
     }
