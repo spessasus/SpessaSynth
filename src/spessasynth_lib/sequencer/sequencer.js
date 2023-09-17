@@ -136,7 +136,7 @@ export class Sequencer {
          * Same as Audio.duration (seconds)
          * @type {number}
          */
-        this.duration = this.ticksToSeconds(this.events.findLast(e => e.messageStatusByte >> 4 === 8 || (e.messageStatusByte >> 4 === 9 && e.messageData[1] === 0)).ticks) + 1;
+        this.duration = this.ticksToSeconds(this.events.findLast(e => e.messageStatusByte >> 4 === 8 || (e.messageStatusByte >> 4 === 9 && e.messageData[1] === 0)).ticks);
 
         console.log(`%cTOTAL TIME: ${formatTime(Math.round(this.duration)).time}`, consoleColors.recognized);
 
