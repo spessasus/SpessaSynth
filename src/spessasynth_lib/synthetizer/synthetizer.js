@@ -242,6 +242,7 @@ export class Synthetizer {
                 this.onControllerChange(chNr, midiControllers.pan, 64);
                 this.onControllerChange(chNr, midiControllers.expressionController, 127);
                 this.onControllerChange(chNr, midiControllers.modulationWheel, 0);
+                this.onControllerChange(chNr, midiControllers.effects3Depth, 0);
             }
             if(this.onPitchWheel)
             {

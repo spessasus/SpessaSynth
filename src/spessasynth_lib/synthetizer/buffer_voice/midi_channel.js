@@ -52,26 +52,27 @@ export class MidiChannel {
         this.panner = new StereoPannerNode(this.ctx);
 
         this.gainController = new GainNode(this.ctx, {
-            gain: 1
+            gain: CHANNEL_LOUDNESS
         });
 
 
-        // note -> panner -> gain -> out
+        // note -> panner      ->       gain -> out
+        //           \-> chorus -> delay -/
         this.panner.connect(this.gainController);
         this.gainController.connect(this.outputNode);
 
-        // chorus test
-        // const delay = new DelayNode(this.ctx, {
-        //     delayTime: 0.02
-        // });
-        // this.gainController.connect(delay);
-        // delay.connect(this.outputNode);
-        //
-        // const delay2 = new DelayNode(this.ctx, {
-        //     delayTime: 0.03
-        // });
-        // this.gainController.connect(delay2);
-        // delay2.connect(this.outputNode);
+        this.chorusController = new GainNode(this.ctx, {
+            gain: 0
+        });
+        this.delayLine = new DelayNode(this.ctx, {
+            delayTime: 0.017
+        });
+
+        this.panner.connect(this.chorusController);
+        this.chorusController.connect(this.delayLine);
+
+        this.delayLine.connect(this.gainController);
+
 
         this.resetControllers();
 
@@ -143,6 +144,10 @@ export class MidiChannel {
             case midiControllers.lsbForControl11ExpressionController:
                 const expression = (this.channelExpression << 7) | value;
                 this.setExpression(expression)
+                break;
+
+            case midiControllers.effects3Depth:
+                this.setChorus(value);
                 break;
 
             case midiControllers.NRPNMsb:
@@ -309,6 +314,15 @@ export class MidiChannel {
     get voicesAmount()
     {
         return this.playingNotes.reduce((amt, voice) => amt + voice.sampleNodes.length, 0) + this.stoppingNotes.reduce((amt, voice) => amt + voice.sampleNodes.length, 0);
+    }
+
+    /**
+     * @param chorus {number} 0-127
+     */
+    setChorus(chorus)
+    {
+        this.chorusLevel = chorus;
+        this.chorusController.gain.value = chorus / 127;
     }
 
     setVolume(volume) {
@@ -533,6 +547,7 @@ export class MidiChannel {
         this.channelPitchBendRange = 2;
         this.holdPedal = false;
         this.gainController.gain.value = 1;
+        this.chorusController.gain.value = 0;
         this.panner.pan.value = 0;
         this.pitchBend = 0;
         this.modulation = 0;

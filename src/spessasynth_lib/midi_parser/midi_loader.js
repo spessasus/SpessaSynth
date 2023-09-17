@@ -6,6 +6,7 @@ import {
     readBytesAsUintBigEndian,
     readVariableLengthQuantity
 } from "../utils/byte_functions.js";
+import { consoleColors } from '../utils/other.js'
 export class MIDI{
     /**
      * Parses a given midi file
@@ -187,10 +188,15 @@ export class MIDI{
                 }
             }
             this.tracks.push(track);
-            console.log("Parsed", this.tracks.length, "/", this.tracksAmount);
+            console.log(`%cParsed %c${this.tracks.length}%c / %c${this.tracksAmount}`,
+                consoleColors.info,
+                consoleColors.value,
+                consoleColors.info,
+                consoleColors.value);
         }
 
-        this.lastEventTick = Math.max(...this.tracks.map(t => t[t.length - 1].ticks));
+        this.lastEventTick = Math.max(...this.tracks.map(track =>
+        track[track.length - 1].ticks));
         const firstNoteOns = [];
         for(const t of this.tracks)
         {
@@ -202,7 +208,9 @@ export class MIDI{
         }
         this.firstNoteOn = Math.min(...firstNoteOns);
 
-        console.log("MIDI file parsed. Total tick time:", this.lastEventTick);
+        console.log(`%cMIDI file parsed. Total tick time: %c${this.lastEventTick}`,
+            consoleColors.info,
+            consoleColors.recognized);
 
         if(loopStart === null )
         {
@@ -219,7 +227,6 @@ export class MIDI{
          * @type {{start: number, end: number}}
          */
         this.loop = {start: loopStart, end: loopEnd};
-        console.log("loop", this.loop);
 
         // get track name
         this.midiName = "";

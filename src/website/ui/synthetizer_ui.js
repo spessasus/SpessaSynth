@@ -171,6 +171,11 @@ export class SynthetizerUI
                     // mod wheel
                     this.controllers[channel].mod.update(value);
                     break;
+
+                case midiControllers.effects3Depth:
+                    // chorus
+                    this.controllers[channel].chorus.update(value);
+                    break;
             }
         }
 
@@ -191,6 +196,7 @@ export class SynthetizerUI
      *     pan: Meter,
      *     expression: Meter,
      *     mod: Meter,
+     *     chorus: Meter,
      *     preset: HTMLSelectElement,
      *     presetReset: HTMLDivElement
      * }} ChannelController
@@ -280,6 +286,18 @@ export class SynthetizerUI
         modulation.update(0);
         controller.appendChild(modulation.div);
 
+        // chorus
+        const chorus = new Meter(this.channelColors[channelNumber],
+            "Chorus: ",
+            0,
+            127,
+            true,
+            val => {
+                this.synth.controllerChange(channelNumber, midiControllers.effects3Depth, val);
+            });
+        chorus.update(0);
+        controller.appendChild(chorus.div);
+
         // create it here so we can use it in the callback function
         const presetReset = document.createElement("div");
 
@@ -318,6 +336,7 @@ export class SynthetizerUI
             expression: expression,
             volume: volume,
             mod: modulation,
+            chorus: chorus,
             preset: presetSelector,
             presetReset: presetReset
         };
