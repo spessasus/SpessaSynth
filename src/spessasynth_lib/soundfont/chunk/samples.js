@@ -149,6 +149,7 @@ export class Sample {
         this.sampleLength = this.sampleEndIndex - this.sampleStartIndex;
         this.indexRatio = 1;
         this.sampleDataArray = smplArr;
+        this.sampleLengthSeconds = this.sampleLength / (this.sampleRate * 2);
 
         if (this.sampleLength < 1 || this.sampleName.substring(0, 3).toLowerCase() === "eos") {
             return;

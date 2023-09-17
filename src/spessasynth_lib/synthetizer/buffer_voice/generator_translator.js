@@ -243,9 +243,9 @@ export class GeneratorTranslator {
         const decayTime = this.timecentsToSeconds(this.decayTime  + ((60 - this.midiNote) * this.keyToVolDecay));
         const sustainLevel = this._getSustainLevel() * velocityGain;
         let releaseTime = this.timecentsToSeconds(this.releaseTime);
-        if(releaseTime > 5)
+        if (releaseTime > 15)
         {
-            releaseTime = 5;
+            releaseTime = 15;
         }
         return {
             attenuation: attenuation,

@@ -308,7 +308,7 @@ export class MidiChannel {
 
     get voicesAmount()
     {
-        return this.notes.size;
+        return this.playingNotes.reduce((amt, voice) => amt + voice.sampleNodes.length, 0) + this.stoppingNotes.reduce((amt, voice) => amt + voice.sampleNodes.length, 0);
     }
 
     setVolume(volume) {
@@ -477,34 +477,32 @@ export class MidiChannel {
             return;
         }
 
-        let notes = this.playingNotes.filter(n => n.midiNote === midiNote);
-        if(notes.length < 1)
+        let note = this.playingNotes.find(n => n.midiNote === midiNote);
+        if(!note)
         {
             return
         }
-        for(let note of notes) {
 
-            // add note as a fading one
-            this.stoppingNotes.push(note);
+        // add note as a fading one
+        this.stoppingNotes.push(note);
 
-            // and remove it from the main array
-            this.playingNotes.splice(this.playingNotes.indexOf(note), 1);
+        // and remove it from the main array
+        this.playingNotes.splice(this.playingNotes.indexOf(note), 1);
 
-            if(highPerf)
-            {
-                note.killNote().then(() => {
-                    this.notes.delete(midiNote);
-                    note.disconnectNote();
-                    delete this.stoppingNotes.splice(this.stoppingNotes.indexOf(note), 1);
-                });
-            }
-            else {
-                note.stopNote().then(() => {
-                    this.notes.delete(midiNote);
-                    note.disconnectNote();
-                    delete this.stoppingNotes.splice(this.stoppingNotes.indexOf(note), 1);
-                });
-            }
+        if(highPerf)
+        {
+            note.killNote().then(() => {
+                this.notes.delete(midiNote);
+                note.disconnectNote();
+                delete this.stoppingNotes.splice(this.stoppingNotes.indexOf(note), 1);
+            });
+        }
+        else {
+            note.stopNote().then(() => {
+                this.notes.delete(midiNote);
+                note.disconnectNote();
+                delete this.stoppingNotes.splice(this.stoppingNotes.indexOf(note), 1);
+            });
         }
     }
 

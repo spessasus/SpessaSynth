@@ -12,5 +12,5 @@ export function getLFOValue(startTime, frequency, currentTime) {
     const xVal = (currentTime - startTime) / (1 / frequency);
 
     // triangle, not sine
-    return Math.abs(xVal - ~~(xVal + 0.5)) * 4 - 1;
+    return Math.abs(xVal - (~~(xVal + 0.5))) * 4 - 1;
 }

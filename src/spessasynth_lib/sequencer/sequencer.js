@@ -1,6 +1,6 @@
 import {MIDI} from "../midi_parser/midi_loader.js";
 import { DEFAULT_PERCUSSION, Synthetizer } from '../synthetizer/synthetizer.js';
-import {getEvent, messageTypes, MidiMessage} from "../midi_parser/midi_message.js";
+import { getEvent, messageTypes, midiControllers, MidiMessage } from '../midi_parser/midi_message.js'
 import { consoleColors, formatTime } from '../utils/other.js'
 import {readBytesAsUintBigEndian} from "../utils/byte_functions.js";
 
@@ -599,7 +599,10 @@ export class Sequencer {
     {
         clearInterval(this.playbackInterval);
         this.playbackInterval = undefined;
-        this.synth.stopAll(true);
+        for (let i = 0; i < 16; i++) {
+            this.synth.controllerChange(i, midiControllers.sustainPedal, 0);
+        }
+        this.synth.stopAll();
         if(this.MIDIout)
         {
             for (let c = 0; c < 16; c++)

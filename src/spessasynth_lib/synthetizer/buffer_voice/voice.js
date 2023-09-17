@@ -92,10 +92,7 @@ export class Voice
      */
     async stopNote(){
         // find the longest release time
-        let maxFadeout = Math.max(...this.sampleNodes.map(s => s.volEnv.releaseTime));
-
-        // stop every sample
-        this.sampleNodes.forEach(s => s.stop());
+        let maxFadeout = Math.max(...this.sampleNodes.map(s => s.stop()));
 
         // so .then() can be added to delete the note after it finished
         await new Promise(r => setTimeout(r, maxFadeout * 1000));

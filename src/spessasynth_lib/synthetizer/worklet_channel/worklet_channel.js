@@ -5,6 +5,8 @@
  * rootKey: number,
  * loopStart: number,
  * loopEnd: number,
+ * end: number,
+ * loopingMode: 0|1|2,
  * }} WorkletSample
  *
  * @typedef {{
@@ -19,6 +21,7 @@
  * startTime: number,
  * midiNote: number,
  * releaseStartTime: number,
+ * targetKey: number,
  * }} WorkletVoice
  */
 
@@ -106,7 +109,9 @@ export class WorkletChannel {
         this.preset = defaultPreset;
         this.bank = this.preset.bank;
         this.channelVolume = 1;
-        this.channelExpression = 1
+        this.channelExpression = 1;
+
+        this.channelTuningSemitones = 0;
 
         /**
          * @type {number[]}
@@ -260,7 +265,8 @@ export class WorkletChannel {
             workletVoices = cached;
             workletVoices.forEach(v => {
                 v.startTime = this.ctx.currentTime;
-            })
+                this.actualVoices.push(midiNote);
+            });
         }
         else
         {
@@ -279,6 +285,26 @@ export class WorkletChannel {
                     });
                 }
 
+                // create the generator list
+                const generators = new Int16Array(60);
+                // apply and sum the gens
+                for (let i = 0; i < 60; i++) {
+                    generators[i] = addAndClampGenerator(i, sampleAndGenerators.presetGenerators, sampleAndGenerators.instrumentGenerators);
+                }
+
+                // key override
+                let rootKey = sampleAndGenerators.sample.samplePitch;
+                if(generators[generatorTypes.overridingRootKey] > -1)
+                {
+                    rootKey = generators[generatorTypes.overridingRootKey];
+                }
+
+                let targetKey = midiNote;
+                if(generators[generatorTypes.keyNum] > -1)
+                {
+                    targetKey = generators[generatorTypes.keyNum];
+                }
+
                 /**
                  * create the worklet sample
                  * @type {WorkletSample}
@@ -286,17 +312,19 @@ export class WorkletChannel {
                 const workletSample = {
                     sampleID: sampleAndGenerators.sampleID,
                     playbackStep: (sampleAndGenerators.sample.sampleRate / this.ctx.sampleRate) * Math.pow(2, sampleAndGenerators.sample.samplePitchCorrection / 1200),// cent tuning
-                    cursor: 0,
-                    rootKey: sampleAndGenerators.sample.samplePitch,
-                    loopStart: sampleAndGenerators.sample.sampleLoopStartIndex / 2,
-                    loopEnd: sampleAndGenerators.sample.sampleLoopEndIndex / 2
+                    cursor: generators[generatorTypes.startAddrsOffset] + (generators[generatorTypes.startAddrsCoarseOffset] * 32768),
+                    rootKey: rootKey,
+                    loopStart: (sampleAndGenerators.sample.sampleLoopStartIndex / 2) + (generators[generatorTypes.startloopAddrsOffset] + (generators[generatorTypes.startloopAddrsCoarseOffset] * 32768)),
+                    loopEnd: (sampleAndGenerators.sample.sampleLoopEndIndex / 2) + (generators[generatorTypes.endloopAddrsOffset] + (generators[generatorTypes.endloopAddrsCoarseOffset] * 32768)),
+                    end: sampleAndGenerators.sample.sampleLength / 2 + 1 + (generators[generatorTypes.endAddrOffset] + (generators[generatorTypes.endAddrsCoarseOffset] * 32768)),
+                    loopingMode: generators[generatorTypes.sampleModes]
                 };
 
-                // create the generator list
-                const generators = new Int16Array(60);
-                // apply and sum the gens
-                for (let i = 0; i < 60; i++) {
-                    generators[i] = addAndClampGenerator(i, sampleAndGenerators.presetGenerators, sampleAndGenerators.instrumentGenerators);
+
+                // velocity override
+                if(generators[generatorTypes.velocity] > -1)
+                {
+                    velocity = generators[generatorTypes.velocity];
                 }
 
                 /**
@@ -334,19 +362,20 @@ export class WorkletChannel {
                     midiNote: midiNote,
                     startTime: this.ctx.currentTime,
                     isInRelease: false,
-                    releaseStartTime: 0
+                    releaseStartTime: 0,
+                    targetKey: targetKey
                 };
 
             });
+
+            // cache the voice
+            this.cachedWorkletVoices[midiNote][velocity] = workletVoices;
         }
 
         if(debug)
         {
             console.log(workletVoices)
         }
-
-        // cache the voice
-        this.cachedWorkletVoices[midiNote][velocity] = workletVoices;
 
         this.post({
             messageType: workletMessageType.noteOn,

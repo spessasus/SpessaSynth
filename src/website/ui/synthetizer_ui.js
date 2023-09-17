@@ -212,7 +212,7 @@ export class SynthetizerUI
         const voiceMeter = new Meter(this.channelColors[channelNumber],
             "Voices: ",
             0,
-            50);
+            100);
         voiceMeter.bar.classList.add("voice_meter_bar_smooth");
         controller.appendChild(voiceMeter.div);
 

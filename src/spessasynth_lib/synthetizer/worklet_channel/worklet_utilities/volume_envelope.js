@@ -63,14 +63,14 @@ export function getVolumeEnvelopeValue(delay, attack, peak, hold, sustain, decay
         // exponential
         const gain = releaseExpoLookupTable[Math.trunc(((currentTime - holdEnd) / decay) * 1000)] * (peak - sustain) + sustain
         if (gain < MIN_AUDIBLE_GAIN) {
-            return -1;
+            return -0.001;
         }
         return gain;
     }
     // sustain
     else {
         if (sustain < MIN_AUDIBLE_GAIN) {
-            return -1;
+            return -0.001;
         }
         return sustain;
     }

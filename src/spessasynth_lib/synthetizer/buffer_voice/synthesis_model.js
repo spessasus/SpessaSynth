@@ -194,6 +194,9 @@ export class SynthesisModel
         this.wavetableOscillator.start();
     }
 
+    /**
+     * @returns {number} the release time
+     */
     stop()
     {
         // looping mode 3
@@ -230,6 +233,12 @@ export class SynthesisModel
             this.lowpassFilter.frequency.setValueAtTime(this.lowpassFilter.frequency.value, this.now);
             this.lowpassFilter.frequency.linearRampToValueAtTime(this.filEnv.endHz, this.now + this.filEnv.releaseTime);
         }
+
+        if(this.volEnv.releaseTime > this.synthesisOptions.sample.sampleLengthSeconds && !this.wavetableOscillator.loop)
+        {
+            return this.synthesisOptions.sample.sampleLengthSeconds;
+        }
+        return this.volEnv.releaseTime;
     }
 
     disconnect()

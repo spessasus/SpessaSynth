@@ -95,7 +95,7 @@ export function computeWorkletModulator(controllerTable, modulator, midiNote, ve
 
 
     // compute the modulator
-    const computedValue = Math.floor(sourceValue * secondSrcValue * modulator.transformAmount);
+    const computedValue = sourceValue * secondSrcValue * modulator.transformAmount;
 
     if(modulator.transformType === 2)
     {
@@ -111,15 +111,22 @@ export function computeWorkletModulator(controllerTable, modulator, midiNote, ve
  * @param controllerTable {Int16Array}
  * @returns {number} the computed number
  */
-export function getModulated(voice, generatorType, controllerTable)
-{
-    const genVal = voice.generators[generatorType];
-    if(!voice.modulators[generatorType].length)
-    {
+export function getModulated(voice, generatorType, controllerTable) {
+    const modLen = voice.modulators[generatorType].length;
+    if (modLen < 1) {
         // if no mods, just return gen
-        return genVal;
+        return voice.generators[generatorType];
     }
-    // if mods, sum them
-    return genVal + voice.modulators[generatorType]
-        .reduce((value, mod) => value + computeWorkletModulator(controllerTable, mod, voice.midiNote, voice.velocity), 0);
+    else if(modLen === 1)
+    {
+        return voice.generators[generatorType] + computeWorkletModulator(controllerTable, voice.modulators[generatorType][0], voice.midiNote, voice.velocity)
+    }
+    else {
+        // if mods, sum them
+        let sum = voice.generators[generatorType];
+        for (let i = 0; i < modLen; i++) {
+            sum += computeWorkletModulator(controllerTable, voice.modulators[generatorType][i], voice.midiNote, voice.velocity);
+        }
+        return sum;
+    }
 }
