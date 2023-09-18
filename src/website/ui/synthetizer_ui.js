@@ -1,4 +1,4 @@
-import {Synthetizer} from "../../spessasynth_lib/synthetizer/synthetizer.js";
+import { DEFAULT_GAIN, Synthetizer } from '../../spessasynth_lib/synthetizer/synthetizer.js'
 import {MidiChannel} from "../../spessasynth_lib/synthetizer/buffer_voice/midi_channel.js";
 import { getLoopSvg } from './icons.js';
 import { ShiftableByteArray } from '../../spessasynth_lib/utils/shiftable_array.js';
@@ -113,7 +113,7 @@ export class SynthetizerUI
             // update channel
             this.controllers[i].voiceMeter.update(this.synth.midiChannels[i].voicesAmount);
         }
-        this.volumeController.update(this.synth.volumeController.gain.value * 100);
+        this.volumeController.update((this.synth.volumeController.gain.value * (1 / DEFAULT_GAIN)) * 100);
         this.panController.update(this.synth.panController.pan.value);
     }
 

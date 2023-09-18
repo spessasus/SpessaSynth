@@ -7,6 +7,8 @@ import { WorkletChannel } from './worklet_channel/worklet_channel.js'
 
 // i mean come on
 const VOICES_CAP = 1000;
+
+export const DEFAULT_GAIN = 0.5;
 export const DEFAULT_PERCUSSION = 9;
 
 export class Synthetizer {
@@ -21,7 +23,7 @@ export class Synthetizer {
         this.context = targetNode.context;
 
         this.volumeController = new GainNode(targetNode.context, {
-            gain: 1
+            gain: DEFAULT_GAIN
         });
 
         this.panController = new StereoPannerNode(targetNode.context, {
@@ -253,7 +255,7 @@ export class Synthetizer {
         this.midiChannels[DEFAULT_PERCUSSION].percussionChannel = true;
         this.midiChannels[DEFAULT_PERCUSSION].setPreset(this.percussionPreset);
         this.system = "gm2";
-        this.volumeController.gain.value = 1;
+        this.volumeController.gain.value = DEFAULT_GAIN;
         this.panController.pan.value = 0;
     }
 
@@ -287,7 +289,7 @@ export class Synthetizer {
      */
     setMainVolume(volume)
     {
-        this.volumeController.gain.value = volume;
+        this.volumeController.gain.value = volume * DEFAULT_GAIN;
     }
 
     /**

@@ -234,8 +234,9 @@ export class SynthesisModel
             this.lowpassFilter.frequency.linearRampToValueAtTime(this.filEnv.endHz, this.now + this.filEnv.releaseTime);
         }
 
-        if(this.volEnv.releaseTime > this.synthesisOptions.sample.sampleLengthSeconds && !this.wavetableOscillator.loop)
+        if(!this.wavetableOscillator.loop)
         {
+            // if not looping, return the sample length
             return this.synthesisOptions.sample.sampleLengthSeconds;
         }
         return this.volEnv.releaseTime;
