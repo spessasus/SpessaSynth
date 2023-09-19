@@ -9,11 +9,11 @@ const MAX_NOTEONS_PER_S = 200;
 
 export class Sequencer {
     /**
-     * Creates a new Midi sequencer for playing back MIDI file
-     * @param parsedMidi {MIDI} The parsed midi
+     * Creates a new Midi sequencer for playing back MIDI files
+     * @param parsedMidis {MIDI[]} List of the parsed midi
      * @param synth {Synthetizer} synth to send events to
      */
-    constructor(parsedMidi, synth)
+    constructor(parsedMidis, synth)
     {
         this.ignoreEvents = false;
         this.synth = synth;
@@ -34,7 +34,7 @@ export class Sequencer {
          * Absolute playback startTime, bases on the synth's time
          * @type {number}
          */
-        this.absoluteStartTime = this.synth.currentTime;
+        this.absoluteStartTime = this.now;
 
         /**
          * Controls the playback's rate
@@ -57,7 +57,39 @@ export class Sequencer {
 
         this.noteOnsPerS = 0;
 
-        this.loadNewSequence(parsedMidi);
+        this.loadNewSongList(parsedMidis);
+    }
+
+    /**
+     * @param parsedMidis {MIDI[]}
+     */
+    loadNewSongList(parsedMidis)
+    {
+        this.songs = parsedMidis;
+        this.songIndex = 0;
+        this.loadNewSequence(this.songs[this.songIndex]);
+    }
+
+    nextSong()
+    {
+        this.songIndex++;
+        this.songIndex %= this.songs.length;
+        this.loadNewSequence(this.songs[this.songIndex]);
+    }
+
+    previousSong()
+    {
+        this.songIndex--;
+        if(this.songIndex < 0)
+        {
+            this.songIndex = this.songs.length - 1;
+        }
+        this.loadNewSequence(this.songs[this.songIndex]);
+    }
+
+    get now()
+    {
+        return performance.now() / 1000
     }
 
     /**
@@ -70,7 +102,7 @@ export class Sequencer {
         {
             return this.pausedTime;
         }
-        return (this.synth.currentTime - this.absoluteStartTime) * this.playbackRate;
+        return (this.now - this.absoluteStartTime) * this.playbackRate;
     }
 
     set currentTime(time)
@@ -87,7 +119,7 @@ export class Sequencer {
         this.playingNotes = [];
         this.pausedTime = undefined;
         this._playTo(time);
-        this.absoluteStartTime = this.synth.currentTime - time / this.playbackRate;
+        this.absoluteStartTime = this.now - time / this.playbackRate;
         this.play();
         if(this.renderer)
         {
@@ -117,6 +149,7 @@ export class Sequencer {
      */
     loadNewSequence(parsedMidi)
     {
+        this.stop();
         if (!parsedMidi.tracks) {
             throw "No tracks supplied!";
         }
@@ -146,6 +179,7 @@ export class Sequencer {
         }
 
         this.synth.resetControllers();
+        this.play(true);
     }
 
     calculateNoteTimes()
@@ -401,7 +435,7 @@ export class Sequencer {
         if(this.paused)
         {
             // adjust the start time
-            this.absoluteStartTime = this.synth.currentTime - this.pausedTime;
+            this.absoluteStartTime = this.now - this.pausedTime;
             this.pausedTime = undefined;
         }
 
@@ -423,7 +457,7 @@ export class Sequencer {
         this.playingNotes = [];
         this.pausedTime = undefined;
         this._playTo(0, ticks);
-        this.absoluteStartTime = this.synth.currentTime - this.playedTime / this.playbackRate;
+        this.absoluteStartTime = this.now - this.playedTime / this.playbackRate;
         this.play();
         if(this.renderer)
         {
@@ -448,7 +482,8 @@ export class Sequencer {
             return;
         }
         let event = this.events[this.eventIndex];
-        while(this.playedTime <= this.currentTime)
+        let current = this.currentTime
+        while(this.playedTime <= current)
         {
             this._processEvent(event);
             ++this.eventIndex;
@@ -459,10 +494,19 @@ export class Sequencer {
                 this.setTimeTicks(this.midiData.loop.start);
                 return;
             }
-
-            if(this.eventIndex >= this.events.length)
+            else if(this.eventIndex >= this.events.length || current > this.duration)
             {
                 this.pause();
+                // if(this.loop) {
+                //     this.setTimeTicks(this.midiData.loop.start);
+                // }
+                // else
+                // {
+                    if(this.songs.length > 1)
+                    {
+                        this.nextSong();
+                    }
+                // }
                 return;
             }
 

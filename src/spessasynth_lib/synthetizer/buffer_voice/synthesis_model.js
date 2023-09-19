@@ -29,14 +29,15 @@ export class SynthesisModel
         WAVETABLE OSCILLATOR
         ====================
          */
+        const loop = this.looping !== 0 && sample.loopAllowed;
         this.wavetableOscillator = new AudioBufferSourceNode(context, {
             buffer: sample.getAudioBuffer(context, offsets.start, offsets.end),
             playbackRate: synthesisOptions.getPlaybackRate() * tuningRatio,
-            loop: this.looping !== 0
+            loop: loop
         });
 
         // set up loop
-        if (this.looping !== 0)
+        if (loop)
         {
             // lsI / (sr * 2)
             const loopStartIndex = sample.sampleLoopStartIndex

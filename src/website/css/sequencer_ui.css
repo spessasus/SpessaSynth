@@ -41,7 +41,6 @@
 
 #sequencer_controls .control_buttons:hover{
     cursor: pointer;
-    filter: brightness(1.5);
 }
 
 #sequencer_controls #note_progress_background

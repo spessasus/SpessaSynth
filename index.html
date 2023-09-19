@@ -24,11 +24,11 @@
 
     <div id="title_wrapper">
       <div id="progress_bar"></div>
-      <h1 id="title">SpessaSynth: SoundFont2 Javascript Synthetizer Online Demo</h1>
+      <h1 id="title">SpessaSynth: Online Demo</h1>
 
       <div class="midi_and_sf_controller">
-        <label id="file_upload" for='midi_file_input'> Upload the MIDI file</label>
-        <input type="file" accept=".mid" id="midi_file_input"><br/>
+        <label id="file_upload" for='midi_file_input'>Upload your MIDI files</label>
+        <input type="file" accept=".mid" id="midi_file_input" multiple><br/>
 
         <label id="sf_upload"> Upload the soundfont
           <input type="file" accept=".sf2" id="sf_file_input"><br/>
@@ -114,6 +114,7 @@
   }
 
   document.getElementById("bundled_sf").onclick = () => {
+    titleMessage.innerText = "Downloading SoundFont...";
     fetchFont("soundfonts/GeneralUser_GS.sf2", percent => titleMessage.innerText = `Downloading SF2: ${percent}%`).then(arr => {
       try {
         window.soundFontParser = new SoundFont2(arr);
@@ -132,6 +133,7 @@
 
   /**
    * @param midiFile {File}
+   * @returns {Promise<MIDI>}
    */
   async function parseMidi(midiFile)
   {
@@ -149,32 +151,51 @@
   }
 
   /**
-   * @param midiFile {File}
+   * @param midiFiles {FileList}
    */
-  function startMidi(midiFile)
+  async function startMidi(midiFiles)
   {
-    titleMessage.innerText = `Parsing ${midiFile.name}`;
-    document.getElementById("file_upload").innerText = midiFile.name;
-    parseMidi(midiFile).then(parsedMidi => {
-      if(parsedMidi.midiName.trim().length > 0)
-      {
-        titleMessage.style.fontStyle = "italic";
-        titleMessage.innerText = parsedMidi.midiName;
-      }
-      else
-      {
-        titleMessage.innerText = TITLE;
-      }
+    titleMessage.innerText = `Parsing ${midiFiles[0].name}`;
+    let fName;
+    if(midiFiles[0].name.length > 20)
+    {
+      fName = midiFiles[0].name.substring(0, 21) + "...";
+    }
+    else
+    {
+      fName = midiFiles[0].name;
+    }
+    if(midiFiles.length > 1)
+    {
+      fName += ` and ${midiFiles.length - 1} others`;
+    }
+    document.getElementById("file_upload").innerText = fName;
+    /**
+     * @type {MIDI[]}
+     */
+    const parsed = [];
+    for (let i = 0; i < midiFiles.length; i++) {
+      titleMessage.innerText = `Parsing ${midiFiles[i].name}`;
+      parsed.push(await parseMidi(midiFiles[i]));
+    }
+    titleMessage.style.fontStyle = "italic";
+    if(parsed[0].midiName.trim().length > 0)
+    {
+      titleMessage.innerText = parsed[0].midiName.trim();
+    }
+    else
+    {
+      titleMessage.innerText = midiFiles[0].name;
+    }
 
-      if(manager.seq)
-      {
-        manager.seq.loadNewSequence(parsedMidi);
-        manager.seq.currentTime = 0;
-      }
-      else {
-        manager.play(parsedMidi);
-      }
-    });
+    if(manager.seq)
+    {
+      manager.seq.loadNewSongList(parsed);
+      manager.seq.currentTime = 0;
+    }
+    else {
+      manager.play(parsed);
+    }
   }
 
   /**
@@ -221,7 +242,7 @@
     sfInput.onchange = undefined;
     if(fileInput.files[0])
     {
-      startMidi(fileInput.files[0]);
+      startMidi(fileInput.files);
     }
     else
     {
@@ -229,7 +250,7 @@
       fileInput.onchange = e => {
         if(e.target.files[0])
         {
-          startMidi(fileInput.files[0]);
+          startMidi(fileInput.files);
         }
       }
     }

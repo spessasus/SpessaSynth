@@ -6,7 +6,7 @@ import { midiControllers } from '../midi_parser/midi_message.js'
 import { WorkletChannel } from './worklet_channel/worklet_channel.js'
 
 // i mean come on
-const VOICES_CAP = 1000;
+const VOICES_CAP = 2137;
 
 export const DEFAULT_GAIN = 0.5;
 export const DEFAULT_PERCUSSION = 9;
@@ -386,8 +386,16 @@ export class Synthetizer {
                 // main volume
                 if (messageData[2] === 0x04 && messageData[3] === 0x01)
                 {
-                    const vol = messageData[5] << 7 | messageData[4];
-                    this.volumeController.gain.value = vol / 16383;
+                    if(messageData[4])
+                    {
+                        const vol = messageData[5] << 7 | messageData[4];
+                        this.volumeController.gain.value = vol / 16384 * DEFAULT_GAIN;
+                    }
+                    else
+                    {
+                        const vol = messageData[5];
+                        this.volumeController.gain.value = vol / 127 * DEFAULT_GAIN;
+                    }
                 }
                 break;
 
@@ -448,7 +456,7 @@ export class Synthetizer {
                 if(messageData[2] === 0x16 && messageData[3] === 0x12 && messageData[4] === 0x10)
                 {
                     // this is a roland master volume message
-                    this.volumeController.gain.value = messageData[7] / 100;
+                    this.volumeController.gain.value = messageData[7] / 100 * DEFAULT_GAIN;
                     console.log(`%cRoland Master Volume control set to: %c${messageData[7]}%c via: %c${arrayToHexString(messageData)}`,
                         consoleColors.info,
                         consoleColors.value,

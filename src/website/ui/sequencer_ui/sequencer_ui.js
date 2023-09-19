@@ -1,7 +1,8 @@
-import {Sequencer} from "../../spessasynth_lib/sequencer/sequencer.js";
-import { formatTime, supportedEncodings } from '../../spessasynth_lib/utils/other.js'
-import { getLoopSvg, getPauseSvg, getPlaySvg, getTextSvg } from './icons.js';
-import { messageTypes } from '../../spessasynth_lib/midi_parser/midi_message.js'
+import {Sequencer} from "../../../spessasynth_lib/sequencer/sequencer.js";
+import { formatTime, supportedEncodings } from '../../../spessasynth_lib/utils/other.js'
+import { getBackwardSvg, getForwardSvg, getLoopSvg, getPauseSvg, getPlaySvg, getTextSvg } from '../icons.js'
+import { messageTypes } from '../../../spessasynth_lib/midi_parser/midi_message.js'
+import { getSeqUIButton } from './sequi_button.js'
 
 const ICON_SIZE = 32;
 
@@ -21,6 +22,18 @@ export class SequencerUI{
         this.encoder = new TextEncoder(this.encoding);
         this.text = "";
         this.rawText = [];
+        this.titles = [""];
+        this.titleIndex = 0;
+    }
+
+
+    /**
+     * @param songTitles {string[]}
+     */
+    setSongTitles(songTitles)
+    {
+        this.titles = songTitles;
+        this.titleIndex = 0;
     }
 
     /**
@@ -104,12 +117,16 @@ export class SequencerUI{
         // main div
         const mainLyricsDiv  = document.createElement("div");
         mainLyricsDiv.classList.add("lyrics");
+
+
         // title
         const lyricsTitle = document.createElement("h2");
         lyricsTitle.innerText = "Decoded Text";
         lyricsTitle.classList.add("lyrics_title");
         mainLyricsDiv.appendChild(lyricsTitle);
         this.lyricsElement.title = lyricsTitle;
+
+
         // encoding selector
         const encodingSelector = document.createElement("select");
         supportedEncodings.forEach(encoding => {
@@ -122,23 +139,24 @@ export class SequencerUI{
         encodingSelector.onchange = () => this.changeEncoding(encodingSelector.value);
         encodingSelector.classList.add("lyrics_selector");
         mainLyricsDiv.appendChild(encodingSelector);
+
+
         // the actual text
         const text = document.createElement("p");
         text.classList.add("lyrics_text");
         mainLyricsDiv.appendChild(text);
         this.lyricsElement.text = text;
-
         this.lyricsElement.mainDiv = mainLyricsDiv;
-
         this.controls.appendChild(mainLyricsDiv);
-
         setInterval(() => {
             if(this.lyricsElement.text.innerText !== this.text) this.lyricsElement.text.innerText = this.text;
         }, 100);
 
+
         // background bar
         const progressBarBg = document.createElement("div");
         progressBarBg.id = "note_progress_background";
+
 
         // foreground bar
         this.progressBar = document.createElement("div");
@@ -146,14 +164,14 @@ export class SequencerUI{
         this.progressBar.min = (0).toString();
         this.progressBar.max =  this.seq.duration.toString();
 
+
         // control buttons
         const controlsDiv = document.createElement("div");
 
+
         // play pause
-        const playPauseButton = document.createElement("div");
-        playPauseButton.classList.add("control_buttons");
-        playPauseButton.title = "Play/pause";
-        playPauseButton.innerHTML = getPauseSvg(ICON_SIZE);
+        const playPauseButton = getSeqUIButton("Play/Pause",
+            getPauseSvg(ICON_SIZE));
         const togglePlayback = () => {
             if(this.seq.paused)
             {
@@ -168,11 +186,20 @@ export class SequencerUI{
         }
         playPauseButton.onclick = togglePlayback;
 
+
+        // previous song button
+        const previousSongButton = getSeqUIButton("Previous song",
+        getBackwardSvg(ICON_SIZE));
+        previousSongButton.onclick = () => this.seq.previousSong();
+
+        // next song button
+        const nextSongButton = getSeqUIButton("Next song",
+            getForwardSvg(ICON_SIZE));
+        nextSongButton.onclick = () => this.seq.nextSong();
+
         // loop button
-        const loopButton = document.createElement("div");
-        loopButton.classList.add("control_buttons");
-        loopButton.title = "Loop";
-        loopButton.innerHTML = getLoopSvg(ICON_SIZE);
+        const loopButton = getSeqUIButton("Loop this",
+            getLoopSvg(ICON_SIZE))
         const toggleLoop = () => {
             if(this.seq.loop)
             {
@@ -190,11 +217,10 @@ export class SequencerUI{
         }
         loopButton.onclick = toggleLoop;
 
+
         // show text button
-        const textButton = document.createElement("div");
-        textButton.classList.add("control_buttons");
-        textButton.title = "Show lyrics";
-        textButton.innerHTML = getTextSvg(ICON_SIZE);
+        const textButton = getSeqUIButton("Show lyrics",
+            getTextSvg(ICON_SIZE));
         textButton.firstElementChild.setAttribute("fill", ICON_DISABLED); // defaults to disabled
         const toggleLyrics = () => {
             this.lyricsElement.mainDiv.classList.toggle("lyrics_show");
@@ -225,11 +251,14 @@ export class SequencerUI{
                     break;
             }
         })
-        controlsDiv.appendChild(playPauseButton);
-        controlsDiv.appendChild(loopButton);
-        controlsDiv.appendChild(textButton);
 
         // add everything
+        controlsDiv.appendChild(previousSongButton); // |<
+        controlsDiv.appendChild(loopButton);         // ()
+        controlsDiv.appendChild(playPauseButton);    // ||
+        controlsDiv.appendChild(textButton);         // ==
+        controlsDiv.appendChild(nextSongButton);     // >|
+
         this.controls.appendChild(progressBarBg);
         this.controls.appendChild(this.progressBar);
         this.controls.appendChild(this.progressTime);
@@ -238,28 +267,40 @@ export class SequencerUI{
         // add number and arrow controls
         document.addEventListener("keydown", e => {
 
-            if(e.key.toLowerCase() === "arrowleft")
+            switch (e.key.toLowerCase())
             {
-                e.preventDefault();
-                this.seq.currentTime -= 5;
-                playPauseButton.innerHTML = getPauseSvg(ICON_SIZE);
-            }
-            else if(e.key.toLowerCase() === "arrowright")
-            {
-                e.preventDefault();
-                this.seq.currentTime += 5;
-                playPauseButton.innerHTML = getPauseSvg(ICON_SIZE);
-            }
-
-            if(!isNaN(parseFloat(e.key)))
-            {
-                e.preventDefault();
-                const num = parseInt(e.key);
-                if(0 <= num && num <= 9)
-                {
-                    this.seq.currentTime = this.seq.duration * (num / 10);
+                case "arrowleft":
+                    e.preventDefault();
+                    this.seq.currentTime -= 5;
                     playPauseButton.innerHTML = getPauseSvg(ICON_SIZE);
-                }
+                    break;
+
+                case "arrowright":
+                    e.preventDefault();
+                    this.seq.currentTime += 5;
+                    playPauseButton.innerHTML = getPauseSvg(ICON_SIZE);
+                    break;
+
+                case "[":
+                    this.seq.previousSong();
+                    break;
+
+                case "]":
+                    this.seq.nextSong();
+                    break;
+
+                default:
+                    if(!isNaN(parseFloat(e.key)))
+                    {
+                        e.preventDefault();
+                        const num = parseInt(e.key);
+                        if(0 <= num && num <= 9)
+                        {
+                            this.seq.currentTime = this.seq.duration * (num / 10);
+                            playPauseButton.innerHTML = getPauseSvg(ICON_SIZE);
+                        }
+                    }
+                    break;
             }
         })
     }
@@ -270,6 +311,11 @@ export class SequencerUI{
             const time = formatTime(this.seq.currentTime);
             const total = formatTime(this.seq.duration);
             this.progressTime.innerText = `${time.time} / ${total.time}`;
+            if(this.seq.songIndex !== this.titleIndex)
+            {
+                document.getElementById("title").innerText = this.titles[this.seq.songIndex];
+                this.titleIndex = this.seq.songIndex;
+            }
         }, 100);
     }
 }

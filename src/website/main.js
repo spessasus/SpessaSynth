@@ -72,41 +72,61 @@ async function fetchFont(fileName, callback)
 }
 
 /**
- * @param midiFile {File}
+ * @param midiFiles {FileList}
  */
-function startMidi(midiFile)
+async function startMidi(midiFiles)
 {
-    let fName = "";
-    if(midiFile.name.length > 20)
+    let fName;
+    if(midiFiles[0].name.length > 20)
     {
-        fName = midiFile.name.substring(0, 21) + "...";
+        fName = midiFiles[0].name.substring(0, 21) + "...";
     }
     else
     {
-        fName = midiFile.name;
+        fName = midiFiles[0].name;
     }
-    titleMessage.innerText = `Parsing ${fName}`;
+    if(midiFiles.length > 1)
+    {
+        fName += ` and ${midiFiles.length - 1} others`;
+    }
     document.getElementById("file_upload").innerText = fName;
-    parseMidi(midiFile).then(parsedMidi => {
-        if(parsedMidi.midiName.trim().length > 0)
+    /**
+     * @type {MIDI[]}
+     */
+    const parsed = [];
+
+    /**
+     * @type {string[]}
+     */
+    const titles = [];
+    for (let i = 0; i < midiFiles.length; i++) {
+        titleMessage.innerText = `Parsing ${midiFiles[i].name}`;
+        parsed.push(await parseMidi(midiFiles[i]));
+
+        let title;
+        if(parsed[i].midiName.trim().length > 0)
         {
-            titleMessage.style.fontStyle = "italic";
-            titleMessage.innerText = parsedMidi.midiName;
+            title = parsed[i].midiName.trim();
         }
         else
         {
-            titleMessage.innerText = TITLE;
+            title = midiFiles[i].name;
         }
+        titles.push(title);
+    }
+    titleMessage.style.fontStyle = "italic";
+    document.title = titles[0];
+    titleMessage.innerText = titles[0]
 
-        if(manager.seq)
-        {
-            manager.seq.loadNewSequence(parsedMidi);
-            manager.seq.currentTime = 0;
-        }
-        else {
-            manager.play(parsedMidi);
-        }
-    });
+    if(manager.seq)
+    {
+        manager.seq.loadNewSongList(parsed);
+
+    }
+    else {
+        manager.play(parsed);
+    }
+    manager.seqUI.setSongTitles(titles);
 }
 
 /**
@@ -224,7 +244,7 @@ fetch("soundfonts").then(async r => {
 
     // start midi if already uploaded
     if(fileInput.files[0]) {
-        startMidi(fileInput.files[0]);
+        await startMidi(fileInput.files);
     }
 
     // and add the event listener
@@ -232,6 +252,6 @@ fetch("soundfonts").then(async r => {
         if (!fileInput.files[0]) {
             return;
         }
-        startMidi(fileInput.files[0]);
+        startMidi(fileInput.files);
     };
 })

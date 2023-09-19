@@ -281,6 +281,10 @@ export class MidiKeyboard
          * @type {string[]}
          */
         let pressedColors = this.keyColors[midiNote];
+        if(!pressedColors)
+        {
+            return;
+        }
         if(pressedColors.length > 1) {
             pressedColors.pop();
             key.style.background = pressedColors[pressedColors.length - 1];

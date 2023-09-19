@@ -1,10 +1,10 @@
-import { DEFAULT_GAIN, Synthetizer } from '../../spessasynth_lib/synthetizer/synthetizer.js'
-import {MidiChannel} from "../../spessasynth_lib/synthetizer/buffer_voice/midi_channel.js";
-import { getLoopSvg } from './icons.js';
-import { ShiftableByteArray } from '../../spessasynth_lib/utils/shiftable_array.js';
+import { DEFAULT_GAIN, Synthetizer } from '../../../spessasynth_lib/synthetizer/synthetizer.js'
+import {MidiChannel} from "../../../spessasynth_lib/synthetizer/buffer_voice/midi_channel.js";
+import { getLoopSvg } from '../icons.js';
+import { ShiftableByteArray } from '../../../spessasynth_lib/utils/shiftable_array.js';
 import { Meter } from './synthui_meter.js'
-import { midiPatchNames } from '../../spessasynth_lib/utils/other.js'
-import { midiControllers } from '../../spessasynth_lib/midi_parser/midi_message.js'
+import { midiPatchNames } from '../../../spessasynth_lib/utils/other.js'
+import { midiControllers } from '../../../spessasynth_lib/midi_parser/midi_message.js'
 
 const MAX_VOICE_METER = 400;
 export class SynthetizerUI

@@ -2,6 +2,7 @@ import {Voice} from "./voice.js";
 import {Preset} from "../../soundfont/chunk/presets.js";
 import { consoleColors } from '../../utils/other.js'
 import { midiControllers } from '../../midi_parser/midi_message.js'
+import { DEFAULT_GAIN } from '../synthetizer.js'
 
 const CHANNEL_LOUDNESS = 0.5;
 
@@ -123,8 +124,8 @@ export class MidiChannel {
                 break;
 
             case midiControllers.lsbForControl7MainVolume:
-                let nevVol = (this.channelVolume << 7) | value;
-                this.setVolume(nevVol);
+                let nevVol = ((this.channelVolume & 0x7f) << 7) | value;
+                this.setVolume(nevVol / 128);
                 break;
 
             case midiControllers.sustainPedal:
@@ -142,8 +143,8 @@ export class MidiChannel {
                 break;
 
             case midiControllers.lsbForControl11ExpressionController:
-                const expression = (this.channelExpression << 7) | value;
-                this.setExpression(expression)
+                const expression = ((this.channelExpression & 0x7f) << 7) | value;
+                this.setExpression(expression / 16384)
                 break;
 
             case midiControllers.effects3Depth:
@@ -230,6 +231,7 @@ export class MidiChannel {
 
     setExpression(val)
     {
+        val = Math.min(1, val);
         this.channelExpression = val;
         this.gainController.gain.value = this.getGain();
     }
@@ -326,6 +328,7 @@ export class MidiChannel {
     }
 
     setVolume(volume) {
+        volume = Math.min(127, volume);
         this.channelVolume = volume / 127;
         this.gainController.gain.value = this.getGain();
     }
@@ -546,7 +549,7 @@ export class MidiChannel {
         this.channelTuningRatio = 1;
         this.channelPitchBendRange = 2;
         this.holdPedal = false;
-        this.gainController.gain.value = 1;
+        this.gainController.gain.value = this.getGain();
         this.chorusController.gain.value = 0;
         this.panner.pan.value = 0;
         this.pitchBend = 0;
