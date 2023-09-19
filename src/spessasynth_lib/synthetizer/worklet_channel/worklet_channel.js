@@ -21,7 +21,7 @@
  * startTime: number,
  * midiNote: number,
  * releaseStartTime: number,
- * targetKey: number,
+ * targetKey: number
  * }} WorkletVoice
  */
 
@@ -363,7 +363,7 @@ export class WorkletChannel {
                     startTime: this.ctx.currentTime,
                     isInRelease: false,
                     releaseStartTime: 0,
-                    targetKey: targetKey
+                    targetKey: targetKey,
                 };
 
             });
