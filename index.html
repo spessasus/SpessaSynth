@@ -155,7 +155,6 @@
    */
   async function startMidi(midiFiles)
   {
-    titleMessage.innerText = `Parsing ${midiFiles[0].name}`;
     let fName;
     if(midiFiles[0].name.length > 20)
     {
@@ -174,28 +173,39 @@
      * @type {MIDI[]}
      */
     const parsed = [];
+
+    /**
+     * @type {string[]}
+     */
+    const titles = [];
     for (let i = 0; i < midiFiles.length; i++) {
       titleMessage.innerText = `Parsing ${midiFiles[i].name}`;
       parsed.push(await parseMidi(midiFiles[i]));
+
+      let title;
+      if(parsed[i].midiName.trim().length > 0)
+      {
+        title = parsed[i].midiName.trim();
+      }
+      else
+      {
+        title = midiFiles[i].name;
+      }
+      titles.push(title);
     }
     titleMessage.style.fontStyle = "italic";
-    if(parsed[0].midiName.trim().length > 0)
-    {
-      titleMessage.innerText = parsed[0].midiName.trim();
-    }
-    else
-    {
-      titleMessage.innerText = midiFiles[0].name;
-    }
+    document.title = titles[0];
+    titleMessage.innerText = titles[0]
 
     if(manager.seq)
     {
       manager.seq.loadNewSongList(parsed);
-      manager.seq.currentTime = 0;
+
     }
     else {
       manager.play(parsed);
     }
+    manager.seqUI.setSongTitles(titles);
   }
 
   /**
