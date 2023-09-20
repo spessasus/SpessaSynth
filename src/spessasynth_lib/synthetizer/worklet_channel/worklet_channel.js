@@ -30,7 +30,6 @@ import { consoleColors } from '../../utils/other.js'
 import { modulatorSources } from '../../soundfont/chunk/modulators.js'
 import { midiControllers } from '../../midi_parser/midi_message.js'
 import { addAndClampGenerator, generatorTypes } from '../../soundfont/chunk/generators.js'
-
 const CHANNEL_GAIN = 0.5;
 
 export const NON_CC_INDEX_OFFSET = 128;
@@ -160,6 +159,7 @@ export class WorkletChannel {
          * @type {boolean}
          */
         this.lockPreset = false;
+        this.lockVibrato = false;
     }
 
     /**
@@ -168,6 +168,16 @@ export class WorkletChannel {
     post(data)
     {
         this.worklet.port.postMessage(data);
+    }
+
+    muteChannel()
+    {
+        this.gainController.gain.value = 0;
+    }
+
+    unmuteChannel()
+    {
+        this.gainController.gain.value = CHANNEL_GAIN;
     }
 
     /**
@@ -493,6 +503,10 @@ export class WorkletChannel {
 
                             // vibrato rate
                             case 8:
+                                if(this.lockVibrato)
+                                {
+                                    return;
+                                }
                                 if(dataValue === 64)
                                 {
                                     return;

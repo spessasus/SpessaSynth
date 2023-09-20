@@ -115,6 +115,20 @@
     display: block;
 }
 
+.mute_button
+{
+    flex: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: #777 1px solid;
+    min-width: var(--voice-meter-height);
+}
+
+.mute_button:hover{
+    cursor: pointer;
+}
+
 .voice_reset{
     flex: 0;
     min-width: 0;

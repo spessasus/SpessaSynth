@@ -30,6 +30,7 @@ export class MidiChannel {
         this.outputNode = targetNode;
         this.channelNumber = channelNumber
         this.percussionChannel = percussionChannel;
+        this.defaultGain = CHANNEL_LOUDNESS;
 
         this.preset = defaultPreset;
         this.bank = this.preset.bank;
@@ -101,6 +102,7 @@ export class MidiChannel {
          * @type {boolean}
          */
         this.lockPreset = false;
+        this.lockVibrato = false;
     }
 
     /**
@@ -233,7 +235,7 @@ export class MidiChannel {
     {
         val = Math.min(1, val);
         this.channelExpression = val;
-        this.gainController.gain.value = this.getGain();
+        this.updateGain();
     }
 
     /**
@@ -242,13 +244,14 @@ export class MidiChannel {
      * @param debugInfo {boolean} for debugging set to true
      */
     playNote(midiNote, velocity, debugInfo = false) {
-        if(!velocity)
-        {
-            throw "No velocity given!";
-        }
         if (velocity === 0) {
             // stop if velocity 0
             this.stopNote(midiNote);
+            return;
+        }
+
+        if(this.defaultGain === 0)
+        {
             return;
         }
 
@@ -330,7 +333,7 @@ export class MidiChannel {
     setVolume(volume) {
         volume = Math.min(127, volume);
         this.channelVolume = volume / 127;
-        this.gainController.gain.value = this.getGain();
+        this.updateGain();
     }
 
     setRPCoarse(value)
@@ -387,6 +390,10 @@ export class MidiChannel {
                         break;
 
                     case 1:
+                        if(this.lockVibrato)
+                        {
+                            return;
+                        }
                         switch(this.NRPFine)
                         {
                             default:
@@ -472,12 +479,20 @@ export class MidiChannel {
 
         }
     }
+    updateGain(){
+        this.gainController.gain.value = this.defaultGain * this.channelVolume * this.channelExpression;
+    }
 
-    /**
-     * @returns {number}
-     */
-    getGain(){
-        return CHANNEL_LOUDNESS * this.channelVolume * this.channelExpression;
+    muteChannel()
+    {
+        this.defaultGain = 0;
+        this.updateGain();
+    }
+
+    unmuteChannel()
+    {
+        this.defaultGain = CHANNEL_LOUDNESS;
+        this.updateGain();
     }
 
     /**
@@ -533,6 +548,9 @@ export class MidiChannel {
         {
             this.stopNote(midiNote);
         }
+        this.playingNotes.forEach(n => {
+            this.stopNote(n.midiNote);
+        });
         if(force)
         {
             this.stoppingNotes.forEach(n => {
@@ -549,7 +567,7 @@ export class MidiChannel {
         this.channelTuningRatio = 1;
         this.channelPitchBendRange = 2;
         this.holdPedal = false;
-        this.gainController.gain.value = this.getGain();
+        this.updateGain();
         this.chorusController.gain.value = 0;
         this.panner.pan.value = 0;
         this.pitchBend = 0;

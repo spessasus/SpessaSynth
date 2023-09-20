@@ -211,42 +211,42 @@ class ChannelProcessor extends AudioWorkletProcessor {
 
 
         // LOWPASS
-        const filterQ = getModulated(voice, generatorTypes.initialFilterQ, this.midiControllers) - 3.01; // polyphone????
-        const filterQgain = Math.pow(10, filterQ / 20);
-        const filterFcHz = absCentsToHz(getModulated(voice, generatorTypes.initialFilterFc, this.midiControllers));
-        // calculate coefficients
-        const theta = 2 * Math.PI * filterFcHz / sampleRate;
-        let a0, a1, a2, b1, b2;
-        if (filterQgain <= 0)
-        {
-            a0 = 1;
-            a1 = 0;
-            a2 = 0;
-            b1 = 0;
-            b2 = 0;
-        }
-        else
-        {
-            const dTmp = Math.sin(theta) / (2 * filterQgain);
-            if (dTmp <= -1.0)
-            {
-                a0 = 1;
-                a1 = 0;
-                a2 = 0;
-                b1 = 0;
-                b2 = 0;
-            }
-            else
-            {
-                const beta = 0.5 * (1 - dTmp) / (1 + dTmp);
-                const gamma = (0.5 + beta) * Math.cos(theta);
-                a0 = (0.5 + beta - gamma) / 2;
-                a1 = 2 * a0;
-                a2 = a0;
-                b1 = -2 * gamma;
-                b2 = 2 * beta;
-            }
-        }
+        // const filterQ = getModulated(voice, generatorTypes.initialFilterQ, this.midiControllers) - 3.01; // polyphone????
+        // const filterQgain = Math.pow(10, filterQ / 20);
+        // const filterFcHz = absCentsToHz(getModulated(voice, generatorTypes.initialFilterFc, this.midiControllers));
+        // // calculate coefficients
+        // const theta = 2 * Math.PI * filterFcHz / sampleRate;
+        // let a0, a1, a2, b1, b2;
+        // if (filterQgain <= 0)
+        // {
+        //     a0 = 1;
+        //     a1 = 0;
+        //     a2 = 0;
+        //     b1 = 0;
+        //     b2 = 0;
+        // }
+        // else
+        // {
+        //     const dTmp = Math.sin(theta) / (2 * filterQgain);
+        //     if (dTmp <= -1.0)
+        //     {
+        //         a0 = 1;
+        //         a1 = 0;
+        //         a2 = 0;
+        //         b1 = 0;
+        //         b2 = 0;
+        //     }
+        //     else
+        //     {
+        //         const beta = 0.5 * (1 - dTmp) / (1 + dTmp);
+        //         const gamma = (0.5 + beta) * Math.cos(theta);
+        //         a0 = (0.5 + beta - gamma) / 2;
+        //         a1 = 2 * a0;
+        //         a2 = a0;
+        //         b1 = -2 * gamma;
+        //         b2 = 2 * beta;
+        //     }
+        // }
 
         // SYNTHESIS
         let actualTime = currentTime;

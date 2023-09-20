@@ -1,6 +1,6 @@
 import { DEFAULT_GAIN, Synthetizer } from '../../../spessasynth_lib/synthetizer/synthetizer.js'
 import {MidiChannel} from "../../../spessasynth_lib/synthetizer/buffer_voice/midi_channel.js";
-import { getLoopSvg } from '../icons.js';
+import { getLoopSvg, getMuteSvg, getVolumeSvg } from '../icons.js'
 import { ShiftableByteArray } from '../../../spessasynth_lib/utils/shiftable_array.js';
 import { Meter } from './synthui_meter.js'
 import { midiPatchNames } from '../../../spessasynth_lib/utils/other.js'
@@ -324,9 +324,26 @@ export class SynthetizerUI
             this.synth.midiChannels[channelNumber].lockPreset = false;
             presetSelector.classList.remove("locked_selector");
         }
-
         controller.appendChild(presetReset);
 
+        // mute button
+        const muteButton = document.createElement("div");
+        muteButton.innerHTML = getVolumeSvg(32);
+        muteButton.classList.add("controller_element");
+        muteButton.classList.add("mute_button");
+        muteButton.onclick = () => {
+            if(this.synth.midiChannels[channelNumber].gainController.gain.value === 0)
+            {
+                this.synth.midiChannels[channelNumber].unmuteChannel();
+                muteButton.innerHTML = getVolumeSvg(32);
+            }
+            else
+            {
+                this.synth.midiChannels[channelNumber].muteChannel();
+                muteButton.innerHTML = getMuteSvg(32);
+            }
+        }
+        controller.appendChild(muteButton);
 
         return {
             controller: controller,

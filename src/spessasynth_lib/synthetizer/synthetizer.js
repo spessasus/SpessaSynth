@@ -13,6 +13,7 @@ export const DEFAULT_PERCUSSION = 9;
 
 export class Synthetizer {
     /**
+     * Creates a new instance of the SpessaSynth synthesizer
      * @param targetNode {AudioNode}
      * @param soundFont {SoundFont2}
      */
@@ -68,10 +69,10 @@ export class Synthetizer {
     }
 
     /**
-     * MIDI noteOn Event
-     * @param channel {number} 0-15
-     * @param midiNote {number} 0-127
-     * @param velocity {number} 0-127
+     * Starts playing a note
+     * @param channel {number} 0-15 the channel to play the note
+     * @param midiNote {number} 0-127 the key number of the note
+     * @param velocity {number} 0-127 the velocity of the note (generally controls loudness)
      * @param enableDebugging {boolean} set to true to log stuff to console
      */
     noteOn(channel, midiNote, velocity, enableDebugging = false) {
@@ -103,10 +104,18 @@ export class Synthetizer {
         }
     }
 
+    /*
+     * Prevents any further changes to the vibrato via NRPN messages
+     */
+    lockChannelVibrato()
+    {
+        this.midiChannels.forEach(c => c.lockVibrato = true);
+    }
+
     /**
-     * MIDI noteOff event
-     * @param channel {number} 0-15
-     * @param midiNote {number} 0-127
+     * Stops playing a note
+     * @param channel {number} 0-15 the channel of the note
+     * @param midiNote {number} 0-127 the key number of the note
      */
     noteOff(channel, midiNote) {
         if(midiNote > 127 || midiNote < 0)
@@ -161,9 +170,9 @@ export class Synthetizer {
 
     /**
      * Changes the given controller
-     * @param channel {number} 0-15
-     * @param controllerNumber {number} 0-127
-     * @param controllerValue {number} 0-127
+     * @param channel {number} 0-15 the channel to change the controller
+     * @param controllerNumber {number} 0-127 the MIDI CC number
+     * @param controllerValue {number} 0-127 the controller value
      */
     controllerChange(channel, controllerNumber, controllerValue)
     {
@@ -219,7 +228,7 @@ export class Synthetizer {
     }
 
     /**
-     * Resets all controllers
+     * Resets all controllers (for every channel)
      */
     resetControllers()
     {
@@ -260,10 +269,10 @@ export class Synthetizer {
     }
 
     /**
-     * Sets the pitch
-     * @param channel {number} 0-16
-     * @param MSB {number} SECOND byte
-     * @param LSB {number} FIRST byte
+     * Sets the pitch of the given channel
+     * @param channel {number} 0-16 the channel to change pitch
+     * @param MSB {number} SECOND byte of the MIDI pitchWheel message
+     * @param LSB {number} FIRST byte of the MIDI pitchWheel message
      */
     pitchWheel(channel, MSB, LSB)
     {
@@ -276,7 +285,7 @@ export class Synthetizer {
 
     /**
      * Transposes the synthetizer's pitch by given semitones amount (percussion channels do not get affected)
-     * @param semitones {number}
+     * @param semitones {number} the semitones to transpose by. Can be a floating point number for more precision
      */
     transpose(semitones)
     {
@@ -285,7 +294,7 @@ export class Synthetizer {
 
     /**
      * Sets the main volume
-     * @param volume {number} 0-1
+     * @param volume {number} 0-1 the volume
      */
     setMainVolume(volume)
     {
@@ -311,8 +320,9 @@ export class Synthetizer {
     onPitchWheel;
 
     /**
-     * @param channel {number} 0-15
-     * @param programNumber {number} 0-127
+     * Changes the patch for a given channel
+     * @param channel {number} 0-15 the channel to change
+     * @param programNumber {number} 0-127 the MIDI patch number
      */
     programChange(channel, programNumber)
     {
@@ -330,6 +340,9 @@ export class Synthetizer {
         }
     }
 
+    /**
+     * Call after replacing synth.soundFont
+     */
     reloadSoundFont()
     {
         this.defaultPreset = this.soundFont.getPreset(0, 0);
@@ -346,8 +359,8 @@ export class Synthetizer {
     }
 
     /**
-     * Sends a sysex
-     * @param messageData {ShiftableByteArray} the message's data (after F0)
+     * Sends a MIDI Sysex message
+     * @param messageData {ShiftableByteArray} the message's data (excluding the F0 byte, but including the F7 at the end)
      */
     systemExclusive(messageData)
     {
@@ -493,7 +506,7 @@ export class Synthetizer {
     }
 
     /**
-     * @returns {number}
+     * @returns {number} the audioContext's current time
      */
     get currentTime()
     {
