@@ -1,5 +1,4 @@
 import {Preset} from "../../soundfont/chunk/presets.js";
-import {GeneratorTranslator} from "./generator_translator.js";
 import { SynthesisModel } from './synthesis_model.js'
 
 export class Voice
@@ -48,7 +47,8 @@ export class Voice
          */
         this.sampleNodes = samples.map(samAndGen => {
             const sm =  new SynthesisModel(
-                new GeneratorTranslator(samAndGen, midiNote, targetVelocity),
+                samAndGen,
+                midiNote,
                 node,
                 this.tuningRatio,
                 this.velocity,

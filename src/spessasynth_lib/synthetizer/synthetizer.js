@@ -46,19 +46,12 @@ export class Synthetizer {
          */
         this.system = "gm2";
 
-        /**
-         * @type {WorkletChannel[]}
-         */
-        this.midiChannels = [];
 
         this.defaultPreset = this.soundFont.getPreset(0, 0);
         this.percussionPreset = this.soundFont.getPreset(128, 0);
 
         // create 16 channels
-        for (let j = 0; j < 16; j++) {
-            // default to the first preset
-            this.midiChannels[j] = new MidiChannel(this.volumeController, this.defaultPreset, j + 1, false);
-        }
+        this.midiChannels = [...Array(16).keys()].map(j => new MidiChannel(this.volumeController, this.defaultPreset, j + 1, false));
 
         // change percussion channel to the percussion preset
         this.midiChannels[DEFAULT_PERCUSSION].percussionChannel = true;

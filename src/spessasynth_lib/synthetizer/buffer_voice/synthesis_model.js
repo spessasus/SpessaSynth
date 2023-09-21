@@ -4,13 +4,15 @@ export class SynthesisModel
 {
     /**
      * Creates a new instance of a single sample
-     * @param synthesisOptions {GeneratorTranslator}
+     * @param sampleAndGenerators {SampleAndGenerators}
+     * @param midiNote {number}
      * @param outputNode {AudioNode}
      * @param tuningRatio {number}
      * @param velocity {number}
      * @param vibratoDepth {number} in cents
      */
-    constructor(synthesisOptions, outputNode, tuningRatio, velocity, vibratoDepth) {
+    constructor(sampleAndGenerators, midiNote, outputNode, tuningRatio, velocity, vibratoDepth) {
+        const synthesisOptions = new GeneratorTranslator(sampleAndGenerators, midiNote, velocity);
         const context = outputNode.context;
         const sample = synthesisOptions.sample;
         const offsets = synthesisOptions.getAddressOffsets();
@@ -232,7 +234,7 @@ export class SynthesisModel
         // filter too
         if(this.lowpassFilter) {
             this.lowpassFilter.frequency.setValueAtTime(this.lowpassFilter.frequency.value, this.now);
-            this.lowpassFilter.frequency.linearRampToValueAtTime(this.filEnv.endHz, this.now + this.filEnv.releaseTime);
+            this.lowpassFilter.frequency.exponentialRampToValueAtTime(this.filEnv.endHz, this.now + this.filEnv.releaseTime);
         }
 
         if(!this.wavetableOscillator.loop)

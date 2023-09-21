@@ -2,10 +2,8 @@ import {Voice} from "./voice.js";
 import {Preset} from "../../soundfont/chunk/presets.js";
 import { consoleColors } from '../../utils/other.js'
 import { midiControllers } from '../../midi_parser/midi_message.js'
-import { DEFAULT_GAIN } from '../synthetizer.js'
 
 const CHANNEL_LOUDNESS = 0.5;
-
 
 const dataEntryStates = {
     Idle: 0,
@@ -57,11 +55,11 @@ export class MidiChannel {
             gain: CHANNEL_LOUDNESS
         });
 
-
         // note -> panner      ->       gain -> out
         //           \-> chorus -> delay -/
         this.panner.connect(this.gainController);
         this.gainController.connect(this.outputNode);
+
 
         this.chorusController = new GainNode(this.ctx, {
             gain: 0
@@ -233,7 +231,7 @@ export class MidiChannel {
 
     setExpression(val)
     {
-        val = Math.min(1, val);
+        //val = Math.min(1, val);
         this.channelExpression = val;
         this.updateGain();
     }
@@ -370,8 +368,8 @@ export class MidiChannel {
         {
             if(this.vibrato.delay === 0 && this.vibrato.rate === 0 && this.vibrato.depth === 0)
             {
-                this.vibrato.depth = 30;
-                this.vibrato.rate = 6;
+                this.vibrato.depth = 50;
+                this.vibrato.rate = 8;
                 this.vibrato.delay = 0.6;
             }
         }

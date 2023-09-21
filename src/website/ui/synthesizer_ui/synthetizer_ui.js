@@ -254,7 +254,7 @@ export class SynthetizerUI
         const expression = new Meter(this.channelColors[channelNumber],
             "Expression: ",
             0,
-            127,
+            256,
             true,
             val => {
                 this.synth.controllerChange(channelNumber, midiControllers.expressionController, val);
