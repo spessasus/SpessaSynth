@@ -507,7 +507,7 @@ export class MidiChannel {
             return;
         }
 
-        let note = this.playingNotes.find(n => n.midiNote === midiNote);
+        let note = this.playingNotes.findLast(n => n.midiNote === midiNote);
         if(!note)
         {
             return
