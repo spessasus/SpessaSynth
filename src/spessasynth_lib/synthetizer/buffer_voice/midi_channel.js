@@ -2,6 +2,7 @@ import {Voice} from "./voice.js";
 import {Preset} from "../../soundfont/chunk/presets.js";
 import { consoleColors } from '../../utils/other.js'
 import { midiControllers } from '../../midi_parser/midi_message.js'
+import { Chorus } from './chorus.js'
 
 const CHANNEL_LOUDNESS = 0.5;
 
@@ -55,24 +56,13 @@ export class MidiChannel {
             gain: CHANNEL_LOUDNESS
         });
 
-        // note -> panner      ->       gain -> out
-        //           \-> chorus -> delay -/
+        // note -> panner  ->  gain -> out
+        //           \-> chorus -/
         this.panner.connect(this.gainController);
         this.gainController.connect(this.outputNode);
 
-
-        this.chorusController = new GainNode(this.ctx, {
-            gain: 0
-        });
-        this.delayLine = new DelayNode(this.ctx, {
-            delayTime: 0.017
-        });
-
-        this.panner.connect(this.chorusController);
-        this.chorusController.connect(this.delayLine);
-
-        this.delayLine.connect(this.gainController);
-
+        // chorus
+        this.chorus = new Chorus(this.panner, this.outputNode, 0);
 
         this.resetControllers();
 
@@ -87,7 +77,6 @@ export class MidiChannel {
          * @type {Voice[]}
          */
         this.stoppingNotes = [];
-
 
         /**
          * In semitones, does not get affected by resetControllers()
@@ -324,8 +313,7 @@ export class MidiChannel {
      */
     setChorus(chorus)
     {
-        this.chorusLevel = chorus;
-        this.chorusController.gain.value = chorus / 127;
+        this.chorus.setChorusLevel(chorus);
     }
 
     setVolume(volume) {
@@ -566,7 +554,7 @@ export class MidiChannel {
         this.channelPitchBendRange = 2;
         this.holdPedal = false;
         this.updateGain();
-        this.chorusController.gain.value = 0;
+        this.chorus.setChorusLevel(0);
         this.panner.pan.value = 0;
         this.pitchBend = 0;
         this.modulation = 0;
