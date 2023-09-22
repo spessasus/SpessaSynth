@@ -77,7 +77,7 @@ export class GeneratorTranslator {
 
         // releaseVolEnv (timecents) defaults to 5s
         this.releaseTime = this.sumGeneratorValue(generatorTypes.releaseVolEnv,
-            -7200,
+            -12000,
             -7200, // shorter to prevent clicks
             8000);
 
@@ -176,7 +176,6 @@ export class GeneratorTranslator {
             const val = gen.generatorValue + preset;
             return this.limitValue(val, minAllowed, maxAllowed)
         }
-
         return this.limitValue(preset + defaultValue, minAllowed, maxAllowed);
     }
 

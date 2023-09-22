@@ -37,7 +37,7 @@ export class Manager {
      */
     constructor(context, soundFont) {
         this.context = context;
-        this.initializeContext(context, soundFont);
+        this.initializeContext(context, soundFont).then();
 
     }
 
@@ -77,13 +77,10 @@ export class Manager {
         this.renderer = new Renderer(this.channelColors, this.synth, canvas);
         this.renderer.render(true);
 
-        // connect the synth to keyboard
-        this.synth.onNoteOn = (note, chan, vel, vol, exp) => this.keyboard.pressNote(note, chan, vel, vol, exp);
-        this.synth.onNoteOff = note => this.keyboard.releaseNote(note);
-
         // set up synth UI
         this.synthUI = new SynthetizerUI(this.channelColors);
         this.synthUI.connectSynth(this.synth);
+        this.synthUI.connectKeyboard(this.keyboard);
 
         // create an UI for sequencer
         this.seqUI = new SequencerUI();

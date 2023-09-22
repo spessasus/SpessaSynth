@@ -92,8 +92,8 @@ export class Synthetizer {
 
         let chan = this.midiChannels[channel];
         chan.playNote(midiNote, velocity, enableDebugging);
-        if(this.onNoteOn) {
-            this.onNoteOn(midiNote, channel, velocity, chan.channelVolume, chan.channelExpression);
+        if(this.onNoteOn.length) {
+            this.callEvent(this.onNoteOn, [midiNote, channel, velocity, chan.channelVolume, chan.channelExpression]);
         }
     }
 
@@ -117,7 +117,7 @@ export class Synthetizer {
             return;
         }
         if(this.onNoteOff) {
-            this.onNoteOff(midiNote);
+            this.callEvent(this.onNoteOff, [midiNote, channel]);
         }
         if(this.highPerformanceMode)
         {
@@ -128,20 +128,32 @@ export class Synthetizer {
     }
 
     /**
+     * @param event {function[]}
+     * @param args {number[]}
+     */
+    callEvent(event, args)
+    {
+        event.forEach(f => f(...args))
+    }
+
+    /**
      * Plays when the midi note goes on
+     * @type {function[]}
      * @param midiNote {number} 0-127
      * @param channel {number} 0-15
      * @param velocity {number} 0-127
      * @param volume {number} 0-1
      * @param expression {number} 0-1
      */
-    onNoteOn;
+    onNoteOn = [];
 
     /**
      * Plays when the midi note goes off
+     * @type {function[]}
      * @param midiNote {number} 0-127
+     * @param channel {number} 0-15
      */
-    onNoteOff;
+    onNoteOff = [];
 
     /**
      * Stops all notes
@@ -154,7 +166,7 @@ export class Synthetizer {
             {
                 for(const note of channel.notes)
                 {
-                    this.onNoteOff(note);
+                    this.callEvent(this.onNoteOff, [note, channel.channelNumber - 1]);
                 }
             }
             channel.stopAll(force);
@@ -216,7 +228,7 @@ export class Synthetizer {
         }
         if(this.onControllerChange)
         {
-            this.onControllerChange(channel, controllerNumber, controllerValue);
+            this.callEvent(this.onControllerChange, [channel, controllerNumber, controllerValue]);
         }
     }
 
@@ -236,21 +248,22 @@ export class Synthetizer {
 
             // call all the event listeners
             const chNr = ch.channelNumber - 1;
-            if(this.onProgramChange)
+            if(this.onProgramChange.length)
             {
-                this.onProgramChange(chNr, chNr === DEFAULT_PERCUSSION ? this.percussionPreset : this.defaultPreset);
+                this.callEvent(this.onProgramChange, [chNr, chNr === DEFAULT_PERCUSSION ? this.percussionPreset : this.defaultPreset]);
             }
-            if(this.onControllerChange)
+            if(this.onControllerChange.length)
             {
-                this.onControllerChange(chNr, midiControllers.mainVolume, 100);
-                this.onControllerChange(chNr, midiControllers.pan, 64);
-                this.onControllerChange(chNr, midiControllers.expressionController, 127);
-                this.onControllerChange(chNr, midiControllers.modulationWheel, 0);
-                this.onControllerChange(chNr, midiControllers.effects3Depth, 0);
+                this.callEvent(this.onControllerChange, [chNr, midiControllers.mainVolume, 100]);
+                this.callEvent(this.onControllerChange, [chNr, midiControllers.pan, 64]);
+                this.callEvent(this.onControllerChange, [chNr, midiControllers.expressionController, 127]);
+                this.callEvent(this.onControllerChange, [chNr, midiControllers.modulationWheel, 0]);
+                this.callEvent(this.onControllerChange, [chNr, midiControllers.effects3Depth, 0]);
+
             }
-            if(this.onPitchWheel)
+            if(this.onPitchWheel.length)
             {
-                this.onPitchWheel(ch.channelNumber - 1, 64, 0);
+                this.callEvent(this.onPitchWheel, [chNr, 64, 0]);
             }
         }
 
@@ -270,9 +283,9 @@ export class Synthetizer {
     pitchWheel(channel, MSB, LSB)
     {
         this.midiChannels[channel].setPitchBend(MSB, LSB);
-        if(this.onPitchWheel)
+        if(this.onPitchWheel.length)
         {
-            this.onPitchWheel(channel, MSB, LSB);
+            this.callEvent(this.onPitchWheel, [channel, MSB, LSB]);
         }
     }
 
@@ -296,21 +309,24 @@ export class Synthetizer {
 
     /**
      * Calls on program change(channel number, preset)
-     * @type {function(number, Preset)}
+     * @type {function(number, Preset)[]}
      */
-    onProgramChange;
+    onProgramChange = [];
 
     /**
      * Calls on controller change(channel number, cc, controller value)
-     * @type {function(number, number, number)}
+     * @param channel {number} 0-16
+     * @param controllerNumber {number} 0-127
+     * @param controllerValue {number} 0-127
+     * @type {function[]}
      */
-    onControllerChange;
+    onControllerChange = [];
 
     /**
      * Calls on pitch wheel change (channel, msb, lsb)
-     * @type {function(number, number, number)}
+     * @type {function(number, number, number)[]}
      */
-    onPitchWheel;
+    onPitchWheel = [];
 
     /**
      * Changes the patch for a given channel
@@ -329,7 +345,7 @@ export class Synthetizer {
         // console.log("changing channel", channel, "to bank:", channelObj.bank,
         //     "preset:", programNumber, preset.presetName);
         if(this.onProgramChange) {
-            this.onProgramChange(channel, preset);
+            this.callEvent(this.onProgramChange, [channel, preset]);
         }
     }
 
@@ -508,6 +524,6 @@ export class Synthetizer {
 
     get voicesAmount()
     {
-        return this.midiChannels.reduce((amt, chan) => amt += chan.voicesAmount, 0);
+        return this.midiChannels.reduce((amt, chan) => amt + chan.voicesAmount, 0);
     }
 }

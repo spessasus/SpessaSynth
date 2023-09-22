@@ -191,6 +191,10 @@ export class MidiKeyboard
 
             this.selectorMenu.appendChild(inputSelector);
         });
+
+        // connect the synth to keyboard
+        this.synth.onNoteOn.push((note, chan, vel, vol, exp) => this.pressNote(note, chan, vel, vol, exp));
+        this.synth.onNoteOff.push(note => this.releaseNote(note));
     }
 
     createMIDIOutputSelector(seq)
