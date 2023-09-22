@@ -62,7 +62,7 @@ export class MidiChannel {
         this.gainController.connect(this.outputNode);
 
         // chorus
-        this.chorus = new Chorus(this.panner, this.outputNode, 0);
+        this.chorus = new Chorus(this.panner, this.gainController, 0);
 
         this.resetControllers();
 
@@ -314,6 +314,7 @@ export class MidiChannel {
     setChorus(chorus)
     {
         this.chorus.setChorusLevel(chorus);
+        this.updateGain();
     }
 
     setVolume(volume) {
@@ -466,7 +467,10 @@ export class MidiChannel {
         }
     }
     updateGain(){
-        this.gainController.gain.value = this.defaultGain * this.channelVolume * this.channelExpression;
+        this.gainController.gain.value = this.defaultGain
+            * this.channelVolume
+            * this.channelExpression
+            * (1 - this.chorus.getChorusLevel() / 381); // lower the volume to min 2/3 to compensate for delay line (it doubles the volume)
     }
 
     muteChannel()
@@ -552,9 +556,9 @@ export class MidiChannel {
         this.channelExpression = 1;
         this.channelTuningRatio = 1;
         this.channelPitchBendRange = 2;
+        this.chorus.setChorusLevel(0);
         this.holdPedal = false;
         this.updateGain();
-        this.chorus.setChorusLevel(0);
         this.panner.pan.value = 0;
         this.pitchBend = 0;
         this.modulation = 0;
