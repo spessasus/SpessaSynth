@@ -29,13 +29,14 @@ export class Chorus
         });
         this.delayOscillator.start();
 
-        /*
+        /* +----------------------------------------------+
+           |                                             \|/
         +-----+    +--------------+    +----------+    +------+
-        |input| -> |wet controller| -> |delay line| -> |output|
+        |input|--->|wet controller|--->|delay line|--->|output|
         +-----+    +--------------+    +----------+    +------+
                                            /|\ delay time
         +----------+    +----------+        |
-        |oscillator| -> |delay gain| -------+
+        |oscillator|--->|delay gain| -------+
         +----------+    +----------+
          */
 
@@ -45,6 +46,8 @@ export class Chorus
         this.input.connect(this.wetController);
         this.wetController.connect(this.delayLine);
         this.delayLine.connect(this.output);
+
+        this.input.connect(this.output);
     }
 
     /**
@@ -67,5 +70,6 @@ export class Chorus
     {
         this.input.disconnect(this.wetController);
         this.delayLine.disconnect(this.output);
+        this.input.disconnect(this.output);
     }
 }

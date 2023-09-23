@@ -643,6 +643,7 @@ export class Sequencer {
     {
         clearInterval(this.playbackInterval);
         this.playbackInterval = undefined;
+        // disable sustain
         for (let i = 0; i < 16; i++) {
             this.synth.controllerChange(i, midiControllers.sustainPedal, 0);
         }
