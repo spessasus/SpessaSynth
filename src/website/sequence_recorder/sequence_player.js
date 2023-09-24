@@ -1,4 +1,5 @@
 import { MIDIDeviceHandler } from '../../spessasynth_lib/midi_handler/midi_handler.js'
+import { midiControllers } from '../../spessasynth_lib/midi_parser/midi_message.js'
 
 export class SequencePlayer
 {
@@ -32,6 +33,7 @@ export class SequencePlayer
             this.eventIndex++;
             if(this.eventIndex >= this.recorder.events.length)
             {
+                this.synth.controllerChange(this.recorder.targetChannel, midiControllers.allNotesOff, 0);
                 this.eventIndex = 0;
                 this.startTime = this.synth.currentTime;
             }

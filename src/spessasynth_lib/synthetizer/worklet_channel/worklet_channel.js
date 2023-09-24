@@ -30,6 +30,7 @@ import { consoleColors } from '../../utils/other.js'
 import { modulatorSources } from '../../soundfont/chunk/modulators.js'
 import { midiControllers } from '../../midi_parser/midi_message.js'
 import { addAndClampGenerator, generatorTypes } from '../../soundfont/chunk/generators.js'
+import { Chorus } from '../chorus.js'
 const CHANNEL_GAIN = 0.5;
 
 export const NON_CC_INDEX_OFFSET = 128;
@@ -142,7 +143,8 @@ export class WorkletChannel {
          */
         this.dumpedSamples = new Set();
 
-        this.worklet.connect(this.gainController);
+        this.chorus = new Chorus(this.worklet, this.gainController, 0);
+
         this.gainController.connect(this.outputNode);
 
         this.resetControllers();
@@ -209,6 +211,10 @@ export class WorkletChannel {
 
             case midiControllers.NRPNLsb:
                 this.setNRPFine(val);
+                break;
+
+            case midiControllers.effects3Depth:
+                this.chorus.setChorusLevel(val);
                 break;
 
             case midiControllers.sustainPedal:

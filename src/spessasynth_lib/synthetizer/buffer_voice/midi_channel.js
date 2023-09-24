@@ -2,7 +2,7 @@ import {Voice} from "./voice.js";
 import {Preset} from "../../soundfont/chunk/presets.js";
 import { consoleColors } from '../../utils/other.js'
 import { midiControllers } from '../../midi_parser/midi_message.js'
-import { Chorus } from './chorus.js'
+import { Chorus } from '../chorus.js'
 
 const CHANNEL_LOUDNESS = 0.5;
 
@@ -55,10 +55,15 @@ export class MidiChannel {
         this.gainController = new GainNode(this.ctx, {
             gain: CHANNEL_LOUDNESS
         });
+        //this.reverb = new Freeverb(this.ctx, 0);
 
-        // note -> panner -> chorus ->  gain -> out
+        // note -> panner -> chorus ->  ->  gain -> out
 
+        //const dummy = new GainNode(this.ctx, {gain: 1});
         this.chorus = new Chorus(this.panner, this.gainController, 0);
+        //this.reverb.input.connect(dummy);
+        //this.reverb.connectOutput(this.gainController);
+
         this.gainController.connect(this.outputNode);
 
         this.resetControllers();
@@ -136,6 +141,10 @@ export class MidiChannel {
             case midiControllers.effects3Depth:
                 this.setChorus(value);
                 break;
+
+            // case midiControllers.effects1Depth:
+            //     this.reverb.setLevel(value);
+            //     break;
 
             case midiControllers.NRPNMsb:
                 this.setNRPCoarse(value);

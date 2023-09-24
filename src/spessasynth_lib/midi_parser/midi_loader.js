@@ -13,6 +13,8 @@ export class MIDI{
      * @param fileByteArray {ShiftableByteArray}
      */
     constructor(fileByteArray) {
+        console.groupCollapsed(`%cParsing MIDI File...`, consoleColors.info);
+
         const headerChunk = this.readMIDIChunk(fileByteArray);
         if(headerChunk.type !== "MThd")
         {
@@ -30,8 +32,6 @@ export class MIDI{
         this.tracksAmount = readBytesAsUintBigEndian(headerChunk.data, 2);
         // time division
         this.timeDivision = readBytesAsUintBigEndian(headerChunk.data, 2);
-
-        console.log("Tracks:", this.tracksAmount, "Time division:", this.timeDivision);
 
         /**
          * Contains all the tempo changes in the file. (Ordered from last to first)
@@ -211,6 +211,7 @@ export class MIDI{
         console.log(`%cMIDI file parsed. Total tick time: %c${this.lastEventTick}`,
             consoleColors.info,
             consoleColors.recognized);
+        console.groupEnd();
 
         if(loopStart === null )
         {
