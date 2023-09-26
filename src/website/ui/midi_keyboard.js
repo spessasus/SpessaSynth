@@ -149,7 +149,7 @@ export class MidiKeyboard
 
         this.selectorMenu = document.getElementById("keyboard_selector");
         // dark mode toggle
-        const modeToggler = document.createElement("button");
+        const modeToggler = document.createElement("div");
         modeToggler.innerText = "Toggle Dark Keyboard";
         modeToggler.classList.add("kebui_button");
         modeToggler.onclick = this.toggleMode.bind(this);

@@ -21,21 +21,13 @@
 
 .kebui_button
 {
-    background: #000;
-    border: 1px #333 solid;
-    min-height: 2em;
-    border-radius: 5px;
-    font-size: 16px;
-    display: block;
-    white-space: nowrap;
-    color: var(--font-color);
+    font-size: 20px;
+    background: var(--top-color);
     margin: auto;
 }
 
 .kebui_button:hover
 {
     cursor: pointer;
-    background: #111;
-    color: #fff;
     text-shadow: 0 0 5px white;
 }
