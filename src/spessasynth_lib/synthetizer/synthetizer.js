@@ -4,9 +4,10 @@ import {ShiftableByteArray} from "../utils/shiftable_array.js";
 import { arrayToHexString, consoleColors } from '../utils/other.js';
 import { midiControllers } from '../midi_parser/midi_message.js'
 import { WorkletChannel } from './worklet_channel/worklet_channel.js'
+import { EventHandler } from '../utils/event_handler.js'
 
 // i mean come on
-const VOICES_CAP = 2137;
+const VOICES_CAP = 800;
 
 export const DEFAULT_GAIN = 0.5;
 export const DEFAULT_PERCUSSION = 9;
@@ -22,6 +23,8 @@ export class Synthetizer {
         this.voiceCap = VOICES_CAP;
         this.soundFont = soundFont;
         this.context = targetNode.context;
+
+        this.eventHandler = new EventHandler();
 
         this.volumeController = new GainNode(targetNode.context, {
             gain: DEFAULT_GAIN
@@ -92,9 +95,13 @@ export class Synthetizer {
 
         let chan = this.midiChannels[channel];
         chan.playNote(midiNote, velocity, enableDebugging);
-        if(this.onNoteOn.length) {
-            this.callEvent(this.onNoteOn, [midiNote, channel, velocity, chan.channelVolume, chan.channelExpression]);
-        }
+        this.eventHandler.callEvent("noteon", {
+            midiNote: midiNote,
+            channel: channel,
+            velocity: velocity,
+            channelVolume: chan.channelVolume,
+            channelExpression: chan.channelExpression,
+        });
     }
 
     /*
@@ -116,9 +123,10 @@ export class Synthetizer {
             console.warn(`Received a noteOn for note`, midiNote, "Ignoring.");
             return;
         }
-        if(this.onNoteOff) {
-            this.callEvent(this.onNoteOff, [midiNote, channel]);
-        }
+        this.eventHandler.callEvent("noteoff", {
+            midiNote: midiNote,
+            channel: channel
+        });
         if(this.highPerformanceMode)
         {
             this.midiChannels[channel].stopNote(midiNote, true);
@@ -128,46 +136,18 @@ export class Synthetizer {
     }
 
     /**
-     * @param event {function[]}
-     * @param args {number[]}
-     */
-    callEvent(event, args)
-    {
-        event.forEach(f => f(...args))
-    }
-
-    /**
-     * Plays when the midi note goes on
-     * @type {function[]}
-     * @param midiNote {number} 0-127
-     * @param channel {number} 0-15
-     * @param velocity {number} 0-127
-     * @param volume {number} 0-1
-     * @param expression {number} 0-1
-     */
-    onNoteOn = [];
-
-    /**
-     * Plays when the midi note goes off
-     * @type {function[]}
-     * @param midiNote {number} 0-127
-     * @param channel {number} 0-15
-     */
-    onNoteOff = [];
-
-    /**
      * Stops all notes
      * @param force {boolean} if we should instantly kill the note, defaults to false
      */
     stopAll(force=false) {
         console.log("%cStop all received!", consoleColors.info);
         for (let channel of this.midiChannels) {
-            if(this.onNoteOff)
+            for(const note of channel.notes)
             {
-                for(const note of channel.notes)
-                {
-                    this.callEvent(this.onNoteOff, [note, channel.channelNumber - 1]);
-                }
+                this.eventHandler.callEvent("noteoff", {
+                    midiNote: note,
+                    channel: channel.channelNumber - 1
+                });
             }
             channel.stopAll(force);
         }
@@ -216,8 +196,16 @@ export class Synthetizer {
                     if(this.midiChannels[channel].bank === 127)
                     {
                         this.midiChannels[channel].percussionChannel = true;
+                        this.eventHandler.callEvent("drumchange",{
+                            channel: channel,
+                            isDrumChannel: true
+                        });
                     }
                     this.midiChannels[channel].bank = controllerValue;
+                    this.eventHandler.callEvent("drumchange",{
+                        channel: channel,
+                        isDrumChannel: false
+                    });
                 }
                 break;
 
@@ -226,10 +214,11 @@ export class Synthetizer {
                 this.midiChannels[channel].controllerChange(controllerNumber, controllerValue);
                 break;
         }
-        if(this.onControllerChange)
-        {
-            this.callEvent(this.onControllerChange, [channel, controllerNumber, controllerValue]);
-        }
+        this.eventHandler.callEvent("controllerchange", {
+            channel: channel,
+            controllerNumber: controllerNumber,
+            controllerValue: controllerValue
+        });
     }
 
     /**
@@ -242,33 +231,37 @@ export class Synthetizer {
         {
             // reset
             ch.resetControllers();
-            ch.percussionChannel = false;
             ch.bank = 0;
-            ch.setPreset(this.defaultPreset);
+            if(ch.channelNumber - 1 === DEFAULT_PERCUSSION) {
+                ch.setPreset(this.percussionPreset);
+                ch.percussionChannel = true;
+                this.eventHandler.callEvent("drumchange",{
+                    channel: ch.channelNumber - 1,
+                    isDrumChannel: true
+                });
+            }
+            else
+            {
+                ch.percussionChannel = false;
+                ch.setPreset(this.defaultPreset);
+                this.eventHandler.callEvent("drumchange",{
+                    channel: ch.channelNumber - 1,
+                    isDrumChannel: false
+                });
+            }
 
             // call all the event listeners
             const chNr = ch.channelNumber - 1;
-            if(this.onProgramChange.length)
-            {
-                this.callEvent(this.onProgramChange, [chNr, chNr === DEFAULT_PERCUSSION ? this.percussionPreset : this.defaultPreset]);
-            }
-            if(this.onControllerChange.length)
-            {
-                this.callEvent(this.onControllerChange, [chNr, midiControllers.mainVolume, 100]);
-                this.callEvent(this.onControllerChange, [chNr, midiControllers.pan, 64]);
-                this.callEvent(this.onControllerChange, [chNr, midiControllers.expressionController, 127]);
-                this.callEvent(this.onControllerChange, [chNr, midiControllers.modulationWheel, 0]);
-                this.callEvent(this.onControllerChange, [chNr, midiControllers.effects3Depth, 0]);
+            this.eventHandler.callEvent("programchange", {channel: chNr, preset: ch.preset})
 
-            }
-            if(this.onPitchWheel.length)
-            {
-                this.callEvent(this.onPitchWheel, [chNr, 64, 0]);
-            }
+            this.eventHandler.callEvent("controllerchange", {channel: chNr, controllerNumber: midiControllers.mainVolume, controllerValue: 100});
+            this.eventHandler.callEvent("controllerchange", {channel: chNr, controllerNumber: midiControllers.pan, controllerValue: 64});
+            this.eventHandler.callEvent("controllerchange", {channel: chNr, controllerNumber: midiControllers.expressionController, controllerValue: 127});
+            this.eventHandler.callEvent("controllerchange", {channel: chNr, controllerNumber: midiControllers.modulationWheel, controllerValue: 0});
+            this.eventHandler.callEvent("controllerchange", {channel: chNr, controllerNumber: midiControllers.effects3Depth, controllerValue: 0});
+
+            this.eventHandler.callEvent("pitchwheel", {channel: chNr, MSB: 64, LSB: 0})
         }
-
-        this.midiChannels[DEFAULT_PERCUSSION].percussionChannel = true;
-        this.midiChannels[DEFAULT_PERCUSSION].setPreset(this.percussionPreset);
         this.system = "gm2";
         this.volumeController.gain.value = DEFAULT_GAIN;
         this.panController.pan.value = 0;
@@ -283,10 +276,11 @@ export class Synthetizer {
     pitchWheel(channel, MSB, LSB)
     {
         this.midiChannels[channel].setPitchBend(MSB, LSB);
-        if(this.onPitchWheel.length)
-        {
-            this.callEvent(this.onPitchWheel, [channel, MSB, LSB]);
-        }
+        this.eventHandler.callEvent("pitchwheel", {
+            channel: channel,
+            MSB: MSB,
+            LSB: LSB
+        });
     }
 
     /**
@@ -308,27 +302,6 @@ export class Synthetizer {
     }
 
     /**
-     * Calls on program change(channel number, preset)
-     * @type {function(number, Preset)[]}
-     */
-    onProgramChange = [];
-
-    /**
-     * Calls on controller change(channel number, cc, controller value)
-     * @param channel {number} 0-16
-     * @param controllerNumber {number} 0-127
-     * @param controllerValue {number} 0-127
-     * @type {function[]}
-     */
-    onControllerChange = [];
-
-    /**
-     * Calls on pitch wheel change (channel, msb, lsb)
-     * @type {function(number, number, number)[]}
-     */
-    onPitchWheel = [];
-
-    /**
      * Changes the patch for a given channel
      * @param channel {number} 0-15 the channel to change
      * @param programNumber {number} 0-127 the MIDI patch number
@@ -342,11 +315,10 @@ export class Synthetizer {
         // find the preset
         let preset = this.soundFont.getPreset(bank, programNumber);
         channelObj.setPreset(preset);
-        // console.log("changing channel", channel, "to bank:", channelObj.bank,
-        //     "preset:", programNumber, preset.presetName);
-        if(this.onProgramChange) {
-            this.callEvent(this.onProgramChange, [channel, preset]);
-        }
+        this.eventHandler.callEvent("programchange", {
+            channel: channel,
+            preset: preset
+        });
     }
 
     /**
@@ -452,6 +424,11 @@ export class Synthetizer {
                             consoleColors.recognized,
                             consoleColors.info,
                             consoleColors.value);
+
+                        this.eventHandler.callEvent("drumchange",{
+                            channel: channel,
+                            isDrumChannel: this.midiChannels[channel].percussionChannel
+                        });
                     }
                     else
                     if(messageData[4] === 0x40 && messageData[6] === 0x06 && messageData[5] === 0x00)

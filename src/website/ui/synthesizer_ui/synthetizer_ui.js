@@ -8,7 +8,6 @@ import { midiControllers } from '../../../spessasynth_lib/midi_parser/midi_messa
 import { SequencePlayer } from '../../sequence_recorder/sequence_player.js'
 import { SequenceRecorder } from '../../sequence_recorder/sequence_recorder.js'
 
-const MAX_VOICE_METER = 400;
 export class SynthetizerUI
 {
     /**
@@ -35,7 +34,7 @@ export class SynthetizerUI
          * Voice meter
          * @type {Meter}
          */
-        this.voiceMeter = new Meter("#206", "Voices: ", 0, MAX_VOICE_METER);
+        this.voiceMeter = new Meter("#206", "Voices: ", 0, this.synth.voiceCap);
         this.voiceMeter.bar.classList.add("voice_meter_bar_smooth");
 
         /**
@@ -185,15 +184,20 @@ export class SynthetizerUI
             num++;
         }
 
-        this.synth.onProgramChange.push((channel, p) => {
-            if(this.synth.midiChannels[channel].lockPreset)
+        // add event listeners
+        this.synth.eventHandler.addEvent("programchange", e =>
+        {
+            if(this.synth.midiChannels[e.channel].lockPreset)
             {
                 return;
             }
-            this.controllers[channel].preset.value = JSON.stringify([p.bank, p.program]);
+            this.controllers[e.channel].preset.value = JSON.stringify([e.preset.bank, e.preset.program]);
         });
 
-        this.synth.onControllerChange.push((channel, controller, value) => {
+        this.synth.eventHandler.addEvent("controllerchange", e => {
+            const controller = e.controllerNumber;
+            const channel = e.channel;
+            const value = e.controllerValue;
             switch (controller)
             {
                 default:
@@ -226,10 +230,18 @@ export class SynthetizerUI
             }
         });
 
-        this.synth.onPitchWheel.push((channel, MSB, LSB) => {
-            const val = (MSB << 7) | LSB;
+        this.synth.eventHandler.addEvent("pitchwheel", e => {
+            const val = (e.MSB << 7) | e.LSB;
             // pitch wheel
-            this.controllers[channel].pitchWheel.update(val - 8192);
+            this.controllers[e.channel].pitchWheel.update(val - 8192);
+        });
+
+        this.synth.eventHandler.addEvent("drumchange", e => {
+            if(this.synth.midiChannels[e.channel].lockPreset)
+            {
+                return;
+            }
+            this.reloadSelector(this.controllers[e.channel].preset, e.isDrumChannel ? this.percussionList : this.instrumentList);
         });
 
         setInterval(this.updateVoicesAmount.bind(this), 100);

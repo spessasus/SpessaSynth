@@ -110,7 +110,7 @@ async function startMidi(midiFiles)
         }
         else
         {
-            title = midiFiles[i].name;
+            title = midiFiles[i].name.replace(".mid", "");
         }
         titles.push(title);
     }
@@ -192,7 +192,9 @@ document.body.onclick = () =>
 {
     // user has clicked, we can create the ui
     if(!window.audioContextMain) {
-        window.audioContextMain = new AudioContext({sampleRate: 44100});
+        navigator.mediaSession.playbackState = "playing";
+        window.audioContextMain = new AudioContext({sampleRate: 44100,
+        latencyHint: "playback"});
         if(window.soundFontParser) {
             titleMessage.innerText = TITLE;
             // prepare midi interface

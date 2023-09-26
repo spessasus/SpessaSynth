@@ -1,4 +1,4 @@
-import {Sequencer} from "../../../spessasynth_lib/sequencer/sequencer.js";
+import { Sequencer } from '../../../spessasynth_lib/sequencer/sequencer.js'
 import { formatTime, supportedEncodings } from '../../../spessasynth_lib/utils/other.js'
 import { getBackwardSvg, getForwardSvg, getLoopSvg, getPauseSvg, getPlaySvg, getTextSvg } from '../icons.js'
 import { messageTypes } from '../../../spessasynth_lib/midi_parser/midi_message.js'
@@ -23,9 +23,74 @@ export class SequencerUI{
         this.text = "";
         this.rawText = [];
         this.titles = [""];
-        this.titleIndex = 0;
     }
 
+    createNavigatorHandler()
+    {
+
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: this.titles[this.seq.songIndex],
+            artist: "SpessaSynth"
+        });
+
+        navigator.mediaSession.setActionHandler("play", () => {
+            this.seqPlay();
+        });
+        navigator.mediaSession.setActionHandler("pause", () => {
+            this.seqPause();
+        });
+        navigator.mediaSession.setActionHandler("stop", () => {
+            this.seq.currentTime = 0;
+            this.seqPause();
+        });
+        navigator.mediaSession.setActionHandler("seekbackward", e => {
+            this.seq.currentTime -= e.seekOffset || 10;
+        });
+        navigator.mediaSession.setActionHandler("seekforward", e => {
+            this.seq.currentTime += e.seekOffset || 10;
+        });
+        navigator.mediaSession.setActionHandler("seekto", e => {
+            this.seq.currentTime = e.seekTime
+        });
+        navigator.mediaSession.setActionHandler("previoustrack", () => {
+            this.switchToPreviousSong();
+        });
+        navigator.mediaSession.setActionHandler("nexttrack", () => {
+            this.switchToNextSong();
+        });
+
+        navigator.mediaSession.playbackState = "playing";
+    }
+
+    seqPlay()
+    {
+        this.seq.play();
+        this.createNavigatorHandler();
+        this.updateTitleAndMediaStatus();
+        navigator.mediaSession.playbackState = "playing";
+    }
+
+    seqPause()
+    {
+        this.seq.pause();
+        this.createNavigatorHandler();
+        this.updateTitleAndMediaStatus();
+        navigator.mediaSession.playbackState = "paused";
+    }
+
+    switchToNextSong()
+    {
+        this.seq.nextSong();
+        this.createNavigatorHandler();
+        this.updateTitleAndMediaStatus();
+    }
+
+    switchToPreviousSong()
+    {
+        this.seq.previousSong();
+        this.createNavigatorHandler();
+        this.updateTitleAndMediaStatus();
+    }
 
     /**
      * @param songTitles {string[]}
@@ -33,7 +98,8 @@ export class SequencerUI{
     setSongTitles(songTitles)
     {
         this.titles = songTitles;
-        this.titleIndex = 0;
+        this.createNavigatorHandler();
+        this.updateTitleAndMediaStatus();
     }
 
     /**
@@ -45,6 +111,8 @@ export class SequencerUI{
         this.seq = sequencer;
         this.createControls();
         this.setSliderInterval();
+        this.createNavigatorHandler();
+        this.updateTitleAndMediaStatus();
 
         this.seq.onTextEvent = (data, type) => {
             let end = "";
@@ -113,20 +181,15 @@ export class SequencerUI{
          * }}
          */
         this.lyricsElement = {};
-
         // main div
         const mainLyricsDiv  = document.createElement("div");
         mainLyricsDiv.classList.add("lyrics");
-
-
         // title
         const lyricsTitle = document.createElement("h2");
         lyricsTitle.innerText = "Decoded Text";
         lyricsTitle.classList.add("lyrics_title");
         mainLyricsDiv.appendChild(lyricsTitle);
         this.lyricsElement.title = lyricsTitle;
-
-
         // encoding selector
         const encodingSelector = document.createElement("select");
         supportedEncodings.forEach(encoding => {
@@ -139,8 +202,6 @@ export class SequencerUI{
         encodingSelector.onchange = () => this.changeEncoding(encodingSelector.value);
         encodingSelector.classList.add("lyrics_selector");
         mainLyricsDiv.appendChild(encodingSelector);
-
-
         // the actual text
         const text = document.createElement("p");
         text.classList.add("lyrics_text");
@@ -175,12 +236,12 @@ export class SequencerUI{
         const togglePlayback = () => {
             if(this.seq.paused)
             {
-                this.seq.play();
                 playPauseButton.innerHTML = getPauseSvg(ICON_SIZE);
+                this.seqPlay();
             }
             else
             {
-                this.seq.pause();
+                this.seqPause()
                 playPauseButton.innerHTML = getPlaySvg(ICON_SIZE);
             }
         }
@@ -190,12 +251,12 @@ export class SequencerUI{
         // previous song button
         const previousSongButton = getSeqUIButton("Previous song",
         getBackwardSvg(ICON_SIZE));
-        previousSongButton.onclick = () => this.seq.previousSong();
+        previousSongButton.onclick = () => this.switchToPreviousSong();
 
         // next song button
         const nextSongButton = getSeqUIButton("Next song",
             getForwardSvg(ICON_SIZE));
-        nextSongButton.onclick = () => this.seq.nextSong();
+        nextSongButton.onclick = () => this.switchToNextSong();
 
         // loop button
         const loopButton = getSeqUIButton("Loop this",
@@ -282,11 +343,11 @@ export class SequencerUI{
                     break;
 
                 case "[":
-                    this.seq.previousSong();
+                    this.switchToPreviousSong();
                     break;
 
                 case "]":
-                    this.seq.nextSong();
+                    this.switchToNextSong();
                     break;
 
                 default:
@@ -305,17 +366,24 @@ export class SequencerUI{
         })
     }
 
+    updateTitleAndMediaStatus()
+    {
+        document.getElementById("title").innerText = this.titles[this.seq.songIndex];
+
+        navigator.mediaSession.setPositionState({
+            duration: this.seq.duration,
+            playbackRate: this.seq.playbackRate,
+            position: this.seq.currentTime
+        });
+    }
+
     setSliderInterval(){
         setInterval(() => {
+            //this.updateTitleAndMediaStatus();
             this.progressBar.style.width = `${(this.seq.currentTime / this.seq.duration) * 100}%`;
             const time = formatTime(this.seq.currentTime);
             const total = formatTime(this.seq.duration);
             this.progressTime.innerText = `${time.time} / ${total.time}`;
-            if(this.seq.songIndex !== this.titleIndex)
-            {
-                document.getElementById("title").innerText = this.titles[this.seq.songIndex];
-                this.titleIndex = this.seq.songIndex;
-            }
         }, 100);
     }
 }

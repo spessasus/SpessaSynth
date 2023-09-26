@@ -23,7 +23,7 @@
     z-index: 5;
     font-size: var(--progress-bar-height);
     text-align: center;
-    color: #ccc;
+    color: var(--font-color);
     margin: auto;
     width: 100%;
 }

@@ -25,30 +25,49 @@ export class SequenceRecorder
     {
         this.targetChannel = desiredChannel;
         // connect to synth
-        this.synth.onNoteOn.push(this.noteOn.bind(this));
-        this.nOnI = this.synth.onNoteOn.length - 1; // note on index
-        this.synth.onNoteOff.push(this.noteOff.bind(this));
-        this.nOffI = this.synth.onNoteOn.length - 1; // note off index
-        this.synth.onControllerChange.push(this.controllerChange.bind(this));
-        this.cCI = this.synth.onNoteOn.length - 1; // controller change index
-        this.synth.onProgramChange.push(this.programChange.bind(this));
-        this.pCI = this.synth.onNoteOn.length - 1; // program change index
-        this.synth.onPitchWheel.push(this.pitchWheel.bind(this));
-        this.pWI = this.synth.onNoteOn.length - 1; // pitch wheel index
+        this.synth.eventHandler.addEvent("noteon", e => {
+            this.noteOn(e.midiNote, e.channel, e.velocity);
+        });
+        this.synth.eventHandler.addEvent("noteoff", e => {
+            this.noteOff(e.midiNote, e.channel);
+        });
+        this.synth.eventHandler.addEvent("controllerchange", e => {
+            this.controllerChange(e.channel, e.controllerNumber, e.controllerValue);
+        });
+        this.synth.eventHandler.addEvent("programchange", e => {
+            this.programChange(e.channel, e.preset);
+        });
+        this.synth.eventHandler.addEvent("controllerchange", e => {
+            this.controllerChange(e.channel, e.controllerNumber, e.controllerValue);
+        });
+        //this.synth.onNoteOn.push(this.noteOn.bind(this));
+        //this.nOnI = this.synth.onNoteOn.length - 1; // note on index
+        //this.synth.onNoteOff.push(this.noteOff.bind(this));
+        // this.nOffI = this.synth.onNoteOn.length - 1; // note off index
+        // this.synth.onControllerChange.push(this.controllerChange.bind(this));
+        // this.cCI = this.synth.onNoteOn.length - 1; // controller change index
+        // this.synth.onProgramChange.push(this.programChange.bind(this));
+        // this.pCI = this.synth.onNoteOn.length - 1; // program change index
+        // this.synth.onPitchWheel.push(this.pitchWheel.bind(this));
+        // this.pWI = this.synth.onNoteOn.length - 1; // pitch wheel index
     }
 
     stopRecording()
     {
-        this.synth.onNoteOff.splice(this.nOffI, 1);
-        this.synth.onNoteOn.splice(this.nOnI, 1);
-        this.synth.onControllerChange.splice(this.cCI, 1);
-        this.synth.onProgramChange.splice(this.pCI, 1);
-        this.synth.onPitchWheel.splice(this.pWI, 1);
-        // this.synth.onNoteOff = this.synth.onNoteOff.filter(e => e !== this.noteOff.bind(this));
-        // this.synth.onNoteOn = this.synth.onNoteOn.filter(e => e !== this.noteOn.bind(this));
-        // this.synth.onControllerChange = this.synth.onControllerChange.filter(e => e !== this.controllerChange.bind(this));
-        // this.synth.onProgramChange = this.synth.onProgramChange.filter(e => e !== this.programChange.bind(this));
-        // this.synth.onPitchWheel = this.synth.onPitchWheel.filter(e => e !== this.pitchWheel.bind(this));
+        this.synth.eventHandler.removeEvent("noteon", e => {
+            this.noteOn(e.midiNote, e.channel, e.velocity);
+        });
+        this.synth.eventHandler.removeEvent("noteoff", e => {
+            this.noteOff(e.midiNote, e.channel);
+        });
+        this.synth.eventHandler.removeEvent("controllerchange", e => {
+            this.controllerChange(e.channel, e.controllerNumber, e.controllerValue);
+        });
+        // this.synth.onNoteOff.splice(this.nOffI, 1);
+        // this.synth.onNoteOn.splice(this.nOnI, 1);
+        // this.synth.onControllerChange.splice(this.cCI, 1);
+        // this.synth.onProgramChange.splice(this.pCI, 1);
+        // this.synth.onPitchWheel.splice(this.pWI, 1);
     }
 
     getTime()

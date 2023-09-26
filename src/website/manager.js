@@ -38,15 +38,15 @@ export class Manager {
     constructor(context, soundFont) {
         this.context = context;
         this.initializeContext(context, soundFont).then();
-
     }
 
     async initializeContext(context, soundFont) {
-        try {
-            await context.audioWorklet.addModule("/spessasynth_lib/synthetizer/worklet_channel/channel_processor.js");
-        }
-        catch (e) {
-            await context.audioWorklet.addModule("src/spessasynth_lib/synthetizer/worklet_channel/channel_processor.js");
+        if(context.audioWorklet) {
+            try {
+                await context.audioWorklet.addModule("/spessasynth_lib/synthetizer/worklet_channel/channel_processor.js");
+            } catch (e) {
+                await context.audioWorklet.addModule("src/spessasynth_lib/synthetizer/worklet_channel/channel_processor.js");
+            }
         }
         // set up soundfont
         this.soundFont = soundFont;

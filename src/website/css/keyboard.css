@@ -23,6 +23,10 @@
     --flat-half-translate: 18%;
 }
 
+#keyboard .flat_dark_key{
+    background: linear-gradient(262deg, #111, #000);
+}
+
 #keyboard .sharp_key{
     --sharp-transform: scale(1, 0.7);
     transform: var(--sharp-transform);

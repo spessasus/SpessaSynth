@@ -127,6 +127,7 @@
 
 .mute_button:hover{
     cursor: pointer;
+
 }
 
 .voice_reset{
@@ -165,12 +166,12 @@
     display: block;
     min-height: var(--voice-meter-height);
     white-space: nowrap;
-    color: #ccc;
-    padding: 9px;
+    color: var(--font-color);
 }
 .synthui_button:hover
 {
     cursor: pointer;
     background: #111;
     color: #fff;
+    text-shadow: 0 0 5px white;
 }

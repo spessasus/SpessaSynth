@@ -1,5 +1,9 @@
+/**
+ * @typedef {{}}
+ */
+
 import {Preset} from "../../soundfont/chunk/presets.js";
-import { SynthesisModel } from './synthesis_model.js'
+import { SynthesisModel } from './synthesis_model.js';
 
 export class Voice
 {
@@ -63,6 +67,11 @@ export class Voice
             return sm;
         });
     }
+
+    /**
+     * @type {[]}
+     */
+    static cachedVoices = [];
 
 
     /**

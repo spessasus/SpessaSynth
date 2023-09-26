@@ -3,6 +3,7 @@ import { MIDIDeviceHandler } from '../../spessasynth_lib/midi_handler/midi_handl
 import { midiControllers } from '../../spessasynth_lib/midi_parser/midi_message.js'
 
 const KEYBOARD_VELOCITY = 126;
+const GLOW_PX = 50;
 
 export class MidiKeyboard
 {
@@ -15,6 +16,10 @@ export class MidiKeyboard
     constructor(channelColors, synth, handler) {
         this.mouseHeld = false;
         this.heldKeys = [];
+        /**
+         * @type {"light"|"dark"}
+         */
+        this.mode = "light";
 
         document.onmousedown = () => this.mouseHeld = true;
         document.onmouseup = () => {
@@ -22,7 +27,7 @@ export class MidiKeyboard
             for(let key of this.heldKeys)
             {
                 // user note off
-                this.releaseNote(key);
+                this.releaseNote(key, this.channel);
                 this.synth.noteOff(this.channel, key);
             }
         }
@@ -98,7 +103,7 @@ export class MidiKeyboard
             keyElement.onmouseout = () => {
                 // user note off
                 this.heldKeys.splice(this.heldKeys.indexOf(midiNote), 1);
-                this.releaseNote(midiNote);
+                this.releaseNote(midiNote, this.channel);
                 this.synth.noteOff(this.channel, midiNote);
             };
             keyElement.onmouseleave = keyElement.onmouseup;
@@ -142,8 +147,16 @@ export class MidiKeyboard
             this.keys.push(keyElement);
         }
 
-        // channel selector
         this.selectorMenu = document.getElementById("keyboard_selector");
+        // dark mode toggle
+        const modeToggler = document.createElement("button");
+        modeToggler.innerText = "Toggle Dark Keyboard";
+        modeToggler.classList.add("kebui_button");
+        modeToggler.onclick = this.toggleMode.bind(this);
+
+        this.selectorMenu.appendChild(modeToggler);
+
+        // channel selector
         const channelSelector = document.createElement("select");
 
         let channelNumber = 0;
@@ -193,8 +206,32 @@ export class MidiKeyboard
         });
 
         // connect the synth to keyboard
-        this.synth.onNoteOn.push((note, chan, vel, vol, exp) => this.pressNote(note, chan, vel, vol, exp));
-        this.synth.onNoteOff.push(note => this.releaseNote(note));
+        this.synth.eventHandler.addEvent("noteon", e => {
+            this.pressNote(e.midiNote, e.channel, e.velocity, e.channelVolume, e.channelExpression);
+        });
+        this.synth.eventHandler.addEvent("noteoff", e => {
+            this.releaseNote(e.midiNote, e.channel);
+        })
+        //this.synth.onNoteOn.push((note, chan, vel, vol, exp) => this.pressNote(note, chan, vel, vol, exp));
+        //this.synth.onNoteOff.push((note, chan) => this.releaseNote(note, chan));
+    }
+
+    toggleMode()
+    {
+        if(this.mode === "light")
+        {
+            this.mode = "dark";
+        }
+        else
+        {
+            this.mode = "light";
+        }
+        this.keys.forEach(k => {
+            if(k.classList.contains("flat_key"))
+            {
+                k.classList.toggle("flat_dark_key");
+            }
+        })
     }
 
     createMIDIOutputSelector(seq)
@@ -252,12 +289,13 @@ export class MidiKeyboard
         let rgbaValues = this.channelColors[channel].match(/\d+(\.\d+)?/g).map(parseFloat);
 
         // multiply the rgb values by brightness
-        if (!isSharp) {
+        let color;
+        if (!isSharp && this.mode === "light") {
             // multiply the rgb values
             let newRGBValues = rgbaValues.slice(0, 3).map(value => 255 - (255 - value) * brightness);
 
             // create the new color
-            key.style.background = `rgba(${newRGBValues.join(", ")}, ${rgbaValues[3]})`;
+            color = `rgba(${newRGBValues.join(", ")}, ${rgbaValues[3]})`;
         }
         else
         {
@@ -265,7 +303,12 @@ export class MidiKeyboard
             let newRGBValues = rgbaValues.slice(0, 3).map(value => value * brightness);
 
             // create the new color
-            key.style.background = `rgba(${newRGBValues.join(", ")}, ${rgbaValues[3]})`;
+            color = `rgba(${newRGBValues.join(", ")}, ${rgbaValues[3]})`;
+        }
+        key.style.background = color;
+        if(this.mode === "dark")
+        {
+            key.style.boxShadow = `0px 0px ${GLOW_PX * brightness}px ${color}`;
         }
         /**
          * @type {string[]}
@@ -273,7 +316,11 @@ export class MidiKeyboard
         this.keyColors[midiNote].push(this.channelColors[channel]);
     }
 
-    releaseNote(midiNote)
+    /**
+     * @param midiNote {number} 0-127
+     * @param channel {number} 0-15
+     */
+    releaseNote(midiNote, channel)
     {
         if(midiNote > 127 || midiNote < 0)
         {
@@ -290,13 +337,18 @@ export class MidiKeyboard
             return;
         }
         if(pressedColors.length > 1) {
-            pressedColors.pop();
+            pressedColors.splice(pressedColors.findLastIndex(v => v === this.channelColors[channel]), 1);
             key.style.background = pressedColors[pressedColors.length - 1];
+            if(this.mode === "dark")
+            {
+                key.style.boxShadow = `0px 0px ${GLOW_PX}px ${pressedColors[pressedColors.length - 1]}`;
+            }
         }
         if(pressedColors.length === 1)
         {
             key.classList.remove("pressed");
             key.style.background = "";
+            key.style.boxShadow = "";
         }
     }
 }
