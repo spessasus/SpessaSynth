@@ -369,6 +369,7 @@ export class SequencerUI{
     updateTitleAndMediaStatus()
     {
         document.getElementById("title").innerText = this.titles[this.seq.songIndex];
+        document.title = this.titles[this.seq.songIndex] + " - SpessaSynth"
 
         navigator.mediaSession.setPositionState({
             duration: this.seq.duration,

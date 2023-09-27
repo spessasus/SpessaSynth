@@ -66,3 +66,10 @@ The program is divided into parts:
 - Scale tuning, fine tune and coarse tune
 - exclusive class (although sometimes broken)
 - pan
+
+#### todo
+- make the worklet system work
+- make the worklet system perform good
+- implement the worklet system
+- port the worklet system to emscripten (maybe)
+- reverb that actually runs well

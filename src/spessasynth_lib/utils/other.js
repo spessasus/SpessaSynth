@@ -100,7 +100,7 @@ export const midiPatchNames = [
     "Synth Strings 1",
     "Synth Strings 2",
     "Choir Aahs",
-    "Voice Oohs",
+    "VoiceGroup Oohs",
     "Synth Choir",
     "Orchestra Hit",
     "Trumpet",

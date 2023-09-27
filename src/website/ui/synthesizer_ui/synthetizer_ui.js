@@ -1,5 +1,5 @@
 import { DEFAULT_GAIN, Synthetizer } from '../../../spessasynth_lib/synthetizer/synthetizer.js'
-import {MidiChannel} from "../../../spessasynth_lib/synthetizer/buffer_voice/midi_channel.js";
+import {MidiChannel} from "../../../spessasynth_lib/synthetizer/native_system/midi_channel.js";
 import { getLoopSvg, getMuteSvg, getVolumeSvg } from '../icons.js'
 import { ShiftableByteArray } from '../../../spessasynth_lib/utils/shiftable_array.js';
 import { Meter } from './synthui_meter.js'
@@ -31,7 +31,7 @@ export class SynthetizerUI
     createMainSynthController()
     {
         /**
-         * Voice meter
+         * VoiceGroup meter
          * @type {Meter}
          */
         this.voiceMeter = new Meter("#206", "Voices: ", 0, this.synth.voiceCap);

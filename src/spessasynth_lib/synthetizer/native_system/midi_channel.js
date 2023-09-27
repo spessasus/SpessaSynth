@@ -1,4 +1,4 @@
-import {Voice} from "./voice.js";
+import {VoiceGroup} from "./voice_group.js";
 import {Preset} from "../../soundfont/chunk/presets.js";
 import { consoleColors } from '../../utils/other.js'
 import { midiControllers } from '../../midi_parser/midi_message.js'
@@ -71,12 +71,12 @@ export class MidiChannel {
 
         /**
          * Current playing notes
-         * @type {Voice[]}
+         * @type {VoiceGroup[]}
          */
         this.playingNotes = [];
         /**
          * Notes that are stopping and are about to get deleted
-         * @type {Voice[]}
+         * @type {VoiceGroup[]}
          */
         this.stoppingNotes = [];
 
@@ -250,7 +250,7 @@ export class MidiChannel {
 
         this.notes.add(midiNote);
         this.receivedNotes.add(midiNote);
-        let note = new Voice(midiNote, velocity, this.panner, this.preset, this.vibrato, this.channelTuningRatio, this.modulation);
+        let note = new VoiceGroup(midiNote, velocity, this.panner, this.preset, this.vibrato, this.channelTuningRatio, this.modulation);
 
         let exclusives = note.startNote(debugInfo);
         const bendRatio = (this.pitchBend / 8192) * this.channelPitchBendRange;

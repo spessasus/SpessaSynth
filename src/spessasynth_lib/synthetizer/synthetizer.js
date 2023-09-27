@@ -1,9 +1,9 @@
-import {MidiChannel} from "./buffer_voice/midi_channel.js";
+import {MidiChannel} from "./native_system/midi_channel.js";
 import {SoundFont2} from "../soundfont/soundfont_parser.js";
 import {ShiftableByteArray} from "../utils/shiftable_array.js";
 import { arrayToHexString, consoleColors } from '../utils/other.js';
 import { midiControllers } from '../midi_parser/midi_message.js'
-import { WorkletChannel } from './worklet_channel/worklet_channel.js'
+import { WorkletChannel } from './worklet_system/worklet_channel.js'
 import { EventHandler } from '../utils/event_handler.js'
 
 // i mean come on
@@ -105,11 +105,14 @@ export class Synthetizer {
     }
 
     /*
-     * Prevents any further changes to the vibrato via NRPN messages
+     * Prevents any further changes to the vibrato via NRPN messages and resets it to none
      */
-    lockChannelVibrato()
+    lockAndResetChannelVibrato()
     {
-        this.midiChannels.forEach(c => c.lockVibrato = true);
+        this.midiChannels.forEach(c => {
+            c.lockVibrato = true;
+            c.vibrato = {depth: 0, rate: 0, delay: 0};
+        });
     }
 
     /**
@@ -142,15 +145,9 @@ export class Synthetizer {
     stopAll(force=false) {
         console.log("%cStop all received!", consoleColors.info);
         for (let channel of this.midiChannels) {
-            for(const note of channel.notes)
-            {
-                this.eventHandler.callEvent("noteoff", {
-                    midiNote: note,
-                    channel: channel.channelNumber - 1
-                });
-            }
             channel.stopAll(force);
         }
+        this.eventHandler.callEvent("stopall", {});
     }
 
     /**

@@ -21,7 +21,7 @@ export class Voice2 extends AudioWorkletNode{
      * @param tuningRatio {number} the note's initial tuning ratio
      */
     constructor(midiNote, targetVelocity, node, preset, vibratoOptions, tuningRatio) {
-        super(node.context,"worklet_channel-processor" , {
+        super(node.context,"worklet_system-processor" , {
             outputChannelCount: [2]
         });
         this.midiNote = midiNote;

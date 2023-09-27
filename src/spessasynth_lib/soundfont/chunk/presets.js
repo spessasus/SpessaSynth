@@ -182,7 +182,7 @@ export class Preset {
                     if(identicalInstrumentModulator)
                     {
                         // sum the amounts
-                        identicalInstrumentModulator.modulationAmount += mod.modulationAmount;
+                        identicalInstrumentModulator.modulationAmount += mod.transformAmount;
                     }
                     else
                     {

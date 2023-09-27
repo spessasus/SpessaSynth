@@ -12,12 +12,13 @@
  * @typedef {{
  * sample: WorkletSample,
  * generators: Int16Array,
- * modulators: WorkletModulator[][],
+ * modulators: Modulator[],
+ * modulatedGenerators: Int16Array,
  * finished: boolean,
  * isInRelease: boolean,
  * velocity: number,
- * currentGain: number,
- * volEnvGain: number,
+ * currentAttenuationDb: number,
+ * releaseStartDb: number,
  * startTime: number,
  * midiNote: number,
  * releaseStartTime: number,
@@ -54,11 +55,12 @@ export const workletMessageType = {
     ccReset: 5,
     setChannelVibrato: 6,
     clearCache: 7,
+    stopAll: 8
 };
 
 /**
  * @typedef {{
- *     messageType: 0|1|2|3|4|5|6|7,
+ *     messageType: 0|1|2|3|4|5|6|7|8,
  *     messageData: (
  *     number[]
  *     |WorkletVoice[]
@@ -76,6 +78,7 @@ export const workletMessageType = {
  * 5 - controllers reset
  * 6 - channel vibrato -> {frequencyHz: number, depthCents: number, delaySeconds: number}
  * 7 - clear cached samples
+ * 8 - stop all notes
  */
 
 
@@ -343,42 +346,20 @@ export class WorkletChannel {
                     velocity = generators[generatorTypes.velocity];
                 }
 
-                /**
-                 * grouped by destination
-                 * @type {WorkletModulator[][]}
-                 */
-                const modulators = []
-                for (let i = 0; i < 60; i++) {
-                    modulators.push([]);
-                }
-                sampleAndGenerators.modulators.forEach(mod => {
-                    modulators[mod.modulatorDestination].push({
-                        transformAmount: mod.modulationAmount,
-                        transformType: mod.transformType,
-
-                        sourceIndex: mod.sourceIndex,
-                        sourceUsesCC: mod.sourceUsesCC,
-                        sourceTransformed: mod.sourceTransformed,
-
-                        secondarySrcIndex: mod.secSrcIndex,
-                        secondarySrcUsesCC: mod.secSrcUsesCC,
-                        secondarySrcTransformed: mod.secondarySrcTransformed
-                    });
-                });
-
                 this.actualVoices.push(midiNote);
                 return {
                     generators: generators,
+                    modulatedGenerators: new Int16Array(60),
                     sample: workletSample,
-                    modulators: modulators,
+                    modulators: sampleAndGenerators.modulators,
                     finished: false,
                     velocity: velocity,
-                    currentGain: 0,
-                    volEnvGain: 0,
+                    currentAttenuationDb: 100,
+                    releaseStartDb: 0,
                     midiNote: midiNote,
                     startTime: this.ctx.currentTime,
                     isInRelease: false,
-                    releaseStartTime: 0,
+                    releaseStartTime: -1,
                     targetKey: targetKey,
                 };
 
@@ -601,10 +582,10 @@ export class WorkletChannel {
                         // semitones
                         this.channelTuningSemitones = dataValue - 64;
                         console.log("tuning", this.channelTuningSemitones, "for", this.channelNumber);
-                        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning] = this.channelTuningSemitones + this.channelTranspose << 7;
+                        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning] = (this.channelTuningSemitones + this.channelTranspose) * 100;
                         this.post({
                             messageType: workletMessageType.ccChange,
-                            messageData: [NON_CC_INDEX_OFFSET + modulatorSources.channelTuning, this.channelTuningSemitones + this.channelTranspose << 7]
+                            messageData: [NON_CC_INDEX_OFFSET + modulatorSources.channelTuning, (this.channelTuningSemitones + this.channelTranspose) * 100]
                         });
                         break;
 
@@ -619,10 +600,12 @@ export class WorkletChannel {
 
     stopAll()
     {
-        for(let midiNote = 0; midiNote < 128; midiNote++)
-        {
-            this.stopNote(midiNote);
-        }
+        this.post({
+            messageType: workletMessageType.stopAll,
+            messageData: 0
+        });
+        this.actualVoices = [];
+        this.notes = new Set();
     }
 
     transposeChannel(semitones)
@@ -632,20 +615,25 @@ export class WorkletChannel {
             return;
         }
         this.channelTranspose = semitones;
-        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning] = this.channelTuningSemitones + this.channelTranspose << 7;
+        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning] = (this.channelTuningSemitones + this.channelTranspose) * 100;
         this.post({
             messageType: workletMessageType.ccChange,
-            messageData: [NON_CC_INDEX_OFFSET + modulatorSources.channelTuning, (this.channelTuningSemitones + this.channelTranspose) << 7]
+            messageData: [NON_CC_INDEX_OFFSET + modulatorSources.channelTuning, (this.channelTuningSemitones + this.channelTranspose) * 100]
         });
     }
 
     resetControllers()
     {
         this.holdPedal = false;
+        this.chorus.setChorusLevel(0);
 
         this.vibrato = {depth: 0, rate: 0, delay: 0};
 
         this.resetParameters();
+        this.post({
+            messageType: workletMessageType.ccReset,
+            messageData: 0
+        });
     }
 
     resetParameters()

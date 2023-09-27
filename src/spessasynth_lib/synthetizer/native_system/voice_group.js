@@ -1,10 +1,10 @@
 import {Preset} from "../../soundfont/chunk/presets.js";
-import { SynthesisModel } from './synthesis_model.js';
+import { Voice } from './voice.js';
 
-export class Voice
+export class VoiceGroup
 {
     /**
-     * Create a note
+     * Create a note (a group of voices)
      * @param midiNote {number}
      * @param targetVelocity {number}
      * @param node {AudioNode}
@@ -43,10 +43,10 @@ export class Voice
         this.exclusives = new Set();
 
         /**
-         * @type {SynthesisModel[]}
+         * @type {Voice[]}
          */
         this.sampleNodes = samples.map(samAndGen => {
-            const sm =  new SynthesisModel(
+            const sm =  new Voice(
                 samAndGen,
                 midiNote,
                 node,

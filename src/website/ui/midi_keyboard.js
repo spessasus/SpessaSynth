@@ -3,7 +3,7 @@ import { MIDIDeviceHandler } from '../../spessasynth_lib/midi_handler/midi_handl
 import { midiControllers } from '../../spessasynth_lib/midi_parser/midi_message.js'
 
 const KEYBOARD_VELOCITY = 126;
-const GLOW_PX = 50;
+const GLOW_PX = 75;
 
 export class MidiKeyboard
 {
@@ -142,7 +142,7 @@ export class MidiKeyboard
 
 
             }
-            this.keyColors.push([keyElement.style.background]);
+            this.keyColors.push([]);
             this.keyboard.appendChild(keyElement);
             this.keys.push(keyElement);
         }
@@ -212,8 +212,9 @@ export class MidiKeyboard
         this.synth.eventHandler.addEvent("noteoff", e => {
             this.releaseNote(e.midiNote, e.channel);
         })
-        //this.synth.onNoteOn.push((note, chan, vel, vol, exp) => this.pressNote(note, chan, vel, vol, exp));
-        //this.synth.onNoteOff.push((note, chan) => this.releaseNote(note, chan));
+        this.synth.eventHandler.addEvent("stopall", () => {
+            this.clearNotes();
+        })
     }
 
     toggleMode()
@@ -336,19 +337,27 @@ export class MidiKeyboard
         {
             return;
         }
-        if(pressedColors.length > 1) {
-            pressedColors.splice(pressedColors.findLastIndex(v => v === this.channelColors[channel]), 1);
-            key.style.background = pressedColors[pressedColors.length - 1];
-            if(this.mode === "dark")
-            {
-                key.style.boxShadow = `0px 0px ${GLOW_PX}px ${pressedColors[pressedColors.length - 1]}`;
-            }
+        pressedColors.splice(pressedColors.findLastIndex(v => v === this.channelColors[channel]), 1);
+        key.style.background = pressedColors[pressedColors.length - 1];
+        if(this.mode === "dark")
+        {
+            key.style.boxShadow = `0px 0px ${GLOW_PX}px ${pressedColors[pressedColors.length - 1]}`;
         }
-        if(pressedColors.length === 1)
+        if(pressedColors.length < 1)
         {
             key.classList.remove("pressed");
             key.style.background = "";
             key.style.boxShadow = "";
         }
+    }
+
+    clearNotes()
+    {
+        this.keys.forEach((key, index) => {
+            key.classList.remove("pressed");
+            key.style.background = "";
+            key.style.boxShadow = "";
+            this.keyColors[index] = [];
+        })
     }
 }

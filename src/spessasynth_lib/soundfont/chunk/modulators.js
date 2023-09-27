@@ -1,9 +1,5 @@
 import {signedInt16, readByte, readBytesAsUintLittleEndian} from "../../utils/byte_functions.js";
 import { ShiftableByteArray } from '../../utils/shiftable_array.js';
-import {
-    getModulatorValue,
-    MOD_PRECOMPUTED_LENGTH,
-} from '../../synthetizer/worklet_channel/worklet_utilities/modulator_curves.js'
 import { generatorTypes } from './generators.js'
 import { consoleColors } from '../../utils/other.js'
 
@@ -47,13 +43,13 @@ export class Modulator{
             this.modulatorSource = dataArray.srcEnum;
             this.modulatorDestination = dataArray.dest;
             this.modulationSecondarySrc = dataArray.secSrcEnum;
-            this.modulationAmount = dataArray.amt;
+            this.transformAmount = dataArray.amt;
             this.transformType = dataArray.transform;
         }
         else {
             this.modulatorSource = readBytesAsUintLittleEndian(dataArray, 2);
             this.modulatorDestination = readBytesAsUintLittleEndian(dataArray, 2);
-            this.modulationAmount = signedInt16(readByte(dataArray), readByte(dataArray));
+            this.transformAmount = signedInt16(readByte(dataArray), readByte(dataArray));
             this.modulationSecondarySrc = readBytesAsUintLittleEndian(dataArray, 2);
             this.transformType = readBytesAsUintLittleEndian(dataArray, 2);
         }
@@ -64,84 +60,20 @@ export class Modulator{
         }
 
         // decode the source
-        this.sourceIsBipolar = this.modulatorSource >> 9 & 1;
+        this.sourcePolarity = this.modulatorSource >> 9 & 1;
         this.sourceDirection = this.modulatorSource >> 8 & 1;
         this.sourceUsesCC = this.modulatorSource >> 7 & 1;
         this.sourceIndex = this.modulatorSource & 127;
         this.sourceCurveType = this.modulatorSource >> 10 & 3;
 
         // decode the secondary source
-        this.secSrcIsBipolar = this.modulationSecondarySrc >> 9 & 1;
+        this.secSrcPolarity = this.modulationSecondarySrc >> 9 & 1;
         this.secSrcDirection = this.modulationSecondarySrc >> 8 & 1;
         this.secSrcUsesCC = this.modulationSecondarySrc >> 7 & 1;
         this.secSrcIndex = this.modulationSecondarySrc & 127;
         this.secSrcCurveType = this.modulationSecondarySrc >> 10 & 3;
 
-        this.precomputeModulatorTransform();
-    }
-
-    // precompute the values on sf load
-    precomputeModulatorTransform()
-    {
-        this.sourceTransformed = new Float32Array(MOD_PRECOMPUTED_LENGTH);
-        this.secondarySrcTransformed = new Float32Array(MOD_PRECOMPUTED_LENGTH);
-
-        if(this.modulationAmount < 1)
-        {
-            return;
-        }
-
-
-        // read the cached table
-        let sourceCached = false;
-        if(precomputedTransforms[this.sourceCurveType][this.sourceIsBipolar][this.sourceDirection])
-        {
-            this.sourceTransformed = new Float32Array(precomputedTransforms[this.sourceCurveType][this.sourceIsBipolar][this.sourceDirection]);
-            sourceCached = true;
-        }
-
-        let secondarySourceCached = false;
-        if(precomputedTransforms[this.secSrcCurveType][this.secSrcIsBipolar][this.secSrcDirection])
-        {
-            this.secondarySrcTransformed = new Float32Array(precomputedTransforms[this.secSrcCurveType][this.secSrcIsBipolar][this.secSrcDirection]);
-            secondarySourceCached = true;
-        }
-
-        if(!secondarySourceCached || !sourceCached) {
-            for (let i = 0; i < MOD_PRECOMPUTED_LENGTH; i++) {
-                if (!sourceCached) {
-                    this.sourceTransformed[i] = getModulatorValue(
-                        this.sourceDirection,
-                        this.sourceCurveType,
-                        i / MOD_PRECOMPUTED_LENGTH,
-                        this.sourceIsBipolar);
-                    if (isNaN(this.sourceTransformed[i])) {
-                        this.sourceTransformed[i] = 1;
-                    }
-                }
-
-                if (!secondarySourceCached) {
-                    this.secondarySrcTransformed[i] = getModulatorValue(
-                        this.secSrcDirection,
-                        this.secSrcCurveType,
-                        i / MOD_PRECOMPUTED_LENGTH,
-                        this.secSrcIsBipolar);
-                    if (isNaN(this.secondarySrcTransformed[i])) {
-                        this.secondarySrcTransformed[i] = 1;
-                    }
-                }
-            }
-        }
-
-        if(!sourceCached)
-        {
-            precomputedTransforms[this.sourceCurveType][this.sourceIsBipolar][this.sourceDirection] = this.sourceTransformed;
-        }
-
-        if(!secondarySourceCached)
-        {
-            precomputedTransforms[this.secSrcCurveType][this.secSrcIsBipolar][this.secSrcDirection] = this.secondarySrcTransformed;
-        }
+        //this.precomputeModulatorTransform();
     }
 }
 

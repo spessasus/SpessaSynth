@@ -1,33 +1,47 @@
 import { NON_CC_INDEX_OFFSET, workletMessageType } from './worklet_channel.js';
 import { midiControllers } from '../../midi_parser/midi_message.js';
 import { generatorTypes } from '../../soundfont/chunk/generators.js';
-import { getOscillatorValue } from './worklet_utilities/wavetable_oscillator.js';
+import { getOscillatorData } from './worklet_utilities/wavetable_oscillator.js'
 import { modulatorSources } from '../../soundfont/chunk/modulators.js';
-import { getModulated } from './worklet_utilities/worklet_modulator.js'
-import {
-    getVolEnvReleaseMultiplier,
-    getVolumeEnvelopeValue,
-} from './worklet_utilities/volume_envelope.js'
+import { computeModulators } from './worklet_utilities/worklet_modulator.js'
 import {
     absCentsToHz,
-    decibelAttenuationToGain,
-    HALF_PI,
     timecentsToSeconds,
 } from './worklet_utilities/unit_converter.js'
 import { getLFOValue } from './worklet_utilities/lfo.js';
 import { consoleColors } from '../../utils/other.js'
+import { panVoice } from './worklet_utilities/stereo_panner.js'
+import { applyVolumeEnvelope } from './worklet_utilities/volume_envelope.js'
 
 export const MIN_AUDIBLE_GAIN = 0.0001;
+
+// an array with preset default values so we can quickly use set() to reset the controllers
+const resetArray = new Int16Array(146);
+resetArray[midiControllers.mainVolume] = 100 << 7;
+resetArray[midiControllers.expressionController] = 127 << 7;
+resetArray[midiControllers.pan] = 64 << 7;
+
+resetArray[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel] = 8192;
+resetArray[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] = 2 << 7;
+resetArray[NON_CC_INDEX_OFFSET + modulatorSources.channelPressure] = 127 << 7;
+resetArray[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning] = 0;
 
 class ChannelProcessor extends AudioWorkletProcessor {
     constructor() {
         super();
 
         /**
+         * Contains all controllers + other "not controllers" like pitch bend
+         * @type {Int16Array}
+         */
+        this.midiControllers = new Int16Array(146);
+
+        /**
          * @type {Object<number, Float32Array>}
          */
         this.samples = {};
 
+        // in seconds, time between two samples (very, very short)
         this.sampleTime = 1 / sampleRate;
 
         this.resetControllers();
@@ -63,6 +77,7 @@ class ChannelProcessor extends AudioWorkletProcessor {
                         }
                         v.releaseStartTime = currentTime;
                         v.isInRelease = true;
+                        v.releaseStartDb = v.currentAttenuationDb;
                     });
                     break;
 
@@ -77,6 +92,7 @@ class ChannelProcessor extends AudioWorkletProcessor {
                         {
                             this.voices = this.voices.filter(v => v.generators[generatorTypes.exclusiveClass] !== exclusive);
                         }
+                        computeModulators(voice, this.midiControllers);
                     })
                     this.voices.push(...data);
                     break;
@@ -91,6 +107,7 @@ class ChannelProcessor extends AudioWorkletProcessor {
 
                 case workletMessageType.ccChange:
                     this.midiControllers[data[0]] = data[1];
+                    this.voices.forEach(v => computeModulators(v, this.midiControllers));
                     break;
 
                 case workletMessageType.setChannelVibrato:
@@ -99,6 +116,11 @@ class ChannelProcessor extends AudioWorkletProcessor {
 
                 case workletMessageType.clearCache:
                     this.samples = [];
+                    break;
+
+                case workletMessageType.stopAll:
+                    this.voices = [];
+                    break;
             }
         }
     }
@@ -109,6 +131,10 @@ class ChannelProcessor extends AudioWorkletProcessor {
      * @returns {boolean}
      */
     process(inputs, outputs) {
+        if(this.voices.length < 1)
+        {
+            return true;
+        }
         const channels = outputs[0];
         const tempV = this.voices;
         this.voices = [];
@@ -136,24 +162,22 @@ class ChannelProcessor extends AudioWorkletProcessor {
             return;
         }
 
-
-        // MODULATORS are computed in getModulated if needed.
-
         // TUNING
 
         // calculate tuning
-        let cents = getModulated(voice, generatorTypes.fineTune, this.midiControllers);
-        let semitones = getModulated(voice, generatorTypes.coarseTune, this.midiControllers) + parseFloat(this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning] >> 7);
+        let cents = voice.modulatedGenerators[generatorTypes.fineTune]
+            + this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning];
+        let semitones = voice.modulatedGenerators[generatorTypes.coarseTune];
 
         // calculate tuning by key
-        cents += (voice.targetKey - voice.sample.rootKey) * getModulated(voice, generatorTypes.scaleTuning, this.midiControllers);
+        cents += (voice.targetKey - voice.sample.rootKey) * voice.modulatedGenerators[generatorTypes.scaleTuning];
 
         // vibrato LFO
-        const vibratoDepth = getModulated(voice, generatorTypes.vibLfoToPitch, this.midiControllers);
+        const vibratoDepth = voice.modulatedGenerators[generatorTypes.vibLfoToPitch];
         if(vibratoDepth > 0)
         {
-            const vibStart = voice.startTime + timecentsToSeconds(getModulated(voice, generatorTypes.delayVibLFO, this.midiControllers));
-            const vibFreqHz = absCentsToHz(getModulated(voice, generatorTypes.freqVibLFO, this.midiControllers));
+            const vibStart = voice.startTime + timecentsToSeconds(voice.modulatedGenerators[generatorTypes.delayVibLFO]);
+            const vibFreqHz = absCentsToHz(voice.modulatedGenerators[generatorTypes.freqVibLFO]);
             const lfoVal = getLFOValue(vibStart, vibFreqHz, currentTime);
             if(lfoVal)
             {
@@ -162,13 +186,13 @@ class ChannelProcessor extends AudioWorkletProcessor {
         }
 
         // mod LFO
-        const modPitchDepth = getModulated(voice, generatorTypes.modLfoToPitch, this.midiControllers);
-        const modVolDepth = getModulated(voice, generatorTypes.modLfoToVolume, this.midiControllers);
+        const modPitchDepth = voice.modulatedGenerators[generatorTypes.modLfoToPitch];
+        const modVolDepth = voice.modulatedGenerators[generatorTypes.modLfoToVolume];
         let modLfoCentibels = 0;
         if(modPitchDepth > 0 || modVolDepth > 0)
         {
-            const modStart = voice.startTime + timecentsToSeconds(getModulated(voice, generatorTypes.delayModLFO, this.midiControllers));
-            const modFreqHz = absCentsToHz(getModulated(voice, generatorTypes.freqModLFO, this.midiControllers));
+            const modStart = voice.startTime + timecentsToSeconds(voice.modulatedGenerators[generatorTypes.delayModLFO]);
+            const modFreqHz = absCentsToHz(voice.modulatedGenerators[generatorTypes.freqModLFO]);
             const modLfo = getLFOValue(modStart, modFreqHz, currentTime);
             if(modLfo) {
                 cents += (modLfo * modPitchDepth);
@@ -189,31 +213,14 @@ class ChannelProcessor extends AudioWorkletProcessor {
         // finally calculate the playback rate
         const playbackRate = Math.pow(2,(cents / 100 + semitones) / 12);
 
-        // VOLUME ENVELOPE
-        let attenuation, sustain, delay, attack, hold, decay, release;
-        attenuation = decibelAttenuationToGain((getModulated(voice, generatorTypes.initialAttenuation, this.midiControllers) / 25) + modLfoCentibels);
-        if(voice.isInRelease)
-        {
-            release = timecentsToSeconds(getModulated(voice, generatorTypes.releaseVolEnv, this.midiControllers));
-        }
-        else {
-            sustain = attenuation * decibelAttenuationToGain(getModulated(voice, generatorTypes.sustainVolEnv, this.midiControllers) / 10);
-            delay = timecentsToSeconds(getModulated(voice, generatorTypes.delayVolEnv, this.midiControllers));
-            attack = timecentsToSeconds(getModulated(voice, generatorTypes.attackVolEnv, this.midiControllers));
-            hold = timecentsToSeconds(getModulated(voice, generatorTypes.holdVolEnv, this.midiControllers) + ((60 - voice.midiNote) * getModulated(voice, generatorTypes.keyNumToVolEnvHold, this.midiControllers)));
-            decay = timecentsToSeconds(getModulated(voice, generatorTypes.decayVolEnv, this.midiControllers) + ((60 - voice.midiNote) * getModulated(voice, generatorTypes.keyNumToVolEnvDecay, this.midiControllers)));
-        }
-
         // PANNING
-        const pan = ( (Math.max(-500, Math.min(500, getModulated(voice, generatorTypes.pan, this.midiControllers) )) + 500) / 1000) ; // 0 to 1
-        const panLeft = Math.cos(HALF_PI * pan);
-        const panRight = Math.sin(HALF_PI * pan);
+        const pan = ( (Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan] )) + 500) / 1000) ; // 0 to 1
 
 
         // LOWPASS
-        // const filterQ = getModulated(voice, generatorTypes.initialFilterQ, this.midiControllers) - 3.01; // polyphone????
+        // const filterQ = voice.modulatedGenerators[generatorTypes.initialFilterQ] - 3.01; // polyphone????
         // const filterQgain = Math.pow(10, filterQ / 20);
-        // const filterFcHz = absCentsToHz(getModulated(voice, generatorTypes.initialFilterFc, this.midiControllers));
+        // const filterFcHz = absCentsToHz(voice.modulatedGenerators[generatorTypes.initialFilterFc]);
         // // calculate coefficients
         // const theta = 2 * Math.PI * filterFcHz / sampleRate;
         // let a0, a1, a2, b1, b2;
@@ -249,62 +256,62 @@ class ChannelProcessor extends AudioWorkletProcessor {
         // }
 
         // SYNTHESIS
-        let actualTime = currentTime;
-        for (let outputSampleIndex = 0; outputSampleIndex < outputLeft.length; outputSampleIndex++) {
+        const bufferOut = new Float32Array(outputLeft.length);
 
-            // Read the sample
-            let sample = getOscillatorValue(
-                voice,
-                this.samples[voice.sample.sampleID],
-                playbackRate
-            );
+        // wavetable oscillator
+        getOscillatorData(voice, this.samples[voice.sample.sampleID], playbackRate, bufferOut);
 
-            // apply the volenv
-            if(voice.isInRelease)
-            {
-                voice.volEnvGain = attenuation * getVolEnvReleaseMultiplier(release, actualTime - voice.releaseStartTime);
-            }
-            else {
-                voice.currentGain = getVolumeEnvelopeValue(
-                    delay,
-                    attack,
-                    attenuation,
-                    hold,
-                    sustain,
-                    decay,
-                    voice.startTime,
-                    actualTime);
+        // volenv
+        applyVolumeEnvelope(voice, bufferOut, currentTime, modLfoCentibels, this.sampleTime);
 
-                voice.volEnvGain = voice.currentGain;
-            }
-            if(voice.volEnvGain < 0)
-            {
-                voice.finished = true;
-                return;
-            }
+        // pan the voice and write out
+        panVoice(pan, bufferOut, outputLeft, outputRight);
 
-            sample *= voice.volEnvGain;
-
-            // pan the voice and write out
-            outputLeft[outputSampleIndex] += sample * panLeft;
-            outputRight[outputSampleIndex] += sample * panRight;
-
-            actualTime += this.sampleTime;
-        }
+        // apply the volEnv
+        // for (let outputSampleIndex = 0; outputSampleIndex < outputLeft.length; outputSampleIndex++) {
+        //
+        //     // Read the sample
+        //     let sample = getOscillatorValue(
+        //         voice,
+        //         this.samples[voice.sample.sampleID],
+        //         playbackRate
+        //     );
+        //
+        //     // apply the volenv
+        //     if(voice.isInRelease)
+        //     {
+        //         voice.volEnvGain = attenuation * getVolEnvReleaseMultiplier(release, actualTime - voice.releaseStartTime);
+        //     }
+        //     else {
+        //         voice.currentGain = getVolumeEnvelopeValue(
+        //             delay,
+        //             attack,
+        //             attenuation,
+        //             hold,
+        //             sustain,
+        //             decay,
+        //             voice.startTime,
+        //             actualTime);
+        //
+        //         voice.volEnvGain = voice.currentGain;
+        //     }
+        //     if(voice.volEnvGain < 0)
+        //     {
+        //         voice.finished = true;
+        //         return;
+        //     }
+        //
+        //     sample *= voice.volEnvGain;
+        //
+        //
+        //
+        //     actualTime += this.sampleTime;
+        // }
     }
 
     resetControllers()
     {
-        // Create an Int16Array with 127 elements
-        this.midiControllers = new Int16Array(146);
-        this.midiControllers[midiControllers.mainVolume] = 100 << 7;
-        this.midiControllers[midiControllers.expressionController] = 127 << 7;
-        this.midiControllers[midiControllers.pan] = 64 << 7;
-
-        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel] = 8192;
-        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] = 2 << 7;
-        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelPressure] = 127 << 7;
-        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning] = 0;
+        this.midiControllers.set(resetArray);
     }
 
 }

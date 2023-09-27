@@ -5,7 +5,8 @@
  * "pitchwheel"|
  * "controllerchange"|
  * "programchange"|
- * "drumchange"} EventTypes
+ * "drumchange"|
+ * "stopall"} EventTypes
  */
 export class EventHandler
 {

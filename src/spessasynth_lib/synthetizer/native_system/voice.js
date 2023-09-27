@@ -1,6 +1,6 @@
 import { GeneratorTranslator } from './generator_translator.js';
 
-export class SynthesisModel
+export class Voice
 {
     /**
      * Creates a new instance of a single sample
@@ -240,7 +240,7 @@ export class SynthesisModel
         if(!this.wavetableOscillator.loop)
         {
             // if not looping, return the sample length
-            return this.synthesisOptions.sample.sampleLengthSeconds;
+            return Math.min(this.synthesisOptions.sample.sampleLengthSeconds, this.volEnv.releaseTime);
         }
         return this.volEnv.releaseTime;
     }
