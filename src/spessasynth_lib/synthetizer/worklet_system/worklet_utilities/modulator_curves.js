@@ -30,7 +30,7 @@ for (let i = 0; i < MOD_PRECOMPUTED_LENGTH; i++) {
  * @param value {number} 0 to 1
  * @returns {number} 0 to 1 or -1 to 0
  */
-export function getModulatorValue(direction, curveType, value, polarity) {
+export function getModulatorCurveValue(direction, curveType, value, polarity) {
     // inverse the value if needed
     if(direction)
     {

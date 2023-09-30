@@ -1,6 +1,6 @@
 import { NON_CC_INDEX_OFFSET } from '../worklet_channel.js'
 import { modulatorSources } from '../../../soundfont/chunk/modulators.js'
-import { getModulatorValue, MOD_PRECOMPUTED_LENGTH } from './modulator_curves.js'
+import { getModulatorCurveValue, MOD_PRECOMPUTED_LENGTH } from './modulator_curves.js'
 
 /**
  *
@@ -134,7 +134,7 @@ for(let curve = 0; curve < 4; curve++)
     for (let i = 0; i < MOD_PRECOMPUTED_LENGTH; i++) {
 
         // polarity 0 dir 0
-        transforms[curve][0][0][i] = getModulatorValue(
+        transforms[curve][0][0][i] = getModulatorCurveValue(
             0,
             curve,
             i / MOD_PRECOMPUTED_LENGTH,
@@ -144,7 +144,7 @@ for(let curve = 0; curve < 4; curve++)
         }
 
         // polarity 1 dir 0
-        transforms[curve][1][0][i] = getModulatorValue(
+        transforms[curve][1][0][i] = getModulatorCurveValue(
             0,
             curve,
             i / MOD_PRECOMPUTED_LENGTH,
@@ -154,7 +154,7 @@ for(let curve = 0; curve < 4; curve++)
         }
 
         // polarity 0 dir 1
-        transforms[curve][0][1][i] = getModulatorValue(
+        transforms[curve][0][1][i] = getModulatorCurveValue(
             1,
             curve,
             i / MOD_PRECOMPUTED_LENGTH,
@@ -164,7 +164,7 @@ for(let curve = 0; curve < 4; curve++)
         }
 
         // polarity 1 dir 1
-        transforms[curve][1][1][i] = getModulatorValue(
+        transforms[curve][1][1][i] = getModulatorCurveValue(
             1,
             curve,
             i / MOD_PRECOMPUTED_LENGTH,

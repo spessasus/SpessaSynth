@@ -1,10 +1,9 @@
 /**
  * @param voice {WorkletVoice}
  * @param sampleData {Float32Array}
- * @param playbackRate {number}
  * @param outputBuffer {Float32Array}
  */
-export function getOscillatorData(voice, sampleData, playbackRate, outputBuffer)
+export function getOscillatorData(voice, sampleData, outputBuffer)
 {
     let cur = voice.sample.cursor;
     const loop = (voice.sample.loopingMode === 1) || (voice.sample.loopingMode === 3 && !voice.isInRelease);
@@ -14,7 +13,7 @@ export function getOscillatorData(voice, sampleData, playbackRate, outputBuffer)
     {
         for (let i = 0; i < outputBuffer.length; i++) {
             // check for loop
-            if (cur > voice.sample.loopEnd) {
+            while(cur > voice.sample.loopEnd) {
                 cur -= loopLength;
             }
 
@@ -22,8 +21,7 @@ export function getOscillatorData(voice, sampleData, playbackRate, outputBuffer)
             const floor = ~~cur;
             let ceil = floor + 1;
 
-            if(ceil > voice.sample.loopEnd)
-            {
+            while(ceil > voice.sample.loopEnd) {
                 ceil -= loopLength;
             }
 
@@ -34,7 +32,7 @@ export function getOscillatorData(voice, sampleData, playbackRate, outputBuffer)
             const lower = sampleData[floor];
             outputBuffer[i] = (lower + (upper - lower) * fraction);
 
-            cur += voice.sample.playbackStep * playbackRate;
+            cur += voice.sample.playbackStep * voice.currentTuningCalculated;
         }
     }
     else
@@ -59,7 +57,7 @@ export function getOscillatorData(voice, sampleData, playbackRate, outputBuffer)
             const lower = sampleData[floor];
             outputBuffer[i] = (lower + (upper - lower) * fraction);
 
-            cur += voice.sample.playbackStep * playbackRate;
+            cur += voice.sample.playbackStep * voice.currentTuningCalculated;
         }
     }
     voice.sample.cursor = cur;

@@ -9,20 +9,51 @@
  * loopingMode: 0|1|2,
  * }} WorkletSample
  *
+ *
+ * @typedef {{
+ *     a0: number,
+ *     a1: number,
+ *     a2: number,
+ *     a3: number,
+ *     a4: number,
+ *
+ *     x1: number,
+ *     x2: number,
+ *     y1: number,
+ *     y2: number
+ *
+ *     reasonanceCb: number,
+ *     reasonanceGain: number
+ *
+ *     cutoffCents: number,
+ *     cutoffHz: number
+ * }} WorkletLowpassFilter
+ *
  * @typedef {{
  * sample: WorkletSample,
+ * filter: WorkletLowpassFilter
+ *
  * generators: Int16Array,
  * modulators: Modulator[],
  * modulatedGenerators: Int16Array,
+ *
  * finished: boolean,
  * isInRelease: boolean,
+ *
  * velocity: number,
- * currentAttenuationDb: number,
- * releaseStartDb: number,
- * startTime: number,
  * midiNote: number,
+ * targetKey: number,
+ *
+ * currentAttenuationDb: number,
+ * currentModEnvValue: number,
+ * startTime: number,
+ *
  * releaseStartTime: number,
- * targetKey: number
+ * releaseStartDb: number,
+ * releaseStartModEnv: number,
+ *
+ * currentTuningCents: number,
+ * currentTuningCalculated: number
  * }} WorkletVoice
  */
 
@@ -78,7 +109,7 @@ export const workletMessageType = {
  * 5 - controllers reset
  * 6 - channel vibrato -> {frequencyHz: number, depthCents: number, delaySeconds: number}
  * 7 - clear cached samples
- * 8 - stop all notes
+ * 8 - stop all notes force: number (0 false, 1 true)
  */
 
 
@@ -116,25 +147,18 @@ export class WorkletChannel {
 
         this.channelTuningSemitones = 0;
 
-        /**
-         * @type {number[]}
-         */
-        this.actualVoices = [];
-
         this.holdPedal = false;
         /**
          * @type {number[]}
          */
         this.sustainedNotes = [];
 
-        /**
-         * @type {Set<number>}
-         */
-        this.notes = new Set();
-
         this.worklet = new AudioWorkletNode(this.ctx, "worklet-channel-processor", {
             outputChannelCount: [2]
         });
+
+        this.reportedVoicesAmount = 0;
+        this.worklet.port.onmessage = e => this.reportedVoicesAmount = e.data;
 
         // for the renderer
         this.gainController = new GainNode(this.ctx, {
@@ -165,6 +189,22 @@ export class WorkletChannel {
          */
         this.lockPreset = false;
         this.lockVibrato = false;
+    }
+
+    /**
+     * @param value {{delay: number, depth: number, rate: number}}
+     */
+    set vibrato(value)
+    {
+        this.post({
+            messageType: workletMessageType.setChannelVibrato,
+            messageData: value
+        });
+    }
+
+    get vibrato()
+    {
+        return this._vibrato;
     }
 
     /**
@@ -221,7 +261,7 @@ export class WorkletChannel {
                 break;
 
             case midiControllers.sustainPedal:
-                if(val > 64)
+                if(val >= 64)
                 {
                     this.holdPedal = true;
                 }
@@ -255,24 +295,23 @@ export class WorkletChannel {
         for (let i = 0; i < 128; i++) {
             this.cachedWorkletVoices.push([]);
         }
+        if(this.preset.bank === 128)
+        {
+            this.channelTranspose = 0;
+            this.post({
+                messageType: workletMessageType.ccChange,
+                messageData: [NON_CC_INDEX_OFFSET + modulatorSources.channelTranspose, 0]
+            });
+        }
     }
 
     /**
-     * @param midiNote {number} 0-127
-     * @param velocity {number} 0-127
-     * @param debug {boolean}
+     * @param midiNote {number}
+     * @param velocity {number}
+     * @returns {WorkletVoice[]}
      */
-    playNote(midiNote, velocity, debug = false) {
-        if(!velocity)
-        {
-            throw "No velocity given!";
-        }
-        if (velocity === 0) {
-            // stop if velocity 0
-            this.stopNote(midiNote);
-            return;
-        }
-
+    getWorkletVoices(midiNote, velocity)
+    {
         /**
          * @type {WorkletVoice[]}
          */
@@ -284,7 +323,6 @@ export class WorkletChannel {
             workletVoices = cached;
             workletVoices.forEach(v => {
                 v.startTime = this.ctx.currentTime;
-                this.actualVoices.push(midiNote);
             });
         }
         else
@@ -346,8 +384,23 @@ export class WorkletChannel {
                     velocity = generators[generatorTypes.velocity];
                 }
 
-                this.actualVoices.push(midiNote);
                 return {
+                    filter: {
+                        a0: 0,
+                        a1: 0,
+                        a2: 0,
+                        a3: 0,
+                        a4: 0,
+
+                        x1: 0,
+                        x2: 0,
+                        y1: 0,
+                        y2: 0,
+                        reasonanceCb: 0,
+                        reasonanceGain: 1,
+                        cutoffCents: 13500,
+                        cutoffHz: 20000
+                    },
                     generators: generators,
                     modulatedGenerators: new Int16Array(60),
                     sample: workletSample,
@@ -355,12 +408,16 @@ export class WorkletChannel {
                     finished: false,
                     velocity: velocity,
                     currentAttenuationDb: 100,
+                    currentModEnvValue: 0,
+                    releaseStartModEnv: 1,
                     releaseStartDb: 0,
                     midiNote: midiNote,
                     startTime: this.ctx.currentTime,
                     isInRelease: false,
                     releaseStartTime: -1,
                     targetKey: targetKey,
+                    currentTuningCalculated: 1,
+                    currentTuningCents: 0
                 };
 
             });
@@ -368,6 +425,26 @@ export class WorkletChannel {
             // cache the voice
             this.cachedWorkletVoices[midiNote][velocity] = workletVoices;
         }
+        return workletVoices;
+    }
+
+    /**
+     * @param midiNote {number} 0-127
+     * @param velocity {number} 0-127
+     * @param debug {boolean}
+     */
+    playNote(midiNote, velocity, debug = false) {
+        if(!velocity)
+        {
+            throw "No velocity given!";
+        }
+        if (velocity === 0) {
+            // stop if velocity 0
+            this.stopNote(midiNote);
+            return;
+        }
+
+        let workletVoices = this.getWorkletVoices(midiNote, velocity);
 
         if(debug)
         {
@@ -378,9 +455,6 @@ export class WorkletChannel {
             messageType: workletMessageType.noteOn,
             messageData: workletVoices
         });
-
-
-        this.notes.add(midiNote);
     }
 
     /**
@@ -409,10 +483,6 @@ export class WorkletChannel {
                 messageData: midiNote
             });
         }
-
-        this.actualVoices = this.actualVoices.filter(v => v !== midiNote);
-
-        this.notes.delete(midiNote);
     }
 
     setPitchBend(bendMSB, bendLSB) {
@@ -426,7 +496,7 @@ export class WorkletChannel {
     }
 
     get voicesAmount() {
-        return this.actualVoices.length;
+        return this.reportedVoicesAmount;
     }
 
     setRPCoarse(value)
@@ -461,11 +531,11 @@ export class WorkletChannel {
     {
         let addDefaultVibrato = () =>
         {
-            if(this.vibrato.delay === 0 && this.vibrato.rate === 0 && this.vibrato.depth === 0)
+            if(this._vibrato.delay === 0 && this._vibrato.rate === 0 && this._vibrato.depth === 0)
             {
-                this.vibrato.depth = 30;
-                this.vibrato.rate = 6;
-                this.vibrato.delay = 0.6;
+                this._vibrato.depth = 30;
+                this._vibrato.rate = 6;
+                this._vibrato.delay = 0.6;
             }
         }
 
@@ -499,8 +569,8 @@ export class WorkletChannel {
                                     return;
                                 }
                                 addDefaultVibrato();
-                                this.vibrato.rate = (dataValue / 64) * 8;
-                                console.log(`%cVibrato rate for channel %c${this.channelNumber}%c is now set to %c${this.vibrato.rate}%cHz.`,
+                                this._vibrato.rate = (dataValue / 64) * 8;
+                                console.log(`%cVibrato rate for channel %c${this.channelNumber}%c is now set to %c${this._vibrato.rate}%cHz.`,
                                     consoleColors.info,
                                     consoleColors.recognized,
                                     consoleColors.info,
@@ -509,7 +579,7 @@ export class WorkletChannel {
 
                                 this.post({
                                     messageType: workletMessageType.setChannelVibrato,
-                                    messageData: this.vibrato
+                                    messageData: this._vibrato
                                 });
                                 break;
 
@@ -520,8 +590,8 @@ export class WorkletChannel {
                                     return;
                                 }
                                 addDefaultVibrato();
-                                this.vibrato.depth = dataValue / 2;
-                                console.log(`%cVibrato depth for %c${this.channelNumber}%c is now set to %c${this.vibrato.depth} %ccents range of detune.`,
+                                this._vibrato.depth = dataValue / 2;
+                                console.log(`%cVibrato depth for %c${this.channelNumber}%c is now set to %c${this._vibrato.depth} %ccents range of detune.`,
                                     consoleColors.info,
                                     consoleColors.recognized,
                                     consoleColors.info,
@@ -530,7 +600,7 @@ export class WorkletChannel {
 
                                 this.post({
                                     messageType: workletMessageType.setChannelVibrato,
-                                    messageData: this.vibrato
+                                    messageData: this._vibrato
                                 });
                                 break;
 
@@ -541,8 +611,8 @@ export class WorkletChannel {
                                     return;
                                 }
                                 addDefaultVibrato();
-                                this.vibrato.delay = (dataValue / 64) / 3;
-                                console.log(`%cVibrato delay for %c${this.channelNumber}%c is now set to %c${this.vibrato.delay} %cseconds.`,
+                                this._vibrato.delay = (dataValue / 64) / 3;
+                                console.log(`%cVibrato delay for %c${this.channelNumber}%c is now set to %c${this._vibrato.delay} %cseconds.`,
                                     consoleColors.info,
                                     consoleColors.recognized,
                                     consoleColors.info,
@@ -551,7 +621,7 @@ export class WorkletChannel {
 
                                 this.post({
                                     messageType: workletMessageType.setChannelVibrato,
-                                    messageData: this.vibrato
+                                    messageData: this._vibrato
                                 });
                                 break;
                         }
@@ -582,10 +652,10 @@ export class WorkletChannel {
                         // semitones
                         this.channelTuningSemitones = dataValue - 64;
                         console.log("tuning", this.channelTuningSemitones, "for", this.channelNumber);
-                        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning] = (this.channelTuningSemitones + this.channelTranspose) * 100;
+                        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning] = (this.channelTuningSemitones) * 100;
                         this.post({
                             messageType: workletMessageType.ccChange,
-                            messageData: [NON_CC_INDEX_OFFSET + modulatorSources.channelTuning, (this.channelTuningSemitones + this.channelTranspose) * 100]
+                            messageData: [NON_CC_INDEX_OFFSET + modulatorSources.channelTuning, (this.channelTuningSemitones) * 100]
                         });
                         break;
 
@@ -598,14 +668,12 @@ export class WorkletChannel {
         }
     }
 
-    stopAll()
+    stopAll(force=false)
     {
         this.post({
             messageType: workletMessageType.stopAll,
-            messageData: 0
+            messageData: force ? 1 : 0
         });
-        this.actualVoices = [];
-        this.notes = new Set();
     }
 
     transposeChannel(semitones)
@@ -615,10 +683,10 @@ export class WorkletChannel {
             return;
         }
         this.channelTranspose = semitones;
-        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning] = (this.channelTuningSemitones + this.channelTranspose) * 100;
+        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTranspose] = this.channelTranspose * 100;
         this.post({
             messageType: workletMessageType.ccChange,
-            messageData: [NON_CC_INDEX_OFFSET + modulatorSources.channelTuning, (this.channelTuningSemitones + this.channelTranspose) * 100]
+            messageData: [NON_CC_INDEX_OFFSET + modulatorSources.channelTranspose, this.channelTranspose * 100]
         });
     }
 
@@ -627,7 +695,7 @@ export class WorkletChannel {
         this.holdPedal = false;
         this.chorus.setChorusLevel(0);
 
-        this.vibrato = {depth: 0, rate: 0, delay: 0};
+        this._vibrato = {depth: 0, rate: 0, delay: 0};
 
         this.resetParameters();
         this.post({

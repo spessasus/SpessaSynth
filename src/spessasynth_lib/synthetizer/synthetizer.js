@@ -7,7 +7,7 @@ import { WorkletChannel } from './worklet_system/worklet_channel.js'
 import { EventHandler } from '../utils/event_handler.js'
 
 // i mean come on
-const VOICES_CAP = 800;
+const VOICES_CAP = 2000;
 
 export const DEFAULT_GAIN = 0.5;
 export const DEFAULT_PERCUSSION = 9;

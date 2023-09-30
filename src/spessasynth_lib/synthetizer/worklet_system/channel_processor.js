@@ -12,8 +12,14 @@ import { getLFOValue } from './worklet_utilities/lfo.js';
 import { consoleColors } from '../../utils/other.js'
 import { panVoice } from './worklet_utilities/stereo_panner.js'
 import { applyVolumeEnvelope } from './worklet_utilities/volume_envelope.js'
+import { applyLowpassFilter } from './worklet_utilities/lowpass_filter.js'
+import { getModEnvValue } from './worklet_utilities/modulation_envelope.js'
 
 export const MIN_AUDIBLE_GAIN = 0.0001;
+
+const CONTROLLER_TABLE_SIZE = 147;
+
+const BLOCK_SIZE = 128;
 
 // an array with preset default values so we can quickly use set() to reset the controllers
 const resetArray = new Int16Array(146);
@@ -34,7 +40,9 @@ class ChannelProcessor extends AudioWorkletProcessor {
          * Contains all controllers + other "not controllers" like pitch bend
          * @type {Int16Array}
          */
-        this.midiControllers = new Int16Array(146);
+        this.midiControllers = new Int16Array(CONTROLLER_TABLE_SIZE);
+
+        this.emptyOutBuffer = new Float32Array(BLOCK_SIZE).buffer;
 
         /**
          * @type {Object<number, Float32Array>}
@@ -71,18 +79,17 @@ class ChannelProcessor extends AudioWorkletProcessor {
                 // note off
                 case workletMessageType.noteOff:
                     this.voices.forEach(v => {
-                        if(v.midiNote !== data)
+                        if(v.midiNote !== data || v.isInRelease === true)
                         {
                             return;
                         }
-                        v.releaseStartTime = currentTime;
-                        v.isInRelease = true;
-                        v.releaseStartDb = v.currentAttenuationDb;
+                        this.releaseVoice(v);
                     });
                     break;
 
                 case workletMessageType.killNote:
                     this.voices = this.voices.filter(v => v.midiNote !== data);
+                    this.port.postMessage(this.voices.length);
                     break;
 
                 case workletMessageType.noteOn:
@@ -90,11 +97,30 @@ class ChannelProcessor extends AudioWorkletProcessor {
                         const exclusive = voice.generators[generatorTypes.exclusiveClass];
                         if(exclusive !== 0)
                         {
-                            this.voices = this.voices.filter(v => v.generators[generatorTypes.exclusiveClass] !== exclusive);
+                            this.voices.forEach(v => {
+                                if(v.generators[generatorTypes.exclusiveClass] === exclusive)
+                                {
+                                    this.releaseVoice(v);
+                                    v.generators[generatorTypes.releaseVolEnv] = -12000; // make the release nearly instant
+                                    computeModulators(v, this.midiControllers);
+                                }
+                            })
+                            //this.voices = this.voices.filter(v => v.generators[generatorTypes.exclusiveClass] !== exclusive);
                         }
                         computeModulators(voice, this.midiControllers);
+
+                        // if both delay + attack are less than -23999, instantly ramp to attenuation (attack and delay are essentially 0)
+                        if(voice.modulatedGenerators[generatorTypes.delayVolEnv] + voice.modulatedGenerators[generatorTypes.attackVolEnv] < -23999)
+                        {
+                            voice.currentAttenuationDb = voice.modulatedGenerators[generatorTypes.initialAttenuation] / 25;
+                        }
+                        else
+                        {
+                            voice.currentAttenuationDb = 100;
+                        }
                     })
                     this.voices.push(...data);
+                    this.port.postMessage(this.voices.length);
                     break;
 
                 case workletMessageType.sampleDump:
@@ -119,10 +145,33 @@ class ChannelProcessor extends AudioWorkletProcessor {
                     break;
 
                 case workletMessageType.stopAll:
-                    this.voices = [];
+                    if(data === 1)
+                    {
+                        // force stop all
+                        this.voices = [];
+                        this.port.postMessage(0);
+                    }
+                    else
+                    {
+                        this.voices.forEach(v => {
+                            if(v.isInRelease) return;
+                            this.releaseVoice(v)
+                        });
+                    }
                     break;
             }
         }
+    }
+
+    /**
+     * @param voice {WorkletVoice}
+     */
+    releaseVoice(voice)
+    {
+        voice.releaseStartTime = currentTime;
+        voice.isInRelease = true;
+        voice.releaseStartDb = voice.currentAttenuationDb;
+        voice.releaseStartModEnv = voice.currentModEnvValue;
     }
 
     /**
@@ -146,6 +195,10 @@ class ChannelProcessor extends AudioWorkletProcessor {
             }
         });
 
+        if(tempV.length !== this.voices.length) {
+            this.port.postMessage(this.voices.length);
+        }
+
         return true;
     }
 
@@ -166,7 +219,8 @@ class ChannelProcessor extends AudioWorkletProcessor {
 
         // calculate tuning
         let cents = voice.modulatedGenerators[generatorTypes.fineTune]
-            + this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning];
+            + this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning]
+            + this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTranspose];
         let semitones = voice.modulatedGenerators[generatorTypes.coarseTune];
 
         // calculate tuning by key
@@ -185,19 +239,22 @@ class ChannelProcessor extends AudioWorkletProcessor {
             }
         }
 
+        // lowpass frequency
+        let lowpassCents = voice.modulatedGenerators[generatorTypes.initialFilterFc];
+
         // mod LFO
         const modPitchDepth = voice.modulatedGenerators[generatorTypes.modLfoToPitch];
         const modVolDepth = voice.modulatedGenerators[generatorTypes.modLfoToVolume];
+        const modFilterDepth = voice.modulatedGenerators[generatorTypes.modLfoToFilterFc];
         let modLfoCentibels = 0;
-        if(modPitchDepth > 0 || modVolDepth > 0)
+        if(modPitchDepth + modFilterDepth + modVolDepth > 0)
         {
             const modStart = voice.startTime + timecentsToSeconds(voice.modulatedGenerators[generatorTypes.delayModLFO]);
             const modFreqHz = absCentsToHz(voice.modulatedGenerators[generatorTypes.freqModLFO]);
-            const modLfo = getLFOValue(modStart, modFreqHz, currentTime);
-            if(modLfo) {
-                cents += (modLfo * modPitchDepth);
-                modLfoCentibels = (modLfo * modVolDepth) / 10
-            }
+            const modLfoValue = getLFOValue(modStart, modFreqHz, currentTime);
+            cents += modLfoValue * modPitchDepth;
+            modLfoCentibels = modLfoValue * modVolDepth;
+            lowpassCents += modLfoValue * modFilterDepth;
         }
 
         // channel vibrato (GS NRPN)
@@ -210,56 +267,33 @@ class ChannelProcessor extends AudioWorkletProcessor {
             }
         }
 
+        // mod env
+        const modEnvPitchDepth = voice.modulatedGenerators[generatorTypes.modEnvToPitch];
+        const modEnvFilterDepth = voice.modulatedGenerators[generatorTypes.modEnvToFilterFc];
+        const modEnv = getModEnvValue(voice, currentTime);
+        lowpassCents += modEnv * modEnvFilterDepth;
+        cents += modEnv * modEnvPitchDepth;
+
         // finally calculate the playback rate
-        const playbackRate = Math.pow(2,(cents / 100 + semitones) / 12);
+        const centsTotal = ~~(cents + semitones * 100);
+        if(centsTotal !== voice.currentTuningCents)
+        {
+            voice.currentTuningCents = centsTotal;
+            voice.currentTuningCalculated = Math.pow(2, centsTotal / 1200);
+        }
 
         // PANNING
         const pan = ( (Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan] )) + 500) / 1000) ; // 0 to 1
 
 
-        // LOWPASS
-        // const filterQ = voice.modulatedGenerators[generatorTypes.initialFilterQ] - 3.01; // polyphone????
-        // const filterQgain = Math.pow(10, filterQ / 20);
-        // const filterFcHz = absCentsToHz(voice.modulatedGenerators[generatorTypes.initialFilterFc]);
-        // // calculate coefficients
-        // const theta = 2 * Math.PI * filterFcHz / sampleRate;
-        // let a0, a1, a2, b1, b2;
-        // if (filterQgain <= 0)
-        // {
-        //     a0 = 1;
-        //     a1 = 0;
-        //     a2 = 0;
-        //     b1 = 0;
-        //     b2 = 0;
-        // }
-        // else
-        // {
-        //     const dTmp = Math.sin(theta) / (2 * filterQgain);
-        //     if (dTmp <= -1.0)
-        //     {
-        //         a0 = 1;
-        //         a1 = 0;
-        //         a2 = 0;
-        //         b1 = 0;
-        //         b2 = 0;
-        //     }
-        //     else
-        //     {
-        //         const beta = 0.5 * (1 - dTmp) / (1 + dTmp);
-        //         const gamma = (0.5 + beta) * Math.cos(theta);
-        //         a0 = (0.5 + beta - gamma) / 2;
-        //         a1 = 2 * a0;
-        //         a2 = a0;
-        //         b1 = -2 * gamma;
-        //         b2 = 2 * beta;
-        //     }
-        // }
-
         // SYNTHESIS
-        const bufferOut = new Float32Array(outputLeft.length);
+        const bufferOut = new Float32Array(this.emptyOutBuffer);
 
         // wavetable oscillator
-        getOscillatorData(voice, this.samples[voice.sample.sampleID], playbackRate, bufferOut);
+        getOscillatorData(voice, this.samples[voice.sample.sampleID], bufferOut);
+
+        // lowpass filter
+        applyLowpassFilter(voice, bufferOut, lowpassCents);
 
         // volenv
         applyVolumeEnvelope(voice, bufferOut, currentTime, modLfoCentibels, this.sampleTime);
@@ -311,7 +345,10 @@ class ChannelProcessor extends AudioWorkletProcessor {
 
     resetControllers()
     {
+        // transpose does not get affected
+        const transpose = this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTranspose];
         this.midiControllers.set(resetArray);
+        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTranspose] = transpose;
     }
 
 }
