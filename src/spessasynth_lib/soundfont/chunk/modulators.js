@@ -86,17 +86,27 @@ function getModSourceEnum(curveType, polarity, direction, isCC, index)
 
 export const defaultModulators = [
     // vel to attenuation
-    new Modulator({srcEnum: 0x0502, dest: generatorTypes.initialAttenuation, amt: 960, secSrcEnum: 0x0, transform: 0}),
+    new Modulator({
+        srcEnum: getModSourceEnum(modulatorCurveTypes.concave, 0, 1, 0, modulatorSources.noteOnVelocity),
+        dest: generatorTypes.initialAttenuation,
+        amt: 960,
+        secSrcEnum: 0x0,
+        transform: 0}),
     // mod wheel to vibrato
     new Modulator({srcEnum: 0x0081, dest: generatorTypes.vibLfoToPitch, amt: 50, secSrcEnum: 0x0, transform: 0}),
     // vol to attenuation
-    new Modulator({srcEnum: 0x0587, dest: generatorTypes.initialAttenuation, amt: 1440, secSrcEnum: 0x0, transform: 0}),
+    new Modulator({
+        srcEnum: getModSourceEnum(modulatorCurveTypes.concave, 0, 1, 1, midiControllers.mainVolume),
+        dest: generatorTypes.initialAttenuation,
+        amt: 960,
+        secSrcEnum: 0x0,
+        transform: 0}),
     // pitch wheel to tuning
     new Modulator({srcEnum: 0x020E, dest: generatorTypes.fineTune, amt: 12700, secSrcEnum: 0x0010, transform: 0}),
     // pan to uhh, pan
     new Modulator({srcEnum: 0x028A, dest: generatorTypes.pan, amt: 1000, secSrcEnum: 0x0, transform: 0}),
     // expression to attenuation
-    new Modulator({srcEnum: 0x058B, dest: generatorTypes.initialAttenuation, amt: 1440, secSrcEnum: 0x0, transform: 0}),
+    new Modulator({srcEnum: 0x058B, dest: generatorTypes.initialAttenuation, amt: 960, secSrcEnum: 0x0, transform: 0}),
 
     // custom modulators heck yeah
     // cc 92 (tremolo) to modLFO volume
