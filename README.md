@@ -10,7 +10,10 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 # [Live demo](https://spessasus.github.io/SpessaSynth/)
 
 ## Features
-- SoundFont2 Generator Support (Specifcally [here](#currently-supported-generators))
+- SoundFont2 Generator Support
+- SoundFont2 Modulator Support
+- A few custom modulators to support some additional controllers (see `modulators.js`)
+- Written using AudioWorklets
 - MIDI Controller Support (Currently supported controllers can be found [here](../../wiki/Synthetizer-Class#supported-controllers))
 - Supports some Roland and Yamaha XG sysex messages
 - High performance mode for playing black MIDIs (Don't go too crazy with the amount of notes though)
@@ -26,7 +29,7 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 - Comes bundled with a small [GeneralUser GS](https://schristiancollins.com/generaluser.php) soundFont to get you started
 
 ### Limitations
-- The program currently supports no modulators (Work in progress) and no reverb. 
+- The program currently supports no reverb. 
 - It might not sound as good as other synthetizers (e.g. FluidSynth or BASSMIDI)
 
 ## Installation
@@ -52,24 +55,7 @@ The program is divided into parts:
 - [Synthetizer](../../wiki/Synthetizer-Class) - generates the sound using the given preset
 - UI classes - used for user interface, connect to their respective parts (eg. synth, sequencer, keyboard etc)
 
-
-## Currently supported generators
-- Full volume envelope
-- All address offsets
-- Chorus (on channel level)
-- Looping modes
-- FilterFc and FilterQ
-- Modulation envelope for the low-pass filter (attack is linear instead of convex)
-- KeyNumTo ModEnv hold and decay, same for volEnv
-- Overriding root key, keynum and velocity
-- Vibrato LFO (freq, depth and delay) **Including the Mod wheel support!**
-- Scale tuning, fine tune and coarse tune
-- exclusive class (although sometimes broken)
-- pan
-
 #### todo
-- make the worklet system work
 - make the worklet system perform good
-- implement the worklet system
 - port the worklet system to emscripten (maybe)
 - reverb that actually runs well

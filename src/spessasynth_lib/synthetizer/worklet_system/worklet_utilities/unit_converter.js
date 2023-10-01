@@ -3,7 +3,7 @@
 const MIN_TIMECENT = -15000;
 const MAX_TIMECENT = 15000;
 const timecentLookupTable = new Float32Array(MAX_TIMECENT - MIN_TIMECENT + 1);
-for (let i = 1; i < timecentLookupTable.length; i++) {
+for (let i = 0; i < timecentLookupTable.length; i++) {
     const timecents = MIN_TIMECENT + i;
     timecentLookupTable[i] = Math.pow(2, timecents / 1200);
 }

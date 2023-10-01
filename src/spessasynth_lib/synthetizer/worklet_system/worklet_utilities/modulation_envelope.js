@@ -1,8 +1,16 @@
 import { timecentsToSeconds } from './unit_converter.js'
 import { generatorTypes } from '../../../soundfont/chunk/generators.js'
-import { CONVEX_ATTACK } from './volume_envelope.js'
+import { getModulatorCurveValue } from './modulator_curves.js'
+import { modulatorCurveTypes } from '../../../soundfont/chunk/modulators.js'
 
 const PEAK = 1;
+
+// 1000 should be precise enough
+const CONVEX_ATTACK = new Float32Array(1000);
+for (let i = 0; i < CONVEX_ATTACK.length; i++) {
+    // this makes the db linear ( i think
+    CONVEX_ATTACK[i] = getModulatorCurveValue(0, modulatorCurveTypes.convex, i / 1000, 0);
+}
 
 /**
  * @param voice {WorkletVoice}

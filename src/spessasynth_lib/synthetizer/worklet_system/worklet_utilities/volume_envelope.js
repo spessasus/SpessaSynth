@@ -1,16 +1,7 @@
 import { decibelAttenuationToGain, timecentsToSeconds } from './unit_converter.js'
 import { generatorTypes } from '../../../soundfont/chunk/generators.js'
-import { getModulatorCurveValue } from './modulator_curves.js'
-import { modulatorCurveTypes } from '../../../soundfont/chunk/modulators.js'
 
 const DB_SILENCE = 100;
-
-// 1000 should be precise enough
-export const CONVEX_ATTACK = new Float32Array(1000);
-for (let i = 0; i < CONVEX_ATTACK.length; i++) {
-    CONVEX_ATTACK[i] = getModulatorCurveValue(0, modulatorCurveTypes.convex, i / 1000, 0);
-}
-
 /**
  * @param voice {WorkletVoice}
  * @param audioBuffer {Float32Array}
@@ -64,7 +55,12 @@ export function applyVolumeEnvelope(voice, audioBuffer, currentTime, centibelOff
         else if(currentFrameTime < attackEnd)
         {
             // we're in the attack phase
-            dbAttenuation = CONVEX_ATTACK[~~(((attackEnd - currentFrameTime) / attack) * 1000)] * (DB_SILENCE - attenuation) + attenuation;
+            // Special case: linear instead of exponential
+            const elapsed = (attackEnd - currentFrameTime) / attack;
+            audioBuffer[i] = audioBuffer[i] * (1 - elapsed) * decibelAttenuationToGain(attenuation);
+            currentFrameTime += sampleTime;
+            dbAttenuation = elapsed * attenuation;
+            continue;
         }
         else if(currentFrameTime < holdEnd)
         {

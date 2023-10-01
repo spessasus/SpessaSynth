@@ -2,6 +2,7 @@ import {signedInt16, readByte, readBytesAsUintLittleEndian} from "../../utils/by
 import { ShiftableByteArray } from '../../utils/shiftable_array.js';
 import { generatorTypes } from './generators.js'
 import { consoleColors } from '../../utils/other.js'
+import { midiControllers } from '../../midi_parser/midi_message.js'
 
 export const modulatorSources = {
     noController: 0,
@@ -78,14 +79,53 @@ export class Modulator{
     }
 }
 
+function getModSourceEnum(curveType, polarity, direction, isCC, index)
+{
+    return (curveType << 10) | (polarity << 9) | (direction << 8) | (isCC << 7) | index;
+}
+
 export const defaultModulators = [
-    new Modulator({srcEnum: 0x0502, dest: generatorTypes.initialAttenuation, amt: 960, secSrcEnum: 0x0, transform: 0}), // vel to attenuation
-    new Modulator({srcEnum: 0x0081, dest: generatorTypes.vibLfoToPitch, amt: 50, secSrcEnum: 0x0, transform: 0}), // mod to vibrato
-    new Modulator({srcEnum: 0x0587, dest: generatorTypes.initialAttenuation, amt: 960, secSrcEnum: 0x0, transform: 0}), // vol to attenuation
-    new Modulator({srcEnum: 0x020E, dest: generatorTypes.fineTune, amt: 12700, secSrcEnum: 0x0010, transform: 0}), // pitch to tuning
-    new Modulator({srcEnum: 0x028A, dest: generatorTypes.pan, amt: 1000, secSrcEnum: 0x0, transform: 0}), // pan to uhh, pan
-    new Modulator({srcEnum: 0x058B, dest: generatorTypes.initialAttenuation, amt: 960, secSrcEnum: 0x0, transform: 0}) // expression to attenuation
-]
+    // vel to attenuation
+    new Modulator({srcEnum: 0x0502, dest: generatorTypes.initialAttenuation, amt: 960, secSrcEnum: 0x0, transform: 0}),
+    // mod wheel to vibrato
+    new Modulator({srcEnum: 0x0081, dest: generatorTypes.vibLfoToPitch, amt: 50, secSrcEnum: 0x0, transform: 0}),
+    // vol to attenuation
+    new Modulator({srcEnum: 0x0587, dest: generatorTypes.initialAttenuation, amt: 1440, secSrcEnum: 0x0, transform: 0}),
+    // pitch wheel to tuning
+    new Modulator({srcEnum: 0x020E, dest: generatorTypes.fineTune, amt: 12700, secSrcEnum: 0x0010, transform: 0}),
+    // pan to uhh, pan
+    new Modulator({srcEnum: 0x028A, dest: generatorTypes.pan, amt: 1000, secSrcEnum: 0x0, transform: 0}),
+    // expression to attenuation
+    new Modulator({srcEnum: 0x058B, dest: generatorTypes.initialAttenuation, amt: 1440, secSrcEnum: 0x0, transform: 0}),
+
+    // custom modulators heck yeah
+    // cc 92 (tremolo) to modLFO volume
+    new Modulator({
+        srcEnum: getModSourceEnum(modulatorCurveTypes.linear, 0, 0, 1, midiControllers.effects2Depth), /*linear forward unipolar cc 92 */
+        dest: generatorTypes.modLfoToVolume,
+        amt: 24,
+        secSrcEnum: 0x0, // no controller
+        transform: 0
+    }),
+
+    // cc 72 (release time) to volEnv release
+    new Modulator({
+        srcEnum: getModSourceEnum(modulatorCurveTypes.linear, 1, 0, 1, midiControllers.releaseTime), // linear forward bipolar cc 72
+        dest: generatorTypes.releaseVolEnv,
+        amt: 1200,
+        secSrcEnum: 0x0, // no controller
+        transform: 0
+    }),
+
+    // cc 74 (brightness) to filterFc
+    new Modulator({
+        srcEnum: getModSourceEnum(modulatorCurveTypes.linear, 1, 0, 1, midiControllers.brightness), // linear forwards bipolar cc 74
+        dest: generatorTypes.initialFilterFc,
+        amt: 5000,
+        secSrcEnum: 0x0, // no controller
+        transform: 0
+    })
+];
 
 console.log("%cDefault Modulators:", consoleColors.recognized, defaultModulators)
 

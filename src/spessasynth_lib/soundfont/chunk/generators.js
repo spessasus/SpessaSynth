@@ -109,7 +109,7 @@ generatorLimits[generatorTypes.attackModEnv] = {min: -12000, max: 8000, def: -12
 generatorLimits[generatorTypes.holdModEnv] = {min: -12000, max: 5000, def: -12000};
 generatorLimits[generatorTypes.decayModEnv] = {min: -12000, max: 8000, def: -12000};
 generatorLimits[generatorTypes.sustainModEnv] = {min: 0, max: 1000, def: 0};
-generatorLimits[generatorTypes.releaseModEnv] = {min: -12000, max: 8000, def: -7200};
+generatorLimits[generatorTypes.releaseModEnv] = {min: -12000, max: 8000, def: -12000};
 // keynum to mod env
 generatorLimits[generatorTypes.keyNumToModEnvHold] = {min: -1200, max: 1200, def: 0};
 generatorLimits[generatorTypes.keyNumToModEnvDecay] = {min: -1200, max: 1200, def: 0};

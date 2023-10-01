@@ -136,10 +136,6 @@ export class WorkletChannel {
             this.cachedWorkletVoices.push([]);
         }
 
-
-        // contains all the midi controllers and their values (and the source enum controller palettes
-        this.midiControllers = new Int16Array(146); // 127 controllers + sf2 spec 8.2.1 + other things
-
         this.preset = defaultPreset;
         this.bank = this.preset.bank;
         this.channelVolume = 1;
@@ -164,6 +160,7 @@ export class WorkletChannel {
         this.gainController = new GainNode(this.ctx, {
             gain: CHANNEL_GAIN
         });
+        this.muted = false;
 
         /**
          * @type {Set<number>}
@@ -218,10 +215,12 @@ export class WorkletChannel {
     muteChannel()
     {
         this.gainController.gain.value = 0;
+        this.muted = true;
     }
 
     unmuteChannel()
     {
+        this.muted = false;
         this.gainController.gain.value = CHANNEL_GAIN;
     }
 
@@ -233,7 +232,6 @@ export class WorkletChannel {
     {
         switch (cc) {
             default:
-                this.midiControllers[cc] = val << 7;
                 this.post({
                     messageType: workletMessageType.ccChange,
                     messageData: [cc, val << 7]
@@ -444,6 +442,11 @@ export class WorkletChannel {
             return;
         }
 
+        if(this.muted)
+        {
+            return;
+        }
+
         let workletVoices = this.getWorkletVoices(midiNote, velocity);
 
         if(debug)
@@ -488,7 +491,6 @@ export class WorkletChannel {
     setPitchBend(bendMSB, bendLSB) {
         // bend all the notes
         this.pitchBend = (bendLSB | (bendMSB << 7)) ;
-        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel] = this.pitchBend;
         this.post({
             messageType: workletMessageType.ccChange,
             messageData: [NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel, this.pitchBend]
@@ -640,7 +642,6 @@ export class WorkletChannel {
                     case 0x0000:
                         this.channelPitchBendRange = dataValue;
                         console.log(`Channel ${this.channelNumber} bend range. Semitones:`, dataValue);
-                        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] = this.channelPitchBendRange << 7;
                         this.post({
                             messageType: workletMessageType.ccChange,
                             messageData: [NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange, this.channelPitchBendRange << 7]
@@ -652,7 +653,6 @@ export class WorkletChannel {
                         // semitones
                         this.channelTuningSemitones = dataValue - 64;
                         console.log("tuning", this.channelTuningSemitones, "for", this.channelNumber);
-                        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning] = (this.channelTuningSemitones) * 100;
                         this.post({
                             messageType: workletMessageType.ccChange,
                             messageData: [NON_CC_INDEX_OFFSET + modulatorSources.channelTuning, (this.channelTuningSemitones) * 100]
@@ -683,7 +683,6 @@ export class WorkletChannel {
             return;
         }
         this.channelTranspose = semitones;
-        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTranspose] = this.channelTranspose * 100;
         this.post({
             messageType: workletMessageType.ccChange,
             messageData: [NON_CC_INDEX_OFFSET + modulatorSources.channelTranspose, this.channelTranspose * 100]

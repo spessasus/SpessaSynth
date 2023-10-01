@@ -15,7 +15,7 @@ import { applyVolumeEnvelope } from './worklet_utilities/volume_envelope.js'
 import { applyLowpassFilter } from './worklet_utilities/lowpass_filter.js'
 import { getModEnvValue } from './worklet_utilities/modulation_envelope.js'
 
-export const MIN_AUDIBLE_GAIN = 0.0001;
+const CHANNEL_CAP = 400;
 
 const CONTROLLER_TABLE_SIZE = 147;
 
@@ -26,6 +26,8 @@ const resetArray = new Int16Array(146);
 resetArray[midiControllers.mainVolume] = 100 << 7;
 resetArray[midiControllers.expressionController] = 127 << 7;
 resetArray[midiControllers.pan] = 64 << 7;
+resetArray[midiControllers.releaseTime] = 64 << 7;
+resetArray[midiControllers.brightness] = 64 << 7;
 
 resetArray[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel] = 8192;
 resetArray[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] = 2 << 7;
@@ -88,8 +90,17 @@ class ChannelProcessor extends AudioWorkletProcessor {
                     break;
 
                 case workletMessageType.killNote:
-                    this.voices = this.voices.filter(v => v.midiNote !== data);
-                    this.port.postMessage(this.voices.length);
+                    this.voices.forEach(v => {
+                        if(v.midiNote !== data)
+                        {
+                            return;
+                        }
+                        v.generators[generatorTypes.releaseVolEnv] = -7200;
+                        computeModulators(v, this.midiControllers);
+                        this.releaseVoice(v);
+                    });
+                    // this.voices = this.voices.filter(v => v.midiNote !== data);
+                    // this.port.postMessage(this.voices.length);
                     break;
 
                 case workletMessageType.noteOn:
@@ -120,6 +131,10 @@ class ChannelProcessor extends AudioWorkletProcessor {
                         }
                     })
                     this.voices.push(...data);
+                    if(this.voices.length > CHANNEL_CAP)
+                    {
+                        this.voices.splice(0, this.voices.length - CHANNEL_CAP);
+                    }
                     this.port.postMessage(this.voices.length);
                     break;
 
@@ -212,6 +227,13 @@ class ChannelProcessor extends AudioWorkletProcessor {
         if(!this.samples[voice.sample.sampleID])
         {
             voice.finished = true;
+            return;
+        }
+
+
+        // if the initial attenuation is more than 100dB, skip the voice (it's silent anyways)
+        if(voice.modulatedGenerators[generatorTypes.initialAttenuation] > 2500)
+        {
             return;
         }
 

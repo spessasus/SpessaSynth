@@ -107,10 +107,6 @@ export class Sequencer {
 
     set currentTime(time)
     {
-        if(this.onTimeChange)
-        {
-            this.onTimeChange(time);
-        }
         if(time < 0 || time > this.duration)
         {
             time = 0;
@@ -125,6 +121,10 @@ export class Sequencer {
         {
             this.renderer.noteStartTime = this.absoluteStartTime;
             this.resetRendererIndexes();
+        }
+        if(this.onTimeChange)
+        {
+            this.onTimeChange(time);
         }
     }
 

@@ -7,7 +7,7 @@ import { WorkletChannel } from './worklet_system/worklet_channel.js'
 import { EventHandler } from '../utils/event_handler.js'
 
 // i mean come on
-const VOICES_CAP = 2000;
+const VOICES_CAP = 1300;
 
 export const DEFAULT_GAIN = 0.5;
 export const DEFAULT_PERCUSSION = 9;
@@ -53,8 +53,11 @@ export class Synthetizer {
         this.defaultPreset = this.soundFont.getPreset(0, 0);
         this.percussionPreset = this.soundFont.getPreset(128, 0);
 
-        // create 16 channels
-        this.midiChannels = [...Array(16).keys()].map(j => new MidiChannel(this.volumeController, this.defaultPreset, j + 1, false));
+        /**
+         *  create 16 channels
+         * @type {WorkletChannel[]|MidiChannel[]}
+         */
+        this.midiChannels = [...Array(16).keys()].map(j => new WorkletChannel(this.volumeController, this.defaultPreset, j + 1, false));
 
         // change percussion channel to the percussion preset
         this.midiChannels[DEFAULT_PERCUSSION].percussionChannel = true;
