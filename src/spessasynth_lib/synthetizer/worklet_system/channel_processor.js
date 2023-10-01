@@ -16,10 +16,9 @@ import { applyLowpassFilter } from './worklet_utilities/lowpass_filter.js'
 import { getModEnvValue } from './worklet_utilities/modulation_envelope.js'
 
 const CHANNEL_CAP = 400;
-
 const CONTROLLER_TABLE_SIZE = 147;
-
 const BLOCK_SIZE = 128;
+const MIN_TIMECENTS_INSTANT_ATTACK = -22000; // delay + attack is less than this, instantly jump to peak
 
 // an array with preset default values so we can quickly use set() to reset the controllers
 const resetArray = new Int16Array(146);
@@ -43,8 +42,6 @@ class ChannelProcessor extends AudioWorkletProcessor {
          * @type {Int16Array}
          */
         this.midiControllers = new Int16Array(CONTROLLER_TABLE_SIZE);
-
-        this.emptyOutBuffer = new Float32Array(BLOCK_SIZE).buffer;
 
         /**
          * @type {Object<number, Float32Array>}
@@ -121,7 +118,7 @@ class ChannelProcessor extends AudioWorkletProcessor {
                         computeModulators(voice, this.midiControllers);
 
                         // if both delay + attack are less than -23999, instantly ramp to attenuation (attack and delay are essentially 0)
-                        if(voice.modulatedGenerators[generatorTypes.delayVolEnv] + voice.modulatedGenerators[generatorTypes.attackVolEnv] < -23999)
+                        if(voice.modulatedGenerators[generatorTypes.delayVolEnv] + voice.modulatedGenerators[generatorTypes.attackVolEnv] < MIN_TIMECENTS_INSTANT_ATTACK)
                         {
                             voice.currentAttenuationDb = voice.modulatedGenerators[generatorTypes.initialAttenuation] / 25;
                         }
@@ -309,7 +306,7 @@ class ChannelProcessor extends AudioWorkletProcessor {
 
 
         // SYNTHESIS
-        const bufferOut = new Float32Array(this.emptyOutBuffer);
+        const bufferOut = new Float32Array(BLOCK_SIZE);
 
         // wavetable oscillator
         getOscillatorData(voice, this.samples[voice.sample.sampleID], bufferOut);
