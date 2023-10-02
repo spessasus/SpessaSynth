@@ -45,7 +45,7 @@ export class Manager {
             try {
                 await context.audioWorklet.addModule("/spessasynth_lib/synthetizer/worklet_system/channel_processor.js");
             } catch (e) {
-                await context.audioWorklet.addModule("src/spessasynth_lib/synthetizer/worklet_system/channel_processor.js");
+                await context.audioWorklet.addModule("/SpessaSynth/src/spessasynth_lib/synthetizer/worklet_system/channel_processor.js");
             }
         }
         // set up soundfont

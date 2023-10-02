@@ -17,17 +17,16 @@ import { getModEnvValue } from './worklet_utilities/modulation_envelope.js'
 
 const CHANNEL_CAP = 400;
 const CONTROLLER_TABLE_SIZE = 147;
-const BLOCK_SIZE = 128;
 const MIN_TIMECENTS_INSTANT_ATTACK = -22000; // delay + attack is less than this, instantly jump to peak
 
 // an array with preset default values so we can quickly use set() to reset the controllers
-const resetArray = new Int16Array(146);
+const resetArray = new Int16Array(CONTROLLER_TABLE_SIZE);
+// default values
 resetArray[midiControllers.mainVolume] = 100 << 7;
 resetArray[midiControllers.expressionController] = 127 << 7;
 resetArray[midiControllers.pan] = 64 << 7;
 resetArray[midiControllers.releaseTime] = 64 << 7;
 resetArray[midiControllers.brightness] = 64 << 7;
-
 resetArray[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel] = 8192;
 resetArray[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] = 2 << 7;
 resetArray[NON_CC_INDEX_OFFSET + modulatorSources.channelPressure] = 127 << 7;
@@ -92,7 +91,7 @@ class ChannelProcessor extends AudioWorkletProcessor {
                         {
                             return;
                         }
-                        v.generators[generatorTypes.releaseVolEnv] = -7200;
+                        v.generators[generatorTypes.releaseVolEnv] = -12000; // set release to be very short
                         computeModulators(v, this.midiControllers);
                         this.releaseVoice(v);
                     });
@@ -117,7 +116,7 @@ class ChannelProcessor extends AudioWorkletProcessor {
                         }
                         computeModulators(voice, this.midiControllers);
 
-                        // if both delay + attack are less than -23999, instantly ramp to attenuation (attack and delay are essentially 0)
+                        // if both delay + attack are less than -22000, instantly ramp to attenuation (attack and delay are essentially 0)
                         if(voice.modulatedGenerators[generatorTypes.delayVolEnv] + voice.modulatedGenerators[generatorTypes.attackVolEnv] < MIN_TIMECENTS_INSTANT_ATTACK)
                         {
                             voice.currentAttenuationDb = voice.modulatedGenerators[generatorTypes.initialAttenuation] / 25;
@@ -306,7 +305,7 @@ class ChannelProcessor extends AudioWorkletProcessor {
 
 
         // SYNTHESIS
-        const bufferOut = new Float32Array(BLOCK_SIZE);
+        const bufferOut = new Float32Array(outputLeft.length);
 
         // wavetable oscillator
         getOscillatorData(voice, this.samples[voice.sample.sampleID], bufferOut);
@@ -319,47 +318,6 @@ class ChannelProcessor extends AudioWorkletProcessor {
 
         // pan the voice and write out
         panVoice(pan, bufferOut, outputLeft, outputRight);
-
-        // apply the volEnv
-        // for (let outputSampleIndex = 0; outputSampleIndex < outputLeft.length; outputSampleIndex++) {
-        //
-        //     // Read the sample
-        //     let sample = getOscillatorValue(
-        //         voice,
-        //         this.samples[voice.sample.sampleID],
-        //         playbackRate
-        //     );
-        //
-        //     // apply the volenv
-        //     if(voice.isInRelease)
-        //     {
-        //         voice.volEnvGain = attenuation * getVolEnvReleaseMultiplier(release, actualTime - voice.releaseStartTime);
-        //     }
-        //     else {
-        //         voice.currentGain = getVolumeEnvelopeValue(
-        //             delay,
-        //             attack,
-        //             attenuation,
-        //             hold,
-        //             sustain,
-        //             decay,
-        //             voice.startTime,
-        //             actualTime);
-        //
-        //         voice.volEnvGain = voice.currentGain;
-        //     }
-        //     if(voice.volEnvGain < 0)
-        //     {
-        //         voice.finished = true;
-        //         return;
-        //     }
-        //
-        //     sample *= voice.volEnvGain;
-        //
-        //
-        //
-        //     actualTime += this.sampleTime;
-        // }
     }
 
     resetControllers()
