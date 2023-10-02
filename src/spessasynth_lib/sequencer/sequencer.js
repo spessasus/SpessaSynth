@@ -489,13 +489,19 @@ export class Sequencer {
             ++this.eventIndex;
 
             // loop
-            if((this.eventIndex >= this.events.length || this.midiData.loop.end <= event.ticks) && this.loop)
+            if((this.midiData.loop.end <= event.ticks) && this.loop)
             {
                 this.setTimeTicks(this.midiData.loop.start);
                 return;
             }
-            else if(this.eventIndex >= this.events.length || current > this.duration + 1)
+            // if song has ended
+            else if(this.eventIndex >= this.events.length || current > this.duration + 0.1)
             {
+                if(this.loop)
+                {
+                    this.setTimeTicks(this.midiData.loop.start);
+                    return;
+                }
                 this.pause();
                 // if(this.loop) {
                 //     this.setTimeTicks(this.midiData.loop.start);

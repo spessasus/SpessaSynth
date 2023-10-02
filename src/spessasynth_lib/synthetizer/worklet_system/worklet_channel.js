@@ -86,12 +86,13 @@ export const workletMessageType = {
     ccReset: 5,
     setChannelVibrato: 6,
     clearCache: 7,
-    stopAll: 8
+    stopAll: 8,
+    killNotes: 9
 };
 
 /**
  * @typedef {{
- *     messageType: 0|1|2|3|4|5|6|7|8,
+ *     messageType: 0|1|2|3|4|5|6|7|8|9,
  *     messageData: (
  *     number[]
  *     |WorkletVoice[]
@@ -103,13 +104,14 @@ export const workletMessageType = {
  * Message types:
  * 0 - noteOff            -> midiNote<number>
  * 1 - noteOn             -> [midiNote<number>, ...generators]
- * 2 - controller change         -> [ccNumber<number>, ccValue<number>]
- * 3 - sample dump -> {sampleData: Float32Array, sampleID: number}
+ * 2 - controller change  -> [ccNumber<number>, ccValue<number>]
+ * 3 - sample dump        -> {sampleData: Float32Array, sampleID: number}
  * 4 - note off instantly -> midiNote<number>
- * 5 - controllers reset
- * 6 - channel vibrato -> {frequencyHz: number, depthCents: number, delaySeconds: number}
- * 7 - clear cached samples
- * 8 - stop all notes force: number (0 false, 1 true)
+ * 5 - controllers reset     (no data)
+ * 6 - channel vibrato    -> {frequencyHz: number, depthCents: number, delaySeconds: number}
+ * 7 - clear cached samples  (no data)
+ * 8 - stop all notes     -> force<number> (0 false, 1 true)
+ * 9 - kill notes         -> amount<number>
  */
 
 
@@ -186,6 +188,18 @@ export class WorkletChannel {
          */
         this.lockPreset = false;
         this.lockVibrato = false;
+    }
+
+    /**
+     * Kills the given amount of notes
+     * @param amount {number}
+     */
+    requestNoteRemoval(amount)
+    {
+        this.post({
+            messageType: workletMessageType.killNotes,
+            messageData: amount
+        });
     }
 
     /**
@@ -430,6 +444,7 @@ export class WorkletChannel {
      * @param midiNote {number} 0-127
      * @param velocity {number} 0-127
      * @param debug {boolean}
+     * @returns {number} the amount of voices the note generates
      */
     playNote(midiNote, velocity, debug = false) {
         if(!velocity)
@@ -439,12 +454,12 @@ export class WorkletChannel {
         if (velocity === 0) {
             // stop if velocity 0
             this.stopNote(midiNote);
-            return;
+            return 0;
         }
 
         if(this.muted)
         {
-            return;
+            return 0;
         }
 
         let workletVoices = this.getWorkletVoices(midiNote, velocity);
@@ -458,6 +473,7 @@ export class WorkletChannel {
             messageType: workletMessageType.noteOn,
             messageData: workletVoices
         });
+        return workletVoices.length;
     }
 
     /**
@@ -535,8 +551,8 @@ export class WorkletChannel {
         {
             if(this._vibrato.delay === 0 && this._vibrato.rate === 0 && this._vibrato.depth === 0)
             {
-                this._vibrato.depth = 30;
-                this._vibrato.rate = 6;
+                this._vibrato.depth = 50;
+                this._vibrato.rate = 8;
                 this._vibrato.delay = 0.6;
             }
         }

@@ -59,7 +59,7 @@ export function applyVolumeEnvelope(voice, audioBuffer, currentTime, centibelOff
             const elapsed = (attackEnd - currentFrameTime) / attack;
             audioBuffer[i] = audioBuffer[i] * (1 - elapsed) * decibelAttenuationToGain(attenuation);
             currentFrameTime += sampleTime;
-            dbAttenuation = elapsed * attenuation;
+            dbAttenuation = elapsed * (attenuation - DB_SILENCE) + DB_SILENCE;
             continue;
         }
         else if(currentFrameTime < holdEnd)

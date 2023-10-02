@@ -106,7 +106,12 @@ export const defaultModulators = [
     // pan to uhh, pan
     new Modulator({srcEnum: 0x028A, dest: generatorTypes.pan, amt: 1000, secSrcEnum: 0x0, transform: 0}),
     // expression to attenuation
-    new Modulator({srcEnum: 0x058B, dest: generatorTypes.initialAttenuation, amt: 960, secSrcEnum: 0x0, transform: 0}),
+    new Modulator({
+        srcEnum: getModSourceEnum(modulatorCurveTypes.concave, 0, 1, 1, midiControllers.expressionController),
+        dest: generatorTypes.initialAttenuation,
+        amt: 960,
+        secSrcEnum: 0x0,
+        transform: 0}),
 
     // custom modulators heck yeah
     // cc 92 (tremolo) to modLFO volume

@@ -170,6 +170,11 @@ class ChannelProcessor extends AudioWorkletProcessor {
                         });
                     }
                     break;
+
+                case workletMessageType.killNotes:
+                    this.voices.splice(0, data); // starting from 0 (earliest
+                    this.port.postMessage(this.voices.length);
+                    break;
             }
         }
     }

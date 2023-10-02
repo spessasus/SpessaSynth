@@ -6,8 +6,7 @@ import { midiControllers } from '../midi_parser/midi_message.js'
 import { WorkletChannel } from './worklet_system/worklet_channel.js'
 import { EventHandler } from '../utils/event_handler.js'
 
-// i mean come on
-const VOICES_CAP = 1300;
+const VOICES_CAP = 450;
 
 export const DEFAULT_GAIN = 0.5;
 export const DEFAULT_PERCUSSION = 9;
@@ -80,11 +79,6 @@ export class Synthetizer {
             return;
         }
 
-        if(this.voicesAmount > this.voiceCap)
-        {
-            return;
-        }
-
         if(this.highPerformanceMode && this.voicesAmount > 200 && velocity < 40)
         {
             return;
@@ -98,6 +92,16 @@ export class Synthetizer {
 
         let chan = this.midiChannels[channel];
         chan.playNote(midiNote, velocity, enableDebugging);
+        const newVoicesAmount = this.voicesAmount;
+        if(newVoicesAmount > this.voiceCap)
+        {
+            // find the non percussion channel with the largest amount of voices
+            const channel = this.midiChannels.reduce((prev, current) => {
+                return (prev && prev.voicesAmount > current.voicesAmount && !prev.percussionChannel) ? prev : current
+            });
+            channel.requestNoteRemoval(newVoicesAmount - this.voiceCap);
+        }
+
         this.eventHandler.callEvent("noteon", {
             midiNote: midiNote,
             channel: channel,
