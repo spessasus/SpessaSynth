@@ -108,7 +108,7 @@ class ChannelProcessor extends AudioWorkletProcessor {
                                 if(v.generators[generatorTypes.exclusiveClass] === exclusive)
                                 {
                                     this.releaseVoice(v);
-                                    v.generators[generatorTypes.releaseVolEnv] = -12000; // make the release nearly instant
+                                    v.generators[generatorTypes.releaseVolEnv] = -7200; // make the release nearly instant
                                     computeModulators(v, this.midiControllers);
                                 }
                             })

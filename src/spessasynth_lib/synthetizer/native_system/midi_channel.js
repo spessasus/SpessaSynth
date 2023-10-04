@@ -235,17 +235,18 @@ export class MidiChannel {
      * @param midiNote {number} 0-127
      * @param velocity {number} 0-127
      * @param debugInfo {boolean} for debugging set to true
+     * @returns {number} the amount of voices the note adds
      */
     playNote(midiNote, velocity, debugInfo = false) {
         if (velocity === 0) {
             // stop if velocity 0
             this.stopNote(midiNote);
-            return;
+            return 0;
         }
 
         if(this.defaultGain === 0)
         {
-            return;
+            return 0;
         }
 
         this.notes.add(midiNote);
@@ -283,6 +284,7 @@ export class MidiChannel {
         }
 
         this.playingNotes.push(note);
+        return note.sampleNodes.length;
     }
 
     setPitchBend(bendMSB, bendLSB) {

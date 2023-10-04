@@ -91,8 +91,8 @@ export class Synthetizer {
         }
 
         let chan = this.midiChannels[channel];
-        chan.playNote(midiNote, velocity, enableDebugging);
-        const newVoicesAmount = this.voicesAmount;
+        const voicesAmountBefore = this.voicesAmount;
+        const newVoicesAmount = voicesAmountBefore + chan.playNote(midiNote, velocity, enableDebugging);
         if(newVoicesAmount > this.voiceCap)
         {
             // find the non percussion channel with the largest amount of voices

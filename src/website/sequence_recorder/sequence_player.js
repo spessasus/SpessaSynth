@@ -39,6 +39,13 @@ export class SequencePlayer
             }
             event = this.recorder.events[this.eventIndex];
         }
+
+        if(this.eventIndex >= this.recorder.events.length)
+        {
+            this.synth.controllerChange(this.recorder.targetChannel, midiControllers.allNotesOff, 0);
+            this.eventIndex = 0;
+            this.startTime = this.synth.currentTime;
+        }
     }
 
     get currentTime()

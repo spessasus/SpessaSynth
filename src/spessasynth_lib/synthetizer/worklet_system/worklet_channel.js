@@ -444,7 +444,7 @@ export class WorkletChannel {
      * @param midiNote {number} 0-127
      * @param velocity {number} 0-127
      * @param debug {boolean}
-     * @returns {number} the amount of voices the note generates
+     * @returns {number} the number of voices that this note adds
      */
     playNote(midiNote, velocity, debug = false) {
         if(!velocity)
@@ -466,7 +466,7 @@ export class WorkletChannel {
 
         if(debug)
         {
-            console.log(workletVoices)
+            console.table(workletVoices)
         }
 
         this.post({

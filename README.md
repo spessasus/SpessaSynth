@@ -13,7 +13,7 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 - SoundFont2 Generator Support
 - SoundFont2 Modulator Support
 - A few custom modulators to support some additional controllers (see `modulators.js`)
-- Written using AudioWorklets
+- Written using AudioWorklets (Firefox and Chrome both work perfectly)
 - MIDI Controller Support (Currently supported controllers can be found [here](../../wiki/Synthetizer-Class#supported-controllers))
 - Supports some Roland and Yamaha XG sysex messages
 - High performance mode for playing black MIDIs (Don't go too crazy with the amount of notes though)
@@ -33,7 +33,7 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 - It might not sound as good as other synthetizers (e.g. FluidSynth or BASSMIDI)
 
 ## Installation
-***Chromium based browser is highly recommended, unless you're loading a large (>4GB) SoundFont (then use Firefox, because chromium has a 4GB memory limit)***
+***When you're loading a large (>4GB) SoundFont, use Firefox because chromium has a 4GB memory limit***
 
 ### [Recommended and tested SoundFont](https://musical-artifacts.com/artifacts/1176)
 

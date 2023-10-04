@@ -18,7 +18,8 @@ export function applyLowpassFilter(voice, outputBuffer, cutoffCents)
         voice.filter.cutoffCents = cutoffCents;
         voice.filter.reasonanceCb = voice.modulatedGenerators[generatorTypes.initialFilterQ];
         voice.filter.cutoffHz = absCentsToHz(cutoffCents);
-        voice.filter.reasonanceGain = decibelAttenuationToGain(-1 * (voice.filter.reasonanceCb / 10)); // -1 because it's attenuation that we're inverting
+        //                                                                                                      \/ adjust the filterQ (fluid_iir_filter.h line 204)
+        voice.filter.reasonanceGain = decibelAttenuationToGain(-1 * ((voice.filter.reasonanceCb / 10) - 3.01)); // -1 because it's attenuation that we're inverting
         calculateCoefficients(voice);
     }
 
