@@ -331,6 +331,7 @@ class ChannelProcessor extends AudioWorkletProcessor {
         const transpose = this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTranspose];
         this.midiControllers.set(resetArray);
         this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTranspose] = transpose;
+        this.channelVibrato = {rate: 0, depth: 0, delay: 0};
     }
 
 }

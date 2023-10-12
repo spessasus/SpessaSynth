@@ -1,19 +1,26 @@
 #synthetizer_controls
 {
     --voice-meter-height: 2.5em;
-    flex: 1;
 }
 
 .wrapper{
     height: 80%;
     padding: 2%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
 }
 
 .controls_wrapper{
-    display: flex;
+    display: none;
     flex-wrap: wrap;
     align-items: stretch;
     justify-content: center;
+    margin: 1em;
+}
+
+.controls_wrapper_show{
+    display: flex !important;
 }
 
 .controller_element
@@ -167,6 +174,7 @@
     min-height: var(--voice-meter-height);
     white-space: nowrap;
     color: var(--font-color);
+    flex: 1;
 }
 .synthui_button:hover
 {

@@ -476,13 +476,22 @@ export class Sequencer {
      */
     _processTick()
     {
-        if(this.eventIndex >= this.events.length)
+        let current = this.currentTime;
+        if(this.eventIndex >= this.events.length || current > this.duration + 0.1)
         {
+            if(this.loop)
+            {
+                this.setTimeTicks(this.midiData.loop.start);
+                return;
+            }
             this.pause();
+            if(this.songs.length > 1)
+            {
+                this.nextSong();
+            }
             return;
         }
         let event = this.events[this.eventIndex];
-        let current = this.currentTime
         while(this.playedTime <= current)
         {
             this._processEvent(event);
@@ -495,7 +504,8 @@ export class Sequencer {
                 return;
             }
             // if song has ended
-            else if(this.eventIndex >= this.events.length || current > this.duration + 0.1)
+            else if(this.eventIndex >= this.events.length ||
+                current > this.duration + 0.1)
             {
                 if(this.loop)
                 {
@@ -503,16 +513,10 @@ export class Sequencer {
                     return;
                 }
                 this.pause();
-                // if(this.loop) {
-                //     this.setTimeTicks(this.midiData.loop.start);
-                // }
-                // else
-                // {
-                    if(this.songs.length > 1)
-                    {
-                        this.nextSong();
-                    }
-                // }
+                if(this.songs.length > 1)
+                {
+                    this.nextSong();
+                }
                 return;
             }
 

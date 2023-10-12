@@ -30,8 +30,12 @@ export class SynthetizerUI
 
     createMainSynthController()
     {
+        // controls wrapper
+        let controlsWrapper = document.createElement("div");
+        controlsWrapper.classList.add("controls_wrapper");
+
         /**
-         * VoiceGroup meter
+         * Voice meter
          * @type {Meter}
          */
         this.voiceMeter = new Meter("#206", "Voices: ", 0, this.synth.voiceCap);
@@ -61,9 +65,9 @@ export class SynthetizerUI
          * @type {Meter}
          */
         this.transposeController = new Meter("#206", "Transpose: ", -12, 12, true, v => {
-            // use roland gs master pan
-            this.synth.transpose(Math.round(v));
-            this.transposeController.update(Math.round(v))
+            // limit to half semitone precision
+            this.synth.transpose(Math.round(v * 2 ) / 2);
+            this.transposeController.update(Math.round(v * 2) / 2)
         });
         this.transposeController.bar.classList.add("voice_meter_bar_smooth");
         this.transposeController.update(0);
@@ -88,7 +92,10 @@ export class SynthetizerUI
         let showControllerButton = document.createElement("button");
         showControllerButton.innerText = "Synthesizer controller";
         showControllerButton.classList.add("synthui_button");
-        showControllerButton.onclick = () => controller.classList.toggle("synthui_controller_show");
+        showControllerButton.onclick = () => {
+            controller.classList.toggle("synthui_controller_show");
+            controlsWrapper.classList.toggle("controls_wrapper_show");
+        }
 
         // black midi mode toggle
         const highPerfToggle = document.createElement("button");
@@ -124,22 +131,19 @@ export class SynthetizerUI
 
         this.recordingButton = recordingButton;
 
-        // controls wrapper
-        let controlsWrapper = document.createElement("div");
-        controlsWrapper.classList.add("controls_wrapper")
-
-        controlsWrapper.appendChild(this.voiceMeter.div);
+        // meters
         controlsWrapper.appendChild(this.volumeController.div);
         controlsWrapper.appendChild(this.panController.div);
         controlsWrapper.appendChild(this.transposeController.div);
-
+        // buttons
         controlsWrapper.appendChild(midiPanicButton);
         controlsWrapper.appendChild(resetCCButton);
         controlsWrapper.appendChild(recordingButton);
-        controlsWrapper.appendChild(showControllerButton);
         controlsWrapper.appendChild(highPerfToggle);
-
-        this.uiDiv.appendChild(controlsWrapper);
+        // main synth div
+        this.uiDiv.appendChild(this.voiceMeter.div);
+        this.uiDiv.appendChild(showControllerButton);
+        controller.appendChild(controlsWrapper);
     }
 
     /**
@@ -166,10 +170,6 @@ export class SynthetizerUI
     createChannelControllers()
     {
         const dropdownDiv = this.uiDiv.getElementsByClassName("synthui_controller")[0];
-
-        const title = document.createElement("h4");
-        title.innerText = "Synthetizer controller";
-        dropdownDiv.appendChild(title);
 
         /**
          * @type {ChannelController[]}
@@ -313,7 +313,7 @@ export class SynthetizerUI
         const expression = new Meter(this.channelColors[channelNumber],
             "Expression: ",
             0,
-            256,
+            127,
             true,
             val => {
                 this.synth.controllerChange(channelNumber, midiControllers.expressionController, val);
@@ -439,7 +439,9 @@ export class SynthetizerUI
             {
                 case "s":
                     e.preventDefault();
-                    this.uiDiv.getElementsByClassName("synthui_controller")[0].classList.toggle("synthui_controller_show");
+                    const controller = this.uiDiv.getElementsByClassName("synthui_controller")[0];
+                    controller.classList.toggle("synthui_controller_show");
+                    controller.getElementsByClassName("controls_wrapper")[0].classList.toggle("controls_wrapper_show");
                     break;
 
                 case "b":

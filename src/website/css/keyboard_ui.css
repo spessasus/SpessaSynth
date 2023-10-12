@@ -1,7 +1,3 @@
-#keyboard_selector{
-    flex: 1;
-}
-
 #keyboard_selector select option
 {
     background-color: var(--top-color);

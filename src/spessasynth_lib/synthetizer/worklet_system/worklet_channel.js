@@ -211,6 +211,7 @@ export class WorkletChannel {
             messageType: workletMessageType.setChannelVibrato,
             messageData: value
         });
+        this._vibrato = value;
     }
 
     get vibrato()

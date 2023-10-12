@@ -181,6 +181,10 @@ export class MidiKeyboard
         this.handler = handler;
         handler.createMIDIDeviceHandler().then(() => {
             // input selector
+            if(handler.inputs.length < 1)
+            {
+                return;
+            }
             const inputSelector = document.createElement("select");
             // no device
             inputSelector.innerHTML = "<option value='-1' selected>No input selected</option>";
@@ -237,6 +241,14 @@ export class MidiKeyboard
 
     createMIDIOutputSelector(seq)
     {
+        if(!this.handler.outputs)
+        {
+            return;
+        }
+        if(this.handler.inputs.length < 1)
+        {
+            return;
+        }
         // output selector
         const outputSelector = document.createElement("select");
         // no device
