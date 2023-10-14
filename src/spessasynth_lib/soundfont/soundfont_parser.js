@@ -217,10 +217,13 @@ export class SoundFont2
                     preset = this.presets.find(p => p.bank === 128);
                 }
             }
+            if(preset) {
+                console.info(`%cPreset at bank ${bankNr} not found. Replaced with ${preset.presetName}`, consoleColors.warn);
+            }
         }
         if(!preset)
         {
-            console.warn("Preset not found. Defaulting to:", this.presets[0].presetName);
+            console.warn(`Preset ${presetNr} not found. Defaulting to`, this.presets[0].presetName);
             preset = this.presets[0];
         }
         return preset;

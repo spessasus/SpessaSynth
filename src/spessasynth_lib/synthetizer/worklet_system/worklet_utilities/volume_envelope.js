@@ -29,11 +29,36 @@ export function applyVolumeEnvelope(voice, audioBuffer, currentTime, centibelOff
 
     if(voice.isInRelease)
     {
+        // calculate the db attenuation at the time of release
+        let dbAttenuation;
+        if(currentTime < delayEnd)
+        {
+            // we're in the delay phase (skip to peak)
+            dbAttenuation = attenuation;
+        }
+        else if(currentTime < attackEnd)
+        {
+            let elapsed = (attackEnd - currentTime) / attack;
+            dbAttenuation = elapsed * (attenuation - DB_SILENCE) + DB_SILENCE;
+        }
+        else if(currentTime < holdEnd)
+        {
+            dbAttenuation = attenuation;
+        }
+        else if(currentTime < decayEnd)
+        {
+            // we're in the decay phase
+            dbAttenuation = (1 - (decayEnd - currentTime) / decay) * (sustain - attenuation) + attenuation;
+        }
+        else
+        {
+            dbAttenuation = sustain;
+        }
         let elapsedRelease = currentTime - voice.releaseStartTime;
-        let dbDifference = DB_SILENCE - voice.releaseStartDb;
+        let dbDifference = DB_SILENCE - dbAttenuation;
         let db;
         for (let i = 0; i < audioBuffer.length; i++) {
-            db = (elapsedRelease / release) * dbDifference + voice.releaseStartDb;
+            db = (elapsedRelease / release) * dbDifference + dbAttenuation;
             audioBuffer[i] = decibelAttenuationToGain(db + decibelOffset) * audioBuffer[i];
             elapsedRelease += sampleTime;
         }
@@ -51,6 +76,9 @@ export function applyVolumeEnvelope(voice, audioBuffer, currentTime, centibelOff
         {
             // we're in the delay phase
             dbAttenuation = DB_SILENCE;
+            currentFrameTime += sampleTime;
+            audioBuffer[i] = 0;
+            continue;
         }
         else if(currentFrameTime < attackEnd)
         {
@@ -79,6 +107,13 @@ export function applyVolumeEnvelope(voice, audioBuffer, currentTime, centibelOff
         // apply gain and advance the time
         audioBuffer[i] = audioBuffer[i] * decibelAttenuationToGain(dbAttenuation + decibelOffset);
         currentFrameTime += sampleTime;
+
+        //we can put this here, since delay and attack continue, so they aren't affected
+        if(dbAttenuation >= 96) // 96 is quiet enough, no need to wait for 100
+        {
+            voice.finished = true;
+            return;
+        }
     }
     voice.currentAttenuationDb = dbAttenuation;
 }

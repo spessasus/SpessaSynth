@@ -210,13 +210,13 @@ export class MidiKeyboard
         });
 
         // connect the synth to keyboard
-        this.synth.eventHandler.addEvent("noteon", e => {
+        this.synth.eventHandler.addEvent("noteon", "keyboard-note-on", e => {
             this.pressNote(e.midiNote, e.channel, e.velocity, e.channelVolume, e.channelExpression);
         });
-        this.synth.eventHandler.addEvent("noteoff", e => {
+        this.synth.eventHandler.addEvent("noteoff", "keyboard-note-off", e => {
             this.releaseNote(e.midiNote, e.channel);
         })
-        this.synth.eventHandler.addEvent("stopall", () => {
+        this.synth.eventHandler.addEvent("stopall", "keyboard-stop-all", () => {
             this.clearNotes();
         })
     }

@@ -175,11 +175,21 @@ export class Synthetizer {
                 if(this.system === "gm")
                 {
                     // gm ignores bank select
-                    console.log("%cIgnorind the Bank Select, as the synth is in GM mode.", consoleColors.info);
+                    console.log("%cIgnoring the Bank Select, as the synth is in GM mode.", consoleColors.info);
                     return;
                 }
                 let bankNr = controllerValue;
                 const channelObject = this.midiChannels[channel];
+
+                // for xg, if msb is 127, then it's drums
+                if(bankNr === 127 && this.system === "xg")
+                {
+                    channelObject.percussionChannel = true;
+                    this.eventHandler.callEvent("drumchange",{
+                        channel: channel,
+                        isDrumChannel: true
+                    });
+                }
                 if(channelObject.percussionChannel)
                 {
                     // 128 for percussion channel
@@ -197,19 +207,7 @@ export class Synthetizer {
             case midiControllers.lsbForControl0BankSelect:
                 if(this.system === 'xg')
                 {
-                    if(this.midiChannels[channel].bank === 127)
-                    {
-                        this.midiChannels[channel].percussionChannel = true;
-                        this.eventHandler.callEvent("drumchange",{
-                            channel: channel,
-                            isDrumChannel: true
-                        });
-                    }
                     this.midiChannels[channel].bank = controllerValue;
-                    this.eventHandler.callEvent("drumchange",{
-                        channel: channel,
-                        isDrumChannel: false
-                    });
                 }
                 break;
 
@@ -417,12 +415,25 @@ export class Synthetizer {
                     {
                         // this is the Use for Drum Part sysex (multiple drums)
                         // determine the channel 0 means channel 10 (default), 1 means 1 etc.
-                        const channel = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15][messageData[5] & 0x0F]; // for example 1A means A = 11
-                        this.midiChannels[channel].percussionChannel = (messageData[7] > 0 && messageData[5] >> 4); // if set to other than 0, is a drum channel
-                        console.log(`%cChannel %c${channel}%c ${this.midiChannels[channel].percussionChannel ? 
-                            "is now a drum channel" 
-                            : 
-                            "now isn't a drum channel"}%c via: %c${arrayToHexString(messageData)}`,
+                        const channel = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15][messageData[5] & 0x0F]; // for example 1A means A = 11, which corresponds to channel 12 (counting from 1)
+
+                        const channelObject = this.midiChannels[channel];
+                        if(messageData[7] > 0 && messageData[5] >> 4)// if set to other than 0, is a drum channel
+                        {
+                            channelObject.percussionChannel = true;
+                            channelObject.setPreset(this.soundFont.getPreset(128, channelObject.preset.program));
+                        }
+                        else
+                        {
+                            channelObject.percussionChannel = false;
+                            channelObject.setPreset(this.soundFont.getPreset(0, channelObject.preset.program));
+                        }
+                        console.log(
+                            `%cChannel %c${channel}%c ${channelObject.percussionChannel ? 
+                                "is now a drum channel" 
+                                : 
+                                "now isn't a drum channel"
+                            }%c via: %c${arrayToHexString(messageData)}`,
                             consoleColors.info,
                             consoleColors.value,
                             consoleColors.recognized,
@@ -431,7 +442,11 @@ export class Synthetizer {
 
                         this.eventHandler.callEvent("drumchange",{
                             channel: channel,
-                            isDrumChannel: this.midiChannels[channel].percussionChannel
+                            isDrumChannel: channelObject.percussionChannel
+                        });
+                        this.eventHandler.callEvent("programchange",{
+                            channel: channel,
+                            preset: channelObject.preset
                         });
                     }
                     else

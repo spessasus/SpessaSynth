@@ -1,12 +1,10 @@
-import { DEFAULT_GAIN, Synthetizer } from '../../../spessasynth_lib/synthetizer/synthetizer.js'
+import { DEFAULT_GAIN, DEFAULT_PERCUSSION, Synthetizer } from '../../../spessasynth_lib/synthetizer/synthetizer.js'
 import {MidiChannel} from "../../../spessasynth_lib/synthetizer/native_system/midi_channel.js";
-import { getLoopSvg, getMuteSvg, getVolumeSvg } from '../icons.js'
+import { getDrumsSvg, getLoopSvg, getMuteSvg, getNoteSvg, getVolumeSvg } from '../icons.js'
 import { ShiftableByteArray } from '../../../spessasynth_lib/utils/shiftable_array.js';
 import { Meter } from './synthui_meter.js'
 import { midiPatchNames } from '../../../spessasynth_lib/utils/other.js'
 import { midiControllers } from '../../../spessasynth_lib/midi_parser/midi_message.js'
-import { SequencePlayer } from '../../sequence_recorder/sequence_player.js'
-import { SequenceRecorder } from '../../sequence_recorder/sequence_recorder.js'
 
 export class SynthetizerUI
 {
@@ -21,10 +19,6 @@ export class SynthetizerUI
         this.uiDiv.classList.add("wrapper");
         wrapper.appendChild(this.uiDiv);
         this.uiDiv.style.visibility = "hidden";
-        /**
-         * @type {SequenceRecorder}
-         */
-        this.recorder = undefined;
         setTimeout(() => this.uiDiv.style.visibility = "visible", 500);
     }
 
@@ -38,14 +32,24 @@ export class SynthetizerUI
          * Voice meter
          * @type {Meter}
          */
-        this.voiceMeter = new Meter("#206", "Voices: ", 0, this.synth.voiceCap);
+        this.voiceMeter = new Meter("#206",
+            "Voices: ",
+            0,
+            this.synth.voiceCap,
+            "The total amount of voices currently playing");
         this.voiceMeter.bar.classList.add("voice_meter_bar_smooth");
 
         /**
          * Volume controller
          * @type {Meter}
          */
-        this.volumeController = new Meter("#206", "Volume: ", 0, 100, true, v => {
+        this.volumeController = new Meter("#206",
+            "Volume: ",
+            0,
+            100,
+            "The current master volume of the synthesizer",
+            true,
+                v => {
             this.synth.setMainVolume(Math.round(v) / 100);
         });
         this.volumeController.bar.classList.add("voice_meter_bar_smooth");
@@ -54,7 +58,13 @@ export class SynthetizerUI
          * Pan controller
          * @type {Meter}
          */
-        this.panController = new Meter("#206", "Pan: ", -1, 1, true, v => {
+        this.panController = new Meter("#206",
+            "Pan: ",
+            -1,
+            1,
+            "The current master stereo panning of the synthesizer",
+            true,
+            v => {
             // use roland gs master pan
             this.synth.systemExclusive(new ShiftableByteArray([0x41, 0x10, 0x42, 0x12, 0x40, 0x00, 0x06, ((v + 1) / 2) * 127]));
         });
@@ -64,7 +74,13 @@ export class SynthetizerUI
          * Transpose controller
          * @type {Meter}
          */
-        this.transposeController = new Meter("#206", "Transpose: ", -12, 12, true, v => {
+        this.transposeController = new Meter("#206",
+            "Transpose: ",
+            -12,
+            12,
+            "Allows to transpose the synthesizer by semitones",
+            true,
+                v => {
             // limit to half semitone precision
             this.synth.transpose(Math.round(v * 2 ) / 2);
             this.transposeController.update(Math.round(v * 2) / 2)
@@ -105,32 +121,6 @@ export class SynthetizerUI
             this.synth.highPerformanceMode = !this.synth.highPerformanceMode;
         }
 
-        const recordingButton = document.createElement("button");
-        recordingButton.innerText = "Start Recording";
-        recordingButton.classList.add("synthui_button");
-        recordingButton.onclick = () => {
-            if(this.recorder)
-            {
-                recordingButton.innerText = "Start Recording";
-                this.recorder.stopRecording();
-                new SequencePlayer(this.synth, this.recorder).play();
-                this.recorder = undefined;
-            }
-            else
-            {
-                recordingButton.innerText = "Stop Recording";
-                this.recorder = new SequenceRecorder(this.synth);
-                let targetCh = 0;
-                if(this.keyboard)
-                {
-                    targetCh = this.keyboard.channel;
-                }
-                this.recorder.startRecording(targetCh);
-            }
-        }
-
-        this.recordingButton = recordingButton;
-
         // meters
         controlsWrapper.appendChild(this.volumeController.div);
         controlsWrapper.appendChild(this.panController.div);
@@ -138,20 +128,11 @@ export class SynthetizerUI
         // buttons
         controlsWrapper.appendChild(midiPanicButton);
         controlsWrapper.appendChild(resetCCButton);
-        controlsWrapper.appendChild(recordingButton);
         controlsWrapper.appendChild(highPerfToggle);
         // main synth div
         this.uiDiv.appendChild(this.voiceMeter.div);
         this.uiDiv.appendChild(showControllerButton);
         controller.appendChild(controlsWrapper);
-    }
-
-    /**
-     * @param keyboard {MidiKeyboard}
-     */
-    connectKeyboard(keyboard)
-    {
-        this.keyboard = keyboard;
     }
 
     updateVoicesAmount()
@@ -185,7 +166,7 @@ export class SynthetizerUI
         }
 
         // add event listeners
-        this.synth.eventHandler.addEvent("programchange", e =>
+        this.synth.eventHandler.addEvent("programchange", "synthui-program-change", e =>
         {
             if(this.synth.midiChannels[e.channel].lockPreset)
             {
@@ -194,7 +175,7 @@ export class SynthetizerUI
             this.controllers[e.channel].preset.value = JSON.stringify([e.preset.bank, e.preset.program]);
         });
 
-        this.synth.eventHandler.addEvent("controllerchange", e => {
+        this.synth.eventHandler.addEvent("controllerchange", "synthui-controller-change",e => {
             const controller = e.controllerNumber;
             const channel = e.channel;
             const value = e.controllerValue;
@@ -230,17 +211,18 @@ export class SynthetizerUI
             }
         });
 
-        this.synth.eventHandler.addEvent("pitchwheel", e => {
+        this.synth.eventHandler.addEvent("pitchwheel", "synthui-pitch-wheel", e => {
             const val = (e.MSB << 7) | e.LSB;
             // pitch wheel
             this.controllers[e.channel].pitchWheel.update(val - 8192);
         });
 
-        this.synth.eventHandler.addEvent("drumchange", e => {
+        this.synth.eventHandler.addEvent("drumchange", "synthui-drum-change", e => {
             if(this.synth.midiChannels[e.channel].lockPreset)
             {
                 return;
             }
+            this.controllers[e.channel].drumsToggle.innerHTML = (e.isDrumChannel ? getDrumsSvg(32) : getNoteSvg(32));
             this.reloadSelector(this.controllers[e.channel].preset, e.isDrumChannel ? this.percussionList : this.instrumentList);
         });
 
@@ -257,7 +239,8 @@ export class SynthetizerUI
      *     mod: Meter,
      *     chorus: Meter,
      *     preset: HTMLSelectElement,
-     *     presetReset: HTMLDivElement
+     *     presetReset: HTMLDivElement,
+     *     drumsToggle: HTMLDivElement
      * }} ChannelController
      */
 
@@ -277,7 +260,8 @@ export class SynthetizerUI
         const voiceMeter = new Meter(this.channelColors[channelNumber],
             "Voices: ",
             0,
-            100);
+            100,
+            "The current amount of voices playing");
         voiceMeter.bar.classList.add("voice_meter_bar_smooth");
         controller.appendChild(voiceMeter.div);
 
@@ -286,6 +270,7 @@ export class SynthetizerUI
             "Pitch: ",
             -8192,
             8192,
+            "The current pitch bend of the channel",
             true,
             val => {
                 val = Math.round(val) + 8192;
@@ -302,6 +287,7 @@ export class SynthetizerUI
             "Pan: ",
             -1,
             1,
+            "The current stereo panning of the channel",
             true,
             val => {
                 this.synth.controllerChange(channelNumber, midiControllers.pan, (val / 2 + 0.5) * 127);
@@ -314,6 +300,7 @@ export class SynthetizerUI
             "Expression: ",
             0,
             127,
+            "The current expression (loudness) of the channel",
             true,
             val => {
                 this.synth.controllerChange(channelNumber, midiControllers.expressionController, val);
@@ -327,6 +314,7 @@ export class SynthetizerUI
             "Volume: ",
             0,
             127,
+            "The current volume of the channel",
             true,
             val => {
             this.synth.controllerChange(channelNumber, midiControllers.mainVolume, val);
@@ -340,6 +328,7 @@ export class SynthetizerUI
             "Mod Wheel: ",
             0,
             127,
+            "The current modulation (vibrato) depth of the channel",
             true,
             val => {
                 this.synth.controllerChange(channelNumber, midiControllers.modulationWheel, val);
@@ -352,6 +341,7 @@ export class SynthetizerUI
             "Chorus: ",
             0,
             127,
+            "The current level of chorus effect applied to the channel",
             true,
             val => {
                 this.synth.controllerChange(channelNumber, midiControllers.effects3Depth, val);
@@ -375,10 +365,12 @@ export class SynthetizerUI
             this.synth.midiChannels[channelNumber].lockPreset = true;
         }
         );
+        presetSelector.title = "Change the instrument that the channel is using";
         controller.appendChild(presetSelector);
 
         // preset reset
         presetReset.innerHTML = getLoopSvg(32);
+        presetReset.title = "Unlock the channel to allow program changes"
         presetReset.classList.add("controller_element");
         presetReset.classList.add("voice_reset");
         presetReset.onclick = () => {
@@ -390,6 +382,7 @@ export class SynthetizerUI
         // mute button
         const muteButton = document.createElement("div");
         muteButton.innerHTML = getVolumeSvg(32);
+        muteButton.title = "Mute the channel"
         muteButton.classList.add("controller_element");
         muteButton.classList.add("mute_button");
         muteButton.onclick = () => {
@@ -406,6 +399,31 @@ export class SynthetizerUI
         }
         controller.appendChild(muteButton);
 
+        // drums toggle
+        const drumsToggle = document.createElement("div");
+        drumsToggle.innerHTML = channelNumber === DEFAULT_PERCUSSION ? getDrumsSvg(32) : getNoteSvg(32);
+        drumsToggle.title = "Toggle drums on this channel";
+        drumsToggle.classList.add("controller_element");
+        drumsToggle.classList.add("mute_button");
+        drumsToggle.onclick = () => {
+            // correct the channel number
+            console.log(channelNumber)
+            const sysexChannelNumber = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 10, 11, 12, 13, 14, 15][channelNumber];
+            this.synth.systemExclusive(new ShiftableByteArray([ // roland gs drum sysex
+                0x41, // roland
+                0x10, // device id (doesn't matter, really)
+                0x42, // gs
+                0x12,
+                0x40, // drums
+                0x10 | sysexChannelNumber,
+                0x15, /// drums
+                this.synth.midiChannels[channelNumber].percussionChannel ? 0x00 : 0x01,
+                0x11,
+                0xF7
+            ]));
+        }
+        controller.appendChild(drumsToggle);
+
         return {
             controller: controller,
             voiceMeter: voiceMeter,
@@ -416,7 +434,8 @@ export class SynthetizerUI
             mod: modulation,
             chorus: chorus,
             preset: presetSelector,
-            presetReset: presetReset
+            presetReset: presetReset,
+            drumsToggle: drumsToggle
         };
 
     }
@@ -447,31 +466,6 @@ export class SynthetizerUI
                 case "b":
                     e.preventDefault();
                     this.synth.highPerformanceMode = !this.synth.highPerformanceMode;
-                    break;
-
-                case "r":
-                    if(e.shiftKey)
-                    {
-                        return
-                    }
-                    if(this.recorder)
-                    {
-                        this.recordingButton.innerText = "Start Recording";
-                        this.recorder.stopRecording();
-                        new SequencePlayer(this.synth, this.recorder).play();
-                        this.recorder = undefined;
-                    }
-                    else
-                    {
-                        this.recordingButton.innerText = "Stop Recording";
-                        this.recorder = new SequenceRecorder(this.synth);
-                        let targetCh = 0;
-                        if(this.keyboard)
-                        {
-                            targetCh = this.keyboard.channel;
-                        }
-                        this.recorder.startRecording(targetCh);
-                    }
                     break;
 
                 case "backspace":

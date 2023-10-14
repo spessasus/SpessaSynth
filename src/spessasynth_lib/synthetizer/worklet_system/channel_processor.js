@@ -95,8 +95,6 @@ class ChannelProcessor extends AudioWorkletProcessor {
                         computeModulators(v, this.midiControllers);
                         this.releaseVoice(v);
                     });
-                    // this.voices = this.voices.filter(v => v.midiNote !== data);
-                    // this.port.postMessage(this.voices.length);
                     break;
 
                 case workletMessageType.noteOn:
@@ -112,19 +110,9 @@ class ChannelProcessor extends AudioWorkletProcessor {
                                     computeModulators(v, this.midiControllers);
                                 }
                             })
-                            //this.voices = this.voices.filter(v => v.generators[generatorTypes.exclusiveClass] !== exclusive);
                         }
                         computeModulators(voice, this.midiControllers);
-
-                        // if both delay + attack are less than -22000, instantly ramp to attenuation (attack and delay are essentially 0)
-                        if(voice.modulatedGenerators[generatorTypes.delayVolEnv] + voice.modulatedGenerators[generatorTypes.attackVolEnv] < MIN_TIMECENTS_INSTANT_ATTACK)
-                        {
-                            voice.currentAttenuationDb = voice.modulatedGenerators[generatorTypes.initialAttenuation] / 25;
-                        }
-                        else
-                        {
-                            voice.currentAttenuationDb = 100;
-                        }
+                        voice.currentAttenuationDb = 100;
                     })
                     this.voices.push(...data);
                     if(this.voices.length > CHANNEL_CAP)
@@ -186,7 +174,6 @@ class ChannelProcessor extends AudioWorkletProcessor {
     {
         voice.releaseStartTime = currentTime;
         voice.isInRelease = true;
-        voice.releaseStartDb = voice.currentAttenuationDb;
         voice.releaseStartModEnv = voice.currentModEnvValue;
     }
 

@@ -49,7 +49,6 @@
  * startTime: number,
  *
  * releaseStartTime: number,
- * releaseStartDb: number,
  * releaseStartModEnv: number,
  *
  * currentTuningCents: number,
@@ -423,7 +422,6 @@ export class WorkletChannel {
                     currentAttenuationDb: 100,
                     currentModEnvValue: 0,
                     releaseStartModEnv: 1,
-                    releaseStartDb: 0,
                     midiNote: midiNote,
                     startTime: this.ctx.currentTime,
                     isInRelease: false,
@@ -658,7 +656,9 @@ export class WorkletChannel {
                     // pitch bend range
                     case 0x0000:
                         this.channelPitchBendRange = dataValue;
-                        console.log(`Channel ${this.channelNumber} bend range. Semitones:`, dataValue);
+                        console.log(`%cChannel ${this.channelNumber} bend range. Semitones: %c${dataValue}`,
+                            consoleColors.info,
+                            consoleColors.value);
                         this.post({
                             messageType: workletMessageType.ccChange,
                             messageData: [NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange, this.channelPitchBendRange << 7]
@@ -669,7 +669,9 @@ export class WorkletChannel {
                     case 0x0002:
                         // semitones
                         this.channelTuningSemitones = dataValue - 64;
-                        console.log("tuning", this.channelTuningSemitones, "for", this.channelNumber);
+                        console.log(`%cChannel ${this.channelNumber} tuning. Semitones: %c${this.channelTuningSemitones}`,
+                            consoleColors.info,
+                            consoleColors.value);
                         this.post({
                             messageType: workletMessageType.ccChange,
                             messageData: [NON_CC_INDEX_OFFSET + modulatorSources.channelTuning, (this.channelTuningSemitones) * 100]

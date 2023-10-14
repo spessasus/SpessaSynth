@@ -11,6 +11,7 @@ export class Meter
      * @param meterText {string}
      * @param max {number}
      * @param min {number}
+     * @param description {string}
      * @param editable {boolean} if the meter should be editable with mouse
      * @param editCallback {MeterCallbackFunction}
      */
@@ -18,6 +19,7 @@ export class Meter
                 meterText="Voices: ",
                 min = 0,
                 max = 100,
+                description,
                 editable=false,
                 editCallback = undefined)
     {
@@ -32,6 +34,7 @@ export class Meter
         this.div.classList.add("voice_meter");
         this.div.classList.add("controller_element");
         this.div.style.border = "1px solid "+ color;
+        this.div.title = description;
 
         /**
          * @type {HTMLDivElement}

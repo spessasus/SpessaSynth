@@ -80,7 +80,6 @@ export class Manager {
         // set up synth UI
         this.synthUI = new SynthetizerUI(this.channelColors);
         this.synthUI.connectSynth(this.synth);
-        this.synthUI.connectKeyboard(this.keyboard);
 
         // create an UI for sequencer
         this.seqUI = new SequencerUI();

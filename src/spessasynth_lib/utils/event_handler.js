@@ -16,36 +16,38 @@ export class EventHandler
     constructor() {
         /**
          * The main list of events
-         * @type {Object<EventTypes, function(Object)[]>}
+         * @type {Object<EventTypes, Object<string, function(Object)>>}
          */
-        this.events = {};
+        this.events = {
+            "noteoff": {},
+            "noteon": {},
+            "pitchwheel": {},
+            "controllerchange": {},
+            "programchange": {},
+            "drumchange": {},
+            "stopall": {}
+        };
     }
 
     /**
      * Adds a new event listener
      * @param name {EventTypes}
+     * @param id {string} the unique identifier for the event (to delete it
      * @param callback {function(Object)}
      */
-    addEvent(name, callback)
+    addEvent(name, id, callback)
     {
-        if(this.events[name])
-        {
-            this.events[name].push(callback);
-        }
-        else
-        {
-            this.events[name] = [callback];
-        }
+        this.events[name][id] = callback;
     }
 
     /**
      * Removes an event listener
      * @param name {EventTypes}
-     * @param callback {function(Object)}
+     * @param id {string}
      */
-    removeEvent(name, callback)
+    removeEvent(name, id)
     {
-        this.events[name].splice(this.events[name].findIndex(c => c === callback), 1);
+        delete this.events[name][id];
     }
 
     /**
@@ -57,7 +59,7 @@ export class EventHandler
     {
         if(this.events[name])
         {
-            this.events[name].forEach(ev => ev(eventData));
+            Object.values(this.events[name]).forEach(ev => ev(eventData));
         }
     }
 }
