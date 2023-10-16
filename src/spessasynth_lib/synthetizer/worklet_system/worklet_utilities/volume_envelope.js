@@ -2,6 +2,7 @@ import { decibelAttenuationToGain, timecentsToSeconds } from './unit_converter.j
 import { generatorTypes } from '../../../soundfont/chunk/generators.js'
 
 const DB_SILENCE = 100;
+const GAIN_SILENCE = 0.001;
 /**
  * @param voice {WorkletVoice}
  * @param audioBuffer {Float32Array}
@@ -105,11 +106,12 @@ export function applyVolumeEnvelope(voice, audioBuffer, currentTime, centibelOff
         }
 
         // apply gain and advance the time
-        audioBuffer[i] = audioBuffer[i] * decibelAttenuationToGain(dbAttenuation + decibelOffset);
+        const gain = decibelAttenuationToGain(dbAttenuation + decibelOffset);
+        audioBuffer[i] = audioBuffer[i] * gain;
         currentFrameTime += sampleTime;
 
         //we can put this here, since delay and attack continue, so they aren't affected
-        if(dbAttenuation >= 96) // 96 is quiet enough, no need to wait for 100
+        if(gain <= GAIN_SILENCE)
         {
             voice.finished = true;
             return;

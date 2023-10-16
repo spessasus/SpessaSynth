@@ -224,7 +224,7 @@ export class Sequencer {
                 const note = noteTimes[channel].notes.findLast(n => n.midiNote === event.messageData[0] && n.length === -1)
                 if(note) {
                     const time = elapsedTime - note.start;
-                    note.length = (time < MIN_NOTE_TIME  ? MIN_NOTE_TIME : time);
+                    note.length = (time < MIN_NOTE_TIME && channel === DEFAULT_PERCUSSION ? MIN_NOTE_TIME : time);
                 }
             }
             // note on
@@ -236,7 +236,7 @@ export class Sequencer {
                     const note = noteTimes[channel].notes.findLast(n => n.midiNote === event.messageData[0] && n.length === -1)
                     if(note) {
                         const time = elapsedTime - note.start;
-                        note.length = (time < MIN_NOTE_TIME ? MIN_NOTE_TIME : time);
+                        note.length = (time < MIN_NOTE_TIME && channel === DEFAULT_PERCUSSION ? MIN_NOTE_TIME : time);
                     }
                 }
                 else {

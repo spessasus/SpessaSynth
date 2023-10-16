@@ -407,7 +407,6 @@ export class SynthetizerUI
         drumsToggle.classList.add("mute_button");
         drumsToggle.onclick = () => {
             // correct the channel number
-            console.log(channelNumber)
             const sysexChannelNumber = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 10, 11, 12, 13, 14, 15][channelNumber];
             this.synth.systemExclusive(new ShiftableByteArray([ // roland gs drum sysex
                 0x41, // roland
