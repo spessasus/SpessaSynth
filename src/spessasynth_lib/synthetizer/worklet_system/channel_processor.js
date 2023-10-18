@@ -18,6 +18,7 @@ import { getModEnvValue } from './worklet_utilities/modulation_envelope.js'
 const CHANNEL_CAP = 400;
 const CONTROLLER_TABLE_SIZE = 147;
 const MIN_TIMECENTS_INSTANT_ATTACK = -22000; // delay + attack is less than this, instantly jump to peak
+const MIN_NOTE_LENGTH = 0.05; // if the note is released faster than that, it will be forced to 10 ms at least.
 
 // an array with preset default values so we can quickly use set() to reset the controllers
 const resetArray = new Int16Array(CONTROLLER_TABLE_SIZE);
@@ -94,8 +95,7 @@ class ChannelProcessor extends AudioWorkletProcessor {
                         {
                             return;
                         }
-                        v.generators[generatorTypes.releaseVolEnv] = -12000; // set release to be very short
-                        computeModulators(v, this.midiControllers);
+                        v.modulatedGenerators[generatorTypes.releaseVolEnv] = -12000; // set release to be very short
                         this.releaseVoice(v);
                     });
                     break;
@@ -177,6 +177,11 @@ class ChannelProcessor extends AudioWorkletProcessor {
     releaseVoice(voice)
     {
         voice.releaseStartTime = currentTime;
+        // check if the note is shorter than the min note time, if so, extend it
+        if(voice.releaseStartTime - voice.startTime < MIN_NOTE_LENGTH)
+        {
+            voice.releaseStartTime = voice.startTime + MIN_NOTE_LENGTH;
+        }
         voice.isInRelease = true;
         voice.releaseStartModEnv = voice.currentModEnvValue;
     }

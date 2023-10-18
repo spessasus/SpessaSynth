@@ -32,37 +32,53 @@ export function applyVolumeEnvelope(voice, audioBuffer, currentTime, centibelOff
     if(voice.isInRelease)
     {
         // calculate the db attenuation at the time of release
-        let dbAttenuation;
-        if(currentTime < delayEnd)
+        let releaseStartDb;
+        if(voice.releaseStartTime < delayEnd)
         {
             // we're in the delay phase (skip to peak)
-            dbAttenuation = attenuation;
+            releaseStartDb = attenuation;
         }
-        else if(currentTime < attackEnd)
+        else if(voice.releaseStartTime < attackEnd)
         {
-            let elapsed = (attackEnd - currentTime) / attack;
-            dbAttenuation = elapsed * (attenuation - DB_SILENCE) + DB_SILENCE;
+            // attack is linear (in gain) so we need to do get db from that
+            let elapsed = 1 - ((attackEnd - voice.releaseStartTime) / attack);
+            // calculate the gain that the attack would have
+            let attackGain = elapsed * decibelAttenuationToGain(attenuation + decibelOffset);
+
+            // turn that into db
+            releaseStartDb = 20 * Math.log10(attackGain) * -1;
         }
-        else if(currentTime < holdEnd)
+        else if(voice.releaseStartTime < holdEnd)
         {
-            dbAttenuation = attenuation;
+            releaseStartDb = attenuation;
         }
-        else if(currentTime < decayEnd)
+        else if(voice.releaseStartTime < decayEnd)
         {
             // we're in the decay phase
-            dbAttenuation = (1 - (decayEnd - currentTime) / decay) * (sustain - attenuation) + attenuation;
+            releaseStartDb = (1 - (decayEnd - voice.releaseStartTime) / decay) * (sustain - attenuation) + attenuation;
         }
         else
         {
-            dbAttenuation = sustain;
+            releaseStartDb = sustain;
         }
+
+        // if the voice is not released, but state set to true (due to min note length, simply use the release db)
+        if(voice.releaseStartTime > currentTime)
+        {
+            const gain = decibelAttenuationToGain(releaseStartDb + decibelOffset);
+            for (let i = 0; i < audioBuffer.length; i++) {
+                audioBuffer[i] = gain * audioBuffer[i];
+            }
+            return;
+        }
+
         let elapsedRelease = currentTime - voice.releaseStartTime;
-        let dbDifference = DB_SILENCE - dbAttenuation;
+        let dbDifference = DB_SILENCE - releaseStartDb;
         let gain;
         for (let i = 0; i < audioBuffer.length; i++) {
-            let db = (elapsedRelease / release) * dbDifference + dbAttenuation;
+            let db = (elapsedRelease / release) * dbDifference + releaseStartDb;
             gain = decibelAttenuationToGain(db + decibelOffset);
-            audioBuffer[i] = gain * audioBuffer[i]
+            audioBuffer[i] = gain * audioBuffer[i];
             elapsedRelease += sampleTime;
         }
 
@@ -90,7 +106,7 @@ export function applyVolumeEnvelope(voice, audioBuffer, currentTime, centibelOff
             const elapsed = (attackEnd - currentFrameTime) / attack;
             audioBuffer[i] = audioBuffer[i] * (1 - elapsed) * decibelAttenuationToGain(attenuation + decibelOffset);
             currentFrameTime += sampleTime;
-            dbAttenuation = elapsed * (attenuation - DB_SILENCE) + DB_SILENCE;
+            dbAttenuation = 10 * Math.log10((elapsed * (attenuation - DB_SILENCE) + DB_SILENCE) * -1);
             continue;
         }
         else if(currentFrameTime < holdEnd)

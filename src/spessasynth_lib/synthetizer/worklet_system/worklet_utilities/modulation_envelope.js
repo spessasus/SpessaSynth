@@ -26,7 +26,7 @@ export function getModEnvValue(voice, currentTime)
     let hold = timecentsToSeconds(voice.modulatedGenerators[generatorTypes.holdModEnv] + ((60 - voice.midiNote) * voice.modulatedGenerators[generatorTypes.keyNumToModEnvHold]));
 
     // calculate absolute times
-    if(voice.isInRelease)
+    if(voice.isInRelease && voice.releaseStartTime < currentTime)
     {
         let release = timecentsToSeconds(voice.modulatedGenerators[generatorTypes.releaseModEnv]);
         if(voice.modulatedGenerators[generatorTypes.releaseModEnv] < -7199)
