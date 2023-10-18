@@ -1,7 +1,8 @@
 /**
- * @param voice {WorkletVoice}
- * @param sampleData {Float32Array}
- * @param outputBuffer {Float32Array}
+ * Fills the output buffer with raw sample data
+ * @param voice {WorkletVoice} the voice we're working on
+ * @param sampleData {Float32Array} the sample data to write with
+ * @param outputBuffer {Float32Array} the output buffer to write to
  */
 export function getOscillatorData(voice, sampleData, outputBuffer)
 {

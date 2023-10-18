@@ -1,10 +1,11 @@
 import { HALF_PI } from './unit_converter.js'
 
 /**
- * @param pan {number} 0-1
- * @param inputBuffer {Float32Array}
- * @param outputLeft {Float32Array}
- * @param outputRight {Float32Array}
+ * Pans the voice to the given output buffers
+ * @param pan {number} 0-1 , 0.5 is middle
+ * @param inputBuffer {Float32Array} the input buffer in mono
+ * @param outputLeft {Float32Array} stereo left output buffer
+ * @param outputRight {Float32Array} stereo right output buffer
  */
 export function panVoice(pan, inputBuffer, outputLeft, outputRight)
 {

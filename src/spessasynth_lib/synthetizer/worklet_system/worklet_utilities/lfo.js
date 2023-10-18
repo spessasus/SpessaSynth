@@ -1,4 +1,5 @@
 /**
+ * Calculates a triangular wave value for the given time
  * @param startTime {number} seconds
  * @param frequency {number} Hz
  * @param currentTime {number} seconds

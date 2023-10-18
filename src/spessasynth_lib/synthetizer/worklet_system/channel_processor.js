@@ -33,6 +33,9 @@ resetArray[NON_CC_INDEX_OFFSET + modulatorSources.channelPressure] = 127 << 7;
 resetArray[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning] = 0;
 
 class ChannelProcessor extends AudioWorkletProcessor {
+    /**
+     * Creates a new channel mini synthesizer
+     */
     constructor() {
         super();
 
@@ -168,7 +171,8 @@ class ChannelProcessor extends AudioWorkletProcessor {
     }
 
     /**
-     * @param voice {WorkletVoice}
+     * Stops the voice
+     * @param voice {WorkletVoice} the voice to stop
      */
     releaseVoice(voice)
     {
@@ -178,9 +182,10 @@ class ChannelProcessor extends AudioWorkletProcessor {
     }
 
     /**
-     * @param inputs {Float32Array[][]}
-     * @param outputs {Float32Array[][]}
-     * @returns {boolean}
+     * Syntesizes the voice to buffers
+     * @param inputs {Float32Array[][]} required by WebAudioAPI
+     * @param outputs {Float32Array[][]} the outputs to write to, only the first 2 channels are populated
+     * @returns {boolean} true
      */
     process(inputs, outputs) {
         if(this.voices.length < 1)
@@ -206,9 +211,10 @@ class ChannelProcessor extends AudioWorkletProcessor {
     }
 
     /**
-     * @param voice {WorkletVoice}
-     * @param outputLeft {Float32Array}
-     * @param outputRight {Float32Array}
+     * Renders a voice to the stereo output buffer
+     * @param voice {WorkletVoice} the voice to render
+     * @param outputLeft {Float32Array} the left output buffer
+     * @param outputRight {Float32Array} the right output buffer
      */
     renderVoice(voice, outputLeft, outputRight)
     {
@@ -312,6 +318,9 @@ class ChannelProcessor extends AudioWorkletProcessor {
         panVoice(pan, bufferOut, outputLeft, outputRight);
     }
 
+    /**
+     * Resets all controllers
+     */
     resetControllers()
     {
         // transpose does not get affected

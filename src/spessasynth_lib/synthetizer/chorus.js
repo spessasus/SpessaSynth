@@ -59,6 +59,7 @@ export class Chorus
     }
 
     /**
+     * returns the chorus level
      * @returns {number} 0-127
      */
     getChorusLevel()
@@ -66,6 +67,9 @@ export class Chorus
         return this.wetController.gain.value * 127;
     }
 
+    /**
+     * Disconnect the chorus from the nodes
+     */
     disconnectChorus()
     {
         this.input.disconnect(this.wetController);

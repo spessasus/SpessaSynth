@@ -23,6 +23,10 @@ export class Synthetizer {
         this.soundFont = soundFont;
         this.context = targetNode.context;
 
+        /**
+         * Allows to set up custom event listeners for the synthesizer
+         * @type {EventHandler}
+         */
         this.eventHandler = new EventHandler();
 
         this.volumeController = new GainNode(targetNode.context, {
@@ -71,7 +75,7 @@ export class Synthetizer {
      * @param channel {number} 0-15 the channel to play the note
      * @param midiNote {number} 0-127 the key number of the note
      * @param velocity {number} 0-127 the velocity of the note (generally controls loudness)
-     * @param enableDebugging {boolean} set to true to log stuff to console
+     * @param enableDebugging {boolean} set to true to log technical details to console
      */
     noteOn(channel, midiNote, velocity, enableDebugging = false) {
         if (velocity === 0) {
@@ -112,13 +116,14 @@ export class Synthetizer {
     }
 
     /*
-     * Prevents any further changes to the vibrato via NRPN messages and resets it to none
+     * Prevents any further changes to the vibrato via NRPN messages and sets it to disabled
      */
     lockAndResetChannelVibrato()
     {
         this.midiChannels.forEach(c => {
-            c.lockVibrato = true;
+            c.lockVibrato = false;
             c.vibrato = {depth: 0, rate: 0, delay: 0};
+            c.lockVibrato = true;
         });
     }
 
@@ -324,7 +329,8 @@ export class Synthetizer {
     }
 
     /**
-     * Call after replacing synth.soundFont
+     * Reloads the sounfont.
+     * Note: you need to change the soundfont via synth.soundFont then call this
      */
     reloadSoundFont()
     {
@@ -342,7 +348,7 @@ export class Synthetizer {
     }
 
     /**
-     * Sends a MIDI Sysex message
+     * Sends a MIDI Sysex message to the synthesizer
      * @param messageData {ShiftableByteArray} the message's data (excluding the F0 byte, but including the F7 at the end)
      */
     systemExclusive(messageData)
@@ -518,6 +524,9 @@ export class Synthetizer {
         return this.context.currentTime;
     }
 
+    /**
+     * @returns {number} the current amount of voices playing
+     */
     get voicesAmount()
     {
         return this.midiChannels.reduce((amt, chan) => amt + chan.voicesAmount, 0);

@@ -3,11 +3,11 @@ import { modulatorSources } from '../../../soundfont/chunk/modulators.js'
 import { getModulatorCurveValue, MOD_PRECOMPUTED_LENGTH } from './modulator_curves.js'
 
 /**
- *
+ * Computes a given modulator
  * @param controllerTable {Int16Array} all midi controllers as 14bit values + the non controller indexes, starting at 128
- * @param modulator {Modulator}
- * @param midiNote {number}
- * @param velocity {number}
+ * @param modulator {Modulator} the modulator to compute
+ * @param midiNote {number} the midiNote of the voice belonging to the modulator
+ * @param velocity {number} the velocity of the voice belonging to the modulator
  * @returns {number} the computed value
  */
 export function computeWorkletModulator(controllerTable, modulator, midiNote, velocity)
@@ -92,8 +92,9 @@ export function computeWorkletModulator(controllerTable, modulator, midiNote, ve
 }
 
 /**
- * @param voice {WorkletVoice}
- * @param controllerTable {Int16Array}
+ * Computes all modulators of a given voice
+ * @param voice {WorkletVoice} the voice to compute modulators for
+ * @param controllerTable {Int16Array} all midi controllers as 14bit values + the non controller indexes, starting at 128
  */
 export function computeModulators(voice, controllerTable)
 {

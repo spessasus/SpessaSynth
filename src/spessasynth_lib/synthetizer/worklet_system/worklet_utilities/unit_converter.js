@@ -11,6 +11,7 @@ for (let i = 0; i < timecentLookupTable.length; i++) {
 export const HALF_PI = Math.PI / 2;
 
 /**
+ * Converts timecents to seconds
  * @param timecents {number} timecents
  * @returns {number} seconds
  */
@@ -29,7 +30,8 @@ for (let i = 0; i < absoluteCentLookupTable.length; i++) {
 }
 
 /**
- * @param cents {number}
+ * Converts absolute cents to hertz
+ * @param cents {number} absolute cents
  * @returns {number} hertz
  */
 export function absCentsToHz(cents)
@@ -50,7 +52,11 @@ for (let i = 0; i < decibelLookUpTable.length; i++) {
     decibelLookUpTable[i] = Math.pow(10, -decibels / 20);
 }
 
-
+/**
+ * convers decibel attenuation to gain
+ * @param decibels {number} the decibel attenuation
+ * @returns {number} gain
+ */
 export function decibelAttenuationToGain(decibels)
 {
     return decibelLookUpTable[Math.floor((decibels - MIN_DECIBELS) * 100)];

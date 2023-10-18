@@ -2,7 +2,7 @@ import {Synthetizer} from "../../spessasynth_lib/synthetizer/synthetizer.js";
 import { MIDIDeviceHandler } from '../../spessasynth_lib/midi_handler/midi_handler.js'
 import { midiControllers } from '../../spessasynth_lib/midi_parser/midi_message.js'
 
-const KEYBOARD_VELOCITY = 126;
+const KEYBOARD_VELOCITY = 100;
 const GLOW_PX = 75;
 
 export class MidiKeyboard

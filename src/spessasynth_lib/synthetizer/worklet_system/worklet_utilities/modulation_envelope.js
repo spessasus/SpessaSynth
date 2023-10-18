@@ -13,9 +13,10 @@ for (let i = 0; i < CONVEX_ATTACK.length; i++) {
 }
 
 /**
- * @param voice {WorkletVoice}
- * @param currentTime {number}
- * @returns {number} from 0 to 1
+ * Calculates the current modulation envelope value for the given time and voice
+ * @param voice {WorkletVoice} the voice we're working on
+ * @param currentTime {number} in seconds
+ * @returns {number} modenv value, from 0 to 1
  */
 export function getModEnvValue(voice, currentTime)
 {

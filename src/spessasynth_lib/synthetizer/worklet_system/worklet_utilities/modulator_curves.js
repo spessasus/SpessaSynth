@@ -24,11 +24,12 @@ for (let i = 0; i < MOD_PRECOMPUTED_LENGTH; i++) {
 }
 
 /**
- * @param polarity {number}
- * @param direction {number}
- * @param curveType {number}
- * @param value {number} 0 to 1
- * @returns {number} 0 to 1 or -1 to 0
+ * Transforms a value with a given curve type
+ * @param polarity {number} 0 or 1
+ * @param direction {number} 0 or 1
+ * @param curveType {number} see modulatorCurveTypes in modulators.js
+ * @param value {number} the linear value, 0 to 1
+ * @returns {number} the transformed value, 0 to 1 or -1 to 1
  */
 export function getModulatorCurveValue(direction, curveType, value, polarity) {
     // inverse the value if needed

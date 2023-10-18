@@ -602,6 +602,10 @@ export class WorkletChannel {
 
                             // vibrato depth
                             case 9:
+                                if(this.lockVibrato)
+                                {
+                                    return;
+                                }
                                 if(dataValue === 64)
                                 {
                                     return;
@@ -623,6 +627,10 @@ export class WorkletChannel {
 
                             // vibrato delay
                             case 10:
+                                if(this.lockVibrato)
+                                {
+                                    return;
+                                }
                                 if(dataValue === 64)
                                 {
                                     return;

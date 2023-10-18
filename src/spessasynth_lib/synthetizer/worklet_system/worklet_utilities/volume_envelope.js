@@ -2,13 +2,14 @@ import { decibelAttenuationToGain, timecentsToSeconds } from './unit_converter.j
 import { generatorTypes } from '../../../soundfont/chunk/generators.js'
 
 const DB_SILENCE = 100;
-const GAIN_SILENCE = 0.001;
+const GAIN_SILENCE = 0.005;
 /**
- * @param voice {WorkletVoice}
- * @param audioBuffer {Float32Array}
- * @param currentTime {number}
- * @param centibelOffset {number}
- * @param sampleTime {number} single sample time, usually 1 / 44100 of a second
+ * Applies volume envelope gain to the given output buffer
+ * @param voice {WorkletVoice} the voice we're working on
+ * @param audioBuffer {Float32Array} the audio buffer to modify
+ * @param currentTime {number} the current audio time
+ * @param centibelOffset {number} the centibel offset of volume, for modLFOtoVolume
+ * @param sampleTime {number} single sample time in seconds, usually 1 / 44100 of a second
  */
 export function applyVolumeEnvelope(voice, audioBuffer, currentTime, centibelOffset, sampleTime)
 {
@@ -57,14 +58,15 @@ export function applyVolumeEnvelope(voice, audioBuffer, currentTime, centibelOff
         }
         let elapsedRelease = currentTime - voice.releaseStartTime;
         let dbDifference = DB_SILENCE - dbAttenuation;
-        let db;
+        let gain;
         for (let i = 0; i < audioBuffer.length; i++) {
-            db = (elapsedRelease / release) * dbDifference + dbAttenuation;
-            audioBuffer[i] = decibelAttenuationToGain(db + decibelOffset) * audioBuffer[i];
+            let db = (elapsedRelease / release) * dbDifference + dbAttenuation;
+            gain = decibelAttenuationToGain(db + decibelOffset);
+            audioBuffer[i] = gain * audioBuffer[i]
             elapsedRelease += sampleTime;
         }
 
-        if(db >= DB_SILENCE)
+        if(gain <= GAIN_SILENCE)
         {
             voice.finished = true;
         }
@@ -86,7 +88,7 @@ export function applyVolumeEnvelope(voice, audioBuffer, currentTime, centibelOff
             // we're in the attack phase
             // Special case: linear instead of exponential
             const elapsed = (attackEnd - currentFrameTime) / attack;
-            audioBuffer[i] = audioBuffer[i] * (1 - elapsed) * decibelAttenuationToGain(attenuation);
+            audioBuffer[i] = audioBuffer[i] * (1 - elapsed) * decibelAttenuationToGain(attenuation + decibelOffset);
             currentFrameTime += sampleTime;
             dbAttenuation = elapsed * (attenuation - DB_SILENCE) + DB_SILENCE;
             continue;
@@ -111,7 +113,7 @@ export function applyVolumeEnvelope(voice, audioBuffer, currentTime, centibelOff
         currentFrameTime += sampleTime;
 
         //we can put this here, since delay and attack continue, so they aren't affected
-        if(gain <= GAIN_SILENCE)
+        if(gain <= GAIN_SILENCE && attenuation > DB_SILENCE) // make sure that the voice is actually meant to be audible, so we don't cancel it on for example volume set to 0
         {
             voice.finished = true;
             return;

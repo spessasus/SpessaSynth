@@ -2,8 +2,9 @@ import { generatorTypes } from '../../../soundfont/chunk/generators.js'
 import { absCentsToHz, decibelAttenuationToGain } from './unit_converter.js'
 
 /**
- * @param voice {WorkletVoice}
- * @param outputBuffer {Float32Array}
+ * Applies a low-pass filter to the given buffer
+ * @param voice {WorkletVoice} the voice we're working on
+ * @param outputBuffer {Float32Array} the buffer to apply the filter to
  * @param cutoffCents {number} cutoff frequency in cents
  */
 export function applyLowpassFilter(voice, outputBuffer, cutoffCents)
