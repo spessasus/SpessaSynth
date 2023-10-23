@@ -127,13 +127,6 @@ export function applyVolumeEnvelope(voice, audioBuffer, currentTime, centibelOff
         const gain = decibelAttenuationToGain(dbAttenuation + decibelOffset);
         audioBuffer[i] = audioBuffer[i] * gain;
         currentFrameTime += sampleTime;
-
-        //we can put this here, since delay and attack continue, so they aren't affected
-        if(gain <= GAIN_SILENCE && attenuation > DB_SILENCE) // make sure that the voice is actually meant to be audible, so we don't cancel it on for example volume set to 0
-        {
-            voice.finished = true;
-            return;
-        }
     }
     voice.currentAttenuationDb = dbAttenuation;
 }

@@ -1,11 +1,13 @@
 import { modulatorCurveTypes } from '../../../soundfont/chunk/modulators.js'
 
+const CONCAVE_POWER_CONSTANT = 1.54;
+
 export const MOD_PRECOMPUTED_LENGTH = 16384;
 
 // Precalculate lookup tables
 const concave = new Float32Array(MOD_PRECOMPUTED_LENGTH);
 for (let i = 0; i < MOD_PRECOMPUTED_LENGTH; i++) {
-    concave[i] = Math.pow(i / MOD_PRECOMPUTED_LENGTH, 2);
+    concave[i] = Math.pow(i / MOD_PRECOMPUTED_LENGTH, CONCAVE_POWER_CONSTANT);
     if(isNaN(concave[i]))
     {
         concave[i] = 1;
@@ -15,7 +17,7 @@ for (let i = 0; i < MOD_PRECOMPUTED_LENGTH; i++) {
 
 const convex = new Float32Array(MOD_PRECOMPUTED_LENGTH);
 for (let i = 0; i < MOD_PRECOMPUTED_LENGTH; i++) {
-    convex[i] = 1 - Math.pow(1 - (i / MOD_PRECOMPUTED_LENGTH), 2);
+    convex[i] = 1 - Math.pow(1 - (i / MOD_PRECOMPUTED_LENGTH), CONCAVE_POWER_CONSTANT);
     if(isNaN(convex[i]))
     {
         convex[i] = 1;

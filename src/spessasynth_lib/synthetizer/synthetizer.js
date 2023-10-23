@@ -362,6 +362,7 @@ export class Synthetizer {
                     consoleColors.unrecognized);
                 break;
 
+            // non realtime
             case 0x7E:
                 // gm system
                 if(messageData[2] === 0x09)
@@ -384,6 +385,7 @@ export class Synthetizer {
                 }
                 break;
 
+            // realtime
             case 0x7F:
                 // main volume
                 if (messageData[2] === 0x04 && messageData[3] === 0x01)
