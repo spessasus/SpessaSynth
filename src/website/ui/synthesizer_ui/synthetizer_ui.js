@@ -359,10 +359,13 @@ export class SynthetizerUI
             presetName => {
             const data = JSON.parse(presetName);
             this.synth.midiChannels[channelNumber].lockPreset = false;
+            const sys = this.synth.system;
+            this.synth.system = "gs";
             this.synth.controllerChange(channelNumber, midiControllers.bankSelect, data[0]);
             this.synth.programChange(channelNumber, data[1]);
             presetSelector.classList.add("locked_selector");
             this.synth.midiChannels[channelNumber].lockPreset = true;
+            this.synth.system = sys;
         }
         );
         presetSelector.title = "Change the instrument that the channel is using";

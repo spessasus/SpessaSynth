@@ -9,6 +9,10 @@ import { HALF_PI } from './unit_converter.js'
  */
 export function panVoice(pan, inputBuffer, outputLeft, outputRight)
 {
+    if(isNaN(inputBuffer[0]))
+    {
+        return;
+    }
     const panLeft = Math.cos(HALF_PI * pan);
     const panRight = Math.sin(HALF_PI * pan);
     for (let i = 0; i < inputBuffer.length; i++) {
