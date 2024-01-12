@@ -2,6 +2,7 @@ import {MidiKeyboard} from "./ui/midi_keyboard.js";
 import {Synthetizer} from "../spessasynth_lib/synthetizer/synthetizer.js";
 import {Renderer} from "./ui/renderer.js";
 import {Sequencer} from "../spessasynth_lib/sequencer/sequencer.js";
+import { SequencerNew } from '../spessasynth_lib/sequencer/sequencer_new.js'
 import {MIDI} from "../spessasynth_lib/midi_parser/midi_loader.js";
 
 import {SoundFont2} from "../spessasynth_lib/soundfont/soundfont_parser.js";
@@ -122,7 +123,7 @@ export class Manager {
             return;
         }
         // create a new sequencer
-        this.seq = new Sequencer(parsedMidi, this.synth);
+        this.seq = new SequencerNew(parsedMidi, this.synth);
 
         // connect to the UI
         this.seqUI.connectSequencer(this.seq);

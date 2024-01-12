@@ -90,6 +90,10 @@
     flex-wrap: wrap;
 }
 
+.no_voices {
+    filter: brightness(80%);
+}
+
 .voice_selector{
     border: #777 1px solid;
     line-height: var(--voice-meter-height);

@@ -26,6 +26,9 @@ export class Meter
         this.meterText = meterText;
         this.min = min;
         this.max = max;
+        this.currentValue = -1;
+        this.isShown = true;
+        this.isVisualValueSet = true;
 
         /**
          * @type {HTMLDivElement}
@@ -68,6 +71,22 @@ export class Meter
         }
     }
 
+    show()
+    {
+        this.isShown = true;
+        if(!this.isVisualValueSet) {
+            const percentage = Math.max(0, Math.min((this.currentValue - this.min) / (this.max - this.min), 1));
+            this.bar.style.width = `${percentage * 100}%`;
+            this.text.innerText = this.meterText + (Math.round(this.currentValue * 100) / 100).toString();
+            this.isVisualValueSet = true;
+        }
+    }
+
+    hide()
+    {
+        this.isShown = false;
+    }
+
 
     /**
      * Updates a given meter to a given value
@@ -75,8 +94,20 @@ export class Meter
      */
     update(value)
     {
-        const percentage = Math.max(0, Math.min((value - this.min) / (this.max - this.min), 1));
-        this.bar.style.width = `${percentage * 100}%`;
-        this.text.innerText = this.meterText + (Math.round(value * 100) / 100).toString();
+        if(value === this.currentValue)
+        {
+            return;
+        }
+        this.currentValue = value;
+        if(this.isShown) {
+            const percentage = Math.max(0, Math.min((value - this.min) / (this.max - this.min), 1));
+            this.bar.style.width = `${percentage * 100}%`;
+            this.text.innerText = this.meterText + (Math.round(value * 100) / 100).toString();
+            this.isVisualValueSet = true;
+        }
+        else
+        {
+            this.isVisualValueSet = false;
+        }
     }
 }

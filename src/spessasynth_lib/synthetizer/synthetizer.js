@@ -4,12 +4,14 @@ import {ShiftableByteArray} from "../utils/shiftable_array.js";
 import { arrayToHexString, consoleColors } from '../utils/other.js';
 import { midiControllers } from '../midi_parser/midi_message.js'
 import { WorkletChannel } from './worklet_system/worklet_channel.js'
-import { EventHandler } from '../utils/event_handler.js'
+import { EventHandler } from '../utils/synth_event_handler.js'
 
 const VOICES_CAP = 450;
 
-export const DEFAULT_GAIN = 0.5;
+export const DEFAULT_GAIN = 1;
 export const DEFAULT_PERCUSSION = 9;
+
+export const DEFAULT_CHANNEL_COUNT = 16;
 
 export class Synthetizer {
     /**
@@ -60,7 +62,7 @@ export class Synthetizer {
          *  create 16 channels
          * @type {WorkletChannel[]|MidiChannel[]}
          */
-        this.midiChannels = [...Array(16).keys()].map(j => new WorkletChannel(this.volumeController, this.defaultPreset, j + 1, false));
+        this.midiChannels = [...Array(DEFAULT_CHANNEL_COUNT).keys()].map(j => new WorkletChannel(this.volumeController, this.defaultPreset, j + 1, false));
 
         // change percussion channel to the percussion preset
         this.midiChannels[DEFAULT_PERCUSSION].percussionChannel = true;
@@ -68,6 +70,15 @@ export class Synthetizer {
         this.midiChannels[DEFAULT_PERCUSSION].bank = 128;
 
         console.log("%cSpessaSynth is ready!", consoleColors.recognized);
+    }
+
+    /**
+     * Adds a new channel to the synthesizer
+     */
+    addNewChannel()
+    {
+        this.midiChannels.push(new WorkletChannel(this.volumeController, this.defaultPreset, this.midiChannels.length + 1, false));
+        this.eventHandler.callEvent("newchannel", this.midiChannels[this.midiChannels.length - 1]);
     }
 
     /**
@@ -239,7 +250,7 @@ export class Synthetizer {
             // reset
             ch.resetControllers();
             ch.bank = 0;
-            if(ch.channelNumber - 1 === DEFAULT_PERCUSSION) {
+            if((ch.channelNumber - 1) % 16 === DEFAULT_PERCUSSION) {
                 ch.setPreset(this.percussionPreset);
                 ch.percussionChannel = true;
                 this.eventHandler.callEvent("drumchange",{
@@ -425,19 +436,9 @@ export class Synthetizer {
                         // determine the channel 0 means channel 10 (default), 1 means 1 etc.
                         const channel = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15][messageData[5] & 0x0F]; // for example 1A means A = 11, which corresponds to channel 12 (counting from 1)
 
-                        const channelObject = this.midiChannels[channel];
-                        if(messageData[7] > 0 && messageData[5] >> 4)// if set to other than 0, is a drum channel
-                        {
-                            channelObject.percussionChannel = true;
-                            channelObject.setPreset(this.soundFont.getPreset(128, channelObject.preset.program));
-                        }
-                        else
-                        {
-                            channelObject.percussionChannel = false;
-                            channelObject.setPreset(this.soundFont.getPreset(0, channelObject.preset.program));
-                        }
+                        this.setDrums(channel, messageData[7] > 0 && messageData[5] >> 4); // if set to other than 0, is a drum channel
                         console.log(
-                            `%cChannel %c${channel}%c ${channelObject.percussionChannel ? 
+                            `%cChannel %c${channel}%c ${this.midiChannels[channel].percussionChannel ? 
                                 "is now a drum channel" 
                                 : 
                                 "now isn't a drum channel"
@@ -448,14 +449,6 @@ export class Synthetizer {
                             consoleColors.info,
                             consoleColors.value);
 
-                        this.eventHandler.callEvent("drumchange",{
-                            channel: channel,
-                            isDrumChannel: channelObject.percussionChannel
-                        });
-                        this.eventHandler.callEvent("programchange",{
-                            channel: channel,
-                            preset: channelObject.preset
-                        });
                     }
                     else
                     if(messageData[4] === 0x40 && messageData[6] === 0x06 && messageData[5] === 0x00)
@@ -516,6 +509,34 @@ export class Synthetizer {
 
 
         }
+    }
+
+    /**
+     * Toggles drums on a given channel
+     * @param channel {number}
+     * @param isDrum {boolean}
+     */
+    setDrums(channel, isDrum)
+    {
+        const channelObject = this.midiChannels[channel];
+        if(isDrum)
+        {
+            channelObject.percussionChannel = true;
+            channelObject.setPreset(this.soundFont.getPreset(128, channelObject.preset.program));
+        }
+        else
+        {
+            channelObject.percussionChannel = false;
+            channelObject.setPreset(this.soundFont.getPreset(0, channelObject.preset.program));
+        }
+        this.eventHandler.callEvent("drumchange",{
+            channel: channel,
+            isDrumChannel: channelObject.percussionChannel
+        });
+        this.eventHandler.callEvent("programchange",{
+            channel: channel,
+            preset: channelObject.preset
+        });
     }
 
     /**

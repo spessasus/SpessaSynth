@@ -125,6 +125,18 @@ export class Renderer
             }
             return;
         }
+        // calculate fps
+        let timeSinceLastFrame = performance.now() - this.frameTimeStart;
+        let fps = 1000 / timeSinceLastFrame;
+
+        if(timeSinceLastFrame <= 0)
+        {
+            if (auto) {
+                requestAnimationFrame(this.render.bind(this));
+            }
+            return;
+        }
+
         if (auto) {
             this.drawingContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
         }
@@ -269,10 +281,6 @@ export class Renderer
                 })
             }
         }
-
-        // calculate fps
-        let timeSinceLastFrame = performance.now() - this.frameTimeStart;
-        let fps = 1000 / timeSinceLastFrame;
 
         // draw note count and fps
         this.drawingContext.textAlign = "end";

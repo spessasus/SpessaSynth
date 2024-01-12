@@ -45,6 +45,8 @@ export class MIDI{
         let loopStart = null;
         let loopEnd = null;
 
+        this.lastVoiceEventTick = 0;
+
         /**
          * Read all the tracks
          * @type {MidiMessage[][]}
@@ -115,7 +117,12 @@ export class MIDI{
                         eventDataLength = readVariableLengthQuantity(trackChunk.data);
                         break;
                     default:
+                        // voice message
                         // get the midi message length
+                        if(totalTicks > this.lastVoiceEventTick)
+                        {
+                            this.lastVoiceEventTick = totalTicks;
+                        }
                         eventDataLength = dataBytesAmount[statusByte >> 4];
                         break;
                 }
@@ -195,8 +202,8 @@ export class MIDI{
                 consoleColors.value);
         }
 
-        this.lastEventTick = Math.max(...this.tracks.map(track =>
-        track[track.length - 1].ticks));
+        //this.lastVoiceEventTick = Math.max(...this.tracks.map(track =>
+        //track[track.length - 1].ticks));
         const firstNoteOns = [];
         for(const t of this.tracks)
         {
@@ -208,19 +215,25 @@ export class MIDI{
         }
         this.firstNoteOn = Math.min(...firstNoteOns);
 
-        console.log(`%cMIDI file parsed. Total tick time: %c${this.lastEventTick}`,
+        console.log(`%cMIDI file parsed. Total tick time: %c${this.lastVoiceEventTick}`,
             consoleColors.info,
             consoleColors.recognized);
         console.groupEnd();
-
-        if(loopStart === null )
+        
+        if(loopStart !== null && loopEnd === null)
         {
+            // not a loop
             loopStart = this.firstNoteOn;
+            loopEnd = this.lastVoiceEventTick;
         }
+        else {
+            if (loopStart === null) {
+                loopStart = this.firstNoteOn;
+            }
 
-        if(loopEnd === null || loopEnd === 0)
-        {
-            loopEnd = this.lastEventTick;
+            if (loopEnd === null || loopEnd === 0) {
+                loopEnd = this.lastVoiceEventTick;
+            }
         }
 
         /**

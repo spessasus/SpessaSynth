@@ -6,7 +6,8 @@
  * "controllerchange"|
  * "programchange"|
  * "drumchange"|
- * "stopall"} EventTypes
+ * "stopall"|
+ * "newchannel"} EventTypes
  */
 export class EventHandler
 {
@@ -25,7 +26,8 @@ export class EventHandler
             "controllerchange": {},
             "programchange": {},
             "drumchange": {},
-            "stopall": {}
+            "stopall": {},
+            "newchannel": {}
         };
     }
 

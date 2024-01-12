@@ -213,12 +213,27 @@ export class MidiKeyboard
         this.synth.eventHandler.addEvent("noteon", "keyboard-note-on", e => {
             this.pressNote(e.midiNote, e.channel, e.velocity, e.channelVolume, e.channelExpression);
         });
+
         this.synth.eventHandler.addEvent("noteoff", "keyboard-note-off", e => {
             this.releaseNote(e.midiNote, e.channel);
-        })
+        });
+
         this.synth.eventHandler.addEvent("stopall", "keyboard-stop-all", () => {
             this.clearNotes();
-        })
+        });
+
+        this.synth.eventHandler.addEvent("newchannel", "keyboard-new-channel",  () => {
+            const option = document.createElement("option");
+
+            option.value = channelNumber.toString();
+            option.innerText = `Channel ${channelNumber + 1}`;
+
+            option.style.background = channelColors[channelNumber % channelColors.length];
+            option.style.color = "rgb(0, 0, 0)";
+
+            channelSelector.appendChild(option);
+            channelNumber++
+        });
     }
 
     toggleMode()
@@ -299,7 +314,7 @@ export class MidiKeyboard
 
         let isSharp = key.classList.contains("sharp_key");
         let brightness = expression * volume * (velocity / 127);
-        let rgbaValues = this.channelColors[channel].match(/\d+(\.\d+)?/g).map(parseFloat);
+        let rgbaValues = this.channelColors[channel % 16].match(/\d+(\.\d+)?/g).map(parseFloat);
 
         // multiply the rgb values by brightness
         let color;
@@ -326,7 +341,7 @@ export class MidiKeyboard
         /**
          * @type {string[]}
          */
-        this.keyColors[midiNote].push(this.channelColors[channel]);
+        this.keyColors[midiNote].push(this.channelColors[channel % 16]);
     }
 
     /**

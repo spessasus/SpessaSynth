@@ -3,6 +3,7 @@ import {MidiChannel} from "../../../spessasynth_lib/synthetizer/native_system/mi
 import { getDrumsSvg, getLoopSvg, getMuteSvg, getNoteSvg, getVolumeSvg } from '../icons.js'
 import { ShiftableByteArray } from '../../../spessasynth_lib/utils/shiftable_array.js';
 import { Meter } from './synthui_meter.js'
+import { Selector } from './synthui_selector.js'
 import { midiPatchNames } from '../../../spessasynth_lib/utils/other.js'
 import { midiControllers } from '../../../spessasynth_lib/midi_parser/midi_message.js'
 
@@ -18,8 +19,8 @@ export class SynthetizerUI
         this.uiDiv = document.createElement("div");
         this.uiDiv.classList.add("wrapper");
         wrapper.appendChild(this.uiDiv);
-        this.uiDiv.style.visibility = "hidden";
-        setTimeout(() => this.uiDiv.style.visibility = "visible", 500);
+        this.uiDiv.style.visibility = "visible";
+        this.isShown = false;
     }
 
     createMainSynthController()
@@ -111,6 +112,15 @@ export class SynthetizerUI
         showControllerButton.onclick = () => {
             controller.classList.toggle("synthui_controller_show");
             controlsWrapper.classList.toggle("controls_wrapper_show");
+            this.isShown = !this.isShown;
+            if(this.isShown)
+            {
+                this.showControllers();
+            }
+            else
+            {
+                this.hideControllers()
+            }
         }
 
         // black midi mode toggle
@@ -121,6 +131,15 @@ export class SynthetizerUI
             this.synth.highPerformanceMode = !this.synth.highPerformanceMode;
         }
 
+        // vibrato reset
+        const vibratoReset = document.createElement("button");
+        vibratoReset.innerText = "Disable custom vibrato";
+        vibratoReset.classList.add("synthui_button");
+        vibratoReset.onclick = () => {
+            this.synth.lockAndResetChannelVibrato();
+            vibratoReset.parentNode.removeChild(vibratoReset);
+        }
+
         // meters
         controlsWrapper.appendChild(this.volumeController.div);
         controlsWrapper.appendChild(this.panController.div);
@@ -129,6 +148,7 @@ export class SynthetizerUI
         controlsWrapper.appendChild(midiPanicButton);
         controlsWrapper.appendChild(resetCCButton);
         controlsWrapper.appendChild(highPerfToggle);
+        controlsWrapper.appendChild(vibratoReset);
         // main synth div
         this.uiDiv.appendChild(this.voiceMeter.div);
         this.uiDiv.appendChild(showControllerButton);
@@ -139,11 +159,19 @@ export class SynthetizerUI
     {
         this.voiceMeter.update(this.synth.voicesAmount);
 
-        for(let i = 0; i < this.controllers.length; i++)
-        {
+        this.controllers.forEach((controller, i) => {
             // update channel
-            this.controllers[i].voiceMeter.update(this.synth.midiChannels[i].voicesAmount);
-        }
+            let voices = this.synth.midiChannels[i].voicesAmount;
+            controller.voiceMeter.update(voices);
+            if(voices < 1 && this.synth.voicesAmount > 0)
+            {
+                controller.controller.classList.add("no_voices");
+            }
+            else
+            {
+                controller.controller.classList.remove("no_voices");
+            }
+        });
         this.volumeController.update((this.synth.volumeController.gain.value * (1 / DEFAULT_GAIN)) * 100);
         this.panController.update(this.synth.panController.pan.value);
     }
@@ -156,15 +184,22 @@ export class SynthetizerUI
          * @type {ChannelController[]}
          */
         this.controllers = [];
-        let num = 0;
         for(const chan of this.synth.midiChannels)
         {
-            const controller = this.createChannelController(chan, num);
+            const controller = this.createChannelController(chan, this.controllers.length);
             this.controllers.push(controller);
             dropdownDiv.appendChild(controller.controller);
-            num++;
         }
 
+        this.setEventListeners();
+
+        setInterval(this.updateVoicesAmount.bind(this), 100);
+        this.hideControllers();
+    }
+
+    setEventListeners()
+    {
+        const dropdownDiv = this.uiDiv.getElementsByClassName("synthui_controller")[0];
         // add event listeners
         this.synth.eventHandler.addEvent("programchange", "synthui-program-change", e =>
         {
@@ -172,7 +207,7 @@ export class SynthetizerUI
             {
                 return;
             }
-            this.controllers[e.channel].preset.value = JSON.stringify([e.preset.bank, e.preset.program]);
+            this.controllers[e.channel].preset.set(JSON.stringify([e.preset.bank, e.preset.program]));
         });
 
         this.synth.eventHandler.addEvent("controllerchange", "synthui-controller-change",e => {
@@ -223,10 +258,42 @@ export class SynthetizerUI
                 return;
             }
             this.controllers[e.channel].drumsToggle.innerHTML = (e.isDrumChannel ? getDrumsSvg(32) : getNoteSvg(32));
-            this.reloadSelector(this.controllers[e.channel].preset, e.isDrumChannel ? this.percussionList : this.instrumentList);
+            this.controllers[e.channel].preset.reload(e.isDrumChannel ? this.percussionList : this.instrumentList);
         });
 
-        setInterval(this.updateVoicesAmount.bind(this), 100);
+        this.synth.eventHandler.addEvent("newchannel", "synthui-new-channel", channel => {
+            const controller = this.createChannelController(channel, this.controllers.length);
+            this.controllers.push(controller);
+            dropdownDiv.appendChild(controller.controller);
+            this.hideControllers();
+        });
+    }
+
+    hideControllers()
+    {
+        this.controllers.forEach(c => {
+            c.voiceMeter.hide();
+            c.pitchWheel.hide();
+            c.pan.hide();
+            c.expression.hide();
+            c.volume.hide();
+            c.mod.hide();
+            c.chorus.hide();
+            c.preset.hide();
+        })
+    }
+    showControllers()
+    {
+        this.controllers.forEach(c => {
+            c.voiceMeter.show();
+            c.pitchWheel.show();
+            c.pan.show();
+            c.expression.show();
+            c.volume.show();
+            c.mod.show();
+            c.chorus.show();
+            c.preset.show();
+        })
     }
 
     /**
@@ -236,9 +303,10 @@ export class SynthetizerUI
      *     pitchWheel: Meter,
      *     pan: Meter,
      *     expression: Meter,
+     *     volume: Meter,
      *     mod: Meter,
      *     chorus: Meter,
-     *     preset: HTMLSelectElement,
+     *     preset: Selector,
      *     presetReset: HTMLDivElement,
      *     drumsToggle: HTMLDivElement
      * }} ChannelController
@@ -257,7 +325,7 @@ export class SynthetizerUI
         controller.classList.add("channel_controller");
 
         // voice meter
-        const voiceMeter = new Meter(this.channelColors[channelNumber],
+        const voiceMeter = new Meter(this.channelColors[channelNumber % this.channelColors.length],
             "Voices: ",
             0,
             100,
@@ -266,7 +334,7 @@ export class SynthetizerUI
         controller.appendChild(voiceMeter.div);
 
         // pitch wheel
-        const pitchWheel = new Meter(this.channelColors[channelNumber],
+        const pitchWheel = new Meter(this.channelColors[channelNumber % this.channelColors.length],
             "Pitch: ",
             -8192,
             8192,
@@ -283,7 +351,7 @@ export class SynthetizerUI
         controller.appendChild(pitchWheel.div);
 
         // pan controller
-        const pan = new Meter(this.channelColors[channelNumber],
+        const pan = new Meter(this.channelColors[channelNumber % this.channelColors.length],
             "Pan: ",
             -1,
             1,
@@ -296,7 +364,7 @@ export class SynthetizerUI
         controller.appendChild(pan.div);
 
         // expression controller
-        const expression = new Meter(this.channelColors[channelNumber],
+        const expression = new Meter(this.channelColors[channelNumber % this.channelColors.length],
             "Expression: ",
             0,
             127,
@@ -310,7 +378,7 @@ export class SynthetizerUI
         controller.appendChild(expression.div);
 
         // volume controller
-        const volume = new Meter(this.channelColors[channelNumber],
+        const volume = new Meter(this.channelColors[channelNumber % this.channelColors.length],
             "Volume: ",
             0,
             127,
@@ -324,7 +392,7 @@ export class SynthetizerUI
         controller.appendChild(volume.div);
 
         // modulation wheel
-        const modulation = new Meter(this.channelColors[channelNumber],
+        const modulation = new Meter(this.channelColors[channelNumber % this.channelColors.length],
             "Mod Wheel: ",
             0,
             127,
@@ -337,7 +405,7 @@ export class SynthetizerUI
         controller.appendChild(modulation.div);
 
         // chorus
-        const chorus = new Meter(this.channelColors[channelNumber],
+        const chorus = new Meter(this.channelColors[channelNumber % this.channelColors.length],
             "Chorus: ",
             0,
             127,
@@ -353,7 +421,7 @@ export class SynthetizerUI
         const presetReset = document.createElement("div");
 
         // preset controller
-        const presetSelector = this.createSelector((
+        const presetSelector = new Selector((
             channel.percussionChannel ? this.percussionList : this.instrumentList
         ),
             presetName => {
@@ -363,13 +431,13 @@ export class SynthetizerUI
             this.synth.system = "gs";
             this.synth.controllerChange(channelNumber, midiControllers.bankSelect, data[0]);
             this.synth.programChange(channelNumber, data[1]);
-            presetSelector.classList.add("locked_selector");
+            presetSelector.mainDiv.classList.add("locked_selector");
             this.synth.midiChannels[channelNumber].lockPreset = true;
             this.synth.system = sys;
         }
         );
         presetSelector.title = "Change the instrument that the channel is using";
-        controller.appendChild(presetSelector);
+        controller.appendChild(presetSelector.mainDiv);
 
         // preset reset
         presetReset.innerHTML = getLoopSvg(32);
@@ -378,7 +446,7 @@ export class SynthetizerUI
         presetReset.classList.add("voice_reset");
         presetReset.onclick = () => {
             this.synth.midiChannels[channelNumber].lockPreset = false;
-            presetSelector.classList.remove("locked_selector");
+            presetSelector.mainDiv.classList.remove("locked_selector");
         }
         controller.appendChild(presetReset);
 
@@ -463,6 +531,15 @@ export class SynthetizerUI
                     const controller = this.uiDiv.getElementsByClassName("synthui_controller")[0];
                     controller.classList.toggle("synthui_controller_show");
                     controller.getElementsByClassName("controls_wrapper")[0].classList.toggle("controls_wrapper_show");
+                    this.isShown = !this.isShown;
+                    if(this.isShown)
+                    {
+                        this.showControllers();
+                    }
+                    else
+                    {
+                        this.hideControllers()
+                    }
                     break;
 
                 case "b":
@@ -476,78 +553,6 @@ export class SynthetizerUI
                     break;
             }
         })
-    }
-
-    /**
-     * Creates a new selector
-     * @param elements  {{name: string, program: number, bank: number}[]}
-     * @param editCallback {function(string)}
-     * @returns {HTMLSelectElement}
-     */
-    createSelector(elements,
-                   editCallback)
-    {
-        const mainDiv = document.createElement("select");
-        mainDiv.classList.add("voice_selector");
-        mainDiv.classList.add("controller_element");
-
-        this.reloadSelector(mainDiv, elements);
-
-        mainDiv.onchange = () => editCallback(mainDiv.value);
-
-        return mainDiv;
-    }
-
-    /**
-     * @param selector {HTMLSelectElement}
-     * @param elements {{name: string, program: number, bank: number}[]}
-     */
-    reloadSelector(selector, elements)
-    {
-        selector.innerHTML = "";
-        let lastProgram = -20;
-
-        let currentGroup; // current group (optgroup element) or if single preset for program, the select element
-        let isInGroup = false; // controls how we should format the preset name
-
-        for(const preset of elements)
-        {
-            const bank = preset.bank;
-            const program = preset.program;
-
-            // create a new group
-            if(program !== lastProgram)
-            {
-                lastProgram = program;
-                // unless there's only 1 preset for this program
-                if(elements.filter(e => e.program === lastProgram).length > 1)
-                {
-                    isInGroup = true;
-                    currentGroup = document.createElement("optgroup");
-                    currentGroup.label = `${lastProgram}. ${midiPatchNames[lastProgram]}`;
-                    selector.appendChild(currentGroup);
-                }
-                else
-                {
-                    isInGroup = false;
-                    currentGroup = selector;
-                }
-            }
-
-            const element = document.createElement("option");
-            element.classList.add("selector_option");
-            if(isInGroup)
-            {
-                element.innerText = `${preset.program}.${preset.bank}. ${preset.name}`;
-            }
-            else
-            {
-                element.innerText = `${preset.program}. ${preset.name}`;
-            }
-            element.value = JSON.stringify([bank, program]);
-            currentGroup.appendChild(element);
-        }
-
     }
 
     getInstrumentList()
@@ -589,7 +594,7 @@ export class SynthetizerUI
     {
         this.getInstrumentList();
         this.controllers.forEach((controller, i) => {
-            this.reloadSelector(controller.preset, this.synth.midiChannels[i].percussionChannel ? this.percussionList : this.instrumentList);
+            controller.preset.reload(this.synth.midiChannels[i].percussionChannel ? this.percussionList : this.instrumentList);
         })
     }
 }
