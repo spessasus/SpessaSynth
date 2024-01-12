@@ -427,7 +427,11 @@ export class SequencerNew {
          * Save controllers here and send them only after
          * @type {number[][]}
          */
-        const savedControllers = Array(16).fill(Array.from(defaultControllerArray));
+        const savedControllers = [];
+        for (let i = 0; i < 16; i++)
+        {
+            savedControllers.push(Array.from(defaultControllerArray));
+        }
 
         while(true)
         {
@@ -476,7 +480,8 @@ export class SequencerNew {
                         controllerNumber === midiControllers.NRPNLsb                 ||
                         controllerNumber === midiControllers.NRPNMsb                 ||
                         controllerNumber === midiControllers.bankSelect              ||
-                        controllerNumber === midiControllers.lsbForControl0BankSelect
+                        controllerNumber === midiControllers.lsbForControl0BankSelect||
+                        controllerNumber === midiControllers.resetAllControllers
                     )
                     {
                         this.synth.controllerChange(info.channel, controllerNumber, event.messageData[1]);
@@ -532,7 +537,7 @@ export class SequencerNew {
                 {
                     // every controller that has changed
                     savedControllers[channelNumber].forEach((value, index) => {
-                        if(value !== defaultControllerArray[channelNumber])
+                        if(value !== defaultControllerArray[index])
                         {
                             this.synth.controllerChange(channelNumber, index, value);
                         }
@@ -540,6 +545,7 @@ export class SequencerNew {
                 }
             })
         }
+        window.abba = savedControllers;
     }
 
     /**
