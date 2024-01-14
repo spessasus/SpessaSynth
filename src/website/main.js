@@ -24,6 +24,8 @@ let fileInput = document.getElementById("midi_file_input");
 fileInput.value = "";
 fileInput.focus();
 
+let synthReady = false;
+
 /**
  * @type {{name: string, sf: SoundFont2}[]}
  */
@@ -76,6 +78,16 @@ async function fetchFont(fileName, callback)
  */
 async function startMidi(midiFiles)
 {
+    if(!synthReady)
+    {
+        setTimeout(() => startMidi(midiFiles), 100);
+        return;
+    }
+    else if(!manager.ready)
+    {
+        setTimeout(() => startMidi(midiFiles), 100);
+        return;
+    }
     let fName;
     if(midiFiles[0].name.length > 20)
     {
@@ -162,6 +174,7 @@ async function replaceFont(fontName)
                 window.manager.seq.currentTime -= 0.1;
             }
         }
+        synthReady = true;
     }
 
     if(window.loadedSoundfonts.find(sf => sf.name === fontName))

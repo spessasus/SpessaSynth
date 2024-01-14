@@ -199,6 +199,9 @@ export class SequencerNew {
          */
         this.tracks = this.midiData.tracks;
 
+        // copy over the port data (can be overwritten in real time if needed)
+        this.midiPorts = this.midiData.midiPorts;
+
         /**
          * Same as Audio.duration (seconds)
          * @type {number}
@@ -746,8 +749,9 @@ export class SequencerNew {
 
                 if(this.midiPortChannelOffsets[port] === undefined)
                 {
-                    if(this.synth.midiChannels.length < this.midiPortChannelOffset + 16)
-                    this._addNewMidiPort();
+                    if(this.synth.midiChannels.length < this.midiPortChannelOffset + 16) {
+                        this._addNewMidiPort();
+                    }
                     this.midiPortChannelOffsets[port] = this.midiPortChannelOffset;
                     this.midiPortChannelOffset += 16;
                 }

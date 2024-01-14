@@ -1,7 +1,6 @@
 import {MidiKeyboard} from "./ui/midi_keyboard.js";
 import {Synthetizer} from "../spessasynth_lib/synthetizer/synthetizer.js";
 import {Renderer} from "./ui/renderer.js";
-import {Sequencer} from "../spessasynth_lib/sequencer/sequencer.js";
 import { SequencerNew } from '../spessasynth_lib/sequencer/sequencer_new.js'
 import {MIDI} from "../spessasynth_lib/midi_parser/midi_loader.js";
 
@@ -39,6 +38,7 @@ export class Manager {
     constructor(context, soundFont) {
         this.context = context;
         this.initializeContext(context, soundFont).then();
+        this.ready = false;
     }
 
     async initializeContext(context, soundFont) {
@@ -110,6 +110,7 @@ export class Manager {
                     break;
             }
         });
+        this.ready = true;
     }
 
     /**

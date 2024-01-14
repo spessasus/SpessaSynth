@@ -48,6 +48,12 @@ export class MIDI{
         this.lastVoiceEventTick = 0;
 
         /**
+         * Midi port numbers for each tracks
+         * @type {number[]}
+         */
+        this.midiPorts = [];
+
+        /**
          * Read all the tracks
          * @type {MidiMessage[][]}
          */
@@ -59,6 +65,7 @@ export class MIDI{
              */
             const track = [];
             const trackChunk = this.readMIDIChunk(fileByteArray);
+            this.midiPorts.push(0)
 
             if(trackChunk.type !== "MTrk")
             {
@@ -192,6 +199,12 @@ export class MIDI{
                             }
                             break;
                     }
+                }
+                else
+                // check for midi port
+                if(statusByte === messageTypes.midiPort)
+                {
+                    this.midiPorts[i] = eventData[0];
                 }
             }
             this.tracks.push(track);
