@@ -212,6 +212,7 @@ document.body.onclick = () =>
             titleMessage.innerText = TITLE;
             // prepare midi interface
             window.manager = new Manager(audioContextMain, soundFontParser);
+            synthReady = true;
         }
     }
     document.body.onclick = null;
