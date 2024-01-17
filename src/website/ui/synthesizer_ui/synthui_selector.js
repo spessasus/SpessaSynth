@@ -16,7 +16,13 @@ export class Selector
          * @type {{name: string, program: number, bank: number}[]}
          */
         this.elements = elements;
-        this.value = JSON.stringify([this.elements[0].bank, this.elements[0].program]);
+        if(this.elements.length > 0) {
+            this.value = JSON.stringify([this.elements[0].bank, this.elements[0].program]);
+        }
+        else
+        {
+            this.value = "";
+        }
 
         this.mainDiv = document.createElement("select");
         this.mainDiv.classList.add("voice_selector");

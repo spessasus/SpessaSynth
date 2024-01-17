@@ -57,7 +57,7 @@ app.get("/setlastsf2", (req) => {
 });
 
 app.listen(PORT,  HOST, undefined, () =>{
-    let url = `http://${HOST}:${PORT}`;
+    let url = `http://localhost:${PORT}`;
     open(url).then(() => {
         console.log(`Running on ${url}. A browser window should open.`);
     });
