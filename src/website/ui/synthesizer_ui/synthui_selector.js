@@ -5,9 +5,11 @@ export class Selector
     /**
      * Creates a new selector
      * @param elements  {{name: string, program: number, bank: number}[]}
+     * @param description {string}
      * @param editCallback {function(string)}
      */
     constructor(elements,
+                description,
                 editCallback = undefined)
     {
         this.isShown = true;
@@ -27,6 +29,7 @@ export class Selector
         this.mainDiv = document.createElement("select");
         this.mainDiv.classList.add("voice_selector");
         this.mainDiv.classList.add("controller_element");
+        this.mainDiv.title = description;
 
         this.reload();
 

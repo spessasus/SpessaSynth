@@ -92,11 +92,13 @@ export class SynthetizerUI
         // note killer
         let midiPanicButton = document.createElement("button");
         midiPanicButton.innerText = "MIDI Panic";
+        midiPanicButton.title = "Stops all voices immediately";
         midiPanicButton.classList.add("synthui_button");
         midiPanicButton.onclick = () => this.synth.stopAll(true);
 
         let resetCCButton = document.createElement("button");
         resetCCButton.innerText = "System Reset";
+        resetCCButton.title = "Resets all controllers to their default values"
         resetCCButton.classList.add("synthui_button");
         resetCCButton.onclick = () => this.synth.resetControllers();
 
@@ -108,6 +110,7 @@ export class SynthetizerUI
         // channel controller shower
         let showControllerButton = document.createElement("button");
         showControllerButton.innerText = "Synthesizer controller";
+        showControllerButton.title = "Shows the synthesizer controller"
         showControllerButton.classList.add("synthui_button");
         showControllerButton.onclick = () => {
             controller.classList.toggle("synthui_controller_show");
@@ -126,6 +129,7 @@ export class SynthetizerUI
         // black midi mode toggle
         const highPerfToggle = document.createElement("button");
         highPerfToggle.innerText = "Black MIDI mode";
+        highPerfToggle.title = "Toggles the High Performance Mode, simplifying the look and killing the notes faster"
         highPerfToggle.classList.add("synthui_button");
         highPerfToggle.onclick = () => {
             this.synth.highPerformanceMode = !this.synth.highPerformanceMode;
@@ -134,6 +138,7 @@ export class SynthetizerUI
         // vibrato reset
         const vibratoReset = document.createElement("button");
         vibratoReset.innerText = "Disable custom vibrato";
+        vibratoReset.title = "Disables the custom (NRPN) Vibrato permamently. Reload the website to reenable it"
         vibratoReset.classList.add("synthui_button");
         vibratoReset.onclick = () => {
             this.synth.lockAndResetChannelVibrato();
@@ -424,6 +429,7 @@ export class SynthetizerUI
         const presetSelector = new Selector((
             channel.percussionChannel ? this.percussionList : this.instrumentList
         ),
+            "Change the instrument that this channels is using",
             presetName => {
             const data = JSON.parse(presetName);
             this.synth.midiChannels[channelNumber].lockPreset = false;
