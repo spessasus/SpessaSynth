@@ -94,7 +94,9 @@ export class Synthetizer {
             return;
         }
 
-        if(this.highPerformanceMode && this.voicesAmount > 200 && velocity < 40)
+        if((this.highPerformanceMode && this.voicesAmount > 200 && velocity < 40)
+        ||
+            (this.highPerformanceMode && velocity < 10))
         {
             return;
         }

@@ -158,6 +158,7 @@ export class MidiKeyboard
 
         // channel selector
         const channelSelector = document.createElement("select");
+        channelSelector.classList.add("kebui_button");
 
         let channelNumber = 0;
         for(const channel of this.synth.midiChannels)
@@ -186,6 +187,7 @@ export class MidiKeyboard
                 return;
             }
             const inputSelector = document.createElement("select");
+            inputSelector.classList.add("kebui_button");
             // no device
             inputSelector.innerHTML = "<option value='-1' selected>No input selected</option>";
             for(const input of handler.inputs)

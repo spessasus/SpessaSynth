@@ -1,7 +1,6 @@
 import {MidiKeyboard} from "./ui/midi_keyboard.js";
 import {Synthetizer} from "../spessasynth_lib/synthetizer/synthetizer.js";
 import {Renderer} from "./ui/renderer.js";
-import { SequencerNew } from '../spessasynth_lib/sequencer/sequencer_new.js'
 import {MIDI} from "../spessasynth_lib/midi_parser/midi_loader.js";
 
 import {SoundFont2} from "../spessasynth_lib/soundfont/soundfont_parser.js";
@@ -9,6 +8,7 @@ import {SequencerUI} from "./ui/sequencer_ui/sequencer_ui.js";
 import {SynthetizerUI} from "./ui/synthesizer_ui/synthetizer_ui.js";
 import { MIDIDeviceHandler } from '../spessasynth_lib/midi_handler/midi_handler.js'
 import { WebMidiLinkHandler } from '../spessasynth_lib/midi_handler/web_midi_link.js'
+import { Sequencer } from '../spessasynth_lib/sequencer/sequencer.js'
 
 export class Manager {
     channelColors = [
@@ -124,7 +124,7 @@ export class Manager {
             return;
         }
         // create a new sequencer
-        this.seq = new SequencerNew(parsedMidi, this.synth);
+        this.seq = new Sequencer(parsedMidi, this.synth);
 
         // connect to the UI
         this.seqUI.connectSequencer(this.seq);

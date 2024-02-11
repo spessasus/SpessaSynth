@@ -7,6 +7,15 @@ import {readBytesAsUintBigEndian} from "../utils/byte_functions.js";
 const MIN_NOTE_TIME = 0.02;
 const MAX_NOTEONS_PER_S = 200;
 
+// an array with preset default values
+const defaultControllerArray = new Int16Array(127);
+// default values
+defaultControllerArray[midiControllers.mainVolume] = 100;
+defaultControllerArray[midiControllers.expressionController] = 127;
+defaultControllerArray[midiControllers.pan] = 64;
+defaultControllerArray[midiControllers.releaseTime] = 64;
+defaultControllerArray[midiControllers.brightness] = 64;
+
 export class Sequencer {
     /**
      * Creates a new Midi sequencer for playing back MIDI files
@@ -19,9 +28,15 @@ export class Sequencer {
         this.synth = synth;
 
         // event's number in this.events
-        this.eventIndex = 0;
+        /**
+         * @type {number[]}
+         */
+        this.eventIndex = [];
 
         // tracks the time that we have already played
+        /**
+         * @type {number}
+         */
         this.playedTime = 0;
 
         /**
@@ -54,6 +69,20 @@ export class Sequencer {
 
         // controls if the sequencer loops (defaults to true)
         this.loop = true;
+
+        /**
+         * midi port number for the corresponding track
+         * @type {number[]}
+         */
+        this.midiPorts = [];
+
+        this.midiPortChannelOffset = 0;
+
+        /**
+         * midi port: channel offset
+         * @type {Object<number, number>}
+         */
+        this.midiPortChannelOffsets = {};
 
         this.noteOnsPerS = 0;
 
@@ -162,16 +191,26 @@ export class Sequencer {
          * merge the tracks
          * @type {MidiMessage[]}
          */
-        this.events = this.midiData.tracks.flat();
-        this.events.sort((e1, e2) => e1.ticks - e2.ticks);
+        //this.events = this.midiData.tracks.flat();
+        //this.events.sort((e1, e2) => e1.ticks - e2.ticks);
+
+        /**
+         * @type {MidiMessage[][]}
+         */
+        this.tracks = this.midiData.tracks;
+
+        // copy over the port data (can be overwritten in real time if needed)
+        this.midiPorts = this.midiData.midiPorts;
 
         /**
          * Same as Audio.duration (seconds)
          * @type {number}
          */
-        this.duration = this.ticksToSeconds(this.events.findLast(e => e.messageStatusByte >> 4 === 8 || (e.messageStatusByte >> 4 === 9 && e.messageData[1] === 0)).ticks);
+        this.duration = this.ticksToSeconds(this.midiData.lastVoiceEventTick);
 
         console.log(`%cTOTAL TIME: ${formatTime(Math.round(this.duration)).time}`, consoleColors.recognized);
+        this.midiPortChannelOffset = 0;
+        this.midiPortChannelOffsets = {};
 
         if(this.renderer)
         {
@@ -180,6 +219,21 @@ export class Sequencer {
 
         this.synth.resetControllers();
         this.play(true);
+    }
+
+    /**
+     * Adds 16 channels to the synth
+     * @private
+     */
+    _addNewMidiPort()
+    {
+        for (let i = 0; i < 16; i++) {
+            this.synth.addNewChannel();
+            if(i === 9)
+            {
+                this.synth.setDrums(this.synth.midiChannels.length - 1, true);
+            }
+        }
     }
 
     calculateNoteTimes()
@@ -201,7 +255,11 @@ export class Sequencer {
         /**
          * @type {NoteTimes}
          */
+
+
         const noteTimes = [];
+        let events = this.tracks.flat();
+        events.sort((e1, e2) => e1.ticks - e2.ticks);
         for (let i = 0; i < 16; i++)
         {
             noteTimes.push({renderStartIndex: 0, notes: []});
@@ -211,9 +269,9 @@ export class Sequencer {
         let eventIndex = 0;
 
         console.log("%cLoading note times for note rendering...", consoleColors.warn);
-        while(eventIndex < this.events.length)
+        while(eventIndex < events.length)
         {
-            const event = this.events[eventIndex];
+            const event = events[eventIndex];
 
             const status = event.messageStatusByte >> 4;
             const channel = event.messageStatusByte & 0x0F;
@@ -253,9 +311,9 @@ export class Sequencer {
                 oneTickToSeconds = 60 / (this.getTempo(event) * this.midiData.timeDivision);
             }
 
-            if(++eventIndex >= this.events.length) break;
+            if(++eventIndex >= events.length) break;
 
-            elapsedTime += oneTickToSeconds * (this.events[eventIndex].ticks - event.ticks);
+            elapsedTime += oneTickToSeconds * (events[eventIndex].ticks - event.ticks);
         }
 
         console.log("%cFinished loading note times and ready to render the sequence!", consoleColors.info);
@@ -309,6 +367,12 @@ export class Sequencer {
         return this.ticksToSeconds(ticks - timeSinceLastTempo) + (timeSinceLastTempo * 60) / (tempo.tempo * this.midiData.timeDivision);
     }
 
+    _resetTimers()
+    {
+        this.playedTime = 0
+        this.eventIndex = Array(this.tracks.length).fill(0);
+    }
+
     /**
      * true if paused, false if playing or stopped
      * @returns {boolean}
@@ -319,6 +383,27 @@ export class Sequencer {
     }
 
     /**
+     * @returns {number} the index of the first to the current played time
+     */
+    _findFirstEventIndex()
+    {
+        let index = 0;
+        let ticks = Infinity;
+        this.tracks.forEach((track, i) => {
+            if(this.eventIndex[i] >= track.length)
+            {
+                return;
+            }
+            if(track[this.eventIndex[i]].ticks < ticks)
+            {
+                index = i;
+                ticks = track[this.eventIndex[i]].ticks;
+            }
+        });
+        return index;
+    }
+
+    /**
      * plays from start to the target time, excluding note messages (to get the synth to the correct state)
      * @private
      * @param time {number} in seconds
@@ -326,8 +411,6 @@ export class Sequencer {
      */
     _playTo(time, ticks = undefined)
     {
-        this.playedTime = 0;
-        this.eventIndex = 0;
         this.oneTickToSeconds = 60 / (120 * this.midiData.timeDivision);
         // process every non note message from the start
         this.synth.resetControllers();
@@ -336,51 +419,28 @@ export class Sequencer {
             this.MIDIout.send([messageTypes.reset]);
         }
 
-        // optimize to call pitchwheels 16 times only
-        const pitches = new Uint16Array(16);
+        this._resetTimers()
+        /**
+         * save pitch bends here and send them only after
+         * @type {number[]}
+         */
+        const pitchBends = Array(16).fill(8192);
 
-        // optimize program changes to call 16 times only
-        const programs = new Uint8Array(16);
-
-        for(let i = 0; i < 16; i++)
+        /**
+         * Save controllers here and send them only after
+         * @type {number[][]}
+         */
+        const savedControllers = [];
+        for (let i = 0; i < 16; i++)
         {
-            pitches[i] = 8192;
+            savedControllers.push(Array.from(defaultControllerArray));
         }
-        let event = this.events[this.eventIndex];
-        while(true) {
-            const type = event.messageStatusByte >> 4;
-            const channel = event.messageStatusByte & 0x0F;
-            if (type === 0x8 || type === 0x9) {
-                this.eventIndex++;
-                this.playedTime += this.oneTickToSeconds * (this.events[this.eventIndex].ticks - event.ticks);
-                event = this.events[this.eventIndex];
-            }
-            else
-            // pitch wheel
-            if(type === 0xE)
-            {
-                pitches[channel] = (event.messageData[1] << 7 ) | event.messageData[0];
-                this.eventIndex++;
-                this.playedTime += this.oneTickToSeconds * (this.events[this.eventIndex].ticks - event.ticks);
-                event = this.events[this.eventIndex];
-            }
-            else
-            // program change
-            if(type === 0xC)
-            {
-                programs[channel] = event.messageData[0];
-                this.eventIndex++;
-                this.playedTime += this.oneTickToSeconds * (this.events[this.eventIndex].ticks - event.ticks);
-                event = this.events[this.eventIndex];
-            }
-            else {
-                this._processEvent(event);
 
-                this.eventIndex++;
-                this.playedTime += this.oneTickToSeconds * (this.events[this.eventIndex].ticks - event.ticks);
-                event = this.events[this.eventIndex];
-            }
-
+        while(true)
+        {
+            // find next event
+            let trackIndex = this._findFirstEventIndex();
+            let event = this.tracks[trackIndex][this.eventIndex[trackIndex]];
             if(ticks !== undefined)
             {
                 if(event.ticks >= ticks)
@@ -395,21 +455,100 @@ export class Sequencer {
                     break;
                 }
             }
+
+            // skip note ons
+            const info = getEvent(event.messageStatusByte);
+            switch(info.status)
+            {
+                // skip note messages
+                case messageTypes.noteOn:
+                case messageTypes.noteOff:
+                    break;
+
+                // skip pitch bend
+                case messageTypes.pitchBend:
+                    pitchBends[info.channel] = event.messageData[1] << 7 | event.messageData[0];
+                    break;
+
+                case messageTypes.controllerChange:
+                    // do not skip data entries
+                    const controllerNumber = event.messageData[0];
+                    if(
+                        controllerNumber === midiControllers.dataDecrement           ||
+                        controllerNumber === midiControllers.dataEntryMsb            ||
+                        controllerNumber === midiControllers.dataDecrement           ||
+                        controllerNumber === midiControllers.lsbForControl6DataEntry ||
+                        controllerNumber === midiControllers.RPNLsb                  ||
+                        controllerNumber === midiControllers.RPNMsb                  ||
+                        controllerNumber === midiControllers.NRPNLsb                 ||
+                        controllerNumber === midiControllers.NRPNMsb                 ||
+                        controllerNumber === midiControllers.bankSelect              ||
+                        controllerNumber === midiControllers.lsbForControl0BankSelect||
+                        controllerNumber === midiControllers.resetAllControllers
+                    )
+                    {
+                        this.synth.controllerChange(info.channel, controllerNumber, event.messageData[1]);
+                    }
+                    else
+                    {
+                        if(savedControllers[info.channel] === undefined)
+                        {
+                            savedControllers[info.channel] = Array.from(defaultControllerArray);
+                        }
+                        savedControllers[info.channel][controllerNumber] = event.messageData[1];
+                    }
+                    break;
+
+                default:
+                    this._processEvent(event, trackIndex);
+                    break;
+            }
+
+            this.eventIndex[trackIndex]++;
+            // find next event
+            trackIndex = this._findFirstEventIndex();
+            let nextEvent = this.tracks[trackIndex][this.eventIndex[trackIndex]];
+            this.playedTime += this.oneTickToSeconds * (nextEvent.ticks - event.ticks);
         }
 
-        for(let i = 0; i < 16; i++)
+        // restoring saved controllers
+        if(this.MIDIout)
         {
-            if(this.MIDIout)
-            {
-                this.MIDIout.send([messageTypes.pitchBend | i, pitches[i] & 0x7F, pitches[i] >> 7]);
-                this.MIDIout.send([messageTypes.programChange | i, programs[i]]);
-            }
-            else
-            {
-                this.synth.pitchWheel(i, pitches[i] >> 7, pitches[i] & 0x7F);
-                this.synth.programChange(i, programs[i]);
+            // for all 16 channels
+            for (let channelNumber = 0; channelNumber < 16; channelNumber++) {
+                // send saved pitch bend
+                this.MIDIout.send([messageTypes.pitchBend | channelNumber, pitchBends[channelNumber] & 0x7F, pitchBends[channelNumber] >> 7]);
+
+                // every controller that has changed
+                savedControllers[channelNumber].forEach((value, index) => {
+                    if(value !== defaultControllerArray[channelNumber])
+                    {
+                        this.MIDIout.send([messageTypes.controllerChange | channelNumber, index, value])
+                    }
+                })
             }
         }
+        else
+        {
+            // for all synth channels
+            this.synth.midiChannels.forEach((channel, channelNumber) => {
+                // restore pitch bends
+                if(pitchBends[channelNumber] !== undefined) {
+                    this.synth.pitchWheel(channelNumber, pitchBends[channelNumber] >> 7, pitchBends[channelNumber] & 0x7F);
+                }
+                if(savedControllers[channelNumber] !== undefined)
+                {
+                    // every controller that has changed
+                    savedControllers[channelNumber].forEach((value, index) => {
+                        if(value !== defaultControllerArray[index])
+                        {
+                            this.synth.controllerChange(channelNumber, index, value);
+                        }
+                    })
+                }
+            })
+        }
+        window.abba = savedControllers;
     }
 
     /**
@@ -477,25 +616,34 @@ export class Sequencer {
     _processTick()
     {
         let current = this.currentTime;
-        if(this.eventIndex >= this.events.length || current > this.duration + 0.1)
+        while(this.playedTime < current)
         {
-            if(this.loop)
+            // find next event
+            let trackIndex = this._findFirstEventIndex();
+            let event = this.tracks[trackIndex][this.eventIndex[trackIndex]];
+            this._processEvent(event, trackIndex);
+
+            this.eventIndex[trackIndex]++;
+
+            // find next event
+            trackIndex = this._findFirstEventIndex();
+            if(this.tracks[trackIndex].length <= this.eventIndex[trackIndex])
             {
-                this.setTimeTicks(this.midiData.loop.start);
+                // song has ended
+                if(this.loop)
+                {
+                    this.setTimeTicks(this.midiData.loop.start);
+                    return;
+                }
+                this.pause();
+                if(this.songs.length > 1)
+                {
+                    this.nextSong();
+                }
                 return;
             }
-            this.pause();
-            if(this.songs.length > 1)
-            {
-                this.nextSong();
-            }
-            return;
-        }
-        let event = this.events[this.eventIndex];
-        while(this.playedTime <= current)
-        {
-            this._processEvent(event);
-            ++this.eventIndex;
+            let eventNext = this.tracks[trackIndex][this.eventIndex[trackIndex]];
+            this.playedTime += this.oneTickToSeconds * (eventNext.ticks - event.ticks);
 
             // loop
             if((this.midiData.loop.end <= event.ticks) && this.loop)
@@ -504,8 +652,7 @@ export class Sequencer {
                 return;
             }
             // if song has ended
-            else if(this.eventIndex >= this.events.length ||
-                current > this.duration + 0.1)
+            else if(current > this.duration + 0.1)
             {
                 if(this.loop)
                 {
@@ -519,9 +666,6 @@ export class Sequencer {
                 }
                 return;
             }
-
-            this.playedTime += this.oneTickToSeconds * (this.events[this.eventIndex].ticks - event.ticks);
-            event = this.events[this.eventIndex];
         }
     }
 
@@ -539,9 +683,10 @@ export class Sequencer {
     /**
      * Processes a single event
      * @param event {MidiMessage}
+     * @param trackIndex {number}
      * @private
      */
-    _processEvent(event)
+    _processEvent(event, trackIndex)
     {
         if(this.ignoreEvents) return;
         if(this.MIDIout)
@@ -552,6 +697,7 @@ export class Sequencer {
             }
         }
         const statusByteData = getEvent(event.messageStatusByte);
+        statusByteData.channel += this.midiPortChannelOffsets[this.midiPorts[trackIndex]] || 0;
         // process the event
         switch (statusByteData.status) {
             case messageTypes.noteOn:
@@ -592,13 +738,33 @@ export class Sequencer {
                 }
                 break;
 
+            case messageTypes.midiPort:
+                const port = event.messageData[0];
+                // assign new 16 channels if the port is not occupied yet
+                if(this.midiPortChannelOffset === 0)
+                {
+                    this.midiPortChannelOffset += 16;
+                    this.midiPortChannelOffsets[port] = 0;
+                }
+
+                if(this.midiPortChannelOffsets[port] === undefined)
+                {
+                    if(this.synth.midiChannels.length < this.midiPortChannelOffset + 16) {
+                        this._addNewMidiPort();
+                    }
+                    this.midiPortChannelOffsets[port] = this.midiPortChannelOffset;
+                    this.midiPortChannelOffset += 16;
+                }
+
+                this.midiPorts[trackIndex] = port;
+                break;
+
             case messageTypes.endOfTrack:
             case messageTypes.midiChannelPrefix:
             case messageTypes.timeSignature:
             case messageTypes.songPosition:
             case messageTypes.activeSensing:
             case messageTypes.keySignature:
-            case messageTypes.midiPort:
                 break;
 
             default:

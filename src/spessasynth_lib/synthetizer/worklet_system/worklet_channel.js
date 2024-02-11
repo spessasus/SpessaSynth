@@ -540,6 +540,18 @@ export class WorkletChannel {
         this.dataEntryState = dataEntryStates.NRPFine;
     }
 
+    setPitchBendRange(semitones)
+    {
+        this.channelPitchBendRange = semitones;
+        console.log(`%cChannel ${this.channelNumber} bend range. Semitones: %c${semitones}`,
+            consoleColors.info,
+            consoleColors.value);
+        this.post({
+            messageType: workletMessageType.ccChange,
+            messageData: [NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange, this.channelPitchBendRange << 7]
+        });
+    }
+
     /**
      * Executes a data entry for an NRP for a sc88pro NRP (because touhou yes) and RPN tuning
      * @param dataValue {number} dataEntryCoarse MSB
@@ -663,14 +675,7 @@ export class WorkletChannel {
 
                     // pitch bend range
                     case 0x0000:
-                        this.channelPitchBendRange = dataValue;
-                        console.log(`%cChannel ${this.channelNumber} bend range. Semitones: %c${dataValue}`,
-                            consoleColors.info,
-                            consoleColors.value);
-                        this.post({
-                            messageType: workletMessageType.ccChange,
-                            messageData: [NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange, this.channelPitchBendRange << 7]
-                        });
+                        this.setPitchBendRange(dataValue);
                         break;
 
                     // coarse tuning
@@ -703,9 +708,14 @@ export class WorkletChannel {
         });
     }
 
-    transposeChannel(semitones)
+    /**
+     * Transposes the channel by given amount of semitones
+     * @param semitones {number} Can be float
+     * @param force {boolean} defaults to false, if true transposes the channel even if it's a drum channel
+     */
+    transposeChannel(semitones, force=false)
     {
-        if(this.percussionChannel)
+        if(this.percussionChannel && !force)
         {
             return;
         }
