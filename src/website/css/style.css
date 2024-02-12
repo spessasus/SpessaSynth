@@ -1,11 +1,7 @@
-@font-face {
-    font-family: "Sans";
-    src: url("../OpenSans-Light.ttf");
-}
-
 * {
     --font-color: #ccc;
-    font-family: "Sans", serif;
+    --top-buttons-color: linear-gradient(201deg, #222, #333);
+    font-family: "Open Sans Light", sans-serif;
     color: var(--font-color);
     text-align: center;
     margin: 0;
@@ -13,7 +9,7 @@
 html, body {
     height: 100%;
     width: 100%;
-    background-color: black;
+    background: black;
     overflow-x: clip;
 }
 
@@ -42,9 +38,9 @@ a{
 /*Top*/
 .top_part
 {
-    --top-color: #101010;
+    --top-color: linear-gradient(31deg, #101010, #212121);
     position: relative;
-    background-color: var(--top-color);
+    background: var(--top-color);
     border-radius: 0 0 15px 15px;
     padding: 3px;
     display: flex;
@@ -52,6 +48,10 @@ a{
     align-content: space-around;
     justify-content: space-around;
     align-items: center;
+}
+
+.top_part_light{
+    --top-color: linear-gradient(20deg, #bbb, #ddd) !important;
 }
 
 input[type="file"] {
@@ -72,7 +72,7 @@ input[type="file"] {
 
 #progress_bar
 {
-    background-color: #206;
+    background: #206;
     display: block;
     position: absolute;
     width: 0;
@@ -104,14 +104,14 @@ input[type="file"] {
     padding: 6px;
     border-radius: 5px;
     cursor: pointer;
-    background-color: #222;
+    background: var(--top-buttons-color);
     font-weight: bolder;
     margin: 5px;
 }
 
 #sf_selector option
 {
-    background-color: var(--top-color);
+    background: var(--top-color);
     text-align: center;
 }
 
@@ -120,7 +120,7 @@ input[type="file"] {
     display: block;
     border: none;
     font-size: 15px;
-    background: #222;
+    background: var(--top-buttons-color);
     text-align: center;
     margin: 5px;
     padding: 6px;
@@ -139,8 +139,16 @@ input[type="file"] {
     height: 1px; /*I have absolutely no idea how this works but whatever ¯\_(ツ)_/¯*/
 }
 
+#note_canvas.light_mode{
+    background: linear-gradient(45deg, #ccc, #fff);
+}
+
 /*Bottom*/
 
 .bottom_part{
     margin-top: 5px;
+}
+
+button{
+    user-select: none;
 }

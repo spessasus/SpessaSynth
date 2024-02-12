@@ -1,0 +1,109 @@
+@import "voice_meter.css";
+@import "voice_selector.css";
+@import "synthui_button.css";
+
+#synthetizer_controls
+{
+    --voice-meter-height: 2.5em;
+}
+
+.wrapper{
+    height: 80%;
+    padding: 2%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+}
+
+.controls_wrapper{
+    display: none;
+    flex-wrap: wrap;
+    align-items: stretch;
+    justify-content: center;
+    margin: 1em;
+}
+
+.controls_wrapper_show{
+    display: flex !important;
+}
+
+.controller_element
+{
+    position: relative;
+    height: var(--voice-meter-height);
+    flex: 1;
+    border-radius: 5px;
+    margin: 2px;
+}
+
+.synthui_controller{
+    left: 0;
+    display: none;
+    position: absolute;
+    backdrop-filter: blur(2px) brightness(0.5);
+    background: rgba(3, 3, 3, 0.3);
+    top: 100%;
+    border-radius: 15px;
+    width: 100%;
+    z-index: 127;
+}
+
+.synthui_controller_light
+{
+    backdrop-filter: blur(2px) brightness(1.5) !important;
+    background: linear-gradient(115deg, rgba(200, 200, 200, 0.7), rgba(255, 255, 255, 0.7), rgba(200, 200, 200, 0.7)) !important;
+}
+
+.synthui_controller_show{
+    display: block !important;
+}
+
+.channel_controller{
+    display: flex;
+    align-items: stretch;
+    flex-wrap: wrap;
+}
+
+.no_voices {
+    filter: brightness(80%);
+}
+
+.mute_button
+{
+    flex: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: #777 1px solid;
+    min-width: var(--voice-meter-height);
+}
+
+.mute_button_light * {
+    color: black;
+}
+
+.mute_button:hover{
+    cursor: pointer;
+
+}
+
+.voice_reset{
+    flex: 0;
+    min-width: 0;
+    display: flex;
+    visibility: hidden;
+    justify-content: center;
+    align-items: center;
+    border: #777 1px solid;
+    transition: min-width 50ms ease;
+}
+
+.voice_reset_light * {
+    color: black;
+}
+
+.voice_reset:hover{
+    visibility: visible;
+    min-width: var(--voice-meter-height);
+    cursor: pointer;
+}

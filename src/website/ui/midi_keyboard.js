@@ -1,5 +1,4 @@
 import {Synthetizer} from "../../spessasynth_lib/synthetizer/synthetizer.js";
-import { MIDIDeviceHandler } from '../../spessasynth_lib/midi_handler/midi_handler.js'
 import { midiControllers } from '../../spessasynth_lib/midi_parser/midi_message.js'
 
 const KEYBOARD_VELOCITY = 100;
@@ -11,9 +10,8 @@ export class MidiKeyboard
      * Creates a new midi keyboard(keyboard)
      * @param channelColors {Array<string>}
      * @param synth {Synthetizer}
-     * @param handler {MIDIDeviceHandler}
      */
-    constructor(channelColors, synth, handler) {
+    constructor(channelColors, synth) {
         this.mouseHeld = false;
         this.heldKeys = [];
         /**
@@ -147,70 +145,6 @@ export class MidiKeyboard
             this.keys.push(keyElement);
         }
 
-        this.selectorMenu = document.getElementById("keyboard_selector");
-        // dark mode toggle
-        const modeToggler = document.createElement("div");
-        modeToggler.innerText = "Toggle Dark Keyboard";
-        modeToggler.classList.add("kebui_button");
-        modeToggler.onclick = this.toggleMode.bind(this);
-
-        this.selectorMenu.appendChild(modeToggler);
-
-        // channel selector
-        const channelSelector = document.createElement("select");
-        channelSelector.classList.add("kebui_button");
-
-        let channelNumber = 0;
-        for(const channel of this.synth.midiChannels)
-        {
-            const option = document.createElement("option");
-
-            option.value = channelNumber.toString();
-            option.innerText = `Channel ${channelNumber + 1}`;
-
-            option.style.background = channelColors[channelNumber];
-            option.style.color = "rgb(0, 0, 0)";
-
-            channelSelector.appendChild(option);
-            channelNumber++;
-        }
-        channelSelector.onchange = () => {
-            this.selectChannel(parseInt(channelSelector.value));
-        }
-        this.selectorMenu.appendChild(channelSelector);
-
-        this.handler = handler;
-        handler.createMIDIDeviceHandler().then(() => {
-            // input selector
-            if(handler.inputs.length < 1)
-            {
-                return;
-            }
-            const inputSelector = document.createElement("select");
-            inputSelector.classList.add("kebui_button");
-            // no device
-            inputSelector.innerHTML = "<option value='-1' selected>No input selected</option>";
-            for(const input of handler.inputs)
-            {
-                const option = document.createElement("option");
-                option.value = input[0];
-                option.innerText = input[1].name;
-                inputSelector.appendChild(option);
-            }
-            inputSelector.onchange = () => {
-                if(inputSelector.value === "-1")
-                {
-                    handler.disconnectAllDevicesFromSynth();
-                }
-                else
-                {
-                    handler.connectDeviceToSynth(handler.inputs.get(inputSelector.value), this.synth);
-                }
-            }
-
-            this.selectorMenu.appendChild(inputSelector);
-        });
-
         // connect the synth to keyboard
         this.synth.eventHandler.addEvent("noteon", "keyboard-note-on", e => {
             this.pressNote(e.midiNote, e.channel, e.velocity, e.channelVolume, e.channelExpression);
@@ -222,19 +156,6 @@ export class MidiKeyboard
 
         this.synth.eventHandler.addEvent("stopall", "keyboard-stop-all", () => {
             this.clearNotes();
-        });
-
-        this.synth.eventHandler.addEvent("newchannel", "keyboard-new-channel",  () => {
-            const option = document.createElement("option");
-
-            option.value = channelNumber.toString();
-            option.innerText = `Channel ${channelNumber + 1}`;
-
-            option.style.background = channelColors[channelNumber % channelColors.length];
-            option.style.color = "rgb(0, 0, 0)";
-
-            channelSelector.appendChild(option);
-            channelNumber++
         });
     }
 
@@ -254,42 +175,6 @@ export class MidiKeyboard
                 k.classList.toggle("flat_dark_key");
             }
         })
-    }
-
-    createMIDIOutputSelector(seq)
-    {
-        if(!this.handler.outputs)
-        {
-            return;
-        }
-        if(this.handler.inputs.length < 1)
-        {
-            return;
-        }
-        // output selector
-        const outputSelector = document.createElement("select");
-        // no device
-        outputSelector.innerHTML = "<option value='-1' selected>No output selected</option>";
-        for(const output of this.handler.outputs)
-        {
-            const option = document.createElement("option");
-            option.value = output[0];
-            option.innerText = output[1].name;
-            outputSelector.appendChild(option);
-        }
-
-        outputSelector.onchange = () => {
-            if(outputSelector.value === "-1")
-            {
-                this.handler.disconnectSeqFromMIDI(seq);
-            }
-            else
-            {
-                this.handler.connectMIDIOutputToSeq(this.handler.outputs.get(outputSelector.value), seq);
-            }
-        }
-
-        this.selectorMenu.appendChild(outputSelector);
     }
 
     /**

@@ -6,11 +6,12 @@ import { Sequencer } from '../../spessasynth_lib/sequencer/sequencer.js';
 const CHANNEL_ANALYSER_FFT = 512;
 const DRUMS_ANALYSER_FFT = 2048;
 const WAVE_MULTIPLIER = 2;
+const ANALYSER_STROKE = 2;
 
 // note rendering
 const DARKER_MULTIPLIER = 0.6;
 const GRADIENT_DARKEN = 0.5;
-const STROKE_THICKNESS = 0.5;
+const STROKE_THICKNESS = 1;
 const NOTE_MARGIN = 1;
 const FONT_SIZE = 16;
 const STROKE_COLOR = "#000";
@@ -32,11 +33,14 @@ export class Renderer
         // variables
         this.noteFallingTimeMs = 1000;
         this.noteAfterTriggerTimeMs = 0;
+        this.lineThickness = ANALYSER_STROKE;
+
 
         // booleans
         this.renderBool = true;
         this.renderAnalysers = true;
         this.renderNotes = true;
+        this.drawActiveNotes = true;
 
         /**
          * canvas
@@ -77,6 +81,11 @@ export class Renderer
          */
         this.channelAnalysers = [];
         this.connectChannelAnalysers(synth);
+    }
+
+    toggleDarkMode()
+    {
+        this.canvas.classList.toggle("light_mode");
     }
 
     /**
@@ -233,7 +242,7 @@ export class Renderer
                             }
                             else {
                                 // save the notes to draw
-                                if (note.start > currentSeqTime || noteSum < currentSeqTime) {
+                                if ((note.start > currentSeqTime || noteSum < currentSeqTime) && this.drawActiveNotes) {
                                     notesToDraw.push({
                                         x: xPos,
                                         y: yPos,
@@ -312,6 +321,7 @@ export class Renderer
         const multiplier = WAVE_MULTIPLIER * waveHeight;
 
         // draw
+        this.drawingContext.lineWidth = this.lineThickness;
         this.drawingContext.strokeStyle = this.channelColors[channelNumber];
 
         const path = new Path2D();

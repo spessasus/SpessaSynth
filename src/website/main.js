@@ -102,6 +102,7 @@ async function startMidi(midiFiles)
         fName += ` and ${midiFiles.length - 1} others`;
     }
     document.getElementById("file_upload").innerText = fName;
+    document.getElementById("file_upload").title = midiFiles[0].name;
     /**
      * @type {MIDI[]}
      */

@@ -10,11 +10,15 @@
 #sequencer_controls #note_progress
 {
     border-radius: var(--progress-bar-height);
-    background-color: #406;
+    background: linear-gradient(95deg, #306, #406);
     height: var(--progress-bar-height);
     padding: 5px;
     transition: all 100ms linear;
     position: absolute;
+}
+
+#sequencer_controls .note_progress_light{
+    filter: brightness(3);
 }
 
 #sequencer_controls #note_time
@@ -46,11 +50,16 @@
 #sequencer_controls #note_progress_background
 {
     border-radius: var(--progress-bar-height);
-    background-color: #343434;
+    background: linear-gradient(90deg, #454545, #343434);
     height: var(--progress-bar-height);
     position: absolute;
     padding: 5px;
     width: 100%;
+}
+
+#sequencer_controls .note_progress_background_light
+{
+    background: linear-gradient(90deg, #ddd, #bbb) !important;
 }
 
 #sequencer_controls .lyrics{
@@ -64,7 +73,7 @@
     z-index: 256;
     display: block;
     opacity: 0;
-    backdrop-filter: blur(2px) brightness(0.5);
+    backdrop-filter: blur(5px) brightness(0.5);
     background-color: rgba(3, 3, 3, 0.3);
     transition: opacity 100ms ease-in-out;
     scroll-behavior: smooth;
@@ -73,21 +82,25 @@
     border-radius: 10px;
 }
 
+#sequencer_controls .lyrics_light{
+    backdrop-filter: blur(5px) brightness(1.5);
+    background-color: rgba(250, 250, 250, 0.8);
+}
+
 .lyrics_title{
     position: sticky;
     top: 2px;
-    background-color: rgba(3, 3, 3);
     border-radius: 10px;
 }
 
 .lyrics_selector{
     position: sticky;
     top: 2em;
-    background-color: rgba(3, 3, 3);
     width: 100%;
     border: none;
     font-size: 16px;
     padding: 5px;
+    background: transparent;
 }
 
 .lyrics_show{

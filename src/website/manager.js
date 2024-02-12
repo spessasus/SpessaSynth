@@ -9,6 +9,7 @@ import {SynthetizerUI} from "./ui/synthesizer_ui/synthetizer_ui.js";
 import { MIDIDeviceHandler } from '../spessasynth_lib/midi_handler/midi_handler.js'
 import { WebMidiLinkHandler } from '../spessasynth_lib/midi_handler/web_midi_link.js'
 import { Sequencer } from '../spessasynth_lib/sequencer/sequencer.js'
+import { Settings } from './ui/settings_ui/settings.js'
 
 export class Manager {
     channelColors = [
@@ -62,7 +63,7 @@ export class Manager {
         this.wml = new WebMidiLinkHandler(this.synth);
 
         // set up keyboard
-        this.keyboard = new MidiKeyboard(this.channelColors, this.synth, this.midHandler);
+        this.keyboard = new MidiKeyboard(this.channelColors, this.synth);
 
         // set up renderer
         const canvas = document.getElementById("note_canvas");
@@ -79,12 +80,22 @@ export class Manager {
         this.renderer.render(true);
 
         // set up synth UI
-        this.synthUI = new SynthetizerUI(this.channelColors);
+        this.synthUI = new SynthetizerUI(this.channelColors, document.getElementById("synthetizer_controls"));
         this.synthUI.connectSynth(this.synth);
 
         // create an UI for sequencer
-        this.seqUI = new SequencerUI();
+        this.seqUI = new SequencerUI(document.getElementById("sequencer_controls"));
 
+        // set up settings UI
+        this.settingsUI = new Settings(
+            document.getElementById("settings_div"),
+            this.synthUI,
+            this.seqUI,
+            this.renderer,
+            this.keyboard,
+            this.midHandler);
+
+        // add keypresses
         document.addEventListener("keypress", e => {
             switch (e.key.toLowerCase()) {
                 case "c":
@@ -134,6 +145,5 @@ export class Manager {
 
         // play the midi
         this.seq.play(true);
-        this.keyboard.createMIDIOutputSelector(this.seq);
     }
 }

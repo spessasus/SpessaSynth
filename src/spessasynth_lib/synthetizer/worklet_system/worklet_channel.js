@@ -681,14 +681,7 @@ export class WorkletChannel {
                     // coarse tuning
                     case 0x0002:
                         // semitones
-                        this.channelTuningSemitones = dataValue - 64;
-                        console.log(`%cChannel ${this.channelNumber} tuning. Semitones: %c${this.channelTuningSemitones}`,
-                            consoleColors.info,
-                            consoleColors.value);
-                        this.post({
-                            messageType: workletMessageType.ccChange,
-                            messageData: [NON_CC_INDEX_OFFSET + modulatorSources.channelTuning, (this.channelTuningSemitones) * 100]
-                        });
+                        this.setChannelTuning(dataValue - 64);
                         break;
 
                     case 0x3FFF:
@@ -698,6 +691,22 @@ export class WorkletChannel {
                 }
 
         }
+    }
+
+    /**
+     * Sets the channel's tuning
+     * @param semitones {number}
+     */
+    setChannelTuning(semitones)
+    {
+        this.channelTuningSemitones = semitones;
+        console.log(`%cChannel ${this.channelNumber} tuning. Semitones: %c${this.channelTuningSemitones}`,
+            consoleColors.info,
+            consoleColors.value);
+        this.post({
+            messageType: workletMessageType.ccChange,
+            messageData: [NON_CC_INDEX_OFFSET + modulatorSources.channelTuning, (this.channelTuningSemitones) * 100]
+        });
     }
 
     stopAll(force=false)

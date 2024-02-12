@@ -90,6 +90,16 @@ export class Meter
         }
     }
 
+    toggleMode(updateColor=false)
+    {
+        if(updateColor)
+        {
+            this.bar.classList.toggle("voice_meter_light_color");
+            this.div.classList.toggle("voice_meter_light_color");
+        }
+        this.text.classList.toggle("voice_meter_text_light");
+    }
+
     show()
     {
         this.isShown = true;

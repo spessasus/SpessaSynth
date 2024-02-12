@@ -1,0 +1,41 @@
+.synthui_button
+{
+    background: #000;
+    border: 1px #333 solid;
+    margin: 2px;
+    border-radius: 5px;
+    font-size: 16px;
+    display: block;
+    min-height: var(--voice-meter-height);
+    white-space: nowrap;
+    color: var(--font-color);
+    flex: 1;
+}
+.synthui_button:hover
+{
+    cursor: pointer;
+    background: #111;
+    color: #fff;
+    text-shadow: 0 0 5px white;
+}
+
+.synthui_button_light{
+    background: #fff;
+    border: 1px #ccc solid;
+    margin: 2px;
+    border-radius: 5px;
+    font-size: 16px;
+    display: block;
+    min-height: var(--voice-meter-height);
+    white-space: nowrap;
+    color: #333;
+    flex: 1;
+    text-shadow: 1px 1px 2px #000;
+}
+
+.synthui_button_light:hover
+{
+    cursor: pointer;
+    color: #666;
+    text-shadow: 0 0 5px #666;
+}

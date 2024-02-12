@@ -14,15 +14,39 @@ const DEFAULT_ENCODING = "Shift_JIS";
 export class SequencerUI{
     /**
      * Creates a new User Interface for the given MidiSequencer
+     * @param element {HTMLElement} the element to create sequi in
      */
-    constructor() {
-        this.controls = document.getElementById("sequencer_controls");
+    constructor(element) {
+        this.controls = element;
         this.encoding = DEFAULT_ENCODING;
         this.decoder = new TextDecoder(this.encoding);
         this.encoder = new TextEncoder(this.encoding);
         this.text = "";
         this.rawText = [];
         this.titles = [""];
+        this.mode = "dark";
+    }
+
+    toggleDarkMode()
+    {
+        if(this.mode === "dark")
+        {
+            this.mode = "light";
+        }
+        else
+        {
+            this.mode = "dark";
+        }
+        if(!this.seq)
+        {
+            this.requiresThemeUpdate = true;
+            return;
+        }
+        this.progressBar.classList.toggle("note_progress_light");
+        this.progressBarBackground.classList.toggle("note_progress_background_light");
+        this.lyricsElement.mainDiv.classList.toggle("lyrics_light");
+        this.lyricsElement.text.classList.toggle("lyrics_light");
+        this.lyricsElement.selector.classList.toggle("lyrics_light");
     }
 
     createNavigatorHandler()
@@ -147,6 +171,17 @@ export class SequencerUI{
             this.text = "";
             this.rawText = [];
         }
+
+        if(this.requiresThemeUpdate)
+        {
+            if(this.mode === "light")
+            {
+                // change to dark and then switch
+                this.mode = "dark";
+                this.toggleDarkMode();
+            }
+            // otherwise we're already dark
+        }
     }
 
     changeEncoding(encoding)
@@ -208,6 +243,7 @@ export class SequencerUI{
         mainLyricsDiv.appendChild(text);
         this.lyricsElement.text = text;
         this.lyricsElement.mainDiv = mainLyricsDiv;
+        this.lyricsElement.selector = encodingSelector;
         this.controls.appendChild(mainLyricsDiv);
         setInterval(() => {
             if(this.lyricsElement.text.innerText !== this.text) this.lyricsElement.text.innerText = this.text;
@@ -217,6 +253,7 @@ export class SequencerUI{
         // background bar
         const progressBarBg = document.createElement("div");
         progressBarBg.id = "note_progress_background";
+        this.progressBarBackground = progressBarBg;
 
 
         // foreground bar

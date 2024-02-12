@@ -37,6 +37,11 @@ export class Selector
         this.mainDiv.onchange = () => editCallback(this.mainDiv.value);
     }
 
+    toggleMode()
+    {
+        this.mainDiv.classList.toggle("voice_selector_light")
+    }
+
     /**
      * @param elements {{name: string, program: number, bank: number}[]}
      */

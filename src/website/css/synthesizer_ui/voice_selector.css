@@ -1,0 +1,58 @@
+.voice_selector{
+    border: #777 1px solid;
+    line-height: var(--voice-meter-height);
+    background-color: rgba(1, 1, 1, 0.5);
+    font-size: 16px;
+    font-weight: bold;
+    min-width: 8em;
+}
+
+.voice_selector_light{
+    border: #111 1px solid;
+    background: linear-gradient(170deg, #bbb, #fff);
+    color: black;
+}
+
+.voice_selector:hover{
+    cursor: pointer;
+    background: #111;
+    color: #fff;
+    text-shadow: 0 0 5px white;
+}
+
+.voice_selector_light:hover{
+    background: #fff;
+    color: #444;
+}
+
+.voice_selector .selector_option{
+    padding: 5px;
+    background-color: #111;
+    text-align: left;
+}
+
+.voice_selector optgroup{
+    font-weight: bolder;
+    background-color: #141414;
+    text-align: left;
+}
+
+.voice_selector .selector_option:hover
+{
+    background-color: #222;
+    cursor: pointer;
+
+}
+
+.selector_options:hover{
+    display: block;
+}
+
+.locked_selector{
+    color: red;
+}
+
+.locked_selector:hover + .voice_reset{
+    visibility: visible;
+    min-width: var(--voice-meter-height);
+}
