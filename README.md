@@ -1,8 +1,8 @@
 # SpessaSynth
 SoundFont2 based realtime synthetizer and MIDI player written in JavaScript using Web Audio API. Can also be used as a synthesis library.
 
+![SpessaSynth Promotional Image](https://github.com/spessasus/SpessaSynth/assets/95608008/307b6b55-da16-49e8-b0e8-a07e7b699a8c)
 
-![image](https://github.com/spessasus/SpessaSynth/assets/95608008/b092e92b-0f21-4b97-8449-75cb1b6a72cc)
 
 
 [Youtube Video](https://youtu.be/_vPkI35Y5Po)
