@@ -54,12 +54,19 @@ export class Meter
         this.text.classList.add("voice_meter_text");
         this.div.appendChild(this.text);
 
+        this.isActive = false;
+
         if(editable)
         {
             if(editCallback === undefined) {
                 throw "No editable function given!";
             }
-            this.div.onclick = e => {
+            this.div.onmousedown = () => this.isActive = true;
+            this.div.onmousemove = e => {
+                if(!this.isActive)
+                {
+                    return;
+                }
                 const bounds = e.currentTarget.getBoundingClientRect();
                 const relativeLeft = bounds.left;
                 const width = bounds.width;
@@ -67,6 +74,18 @@ export class Meter
                 const percentage =  Math.max(0, Math.min(1, relative / width));
                 editCallback(percentage * (max - min) + min);
             };
+            this.div.onmouseup = () => this.isActive = false;
+            this.div.onmouseleave = e => {
+                this.div.onmousemove(e);
+                this.isActive = false;
+            }
+
+            // add mobile
+            this.div.onclick = e => {
+                this.isActive = true;
+                this.div.onmousemove(e);
+                this.isActive = false;
+            }
             this.div.classList.add("editable");
         }
     }
