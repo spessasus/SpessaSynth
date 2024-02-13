@@ -7,7 +7,10 @@ import { getSeqUIButton } from './sequi_button.js'
 const ICON_SIZE = 32;
 
 const ICON_COLOR = "#ccc";
-const ICON_DISABLED = "#555";
+const ICON_DISABLED_COLOR = "#555";
+
+const ICON_COLOR_L = "#333";
+const ICON_DISABLED_COLOR_L = "#ddd";
 
 const DEFAULT_ENCODING = "Shift_JIS";
 
@@ -17,6 +20,8 @@ export class SequencerUI{
      * @param element {HTMLElement} the element to create sequi in
      */
     constructor(element) {
+        this.iconColor = ICON_COLOR;
+        this.iconDisabledColor = ICON_DISABLED_COLOR;
         this.controls = element;
         this.encoding = DEFAULT_ENCODING;
         this.decoder = new TextDecoder(this.encoding);
@@ -32,10 +37,14 @@ export class SequencerUI{
         if(this.mode === "dark")
         {
             this.mode = "light";
+            this.iconColor = ICON_COLOR_L;
+            this.iconDisabledColor = ICON_DISABLED_COLOR_L;
         }
         else
         {
             this.mode = "dark";
+            this.iconColor = ICON_COLOR;
+            this.iconDisabledColor = ICON_DISABLED_COLOR;
         }
         if(!this.seq)
         {
@@ -311,7 +320,7 @@ export class SequencerUI{
                     this.seq.currentTime = 0;
                 }
             }
-            loopButton.firstElementChild.setAttribute("fill", (this.seq.loop ? ICON_COLOR : ICON_DISABLED));
+            loopButton.firstElementChild.setAttribute("fill", (this.seq.loop ? this.iconColor : this.iconDisabledColor));
         }
         loopButton.onclick = toggleLoop;
 
@@ -319,10 +328,10 @@ export class SequencerUI{
         // show text button
         const textButton = getSeqUIButton("Show lyrics",
             getTextSvg(ICON_SIZE));
-        textButton.firstElementChild.setAttribute("fill", ICON_DISABLED); // defaults to disabled
+        textButton.firstElementChild.setAttribute("fill", this.iconDisabledColor); // defaults to disabled
         const toggleLyrics = () => {
             this.lyricsElement.mainDiv.classList.toggle("lyrics_show");
-            textButton.firstElementChild.setAttribute("fill", (this.lyricsElement.mainDiv.classList.contains("lyrics_show") ? ICON_COLOR : ICON_DISABLED));
+            textButton.firstElementChild.setAttribute("fill", (this.lyricsElement.mainDiv.classList.contains("lyrics_show") ? this.iconColor : this.iconDisabledColor));
         }
         textButton.onclick = toggleLyrics;
 
