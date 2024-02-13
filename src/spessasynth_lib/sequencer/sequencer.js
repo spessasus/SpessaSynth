@@ -87,6 +87,13 @@ export class Sequencer {
         this.noteOnsPerS = 0;
 
         this.loadNewSongList(parsedMidis);
+
+        document.addEventListener("close", () => {
+            if(this.MIDIout)
+            {
+                this.MIDIout.send([messageTypes.reset]);
+            }
+        })
     }
 
     /**
@@ -487,7 +494,14 @@ export class Sequencer {
                         controllerNumber === midiControllers.resetAllControllers
                     )
                     {
-                        this.synth.controllerChange(info.channel, controllerNumber, event.messageData[1]);
+                        if(this.MIDIout)
+                        {
+                            this.MIDIout.send([messageTypes.controllerChange | info.channel, controllerNumber, event.messageData[1]])
+                        }
+                        else
+                        {
+                            this.synth.controllerChange(info.channel, controllerNumber, event.messageData[1]);
+                        }
                     }
                     else
                     {
