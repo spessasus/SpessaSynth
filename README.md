@@ -44,7 +44,7 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 **Requires Node.js**
 1. Download the code as zip and extract or use `git clone https://github.com/spessasus/SpessaSynth`
 2. Put your soundfonts into the `soundfonts` folder. (you can select soundfonts in the program)
-3. Double click the `start.bat` (for linux, type `call npm install` into terminal when in the project's folder)
+3. Double click the `start.bat` (for linux, type `npm install && node server.js` into terminal when in the project's folder)
 4. Enjoy!
 
 ## Some notes about the implementation
