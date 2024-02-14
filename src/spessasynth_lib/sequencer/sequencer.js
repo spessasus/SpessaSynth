@@ -86,6 +86,11 @@ export class Sequencer {
 
         this.noteOnsPerS = 0;
 
+        /**
+         * @type {Object<string, function(MIDI)>}
+         */
+        this.onSongChange = {};
+
         this.loadNewSongList(parsedMidis);
 
         document.addEventListener("close", () => {
@@ -94,6 +99,17 @@ export class Sequencer {
                 this.MIDIout.send([messageTypes.reset]);
             }
         })
+    }
+
+    /**
+     * Adds a new event that gets called when the song changes
+     * @param callback {function(MIDI)}
+     * @param id {string} must be unique
+     */
+    addOnSongChangeEvent(callback, id)
+    {
+        this.onSongChange[id] = callback;
+        callback(this.midiData);
     }
 
     /**
@@ -218,6 +234,9 @@ export class Sequencer {
         console.log(`%cTOTAL TIME: ${formatTime(Math.round(this.duration)).time}`, consoleColors.recognized);
         this.midiPortChannelOffset = 0;
         this.midiPortChannelOffsets = {};
+
+        Object.entries(this.onSongChange).forEach((callback) => callback[1](this.midiData));
+        console.log(this.onSongChange)
 
         if(this.renderer)
         {

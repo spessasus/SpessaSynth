@@ -11,6 +11,7 @@
   <link rel="stylesheet" href='src/website/css/synthesizer_ui/synthesizer_ui.css'>
   <link rel="stylesheet" href='src/website/css/keyboard.css'>
   <link rel='stylesheet' href='src/website/css/settings.css'>
+  <link rel='stylesheet' href='src/website/css/player_ui.css'>
 
   <style>
     a{
@@ -51,6 +52,7 @@
   </div>
   <canvas id="note_canvas"></canvas>
   <div id='keyboard'></div>
+  <div id='player_info'></div>
 
   <div class="bottom_part">
     <div id="sequencer_controls"></div>
@@ -65,6 +67,7 @@
 
   import {SoundFont2} from "./src/spessasynth_lib/soundfont/soundfont_parser.js";
   import {ShiftableByteArray} from "./src/spessasynth_lib/utils/shiftable_array.js";
+  import { formatTitle } from './src/spessasynth_lib/utils/other.js'
 
 
   const TITLE = "SpessaSynth: SoundFont2 Javascript Synthetizer Online Demo";
@@ -143,7 +146,7 @@
     const arr = new ShiftableByteArray(buffer);
     try
     {
-      return new MIDI(arr);
+      return new MIDI(arr, midiFile.name);
     }
     catch (e)
     {
@@ -191,7 +194,7 @@
       }
       else
       {
-        title = midiFiles[i].name.replace(".mid", "");
+        title = formatTitle(midiFiles[i].name);
       }
       titles.push(title);
     }

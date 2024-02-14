@@ -6,13 +6,14 @@ import {
     readBytesAsUintBigEndian,
     readVariableLengthQuantity
 } from "../utils/byte_functions.js";
-import { consoleColors } from '../utils/other.js'
+import { consoleColors, formatTitle } from '../utils/other.js'
 export class MIDI{
     /**
      * Parses a given midi file
      * @param fileByteArray {ShiftableByteArray}
+     * @param fileName {string} optional, replaces the decoded title if empty
      */
-    constructor(fileByteArray) {
+    constructor(fileByteArray, fileName="") {
         console.groupCollapsed(`%cParsing MIDI File...`, consoleColors.info);
 
         const headerChunk = this.readMIDIChunk(fileByteArray);
@@ -257,9 +258,18 @@ export class MIDI{
 
         // get track name
         this.midiName = "";
-        if(this.tracks[0][0].messageStatusByte === 0x03) {
+
+        // first track name
+        if(this.tracks[0][0].messageStatusByte === messageTypes.trackName) {
             const decoder = new TextDecoder('shift-jis');
             this.midiName = decoder.decode(this.tracks[0][0].messageData);
+        }
+
+        this.fileName = fileName;
+
+        if(this.midiName.length === 0 && fileName.length > 0)
+        {
+            this.midiName = formatTitle(fileName);
         }
 
         // reverse the tempo changes

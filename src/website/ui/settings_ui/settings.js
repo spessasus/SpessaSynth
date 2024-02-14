@@ -10,8 +10,15 @@ export class Settings
      * @param renderer {Renderer}
      * @param midiKeyboard {MidiKeyboard}
      * @param midiDeviceHandler {MIDIDeviceHandler}
+     * @param playerInfo {PlayerUI}
      */
-    constructor(element, sythui, sequi, renderer, midiKeyboard, midiDeviceHandler) {
+    constructor(element,
+                sythui,
+                sequi,
+                renderer,
+                midiKeyboard,
+                midiDeviceHandler,
+                playerInfo) {
         let settingsWrapper = element;
         settingsWrapper.style.minWidth = "7em";
         this.mode = "dark";
@@ -59,7 +66,8 @@ export class Settings
             document.getElementById("analyser_toggler"),
             document.getElementById("note_toggler"),
             document.getElementById("active_note_toggler"),
-            document.getElementById("analyser_thickness_slider"));
+            document.getElementById("analyser_thickness_slider"),
+            document.getElementById("analyser_fft_slider"));
 
         this._createMidiSettingsHandler(document.getElementById("midi_input_selector"),
             document.getElementById("midi_output_selector"),
@@ -72,7 +80,14 @@ export class Settings
             sythui,
             document.getElementById("mode_selector"));
 
-        this._createLightModeHandler(document.getElementById("toggle_mode_button"), sythui, sequi, renderer);
+        this._createInterfaceSettingsHandler(
+            document.getElementById("toggle_mode_button"),
+            document.getElementById("toggle_player_mode_button"),
+            sythui,
+            sequi,
+            renderer,
+            playerInfo,
+            midiKeyboard);
 
         // key bind is "R"
         document.addEventListener("keydown", e => {
@@ -85,12 +100,15 @@ export class Settings
 
     /**
      * @param button {HTMLButtonElement}
+     * @param playerButtom {HTMLButtonElement}
      * @param synthui {SynthetizerUI}
      * @param sequi {SequencerUI}
      * @param renderer {Renderer}
+     * @param playerInfo {PlayerUI}
+     * @param keyboard {MidiKeyboard}
      * @private
      */
-    _createLightModeHandler(button, synthui, sequi, renderer)
+    _createInterfaceSettingsHandler(button, playerButtom, synthui, sequi, renderer, playerInfo, keyboard)
     {
         button.onclick = () => {
             if(button.innerText === "Mode: Dark")
@@ -120,6 +138,15 @@ export class Settings
             document.styleSheets[0].cssRules[0].style.setProperty("--font-color",  this.mode === "dark" ? "#eee" : "#333");
             document.styleSheets[0].cssRules[0].style.setProperty("--top-buttons-color",  this.mode === "dark" ? "#222" : "linear-gradient(270deg, #ddd, #fff)");
             document.body.style.background = this.mode === "dark" ? "black" : "white";
+        }
+
+        playerButtom.onclick = () => {
+            playerInfo.togglevisibility();
+            renderer.canvas.classList.toggle("hidden");
+            keyboard.keyboard.classList.toggle("hidden");
+
+            // disable rendering when hidden
+            renderer.renderBool = !renderer.canvas.classList.contains("hidden");
         }
     }
 
@@ -280,9 +307,10 @@ export class Settings
      * @param note {HTMLButtonElement}
      * @param activeNote {HTMLButtonElement}
      * @param analyserSlider {HTMLInputElement}
+     * @param fftSlider {HTMLInputElement}
      * @private
      */
-    _createRendererHandler(renderer, slider, analyser, note, activeNote, analyserSlider)
+    _createRendererHandler(renderer, slider, analyser, note, activeNote, analyserSlider, fftSlider)
     {
         slider.oninput = () => {
             renderer.noteFallingTimeMs = slider.value;
@@ -290,8 +318,15 @@ export class Settings
         }
 
         analyserSlider.oninput = () => {
-            renderer.lineThickness = analyserSlider.value;
+            renderer.lineThickness = parseInt(analyserSlider.value);
             analyserSlider.nextElementSibling.innerText = `${analyserSlider.value}px`;
+        }
+
+        fftSlider.oninput = () => {
+            let value = Math.pow(2, parseInt(fftSlider.value));
+            renderer.normalAnalyserFft = value;
+            renderer.drumAnalyserFft = Math.pow(2, Math.min(15, parseInt(fftSlider.value) + 2));
+            fftSlider.nextElementSibling.innerText = `${value}`;
         }
 
         analyser.onclick = () => renderer.renderAnalysers = !renderer.renderAnalysers;

@@ -6,10 +6,11 @@ import {MIDI} from "../spessasynth_lib/midi_parser/midi_loader.js";
 import {SoundFont2} from "../spessasynth_lib/soundfont/soundfont_parser.js";
 import {SequencerUI} from "./ui/sequencer_ui/sequencer_ui.js";
 import {SynthetizerUI} from "./ui/synthesizer_ui/synthetizer_ui.js";
-import { MIDIDeviceHandler } from '../spessasynth_lib/midi_handler/midi_handler.js'
-import { WebMidiLinkHandler } from '../spessasynth_lib/midi_handler/web_midi_link.js'
-import { Sequencer } from '../spessasynth_lib/sequencer/sequencer.js'
-import { Settings } from './ui/settings_ui/settings.js'
+import { MIDIDeviceHandler } from '../spessasynth_lib/midi_handler/midi_handler.js';
+import { WebMidiLinkHandler } from '../spessasynth_lib/midi_handler/web_midi_link.js';
+import { Sequencer } from '../spessasynth_lib/sequencer/sequencer.js';
+import { Settings } from './ui/settings_ui/settings.js';
+import { PlayerUI } from './ui/player_ui.js';
 
 export class Manager {
     channelColors = [
@@ -86,6 +87,9 @@ export class Manager {
         // create an UI for sequencer
         this.seqUI = new SequencerUI(document.getElementById("sequencer_controls"));
 
+        // create an UI for music player mode
+        this.playerUI = new PlayerUI(document.getElementById("player_info"));
+
         // set up settings UI
         this.settingsUI = new Settings(
             document.getElementById("settings_div"),
@@ -93,7 +97,8 @@ export class Manager {
             this.seqUI,
             this.renderer,
             this.keyboard,
-            this.midHandler);
+            this.midHandler,
+            this.playerUI);
 
         // add keypresses
         document.addEventListener("keypress", e => {
@@ -139,6 +144,9 @@ export class Manager {
 
         // connect to the UI
         this.seqUI.connectSequencer(this.seq);
+
+        // connect to the Player UI
+        this.playerUI.connectSequencer(this.seq);
 
         // connect to the renderer;
         this.seq.connectRenderer(this.renderer);

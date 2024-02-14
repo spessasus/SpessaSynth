@@ -152,3 +152,7 @@ input[type="file"] {
 button{
     user-select: none;
 }
+
+.hidden{
+    display: none !important;
+}

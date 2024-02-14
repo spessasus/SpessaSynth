@@ -133,6 +133,13 @@ export class SequencerUI{
         this.titles = songTitles;
         this.createNavigatorHandler();
         this.updateTitleAndMediaStatus();
+
+        // disable loop if more than 1 song
+        if(songTitles.length > 1)
+        {
+            this.seq.loop = false;
+            this.loopButton.firstElementChild.setAttribute("fill", this.iconDisabledColor);
+        }
     }
 
     /**
@@ -180,6 +187,10 @@ export class SequencerUI{
             this.text = "";
             this.rawText = [];
         }
+
+        this.seq.addOnSongChangeEvent(() => {
+            this.updateTitleAndMediaStatus();
+        }, "sequi-song-change");
 
         if(this.requiresThemeUpdate)
         {
@@ -323,6 +334,7 @@ export class SequencerUI{
             loopButton.firstElementChild.setAttribute("fill", (this.seq.loop ? this.iconColor : this.iconDisabledColor));
         }
         loopButton.onclick = toggleLoop;
+        this.loopButton = loopButton;
 
 
         // show text button
@@ -417,11 +429,17 @@ export class SequencerUI{
         document.getElementById("title").innerText = this.titles[this.seq.songIndex];
         document.title = this.titles[this.seq.songIndex] + " - SpessaSynth"
 
-        navigator.mediaSession.setPositionState({
-            duration: this.seq.duration,
-            playbackRate: this.seq.playbackRate,
-            position: this.seq.currentTime
-        });
+        try {
+            navigator.mediaSession.setPositionState({
+                duration: this.seq.duration,
+                playbackRate: this.seq.playbackRate,
+                position: this.seq.currentTime
+            });
+        }
+        catch(e)
+        {
+
+        }
     }
 
     setSliderInterval(){

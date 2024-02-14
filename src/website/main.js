@@ -5,6 +5,7 @@ import {MIDI} from "../spessasynth_lib/midi_parser/midi_loader.js";
 
 import {SoundFont2} from "../spessasynth_lib/soundfont/soundfont_parser.js";
 import {ShiftableByteArray} from "../spessasynth_lib/utils/shiftable_array.js";
+import { formatTitle } from '../spessasynth_lib/utils/other.js'
 
 const TITLE = "SpessaSynth: SoundFont2 Javascript Synthetizer";
 
@@ -39,7 +40,7 @@ async function parseMidi(midiFile)
 {
     const buffer = await midiFile.arrayBuffer();
     const arr = new ShiftableByteArray(buffer);
-    return new MIDI(arr);
+    return new MIDI(arr, midiFile.name);
 }
 
 /**
@@ -123,7 +124,7 @@ async function startMidi(midiFiles)
         }
         else
         {
-            title = midiFiles[i].name.replace(".mid", "");
+            title = formatTitle(midiFiles[i].name);
         }
         titles.push(title);
     }

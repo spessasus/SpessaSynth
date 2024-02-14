@@ -1,0 +1,25 @@
+#player_info
+{
+    width: 100%;
+    display: none;
+    flex: 1;
+    height: 1px;
+    align-items: center;
+    justify-content: center;
+}
+
+.player_info_wrapper{
+    display: flex;
+    border: #333 solid 1px;
+    border-radius: 15px;
+    padding: 2em;
+    align-items: center;
+}
+
+.player_info_wrapper *{
+    text-align: left;
+}
+
+.player_info_show{
+    display: flex !important;
+}

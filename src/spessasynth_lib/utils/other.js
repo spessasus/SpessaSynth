@@ -10,6 +10,15 @@ export function formatTime(totalSeconds) {
 }
 
 /**
+ * @param fileName {string}
+ * @returns {string}
+ */
+export function formatTitle(fileName)
+{
+    return fileName.replaceAll(".mid", "").replaceAll("_", " ");
+}
+
+/**
  * performs the given function on an rgb string and returns a new one
  * @param rgbString {string} the rgb string, ex. "rgb(255, 0, 00)"
  * @param operation {function(number): number} the function for calculation

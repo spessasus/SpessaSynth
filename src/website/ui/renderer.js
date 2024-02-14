@@ -33,7 +33,10 @@ export class Renderer
         // variables
         this.noteFallingTimeMs = 1000;
         this.noteAfterTriggerTimeMs = 0;
+
         this.lineThickness = ANALYSER_STROKE;
+        this.normalAnalyserFft = CHANNEL_ANALYSER_FFT;
+        this.drumAnalyserFft = DRUMS_ANALYSER_FFT;
 
 
         // booleans
@@ -105,7 +108,7 @@ export class Renderer
         {
             // create the analyser
             const analyser = new AnalyserNode(channel.ctx, {
-                fftSize: CHANNEL_ANALYSER_FFT
+                fftSize: this.normalAnalyserFft
             });
             // connect the channel's output to the analyser
             channel.gainController.connect(analyser);
@@ -160,9 +163,13 @@ export class Renderer
             // draw the individual analysers
             this.channelAnalysers.forEach((analyser, i) => {
                 if (this.synth.midiChannels[i].percussionChannel) {
-                    if (analyser.fftSize !== DRUMS_ANALYSER_FFT) {
-                        analyser.fftSize = DRUMS_ANALYSER_FFT;
+                    if (analyser.fftSize !== this.drumAnalyserFft) {
+                        analyser.fftSize = this.drumAnalyserFft;
                     }
+                }
+                else if(analyser.fftSize !== this.normalAnalyserFft)
+                {
+                    analyser.fftSize = this.normalAnalyserFft;
                 }
 
                 this.drawChannelWaveform(analyser,

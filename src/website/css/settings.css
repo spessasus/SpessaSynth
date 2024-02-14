@@ -39,6 +39,7 @@
     min-width: 30%;
     max-width: 100%;
     min-height: 100%;
+    max-height: 30rem;
     z-index: 256;
     display: block;
     opacity: 0;
