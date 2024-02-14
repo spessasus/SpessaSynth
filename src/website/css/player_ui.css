@@ -12,12 +12,18 @@
     display: flex;
     border: #333 solid 1px;
     border-radius: 15px;
-    padding: 2em;
+    padding: 10px;
     align-items: center;
+    max-width: 90%;
+}
+
+.player_info_details{
+    max-width: 80%;
 }
 
 .player_info_wrapper *{
     text-align: left;
+    overflow-wrap: anywhere;
 }
 
 .player_info_show{

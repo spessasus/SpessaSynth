@@ -14,8 +14,9 @@ export class PlayerUI{
                 ${getDoubleNoteSvg("100%")}
             </div>
             <div class='player_info_details'>
+                <p style='font-size: small'><i>Currently playing:</i></p>
                 <h1 id='player_info_title'>Nothing is playing</h1>
-                <h3 id='player_info_detail'>Upload a MIDI!</h3>
+                <h3><i id='player_info_detail'>Upload a MIDI!</i></h3>
                 <h3 id='player_info_time'></h3>
             </div>
         </div>`;
