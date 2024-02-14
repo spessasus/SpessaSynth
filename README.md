@@ -18,7 +18,9 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 - SoundFont2 Modulator Support
 - A few custom modulators to support some additional controllers (see `modulators.js`)
 - Written using AudioWorklets (Firefox and Chrome both work perfectly)
-- MIDI Controller Support (Currently supported controllers can be found [here](../../wiki/Synthetizer-Class#supported-controllers))
+- Can load really large soundfonts (4GB!) (but only on Firefox, Chromium has a memory limit)
+- Multi-port MIDIs support (more than 16 channels)
+- MIDI Controller Support (Default supported controllers can be found [here](../../wiki/Synthetizer-Class#supported-controllers))
 - Supports some Roland and Yamaha XG sysex messages
 - High performance mode for playing black MIDIs (Don't go too crazy with the amount of notes though)
 - Visualization of the played sequence
@@ -42,14 +44,23 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 ### [Recommended and tested SoundFont](https://musical-artifacts.com/artifacts/1176)
 
 **Requires Node.js**
+### Windows
 1. Download the code as zip and extract or use `git clone https://github.com/spessasus/SpessaSynth`
 2. Put your soundfonts into the `soundfonts` folder. (you can select soundfonts in the program)
-3. Double click the `start.bat` (for linux, type `npm install && node server.js` into terminal when in the project's folder)
+3. Double click the `start.bat`
 4. Enjoy!
 
-## Some notes about the implementation
+### Linux
+1. ```shell
+   git clone https://github.com/spessasus/SpessaSynth
+   cd SpessaSynth
+   npm install && node server.js 
+   ```
+2. Put your soundfonts into the `soundfonts` folder. (you can select soundfonts in the program)
+3. Enjoy!
+
 ### [Check out the wiki!](../../wiki/Home)
-*Note: some links might not work as the wiki is under construction.*
+*Note: the wiki is quite outdated, but most of the methods should still work.*
 
 The program is divided into parts:
 - [Soundfont2 parser](../../wiki/SoundFont2-Class) - parses the soundfont file into an object readable by synth
@@ -58,6 +69,8 @@ The program is divided into parts:
 - [Renderer](../../wiki/Renderer-Class) - renders the waveforms of the channels and the falling notes. Must be connected to a synthetizer
 - [Synthetizer](../../wiki/Synthetizer-Class) - generates the sound using the given preset
 - UI classes - used for user interface, connect to their respective parts (eg. synth, sequencer, keyboard etc)
+
+[How to use SpessaSynth in your project](../../wiki/Usage-As-Library)
 
 #### todo
 - make the worklet system perform good
