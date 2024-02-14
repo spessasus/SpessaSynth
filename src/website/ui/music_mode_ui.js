@@ -1,7 +1,7 @@
 import { getDoubleNoteSvg } from './icons.js'
 import { formatTime } from '../../spessasynth_lib/utils/other.js'
 
-export class PlayerUI{
+export class MusicModeUI {
     /**
      * Creates a new class for displaying information about the current file.
      * @param element {HTMLElement}
@@ -41,7 +41,15 @@ export class PlayerUI{
                 title =  mid.fileName;
             }
             document.getElementById("player_info_title").innerText = title;
-            document.getElementById("player_info_detail").innerText = mid.fileName;
+            // use file name if no copyright detected
+            if(mid.copyright.replaceAll("\n", "").length > 0)
+            {
+                document.getElementById("player_info_detail").innerText = mid.copyright + mid.fileName;
+            }
+            else
+            {
+                document.getElementById("player_info_detail").innerText = mid.fileName;
+            }
             document.getElementById("player_info_time").innerText = formatTime(this.seq.duration).time;
         }, "player-ui-song-change");
     }

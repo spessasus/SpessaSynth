@@ -10,7 +10,7 @@ import { MIDIDeviceHandler } from '../spessasynth_lib/midi_handler/midi_handler.
 import { WebMidiLinkHandler } from '../spessasynth_lib/midi_handler/web_midi_link.js';
 import { Sequencer } from '../spessasynth_lib/sequencer/sequencer.js';
 import { Settings } from './ui/settings_ui/settings.js';
-import { PlayerUI } from './ui/player_ui.js';
+import { MusicModeUI } from './ui/music_mode_ui.js';
 
 export class Manager {
     channelColors = [
@@ -88,7 +88,7 @@ export class Manager {
         this.seqUI = new SequencerUI(document.getElementById("sequencer_controls"));
 
         // create an UI for music player mode
-        this.playerUI = new PlayerUI(document.getElementById("player_info"));
+        this.playerUI = new MusicModeUI(document.getElementById("player_info"));
 
         // set up settings UI
         this.settingsUI = new Settings(

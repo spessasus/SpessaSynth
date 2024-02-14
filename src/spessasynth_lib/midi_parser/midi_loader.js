@@ -34,6 +34,11 @@ export class MIDI{
         // time division
         this.timeDivision = readBytesAsUintBigEndian(headerChunk.data, 2);
 
+        const decoder = new TextDecoder('shift-jis');
+
+        // read the copyright
+        this.copyright = "";
+
         /**
          * Contains all the tempo changes in the file. (Ordered from last to first)
          * @type {{
@@ -207,6 +212,12 @@ export class MIDI{
                 {
                     this.midiPorts[i] = eventData[0];
                 }
+                else
+                // check for copyright
+                if(statusByte === messageTypes.copyright)
+                {
+                    this.copyright += decoder.decode(eventData) + "\n";
+                }
             }
             this.tracks.push(track);
             console.log(`%cParsed %c${this.tracks.length}%c / %c${this.tracksAmount}`,
@@ -261,8 +272,24 @@ export class MIDI{
 
         // first track name
         if(this.tracks[0][0].messageStatusByte === messageTypes.trackName) {
-            const decoder = new TextDecoder('shift-jis');
             this.midiName = decoder.decode(this.tracks[0][0].messageData);
+        }
+        else if(this.tracks.length > 1)
+        {
+            // if more than 1 track and the first track has no notes, just find the first trackName in the first track
+            if(this.tracks[0].find(
+                message => message.messageStatusByte >= messageTypes.noteOn
+                &&
+                message.messageStatusByte < messageTypes.systemExclusive
+            ) === undefined)
+            {
+                console.log("message", this.tracks[0])
+                let name = this.tracks[0].find(message => message.messageStatusByte === messageTypes.trackName);
+                if(name)
+                {
+                    this.midiName = decoder.decode(name.messageData);
+                }
+            }
         }
 
         this.fileName = fileName;

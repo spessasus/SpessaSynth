@@ -4,35 +4,37 @@ export class Settings
 {
     /**
      * Creates a new instance of synthetizer UI
-     * @param element {HTMLElement} the element to create the settings in
+     * @param settingsWrapper {HTMLElement} the element to create the settings in
      * @param sythui {SynthetizerUI}
      * @param sequi {SequencerUI}
      * @param renderer {Renderer}
      * @param midiKeyboard {MidiKeyboard}
      * @param midiDeviceHandler {MIDIDeviceHandler}
-     * @param playerInfo {PlayerUI}
+     * @param playerInfo {MusicModeUI}
      */
-    constructor(element,
+    constructor(settingsWrapper,
                 sythui,
                 sequi,
                 renderer,
                 midiKeyboard,
                 midiDeviceHandler,
                 playerInfo) {
-        let settingsWrapper = element;
-        settingsWrapper.style.minWidth = "7em";
         this.mode = "dark";
 
         const settingsButton = document.createElement("div");
         settingsButton.style.position = "relative";
         settingsButton.classList.add("seamless_button");
         settingsButton.classList.add("settings_button");
-        settingsWrapper.insertBefore(settingsButton, settingsWrapper.firstChild);
+        settingsWrapper.appendChild(settingsButton);
 
-        let text = document.createElement('span');
-        text.innerText = "Settings";
-        text.style.fontSize = "larger";
-        text.style.minWidth = "7em";
+        const musicModeButton = document.createElement("div");
+        musicModeButton.classList.add("seamless_button");
+        musicModeButton.innerText = `Toggle music player mode`;
+        musicModeButton.title = 'Toggle the simplified UI version';
+        settingsWrapper.appendChild(musicModeButton)
+
+        let text = document.createElement('span')
+        text.innerText = 'Settings';
 
         let gear = document.createElement('div');
         gear.innerHTML = getGearSvg(32);
@@ -48,6 +50,15 @@ export class Settings
             e.stopPropagation();
         }
         settingsWrapper.appendChild(this.mainDiv);
+
+        musicModeButton.onclick = () => {
+            playerInfo.togglevisibility();
+            renderer.canvas.classList.toggle("hidden");
+            midiKeyboard.keyboard.classList.toggle("hidden");
+
+            // disable rendering when hidden
+            renderer.renderBool = !renderer.canvas.classList.contains("hidden");
+        }
 
         // stop propagation to disable hide on click outside
         this.mainDiv.onclick = e => e.stopPropagation();
@@ -85,9 +96,7 @@ export class Settings
             document.getElementById("toggle_player_mode_button"),
             sythui,
             sequi,
-            renderer,
-            playerInfo,
-            midiKeyboard);
+            renderer);
 
         // key bind is "R"
         document.addEventListener("keydown", e => {
@@ -104,11 +113,9 @@ export class Settings
      * @param synthui {SynthetizerUI}
      * @param sequi {SequencerUI}
      * @param renderer {Renderer}
-     * @param playerInfo {PlayerUI}
-     * @param keyboard {MidiKeyboard}
      * @private
      */
-    _createInterfaceSettingsHandler(button, playerButtom, synthui, sequi, renderer, playerInfo, keyboard)
+    _createInterfaceSettingsHandler(button, playerButtom, synthui, sequi, renderer)
     {
         button.onclick = () => {
             if(button.innerText === "Mode: Dark")
@@ -138,15 +145,6 @@ export class Settings
             document.styleSheets[0].cssRules[0].style.setProperty("--font-color",  this.mode === "dark" ? "#eee" : "#333");
             document.styleSheets[0].cssRules[0].style.setProperty("--top-buttons-color",  this.mode === "dark" ? "#222" : "linear-gradient(270deg, #ddd, #fff)");
             document.body.style.background = this.mode === "dark" ? "black" : "white";
-        }
-
-        playerButtom.onclick = () => {
-            playerInfo.togglevisibility();
-            renderer.canvas.classList.toggle("hidden");
-            keyboard.keyboard.classList.toggle("hidden");
-
-            // disable rendering when hidden
-            renderer.renderBool = !renderer.canvas.classList.contains("hidden");
         }
     }
 

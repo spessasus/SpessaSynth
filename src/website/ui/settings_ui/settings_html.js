@@ -58,7 +58,5 @@ export const settingsHtml = `
 <div class='settings_group'>
     <h2>Interface Settings</h2>
     <button class='seamless_button' id='toggle_mode_button' title='Toggle the interface theme'>Mode: Dark</button>
-    <br/>
-    <button class='seamless_button' id='toggle_player_mode_button' title='Toggle the simplified UI version'>Toggle music player mode</button>
 </div>
 `;
