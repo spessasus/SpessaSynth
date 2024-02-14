@@ -270,11 +270,8 @@ export class MIDI{
         // get track name
         this.midiName = "";
 
-        // first track name
-        if(this.tracks[0][0].messageStatusByte === messageTypes.trackName) {
-            this.midiName = decoder.decode(this.tracks[0][0].messageData);
-        }
-        else if(this.tracks.length > 1)
+        // midi name
+        if(this.tracks.length > 1)
         {
             // if more than 1 track and the first track has no notes, just find the first trackName in the first track
             if(this.tracks[0].find(
@@ -291,10 +288,20 @@ export class MIDI{
                 }
             }
         }
+        else
+        {
+            // if only 1 track, find the first "track name" event
+            let name = this.tracks[0].find(message => message.messageStatusByte === messageTypes.trackName);
+            if(name)
+            {
+                this.midiName = decoder.decode(name.messageData);
+            }
+        }
 
         this.fileName = fileName;
 
-        if(this.midiName.length === 0 && fileName.length > 0)
+        // if midiName is "", use the file name
+        if(this.midiName.trim().length === 0 && fileName.length > 0)
         {
             this.midiName = formatTitle(fileName);
         }

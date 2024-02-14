@@ -236,7 +236,6 @@ export class Sequencer {
         this.midiPortChannelOffsets = {};
 
         Object.entries(this.onSongChange).forEach((callback) => callback[1](this.midiData));
-        console.log(this.onSongChange)
 
         if(this.renderer)
         {
