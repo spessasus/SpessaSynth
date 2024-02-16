@@ -40,7 +40,13 @@ async function parseMidi(midiFile)
 {
     const buffer = await midiFile.arrayBuffer();
     const arr = new ShiftableByteArray(buffer);
-    return new MIDI(arr, midiFile.name);
+    try {
+        return new MIDI(arr, midiFile.name);
+    }
+    catch (e) {
+        titleMessage.innerHTML = `Error parsing MIDI: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
+        throw e;
+    }
 }
 
 /**

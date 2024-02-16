@@ -216,6 +216,14 @@ export class MidiChannel {
     }
 
     /**
+     * Dummy function, only for compatibility reasons
+     */
+    requestNoteRemoval()
+    {
+        // pass
+    }
+
+    /**
      * Changes audio pan
      * @param pan {number}
      */

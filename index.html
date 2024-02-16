@@ -127,12 +127,12 @@
       }
       catch (e)
       {
-        titleMessage.innerText = "Error parsing soundfont! Check console for more info";
+        titleMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
         console.log(e);
         return;
       }
       prepareUI();
-    })
+    });
   }
 
 
@@ -144,13 +144,11 @@
   {
     const buffer = await midiFile.arrayBuffer();
     const arr = new ShiftableByteArray(buffer);
-    try
-    {
+    try {
       return new MIDI(arr, midiFile.name);
     }
-    catch (e)
-    {
-      titleMessage.innerText = "Error parsing MIDI! Check console for more info";
+    catch (e) {
+      titleMessage.innerHTML = `Error parsing MIDI: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
       throw e;
     }
   }
@@ -236,7 +234,7 @@
     }
     catch (e)
     {
-      titleMessage.innerText = "Error parsing soundfont! Check console for more info";
+      titleMessage.innerHTML = `Error parsing SoundFont: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
       console.log(e);
       return;
     }

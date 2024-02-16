@@ -72,6 +72,8 @@ The program is divided into parts:
 
 [How to use SpessaSynth in your project](../../wiki/Usage-As-Library)
 
+[Can't use AudioWorklets because your site doesn't support HTTPS? No problem!](/src/spessasynth_lib/synthetizer/native_system/README.md)
+
 #### todo
 - make the worklet system perform good
 - port the worklet system to emscripten (maybe)
