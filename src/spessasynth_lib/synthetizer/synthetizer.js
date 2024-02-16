@@ -62,7 +62,7 @@ export class Synthetizer {
          *  create 16 channels
          * @type {WorkletChannel[]|MidiChannel[]}
          */
-        this.midiChannels = [...Array(DEFAULT_CHANNEL_COUNT).keys()].map(j => new MidiChannel(this.volumeController, this.defaultPreset, j + 1, false));
+        this.midiChannels = [...Array(DEFAULT_CHANNEL_COUNT).keys()].map(j => new WorkletChannel(this.volumeController, this.defaultPreset, j + 1, false));
 
         // change percussion channel to the percussion preset
         this.midiChannels[DEFAULT_PERCUSSION].percussionChannel = true;
@@ -77,7 +77,7 @@ export class Synthetizer {
      */
     addNewChannel()
     {
-        this.midiChannels.push(new MidiChannel(this.volumeController, this.defaultPreset, this.midiChannels.length + 1, false));
+        this.midiChannels.push(new WorkletChannel(this.volumeController, this.defaultPreset, this.midiChannels.length + 1, false));
         this.eventHandler.callEvent("newchannel", this.midiChannels[this.midiChannels.length - 1]);
     }
 
