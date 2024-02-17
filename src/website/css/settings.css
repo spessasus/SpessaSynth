@@ -96,7 +96,7 @@
     cursor: pointer;
     -webkit-appearance: none;
     margin-top: -7.5px;
-    background: transparent;
+    background: white;
 }
 .settings_slider:focus::-webkit-slider-runnable-track {
     background: #510087;
