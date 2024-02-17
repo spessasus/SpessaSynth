@@ -78,3 +78,6 @@ The program is divided into parts:
 - make the worklet system perform good
 - port the worklet system to emscripten (maybe)
 - reverb that actually runs well
+- 
+### License
+Copyright © 2024 Spessasus. Licensed under the MIT License.
