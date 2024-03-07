@@ -523,11 +523,25 @@ export class Sequencer {
                     }
                     else
                     {
-                        if(savedControllers[info.channel] === undefined)
+                        // Keep in mind midi ports to determine channel!!
+                        const channel = info.channel + (this.midiPortChannelOffsets[this.midiPorts[trackIndex]] || 0);
+                        if(savedControllers[channel] === undefined)
                         {
-                            savedControllers[info.channel] = Array.from(defaultControllerArray);
+                            savedControllers[channel] = Array.from(defaultControllerArray);
                         }
-                        savedControllers[info.channel][controllerNumber] = event.messageData[1];
+                        savedControllers[channel][controllerNumber] = event.messageData[1];
+                    }
+                    break;
+
+                // midiport: handle it and make sure that the saved controllers table is the same size as synth channels
+                case messageTypes.midiPort:
+                    this._processEvent(event, trackIndex);
+                    if(this.synth.midiChannels.length > savedControllers.length)
+                    {
+                        while(this.synth.midiChannels.length > savedControllers.length)
+                        {
+                            savedControllers.push(Array.from(defaultControllerArray));
+                        }
                     }
                     break;
 
@@ -606,7 +620,7 @@ export class Sequencer {
         if(this.paused)
         {
             // adjust the start time
-            this.absoluteStartTime = this.now - this.pausedTime;
+            this.absoluteStartTime = this.now - this.pausedTime / this.playbackRate;
             this.pausedTime = undefined;
         }
 
@@ -619,7 +633,7 @@ export class Sequencer {
         });
 
         this.playbackInterval = setInterval(this._processTick.bind(this));
-        this.noteCounterClearInterval = setInterval( () =>this.noteOnsPerS = 0, 100);
+        setInterval( () =>this.noteOnsPerS = 0, 100);
     }
 
     setTimeTicks(ticks)

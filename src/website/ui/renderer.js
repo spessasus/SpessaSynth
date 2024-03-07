@@ -37,6 +37,7 @@ export class Renderer
         this.lineThickness = ANALYSER_STROKE;
         this.normalAnalyserFft = CHANNEL_ANALYSER_FFT;
         this.drumAnalyserFft = DRUMS_ANALYSER_FFT;
+        this.waveMultiplier = WAVE_MULTIPLIER;
 
 
         // booleans
@@ -325,7 +326,7 @@ export class Renderer
         const relativeX = waveWidth * x;
         const relativeY = waveHeight * y + waveHeight / 2;
         const step = waveWidth / waveform.length;
-        const multiplier = WAVE_MULTIPLIER * waveHeight;
+        const multiplier = this.waveMultiplier * waveHeight;
 
         // draw
         this.drawingContext.lineWidth = this.lineThickness;

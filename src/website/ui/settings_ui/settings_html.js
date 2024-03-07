@@ -1,7 +1,7 @@
 export const settingsHtml = `
 <h1>Program settings</h1>
-
-<div class='settings_group'>
+<div class='settings_groups_parent'>
+    <div class='settings_group'>
     <h2>Renderer settings</h2>
     <label title='How fast the notes fall (visually)'> Note falling time (milisseconds) </label>
     <p style='display: flex; align-items: center; width: 100%; justify-content: center'>
@@ -24,12 +24,20 @@ export const settingsHtml = `
         </span>
     </p>
     
+    <label title='How vibrant are the waveforms'> Waveform amplifier </label>
+    <p style='display: flex; align-items: center; width: 100%; justify-content: center'>
+        <input type='range' min='1' max='20' value='2' class='settings_slider' id='wave_multiplier_slider'>
+        <span>2</span>
+        </span>
+    </p>
+    
     <button class='seamless_button' id='analyser_toggler' title='Toggle rendering of the waveforms of the channels'>Toggle waveforms rendering</button>
     <br/>
     <button class='seamless_button' id='note_toggler' title='Toggle rendering of the notes when playing a MIDI file'>Toggle notes rendering</button>
     <br/>
     <button class='seamless_button' id='active_note_toggler' title='Toggle notes "lighting up" when they get active'>Toggle drawing active notes</button>
 </div>
+
 
 <div class='settings_group'>
     <h2>Keyboard settings</h2>
@@ -39,6 +47,7 @@ export const settingsHtml = `
     <br/>
     <button class='seamless_button' id='mode_selector' title='Toggle the keyboard thee'>Mode: White</button>
 </div>
+
 
 <div class='settings_group'>
     <h2>MIDI Settings</h2>
@@ -55,8 +64,10 @@ export const settingsHtml = `
     </select>
 </div>
 
+
 <div class='settings_group'>
     <h2>Interface Settings</h2>
     <button class='seamless_button' id='toggle_mode_button' title='Toggle the interface theme'>Mode: Dark</button>
+</div>
 </div>
 `;

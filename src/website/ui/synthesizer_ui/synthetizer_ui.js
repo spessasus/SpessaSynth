@@ -394,6 +394,20 @@ export class SynthetizerUI
         chorus.update(0);
         controller.appendChild(chorus.div);
 
+        // transpose
+        const transpose = new Meter(this.channelColors[channelNumber % this.channelColors.length],
+            "Transpose: ",
+            -36,
+            36, `The current level of chorus effect applied to channel ${channelNumber + 1}`,
+            true,
+            val => {
+                val = Math.round(val)
+                this.synth.midiChannels[channelNumber].transposeChannel(val, true);
+                transpose.update(val);
+            });
+        transpose.update(0);
+        controller.appendChild(transpose.div);
+
         // create it here so we can use it in the callback function
         const presetReset = document.createElement("div");
 

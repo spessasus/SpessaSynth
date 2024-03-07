@@ -41,11 +41,9 @@
     overflow: scroll;
     top: 100%;
     right: 0;
-    width: 30em;
     min-width: 30%;
     max-width: 100%;
     min-height: 100%;
-    max-height: 30rem;
     z-index: 256;
     display: block;
     opacity: 0;
@@ -129,9 +127,15 @@
     text-shadow: 0 0 5px white;
 }
 
+.settings_groups_parent{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+}
+
 .settings_group{
     border-radius: 10px;
     border: solid #333 1px;
     margin: 10px;
-    padding: 5px;
+    padding: 10px;
 }

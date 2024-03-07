@@ -78,7 +78,8 @@ export class Settings
             document.getElementById("note_toggler"),
             document.getElementById("active_note_toggler"),
             document.getElementById("analyser_thickness_slider"),
-            document.getElementById("analyser_fft_slider"));
+            document.getElementById("analyser_fft_slider"),
+            document.getElementById("wave_multiplier_slider"));
 
         this._createMidiSettingsHandler(document.getElementById("midi_input_selector"),
             document.getElementById("midi_output_selector"),
@@ -306,9 +307,17 @@ export class Settings
      * @param activeNote {HTMLButtonElement}
      * @param analyserSlider {HTMLInputElement}
      * @param fftSlider {HTMLInputElement}
+     * @param waveMultiplierSlider {HTMLInputElement}
      * @private
      */
-    _createRendererHandler(renderer, slider, analyser, note, activeNote, analyserSlider, fftSlider)
+    _createRendererHandler(renderer,
+                           slider,
+                           analyser,
+                           note,
+                           activeNote,
+                           analyserSlider,
+                           fftSlider,
+                           waveMultiplierSlider)
     {
         slider.oninput = () => {
             renderer.noteFallingTimeMs = slider.value;
@@ -325,6 +334,11 @@ export class Settings
             renderer.normalAnalyserFft = value;
             renderer.drumAnalyserFft = Math.pow(2, Math.min(15, parseInt(fftSlider.value) + 2));
             fftSlider.nextElementSibling.innerText = `${value}`;
+        }
+
+        waveMultiplierSlider.oninput = () => {
+            renderer.waveMultiplier = parseInt(waveMultiplierSlider.value);
+            waveMultiplierSlider.nextElementSibling.innerText = waveMultiplierSlider.value;
         }
 
         analyser.onclick = () => renderer.renderAnalysers = !renderer.renderAnalysers;
