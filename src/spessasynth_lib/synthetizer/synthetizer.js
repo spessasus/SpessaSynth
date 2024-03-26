@@ -304,6 +304,7 @@ export class Synthetizer {
             this.eventHandler.callEvent("controllerchange", {channel: chNr, controllerNumber: midiControllers.expressionController, controllerValue: 127});
             this.eventHandler.callEvent("controllerchange", {channel: chNr, controllerNumber: midiControllers.modulationWheel, controllerValue: 0});
             this.eventHandler.callEvent("controllerchange", {channel: chNr, controllerNumber: midiControllers.effects3Depth, controllerValue: 0});
+            this.eventHandler.callEvent("controllerchange", {channel: chNr, controllerNumber: midiControllers.effects1Depth, controllerValue: 0});
 
             this.eventHandler.callEvent("pitchwheel", {channel: chNr, MSB: 64, LSB: 0})
         }

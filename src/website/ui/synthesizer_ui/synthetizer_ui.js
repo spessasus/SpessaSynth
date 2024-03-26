@@ -411,7 +411,7 @@ export class SynthetizerUI
         const transpose = new Meter(this.channelColors[channelNumber % this.channelColors.length],
             "Transpose: ",
             -36,
-            36, `The current level of chorus effect applied to channel ${channelNumber + 1}`,
+            36, `The pitch tuning applied to channel ${channelNumber + 1}`,
             true,
             val => {
                 val = Math.round(val)
