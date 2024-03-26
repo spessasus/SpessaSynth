@@ -72,17 +72,9 @@ export class Settings
         this.mainDiv.innerHTML = settingsHtml;
 
         // create handlers for all settings
-        this._createRendererHandler(renderer,
-            document.getElementById("note_time_slider"),
-            document.getElementById("analyser_toggler"),
-            document.getElementById("note_toggler"),
-            document.getElementById("active_note_toggler"),
-            document.getElementById("analyser_thickness_slider"),
-            document.getElementById("analyser_fft_slider"),
-            document.getElementById("wave_multiplier_slider"));
+        this._createRendererHandler(renderer);
 
-        this._createMidiSettingsHandler(document.getElementById("midi_input_selector"),
-            document.getElementById("midi_output_selector"),
+        this._createMidiSettingsHandler(
             midiDeviceHandler,
             sequi,
             sythui);
@@ -93,8 +85,6 @@ export class Settings
             document.getElementById("mode_selector"));
 
         this._createInterfaceSettingsHandler(
-            document.getElementById("toggle_mode_button"),
-            document.getElementById("toggle_player_mode_button"),
             sythui,
             sequi,
             renderer);
@@ -109,15 +99,14 @@ export class Settings
     }
 
     /**
-     * @param button {HTMLButtonElement}
-     * @param playerButtom {HTMLButtonElement}
      * @param synthui {SynthetizerUI}
      * @param sequi {SequencerUI}
      * @param renderer {Renderer}
      * @private
      */
-    _createInterfaceSettingsHandler(button, playerButtom, synthui, sequi, renderer)
+    _createInterfaceSettingsHandler(synthui, sequi, renderer)
     {
+        const button = document.getElementById("toggle_mode_button");
         button.onclick = () => {
             if(button.innerText === "Mode: Dark")
             {
@@ -150,18 +139,16 @@ export class Settings
     }
 
     /**
-     * @param inputSelect {HTMLSelectElement}
-     * @param outputSelect {HTMLSelectElement}
      * @param handler {MIDIDeviceHandler}
      * @param sequi {SequencerUI}
      * @param synthui {SynthetizerUI}
      * @private
      */
-    _createMidiSettingsHandler(inputSelect, outputSelect, handler, sequi, synthui)
+    _createMidiSettingsHandler(handler, sequi, synthui)
     {
         handler.createMIDIDeviceHandler().then(() => {
-            this._createMidiInputHandler(inputSelect, handler, synthui.synth)
-            this._createMidiOutputHandler(outputSelect, handler, sequi);
+            this._createMidiInputHandler(document.getElementById("midi_input_selector"), handler, synthui.synth);
+            this._createMidiOutputHandler(document.getElementById("midi_output_selector"), handler, sequi);
         });
     }
 
@@ -301,24 +288,18 @@ export class Settings
 
     /**
      * @param renderer {Renderer}
-     * @param slider {HTMLInputElement}
-     * @param analyser {HTMLButtonElement}
-     * @param note {HTMLButtonElement}
-     * @param activeNote {HTMLButtonElement}
-     * @param analyserSlider {HTMLInputElement}
-     * @param fftSlider {HTMLInputElement}
-     * @param waveMultiplierSlider {HTMLInputElement}
      * @private
      */
-    _createRendererHandler(renderer,
-                           slider,
-                           analyser,
-                           note,
-                           activeNote,
-                           analyserSlider,
-                           fftSlider,
-                           waveMultiplierSlider)
+    _createRendererHandler(renderer)
     {
+        const slider = document.getElementById("note_time_slider");
+        const analyser = document.getElementById("analyser_toggler");
+        const note =  document.getElementById("note_toggler");
+        const activeNote = document.getElementById("active_note_toggler");
+        const analyserSlider = document.getElementById("analyser_thickness_slider");
+        const fftSlider = document.getElementById("analyser_fft_slider");
+        const waveMultiplierSlider = document.getElementById("wave_multiplier_slider");
+        const renderingModeSelector = document.getElementById("rendering_mode_selector");
         slider.oninput = () => {
             renderer.noteFallingTimeMs = slider.value;
             slider.nextElementSibling.innerText = `${slider.value}ms`
@@ -339,6 +320,10 @@ export class Settings
         waveMultiplierSlider.oninput = () => {
             renderer.waveMultiplier = parseInt(waveMultiplierSlider.value);
             waveMultiplierSlider.nextElementSibling.innerText = waveMultiplierSlider.value;
+        }
+
+        renderingModeSelector.onchange = () => {
+            renderer.noteRenderingMode = parseInt(renderingModeSelector.value);
         }
 
         analyser.onclick = () => renderer.renderAnalysers = !renderer.renderAnalysers;

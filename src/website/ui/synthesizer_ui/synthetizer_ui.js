@@ -283,6 +283,7 @@ export class SynthetizerUI
      *     volume: Meter,
      *     mod: Meter,
      *     chorus: Meter,
+     *     reverb: Meter,
      *     preset: Selector,
      *     presetReset: HTMLDivElement,
      *     drumsToggle: HTMLDivElement,
@@ -394,6 +395,18 @@ export class SynthetizerUI
         chorus.update(0);
         controller.appendChild(chorus.div);
 
+        // reverb
+        const reverb = new Meter(this.channelColors[channelNumber % this.channelColors.length],
+            "Reverb: ",
+            0,
+            127, `The current level of reverb effect applied to channel ${channelNumber + 1}`,
+            true,
+            val => {
+            this.synth.controllerChange(channelNumber, midiControllers.effects1Depth, val);
+            });
+        reverb.update(0);
+        controller.appendChild(reverb.div);
+
         // transpose
         const transpose = new Meter(this.channelColors[channelNumber % this.channelColors.length],
             "Transpose: ",
@@ -494,6 +507,7 @@ export class SynthetizerUI
             volume: volume,
             mod: modulation,
             chorus: chorus,
+            reverb: reverb,
             preset: presetSelector,
             presetReset: presetReset,
             drumsToggle: drumsToggle,
@@ -569,6 +583,10 @@ export class SynthetizerUI
                     // chorus
                     this.controllers[channel].chorus.update(value);
                     break;
+
+                case midiControllers.effects1Depth:
+                    // reverb
+                    this.controllers[channel].reverb.update(value);
             }
         });
 

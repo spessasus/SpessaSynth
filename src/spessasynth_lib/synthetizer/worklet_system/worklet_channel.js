@@ -118,11 +118,12 @@ export class WorkletChannel {
     /**
      * creates a midi channel
      * @param targetNode {AudioNode}
+     * @param reverbNode {AudioNode}
      * @param defaultPreset {Preset}
      * @param channelNumber {number}
      * @param percussionChannel {boolean}
      */
-    constructor(targetNode, defaultPreset, channelNumber = -1, percussionChannel = false) {
+    constructor(targetNode, reverbNode, defaultPreset, channelNumber = -1, percussionChannel = false) {
         this.ctx = targetNode.context;
         this.outputNode = targetNode;
         this.channelNumber = channelNumber
@@ -151,7 +152,8 @@ export class WorkletChannel {
         this.sustainedNotes = [];
 
         this.worklet = new AudioWorkletNode(this.ctx, "worklet-channel-processor", {
-            outputChannelCount: [2]
+            outputChannelCount: [2, 2],
+            numberOfOutputs: 2
         });
 
         this.reportedVoicesAmount = 0;
@@ -171,6 +173,8 @@ export class WorkletChannel {
         this.chorus = new Chorus(this.worklet, this.gainController, 0);
 
         this.gainController.connect(this.outputNode);
+        this.worklet.connect(reverbNode, 1);
+
 
         this.resetControllers();
 

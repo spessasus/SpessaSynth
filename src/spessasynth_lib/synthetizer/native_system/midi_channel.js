@@ -4,7 +4,7 @@ import { consoleColors } from '../../utils/other.js'
 import { midiControllers } from '../../midi_parser/midi_message.js'
 import { Chorus } from '../chorus.js'
 
-const CHANNEL_LOUDNESS = 0.5;
+const CHANNEL_LOUDNESS = 0.3;
 
 const dataEntryStates = {
     Idle: 0,
@@ -20,11 +20,12 @@ export class MidiChannel {
     /**
      * creates a midi channel
      * @param targetNode {AudioNode}
+     * @param targetReverbNode {AudioNode}
      * @param defaultPreset {Preset}
      * @param channelNumber {number}
      * @param percussionChannel {boolean}
      */
-    constructor(targetNode, defaultPreset, channelNumber = -1, percussionChannel = false) {
+    constructor(targetNode, targetReverbNode, defaultPreset, channelNumber = -1, percussionChannel = false) {
         this.ctx = targetNode.context;
         this.outputNode = targetNode;
         this.channelNumber = channelNumber
@@ -55,9 +56,13 @@ export class MidiChannel {
         this.gainController = new GainNode(this.ctx, {
             gain: CHANNEL_LOUDNESS
         });
-        //this.reverb = new Freeverb(this.ctx, 0);
 
-        // note -> panner -> chorus ->  ->  gain -> out
+        this.reverb = new GainNode(this.ctx, {
+            gain: 0
+        });
+        this.reverb.connect(targetReverbNode);
+
+        // note -> panner -> chorus -> gain -> reverb + passthrough)     -> out
 
         //const dummy = new GainNode(this.ctx, {gain: 1});
         this.chorus = new Chorus(this.panner, this.gainController, 0);
@@ -65,6 +70,7 @@ export class MidiChannel {
         //this.reverb.connectOutput(this.gainController);
 
         this.gainController.connect(this.outputNode);
+        this.gainController.connect(this.reverb);
 
         this.resetControllers();
 
@@ -142,9 +148,9 @@ export class MidiChannel {
                 this.setChorus(value);
                 break;
 
-            // case midiControllers.effects1Depth:
-            //     this.reverb.setLevel(value);
-            //     break;
+            case midiControllers.effects1Depth:
+                 this.setReverb(value);
+                 break;
 
             case midiControllers.NRPNMsb:
                 this.setNRPCoarse(value);
@@ -332,6 +338,11 @@ export class MidiChannel {
         this.chorus.setChorusLevel(chorus);
     }
 
+    setReverb(reverbLevel)
+    {
+        this.reverb.gain.value = reverbLevel / 127;
+    }
+
     setVolume(volume) {
         volume = Math.min(127, volume);
         this.channelVolume = volume / 127;
@@ -483,8 +494,8 @@ export class MidiChannel {
     }
     updateGain(){
         this.gainController.gain.value = this.defaultGain
-            * this.channelVolume
-            * this.channelExpression
+            * this.channelVolume * this.channelVolume
+            * this.channelExpression * this.channelExpression
             //* (1 - this.chorus.getChorusLevel() / 381); // lower the volume to min 2/3 to compensate for delay line (it doubles the volume)
     }
 

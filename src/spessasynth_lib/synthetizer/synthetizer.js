@@ -10,8 +10,8 @@ const VOICES_CAP = 450;
 
 export const DEFAULT_GAIN = 1;
 export const DEFAULT_PERCUSSION = 9;
-
 export const DEFAULT_CHANNEL_COUNT = 16;
+export const REVERB_TIME_S = 2;
 
 export class Synthetizer {
     /**
@@ -31,14 +31,39 @@ export class Synthetizer {
          */
         this.eventHandler = new EventHandler();
 
-        this.volumeController = new GainNode(targetNode.context, {
+        this.volumeController = new GainNode(this.context, {
             gain: DEFAULT_GAIN
         });
 
-        this.panController = new StereoPannerNode(targetNode.context, {
+        this.panController = new StereoPannerNode(this.context, {
             pan: 0
         });
 
+        // create reverb processor
+        const revLength = Math.round(this.context.sampleRate * REVERB_TIME_S);
+        const revbuff = new AudioBuffer({
+            numberOfChannels: 2,
+            sampleRate: this.context.sampleRate,
+            length: revLength
+        });
+        const revLeft = revbuff.getChannelData(0);
+        const revRight = revbuff.getChannelData(1);
+        for(let i = 0; i < revLength; i++)
+        {
+            // clever reverb algorithm from here:
+            // https://github.com/g200kg/webaudio-tinysynth/blob/master/webaudio-tinysynth.js#L1342
+            if(i / revLength < Math.random())
+            {
+                revLeft[i] = Math.exp(-3 * i / revLength) * (Math.random() - 0.5) / 2;
+                revRight[i] = Math.exp(-3 * i / revLength) * (Math.random() - 0.5) / 2;
+            }
+        }
+
+        this.reverbProcessor = new ConvolverNode(this.context, {
+            buffer: revbuff
+        });
+
+        this.reverbProcessor.connect(this.volumeController);
         this.volumeController.connect(this.panController);
         this.panController.connect(targetNode);
 
@@ -62,7 +87,7 @@ export class Synthetizer {
          *  create 16 channels
          * @type {WorkletChannel[]|MidiChannel[]}
          */
-        this.midiChannels = [...Array(DEFAULT_CHANNEL_COUNT).keys()].map(j => new WorkletChannel(this.volumeController, this.defaultPreset, j + 1, false));
+        this.midiChannels = [...Array(DEFAULT_CHANNEL_COUNT).keys()].map(j => new WorkletChannel(this.volumeController, this.reverbProcessor, this.defaultPreset, j + 1, false));
 
         // change percussion channel to the percussion preset
         this.midiChannels[DEFAULT_PERCUSSION].percussionChannel = true;

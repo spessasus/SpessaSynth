@@ -113,6 +113,9 @@ export const defaultModulators = [
         secSrcEnum: 0x0,
         transform: 0}),
 
+    // reverb effects to send
+    new Modulator({srcEnum: 0x00DB, dest: generatorTypes.reverbEffectsSend, amt: 500, secSrcEnum: 0x0, transform: 0}),
+
     // custom modulators heck yeah
     // cc 92 (tremolo) to modLFO volume
     new Modulator({

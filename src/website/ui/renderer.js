@@ -2,6 +2,10 @@ import {Synthetizer} from "../../spessasynth_lib/synthetizer/synthetizer.js";
 import { calculateRGB } from '../../spessasynth_lib/utils/other.js';
 import { Sequencer } from '../../spessasynth_lib/sequencer/sequencer.js';
 
+/**
+ * @typedef {{xPos: number, yPos: number, height: number, width: number, stroke: number, color: CanvasGradient}} NoteToRender
+ */
+
 // analysers
 const CHANNEL_ANALYSER_FFT = 512;
 const DRUMS_ANALYSER_FFT = 2048;
@@ -29,10 +33,12 @@ export class Renderer
      * @param synth {Synthetizer}
      * @param canvas {HTMLCanvasElement}
      */
-    constructor(channelColors, synth, canvas) {
+    constructor(channelColors, synth, canvas)
+    {
         // variables
         this.noteFallingTimeMs = 1000;
         this.noteAfterTriggerTimeMs = 0;
+        this.noteRenderingMode = 0;
 
         this.lineThickness = ANALYSER_STROKE;
         this.normalAnalyserFft = CHANNEL_ANALYSER_FFT;
@@ -131,7 +137,8 @@ export class Renderer
      * Renders a single frame
      * @param auto {boolean} if set to false, the renderer won't clear the screen or request an animation frame. Defaults to true.
      */
-    render(auto = true) {
+    render(auto = true)
+    {
         if (!this.renderBool) {
             if (auto) {
                 requestAnimationFrame(this.render.bind(this));
@@ -162,32 +169,10 @@ export class Renderer
 
         if (this.renderAnalysers && !this.synth.highPerformanceMode) {
             // draw the individual analysers
-            this.channelAnalysers.forEach((analyser, i) => {
-                if (this.synth.midiChannels[i].percussionChannel) {
-                    if (analyser.fftSize !== this.drumAnalyserFft) {
-                        analyser.fftSize = this.drumAnalyserFft;
-                    }
-                }
-                else if(analyser.fftSize !== this.normalAnalyserFft)
-                {
-                    analyser.fftSize = this.normalAnalyserFft;
-                }
-
-                this.drawChannelWaveform(analyser,
-                    i % 4,
-                    Math.floor(i / 4), i);
-                i++;
-            });
+            this.renderWaveforms();
         }
 
         if (this.renderNotes && this.noteTimes) {
-
-            // draw the notes
-            /**
-             * @type {{x: number, y: number, h: number, c: CanvasGradient}[]}
-             */
-            const notesToDraw = [];
-
             // math
             this.notesOnScreen = 0;
             const keyStep = this.canvas.width / 128;
@@ -202,99 +187,51 @@ export class Renderer
             const currentEndTime = currentStartTime + fallingTimeSeconds;
             const minNoteHeight = MIN_NOTE_HEIGHT_PX / fallingTimeSeconds;
 
-            this.noteTimes.forEach((channel, channelNumder) => {
+            /**
+             * Compute positions
+             * @type {NoteToRender[]}
+             */
+            let notesToDraw = [];
+            switch(this.noteRenderingMode)
+            {
+                default:
+                    notesToDraw = this.computeNotePositions(currentStartTime,
+                        currentEndTime,
+                        fallingTimeSeconds,
+                        minNoteHeight,
+                        noteWidth,
+                        currentSeqTime,
+                        keyStep,
+                        this.synth.highPerformanceMode);
+                    break;
 
-                if(channel.renderStartIndex >= channel.notes.length) return;
-
-                let noteIndex = channel.renderStartIndex;
-                const notes = channel.notes;
-                let note = notes[noteIndex];
-
-                let firstNoteIndex = -1;
-
-                // while the note start is in range
-                while(note.start <= currentEndTime){
-                    noteIndex++;
-                    // cap notes
-                    if(this.notesOnScreen > MAX_NOTES)
-                    {
-                        break;
-                    }
-
-                    const noteSum = note.start + note.length
-
-                    // if the note is out of range, append the render start index
-                    if(noteSum > currentStartTime && note.length > 0) {
-                        const height = ((note.length / fallingTimeSeconds) * this.canvas.height) - (NOTE_MARGIN * 2);
-
-                        // height less than that can be ommitted (come on)
-                        if(height > minNoteHeight || this.notesOnScreen < 1000) {
-                            if(firstNoteIndex === -1)
-                            {
-                                firstNoteIndex = noteIndex - 1;
-                            }
-                            const yPos = this.canvas.height - height
-                                - (((note.start - currentStartTime) / fallingTimeSeconds) * this.canvas.height) + NOTE_MARGIN;
-
-                            const xPos = keyStep * note.midiNote + NOTE_MARGIN;
-
-                            // determine if the note should be darker or not (or flat if black midi mode is on
-                            if(this.synth.highPerformanceMode)
-                            {
-                                // draw them right away, we don't care about the order
-                                this.drawingContext.fillStyle = this.plainColors[channelNumder];
-                                this.drawingContext.fillRect(xPos + STROKE_THICKNESS + NOTE_MARGIN,
-                                    yPos + STROKE_THICKNESS,
-                                    noteWidth - (STROKE_THICKNESS * 2),
-                                    height - (STROKE_THICKNESS * 2));
-                            }
-                            else {
-                                // save the notes to draw
-                                if ((note.start > currentSeqTime || noteSum < currentSeqTime) && this.drawActiveNotes) {
-                                    notesToDraw.push({
-                                        x: xPos,
-                                        y: yPos,
-                                        h: height,
-                                        c: this.darkerColors[channelNumder]
-                                    })
-                                } else {
-                                    notesToDraw.push({
-                                        x: xPos,
-                                        y: yPos,
-                                        h: height,
-                                        c: this.channelColors[channelNumder]
-                                    })
-                                }
-                            }
-                            this.notesOnScreen++;
-                        }
-                    }
-
-                    if(noteIndex >= notes.length)
-                    {
-                        break;
-                    }
-
-                    note = notes[noteIndex];
-                }
-                if(firstNoteIndex > -1) channel.renderStartIndex = firstNoteIndex;
-            });
+                case 1:
+                    notesToDraw = this.computeNotePositionsChannel(currentStartTime,
+                        currentEndTime,
+                        fallingTimeSeconds,
+                        minNoteHeight,
+                        noteWidth,
+                        currentSeqTime,
+                        keyStep,
+                        this.synth.highPerformanceMode);
+                    break;
+            }
 
             // draw the notes from longest to shortest (non black midi mode)
             if(!this.synth.highPerformanceMode)
             {
-                notesToDraw.sort((n1, n2) => n2.h - n1.h);
+                notesToDraw.sort((n1, n2) => n2.height - n1.height);
                 notesToDraw.forEach(n => {
                     this.drawingContext.save();
-                    this.drawingContext.fillStyle = n.c;
-                    this.drawingContext.translate(n.x, n.y);
+                    this.drawingContext.fillStyle = n.color;
+                    this.drawingContext.translate(n.xPos, n.yPos);
 
-                    this.drawingContext.fillRect(0, 0, noteWidth, n.h);
+                    this.drawingContext.fillRect(0, 0, n.width, n.height);
                     this.drawingContext.restore();
 
                     this.drawingContext.strokeStyle = STROKE_COLOR;
-                    this.drawingContext.lineWidth = STROKE_THICKNESS;
-                    this.drawingContext.strokeRect(n.x, n.y, noteWidth, n.h);
+                    this.drawingContext.lineWidth = n.stroke;
+                    this.drawingContext.strokeRect(n.xPos, n.yPos, n.width, n.height);
                 })
             }
         }
@@ -308,6 +245,270 @@ export class Renderer
         if(auto) {
             requestAnimationFrame(this.render.bind(this));
         }
+    }
+
+    renderWaveforms()
+    {
+        this.channelAnalysers.forEach((analyser, i) => {
+            if (this.synth.midiChannels[i].percussionChannel) {
+                if (analyser.fftSize !== this.drumAnalyserFft) {
+                    analyser.fftSize = this.drumAnalyserFft;
+                }
+            }
+            else if(analyser.fftSize !== this.normalAnalyserFft)
+            {
+                analyser.fftSize = this.normalAnalyserFft;
+            }
+
+            this.drawChannelWaveform(analyser,
+                i % 4,
+                Math.floor(i / 4), i);
+            i++;
+        });
+    }
+
+    /**
+     * @param currentStartTime {number}
+     * @param currentEndTime {number}
+     * @param fallingTimeSeconds {number}
+     * @param minNoteHeight {number}
+     * @param noteWidth {number}
+     * @param currentSeqTime {number}
+     * @param keyStep {number}
+     * @param renderImmediately {boolean}
+     * @returns {NoteToRender[]}
+     */
+    computeNotePositions(currentStartTime,
+                         currentEndTime,
+                         fallingTimeSeconds,
+                         minNoteHeight,
+                         noteWidth,
+                         currentSeqTime,
+                         keyStep,
+                         renderImmediately=false)
+    {
+        /**
+         * @type {NoteToRender[]}
+         */
+        const notesToDraw = [];
+        this.noteTimes.forEach((channel, channelNumder) => {
+
+            if(channel.renderStartIndex >= channel.notes.length) return;
+
+            let noteIndex = channel.renderStartIndex;
+            const notes = channel.notes;
+            let note = notes[noteIndex];
+
+            let firstNoteIndex = -1;
+
+            // while the note start is in range
+            while(note.start <= currentEndTime){
+                noteIndex++;
+                // cap notes
+                if(this.notesOnScreen > MAX_NOTES)
+                {
+                    break;
+                }
+
+                const noteSum = note.start + note.length
+
+                // if the note is out of range, append the render start index
+                if(noteSum > currentStartTime && note.length > 0) {
+                    const height = ((note.length / fallingTimeSeconds) * this.canvas.height) - (NOTE_MARGIN * 2);
+
+                    // height less than that can be ommitted (come on)
+                    if(height > minNoteHeight || this.notesOnScreen < 1000) {
+                        if(firstNoteIndex === -1)
+                        {
+                            firstNoteIndex = noteIndex - 1;
+                        }
+                        const yPos = this.canvas.height - height
+                            - (((note.start - currentStartTime) / fallingTimeSeconds) * this.canvas.height) + NOTE_MARGIN;
+
+                        const xPos = keyStep * note.midiNote + NOTE_MARGIN;
+
+                        // determine if the note should be darker or not (or flat if black midi mode is on
+                        if(renderImmediately)
+                        {
+                            // draw them right away, we don't care about the order
+                            this.drawingContext.fillStyle = this.plainColors[channelNumder];
+                            this.drawingContext.fillRect(xPos + STROKE_THICKNESS + NOTE_MARGIN,
+                                yPos + STROKE_THICKNESS,
+                                noteWidth - (STROKE_THICKNESS * 2),
+                                height - (STROKE_THICKNESS * 2));
+                        }
+                        else {
+                            // save the notes to draw
+                            if ((note.start > currentSeqTime || noteSum < currentSeqTime) && this.drawActiveNotes) {
+                                notesToDraw.push({
+                                    xPos: xPos,
+                                    yPos: yPos,
+                                    height: height,
+                                    width: noteWidth,
+                                    stroke: STROKE_THICKNESS,
+                                    color: this.darkerColors[channelNumder]
+                                })
+                            } else {
+                                notesToDraw.push({
+                                    xPos: xPos,
+                                    yPos: yPos,
+                                    height: height,
+                                    width: noteWidth,
+                                    stroke: STROKE_THICKNESS,
+                                    color: this.channelColors[channelNumder]
+                                })
+                            }
+                        }
+                        this.notesOnScreen++;
+                    }
+                }
+
+                if(noteIndex >= notes.length)
+                {
+                    break;
+                }
+
+                note = notes[noteIndex];
+            }
+            if(firstNoteIndex > -1) channel.renderStartIndex = firstNoteIndex;
+        });
+        return notesToDraw;
+    }
+
+    /**
+     * @param currentStartTime {number}
+     * @param currentEndTime {number}
+     * @param fallingTimeSeconds {number}
+     * @param minNoteHeight {number}
+     * @param noteWidth {number}
+     * @param currentSeqTime {number}
+     * @param keyStep {number}
+     * @param renderImmediately {boolean}
+     * @returns {NoteToRender[]}
+     */
+    computeNotePositionsChannel(currentStartTime,
+                         currentEndTime,
+                         fallingTimeSeconds,
+                         minNoteHeight,
+                         noteWidth,
+                         currentSeqTime,
+                         keyStep,
+                         renderImmediately = false)
+    {
+        /**
+         * @type {NoteToRender[]}
+         */
+        const notesToDraw = [];
+
+        const fieldWidth = this.canvas.width / 4;
+        const fieldHeight = this.canvas.height / 4;
+        minNoteHeight /= 4;
+        noteWidth /= 4;
+        keyStep /= 4;
+        const margin = NOTE_MARGIN / 4;
+        const innerWidth = noteWidth - (STROKE_THICKNESS / 2);
+
+        this.noteTimes.forEach((channel, channelNumder) => {
+
+            if(channel.renderStartIndex >= channel.notes.length) return;
+
+            // compute note offset
+            const yOffset = fieldHeight * Math.floor(channelNumder / 4);
+            const xOffset = fieldWidth * (channelNumder % 4);
+
+            let noteIndex = channel.renderStartIndex;
+            const notes = channel.notes;
+            let note = notes[noteIndex];
+
+            let firstNoteIndex = -1;
+
+            // while the note start is in range
+            while(note.start <= currentEndTime){
+                noteIndex++;
+                // cap notes
+                if(this.notesOnScreen > MAX_NOTES)
+                {
+                    break;
+                }
+
+                const noteSum = note.start + note.length
+
+                // if the note is out of range, append the render start index
+                if(noteSum > currentStartTime && note.length > 0) {
+                    // % of total height times height minus margin
+                    let height = ((note.length / fallingTimeSeconds) * fieldHeight) - (margin * 2);
+
+                    // height less than that can be ommitted (come on)
+                    if(height > minNoteHeight || this.notesOnScreen < 1000) {
+                        if(firstNoteIndex === -1)
+                        {
+                            firstNoteIndex = noteIndex - 1;
+                        }
+
+
+                        let yPos = fieldHeight - height
+                            - (((note.start - currentStartTime) / fallingTimeSeconds) * fieldHeight) + margin;
+
+                        const xPos = keyStep * note.midiNote + margin;
+
+                        // shrink the note when its leaving the renderer
+                        if(yPos < 0)
+                        {
+                            height += yPos;
+                            yPos = 0;
+                        }
+                        if(yPos + height > fieldHeight)
+                        {
+                            height -= (yPos + height - fieldHeight)
+                        }
+
+
+                        // determine if the note should be darker or not (or flat if black midi mode is on
+                        if(renderImmediately)
+                        {
+                            // draw them right away, we don't care about the order
+                            this.drawingContext.fillStyle = this.plainColors[channelNumder];
+                            this.drawingContext.fillRect(xPos + STROKE_THICKNESS + margin + xOffset,
+                                yPos + STROKE_THICKNESS + yOffset,
+                                noteWidth,
+                                height - (STROKE_THICKNESS / 2));
+                        }
+                        else {
+                            // save the notes to draw
+                            if ((note.start > currentSeqTime || noteSum < currentSeqTime) && this.drawActiveNotes) {
+                                notesToDraw.push({
+                                    xPos: xPos + xOffset,
+                                    yPos: yPos + yOffset,
+                                    height: height,
+                                    width: innerWidth,
+                                    stroke: STROKE_THICKNESS / 4,
+                                    color: this.darkerColors[channelNumder]
+                                })
+                            } else {
+                                notesToDraw.push({
+                                    xPos: xPos + xOffset,
+                                    yPos: yPos + yOffset,
+                                    height: height,
+                                    width: innerWidth,
+                                    stroke: STROKE_THICKNESS / 4,
+                                    color: this.channelColors[channelNumder]
+                                })
+                            }
+                        }
+                        this.notesOnScreen++;
+                    }
+                }
+
+                if(noteIndex >= notes.length)
+                {
+                    break;
+                }
+
+                note = notes[noteIndex];
+            }
+            if(firstNoteIndex > -1) channel.renderStartIndex = firstNoteIndex;
+        });
+        return notesToDraw;
     }
 
     /**
