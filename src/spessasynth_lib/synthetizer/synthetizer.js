@@ -102,7 +102,7 @@ export class Synthetizer {
      */
     addNewChannel()
     {
-        this.midiChannels.push(new WorkletChannel(this.volumeController, this.defaultPreset, this.midiChannels.length + 1, false));
+        this.midiChannels.push(new WorkletChannel(this.volumeController, this.reverbProcessor, this.defaultPreset, this.midiChannels.length + 1, false));
         this.eventHandler.callEvent("newchannel", this.midiChannels[this.midiChannels.length - 1]);
     }
 
