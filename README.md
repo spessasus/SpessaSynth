@@ -16,6 +16,7 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 ## Features
 - SoundFont2 Generator Support
 - SoundFont2 Modulator Support
+- Reverb and chorus support
 - A few custom modulators to support some additional controllers (see `modulators.js`)
 - Written using AudioWorklets (Firefox and Chrome both work perfectly)
 - Can load really large soundfonts (4GB!) (but only on Firefox, Chromium has a memory limit)
@@ -35,7 +36,6 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 - Comes bundled with a small [GeneralUser GS](https://schristiancollins.com/generaluser.php) soundFont to get you started
 
 ### Limitations
-- The program currently supports no reverb. 
 - It might not sound as good as other synthetizers (e.g. FluidSynth or BASSMIDI)
 
 ## Installation
@@ -77,7 +77,6 @@ The program is divided into parts:
 #### todo
 - make the worklet system perform good
 - port the worklet system to emscripten (maybe)
-- reverb that actually runs well
 - 
 ### License
 Copyright © 2024 Spessasus. Licensed under the MIT License.
