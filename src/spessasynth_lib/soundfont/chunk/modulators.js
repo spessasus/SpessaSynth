@@ -86,14 +86,17 @@ function getModSourceEnum(curveType, polarity, direction, isCC, index)
 
 export const defaultModulators = [
     // vel to attenuation
+    // FIXME: something is wrong with the volume control, forced to use concave in volume modulators because linear sounds wrong
     new Modulator({
         srcEnum: getModSourceEnum(modulatorCurveTypes.concave, 0, 1, 0, modulatorSources.noteOnVelocity),
         dest: generatorTypes.initialAttenuation,
         amt: 960,
         secSrcEnum: 0x0,
         transform: 0}),
+
     // mod wheel to vibrato
     new Modulator({srcEnum: 0x0081, dest: generatorTypes.vibLfoToPitch, amt: 50, secSrcEnum: 0x0, transform: 0}),
+
     // vol to attenuation
     new Modulator({
         srcEnum: getModSourceEnum(modulatorCurveTypes.concave, 0, 1, 1, midiControllers.mainVolume),
@@ -101,10 +104,13 @@ export const defaultModulators = [
         amt: 960,
         secSrcEnum: 0x0,
         transform: 0}),
+
     // pitch wheel to tuning
     new Modulator({srcEnum: 0x020E, dest: generatorTypes.fineTune, amt: 12700, secSrcEnum: 0x0010, transform: 0}),
+
     // pan to uhh, pan
     new Modulator({srcEnum: 0x028A, dest: generatorTypes.pan, amt: 1000, secSrcEnum: 0x0, transform: 0}),
+
     // expression to attenuation
     new Modulator({
         srcEnum: getModSourceEnum(modulatorCurveTypes.concave, 0, 1, 1, midiControllers.expressionController),

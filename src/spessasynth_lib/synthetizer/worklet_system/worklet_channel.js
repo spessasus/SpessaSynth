@@ -145,12 +145,6 @@ export class WorkletChannel {
 
         this.channelTuningSemitones = 0;
 
-        this.holdPedal = false;
-        /**
-         * @type {number[]}
-         */
-        this.sustainedNotes = [];
-
         this.worklet = new AudioWorkletNode(this.ctx, "worklet-channel-processor", {
             outputChannelCount: [2, 2],
             numberOfOutputs: 2
@@ -274,21 +268,6 @@ export class WorkletChannel {
 
             case midiControllers.effects3Depth:
                 this.chorus.setChorusLevel(val);
-                break;
-
-            case midiControllers.sustainPedal:
-                if(val >= 64)
-                {
-                    this.holdPedal = true;
-                }
-                else
-                {
-                    this.holdPedal = false;
-                    this.sustainedNotes.forEach(n => {
-                        this.stopNote(n);
-                    })
-                    this.sustainedNotes = [];
-                }
                 break;
 
             case midiControllers.dataEntryMsb:
@@ -485,13 +464,6 @@ export class WorkletChannel {
      * @param highPerf {boolean} if set to true, the note will be silenced in 50ms
      */
     stopNote(midiNote, highPerf=false) {
-        // TODO: fix holdPedal
-        if(this.holdPedal)
-        {
-            this.sustainedNotes.push(midiNote);
-            return;
-        }
-
         if(highPerf)
         {
             this.worklet.port.postMessage({
@@ -741,7 +713,6 @@ export class WorkletChannel {
 
     resetControllers()
     {
-        this.holdPedal = false;
         this.chorus.setChorusLevel(0);
 
         this._vibrato = {depth: 0, rate: 0, delay: 0};

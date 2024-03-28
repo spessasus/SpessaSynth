@@ -69,103 +69,134 @@ class ChannelProcessor extends AudioWorkletProcessor {
         this.voices = [];
 
         /**
-         * @param e {{data: WorkletMessage}}
+         * contains sustained voices via cc 64: hold pedal
+         * @type {WorkletVoice[]}
          */
-        this.port.onmessage = e => {
-            const data = e.data.messageData;
-            switch (e.data.messageType) {
-                default:
-                    break;
+        this.sustainedVoices = [];
+        this.holdPedal = false;
 
-                // note off
-                case workletMessageType.noteOff:
-                    this.voices.forEach(v => {
-                        if(v.midiNote !== data || v.isInRelease === true)
-                        {
-                            return;
-                        }
-                        this.releaseVoice(v);
-                    });
-                    break;
+        this.port.onmessage = e => this.handleMessage(e.data);
+    }
 
-                case workletMessageType.killNote:
-                    this.voices.forEach(v => {
-                        if(v.midiNote !== data)
-                        {
-                            return;
-                        }
-                        v.modulatedGenerators[generatorTypes.releaseVolEnv] = -12000; // set release to be very short
-                        this.releaseVoice(v);
-                    });
-                    break;
+    /**
+     * @param message {WorkletMessage}
+     */
+    handleMessage(message)
+    {
+        const data = message.messageData;
+        switch (message.messageType) {
+            default:
+                break;
 
-                case workletMessageType.noteOn:
-                    data.forEach(voice => {
-                        const exclusive = voice.generators[generatorTypes.exclusiveClass];
-                        if(exclusive !== 0)
-                        {
-                            this.voices.forEach(v => {
-                                if(v.generators[generatorTypes.exclusiveClass] === exclusive)
-                                {
-                                    this.releaseVoice(v);
-                                    v.generators[generatorTypes.releaseVolEnv] = -7200; // make the release nearly instant
-                                    computeModulators(v, this.midiControllers);
-                                }
-                            })
-                        }
-                        computeModulators(voice, this.midiControllers);
-                        voice.currentAttenuationDb = 100;
-                    })
-                    this.voices.push(...data);
-                    if(this.voices.length > CHANNEL_CAP)
+            // note off
+            case workletMessageType.noteOff:
+                this.voices.forEach(v => {
+                    if(v.midiNote !== data || v.isInRelease === true)
                     {
-                        this.voices.splice(0, this.voices.length - CHANNEL_CAP);
+                        return;
                     }
-                    this.port.postMessage(this.voices.length);
-                    break;
-
-                case workletMessageType.sampleDump:
-                    this.samples[data.sampleID] = data.sampleData;
-                    break;
-
-                case workletMessageType.ccReset:
-                    this.resetControllers();
-                    break;
-
-                case workletMessageType.ccChange:
-                    this.midiControllers[data[0]] = data[1];
-                    this.voices.forEach(v => computeModulators(v, this.midiControllers));
-                    break;
-
-                case workletMessageType.setChannelVibrato:
-                    this.channelVibrato = data;
-                    break;
-
-                case workletMessageType.clearCache:
-                    this.samples = [];
-                    break;
-
-                case workletMessageType.stopAll:
-                    if(data === 1)
-                    {
-                        // force stop all
-                        this.voices = [];
-                        this.port.postMessage(0);
+                    if(this.holdPedal) {
+                        this.sustainedVoices.push(v);
                     }
                     else
                     {
+                        this.releaseVoice(v);
+                    }
+                });
+                break;
+
+            case workletMessageType.killNote:
+                this.voices.forEach(v => {
+                    if(v.midiNote !== data)
+                    {
+                        return;
+                    }
+                    v.modulatedGenerators[generatorTypes.releaseVolEnv] = -12000; // set release to be very short
+                    this.releaseVoice(v);
+                });
+                break;
+
+            case workletMessageType.noteOn:
+                data.forEach(voice => {
+                    const exclusive = voice.generators[generatorTypes.exclusiveClass];
+                    if(exclusive !== 0)
+                    {
                         this.voices.forEach(v => {
-                            if(v.isInRelease) return;
+                            if(v.generators[generatorTypes.exclusiveClass] === exclusive)
+                            {
+                                this.releaseVoice(v);
+                                v.generators[generatorTypes.releaseVolEnv] = -7200; // make the release nearly instant
+                                computeModulators(v, this.midiControllers);
+                            }
+                        })
+                    }
+                    computeModulators(voice, this.midiControllers);
+                    voice.currentAttenuationDb = 100;
+                })
+                this.voices.push(...data);
+                if(this.voices.length > CHANNEL_CAP)
+                {
+                    this.voices.splice(0, this.voices.length - CHANNEL_CAP);
+                }
+                this.port.postMessage(this.voices.length);
+                break;
+
+            case workletMessageType.sampleDump:
+                this.samples[data.sampleID] = data.sampleData;
+                break;
+
+            case workletMessageType.ccReset:
+                this.resetControllers();
+                break;
+
+            case workletMessageType.ccChange:
+                // special case: hold pedal
+                if(data[0] === midiControllers.sustainPedal) {
+                    if (data[1] >= 64)
+                    {
+                        this.holdPedal = true;
+                    }
+                    else
+                    {
+                        this.holdPedal = false;
+                        this.sustainedVoices.forEach(v => {
                             this.releaseVoice(v)
                         });
+                        this.sustainedVoices = [];
                     }
-                    break;
+                }
+                this.midiControllers[data[0]] = data[1];
+                this.voices.forEach(v => computeModulators(v, this.midiControllers));
+                break;
 
-                case workletMessageType.killNotes:
-                    this.voices.splice(0, data); // starting from 0 (earliest
-                    this.port.postMessage(this.voices.length);
-                    break;
-            }
+            case workletMessageType.setChannelVibrato:
+                this.channelVibrato = data;
+                break;
+
+            case workletMessageType.clearCache:
+                this.samples = [];
+                break;
+
+            case workletMessageType.stopAll:
+                if(data === 1)
+                {
+                    // force stop all
+                    this.voices = [];
+                    this.port.postMessage(0);
+                }
+                else
+                {
+                    this.voices.forEach(v => {
+                        if(v.isInRelease) return;
+                        this.releaseVoice(v)
+                    });
+                }
+                break;
+
+            case workletMessageType.killNotes:
+                this.voices.splice(0, data); // starting from 0 (earliest
+                this.port.postMessage(this.voices.length);
+                break;
         }
     }
 
@@ -201,7 +232,7 @@ class ChannelProcessor extends AudioWorkletProcessor {
         const tempV = this.voices;
         this.voices = [];
         tempV.forEach(v => {
-            this.renderVoice(v, channels[0], channels[1], reverbChannels[0], reverbChannels[1]);
+            this.renderVoice(v, channels, reverbChannels);
             if(!v.finished)
             {
                 this.voices.push(v);
@@ -218,12 +249,10 @@ class ChannelProcessor extends AudioWorkletProcessor {
     /**
      * Renders a voice to the stereo output buffer
      * @param voice {WorkletVoice} the voice to render
-     * @param outputLeft {Float32Array} the left output buffer
-     * @param outputRight {Float32Array} the right output buffer
-     * @param reverbOutputLeft {Float32Array} left output for reverb
-     * @param reverbOutputRight {Float32Array} right output for reverb
+     * @param output {Float32Array[]} the output buffer
+     * @param reverbOutput {Float32Array[]} output for reverb
      */
-    renderVoice(voice, outputLeft, outputRight, reverbOutputLeft, reverbOutputRight)
+    renderVoice(voice, output, reverbOutput)
     {
         if(!this.samples[voice.sample.sampleID])
         {
@@ -310,7 +339,7 @@ class ChannelProcessor extends AudioWorkletProcessor {
 
 
         // SYNTHESIS
-        const bufferOut = new Float32Array(outputLeft.length);
+        const bufferOut = new Float32Array(output[0].length);
 
         // wavetable oscillator
         getOscillatorData(voice, this.samples[voice.sample.sampleID], bufferOut);
@@ -322,7 +351,7 @@ class ChannelProcessor extends AudioWorkletProcessor {
         applyVolumeEnvelope(voice, bufferOut, currentTime, modLfoCentibels, this.sampleTime);
 
         // pan the voice and write out
-        panVoice(pan, bufferOut, outputLeft, outputRight, reverbOutputLeft, reverbOutputRight, voice.modulatedGenerators[generatorTypes.reverbEffectsSend]);
+        panVoice(pan, bufferOut, output, reverbOutput, voice.modulatedGenerators[generatorTypes.reverbEffectsSend]);
     }
 
     /**
@@ -335,6 +364,7 @@ class ChannelProcessor extends AudioWorkletProcessor {
         this.midiControllers.set(resetArray);
         this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTranspose] = transpose;
         this.channelVibrato = {rate: 0, depth: 0, delay: 0};
+        this.holdPedal = false;
     }
 
 }

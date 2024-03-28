@@ -105,15 +105,6 @@ export function computeModulators(voice, controllerTable)
 }
 
 /**
- * @param voice {WorkletVoice}
- * @param generatorType {number}
- * @returns {number} the computed number
- */
-// export function getModulated(voice, generatorType) {
-//     return voice.modulatedGenerators[generatorType];
-// }
-
-/**
  * as follows: transforms[curveType][polarity][direction] is an array
  * @type {Float32Array[][][]}
  */

@@ -182,7 +182,8 @@ export class Synthetizer {
         });
         if(this.highPerformanceMode)
         {
-            this.midiChannels[channel].stopNote(midiNote, true);
+            // do not kill percussion notes
+            this.midiChannels[channel].stopNote(midiNote, !this.midiChannels[channel].percussionChannel);
             return;
         }
         this.midiChannels[channel].stopNote(midiNote);
@@ -581,5 +582,12 @@ export class Synthetizer {
     get voicesAmount()
     {
         return this.midiChannels.reduce((amt, chan) => amt + chan.voicesAmount, 0);
+    }
+
+    reverbateEverythingBecauseWhyNot()
+    {
+        for (let i = 0; i < this.midiChannels.length; i++) {
+            this.controllerChange(i, midiControllers.effects1Depth, 127);
+        }
     }
 }
