@@ -1,3 +1,9 @@
+@import "settings.css";
+@import "keyboard.css";
+@import "sequencer_ui.css";
+@import "music_mode_ui.css";
+@import "synthesizer_ui/synthesizer_ui.css";
+
 * {
     --font-color: #ccc;
     --top-buttons-color: linear-gradient(201deg, #222, #333);

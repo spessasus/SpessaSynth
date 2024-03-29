@@ -589,5 +589,6 @@ export class Synthetizer {
         for (let i = 0; i < this.midiChannels.length; i++) {
             this.controllerChange(i, midiControllers.effects1Depth, 127);
         }
+        return "That's the spirit!";
     }
 }
