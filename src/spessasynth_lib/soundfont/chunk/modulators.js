@@ -143,9 +143,9 @@ export const defaultModulators = [
 
     // cc 74 (brightness) to filterFc
     new Modulator({
-        srcEnum: getModSourceEnum(modulatorCurveTypes.linear, 1, 0, 1, midiControllers.brightness), // linear forwards bipolar cc 74
+        srcEnum: getModSourceEnum(modulatorCurveTypes.linear, 0, 1  , 1, midiControllers.brightness), // linear forwards bipolar cc 74
         dest: generatorTypes.initialFilterFc,
-        amt: 5000,
+        amt: -5000,
         secSrcEnum: 0x0, // no controller
         transform: 0
     })
