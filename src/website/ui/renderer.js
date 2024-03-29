@@ -121,6 +121,12 @@ export class Renderer
             channel.gainController.connect(analyser);
             this.channelAnalysers.push(analyser);
         }
+
+        // connect more channels to the same analysers on add
+        synth.eventHandler.addEvent("newchannel", "renderer-new-channel", channel => {
+            const targetAnalyser = this.channelAnalysers[(synth.midiChannels.length - 1) % this.channelAnalysers.length];
+            channel.gainController.connect(targetAnalyser);
+        })
     }
 
     /**
