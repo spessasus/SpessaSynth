@@ -2,7 +2,7 @@ import {MidiChannel} from "./native_system/midi_channel.js";
 import {SoundFont2} from "../soundfont/soundfont_parser.js";
 import {ShiftableByteArray} from "../utils/shiftable_array.js";
 import { arrayToHexString, consoleColors } from '../utils/other.js';
-import { midiControllers } from '../midi_parser/midi_message.js'
+import { getEvent, messageTypes, midiControllers } from '../midi_parser/midi_message.js'
 import { WorkletChannel } from './worklet_system/worklet_channel.js'
 import { EventHandler } from '../utils/synth_event_handler.js'
 
@@ -566,6 +566,60 @@ export class Synthetizer {
             channel: channel,
             preset: channelObject.preset
         });
+    }
+
+    /**
+     * sends a raw MIDI message to the synthesizer
+     * @param message {Array<number>} the midi message, each number is a byte
+     */
+    sendMessage(message)
+    {
+        // discard as soon as possible if high perf
+        const statusByteData = getEvent(message[0]);
+
+
+        // process the event
+        switch (statusByteData.status)
+        {
+            case messageTypes.noteOn:
+                const velocity = message[2];
+                if(velocity > 0) {
+                    this.noteOn(statusByteData.channel, message[1], velocity);
+                }
+                else
+                {
+                    this.noteOff(statusByteData.channel, message[1]);
+                }
+                break;
+
+            case messageTypes.noteOff:
+                this.noteOff(statusByteData.channel, message[1]);
+                break;
+
+            case messageTypes.pitchBend:
+                this.pitchWheel(statusByteData.channel, message[2], message[1]);
+                break;
+
+            case messageTypes.controllerChange:
+                this.controllerChange(statusByteData.channel, message[1], message[2]);
+                break;
+
+            case messageTypes.programChange:
+                this.programChange(statusByteData.channel, message[1]);
+                break;
+
+            case messageTypes.systemExclusive:
+                this.systemExclusive(new ShiftableByteArray(message.slice(1)));
+                break;
+
+            case messageTypes.reset:
+                this.stopAll();
+                this.resetControllers();
+                break;
+
+            default:
+                break;
+        }
     }
 
     /**

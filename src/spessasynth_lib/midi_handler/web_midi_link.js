@@ -1,6 +1,5 @@
 import { Synthetizer } from '../synthetizer/synthetizer.js'
 import { consoleColors } from '../utils/other.js'
-import { MIDIDeviceHandler } from './midi_handler.js'
 export class WebMidiLinkHandler
 {
     /**
@@ -26,7 +25,7 @@ export class WebMidiLinkHandler
 
             const midiData = data.map(byte => parseInt(byte, 16));
 
-            MIDIDeviceHandler.decodeMidiMessage(midiData, synth);
+            synth.sendMessage(midiData);
         });
 
         console.log("%cWeb MIDI Link handler created!", consoleColors.recognized);
