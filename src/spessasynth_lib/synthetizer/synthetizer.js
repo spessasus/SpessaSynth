@@ -5,6 +5,7 @@ import { arrayToHexString, consoleColors } from '../utils/other.js';
 import { getEvent, messageTypes, midiControllers } from '../midi_parser/midi_message.js'
 import { WorkletChannel } from './worklet_system/worklet_channel.js'
 import { EventHandler } from '../utils/synth_event_handler.js'
+import { FancyChorus } from './fancy_chorus.js'
 
 const VOICES_CAP = 450;
 
@@ -12,6 +13,8 @@ export const DEFAULT_GAIN = 1;
 export const DEFAULT_PERCUSSION = 9;
 export const DEFAULT_CHANNEL_COUNT = 16;
 export const REVERB_TIME_S = 2;
+export const DEFAULT_SYNTH_MODE = "gm2";
+export const DEFAULT_SYNTHESIS_MODE = "worklet";
 
 export class Synthetizer {
     /**
@@ -66,6 +69,7 @@ export class Synthetizer {
         this.reverbProcessor.connect(this.volumeController);
         this.volumeController.connect(this.panController);
         this.panController.connect(targetNode);
+        this.chorusProcessor = new FancyChorus(this.volumeController);
 
         /**
          * For Black MIDI's - forces release time to 50ms
@@ -77,24 +81,59 @@ export class Synthetizer {
          * Controls the system
          * @type {"gm"|"gm2"|"gs"|"xg"}
          */
-        this.system = "gm2";
+        this.system = DEFAULT_SYNTH_MODE;
 
+        /**
+         * the system that synth uses
+         * @type {"worklet"|"legacy"}
+         * @private
+         */
+        this._synthesisMode = DEFAULT_SYNTHESIS_MODE;
+        if(window.isSecureContext === false)
+        {
+            this._synthesisMode = "legacy";
+            console.log("%cDetected insecure context. Worklet system is unavailable, switching to legacy instead.", consoleColors.warn);
+        }
 
         this.defaultPreset = this.soundFont.getPreset(0, 0);
         this.percussionPreset = this.soundFont.getPreset(128, 0);
 
+        this.createDefaultChannels();
+        console.log("%cSpessaSynth is ready!", consoleColors.recognized);
+    }
+
+    createDefaultChannels()
+    {
         /**
          *  create 16 channels
          * @type {WorkletChannel[]|MidiChannel[]}
          */
-        this.midiChannels = [...Array(DEFAULT_CHANNEL_COUNT).keys()].map(j => new WorkletChannel(this.volumeController, this.reverbProcessor, this.defaultPreset, j + 1, false));
+        this.midiChannels = [];
+
+        for (let i = 0; i < DEFAULT_CHANNEL_COUNT; i++) {
+            this._addChannelInternal();
+        }
+
 
         // change percussion channel to the percussion preset
         this.midiChannels[DEFAULT_PERCUSSION].percussionChannel = true;
         this.midiChannels[DEFAULT_PERCUSSION].setPreset(this.percussionPreset);
         this.midiChannels[DEFAULT_PERCUSSION].bank = 128;
+    }
 
-        console.log("%cSpessaSynth is ready!", consoleColors.recognized);
+    /**
+     * @private
+     */
+    _addChannelInternal()
+    {
+        if(this._synthesisMode === "worklet")
+        {
+            this.midiChannels.push(new WorkletChannel(this.volumeController, this.reverbProcessor, this.chorusProcessor.input, this.defaultPreset, this.midiChannels.length + 1, false));
+        }
+        else
+        {
+            this.midiChannels.push(new MidiChannel(this.volumeController, this.reverbProcessor, this.chorusProcessor.input, this.defaultPreset, this.midiChannels.length + 1, false));
+        }
     }
 
     /**
@@ -102,7 +141,7 @@ export class Synthetizer {
      */
     addNewChannel()
     {
-        this.midiChannels.push(new WorkletChannel(this.volumeController, this.reverbProcessor, this.defaultPreset, this.midiChannels.length + 1, false));
+        this._addChannelInternal();
         this.eventHandler.callEvent("newchannel", this.midiChannels[this.midiChannels.length - 1]);
     }
 
@@ -148,8 +187,6 @@ export class Synthetizer {
             midiNote: midiNote,
             channel: channel,
             velocity: velocity,
-            channelVolume: chan.channelVolume,
-            channelExpression: chan.channelExpression,
         });
     }
 
@@ -636,6 +673,30 @@ export class Synthetizer {
     get voicesAmount()
     {
         return this.midiChannels.reduce((amt, chan) => amt + chan.voicesAmount, 0);
+    }
+
+    get synthesisMode()
+    {
+        return this._synthesisMode;
+    }
+
+    /**
+     * @param value {"worklet"|"legacy"}
+     */
+    set synthesisMode(value)
+    {
+        if (value !== "worklet" && value !== "legacy")
+        {
+            throw TypeError("invalid type!");
+        }
+        this._synthesisMode = value;
+        const channelsAmount =  this.midiChannels.length;
+        for (let i = 0; i < channelsAmount; i++) {
+            this.midiChannels[i].stopAll(true);
+            this.midiChannels[i].killChannel();
+            delete this.midiChannels[i];
+        }
+        this.createDefaultChannels();
     }
 
     reverbateEverythingBecauseWhyNot()

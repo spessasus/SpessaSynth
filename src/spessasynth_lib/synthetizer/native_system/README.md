@@ -1,25 +1,15 @@
 # This is the old synthesis system.
-It's not maintained anymore, but it's here for the HTTP websites which can't use AudioWorklets.
-To use this system, edit `synthetizer.js`:
-```js
-import { MidiChannel } from './native_system/midi_channel.js';
-```
-and change the class from `WorkletChannel` to `MidiChannel`
-```js
-/**
- *  create 16 channels
- * @type {WorkletChannel[]|MidiChannel[]}
- */
-this.midiChannels = [...Array(DEFAULT_CHANNEL_COUNT).keys()].map(j => new MidiChannel(this.volumeController, this.defaultPreset, j + 1, false));
+It's not updated anymore, but it's here for the HTTP websites which can't use AudioWorklets.
+To use this system, change the `synthesisMode` to `"legacy"`:
 
-// ...
-
-/**
- * Adds a new channel to the synthesizer
- */
-addNewChannel()
-{
-    this.midiChannels.push(new MidiChannel(this.volumeController, this.defaultPreset, this.midiChannels.length + 1, false));
-    this.eventHandler.callEvent("newchannel", this.midiChannels[this.midiChannels.length - 1]);
-}
+```js
+synth.synthesisMode = "legacy";
 ```
+it should automatically create the legacy channels.
+If you want to automatically use this mode, then
+```js
+export const DEFAULT_SYNTHESIS_MODE = "legacy";
+```
+
+Note:
+the synth will try to detect if the worklets are available. if not, then it should switch to legacy

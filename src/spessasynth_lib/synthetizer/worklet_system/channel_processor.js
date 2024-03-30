@@ -229,10 +229,11 @@ class ChannelProcessor extends AudioWorkletProcessor {
         }
         const channels = outputs[0];
         const reverbChannels = outputs[1];
+        const chorusChannels = outputs[2];
         const tempV = this.voices;
         this.voices = [];
         tempV.forEach(v => {
-            this.renderVoice(v, channels, reverbChannels);
+            this.renderVoice(v, channels, reverbChannels, chorusChannels);
             if(!v.finished)
             {
                 this.voices.push(v);
@@ -251,8 +252,9 @@ class ChannelProcessor extends AudioWorkletProcessor {
      * @param voice {WorkletVoice} the voice to render
      * @param output {Float32Array[]} the output buffer
      * @param reverbOutput {Float32Array[]} output for reverb
+     * @param chorusOutput {Float32Array[]} output for chorus
      */
-    renderVoice(voice, output, reverbOutput)
+    renderVoice(voice, output, reverbOutput, chorusOutput)
     {
         if(!this.samples[voice.sample.sampleID])
         {
@@ -351,7 +353,9 @@ class ChannelProcessor extends AudioWorkletProcessor {
         applyVolumeEnvelope(voice, bufferOut, currentTime, modLfoCentibels, this.sampleTime);
 
         // pan the voice and write out
-        panVoice(pan, bufferOut, output, reverbOutput, voice.modulatedGenerators[generatorTypes.reverbEffectsSend]);
+        panVoice(pan, bufferOut, output,
+            reverbOutput, voice.modulatedGenerators[generatorTypes.reverbEffectsSend],
+            chorusOutput, voice.modulatedGenerators[generatorTypes.chorusEffectsSend]);
     }
 
     /**

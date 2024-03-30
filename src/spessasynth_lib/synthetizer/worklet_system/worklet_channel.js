@@ -61,7 +61,6 @@ import { consoleColors } from '../../utils/other.js'
 import { modulatorSources } from '../../soundfont/chunk/modulators.js'
 import { midiControllers } from '../../midi_parser/midi_message.js'
 import { addAndClampGenerator, generatorTypes } from '../../soundfont/chunk/generators.js'
-import { Chorus } from '../chorus.js'
 const CHANNEL_GAIN = 0.5;
 
 export const NON_CC_INDEX_OFFSET = 128;
@@ -119,11 +118,12 @@ export class WorkletChannel {
      * creates a midi channel
      * @param targetNode {AudioNode}
      * @param reverbNode {AudioNode}
+     * @param chorusNode {AudioNode}
      * @param defaultPreset {Preset}
      * @param channelNumber {number}
      * @param percussionChannel {boolean}
      */
-    constructor(targetNode, reverbNode, defaultPreset, channelNumber = -1, percussionChannel = false) {
+    constructor(targetNode, reverbNode, chorusNode, defaultPreset, channelNumber = -1, percussionChannel = false) {
         this.ctx = targetNode.context;
         this.outputNode = targetNode;
         this.channelNumber = channelNumber
@@ -146,8 +146,8 @@ export class WorkletChannel {
         this.channelTuningSemitones = 0;
 
         this.worklet = new AudioWorkletNode(this.ctx, "worklet-channel-processor", {
-            outputChannelCount: [2, 2],
-            numberOfOutputs: 2
+            outputChannelCount: [2, 2, 2],
+            numberOfOutputs: 3
         });
 
         this.reportedVoicesAmount = 0;
@@ -164,10 +164,10 @@ export class WorkletChannel {
          */
         this.dumpedSamples = new Set();
 
-        this.chorus = new Chorus(this.worklet, this.gainController, 0);
-
         this.gainController.connect(this.outputNode);
+        this.worklet.connect(this.gainController, 0);
         this.worklet.connect(reverbNode, 1);
+        this.worklet.connect(chorusNode, 2);
 
 
         this.resetControllers();
@@ -185,6 +185,18 @@ export class WorkletChannel {
          */
         this.lockPreset = false;
         this.lockVibrato = false;
+    }
+
+    /**
+     * Kills the channel, disconnecting everything
+     */
+    killChannel()
+    {
+        this.stopAll(true);
+        this.muteChannel();
+        this.worklet.disconnect();
+        this.gainController.disconnect();
+        delete this.cachedWorkletVoices;
     }
 
     /**
@@ -264,10 +276,6 @@ export class WorkletChannel {
 
             case midiControllers.NRPNLsb:
                 this.setNRPFine(val);
-                break;
-
-            case midiControllers.effects3Depth:
-                this.chorus.setChorusLevel(val);
                 break;
 
             case midiControllers.dataEntryMsb:
@@ -713,7 +721,6 @@ export class WorkletChannel {
 
     resetControllers()
     {
-        this.chorus.setChorusLevel(0);
 
         this._vibrato = {depth: 0, rate: 0, delay: 0};
 

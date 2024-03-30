@@ -2,7 +2,6 @@ import {VoiceGroup} from "./voice_group.js";
 import {Preset} from "../../soundfont/chunk/presets.js";
 import { consoleColors } from '../../utils/other.js'
 import { midiControllers } from '../../midi_parser/midi_message.js'
-import { Chorus } from '../chorus.js'
 
 const CHANNEL_LOUDNESS = 0.3;
 
@@ -21,11 +20,12 @@ export class MidiChannel {
      * creates a midi channel
      * @param targetNode {AudioNode}
      * @param targetReverbNode {AudioNode}
+     * @param targetChorusNode {AudioNode}
      * @param defaultPreset {Preset}
      * @param channelNumber {number}
      * @param percussionChannel {boolean}
      */
-    constructor(targetNode, targetReverbNode, defaultPreset, channelNumber = -1, percussionChannel = false) {
+    constructor(targetNode, targetReverbNode, targetChorusNode, defaultPreset, channelNumber = -1, percussionChannel = false) {
         this.ctx = targetNode.context;
         this.outputNode = targetNode;
         this.channelNumber = channelNumber
@@ -65,12 +65,17 @@ export class MidiChannel {
         // note -> panner -> chorus -> gain -> reverb + passthrough)     -> out
 
         //const dummy = new GainNode(this.ctx, {gain: 1});
-        this.chorus = new Chorus(this.panner, this.gainController, 0);
+        this.chorus = new GainNode(this.ctx, {
+            gain: 0
+        });
+        this.chorus.connect(targetChorusNode)
         //this.reverb.input.connect(dummy);
         //this.reverb.connectOutput(this.gainController);
 
+        this.panner.connect(this.gainController);
         this.gainController.connect(this.outputNode);
         this.gainController.connect(this.reverb);
+        this.gainController.connect(this.chorus);
 
         this.resetControllers();
 
@@ -98,6 +103,18 @@ export class MidiChannel {
          */
         this.lockPreset = false;
         this.lockVibrato = false;
+    }
+
+    /**
+     * Kills the channel, disconnecting everything
+     */
+    killChannel()
+    {
+        this.gainController.disconnect();
+        this.stopAll(true);
+        this.muteChannel();
+        this.playingNotes = [];
+        this.stoppingNotes = [];
     }
 
     /**
@@ -335,7 +352,7 @@ export class MidiChannel {
      */
     setChorus(chorus)
     {
-        this.chorus.setChorusLevel(chorus);
+        this.chorus.gain.value = chorus / 127;
     }
 
     setReverb(reverbLevel)
@@ -578,11 +595,17 @@ export class MidiChannel {
 
     resetControllers()
     {
+        /**
+         * @type {number}
+         */
         this.channelVolume = 100 / 127; // per midi spec
+        /**
+         * @type {number}
+         */
         this.channelExpression = 1;
         this.channelTuningRatio = 1;
         this.channelPitchBendRange = 2;
-        this.chorus.setChorusLevel(0);
+        this.chorus.gain.value = 0;
         this.holdPedal = false;
         this.updateGain();
         this.panner.pan.value = 0;

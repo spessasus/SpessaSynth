@@ -86,7 +86,7 @@ export class MidiKeyboard
 
                 // user note on
                 this.heldKeys.push(midiNote);
-                this.pressNote(midiNote, this.channel, KEYBOARD_VELOCITY, 1, 1);
+                this.pressNote(midiNote, this.channel, KEYBOARD_VELOCITY);
                 this.synth.noteOn(this.channel, midiNote, KEYBOARD_VELOCITY, true);
             }
 
@@ -94,7 +94,7 @@ export class MidiKeyboard
             {
                 // user note on
                 this.heldKeys.push(midiNote);
-                this.pressNote(midiNote, this.channel, KEYBOARD_VELOCITY, 1, 1);
+                this.pressNote(midiNote, this.channel, KEYBOARD_VELOCITY);
                 this.synth.noteOn(this.channel, midiNote, KEYBOARD_VELOCITY, true);
             }
 
@@ -147,7 +147,7 @@ export class MidiKeyboard
 
         // connect the synth to keyboard
         this.synth.eventHandler.addEvent("noteon", "keyboard-note-on", e => {
-            this.pressNote(e.midiNote, e.channel, e.velocity, e.channelVolume, e.channelExpression);
+            this.pressNote(e.midiNote, e.channel, e.velocity);
         });
 
         this.synth.eventHandler.addEvent("noteoff", "keyboard-note-off", e => {
@@ -190,17 +190,15 @@ export class MidiKeyboard
      * presses a midi note visually
      * @param midiNote {number} 0-127
      * @param channel {number} 0-15     * @param volume {number} 0-1
-     * @param expression {number} 0-1
-     * @param volume {number} 0-1
      * @param velocity {number} 0-127
      */
-    pressNote(midiNote, channel, velocity, volume, expression)
+    pressNote(midiNote, channel, velocity)
     {
         let key = this.keys[midiNote];
         key.classList.add("pressed");
 
         let isSharp = key.classList.contains("sharp_key");
-        let brightness = expression * volume * (velocity / 127);
+        let brightness = velocity / 127;
         let rgbaValues = this.channelColors[channel % 16].match(/\d+(\.\d+)?/g).map(parseFloat);
 
         // multiply the rgb values by brightness
