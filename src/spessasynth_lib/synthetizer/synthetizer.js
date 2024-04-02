@@ -314,23 +314,23 @@ export class Synthetizer {
         {
             // reset
             ch.resetControllers();
-            ch.bank = 0;
-            if((ch.channelNumber - 1) % 16 === DEFAULT_PERCUSSION) {
-                ch.setPreset(this.percussionPreset);
-                ch.percussionChannel = true;
-                this.eventHandler.callEvent("drumchange",{
-                    channel: ch.channelNumber - 1,
-                    isDrumChannel: true
-                });
-            }
-            else
-            {
-                ch.percussionChannel = false;
-                ch.setPreset(this.defaultPreset);
-                this.eventHandler.callEvent("drumchange",{
-                    channel: ch.channelNumber - 1,
-                    isDrumChannel: false
-                });
+            if(!ch.lockPreset) {
+                ch.bank = 0;
+                if ((ch.channelNumber - 1) % 16 === DEFAULT_PERCUSSION) {
+                    ch.setPreset(this.percussionPreset);
+                    ch.percussionChannel = true;
+                    this.eventHandler.callEvent("drumchange", {
+                        channel: ch.channelNumber - 1,
+                        isDrumChannel: true
+                    });
+                } else {
+                    ch.percussionChannel = false;
+                    ch.setPreset(this.defaultPreset);
+                    this.eventHandler.callEvent("drumchange", {
+                        channel: ch.channelNumber - 1,
+                        isDrumChannel: false
+                    });
+                }
             }
 
             // call all the event listeners

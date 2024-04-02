@@ -132,8 +132,8 @@ export class Settings
 
             // rest
             // things get hacky here: change the global (*) --font-color to black:
-            document.styleSheets[0].cssRules[0].style.setProperty("--font-color",  this.mode === "dark" ? "#eee" : "#333");
-            document.styleSheets[0].cssRules[0].style.setProperty("--top-buttons-color",  this.mode === "dark" ? "#222" : "linear-gradient(270deg, #ddd, #fff)");
+            document.styleSheets[0].cssRules[5].style.setProperty("--font-color",  this.mode === "dark" ? "#eee" : "#333");
+            document.styleSheets[0].cssRules[5].style.setProperty("--top-buttons-color",  this.mode === "dark" ? "#222" : "linear-gradient(270deg, #ddd, #fff)");
             document.body.style.background = this.mode === "dark" ? "black" : "white";
         }
     }

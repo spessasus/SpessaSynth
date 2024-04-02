@@ -1,5 +1,5 @@
 import {Synthetizer} from "../../spessasynth_lib/synthetizer/synthetizer.js";
-import { calculateRGB } from '../../spessasynth_lib/utils/other.js';
+import { calculateRGB, consoleColors } from '../../spessasynth_lib/utils/other.js'
 import { Sequencer } from '../../spessasynth_lib/sequencer/sequencer.js';
 
 /**
@@ -47,7 +47,7 @@ export class Renderer
 
 
         // booleans
-        this.renderBool = true;
+        this._renderBool = true;
         this.renderAnalysers = true;
         this.renderNotes = true;
         this.drawActiveNotes = true;
@@ -90,6 +90,7 @@ export class Renderer
          * @type {AnalyserNode[]}
          */
         this.channelAnalysers = [];
+        this.createChannelAnalysers(synth);
         this.connectChannelAnalysers(synth);
     }
 
@@ -99,10 +100,9 @@ export class Renderer
     }
 
     /**
-     * Connect the 16 channels to their respective analysers
      * @param synth {Synthetizer}
      */
-    connectChannelAnalysers(synth)
+    createChannelAnalysers(synth)
     {
         // disconnect the analysers from earlier
         for(const analyser of this.channelAnalysers)
@@ -111,22 +111,40 @@ export class Renderer
             this.channelAnalysers.splice(0, 1);
         }
         this.channelAnalysers = [];
-        for(const channel of synth.midiChannels)
+        for(let i = 0; i < synth.midiChannels.length; i++)
         {
             // create the analyser
-            const analyser = new AnalyserNode(channel.ctx, {
+            const analyser = new AnalyserNode(synth.context, {
                 fftSize: this.normalAnalyserFft
             });
-            // connect the channel's output to the analyser
-            channel.gainController.connect(analyser);
             this.channelAnalysers.push(analyser);
         }
-
         // connect more channels to the same analysers on add
         synth.eventHandler.addEvent("newchannel", "renderer-new-channel", channel => {
             const targetAnalyser = this.channelAnalysers[(synth.midiChannels.length - 1) % this.channelAnalysers.length];
             channel.gainController.connect(targetAnalyser);
         })
+    }
+
+    /**
+     * Connect the 16 channels to their respective analysers
+     * @param synth {Synthetizer}
+     */
+    connectChannelAnalysers(synth)
+    {
+        for(let i = 0; i < synth.midiChannels.length; i++)
+        {
+            // connect the channel's output to the analyser
+            synth.midiChannels[i].gainController.connect(this.channelAnalysers[i % this.channelAnalysers.length]);
+        }
+    }
+
+    disconnectChannelAnalysers()
+    {
+        for (const channelAnalyser of this.channelAnalysers) {
+            channelAnalyser.disconnect();
+        }
+        console.log("%cAnalysers disconnected!", consoleColors.recognized);
     }
 
     /**
@@ -250,6 +268,24 @@ export class Renderer
         this.frameTimeStart = performance.now();
         if(auto) {
             requestAnimationFrame(this.render.bind(this));
+        }
+    }
+
+    get renderBool()
+    {
+        return this._renderBool;
+    }
+
+    set renderBool(value)
+    {
+        this._renderBool = value;
+        if(value === true)
+        {
+            this.connectChannelAnalysers(this.synth);
+        }
+        else
+        {
+            this.disconnectChannelAnalysers();
         }
     }
 
