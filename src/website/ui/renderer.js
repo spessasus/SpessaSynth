@@ -135,7 +135,7 @@ export class Renderer
         for(let i = 0; i < synth.midiChannels.length; i++)
         {
             // connect the channel's output to the analyser
-            synth.midiChannels[i].gainController.connect(this.channelAnalysers[i % this.channelAnalysers.length]);
+            synth.midiChannels[i].gainController.connect(this.channelAnalysers[i % this.channelAnalysers.length], 0);
         }
     }
 
@@ -574,19 +574,18 @@ export class Renderer
         // draw
         this.drawingContext.lineWidth = this.lineThickness;
         this.drawingContext.strokeStyle = this.channelColors[channelNumber];
-
-        const path = new Path2D();
-        path.moveTo(relativeX, relativeY + waveform[0] * multiplier);
+        this.drawingContext.beginPath();
+        this.drawingContext.moveTo(relativeX, relativeY + waveform[0] * multiplier);
 
 
         let xPos = relativeX;
         waveform.forEach((val)  => {
-            path.lineTo(
+            this.drawingContext.lineTo(
                 xPos,
                 relativeY + val * multiplier);
             xPos += step;
 
         });
-        this.drawingContext.stroke(path);
+        this.drawingContext.stroke();
     }
 }

@@ -19,6 +19,15 @@ export class MidiKeyboard
          */
         this.mode = "light";
 
+        /**
+         * @type {{min: number, max: number}}
+         * @private
+         */
+        this._keyRange = {
+            min: 0,
+            max: 127
+        };
+
         document.onmousedown = () => this.mouseHeld = true;
         document.onmouseup = () => {
             this.mouseHeld = false;
@@ -53,10 +62,32 @@ export class MidiKeyboard
 
         this.channelColors = channelColors;
 
+        this._createKeyboard();
+
+        // connect the synth to keyboard
+        this.synth.eventHandler.addEvent("noteon", "keyboard-note-on", e => {
+            this.pressNote(e.midiNote, e.channel, e.velocity);
+        });
+
+        this.synth.eventHandler.addEvent("noteoff", "keyboard-note-off", e => {
+            this.releaseNote(e.midiNote, e.channel);
+        });
+
+        this.synth.eventHandler.addEvent("stopall", "keyboard-stop-all", () => {
+            this.clearNotes();
+        });
+    }
+
+    /**
+     * @private
+     */
+    _createKeyboard()
+    {
         /**
          * @type {HTMLDivElement}
          */
         this.keyboard = document.getElementById("keyboard");
+        this.keyboard.innerHTML = "";
 
         /**
          *
@@ -68,13 +99,12 @@ export class MidiKeyboard
          * @type {string[][]}
          */
         this.keyColors = [];
-
         // create keyboard
         function isBlackNoteNumber(noteNumber) {
-                let pitchClass = noteNumber % 12;
-                return pitchClass === 1 || pitchClass === 3 || pitchClass === 6 || pitchClass === 8 || pitchClass === 10;
+            let pitchClass = noteNumber % 12;
+            return pitchClass === 1 || pitchClass === 3 || pitchClass === 6 || pitchClass === 8 || pitchClass === 10;
         }
-        for (let midiNote = 0; midiNote < 128; midiNote++) {
+        for (let midiNote = this._keyRange.min; midiNote < this._keyRange.max + 1; midiNote++) {
             let keyElement = document.createElement("div");
             keyElement.classList.add("key");
             keyElement.id = `note${midiNote}`;
@@ -144,19 +174,6 @@ export class MidiKeyboard
             this.keyboard.appendChild(keyElement);
             this.keys.push(keyElement);
         }
-
-        // connect the synth to keyboard
-        this.synth.eventHandler.addEvent("noteon", "keyboard-note-on", e => {
-            this.pressNote(e.midiNote, e.channel, e.velocity);
-        });
-
-        this.synth.eventHandler.addEvent("noteoff", "keyboard-note-off", e => {
-            this.releaseNote(e.midiNote, e.channel);
-        });
-
-        this.synth.eventHandler.addEvent("stopall", "keyboard-stop-all", () => {
-            this.clearNotes();
-        });
     }
 
     toggleMode()
@@ -178,6 +195,37 @@ export class MidiKeyboard
     }
 
     /**
+     * The range of displayed MIDI keys
+     * @returns {{min: number, max: number}}
+     */
+    get keyRange()
+    {
+        return this._keyRange;
+    }
+
+    /**
+     * The range of displayed MIDI keys
+     * @param value {{min: number, max: number}}
+     */
+    set keyRange(value)
+    {
+        if(value.max === undefined || value.min === undefined)
+        {
+            throw new TypeError("No min or max property!");
+        }
+        if(value.min > value.max)
+        {
+            let temp = value.min;
+            value.min = value.max;
+            value.max = temp;
+        }
+        value.min = Math.max(0, value.min);
+        value.max = Math.min(127, value.max);
+        this._keyRange = value;
+        this._createKeyboard();
+    }
+
+    /**
      * Selects the channel from synth
      * @param channel {number} 0-15
      */
@@ -194,7 +242,11 @@ export class MidiKeyboard
      */
     pressNote(midiNote, channel, velocity)
     {
-        let key = this.keys[midiNote];
+        if(midiNote > this._keyRange.max || midiNote < this._keyRange.min)
+        {
+            return;
+        }
+        let key = this.keys[midiNote - this._keyRange.min];
         key.classList.add("pressed");
 
         let isSharp = key.classList.contains("sharp_key");
@@ -226,7 +278,7 @@ export class MidiKeyboard
         /**
          * @type {string[]}
          */
-        this.keyColors[midiNote].push(this.channelColors[channel % 16]);
+        this.keyColors[midiNote - this._keyRange.min].push(this.channelColors[channel % 16]);
     }
 
     /**
@@ -235,16 +287,20 @@ export class MidiKeyboard
      */
     releaseNote(midiNote, channel)
     {
+        if(midiNote > this._keyRange.max || midiNote < this._keyRange.min)
+        {
+            return;
+        }
         if(midiNote > 127 || midiNote < 0)
         {
             return;
         }
-        let key = this.keys[midiNote];
+        let key = this.keys[midiNote - this._keyRange.min];
 
         /**
          * @type {string[]}
          */
-        let pressedColors = this.keyColors[midiNote];
+        let pressedColors = this.keyColors[midiNote - this._keyRange.min];
         if(!pressedColors)
         {
             return;
