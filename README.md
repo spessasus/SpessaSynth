@@ -61,6 +61,8 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
    ```
 2. Put your soundfonts into the `soundfonts` folder. (you can select soundfonts in the program)
 3. Enjoy!
+   
+(note that in KDE Plasma 6 the browser auto opening seems to be broken. You must navigate to http://localhost:8181 manually)
 
 ### [Check out the wiki!](../../wiki/Home)
 *Note: the wiki is quite outdated, but most of the methods should still work.*
