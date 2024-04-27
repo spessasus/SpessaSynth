@@ -1,16 +1,16 @@
-import {MidiKeyboard} from "./ui/midi_keyboard.js";
-import {Synthetizer} from "../spessasynth_lib/synthetizer/synthetizer.js";
-import {Renderer} from "./ui/renderer.js";
-import {MIDI} from "../spessasynth_lib/midi_parser/midi_loader.js";
+import { MidiKeyboard } from './ui/midi_keyboard.js'
+import { Synthetizer } from '../spessasynth_lib/synthetizer/synthetizer.js'
+import { Renderer } from './ui/renderer.js'
+import { MIDI } from '../spessasynth_lib/midi_parser/midi_loader.js'
 
-import {SoundFont2} from "../spessasynth_lib/soundfont/soundfont_parser.js";
-import {SequencerUI} from "./ui/sequencer_ui/sequencer_ui.js";
-import {SynthetizerUI} from "./ui/synthesizer_ui/synthetizer_ui.js";
-import { MIDIDeviceHandler } from '../spessasynth_lib/midi_handler/midi_handler.js';
-import { WebMidiLinkHandler } from '../spessasynth_lib/midi_handler/web_midi_link.js';
-import { Sequencer } from '../spessasynth_lib/sequencer/sequencer.js';
-import { Settings } from './ui/settings_ui/settings.js';
-import { MusicModeUI } from './ui/music_mode_ui.js';
+import { SoundFont2 } from '../spessasynth_lib/soundfont/soundfont_parser.js'
+import { SequencerUI } from './ui/sequencer_ui/sequencer_ui.js'
+import { SynthetizerUI } from './ui/synthesizer_ui/synthetizer_ui.js'
+import { MIDIDeviceHandler } from '../spessasynth_lib/midi_handler/midi_handler.js'
+import { WebMidiLinkHandler } from '../spessasynth_lib/midi_handler/web_midi_link.js'
+import { Sequencer } from '../spessasynth_lib/sequencer/sequencer.js'
+import { Settings } from './ui/settings_ui/settings.js'
+import { MusicModeUI } from './ui/music_mode_ui.js'
 
 export class Manager {
     channelColors = [
@@ -105,8 +105,15 @@ export class Manager {
             switch (e.key.toLowerCase()) {
                 case "c":
                     e.preventDefault();
+                    if(this.seq)
+                    {
+                        this.seq.pause();
+                    }
                     const response = window.prompt("Cinematic mode activated!\n Paste the link to the image for canvas (leave blank to disable)", "");
-
+                    if(this.seq)
+                    {
+                        this.seq.play();
+                    }
                     if (response === null) {
                         return;
                     }
@@ -114,6 +121,32 @@ export class Manager {
                     document.getElementsByClassName("top_part")[0].style.display = "none";
                     document.getElementsByClassName("bottom_part")[0].style.display = "none";
                     document.body.requestFullscreen().then();
+                    break;
+
+                case "v":
+                    e.preventDefault();
+                    if(this.seq)
+                    {
+                        this.seq.pause();
+                    }
+                    const videoSource = window.prompt("Video mode!\n Paste the link to the video source (leave blank to disable)\n" +
+                        "Note: the video will be available in console as 'video'", "");
+                    if (videoSource === null) {
+                        return;
+                    }
+                    const video = document.createElement("video");
+                    video.src = videoSource;
+                    video.classList.add("secret_video");
+                    canvas.parentElement.appendChild(video);
+                    video.play();
+                    window.video = video;
+                    if(this.seq)
+                    {
+                        video.currentTime = parseFloat(window.prompt("Video offset to sync to midi, in seconds.", "0"));
+                        video.play();
+                        this.seq.currentTime = 0;
+                    }
+
                     break;
 
                 case "n":

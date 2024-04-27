@@ -110,6 +110,12 @@ export class Synthetizer {
          */
         this.midiChannels = [];
 
+        /**
+         * The synth's transposition, in semitones.
+         * @type {number}
+         */
+        this.transposition = 0;
+
         for (let i = 0; i < DEFAULT_CHANNEL_COUNT; i++) {
             this._addChannelInternal();
         }
@@ -374,6 +380,7 @@ export class Synthetizer {
     transpose(semitones)
     {
         this.midiChannels.forEach(c => c.transposeChannel(semitones));
+        this.transposition = semitones;
     }
 
     /**

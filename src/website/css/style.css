@@ -54,6 +54,7 @@ a{
     align-content: space-around;
     justify-content: space-around;
     align-items: center;
+    z-index: 50;
 }
 
 .top_part_light{
@@ -143,6 +144,7 @@ input[type="file"] {
     flex: 1;
     background-size: cover;
     height: 1px; /*I have absolutely no idea how this works but whatever ¯\_(ツ)_/¯*/
+    z-index: 1;
 }
 
 #note_canvas.light_mode{
@@ -161,4 +163,11 @@ button{
 
 .hidden{
     display: none !important;
+}
+
+.secret_video{
+    position: absolute;
+    width: 100%;
+    left: 0;
+    z-index: 0;
 }

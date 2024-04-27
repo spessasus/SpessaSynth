@@ -84,13 +84,16 @@ function getModSourceEnum(curveType, polarity, direction, isCC, index)
     return (curveType << 10) | (polarity << 9) | (direction << 8) | (isCC << 7) | index;
 }
 
+const DEFAULT_ATTENUATION_MOD_AMOUNT = 960;
+const DEFAULT_ATTENUATION_MOD_CURVE_TYPE = modulatorCurveTypes.concave;
+
 export const defaultModulators = [
     // vel to attenuation
     // FIXME: something is wrong with the volume control, forced to use concave in volume modulators because linear sounds wrong
     new Modulator({
-        srcEnum: getModSourceEnum(modulatorCurveTypes.concave, 0, 1, 0, modulatorSources.noteOnVelocity),
+        srcEnum: getModSourceEnum(DEFAULT_ATTENUATION_MOD_CURVE_TYPE, 0, 1, 0, modulatorSources.noteOnVelocity),
         dest: generatorTypes.initialAttenuation,
-        amt: 960,
+        amt: DEFAULT_ATTENUATION_MOD_AMOUNT,
         secSrcEnum: 0x0,
         transform: 0}),
 
@@ -99,9 +102,9 @@ export const defaultModulators = [
 
     // vol to attenuation
     new Modulator({
-        srcEnum: getModSourceEnum(modulatorCurveTypes.concave, 0, 1, 1, midiControllers.mainVolume),
+        srcEnum: getModSourceEnum(DEFAULT_ATTENUATION_MOD_CURVE_TYPE, 0, 1, 1, midiControllers.mainVolume),
         dest: generatorTypes.initialAttenuation,
-        amt: 960,
+        amt: DEFAULT_ATTENUATION_MOD_AMOUNT,
         secSrcEnum: 0x0,
         transform: 0}),
 
@@ -113,9 +116,9 @@ export const defaultModulators = [
 
     // expression to attenuation
     new Modulator({
-        srcEnum: getModSourceEnum(modulatorCurveTypes.concave, 0, 1, 1, midiControllers.expressionController),
+        srcEnum: getModSourceEnum(DEFAULT_ATTENUATION_MOD_CURVE_TYPE, 0, 1, 1, midiControllers.expressionController),
         dest: generatorTypes.initialAttenuation,
-        amt: 960,
+        amt: DEFAULT_ATTENUATION_MOD_AMOUNT,
         secSrcEnum: 0x0,
         transform: 0}),
 

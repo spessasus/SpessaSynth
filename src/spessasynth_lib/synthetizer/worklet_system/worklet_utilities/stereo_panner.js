@@ -49,8 +49,20 @@ export function panVoice(pan, inputBuffer, output, reverb, reverbLevel, chorus, 
     const rightChannel = output[1];
     // panLeft *= dryGain;
     // panRight *= dryGain;
-    for (let i = 0; i < inputBuffer.length; i++) {
-        leftChannel[i] += panLeft * inputBuffer[i];
-        rightChannel[i] += panRight * inputBuffer[i];
+    // for (let i = 0; i < inputBuffer.length; i++)
+    // {
+    //     leftChannel[i] += panLeft * inputBuffer[i];
+    //     rightChannel[i] += panRight * inputBuffer[i];
+    // }
+    if(panLeft > 0)
+    {
+        for (let i = 0; i < inputBuffer.length; i++) {
+            leftChannel[i] += panLeft * inputBuffer[i];
+        }
+    }
+    if(panRight > 0) {
+        for (let i = 0; i < inputBuffer.length; i++) {
+            rightChannel[i] += panRight * inputBuffer[i];
+        }
     }
 }

@@ -414,8 +414,10 @@ export class SynthetizerUI
             36, `The pitch tuning applied to channel ${channelNumber + 1}`,
             true,
             val => {
-                val = Math.round(val)
-                this.synth.midiChannels[channelNumber].transposeChannel(val, true);
+                val = Math.round(val);
+                // adjust to synth's transposition
+                let transposition = this.synth.transposition + val;
+                this.synth.midiChannels[channelNumber].transposeChannel(transposition, true);
                 transpose.update(val);
             });
         transpose.update(0);
