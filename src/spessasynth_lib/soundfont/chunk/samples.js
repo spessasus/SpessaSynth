@@ -1,6 +1,7 @@
 import {RiffChunk} from "./riff_chunk.js";
 import {ShiftableByteArray} from "../../utils/shiftable_array.js";
 import {readByte, readBytesAsUintLittleEndian, readBytesAsString, signedInt8} from "../../utils/byte_functions.js";
+import { consoleColors } from '../../utils/other.js'
 /**
  * Reads the generatorTranslator from the shdr chunk
  * @param sampleHeadersChunk {RiffChunk}
@@ -260,10 +261,9 @@ export class Sample {
 
         if((this.sampleType & 0x10) > 0)
         {
-            const buff = smplArr.slice(this.sampleStartIndex, this.sampleEndIndex + 1).buffer;
-            this.b = buff
-            console.log("COMP", this.b);
-            audioData = new AudioContext().decodeAudioData(buff);
+            //const buff = smplArr.slice(this.sampleStartIndex, this.sampleEndIndex + 1).buffer;
+            console.log("%cCompressed sample! This is sadly not supported yet... aborting!", consoleColors.unrecognized);
+            return new Float32Array(0);
         }
 
         else {

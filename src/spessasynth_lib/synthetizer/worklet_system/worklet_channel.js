@@ -142,6 +142,8 @@ export class WorkletChannel {
         this.bank = this.preset.bank;
         this.channelVolume = 1;
         this.channelExpression = 1;
+        this.pitchBend = 0;
+        this.channelPitchBendRange = 2;
 
         this.channelTuningSemitones = 0;
 

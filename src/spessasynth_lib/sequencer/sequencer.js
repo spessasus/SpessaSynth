@@ -159,9 +159,11 @@ export class Sequencer {
 
     set currentTime(time)
     {
-        if(time < 0 || time > this.duration)
+        if(time < 0 || time > this.duration || time === 0)
         {
-            time = 0;
+            // time is 0
+            this.setTimeTicks(this.midiData.firstNoteOn - 1);
+            return;
         }
         this.stop();
         this.playingNotes = [];

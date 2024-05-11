@@ -28,8 +28,10 @@ export class MidiKeyboard
             max: 127
         };
 
-        document.onmousedown = () => this.mouseHeld = true;
-        document.onmouseup = () => {
+        document.onpointerdown = () => {
+            this.mouseHeld = true;
+        }
+        document.onpointerup = () => {
             this.mouseHeld = false;
             for(let key of this.heldKeys)
             {
@@ -108,7 +110,7 @@ export class MidiKeyboard
             let keyElement = document.createElement("div");
             keyElement.classList.add("key");
             keyElement.id = `note${midiNote}`;
-            keyElement.onmouseover = () => {
+            keyElement.onpointerover = () => {
                 if(!this.mouseHeld)
                 {
                     return
@@ -120,7 +122,7 @@ export class MidiKeyboard
                 this.synth.noteOn(this.channel, midiNote, KEYBOARD_VELOCITY, true);
             }
 
-            keyElement.onmousedown = () =>
+            keyElement.onpointerdown = () =>
             {
                 // user note on
                 this.heldKeys.push(midiNote);
@@ -128,13 +130,13 @@ export class MidiKeyboard
                 this.synth.noteOn(this.channel, midiNote, KEYBOARD_VELOCITY, true);
             }
 
-            keyElement.onmouseout = () => {
+            keyElement.onpointerout = () => {
                 // user note off
                 this.heldKeys.splice(this.heldKeys.indexOf(midiNote), 1);
                 this.releaseNote(midiNote, this.channel);
                 this.synth.noteOff(this.channel, midiNote);
             };
-            keyElement.onmouseleave = keyElement.onmouseup;
+            keyElement.onpointerleave = keyElement.onpointerup;
             let isBlack = isBlackNoteNumber(midiNote);
             if(isBlack)
             {

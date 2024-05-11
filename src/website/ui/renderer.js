@@ -330,6 +330,15 @@ export class Renderer
                          renderImmediately=false)
     {
         /**
+         * compute note pitch bend visual shift (for each channel)
+         * @type {number[]}
+         */
+        const pitchBendXShift = [];
+        this.synth.midiChannels.forEach(channel => {
+            // (pitch range / 2) * (bend - 8192) / 8192)) * key width
+            pitchBendXShift.push(((channel.channelPitchBendRange / 2) * ((channel.pitchBend - 8192) / 8192)) * keyStep);
+        })
+        /**
          * @type {NoteToRender[]}
          */
         const notesToDraw = [];
@@ -367,7 +376,7 @@ export class Renderer
                         const yPos = this.canvas.height - height
                             - (((note.start - currentStartTime) / fallingTimeSeconds) * this.canvas.height) + NOTE_MARGIN;
 
-                        const xPos = keyStep * note.midiNote + NOTE_MARGIN;
+                        let xPos = keyStep * note.midiNote + NOTE_MARGIN;
 
                         // determine if the note should be darker or not (or flat if black midi mode is on
                         if(renderImmediately)
@@ -381,6 +390,7 @@ export class Renderer
                         }
                         else {
                             // save the notes to draw
+                            // not active notes
                             if ((note.start > currentSeqTime || noteSum < currentSeqTime) && this.drawActiveNotes) {
                                 notesToDraw.push({
                                     xPos: xPos,
@@ -391,8 +401,9 @@ export class Renderer
                                     color: this.darkerColors[channelNumder]
                                 })
                             } else {
+                                // active notes
                                 notesToDraw.push({
-                                    xPos: xPos,
+                                    xPos: xPos + pitchBendXShift[channelNumder], // add pitch bend shift only to active notes
                                     yPos: yPos,
                                     height: height,
                                     width: noteWidth,
