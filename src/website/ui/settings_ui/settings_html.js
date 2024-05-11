@@ -43,6 +43,8 @@ export const settingsHtml = `
         <button class='seamless_button' id='note_toggler' title='Toggle rendering of the notes when playing a MIDI file'>Toggle notes rendering</button>
         <br/>
         <button class='seamless_button' id='active_note_toggler' title='Toggle notes "lighting up" when they get active'>Toggle drawing active notes</button>
+        <br/>
+        <button class='seamless_button' id='visual_pitch_toggler' title='Toggle shifting notes when pitch wheel is applied'>Toggle drawing visual pitch</button>
     </div>
 
 

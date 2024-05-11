@@ -51,6 +51,7 @@ export class Renderer
         this.renderAnalysers = true;
         this.renderNotes = true;
         this.drawActiveNotes = true;
+        this.showVisualPitch = true;
 
         /**
          * canvas
@@ -336,7 +337,13 @@ export class Renderer
         const pitchBendXShift = [];
         this.synth.midiChannels.forEach(channel => {
             // (pitch range / 2) * (bend - 8192) / 8192)) * key width
-            pitchBendXShift.push(((channel.channelPitchBendRange / 2) * ((channel.pitchBend - 8192) / 8192)) * keyStep);
+            if(this.showVisualPitch) {
+                pitchBendXShift.push(((channel.channelPitchBendRange / 2) * ((channel.pitchBend - 8192) / 8192)) * keyStep);
+            }
+            else
+            {
+                pitchBendXShift.push(0);
+            }
         })
         /**
          * @type {NoteToRender[]}
@@ -376,12 +383,11 @@ export class Renderer
                         const yPos = this.canvas.height - height
                             - (((note.start - currentStartTime) / fallingTimeSeconds) * this.canvas.height) + NOTE_MARGIN;
 
-                        let xPos = keyStep * note.midiNote + NOTE_MARGIN;
+                        const xPos = keyStep * note.midiNote + NOTE_MARGIN;
 
-                        // determine if the note should be darker or not (or flat if black midi mode is on
                         if(renderImmediately)
                         {
-                            // draw them right away, we don't care about the order
+                            // draw the notes right away, we don't care about the order
                             this.drawingContext.fillStyle = this.plainColors[channelNumder];
                             this.drawingContext.fillRect(xPos + STROKE_THICKNESS + NOTE_MARGIN,
                                 yPos + STROKE_THICKNESS,
@@ -390,15 +396,17 @@ export class Renderer
                         }
                         else {
                             // save the notes to draw
+                            // determine if notes are active or not (i.e. currently playing)
                             // not active notes
-                            if ((note.start > currentSeqTime || noteSum < currentSeqTime) && this.drawActiveNotes) {
+                            if ((note.start > currentSeqTime || noteSum < currentSeqTime)) {
                                 notesToDraw.push({
                                     xPos: xPos,
                                     yPos: yPos,
                                     height: height,
                                     width: noteWidth,
                                     stroke: STROKE_THICKNESS,
-                                    color: this.darkerColors[channelNumder]
+                                    // if we ignore drawing active notes, draw those with regular colors
+                                    color: this.drawActiveNotes ? this.darkerColors[channelNumder] : this.channelColors[channelNumder],
                                 })
                             } else {
                                 // active notes

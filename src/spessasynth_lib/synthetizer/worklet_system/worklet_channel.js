@@ -142,8 +142,6 @@ export class WorkletChannel {
         this.bank = this.preset.bank;
         this.channelVolume = 1;
         this.channelExpression = 1;
-        this.pitchBend = 0;
-        this.channelPitchBendRange = 2;
 
         this.channelTuningSemitones = 0;
 
@@ -725,7 +723,8 @@ export class WorkletChannel {
     {
 
         this._vibrato = {depth: 0, rate: 0, delay: 0};
-
+        this.pitchBend = 0;
+        this.channelPitchBendRange = 2;
         this.resetParameters();
         this.post({
             messageType: workletMessageType.ccReset,

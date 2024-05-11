@@ -296,9 +296,12 @@ export class Settings
         const analyser = document.getElementById("analyser_toggler");
         const note =  document.getElementById("note_toggler");
         const activeNote = document.getElementById("active_note_toggler");
+        const visualPitch = document.getElementById("visual_pitch_toggler");
+
         const analyserSlider = document.getElementById("analyser_thickness_slider");
         const fftSlider = document.getElementById("analyser_fft_slider");
         const waveMultiplierSlider = document.getElementById("wave_multiplier_slider");
+
         const renderingModeSelector = document.getElementById("rendering_mode_selector");
         slider.oninput = () => {
             renderer.noteFallingTimeMs = slider.value;
@@ -329,5 +332,6 @@ export class Settings
         analyser.onclick = () => renderer.renderAnalysers = !renderer.renderAnalysers;
         note.onclick = () => renderer.renderNotes = !renderer.renderNotes;
         activeNote.onclick = () => renderer.drawActiveNotes = !renderer.drawActiveNotes;
+        visualPitch.onclick = () => renderer.showVisualPitch = !renderer.showVisualPitch;
     }
 }
