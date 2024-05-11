@@ -336,9 +336,9 @@ export class Renderer
          */
         const pitchBendXShift = [];
         this.synth.midiChannels.forEach(channel => {
-            // (pitch range / 2) * (bend - 8192) / 8192)) * key width
+            // pitch range * (bend - 8192) / 8192)) * key width
             if(this.showVisualPitch) {
-                pitchBendXShift.push(((channel.channelPitchBendRange / 2) * ((channel.pitchBend - 8192) / 8192)) * keyStep);
+                pitchBendXShift.push((channel.channelPitchBendRange * ((channel.pitchBend - 8192) / 8192)) * keyStep);
             }
             else
             {
