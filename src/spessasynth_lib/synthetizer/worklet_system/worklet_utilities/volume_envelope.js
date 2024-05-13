@@ -21,7 +21,7 @@ export function applyVolumeEnvelope(voice, audioBuffer, currentTime, centibelOff
     let decay = timecentsToSeconds(voice.modulatedGenerators[generatorTypes.decayVolEnv] + ((60 - voice.midiNote) * voice.modulatedGenerators[generatorTypes.keyNumToVolEnvDecay]));
 
     // calculate absolute times
-    let attenuation = voice.modulatedGenerators[generatorTypes.initialAttenuation] / 25;
+    let attenuation = voice.modulatedGenerators[generatorTypes.initialAttenuation] / 10; // divide by ten to get decibelts
     let release = timecentsToSeconds(voice.modulatedGenerators[generatorTypes.releaseVolEnv]);
     let sustain = attenuation + voice.modulatedGenerators[generatorTypes.sustainVolEnv] / 10;
     let delayEnd  = timecentsToSeconds(voice.modulatedGenerators[generatorTypes.delayVolEnv]) + voice.startTime;

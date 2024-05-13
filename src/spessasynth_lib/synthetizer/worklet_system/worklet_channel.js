@@ -294,6 +294,9 @@ export class WorkletChannel {
                     generators[i] = addAndClampGenerator(i, sampleAndGenerators.presetGenerators, sampleAndGenerators.instrumentGenerators);
                 }
 
+                // !! EMU initial attenuation correction, multiply initial attenuation by 0.4
+                generators[generatorTypes.initialAttenuation] = Math.floor(generators[generatorTypes.initialAttenuation] * 0.4);
+
                 // key override
                 let rootKey = sampleAndGenerators.sample.samplePitch;
                 if(generators[generatorTypes.overridingRootKey] > -1)

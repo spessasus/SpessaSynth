@@ -89,7 +89,6 @@ const DEFAULT_ATTENUATION_MOD_CURVE_TYPE = modulatorCurveTypes.concave;
 
 export const defaultModulators = [
     // vel to attenuation
-    // FIXME: something is wrong with the volume control, forced to use concave in volume modulators because linear sounds wrong
     new Modulator({
         srcEnum: getModSourceEnum(DEFAULT_ATTENUATION_MOD_CURVE_TYPE, 0, 1, 0, modulatorSources.noteOnVelocity),
         dest: generatorTypes.initialAttenuation,

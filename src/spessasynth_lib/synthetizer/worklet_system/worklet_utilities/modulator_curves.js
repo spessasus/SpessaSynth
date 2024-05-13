@@ -1,28 +1,25 @@
 import { modulatorCurveTypes } from '../../../soundfont/chunk/modulators.js'
 
-const CONCAVE_POWER_CONSTANT = 1.54;
 
+// the length of the precomputed curve tables
 export const MOD_PRECOMPUTED_LENGTH = 16384;
 
-// Precalculate lookup tables
+// Precalculate lookup tables for concave and convers
 const concave = new Float32Array(MOD_PRECOMPUTED_LENGTH);
-for (let i = 0; i < MOD_PRECOMPUTED_LENGTH; i++) {
-    concave[i] = Math.pow(i / MOD_PRECOMPUTED_LENGTH, CONCAVE_POWER_CONSTANT);
-    if(isNaN(concave[i]))
-    {
-        concave[i] = 1;
-        console.warn("Concave was NaN, replaced with 1");
-    }
-}
-
 const convex = new Float32Array(MOD_PRECOMPUTED_LENGTH);
-for (let i = 0; i < MOD_PRECOMPUTED_LENGTH; i++) {
-    convex[i] = 1 - Math.pow(1 - (i / MOD_PRECOMPUTED_LENGTH), CONCAVE_POWER_CONSTANT);
-    if(isNaN(convex[i]))
-    {
-        convex[i] = 1;
-        console.warn("Convex was NaN, replaced with 1");
-    }
+// the equation is taken from FluidSynth as it's the standard for soundFonts
+// more precisely, this:
+// https://github.com/FluidSynth/fluidsynth/blob/cb8da1e1e2c0a5cff2bab6a419755b598b793384/src/gentables/gen_conv.c#L55
+concave[0] = 0;
+concave[MOD_PRECOMPUTED_LENGTH - 1] = 1;
+
+convex[0] = 0;
+convex[MOD_PRECOMPUTED_LENGTH - 1] = 1;
+for(let i = 1; i < MOD_PRECOMPUTED_LENGTH - 1; i++)
+{
+    let x = (-200 * 2 / 960) * Math.log(i / (MOD_PRECOMPUTED_LENGTH - 1)) / Math.LN10;
+    convex[i] = 1 - x;
+    concave[MOD_PRECOMPUTED_LENGTH - 1 - i] = x;
 }
 
 /**
