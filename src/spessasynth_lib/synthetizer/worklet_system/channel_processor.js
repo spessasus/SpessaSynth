@@ -339,12 +339,12 @@ class ChannelProcessor extends AudioWorkletProcessor {
         // PANNING
         const pan = ( (Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan] )) + 500) / 1000) ; // 0 to 1
 
-
         // SYNTHESIS
         const bufferOut = new Float32Array(output[0].length);
 
         // wavetable oscillator
         getOscillatorData(voice, this.samples[voice.sample.sampleID], bufferOut);
+
 
         // lowpass filter
         applyLowpassFilter(voice, bufferOut, lowpassCents);
