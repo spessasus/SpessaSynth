@@ -18,7 +18,7 @@ app.use(express.static("soundfonts"));
 fs.writeFile("config.json", "{}", {flag: "wx"}, () => {});
 
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "src", "website", "index.html"));
+    res.sendFile(path.join(__dirname, "src", "website", "local_edition_index.html"));
 })
 
 app.get("/soundfonts", (req, res) => {

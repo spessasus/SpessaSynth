@@ -6,7 +6,7 @@ import {
     readBytesAsUintBigEndian,
     readVariableLengthQuantity
 } from "../utils/byte_functions.js";
-import { consoleColors, formatTitle } from '../utils/other.js'
+import { arrayToHexString, consoleColors, formatTitle } from '../utils/other.js'
 export class MIDI{
     /**
      * Parses a given midi file
@@ -217,6 +217,20 @@ export class MIDI{
                 if(statusByte === messageTypes.copyright)
                 {
                     this.copyright += decoder.decode(eventData) + "\n";
+                }
+
+                // check for embedded copyright (roland SC display sysex) http://www.bandtrax.com.au/sysex.htm
+                if(statusByte === messageTypes.systemExclusive)
+                {
+                    // header goes like this: 41 10 45 12 10 00 00
+                    if(arrayToHexString(messageData.slice(0, 7)).trim() === "41 10 45 12 10 00 00")
+                    {
+                        const decoded = decoder.decode(messageData.slice(7, messageData.length - 3)) + "\n";
+                        this.copyright += decoded;
+                        console.log(`%cDecoded Roland SC message! %c${decoded}`,
+                            consoleColors.recognized,
+                            consoleColors.value)
+                    }
                 }
             }
             this.tracks.push(track);
