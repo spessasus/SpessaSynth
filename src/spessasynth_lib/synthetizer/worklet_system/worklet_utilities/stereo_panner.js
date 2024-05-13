@@ -23,7 +23,7 @@ export function panVoice(pan, inputBuffer, output, reverb, reverbLevel, chorus, 
     {
         const reverbLeft = reverb[0];
         const reverbRight = reverb[1];
-        const reverbGain = reverbLevel / 1000;
+        const reverbGain = reverbLevel / 800;
         const reverbLeftGain = panLeft * reverbGain;
         const reverbRightGain = panRight * reverbGain;
         for (let i = 0; i < inputBuffer.length; i++) {
