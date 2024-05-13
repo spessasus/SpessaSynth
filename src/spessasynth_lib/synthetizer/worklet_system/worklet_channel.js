@@ -1,61 +1,3 @@
-/**
- * @typedef {{sampleID: number,
- * playbackStep: number,
- * cursor: number,
- * rootKey: number,
- * loopStart: number,
- * loopEnd: number,
- * end: number,
- * loopingMode: 0|1|2,
- * }} WorkletSample
- *
- *
- * @typedef {{
- *     a0: number,
- *     a1: number,
- *     a2: number,
- *     a3: number,
- *     a4: number,
- *
- *     x1: number,
- *     x2: number,
- *     y1: number,
- *     y2: number
- *
- *     reasonanceCb: number,
- *     reasonanceGain: number
- *
- *     cutoffCents: number,
- *     cutoffHz: number
- * }} WorkletLowpassFilter
- *
- * @typedef {{
- * sample: WorkletSample,
- * filter: WorkletLowpassFilter
- *
- * generators: Int16Array,
- * modulators: Modulator[],
- * modulatedGenerators: Int16Array,
- *
- * finished: boolean,
- * isInRelease: boolean,
- *
- * velocity: number,
- * midiNote: number,
- * targetKey: number,
- *
- * currentAttenuationDb: number,
- * currentModEnvValue: number,
- * startTime: number,
- *
- * releaseStartTime: number,
- * releaseStartModEnv: number,
- *
- * currentTuningCents: number,
- * currentTuningCalculated: number
- * }} WorkletVoice
- */
-
 import { Preset } from '../../soundfont/chunk/presets.js'
 import { consoleColors } from '../../utils/other.js'
 import { modulatorSources } from '../../soundfont/chunk/modulators.js'
@@ -365,6 +307,14 @@ export class WorkletChannel {
                     targetKey = generators[generatorTypes.keyNum];
                 }
 
+                // determine looping mode now. if the loop is too small, disable
+                const loopStart = (sampleAndGenerators.sample.sampleLoopStartIndex / 2) + (generators[generatorTypes.startloopAddrsOffset] + (generators[generatorTypes.startloopAddrsCoarseOffset] * 32768));
+                const loopEnd = (sampleAndGenerators.sample.sampleLoopEndIndex / 2) + (generators[generatorTypes.endloopAddrsOffset] + (generators[generatorTypes.endloopAddrsCoarseOffset] * 32768));
+                let loopingMode = generators[generatorTypes.sampleModes];
+                if(loopEnd - loopStart < 1)
+                {
+                    loopingMode = 0;
+                }
                 /**
                  * create the worklet sample
                  * @type {WorkletSample}
@@ -374,10 +324,10 @@ export class WorkletChannel {
                     playbackStep: (sampleAndGenerators.sample.sampleRate / this.ctx.sampleRate) * Math.pow(2, sampleAndGenerators.sample.samplePitchCorrection / 1200),// cent tuning
                     cursor: generators[generatorTypes.startAddrsOffset] + (generators[generatorTypes.startAddrsCoarseOffset] * 32768),
                     rootKey: rootKey,
-                    loopStart: (sampleAndGenerators.sample.sampleLoopStartIndex / 2) + (generators[generatorTypes.startloopAddrsOffset] + (generators[generatorTypes.startloopAddrsCoarseOffset] * 32768)),
-                    loopEnd: (sampleAndGenerators.sample.sampleLoopEndIndex / 2) + (generators[generatorTypes.endloopAddrsOffset] + (generators[generatorTypes.endloopAddrsCoarseOffset] * 32768)),
+                    loopStart: loopStart,
+                    loopEnd: loopEnd,
                     end: sampleAndGenerators.sample.sampleLength / 2 + 1 + (generators[generatorTypes.endAddrOffset] + (generators[generatorTypes.endAddrsCoarseOffset] * 32768)),
-                    loopingMode: generators[generatorTypes.sampleModes]
+                    loopingMode: loopingMode
                 };
 
 
