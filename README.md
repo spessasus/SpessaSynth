@@ -38,7 +38,7 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 
 ### Limitations
 - It might not sound as good as other synthetizers (e.g. FluidSynth or BASSMIDI)
-- The modulation envelope needs some work
+- The performance is questionable, especially on mobile devices
 
 ## Installation
 ***When you're loading a large (>4GB) SoundFont, use Firefox because chromium has a 4GB memory limit***
@@ -81,8 +81,6 @@ The program is divided into parts:
 #### todo
 - make the worklet system perform good
 - port the worklet system to emscripten (maybe)
-- fix modenv
 - fix rare clicking in volenv
-- fix attenuation modulators
 ### License
 Copyright © 2024 Spessasus. Licensed under the MIT License.
