@@ -273,7 +273,7 @@ export class Sample {
             );
 
             // convert to float
-            for(let i = 0; i < audioData.length; i++)
+            for(let i = 0; i < convertedSigned16.length; i++)
             {
                 audioData[i] = convertedSigned16[i] / 32768;
             }
