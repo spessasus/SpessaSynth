@@ -267,15 +267,25 @@ export class Sample {
         }
 
         else {
-            for (let i = this.sampleStartIndex; i < this.sampleEndIndex; i += 2) {
-                // convert 2 uint8 bytes to singed int16
-                let val = (smplArr[dataStartIndex + i + 1] << 8) | smplArr[dataStartIndex + i];
-                if (val > 32767) {
-                    val -= 65536
-                }
+            let convertedSigned16 = new Int16Array(
+                smplArr.slice(dataStartIndex + this.sampleStartIndex, dataStartIndex + this.sampleEndIndex)
+                    .buffer
+            );
 
-                audioData[(i - this.sampleStartIndex) / 2] = val / 32768;
+            // convert to float
+            for(let i = 0; i < audioData.length; i++)
+            {
+                audioData[i] = convertedSigned16[i] / 32768;
             }
+            // for (let i = this.sampleStartIndex; i < this.sampleEndIndex; i += 2) {
+            //     // convert 2 uint8 bytes to singed int16
+            //     let val = (smplArr[dataStartIndex + i + 1] << 8) | smplArr[dataStartIndex + i];
+            //     if (val > 32767) {
+            //         val -= 65536
+            //     }
+            //
+            //     audioData[(i - this.sampleStartIndex) / 2] = val / 32768;
+            // }
         }
         return audioData;
     }
