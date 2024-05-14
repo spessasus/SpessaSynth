@@ -80,9 +80,11 @@ export function readRIFFChunk(dataArray, readData = true){
     let chunkData = undefined;
     if(readData) {
         chunkData = new ShiftableByteArray(size);
-        for (let i = 0; i < size; i++) {
-            chunkData[i] = readByte(dataArray);
-        }
+        chunkData.set(dataArray.slice(dataArray.currentIndex, dataArray.currentIndex + size));
+        dataArray.currentIndex += size;
+        // for (let i = 0; i < size; i++) {
+        //     chunkData[i] = readByte(dataArray);
+        // }
     }
 
     return new RiffChunk(header, size, chunkData);
