@@ -272,7 +272,8 @@ export class Sequencer {
          *      notes: {
          *          midiNote: number,
          *          start: number,
-         *          length: number
+         *          length: number,
+         *          velocity: number,
          *      }[],
          *      renderStartIndex: number
          * }[]
@@ -328,7 +329,8 @@ export class Sequencer {
                     noteTimes[event.messageStatusByte & 0x0F].notes.push({
                         midiNote: event.messageData[0],
                         start: elapsedTime,
-                        length: -1
+                        length: -1,
+                        velocity: event.messageData[1] / 127
                     });
                 }
             }

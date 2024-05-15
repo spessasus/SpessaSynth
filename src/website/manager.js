@@ -1,6 +1,6 @@
 import { MidiKeyboard } from './ui/midi_keyboard.js'
 import { Synthetizer } from '../spessasynth_lib/synthetizer/synthetizer.js'
-import { Renderer } from './ui/renderer.js'
+import { Renderer } from './ui/renderer/renderer.js'
 import { MIDI } from '../spessasynth_lib/midi_parser/midi_loader.js'
 
 import { SoundFont2 } from '../spessasynth_lib/soundfont/soundfont_parser.js'
