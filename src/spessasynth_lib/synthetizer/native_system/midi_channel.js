@@ -535,7 +535,6 @@ export class MidiChannel {
      */
     stopNote(midiNote, highPerf=false) {
         this.receivedNotes.delete(midiNote);
-        // TODO: fix holdPedal
         if(this.holdPedal)
         {
             this.heldNotes.push(midiNote);

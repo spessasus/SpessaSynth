@@ -230,6 +230,7 @@ export class Renderer
 
         // draw note count and fps
         this.drawingContext.textAlign = "end";
+        this.drawingContext.fillStyle = "white";
         this.drawingContext.fillText(`${this.notesOnScreen} notes`, this.canvas.width, FONT_SIZE + 5);
         this.drawingContext.fillText(Math.round(fps).toString() + " FPS", this.canvas.width, 5);
 
@@ -420,6 +421,26 @@ export class Renderer
     {
         const waveform = new Float32Array(analyser.frequencyBinCount);
         analyser.getFloatTimeDomainData(waveform);
+        // check if filled with zeros, then skip
+        if(waveform[0] === 0)
+        {
+            // check if first value is zero to avoid unnecessary operations
+            if(waveform.every(el => el === 0))
+            {
+                // draw a straight line
+                const waveWidth = this.canvas.width / 4;
+                const waveHeight = this.canvas.height / 4
+                const relativeX = waveWidth * x;
+                const relativeY = waveHeight * y + waveHeight / 2;
+                this.drawingContext.lineWidth = this.lineThickness;
+                this.drawingContext.strokeStyle = this.channelColors[channelNumber];
+                this.drawingContext.beginPath();
+                this.drawingContext.moveTo(relativeX, relativeY);
+                this.drawingContext.lineTo(relativeX + waveWidth, relativeY);
+                this.drawingContext.stroke();
+                return;
+            }
+        }
         const waveWidth = this.canvas.width / 4;
         const waveHeight = this.canvas.height / 4
         const relativeX = waveWidth * x;

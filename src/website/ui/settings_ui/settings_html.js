@@ -3,7 +3,7 @@ export const settingsHtml = `
 <div class='settings_groups_parent'>
     <div class='settings_group'>
         <h2>Renderer settings</h2>
-        <label title='How fast the notes fall (visually)'> Note falling time (milisseconds) </label>
+        <label title='How fast the notes fall (visually)'> Note falling time (miliseconds) </label>
         <p style='display: flex; align-items: center; width: 100%; justify-content: center'>
             <input type='range' min='1' max='9999' value='1000' class='settings_slider' id='note_time_slider'>
             <span>1000ms</span>
@@ -30,8 +30,6 @@ export const settingsHtml = `
             <span>2</span>
             </span>
         </p>
-        
-        <br/>
         <button class='seamless_button' id='analyser_toggler' title='Toggle rendering of the waveforms of the channels'>Toggle waveforms rendering</button>
         <br/>
         <button class='seamless_button' id='note_toggler' title='Toggle rendering of the notes when playing a MIDI file'>Toggle notes rendering</button>
@@ -48,12 +46,14 @@ export const settingsHtml = `
         <select id='channel_selector'>
         </select>
         <br/>
-        <p title='The size of the keyboard'>Keyboard size</p>
+        <br/>
+        <p title='The range of keys shown on the keyboard. Adjusts the MIDI note size accordingly'>Keyboard size</p>
         <select id='keyboard_size_selector'>
             <option value='full'>128 keys (full)</option>
             <option value='piano'>88 keys (piano)</option>
             <option value='5 octaves'>5 octaves</option>
         </select>
+        <br/>
         <br/>
         <button class='seamless_button' id='mode_selector' title='Toggle the keyboard thee'>Mode: White</button>
     </div>

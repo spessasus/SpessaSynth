@@ -158,6 +158,19 @@ export class Manager {
                         video.play();
                         this.seq.currentTime = 0;
                     }
+                    document.addEventListener("keypress", e => {
+                        if(e.key === " ")
+                        {
+                            if(video.paused)
+                            {
+                                video.play();
+                            }
+                            else
+                            {
+                                video.pause();
+                            }
+                        }
+                    })
 
                     break;
 

@@ -676,7 +676,7 @@ export class WorkletChannel {
     {
 
         this._vibrato = {depth: 0, rate: 0, delay: 0};
-        this.pitchBend = 0;
+        this.pitchBend = 8192;
         this.channelPitchBendRange = 2;
         this.resetParameters();
         this.post({

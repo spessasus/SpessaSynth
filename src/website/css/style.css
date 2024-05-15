@@ -135,6 +135,27 @@ input[type="file"] {
     font-weight: bolder;
 }
 
+.show_top_button{
+    background: var(--top-buttons-color);
+    width: fit-content;
+    padding: 0 2em;
+    border-radius: 0.5em;
+    margin: auto;
+    display: none;
+    position: absolute;
+    z-index: 100;
+    left: 0;
+    right: 0;
+}
+
+.show_top_button:hover{
+    cursor: pointer;
+}
+
+.show_top_button.shown{
+    display: inline-block !important;
+}
+
 /*Center*/
 #note_canvas
 {

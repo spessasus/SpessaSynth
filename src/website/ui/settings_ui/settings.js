@@ -31,7 +31,13 @@ export class Settings
         musicModeButton.classList.add("seamless_button");
         musicModeButton.innerText = `Toggle music player mode`;
         musicModeButton.title = 'Toggle the simplified UI version';
-        settingsWrapper.appendChild(musicModeButton)
+        settingsWrapper.appendChild(musicModeButton);
+
+        const hideTopButton = document.createElement("div");
+        hideTopButton.classList.add("seamless_button");
+        hideTopButton.innerText = "Hide top bar";
+        hideTopButton.title = "Hide the top bar to provide a more seamless experience";
+        settingsWrapper.appendChild(hideTopButton);
 
         let text = document.createElement('span')
         text.innerText = 'Settings';
@@ -58,6 +64,19 @@ export class Settings
 
             // disable rendering when hidden
             renderer.renderBool = !renderer.canvas.classList.contains("hidden");
+        }
+
+        hideTopButton.onclick = () => {
+            // hide top
+            document.getElementsByClassName("top_part")[0].classList.toggle("hidden");
+            // show button to get it back
+            const showTopButton =  document.getElementsByClassName("show_top_button")[0];
+            showTopButton.classList.toggle("shown");
+            showTopButton.onclick = () => {
+                document.getElementsByClassName("top_part")[0].classList.toggle("hidden");
+                showTopButton.classList.toggle("shown");
+            }
+
         }
 
         // stop propagation to disable hide on click outside
