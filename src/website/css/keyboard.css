@@ -15,6 +15,7 @@
     position: relative;
     user-select: none;
     transform-origin: center top;
+    --pressed-transform: matrix3d(1,0,0.00,0,0.00,1,0.00,0.0007,0,0,1,0,0,0,0,1);
 }
 
 #keyboard .flat_key{
@@ -51,17 +52,17 @@
 }
 
 .sharp_key.pressed{
-    transform: var(--sharp-transform) matrix3d(1,0,0.00,0,0.00,1,0.00,0.0007,0,0,1,0,0,0,0,1) !important;
+    transform: var(--sharp-transform) var(--pressed-transform) !important;
 }
 
 .flat_key.between_sharps.pressed{
-    transform: var(--flat-between-transform) matrix3d(1,0,0.00,0,0.00,1,0.00,0.0007,0,0,1,0,0,0,0,1) !important;
+    transform: var(--flat-between-transform) var(--pressed-transform) !important;
 }
 
 .flat_key.left_sharp.pressed{
-    transform: var(--flat-left-transform) matrix3d(1,0,0.00,0,0.00,1,0.00,0.0007,0,0,1,0,0,0,0,1) !important;
+    transform: var(--flat-left-transform) var(--pressed-transform) !important;
 }
 
 .flat_key.right_sharp.pressed{
-    transform: var(--flat-right-transform) matrix3d(1,0,0.00,0,0.00,1,0.00,0.0007,0,0,1,0,0,0,0,1) !important;
+    transform: var(--flat-right-transform) var(--pressed-transform) !important;
 }

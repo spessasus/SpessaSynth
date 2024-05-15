@@ -17,8 +17,7 @@ export function drawNotes(notesToDraw, drawingContext)
         drawingContext.fillStyle = n.color;
         const effectStrength = n.pressedProgress * n.velocity;
         drawingContext.globalAlpha = PRESSED_EFFECT_OPACITY * effectStrength;
-        drawingContext.fillRect(n.xPos + n.width, n.yPos, n.width * effectStrength, n.height);
-        drawingContext.fillRect(n.xPos - n.width * effectStrength, n.yPos, n.width * effectStrength, n.height);
+        drawingContext.fillRect(n.xPos - n.width * effectStrength, n.yPos, n.width * (effectStrength * 2 + 1), n.height);
         drawingContext.globalAlpha = 1;
     })
 

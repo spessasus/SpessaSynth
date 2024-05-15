@@ -31,12 +31,6 @@ export const settingsHtml = `
             </span>
         </p>
         
-        <p title='The way notes are drawn to the screen'>Rendering mode</p>
-        <select id='rendering_mode_selector'>
-            <option value='0' selected>Align to keyboard</option>
-            <option value='1'>Align to waveforms</option>
-        </select>
-        
         <br/>
         <button class='seamless_button' id='analyser_toggler' title='Toggle rendering of the waveforms of the channels'>Toggle waveforms rendering</button>
         <br/>
@@ -52,6 +46,13 @@ export const settingsHtml = `
         <h2>Keyboard settings</h2>
         <p title='The channel keyboard sends messages to'>Selected channel</p>
         <select id='channel_selector'>
+        </select>
+        <br/>
+        <p title='The size of the keyboard'>Keyboard size</p>
+        <select id='keyboard_size_selector'>
+            <option value='full'>128 keys (full)</option>
+            <option value='piano'>88 keys (piano)</option>
+            <option value='5 octaves'>5 octaves</option>
         </select>
         <br/>
         <button class='seamless_button' id='mode_selector' title='Toggle the keyboard thee'>Mode: White</button>

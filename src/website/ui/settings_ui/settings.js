@@ -82,7 +82,10 @@ export class Settings
         this._createKeyboardHandler(document.getElementById("channel_selector"),
             midiKeyboard,
             sythui,
-            document.getElementById("mode_selector"));
+            document.getElementById("mode_selector"),
+            document.getElementById("keyboard_size_selector"),
+            renderer
+        );
 
         this._createInterfaceSettingsHandler(
             sythui,
@@ -238,9 +241,11 @@ export class Settings
      * @param keyboard {MidiKeyboard}
      * @param synthui {SynthetizerUI}
      * @param button {HTMLButtonElement}
+     * @param sizeSelector {HTMLSelectElement}
+     * @param renderer {Renderer}
      * @private
      */
-    _createKeyboardHandler(select, keyboard, synthui, button)
+    _createKeyboardHandler(select, keyboard, synthui, button, sizeSelector, renderer)
     {
         let channelNumber = 0;
 
@@ -265,6 +270,29 @@ export class Settings
         }
         select.onchange = () => {
             keyboard.selectChannel(parseInt(select.value));
+        }
+
+        sizeSelector.onchange = () => {
+            switch (sizeSelector.value)
+            {
+                default:
+                    break;
+
+                case "full":
+                    keyboard.keyRange = {min: 0, max: 127};
+                    renderer.keyRange = {min: 0, max: 127};
+                    break;
+
+                case "piano":
+                    keyboard.keyRange = {min: 21, max: 108};
+                    renderer.keyRange = {min: 21, max: 108};
+                    break;
+
+                case "5 octaves":
+                    keyboard.keyRange = {min: 36, max: 96};
+                    renderer.keyRange = {min: 36, max: 96};
+
+            }
         }
 
         // listen for new channels
@@ -302,7 +330,6 @@ export class Settings
         const fftSlider = document.getElementById("analyser_fft_slider");
         const waveMultiplierSlider = document.getElementById("wave_multiplier_slider");
 
-        const renderingModeSelector = document.getElementById("rendering_mode_selector");
         slider.oninput = () => {
             renderer.noteFallingTimeMs = slider.value;
             slider.nextElementSibling.innerText = `${slider.value}ms`
@@ -323,10 +350,6 @@ export class Settings
         waveMultiplierSlider.oninput = () => {
             renderer.waveMultiplier = parseInt(waveMultiplierSlider.value);
             waveMultiplierSlider.nextElementSibling.innerText = waveMultiplierSlider.value;
-        }
-
-        renderingModeSelector.onchange = () => {
-            renderer.noteRenderingMode = parseInt(renderingModeSelector.value);
         }
 
         analyser.onclick = () => renderer.renderAnalysers = !renderer.renderAnalysers;

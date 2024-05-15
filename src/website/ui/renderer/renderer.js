@@ -48,7 +48,14 @@ export class Renderer
         // variables
         this.noteFallingTimeMs = 1000;
         this.noteAfterTriggerTimeMs = 0;
-        this.noteRenderingMode = 0;
+        /**
+         * @type {{min: number, max: number}}
+         * @private
+         */
+        this._keyRange = {
+            min: 0,
+            max: 127
+        };
 
         this.lineThickness = ANALYSER_STROKE;
         this.normalAnalyserFft = CHANNEL_ANALYSER_FFT;
@@ -208,33 +215,11 @@ export class Renderer
         }
 
         if (this.renderNotes && this.noteTimes) {
-            // math
-            this.notesOnScreen = 0;
-            const keyStep = this.canvas.width / 128;
-            const noteWidth = keyStep - (NOTE_MARGIN * 2);
-
-            const fallingTime = this.noteFallingTimeMs / 1000
-            const afterTime = this.noteAfterTriggerTimeMs / 1000;
-
-            const currentSeqTime = this.seq.currentTime;
-            const currentStartTime = currentSeqTime - afterTime;
-            const fallingTimeSeconds = fallingTime + afterTime;
-            const currentEndTime = currentStartTime + fallingTimeSeconds;
-            const minNoteHeight = MIN_NOTE_HEIGHT_PX / fallingTimeSeconds;
-
             /**
              * Compute positions
              * @type {NoteToRender[]}
              */
-            let notesToDraw = this.computeNotePositions(currentStartTime,
-                currentEndTime,
-                fallingTimeSeconds,
-                minNoteHeight,
-                noteWidth,
-                currentSeqTime,
-                keyStep,
-                this.synth.highPerformanceMode
-            );
+            let notesToDraw = this.computeNotePositions(this.synth.highPerformanceMode);
 
             // draw the notes from longest to shortest (non black midi mode)
             if(!this.synth.highPerformanceMode)
@@ -251,24 +236,6 @@ export class Renderer
         this.frameTimeStart = performance.now();
         if(auto) {
             requestAnimationFrame(this.render.bind(this));
-        }
-    }
-
-    get renderBool()
-    {
-        return this._renderBool;
-    }
-
-    set renderBool(value)
-    {
-        this._renderBool = value;
-        if(value === true)
-        {
-            this.connectChannelAnalysers(this.synth);
-        }
-        else
-        {
-            this.disconnectChannelAnalysers();
         }
     }
 
@@ -293,25 +260,26 @@ export class Renderer
     }
 
     /**
-     * @param currentStartTime {number}
-     * @param currentEndTime {number}
-     * @param fallingTimeSeconds {number}
-     * @param minNoteHeight {number}
-     * @param noteWidth {number}
-     * @param currentSeqTime {number}
-     * @param keyStep {number}
      * @param renderImmediately {boolean}
      * @returns {NoteToRender[]}
      */
-    computeNotePositions(currentStartTime,
-                         currentEndTime,
-                         fallingTimeSeconds,
-                         minNoteHeight,
-                         noteWidth,
-                         currentSeqTime,
-                         keyStep,
-                         renderImmediately=false)
+    computeNotePositions(renderImmediately=false)
     {
+        // math
+        this.notesOnScreen = 0;
+
+        const keysAmount = this.keyRange.max - this.keyRange.min;
+        const keyStep = this.canvas.width / (keysAmount + 1); // add one because it works
+        const noteWidth = keyStep - (NOTE_MARGIN * 2);
+
+        const fallingTime = this.noteFallingTimeMs / 1000
+        const afterTime = this.noteAfterTriggerTimeMs / 1000;
+
+        const currentSeqTime = this.seq.currentTime;
+        const currentStartTime = currentSeqTime - afterTime;
+        const fallingTimeSeconds = fallingTime + afterTime;
+        const currentEndTime = currentStartTime + fallingTimeSeconds;
+        const minNoteHeight = MIN_NOTE_HEIGHT_PX / fallingTimeSeconds;
         /**
          * compute note pitch bend visual shift (for each channel)
          * @type {number[]}
@@ -365,7 +333,14 @@ export class Renderer
                         const yPos = this.canvas.height - height
                             - (((note.start - currentStartTime) / fallingTimeSeconds) * this.canvas.height) + NOTE_MARGIN;
 
-                        const xPos = keyStep * note.midiNote + NOTE_MARGIN;
+                        // if the note out of range, skip
+                        if(note.midiNote < this.keyRange.min || note.midiNote > this.keyRange.max)
+                        {
+                            note = notes[noteIndex];
+                            continue;
+                        }
+                        const correctedNote = note.midiNote - this.keyRange.min;
+                        const xPos = keyStep * correctedNote + NOTE_MARGIN;
 
                         if(renderImmediately)
                         {
@@ -468,5 +443,53 @@ export class Renderer
 
         });
         this.drawingContext.stroke();
+    }
+
+    get renderBool()
+    {
+        return this._renderBool;
+    }
+
+    set renderBool(value)
+    {
+        this._renderBool = value;
+        if(value === true)
+        {
+            this.connectChannelAnalysers(this.synth);
+        }
+        else
+        {
+            this.disconnectChannelAnalysers();
+        }
+    }
+
+    /**
+     * The range of displayed MIDI keys
+     * @returns {{min: number, max: number}}
+     */
+    get keyRange()
+    {
+        return this._keyRange;
+    }
+
+    /**
+     * The range of displayed MIDI keys
+     * @param value {{min: number, max: number}}
+     */
+    set keyRange(value)
+    {
+        if(value.max === undefined || value.min === undefined)
+        {
+            throw new TypeError("No min or max property!");
+        }
+        if(value.min > value.max)
+        {
+            let temp = value.min;
+            value.min = value.max;
+            value.max = temp;
+        }
+        value.min = Math.max(0, value.min);
+        value.max = Math.min(127, value.max);
+        this._keyRange = value;
     }
 }

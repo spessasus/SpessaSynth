@@ -225,6 +225,11 @@ export class MidiKeyboard
         value.max = Math.min(127, value.max);
         this._keyRange = value;
         this._createKeyboard();
+
+        // adjust height
+        // according to my testing, this function seems to calculate the height well:
+        // 900 / (keys + 5)
+        this.keyboard.style.minHeight = `${900 / ((value.max - value.min) + 5)}vw`;
     }
 
     /**
