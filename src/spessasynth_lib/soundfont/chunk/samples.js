@@ -171,7 +171,7 @@ export class Sample {
         }
         // get the compressed byte stream
         const smplStart = smplArr.currentIndex;
-        const buff = smplArr.slice(this.sampleStartIndex / 2 + smplStart, this.sampleEndIndex / 2 + smplStart + 1);
+        const buff = smplArr.slice(this.sampleStartIndex / 2 + smplStart, this.sampleEndIndex / 2 + smplStart);
         await new Promise((resolve, reject) => {
             // decode vorbis
             stbvorbis.decode(buff.buffer, decoded =>
