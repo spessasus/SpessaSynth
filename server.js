@@ -22,7 +22,7 @@ app.get("/", (req, res) => {
 })
 
 app.get("/soundfonts", (req, res) => {
-    const fileNames = fs.readdirSync("soundfonts").filter(fName => fName.slice(-3).toLowerCase() === "sf2");
+    const fileNames = fs.readdirSync("soundfonts").filter(fName => fName.slice(-3).toLowerCase() === "sf2" || fName.slice(-3).toLowerCase() === "sf3" );
 
     // check for last used soundfont
     const config = JSON.parse(fs.readFileSync("config.json", "utf-8"));

@@ -1,7 +1,7 @@
 import {RiffChunk} from "./riff_chunk.js";
 import {ShiftableByteArray} from "../../utils/shiftable_array.js";
 import {readByte, readBytesAsUintLittleEndian, readBytesAsString, signedInt8} from "../../utils/byte_functions.js";
-import { consoleColors } from '../../utils/other.js'
+import { consoleColors } from '../../utils/other.js';
 /**
  * Reads the generatorTranslator from the shdr chunk
  * @param sampleHeadersChunk {RiffChunk}
@@ -65,28 +65,7 @@ function readSample(sampleHeaderData, smplArrayData) {
 
     // read the link to the other channel
     let sampleLink = readBytesAsUintLittleEndian(sampleHeaderData, 2);
-
-    // read the sample type
-    let sampleTypes = {
-        0: "EOS",
-        1: "monoSample",
-        2: "rightSample",
-        4: "leftSample",
-        8: "linkedSample",
-        32769: "RomMonoSample",
-        32770: "RomRightSample",
-        32772: "RomLeftSample",
-        32776: "RomLinkedSample"
-    }
     let sampleType = readBytesAsUintLittleEndian(sampleHeaderData, 2);
-    if(sampleTypes[sampleType])
-    {
-        sampleType = sampleTypes[sampleType];
-    }
-    else
-    {
-        sampleType = sampleType.toString();
-    }
 
 
 
@@ -115,15 +94,7 @@ export class Sample {
      * @param samplePitch {number}
      * @param samplePitchCorrection {number}
      * @param sampleLink {number}
-     * @param sampleType {"EOS"|
-     * "monoSample"|
-     * "rightSample"|
-     * "leftSample"|
-     * "linkedSample"|
-     * "RomMonoSample"|
-     * "RomRightSample"|
-     * "RomLeftSample"|
-     * "RomLinkedSample"}
+     * @param sampleType {number}
      * @param smplArr {ShiftableByteArray}
      */
     constructor(sampleName,
@@ -138,8 +109,10 @@ export class Sample {
                 sampleType,
                 smplArr) {
         this.sampleName = sampleName
+        // in bytes
         this.sampleStartIndex = sampleStartIndex;
         this.sampleEndIndex = sampleEndIndex;
+
         this.sampleLoopStartIndex = sampleLoopStartIndex - sampleStartIndex;
         this.sampleLoopEndIndex = sampleLoopEndIndex - sampleStartIndex;
         this.sampleRate = sampleRate;
@@ -147,11 +120,13 @@ export class Sample {
         this.samplePitchCorrection = samplePitchCorrection;
         this.sampleLink = sampleLink;
         this.sampleType = sampleType;
+        // in bytes
         this.sampleLength = this.sampleEndIndex - this.sampleStartIndex;
         this.indexRatio = 1;
         this.sampleDataArray = smplArr;
         this.sampleLengthSeconds = this.sampleLength / (this.sampleRate * 2);
         this.loopAllowed = this.sampleLoopStartIndex !== this.sampleLoopEndIndex;
+        this.isCompressed = (this.sampleType & 0x10) > 0;
 
         if (this.sampleLength < 1 || this.sampleName.substring(0, 3).toLowerCase() === "eos") {
             return;
@@ -176,6 +151,47 @@ export class Sample {
             this.buffer.getChannelData(0).set(this.sampleData);
         }
 
+        if(this.isCompressed)
+        {
+            // correct loop points
+            this.sampleLoopStartIndex += this.sampleStartIndex;
+            this.sampleLoopEndIndex += this.sampleStartIndex;
+        }
+
+    }
+
+    /**
+     * @param smplArr {ShiftableByteArray}
+     */
+    async decodeVorbis(smplArr)
+    {
+        if (this.sampleLength < 1) {
+            // eos, do not do anything
+            return;
+        }
+        // get the compressed byte stream
+        const smplStart = smplArr.currentIndex;
+        const buff = smplArr.slice(this.sampleStartIndex / 2 + smplStart, this.sampleEndIndex / 2 + smplStart + 1);
+        await new Promise((resolve, reject) => {
+            // decode vorbis
+            stbvorbis.decode(buff.buffer, decoded =>
+            {
+                // check for errors
+                if(decoded.error !== null)
+                {
+                    console.log("%CError decoding sample! " + decoded.error,
+                        consoleColors.unrecognized);
+                    this.sampleData = new Float32Array(0);
+                }
+                if(decoded.eof === false)
+                {
+                    resolve();
+                    this.sampleData = decoded.data[0];
+                    // correct sample length
+                    this.sampleLength = this.sampleData.length * 2 - 1;
+                }
+            })
+        });
     }
 
     /**
@@ -184,9 +200,9 @@ export class Sample {
      * @param endAddrOffset {number}
      * @returns {Float32Array}
      */
-    getAudioData(startAddrOffset = 0, endAddrOffset = 0) {
+     async getAudioData(startAddrOffset = 0, endAddrOffset = 0) {
         if (!this.sampleData) {
-            this.sampleData = this.loadBufferData(this.sampleDataArray);
+            this.sampleData = await this.loadBufferData(this.sampleDataArray);
         }
         // if no offset, return saved sampleData
         if (this.sampleData && startAddrOffset === 0 && endAddrOffset === 0) {
@@ -250,42 +266,29 @@ export class Sample {
      * @param smplArr {ShiftableByteArray}
      * @returns {Float32Array}
      */
-    loadBufferData(smplArr) {
+    async loadBufferData(smplArr) {
         if (this.sampleLength < 1) {
             // eos, do not do anything
             return new Float32Array(1);
         }
+
+        if(this.isCompressed)
+        {
+            await this.decodeVorbis(smplArr);
+            return this.sampleData;
+        }
         // read the sample data
         let audioData = new Float32Array(this.sampleLength / 2 + 1);
         const dataStartIndex = smplArr.currentIndex;
+        let convertedSigned16 = new Int16Array(
+            smplArr.slice(dataStartIndex + this.sampleStartIndex, dataStartIndex + this.sampleEndIndex)
+                .buffer
+        );
 
-        if((this.sampleType & 0x10) > 0)
+        // convert to float
+        for(let i = 0; i < convertedSigned16.length; i++)
         {
-            //const buff = smplArr.slice(this.sampleStartIndex, this.sampleEndIndex + 1).buffer;
-            console.log("%cCompressed sample! This is sadly not supported yet... aborting!", consoleColors.unrecognized);
-            return new Float32Array(0);
-        }
-
-        else {
-            let convertedSigned16 = new Int16Array(
-                smplArr.slice(dataStartIndex + this.sampleStartIndex, dataStartIndex + this.sampleEndIndex)
-                    .buffer
-            );
-
-            // convert to float
-            for(let i = 0; i < convertedSigned16.length; i++)
-            {
-                audioData[i] = convertedSigned16[i] / 32768;
-            }
-            // for (let i = this.sampleStartIndex; i < this.sampleEndIndex; i += 2) {
-            //     // convert 2 uint8 bytes to singed int16
-            //     let val = (smplArr[dataStartIndex + i + 1] << 8) | smplArr[dataStartIndex + i];
-            //     if (val > 32767) {
-            //         val -= 65536
-            //     }
-            //
-            //     audioData[(i - this.sampleStartIndex) / 2] = val / 32768;
-            // }
+            audioData[i] = convertedSigned16[i] / 32768;
         }
         return audioData;
     }
@@ -297,22 +300,6 @@ export class Sample {
      * @returns {Float32Array}
      */
     getOffsetData(startOffset, endOffset) {
-        // const soundfontFileArray = soundFont.dataArray;
-        // // read the sample data
-        // const audioData =  new Float32Array(((this.sampleEndIndex - this.sampleStartIndex) / 2) + 1);
-        // soundfontFileArray.currentIndex = soundFont.sampleDataStartIndex;
-        //
-        // for(let i = this.sampleStartIndex + startOffset * 2; i < this.sampleEndIndex + endOffset * 2; i += 2)
-        // {
-        //     // convert 2 uint8 bytes to singed int16
-        //     let val  = (soundfontFileArray[soundfontFileArray.currentIndex + i + 1] << 8) | soundfontFileArray[soundfontFileArray.currentIndex + i];
-        //     if(val > 32767)
-        //     {
-        //         val -= 65536
-        //     }
-        //
-        //     audioData[(i - this.sampleStartIndex - startOffset * 2) / 2] = val / 32768;
-        // }
         return this.sampleData.subarray(startOffset, this.sampleData.length - endOffset + 1);
     }
 }

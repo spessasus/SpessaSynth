@@ -178,15 +178,15 @@ export class Synthetizer {
         }
 
         let chan = this.midiChannels[channel];
-        const voicesAmountBefore = this.voicesAmount;
-        const newVoicesAmount = voicesAmountBefore + chan.playNote(midiNote, velocity, enableDebugging);
-        if(newVoicesAmount > this.voiceCap)
+        chan.playNote(midiNote, velocity, enableDebugging);
+        const amt = this.voicesAmount;
+        if(amt > this.voiceCap)
         {
             // find the non percussion channel with the largest amount of voices
             const channel = this.midiChannels.reduce((prev, current) => {
                 return (prev && prev.voicesAmount > current.voicesAmount && !prev.percussionChannel) ? prev : current
             });
-            channel.requestNoteRemoval(newVoicesAmount - this.voiceCap);
+            channel.requestNoteRemoval(amt - this.voiceCap);
         }
 
         this.eventHandler.callEvent("noteon", {

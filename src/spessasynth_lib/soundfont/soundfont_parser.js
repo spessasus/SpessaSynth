@@ -1,6 +1,6 @@
 import {ShiftableByteArray} from "../utils/shiftable_array.js";
 import {readSamples} from "./chunk/samples.js";
-import {readRIFFChunk, readBytesAsString} from "../utils/byte_functions.js";
+import { readRIFFChunk, readBytesAsString, readBytesAsUintLittleEndian } from '../utils/byte_functions.js'
 import {readGenerators, Generator} from "./chunk/generators.js";
 import {readInstrumentZones, InstrumentZone, readPresetZones} from "./chunk/zones.js";
 import {Preset, readPresets} from "./chunk/presets.js";
@@ -47,7 +47,17 @@ export class SoundFont2
 
         while(infoChunk.chunkData.length > infoChunk.chunkData.currentIndex) {
             let chunk = readRIFFChunk(infoChunk.chunkData);
-            let text = readBytesAsString(chunk.chunkData, chunk.chunkData.length);
+            let text;
+            // special case: ifil
+            if(chunk.header === "ifil")
+            {
+                text = `${readBytesAsUintLittleEndian(chunk.chunkData, 2)}.${readBytesAsUintLittleEndian(chunk.chunkData, 2)}`;
+            }
+            else
+            {
+                text = readBytesAsString(chunk.chunkData, chunk.chunkData.length);
+            }
+
             console.log(`%c"${chunk.header}": %c"${text}"`,
                 consoleColors.info,
                 consoleColors.recognized);

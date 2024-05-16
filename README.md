@@ -8,6 +8,8 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 ![SpessaSynth in Light mode](https://github.com/spessasus/SpessaSynth/assets/95608008/f592a15e-d9b0-47d6-9486-191951ba35c3)
 
 
+## SoundFont3 Support now available!
+
 
 [Youtube Video](https://youtu.be/_vPkI35Y5Po)
 
@@ -16,6 +18,7 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 ## Features
 - SoundFont2 Generator Support
 - SoundFont2 Modulator Support
+- SoundFont3 (vorbis compressed sf2) Support (thanks to [stbvorbis.js](https://github.com/hajimehoshi/stbvorbis.js))
 - Reverb and chorus support
 - A few custom modulators to support some additional controllers (see `modulators.js`)
 - Written using AudioWorklets (Firefox and Chrome both work perfectly)
@@ -84,3 +87,5 @@ The program is divided into parts:
 - fix rare clicking in volenv
 ### License
 Copyright © 2024 Spessasus. Licensed under the MIT License.
+
+**Please note that bundled [stbvorbis.js](https://github.com/hajimehoshi/stbvorbis.js) is licensed under the Apache-2.0 license.**

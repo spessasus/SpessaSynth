@@ -11,6 +11,7 @@ const GAIN_SILENCE = 0.005;
  * @param centibelOffset {number} the centibel offset of volume, for modLFOtoVolume
  * @param sampleTime {number} single sample time in seconds, usually 1 / 44100 of a second
  */
+
 export function applyVolumeEnvelope(voice, audioBuffer, currentTime, centibelOffset, sampleTime)
 {
     // calculate values

@@ -253,9 +253,10 @@ export class WorkletChannel {
     /**
      * @param midiNote {number}
      * @param velocity {number}
-     * @returns {WorkletVoice[]}
+     * @param debug {boolean}
+     * @returns {Promise<WorkletVoice[]>}
      */
-    getWorkletVoices(midiNote, velocity)
+    async getWorkletVoices(midiNote, velocity, debug=false)
     {
         /**
          * @type {WorkletVoice[]}
@@ -275,15 +276,17 @@ export class WorkletChannel {
             /**
              * @returns {WorkletVoice}
              */
-            workletVoices = this.preset.getSamplesAndGenerators(midiNote, velocity).map(sampleAndGenerators => {
+            workletVoices = await Promise.all(this.preset.getSamplesAndGenerators(midiNote, velocity).map(async sampleAndGenerators => {
 
                 // dump the sample if haven't already
-                if(!this.dumpedSamples.has(sampleAndGenerators.sampleID))
-                {
+                if (!this.dumpedSamples.has(sampleAndGenerators.sampleID)) {
                     this.dumpedSamples.add(sampleAndGenerators.sampleID);
                     this.post({
                         messageType: workletMessageType.sampleDump,
-                        messageData: {sampleID: sampleAndGenerators.sampleID, sampleData: sampleAndGenerators.sample.getAudioData()}
+                        messageData: {
+                            sampleID: sampleAndGenerators.sampleID,
+                            sampleData: await sampleAndGenerators.sample.getAudioData()
+                        }
                     });
                 }
 
@@ -299,14 +302,12 @@ export class WorkletChannel {
 
                 // key override
                 let rootKey = sampleAndGenerators.sample.samplePitch;
-                if(generators[generatorTypes.overridingRootKey] > -1)
-                {
+                if (generators[generatorTypes.overridingRootKey] > -1) {
                     rootKey = generators[generatorTypes.overridingRootKey];
                 }
 
                 let targetKey = midiNote;
-                if(generators[generatorTypes.keyNum] > -1)
-                {
+                if (generators[generatorTypes.keyNum] > -1) {
                     targetKey = generators[generatorTypes.keyNum];
                 }
 
@@ -314,8 +315,7 @@ export class WorkletChannel {
                 const loopStart = (sampleAndGenerators.sample.sampleLoopStartIndex / 2) + (generators[generatorTypes.startloopAddrsOffset] + (generators[generatorTypes.startloopAddrsCoarseOffset] * 32768));
                 const loopEnd = (sampleAndGenerators.sample.sampleLoopEndIndex / 2) + (generators[generatorTypes.endloopAddrsOffset] + (generators[generatorTypes.endloopAddrsCoarseOffset] * 32768));
                 let loopingMode = generators[generatorTypes.sampleModes];
-                if(loopEnd - loopStart < 1)
-                {
+                if (loopEnd - loopStart < 1) {
                     loopingMode = 0;
                 }
                 /**
@@ -329,15 +329,27 @@ export class WorkletChannel {
                     rootKey: rootKey,
                     loopStart: loopStart,
                     loopEnd: loopEnd,
-                    end: sampleAndGenerators.sample.sampleLength / 2 + 1 + (generators[generatorTypes.endAddrOffset] + (generators[generatorTypes.endAddrsCoarseOffset] * 32768)),
+                    end: Math.floor(sampleAndGenerators.sample.sampleLength / 2) + 1 + (generators[generatorTypes.endAddrOffset] + (generators[generatorTypes.endAddrsCoarseOffset] * 32768)),
                     loopingMode: loopingMode
                 };
 
 
                 // velocity override
-                if(generators[generatorTypes.velocity] > -1)
-                {
+                if (generators[generatorTypes.velocity] > -1) {
                     velocity = generators[generatorTypes.velocity];
+                }
+
+                if(debug)
+                {
+                    console.table([{
+                            Sample: sampleAndGenerators.sample,
+                            Generators: generators,
+                            Modulators: sampleAndGenerators.modulators.map(m => m.debugString()).join('\n'),
+                            Velocity: velocity,
+                            TargetKey: targetKey,
+                            MidiNote: midiNote,
+                            WorkletSample: workletSample
+                        }]);
                 }
 
                 return {
@@ -375,7 +387,7 @@ export class WorkletChannel {
                     currentTuningCents: 0
                 };
 
-            });
+            }));
 
             // cache the voice
             this.cachedWorkletVoices[midiNote][velocity] = workletVoices;
@@ -389,7 +401,7 @@ export class WorkletChannel {
      * @param debug {boolean}
      * @returns {number} the number of voices that this note adds
      */
-    playNote(midiNote, velocity, debug = false) {
+    async playNote(midiNote, velocity, debug = false) {
         if(!velocity)
         {
             throw "No velocity given!";
@@ -405,21 +417,7 @@ export class WorkletChannel {
             return 0;
         }
 
-        let workletVoices = this.getWorkletVoices(midiNote, velocity);
-
-        if(debug)
-        {
-            console.table(workletVoices.map(v => {
-                return {
-                    Sample: v.sample,
-                    Generators: v.generators,
-                    Modulators: v.modulators.map(m => m.debugString()).join('\n'),
-                    Velocity: v.velocity,
-                    TargetKey: v.targetKey,
-                    MidiNote: v.midiNote,
-                }
-            }));
-        }
+        let workletVoices = await this.getWorkletVoices(midiNote, velocity, debug);
 
         this.post({
             messageType: workletMessageType.noteOn,
