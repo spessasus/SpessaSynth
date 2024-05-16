@@ -266,6 +266,10 @@ class ChannelProcessor extends AudioWorkletProcessor {
         // if the initial attenuation is more than 100dB, skip the voice (it's silent anyways)
         if(voice.modulatedGenerators[generatorTypes.initialAttenuation] > 2500)
         {
+            if(voice.isInRelease)
+            {
+                voice.finished = true;
+            }
             return;
         }
 

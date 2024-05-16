@@ -1,7 +1,6 @@
 import {Synthetizer} from "../../spessasynth_lib/synthetizer/synthetizer.js";
 import { midiControllers } from '../../spessasynth_lib/midi_parser/midi_message.js'
 
-const KEYBOARD_VELOCITY = 127;
 const GLOW_PX = 75;
 
 export class MidiKeyboard
@@ -110,7 +109,7 @@ export class MidiKeyboard
             let keyElement = document.createElement("div");
             keyElement.classList.add("key");
             keyElement.id = `note${midiNote}`;
-            keyElement.onpointerover = () => {
+            keyElement.onpointerover = e => {
                 if(!this.mouseHeld)
                 {
                     return
@@ -118,16 +117,24 @@ export class MidiKeyboard
 
                 // user note on
                 this.heldKeys.push(midiNote);
-                this.pressNote(midiNote, this.channel, KEYBOARD_VELOCITY);
-                this.synth.noteOn(this.channel, midiNote, KEYBOARD_VELOCITY, true);
+                // determine velocity. lower = more velocity
+                const rect = keyElement.getBoundingClientRect();
+                const relativeMouseY = e.clientY - rect.top;
+                const keyHeight = rect.height;
+                const velocity = Math.floor(relativeMouseY / keyHeight * 127);
+                this.synth.noteOn(this.channel, midiNote, velocity, true);
             }
 
-            keyElement.onpointerdown = () =>
+            keyElement.onpointerdown = e =>
             {
                 // user note on
                 this.heldKeys.push(midiNote);
-                this.pressNote(midiNote, this.channel, KEYBOARD_VELOCITY);
-                this.synth.noteOn(this.channel, midiNote, KEYBOARD_VELOCITY, true);
+                // determine velocity. lower = more velocity
+                const rect = keyElement.getBoundingClientRect();
+                const relativeMouseY = e.clientY - rect.top;
+                const keyHeight = rect.height;
+                const velocity = Math.floor(relativeMouseY / keyHeight * 127);
+                this.synth.noteOn(this.channel, midiNote, velocity, true);
             }
 
             keyElement.onpointerout = () => {

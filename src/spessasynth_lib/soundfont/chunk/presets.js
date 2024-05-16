@@ -177,18 +177,20 @@ export class Preset {
                  * @type {Modulator[]}
                  */
                 const finalModulatorList = [...instrumentModulators];
-                presetModulators.forEach(mod => {
-                    const identicalInstrumentModulator = presetModulators.find(m => identicalMod(mod, m));
-                    if(identicalInstrumentModulator)
+                for(let i = 0; i < presetModulators.length; i++)
+                {
+                    let mod = presetModulators[i];
+                    const identicalInstrumentModulator = finalModulatorList.findIndex(m => identicalMod(mod, m));
+                    if(identicalInstrumentModulator !== -1)
                     {
-                        // sum the amounts
-                        identicalInstrumentModulator.modulationAmount += mod.transformAmount;
+                        // sum the amounts (this makes a new modulator because otherwise it would overwrite the one in the soundfont!!!
+                        finalModulatorList[identicalInstrumentModulator] = finalModulatorList[identicalInstrumentModulator].sumTransform(mod);
                     }
                     else
                     {
                         finalModulatorList.push(mod);
                     }
-                })
+                }
 
 
                 // combine both generators and add to the final result

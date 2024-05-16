@@ -77,6 +77,64 @@ export class Modulator{
 
         //this.precomputeModulatorTransform();
     }
+
+    /**
+     * Sums transform and creates a NEW modulator
+     * @param modulator {Modulator}
+     * @returns {Modulator}
+     */
+    sumTransform(modulator)
+    {
+        return new Modulator({
+            srcEnum: this.modulatorSource,
+            secSrcEnum: this.modulationSecondarySrc,
+            dest: this.modulatorDestination,
+            transform: this.transformType,
+            amt: this.transformAmount + modulator.transformAmount
+        });
+    }
+
+    /**
+     * @returns {string}
+     */
+    debugString()
+    {
+        function getKeyByValue(object, value)
+        {
+            return Object.keys(object).find(key => object[key] === value);
+        }
+
+        let sourceString = getKeyByValue(modulatorCurveTypes, this.sourceCurveType);
+        sourceString += this.sourcePolarity === 0 ? " unipolar " : " bipolar ";
+        sourceString += this.sourceDirection === 0 ? "forwards " : "backwards ";
+        if(this.sourceUsesCC)
+        {
+            sourceString += getKeyByValue(midiControllers, this.sourceIndex);
+        }
+        else
+        {
+            sourceString += getKeyByValue(modulatorSources, this.sourceIndex);
+        }
+
+        let secSrcString = getKeyByValue(modulatorCurveTypes, this.secSrcCurveType);
+        secSrcString += this.secSrcPolarity === 0 ? " unipolar " : " bipolar ";
+        secSrcString += this.secSrcCurveType === 0 ? "forwards " : "backwards ";
+        if(this.secSrcUsesCC)
+        {
+            secSrcString += getKeyByValue(midiControllers, this.secSrcIndex);
+        }
+        else
+        {
+            secSrcString += getKeyByValue(modulatorSources, this.secSrcIndex);
+        }
+        return `Modulator:
+        Source: ${sourceString}
+        Secondary source: ${secSrcString}
+        Destination: ${getKeyByValue(generatorTypes, this.modulatorDestination)}
+        Trasform amount: ${this.transformAmount}
+        Transform type: ${this.transformType}
+        \n\n`;
+    }
 }
 
 function getModSourceEnum(curveType, polarity, direction, isCC, index)

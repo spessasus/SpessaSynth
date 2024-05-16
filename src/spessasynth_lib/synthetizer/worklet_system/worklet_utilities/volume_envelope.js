@@ -29,6 +29,8 @@ export function applyVolumeEnvelope(voice, audioBuffer, currentTime, centibelOff
     let holdEnd = timecentsToSeconds(voice.modulatedGenerators[generatorTypes.holdVolEnv] + ((60 - voice.midiNote) * voice.modulatedGenerators[generatorTypes.keyNumToVolEnvHold])) + attackEnd;
     let decayEnd = decay + holdEnd;
 
+    console.log(attenuation)
+
     if(voice.isInRelease)
     {
         // calculate the db attenuation at the time of release

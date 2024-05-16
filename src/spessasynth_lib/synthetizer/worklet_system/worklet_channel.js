@@ -409,7 +409,16 @@ export class WorkletChannel {
 
         if(debug)
         {
-            console.table(workletVoices)
+            console.table(workletVoices.map(v => {
+                return {
+                    Sample: v.sample,
+                    Generators: v.generators,
+                    Modulators: v.modulators.map(m => m.debugString()).join('\n'),
+                    Velocity: v.velocity,
+                    TargetKey: v.targetKey,
+                    MidiNote: v.midiNote,
+                }
+            }));
         }
 
         this.post({
