@@ -141,14 +141,14 @@ export class Sample {
             });
         } catch (e) {
             console.warn(`Error creating an audio buffer for ${this.sampleName}! Resampling the sample from ${this.sampleRate} to ${FIX_SAMPLERATE} to fix...`);
-            const arr = this.loadBufferData(smplArr);
-            this.sampleData = this.resampleData(arr);
-
-            this.buffer = new AudioBuffer({
-                length: this.sampleData.length,
-                sampleRate: FIX_SAMPLERATE
-            });
-            this.buffer.getChannelData(0).set(this.sampleData);
+            this.loadBufferData(smplArr).then(arr => {
+                this.sampleData = this.resampleData(arr);
+                this.buffer = new AudioBuffer({
+                    length: this.sampleData.length,
+                    sampleRate: FIX_SAMPLERATE
+                });
+                this.buffer.getChannelData(0).set(this.sampleData);
+            })
         }
 
         if(this.isCompressed)
@@ -264,7 +264,7 @@ export class Sample {
 
     /**
      * @param smplArr {ShiftableByteArray}
-     * @returns {Float32Array}
+     * @returns {Promise<Float32Array>}
      */
     async loadBufferData(smplArr) {
         if (this.sampleLength < 1) {

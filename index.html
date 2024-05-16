@@ -35,7 +35,7 @@
         </label>
 
         <label id='bundled_sf'>
-          Use the bundled SoundFont (30MB)
+          Use the bundled SoundFont (7MB)
         </label>
       </div>
     </div>
@@ -115,7 +115,7 @@
 
   document.getElementById("bundled_sf").onclick = () => {
     titleMessage.innerText = "Downloading SoundFont...";
-    fetchFont("soundfonts/GeneralUser_GS.sf2", percent => titleMessage.innerText = `Downloading SF2: ${percent}%`).then(arr => {
+    fetchFont("soundfonts/GeneralUser_GS.sf3", percent => titleMessage.innerText = `Downloading SF2: ${percent}%`).then(arr => {
       try {
         window.soundFontParser = new SoundFont2(arr);
         document.getElementById("sf_upload").innerText = "GeneralUser_GS.sf2";
