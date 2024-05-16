@@ -337,6 +337,10 @@ export class Renderer
                         // if the note out of range, skip
                         if(note.midiNote < this.keyRange.min || note.midiNote > this.keyRange.max)
                         {
+                            if(noteIndex >= notes.length)
+                            {
+                                break;
+                            }
                             note = notes[noteIndex];
                             continue;
                         }
