@@ -1,5 +1,5 @@
 import { settingsHtml } from './settings_html.js'
-import { getGearSvg } from '../icons.js'
+import { getDownArrowSvg, getGearSvg } from '../icons.js'
 export class Settings
 {
     /**
@@ -71,6 +71,8 @@ export class Settings
             document.getElementsByClassName("top_part")[0].classList.toggle("hidden");
             // show button to get it back
             const showTopButton =  document.getElementsByClassName("show_top_button")[0];
+            // add the svg
+            showTopButton.innerHTML = getDownArrowSvg(20);
             showTopButton.classList.toggle("shown");
             showTopButton.onclick = () => {
                 document.getElementsByClassName("top_part")[0].classList.toggle("hidden");

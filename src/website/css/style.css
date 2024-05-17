@@ -138,7 +138,7 @@ input[type="file"] {
 .show_top_button{
     background: var(--top-buttons-color);
     width: fit-content;
-    padding: 0 2em;
+    padding: 0.1em 2em;
     border-radius: 0.5em;
     margin: auto;
     display: none;
@@ -153,7 +153,7 @@ input[type="file"] {
 }
 
 .show_top_button.shown{
-    display: inline-block !important;
+    display: flex !important;
 }
 
 /*Center*/
