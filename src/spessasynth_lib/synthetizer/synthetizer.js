@@ -414,10 +414,11 @@ export class Synthetizer {
 
     /**
      * Reloads the sounfont.
-     * Note: you need to change the soundfont via synth.soundFont then call this
+     * @param soundFont {SoundFont2} the soundfont to another one
      */
-    reloadSoundFont()
+    reloadSoundFont(soundFont)
     {
+        this.soundFont = soundFont;
         this.defaultPreset = this.soundFont.getPreset(0, 0);
         this.percussionPreset = this.soundFont.getPreset(128, 0);
         for(let i = 0; i < 16; i++)

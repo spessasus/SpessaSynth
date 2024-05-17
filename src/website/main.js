@@ -172,8 +172,7 @@ async function replaceFont(fontName)
         }
         else
         {
-            window.manager.synth.soundFont = window.soundFontParser;
-            window.manager.synth.reloadSoundFont();
+            window.manager.synth.reloadSoundFont(window.soundFontParser);
             window.manager.synthUI.reloadSelectors();
 
             if(window.manager.seq)
