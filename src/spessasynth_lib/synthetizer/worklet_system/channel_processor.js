@@ -149,7 +149,7 @@ class ChannelProcessor extends AudioWorkletProcessor {
                     {
                         return;
                     }
-                    v.sample.end = data.sampleData.length + v.generators[generatorTypes.endAddrOffset] + (v.generators[generatorTypes.endAddrsCoarseOffset] * 32768);
+                    v.sample.end = data.sampleData.length - 1 + v.generators[generatorTypes.endAddrOffset] + (v.generators[generatorTypes.endAddrsCoarseOffset] * 32768);
                 })
 
                 break;

@@ -357,7 +357,7 @@ export class WorkletChannel {
                     rootKey: rootKey,
                     loopStart: loopStart,
                     loopEnd: loopEnd,
-                    end: Math.floor( sampleAndGenerators.sample.sampleData.length) + (generators[generatorTypes.endAddrOffset] + (generators[generatorTypes.endAddrsCoarseOffset] * 32768)),
+                    end: Math.floor( sampleAndGenerators.sample.sampleData.length) - 1 + (generators[generatorTypes.endAddrOffset] + (generators[generatorTypes.endAddrsCoarseOffset] * 32768)),
                     loopingMode: loopingMode
                 };
 
