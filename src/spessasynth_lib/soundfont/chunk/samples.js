@@ -112,6 +112,7 @@ export class Sample {
         // in bytes
         this.sampleStartIndex = sampleStartIndex;
         this.sampleEndIndex = sampleEndIndex;
+        this.isSampleLoaded = false;
 
         this.sampleLoopStartIndex = sampleLoopStartIndex - sampleStartIndex;
         this.sampleLoopEndIndex = sampleLoopEndIndex - sampleStartIndex;
@@ -160,7 +161,7 @@ export class Sample {
             // correct loop points
             this.sampleLoopStartIndex += this.sampleStartIndex;
             this.sampleLoopEndIndex += this.sampleStartIndex;
-            this.sampleLength = 10; // set to 10 before we decode it
+            this.sampleLength = 99999999; // set to 999999 before we decode it
         }
 
     }
@@ -177,31 +178,53 @@ export class Sample {
         // get the compressed byte stream
         const smplStart = smplArr.currentIndex;
         const buff = smplArr.slice(this.sampleStartIndex / 2 + smplStart, this.sampleEndIndex / 2 + smplStart);
-        await new Promise((resolve, reject) => {
-            // decode vorbis
+        await new Promise((resolve) => {
+            // reset array and being decoding
+            this.sampleData = new Float32Array(0);
             stbvorbis.decode(buff.buffer, decoded =>
             {
                 // check for errors
                 if(decoded.error !== null)
                 {
-                    console.warn("%CError decoding sample! " + decoded.error,
+                    console.warn("%cError decoding sample! " + decoded.error,
                         consoleColors.unrecognized);
                     this.sampleData = new Float32Array(0);
                 }
+
+                // check if we finished decoding
                 if(decoded.eof === false)
                 {
-                    this.sampleData = decoded.data[0];
-                    // correct sample length
+                    /**
+                     * @type {Float32Array}
+                     */
+                    const decodedData = decoded.data[0];
+
+                    // add the chunk of data
+                    const addedData = new Float32Array(this.sampleData.length + decodedData.length);
+                    addedData.set(this.sampleData, 0);
+                    addedData.set(decodedData, this.sampleData.length);
+                    this.sampleData = addedData;
+                }
+                else
+                {
+                    if(decoded.data) {
+                        /**
+                         * if any data remains, add it
+                         * @type {Float32Array}
+                         */
+                        const decodedData = decoded.data[0];
+                        const addedData = new Float32Array(this.sampleData.length + decodedData.length);
+                        addedData.set(this.sampleData, 0);
+                        addedData.set(decodedData, this.sampleData.length);
+                        this.sampleData = addedData;
+                    }
+
+                    // correct sample length and resolve decoding
                     this.sampleLength = this.sampleData.length * 2;
                     resolve();
                 }
             })
         });
-    }
-
-    get isSampleLoaded()
-    {
-        return this.sampleData.length > 0;
     }
 
     /**
@@ -213,7 +236,7 @@ export class Sample {
      async getAudioData(startAddrOffset = 0, endAddrOffset = 0) {
         if (!this.isSampleLoaded) {
             // start loading data if not loaded
-            return await this.loadBufferData(this.sampleDataArray).then();
+            return await this.loadBufferData(this.sampleDataArray);
         }
         // if no offset, return saved sampleData
         if (this.sampleData && startAddrOffset === 0 && endAddrOffset === 0) {
@@ -331,6 +354,7 @@ export class Sample {
         }
 
         this.sampleData = audioData;
+        this.isSampleLoaded = true;
         return audioData;
     }
 
@@ -347,6 +371,7 @@ export class Sample {
         if(this.isCompressed)
         {
             await this.decodeVorbis(smplArr);
+            this.isSampleLoaded = true;
             return this.sampleData;
         }
         return this.loadUncompressedData(smplArr);
