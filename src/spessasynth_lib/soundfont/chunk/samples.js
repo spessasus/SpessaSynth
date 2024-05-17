@@ -217,11 +217,20 @@ export class Sample {
      * @param context {BaseAudioContext}
      * @param startAddrOffset {number}
      * @param endAddrOffset {number}
-     * @returns {AudioBuffer}
+     * @returns {Promise<AudioBuffer>}
      */
-    getAudioBuffer(context, startAddrOffset, endAddrOffset) {
+    async getAudioBuffer(context, startAddrOffset, endAddrOffset) {
         if (!this.sampleData) {
-            this.sampleData = this.loadBufferData(this.sampleDataArray);
+            this.sampleData = await this.loadBufferData(this.sampleDataArray);
+
+            // if it was compressed, the length has changed
+            if(this.sampleLength / 2 + 1 !== this.buffer.length)
+            {
+                this.buffer = new AudioBuffer({
+                    length: this.sampleLength / 2 + 1,
+                    sampleRate: this.sampleRate
+                })
+            }
             this.buffer.getChannelData(0).set(this.sampleData);
         }
         if (startAddrOffset === 0 && endAddrOffset === 0) {

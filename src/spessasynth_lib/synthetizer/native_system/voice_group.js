@@ -1,5 +1,5 @@
 import {Preset} from "../../soundfont/chunk/presets.js";
-import { Voice } from './voice.js';
+import { getVoiceAsync, Voice } from './voice.js'
 
 export class VoiceGroup
 {
@@ -17,6 +17,8 @@ export class VoiceGroup
         this.midiNote = midiNote;
         this.velocity = targetVelocity;
         this.targetNode = node;
+        this.modulation = modulation;
+        this.vibratoOptions = vibratoOptions;
         /**
          * @type {BaseAudioContext}
          */
@@ -35,33 +37,12 @@ export class VoiceGroup
             this.vibratoDelay = vibratoOptions.delay;
         }
 
-        let samples = preset.getSamplesAndGenerators(midiNote, targetVelocity);
+        this.samAndGen = preset.getSamplesAndGenerators(midiNote, targetVelocity);
 
         /**
          * @type {Set<number>}
          */
         this.exclusives = new Set();
-
-        /**
-         * @type {Voice[]}
-         */
-        this.sampleNodes = samples.map(samAndGen => {
-            const sm =  new Voice(
-                samAndGen,
-                midiNote,
-                node,
-                this.tuningRatio,
-                this.velocity,
-                (modulation / 128) * 50
-            );
-
-            if(vibratoOptions.rate > 0)
-            {
-                this.vibratoDepth.connect(sm.wavetableOscillator.detune);
-            }
-            this.exclusives.add(sm.exclusive);
-            return sm;
-        });
     }
 
 
@@ -69,8 +50,28 @@ export class VoiceGroup
      * @param debug {boolean}
      * @returns {Set<number>} exclusiveClass numbers
      */
-    startNote(debug=false){
+    async startNote(debug=false){
 
+        /**
+         * @type {Voice[]}
+         */
+        this.sampleNodes = await Promise.all(this.samAndGen.map(async samAndGen => {
+            const sm = await getVoiceAsync(
+                samAndGen,
+                this.midiNote,
+                this.targetNode,
+                this.tuningRatio,
+                this.velocity,
+                (this.modulation / 128) * 50
+            );
+
+            if(this.vibratoOptions.rate > 0)
+            {
+                this.vibratoDepth.connect(sm.wavetableOscillator.detune);
+            }
+            this.exclusives.add(sm.exclusive);
+            return sm;
+        }));
         // activate vibrato
         if(this.vibratoWave)
         {

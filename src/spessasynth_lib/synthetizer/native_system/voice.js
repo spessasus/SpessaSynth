@@ -1,18 +1,41 @@
 import { GeneratorTranslator } from './generator_translator.js';
 
+/**
+ * Creates a new instance of a single sample
+ * @param sampleAndGenerators {SampleAndGenerators}
+ * @param midiNote {number}
+ * @param outputNode {AudioNode}
+ * @param tuningRatio {number}
+ * @param velocity {number}
+ * @param vibratoDepth {number} in cents
+ * @returns {Promise<Voice>}
+ */
+export async function getVoiceAsync(sampleAndGenerators, midiNote, outputNode, tuningRatio, velocity, vibratoDepth)
+{
+    const synthesisOptions = new GeneratorTranslator(sampleAndGenerators, midiNote, velocity);
+    const buffer = await sampleAndGenerators.sample.getAudioBuffer(outputNode.context, synthesisOptions.getAddressOffsets().start, synthesisOptions.getAddressOffsets().end);
+    return new Voice(synthesisOptions,
+        midiNote,
+        outputNode,
+        tuningRatio,
+        velocity,
+        vibratoDepth,
+        buffer)
+}
+
 export class Voice
 {
     /**
      * Creates a new instance of a single sample
-     * @param sampleAndGenerators {SampleAndGenerators}
+     * @param synthesisOptions {GeneratorTranslator}
      * @param midiNote {number}
      * @param outputNode {AudioNode}
      * @param tuningRatio {number}
      * @param velocity {number}
      * @param vibratoDepth {number} in cents
+     * @param buffer {AudioBuffer}
      */
-    constructor(sampleAndGenerators, midiNote, outputNode, tuningRatio, velocity, vibratoDepth) {
-        const synthesisOptions = new GeneratorTranslator(sampleAndGenerators, midiNote, velocity);
+    constructor(synthesisOptions, midiNote, outputNode, tuningRatio, velocity, vibratoDepth, buffer) {
         const context = outputNode.context;
         const sample = synthesisOptions.sample;
         const offsets = synthesisOptions.getAddressOffsets();
@@ -31,9 +54,13 @@ export class Voice
         WAVETABLE OSCILLATOR
         ====================
          */
+        if(buffer === undefined)
+        {
+            throw "No buffer provided!";
+        }
         const loop = this.looping !== 0 && sample.loopAllowed;
         this.wavetableOscillator = new AudioBufferSourceNode(context, {
-            buffer: sample.getAudioBuffer(context, offsets.start, offsets.end),
+            buffer: buffer,
             playbackRate: synthesisOptions.getPlaybackRate() * tuningRatio,
             loop: loop
         });

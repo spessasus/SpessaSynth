@@ -268,7 +268,7 @@ export class MidiChannel {
      * @param debugInfo {boolean} for debugging set to true
      * @returns {number} the amount of voices the note adds
      */
-    playNote(midiNote, velocity, debugInfo = false) {
+    async playNote(midiNote, velocity, debugInfo = false) {
         if (velocity === 0) {
             // stop if velocity 0
             this.stopNote(midiNote);
@@ -284,8 +284,8 @@ export class MidiChannel {
         this.receivedNotes.add(midiNote);
         let note = new VoiceGroup(midiNote, velocity, this.panner, this.preset, this.vibrato, this.channelTuningRatio, this.modulation);
 
-        let exclusives = note.startNote(debugInfo);
-        const bendRatio = (this.pitchBend / 8192) * this.channelPitchBendRange;
+        let exclusives = await note.startNote(debugInfo);
+        const bendRatio = ((this.pitchBend - 8192) / 8192) * this.channelPitchBendRange;
         note.bendNote(bendRatio + this.channelTranspose);
 
         for(const exclusive of exclusives)
@@ -320,8 +320,8 @@ export class MidiChannel {
 
     setPitchBend(bendMSB, bendLSB) {
         // bend all the notes
-        this.pitchBend = (bendLSB | (bendMSB << 7)) - 8192;
-        const semitones = (this.pitchBend / 8192) * this.channelPitchBendRange;
+        this.pitchBend = (bendLSB | (bendMSB << 7));
+        const semitones = ((this.pitchBend - 8192) / 8192) * this.channelPitchBendRange;
         for (let note of this.playingNotes) {
             note.bendNote(semitones + this.channelTranspose);
         }
@@ -608,7 +608,7 @@ export class MidiChannel {
         this.holdPedal = false;
         this.updateGain();
         this.panner.pan.value = 0;
-        this.pitchBend = 0;
+        this.pitchBend = 8192;
         this.modulation = 0;
 
         this.vibrato = {depth: 0, rate: 0, delay: 0};
@@ -622,7 +622,7 @@ export class MidiChannel {
             return;
         }
         this.channelTranspose = semitones;
-        const semi = (this.pitchBend / 8192) * this.channelPitchBendRange;
+        const semi = ((this.pitchBend - 8192) / 8192) * this.channelPitchBendRange;
         for (let note of this.playingNotes) {
             note.bendNote(semi + this.channelTranspose);
         }
