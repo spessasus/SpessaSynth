@@ -22,7 +22,7 @@ export function getOscillatorData(voice, sampleData, outputBuffer)
             const floor = ~~cur;
             let ceil = floor + 1;
 
-            while(ceil > voice.sample.loopEnd) {
+            while(ceil >= voice.sample.loopEnd) {
                 ceil -= loopLength;
             }
 
