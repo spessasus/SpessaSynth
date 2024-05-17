@@ -42,6 +42,7 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 ### Limitations
 - It might not sound as good as other synthetizers (e.g. FluidSynth or BASSMIDI)
 - The performance is questionable, especially on mobile devices
+- SoundFont3 support seems to be a bit wonky, so if you notice a but, **please open an issue!**
 
 ## Installation
 ***When you're loading a large (>4GB) SoundFont, use Firefox because chromium has a 4GB memory limit***
@@ -66,6 +67,8 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
    
 (note that in KDE Plasma 6 the browser auto opening seems to be broken. You must navigate to http://localhost:8181 manually)
 
+## [How to use](../../wiki/How-To-Use-App)
+
 ### [Check out the wiki!](../../wiki/Home)
 *Note: the wiki is quite outdated, but most of the methods should still work.*
 
@@ -85,6 +88,16 @@ The program is divided into parts:
 - make the worklet system perform good
 - port the worklet system to emscripten (maybe)
 - fix rare clicking in volenv
+- fix lowpass on instant notes (0 tick long drums)
+
+#### Why did I make this?
+Around 1.5 years ago, 
+I discovered a game series called Touhou Project, 
+and after some time I found out that the older installments use MIDI files as the background music.
+And so the originally called "midi_tester" was born, then I rebranded it to SpessaSynth.
+The project's complexity quickly outgrew everything I've made so far and I've been working on it ever since.
+And I hope that you like my work :-)
+
 ### License
 Copyright © 2024 Spessasus. Licensed under the MIT License.
 
