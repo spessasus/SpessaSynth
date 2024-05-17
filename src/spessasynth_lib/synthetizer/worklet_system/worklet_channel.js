@@ -71,6 +71,12 @@ export class WorkletChannel {
         this.percussionChannel = percussionChannel;
 
         /**
+         * These controllers cannot be changed via controller change
+         * @type {boolean[]}
+         */
+        this.lockedControllers = new Array(127).fill(false);
+
+        /**
          * index 1: midi note, index 2: velocity (the 3rd array is the group of worklet voices
          * @type {WorkletVoice[][][]}
          */
@@ -139,6 +145,25 @@ export class WorkletChannel {
     }
 
     /**
+     * locks the controller, preventing it from being changed
+     * @param controllerNumber {number}
+     */
+    lockController(controllerNumber)
+    {
+        this.lockedControllers[controllerNumber] = true;
+    }
+
+    /**
+     * unlocks the controller
+     * @param controllerNumber {number}
+     */
+
+    unlockController(controllerNumber)
+    {
+        this.lockedControllers[controllerNumber] = false;
+    }
+
+    /**
      * Kills the given amount of notes
      * @param amount {number}
      */
@@ -190,9 +215,14 @@ export class WorkletChannel {
     /**
      * @param cc {number}
      * @param val {number}
+     * @returns {boolean} false if the cc was locked
      */
     controllerChange(cc, val)
     {
+        if(this.lockedControllers[cc] === true)
+        {
+            return false;
+        }
         switch (cc) {
             default:
                 this.post({
@@ -220,6 +250,8 @@ export class WorkletChannel {
             case midiControllers.dataEntryMsb:
                 this.dataEntryCoarse(val);
         }
+
+        return true;
     }
 
     /**

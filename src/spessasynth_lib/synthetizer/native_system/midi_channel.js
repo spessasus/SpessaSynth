@@ -36,6 +36,12 @@ export class MidiChannel {
         this.bank = this.preset.bank;
 
         /**
+         * These controllers cannot be changed via controller change
+         * @type {boolean[]}
+         */
+        this.lockedControllers = new Array(127).fill(false);
+
+        /**
          * The recevied notes (always deleted on nofe off(
          * @type {Set<number>}
          */
@@ -120,9 +126,14 @@ export class MidiChannel {
     /**
      * @param number {number}
      * @param value
+     * @returns {boolean}
      */
     controllerChange(number, value)
     {
+        if(this.lockedControllers[number])
+        {
+            return false;
+        }
         switch (number)
         {
             case midiControllers.pan:
@@ -203,6 +214,27 @@ export class MidiChannel {
                     consoleColors.recognized);
                 break;
         }
+
+        return true;
+    }
+
+    /**
+     * locks the controller, preventing it from being changed
+     * @param controllerNumber {number}
+     */
+    lockController(controllerNumber)
+    {
+        this.lockedControllers[controllerNumber] = true;
+    }
+
+    /**
+     * unlocks the controller
+     * @param controllerNumber {number}
+     */
+
+    unlockController(controllerNumber)
+    {
+        this.lockedControllers[controllerNumber] = false;
     }
 
     pressHoldPedal()

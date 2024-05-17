@@ -338,6 +338,12 @@ export class SynthetizerUI
             true,
             val => {
                 this.synth.controllerChange(channelNumber, midiControllers.pan, (val / 2 + 0.5) * 127);
+            },
+            () => {
+                this.synth.lockController(channelNumber, midiControllers.pan, true);
+            },
+            () => {
+                this.synth.lockController(channelNumber, midiControllers.pan, false);
             });
         pan.update(0);
         controller.appendChild(pan.div);
@@ -352,6 +358,12 @@ export class SynthetizerUI
             val => {
                 this.synth.controllerChange(channelNumber, midiControllers.expressionController, val);
                 expression.update(Math.round(val));
+            },
+            () => {
+                this.synth.lockController(channelNumber, midiControllers.expressionController, true);
+            },
+            () => {
+                this.synth.lockController(channelNumber, midiControllers.expressionController, false);
             });
         expression.update(127);
         controller.appendChild(expression.div);
@@ -366,6 +378,12 @@ export class SynthetizerUI
             val => {
                 this.synth.controllerChange(channelNumber, midiControllers.mainVolume, val);
                 volume.update(Math.round(val));
+            },
+            () => {
+                this.synth.lockController(channelNumber, midiControllers.mainVolume, true);
+            },
+            () => {
+                this.synth.lockController(channelNumber, midiControllers.mainVolume, false);
             });
         volume.update(100);
         controller.appendChild(volume.div);
@@ -379,6 +397,12 @@ export class SynthetizerUI
             true,
             val => {
                 this.synth.controllerChange(channelNumber, midiControllers.modulationWheel, val);
+            },
+            () => {
+                this.synth.lockController(channelNumber, midiControllers.modulationWheel, true);
+            },
+            () => {
+                this.synth.lockController(channelNumber, midiControllers.modulationWheel, false);
             });
         modulation.update(0);
         controller.appendChild(modulation.div);
@@ -391,6 +415,12 @@ export class SynthetizerUI
             true,
             val => {
                 this.synth.controllerChange(channelNumber, midiControllers.effects3Depth, val);
+            },
+            () => {
+                this.synth.lockController(channelNumber, midiControllers.effects3Depth, true);
+            },
+            () => {
+                this.synth.lockController(channelNumber, midiControllers.effects3Depth, false);
             });
         chorus.update(0);
         controller.appendChild(chorus.div);
@@ -403,6 +433,12 @@ export class SynthetizerUI
             true,
             val => {
             this.synth.controllerChange(channelNumber, midiControllers.effects1Depth, val);
+            },
+            () => {
+                this.synth.lockController(channelNumber, midiControllers.effects1Depth, true);
+            },
+            () => {
+                this.synth.lockController(channelNumber, midiControllers.effects1Depth, false);
             });
         reverb.update(0);
         controller.appendChild(reverb.div);

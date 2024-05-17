@@ -41,3 +41,7 @@
 .voice_meter .voice_meter_text_light{
     color: black;
 }
+
+.locked_meter{
+    color: red;
+}

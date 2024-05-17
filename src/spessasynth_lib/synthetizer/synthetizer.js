@@ -252,6 +252,7 @@ export class Synthetizer {
      */
     controllerChange(channel, controllerNumber, controllerValue)
     {
+        let hasChanged = true;
         switch (controllerNumber) {
             case midiControllers.allNotesOff:
             case midiControllers.allSoundOff:
@@ -300,14 +301,16 @@ export class Synthetizer {
 
 
             default:
-                this.midiChannels[channel].controllerChange(controllerNumber, controllerValue);
+                hasChanged = this.midiChannels[channel].controllerChange(controllerNumber, controllerValue);
                 break;
         }
-        this.eventHandler.callEvent("controllerchange", {
-            channel: channel,
-            controllerNumber: controllerNumber,
-            controllerValue: controllerValue
-        });
+        if(hasChanged) {
+            this.eventHandler.callEvent("controllerchange", {
+                channel: channel,
+                controllerNumber: controllerNumber,
+                controllerValue: controllerValue
+            });
+        }
     }
 
     /**
@@ -410,6 +413,23 @@ export class Synthetizer {
             channel: channel,
             preset: preset
         });
+    }
+
+    /**
+     * Causes the given midi channel to ignore controller messages for the given controller number
+     * @param channel {number} 0-16 the channel to lock
+     * @param controllerNumber {number} 0-127 MIDI CC number
+     * @param isLocked {boolean} true if locked, false if unlocked
+     */
+    lockController(channel, controllerNumber, isLocked)
+    {
+        if(isLocked) {
+            this.midiChannels[channel].lockController(controllerNumber);
+        }
+        else
+        {
+            this.midiChannels[channel].unlockController(controllerNumber);
+        }
     }
 
     /**

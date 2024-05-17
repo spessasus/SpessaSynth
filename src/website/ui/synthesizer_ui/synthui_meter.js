@@ -14,6 +14,8 @@ export class Meter
      * @param description {string}
      * @param editable {boolean} if the meter should be editable with mouse
      * @param editCallback {MeterCallbackFunction}
+     * @param lockCallback {function}
+     * @param unlockCallback {function}
      */
     constructor(color = "initial",
                 meterText="Voices: ",
@@ -21,7 +23,9 @@ export class Meter
                 max = 100,
                 description,
                 editable=false,
-                editCallback = undefined)
+                editCallback = undefined,
+                lockCallback = undefined,
+                unlockCallback = undefined)
     {
         this.meterText = meterText;
         this.min = min;
@@ -29,6 +33,9 @@ export class Meter
         this.currentValue = -1;
         this.isShown = true;
         this.isVisualValueSet = true;
+        this.isLocked = false;
+        this.lockCallback = lockCallback;
+        this.unlockCallback = unlockCallback;
 
         /**
          * @type {HTMLDivElement}
@@ -61,7 +68,18 @@ export class Meter
             if(editCallback === undefined) {
                 throw "No editable function given!";
             }
-            this.div.onmousedown = () => this.isActive = true;
+            this.div.onmousedown = e => {
+                e.preventDefault();
+                if(e.button === 0) {
+                    // left mouse button: adjust value
+                    this.isActive = true;
+                }
+                else
+                {
+                    // other, lock it
+                    this.lockMeter();
+                }
+            }
             this.div.onmousemove = e => {
                 if(!this.isActive)
                 {
@@ -80,14 +98,38 @@ export class Meter
                 this.isActive = false;
             }
 
+            // QoL
+            this.text.oncontextmenu = e => {
+                e.preventDefault();
+            };
+
             // add mobile
             this.div.onclick = e => {
+                e.preventDefault();
                 this.isActive = true;
                 this.div.onmousemove(e);
                 this.isActive = false;
             }
             this.div.classList.add("editable");
         }
+    }
+
+    lockMeter()
+    {
+        if(this.lockCallback === undefined)
+        {
+            // no callback, it can't be locked
+            return;
+        }
+        if(this.isLocked) {
+            this.text.classList.remove("locked_meter");
+            this.unlockCallback();
+        }
+        else {
+            this.text.classList.add("locked_meter");
+            this.lockCallback();
+        }
+        this.isLocked = !this.isLocked;
     }
 
     toggleMode(updateColor=false)
