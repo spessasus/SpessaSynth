@@ -53,7 +53,7 @@ class ChannelProcessor extends AudioWorkletProcessor {
         // in seconds, time between two samples (very, very short)
         this.sampleTime = 1 / sampleRate;
 
-        this.resetControllers();
+        this.resetControllers([]);
 
         this.tuningRatio = 1;
 
@@ -155,7 +155,7 @@ class ChannelProcessor extends AudioWorkletProcessor {
                 break;
 
             case workletMessageType.ccReset:
-                this.resetControllers();
+                this.resetControllers(data);
                 break;
 
             case workletMessageType.ccChange:
@@ -373,15 +373,31 @@ class ChannelProcessor extends AudioWorkletProcessor {
 
     /**
      * Resets all controllers
+     * @param excluded {number[]}
      */
-    resetControllers()
+    resetControllers(excluded)
     {
-        // transpose does not get affected
+        // save excluded controllers as reset doesn't affect them
+        let excludedCCvalues = excluded.map(ccNum => {
+            return {
+                ccNum: ccNum,
+                ccVal: this.midiControllers[ccNum]
+            }
+        });
+        // transpose does not get affected either so save
         const transpose = this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTranspose];
+
+        // reset the array
         this.midiControllers.set(resetArray);
-        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTranspose] = transpose;
         this.channelVibrato = {rate: 0, depth: 0, delay: 0};
         this.holdPedal = false;
+
+        // restore unaffected
+        this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTranspose] = transpose;
+        excludedCCvalues.forEach((cc) => {
+            this.midiControllers[cc.ccNum] = cc.ccVal;
+        })
+
     }
 
 }

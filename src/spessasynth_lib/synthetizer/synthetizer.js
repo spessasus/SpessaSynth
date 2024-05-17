@@ -346,12 +346,22 @@ export class Synthetizer {
             const chNr = ch.channelNumber - 1;
             this.eventHandler.callEvent("programchange", {channel: chNr, preset: ch.preset})
 
-            this.eventHandler.callEvent("controllerchange", {channel: chNr, controllerNumber: midiControllers.mainVolume, controllerValue: 100});
-            this.eventHandler.callEvent("controllerchange", {channel: chNr, controllerNumber: midiControllers.pan, controllerValue: 64});
-            this.eventHandler.callEvent("controllerchange", {channel: chNr, controllerNumber: midiControllers.expressionController, controllerValue: 127});
-            this.eventHandler.callEvent("controllerchange", {channel: chNr, controllerNumber: midiControllers.modulationWheel, controllerValue: 0});
-            this.eventHandler.callEvent("controllerchange", {channel: chNr, controllerNumber: midiControllers.effects3Depth, controllerValue: 0});
-            this.eventHandler.callEvent("controllerchange", {channel: chNr, controllerNumber: midiControllers.effects1Depth, controllerValue: 0});
+            let restoreControllerValueEvent = (ccNum, value) =>
+            {
+                if(this.midiChannels[chNr].lockedControllers[ccNum])
+                {
+                    // locked, we did not reset it
+                    return;
+                }
+                this.eventHandler.callEvent("controllerchange", {channel: chNr, controllerNumber: ccNum, controllerValue: value});
+            }
+
+            restoreControllerValueEvent(midiControllers.mainVolume, 100);
+            restoreControllerValueEvent(midiControllers.pan, 64);
+            restoreControllerValueEvent(midiControllers.expressionController, 127);
+            restoreControllerValueEvent(midiControllers.modulationWheel, 0);
+            restoreControllerValueEvent(midiControllers.effects3Depth, 0);
+            restoreControllerValueEvent(midiControllers.effects1Depth, 0);
 
             this.eventHandler.callEvent("pitchwheel", {channel: chNr, MSB: 64, LSB: 0})
         }

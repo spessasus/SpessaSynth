@@ -329,6 +329,23 @@ export class SynthetizerUI
         pitchWheel.update(0);
         controller.appendChild(pitchWheel.div);
 
+        /**
+         * @param cc {number}
+         * @param val {number}
+         * @param meter {Meter}
+         */
+        let changeCCUserFunction = (cc, val, meter) => {
+            if(meter.isLocked)
+            {
+                this.synth.lockController(channelNumber, cc, false);
+                this.synth.controllerChange(channelNumber, cc, val);
+                this.synth.lockController(channelNumber, cc, true);
+            }
+            else {
+                this.synth.controllerChange(channelNumber, cc, val);
+            }
+        }
+
         // pan controller
         const pan = new Meter(this.channelColors[channelNumber % this.channelColors.length],
             "Pan: ",
@@ -337,7 +354,7 @@ export class SynthetizerUI
             `The current stereo panning of channel ${channelNumber + 1}`,
             true,
             val => {
-                this.synth.controllerChange(channelNumber, midiControllers.pan, (val / 2 + 0.5) * 127);
+                changeCCUserFunction(midiControllers.pan, (val / 2 + 0.5) * 127, pan);
             },
             () => {
                 this.synth.lockController(channelNumber, midiControllers.pan, true);
@@ -356,8 +373,7 @@ export class SynthetizerUI
             `The current expression (loudness) of channel ${channelNumber + 1}`,
             true,
             val => {
-                this.synth.controllerChange(channelNumber, midiControllers.expressionController, val);
-                expression.update(Math.round(val));
+                changeCCUserFunction(midiControllers.expressionController, val, expression);
             },
             () => {
                 this.synth.lockController(channelNumber, midiControllers.expressionController, true);
@@ -376,8 +392,7 @@ export class SynthetizerUI
             `The current volume of channel ${channelNumber + 1}`,
             true,
             val => {
-                this.synth.controllerChange(channelNumber, midiControllers.mainVolume, val);
-                volume.update(Math.round(val));
+                changeCCUserFunction(midiControllers.mainVolume, val, volume);
             },
             () => {
                 this.synth.lockController(channelNumber, midiControllers.mainVolume, true);
@@ -396,7 +411,7 @@ export class SynthetizerUI
             `The current modulation (vibrato) depth of channel ${channelNumber + 1}`,
             true,
             val => {
-                this.synth.controllerChange(channelNumber, midiControllers.modulationWheel, val);
+                changeCCUserFunction(midiControllers.modulationWheel, val, modulation);
             },
             () => {
                 this.synth.lockController(channelNumber, midiControllers.modulationWheel, true);
@@ -414,7 +429,7 @@ export class SynthetizerUI
             127, `The current level of chorus effect applied to channel ${channelNumber + 1}`,
             true,
             val => {
-                this.synth.controllerChange(channelNumber, midiControllers.effects3Depth, val);
+                changeCCUserFunction(midiControllers.effects3Depth, val, chorus);
             },
             () => {
                 this.synth.lockController(channelNumber, midiControllers.effects3Depth, true);
@@ -432,7 +447,7 @@ export class SynthetizerUI
             127, `The current level of reverb effect applied to channel ${channelNumber + 1}`,
             true,
             val => {
-            this.synth.controllerChange(channelNumber, midiControllers.effects1Depth, val);
+                changeCCUserFunction(midiControllers.effects1Depth, val, reverb);
             },
             () => {
                 this.synth.lockController(channelNumber, midiControllers.effects1Depth, true);

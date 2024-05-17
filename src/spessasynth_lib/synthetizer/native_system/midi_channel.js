@@ -626,22 +626,37 @@ export class MidiChannel {
 
     resetControllers()
     {
-        /**
-         * @type {number}
-         */
-        this.channelVolume = 100 / 127; // per midi spec
-        /**
-         * @type {number}
-         */
-        this.channelExpression = 1;
-        this.channelTuningRatio = 1;
+        if(!this.lockedControllers[midiControllers.mainVolume]) {
+            /**
+             * @type {number}
+             */
+            this.channelVolume = 100 / 127; // per midi spec
+        }
+        if(!this.lockedControllers[midiControllers.expressionController]) {
+            /**
+             * @type {number}
+             */
+            this.channelExpression = 1;
+        }
+
+        if(!this.lockedControllers[midiControllers.effects3Depth]) {
+            this.chorus.gain.value = 0;
+        }
+
+
+        if(!this.lockedControllers[midiControllers.pan])
+        {
+            this.panner.pan.value = 0;
+        }
+
+        if(!this.lockedControllers[midiControllers.modulationWheel])
+        {
+            this.modulation = 0;
+        }
+        this.pitchBend = 8192;this.channelTuningRatio = 1;
         this.channelPitchBendRange = 2;
-        this.chorus.gain.value = 0;
         this.holdPedal = false;
         this.updateGain();
-        this.panner.pan.value = 0;
-        this.pitchBend = 8192;
-        this.modulation = 0;
 
         this.vibrato = {depth: 0, rate: 0, delay: 0};
         this.resetParameters();

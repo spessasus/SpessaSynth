@@ -47,7 +47,7 @@ export const workletMessageType = {
  * 2 - controller change  -> [ccNumber<number>, ccValue<number>]
  * 3 - sample dump        -> {sampleData: Float32Array, sampleID: number}
  * 4 - note off instantly -> midiNote<number>
- * 5 - controllers reset     (no data)
+ * 5 - controllers reset     array<number> excluded controller numbers (excluded from the reset)
  * 6 - channel vibrato    -> {frequencyHz: number, depthCents: number, delaySeconds: number}
  * 7 - clear cached samples  (no data)
  * 8 - stop all notes     -> force<number> (0 false, 1 true)
@@ -568,10 +568,21 @@ export class WorkletChannel {
         this._vibrato = {depth: 0, rate: 0, delay: 0};
         this.pitchBend = 8192;
         this.channelPitchBendRange = 2;
+        /**
+         * get excluded (locked) cc numbers as locked ccs are unaffected by reset
+         * @type {number[]}
+          */
+        const excludedCCs = this.lockedControllers.reduce((lockedCCs, cc, ccNum) => {
+            if(cc)
+            {
+                lockedCCs.push(ccNum);
+            }
+            return lockedCCs;
+        }, []);
         this.resetParameters();
         this.post({
             messageType: workletMessageType.ccReset,
-            messageData: 0
+            messageData: excludedCCs
         });
     }
 
