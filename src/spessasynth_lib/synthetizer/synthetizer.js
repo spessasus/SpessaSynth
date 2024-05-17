@@ -158,7 +158,7 @@ export class Synthetizer {
      * @param velocity {number} 0-127 the velocity of the note (generally controls loudness)
      * @param enableDebugging {boolean} set to true to log technical details to console
      */
-    noteOn(channel, midiNote, velocity, enableDebugging = false) {
+    async noteOn(channel, midiNote, velocity, enableDebugging = false) {
         if (velocity === 0) {
             this.noteOff(channel, midiNote);
             return;
@@ -178,7 +178,7 @@ export class Synthetizer {
         }
 
         let chan = this.midiChannels[channel];
-        chan.playNote(midiNote, velocity, enableDebugging);
+        await chan.playNote(midiNote, velocity, enableDebugging);
         const amt = this.voicesAmount;
         if(amt > this.voiceCap)
         {
@@ -628,7 +628,7 @@ export class Synthetizer {
             case messageTypes.noteOn:
                 const velocity = message[2];
                 if(velocity > 0) {
-                    this.noteOn(statusByteData.channel, message[1], velocity);
+                    this.noteOn(statusByteData.channel, message[1], velocity).then();
                 }
                 else
                 {

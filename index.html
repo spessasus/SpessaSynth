@@ -116,7 +116,7 @@
 
   document.getElementById("bundled_sf").onclick = () => {
     titleMessage.innerText = "Downloading SoundFont...";
-    fetchFont(`soundfonts/${SF_NAME}`, percent => titleMessage.innerText = `Downloading SF3: ${percent}%`).then(arr => {
+    fetchFont(`soundfonts/${SF_NAME}`, percent => titleMessage.innerText = `Loading SF3: ${percent}%`).then(arr => {
       try {
         window.soundFontParser = new SoundFont2(arr);
         document.getElementById("sf_upload").innerText = SF_NAME;

@@ -280,7 +280,6 @@ export class WorkletChannel {
 
                 // dump the sample if haven't already
                 if (!this.dumpedSamples.has(sampleAndGenerators.sampleID)) {
-                    this.dumpedSamples.add(sampleAndGenerators.sampleID);
                     this.post({
                         messageType: workletMessageType.sampleDump,
                         messageData: {
@@ -288,6 +287,7 @@ export class WorkletChannel {
                             sampleData: await sampleAndGenerators.sample.getAudioData()
                         }
                     });
+                    this.dumpedSamples.add(sampleAndGenerators.sampleID);
                 }
 
                 // create the generator list
@@ -318,6 +318,7 @@ export class WorkletChannel {
                 if (loopEnd - loopStart < 1) {
                     loopingMode = 0;
                 }
+                // determine end
                 /**
                  * create the worklet sample
                  * @type {WorkletSample}
@@ -329,7 +330,7 @@ export class WorkletChannel {
                     rootKey: rootKey,
                     loopStart: loopStart,
                     loopEnd: loopEnd,
-                    end: Math.floor(sampleAndGenerators.sample.sampleLength / 2) + 1 + (generators[generatorTypes.endAddrOffset] + (generators[generatorTypes.endAddrsCoarseOffset] * 32768)),
+                    end: Math.floor(sampleAndGenerators.sample.sampleLength / 2) + (generators[generatorTypes.endAddrOffset] + (generators[generatorTypes.endAddrsCoarseOffset] * 32768)),
                     loopingMode: loopingMode
                 };
 
@@ -344,7 +345,7 @@ export class WorkletChannel {
                     console.table([{
                             Sample: sampleAndGenerators.sample,
                             Generators: generators,
-                            Modulators: sampleAndGenerators.modulators.map(m => m.debugString()).join('\n'),
+                            Modulators: sampleAndGenerators.modulators.map(m => m.debugString()),
                             Velocity: velocity,
                             TargetKey: targetKey,
                             MidiNote: midiNote,

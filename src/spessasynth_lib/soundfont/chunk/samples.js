@@ -142,6 +142,9 @@ export class Sample {
         } catch (e) {
             console.warn(`Error creating an audio buffer for ${this.sampleName}! Resampling the sample from ${this.sampleRate} to ${FIX_SAMPLERATE} to fix...`);
             this.loadBufferData(smplArr).then(arr => {
+                /**
+                 * @type {Float32Array}
+                 */
                 this.sampleData = this.resampleData(arr);
                 this.buffer = new AudioBuffer({
                     length: this.sampleData.length,
@@ -156,6 +159,7 @@ export class Sample {
             // correct loop points
             this.sampleLoopStartIndex += this.sampleStartIndex;
             this.sampleLoopEndIndex += this.sampleStartIndex;
+            this.sampleLength = 10; // set to 10 before we decode it
         }
 
     }
@@ -179,16 +183,16 @@ export class Sample {
                 // check for errors
                 if(decoded.error !== null)
                 {
-                    console.log("%CError decoding sample! " + decoded.error,
+                    console.warn("%CError decoding sample! " + decoded.error,
                         consoleColors.unrecognized);
                     this.sampleData = new Float32Array(0);
                 }
                 if(decoded.eof === false)
                 {
-                    resolve();
                     this.sampleData = decoded.data[0];
                     // correct sample length
-                    this.sampleLength = this.sampleData.length * 2 - 1;
+                    this.sampleLength = this.sampleData.length * 2;
+                    resolve();
                 }
             })
         });
