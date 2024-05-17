@@ -38,6 +38,11 @@ export function getOscillatorData(voice, sampleData, outputBuffer)
     }
     else
     {
+        // check and correct end errors
+        if(voice.sample.end >= sampleData.length)
+        {
+            voice.sample.end = sampleData.length - 1;
+        }
         for (let i = 0; i < outputBuffer.length; i++) {
 
             // linear interpolation
