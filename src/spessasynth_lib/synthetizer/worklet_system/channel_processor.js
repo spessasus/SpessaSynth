@@ -143,6 +143,15 @@ class ChannelProcessor extends AudioWorkletProcessor {
 
             case workletMessageType.sampleDump:
                 this.samples[data.sampleID] = data.sampleData;
+                // the sample maybe was loaded after the voice was sent... adjust the end position!
+                this.voices.forEach(v => {
+                    if(v.sample.sampleID !== data.sampleID)
+                    {
+                        return;
+                    }
+                    v.sample.end = data.sampleData.length + v.generators[generatorTypes.endAddrOffset] + (v.generators[generatorTypes.endAddrsCoarseOffset] * 32768);
+                })
+
                 break;
 
             case workletMessageType.ccReset:
@@ -256,9 +265,9 @@ class ChannelProcessor extends AudioWorkletProcessor {
      */
     renderVoice(voice, output, reverbOutput, chorusOutput)
     {
-        if(!this.samples[voice.sample.sampleID])
+        // if no matching sample, perhaps it's still being loaded..? worklet_channel.js line 256
+        if(this.samples[voice.sample.sampleID] === undefined)
         {
-            voice.finished = true;
             return;
         }
 

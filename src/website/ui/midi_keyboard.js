@@ -17,6 +17,7 @@ export class MidiKeyboard
          * @type {"light"|"dark"}
          */
         this.mode = "light";
+        this.enableDebugging = true;
 
         /**
          * @type {{min: number, max: number}}
@@ -122,7 +123,7 @@ export class MidiKeyboard
                 const relativeMouseY = e.clientY - rect.top;
                 const keyHeight = rect.height;
                 const velocity = Math.floor(relativeMouseY / keyHeight * 127);
-                this.synth.noteOn(this.channel, midiNote, velocity, true);
+                this.synth.noteOn(this.channel, midiNote, velocity, this.enableDebugging);
             }
 
             keyElement.onpointerdown = e =>
@@ -134,7 +135,7 @@ export class MidiKeyboard
                 const relativeMouseY = e.clientY - rect.top;
                 const keyHeight = rect.height;
                 const velocity = Math.floor(relativeMouseY / keyHeight * 127);
-                this.synth.noteOn(this.channel, midiNote, velocity, true);
+                this.synth.noteOn(this.channel, midiNote, velocity, this.enableDebugging);
             }
 
             keyElement.onpointerout = () => {

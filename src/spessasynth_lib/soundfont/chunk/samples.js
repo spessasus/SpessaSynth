@@ -124,6 +124,7 @@ export class Sample {
         this.sampleLength = this.sampleEndIndex - this.sampleStartIndex;
         this.indexRatio = 1;
         this.sampleDataArray = smplArr;
+        this.sampleData = new Float32Array(0);
         this.sampleLengthSeconds = this.sampleLength / (this.sampleRate * 2);
         this.loopAllowed = this.sampleLoopStartIndex !== this.sampleLoopEndIndex;
         this.isCompressed = (this.sampleType & 0x10) > 0;
@@ -198,15 +199,21 @@ export class Sample {
         });
     }
 
+    get isSampleLoaded()
+    {
+        return this.sampleData.length > 0;
+    }
+
     /**
      * creates a sample sampleData and stores it for reuse
      * @param startAddrOffset {number}
      * @param endAddrOffset {number}
-     * @returns {Float32Array}
+     * @returns {Promise<Float32Array>} The audioData
      */
      async getAudioData(startAddrOffset = 0, endAddrOffset = 0) {
-        if (!this.sampleData) {
-            this.sampleData = await this.loadBufferData(this.sampleDataArray);
+        if (!this.isSampleLoaded) {
+            // start loading data if not loaded
+            return await this.loadBufferData(this.sampleDataArray).then();
         }
         // if no offset, return saved sampleData
         if (this.sampleData && startAddrOffset === 0 && endAddrOffset === 0) {
@@ -224,8 +231,10 @@ export class Sample {
      * @returns {Promise<AudioBuffer>}
      */
     async getAudioBuffer(context, startAddrOffset, endAddrOffset) {
-        if (!this.sampleData) {
-            this.sampleData = await this.loadBufferData(this.sampleDataArray);
+        // no sample data means no buffe
+        if (!this.isSampleLoaded) {
+            //  start loading the buffer if no data
+            await this.loadBufferData(this.sampleDataArray)
 
             // if it was compressed, the length has changed
             if(this.sampleLength / 2 + 1 !== this.buffer.length)

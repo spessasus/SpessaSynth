@@ -251,12 +251,42 @@ export class WorkletChannel {
     }
 
     /**
+     * This is how the logic works: since sf3 is compressed, we rely on an async decoder.
+     * So, if the sample isn't loaded yet:
+     * send the workletVoice (generators, modulators, etc) and the WorkletSample(sampleID + end offset + loop)
+     * once the voice is done, then we dump it.
+     *
+     * on the WorkletScope side:
+     * skip the voice if sampleID isn't valid
+     * once we receive a sample dump, adjust all voice endOffsets (loop is already correct in sf3)
+     * now the voice starts playing, yay!
+     * @param sample {Sample}
+     * @param id {number}
+     */
+    dumpSample(sample, id)
+    {
+        // flag as dumped so other calls won't dump it again
+        this.dumpedSamples.add(id);
+
+        // load the data
+        sample.getAudioData().then(sampleData => {
+            this.post({
+                messageType: workletMessageType.sampleDump,
+                messageData: {
+                    sampleID: id,
+                    sampleData: sampleData
+                }
+            });
+        })
+    }
+
+    /**
      * @param midiNote {number}
      * @param velocity {number}
      * @param debug {boolean}
-     * @returns {Promise<WorkletVoice[]>}
+     * @returns {WorkletVoice[]}
      */
-    async getWorkletVoices(midiNote, velocity, debug=false)
+    getWorkletVoices(midiNote, velocity, debug=false)
     {
         /**
          * @type {WorkletVoice[]}
@@ -273,21 +303,18 @@ export class WorkletChannel {
         }
         else
         {
+            let canCache = true;
             /**
              * @returns {WorkletVoice}
              */
-            workletVoices = await Promise.all(this.preset.getSamplesAndGenerators(midiNote, velocity).map(async sampleAndGenerators => {
+            workletVoices = this.preset.getSamplesAndGenerators(midiNote, velocity).map(sampleAndGenerators => {
 
                 // dump the sample if haven't already
                 if (!this.dumpedSamples.has(sampleAndGenerators.sampleID)) {
-                    this.post({
-                        messageType: workletMessageType.sampleDump,
-                        messageData: {
-                            sampleID: sampleAndGenerators.sampleID,
-                            sampleData: await sampleAndGenerators.sample.getAudioData()
-                        }
-                    });
-                    this.dumpedSamples.add(sampleAndGenerators.sampleID);
+                    this.dumpSample(sampleAndGenerators.sample, sampleAndGenerators.sampleID);
+
+                    // can't cache the voice as the end in workletSample maybe is incorrect (the sample is still loading)
+                    canCache = false;
                 }
 
                 // create the generator list
@@ -330,7 +357,7 @@ export class WorkletChannel {
                     rootKey: rootKey,
                     loopStart: loopStart,
                     loopEnd: loopEnd,
-                    end: Math.floor(sampleAndGenerators.sample.sampleLength / 2) + (generators[generatorTypes.endAddrOffset] + (generators[generatorTypes.endAddrsCoarseOffset] * 32768)),
+                    end: Math.floor( sampleAndGenerators.sample.sampleData.length) + (generators[generatorTypes.endAddrOffset] + (generators[generatorTypes.endAddrsCoarseOffset] * 32768)),
                     loopingMode: loopingMode
                 };
 
@@ -388,10 +415,12 @@ export class WorkletChannel {
                     currentTuningCents: 0
                 };
 
-            }));
+            });
 
             // cache the voice
-            this.cachedWorkletVoices[midiNote][velocity] = workletVoices;
+            if(canCache) {
+                this.cachedWorkletVoices[midiNote][velocity] = workletVoices;
+            }
         }
         return workletVoices;
     }
@@ -402,7 +431,7 @@ export class WorkletChannel {
      * @param debug {boolean}
      * @returns {number} the number of voices that this note adds
      */
-    async playNote(midiNote, velocity, debug = false) {
+    playNote(midiNote, velocity, debug = false) {
         if(!velocity)
         {
             throw "No velocity given!";
@@ -418,7 +447,7 @@ export class WorkletChannel {
             return 0;
         }
 
-        let workletVoices = await this.getWorkletVoices(midiNote, velocity, debug);
+        let workletVoices = this.getWorkletVoices(midiNote, velocity, debug);
 
         this.post({
             messageType: workletMessageType.noteOn,
