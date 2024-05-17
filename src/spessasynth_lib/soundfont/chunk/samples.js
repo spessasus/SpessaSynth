@@ -224,6 +224,26 @@ export class Sample {
     }
 
     /**
+     * creates a sample sampleData and stores it for reuse. Note: this version ONLY SUPPORTS UNCOMPRESSED SAMPLES!
+     * @param startAddrOffset {number}
+     * @param endAddrOffset {number}
+     * @returns {Float32Array} The audioData
+     */
+    getAudioDataSync(startAddrOffset = 0, endAddrOffset = 0)
+    {
+        if (!this.isSampleLoaded) {
+            // start loading data if not loaded
+            return this.loadUncompressedData(this.sampleDataArray);
+        }
+        // if no offset, return saved sampleData
+        if (this.sampleData && startAddrOffset === 0 && endAddrOffset === 0) {
+            return this.sampleData;
+        }
+
+        return this.getOffsetData(startAddrOffset, endAddrOffset);
+    }
+
+    /**
      * Creates an audioBuffer for later reuse
      * @param context {BaseAudioContext}
      * @param startAddrOffset {number}
@@ -286,19 +306,16 @@ export class Sample {
 
     /**
      * @param smplArr {ShiftableByteArray}
-     * @returns {Promise<Float32Array>}
+     * @returns {Float32Array}
      */
-    async loadBufferData(smplArr) {
-        if (this.sampleLength < 1) {
-            // eos, do not do anything
-            return new Float32Array(1);
-        }
-
+    loadUncompressedData(smplArr)
+    {
         if(this.isCompressed)
         {
-            await this.decodeVorbis(smplArr);
-            return this.sampleData;
+            console.warn("Trying to load a compressed sample via loadUncompressedData()... aborting!");
+            return new Float32Array(0);
         }
+
         // read the sample data
         let audioData = new Float32Array(this.sampleLength / 2 + 1);
         const dataStartIndex = smplArr.currentIndex;
@@ -312,7 +329,27 @@ export class Sample {
         {
             audioData[i] = convertedSigned16[i] / 32768;
         }
+
+        this.sampleData = audioData;
         return audioData;
+    }
+
+    /**
+     * @param smplArr {ShiftableByteArray}
+     * @returns {Promise<Float32Array>}
+     */
+    async loadBufferData(smplArr) {
+        if (this.sampleLength < 1) {
+            // eos, do not do anything
+            return new Float32Array(1);
+        }
+
+        if(this.isCompressed)
+        {
+            await this.decodeVorbis(smplArr);
+            return this.sampleData;
+        }
+        return this.loadUncompressedData(smplArr);
     }
 
     /**

@@ -2,7 +2,7 @@ import { Preset } from '../../soundfont/chunk/presets.js'
 import { consoleColors } from '../../utils/other.js'
 import { modulatorSources } from '../../soundfont/chunk/modulators.js'
 import { midiControllers } from '../../midi_parser/midi_message.js'
-import { addAndClampGenerator, generatorTypes } from '../../soundfont/chunk/generators.js'
+import { getWorkletVoices } from './worklet_utilities/worklet_voice.js'
 const CHANNEL_GAIN = 0.5;
 
 export const NON_CC_INDEX_OFFSET = 128;
@@ -54,7 +54,6 @@ export const workletMessageType = {
  * 9 - kill notes         -> amount<number>
  */
 
-
 export class WorkletChannel {
     /**
      * creates a midi channel
@@ -82,8 +81,6 @@ export class WorkletChannel {
 
         this.preset = defaultPreset;
         this.bank = this.preset.bank;
-        this.channelVolume = 1;
-        this.channelExpression = 1;
 
         this.channelTuningSemitones = 0;
 
@@ -251,181 +248,6 @@ export class WorkletChannel {
     }
 
     /**
-     * This is how the logic works: since sf3 is compressed, we rely on an async decoder.
-     * So, if the sample isn't loaded yet:
-     * send the workletVoice (generators, modulators, etc) and the WorkletSample(sampleID + end offset + loop)
-     * once the voice is done, then we dump it.
-     *
-     * on the WorkletScope side:
-     * skip the voice if sampleID isn't valid
-     * once we receive a sample dump, adjust all voice endOffsets (loop is already correct in sf3)
-     * now the voice starts playing, yay!
-     * @param sample {Sample}
-     * @param id {number}
-     */
-    dumpSample(sample, id)
-    {
-        // flag as dumped so other calls won't dump it again
-        this.dumpedSamples.add(id);
-
-        // load the data
-        sample.getAudioData().then(sampleData => {
-            this.post({
-                messageType: workletMessageType.sampleDump,
-                messageData: {
-                    sampleID: id,
-                    sampleData: sampleData
-                }
-            });
-        })
-    }
-
-    /**
-     * @param midiNote {number}
-     * @param velocity {number}
-     * @param debug {boolean}
-     * @returns {WorkletVoice[]}
-     */
-    getWorkletVoices(midiNote, velocity, debug=false)
-    {
-        /**
-         * @type {WorkletVoice[]}
-         */
-        let workletVoices;
-
-        const cached = this.cachedWorkletVoices[midiNote][velocity];
-        if(cached)
-        {
-            workletVoices = cached;
-            workletVoices.forEach(v => {
-                v.startTime = this.ctx.currentTime;
-            });
-        }
-        else
-        {
-            let canCache = true;
-            /**
-             * @returns {WorkletVoice}
-             */
-            workletVoices = this.preset.getSamplesAndGenerators(midiNote, velocity).map(sampleAndGenerators => {
-
-                // dump the sample if haven't already
-                if (!this.dumpedSamples.has(sampleAndGenerators.sampleID)) {
-                    this.dumpSample(sampleAndGenerators.sample, sampleAndGenerators.sampleID);
-
-                    // can't cache the voice as the end in workletSample maybe is incorrect (the sample is still loading)
-                    canCache = false;
-                }
-
-                // create the generator list
-                const generators = new Int16Array(60);
-                // apply and sum the gens
-                for (let i = 0; i < 60; i++) {
-                    generators[i] = addAndClampGenerator(i, sampleAndGenerators.presetGenerators, sampleAndGenerators.instrumentGenerators);
-                }
-
-                // !! EMU initial attenuation correction, multiply initial attenuation by 0.4
-                generators[generatorTypes.initialAttenuation] = Math.floor(generators[generatorTypes.initialAttenuation] * 0.4);
-
-                // key override
-                let rootKey = sampleAndGenerators.sample.samplePitch;
-                if (generators[generatorTypes.overridingRootKey] > -1) {
-                    rootKey = generators[generatorTypes.overridingRootKey];
-                }
-
-                let targetKey = midiNote;
-                if (generators[generatorTypes.keyNum] > -1) {
-                    targetKey = generators[generatorTypes.keyNum];
-                }
-
-                // determine looping mode now. if the loop is too small, disable
-                const loopStart = (sampleAndGenerators.sample.sampleLoopStartIndex / 2) + (generators[generatorTypes.startloopAddrsOffset] + (generators[generatorTypes.startloopAddrsCoarseOffset] * 32768));
-                const loopEnd = (sampleAndGenerators.sample.sampleLoopEndIndex / 2) + (generators[generatorTypes.endloopAddrsOffset] + (generators[generatorTypes.endloopAddrsCoarseOffset] * 32768));
-                let loopingMode = generators[generatorTypes.sampleModes];
-                if (loopEnd - loopStart < 1) {
-                    loopingMode = 0;
-                }
-                // determine end
-                /**
-                 * create the worklet sample
-                 * @type {WorkletSample}
-                 */
-                const workletSample = {
-                    sampleID: sampleAndGenerators.sampleID,
-                    playbackStep: (sampleAndGenerators.sample.sampleRate / this.ctx.sampleRate) * Math.pow(2, sampleAndGenerators.sample.samplePitchCorrection / 1200),// cent tuning
-                    cursor: generators[generatorTypes.startAddrsOffset] + (generators[generatorTypes.startAddrsCoarseOffset] * 32768),
-                    rootKey: rootKey,
-                    loopStart: loopStart,
-                    loopEnd: loopEnd,
-                    end: Math.floor( sampleAndGenerators.sample.sampleData.length) - 1 + (generators[generatorTypes.endAddrOffset] + (generators[generatorTypes.endAddrsCoarseOffset] * 32768)),
-                    loopingMode: loopingMode
-                };
-
-
-                // velocity override
-                if (generators[generatorTypes.velocity] > -1) {
-                    velocity = generators[generatorTypes.velocity];
-                }
-
-                if(debug)
-                {
-                    console.table([{
-                            Sample: sampleAndGenerators.sample,
-                            Generators: generators,
-                            Modulators: sampleAndGenerators.modulators.map(m => m.debugString()),
-                            Velocity: velocity,
-                            TargetKey: targetKey,
-                            MidiNote: midiNote,
-                            WorkletSample: workletSample
-                        }]);
-                }
-
-                return {
-                    filter: {
-                        a0: 0,
-                        a1: 0,
-                        a2: 0,
-                        a3: 0,
-                        a4: 0,
-
-                        x1: 0,
-                        x2: 0,
-                        y1: 0,
-                        y2: 0,
-                        reasonanceCb: 0,
-                        reasonanceGain: 1,
-                        cutoffCents: 13500,
-                        cutoffHz: 20000
-                    },
-                    generators: generators,
-                    modulatedGenerators: new Int16Array(60),
-                    sample: workletSample,
-                    modulators: sampleAndGenerators.modulators,
-                    finished: false,
-                    velocity: velocity,
-                    currentAttenuationDb: 100,
-                    currentModEnvValue: 0,
-                    releaseStartModEnv: 1,
-                    midiNote: midiNote,
-                    startTime: this.ctx.currentTime,
-                    isInRelease: false,
-                    releaseStartTime: -1,
-                    targetKey: targetKey,
-                    currentTuningCalculated: 1,
-                    currentTuningCents: 0
-                };
-
-            });
-
-            // cache the voice
-            if(canCache) {
-                this.cachedWorkletVoices[midiNote][velocity] = workletVoices;
-            }
-        }
-        return workletVoices;
-    }
-
-    /**
      * @param midiNote {number} 0-127
      * @param velocity {number} 0-127
      * @param debug {boolean}
@@ -446,8 +268,7 @@ export class WorkletChannel {
         {
             return 0;
         }
-
-        let workletVoices = this.getWorkletVoices(midiNote, velocity, debug);
+        let workletVoices = getWorkletVoices(midiNote, velocity, this.preset, this.dumpedSamples, this.ctx, this.worklet.port, this.cachedWorkletVoices, debug);
 
         this.post({
             messageType: workletMessageType.noteOn,
