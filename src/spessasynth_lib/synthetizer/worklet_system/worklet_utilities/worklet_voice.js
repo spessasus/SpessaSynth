@@ -241,7 +241,7 @@ export function getWorkletVoices(midiNote, velocity, preset, dumpedSamples, cont
                 midiNote: midiNote,
                 startTime: context.currentTime,
                 isInRelease: false,
-                releaseStartTime: -1,
+                releaseStartTime: Infinity,
                 targetKey: targetKey,
                 currentTuningCalculated: 1,
                 currentTuningCents: 0
