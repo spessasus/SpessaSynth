@@ -43,9 +43,10 @@ export function readByte(dataArray){
  * @param dataArray {ShiftableByteArray}
  * @param bytes {number}
  * @param encoding {string} the textElement encoding
+ * @param trimEnd {boolean} if we should trim once we reach an invalid byte
  * @returns {string}
  */
-export function readBytesAsString(dataArray, bytes, encoding=undefined){
+export function readBytesAsString(dataArray, bytes, encoding=undefined, trimEnd=true){
     if(!encoding) {
         let finished = false;
         let string = "";
@@ -53,8 +54,18 @@ export function readBytesAsString(dataArray, bytes, encoding=undefined){
             let byte = readByte(dataArray);
             if(byte < 32 || byte > 127 || finished)
             {
-                finished = true;
-                continue;
+                if(trimEnd) {
+                    finished = true;
+                    continue;
+                }
+                else
+                {
+                    if(byte === 0)
+                    {
+                        finished = true;
+                        continue;
+                    }
+                }
             }
             string += String.fromCharCode(byte);
         }

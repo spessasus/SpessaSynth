@@ -143,7 +143,7 @@ export class Sample {
             });
         } catch (e) {
             console.warn(`Error creating an audio buffer for ${this.sampleName}! Resampling the sample from ${this.sampleRate} to ${FIX_SAMPLERATE} to fix...`);
-            this.loadBufferData(smplArr).then(arr => {
+            this.loadBufferData().then(arr => {
                 /**
                  * @type {Float32Array}
                  */
@@ -236,7 +236,7 @@ export class Sample {
      async getAudioData(startAddrOffset = 0, endAddrOffset = 0) {
         if (!this.isSampleLoaded) {
             // start loading data if not loaded
-            return await this.loadBufferData(this.sampleDataArray);
+            return await this.loadBufferData();
         }
         // if no offset, return saved sampleData
         if (this.sampleData && startAddrOffset === 0 && endAddrOffset === 0) {
@@ -277,7 +277,7 @@ export class Sample {
         // no sample data means no buffe
         if (!this.isSampleLoaded) {
             //  start loading the buffer if no data
-            await this.loadBufferData(this.sampleDataArray)
+            await this.loadBufferData()
 
             // if it was compressed, the length has changed
             if(this.sampleLength / 2 + 1 !== this.buffer.length)
@@ -359,10 +359,9 @@ export class Sample {
     }
 
     /**
-     * @param smplArr {ShiftableByteArray}
      * @returns {Promise<Float32Array>}
      */
-    async loadBufferData(smplArr) {
+    async loadBufferData() {
         if (this.sampleLength < 1) {
             // eos, do not do anything
             return new Float32Array(1);
@@ -370,11 +369,11 @@ export class Sample {
 
         if(this.isCompressed)
         {
-            await this.decodeVorbis(smplArr);
+            await this.decodeVorbis(this.sampleDataArray);
             this.isSampleLoaded = true;
             return this.sampleData;
         }
-        return this.loadUncompressedData(smplArr);
+        return this.loadUncompressedData(this.sampleDataArray);
     }
 
     /**

@@ -51,6 +51,26 @@ export class Preset {
     }
 
     /**
+     * Preloads all samples (async)
+     */
+    preload(keyMin, keyMax)
+    {
+        for (let key = keyMin; key < keyMax + 1; key++)
+        {
+            for (let velocity = 0; velocity < 128; velocity++)
+            {
+                setTimeout(() => {
+                    this.getSamplesAndGenerators(key, velocity).forEach(samandgen => {
+                        if(!samandgen.sample.isSampleLoaded) {
+                            samandgen.sample.loadBufferData().then();
+                        }
+                    })
+                });
+            }
+        }
+    }
+
+    /**
      * @typedef {{
      *  instrumentGenerators: Generator[],
      *  presetGenerators: Generator[],

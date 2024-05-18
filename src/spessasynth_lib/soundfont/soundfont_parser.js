@@ -49,13 +49,18 @@ export class SoundFont2
             let chunk = readRIFFChunk(infoChunk.chunkData);
             let text;
             // special case: ifil
-            if(chunk.header === "ifil")
+            switch (chunk.header.toLowerCase())
             {
-                text = `${readBytesAsUintLittleEndian(chunk.chunkData, 2)}.${readBytesAsUintLittleEndian(chunk.chunkData, 2)}`;
-            }
-            else
-            {
-                text = readBytesAsString(chunk.chunkData, chunk.chunkData.length);
+                case  "ifil":
+                    text = `${readBytesAsUintLittleEndian(chunk.chunkData, 2)}.${readBytesAsUintLittleEndian(chunk.chunkData, 2)}`;
+                    break;
+
+                case "icmt":
+                    text = readBytesAsString(chunk.chunkData, chunk.chunkData.length, undefined, false);
+                    break;
+
+                default:
+                    text = readBytesAsString(chunk.chunkData, chunk.chunkData.length);
             }
 
             console.log(`%c"${chunk.header}": %c"${text}"`,
@@ -119,8 +124,7 @@ export class SoundFont2
          * (the current index points to start of the smpl chunk)
          */
         this.dataArray.currentIndex = this.sampleDataStartIndex
-        let samples = readSamples(presetSamplesChunk, this.dataArray);
-        this.samples = samples;
+        this.samples = readSamples(presetSamplesChunk, this.dataArray);
 
         /**
          * read all the instrument generators
@@ -141,7 +145,7 @@ export class SoundFont2
         let instrumentZones = readInstrumentZones(presetInstrumentZonesChunk,
             instrumentGenerators,
             instrumentModulators,
-            samples);
+            this.samples);
 
         /**
          * read all the instruments
@@ -169,8 +173,9 @@ export class SoundFont2
          */
         this.presets = readPresets(presetHeadersChunk, presetZones);
         this.presets.sort((a, b) => (a.program - b.program) + (a.bank - b.bank));
+        // preload the first preset
         console.log(`%cParsing finished! %c"${this.soundFontInfo["INAM"]}"%c has %c${this.presets.length} %cpresets,
-        %c${instruments.length}%c instruments and %c${samples.length}%c samples.`,
+        %c${instruments.length}%c instruments and %c${this.samples.length}%c samples.`,
             consoleColors.info,
             consoleColors.recognized,
             consoleColors.info,
