@@ -235,8 +235,13 @@ export class Settings
         // find the correct option for the size
         keyboardControls.sizeSelector.value = Object.keys(this.keyboardSizes)
             .find(size => this.keyboardSizes[size].min === keyboardValues.keyRange.min && this.keyboardSizes[size].max === keyboardValues.keyRange.max);
-        keyboard.mode = keyboardValues.mode;
+        // keyboard theme
+        if(keyboardValues.mode === "dark")
+        {
+            keyboard.toggleMode();
+        }
         keyboardControls.modeSelector.innerText = keyboardValues.mode === "dark" ? "Mode: Black" : "Mode: White";
+
 
         // interface
         if(savedSettings.interface.mode === "light")
