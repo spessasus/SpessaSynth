@@ -1,6 +1,7 @@
 import { Synthetizer } from '../synthetizer/synthetizer.js'
 import { consoleColors } from '../utils/other.js';
 
+const NO_INPUT = null;
 
 export class MIDIDeviceHandler
 {
@@ -8,6 +9,14 @@ export class MIDIDeviceHandler
     {}
     async createMIDIDeviceHandler()
     {
+        /**
+         * @type {MIDIInput}
+         */
+        this.selectedInput = NO_INPUT;
+        /**
+         * @type {MIDIOutput}
+         */
+        this.selectedOutput = NO_INPUT;
         if(navigator.requestMIDIAccess) {
             // prepare the midi access
             try
@@ -37,6 +46,7 @@ export class MIDIDeviceHandler
      */
     connectMIDIOutputToSeq(output, seq)
     {
+        this.selectedOutput = output;
         seq.connectMidiOutput(output);
         console.log(`%cPlaying MIDI to %c${output.name}`,
             consoleColors.info,
@@ -49,6 +59,7 @@ export class MIDIDeviceHandler
      */
     disconnectSeqFromMIDI(seq)
     {
+        this.selectedOutput = NO_INPUT;
         seq.connectMidiOutput(undefined);
         console.log("%cDisconnected from MIDI out.",
             consoleColors.info);
@@ -61,6 +72,7 @@ export class MIDIDeviceHandler
      */
     connectDeviceToSynth(input, synth)
     {
+        this.selectedInput = input;
         input.onmidimessage = event => {
             synth.sendMessage(event.data);
         }
@@ -74,6 +86,7 @@ export class MIDIDeviceHandler
      */
     disconnectDeviceFromSynth(input)
     {
+        this.selectedInput = NO_INPUT;
         input.onmidimessage = undefined;
         console.log(`%cDisconnected from %c${input.name}`,
             consoleColors.info,
@@ -82,6 +95,7 @@ export class MIDIDeviceHandler
 
     disconnectAllDevicesFromSynth()
     {
+        this.selectedInput = NO_INPUT;
         for(const i of this.inputs)
         {
             i[1].onmidimessage = undefined;

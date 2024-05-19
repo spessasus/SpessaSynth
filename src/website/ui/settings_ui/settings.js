@@ -1,5 +1,9 @@
 import { settingsHtml } from './settings_html.js'
 import { getDownArrowSvg, getGearSvg } from '../icons.js'
+
+/**
+ * @typedef {{keyboard: {keyRange: {min: number, max: number}, mode: ("light"|"dark"), selectedChannel: number}, renderer: {renderNotes: boolean, keyRange: {min: number, max: number}, noteFallingTimeMs: number, renderWaveforms: boolean, drawActiveNotes: boolean, amplifier: number, showVisualPitch: boolean, sampleSize: number, waveformThickness: number}, midi: {output: (null|string), input: (null|string)}, interface: {mode: ("light"|"dark")}}} SavedSettings
+ */
 export class Settings
 {
     /**
@@ -20,6 +24,16 @@ export class Settings
                 midiDeviceHandler,
                 playerInfo) {
         this.mode = "dark";
+        this.renderer = renderer;
+        this.midiKeyboard = midiKeyboard;
+        this.midiDeviceHandler = midiDeviceHandler;
+        this.synthui = sythui;
+        this.sequi = sequi;
+        this.keyboardSizes = {
+            "full": { min: 0, max: 127 },
+            "piano": { min: 21, max: 108 },
+            "5 octaves": { min: 36, max: 96 }
+        };
 
         const settingsButton = document.createElement("div");
         settingsButton.style.position = "relative";
@@ -92,6 +106,36 @@ export class Settings
         // load the html
         this.mainDiv.innerHTML = settingsHtml;
 
+        // get the html controllers
+        this.htmlControls = {
+            renderer: {
+                noteTimeSlider: document.getElementById("note_time_slider"),
+                analyserToggler: document.getElementById("analyser_toggler"),
+                noteToggler:  document.getElementById("note_toggler"),
+                activeNoteToggler: document.getElementById("active_note_toggler"),
+                visualPitchToggler: document.getElementById("visual_pitch_toggler"),
+
+                analyserThicknessSlider: document.getElementById("analyser_thickness_slider"),
+                analyserFftSlider: document.getElementById("analyser_fft_slider"),
+                waveMultiplierSlizer: document.getElementById("wave_multiplier_slider"),
+            },
+
+            keyboard: {
+                channelSelector: document.getElementById("channel_selector"),
+                modeSelector: document.getElementById("mode_selector"),
+                sizeSelector: document.getElementById("keyboard_size_selector"),
+            },
+
+            midi: {
+                outputSelector: document.getElementById("midi_output_selector"),
+                inputSelector: document.getElementById("midi_input_selector")
+            },
+
+            interface: {
+                themeSelector: document.getElementById("toggle_mode_button")
+            }
+        }
+
         // create handlers for all settings
         this._createRendererHandler(renderer);
 
@@ -100,11 +144,8 @@ export class Settings
             sequi,
             sythui);
 
-        this._createKeyboardHandler(document.getElementById("channel_selector"),
-            midiKeyboard,
+        this._createKeyboardHandler(midiKeyboard,
             sythui,
-            document.getElementById("mode_selector"),
-            document.getElementById("keyboard_size_selector"),
             renderer
         );
 
@@ -120,45 +161,190 @@ export class Settings
                 this.mainDiv.classList.toggle("settings_menu_show");
             }
         })
+
+        // if window.savedSettings exists, load it
+        if(window.savedSettings)
+        {
+            this._loadSettings().then();
+        }
     }
 
     /**
-     * @param synthui {SynthetizerUI}
-     * @param sequi {SequencerUI}
-     * @param renderer {Renderer}
      * @private
      */
-    _createInterfaceSettingsHandler(synthui, sequi, renderer)
+    async _loadSettings()
     {
-        const button = document.getElementById("toggle_mode_button");
+        /**
+         * @type {SavedSettings}
+         */
+        const savedSettings = await window.savedSettings;
+
+        // renderer
+        const rendererControls = this.htmlControls.renderer;
+        const renderer = this.renderer;
+        const rendererValues = savedSettings.renderer;
+        // note falling time
+        renderer.noteFallingTimeMs = rendererValues.noteFallingTimeMs;
+        rendererControls.noteTimeSlider.value = rendererValues.noteFallingTimeMs;
+        rendererControls.noteTimeSlider.nextElementSibling.innerText = `${rendererValues.noteFallingTimeMs}ms`
+
+        // waveform line thickness
+        rendererControls.analyserThicknessSlider.value = rendererValues.waveformThickness
+        renderer.lineThickness = rendererValues.waveformThickness;
+        rendererControls.analyserThicknessSlider.nextElementSibling.innerText = `${rendererValues.waveformThickness}px`;
+
+        // fft size (sample size)
+        let value = rendererValues.sampleSize;
+        // Math.pow(2, parseInt(rendererControls.analyserFftSlider.value)); we need to invert this
+        rendererControls.analyserFftSlider.value = Math.log2(value);
+        renderer.normalAnalyserFft = value;
+        renderer.drumAnalyserFft = Math.pow(2, Math.min(15, Math.log2(value) + 2));
+        rendererControls.analyserFftSlider.nextElementSibling.innerText = `${value}`;
+
+        // wave multiplier
+        renderer.waveMultiplier = rendererValues.amplifier;
+        rendererControls.waveMultiplierSlizer.value = rendererValues.amplifier;
+        rendererControls.waveMultiplierSlizer.nextElementSibling.innerText = rendererValues.amplifier;
+
+        // render waveforms
+        renderer.renderAnalysers = rendererValues.renderWaveforms;
+
+        // render notes
+        renderer.renderNotes = rendererValues.renderNotes;
+
+        // render active notes effect
+        renderer.drawActiveNotes = rendererValues.drawActiveNotes;
+
+        // show visual pitch
+        renderer.showVisualPitch = rendererValues.showVisualPitch;
+
+        // keyboard size
+        renderer.keyRange = rendererValues.keyRange;
+
+        // keyboard
+        const keyboardControls = this.htmlControls.keyboard;
+        const keyboard = this.midiKeyboard;
+        const keyboardValues = savedSettings.keyboard;
+
+        // selected channel
+        keyboard.selectChannel(keyboardValues.selectedChannel);
+        keyboardControls.channelSelector.value = keyboardValues.selectedChannel;
+
+        // keyboard size
+        keyboard.keyRange = keyboardValues.keyRange;
+        // find the correct option for the size
+        keyboardControls.sizeSelector.value = Object.keys(this.keyboardSizes)
+            .find(size => this.keyboardSizes[size].min === keyboardValues.keyRange.min && this.keyboardSizes[size].max === keyboardValues.keyRange.max);
+        keyboard.mode = keyboardValues.mode;
+        keyboardControls.modeSelector.innerText = keyboardValues.mode === "dark" ? "Mode: Black" : "Mode: White";
+
+        // interface
+        if(savedSettings.interface.mode === "light")
+        {
+            this._toggleDarkMode();
+            this.htmlControls.interface.themeSelector.innerText = "Mode: Light";
+        }
+    }
+
+
+
+    // if window.saveSettings function is exposed, call it with _serializeSettings
+    _saveSettings()
+    {
+        if(window.saveSettings)
+        {
+            window.saveSettings(this._serializeSettings());
+        }
+    }
+
+    /**
+     * Serializes settings into a nice object
+     * @private
+     * @returns {SavedSettings}
+     */
+    _serializeSettings()
+    {
+        return {
+            renderer: {
+                noteFallingTimeMs: this.renderer.noteFallingTimeMs,
+                waveformThickness: this.renderer.lineThickness,
+                sampleSize: this.renderer.normalAnalyserFft,
+                amplifier: this.renderer.waveMultiplier,
+                renderWaveforms:  this.renderer.renderNotes,
+                renderNotes: this.renderer.renderNotes,
+                drawActiveNotes: this.renderer.drawActiveNotes,
+                showVisualPitch: this.renderer.showVisualPitch,
+                keyRange: this.renderer.keyRange
+            },
+
+            keyboard: {
+                selectedChannel: this.midiKeyboard.channel,
+                keyRange: this.midiKeyboard.keyRange,
+                mode: this.midiKeyboard.mode
+            },
+
+            midi: {
+                input: this.midiDeviceHandler.selectedInput === null ? null : this.midiDeviceHandler.selectedInput.name,
+                output: this.midiDeviceHandler.selectedOutput === null ? null: this.midiDeviceHandler.selectedOutput.name
+            },
+
+            interface: {
+                mode: this.mode
+            }
+        }
+    }
+
+    /**
+     *
+     * @private
+     */
+    _toggleDarkMode()
+    {
+        if(this.mode === "dark")
+        {
+            this.mode = "light";
+            this.renderer.drawActiveNotes = false;
+        }
+        else
+        {
+            this.renderer.drawActiveNotes = true;
+            this.mode = "dark";
+
+        }
+        this.renderer.toggleDarkMode();
+        this.synthui.toggleDarkMode();
+        this.sequi.toggleDarkMode()
+
+        // top part
+        document.getElementsByClassName("top_part")[0].classList.toggle("top_part_light");
+
+        // settings
+        this.mainDiv.classList.toggle("settings_menu_light");
+
+        // rest
+        // things get hacky here: change the global (*) --font-color to black:
+        document.styleSheets[0].cssRules[5].style.setProperty("--font-color",  this.mode === "dark" ? "#eee" : "#333");
+        document.styleSheets[0].cssRules[5].style.setProperty("--top-buttons-color",  this.mode === "dark" ? "linear-gradient(201deg, #222, #333)" : "linear-gradient(270deg, #ddd, #fff)");
+        document.body.style.background = this.mode === "dark" ? "black" : "white";
+    }
+
+    /**
+     * @private
+     */
+    _createInterfaceSettingsHandler()
+    {
+        const button = this.htmlControls.interface.themeSelector;
         button.onclick = () => {
-            if(button.innerText === "Mode: Dark")
+            if(this.mode === "dark")
             {
-                this.mode = "light";
                 button.innerText = "Mode: Light";
-                renderer.drawActiveNotes = false;
             }
             else
             {
-                renderer.drawActiveNotes = true;
-                this.mode = "dark";
                 button.innerText = "Mode: Dark";
             }
-            renderer.toggleDarkMode();
-            synthui.toggleDarkMode();
-            sequi.toggleDarkMode()
-
-            // top part
-            document.getElementsByClassName("top_part")[0].classList.toggle("top_part_light");
-
-            // settings
-            this.mainDiv.classList.toggle("settings_menu_light");
-
-            // rest
-            // things get hacky here: change the global (*) --font-color to black:
-            document.styleSheets[0].cssRules[5].style.setProperty("--font-color",  this.mode === "dark" ? "#eee" : "#333");
-            document.styleSheets[0].cssRules[5].style.setProperty("--top-buttons-color",  this.mode === "dark" ? "#222" : "linear-gradient(270deg, #ddd, #fff)");
-            document.body.style.background = this.mode === "dark" ? "black" : "white";
+            this._toggleDarkMode();
+            this._saveSettings();
         }
     }
 
@@ -171,18 +357,17 @@ export class Settings
     _createMidiSettingsHandler(handler, sequi, synthui)
     {
         handler.createMIDIDeviceHandler().then(() => {
-            this._createMidiInputHandler(document.getElementById("midi_input_selector"), handler, synthui.synth);
-            this._createMidiOutputHandler(document.getElementById("midi_output_selector"), handler, sequi);
+            this._createMidiInputHandler(handler, synthui.synth);
+            this._createMidiOutputHandler(handler, sequi);
         });
     }
 
     /**
-     * @param select {HTMLSelectElement}
      * @param handler {MIDIDeviceHandler}
      * @param synth {Synthetizer}
      * @private
      */
-    _createMidiInputHandler(select, handler, synth)
+    _createMidiInputHandler(handler, synth)
     {
         // input selector
         if(handler.inputs.length < 1)
@@ -190,6 +375,7 @@ export class Settings
             return;
         }
         // no device
+        const select = this.htmlControls.midi.inputSelector;
         select.innerHTML = "<option value='-1' selected>Disabled</option>";
         for(const input of handler.inputs)
         {
@@ -207,22 +393,22 @@ export class Settings
             {
                 handler.connectDeviceToSynth(handler.inputs.get(select.value), synth);
             }
+            this._saveSettings();
         }
     }
 
     /**
      * note that using sequi allows us to obtain the sequencer after it has been created
-     * @param select {HTMLSelectElement}
      * @param handler {MIDIDeviceHandler}
      * @param sequi {SequencerUI}
      * @private
      */
-    _createMidiOutputHandler(select, handler, sequi)
+    _createMidiOutputHandler(handler, sequi)
     {
         if(!handler.outputs)
         {
             setTimeout(() => {
-                this._createMidiOutputHandler(select, handler, sequi);
+                this._createMidiOutputHandler(handler, sequi);
             }, 1000);
             return;
         }
@@ -230,6 +416,7 @@ export class Settings
         {
             return;
         }
+        const select = this.htmlControls.midi.outputSelector;
         // no device
         select.innerHTML = "<option value='-1' selected>Use SpessaSynth</option>";
         for(const output of handler.outputs)
@@ -253,22 +440,22 @@ export class Settings
             {
                 handler.connectMIDIOutputToSeq(handler.outputs.get(select.value), sequi.seq);
             }
+            this._saveSettings();
         }
     }
 
     /**
      * The channel colors are taken from synthui
-     * @param select {HTMLSelectElement}
      * @param keyboard {MidiKeyboard}
      * @param synthui {SynthetizerUI}
-     * @param button {HTMLButtonElement}
-     * @param sizeSelector {HTMLSelectElement}
      * @param renderer {Renderer}
      * @private
      */
-    _createKeyboardHandler(select, keyboard, synthui, button, sizeSelector, renderer)
+    _createKeyboardHandler( keyboard, synthui, renderer)
     {
         let channelNumber = 0;
+
+        const keyboardControls = this.htmlControls.keyboard;
 
         function createChannel()
         {
@@ -280,7 +467,7 @@ export class Settings
             option.style.background = synthui.channelColors[channelNumber % synthui.channelColors.length];
             option.style.color = "rgb(0, 0, 0)";
 
-            select.appendChild(option);
+            keyboardControls.channelSelector.appendChild(option);
             channelNumber++;
         }
 
@@ -289,31 +476,15 @@ export class Settings
         {
             createChannel();
         }
-        select.onchange = () => {
-            keyboard.selectChannel(parseInt(select.value));
+        keyboardControls.channelSelector.onchange = () => {
+            keyboard.selectChannel(parseInt(keyboardControls.channelSelector.value));
+            this._saveSettings();
         }
 
-        sizeSelector.onchange = () => {
-            switch (sizeSelector.value)
-            {
-                default:
-                    break;
-
-                case "full":
-                    keyboard.keyRange = {min: 0, max: 127};
-                    renderer.keyRange = {min: 0, max: 127};
-                    break;
-
-                case "piano":
-                    keyboard.keyRange = {min: 21, max: 108};
-                    renderer.keyRange = {min: 21, max: 108};
-                    break;
-
-                case "5 octaves":
-                    keyboard.keyRange = {min: 36, max: 96};
-                    renderer.keyRange = {min: 36, max: 96};
-
-            }
+        keyboardControls.sizeSelector.onchange = () => {
+            keyboard.keyRange = this.keyboardSizes[keyboardControls.sizeSelector.value];
+            renderer.keyRange = this.keyboardSizes[keyboardControls.sizeSelector.value];
+            this._saveSettings();
         }
 
         // listen for new channels
@@ -322,16 +493,17 @@ export class Settings
         });
 
         // dark mode toggle
-        button.onclick = () => {
+        keyboardControls.modeSelector.onclick = () => {
             keyboard.toggleMode();
-            if(button.innerText === "Mode: Black")
+            if(keyboardControls.modeSelector.innerText === "Mode: Black")
             {
-                button.innerText = "Mode: White";
+                keyboardControls.modeSelector.innerText = "Mode: White";
             }
             else
             {
-                button.innerText = "Mode: Black";
+                keyboardControls.modeSelector.innerText = "Mode: Black";
             }
+            this._saveSettings();
         }
     }
 
@@ -341,41 +513,61 @@ export class Settings
      */
     _createRendererHandler(renderer)
     {
-        const slider = document.getElementById("note_time_slider");
-        const analyser = document.getElementById("analyser_toggler");
-        const note =  document.getElementById("note_toggler");
-        const activeNote = document.getElementById("active_note_toggler");
-        const visualPitch = document.getElementById("visual_pitch_toggler");
+        const rendererControls = this.htmlControls.renderer;
 
-        const analyserSlider = document.getElementById("analyser_thickness_slider");
-        const fftSlider = document.getElementById("analyser_fft_slider");
-        const waveMultiplierSlider = document.getElementById("wave_multiplier_slider");
-
-        slider.oninput = () => {
-            renderer.noteFallingTimeMs = slider.value;
-            slider.nextElementSibling.innerText = `${slider.value}ms`
+        // note falling time
+        rendererControls.noteTimeSlider.oninput = () => {
+            renderer.noteFallingTimeMs = rendererControls.noteTimeSlider.value;
+            rendererControls.noteTimeSlider.nextElementSibling.innerText = `${rendererControls.noteTimeSlider.value}ms`
         }
+        // bind to onchange instead of oniinput to prevent spam
+        rendererControls.noteTimeSlider.onchange = () => { this._saveSettings(); }
 
-        analyserSlider.oninput = () => {
-            renderer.lineThickness = parseInt(analyserSlider.value);
-            analyserSlider.nextElementSibling.innerText = `${analyserSlider.value}px`;
+        // waveform line thickness
+        rendererControls.analyserThicknessSlider.oninput = () => {
+            renderer.lineThickness = parseInt(rendererControls.analyserThicknessSlider.value);
+            rendererControls.analyserThicknessSlider.nextElementSibling.innerText = `${rendererControls.analyserThicknessSlider.value}px`;
         }
+        rendererControls.analyserThicknessSlider.onchange = () => { this._saveSettings(); }
 
-        fftSlider.oninput = () => {
-            let value = Math.pow(2, parseInt(fftSlider.value));
+        // fft size (sample size)
+        rendererControls.analyserFftSlider.oninput = () => {
+            let value = Math.pow(2, parseInt(rendererControls.analyserFftSlider.value));
             renderer.normalAnalyserFft = value;
-            renderer.drumAnalyserFft = Math.pow(2, Math.min(15, parseInt(fftSlider.value) + 2));
-            fftSlider.nextElementSibling.innerText = `${value}`;
+            renderer.drumAnalyserFft = Math.pow(2, Math.min(15, parseInt(rendererControls.analyserFftSlider.value) + 2));
+            rendererControls.analyserFftSlider.nextElementSibling.innerText = `${value}`;
         }
+        rendererControls.analyserFftSlider.onchange = () => { this._saveSettings(); }
 
-        waveMultiplierSlider.oninput = () => {
-            renderer.waveMultiplier = parseInt(waveMultiplierSlider.value);
-            waveMultiplierSlider.nextElementSibling.innerText = waveMultiplierSlider.value;
+        // wave multiplier
+        rendererControls.waveMultiplierSlizer.oninput = () => {
+            renderer.waveMultiplier = parseInt(rendererControls.waveMultiplierSlizer.value);
+            rendererControls.waveMultiplierSlizer.nextElementSibling.innerText = rendererControls.waveMultiplierSlizer.value;
         }
+        rendererControls.waveMultiplierSlizer.onchange = () => { this._saveSettings(); }
 
-        analyser.onclick = () => renderer.renderAnalysers = !renderer.renderAnalysers;
-        note.onclick = () => renderer.renderNotes = !renderer.renderNotes;
-        activeNote.onclick = () => renderer.drawActiveNotes = !renderer.drawActiveNotes;
-        visualPitch.onclick = () => renderer.showVisualPitch = !renderer.showVisualPitch;
+        // render waveforms
+        rendererControls.analyserToggler.onclick = () => {
+            renderer.renderAnalysers = !renderer.renderAnalysers;
+            this._saveSettings()
+        };
+
+        // render notes
+        rendererControls.noteToggler.onclick = () => {
+            renderer.renderNotes = !renderer.renderNotes;
+            this._saveSettings()
+        };
+
+        // render active notes effect
+        rendererControls.activeNoteToggler.onclick = () => {
+            renderer.drawActiveNotes = !renderer.drawActiveNotes;
+            this._saveSettings()
+        };
+
+        // show visual pitch
+        rendererControls.visualPitchToggler.onclick = () => {
+            renderer.showVisualPitch = !renderer.showVisualPitch;
+            this._saveSettings();
+        };
     }
 }

@@ -243,7 +243,13 @@ fetch("soundfonts").then(async r => {
     for(let sf of soundFonts)
     {
         const option = document.createElement("option");
-        option.innerText = sf.name;
+        option.value = sf.name;
+        let displayName = sf.name
+        if(displayName.length > 20)
+        {
+            displayName = displayName.substring(0, 21) + "...";
+        }
+        option.innerText = displayName;
         sfSelector.appendChild(option);
     }
 
@@ -277,4 +283,35 @@ fetch("soundfonts").then(async r => {
         }
         startMidi(fileInput.files);
     };
-})
+});
+
+/**
+ * saves the settings (settings.js) selected data to config.json
+ * (only on local edition that's why it's here and not in the demo_main.js)
+ * @param settingsData {Object}
+ */
+function saveSettings(settingsData)
+{
+    fetch("/savesettings", {
+        method: "POST",
+        body: JSON.stringify(settingsData),
+        headers: {
+            "Content-type": "application/json; charset=UTF-8"
+        }
+    }).then();
+    console.log("saved as", settingsData)
+}
+
+// expose the function
+window.saveSettings = saveSettings;
+
+/**
+ * reads the settings
+ * @type {Promise<SavedSettings>}
+ */
+window.savedSettings = new Promise(resolve => {
+    fetch("/getsettings").then(response =>  response.json().then(
+        parsedSettings => {
+            resolve(parsedSettings);
+        }));
+});

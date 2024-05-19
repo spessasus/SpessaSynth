@@ -1,8 +1,8 @@
-import open from "open";
-import express from "express";
-import fs from "fs";
-import path from 'path';
-import {fileURLToPath} from 'url';
+import open from 'open'
+import express from 'express'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
 const app = express();
 const PORT = 8181;
@@ -14,6 +14,7 @@ const __dirname = path.dirname(__filename);
 
 app.use(express.static("src"));
 app.use(express.static("soundfonts"));
+app.use(express.json());
 
 fs.writeFile("config.json", "{}", {flag: "wx"}, () => {});
 
@@ -55,6 +56,23 @@ app.get("/setlastsf2", (req) => {
     config["lastUsedSf2"] = req.query['sfname'];
     fs.writeFile("config.json", JSON.stringify(config), { flag: "w"}, () => {});
 });
+
+app.post("/savesettings", (req) => {
+    const config = JSON.parse(fs.readFileSync("config.json", "utf-8"));
+    config.settings = req.body;
+    fs.writeFile("config.json", JSON.stringify(config), { flag: "w"}, () => {});
+})
+
+app.get("/getsettings", (req, res) => {
+    /**
+     * @type {{
+     *     lastUsedSf2: string,
+     *     settings: SavedSettings
+     * }}
+     */
+    const config = JSON.parse(fs.readFileSync("config.json", "utf-8"));
+    res.send(config.settings);
+})
 
 app.listen(PORT,  HOST, undefined, () =>{
     let url = `http://localhost:${PORT}`;

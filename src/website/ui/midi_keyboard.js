@@ -81,6 +81,98 @@ export class MidiKeyboard
     }
 
     /**
+     * @param midiNote {number}
+     * @returns {HTMLDivElement}
+     * @private
+     */
+    _createKey(midiNote)
+    {
+        function isBlackNoteNumber(noteNumber) {
+            let pitchClass = noteNumber % 12;
+            return pitchClass === 1 || pitchClass === 3 || pitchClass === 6 || pitchClass === 8 || pitchClass === 10;
+        }
+        let keyElement = document.createElement("div");
+        keyElement.classList.add("key");
+        keyElement.id = `note${midiNote}`;
+
+        // MOUSE HANDLING
+        keyElement.onpointerover = e => {
+            if(!this.mouseHeld)
+            {
+                return
+            }
+            e.stopPropagation();
+
+            // user note on
+            this.heldKeys.push(midiNote);
+            // determine velocity. lower = more velocity
+            const rect = keyElement.getBoundingClientRect();
+            const relativeMouseY = e.clientY - rect.top;
+            const keyHeight = rect.height;
+            const velocity = Math.floor(relativeMouseY / keyHeight * 127);
+            this.synth.noteOn(this.channel, midiNote, velocity, this.enableDebugging);
+        }
+        keyElement.onpointerdown = e =>
+        {
+            e.stopPropagation();
+            this.mouseHeld = true;
+            // user note on
+            this.heldKeys.push(midiNote);
+            // determine velocity. lower = more velocity
+            const rect = keyElement.getBoundingClientRect();
+            const relativeMouseY = e.clientY - rect.top;
+            const keyHeight = rect.height;
+            const velocity = Math.floor(relativeMouseY / keyHeight * 127);
+            this.synth.noteOn(this.channel, midiNote, velocity, this.enableDebugging);
+        }
+        keyElement.onpointerout = () => {
+            // user note off
+            this.heldKeys.splice(this.heldKeys.indexOf(midiNote), 1);
+            this.releaseNote(midiNote, this.channel);
+            this.synth.noteOff(this.channel, midiNote);
+        };
+        keyElement.onpointerleave = keyElement.onpointerup;
+
+
+        let isBlack = isBlackNoteNumber(midiNote);
+        if(isBlack)
+        {
+            // short note
+            keyElement.classList.add("sharp_key");
+        }
+        else
+        {
+            // long note
+            keyElement.classList.add("flat_key");
+            let blackNoteLeft = false;
+            let blackNoteRight = false;
+            if(midiNote >= 0)
+            {
+                blackNoteLeft = isBlackNoteNumber(midiNote - 1);
+            }
+            if(midiNote < 127) {
+                blackNoteRight = isBlackNoteNumber(midiNote + 1);
+            }
+
+            if(blackNoteRight && blackNoteLeft)
+            {
+                keyElement.classList.add("between_sharps");
+            }
+            else if(blackNoteLeft)
+            {
+                keyElement.classList.add("left_sharp");
+            }
+            else if(blackNoteRight)
+            {
+                keyElement.classList.add("right_sharp");
+            }
+
+
+        }
+        return keyElement;
+    }
+
+    /**
      * @private
      */
     _createKeyboard()
@@ -102,84 +194,9 @@ export class MidiKeyboard
          */
         this.keyColors = [];
         // create keyboard
-        function isBlackNoteNumber(noteNumber) {
-            let pitchClass = noteNumber % 12;
-            return pitchClass === 1 || pitchClass === 3 || pitchClass === 6 || pitchClass === 8 || pitchClass === 10;
-        }
         for (let midiNote = this._keyRange.min; midiNote < this._keyRange.max + 1; midiNote++) {
-            let keyElement = document.createElement("div");
-            keyElement.classList.add("key");
-            keyElement.id = `note${midiNote}`;
-            keyElement.onpointerover = e => {
-                if(!this.mouseHeld)
-                {
-                    return
-                }
 
-                // user note on
-                this.heldKeys.push(midiNote);
-                // determine velocity. lower = more velocity
-                const rect = keyElement.getBoundingClientRect();
-                const relativeMouseY = e.clientY - rect.top;
-                const keyHeight = rect.height;
-                const velocity = Math.floor(relativeMouseY / keyHeight * 127);
-                this.synth.noteOn(this.channel, midiNote, velocity, this.enableDebugging);
-            }
-
-            keyElement.onpointerdown = e =>
-            {
-                // user note on
-                this.heldKeys.push(midiNote);
-                // determine velocity. lower = more velocity
-                const rect = keyElement.getBoundingClientRect();
-                const relativeMouseY = e.clientY - rect.top;
-                const keyHeight = rect.height;
-                const velocity = Math.floor(relativeMouseY / keyHeight * 127);
-                this.synth.noteOn(this.channel, midiNote, velocity, this.enableDebugging);
-            }
-
-            keyElement.onpointerout = () => {
-                // user note off
-                this.heldKeys.splice(this.heldKeys.indexOf(midiNote), 1);
-                this.releaseNote(midiNote, this.channel);
-                this.synth.noteOff(this.channel, midiNote);
-            };
-            keyElement.onpointerleave = keyElement.onpointerup;
-            let isBlack = isBlackNoteNumber(midiNote);
-            if(isBlack)
-            {
-                // short note
-                keyElement.classList.add("sharp_key");
-            }
-            else
-            {
-                // long note
-                keyElement.classList.add("flat_key");
-                let blackNoteLeft = false;
-                let blackNoteRight = false;
-                if(midiNote >= 0)
-                {
-                    blackNoteLeft = isBlackNoteNumber(midiNote - 1);
-                }
-                if(midiNote < 127) {
-                    blackNoteRight = isBlackNoteNumber(midiNote + 1);
-                }
-
-                if(blackNoteRight && blackNoteLeft)
-                {
-                    keyElement.classList.add("between_sharps");
-                }
-                else if(blackNoteLeft)
-                {
-                    keyElement.classList.add("left_sharp");
-                }
-                else if(blackNoteRight)
-                {
-                    keyElement.classList.add("right_sharp");
-                }
-
-
-            }
+            const keyElement = this._createKey(midiNote);
             this.keyColors.push([]);
             this.keyboard.appendChild(keyElement);
             this.keys.push(keyElement);
@@ -246,6 +263,10 @@ export class MidiKeyboard
      */
     selectChannel(channel)
     {
+        if(channel >= this.synth.midiChannels.length)
+        {
+            channel = 0;
+        }
         this.channel = channel;
     }
 

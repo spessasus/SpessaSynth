@@ -645,7 +645,7 @@ export class Synthetizer {
 
     /**
      * sends a raw MIDI message to the synthesizer
-     * @param message {Array<number>} the midi message, each number is a byte
+     * @param message {ArrayLike<number>} the midi message, each number is a byte
      */
     sendMessage(message)
     {
