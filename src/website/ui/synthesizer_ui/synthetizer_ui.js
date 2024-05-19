@@ -1,7 +1,7 @@
 import { DEFAULT_GAIN, DEFAULT_PERCUSSION, Synthetizer } from '../../../spessasynth_lib/synthetizer/synthetizer.js'
-import {MidiChannel} from "../../../spessasynth_lib/synthetizer/native_system/midi_channel.js";
+import { MidiChannel } from '../../../spessasynth_lib/synthetizer/native_system/midi_channel.js'
 import { getDrumsSvg, getLoopSvg, getMuteSvg, getNoteSvg, getVolumeSvg } from '../icons.js'
-import { ShiftableByteArray } from '../../../spessasynth_lib/utils/shiftable_array.js';
+import { ShiftableByteArray } from '../../../spessasynth_lib/utils/shiftable_array.js'
 import { Meter } from './synthui_meter.js'
 import { Selector } from './synthui_selector.js'
 import { midiControllers } from '../../../spessasynth_lib/midi_parser/midi_message.js'
@@ -181,7 +181,12 @@ export class SynthetizerUI
 
         // channel controller shower
         let showControllerButton = document.createElement("button");
-        showControllerButton.innerText = "Synthesizer controller";
+        showControllerButton.innerText = this.synth.synthesisMode === "legacy" ? "Synth controller (legacy mode)" : "Synthesizer controller";
+        if(showControllerButton.innerText !== "Synthesizer controller")
+        {
+            showControllerButton.style.color = "red";
+            showControllerButton.style.fontWeight = "bolder";
+        }
         showControllerButton.title = "Shows the synthesizer controller"
         showControllerButton.classList.add("synthui_button");
         showControllerButton.onclick = () => {

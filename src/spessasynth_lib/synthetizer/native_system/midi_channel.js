@@ -542,10 +542,8 @@ export class MidiChannel {
         }
     }
     updateGain(){
-        this.gainController.gain.value = this.defaultGain
-            * this.channelVolume * this.channelVolume
-            * this.channelExpression * this.channelExpression
-            //* (1 - this.chorus.getChorusLevel() / 381); // lower the volume to min 2/3 to compensate for delay line (it doubles the volume)
+        const gainLinear = this.channelVolume * this.channelExpression
+        this.gainController.gain.value = this.defaultGain * Math.pow(gainLinear, 3);
     }
 
     muteChannel()
