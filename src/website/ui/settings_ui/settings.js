@@ -226,9 +226,7 @@ export class Settings
         const keyboard = this.midiKeyboard;
         const keyboardValues = savedSettings.keyboard;
 
-        // selected channel
-        keyboard.selectChannel(keyboardValues.selectedChannel);
-        keyboardControls.channelSelector.value = keyboardValues.selectedChannel;
+        // removed selected channel because it's not something you want to save
 
         // keyboard size
         keyboard.keyRange = keyboardValues.keyRange;

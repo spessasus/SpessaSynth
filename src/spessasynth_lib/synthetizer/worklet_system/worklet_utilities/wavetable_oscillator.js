@@ -14,7 +14,7 @@ export function getOscillatorData(voice, sampleData, outputBuffer)
     {
         for (let i = 0; i < outputBuffer.length; i++) {
             // check for loop
-            while(cur > voice.sample.loopEnd) {
+            while(cur >= voice.sample.loopEnd) {
                 cur -= loopLength;
             }
 
@@ -32,6 +32,13 @@ export function getOscillatorData(voice, sampleData, outputBuffer)
             const upper = sampleData[ceil];
             const lower = sampleData[floor];
             outputBuffer[i] = (lower + (upper - lower) * fraction);
+
+            // commented code because it's probably gonna come handy... (it did like 6 times already :/)
+            // if(isNaN(outputBuffer[i]))
+            // {
+            //     console.error(voice, upper, lower, floor, ceil, cur)
+            //     throw "NAN ALERT";
+            // }
 
             cur += voice.sample.playbackStep * voice.currentTuningCalculated;
         }

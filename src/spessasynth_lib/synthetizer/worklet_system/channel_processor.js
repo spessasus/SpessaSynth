@@ -150,6 +150,19 @@ class ChannelProcessor extends AudioWorkletProcessor {
                         return;
                     }
                     v.sample.end = data.sampleData.length - 1 + v.generators[generatorTypes.endAddrOffset] + (v.generators[generatorTypes.endAddrsCoarseOffset] * 32768);
+                    // calculate for how long the sample has been playing and move the cursor there
+                    v.sample.cursor = (v.sample.playbackStep * sampleRate) * (currentTime - v.startTime);
+                    if(v.sample.loopingMode === 0) // no loop
+                    {
+                        if (v.sample.cursor >= v.sample.end) {
+                            v.finished = true;
+                        }
+                    }
+                    else
+                    {
+                        // go through modulo (adjust cursor if the sample has looped
+                        v.sample.cursor = v.sample.cursor % (v.sample.loopEnd - v.sample.loopStart) + v.sample.loopStart - 1;
+                    }
                 })
 
                 break;

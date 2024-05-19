@@ -245,9 +245,9 @@ fetch("soundfonts").then(async r => {
         const option = document.createElement("option");
         option.value = sf.name;
         let displayName = sf.name
-        if(displayName.length > 20)
+        if(displayName.length > 29)
         {
-            displayName = displayName.substring(0, 21) + "...";
+            displayName = displayName.substring(0, 30) + "...";
         }
         option.innerText = displayName;
         sfSelector.appendChild(option);
