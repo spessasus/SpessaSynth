@@ -134,28 +134,6 @@ export class Sample {
             return;
         }
 
-
-        // try to create an audioBuffer, if unable to, resample the sample now, otherwise just load it dynamically
-        try {
-            this.buffer = new AudioBuffer({
-                length: this.sampleLength / 2 + 1,
-                sampleRate: this.sampleRate
-            });
-        } catch (e) {
-            console.warn(`Error creating an audio buffer for ${this.sampleName}! Resampling the sample from ${this.sampleRate} to ${FIX_SAMPLERATE} to fix...`);
-            this.loadBufferData().then(arr => {
-                /**
-                 * @type {Float32Array}
-                 */
-                this.sampleData = this.resampleData(arr);
-                this.buffer = new AudioBuffer({
-                    length: this.sampleData.length,
-                    sampleRate: FIX_SAMPLERATE
-                });
-                this.buffer.getChannelData(0).set(this.sampleData);
-            })
-        }
-
         if(this.isCompressed)
         {
             // correct loop points
@@ -274,20 +252,29 @@ export class Sample {
      * @returns {Promise<AudioBuffer>}
      */
     async getAudioBuffer(context, startAddrOffset, endAddrOffset) {
-        // no sample data means no buffe
+        // no sample data means no buffer
         if (!this.isSampleLoaded) {
-            //  start loading the buffer if no data
-            await this.loadBufferData()
-
-            // if it was compressed, the length has changed
-            if(this.sampleLength / 2 + 1 !== this.buffer.length)
-            {
+            const data = await this.loadBufferData();
+            // try to create an audioBuffer, if unable to, resample the sample now, otherwise just load it dynamically
+            try {
                 this.buffer = new AudioBuffer({
                     length: this.sampleLength / 2 + 1,
                     sampleRate: this.sampleRate
-                })
+                });
+                this.buffer.getChannelData(0).set(data);
+            } catch (e) {
+                console.warn(`Error creating an audio buffer for ${this.sampleName}! Resampling the sample from ${this.sampleRate} to ${FIX_SAMPLERATE} to fix...`);
+
+                /**
+                 * @type {Float32Array}
+                 */
+                this.sampleData = this.resampleData(data);
+                this.buffer = new AudioBuffer({
+                    length: this.sampleData.length,
+                    sampleRate: FIX_SAMPLERATE
+                });
+                this.buffer.getChannelData(0).set(this.sampleData);
             }
-            this.buffer.getChannelData(0).set(this.sampleData);
         }
         if (startAddrOffset === 0 && endAddrOffset === 0) {
             return this.buffer;
