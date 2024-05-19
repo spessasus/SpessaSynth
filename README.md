@@ -37,7 +37,7 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 - Modular design allows easy integrations into other projects
 - Written in pure JavaScript using WebAudio API (Every modern browser supports it)
 - No dependencies (Node.js is only required for the app, the core synth and sequencer library needs no dependencies)
-- Comes bundled with a small [GeneralUser GS](https://schristiancollins.com/generaluser.php) soundFont to get you started
+- Comes bundled with a compressed [SGM](https://musical-artifacts.com/artifacts/855) SoundFont to get you started
 
 ### Limitations
 - It might not sound as good as other synthetizers (e.g. FluidSynth or BASSMIDI)
