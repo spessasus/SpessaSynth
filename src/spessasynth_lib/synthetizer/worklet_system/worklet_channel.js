@@ -200,7 +200,7 @@ export class WorkletChannel {
     {
         this.gainController.gain.value = 0;
         this.isMuted = true;
-        this.stopAll();
+        this.stopAll(true);
     }
 
     unmuteChannel()

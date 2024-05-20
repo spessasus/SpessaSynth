@@ -161,7 +161,9 @@ class ChannelProcessor extends AudioWorkletProcessor {
                     else
                     {
                         // go through modulo (adjust cursor if the sample has looped
-                        v.sample.cursor = v.sample.cursor % (v.sample.loopEnd - v.sample.loopStart) + v.sample.loopStart - 1;
+                        if(v.sample.cursor > v.sample.loopEnd) {
+                            v.sample.cursor = v.sample.cursor % (v.sample.loopEnd - v.sample.loopStart) + v.sample.loopStart - 1;
+                        }
                     }
                 })
 
