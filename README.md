@@ -27,29 +27,30 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 - Legacy system that doesn't use AudioWorklets (Available to use over HTTP and will switch automatically)
 - Can load really large soundfonts (4GB!) (but only on Firefox, Chromium has a memory limit)
 - Multi-port MIDIs support (more than 16 channels)
-- MIDI Controller Support (Default supported controllers can be found [here](../../wiki/Synthetizer-Class#supported-controllers))
-- Supports some Roland and Yamaha XG sysex messages
+- MIDI Controller Support (Default supported controllers can be found [here](../../wiki/Synthetizer-Class#supported-controllers)).
+- Supports some Roland GS and Yamaha XG sysex messages
 - High performance mode for playing black MIDIs (Don't go too crazy with the amount of notes though)
-- Visualization of the played sequence
-- Playable keyboard with preset selection
+- Visualization of the played sequence with effects like visual pitch bend and note on effects
+- Playable keyboard with various sizes
 - Integrated controller for the synthetizer
 - `Web MIDI API` support (Enables physical MIDI devices to be used with the program)
 - [WebMidiLink](https://www.g200kg.com/en/docs/webmidilink/) support
 - Can be used as a library ([learn more here](../../wiki/Usage-As-Library))
 - Modular design allows easy integrations into other projects
 - Written in pure JavaScript using WebAudio API (Every modern browser supports it)
-- No dependencies (Node.js is only required for the app, the core synth and sequencer library needs no dependencies)
+- No dependencies (Node.js is only required for the local app, the frontend and audio are vanilla JavaScript)
 - Comes bundled with a compressed [SGM](https://musical-artifacts.com/artifacts/855) SoundFont to get you started
 
 ### Limitations
 - It might not sound as good as other synthetizers (e.g. FluidSynth or BASSMIDI)
 - The performance is questionable, especially on mobile devices
-- SoundFont3 support seems to be a bit wonky, so if you notice a but, **please open an issue!**
+- SoundFont3 support seems to be a bit wonky, so if you notice a bug, **please open an issue!**
+- only real-time, cannot render audio to file (yet)
 
 ## Installation
 ***When you're loading a large (>4GB) SoundFont, use Firefox because chromium has a 4GB memory limit***
 
-### [Recommended and tested SoundFont](https://musical-artifacts.com/artifacts/1176)
+### [Recommended high quality soundfont (better than the built-in one)](https://musical-artifacts.com/artifacts/1176)
 
 **Requires Node.js**
 ### Windows
