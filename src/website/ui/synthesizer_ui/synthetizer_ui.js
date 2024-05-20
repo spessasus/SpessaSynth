@@ -519,14 +519,14 @@ export class SynthetizerUI
         muteButton.classList.add("controller_element");
         muteButton.classList.add("mute_button");
         muteButton.onclick = () => {
-            if(this.synth.midiChannels[channelNumber].gainController.gain.value === 0)
+            if(this.synth.midiChannels[channelNumber].isMuted)
             {
-                this.synth.midiChannels[channelNumber].unmuteChannel();
+                this.synth.muteChannel(channelNumber, false);
                 muteButton.innerHTML = getVolumeSvg(32);
             }
             else
             {
-                this.synth.midiChannels[channelNumber].muteChannel();
+                this.synth.muteChannel(channelNumber, true);
                 muteButton.innerHTML = getMuteSvg(32);
             }
         }

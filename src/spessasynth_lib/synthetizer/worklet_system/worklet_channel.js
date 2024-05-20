@@ -85,6 +85,8 @@ export class WorkletChannel {
             this.cachedWorkletVoices.push([]);
         }
 
+        this.isMuted = false;
+
         this.preset = defaultPreset;
         this.bank = this.preset.bank;
 
@@ -102,7 +104,6 @@ export class WorkletChannel {
         this.gainController = new GainNode(this.ctx, {
             gain: CHANNEL_GAIN
         });
-        this.muted = false;
 
         this.gainController.connect(this.outputNode);
         this.worklet.connect(this.gainController, 0);
@@ -198,12 +199,12 @@ export class WorkletChannel {
     muteChannel()
     {
         this.gainController.gain.value = 0;
-        this.muted = true;
+        this.isMuted = true;
     }
 
     unmuteChannel()
     {
-        this.muted = false;
+        this.isMuted = false;
         this.gainController.gain.value = CHANNEL_GAIN;
     }
 
@@ -291,7 +292,7 @@ export class WorkletChannel {
             return 0;
         }
 
-        if(this.muted)
+        if(this.isMuted)
         {
             return 0;
         }

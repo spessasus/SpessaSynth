@@ -69,6 +69,10 @@ export class Renderer
         this.renderNotes = true;
         this.drawActiveNotes = true;
         this.showVisualPitch = true;
+        /**
+         * @type {boolean[]}
+         */
+        this.renderChannels = Array(16).fill(true);
 
         /**
          * canvas
@@ -141,6 +145,10 @@ export class Renderer
         synth.eventHandler.addEvent("newchannel", "renderer-new-channel", channel => {
             const targetAnalyser = this.channelAnalysers[(synth.midiChannels.length - 1) % this.channelAnalysers.length];
             channel.gainController.connect(targetAnalyser);
+        })
+
+        synth.eventHandler.addEvent("mutechannel", "renderer-mute-channel", eventData => {
+            this.renderChannels[eventData.channel] = !eventData.isMuted;
         })
     }
 
@@ -302,7 +310,7 @@ export class Renderer
         const notesToDraw = [];
         this.noteTimes.forEach((channel, channelNumder) => {
 
-            if(channel.renderStartIndex >= channel.notes.length) return;
+            if(channel.renderStartIndex >= channel.notes.length || !this.renderChannels[channelNumder]) return;
 
             let noteIndex = channel.renderStartIndex;
             const notes = channel.notes;

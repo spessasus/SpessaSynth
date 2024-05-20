@@ -106,7 +106,7 @@ export class Synthetizer {
     {
         /**
          *  create 16 channels
-         * @type {WorkletChannel[]|MidiChannel[]}
+         * @type {WorkletChannel[]}
          */
         this.midiChannels = [];
 
@@ -151,9 +151,21 @@ export class Synthetizer {
         this.eventHandler.callEvent("newchannel", this.midiChannels[this.midiChannels.length - 1]);
     }
 
+    /*
+     * Prevents any further changes to the vibrato via NRPN messages and sets it to disabled
+     */
+    lockAndResetChannelVibrato()
+    {
+        this.midiChannels.forEach(c => {
+            c.lockVibrato = false;
+            c.vibrato = {depth: 0, rate: 0, delay: 0};
+            c.lockVibrato = true;
+        });
+    }
+
     /**
      * Starts playing a note
-     * @param channel {number} 0-15 the channel to play the note
+     * @param channel {number} usually 0-15: the channel to play the note
      * @param midiNote {number} 0-127 the key number of the note
      * @param velocity {number} 0-127 the velocity of the note (generally controls loudness)
      * @param enableDebugging {boolean} set to true to log technical details to console
@@ -166,7 +178,9 @@ export class Synthetizer {
 
         if((this.highPerformanceMode && this.voicesAmount > 200 && velocity < 40)
         ||
-            (this.highPerformanceMode && velocity < 10))
+        (this.highPerformanceMode && velocity < 10)
+        ||
+        (this.midiChannels[channel].isMuted))
         {
             return;
         }
@@ -196,21 +210,9 @@ export class Synthetizer {
         });
     }
 
-    /*
-     * Prevents any further changes to the vibrato via NRPN messages and sets it to disabled
-     */
-    lockAndResetChannelVibrato()
-    {
-        this.midiChannels.forEach(c => {
-            c.lockVibrato = false;
-            c.vibrato = {depth: 0, rate: 0, delay: 0};
-            c.lockVibrato = true;
-        });
-    }
-
     /**
      * Stops playing a note
-     * @param channel {number} 0-15 the channel of the note
+     * @param channel {number} usually 0-15: the channel of the note
      * @param midiNote {number} 0-127 the key number of the note
      */
     noteOff(channel, midiNote) {
@@ -246,7 +248,7 @@ export class Synthetizer {
 
     /**
      * Changes the given controller
-     * @param channel {number} 0-15 the channel to change the controller
+     * @param channel {number} usually 0-15: the channel to change the controller
      * @param controllerNumber {number} 0-127 the MIDI CC number
      * @param controllerValue {number} 0-127 the controller value
      */
@@ -372,7 +374,7 @@ export class Synthetizer {
 
     /**
      * Sets the pitch of the given channel
-     * @param channel {number} 0-16 the channel to change pitch
+     * @param channel {number} usually 0-15: the channel to change pitch
      * @param MSB {number} SECOND byte of the MIDI pitchWheel message
      * @param LSB {number} FIRST byte of the MIDI pitchWheel message
      */
@@ -407,7 +409,7 @@ export class Synthetizer {
 
     /**
      * Changes the patch for a given channel
-     * @param channel {number} 0-15 the channel to change
+     * @param channel {number} usually 0-15: the channel to change
      * @param programNumber {number} 0-127 the MIDI patch number
      */
     programChange(channel, programNumber)
@@ -427,7 +429,7 @@ export class Synthetizer {
 
     /**
      * Causes the given midi channel to ignore controller messages for the given controller number
-     * @param channel {number} 0-16 the channel to lock
+     * @param channel {number} usually 0-15: the channel to lock
      * @param controllerNumber {number} 0-127 MIDI CC number
      * @param isLocked {boolean} true if locked, false if unlocked
      */
@@ -440,6 +442,27 @@ export class Synthetizer {
         {
             this.midiChannels[channel].unlockController(controllerNumber);
         }
+    }
+
+    /**
+     * Mutes or unmutes the given channel
+     * @param channel {number} usually 0-15: the channel to lock
+     * @param isMuted {boolean} indicates if the channel is muted
+     */
+    muteChannel(channel, isMuted)
+    {
+        if(isMuted)
+        {
+            this.midiChannels[channel].muteChannel();
+        }
+        else
+        {
+            this.midiChannels[channel].unmuteChannel();
+        }
+        this.eventHandler.callEvent("mutechannel", {
+            channel: channel,
+            isMuted: isMuted
+        });
     }
 
     /**

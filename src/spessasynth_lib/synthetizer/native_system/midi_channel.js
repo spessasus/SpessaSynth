@@ -103,6 +103,8 @@ export class MidiChannel {
          */
         this.channelTranspose = 0;
 
+        this.isMuted = false;
+
         /**
          * Controls if the channel will be affected by progam change
          * @type {boolean}
@@ -548,6 +550,7 @@ export class MidiChannel {
 
     muteChannel()
     {
+        this.isMuted = true;
         this.defaultGain = 0;
         this.updateGain();
     }
@@ -556,6 +559,7 @@ export class MidiChannel {
     {
         this.defaultGain = CHANNEL_LOUDNESS;
         this.updateGain();
+        this.isMuted = false;
     }
 
     /**
