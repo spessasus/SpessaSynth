@@ -60,10 +60,14 @@ import { workletMessageType } from '../worklet_channel.js'
 
 
 /**
- *
  * @type {Set<number>}
  */
-const globalDumpedSamplesList = new Set();
+let globalDumpedSamplesList = new Set();
+
+export function clearSamplesList()
+{
+    globalDumpedSamplesList = new Set();
+}
 
 function /**
  * This is how the logic works: since sf3 is compressed, we rely on an async decoder.

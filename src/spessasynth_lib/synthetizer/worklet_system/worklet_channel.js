@@ -2,7 +2,7 @@ import { Preset } from '../../soundfont/chunk/presets.js'
 import { consoleColors } from '../../utils/other.js'
 import { modulatorSources } from '../../soundfont/chunk/modulators.js'
 import { midiControllers } from '../../midi_parser/midi_message.js'
-import { getWorkletVoices } from './worklet_utilities/worklet_voice.js'
+import { clearSamplesList, getWorkletVoices } from './worklet_utilities/worklet_voice.js'
 const CHANNEL_GAIN = 0.5;
 
 export const NON_CC_INDEX_OFFSET = 128;
@@ -609,6 +609,7 @@ export class WorkletChannel {
             messageType: workletMessageType.clearCache,
             messageData: undefined
         });
+        clearSamplesList();
         this.cachedWorkletVoices = [];
         for (let i = 0; i < 128; i++) {
             this.cachedWorkletVoices.push([]);

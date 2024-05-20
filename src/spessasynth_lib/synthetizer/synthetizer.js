@@ -471,6 +471,7 @@ export class Synthetizer {
      */
     reloadSoundFont(soundFont)
     {
+        this.stopAll(true);
         this.soundFont = soundFont;
         this.defaultPreset = this.soundFont.getPreset(0, 0);
         this.percussionPreset = this.soundFont.getPreset(128, 0);

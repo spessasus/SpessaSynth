@@ -198,7 +198,9 @@ class ChannelProcessor extends AudioWorkletProcessor {
                 break;
 
             case workletMessageType.clearCache:
-                workletDumpedSamplesList = [];
+                if(workletDumpedSamplesList.length > 0) {
+                    workletDumpedSamplesList = [];
+                }
                 break;
 
             case workletMessageType.stopAll:
