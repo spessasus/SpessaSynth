@@ -186,7 +186,7 @@ function prepareUI()
     document.getElementById("bundled_sf").style.display = "none";
     document.getElementById("bundled_sf").onclick = undefined;
 
-    window.audioContextMain = new AudioContext({sampleRate: 44100});
+    window.audioContextMain = new AudioContext({sampleRate: 44100, latencyHint: "interactive"});
 
     // prepare midi interface
     window.manager = new Manager(audioContextMain, soundFontParser);

@@ -3,6 +3,17 @@ import { generatorTypes } from '../../../soundfont/chunk/generators.js'
 
 const DB_SILENCE = 100;
 const GAIN_SILENCE = 0.005;
+
+/**
+ * VOL ENV STATES:
+ * 0 - delay
+ * 1 - attack
+ * 2 - hold/peak
+ * 3 - decay
+ * 4 - sustain
+ * release is indicated by isInRelease property
+ */
+
 /**
  * Applies volume envelope gain to the given output buffer
  * @param voice {WorkletVoice} the voice we're working on
@@ -92,38 +103,73 @@ export function applyVolumeEnvelope(voice, audioBuffer, currentTime, centibelOff
     let currentFrameTime = currentTime;
     let dbAttenuation;
     for (let i = 0; i < audioBuffer.length; i++) {
-        if(currentFrameTime < delayEnd)
+        switch(voice.volumeEnvelopeState)
         {
-            // we're in the delay phase
-            dbAttenuation = DB_SILENCE;
-            currentFrameTime += sampleTime;
-            audioBuffer[i] = 0;
-            continue;
-        }
-        else if(currentFrameTime < attackEnd)
-        {
-            // we're in the attack phase
-            // Special case: linear instead of exponential
-            const elapsed = (attackEnd - currentFrameTime) / attack;
-            audioBuffer[i] = audioBuffer[i] * (1 - elapsed) * decibelAttenuationToGain(attenuation + decibelOffset);
-            currentFrameTime += sampleTime;
-            dbAttenuation = 10 * Math.log10((elapsed * (attenuation - DB_SILENCE) + DB_SILENCE) * -1);
-            continue;
-        }
-        else if(currentFrameTime < holdEnd)
-        {
-            dbAttenuation = attenuation;
-        }
-        else if(currentFrameTime < decayEnd)
-        {
-            // we're in the decay phase
-            dbAttenuation = (1 - (decayEnd - currentFrameTime) / decay) * (sustain - attenuation) + attenuation;
-        }
-        else
-        {
-            dbAttenuation = sustain;
-        }
+            case 0:
+                // delay phase, no sound is produced
+                if(currentFrameTime >= delayEnd)
+                {
+                    voice.volumeEnvelopeState++;
+                }
+                else
+                {
+                    dbAttenuation = DB_SILENCE;
+                    audioBuffer[i] = 0;
 
+                    // no need to go through the hassle of converting. Skip
+                    currentFrameTime += sampleTime;
+                    continue;
+                }
+            // fallthrough
+
+            case 1:
+                // attack phase: ramp from 0 to attenuation
+                if(currentFrameTime >= attackEnd)
+                {
+                    voice.volumeEnvelopeState++;
+                }
+                else {
+                    // Special case: linear gain ramp instead of linear db ramp
+                    const elapsed = (attackEnd - currentFrameTime) / attack;
+                    dbAttenuation = 10 * Math.log10((elapsed * (attenuation - DB_SILENCE) + DB_SILENCE) * -1);
+                    audioBuffer[i] = audioBuffer[i] * (1 - elapsed) * decibelAttenuationToGain(attenuation + decibelOffset);
+                    currentFrameTime += sampleTime;
+                    continue
+
+                }
+            // fallthrough
+
+            case 2:
+                // hold/peak phase: stay at attenuation
+                if(currentFrameTime >= holdEnd)
+                {
+                    voice.volumeEnvelopeState++;
+                }
+                else
+                {
+                    dbAttenuation = attenuation;
+                    break;
+                }
+            // fallthrough
+
+            case 3:
+                // decay phase: linear ramp from attenuation to sustain
+                if(currentFrameTime >= decayEnd)
+                {
+                    voice.volumeEnvelopeState++;
+                }
+                else
+                {
+                    dbAttenuation = (1 - (decayEnd - currentFrameTime) / decay) * (sustain - attenuation) + attenuation;
+                    break
+                }
+            // fallthrough
+
+            case 4:
+                // sustain phase: stay at sustain
+                dbAttenuation = sustain;
+
+        }
         // apply gain and advance the time
         const gain = decibelAttenuationToGain(dbAttenuation + decibelOffset);
         audioBuffer[i] = audioBuffer[i] * gain;

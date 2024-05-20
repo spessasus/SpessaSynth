@@ -8,6 +8,7 @@ import {ShiftableByteArray} from "../spessasynth_lib/utils/shiftable_array.js";
 import { formatTitle } from '../spessasynth_lib/utils/other.js'
 
 const TITLE = "SpessaSynth: SoundFont2 Javascript Synthetizer";
+const SAMPLE_RATE = 44100;
 
 /**
  * @type {HTMLHeadingElement}
@@ -213,8 +214,8 @@ document.body.onclick = () =>
     // user has clicked, we can create the ui
     if(!window.audioContextMain) {
         navigator.mediaSession.playbackState = "playing";
-        window.audioContextMain = new AudioContext({sampleRate: 44100,
-        latencyHint: "playback"});
+        window.audioContextMain = new AudioContext({sampleRate: SAMPLE_RATE,
+        latencyHint: "interactive"});
         if(window.soundFontParser) {
             titleMessage.innerText = TITLE;
             // prepare midi interface

@@ -24,6 +24,7 @@ export function applyLowpassFilter(voice, outputBuffer, cutoffCents)
         calculateCoefficients(voice);
     }
 
+    // filter the input
     for (let i = 0; i < outputBuffer.length; i++) {
         let input = outputBuffer[i];
         let filtered = voice.filter.a0 * input
@@ -48,8 +49,7 @@ export function applyLowpassFilter(voice, outputBuffer, cutoffCents)
 function calculateCoefficients(voice)
 {
     // code is ported from https://github.com/sinshu/meltysynth/ to work with js. I'm too dumb to understand the math behind this...
-
-    let w = 2 * Math.PI * voice.filter.cutoffHz / sampleRate; // we're in the audioworkletglobalscope so we can use this
+    let w = 2 * Math.PI * voice.filter.cutoffHz / sampleRate; // we're in the audioworkletglobalscope so we can use sampleRate
     let cosw = Math.cos(w);
     let alpha = Math.sin(w) / (2 * voice.filter.reasonanceGain);
 

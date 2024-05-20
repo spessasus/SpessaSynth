@@ -45,6 +45,7 @@
  * targetKey: number,
  *
  * currentAttenuationDb: number,
+ * volumeEnvelopeState: (0|1|2|3|4),
  * currentModEnvValue: number,
  * startTime: number,
  *
@@ -237,22 +238,28 @@ export function getWorkletVoices(midiNote, velocity, preset, context, workletMes
                     cutoffCents: 13500,
                     cutoffHz: 20000
                 },
+                // generators and modulators
                 generators: generators,
-                modulatedGenerators: new Int16Array(60),
-                sample: workletSample,
                 modulators: sampleAndGenerators.modulators,
-                finished: false,
+                modulatedGenerators: new Int16Array(60),
+
+                // sample and playback data
+                sample: workletSample,
                 velocity: velocity,
+                midiNote: midiNote,
+                startTime: context.currentTime,
+                targetKey: targetKey,
+                currentTuningCalculated: 1,
+                currentTuningCents: 0,
+                releaseStartTime: Infinity,
+
+                // envelope data
+                finished: false,
+                isInRelease: false,
                 currentAttenuationDb: 100,
                 currentModEnvValue: 0,
                 releaseStartModEnv: 1,
-                midiNote: midiNote,
-                startTime: context.currentTime,
-                isInRelease: false,
-                releaseStartTime: Infinity,
-                targetKey: targetKey,
-                currentTuningCalculated: 1,
-                currentTuningCents: 0
+                volumeEnvelopeState: 0
             };
 
         });
