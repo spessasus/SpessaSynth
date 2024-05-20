@@ -195,17 +195,6 @@ export class Renderer
             }
             return;
         }
-        // calculate fps
-        let timeSinceLastFrame = performance.now() - this.frameTimeStart;
-        let fps = 1000 / timeSinceLastFrame;
-
-        if(timeSinceLastFrame <= 0)
-        {
-            if (auto) {
-                requestAnimationFrame(this.render.bind(this));
-            }
-            return;
-        }
 
         if (auto) {
             this.drawingContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -236,13 +225,16 @@ export class Renderer
             }
         }
 
+        // calculate fps
+        let timeSinceLastFrame = performance.now() - this.frameTimeStart;
+        this.frameTimeStart = performance.now();
+        let fps = 1000 / timeSinceLastFrame;
+
         // draw note count and fps
         this.drawingContext.textAlign = "end";
         this.drawingContext.fillStyle = "white";
         this.drawingContext.fillText(`${this.notesOnScreen} notes`, this.canvas.width, FONT_SIZE + 5);
         this.drawingContext.fillText(Math.round(fps).toString() + " FPS", this.canvas.width, 5);
-
-        this.frameTimeStart = performance.now();
         if(auto) {
             requestAnimationFrame(this.render.bind(this));
         }
