@@ -1,6 +1,11 @@
 import { decibelAttenuationToGain, timecentsToSeconds } from './unit_converter.js'
 import { generatorTypes } from '../../../soundfont/chunk/generators.js'
 
+/**
+ * volume_envelope.js
+ * purpose: applies a volume envelope for a given voice
+ */
+
 const DB_SILENCE = 100;
 const GAIN_SILENCE = 0.005;
 

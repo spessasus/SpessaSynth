@@ -1,4 +1,9 @@
 /**
+ * other.js
+ * purpose: contains some useful functions that don't belong in any specific category
+ */
+
+/**
  * Formats the given seconds to nice readable time
  * @param totalSeconds {number} time in seconds
  * @return {{seconds: number, minutes: number, time: string}}

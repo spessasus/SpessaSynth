@@ -1,4 +1,10 @@
 /**
+ * wavetable_oscillator.js
+ * purpose: plays back raw audio data at an arbitrary playback rate
+ */
+
+
+/**
  * Fills the output buffer with raw sample data
  * @param voice {WorkletVoice} the voice we're working on
  * @param sampleData {Float32Array} the sample data to write with

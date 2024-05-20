@@ -7,6 +7,10 @@ import { SoundFont2 } from '../spessasynth_lib/soundfont/soundfont_parser.js'
 import { ShiftableByteArray } from '../spessasynth_lib/utils/shiftable_array.js'
 import { formatTitle } from '../spessasynth_lib/utils/other.js'
 
+/**
+ * demo_main.js
+ * purpose: main script for the demo, loads the soundfont and passes it to the manager.js
+ */
 
 const SF_NAME = "SGM.sf3";
 const TITLE = "SpessaSynth: SoundFont2 Javascript Synthetizer Online Demo";

@@ -1,5 +1,9 @@
-import {ShiftableByteArray} from "./shiftable_array.js";
-import {RiffChunk} from "../soundfont/chunk/riff_chunk.js";
+import { ShiftableByteArray } from './shiftable_array.js'
+
+/**
+ * byte_functions.js
+ * purpose: contains various useful functions for bit manipulation and reading
+ */
 
 /**
  * Reads as little endian
@@ -77,28 +81,6 @@ export function readBytesAsString(dataArray, bytes, encoding=undefined, trimEnd=
         let decoder = new TextDecoder(encoding);
         return decoder.decode(byteBuffer.buffer);
     }
-}
-
-/**
- * @param dataArray {ShiftableByteArray}
- * @param readData {boolean}
- * @returns {RiffChunk}
- */
-export function readRIFFChunk(dataArray, readData = true){
-    let header = readBytesAsString(dataArray, 4);
-
-    let size = readBytesAsUintLittleEndian(dataArray, 4);
-    let chunkData = undefined;
-    if(readData) {
-        chunkData = new ShiftableByteArray(size);
-        chunkData.set(dataArray.slice(dataArray.currentIndex, dataArray.currentIndex + size));
-        dataArray.currentIndex += size;
-        // for (let i = 0; i < size; i++) {
-        //     chunkData[i] = readByte(dataArray);
-        // }
-    }
-
-    return new RiffChunk(header, size, chunkData);
 }
 
 /**

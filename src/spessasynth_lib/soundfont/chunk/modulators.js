@@ -4,6 +4,10 @@ import { generatorTypes } from './generators.js'
 import { consoleColors } from '../../utils/other.js'
 import { midiControllers } from '../../midi_parser/midi_message.js'
 
+/**
+ * modulators.js
+ * purpose: parses soundfont modulators and the source enums, also includes the default modulators list
+ **/
 export const modulatorSources = {
     noController: 0,
     noteOnVelocity: 2,

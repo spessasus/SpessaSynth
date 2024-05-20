@@ -4,6 +4,11 @@ import { getEvent, messageTypes, midiControllers, MidiMessage } from '../midi_pa
 import { consoleColors, formatTime } from '../utils/other.js'
 import {readBytesAsUintBigEndian} from "../utils/byte_functions.js";
 
+/**
+ * sequencer.js
+ * purpose: plays back the midi file decoded by midi_loader.js, including support for multi-channel midis (adding channels when more than 1 midi port is detected)
+ */
+
 const MIN_NOTE_TIME = 0.02;
 const MAX_NOTEONS_PER_S = 200;
 

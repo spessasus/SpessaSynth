@@ -11,7 +11,11 @@ import { WebMidiLinkHandler } from '../spessasynth_lib/midi_handler/web_midi_lin
 import { Sequencer } from '../spessasynth_lib/sequencer/sequencer.js'
 import { Settings } from './ui/settings_ui/settings.js'
 import { MusicModeUI } from './ui/music_mode_ui.js'
-import { consoleColors } from '../spessasynth_lib/utils/other.js'
+
+/**
+ * manager.js
+ * purpose: connects every element of spessasynth together
+ */
 
 export class Manager {
     channelColors = [

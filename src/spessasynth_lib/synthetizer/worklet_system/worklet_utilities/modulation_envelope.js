@@ -3,6 +3,10 @@ import { generatorTypes } from '../../../soundfont/chunk/generators.js'
 import { getModulatorCurveValue } from './modulator_curves.js'
 import { modulatorCurveTypes } from '../../../soundfont/chunk/modulators.js'
 
+/**
+ * modulation_envelope.js
+ * purpose: calculates the modulation envelope for the given voice
+ */
 const PEAK = 1;
 
 // 1000 should be precise enough

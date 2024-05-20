@@ -1,3 +1,7 @@
+/**
+ * draw_notes.js
+ * purpose: renders notes with effects to the canvas
+ */
 
 const STROKE_COLOR = "#000";
 const PRESSED_EFFECT_OPACITY = 0.5;

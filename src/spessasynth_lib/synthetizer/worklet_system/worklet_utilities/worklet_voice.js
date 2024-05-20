@@ -1,4 +1,10 @@
 /**
+ * worklet_voice.js
+ * purpose: prepares workletvoices from sample and generator data and manages sample dumping
+ * note: sample dumping means sending it over to the AudioWorkletGlobalScope
+ */
+
+/**
  * @typedef {{sampleID: number,
  * playbackStep: number,
  * cursor: number,

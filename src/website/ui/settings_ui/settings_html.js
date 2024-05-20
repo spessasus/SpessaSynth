@@ -1,3 +1,8 @@
+/**
+ * settings_html.js
+ * purpose: the inner html for the settings element
+ */
+
 export const settingsHtml = `
 <h1>Program settings</h1>
 <div class='settings_groups_parent'>

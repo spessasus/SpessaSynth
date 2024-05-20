@@ -3,6 +3,12 @@ import { consoleColors } from '../../utils/other.js'
 import { modulatorSources } from '../../soundfont/chunk/modulators.js'
 import { midiControllers } from '../../midi_parser/midi_message.js'
 import { clearSamplesList, getWorkletVoices } from './worklet_utilities/worklet_voice.js'
+
+/**
+ * worklet_channel.sj
+ * purpose: manages a single midi channel in the worklet system and communicates with channel_processor.js
+ */
+
 const CHANNEL_GAIN = 0.5;
 
 export const NON_CC_INDEX_OFFSET = 128;

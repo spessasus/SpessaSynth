@@ -1,5 +1,10 @@
 import { midiPatchNames } from '../../../spessasynth_lib/utils/other.js'
 
+/**
+ * syntui_selector.js
+ * purpose: manages a single selector element for selecting the presets
+ */
+
 export class Selector
 {
     /**

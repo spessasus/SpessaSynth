@@ -4,6 +4,11 @@ import { Sequencer } from '../../../spessasynth_lib/sequencer/sequencer.js';
 import { drawNotes } from './draw_notes.js'
 
 /**
+ * renderer.js
+ * purpose: renders midi file and channel waveforms to a canvas
+ */
+
+/**
  * @typedef {{
  * xPos: number,
  * yPos: number,

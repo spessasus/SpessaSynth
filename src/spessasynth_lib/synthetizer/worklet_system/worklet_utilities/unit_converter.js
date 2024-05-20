@@ -1,3 +1,8 @@
+/**
+ * unit_converter.js
+ * purpose: converts soundfont units into more useable values with the use of lookup tables to improve performance
+ */
+
 
 // timecent lookup table
 const MIN_TIMECENT = -15000;

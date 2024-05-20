@@ -1,4 +1,9 @@
 /**
+ * synth_event_handler.js
+ * purpose: manages the synthesizer's event system, calling assinged functions when synthesizer requests dispatching the event
+ */
+
+/**
  * @typedef {
  * "noteon"|
  * "noteoff"|

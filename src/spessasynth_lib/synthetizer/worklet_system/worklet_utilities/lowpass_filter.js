@@ -2,6 +2,12 @@ import { generatorTypes } from '../../../soundfont/chunk/generators.js'
 import { absCentsToHz, decibelAttenuationToGain } from './unit_converter.js'
 
 /**
+ * lowpass_filter.js
+ * purpose: applies a low pass filter to a voice
+ */
+
+
+/**
  * Applies a low-pass filter to the given buffer
  * @param voice {WorkletVoice} the voice we're working on
  * @param outputBuffer {Float32Array} the buffer to apply the filter to

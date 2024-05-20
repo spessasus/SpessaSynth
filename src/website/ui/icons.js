@@ -1,4 +1,10 @@
 /**
+ * icons.js
+ * purpose: contains all icons used in the spessasynth app
+ * note: mostly from bootstrap-icons
+ */
+
+/**
  * @param size {number}
  * @returns {string}
  */

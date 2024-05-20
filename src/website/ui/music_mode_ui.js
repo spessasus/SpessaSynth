@@ -1,6 +1,11 @@
 import { getDoubleNoteSvg } from './icons.js'
 import { formatTime } from '../../spessasynth_lib/utils/other.js'
 
+/**
+ * music_mode_ui.js
+ * purpose: manages the music mode gui, hiding keyboard and renderer from view
+ */
+
 export class MusicModeUI {
     /**
      * Creates a new class for displaying information about the current file.

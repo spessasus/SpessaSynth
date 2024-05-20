@@ -1,3 +1,7 @@
+/**
+ * synthui_meter.js
+ * purpose: manages a single visualization meter, handles user changing the value if set to do so
+ */
 
 /**
  * @typedef {Function} MeterCallbackFunction

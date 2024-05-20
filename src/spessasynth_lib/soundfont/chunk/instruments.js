@@ -2,6 +2,11 @@ import {RiffChunk} from "./riff_chunk.js";
 import {InstrumentZone} from "./zones.js";
 import {readBytesAsString, readBytesAsUintLittleEndian} from "../../utils/byte_functions.js";
 
+/**
+ * instrument.js
+ * purpose: parses soundfont instrument and stores them as a class
+ */
+
 export class Instrument{
     /**
      * Creates an instrument

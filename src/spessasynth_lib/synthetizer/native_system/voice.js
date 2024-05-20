@@ -1,6 +1,12 @@
 import { GeneratorTranslator } from './generator_translator.js';
 
 /**
+ * voice.js
+ * purpose: manages a single voice (sample) with the whole synthesis model (oscillator, lowpass filter, gain controller etc.)
+ */
+
+
+/**
  * Creates a new instance of a single sample
  * @param sampleAndGenerators {SampleAndGenerators}
  * @param midiNote {number}

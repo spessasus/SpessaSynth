@@ -3,6 +3,11 @@ import {Preset} from "../../soundfont/chunk/presets.js";
 import { consoleColors } from '../../utils/other.js'
 import { midiControllers } from '../../midi_parser/midi_message.js'
 
+/**
+ * midi_channel.js
+ * purpose: manages a single midi channel for the native system
+ */
+
 const CHANNEL_LOUDNESS = 0.3;
 
 const dataEntryStates = {

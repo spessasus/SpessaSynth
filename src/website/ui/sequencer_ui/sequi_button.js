@@ -1,4 +1,9 @@
 /**
+ * sequi_button.js
+ * purpose: formats a basic button for the sequencer_ui.js
+ */
+
+/**
  * @param title {string}
  * @param html {string} use carefully!
  * @returns {HTMLDivElement}

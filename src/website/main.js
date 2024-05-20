@@ -7,6 +7,11 @@ import {SoundFont2} from "../spessasynth_lib/soundfont/soundfont_parser.js";
 import {ShiftableByteArray} from "../spessasynth_lib/utils/shiftable_array.js";
 import { formatTitle } from '../spessasynth_lib/utils/other.js'
 
+/**
+ * main.js
+ * purpose: main script for the local edition, loads the soundfont and passes it to the manager.js, reloads soundfonts when needed and saves the settings
+ */
+
 const TITLE = "SpessaSynth: SoundFont2 Javascript Synthetizer";
 const SAMPLE_RATE = 44100;
 

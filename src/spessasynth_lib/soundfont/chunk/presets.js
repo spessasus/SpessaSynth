@@ -5,6 +5,10 @@ import {Sample} from "./samples.js";
 import { Generator, generatorTypes } from './generators.js'
 import { defaultModulators } from './modulators.js'
 
+/**
+ * parses soundfont presets, also includes function for getting the generators and samples from midi note and velocity
+ */
+
 export class Preset {
     /**
      * Creates a preset

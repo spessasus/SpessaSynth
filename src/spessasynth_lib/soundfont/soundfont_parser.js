@@ -1,13 +1,18 @@
 import {ShiftableByteArray} from "../utils/shiftable_array.js";
 import {readSamples} from "./chunk/samples.js";
-import { readRIFFChunk, readBytesAsString, readBytesAsUintLittleEndian } from '../utils/byte_functions.js'
+import { readBytesAsString, readBytesAsUintLittleEndian } from '../utils/byte_functions.js'
 import {readGenerators, Generator} from "./chunk/generators.js";
 import {readInstrumentZones, InstrumentZone, readPresetZones} from "./chunk/zones.js";
 import {Preset, readPresets} from "./chunk/presets.js";
 import {readInstruments, Instrument} from "./chunk/instruments.js";
 import {readModulators, Modulator} from "./chunk/modulators.js";
-import {RiffChunk} from "./chunk/riff_chunk.js";
+import { readRIFFChunk, RiffChunk } from './chunk/riff_chunk.js'
 import { consoleColors } from '../utils/other.js'
+
+/**
+ * soundfont_parser.js
+ * purpose: parses a soundfont2 file
+ */
 
 export class SoundFont2
 {

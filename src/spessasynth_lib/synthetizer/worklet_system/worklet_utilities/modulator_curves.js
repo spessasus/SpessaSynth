@@ -1,5 +1,9 @@
 import { modulatorCurveTypes } from '../../../soundfont/chunk/modulators.js'
 
+/**
+ * modulator_curves.js
+ * precomputes modulator concave and conves curves and calculates a curve value for a given polarity, direction and type
+ */
 
 // the length of the precomputed curve tables
 export const MOD_PRECOMPUTED_LENGTH = 16384;

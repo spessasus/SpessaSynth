@@ -2,6 +2,11 @@ import { settingsHtml } from './settings_html.js'
 import { getDownArrowSvg, getGearSvg } from '../icons.js'
 
 /**
+ * settings.js
+ * purpose: manages the gui settings, controlling things like render settings, light mode etc.
+ */
+
+/**
  * @typedef {{keyboard: {keyRange: {min: number, max: number}, mode: ("light"|"dark"), selectedChannel: number}, renderer: {renderNotes: boolean, keyRange: {min: number, max: number}, noteFallingTimeMs: number, renderWaveforms: boolean, drawActiveNotes: boolean, amplifier: number, showVisualPitch: boolean, sampleSize: number, waveformThickness: number}, midi: {output: (null|string), input: (null|string)}, interface: {mode: ("light"|"dark")}}} SavedSettings
  */
 export class Settings

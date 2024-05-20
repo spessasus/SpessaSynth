@@ -6,6 +6,11 @@ import { Meter } from './synthui_meter.js'
 import { Selector } from './synthui_selector.js'
 import { midiControllers } from '../../../spessasynth_lib/midi_parser/midi_message.js'
 
+/**
+ * synthesizer_ui.js
+ * purpose: manages the graphical user interface for the synthesizer
+ */
+
 export class SynthetizerUI
 {
     /**

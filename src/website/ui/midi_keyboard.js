@@ -1,6 +1,11 @@
 import {Synthetizer} from "../../spessasynth_lib/synthetizer/synthetizer.js";
 import { midiControllers } from '../../spessasynth_lib/midi_parser/midi_message.js'
 
+/**
+ * midi_keyboard.js
+ * purpose: creates and manages the on-screen virtual keyboard
+ */
+
 const GLOW_PX = 75;
 
 export class MidiKeyboard

@@ -1,5 +1,9 @@
 import {ShiftableByteArray} from "../utils/shiftable_array.js";
 
+/**
+ * midi_message.js
+ * purpose: contains enums for midi events and controllers and functions to parse them
+ */
 
 export class MidiMessage
 {

@@ -2,15 +2,21 @@ import {RiffChunk} from "./riff_chunk.js";
 import {ShiftableByteArray} from "../../utils/shiftable_array.js";
 import {readByte, readBytesAsUintLittleEndian, readBytesAsString, signedInt8} from "../../utils/byte_functions.js";
 import { consoleColors } from '../../utils/other.js';
+
+/**
+ * samples.js
+ * purpose: parses soundfont samples, resamples if needed.
+ * loads sample data, handles async loading of sf3 compressed samples
+ */
+
+const FIX_SAMPLERATE = 44100;
+
 /**
  * Reads the generatorTranslator from the shdr chunk
  * @param sampleHeadersChunk {RiffChunk}
  * @param smplChunkData {ShiftableByteArray}
  * @returns {Sample[]}
  */
-
-const FIX_SAMPLERATE = 44100    ;
-
 export function readSamples(sampleHeadersChunk, smplChunkData)
 {
     /**

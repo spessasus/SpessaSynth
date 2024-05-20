@@ -1,6 +1,11 @@
 import { Synthetizer } from '../synthetizer/synthetizer.js'
 import { consoleColors } from '../utils/other.js';
 
+/**
+ * midi_handler.js
+ * purpose: handles the connection between MIDI devices and synthesizer/sequencer via Web MIDI API
+ */
+
 const NO_INPUT = null;
 
 export class MIDIDeviceHandler

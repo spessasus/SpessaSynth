@@ -1,6 +1,11 @@
 import {Preset} from "../../soundfont/chunk/presets.js";
 import { getVoiceAsync, Voice } from './voice.js'
 
+/**
+ * voice_group.js
+ * purpose: manages the group of voices created by a single noteOn message
+ */
+
 export class VoiceGroup
 {
     /**

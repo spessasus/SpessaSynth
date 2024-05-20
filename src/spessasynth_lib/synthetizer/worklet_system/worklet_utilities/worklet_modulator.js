@@ -3,6 +3,11 @@ import { modulatorSources } from '../../../soundfont/chunk/modulators.js'
 import { getModulatorCurveValue, MOD_PRECOMPUTED_LENGTH } from './modulator_curves.js'
 
 /**
+ * worklet_modulator.js
+ * purpose: precomputes all curve types and computes modulators
+ */
+
+/**
  * Computes a given modulator
  * @param controllerTable {Int16Array} all midi controllers as 14bit values + the non controller indexes, starting at 128
  * @param modulator {Modulator} the modulator to compute

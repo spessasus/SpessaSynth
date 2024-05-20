@@ -1,6 +1,11 @@
 import { HALF_PI } from './unit_converter.js'
 
 /**
+ * stereo_panner.js
+ * purpose: pans a given voice out to the stereo output and to the effects' outputs
+ */
+
+/**
  * Pans the voice to the given output buffers
  * @param pan {number} 0-1 , 0.5 is middle
  * @param inputBuffer {Float32Array} the input buffer in mono

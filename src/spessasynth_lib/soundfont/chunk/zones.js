@@ -6,9 +6,14 @@ import {Sample} from "./samples.js";
 import {Instrument} from "./instruments.js";
 import {Modulator} from "./modulators.js";
 
+/**
+ * zones.js
+ * purpose: reads instrumend and preset zones from soundfont and gets their respective samples and generators and modulators
+ */
+
 export class InstrumentZone {
     /**
-     * Creates a zone (presetinstrument)
+     * Creates a zone (instrument)
      * @param dataArray {ShiftableByteArray}
      */
     constructor(dataArray) {

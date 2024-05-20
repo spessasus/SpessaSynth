@@ -4,6 +4,11 @@ import { getBackwardSvg, getForwardSvg, getLoopSvg, getPauseSvg, getPlaySvg, get
 import { messageTypes } from '../../../spessasynth_lib/midi_parser/midi_message.js'
 import { getSeqUIButton } from './sequi_button.js'
 
+/**
+ * sequencer_ui.js
+ * purpose: manages the GUI for the sequencer class, adding buttons for pause/play, lyrics, next, previous etc.
+ */
+
 const ICON_SIZE = 32;
 
 const ICON_COLOR = "#ccc";

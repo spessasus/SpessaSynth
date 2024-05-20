@@ -2,6 +2,11 @@ import { ShiftableByteArray } from '../../utils/shiftable_array.js'
 import { RiffChunk } from './riff_chunk.js'
 import { readByte, signedInt16 } from '../../utils/byte_functions.js'
 
+/**
+ * generators.js
+ * purpose: contains enums for generators and their limis parses reads soundfont generators, sums them and applies limits
+ */
+
 export const generatorTypes = {
     startAddrsOffset: 0,                // sample control - moves sample start point
     endAddrOffset: 1,                   // sample control - moves sample end point

@@ -7,6 +7,11 @@ import {
     readVariableLengthQuantity
 } from "../utils/byte_functions.js";
 import { arrayToHexString, consoleColors, formatTitle } from '../utils/other.js'
+
+/**
+ * midi_loader.js
+ * purpose: parses a midi file for the seqyencer, including things like marker or CC 2/4 loop detection, copyright detection etc.
+ */
 export class MIDI{
     /**
      * Parses a given midi file

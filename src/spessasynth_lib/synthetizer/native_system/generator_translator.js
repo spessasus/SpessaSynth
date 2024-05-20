@@ -1,6 +1,11 @@
 import {Generator, generatorTypes} from "../../soundfont/chunk/generators.js";
 import {Sample} from "../../soundfont/chunk/samples.js";
 
+/**
+ * generator_translator.js
+ * purpose: translates the generators got from the preset to values understandable by voice.js
+ */
+
 const EMU_ATTENUATION_CORRECTION = 0.4;
 const FREQ_MIN = 0;
 const FREQ_MAX = 22050;

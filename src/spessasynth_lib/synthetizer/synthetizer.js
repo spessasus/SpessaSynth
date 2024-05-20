@@ -7,6 +7,11 @@ import { WorkletChannel } from './worklet_system/worklet_channel.js'
 import { EventHandler } from '../utils/synth_event_handler.js'
 import { FancyChorus } from './fancy_chorus.js'
 
+/**
+ * synthesizer.js
+ * purpose: responds to midi messages and called functions, managing the channels and passing the messages to them
+ */
+
 const VOICES_CAP = 450;
 
 export const DEFAULT_GAIN = 1;

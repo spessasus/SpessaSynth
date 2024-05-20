@@ -1,4 +1,9 @@
 /**
+ * lfo.js
+ * purpose: low frequency triangel oscillator
+ */
+
+/**
  * Calculates a triangular wave value for the given time
  * @param startTime {number} seconds
  * @param frequency {number} Hz

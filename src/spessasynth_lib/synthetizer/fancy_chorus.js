@@ -1,3 +1,8 @@
+/**
+ * fancy_chorus.js
+ * purpose: creates a simple chorus effect node
+ */
+
 const DEFAULT_DELAY = 0.02;
 const DELAY_VARIATION = 0.015;
 

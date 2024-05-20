@@ -1,3 +1,8 @@
+/**
+ * shiftable_array.js
+ * purpose: exteds Uint8Array with the Array.shift() function
+ */
+
 export class ShiftableByteArray extends Uint8Array
 {
     /**

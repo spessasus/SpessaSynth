@@ -1,5 +1,12 @@
 import { Synthetizer } from '../synthetizer/synthetizer.js'
 import { consoleColors } from '../utils/other.js'
+
+/**
+ * web_midi_link.js
+ * purpose: handles the web midi link connection to the synthesizer
+ * https://www.g200kg.com/en/docs/webmidilink/
+ */
+
 export class WebMidiLinkHandler
 {
     /**

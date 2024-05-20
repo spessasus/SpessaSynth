@@ -15,6 +15,11 @@ import { applyVolumeEnvelope } from './worklet_utilities/volume_envelope.js'
 import { applyLowpassFilter } from './worklet_utilities/lowpass_filter.js'
 import { getModEnvValue } from './worklet_utilities/modulation_envelope.js'
 
+/**
+ * channel_processor.js
+ * purpose: manages the channel from the AudioWorkletGlobalScope and renders the audio data
+ */
+
 const CHANNEL_CAP = 400;
 const CONTROLLER_TABLE_SIZE = 147;
 const MIN_NOTE_LENGTH = 0.07; // if the note is released faster than that, it forced to last that long
