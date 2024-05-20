@@ -104,11 +104,6 @@ export class WorkletChannel {
         });
         this.muted = false;
 
-        /**
-         * @type {Set<number>}
-         */
-        this.dumpedSamples = new Set();
-
         this.gainController.connect(this.outputNode);
         this.worklet.connect(this.gainController, 0);
         this.worklet.connect(reverbNode, 1);
@@ -300,7 +295,7 @@ export class WorkletChannel {
         {
             return 0;
         }
-        let workletVoices = getWorkletVoices(midiNote, velocity, this.preset, this.dumpedSamples, this.ctx, this.worklet.port, this.cachedWorkletVoices, debug);
+        let workletVoices = getWorkletVoices(midiNote, velocity, this.preset, this.ctx, this.worklet.port, this.cachedWorkletVoices, debug);
 
         this.post({
             messageType: workletMessageType.noteOn,
@@ -612,7 +607,6 @@ export class WorkletChannel {
             messageType: workletMessageType.clearCache,
             messageData: undefined
         });
-        this.dumpedSamples.clear();
         this.cachedWorkletVoices = [];
         for (let i = 0; i < 128; i++) {
             this.cachedWorkletVoices.push([]);

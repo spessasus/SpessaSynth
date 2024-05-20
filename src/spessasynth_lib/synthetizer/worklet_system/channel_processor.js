@@ -32,6 +32,11 @@ resetArray[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] = 2 << 7;
 resetArray[NON_CC_INDEX_OFFSET + modulatorSources.channelPressure] = 127 << 7;
 resetArray[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning] = 0;
 
+/**
+ * @type {Float32Array[]}
+ */
+let workletDumpedSamplesList = [];
+
 class ChannelProcessor extends AudioWorkletProcessor {
     /**
      * Creates a new channel mini synthesizer
@@ -44,11 +49,6 @@ class ChannelProcessor extends AudioWorkletProcessor {
          * @type {Int16Array}
          */
         this.midiControllers = new Int16Array(CONTROLLER_TABLE_SIZE);
-
-        /**
-         * @type {Object<number, Float32Array>}
-         */
-        this.samples = {};
 
         // in seconds, time between two samples (very, very short)
         this.sampleTime = 1 / sampleRate;
@@ -142,7 +142,7 @@ class ChannelProcessor extends AudioWorkletProcessor {
                 break;
 
             case workletMessageType.sampleDump:
-                this.samples[data.sampleID] = data.sampleData;
+                workletDumpedSamplesList[data.sampleID] = data.sampleData;
                 // the sample maybe was loaded after the voice was sent... adjust the end position!
                 this.voices.forEach(v => {
                     if(v.sample.sampleID !== data.sampleID)
@@ -196,7 +196,7 @@ class ChannelProcessor extends AudioWorkletProcessor {
                 break;
 
             case workletMessageType.clearCache:
-                this.samples = [];
+                workletDumpedSamplesList = [];
                 break;
 
             case workletMessageType.stopAll:
@@ -277,7 +277,7 @@ class ChannelProcessor extends AudioWorkletProcessor {
     renderVoice(voice, output, reverbOutput, chorusOutput)
     {
         // if no matching sample, perhaps it's still being loaded..? worklet_channel.js line 256
-        if(this.samples[voice.sample.sampleID] === undefined)
+        if(workletDumpedSamplesList[voice.sample.sampleID] === undefined)
         {
             return;
         }
@@ -376,7 +376,7 @@ class ChannelProcessor extends AudioWorkletProcessor {
         const bufferOut = new Float32Array(output[0].length);
 
         // wavetable oscillator
-        getOscillatorData(voice, this.samples[voice.sample.sampleID], bufferOut);
+        getOscillatorData(voice, workletDumpedSamplesList[voice.sample.sampleID], bufferOut);
 
 
         // lowpass filter

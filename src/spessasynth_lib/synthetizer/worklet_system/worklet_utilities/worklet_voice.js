@@ -59,6 +59,12 @@ import { addAndClampGenerator, generatorTypes } from '../../../soundfont/chunk/g
 import { workletMessageType } from '../worklet_channel.js'
 
 
+/**
+ *
+ * @type {Set<number>}
+ */
+const globalDumpedSamplesList = new Set();
+
 function /**
  * This is how the logic works: since sf3 is compressed, we rely on an async decoder.
  * So, if the sample isn't loaded yet:
@@ -72,12 +78,11 @@ function /**
  * @param sample {Sample}
  * @param id {number}
  * @param messagePort {MessagePort}
- * @param dumpedSamplesList {Set<number>}
  */
-dumpSample(sample, id, messagePort, dumpedSamplesList)
+dumpSample(sample, id, messagePort)
 {
     // flag as dumped so other calls won't dump it again
-    dumpedSamplesList.add(id);
+    globalDumpedSamplesList.add(id);
 
     // if uncompressed, load right away
     if(sample.isCompressed === false)
@@ -108,14 +113,13 @@ dumpSample(sample, id, messagePort, dumpedSamplesList)
  * @param midiNote {number}
  * @param velocity {number}
  * @param preset {Preset}
- * @param dumpedSamples {Set<number>}
  * @param context {BaseAudioContext}
  * @param workletMessagePort {MessagePort}
  * @param cachedVoices {WorkletVoice[][][]} first is midi note, second is velocity. output is an array of WorkletVoices
  * @param debug {boolean}
  * @returns {WorkletVoice[]}
  */
-export function getWorkletVoices(midiNote, velocity, preset, dumpedSamples, context, workletMessagePort, cachedVoices, debug=false)
+export function getWorkletVoices(midiNote, velocity, preset, context, workletMessagePort, cachedVoices, debug=false)
 {
     /**
      * @type {WorkletVoice[]}
@@ -139,8 +143,8 @@ export function getWorkletVoices(midiNote, velocity, preset, dumpedSamples, cont
         workletVoices = preset.getSamplesAndGenerators(midiNote, velocity).map(sampleAndGenerators => {
 
             // dump the sample if haven't already
-            if (!dumpedSamples.has(sampleAndGenerators.sampleID)) {
-                dumpSample(sampleAndGenerators.sample, sampleAndGenerators.sampleID, workletMessagePort, dumpedSamples);
+            if (!globalDumpedSamplesList.has(sampleAndGenerators.sampleID)) {
+                dumpSample(sampleAndGenerators.sample, sampleAndGenerators.sampleID, workletMessagePort);
 
                 // can't cache the voice as the end in workletSample maybe is incorrect (the sample is still loading)
                 if(sampleAndGenerators.sample.isSampleLoaded === false)
