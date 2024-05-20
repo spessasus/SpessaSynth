@@ -553,6 +553,7 @@ export class MidiChannel {
         this.isMuted = true;
         this.defaultGain = 0;
         this.updateGain();
+        this.stopAll();
     }
 
     unmuteChannel()
