@@ -14,6 +14,8 @@ import { panVoice } from './worklet_utilities/stereo_panner.js'
 import { applyVolumeEnvelope } from './worklet_utilities/volume_envelope.js'
 import { applyLowpassFilter } from './worklet_utilities/lowpass_filter.js'
 import { getModEnvValue } from './worklet_utilities/modulation_envelope.js'
+import Module from "./cppessa_synth/cpessasynth.js";
+import Cpessasynth from './cppessa_synth/cpessasynth.js'
 
 /**
  * channel_processor.js
@@ -23,6 +25,8 @@ import { getModEnvValue } from './worklet_utilities/modulation_envelope.js'
 const CHANNEL_CAP = 400;
 const CONTROLLER_TABLE_SIZE = 147;
 const MIN_NOTE_LENGTH = 0.07; // if the note is released faster than that, it forced to last that long
+const CpessaSynth = Module()
+console.log(Cpessasynth());
 
 // an array with preset default values so we can quickly use set() to reset the controllers
 const resetArray = new Int16Array(CONTROLLER_TABLE_SIZE);

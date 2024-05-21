@@ -1,0 +1,5 @@
+/cmake-build-debug-emscripten/
+/cmake-build-debug/
+/build/
+.idea
+cmake-build-*

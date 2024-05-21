@@ -7,6 +7,19 @@
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
       <excludeFolder url="file://$MODULE_DIR$/disabled_sf2s" />
+      <excludeFolder url="file://$MODULE_DIR$/soundfonts/.ark-.ZIyEGv" />
+      <excludeFolder url="file://$MODULE_DIR$/soundfonts/FluidR3Mono" />
+      <excludeFolder url="file://$MODULE_DIR$/soundfonts/excluded" />
+      <excludeFolder url="file://$MODULE_DIR$/soundfonts/sf3convert" />
+      <excludeFolder url="file://$MODULE_DIR$/src/spessasynth_lib/synthetizer/worklet_system/cppessa_synth/build" />
+      <excludeFolder url="file://$MODULE_DIR$/src/spessasynth_lib/synthetizer/worklet_system/cppessa_synth/cmake-build-debug-emscripten/CMakeFiles/3.28.1/CompilerIdC/tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/src/spessasynth_lib/synthetizer/worklet_system/cppessa_synth/cmake-build-debug-emscripten/CMakeFiles/3.28.1/CompilerIdCXX/tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/src/spessasynth_lib/synthetizer/worklet_system/cppessa_synth/cmake-build-debug-emscripten/CMakeFiles/pkgRedirects" />
+      <excludeFolder url="file://$MODULE_DIR$/src/spessasynth_lib/synthetizer/worklet_system/cppessa_synth/cmake-build-debug-emscripten/CMakeFiles/spessasynth_wasm_test.dir" />
+      <excludeFolder url="file://$MODULE_DIR$/src/spessasynth_lib/synthetizer/worklet_system/cppessa_synth/cmake-build-debug/CMakeFiles/3.28.1/CompilerIdC/tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/src/spessasynth_lib/synthetizer/worklet_system/cppessa_synth/cmake-build-debug/CMakeFiles/3.28.1/CompilerIdCXX/tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/src/spessasynth_lib/synthetizer/worklet_system/cppessa_synth/cmake-build-debug/CMakeFiles/CMakeScratch" />
+      <excludeFolder url="file://$MODULE_DIR$/src/spessasynth_lib/synthetizer/worklet_system/cppessa_synth/cmake-build-debug/CMakeFiles/pkgRedirects" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.10" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
