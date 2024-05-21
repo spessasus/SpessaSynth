@@ -83,6 +83,14 @@ export class MidiKeyboard
         this.synth.eventHandler.addEvent("stopall", "keyboard-stop-all", () => {
             this.clearNotes();
         });
+
+        // QoL: change keyboard channel to the changed one when user changed it
+        this.synth.eventHandler.addEvent("programchange", "keyboard-program-change", e => {
+            if(e.userCalled)
+            {
+                this.selectChannel(e.channel);
+            }
+        })
     }
 
     /**

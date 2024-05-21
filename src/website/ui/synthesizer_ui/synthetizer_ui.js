@@ -498,7 +498,7 @@ export class SynthetizerUI
                 const sys = this.synth.system;
                 this.synth.system = "gs";
                 this.synth.controllerChange(channelNumber, midiControllers.bankSelect, data[0]);
-                this.synth.programChange(channelNumber, data[1]);
+                this.synth.programChange(channelNumber, data[1], true);
                 presetSelector.mainDiv.classList.add("locked_selector");
                 this.synth.midiChannels[channelNumber].lockPreset = true;
                 this.synth.system = sys;

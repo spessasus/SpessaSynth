@@ -416,8 +416,9 @@ export class Synthetizer {
      * Changes the patch for a given channel
      * @param channel {number} usually 0-15: the channel to change
      * @param programNumber {number} 0-127 the MIDI patch number
+     * @param userChange {boolean} indicates if the program change has been called by user. defaults to false
      */
-    programChange(channel, programNumber)
+    programChange(channel, programNumber, userChange=false)
     {
         const channelObj = this.midiChannels[channel];
         // always 128 for percussion
@@ -428,7 +429,8 @@ export class Synthetizer {
         channelObj.setPreset(preset);
         this.eventHandler.callEvent("programchange", {
             channel: channel,
-            preset: preset
+            preset: preset,
+            userCalled: userChange
         });
     }
 
