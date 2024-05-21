@@ -46,48 +46,56 @@ export function applyVolumeEnvelope(voice, audioBuffer, currentTime, centibelOff
     let holdEnd = timecentsToSeconds(voice.modulatedGenerators[generatorTypes.holdVolEnv] + ((60 - voice.midiNote) * voice.modulatedGenerators[generatorTypes.keyNumToVolEnvHold])) + attackEnd;
     let decayEnd = decay + holdEnd;
 
+    // check if voice is in release
     if(voice.isInRelease)
     {
-        // calculate the db attenuation at the time of release
+        // calculate the db attenuation at the time of release (not a constant because it can change (ex, volume set to 0, the sound should cut off)
         let releaseStartDb;
-        if(voice.releaseStartTime < delayEnd)
+        switch (voice.volumeEnvelopeState)
         {
-            // we're in the delay phase (skip to peak)
-            releaseStartDb = attenuation;
-        }
-        else if(voice.releaseStartTime < attackEnd)
-        {
-            // attack is linear (in gain) so we need to do get db from that
-            let elapsed = 1 - ((attackEnd - voice.releaseStartTime) / attack);
-            // calculate the gain that the attack would have
-            let attackGain = elapsed * decibelAttenuationToGain(attenuation + decibelOffset);
+            case 0:
+                // delay phase, this shouldn't happen so skip to hold
+                releaseStartDb = attenuation;
+                break;
 
-            // turn that into db
-            releaseStartDb = 20 * Math.log10(attackGain) * -1;
-        }
-        else if(voice.releaseStartTime < holdEnd)
-        {
-            releaseStartDb = attenuation;
-        }
-        else if(voice.releaseStartTime < decayEnd)
-        {
-            // we're in the decay phase
-            releaseStartDb = (1 - (decayEnd - voice.releaseStartTime) / decay) * (sustain - attenuation) + attenuation;
-        }
-        else
-        {
-            releaseStartDb = sustain;
+            case 1:
+                // attack phase
+                // attack is linear (in gain) so we need to do get db from that
+                let elapsed = 1 - ((attackEnd - voice.releaseStartTime) / attack);
+                // calculate the gain that the attack would have
+                let attackGain = elapsed * decibelAttenuationToGain(attenuation + decibelOffset);
+
+                // turn that into db
+                releaseStartDb = 20 * Math.log10(attackGain) * -1;
+                break;
+
+            case 2:
+                // hold
+                releaseStartDb = attenuation;
+                break;
+
+            case 3:
+                // decay
+                releaseStartDb = (1 - (decayEnd - voice.releaseStartTime) / decay) * (sustain - attenuation) + attenuation;
+                break;
+
+            case 4:
+                // sustain
+                releaseStartDb = sustain;
+                break;
+
         }
 
-        // if the voice is not released, but state set to true (due to min note length, simply use the release db)
-        if(voice.releaseStartTime > currentTime)
-        {
-            const gain = decibelAttenuationToGain(releaseStartDb + decibelOffset);
-            for (let i = 0; i < audioBuffer.length; i++) {
-                audioBuffer[i] = gain * audioBuffer[i];
-            }
-            return;
-        }
+        // uncommented because doesn't seem to be needed but just in case
+        // // if the voice is not released, but state set to true (due to min note length, simply use the release db)
+        // if(voice.releaseStartTime > currentTime)
+        // {
+        //     const gain = decibelAttenuationToGain(releaseStartDb + decibelOffset);
+        //     for (let i = 0; i < audioBuffer.length; i++) {
+        //         audioBuffer[i] = gain * audioBuffer[i];
+        //     }
+        //     return;
+        // }
 
         let elapsedRelease = currentTime - voice.releaseStartTime;
         let dbDifference = DB_SILENCE - releaseStartDb;
