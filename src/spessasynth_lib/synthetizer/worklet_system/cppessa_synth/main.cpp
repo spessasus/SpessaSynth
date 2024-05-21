@@ -1,19 +1,38 @@
 #include <iostream>
 #include <emscripten.h>
+#include <cmath>
+#include "main.h"
 
+//
+// Created by spessasus on 21.05.24.
+// main audio rendering code
+//
+
+#ifdef __cplusplus
 extern "C" {
+#endif
     EMSCRIPTEN_KEEPALIVE
-    int* addTwoNums(int* numArray1, int* numArray2, int len) {
-        int* array = new int[len];
-        for (int i = 0; i < len; i++) {
-            array[i] = numArray2[i] + numArray1[i];
-            std::cout << numArray1[i] << " + " << numArray2[i] << " = " << array[i] << "\n";  // Corrected log statement
+    void renderAudio(int channelNumber,
+                     int bufferLength,
+
+                     float* outputLeft,
+                     float* outputRight,
+
+                     float* reverbLeft,
+                     float* reverbRight,
+
+                     float* chorusLeft,
+                     float* chorusRight) {
+        for(int i = 0; i < bufferLength; i++)
+        {
+            // fill the arrays with a sine wave
+            //float sample = i > 64 ? 1.0f : -1.0f;
+            float sample = sinf(2.0f * M_PI * i / bufferLength);
+            outputRight[i] = sample;
+            chorusLeft[i] = sample;
         }
-        return array;
     }
 
-    EMSCRIPTEN_KEEPALIVE
-    void freeArray(int* array) {
-        delete[] array;
-    }
+#ifdef __cplusplus
 }
+#endif

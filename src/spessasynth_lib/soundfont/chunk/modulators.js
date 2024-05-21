@@ -60,10 +60,10 @@ export class Modulator{
             this.transformType = readBytesAsUintLittleEndian(dataArray, 2);
         }
 
-        if(this.modulatorDestination > 58)
-        {
-            this.modulatorDestination = -1; // flag as invalid (for linked ones)
-        }
+        // if(this.modulatorDestination > 58)
+        // {
+        //     this.modulatorDestination = -1; // flag as invalid (for linked ones)
+        // }
 
         // decode the source
         this.sourcePolarity = this.modulatorSource >> 9 & 1;

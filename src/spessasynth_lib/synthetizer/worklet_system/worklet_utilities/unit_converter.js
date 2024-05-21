@@ -26,8 +26,8 @@ export function timecentsToSeconds(timecents)
 }
 
 // abs cent lookup table
-const MIN_ABS_CENT = -20000; // freqVibLfo
-const MAX_ABS_CENT = 16500; // filterFc
+    const MIN_ABS_CENT = -20000; // freqVibLfo
+    const MAX_ABS_CENT = 16500; // filterFc
 const absoluteCentLookupTable = new Float32Array(MAX_ABS_CENT - MIN_ABS_CENT + 1);
 for (let i = 0; i < absoluteCentLookupTable.length; i++) {
     const absoluteCents = MIN_ABS_CENT + i;

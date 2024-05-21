@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/SpessaSynth.iml" filepath="$PROJECT_DIR$/.idea/SpessaSynth.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/SpessaSynth2.iml" filepath="$PROJECT_DIR$/.idea/SpessaSynth2.iml" />
     </modules>
   </component>
 </project>

@@ -14,19 +14,22 @@ import { panVoice } from './worklet_utilities/stereo_panner.js'
 import { applyVolumeEnvelope } from './worklet_utilities/volume_envelope.js'
 import { applyLowpassFilter } from './worklet_utilities/lowpass_filter.js'
 import { getModEnvValue } from './worklet_utilities/modulation_envelope.js'
-import Module from "./cppessa_synth/cpessasynth.js";
-import Cpessasynth from './cppessa_synth/cpessasynth.js'
+import Module from "./cpessasynth.js";
 
 /**
  * channel_processor.js
  * purpose: manages the channel from the AudioWorkletGlobalScope and renders the audio data
  */
 
+const BUFFERS_PER_RENDER = 6; // left, right, reverb left, reverb right, chorus left, chorus right
 const CHANNEL_CAP = 400;
 const CONTROLLER_TABLE_SIZE = 147;
 const MIN_NOTE_LENGTH = 0.07; // if the note is released faster than that, it forced to last that long
-const CpessaSynth = Module()
-console.log(Cpessasynth());
+const CppessaSynth = Module();
+let ready = false;
+CppessaSynth.ready.then(() => {
+    ready = true;
+});
 
 // an array with preset default values so we can quickly use set() to reset the controllers
 const resetArray = new Int16Array(CONTROLLER_TABLE_SIZE);
@@ -50,8 +53,14 @@ class ChannelProcessor extends AudioWorkletProcessor {
     /**
      * Creates a new channel mini synthesizer
      */
-    constructor() {
+    constructor(options) {
         super();
+
+        /**
+         * starts from ZERO, not one. In the worklet and midi channel it starts from one and it's the dumbest thing ever...
+         * @type {number}
+         */
+        this.channelNumber = options.processorOptions.channelNumber - 1;
 
         /**
          * Contains all controllers + other "not controllers" like pitch bend
@@ -256,27 +265,50 @@ class ChannelProcessor extends AudioWorkletProcessor {
      * @returns {boolean} true
      */
     process(inputs, outputs) {
-        if(this.voices.length < 1)
+        if(!ready)
         {
             return true;
         }
         const channels = outputs[0];
-        const reverbChannels = outputs[1];
-        const chorusChannels = outputs[2];
-        const tempV = this.voices;
-        this.voices = [];
-        tempV.forEach(v => {
-            this.renderVoice(v, channels, reverbChannels, chorusChannels);
-            if(!v.finished)
-            {
-                this.voices.push(v);
-            }
-        });
+        const reverb = outputs[1];
+        const chorus = outputs[2];
+        const channelSampleLength = channels[0].length;
+        const sizePerChannel = channelSampleLength * 4; // 4 bytes per float
+        // allocate the memory as a big chunk of left then right data
+        const renderOutPointer = CppessaSynth._malloc(sizePerChannel * BUFFERS_PER_RENDER);
+        // get the pointers
+        const leftChannelPointer = renderOutPointer;
+        const rightChannelPointer = leftChannelPointer + sizePerChannel;
 
-        if(tempV.length !== this.voices.length) {
-            this.port.postMessage(this.voices.length);
-        }
+        const leftReverbPointer = rightChannelPointer + sizePerChannel;
+        const rightReverbPointer = leftReverbPointer + sizePerChannel;
 
+        const leftChorusPointer = rightReverbPointer + sizePerChannel;
+        const rightChorusPointer = leftChorusPointer + sizePerChannel;
+
+        // render
+        CppessaSynth._renderAudio(this.channelNumber, channelSampleLength,
+            leftChannelPointer, rightChannelPointer,
+            leftReverbPointer, rightReverbPointer,
+            leftChorusPointer, rightChorusPointer);
+
+        // copy the rendered data to out
+
+        // dry audio
+        channels[0].set(new Float32Array(CppessaSynth.HEAPU8.buffer, leftChannelPointer, channelSampleLength));
+        channels[1].set(new Float32Array(CppessaSynth.HEAPU8.buffer, rightChannelPointer, channelSampleLength));
+        console.log(channels[1])
+
+        // reverb
+        reverb[0].set(new Float32Array(CppessaSynth.HEAPU8.buffer, leftReverbPointer, channelSampleLength));
+        reverb[1].set(new Float32Array(CppessaSynth.HEAPU8.buffer, rightReverbPointer, channelSampleLength));
+
+        // chorus
+        chorus[0].set(new Float32Array(CppessaSynth.HEAPU8.buffer, leftChorusPointer, channelSampleLength));
+        chorus[1].set(new Float32Array(CppessaSynth.HEAPU8.buffer, rightChorusPointer, channelSampleLength));
+
+        // free memory
+        CppessaSynth._free(renderOutPointer);
         return true;
     }
 

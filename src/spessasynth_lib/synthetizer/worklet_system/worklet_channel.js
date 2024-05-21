@@ -100,7 +100,10 @@ export class WorkletChannel {
 
         this.worklet = new AudioWorkletNode(this.ctx, "worklet-channel-processor", {
             outputChannelCount: [2, 2, 2],
-            numberOfOutputs: 3
+            numberOfOutputs: 3,
+            processorOptions: {
+                channelNumber: channelNumber
+            }
         });
 
         this.reportedVoicesAmount = 0;
