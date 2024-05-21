@@ -297,7 +297,6 @@ class ChannelProcessor extends AudioWorkletProcessor {
         // dry audio
         channels[0].set(new Float32Array(CppessaSynth.HEAPU8.buffer, leftChannelPointer, channelSampleLength));
         channels[1].set(new Float32Array(CppessaSynth.HEAPU8.buffer, rightChannelPointer, channelSampleLength));
-        console.log(channels[1])
 
         // reverb
         reverb[0].set(new Float32Array(CppessaSynth.HEAPU8.buffer, leftReverbPointer, channelSampleLength));

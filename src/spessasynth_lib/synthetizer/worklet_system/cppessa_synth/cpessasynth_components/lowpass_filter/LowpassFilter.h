@@ -50,12 +50,12 @@ private:
 
 public:
     /**
-     * @param voice the voice to apply the filter to
+     * @param filterQcBCurrent the current filter Q in dB if differs from the internal value, the coefficients will be recalculated
      * @param cutoffCentsCurrent the current cutoff cents. if differs from the internal value, the coefficients will be recalculated
      * @param outputBuffer the buffer to process
      * @param bufferLength the length of the buffer
      */
-    void applyLowpassFilter(Voice* voice, unsigned int cutoffCentsCurrent, float* outputBuffer, int bufferLength);
+    void applyLowpassFilter(unsigned int filterQcBCurrent, unsigned int cutoffCentsCurrent, float* outputBuffer, int bufferLength);
     LowpassFilter(unsigned int sampleRate);
 };
 

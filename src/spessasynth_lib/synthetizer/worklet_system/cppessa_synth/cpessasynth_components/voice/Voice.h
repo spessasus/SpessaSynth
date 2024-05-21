@@ -9,9 +9,12 @@
 #include "../lowpass_filter/LowpassFilter.h"
 #include "../generatorTypes.h"
 
-extern "C"
-
 class Voice {
+public:
+    /**
+     * generators modulated by modulators
+     */
+    int* modulatedGenerators;
 private:
     VoiceSample sample;
     LowpassFilter filter;
@@ -20,11 +23,6 @@ private:
      * the voice's generators
      */
     int* generators;
-
-    /**
-     * generators modulated by modulators
-     */
-    int* modulatedGenerators;
 
 };
 

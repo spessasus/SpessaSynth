@@ -2,6 +2,7 @@
 #include <emscripten.h>
 #include <cmath>
 #include "main.h"
+#include "cpessasynth_components/voice/Voice.h"
 
 //
 // Created by spessasus on 21.05.24.
