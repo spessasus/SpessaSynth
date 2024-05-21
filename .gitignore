@@ -2,4 +2,5 @@
 /disabled_sf2s/
 /config.json
 /.idea
-/src/spessasynth_lib/synthetizer/freeverb_unused/
+/src/spessasynth_lib/synthetizer/worklet_system/cppessa_synth/cmake-build-debug/
+/src/spessasynth_lib/synthetizer/worklet_system/cppessa_synth/cmake-build-debug-emscripten/
