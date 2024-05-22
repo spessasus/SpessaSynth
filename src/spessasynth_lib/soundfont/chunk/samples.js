@@ -352,14 +352,6 @@ export class Sample {
     }
 
     /**
-     * forces the sample to load the buffer data again on next getAudioData
-     */
-    pruneCache()
-    {
-        this.isSampleLoaded = false;
-    }
-
-    /**
      * @returns {Promise<Float32Array>}
      */
     async loadBufferData() {

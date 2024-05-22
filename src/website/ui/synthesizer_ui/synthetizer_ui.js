@@ -1,9 +1,4 @@
-import {
-    DEFAULT_GAIN,
-    DEFAULT_PERCUSSION,
-    Synthetizer,
-    VOICE_CAP,
-} from '../../../spessasynth_lib/synthetizer/synthetizer.js'
+import { DEFAULT_GAIN, DEFAULT_PERCUSSION, Synthetizer } from '../../../spessasynth_lib/synthetizer/synthetizer.js'
 import { getDrumsSvg, getLoopSvg, getMuteSvg, getNoteSvg, getVolumeSvg } from '../icons.js'
 import { ShiftableByteArray } from '../../../spessasynth_lib/utils/shiftable_array.js'
 import { Meter } from './synthui_meter.js'
@@ -117,7 +112,7 @@ export class SynthetizerUI
         this.voiceMeter = new Meter("#206",
             "Voices: ",
             0,
-             VOICE_CAP,
+            this.synth.voiceCap,
             "The total amount of voices currently playing");
         this.voiceMeter.bar.classList.add("voice_meter_bar_smooth");
 

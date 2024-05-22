@@ -113,8 +113,6 @@ dumpSample(channel, sample, id, messagePort)
 
     // load the data
     sample.getAudioData().then(sampleData => {
-        // the audio has been transferred, clear the cache!
-        sample.pruneCache();
         messagePort.postMessage({
             channelNumber: channel,
             messageType: workletMessageType.sampleDump,
@@ -122,7 +120,7 @@ dumpSample(channel, sample, id, messagePort)
                 sampleID: id,
                 sampleData: sampleData
             }
-        }, [sampleData.buffer]);
+        });
     })
 }
 
