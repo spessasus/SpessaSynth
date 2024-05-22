@@ -1,4 +1,5 @@
 import { HALF_PI } from './unit_converter.js'
+import { WORKLET_SYSTEM_GAIN } from '../worklet_system.js'
 
 /**
  * stereo_panner.js
@@ -21,14 +22,14 @@ export function panVoice(pan, inputBuffer, output, reverb, reverbLevel, chorus, 
     {
         return;
     }
-    let panLeft = Math.cos(HALF_PI * pan);
-    let panRight = Math.sin(HALF_PI * pan);
+    let panLeft = Math.cos(HALF_PI * pan) * WORKLET_SYSTEM_GAIN;
+    let panRight = Math.sin(HALF_PI * pan) * WORKLET_SYSTEM_GAIN;
 
     if(reverbLevel > 0)
     {
         const reverbLeft = reverb[0];
         const reverbRight = reverb[1];
-        const reverbGain = reverbLevel / 800;
+        const reverbGain = reverbLevel / 500;
         const reverbLeftGain = panLeft * reverbGain;
         const reverbRightGain = panRight * reverbGain;
         for (let i = 0; i < inputBuffer.length; i++) {
@@ -41,7 +42,7 @@ export function panVoice(pan, inputBuffer, output, reverb, reverbLevel, chorus, 
     {
         const chorusLeft = chorus[0];
         const chorusRight = chorus[1];
-        const chorusGain = chorusLevel / 1000;
+        const chorusGain = chorusLevel / 500;
         const chorusLeftGain = panLeft * chorusGain;
         const chorusRightGain = panRight * chorusGain;
         for (let i = 0; i < inputBuffer.length; i++) {

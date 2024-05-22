@@ -46,6 +46,7 @@
  * finished: boolean,
  * isInRelease: boolean,
  *
+ * channelNumber: number,
  * velocity: number,
  * midiNote: number,
  * targetKey: number,
@@ -63,7 +64,7 @@
  * }} WorkletVoice
  */
 import { addAndClampGenerator, generatorTypes } from '../../../soundfont/chunk/generators.js'
-import { workletMessageType } from '../worklet_channel.js'
+import { workletMessageType } from '../worklet_system.js'
 
 
 /**
@@ -86,11 +87,12 @@ function /**
  * skip the voice if sampleID isn't valid
  * once we receive a sample dump, adjust all voice endOffsets (loop is already correct in sf3)
  * now the voice starts playing, yay!
+ * @param channel {number} channel hint for the processor to recalculate cursor positions
  * @param sample {Sample}
  * @param id {number}
  * @param messagePort {MessagePort}
  */
-dumpSample(sample, id, messagePort)
+dumpSample(channel, sample, id, messagePort)
 {
     // flag as dumped so other calls won't dump it again
     globalDumpedSamplesList.add(id);
@@ -99,6 +101,7 @@ dumpSample(sample, id, messagePort)
     if(sample.isCompressed === false)
     {
         messagePort.postMessage({
+            channelNumber: channel,
             messageType: workletMessageType.sampleDump,
             messageData: {
                 sampleID: id,
@@ -111,6 +114,7 @@ dumpSample(sample, id, messagePort)
     // load the data
     sample.getAudioData().then(sampleData => {
         messagePort.postMessage({
+            channelNumber: channel,
             messageType: workletMessageType.sampleDump,
             messageData: {
                 sampleID: id,
@@ -121,6 +125,7 @@ dumpSample(sample, id, messagePort)
 }
 
 /**
+ * @param channel {number} a hint for the processor to recalculate sample cursors when sample dumping
  * @param midiNote {number}
  * @param velocity {number}
  * @param preset {Preset}
@@ -130,7 +135,7 @@ dumpSample(sample, id, messagePort)
  * @param debug {boolean}
  * @returns {WorkletVoice[]}
  */
-export function getWorkletVoices(midiNote, velocity, preset, context, workletMessagePort, cachedVoices, debug=false)
+export function getWorkletVoices(channel, midiNote, velocity, preset, context, workletMessagePort, cachedVoices, debug=false)
 {
     /**
      * @type {WorkletVoice[]}
@@ -155,7 +160,7 @@ export function getWorkletVoices(midiNote, velocity, preset, context, workletMes
 
             // dump the sample if haven't already
             if (!globalDumpedSamplesList.has(sampleAndGenerators.sampleID)) {
-                dumpSample(sampleAndGenerators.sample, sampleAndGenerators.sampleID, workletMessagePort);
+                dumpSample(channel, sampleAndGenerators.sample, sampleAndGenerators.sampleID, workletMessagePort);
 
                 // can't cache the voice as the end in workletSample maybe is incorrect (the sample is still loading)
                 if(sampleAndGenerators.sample.isSampleLoaded === false)
@@ -253,6 +258,7 @@ export function getWorkletVoices(midiNote, velocity, preset, context, workletMes
                 sample: workletSample,
                 velocity: velocity,
                 midiNote: midiNote,
+                channelNumber: channel,
                 startTime: context.currentTime,
                 targetKey: targetKey,
                 currentTuningCalculated: 1,

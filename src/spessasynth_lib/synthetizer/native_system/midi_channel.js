@@ -8,8 +8,6 @@ import { midiControllers } from '../../midi_parser/midi_message.js'
  * purpose: manages a single midi channel for the native system
  */
 
-const CHANNEL_LOUDNESS = 0.3;
-
 const dataEntryStates = {
     Idle: 0,
     RPCoarse: 1,
@@ -19,6 +17,8 @@ const dataEntryStates = {
     DataCoarse: 5,
     DataFine: 6
 };
+
+const CHANNEL_LOUDNESS = 0.3;
 
 export class MidiChannel {
     /**
@@ -670,9 +670,14 @@ export class MidiChannel {
         this.resetParameters();
     }
 
-    transposeChannel(semitones)
+    /**
+     * Transposes the channel by given amount of semitones
+     * @param semitones {number} Can be float
+     * @param force {boolean} defaults to false, if true transposes the channel even if it's a drum channel
+     */
+    transposeChannel(semitones, force=false)
     {
-        if(this.percussionChannel)
+        if(this.percussionChannel && !force)
         {
             return;
         }

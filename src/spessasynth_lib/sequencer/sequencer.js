@@ -263,7 +263,7 @@ export class Sequencer {
             this.synth.addNewChannel();
             if(i === 9)
             {
-                this.synth.setDrums(this.synth.midiChannels.length - 1, true);
+                this.synth.setDrums(this.synth.synthesisSystem.midiChannels.length - 1, true);
             }
         }
     }
@@ -545,9 +545,9 @@ export class Sequencer {
                 // midiport: handle it and make sure that the saved controllers table is the same size as synth channels
                 case messageTypes.midiPort:
                     this._processEvent(event, trackIndex);
-                    if(this.synth.midiChannels.length > savedControllers.length)
+                    if(this.synth.synthesisSystem.midiChannels.length > savedControllers.length)
                     {
-                        while(this.synth.midiChannels.length > savedControllers.length)
+                        while(this.synth.synthesisSystem.midiChannels.length > savedControllers.length)
                         {
                             savedControllers.push(Array.from(defaultControllerArray));
                         }
@@ -586,7 +586,7 @@ export class Sequencer {
         else
         {
             // for all synth channels
-            this.synth.midiChannels.forEach((channel, channelNumber) => {
+            this.synth.synthesisSystem.midiChannels.forEach((channel, channelNumber) => {
                 // restore pitch bends
                 if(pitchBends[channelNumber] !== undefined) {
                     this.synth.pitchWheel(channelNumber, pitchBends[channelNumber] >> 7, pitchBends[channelNumber] & 0x7F);
@@ -804,7 +804,7 @@ export class Sequencer {
 
                 if(this.midiPortChannelOffsets[port] === undefined)
                 {
-                    if(this.synth.midiChannels.length < this.midiPortChannelOffset + 16) {
+                    if(this.synth.synthesisSystem.midiChannels.length < this.midiPortChannelOffset + 16) {
                         this._addNewMidiPort();
                     }
                     this.midiPortChannelOffsets[port] = this.midiPortChannelOffset;

@@ -51,9 +51,9 @@ export class Manager {
     async initializeContext(context, soundFont) {
         if(context.audioWorklet) {
             try {
-                await context.audioWorklet.addModule("/spessasynth_lib/synthetizer/worklet_system/channel_processor.js");
+                await context.audioWorklet.addModule("/spessasynth_lib/synthetizer/worklet_system/worklet_processor.js");
             } catch (e) {
-                await context.audioWorklet.addModule("/SpessaSynth/src/spessasynth_lib/synthetizer/worklet_system/channel_processor.js");
+                await context.audioWorklet.addModule("/SpessaSynth/src/spessasynth_lib/synthetizer/worklet_system/worklet_processor.js");
             }
         }
         // set up soundfont
@@ -182,9 +182,9 @@ export class Manager {
                 case "n":
                     // secret
                     for (let i = 0; i < 16; i++) {
-                        this.synth.midiChannels[i].lockPreset = false;
-                        this.synth.programChange(i, (this.synth.midiChannels[i].preset.program + 1) % 127);
-                        this.synth.midiChannels[i].lockPreset = true;
+                        this.synth.synthesisSystem.midiChannels[i].lockPreset = false;
+                        this.synth.programChange(i, (this.synth.synthesisSystem.midiChannels[i].preset.program + 1) % 127);
+                        this.synth.synthesisSystem.midiChannels[i].lockPreset = true;
                     }
                     break;
             }

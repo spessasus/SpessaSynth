@@ -3,16 +3,17 @@ import {SoundFont2} from "../soundfont/soundfont_parser.js";
 import {ShiftableByteArray} from "../utils/shiftable_array.js";
 import { arrayToHexString, consoleColors } from '../utils/other.js';
 import { getEvent, messageTypes, midiControllers } from '../midi_parser/midi_message.js'
-import { WorkletChannel } from './worklet_system/worklet_channel.js'
-import { EventHandler } from '../utils/synth_event_handler.js'
+import { WorkletSystem } from './worklet_system/worklet_system.js'
+import { EventHandler } from './synth_event_handler.js'
 import { FancyChorus } from './fancy_chorus.js'
+import { NativeSystem } from './native_system/native_system.js'
 
 /**
  * synthesizer.js
  * purpose: responds to midi messages and called functions, managing the channels and passing the messages to them
  */
 
-const VOICES_CAP = 450;
+export const VOICE_CAP = 750;
 
 export const DEFAULT_GAIN = 1;
 export const DEFAULT_PERCUSSION = 9;
@@ -29,7 +30,6 @@ export class Synthetizer {
      */
      constructor(targetNode, soundFont) {
         console.log("%cInitializing SpessaSynth synthesizer...", consoleColors.info);
-        this.voiceCap = VOICES_CAP;
         this.soundFont = soundFont;
         this.context = targetNode.context;
 
@@ -97,54 +97,49 @@ export class Synthetizer {
         if(window.isSecureContext === false)
         {
             this._synthesisMode = "legacy";
-            console.log("%cDetected insecure context. Worklet system is unavailable, switching to legacy instead.", consoleColors.warn);
+            console.warn("%cDetected insecure context. Worklet system is unavailable, switching to legacy instead.", consoleColors.warn);
         }
 
         this.defaultPreset = this.soundFont.getPreset(0, 0);
         this.percussionPreset = this.soundFont.getPreset(128, 0);
 
-        this.createDefaultChannels();
+        this.initializeSynthesisSystem();
         console.log("%cSpessaSynth is ready!", consoleColors.recognized);
     }
 
-    createDefaultChannels()
+    initializeSynthesisSystem()
     {
-        /**
-         *  create 16 channels
-         * @type {WorkletChannel[]}
-         */
-        this.midiChannels = [];
+        if(this._synthesisMode === "worklet")
+        {
+            /**
+             * The synth's core synthesis system
+             * @type {WorkletSystem}
+             */
+            this.synthesisSystem = new WorkletSystem(
+                this.volumeController,
+                this.reverbProcessor,
+                this.chorusProcessor.input,
+                this.defaultPreset,
+                this.percussionPreset,
+                DEFAULT_CHANNEL_COUNT);
+        }
+        else
+        {
+            this.synthesisSystem = new NativeSystem(
+                this.volumeController,
+                this.reverbProcessor,
+                this.chorusProcessor.input,
+                this.defaultPreset,
+                this.percussionPreset,
+                DEFAULT_CHANNEL_COUNT
+            );
+        }
 
         /**
          * The synth's transposition, in semitones.
          * @type {number}
          */
         this.transposition = 0;
-
-        for (let i = 0; i < DEFAULT_CHANNEL_COUNT; i++) {
-            this._addChannelInternal();
-        }
-
-
-        // change percussion channel to the percussion preset
-        this.midiChannels[DEFAULT_PERCUSSION].percussionChannel = true;
-        this.midiChannels[DEFAULT_PERCUSSION].setPreset(this.percussionPreset);
-        this.midiChannels[DEFAULT_PERCUSSION].bank = 128;
-    }
-
-    /**
-     * @private
-     */
-    _addChannelInternal()
-    {
-        if(this._synthesisMode === "worklet")
-        {
-            this.midiChannels.push(new WorkletChannel(this.volumeController, this.reverbProcessor, this.chorusProcessor.input, this.defaultPreset, this.midiChannels.length + 1, false));
-        }
-        else
-        {
-            this.midiChannels.push(new MidiChannel(this.volumeController, this.reverbProcessor, this.chorusProcessor.input, this.defaultPreset, this.midiChannels.length + 1, false));
-        }
     }
 
     /**
@@ -152,8 +147,8 @@ export class Synthetizer {
      */
     addNewChannel()
     {
-        this._addChannelInternal();
-        this.eventHandler.callEvent("newchannel", this.midiChannels[this.midiChannels.length - 1]);
+        this.synthesisSystem.createNewChannel();
+        this.eventHandler.callEvent("newchannel", this.synthesisSystem.midiChannels[this.synthesisSystem.channelsAmount - 1]);
     }
 
     /*
@@ -161,11 +156,11 @@ export class Synthetizer {
      */
     lockAndResetChannelVibrato()
     {
-        this.midiChannels.forEach(c => {
-            c.lockVibrato = false;
-            c.vibrato = {depth: 0, rate: 0, delay: 0};
-            c.lockVibrato = true;
-        });
+        for (let i = 0; i < this.synthesisSystem.channelsAmount; i++) {
+            this.synthesisSystem.setVibratoLock(i, false);
+            this.synthesisSystem.setVibrato(i, {depth: 0, rate: 0, delay: 0});
+            this.synthesisSystem.setVibratoLock(i, true);
+        }
     }
 
     /**
@@ -185,7 +180,7 @@ export class Synthetizer {
         ||
         (this.highPerformanceMode && velocity < 10)
         ||
-        (this.midiChannels[channel].isMuted))
+        (this.synthesisSystem.midiChannels[channel].isMuted))
         {
             return;
         }
@@ -196,17 +191,7 @@ export class Synthetizer {
             return;
         }
 
-        let chan = this.midiChannels[channel];
-        chan.playNote(midiNote, velocity, enableDebugging);
-        const amt = this.voicesAmount;
-        if(amt > this.voiceCap)
-        {
-            // find the non percussion channel with the largest amount of voices
-            const channel = this.midiChannels.reduce((prev, current) => {
-                return (prev && prev.voicesAmount > current.voicesAmount && !prev.percussionChannel) ? prev : current
-            });
-            channel.requestNoteRemoval(amt - this.voiceCap);
-        }
+        this.synthesisSystem.playNote(channel, midiNote, velocity, enableDebugging);
 
         this.eventHandler.callEvent("noteon", {
             midiNote: midiNote,
@@ -230,13 +215,15 @@ export class Synthetizer {
             midiNote: midiNote,
             channel: channel
         });
+
+        // if high performance mode, kill notes instead of stopping them
         if(this.highPerformanceMode)
         {
-            // do not kill percussion notes
-            this.midiChannels[channel].stopNote(midiNote, !this.midiChannels[channel].percussionChannel);
+            // if the channel is percussion channel, do not kill the notes
+            this.synthesisSystem.stopNote(channel, midiNote, !this.synthesisSystem.midiChannels[channel].percussionChannel);
             return;
         }
-        this.midiChannels[channel].stopNote(midiNote);
+        this.synthesisSystem.stopNote(channel, midiNote);
     }
 
     /**
@@ -245,9 +232,7 @@ export class Synthetizer {
      */
     stopAll(force=false) {
         console.log("%cStop all received!", consoleColors.info);
-        for (let channel of this.midiChannels) {
-            channel.stopAll(force);
-        }
+        this.synthesisSystem.stopAllChannels(force);
         this.eventHandler.callEvent("stopall", {});
     }
 
@@ -274,7 +259,7 @@ export class Synthetizer {
                     return;
                 }
                 let bankNr = controllerValue;
-                const channelObject = this.midiChannels[channel];
+                const channelObject = this.synthesisSystem.midiChannels[channel];
 
                 // for xg, if msb is 127, then it's drums
                 if(bankNr === 127 && this.system === "xg")
@@ -288,7 +273,7 @@ export class Synthetizer {
                 if(channelObject.percussionChannel)
                 {
                     // 128 for percussion channel
-                    bankNr = 128
+                    bankNr = 128;
                 }
                 if(bankNr === 128 && !channelObject.percussionChannel)
                 {
@@ -302,13 +287,13 @@ export class Synthetizer {
             case midiControllers.lsbForControl0BankSelect:
                 if(this.system === 'xg')
                 {
-                    this.midiChannels[channel].bank = controllerValue;
+                    this.synthesisSystem.midiChannels[channel].bank = controllerValue;
                 }
                 break;
 
 
             default:
-                hasChanged = this.midiChannels[channel].controllerChange(controllerNumber, controllerValue);
+                hasChanged = this.synthesisSystem.controllerChange(channel, controllerNumber, controllerValue);
                 break;
         }
         if(hasChanged) {
@@ -326,41 +311,44 @@ export class Synthetizer {
     resetControllers()
     {
         console.log("%cResetting all controllers!", consoleColors.info);
-        for(const ch of this.midiChannels)
+        for(let channelNumber = 0; channelNumber < this.synthesisSystem.channelsAmount; channelNumber++)
         {
             // reset
-            ch.resetControllers();
+            this.synthesisSystem.resetControllers(channelNumber);
+            /**
+             * @type {WorkletChannel}
+             **/
+            const ch = this.synthesisSystem.midiChannels[channelNumber];
             if(!ch.lockPreset) {
                 ch.bank = 0;
-                if ((ch.channelNumber - 1) % 16 === DEFAULT_PERCUSSION) {
-                    ch.setPreset(this.percussionPreset);
+                if (channelNumber % 16 === DEFAULT_PERCUSSION) {
+                    this.synthesisSystem.setPreset(channelNumber, this.percussionPreset);
                     ch.percussionChannel = true;
                     this.eventHandler.callEvent("drumchange", {
-                        channel: ch.channelNumber - 1,
+                        channel: channelNumber,
                         isDrumChannel: true
                     });
                 } else {
                     ch.percussionChannel = false;
-                    ch.setPreset(this.defaultPreset);
+                    this.synthesisSystem.setPreset(channelNumber, this.defaultPreset);
                     this.eventHandler.callEvent("drumchange", {
-                        channel: ch.channelNumber - 1,
+                        channel: channelNumber,
                         isDrumChannel: false
                     });
                 }
             }
 
             // call all the event listeners
-            const chNr = ch.channelNumber - 1;
-            this.eventHandler.callEvent("programchange", {channel: chNr, preset: ch.preset})
+            this.eventHandler.callEvent("programchange", {channel: channelNumber, preset: ch.preset})
 
             let restoreControllerValueEvent = (ccNum, value) =>
             {
-                if(this.midiChannels[chNr].lockedControllers[ccNum])
+                if(this.synthesisSystem.midiChannels[channelNumber].lockedControllers[ccNum])
                 {
                     // locked, we did not reset it
                     return;
                 }
-                this.eventHandler.callEvent("controllerchange", {channel: chNr, controllerNumber: ccNum, controllerValue: value});
+                this.eventHandler.callEvent("controllerchange", {channel: channelNumber, controllerNumber: ccNum, controllerValue: value});
             }
 
             restoreControllerValueEvent(midiControllers.mainVolume, 100);
@@ -370,7 +358,7 @@ export class Synthetizer {
             restoreControllerValueEvent(midiControllers.effects3Depth, 0);
             restoreControllerValueEvent(midiControllers.effects1Depth, 0);
 
-            this.eventHandler.callEvent("pitchwheel", {channel: chNr, MSB: 64, LSB: 0})
+            this.eventHandler.callEvent("pitchwheel", {channel: channelNumber, MSB: 64, LSB: 0})
         }
         this.system = "gm2";
         this.volumeController.gain.value = DEFAULT_GAIN;
@@ -385,7 +373,7 @@ export class Synthetizer {
      */
     pitchWheel(channel, MSB, LSB)
     {
-        this.midiChannels[channel].setPitchBend(MSB, LSB);
+        this.synthesisSystem.setPitchBend(channel, MSB, LSB);
         this.eventHandler.callEvent("pitchwheel", {
             channel: channel,
             MSB: MSB,
@@ -399,7 +387,7 @@ export class Synthetizer {
      */
     transpose(semitones)
     {
-        this.midiChannels.forEach(c => c.transposeChannel(semitones));
+        this.synthesisSystem.transposeAll(semitones);
         this.transposition = semitones;
     }
 
@@ -420,13 +408,13 @@ export class Synthetizer {
      */
     programChange(channel, programNumber, userChange=false)
     {
-        const channelObj = this.midiChannels[channel];
+        const channelObj = this.synthesisSystem.midiChannels[channel];
         // always 128 for percussion
         const bank = (channelObj.percussionChannel ? 128 : channelObj.bank);
 
         // find the preset
         let preset = this.soundFont.getPreset(bank, programNumber);
-        channelObj.setPreset(preset);
+        this.synthesisSystem.setPreset(channel, preset)
         this.eventHandler.callEvent("programchange", {
             channel: channel,
             preset: preset,
@@ -443,11 +431,11 @@ export class Synthetizer {
     lockController(channel, controllerNumber, isLocked)
     {
         if(isLocked) {
-            this.midiChannels[channel].lockController(controllerNumber);
+            this.synthesisSystem.lockController(channel, controllerNumber);
         }
         else
         {
-            this.midiChannels[channel].unlockController(controllerNumber);
+            this.synthesisSystem.unlockController(channel, controllerNumber);
         }
     }
 
@@ -460,11 +448,11 @@ export class Synthetizer {
     {
         if(isMuted)
         {
-            this.midiChannels[channel].muteChannel();
+            this.synthesisSystem.muteChannel(channel);
         }
         else
         {
-            this.midiChannels[channel].unmuteChannel();
+            this.synthesisSystem.unmuteChannel(channel);
         }
         this.eventHandler.callEvent("mutechannel", {
             channel: channel,
@@ -482,14 +470,16 @@ export class Synthetizer {
         this.soundFont = soundFont;
         this.defaultPreset = this.soundFont.getPreset(0, 0);
         this.percussionPreset = this.soundFont.getPreset(128, 0);
-        for(let i = 0; i < 16; i++)
+
+        // check if the system supports clearing samples (only worklet does)
+        if(this.synthesisSystem.resetSamples)
         {
-            if(this.midiChannels[i].resetSamples)
-            {
-                this.midiChannels[i].resetSamples();
-            }
-            this.midiChannels[i].lockPreset = false;
-            this.programChange(i, this.midiChannels[i].preset.program);
+            this.synthesisSystem.resetSamples();
+        }
+        for(let i = 0; i < this.synthesisSystem.channelsAmount; i++)
+        {
+            this.synthesisSystem.midiChannels[i].lockPreset = false;
+            this.programChange(i, this.synthesisSystem.midiChannels[i].preset.program);
         }
     }
 
@@ -573,7 +563,7 @@ export class Synthetizer {
 
                         this.setDrums(channel, messageData[7] > 0 && messageData[5] >> 4); // if set to other than 0, is a drum channel
                         console.log(
-                            `%cChannel %c${channel}%c ${this.midiChannels[channel].percussionChannel ? 
+                            `%cChannel %c${channel}%c ${this.synthesisSystem.midiChannels[channel].percussionChannel ? 
                                 "is now a drum channel" 
                                 : 
                                 "now isn't a drum channel"
@@ -653,16 +643,16 @@ export class Synthetizer {
      */
     setDrums(channel, isDrum)
     {
-        const channelObject = this.midiChannels[channel];
+        const channelObject = this.synthesisSystem.midiChannels[channel];
         if(isDrum)
         {
             channelObject.percussionChannel = true;
-            channelObject.setPreset(this.soundFont.getPreset(128, channelObject.preset.program));
+            this.synthesisSystem.setPreset(channel, this.soundFont.getPreset(128, channelObject.preset.program));
         }
         else
         {
             channelObject.percussionChannel = false;
-            channelObject.setPreset(this.soundFont.getPreset(0, channelObject.preset.program));
+            this.synthesisSystem.setPreset(channel, this.soundFont.getPreset(0, channelObject.preset.program));
         }
         this.eventHandler.callEvent("drumchange",{
             channel: channel,
@@ -741,7 +731,7 @@ export class Synthetizer {
      */
     get voicesAmount()
     {
-        return this.midiChannels.reduce((amt, chan) => amt + chan.voicesAmount, 0);
+        return this.synthesisSystem.voicesAmount;
     }
 
     get synthesisMode()
@@ -759,18 +749,14 @@ export class Synthetizer {
             throw TypeError("invalid type!");
         }
         this._synthesisMode = value;
-        const channelsAmount =  this.midiChannels.length;
-        for (let i = 0; i < channelsAmount; i++) {
-            this.midiChannels[i].stopAll(true);
-            this.midiChannels[i].killChannel();
-            delete this.midiChannels[i];
-        }
-        this.createDefaultChannels();
+        this.synthesisSystem.killSystem();
+        delete this.synthesisSystem;
+        this.initializeSynthesisSystem();
     }
 
     reverbateEverythingBecauseWhyNot()
     {
-        for (let i = 0; i < this.midiChannels.length; i++) {
+        for (let i = 0; i < this.synthesisSystem.channelsAmount; i++) {
             this.controllerChange(i, midiControllers.effects1Depth, 127);
         }
         return "That's the spirit!";
