@@ -156,6 +156,7 @@ class WorkletProcessor extends AudioWorkletProcessor {
                 })
                 channelVoices.push(...data);
 
+                this.totalVoicesAmount += data.length;
                 // cap the voices
                 if(this.totalVoicesAmount > VOICE_CAP)
                 {
