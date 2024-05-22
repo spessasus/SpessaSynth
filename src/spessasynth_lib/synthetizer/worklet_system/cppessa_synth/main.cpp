@@ -11,10 +11,14 @@
 
 #ifdef __cplusplus
 extern "C" {
+    const float AMPLITUDE = 0.3f;
+    int freq = 240;
+    float phase = 0;
 #endif
     EMSCRIPTEN_KEEPALIVE
     void renderAudio(int channelNumber,
                      int bufferLength,
+                     float currentTime,
 
                      float* outputLeft,
                      float* outputRight,
@@ -26,11 +30,19 @@ extern "C" {
                      float* chorusRight) {
         for(int i = 0; i < bufferLength; i++)
         {
-            // fill the arrays with a sine wave
-            //float sample = i > 64 ? 1.0f : -1.0f;
-            float sample = sinf(2.0f * M_PI * i / bufferLength);
-            outputRight[i] = sample;
+            // THIS IS THE BEST SOUND EVER WHAT
+            float sample = phase < 0.5 ? AMPLITUDE : -AMPLITUDE;
+            chorusRight[i] = sample;
             chorusLeft[i] = sample;
+            reverbRight[i] = sample;
+            reverbLeft[i] = sample;
+            outputRight[i] = sample;
+            phase += (float)freq / 44100.0f;
+            if (phase >= 1.0) {
+                phase -= 1.0;
+            }
+
+            freq = currentTime * 440;
         }
     }
 

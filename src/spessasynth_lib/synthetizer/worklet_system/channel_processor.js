@@ -287,7 +287,7 @@ class ChannelProcessor extends AudioWorkletProcessor {
         const rightChorusPointer = leftChorusPointer + sizePerChannel;
 
         // render
-        CppessaSynth._renderAudio(this.channelNumber, channelSampleLength,
+        CppessaSynth._renderAudio(this.channelNumber, channelSampleLength, currentTime,
             leftChannelPointer, rightChannelPointer,
             leftReverbPointer, rightReverbPointer,
             leftChorusPointer, rightChorusPointer);

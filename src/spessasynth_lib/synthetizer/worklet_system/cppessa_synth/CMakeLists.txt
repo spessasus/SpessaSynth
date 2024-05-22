@@ -21,4 +21,8 @@ add_executable(tester main.cpp
         cpessasynth_components/unit_converter/UnitConverter.h
         cpessasynth_components/modulator/Modulator.cpp
         cpessasynth_components/modulator/Modulator.h
+        cpessasynth_components/volumeEnvelope/VolumeEnvelope.cpp
+        cpessasynth_components/volumeEnvelope/VolumeEnvelope.h
+        cpessasynth_components/channel_manager/ChannelManager.cpp
+        cpessasynth_components/channel_manager/ChannelManager.h
 )
