@@ -168,7 +168,8 @@ class WorkletProcessor extends AudioWorkletProcessor {
                 break;
 
             case workletMessageType.sampleDump:
-                workletDumpedSamplesList[data.sampleID] = data.sampleData;
+                // new because it's a transferred buffer
+                workletDumpedSamplesList[data.sampleID] = new Float32Array(data.sampleData);
                 // the sample maybe was loaded after the voice was sent... adjust the end position!
 
                 // not for all channels because the system tells us for what channel this voice was dumped! yay!
