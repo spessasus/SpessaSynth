@@ -480,13 +480,12 @@ export class Settings
         }
 
         // create the initial synth channels+
-        for(const channel of synthui.synth.midiChannels)
+        for(const channel of synthui.synth.synthesisSystem.midiChannels)
         {
             createChannel();
         }
         keyboardControls.channelSelector.onchange = () => {
             keyboard.selectChannel(parseInt(keyboardControls.channelSelector.value));
-            this._saveSettings();
         }
 
         keyboardControls.sizeSelector.onchange = () => {

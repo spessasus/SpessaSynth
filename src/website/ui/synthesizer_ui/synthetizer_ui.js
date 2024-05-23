@@ -1,5 +1,9 @@
-import { DEFAULT_GAIN, DEFAULT_PERCUSSION, Synthetizer } from '../../../spessasynth_lib/synthetizer/synthetizer.js'
-import { MidiChannel } from '../../../spessasynth_lib/synthetizer/native_system/midi_channel.js'
+import {
+    DEFAULT_GAIN,
+    DEFAULT_PERCUSSION,
+    Synthetizer,
+    VOICE_CAP,
+} from '../../../spessasynth_lib/synthetizer/synthetizer.js'
 import { getDrumsSvg, getLoopSvg, getMuteSvg, getNoteSvg, getVolumeSvg } from '../icons.js'
 import { ShiftableByteArray } from '../../../spessasynth_lib/utils/shiftable_array.js'
 import { Meter } from './synthui_meter.js'
@@ -113,7 +117,7 @@ export class SynthetizerUI
         this.voiceMeter = new Meter("#206",
             "Voices: ",
             0,
-            this.synth.voiceCap,
+            VOICE_CAP,
             "The total amount of voices currently playing");
         this.voiceMeter.bar.classList.add("voice_meter_bar_smooth");
 
@@ -270,7 +274,7 @@ export class SynthetizerUI
          * @type {ChannelController[]}
          */
         this.controllers = [];
-        for(const chan of this.synth.midiChannels)
+        for(const chan of this.synth.synthesisSystem.midiChannels)
         {
             const controller = this.createChannelController(chan, this.controllers.length);
             this.controllers.push(controller);
@@ -303,7 +307,7 @@ export class SynthetizerUI
 
     /**
      * Creates a new channel controller ui
-     * @param channel {MidiChannel}
+     * @param channel {WorkletChannel}
      * @param channelNumber {number}
      * @returns {ChannelController}
      */
@@ -478,7 +482,7 @@ export class SynthetizerUI
                 val = Math.round(val);
                 // adjust to synth's transposition
                 let transposition = this.synth.transposition + val;
-                this.synth.midiChannels[channelNumber].transposeChannel(transposition, true);
+                this.synth.synthesisSystem.transposeChannel(channelNumber, transposition, true);
                 transpose.update(val);
             });
         transpose.update(0);
@@ -494,13 +498,13 @@ export class SynthetizerUI
             `Change the instrument that channel ${channelNumber + 1} is using`,
             presetName => {
                 const data = JSON.parse(presetName);
-                this.synth.midiChannels[channelNumber].lockPreset = false;
+                this.synth.synthesisSystem.midiChannels[channelNumber].lockPreset = false;
                 const sys = this.synth.system;
                 this.synth.system = "gs";
                 this.synth.controllerChange(channelNumber, midiControllers.bankSelect, data[0]);
                 this.synth.programChange(channelNumber, data[1], true);
                 presetSelector.mainDiv.classList.add("locked_selector");
-                this.synth.midiChannels[channelNumber].lockPreset = true;
+                this.synth.synthesisSystem.midiChannels[channelNumber].lockPreset = true;
                 this.synth.system = sys;
             }
         );
@@ -512,7 +516,7 @@ export class SynthetizerUI
         presetReset.classList.add("controller_element");
         presetReset.classList.add("voice_reset");
         presetReset.onclick = () => {
-            this.synth.midiChannels[channelNumber].lockPreset = false;
+            this.synth.synthesisSystem.midiChannels[channelNumber].lockPreset = false;
             presetSelector.mainDiv.classList.remove("locked_selector");
         }
         controller.appendChild(presetReset);
@@ -524,7 +528,7 @@ export class SynthetizerUI
         muteButton.classList.add("controller_element");
         muteButton.classList.add("mute_button");
         muteButton.onclick = () => {
-            if(this.synth.midiChannels[channelNumber].isMuted)
+            if(this.synth.synthesisSystem.midiChannels[channelNumber].isMuted)
             {
                 this.synth.muteChannel(channelNumber, false);
                 muteButton.innerHTML = getVolumeSvg(32);
@@ -554,7 +558,7 @@ export class SynthetizerUI
                 0x40, // drums
                 0x10 | sysexChannelNumber,
                 0x15, /// drums
-                this.synth.midiChannels[channelNumber].percussionChannel ? 0x00 : 0x01,
+                this.synth.synthesisSystem.midiChannels[channelNumber].percussionChannel ? 0x00 : 0x01,
                 0x11,
                 0xF7
             ]));
@@ -585,7 +589,7 @@ export class SynthetizerUI
 
         this.controllers.forEach((controller, i) => {
             // update channel
-            let voices = this.synth.midiChannels[i].voicesAmount;
+            let voices = this.synth.synthesisSystem.midiChannels[i].voicesAmount;
             controller.voiceMeter.update(voices);
             if(voices < 1 && this.synth.voicesAmount > 0)
             {
@@ -606,7 +610,7 @@ export class SynthetizerUI
         // add event listeners
         this.synth.eventHandler.addEvent("programchange", "synthui-program-change", e =>
         {
-            if(this.synth.midiChannels[e.channel].lockPreset)
+            if(this.synth.synthesisSystem.midiChannels[e.channel].lockPreset)
             {
                 return;
             }
@@ -660,7 +664,7 @@ export class SynthetizerUI
         });
 
         this.synth.eventHandler.addEvent("drumchange", "synthui-drum-change", e => {
-            if(this.synth.midiChannels[e.channel].lockPreset)
+            if(this.synth.synthesisSystem.midiChannels[e.channel].lockPreset)
             {
                 return;
             }
@@ -742,7 +746,7 @@ export class SynthetizerUI
     {
         this.getInstrumentList();
         this.controllers.forEach((controller, i) => {
-            controller.preset.reload(this.synth.midiChannels[i].percussionChannel ? this.percussionList : this.instrumentList);
+            controller.preset.reload(this.synth.synthesisSystem.midiChannels[i].percussionChannel ? this.percussionList : this.instrumentList);
         })
     }
 }

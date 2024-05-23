@@ -33,6 +33,7 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 - Visualization of the played sequence with effects like visual pitch bend and note on effects
 - Playable keyboard with various sizes
 - Integrated controller for the synthetizer
+- Can provide very hiqh quality audio while being relatively light on file size thanks to sf3 support
 - `Web MIDI API` support (Enables physical MIDI devices to be used with the program)
 - [WebMidiLink](https://www.g200kg.com/en/docs/webmidilink/) support
 - Can be used as a library ([learn more here](../../wiki/Usage-As-Library))
@@ -90,8 +91,7 @@ The program is divided into parts:
 #### todo
 - make the worklet system perform good
 - port the worklet system to emscripten (maybe)
-- fix rare clicking in volenv
-- fix lowpass on instant notes (0 tick long drums)
+- fix rare clicking in volenv attack (TR-909 kick for example)
 
 #### Why did I make this?
 Around 1.5 years ago, 

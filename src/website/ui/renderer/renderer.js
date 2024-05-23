@@ -138,7 +138,7 @@ export class Renderer
             this.channelAnalysers.splice(0, 1);
         }
         this.channelAnalysers = [];
-        for(let i = 0; i < synth.midiChannels.length; i++)
+        for(let i = 0; i < synth.synthesisSystem.channelsAmount; i++)
         {
             // create the analyser
             const analyser = new AnalyserNode(synth.context, {
@@ -146,11 +146,6 @@ export class Renderer
             });
             this.channelAnalysers.push(analyser);
         }
-        // connect more channels to the same analysers on add
-        synth.eventHandler.addEvent("newchannel", "renderer-new-channel", channel => {
-            const targetAnalyser = this.channelAnalysers[(synth.midiChannels.length - 1) % this.channelAnalysers.length];
-            channel.gainController.connect(targetAnalyser);
-        })
 
         synth.eventHandler.addEvent("mutechannel", "renderer-mute-channel", eventData => {
             this.renderChannels[eventData.channel] = !eventData.isMuted;
@@ -163,11 +158,7 @@ export class Renderer
      */
     connectChannelAnalysers(synth)
     {
-        for(let i = 0; i < synth.midiChannels.length; i++)
-        {
-            // connect the channel's output to the analyser
-            synth.midiChannels[i].gainController.connect(this.channelAnalysers[i % this.channelAnalysers.length], 0);
-        }
+        synth.synthesisSystem.connectIndividualOutputs(this.channelAnalysers);
     }
 
     disconnectChannelAnalysers()
@@ -248,7 +239,7 @@ export class Renderer
     renderWaveforms()
     {
         this.channelAnalysers.forEach((analyser, i) => {
-            if (this.synth.midiChannels[i].percussionChannel) {
+            if (this.synth.synthesisSystem.midiChannels[i].percussionChannel) {
                 if (analyser.fftSize !== this.drumAnalyserFft) {
                     analyser.fftSize = this.drumAnalyserFft;
                 }
@@ -291,7 +282,7 @@ export class Renderer
          * @type {number[]}
          */
         const pitchBendXShift = [];
-        this.synth.midiChannels.forEach(channel => {
+        this.synth.synthesisSystem.midiChannels.forEach(channel => {
             // pitch range * (bend - 8192) / 8192)) * key width
             if(this.showVisualPitch) {
                 pitchBendXShift.push((channel.channelPitchBendRange * ((channel.pitchBend - 8192) / 8192)) * keyStep);
