@@ -5,8 +5,8 @@ set(CMAKE_TOOLCHAIN_FILE  /usr/lib/emscripten/cmake/Modules/Platform/Emscripten.
 
 include_directories(/usr/lib/emscripten/system/include)
 link_directories(/usr/lib/emscripten/system/include)
-
 set(CMAKE_CXX_STANDARD 17)
+
 add_executable(tester main.cpp
         extern_c.h
         main.h
@@ -23,6 +23,21 @@ add_executable(tester main.cpp
         cpessasynth_components/modulator/Modulator.h
         cpessasynth_components/volumeEnvelope/VolumeEnvelope.cpp
         cpessasynth_components/volumeEnvelope/VolumeEnvelope.h
-        cpessasynth_components/channel_manager/ChannelManager.cpp
-        cpessasynth_components/channel_manager/ChannelManager.h
+        cpessasynth_components/channel/Channel.cpp
+        cpessasynth_components/channel/Channel.h
+        cpessasynth_components/sample_dump_manager/SampleDumpManager.cpp
+        cpessasynth_components/sample_dump_manager/SampleDumpManager.h
+        cpessasynth_components/sample_dump_manager/DumpedSample.h
+        cpessasynth_components/sample_dump_manager/DumpedSample.cpp
+        cpessasynth_components/constants.h
+        cpessasynth_components/low_frequency_oscillator/LowFrequencyOscillator.cpp
+        cpessasynth_components/low_frequency_oscillator/LowFrequencyOscillator.h
+        cpessasynth_components/channel/ChannelVibrato.cpp
+        cpessasynth_components/channel/ChannelVibrato.h
+        cpessasynth_components/modulation_envelope/ModulationEnvelope.cpp
+        cpessasynth_components/modulation_envelope/ModulationEnvelope.h
+        cpessasynth_components/wavetable_oscillator/WavetableOscillator.cpp
+        cpessasynth_components/wavetable_oscillator/WavetableOscillator.h
+        cpessasynth_components/stereo_panner/StereoPanner.cpp
+        cpessasynth_components/stereo_panner/StereoPanner.h
 )

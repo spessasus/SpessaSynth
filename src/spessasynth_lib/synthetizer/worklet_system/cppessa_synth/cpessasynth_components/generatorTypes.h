@@ -68,6 +68,4 @@ enum GeneratorTypes {
     endOper = 60                        // End marker
 };
 
-const char GENERATORS_AMOUNT_TOTAL = 60;
-
 #endif //SPESSASYNTH_GENERATORTYPES_H

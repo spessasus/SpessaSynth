@@ -3,14 +3,11 @@
 //
 
 #include "Modulator.h"
+#include "../constants.h"
 #include <iostream>
 #include <cmath>
 
 // initialize lookup tables
-const int MODULATOR_TRANSFORM_PRECOMPUTED_LENGTH = 16384;
-const char CURVE_TYPES_AMOUNT = 4;
-const char DIRECTIONS_AMOUNT = 2;
-const char POLARITIES_AMOUNT = 2;
 
 float concavePositiveUnipolar[MODULATOR_TRANSFORM_PRECOMPUTED_LENGTH] = {};
 float convexPositiveUnipolar[MODULATOR_TRANSFORM_PRECOMPUTED_LENGTH] = {};
@@ -115,8 +112,6 @@ void precomputeTransforms()
 }
 
 
-// the index offset for non-controller values (pitch bend, etc)
-const unsigned char NON_CC_INDEX_OFFSET = 128;
 
 Modulator::Modulator(int sourceEnum, int secSourceEnum, char destination, int transformAmount, char transformType) {
     this->sourceEnum = sourceEnum;

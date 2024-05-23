@@ -5,12 +5,10 @@
 #include <cmath>
 #include "VolumeEnvelope.h"
 #include "../unit_converter/UnitConverter.h"
-
-const char DB_SILENCE = 100;
-const float GAIN_SILENCE = 0.005f;
+#include "../constants.h"
 
 void
-VolumeEnvelope::applyVolumeEnvelope(Voice *voice, float *outputBuffer, unsigned int bufferLength, float currentTime,
+VolumeEnvelope::applyVolumeEnvelope(Voice* voice, float *outputBuffer, unsigned int bufferLength, float currentTime,
                                     int centibelOffset, float sampleTime) {
     float decibelOffset = (float)centibelOffset / 10.0f;
 

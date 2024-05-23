@@ -20,7 +20,7 @@ public:
  * @param sampleTime single sample time in seconds, usually 1 / 44100 of a second
  */
 
-    void applyVolumeEnvelope(Voice* voice,
+    static void applyVolumeEnvelope(Voice* voice,
                              float* outputBuffer,
                              unsigned int bufferLength,
                              float currentTime,

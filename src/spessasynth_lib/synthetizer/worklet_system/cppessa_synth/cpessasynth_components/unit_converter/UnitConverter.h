@@ -5,7 +5,8 @@
 #ifndef SPESSASYNTH_UNITCONVERTER_H
 #define SPESSASYNTH_UNITCONVERTER_H
 
-const int DECIBEL_TABLE_STATIC_POINT = 100;
+
+#include "../constants.h"
 
 class UnitConverter {
 public:
@@ -31,16 +32,8 @@ public:
     static float decibelAttenuationToGain(float decibels);
 
 private:
-    static const int MIN_TIMECENT = -15000;
-    static const int MAX_TIMECENT = 15000;
     static float timecentLookupTable[MAX_TIMECENT - MIN_TIMECENT + 1];
-
-    static const int MIN_ABS_CENT = -20000; // freqVibLfo
-    static const int MAX_ABS_CENT = 16500;  // filterFc
     static float absoluteCentLookupTable[MAX_ABS_CENT - MIN_ABS_CENT + 1];
-
-    static const int MIN_DECIBELS = -1660;
-    static const int MAX_DECIBELS = 1600;
     static float decibelLookupTable[(MAX_DECIBELS - MIN_DECIBELS) * DECIBEL_TABLE_STATIC_POINT + 1];
 
     static void initializeLookupTables();

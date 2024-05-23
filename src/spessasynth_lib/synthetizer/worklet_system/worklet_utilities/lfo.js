@@ -15,8 +15,8 @@ export function getLFOValue(startTime, frequency, currentTime) {
         return 0;
     }
 
-    const xVal = (currentTime - startTime) / (1 / frequency) - 0.25;
     // offset by -0.25, otherwise we start at -1 and can have unexpected jump in pitch or lowpass (happened with Synth Strings 2)
+    const xVal = (currentTime - startTime) / (1 / frequency) - 0.25;
 
     // triangle, not sine
     return Math.abs(xVal - (~~(xVal + 0.5))) * 4 - 1;

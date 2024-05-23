@@ -2,7 +2,7 @@
 #include <emscripten.h>
 #include <cmath>
 #include "main.h"
-#include "cpessasynth_components/voice/Voice.h"
+#include "cpessasynth_components/channel_manager/Channel.h"
 
 //
 // Created by spessasus on 21.05.24.
@@ -42,7 +42,7 @@ extern "C" {
                 phase -= 1.0;
             }
 
-            freq = currentTime * 440;
+            freq = currentTime * 440.0f;
         }
     }
 

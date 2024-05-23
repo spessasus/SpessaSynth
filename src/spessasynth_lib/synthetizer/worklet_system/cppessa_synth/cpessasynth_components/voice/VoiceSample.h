@@ -53,7 +53,7 @@ public:
     /**
      * the looping mode of the sample
      */
-    LoopingMode loopingMode;
+    unsigned char loopingMode;
 
     VoiceSample(unsigned int sampleID,
                 float playbackRate,

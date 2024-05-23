@@ -9,6 +9,8 @@
 #include "../lowpass_filter/LowpassFilter.h"
 #include "../generatorTypes.h"
 #include "../modulator/Modulator.h"
+#include "../sample_dump_manager/SampleDumpManager.h"
+#include "../channel/ChannelVibrato.h"
 
 class Voice {
 public:
@@ -16,6 +18,7 @@ public:
      * generators modulated by modulators
      */
     int* modulatedGenerators;
+
 
     bool isInRelease;
     unsigned char midiNote;
@@ -33,6 +36,10 @@ public:
     char volumeEnvelopeState;
     float currentAttenuationDb;
     float currentModEnvValue;
+    /**
+     * the value of modenv when the voice was released
+     */
+    float releaseStartModEnv;
     bool finished;
     float startTime;
     float releaseStartTime;
@@ -47,11 +54,16 @@ public:
      * @param reverbRight right reverb wet
      * @param chorusLeft left chorus wet
      * @param chorusRight right chorus wet
+     * @param sampleTime the time of a single sample, for example a sample rate of 44100Hz would be 1 / 44100
      */
     void renderAudio(float currentTime, int bufferLength,
                      float *outputLeft, float* outputRight,
                      float *reverbLeft, float* reverbRight,
-                     float *chorusLeft, float* chorusRight);
+                     float *chorusLeft, float* chorusRight,
+                     SampleDumpManager* sampleDumpManager,
+                     int *channelControllerTable,
+                     ChannelVibrato& channelVibrato,
+                     float sampleTime);
 
     void computeModulators(int* channelControllerArray);
 
