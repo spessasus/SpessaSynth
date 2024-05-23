@@ -49,9 +49,13 @@ public:
     void stopAll(float currentTime, bool force = false);
     void noteOff(unsigned char midiNote, float currentTime);
     void addVoice(Voice& voice);
+    void resetControllers();
+
+    Channel();
 
 private:
     static void releaseVoice(Voice& voice, float currentTime);
+    int resetArray[MIDI_CONTROLLER_TABLE_SIZE];
 };
 
 

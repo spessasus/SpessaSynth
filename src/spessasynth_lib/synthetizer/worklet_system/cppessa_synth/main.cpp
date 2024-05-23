@@ -2,7 +2,7 @@
 #include <emscripten.h>
 #include <cmath>
 #include "main.h"
-#include "cpessasynth_components/channel/Channel.h"
+#include "cpessasynth_components/CppessaSynth.h"
 
 //
 // Created by spessasus on 21.05.24.

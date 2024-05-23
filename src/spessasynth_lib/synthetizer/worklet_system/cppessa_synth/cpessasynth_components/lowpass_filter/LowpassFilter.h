@@ -5,9 +5,6 @@
 #ifndef SPESSASYNTH_LOWPASSFILTER_H
 #define SPESSASYNTH_LOWPASSFILTER_H
 
-
-#include "../voice/Voice.h"
-
 class LowpassFilter {
 private:
     float a0;

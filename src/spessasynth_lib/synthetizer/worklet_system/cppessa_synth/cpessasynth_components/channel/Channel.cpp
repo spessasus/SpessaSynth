@@ -3,6 +3,7 @@
 //
 
 #include "Channel.h"
+#include "../midiControllers.h"
 
 void Channel::renderAudio(
         float currentTime,
@@ -104,4 +105,30 @@ void Channel::noteOff(unsigned char midiNote, float currentTime) {
 
 void Channel::addVoice(Voice &voice) {
     this->voices.push_back(voice);
+}
+
+
+void Channel::resetControllers() {
+    // fill the controller table with reset array
+    std::copy(std::begin(this->resetArray), std::end(this->resetArray), std::begin(this->channelControllerTable));
+}
+
+Channel::Channel() : vibrato(ChannelVibrato(0, 0, 0)), resetArray{0}, channelControllerTable{0} {
+    // an array with preset default values so we can quickly use set() to reset the controllers
+    // default values
+    this->resetArray[MidiControllers::MainVolume] = 100 << 7;
+    this->resetArray[MidiControllers::ExpressionController] = 127 << 7;
+    this->resetArray[MidiControllers::Pan] = 64 << 7;
+    this->resetArray[MidiControllers::ReleaseTime] = 64 << 7;
+    this->resetArray[MidiControllers::Brightness] = 64 << 7;
+    this->resetArray[NON_CC_INDEX_OFFSET + Modulator::SourceEnums::pitchWheel] = 8192;
+    this->resetArray[NON_CC_INDEX_OFFSET + Modulator::SourceEnums::pitchWheelRange] = 2 << 7;
+    this->resetArray[NON_CC_INDEX_OFFSET + Modulator::SourceEnums::channelPressure] = 127 << 7;
+    this->resetArray[NON_CC_INDEX_OFFSET + Modulator::SourceEnums::channelTuning] = 0;
+
+    this->holdPedal = false;
+    this->isMuted = false;
+
+    // fill the controller table with reset array
+    std::copy(std::begin(this->resetArray), std::end(this->resetArray), std::begin(this->channelControllerTable));
 }

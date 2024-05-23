@@ -40,4 +40,7 @@ add_executable(tester main.cpp
         cpessasynth_components/wavetable_oscillator/WavetableOscillator.h
         cpessasynth_components/stereo_panner/StereoPanner.cpp
         cpessasynth_components/stereo_panner/StereoPanner.h
+        cpessasynth_components/CppessaSynth.cpp
+        cpessasynth_components/CppessaSynth.h
+        cpessasynth_components/midiControllers.h
 )
