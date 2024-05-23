@@ -5,6 +5,7 @@
 #ifndef SPESSASYNTH_MODULATOR_H
 #define SPESSASYNTH_MODULATOR_H
 
+#include "../constants.h"
 
 class Modulator {
 public:
@@ -16,11 +17,11 @@ public:
      * @param midiNote the midi note for the voice modulator is for
      * @param velocity the velocity for the voice modulator is for
      */
-    void computeModulator(const int* channelControllerTable,
-                          int* generators,
-                          int* modulatedGenerators,
-                          unsigned char midiNote,
-                          unsigned char velocity);
+    void computeModulator(
+            const int (&channelControllerTable)[MIDI_CONTROLLER_TABLE_SIZE],
+            int (&modulatedGenerators)[GENERATORS_AMOUNT_TOTAL],
+            unsigned char midiNote,
+            unsigned char velocity) const;
 
     Modulator(int sourceEnum, int secSourceEnum, char destination, int transformAmount, char transformType);
 

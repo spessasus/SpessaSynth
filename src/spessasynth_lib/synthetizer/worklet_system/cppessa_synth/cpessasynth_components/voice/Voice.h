@@ -11,13 +11,14 @@
 #include "../modulator/Modulator.h"
 #include "../sample_dump_manager/SampleDumpManager.h"
 #include "../channel/ChannelVibrato.h"
+#include <vector>
 
 class Voice {
 public:
     /**
      * generators modulated by modulators
      */
-    int* modulatedGenerators;
+    int modulatedGenerators[GENERATORS_AMOUNT_TOTAL] = {};
 
 
     bool isInRelease;
@@ -44,6 +45,15 @@ public:
     float startTime;
     float releaseStartTime;
 
+    Voice(VoiceSample &voiceSample,
+          std::vector<Modulator> &modulators,
+          int (&generators)[GENERATORS_AMOUNT_TOTAL],
+          unsigned char midiNote,
+          unsigned char velocity,
+          unsigned char targetKey,
+          unsigned int sampleRate,
+          float startTime);
+
     /**
      * Renders the voice's data out to the buffers
      * @param currentTime the current time in seconds
@@ -55,17 +65,20 @@ public:
      * @param chorusLeft left chorus wet
      * @param chorusRight right chorus wet
      * @param sampleTime the time of a single sample, for example a sample rate of 44100Hz would be 1 / 44100
+     * @param sampleDumpManager the holder of the dumped samples
+     * @param channelVibrato the channel's vibrato
      */
-    void renderAudio(float currentTime, int bufferLength,
-                     float *outputLeft, float* outputRight,
-                     float *reverbLeft, float* reverbRight,
-                     float *chorusLeft, float* chorusRight,
-                     SampleDumpManager* sampleDumpManager,
-                     int *channelControllerTable,
-                     ChannelVibrato& channelVibrato,
-                     float sampleTime);
+    void renderAudio(
+            float currentTime, int bufferLength,
+            float *outputLeft, float* outputRight,
+            float *reverbLeft, float* reverbRight,
+            float *chorusLeft, float* chorusRight,
+            SampleDumpManager& sampleDumpManager,
+            const int (&channelControllerTable)[MIDI_CONTROLLER_TABLE_SIZE],
+            ChannelVibrato& channelVibrato,
+            float sampleTime);
 
-    void computeModulators(int* channelControllerArray);
+    void computeModulators(int (&channelControllerTable)[MIDI_CONTROLLER_TABLE_SIZE]);
 
 private:
     VoiceSample sample;
@@ -74,12 +87,11 @@ private:
     /**
      * the voice's generators
      */
-    int* generators;
+    int generators[GENERATORS_AMOUNT_TOTAL];
     /**
      * the voice's modulators
      */
-    Modulator* modulators;
-    int modulatorsAmount;
+    std::vector<Modulator> modulators;
     int currentTuningCents;
     float currentTuningCalculated;
 

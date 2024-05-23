@@ -13,11 +13,11 @@
 #include "../volumeEnvelope/VolumeEnvelope.h"
 #include "../stereo_panner/StereoPanner.h"
 
-void Voice::computeModulators(int *channelControllerArray) {
-    for (int i = 0; i < this->modulatorsAmount; ++i) {
-        this->modulators[i].computeModulator(
-                channelControllerArray,
-                this->generators,
+void Voice::computeModulators(int (&channelControllerTable)[MIDI_CONTROLLER_TABLE_SIZE]) {
+    for(Modulator &modulator : this->modulators)
+    {
+        modulator.computeModulator(
+                channelControllerTable,
                 this->modulatedGenerators,
                 this->midiNote,
                 this->velocity);
@@ -31,13 +31,13 @@ void Voice::renderAudio(
         float *outputLeft, float *outputRight,
         float *reverbLeft, float *reverbRight,
         float *chorusLeft, float *chorusRight,
-        SampleDumpManager* sampleDumpManager,
-        int *channelControllerTable,
+        SampleDumpManager& sampleDumpManager,
+        const int (&channelControllerTable)[MIDI_CONTROLLER_TABLE_SIZE],
         ChannelVibrato& channelVibrato,
         float sampleTime) {
 
     // if no matching sample, perhaps it's still being loaded..? worklet_channel.js line 256
-    if(sampleDumpManager->dumpedSamples[this->sample.sampleID].isEmpty)
+    if(sampleDumpManager.dumpedSamples[this->sample.sampleID].isEmpty)
     {
         return;
     }
@@ -152,7 +152,7 @@ void Voice::renderAudio(
     // wavetable oscillator (will return true if the sample has reached the end)
     this->isInRelease = WavetableOscillator::getOscillatorData(this->sample,
                                            this->isInRelease,
-                                           sampleDumpManager->dumpedSamples[this->sample.sampleID],
+                                           sampleDumpManager.dumpedSamples[this->sample.sampleID],
                                            outputTable,
                                            bufferLength,
                                            this->currentTuningCalculated);
@@ -179,4 +179,33 @@ void Voice::renderAudio(
 
 
     delete[] outputTable;
+}
+
+Voice::Voice(
+        VoiceSample &voiceSample,
+        std::vector<Modulator> &modulators,
+        int (&generators)[GENERATORS_AMOUNT_TOTAL],
+        unsigned char midiNote,
+        unsigned char velocity,
+        unsigned char targetKey,
+        unsigned int sampleRate,
+        float startTime) : modulators(modulators),
+        sample(voiceSample),
+        filter(LowpassFilter(sampleRate)),
+        midiNote(midiNote),
+        velocity(velocity),
+        targetKey(targetKey),
+        startTime(startTime){
+    this->filter = LowpassFilter(sampleRate);
+    std::copy(std::begin(generators), std::end(generators), std::begin(this->generators));
+
+    this->isInRelease = false;
+    this->finished = false;
+    this->volumeEnvelopeState = VolumeEnvelopeState::delayPhase;
+    this->currentAttenuationDb = 100;
+    this->currentModEnvValue = 0;
+    this->releaseStartModEnv = 1;
+    this->currentTuningCalculated = 1;
+    this->currentTuningCents = 0;
+    this->releaseStartTime = INFINITY;
 }

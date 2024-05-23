@@ -3,7 +3,6 @@
 //
 
 #include "Modulator.h"
-#include "../constants.h"
 #include <iostream>
 #include <cmath>
 
@@ -153,11 +152,11 @@ void Modulator::debugString() {
 
 }
 
-void Modulator::computeModulator(const int *channelControllerTable,
-                                 int *generators,
-                                 int *modulatedGenerators,
-                                 unsigned char midiNote,
-                                 unsigned char velocity) {
+void Modulator::computeModulator(
+        const int (&channelControllerTable)[MIDI_CONTROLLER_TABLE_SIZE],
+        int (&modulatedGenerators)[GENERATORS_AMOUNT_TOTAL],
+        unsigned char midiNote,
+        unsigned char velocity) const {
     if(this->transformAmount == 0)
     {
         // no need to do anything;

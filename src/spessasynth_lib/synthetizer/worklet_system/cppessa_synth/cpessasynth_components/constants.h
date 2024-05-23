@@ -35,6 +35,7 @@ const int GENERATORS_CHORUS_DIVIDER = 500;
 // volume envelope related
 const char DB_SILENCE = 100;
 const float GAIN_SILENCE = 0.005f;
+const float MINIMUM_NOTE_LENGTH = 0.07f;
 
 // modulation envelope related
 const int MODULATION_ENVELOPE_CONVEX_LENGTH = 1000;
