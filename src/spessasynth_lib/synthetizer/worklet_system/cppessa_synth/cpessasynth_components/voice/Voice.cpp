@@ -149,8 +149,8 @@ void Voice::renderAudio(
     // prepare the output table
     auto* outputTable = new float[bufferLength];
 
-    // wavetable oscillator
-    WavetableOscillator::getOscillatorData(this->sample,
+    // wavetable oscillator (will return true if the sample has reached the end)
+    this->isInRelease = WavetableOscillator::getOscillatorData(this->sample,
                                            this->isInRelease,
                                            sampleDumpManager->dumpedSamples[this->sample.sampleID],
                                            outputTable,
@@ -178,4 +178,5 @@ void Voice::renderAudio(
                            bufferLength);
 
 
+    delete[] outputTable;
 }

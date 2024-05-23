@@ -600,7 +600,7 @@ export class WorkletSystem {
     {
         let addDefaultVibrato = () =>
         {
-            if(this.midiChannels[channel].delay === 0 && this.midiChannels[channel].vibrato.rate === 0 && this.midiChannels[channel].vibrato.depth === 0)
+            if(this.midiChannels[channel].vibrato.delay === 0 && this.midiChannels[channel].vibrato.rate === 0 && this.midiChannels[channel].vibrato.depth === 0)
             {
                 this.midiChannels[channel].vibrato.depth = 50;
                 this.midiChannels[channel].vibrato.rate = 8;

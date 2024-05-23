@@ -7,20 +7,17 @@
 
 extern "C"
 /**
-     * @param channelNumber number of the channel to render
+     * @param channelsAmount number of channels amount for left and right each (2 more buffers are for reverb + chorus!!!!)
      * @param bufferLength sample length of the output arrays
      * @param currentTime the current time
-     * @param outputLeft left dry output buffer
-     * @param outputRight right dry output buffer
-     * @param reverbLeft left reverb wet output buffer
-     * @param reverbRight right reverb wet output buffer
-     * @param chorusLeft  left chorus output buffer
-     * @param chorusRight right chorus output buffer
+     * @param outputsLeft left output buffers (2 dimensional array) FIRST IS REVERB THEN CHORUS then THE DRY CHANNELS!!!!
+     * @param outputsRight right output buffers (2 dimensional array) FIRST IS REVERB THEN CHORUS THEN DRY CHANNELS!
      */
-EMSCRIPTEN_KEEPALIVE void renderAudio(int channelNumber, int bufferLength, float currentTime,
-
-                 float* outputLeft,float* outputRight,
-                 float* reverbLeft,float* reverbRight,
-                 float* chorusLeft,float* chorusRight);
+EMSCRIPTEN_KEEPALIVE void renderAudio(
+        int bufferLength,
+        float currentTime,
+        int channelsAmount,
+        float** outputsLeft,
+        float** outputsRight);
 
 #endif //SPESSASYNTH_MAIN_H

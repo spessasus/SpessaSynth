@@ -15,6 +15,7 @@ import { applyVolumeEnvelope } from './worklet_utilities/volume_envelope.js'
 import { applyLowpassFilter } from './worklet_utilities/lowpass_filter.js'
 import { getModEnvValue } from './worklet_utilities/modulation_envelope.js'
 import { VOICE_CAP } from '../synthetizer.js'
+import Module from './cpessasynth.js'
 
 /**
  * worklet_processor.js
@@ -54,6 +55,8 @@ resetArray[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning] = 0;
  */
 let workletDumpedSamplesList = [];
 
+const CppessaSynth = Module();
+
 class WorkletProcessor extends AudioWorkletProcessor {
     /**
      * Creates a new worklet synthesis system. contains all channels
@@ -90,6 +93,7 @@ class WorkletProcessor extends AudioWorkletProcessor {
             voices: [],
             sustainedVoices: [],
             holdPedal: false,
+            isMuted: false,
             channelVibrato: {delay: 0, depth: 0, rate: 0}
 
         })
@@ -306,51 +310,82 @@ class WorkletProcessor extends AudioWorkletProcessor {
     /**
      * Syntesizes the voice to buffers
      * @param inputs {Float32Array[][]} required by WebAudioAPI
-     * @param outputs {Float32Array[][]} the outputs to write to, only the first 2 channels are populated
+     * @param outputs {Float32Array[][]} the outputs to write to
      * @returns {boolean} true
      */
     process(inputs, outputs) {
-        // for every channel
-        let totalCurrentVoices = 0;
-        this.workletProcessorChannels.forEach((channel, index) => {
-            if(channel.voices.length < 1 || channel.isMuted)
-            {
-                // skip the channels
-                return;
-            }
-            const outputIndex = (index % this._outputsAmount) + 2;
-            const outputChannels = outputs[outputIndex];
-            const reverbChannels = outputs[0];
-            const chorusChannels = outputs[1];
-            const tempV = channel.voices;
+        // two output buffers: left and right. map them
+        const leftOutputBuffers = outputs.map(out => out[0]);
+        const rightOutputBuffers = outputs.map(out => out[1]);
+        const bufferLength = outputs[0][0].length;
 
-            // reset voices
-            channel.voices = [];
-
-            // for every voice
-            tempV.forEach(v => {
-                // render voice
-                this.renderVoice(channel, v, outputChannels, reverbChannels, chorusChannels);
-
-                // if not finished, add it back
-                if(!v.finished)
-                {
-                    channel.voices.push(v);
-                }
-            });
-
-            totalCurrentVoices += tempV.length;
+        // allocate memory for each output buffer in the wasm heap
+        /**
+         * @type {number[]}
+         */
+        const leftBufferPointers = leftOutputBuffers.map(outputBuffer => {
+            // get pointer
+            const pointer = CppessaSynth._malloc(outputBuffer.length *  outputBuffer.BYTES_PER_ELEMENT);
+            // malloc
+            CppessaSynth.HEAPF32.set(outputBuffer, pointer / outputBuffer.BYTES_PER_ELEMENT);
+            // return the pointer
+            return pointer;
         });
 
-        // if voice count changed, update voice amount
-        if(totalCurrentVoices !== this.totalVoicesAmount)
-        {
-            this.totalVoicesAmount = totalCurrentVoices;
-            this.updateVoicesAmount();
-        }
+        /**
+         * @type {number[]}
+         */
+        const rightBufferPointers = rightOutputBuffers.map(outputBuffer => {
+            // get pointer
+            const pointer = CppessaSynth._malloc(outputBuffer.length *  outputBuffer.BYTES_PER_ELEMENT);
+            // malloc
+            CppessaSynth.HEAPF32.set(outputBuffer, pointer / outputBuffer.BYTES_PER_ELEMENT);
+            // return the pointer
+            return pointer;
+        })
+
+        // Allocate memory for the array of pointers
+        const leftArraysPointer = CppessaSynth._malloc(leftBufferPointers.length * 4); // 4 bytes per pointer
+        leftBufferPointers.forEach((pointer, index) => {
+            // save the pointer in the wasm heap
+            CppessaSynth.setValue(leftArraysPointer + index * 4, pointer, 'i32'); // 32 bit pointers
+        });
+
+        const rightArraysPointer = CppessaSynth._malloc(rightBufferPointers.length * 4); // 4 bytes per pointer
+        rightBufferPointers.forEach((pointer, index) => {
+            // save the pointer in the wasm heap
+            CppessaSynth.setValue(rightArraysPointer + index * 4, pointer, 'i32'); // 32 bit pointers
+        });
+
+        CppessaSynth._renderAudio(
+            bufferLength,
+            currentTime,
+            this._outputsAmount,
+            leftArraysPointer,
+            rightArraysPointer,
+        );
+
+        // write the arrays back out
+        leftOutputBuffers.forEach((buffer, index) => {
+            const pointer = leftBufferPointers[index];
+            buffer.set(CppessaSynth.HEAPF32.subarray(pointer / buffer.BYTES_PER_ELEMENT, pointer / buffer.BYTES_PER_ELEMENT + buffer.length));
+        });
+
+        rightOutputBuffers.forEach((buffer, index) => {
+            const pointer = rightBufferPointers[index];
+            buffer.set(CppessaSynth.HEAPF32.subarray(pointer / buffer.BYTES_PER_ELEMENT, pointer / buffer.BYTES_PER_ELEMENT + buffer.length));
+        });
+
+        // free stuff
+        leftBufferPointers.forEach(CppessaSynth._free);
+        CppessaSynth._free(leftArraysPointer);
+
+        rightBufferPointers.forEach(CppessaSynth._free);
+        CppessaSynth._free(rightArraysPointer);
 
         return true;
     }
+
 
     /**
      * Renders a voice to the stereo output buffer
