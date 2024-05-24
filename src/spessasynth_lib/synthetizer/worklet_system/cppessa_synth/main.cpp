@@ -1,16 +1,14 @@
 #include <iostream>
 #include <emscripten.h>
-#include <cmath>
 #include "main.h"
 #include "cpessasynth_components/CppessaSynth.h"
 
 //
 // Created by spessasus on 21.05.24.
-// main audio rendering code and javascript communication code
+// main javascript communication code
 //
 
-EXTERN_C_BEGIN
-    const float AMPLITUDE = 0.1f;
+extern "C";
     CppessaSynth* cppessaSynth;
 
     EMSCRIPTEN_KEEPALIVE
@@ -33,8 +31,8 @@ void initializeCppessaSynth(int outputsAmount, float sampleRate, unsigned int to
 }
 
 EMSCRIPTEN_KEEPALIVE
-void dumpSample(float *sampleData, unsigned int sampleLength, unsigned int sampleID) {
-    cppessaSynth->dumpSample(sampleData, sampleLength, sampleID);
+void dumpSample(float *sampleData, unsigned int sampleLength, unsigned int sampleID, float currentTime) {
+    cppessaSynth->dumpSample(sampleData, sampleLength, sampleID, currentTime);
 }
 
 EMSCRIPTEN_KEEPALIVE
@@ -66,11 +64,6 @@ void createVoice(
                 serializedModulators[modulatorArrayIndex + 3],
                 serializedModulators[modulatorArrayIndex + 4]);
         modulatorArrayIndex += 5;
-
-        decodedModulators[decodedModulators.size() - 1].debugString();
-    }
-    for (int i = 0; i < GENERATORS_AMOUNT_TOTAL; ++i) {
-        printf("generator %d: %d\n", i, generators[i]);
     }
 
     VoiceSample voiceSample = VoiceSample(
@@ -92,7 +85,52 @@ void createVoice(
             targetKey,
             (unsigned int)cppessaSynth->sampleRate,
             startTime);
-    cppessaSynth->addVoice(channel, voice);
+    cppessaSynth->addVoice(channel, voice, startTime);
 }
 
-EXTERN_C_END
+EMSCRIPTEN_KEEPALIVE
+void noteOff(int channel, unsigned char midiNote, float currentTime) {
+    cppessaSynth->noteOff(channel, midiNote, currentTime);
+}
+
+EMSCRIPTEN_KEEPALIVE
+void controllerChange(int channel, unsigned char index, int value, float currentTime) {
+    cppessaSynth->controllerChange(channel, index, value, currentTime);
+}
+
+EMSCRIPTEN_KEEPALIVE
+int getVoicesAmount(int channel) {
+    return cppessaSynth->getVoicesAmount(channel);
+}
+
+EMSCRIPTEN_KEEPALIVE
+void clearDumpedSamples(unsigned int totalSamplesAmount) {
+    cppessaSynth->clearDumpedSamples(totalSamplesAmount);
+}
+
+
+EMSCRIPTEN_KEEPALIVE
+void addNewChannel() {
+    cppessaSynth->addNewChannel();
+}
+
+EMSCRIPTEN_KEEPALIVE
+void setChannelMute(int channel, bool isMuted) {
+    cppessaSynth->muteChannel(channel, isMuted);
+}
+
+EMSCRIPTEN_KEEPALIVE
+void killVoices(int amount) {
+    cppessaSynth->killVoices(amount);
+}
+
+EMSCRIPTEN_KEEPALIVE
+void stopAll(bool force, float currentTime) {
+    cppessaSynth->stopAll(force, currentTime);
+}
+
+void setChannelVibrato(int channel, float rate, float delay, int depth) {
+    cppessaSynth->setChannelVibrato(channel, rate, delay, depth);
+}
+
+

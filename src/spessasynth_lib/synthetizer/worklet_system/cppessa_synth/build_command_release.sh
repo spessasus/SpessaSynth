@@ -16,13 +16,15 @@ cpessasynth_components/stereo_panner/StereoPanner.cpp \
 cpessasynth_components/CppessaSynth.cpp \
 -o ../cpessasynth.js \
 -s EXPORTED_FUNCTIONS="['_malloc', '_free']" \
--s EXPORTED_RUNTIME_METHODS="['writeArrayToMemory', 'setValue']" \
--s SAFE_HEAP=1 \
--g3 \
+-s EXPORTED_RUNTIME_METHODS="['setValue']" \
+-s SAFE_HEAP=0 \
 -s SINGLE_FILE=1 \
+-msimd128 \
+--closure 1 \
 -s WASM=1 \
 -s WASM_ASYNC_COMPILATION=0 \
 -s MODULARIZE=1 \
 -s EXPORT_ES6=1 \
 -s ENVIRONMENT="shell" \
+-s ALLOW_MEMORY_GROWTH=1 \
 -O3

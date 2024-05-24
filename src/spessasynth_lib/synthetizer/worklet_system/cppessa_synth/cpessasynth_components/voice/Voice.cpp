@@ -17,6 +17,7 @@
 EMSCRIPTEN_KEEPALIVE
 void Voice::computeModulators(int (&channelControllerTable)[MIDI_CONTROLLER_TABLE_SIZE]) {
 
+    // FIXME: these are not computing at all????
     // copy data
     for (int i = 0; i < GENERATORS_AMOUNT_TOTAL; ++i) {
         this->modulatedGenerators[i] = this->generators[i];
@@ -93,7 +94,7 @@ void Voice::renderAudio(
         float vibratoLFOvalue = LowFrequencyOscillator::getOscillatorValue(vibratoStartTime, vibratoFrequencyHz, currentTime);
         if(vibratoLFOvalue != 0.0f)
         {
-            centTuning += (int)vibratoLFOvalue * vibratoDepth;
+            centTuning += (int)(vibratoLFOvalue * (float)vibratoDepth);
         }
     }
 
@@ -114,9 +115,9 @@ void Voice::renderAudio(
         float modulationLFOValue = LowFrequencyOscillator::getOscillatorValue(modulationStartTime, modulationFrequencyHz, currentTime);
 
         // adjust other values
-        centTuning += (int)modulationLFOValue * modulationPitchDepth;
-        modulationLFOCentibelOffset = (int)modulationLFOValue * modulationVolumeDepth;
-        cutoffCents += (int)modulationLFOValue * modulationFilterDepth;
+        centTuning += (int)(modulationLFOValue * (float)modulationPitchDepth);
+        modulationLFOCentibelOffset = (int)(modulationLFOValue * (float)modulationVolumeDepth);
+        cutoffCents += (int)(modulationLFOValue * (float)modulationFilterDepth);
     }
 
     // channel vibrato (GS NRPN)
@@ -126,15 +127,15 @@ void Voice::renderAudio(
                 this->startTime + channelVibrato.delaySeconds,
                 channelVibrato.frequencyHz,
                 currentTime);
-        centTuning += (int)channelVibratoValue * channelVibrato.depthCents;
+        centTuning += (int)(channelVibratoValue * (float)channelVibrato.depthCents);
     }
 
     // modulation envelope
     int modulationEnvelopePitchDepth = this->modulatedGenerators[GeneratorTypes::modEnvToPitch];
     int modulationEnvelopeFilterDepth = this->modulatedGenerators[GeneratorTypes::modLfoToFilterFc];
     float modulationEnvelopeValue = ModulationEnvelope::getModulationEnvelopeValue(this, currentTime);
-    cutoffCents += (int)modulationEnvelopeValue * modulationEnvelopeFilterDepth;
-    centTuning += (int)modulationEnvelopeValue * modulationEnvelopePitchDepth;
+    cutoffCents += (int)(modulationEnvelopeValue * (float)modulationEnvelopeFilterDepth);
+    centTuning += (int)(modulationEnvelopeValue * (float)modulationEnvelopePitchDepth);
 
     // calculate the final playback rate
     int centTuningFinal = centTuning + semitoneTuning * 100;
@@ -158,15 +159,19 @@ void Voice::renderAudio(
     auto* outputTable = new float[bufferLength];
 
     // wavetable oscillator (will return true if the sample has reached the end)
-    this->isInRelease = WavetableOscillator::getOscillatorData(this->sample,
+    bool hasFinished = WavetableOscillator::getOscillatorData(this->sample,
                                            this->isInRelease,
                                            sampleDumpManager.dumpedSamples[this->sample.sampleID],
                                            outputTable,
                                            bufferLength,
                                            this->currentTuningCalculated);
+    if(hasFinished)
+    {
+        this->finished = true;
+    }
 
     // low pass filter
-    //this->filter.applyLowpassFilter(this->modulatedGenerators[GeneratorTypes::initialFilterQ], cutoffCents, outputTable, bufferLength);
+    this->filter.applyLowpassFilter(this->modulatedGenerators[GeneratorTypes::initialFilterQ], cutoffCents, outputTable, bufferLength);
 
     // volume envelope
     VolumeEnvelope::applyVolumeEnvelope(this,
@@ -222,7 +227,4 @@ Voice::Voice(
     this->releaseStartTime = INFINITY;
 }
 
-Voice::~Voice()
-{
-    delete[] this->generators;
-}
+Voice::~Voice() = default;

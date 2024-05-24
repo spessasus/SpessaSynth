@@ -21,7 +21,7 @@ private:
     /**
      * reasonance in absolute centibels
      */
-    unsigned int reasonanceCb;
+    int reasonanceCb;
 
     /**
      * reasonance converted to linear amplitude
@@ -36,12 +36,12 @@ private:
     /**
      * filter cutoff frequency in absolute centibels
      */
-    unsigned int cutoffCents;
+    int cutoffCents;
 
     /**
      * filter cutoff frequency in hertz
      */
-    unsigned int cutoffHz;
+    float cutoffHz;
 
     void calculateCoefficients();
 
@@ -52,8 +52,8 @@ public:
      * @param outputBuffer the buffer to process
      * @param bufferLength the length of the buffer
      */
-    void applyLowpassFilter(unsigned int filterQcBCurrent, unsigned int cutoffCentsCurrent, float* outputBuffer, int bufferLength);
-    LowpassFilter(unsigned int sampleRate);
+    void applyLowpassFilter(int filterQcBCurrent, int cutoffCentsCurrent, float* outputBuffer, int bufferLength);
+    explicit LowpassFilter(unsigned int sampleRate);
 };
 
 

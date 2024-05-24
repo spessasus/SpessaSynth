@@ -160,6 +160,9 @@ void Modulator::computeModulator(
         return;
     }
 
+    printf("starting to compute!\n");
+    debugString();
+
     // mapped to 0-16384
     int rawSourceValue = 0;
     if(this->sourceUsesCC)
@@ -231,12 +234,21 @@ void Modulator::computeModulator(
 
 
     // compute the modulator
-    int computedValue = (int)sourceValue * (int)secondSrcValue * this->transformAmount;
+    int computedValue = (int)(sourceValue * secondSrcValue * (float)this->transformAmount);
 
     if(this->transformType == 2)
     {
         // abs value
         computedValue = abs(computedValue);
+    }
+
+    if(computedValue != 0)
+    {
+        printf("Modulator affect! Destination: %d computed: %d\n", this->destination, computedValue);
+    }
+    else
+    {
+        printf("No effect for %d\n", this->destination);
     }
 
     // add to generator

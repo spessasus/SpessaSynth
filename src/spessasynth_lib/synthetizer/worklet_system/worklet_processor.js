@@ -77,6 +77,8 @@ class WorkletProcessor extends AudioWorkletProcessor {
             sampleRate,
             options.processorOptions.totalSamplesAmount);
 
+        this.channelsAmount = this._outputsAmount;
+
         // /**
         //  * contains all the channels with their voices on the processor size
         //  * @type {WorkletProcessorChannel[]}
@@ -122,23 +124,11 @@ class WorkletProcessor extends AudioWorkletProcessor {
 
             // note off
             case workletMessageType.noteOff:
-                // channelVoices.forEach(v => {
-                //     if(v.midiNote !== data || v.isInRelease === true)
-                //     {
-                //         return;
-                //     }
-                //     // if hold pedal, move to sustain
-                //     if(this.workletProcessorChannels[channel].holdPedal) {
-                //         this.workletProcessorChannels[channel].sustainedVoices.push(v);
-                //     }
-                //     else
-                //     {
-                //         this.releaseVoice(v);
-                //     }
-                // });
+                CppessaSynth._noteOff(channel, data, currentTime);
                 break;
 
             case workletMessageType.killNote:
+                // TODO: kill note
                 // channelVoices.forEach(v => {
                 //     if(v.midiNote !== data)
                 //     {
@@ -200,159 +190,64 @@ class WorkletProcessor extends AudioWorkletProcessor {
 
                     CppessaSynth._free(modulatorsSerializedPointer);
                 })
-                // data.forEach(voice => {
-                //     const exclusive = voice.generators[generatorTypes.exclusiveClass];
-                //     if(exclusive !== 0)
-                //     {
-                //         channelVoices.forEach(v => {
-                //             if(v.generators[generatorTypes.exclusiveClass] === exclusive)
-                //             {
-                //                 this.releaseVoice(v);
-                //                 v.generators[generatorTypes.releaseVolEnv] = -7200; // make the release nearly instant
-                //                 computeModulators(v, this.workletProcessorChannels[channel].midiControllers);
-                //             }
-                //         })
-                //     }
-                //     computeModulators(voice, this.workletProcessorChannels[channel].midiControllers);
-                //     voice.currentAttenuationDb = 100;
-                // })
-                // channelVoices.push(...data);
-                //
-                // this.totalVoicesAmount += data.length;
-                // // cap the voices
-                // if(this.totalVoicesAmount > VOICE_CAP)
-                // {
-                //     this.voiceKilling(this.totalVoicesAmount - VOICE_CAP);
-                // }
-                // else {
-                //     this.updateVoicesAmount();
-                // }
                 break;
 
             case workletMessageType.sampleDump:
                 // allocate memory
                 const samplePointer = CppessaSynth._malloc(data.sampleData.length * Float32Array.BYTES_PER_ELEMENT);
                 CppessaSynth.HEAPF32.set(data.sampleData, samplePointer / data.sampleData.BYTES_PER_ELEMENT);
-                CppessaSynth._dumpSample(samplePointer, data.sampleData.length, data.sampleID);
-                // workletDumpedSamplesList[data.sampleID] = data.sampleData;
-                // // the sample maybe was loaded after the voice was sent... adjust the end position!
-                //
-                // // not for all channels because the system tells us for what channel this voice was dumped! yay!
-                // channelVoices.forEach(v => {
-                //     if(v.sample.sampleID !== data.sampleID)
-                //     {
-                //         return;
-                //     }
-                //     v.sample.end = data.sampleData.length - 1 + v.generators[generatorTypes.endAddrOffset] + (v.generators[generatorTypes.endAddrsCoarseOffset] * 32768);
-                //     // calculate for how long the sample has been playing and move the cursor there
-                //     v.sample.cursor = (v.sample.playbackStep * sampleRate) * (currentTime - v.startTime);
-                //     if(v.sample.loopingMode === 0) // no loop
-                //     {
-                //         if (v.sample.cursor >= v.sample.end) {
-                //             v.finished = true;
-                //         }
-                //     }
-                //     else
-                //     {
-                //         // go through modulo (adjust cursor if the sample has looped
-                //         if(v.sample.cursor > v.sample.loopEnd) {
-                //             v.sample.cursor = v.sample.cursor % (v.sample.loopEnd - v.sample.loopStart) + v.sample.loopStart - 1;
-                //         }
-                //     }
-                // })
-
+                CppessaSynth._dumpSample(samplePointer, data.sampleData.length, data.sampleID, currentTime);
                 break;
 
             case workletMessageType.ccReset:
+                // TODO: cc reset
                 // this.resetControllers(channel, data);
                 break;
 
             case workletMessageType.ccChange:
-                // special case: hold pedal
-                // if(data[0] === midiControllers.sustainPedal) {
-                //     if (data[1] >= 64)
-                //     {
-                //         this.workletProcessorChannels[channel].holdPedal = true;
-                //     }
-                //     else
-                //     {
-                //         this.workletProcessorChannels[channel].holdPedal = false;
-                //         this.workletProcessorChannels[channel].sustainedVoices.forEach(v => {
-                //             this.releaseVoice(v)
-                //         });
-                //         this.workletProcessorChannels[channel].sustainedVoices = [];
-                //     }
-                // }
-                // this.workletProcessorChannels[channel].midiControllers[data[0]] = data[1];
-                // channelVoices.forEach(v => computeModulators(v, this.workletProcessorChannels[channel].midiControllers));
+                CppessaSynth._controllerChange(channel, data[0], data[1], currentTime);
                 break;
 
             case workletMessageType.setChannelVibrato:
-                // this.workletProcessorChannels[channel].channelVibrato = data;
+                CppessaSynth._setChannelVibrato(channel, data.rate, data.delay, data.depth);
                 break;
 
             case workletMessageType.clearCache:
-                // if(workletDumpedSamplesList.length > 0) {
-                //     workletDumpedSamplesList = [];
-                // }
+                CppessaSynth._clearDumpedSamples(data)
                 break;
 
             case workletMessageType.stopAll:
-                // if(data === 1)
-                // {
-                //     // force stop all
-                //     channelVoices.length = 0;
-                //     this.updateVoicesAmount();
-                // }
-                // else
-                // {
-                //     channelVoices.forEach(v => {
-                //         if(v.isInRelease) return;
-                //         this.releaseVoice(v)
-                //     });
-                // }
+                CppessaSynth._stopAll(data === 1, currentTime);
                 break;
 
             case workletMessageType.killNotes:
-                //this.voiceKilling(data);
+                this.voiceKilling(data);
                 break;
 
             case workletMessageType.muteChannel:
-                //this.workletProcessorChannels[channel].isMuted = data;
+                CppessaSynth._setChannelMute(channel, data);
                 break;
 
             case workletMessageType.addNewChannel:
-                //this.createWorkletChannel();
+                this.channelsAmount++;
+                CppessaSynth._addNewChannel();
                 break;
         }
     }
 
     voiceKilling(amount)
     {
-        // kill the smallest velocity voices
-        let voicesOrderedByVelocity = this.workletProcessorChannels.map(channel => channel.voices);
-
-        /**
-         * @type {WorkletVoice[]}
-         */
-        voicesOrderedByVelocity = voicesOrderedByVelocity.flat();
-        voicesOrderedByVelocity.sort((v1, v2) => v1.velocity - v2.velocity);
-        if(voicesOrderedByVelocity.length < amount)
-        {
-            amount = voicesOrderedByVelocity.length;
-        }
-        for (let i = 0; i < amount; i++) {
-            const voice = voicesOrderedByVelocity[i];
-            this.workletProcessorChannels[voice.channelNumber].voices
-                .splice(this.workletProcessorChannels[voice.channelNumber].voices.indexOf(voice), 1);
-            this.totalVoicesAmount--;
-        }
+        CppessaSynth._killVoices(amount);
         this.updateVoicesAmount();
     }
 
     updateVoicesAmount()
     {
-        this.port.postMessage(this.workletProcessorChannels.map(c => c.voices.length));
+        const amount = [];
+        for (let i = 0; i < this.channelsAmount; i++) {
+            amount.push(CppessaSynth._getVoicesAmount(i));
+        }
+        this.port.postMessage(amount);
     }
 
     /**
@@ -444,166 +339,9 @@ class WorkletProcessor extends AudioWorkletProcessor {
 
         rightBufferPointers.forEach(CppessaSynth._free);
         CppessaSynth._free(rightArraysPointer);
-
+        this.updateVoicesAmount();
         return true;
     }
-
-
-    /**
-     * Renders a voice to the stereo output buffer
-     * @param channel {WorkletProcessorChannel} the voice's channel
-     * @param voice {WorkletVoice} the voice to render
-     * @param output {Float32Array[]} the output buffer
-     * @param reverbOutput {Float32Array[]} output for reverb
-     * @param chorusOutput {Float32Array[]} output for chorus
-     */
-    renderVoice(channel, voice, output, reverbOutput, chorusOutput)
-    {
-        // if no matching sample, perhaps it's still being loaded..? worklet_system.js line 256
-        if(workletDumpedSamplesList[voice.sample.sampleID] === undefined)
-        {
-            return;
-        }
-
-        // check if release
-        if(!voice.isInRelease) {
-            // if not in release, check if the release time is
-            if (currentTime >= voice.releaseStartTime) {
-                voice.releaseStartModEnv = voice.currentModEnvValue;
-                voice.isInRelease = true;
-            }
-        }
-
-
-        // if the initial attenuation is more than 100dB, skip the voice (it's silent anyways)
-        if(voice.modulatedGenerators[generatorTypes.initialAttenuation] > 2500)
-        {
-            if(voice.isInRelease)
-            {
-                voice.finished = true;
-            }
-            return;
-        }
-
-        // TUNING
-
-        // calculate tuning
-        let cents = voice.modulatedGenerators[generatorTypes.fineTune]
-            + channel.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning]
-            + channel.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTranspose];
-        let semitones = voice.modulatedGenerators[generatorTypes.coarseTune];
-
-        // calculate tuning by key
-        cents += (voice.targetKey - voice.sample.rootKey) * voice.modulatedGenerators[generatorTypes.scaleTuning];
-
-        // vibrato LFO
-        const vibratoDepth = voice.modulatedGenerators[generatorTypes.vibLfoToPitch];
-        if(vibratoDepth > 0)
-        {
-            const vibStart = voice.startTime + timecentsToSeconds(voice.modulatedGenerators[generatorTypes.delayVibLFO]);
-            const vibFreqHz = absCentsToHz(voice.modulatedGenerators[generatorTypes.freqVibLFO]);
-            const lfoVal = getLFOValue(vibStart, vibFreqHz, currentTime);
-            if(lfoVal)
-            {
-                cents += lfoVal * vibratoDepth;
-            }
-        }
-
-        // lowpass frequency
-        let lowpassCents = voice.modulatedGenerators[generatorTypes.initialFilterFc];
-
-        // mod LFO
-        const modPitchDepth = voice.modulatedGenerators[generatorTypes.modLfoToPitch];
-        const modVolDepth = voice.modulatedGenerators[generatorTypes.modLfoToVolume];
-        const modFilterDepth = voice.modulatedGenerators[generatorTypes.modLfoToFilterFc];
-        let modLfoCentibels = 0;
-        if(modPitchDepth + modFilterDepth + modVolDepth > 0)
-        {
-            const modStart = voice.startTime + timecentsToSeconds(voice.modulatedGenerators[generatorTypes.delayModLFO]);
-            const modFreqHz = absCentsToHz(voice.modulatedGenerators[generatorTypes.freqModLFO]);
-            const modLfoValue = getLFOValue(modStart, modFreqHz, currentTime);
-            cents += modLfoValue * modPitchDepth;
-            modLfoCentibels = modLfoValue * modVolDepth;
-            lowpassCents += modLfoValue * modFilterDepth;
-        }
-
-        // channel vibrato (GS NRPN)
-        if(channel.channelVibrato.depth > 0)
-        {
-            const channelVibrato = getLFOValue(voice.startTime + channel.channelVibrato.delay, channel.channelVibrato.rate, currentTime);
-            if(channelVibrato)
-            {
-                cents += channelVibrato * channel.channelVibrato.depth;
-            }
-        }
-
-        // mod env
-        const modEnvPitchDepth = voice.modulatedGenerators[generatorTypes.modEnvToPitch];
-        const modEnvFilterDepth = voice.modulatedGenerators[generatorTypes.modEnvToFilterFc];
-        const modEnv = getModEnvValue(voice, currentTime);
-        lowpassCents += modEnv * modEnvFilterDepth;
-        cents += modEnv * modEnvPitchDepth;
-
-        // finally calculate the playback rate
-        const centsTotal = ~~(cents + semitones * 100);
-        if(centsTotal !== voice.currentTuningCents)
-        {
-            voice.currentTuningCents = centsTotal;
-            voice.currentTuningCalculated = Math.pow(2, centsTotal / 1200);
-        }
-
-        // PANNING
-        const pan = ( (Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan] )) + 500) / 1000) ; // 0 to 1
-
-        // SYNTHESIS
-        const bufferOut = new Float32Array(output[0].length);
-
-        // wavetable oscillator
-        getOscillatorData(voice, workletDumpedSamplesList[voice.sample.sampleID], bufferOut);
-
-
-        // lowpass filter
-        applyLowpassFilter(voice, bufferOut, lowpassCents);
-
-        // volenv
-        applyVolumeEnvelope(voice, bufferOut, currentTime, modLfoCentibels, this.sampleTime);
-
-        // pan the voice and write out
-        panVoice(pan, bufferOut, output,
-            reverbOutput, voice.modulatedGenerators[generatorTypes.reverbEffectsSend],
-            chorusOutput, voice.modulatedGenerators[generatorTypes.chorusEffectsSend]);
-    }
-
-    /**
-     * Resets all controllers
-     * @param channel {number}
-     * @param excluded {number[]}
-     */
-    resetControllers(channel, excluded)
-    {
-        // save excluded controllers as reset doesn't affect them
-        let excludedCCvalues = excluded.map(ccNum => {
-            return {
-                ccNum: ccNum,
-                ccVal: this.workletProcessorChannels[channel].midiControllers[ccNum]
-            }
-        });
-        // transpose does not get affected either so save
-        const transpose = this.workletProcessorChannels[channel].midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTranspose];
-
-        // reset the array
-        this.workletProcessorChannels[channel].midiControllers.set(resetArray);
-        this.workletProcessorChannels[channel].channelVibrato = {rate: 0, depth: 0, delay: 0};
-        this.workletProcessorChannels[channel].holdPedal = false;
-
-        // restore unaffected
-        this.workletProcessorChannels[channel].midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTranspose] = transpose;
-        excludedCCvalues.forEach((cc) => {
-            this.workletProcessorChannels[channel].midiControllers[cc.ccNum] = cc.ccVal;
-        })
-
-    }
-
 }
 
 

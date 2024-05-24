@@ -20,6 +20,12 @@ public:
      */
     int modulatedGenerators[GENERATORS_AMOUNT_TOTAL] = {};
 
+    /**
+     * the voice's generators
+     */
+    int* generators;
+
+    VoiceSample sample;
 
     bool isInRelease;
     unsigned char midiNote;
@@ -83,17 +89,11 @@ public:
     void computeModulators(int (&channelControllerTable)[MIDI_CONTROLLER_TABLE_SIZE]);
 
 private:
-    VoiceSample sample;
     LowpassFilter filter;
     /**
      * the voice's modulators
      */
     std::vector<Modulator> modulators;
-
-    /**
-     * the voice's generators
-     */
-    int* generators;
 
     int currentTuningCents;
     float currentTuningCalculated;

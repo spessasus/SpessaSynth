@@ -33,7 +33,7 @@ const int GENERATORS_REVERB_DIVIDER = 500;
 const int GENERATORS_CHORUS_DIVIDER = 500;
 
 // volume envelope related
-const char DB_SILENCE = 100;
+const char DB_SILENCE = 100.0f;
 const float GAIN_SILENCE = 0.005f;
 const float MINIMUM_NOTE_LENGTH = 0.07f;
 

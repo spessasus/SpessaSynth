@@ -475,7 +475,7 @@ export class Synthetizer {
         // check if the system supports clearing samples (only worklet does)
         if(this.synthesisSystem.resetSamples)
         {
-            this.synthesisSystem.resetSamples();
+            this.synthesisSystem.resetSamples(soundFont.samples.length);
         }
         for(let i = 0; i < this.synthesisSystem.channelsAmount; i++)
         {

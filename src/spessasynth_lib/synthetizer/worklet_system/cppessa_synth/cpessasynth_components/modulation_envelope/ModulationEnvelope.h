@@ -18,6 +18,8 @@ public:
      */
     static float getModulationEnvelopeValue(Voice* voice, float currentTime);
 
+    static bool isConvexPrecomputed;
+
     /**
      * mapped from 0 to 1
      */

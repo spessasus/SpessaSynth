@@ -3,6 +3,7 @@
 //
 
 #include <cmath>
+#include <cstdio>
 #include "LowpassFilter.h"
 #include "../generatorTypes.h"
 #include "../unit_converter/UnitConverter.h"
@@ -28,7 +29,7 @@ LowpassFilter::LowpassFilter(unsigned int sampleRate) {
 
 }
 
-void LowpassFilter::applyLowpassFilter(unsigned int filterQcBCurrent, unsigned int cutoffCentsCurrent, float *outputBuffer, int bufferLength) {
+void LowpassFilter::applyLowpassFilter(int filterQcBCurrent, int cutoffCentsCurrent, float *outputBuffer, int bufferLength) {
     if(cutoffCentsCurrent > 13490)
     {
         return; // filter is open
@@ -39,7 +40,7 @@ void LowpassFilter::applyLowpassFilter(unsigned int filterQcBCurrent, unsigned i
     {
         this->cutoffCents = cutoffCentsCurrent;
         this->reasonanceCb = filterQcBCurrent;
-        this->cutoffHz = (unsigned int)UnitConverter::absCentsToHz(cutoffCents);
+        this->cutoffHz = UnitConverter::absCentsToHz(cutoffCents);
                                                                                               //     \/ adjust the filterQ (fluid_iir_filter.h line 204)
         this->reasonanceGain = UnitConverter::decibelAttenuationToGain(-1 * (((float)this->reasonanceCb / 10.0f) - 3.01f)); // -1 because it's attenuation that we're inverting
         calculateCoefficients();

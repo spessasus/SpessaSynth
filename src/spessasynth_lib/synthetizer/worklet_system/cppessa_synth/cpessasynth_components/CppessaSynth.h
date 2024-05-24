@@ -17,12 +17,26 @@ public:
 
     CppessaSynth(int outputsAmount, float sampleRate, unsigned int totalSamplesAmount);
 
+    void clearDumpedSamples(unsigned int totalSamplesAmount);
     void addNewChannel();
     void controllerChange(int channel, unsigned char index, int value, float currentTime);
-    void addVoice(int channel, Voice& voice);
+    void addVoice(int channel, Voice& voice, float currentTime);
     void noteOff(int channel, unsigned char midiNote, float currentTime);
+    void muteChannel(int channel, bool isMuted);
+    void killVoices(int amount);
+    void stopAll(bool force, float currentTime);
 
-    void dumpSample(float* sampleData, unsigned int sampleLength, unsigned int sampleID) const;
+    /**
+     * @param channel channel number
+     * @param rate in hertz
+     * @param delay in seconds
+     * @param depth detune in cents
+     */
+    void setChannelVibrato(int channel, float rate, float delay, int depth);
+
+    void dumpSample(float* sampleData, unsigned int sampleLength, unsigned int sampleID, float currentTime);
+
+    int getVoicesAmount(int channel);
 
     /**
      * Renders the complete audio

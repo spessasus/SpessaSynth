@@ -14,7 +14,7 @@
 class Channel {
 public:
     std::vector<Voice> voices;
-    std::vector<Voice> sustainedVoices;
+    std::vector<Voice*> sustainedVoices;
     ChannelVibrato vibrato;
     int channelControllerTable[MIDI_CONTROLLER_TABLE_SIZE];
     bool holdPedal;
@@ -44,18 +44,29 @@ public:
             SampleDumpManager &sampleDumpManager,
             float sampleTime);
 
+    /**
+     * called on sample dump, used to adjust the voices that were started before the sample was dumped
+     * note: this is only used in sf3 as sf2 sample loading is synchronous (i.e. waits for it to load before starting a voice)
+     * @param sampleID the dumped sample's id
+     * @param sampleLength the dumped sample's length
+     */
+    void adjustVoices(unsigned int sampleID, unsigned int sampleLength, float currentTime);
+
     void controllerChange(unsigned char controllerNumber, int controllerValue, float currentTime);
     void setChannelVibrato(float rate, float delay, int depth);
     void stopAll(float currentTime, bool force = false);
     void noteOff(unsigned char midiNote, float currentTime);
-    void addVoice(Voice& voice);
+    void addVoice(Voice& voice, float currentTime);
     void resetControllers();
+    void setMuted(bool isMuted);
 
-    Channel();
+    Channel(float sampleRate);
 
 private:
     static void releaseVoice(Voice& voice, float currentTime);
     int resetArray[MIDI_CONTROLLER_TABLE_SIZE];
+
+    float sampleRate;
 };
 
 

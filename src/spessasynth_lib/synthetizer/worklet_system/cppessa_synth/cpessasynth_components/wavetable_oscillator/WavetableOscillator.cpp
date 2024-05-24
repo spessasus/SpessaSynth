@@ -2,6 +2,7 @@
 // Created by spessasus on 23.05.24.
 //
 
+#include <cstdio>
 #include "WavetableOscillator.h"
 
 bool WavetableOscillator::getOscillatorData(VoiceSample& voiceSample,
@@ -61,11 +62,6 @@ bool WavetableOscillator::getOscillatorData(VoiceSample& voiceSample,
             if(ceilIndex >= voiceSample.end)
             {
                 // the voice has finished!
-                // fill the rest of the array with zeros
-                for (int j = i; j < outputBufferLength; ++j) {
-                    sampleData.sampleData[j] = 0.0f;
-
-                }
                 return true;
             }
 

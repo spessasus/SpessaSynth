@@ -15,14 +15,15 @@ EMSCRIPTEN_KEEPALIVE
 void UnitConverter::initializeLookupTables() {
     // timecent
     for (int i = 0; i < MAX_TIMECENT - MIN_TIMECENT + 1; ++i) {
-        unsigned int timecents = i + MIN_TIMECENT;
-        timecentLookupTable[i] = powf(2.0f, (float)timecents / 1200.0f);
+        int timecents = i + MIN_TIMECENT;
+        UnitConverter::timecentLookupTable[i] = powf(2.0f, (float)timecents / 1200.0f);
     }
+    printf("\n");
 
     // absolute cent
     for (int i = 0; i < MAX_ABS_CENT - MIN_ABS_CENT + 1; ++i) {
-        unsigned int absoluteCents = i + MIN_ABS_CENT;
-        UnitConverter::absoluteCentLookupTable[i] = powf(2.0f, ((float)absoluteCents - 6900.0f) / 1200.0f);
+        int absoluteCents = i + MIN_ABS_CENT;
+        UnitConverter::absoluteCentLookupTable[i] = 440.0f * powf(2.0f, ((float)absoluteCents - 6900.0f) / 1200.0f);
     }
 
     // decibel (2 points of precision)
@@ -35,12 +36,12 @@ void UnitConverter::initializeLookupTables() {
 }
 
 EMSCRIPTEN_KEEPALIVE
-float UnitConverter::timecentsToSeconds(unsigned int timecents) {
+float UnitConverter::timecentsToSeconds(int timecents) {
     return UnitConverter::timecentLookupTable[timecents - MIN_TIMECENT];
 }
 
 EMSCRIPTEN_KEEPALIVE
-float UnitConverter::absCentsToHz(unsigned int absoluteCents) {
+float UnitConverter::absCentsToHz(int absoluteCents) {
     return UnitConverter::absoluteCentLookupTable[absoluteCents - MIN_ABS_CENT];
 }
 

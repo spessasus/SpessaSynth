@@ -15,14 +15,14 @@ public:
      * @param timecents timecents
      * @return seconds
      */
-    static float timecentsToSeconds(unsigned int timecents);
+    static float timecentsToSeconds(int timecents);
 
     /**
      * Converts absolute cents to hertz
      * @param absoluteCents absolute cents
      * @return hertz
      */
-    static float absCentsToHz(unsigned int absoluteCents);
+    static float absCentsToHz(int absoluteCents);
 
     /**
      * Converts decibel attenuation (-decibels) to linear amplitude

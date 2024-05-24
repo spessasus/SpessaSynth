@@ -10,7 +10,7 @@ import { DEFAULT_PERCUSSION } from '../synthetizer.js'
  * purpose: manages the worklet system and communicates with worklet_processor.js
  */
 
-export const WORKLET_PROCESSOR_NAME = "spessasynth-worklet-syste,";
+export const WORKLET_PROCESSOR_NAME = "spessasynth-worklet-system";
 
 export const WORKLET_SYSTEM_GAIN = 0.5;
 
@@ -63,7 +63,7 @@ export const workletMessageType = {
  * 4 - note off instantly   -> midiNote<number>
  * 5 - controllers reset    ->    array<number> excluded controller numbers (excluded from the reset)
  * 6 - channel vibrato      -> {frequencyHz: number, depthCents: number, delaySeconds: number}
- * 7 - clear cached samples ->  (no data)
+ * 7 - clear cached samples ->  new total amount
  * 8 - stop all notes       -> force<number> (0 false, 1 true)
  * 9 - kill notes           -> amount<number>
  * 10 - mute channel        -> isMuted<booolean>
@@ -868,12 +868,15 @@ export class WorkletSystem {
         this.midiChannels[channel].dataEntryState = dataEntryStates.Idle;
     }
 
-    resetSamples()
+    /**
+     * @param totalSamplesAmount {number}
+     */
+    resetSamples(totalSamplesAmount)
     {
         this.post({
             channelNumber: 0,
             messageType: workletMessageType.clearCache,
-            messageData: undefined
+            messageData: totalSamplesAmount
         });
         clearSamplesList();
         for (let channel of this.midiChannels) {

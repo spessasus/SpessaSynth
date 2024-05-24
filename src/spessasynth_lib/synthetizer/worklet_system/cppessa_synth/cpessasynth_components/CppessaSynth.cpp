@@ -18,7 +18,7 @@ CppessaSynth::CppessaSynth(
     UnitConverter::initializeLookupTables();
 
     for (int i = 0; i < outputsAmount; ++i) {
-        this->midiChannels.emplace_back();
+        this->midiChannels.emplace_back(sampleRate);
     }
 
     printf("CppessaSynth succesfully initialized! with the following params:\n"
@@ -28,7 +28,7 @@ CppessaSynth::CppessaSynth(
 
 EMSCRIPTEN_KEEPALIVE
 void CppessaSynth::addNewChannel() {
-    this->midiChannels.emplace_back();
+    this->midiChannels.emplace_back(this->sampleRate);
 }
 
 EMSCRIPTEN_KEEPALIVE
@@ -38,8 +38,8 @@ void CppessaSynth::controllerChange(int channel, unsigned char index, int value,
 }
 
 EMSCRIPTEN_KEEPALIVE
-void CppessaSynth::addVoice(int channel, Voice &voice) {
-    this->midiChannels[channel].addVoice(voice);
+void CppessaSynth::addVoice(int channel, Voice &voice, float currentTime) {
+    this->midiChannels[channel].addVoice(voice, currentTime);
 }
 
 
@@ -55,8 +55,8 @@ void CppessaSynth::renderAudio(float **outputsLeft, float **outputsRight, int bu
         this->midiChannels[i].renderAudio(
                 currentTime,
                 bufferLength,
-                outputsLeft[i % this->outputsAmount],
-                outputsRight[i % this->outputsAmount],
+                outputsLeft[i % this->outputsAmount + 2],
+                outputsRight[i % this->outputsAmount + 2],
                 outputsLeft[0],
                 outputsRight[0],
                 outputsLeft[1],
@@ -73,7 +73,61 @@ void CppessaSynth::noteOff(int channel, unsigned char midiNote, float currentTim
     this->midiChannels[channel].noteOff(midiNote, currentTime);
 }
 
-void CppessaSynth::dumpSample(float *sampleData, unsigned int sampleLength, unsigned int sampleID) const {
-    // TODO: cursor adjusting
+void CppessaSynth::dumpSample(float *sampleData, unsigned int sampleLength, unsigned int sampleID, float currentTime) {
+    for (Channel& channel : this->midiChannels) {
+        channel.adjustVoices(sampleID, sampleLength, currentTime);
+    }
     this->sampleDumpManager.DumpSample(sampleData, sampleLength, sampleID);
+}
+
+int CppessaSynth::getVoicesAmount(int channel) {
+    return (int)this->midiChannels[channel].voices.size();
+}
+
+void CppessaSynth::clearDumpedSamples(unsigned int totalSamplesAmount) {
+    printf("CppessaSynth renitialized for %d samples!\n", totalSamplesAmount);
+    this->sampleDumpManager.ClearDumpedSamples(totalSamplesAmount);
+}
+
+void CppessaSynth::muteChannel(int channel, bool isMuted) {
+    this->midiChannels[channel].setMuted(isMuted);
+}
+
+void CppessaSynth::killVoices(int amount) {
+    // sort voices by velocity and kill starting from lowest
+    std::vector<Voice*> sortedVoices;
+
+    // for each channel
+    for (Channel& channel : midiChannels) {
+        // for each voice in the channel
+        for (Voice& voice : channel.voices) {
+            // save to vector as pointer
+            sortedVoices.push_back(&voice);
+        }
+    }
+
+    // this is the strangest line of code i've seen but it works
+    std::sort(sortedVoices.begin(), sortedVoices.end(),
+              [](const Voice* a, const Voice* b) {
+                  return a->velocity < b->velocity;
+              });
+
+    if(sortedVoices.size() <= amount)
+    {
+        amount = (int)sortedVoices.size();
+    }
+
+    for (int i = 0; i < amount; ++i) {
+        sortedVoices[i]->finished = true;
+    }
+}
+
+void CppessaSynth::stopAll(bool force, float currentTime) {
+    for (Channel &channel : this->midiChannels) {
+        channel.stopAll(force);
+    }
+}
+
+void CppessaSynth::setChannelVibrato(int channel, float rate, float delay, int depth) {
+    this->midiChannels[channel].setChannelVibrato(rate, delay, depth);
 }

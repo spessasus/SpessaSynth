@@ -7,8 +7,13 @@
 #include <cmath>
 
 float ModulationEnvelope::modulationConvexAttack[MODULATION_ENVELOPE_CONVEX_LENGTH];
+bool ModulationEnvelope::isConvexPrecomputed = false;
 
 float ModulationEnvelope::getModulationEnvelopeValue(Voice* voice, float currentTime) {
+    if(!ModulationEnvelope::isConvexPrecomputed)
+    {
+        ModulationEnvelope::precomputeModulationConvex();
+    }
     float attackDuration = UnitConverter::timecentsToSeconds(voice->modulatedGenerators[GeneratorTypes::attackModEnv]);
     float decayDuration = UnitConverter::timecentsToSeconds(voice->modulatedGenerators[GeneratorTypes::decayModEnv])
             + (float)((60 - voice->midiNote) * voice->modulatedGenerators[GeneratorTypes::keyNumToModEnvDecay]);
@@ -66,6 +71,7 @@ float ModulationEnvelope::getModulationEnvelopeValue(Voice* voice, float current
 }
 
 void ModulationEnvelope::precomputeModulationConvex() {
+    ModulationEnvelope::isConvexPrecomputed = true;
     // precompute convex positive unipolar
     ModulationEnvelope::modulationConvexAttack[0] = 0.0f;
     ModulationEnvelope::modulationConvexAttack[MODULATION_ENVELOPE_CONVEX_LENGTH - 1] = 1.0f;

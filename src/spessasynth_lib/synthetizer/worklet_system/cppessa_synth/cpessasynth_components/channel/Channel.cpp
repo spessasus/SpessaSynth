@@ -16,6 +16,10 @@ void Channel::renderAudio(
         float *chorusRight,
         SampleDumpManager &sampleDumpManager,
         float sampleTime) {
+    if(this->isMuted)
+    {
+        return;
+    }
     // render all voices
     for (Voice& voice : this->voices)
     {
@@ -52,9 +56,9 @@ void Channel::controllerChange(unsigned char controllerNumber, int controllerVal
         else
         {
             this->holdPedal = false;
-            for(Voice &voice : this->sustainedVoices)
+            for(Voice *voice : this->sustainedVoices)
             {
-                this->releaseVoice(voice, currentTime);
+                Channel::releaseVoice(*voice, currentTime);
             }
      }
  }
@@ -94,7 +98,7 @@ void Channel::releaseVoice(Voice &voice, float currentTime) {
     // check if the note is shorter than the min note time, if so, extend it
     if(voice.releaseStartTime - voice.startTime < MINIMUM_NOTE_LENGTH)
     {
-        voice.releaseStartTime = voice.startTime + MINIMUM_NOTE_LENGTH;
+        voice.releaseStartTime = currentTime + MINIMUM_NOTE_LENGTH;
     }
 
 }
@@ -109,7 +113,7 @@ void Channel::noteOff(unsigned char midiNote, float currentTime) {
         // if hold pedal is on, move the voice to sustain
         if(this->holdPedal)
         {
-            this->sustainedVoices.push_back(voice);
+            this->sustainedVoices.push_back(&voice);
         }
         else
         {
@@ -118,9 +122,26 @@ void Channel::noteOff(unsigned char midiNote, float currentTime) {
     }
 }
 
-void Channel::addVoice(Voice &voice) {
+void Channel::addVoice(Voice &voice, float currentTime) {
+    // find voices with the same exclusive class
+    int exclusiveClass = voice.generators[GeneratorTypes::exclusiveClass];
+
+    // if exclusive class is set, look for other voices and release them
+    if(exclusiveClass != 0)
+    {
+        for(Voice &checkedVoice : this->voices)
+        {
+            // if the voice has the same start time, ignore!
+            if(checkedVoice.generators[GeneratorTypes::exclusiveClass] == exclusiveClass && checkedVoice.startTime != voice.startTime)
+            {
+                checkedVoice.generators[GeneratorTypes::releaseVolEnv] = -7900;
+                checkedVoice.computeModulators(this->channelControllerTable);
+                Channel::releaseVoice(voice, currentTime);
+            }
+        }
+    }
+    voice.computeModulators(this->channelControllerTable);
     this->voices.push_back(voice);
-    this->voices[this->voices.size() - 1].computeModulators(this->channelControllerTable);
 }
 
 
@@ -129,7 +150,7 @@ void Channel::resetControllers() {
     std::copy(std::begin(this->resetArray), std::end(this->resetArray), std::begin(this->channelControllerTable));
 }
 
-Channel::Channel() : vibrato(ChannelVibrato(0, 0, 0)), resetArray{0}, channelControllerTable{0} {
+Channel::Channel(float sampleRate) : vibrato(ChannelVibrato(0, 0, 0)), resetArray{0}, channelControllerTable{0}, sampleRate(sampleRate) {
     // an array with preset default values so we can quickly use set() to reset the controllers
     // default values
     this->resetArray[MidiControllers::MainVolume] = 100 << 7;
@@ -147,4 +168,31 @@ Channel::Channel() : vibrato(ChannelVibrato(0, 0, 0)), resetArray{0}, channelCon
 
     // fill the controller table with reset array
     std::copy(std::begin(this->resetArray), std::end(this->resetArray), std::begin(this->channelControllerTable));
+}
+
+void Channel::adjustVoices(unsigned int sampleID, unsigned int sampleLength, float currentTime) {
+    for (Voice& voice : this->voices) {
+        // adjust end position (include generators)
+        voice.sample.end = sampleLength - 1 + voice.generators[GeneratorTypes::endAddrOffset] + (voice.generators[GeneratorTypes::endAddrsCoarseOffset] * 32768);
+        // calculate for how long the sample has been playing and move the cursor there
+        voice.sample.cursor = (voice.sample.playbackRate * this->sampleRate) * (currentTime - voice.startTime);
+        // check for looping mode
+        if(voice.sample.loopingMode == 0) // no loop
+        {
+            if (voice.sample.cursor >= (float)voice.sample.end) {
+                voice.finished = true;
+            }
+        }
+        else
+        {
+            // go through modulo (adjust cursor if the sample has looped
+            if(voice.sample.cursor > (float)voice.sample.loopEnd) {
+                voice.sample.cursor = (float)((unsigned int)voice.sample.cursor % ((voice.sample.loopEnd - voice.sample.loopStart) + voice.sample.loopStart));
+            }
+        }
+    }
+}
+
+void Channel::setMuted(bool isMuted) {
+    this->isMuted = isMuted;
 }

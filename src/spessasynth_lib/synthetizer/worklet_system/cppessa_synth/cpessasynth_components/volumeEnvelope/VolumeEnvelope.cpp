@@ -40,9 +40,12 @@ VolumeEnvelope::applyVolumeEnvelope(Voice* voice, float *outputBuffer, unsigned 
         switch (voice->volumeEnvelopeState)
         {
             case Voice::VolumeEnvelopeState::delayPhase:
-                // delay phase, this shouldn't happen so skip to hold
-                releaseStartDb = attenuation;
-                break;
+                releaseStartDb = 0.0f;
+                // it's 0, just fill it with zeros
+                for (int i = 0; i < bufferLength; ++i) {
+                    outputBuffer[i] = 0.0f;
+                }
+                return;
 
             case Voice::VolumeEnvelopeState::attackPhase: {
                 // attack phase
@@ -163,8 +166,4 @@ VolumeEnvelope::applyVolumeEnvelope(Voice* voice, float *outputBuffer, unsigned 
         currentFrameTime += sampleTime;
     }
     voice->currentAttenuationDb = decibelAttenuation;
-    printf("attenuation level: %f sustain: %f attenuation %f calculated %f"
-           "modulatedAttenuation: %d\n",
-           decibelAttenuation, sustain, attenuation, UnitConverter::decibelAttenuationToGain(decibelAttenuation),
-           voice->modulatedGenerators[GeneratorTypes::initialAttenuation]);
 }

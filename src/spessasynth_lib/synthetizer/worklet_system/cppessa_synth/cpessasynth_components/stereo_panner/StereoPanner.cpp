@@ -9,8 +9,9 @@
 void StereoPanner::panVoice(float pan, const float *inputBuffer, float *outputLeft, float *outputRight, float *reverbLeft,
                             float *reverbRight, float *chorusLeft, float *chorusRight, int chorusLevel, int reverbLevel,
                             int bufferLength) {
-    float panLeft = cosf(M_PI_2 * pan);
-    float panRight = sinf(M_PI_2 * pan);
+    float panLeft = cosf(M_PI_2 * pan) * 0.5f;
+    float panRight = sinf(M_PI_2 * pan) * 0.5f;
+    //printf("%f\n", inputBuffer[0]);
 
     if(reverbLevel > 0)
     {

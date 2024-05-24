@@ -77,7 +77,34 @@ void createVoice(
         int modulatorsAmount);
 
 EMSCRIPTEN_KEEPALIVE
-void dumpSample(float *sampleData, unsigned int sampleLength, unsigned int sampleID);
+void dumpSample(float *sampleData, unsigned int sampleLength, unsigned int sampleID, float currentTime);
+
+EMSCRIPTEN_KEEPALIVE
+void noteOff(int channel, unsigned char midiNote, float currentTime);
+
+EMSCRIPTEN_KEEPALIVE
+void controllerChange(int channel, unsigned char index, int value, float currentTime);
+
+EMSCRIPTEN_KEEPALIVE
+int getVoicesAmount(int channel);
+
+EMSCRIPTEN_KEEPALIVE
+void clearDumpedSamples(unsigned int totalSamplesAmount);
+
+EMSCRIPTEN_KEEPALIVE
+void addNewChannel();
+
+EMSCRIPTEN_KEEPALIVE
+void setChannelMute(int channel, bool isMuted);
+
+EMSCRIPTEN_KEEPALIVE
+void killVoices(int amount);
+
+EMSCRIPTEN_KEEPALIVE
+void stopAll(bool force, float currentTime);
+
+EMSCRIPTEN_KEEPALIVE
+void setChannelVibrato(int channel, float rate, float delay, int depth);
 
 EXTERN_C_END
 #endif //SPESSASYNTH_MAIN_H
