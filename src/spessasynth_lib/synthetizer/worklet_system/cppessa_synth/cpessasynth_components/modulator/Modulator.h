@@ -25,7 +25,7 @@ public:
 
     Modulator(int sourceEnum, int secSourceEnum, char destination, int transformAmount, char transformType);
 
-    void debugString();
+    void debugString() const;
 
     enum CurveTypes {
         linearCurve = 0,

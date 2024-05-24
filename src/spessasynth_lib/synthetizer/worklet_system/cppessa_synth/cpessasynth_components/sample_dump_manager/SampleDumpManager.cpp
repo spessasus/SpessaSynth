@@ -2,6 +2,7 @@
 // Created by spessasus on 23.05.24.
 //
 
+#include <cstdio>
 #include "SampleDumpManager.h"
 
 void SampleDumpManager::ClearDumpedSamples(unsigned int totalSamplesAmount) {
@@ -19,4 +20,5 @@ void SampleDumpManager::DumpSample(float *sampleData, unsigned int sampleLength,
     this->dumpedSamples[sampleID].sampleData = sampleData;
     this->dumpedSamples[sampleID].sampleLength = sampleLength;
     this->dumpedSamples[sampleID].isEmpty = false;
+    printf("successfully dumped sample with ID of %d and length of %d\n", sampleID, sampleLength);
 }

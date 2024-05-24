@@ -121,7 +121,8 @@ export class Synthetizer {
                 this.chorusProcessor.input,
                 this.defaultPreset,
                 this.percussionPreset,
-                DEFAULT_CHANNEL_COUNT);
+                DEFAULT_CHANNEL_COUNT,
+                this.soundFont.samples.length);
         }
         else
         {

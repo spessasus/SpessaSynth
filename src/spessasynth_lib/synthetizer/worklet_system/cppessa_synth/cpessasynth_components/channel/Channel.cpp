@@ -42,7 +42,22 @@ void Channel::renderAudio(
     voices.end());
 }
 
-void Channel::controllerChange(unsigned char controllerNumber, unsigned char controllerValue) {
+void Channel::controllerChange(unsigned char controllerNumber, int controllerValue, float currentTime) {
+    // special case: hold pedal
+    if(controllerNumber == MidiControllers::SustainPedal) {
+        if (controllerValue >= 64)
+        {
+            this->holdPedal = true;
+        }
+        else
+        {
+            this->holdPedal = false;
+            for(Voice &voice : this->sustainedVoices)
+            {
+                this->releaseVoice(voice, currentTime);
+            }
+     }
+ }
     this->channelControllerTable[controllerNumber] = controllerValue;
     for(Voice &voice : this->voices)
     {
@@ -94,7 +109,7 @@ void Channel::noteOff(unsigned char midiNote, float currentTime) {
         // if hold pedal is on, move the voice to sustain
         if(this->holdPedal)
         {
-            this->sustainedVoices.push_back(std::move(voice));
+            this->sustainedVoices.push_back(voice);
         }
         else
         {
@@ -105,6 +120,7 @@ void Channel::noteOff(unsigned char midiNote, float currentTime) {
 
 void Channel::addVoice(Voice &voice) {
     this->voices.push_back(voice);
+    this->voices[this->voices.size() - 1].computeModulators(this->channelControllerTable);
 }
 
 

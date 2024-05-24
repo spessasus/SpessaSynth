@@ -4,6 +4,7 @@
 #include <cmath>
 #include "StereoPanner.h"
 #include "../constants.h"
+#include <cstdio>
 
 void StereoPanner::panVoice(float pan, const float *inputBuffer, float *outputLeft, float *outputRight, float *reverbLeft,
                             float *reverbRight, float *chorusLeft, float *chorusRight, int chorusLevel, int reverbLevel,

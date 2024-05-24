@@ -106,13 +106,15 @@ export class WorkletSystem {
      * @param percussionPreset {Preset}
      * @param channelsAmount {number} the new channels will have their audio modulod by this constant.
      * the worklet will have channelsAmount outputs + reverb + chorus
+     * @param totalSamplesAmount {number} the number of total samples in the soundfont
      */
     constructor(targetNode,
                 reverbNode,
                 chorusNode,
                 defaultPreset,
                 percussionPreset,
-                channelsAmount) {
+                channelsAmount,
+                totalSamplesAmount) {
 
         // set the constants
         this.ctx = targetNode.context;
@@ -140,7 +142,8 @@ export class WorkletSystem {
             outputChannelCount: Array(this._outputsAmount + 2).fill(2),
             numberOfOutputs: this._outputsAmount + 2,
             processorOptions: {
-                midiChannels: this._outputsAmount
+                midiChannels: this._outputsAmount,
+                totalSamplesAmount: totalSamplesAmount
             }
         });
 

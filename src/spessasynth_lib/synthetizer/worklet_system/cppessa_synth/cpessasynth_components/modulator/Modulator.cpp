@@ -134,21 +134,18 @@ Modulator::Modulator(int sourceEnum, int secSourceEnum, char destination, int tr
     this->secSourceCurveType = (char)(this->secSourceEnum >> 10 & 3);
 }
 
-void Modulator::debugString() {
-    std::cout << "Source:\nPolarity: " << this->sourcePolarity
-    << "\nDirection: " << this->sourceDirection
-    << "\nUses CC: " << this->sourceUsesCC
-    << "\nIndex: " << this->sourceIndex
-    << "\nCurve type:" << this->sourceCurveType
-    << "\n"
-    << "\nSecondary source:\nPolarity: " << this->secSourcePolarity
-    << "\nDirection: " << this->secSourceDirection
-    << "\nUses CC: " << this->secSourceUsesCC
-    << "\nIndex: " << this->secSourceIndex
-    << "\nCurve type:" << this->secSourceCurveType
-    << "\n"
-    << "\nTransform amount: " << this->transformAmount
-    << "\nDestination: " << this->destination << "\n";
+void Modulator::debugString() const {
+    printf("Source: "
+           "Polarity: %d "
+           "Direction: %d "
+           "Uses CC: %d "
+           "Index: %d "
+           "Curve type: %d\n",
+           this->sourcePolarity,
+           this->sourceDirection,
+           this->sourceUsesCC,
+           this->sourceIndex,
+           this->sourceCurveType);
 
 }
 

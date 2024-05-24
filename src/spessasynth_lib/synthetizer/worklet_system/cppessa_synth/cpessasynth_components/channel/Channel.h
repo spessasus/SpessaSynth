@@ -44,7 +44,7 @@ public:
             SampleDumpManager &sampleDumpManager,
             float sampleTime);
 
-    void controllerChange(unsigned char controllerNumber, unsigned char controllerValue);
+    void controllerChange(unsigned char controllerNumber, int controllerValue, float currentTime);
     void setChannelVibrato(float rate, float delay, int depth);
     void stopAll(float currentTime, bool force = false);
     void noteOff(unsigned char midiNote, float currentTime);

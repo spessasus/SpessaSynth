@@ -47,12 +47,14 @@ public:
 
     Voice(VoiceSample &voiceSample,
           std::vector<Modulator> &modulators,
-          int (&generators)[GENERATORS_AMOUNT_TOTAL],
+          int* generators,
           unsigned char midiNote,
           unsigned char velocity,
           unsigned char targetKey,
           unsigned int sampleRate,
           float startTime);
+
+    ~Voice();
 
     /**
      * Renders the voice's data out to the buffers
@@ -83,15 +85,16 @@ public:
 private:
     VoiceSample sample;
     LowpassFilter filter;
-
-    /**
-     * the voice's generators
-     */
-    int generators[GENERATORS_AMOUNT_TOTAL];
     /**
      * the voice's modulators
      */
     std::vector<Modulator> modulators;
+
+    /**
+     * the voice's generators
+     */
+    int* generators;
+
     int currentTuningCents;
     float currentTuningCalculated;
 

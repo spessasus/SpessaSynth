@@ -3,8 +3,15 @@
 //
 
 #include <cmath>
+#include <emscripten/emscripten.h>
+#include <cstdio>
 #include "UnitConverter.h"
 
+float UnitConverter::timecentLookupTable[MAX_TIMECENT - MIN_TIMECENT + 1];
+float UnitConverter::absoluteCentLookupTable[MAX_ABS_CENT - MIN_ABS_CENT + 1];
+//float UnitConverter::decibelLookupTable[(MAX_DECIBELS - MIN_DECIBELS) * DECIBEL_TABLE_STATIC_POINT + 1];
+
+EMSCRIPTEN_KEEPALIVE
 void UnitConverter::initializeLookupTables() {
     // timecent
     for (int i = 0; i < MAX_TIMECENT - MIN_TIMECENT + 1; ++i) {
@@ -15,24 +22,29 @@ void UnitConverter::initializeLookupTables() {
     // absolute cent
     for (int i = 0; i < MAX_ABS_CENT - MIN_ABS_CENT + 1; ++i) {
         unsigned int absoluteCents = i + MIN_ABS_CENT;
-        absoluteCentLookupTable[i] = powf(2.0f, ((float)absoluteCents - 6900.0f) / 1200.0f);
+        UnitConverter::absoluteCentLookupTable[i] = powf(2.0f, ((float)absoluteCents - 6900.0f) / 1200.0f);
     }
 
     // decibel (2 points of precision)
-    for (int i = 0; i < MAX_DECIBELS - MIN_DECIBELS + 1; ++i) {
-        float decibels = (MIN_DECIBELS * DECIBEL_TABLE_STATIC_POINT * (float)i) / DECIBEL_TABLE_STATIC_POINT;
-        decibelLookupTable[i] = powf(10.0f, -decibels / 20.0f);
-    }
+//    for (int i = 0; i < (MAX_DECIBELS - MIN_DECIBELS) * 100 + 1; ++i) {
+//        float decibels = (MIN_DECIBELS * DECIBEL_TABLE_STATIC_POINT + (float)i) / DECIBEL_TABLE_STATIC_POINT;
+//        UnitConverter::decibelLookupTable[i] = powf(10.0f, -decibels / 20.0f);
+//        printf("%f %f ", UnitConverter::decibelLookupTable[i], decibels);
+//    }
+//    printf("\n");
 }
 
+EMSCRIPTEN_KEEPALIVE
 float UnitConverter::timecentsToSeconds(unsigned int timecents) {
-    return timecentLookupTable[timecents - MIN_TIMECENT];
+    return UnitConverter::timecentLookupTable[timecents - MIN_TIMECENT];
 }
 
+EMSCRIPTEN_KEEPALIVE
 float UnitConverter::absCentsToHz(unsigned int absoluteCents) {
-    return absoluteCentLookupTable[absoluteCents - MIN_ABS_CENT];
+    return UnitConverter::absoluteCentLookupTable[absoluteCents - MIN_ABS_CENT];
 }
 
+EMSCRIPTEN_KEEPALIVE
 float UnitConverter::decibelAttenuationToGain(float decibels) {
-    return decibelLookupTable[(unsigned int)floor((decibels - MIN_DECIBELS) * DECIBEL_TABLE_STATIC_POINT)];
+    return powf(10.0f, -decibels / 20.0f); //UnitConverter::decibelLookupTable[(unsigned int)floor((decibels - MIN_DECIBELS) * DECIBEL_TABLE_STATIC_POINT)];
 }

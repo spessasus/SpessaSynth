@@ -6,6 +6,8 @@
 #include "../unit_converter/UnitConverter.h"
 #include <cmath>
 
+float ModulationEnvelope::modulationConvexAttack[MODULATION_ENVELOPE_CONVEX_LENGTH];
+
 float ModulationEnvelope::getModulationEnvelopeValue(Voice* voice, float currentTime) {
     float attackDuration = UnitConverter::timecentsToSeconds(voice->modulatedGenerators[GeneratorTypes::attackModEnv]);
     float decayDuration = UnitConverter::timecentsToSeconds(voice->modulatedGenerators[GeneratorTypes::decayModEnv])

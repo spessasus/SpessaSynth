@@ -3,10 +3,12 @@
 //
 
 #include <cmath>
+#include <emscripten/emscripten.h>
 #include "VolumeEnvelope.h"
 #include "../unit_converter/UnitConverter.h"
 #include "../constants.h"
 
+EMSCRIPTEN_KEEPALIVE
 void
 VolumeEnvelope::applyVolumeEnvelope(Voice* voice, float *outputBuffer, unsigned int bufferLength, float currentTime,
                                     int centibelOffset, float sampleTime) {
@@ -86,7 +88,7 @@ VolumeEnvelope::applyVolumeEnvelope(Voice* voice, float *outputBuffer, unsigned 
         return;
     }
     float currentFrameTime = currentTime;
-    float decibelAttenuation;
+    float decibelAttenuation = DB_SILENCE;
     for (int i = 0; i < bufferLength; ++i) {
         switch (voice->volumeEnvelopeState) {
             case Voice::VolumeEnvelopeState::delayPhase:
@@ -161,4 +163,8 @@ VolumeEnvelope::applyVolumeEnvelope(Voice* voice, float *outputBuffer, unsigned 
         currentFrameTime += sampleTime;
     }
     voice->currentAttenuationDb = decibelAttenuation;
+    printf("attenuation level: %f sustain: %f attenuation %f calculated %f"
+           "modulatedAttenuation: %d\n",
+           decibelAttenuation, sustain, attenuation, UnitConverter::decibelAttenuationToGain(decibelAttenuation),
+           voice->modulatedGenerators[GeneratorTypes::initialAttenuation]);
 }

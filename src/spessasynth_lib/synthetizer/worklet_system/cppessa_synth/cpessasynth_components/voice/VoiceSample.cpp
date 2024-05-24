@@ -2,6 +2,7 @@
 // Created by spessasus on 21.05.24.
 //
 
+#include <emscripten/emscripten.h>
 #include "VoiceSample.h"
 
 /**
@@ -14,6 +15,7 @@
  * @param endIndex calculaded (offset) end index
  * @param loopingMode
  */
+EMSCRIPTEN_KEEPALIVE
 VoiceSample::VoiceSample(unsigned int sampleID,
                          float playbackRate,
                          unsigned int rootKey,
@@ -21,7 +23,7 @@ VoiceSample::VoiceSample(unsigned int sampleID,
                          unsigned int loopEnd,
                          unsigned int startIndex,
                          unsigned int endIndex,
-                         VoiceSample::LoopingMode loopingMode) {
+                         char loopingMode) {
     this->cursor = (float)startIndex; // set the cursor to start index
     this->sampleID = sampleID;
     this->playbackRate = playbackRate;

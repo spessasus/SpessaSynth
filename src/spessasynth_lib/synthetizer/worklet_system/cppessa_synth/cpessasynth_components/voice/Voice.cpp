@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <algorithm>
+#include <emscripten/emscripten.h>
 #include "Voice.h"
 #include "../constants.h"
 #include "../unit_converter/UnitConverter.h"
@@ -13,7 +14,13 @@
 #include "../volumeEnvelope/VolumeEnvelope.h"
 #include "../stereo_panner/StereoPanner.h"
 
+EMSCRIPTEN_KEEPALIVE
 void Voice::computeModulators(int (&channelControllerTable)[MIDI_CONTROLLER_TABLE_SIZE]) {
+
+    // copy data
+    for (int i = 0; i < GENERATORS_AMOUNT_TOTAL; ++i) {
+        this->modulatedGenerators[i] = this->generators[i];
+    }
     for(Modulator &modulator : this->modulators)
     {
         modulator.computeModulator(
@@ -25,6 +32,7 @@ void Voice::computeModulators(int (&channelControllerTable)[MIDI_CONTROLLER_TABL
 
 }
 
+EMSCRIPTEN_KEEPALIVE
 void Voice::renderAudio(
         float currentTime,
         int bufferLength,
@@ -158,7 +166,7 @@ void Voice::renderAudio(
                                            this->currentTuningCalculated);
 
     // low pass filter
-    this->filter.applyLowpassFilter(this->modulatedGenerators[GeneratorTypes::initialFilterQ], cutoffCents, outputTable, bufferLength);
+    //this->filter.applyLowpassFilter(this->modulatedGenerators[GeneratorTypes::initialFilterQ], cutoffCents, outputTable, bufferLength);
 
     // volume envelope
     VolumeEnvelope::applyVolumeEnvelope(this,
@@ -181,23 +189,27 @@ void Voice::renderAudio(
     delete[] outputTable;
 }
 
+EMSCRIPTEN_KEEPALIVE
 Voice::Voice(
         VoiceSample &voiceSample,
         std::vector<Modulator> &modulators,
-        int (&generators)[GENERATORS_AMOUNT_TOTAL],
+        int* generators,
         unsigned char midiNote,
         unsigned char velocity,
         unsigned char targetKey,
         unsigned int sampleRate,
-        float startTime) : modulators(modulators),
+        float startTime)
+
+        : modulators(modulators),
         sample(voiceSample),
         filter(LowpassFilter(sampleRate)),
         midiNote(midiNote),
         velocity(velocity),
         targetKey(targetKey),
         startTime(startTime){
+
+    this->generators = generators;
     this->filter = LowpassFilter(sampleRate);
-    std::copy(std::begin(generators), std::end(generators), std::begin(this->generators));
 
     this->isInRelease = false;
     this->finished = false;
@@ -208,4 +220,9 @@ Voice::Voice(
     this->currentTuningCalculated = 1;
     this->currentTuningCents = 0;
     this->releaseStartTime = INFINITY;
+}
+
+Voice::~Voice()
+{
+    delete[] this->generators;
 }

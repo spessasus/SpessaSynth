@@ -30,13 +30,11 @@ public:
      * @return linear amplitude
      */
     static float decibelAttenuationToGain(float decibels);
+    static void initializeLookupTables();
 
-private:
     static float timecentLookupTable[MAX_TIMECENT - MIN_TIMECENT + 1];
     static float absoluteCentLookupTable[MAX_ABS_CENT - MIN_ABS_CENT + 1];
-    static float decibelLookupTable[(MAX_DECIBELS - MIN_DECIBELS) * DECIBEL_TABLE_STATIC_POINT + 1];
-
-    static void initializeLookupTables();
+    //static float decibelLookupTable[(MAX_DECIBELS - MIN_DECIBELS) * DECIBEL_TABLE_STATIC_POINT + 1];
 };
 
 

@@ -3,8 +3,8 @@ project(SpessaSynth)
 
 set(CMAKE_TOOLCHAIN_FILE  /usr/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake)
 
-include_directories(/usr/lib/emscripten/system/include)
-link_directories(/usr/lib/emscripten/system/include)
+include_directories(/home/spessasus/.emscripten_cache/sysroot/include)
+link_directories(/home/spessasus/.emscripten_cache/sysroot/include)
 set(CMAKE_CXX_STANDARD 17)
 
 add_executable(tester main.cpp
