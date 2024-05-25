@@ -54,9 +54,11 @@ export function applyVolumeEnvelope(voice, audioBuffer, currentTime, centibelOff
         switch (voice.volumeEnvelopeState)
         {
             case 0:
-                // delay phase, this shouldn't happen so skip to hold
-                releaseStartDb = attenuation;
-                break;
+                // no sound: fill with zero and skip!
+                for (let i = 0; i < audioBuffer.length; i++) {
+                    audioBuffer[i] = 0;
+                }
+                return;
 
             case 1:
                 // attack phase
