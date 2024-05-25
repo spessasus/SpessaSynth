@@ -1,5 +1,5 @@
 <p align='center'>
-<img src="src/website/spessasynth_logo_rounded.png" width='200' alt='SpessaSynth logo'>
+<img src="src/website/spessasynth_logo_rounded.png" width='300' alt='SpessaSynth logo'>
 </p>
 
 SoundFont2 based realtime synthetizer and MIDI player written in JavaScript using Web Audio API. Can also be used as a synthesis library.
