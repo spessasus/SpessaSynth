@@ -4,7 +4,6 @@ import { Manager } from './manager.js'
 import { MIDI } from '../spessasynth_lib/midi_parser/midi_loader.js'
 
 import { SoundFont2 } from '../spessasynth_lib/soundfont/soundfont_parser.js'
-import { ShiftableByteArray } from '../spessasynth_lib/utils/shiftable_array.js'
 import { formatTitle } from '../spessasynth_lib/utils/other.js'
 
 /**
@@ -46,7 +45,7 @@ async function fetchFont(url, callback)
     let size = response.headers.get("content-length");
     let reader = await (await response.body).getReader();
     let done = false;
-    let dataArray = new ShiftableByteArray(parseInt(size));
+    let dataArray = new Uint8Array(parseInt(size));
     let offset = 0;
     do{
         let readData = await reader.read();
@@ -58,7 +57,7 @@ async function fetchFont(url, callback)
         let percent = Math.round((offset / size) * 100);
         callback(percent);
     }while(!done);
-    return dataArray;
+    return dataArray.buffer;
 }
 
 document.getElementById("bundled_sf").onclick = () => {
@@ -86,9 +85,8 @@ document.getElementById("bundled_sf").onclick = () => {
 async function parseMidi(midiFile)
 {
     const buffer = await midiFile.arrayBuffer();
-    const arr = new ShiftableByteArray(buffer);
     try {
-        return new MIDI(arr, midiFile.name);
+        return new MIDI(buffer, midiFile.name);
     }
     catch (e) {
         titleMessage.innerHTML = `Error parsing MIDI: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
@@ -173,7 +171,7 @@ sfInput.onchange = async e => {
 
     const arr = await file.arrayBuffer();
     try {
-        window.soundFontParser = new SoundFont2(new ShiftableByteArray(arr));
+        window.soundFontParser = new SoundFont2(arr);
     }
     catch (e)
     {

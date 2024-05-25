@@ -18,16 +18,16 @@ export class SoundFont2
 {
     /**
      * Initializes a new SoundFont2 Parser and parses the given data array
-     * @param dataArray {ShiftableByteArray|{presets: Preset[], info: Object<string, string>}}
+     * @param arrayBuffer {ArrayBuffer|{presets: Preset[], info: Object<string, string>}}
      */
-    constructor(dataArray) {
-        if(dataArray.presets)
+    constructor(arrayBuffer) {
+        if(arrayBuffer.presets)
         {
-            this.presets = dataArray.presets;
-            this.soundFontInfo = dataArray.info;
+            this.presets = arrayBuffer.presets;
+            this.soundFontInfo = arrayBuffer.info;
             return;
         }
-        this.dataArray = dataArray;
+        this.dataArray = new ShiftableByteArray(arrayBuffer);
         console.group("%cParsing SoundFont...", consoleColors.info);
         if(!this.dataArray)
         {
@@ -83,12 +83,12 @@ export class SoundFont2
         console.log("%cVerifying smpl chunk...", consoleColors.warn)
         let sampleDataChunk = readRIFFChunk(this.dataArray, false);
         this.verifyHeader(sampleDataChunk, "smpl");
-        this.sampleDataStartIndex = dataArray.currentIndex;
+        this.sampleDataStartIndex = this.dataArray.currentIndex;
 
         console.log(`%cSkipping sample chunk, length: %c${sdtaChunk.size - 12}`,
             consoleColors.info,
             consoleColors.value);
-        dataArray.currentIndex += sdtaChunk.size - 12;
+        this.dataArray.currentIndex += sdtaChunk.size - 12;
 
         // PDTA
         console.log("%cLoading preset data chunk...", consoleColors.warn)

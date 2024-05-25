@@ -15,12 +15,13 @@ import { arrayToHexString, consoleColors, formatTitle } from '../utils/other.js'
 export class MIDI{
     /**
      * Parses a given midi file
-     * @param fileByteArray {ShiftableByteArray}
+     * @param arrayBuffer {ArrayBuffer}
      * @param fileName {string} optional, replaces the decoded title if empty
      */
-    constructor(fileByteArray, fileName="") {
+    constructor(arrayBuffer, fileName="") {
         console.groupCollapsed(`%cParsing MIDI File...`, consoleColors.info);
 
+        const fileByteArray = new ShiftableByteArray(arrayBuffer);
         const headerChunk = this.readMIDIChunk(fileByteArray);
         if(headerChunk.type !== "MThd")
         {
