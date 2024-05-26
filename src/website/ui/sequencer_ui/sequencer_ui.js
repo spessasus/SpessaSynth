@@ -32,6 +32,7 @@ export class SequencerUI{
         this.decoder = new TextDecoder(this.encoding);
         this.encoder = new TextEncoder(this.encoding);
         this.text = "";
+        this.requiresTextUpdate = false;
         this.rawText = [];
         this.titles = [""];
         this.mode = "dark";
@@ -179,11 +180,13 @@ export class SequencerUI{
             }
             const text = this.decoder.decode(data.buffer);
             this.text += text + end;
+            this.requiresTextUpdate = true;
             this.rawText.push(...data, ...this.encoder.encode(end));
             if(end === "")
             {
                 // instantly append if lyrics and 100ms batches otherwise, to avoid that initial setup text spam (looking at you, touhou midis)
-                this.lyricsElement.text.innerText = this.text
+                this.lyricsElement.text.innerText = this.text;
+                this.requiresTextUpdate = false;
             }
             this.lyricsElement.mainDiv.scrollTo(0, this.lyricsElement.text.scrollHeight);
         }
@@ -270,9 +273,7 @@ export class SequencerUI{
         this.lyricsElement.mainDiv = mainLyricsDiv;
         this.lyricsElement.selector = encodingSelector;
         this.controls.appendChild(mainLyricsDiv);
-        setInterval(() => {
-            if(this.lyricsElement.text.innerText !== this.text) this.lyricsElement.text.innerText = this.text;
-        }, 100);
+        this.requiresTextUpdate = true;
 
 
         // background bar
@@ -454,6 +455,10 @@ export class SequencerUI{
             const time = formatTime(this.seq.currentTime);
             const total = formatTime(this.seq.duration);
             this.progressTime.innerText = `${time.time} / ${total.time}`;
+            if(this.requiresTextUpdate) {
+                this.lyricsElement.text.innerText = this.text;
+                this.requiresTextUpdate = false;
+            }
         }, 100);
     }
 }

@@ -1,0 +1,15 @@
+{
+  "name": "SpessaSynth",
+  "short_name": "SpessaSynth",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "spessasynth_logo_rounded.png",
+      "type": "image/png",
+      "sizes": "930x930"
+    }
+  ],
+  "start_url": "../../index.html",
+  "display": "fullscreen",
+  "description": "index.html"
+}

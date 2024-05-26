@@ -187,6 +187,25 @@ export class Sequencer {
         }
     }
 
+    setTimeTicks(ticks)
+    {
+        this.stop();
+        if(this.onTimeChange)
+        {
+            this.onTimeChange(this.currentTime);
+        }
+        this.playingNotes = [];
+        this.pausedTime = undefined;
+        this._playTo(0, ticks);
+        this.absoluteStartTime = this.now - this.playedTime / this.playbackRate;
+        this.play();
+        if(this.renderer)
+        {
+            this.renderer.noteStartTime = this.absoluteStartTime;
+            this.resetRendererIndexes();
+        }
+    }
+
     resetRendererIndexes()
     {
         this.renderer.noteTimes.forEach(n => n.renderStartIndex = 0);
@@ -643,25 +662,6 @@ export class Sequencer {
 
         this.playbackInterval = setInterval(this._processTick.bind(this));
         setInterval( () =>this.noteOnsPerS = 0, 100);
-    }
-
-    setTimeTicks(ticks)
-    {
-        this.stop();
-        this.playingNotes = [];
-        this.pausedTime = undefined;
-        this._playTo(0, ticks);
-        this.absoluteStartTime = this.now - this.playedTime / this.playbackRate;
-        this.play();
-        if(this.renderer)
-        {
-            this.renderer.noteStartTime = this.absoluteStartTime;
-            this.resetRendererIndexes();
-        }
-        if(this.onTimeChange)
-        {
-            this.onTimeChange(this.currentTime);
-        }
     }
 
     /**
