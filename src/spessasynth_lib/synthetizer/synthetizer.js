@@ -60,11 +60,8 @@ export class Synthetizer {
         {
             // clever reverb algorithm from here:
             // https://github.com/g200kg/webaudio-tinysynth/blob/master/webaudio-tinysynth.js#L1342
-            if(i / revLength < Math.random())
-            {
-                revLeft[i] = Math.exp(-3 * i / revLength) * (Math.random() - 0.5) / 2;
-                revRight[i] = Math.exp(-3 * i / revLength) * (Math.random() - 0.5) / 2;
-            }
+            revLeft[i] = Math.exp(-3 * i / revLength) * (Math.random() - 0.5) / 2;
+            revRight[i] = Math.exp(-3 * i / revLength) * (Math.random() - 0.5) / 2;
         }
 
         this.reverbProcessor = new ConvolverNode(this.context, {
