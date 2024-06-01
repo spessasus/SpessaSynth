@@ -184,7 +184,8 @@ export const defaultModulators = [
         transform: 0}),
 
     // reverb effects to send
-    new Modulator({srcEnum: 0x00DB, dest: generatorTypes.reverbEffectsSend, amt: 200, secSrcEnum: 0x0, transform: 0}),
+    // 1000 to align with the reverbSend (overriding it works anyways)
+    new Modulator({srcEnum: 0x00DB, dest: generatorTypes.reverbEffectsSend, amt: 1000, secSrcEnum: 0x0, transform: 0}),
 
     // chorus effects to send
     new Modulator({srcEnum: 0x00DD, dest: generatorTypes.chorusEffectsSend, amt: 200, secSrcEnum: 0x0, transform: 0}),

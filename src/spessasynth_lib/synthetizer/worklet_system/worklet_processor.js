@@ -241,9 +241,13 @@ class WorkletProcessor extends AudioWorkletProcessor {
                 else
                 {
                     channelVoices.forEach(v => {
-                        if(v.isInRelease) return;
-                        this.releaseVoice(v)
+                        this.releaseVoice(v);
+                        v.isInRelease = true;
                     });
+                    this.workletProcessorChannels[channel].sustainedVoices.forEach(v => {
+                        this.releaseVoice(v);
+                        v.isInRelease = true;
+                    })
                 }
                 break;
 

@@ -10,9 +10,12 @@ import { DEFAULT_PERCUSSION } from '../synthetizer.js'
  * purpose: manages the worklet system and communicates with worklet_processor.js
  */
 
-export const WORKLET_PROCESSOR_NAME = "spessasynth-worklet-syste,";
+export const WORKLET_PROCESSOR_NAME = "spessasynth-worklet-system";
 
 export const WORKLET_SYSTEM_GAIN = 0.5;
+export const WORKLET_SYSTEM_REVERB_DIVIDER = 1000;
+export const WORKLET_SYSTEM_CHORUS_DIVIDER = 500;
+
 
 export const NON_CC_INDEX_OFFSET = 128;
 

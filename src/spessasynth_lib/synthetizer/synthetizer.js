@@ -1,7 +1,6 @@
-import {MidiChannel} from "./native_system/midi_channel.js";
-import {SoundFont2} from "../soundfont/soundfont_parser.js";
-import {ShiftableByteArray} from "../utils/shiftable_array.js";
-import { arrayToHexString, consoleColors } from '../utils/other.js';
+import { SoundFont2 } from '../soundfont/soundfont_parser.js'
+import { ShiftableByteArray } from '../utils/shiftable_array.js'
+import { arrayToHexString, consoleColors } from '../utils/other.js'
 import { getEvent, messageTypes, midiControllers } from '../midi_parser/midi_message.js'
 import { WorkletSystem } from './worklet_system/worklet_system.js'
 import { EventHandler } from './synth_event_handler.js'
@@ -13,7 +12,7 @@ import { NativeSystem } from './native_system/native_system.js'
  * purpose: responds to midi messages and called functions, managing the channels and passing the messages to them
  */
 
-export const VOICE_CAP = 750;
+export const VOICE_CAP = 450;
 
 export const DEFAULT_GAIN = 1;
 export const DEFAULT_PERCUSSION = 9;
@@ -47,25 +46,14 @@ export class Synthetizer {
             pan: 0
         });
 
-        // create reverb processor
-        const revLength = Math.round(this.context.sampleRate * REVERB_TIME_S);
-        const revbuff = new AudioBuffer({
-            numberOfChannels: 2,
-            sampleRate: this.context.sampleRate,
-            length: revLength
-        });
-        const revLeft = revbuff.getChannelData(0);
-        const revRight = revbuff.getChannelData(1);
-        for(let i = 0; i < revLength; i++)
-        {
-            // clever reverb algorithm from here:
-            // https://github.com/g200kg/webaudio-tinysynth/blob/master/webaudio-tinysynth.js#L1342
-            revLeft[i] = Math.exp(-3 * i / revLength) * (Math.random() - 0.5) / 2;
-            revRight[i] = Math.exp(-3 * i / revLength) * (Math.random() - 0.5) / 2;
-        }
+        // create reverb processor and load the impulse response
+        this.reverbProcessor = new ConvolverNode(this.context);
 
-        this.reverbProcessor = new ConvolverNode(this.context, {
-            buffer: revbuff
+        // resolve relative url
+        const impulseURL = new URL("impulse_response.wav", import.meta.url);
+        fetch(impulseURL).then(async response => {
+            const data = await response.arrayBuffer();
+            this.reverbProcessor.buffer = await this.context.decodeAudioData(data);
         });
 
         this.reverbProcessor.connect(this.volumeController);

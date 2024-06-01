@@ -238,8 +238,10 @@ export class Renderer
 
     renderWaveforms()
     {
-        this.channelAnalysers.forEach((analyser, i) => {
-            if (this.synth.synthesisSystem.midiChannels[i].percussionChannel) {
+        // draw all 16 channel waveforms in a 4x4 pattern
+        this.channelAnalysers.forEach((analyser, channelNumber) => {
+            // if this channel is now a drum channel, adjust the fft
+            if (this.synth.synthesisSystem.midiChannels[channelNumber].percussionChannel) {
                 if (analyser.fftSize !== this.drumAnalyserFft) {
                     analyser.fftSize = this.drumAnalyserFft;
                 }
@@ -249,10 +251,53 @@ export class Renderer
                 analyser.fftSize = this.normalAnalyserFft;
             }
 
-            this.drawChannelWaveform(analyser,
-                i % 4,
-                Math.floor(i / 4), i);
-            i++;
+            const x = channelNumber % 4;
+            const y = Math.floor(channelNumber / 4);
+            const waveform = new Float32Array(analyser.frequencyBinCount);
+            analyser.getFloatTimeDomainData(waveform);
+            // check if filled with zeros, then skip
+            if(waveform[0] === 0)
+            {
+                // check if first value is zero to avoid unnecessary operations
+                if(waveform.every(el => el === 0))
+                {
+                    // draw a straight line
+                    const waveWidth = this.canvas.width / 4;
+                    const waveHeight = this.canvas.height / 4
+                    const relativeX = waveWidth * x;
+                    const relativeY = waveHeight * y + waveHeight / 2;
+                    this.drawingContext.lineWidth = this.lineThickness;
+                    this.drawingContext.strokeStyle = this.channelColors[channelNumber];
+                    this.drawingContext.beginPath();
+                    this.drawingContext.moveTo(relativeX, relativeY);
+                    this.drawingContext.lineTo(relativeX + waveWidth, relativeY);
+                    this.drawingContext.stroke();
+                    return;
+                }
+            }
+            const waveWidth = this.canvas.width / 4;
+            const waveHeight = this.canvas.height / 4
+            const relativeX = waveWidth * x;
+            const relativeY = waveHeight * y + waveHeight / 2;
+            const step = waveWidth / waveform.length;
+            const multiplier = this.waveMultiplier * waveHeight;
+
+            // draw
+            this.drawingContext.lineWidth = this.lineThickness;
+            this.drawingContext.strokeStyle = this.channelColors[channelNumber];
+            this.drawingContext.beginPath();
+            this.drawingContext.moveTo(relativeX, relativeY + waveform[0] * multiplier);
+
+            let xPos = relativeX;
+            waveform.forEach(   val  => {
+                this.drawingContext.lineTo(
+                    xPos,
+                    relativeY + val * multiplier);
+                xPos += step;
+
+            });
+            this.drawingContext.stroke();
+            channelNumber++;
         });
     }
 
@@ -408,62 +453,6 @@ export class Renderer
         // sort the notes from shortest to longest (draw order)
         notesToDraw.sort((n1, n2) => n2.height - n1.height);
         return notesToDraw;
-    }
-
-    /**
-     * Draws the channel waveforms
-     * @param analyser {AnalyserNode}
-     * @param x {number} from 0 to 3
-     * @param y {number} from 0 to 3
-     * @param channelNumber {number} 0-15
-     */
-    drawChannelWaveform(analyser, x, y, channelNumber)
-    {
-        const waveform = new Float32Array(analyser.frequencyBinCount);
-        analyser.getFloatTimeDomainData(waveform);
-        // check if filled with zeros, then skip
-        if(waveform[0] === 0)
-        {
-            // check if first value is zero to avoid unnecessary operations
-            if(waveform.every(el => el === 0))
-            {
-                // draw a straight line
-                const waveWidth = this.canvas.width / 4;
-                const waveHeight = this.canvas.height / 4
-                const relativeX = waveWidth * x;
-                const relativeY = waveHeight * y + waveHeight / 2;
-                this.drawingContext.lineWidth = this.lineThickness;
-                this.drawingContext.strokeStyle = this.channelColors[channelNumber];
-                this.drawingContext.beginPath();
-                this.drawingContext.moveTo(relativeX, relativeY);
-                this.drawingContext.lineTo(relativeX + waveWidth, relativeY);
-                this.drawingContext.stroke();
-                return;
-            }
-        }
-        const waveWidth = this.canvas.width / 4;
-        const waveHeight = this.canvas.height / 4
-        const relativeX = waveWidth * x;
-        const relativeY = waveHeight * y + waveHeight / 2;
-        const step = waveWidth / waveform.length;
-        const multiplier = this.waveMultiplier * waveHeight;
-
-        // draw
-        this.drawingContext.lineWidth = this.lineThickness;
-        this.drawingContext.strokeStyle = this.channelColors[channelNumber];
-        this.drawingContext.beginPath();
-        this.drawingContext.moveTo(relativeX, relativeY + waveform[0] * multiplier);
-
-
-        let xPos = relativeX;
-        waveform.forEach((val)  => {
-            this.drawingContext.lineTo(
-                xPos,
-                relativeY + val * multiplier);
-            xPos += step;
-
-        });
-        this.drawingContext.stroke();
     }
 
     get renderBool()

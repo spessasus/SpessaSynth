@@ -68,13 +68,14 @@ import { workletMessageType } from '../worklet_system.js'
 
 
 /**
- * @type {Set<number>}
+ * the sampleID is the index
+ * @type {boolean[]}
  */
-let globalDumpedSamplesList = new Set();
+let globalDumpedSamplesList = [];
 
 export function clearSamplesList()
 {
-    globalDumpedSamplesList = new Set();
+    globalDumpedSamplesList = [];
 }
 
 function /**
@@ -94,8 +95,8 @@ function /**
  */
 dumpSample(channel, sample, id, messagePort)
 {
-    // flag as dumped so other calls won't dump it again
-    globalDumpedSamplesList.add(id);
+    // flag as defined, so it's currently being dumped
+    globalDumpedSamplesList[id] = false;
 
     // if uncompressed, load right away
     if(sample.isCompressed === false)
@@ -108,6 +109,7 @@ dumpSample(channel, sample, id, messagePort)
                 sampleData: sample.getAudioDataSync()
             }
         });
+        globalDumpedSamplesList[id] = true;
         return;
     }
 
@@ -121,6 +123,7 @@ dumpSample(channel, sample, id, messagePort)
                 sampleData: sampleData
             }
         });
+        globalDumpedSamplesList[id] = true;
     })
 }
 
@@ -159,14 +162,14 @@ export function getWorkletVoices(channel, midiNote, velocity, preset, context, w
         workletVoices = preset.getSamplesAndGenerators(midiNote, velocity).map(sampleAndGenerators => {
 
             // dump the sample if haven't already
-            if (!globalDumpedSamplesList.has(sampleAndGenerators.sampleID)) {
-                dumpSample(channel, sampleAndGenerators.sample, sampleAndGenerators.sampleID, workletMessagePort);
+            if (globalDumpedSamplesList[sampleAndGenerators.sampleID] !== true) {
+                // if the sample is currently being loaded, don't dump again (undefined means not loaded, false means is being loaded)
+                if(globalDumpedSamplesList[sampleAndGenerators.sampleID] === undefined) {
+                    dumpSample(channel, sampleAndGenerators.sample, sampleAndGenerators.sampleID, workletMessagePort);
+                }
 
                 // can't cache the voice as the end in workletSample maybe is incorrect (the sample is still loading)
-                if(sampleAndGenerators.sample.isSampleLoaded === false)
-                {
-                    canCache = false;
-                }
+                canCache = false;
             }
 
             // create the generator list
