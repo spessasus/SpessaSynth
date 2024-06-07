@@ -28,10 +28,10 @@
 
     <div id="title_wrapper">
       <div id="progress_bar"></div>
-      <h1 id="title">SpessaSynth: Online Demo</h1>
+      <h1 id="title" translate-path='locale.demoTitleMessage'>SpessaSynth: Online Demo</h1>
 
       <div class="midi_and_sf_controller">
-        <label id="file_upload" for='midi_file_input'>Upload your MIDI files</label>
+        <label id="file_upload" for='midi_file_input'  translate-path='locale.midiUploadButton'>Upload your MIDI files</label>
         <input type="file" accept=".mid" id="midi_file_input" multiple><br/>
 
         <label id="sf_upload"> Upload the soundfont
@@ -39,10 +39,10 @@
         </label>
 
         <label>
-          <a href='https://github.com/spessasus/SpessaSynth' target='_blank' id='github_page'>Project's page</a>
+          <a href='https://github.com/spessasus/SpessaSynth' target='_blank' id='github_page' translate-path='locale.demoGithubPage'>Project's page</a>
         </label>
 
-        <label id='bundled_sf'>
+        <label id='bundled_sf' translate-path='locale.demoBundledSoundfont'>
           Use the bundled SoundFont (22MB)
         </label>
       </div>

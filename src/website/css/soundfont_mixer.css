@@ -1,0 +1,45 @@
+.soundfont_mixer{
+    top: 100%;
+    position: absolute;
+    background: var(--top-color);
+    padding: 0.5em;
+    border-radius: 0 0 1em 1em;
+    width: 50%;
+    left: 25%;
+    margin: auto;
+    min-width: fit-content;
+}
+
+.soundfont_mixer_list{
+    margin: 1em;
+    border-radius: 0.3em;
+    min-height: 4em ;
+}
+
+.soundfont_mixer .soundfont_entry{
+    background: var(--top-buttons-color);
+    margin: 0.2em;
+    border-radius: 0.5em;
+    text-align: start;
+    width: fit-content;
+    display: flex;
+    padding: 0.3em;
+    justify-content: center;
+}
+
+.soundfont_mixer .soundfont_entry_wrapper{
+    display: flex;
+    justify-content: space-between;
+}
+
+.soundfont_mixer .soundfont_entry_button{
+}
+
+.soundfont_mixer .soundfont_entry_button:hover{
+    cursor: pointer;
+}
+
+.soundfont_mixer .action_buttons_wrapper{
+    display: flex;
+    justify-content: space-between;
+}

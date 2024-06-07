@@ -23,8 +23,9 @@ export class SequencerUI{
     /**
      * Creates a new User Interface for the given MidiSequencer
      * @param element {HTMLElement} the element to create sequi in
+     * @param locale {LocaleManager}
      */
-    constructor(element) {
+    constructor(element, locale) {
         this.iconColor = ICON_COLOR;
         this.iconDisabledColor = ICON_DISABLED_COLOR;
         this.controls = element;
@@ -36,6 +37,7 @@ export class SequencerUI{
         this.rawText = [];
         this.titles = [""];
         this.mode = "dark";
+        this.locale = locale;
     }
 
     toggleDarkMode()
@@ -249,7 +251,7 @@ export class SequencerUI{
         mainLyricsDiv.classList.add("lyrics");
         // title
         const lyricsTitle = document.createElement("h2");
-        lyricsTitle.innerText = "Decoded Text";
+        this.locale.bindObjectProperty(lyricsTitle, "textContent", "locale.sequencerController.lyrics.title");
         lyricsTitle.classList.add("lyrics_title");
         mainLyricsDiv.appendChild(lyricsTitle);
         this.lyricsElement.title = lyricsTitle;
@@ -296,6 +298,7 @@ export class SequencerUI{
         // play pause
         const playPauseButton = getSeqUIButton("Play/Pause",
             getPauseSvg(ICON_SIZE));
+        this.locale.bindObjectProperty(playPauseButton, "title", "locale.sequencerController.playPause");
         const togglePlayback = () => {
             if(this.seq.paused)
             {
@@ -314,16 +317,19 @@ export class SequencerUI{
         // previous song button
         const previousSongButton = getSeqUIButton("Previous song",
         getBackwardSvg(ICON_SIZE));
+        this.locale.bindObjectProperty(previousSongButton, "title", "locale.sequencerController.previousSong");
         previousSongButton.onclick = () => this.switchToPreviousSong();
 
         // next song button
         const nextSongButton = getSeqUIButton("Next song",
             getForwardSvg(ICON_SIZE));
+        this.locale.bindObjectProperty(nextSongButton, "title", "locale.sequencerController.nextSong");
         nextSongButton.onclick = () => this.switchToNextSong();
 
         // loop button
         const loopButton = getSeqUIButton("Loop this",
-            getLoopSvg(ICON_SIZE))
+            getLoopSvg(ICON_SIZE));
+        this.locale.bindObjectProperty(loopButton, "title", "locale.sequencerController.loopThis");
         const toggleLoop = () => {
             if(this.seq.loop)
             {
@@ -346,6 +352,7 @@ export class SequencerUI{
         // show text button
         const textButton = getSeqUIButton("Show lyrics",
             getTextSvg(ICON_SIZE));
+        this.locale.bindObjectProperty(textButton, "title", "locale.sequencerController.lyrics.show");
         textButton.firstElementChild.setAttribute("fill", this.iconDisabledColor); // defaults to disabled
         const toggleLyrics = () => {
             this.lyricsElement.mainDiv.classList.toggle("lyrics_show");

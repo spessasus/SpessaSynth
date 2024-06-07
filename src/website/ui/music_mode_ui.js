@@ -10,22 +10,29 @@ export class MusicModeUI {
     /**
      * Creates a new class for displaying information about the current file.
      * @param element {HTMLElement}
+     * @param localeManager {LocaleManager}
      */
-    constructor(element) {
+    constructor(element, localeManager) {
         this.mainDiv = element;
+        // load html
         this.mainDiv.innerHTML = `
         <div class='player_info_wrapper'>
             <div class="player_info_note_icon">
                 ${getDoubleNoteSvg("100%")}
             </div>
             <div class='player_info_details'>
-                <p style='font-size: small'><i>Currently playing:</i></p>
-                <h1 id='player_info_title'>Nothing is playing</h1>
-                <h3><i id='player_info_detail'>Upload a MIDI!</i></h3>
+                <p style='font-size: small'><i translate-path='locale.musicPlayerMode.currentlyPlaying'></i></p>
+                <h1 id='player_info_title' translate-path='locale.musicPlayerMode.nothingPlaying'></h1>
+                <h3><i id='player_info_detail' translate-path='locale.musicPlayerMode.nothingPlayingCopyright'></i></h3>
                 <h3 id='player_info_time'></h3>
             </div>
         </div>`;
 
+        // apply locale bindings
+        for (const el of this.mainDiv.querySelectorAll("*[translate-path]"))
+        {
+            localeManager.bindObjectProperty(el, "textContent", el.getAttribute("translate-path"));
+        }
     }
 
     /**
@@ -45,17 +52,17 @@ export class MusicModeUI {
             {
                 title =  mid.fileName;
             }
-            document.getElementById("player_info_title").innerText = title;
+            document.getElementById("player_info_title").textContent = title;
             // use file name if no copyright detected
             if(mid.copyright.replaceAll("\n", "").length > 0)
             {
-                document.getElementById("player_info_detail").innerText = mid.copyright + mid.fileName;
+                document.getElementById("player_info_detail").textContent = mid.copyright + mid.fileName;
             }
             else
             {
-                document.getElementById("player_info_detail").innerText = mid.fileName;
+                document.getElementById("player_info_detail").textContent = mid.fileName;
             }
-            document.getElementById("player_info_time").innerText = formatTime(this.seq.duration).time;
+            document.getElementById("player_info_time").textContent = formatTime(this.seq.duration).time;
         }, "player-ui-song-change");
     }
 

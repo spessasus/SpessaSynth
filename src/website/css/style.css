@@ -3,6 +3,7 @@
 @import "sequencer_ui.css";
 @import "music_mode_ui.css";
 @import "synthesizer_ui/synthesizer_ui.css";
+@import "soundfont_mixer.css";
 
 * {
     --font-color: #ccc;
@@ -114,6 +115,9 @@ input[type="file"] {
     background: var(--top-buttons-color);
     font-weight: bolder;
     margin: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #sf_selector option

@@ -1,5 +1,6 @@
 import { settingsHtml } from './settings_html.js'
 import { getDownArrowSvg, getGearSvg } from '../icons.js'
+import { DEFAULT_LOCALE } from '../../locale/locale_files/locale_list.js'
 
 /**
  * settings.js
@@ -7,8 +8,40 @@ import { getDownArrowSvg, getGearSvg } from '../icons.js'
  */
 
 /**
- * @typedef {{keyboard: {keyRange: {min: number, max: number}, mode: ("light"|"dark"), selectedChannel: number}, renderer: {renderNotes: boolean, keyRange: {min: number, max: number}, noteFallingTimeMs: number, renderWaveforms: boolean, drawActiveNotes: boolean, amplifier: number, showVisualPitch: boolean, sampleSize: number, waveformThickness: number}, midi: {output: (null|string), input: (null|string)}, interface: {mode: ("light"|"dark")}}} SavedSettings
+ * @typedef {{
+ *   keyboard: {
+ *     keyRange: {
+ *       min: number,
+ *       max: number
+ *     },
+ *     mode: ("light" | "dark"),
+ *     selectedChannel: number
+ *   },
+ *   renderer: {
+ *     renderNotes: boolean,
+ *     keyRange: {
+ *       min: number,
+ *       max: number
+ *     },
+ *     noteFallingTimeMs: number,
+ *     renderWaveforms: boolean,
+ *     drawActiveNotes: boolean,
+ *     amplifier: number,
+ *     showVisualPitch: boolean,
+ *     sampleSize: number,
+ *     waveformThickness: number
+ *   },
+ *   midi: {
+ *     output: (null | string),
+ *     input: (null | string)
+ *   },
+ *   interface: {
+ *     mode: ("light" | "dark"),
+ *     language: string
+ *   }
+ * }} SavedSettings
  */
+
 export class Settings
 {
     /**
@@ -20,6 +53,8 @@ export class Settings
      * @param midiKeyboard {MidiKeyboard}
      * @param midiDeviceHandler {MIDIDeviceHandler}
      * @param playerInfo {MusicModeUI}
+     * @param localeManager {LocaleManager}
+     * @param locales {Object<string, CompleteLocaleTypedef>}
      */
     constructor(settingsWrapper,
                 sythui,
@@ -27,13 +62,17 @@ export class Settings
                 renderer,
                 midiKeyboard,
                 midiDeviceHandler,
-                playerInfo) {
+                playerInfo,
+                localeManager,
+                locales) {
         this.mode = "dark";
         this.renderer = renderer;
         this.midiKeyboard = midiKeyboard;
         this.midiDeviceHandler = midiDeviceHandler;
         this.synthui = sythui;
         this.sequi = sequi;
+        this.locale = localeManager;
+        this.locales = locales;
         this.keyboardSizes = {
             "full": { min: 0, max: 127 },
             "piano": { min: 21, max: 108 },
@@ -48,18 +87,22 @@ export class Settings
 
         const musicModeButton = document.createElement("div");
         musicModeButton.classList.add("seamless_button");
-        musicModeButton.innerText = `Toggle music player mode`;
-        musicModeButton.title = 'Toggle the simplified UI version';
+
+        this.locale.bindObjectProperty(musicModeButton, "innerText", "locale.musicPlayerMode.toggleButton.title");
+        this.locale.bindObjectProperty(musicModeButton, "title", "locale.musicPlayerMode.toggleButton.description");
+
         settingsWrapper.appendChild(musicModeButton);
 
         const hideTopButton = document.createElement("div");
         hideTopButton.classList.add("seamless_button");
-        hideTopButton.innerText = "Hide top bar";
-        hideTopButton.title = "Hide the top bar to provide a more seamless experience";
+
+        this.locale.bindObjectProperty(hideTopButton, "innerText", "locale.hideTopBar.title");
+        this.locale.bindObjectProperty(hideTopButton, "title", "locale.hideTopBar.description");
+
         settingsWrapper.appendChild(hideTopButton);
 
-        let text = document.createElement('span')
-        text.innerText = 'Settings';
+        let text = document.createElement('span');
+        this.locale.bindObjectProperty(text, "innerText", "locale.settings.toggleButton");
 
         let gear = document.createElement('div');
         gear.innerHTML = getGearSvg(32);
@@ -110,6 +153,19 @@ export class Settings
 
         // load the html
         this.mainDiv.innerHTML = settingsHtml;
+        // bind all translations to the html
+        for (const element of this.mainDiv.querySelectorAll("*[translate-path]"))
+        {
+            // translate-path apply innerText directly
+            this.locale.bindObjectProperty(element, "textContent", element.getAttribute("translate-path"));
+        }
+        for (const element of this.mainDiv.querySelectorAll("*[translate-path-title]"))
+        {
+            const path = element.getAttribute("translate-path-title");
+            // translate-path-title: apply to both innerText and title, by adding .title and .description respectively
+            this.locale.bindObjectProperty(element, "textContent",  path + ".title");
+            this.locale.bindObjectProperty(element, "title", path + ".description");
+        }
 
         // get the html controllers
         this.htmlControls = {
@@ -137,7 +193,8 @@ export class Settings
             },
 
             interface: {
-                themeSelector: document.getElementById("toggle_mode_button")
+                themeSelector: document.getElementById("toggle_mode_button"),
+                languageSelector: document.getElementById("language_selector")
             }
         }
 
@@ -154,10 +211,7 @@ export class Settings
             renderer
         );
 
-        this._createInterfaceSettingsHandler(
-            sythui,
-            sequi,
-            renderer);
+        this._createInterfaceSettingsHandler();
 
         // key bind is "R"
         document.addEventListener("keydown", e => {
@@ -243,14 +297,17 @@ export class Settings
         {
             keyboard.toggleMode();
         }
-        keyboardControls.modeSelector.innerText = keyboardValues.mode === "dark" ? "Mode: Black" : "Mode: White";
 
 
         // interface
+        if(savedSettings.interface.language !== DEFAULT_LOCALE)
+        {
+            this.locale.changeGlobalLocale(this.locales[savedSettings.interface.language]);
+            this.htmlControls.interface.languageSelector.value = savedSettings.interface.language;
+        }
         if(savedSettings.interface.mode === "light")
         {
             this._toggleDarkMode();
-            this.htmlControls.interface.themeSelector.innerText = "Mode: Light";
         }
     }
 
@@ -297,7 +354,8 @@ export class Settings
             },
 
             interface: {
-                mode: this.mode
+                mode: this.mode,
+                language: this.htmlControls.interface.languageSelector.value
             }
         }
     }
@@ -331,8 +389,17 @@ export class Settings
 
         // rest
         // things get hacky here: change the global (*) --font-color to black:
-        document.styleSheets[0].cssRules[5].style.setProperty("--font-color",  this.mode === "dark" ? "#eee" : "#333");
-        document.styleSheets[0].cssRules[5].style.setProperty("--top-buttons-color",  this.mode === "dark" ? "linear-gradient(201deg, #222, #333)" : "linear-gradient(270deg, #ddd, #fff)");
+        // find the star rule
+        const rules = document.styleSheets[0].cssRules;
+        for(let rule of rules)
+        {
+            if(rule.selectorText === "*")
+            {
+                rule.style.setProperty("--font-color",  this.mode === "dark" ? "#eee" : "#333");
+                rule.style.setProperty("--top-buttons-color",  this.mode === "dark" ? "linear-gradient(201deg, #222, #333)" : "linear-gradient(270deg, #ddd, #fff)");
+                break;
+            }
+        }
         document.body.style.background = this.mode === "dark" ? "black" : "white";
     }
 
@@ -343,15 +410,20 @@ export class Settings
     {
         const button = this.htmlControls.interface.themeSelector;
         button.onclick = () => {
-            if(this.mode === "dark")
-            {
-                button.innerText = "Mode: Light";
-            }
-            else
-            {
-                button.innerText = "Mode: Dark";
-            }
             this._toggleDarkMode();
+            this._saveSettings();
+        }
+        const select = this.htmlControls.interface.languageSelector;
+        // load up the languages
+        for(const [code, locale] of Object.entries(this.locales))
+        {
+            const option = document.createElement("option");
+            option.value = code;
+            option.textContent = locale.localeName
+            select.appendChild(option);
+        }
+        select.onchange = () => {
+            this.locale.changeGlobalLocale(this.locales[select.value]);
             this._saveSettings();
         }
     }
@@ -384,7 +456,6 @@ export class Settings
         }
         // no device
         const select = this.htmlControls.midi.inputSelector;
-        select.innerHTML = "<option value='-1' selected>Disabled</option>";
         for(const input of handler.inputs)
         {
             const option = document.createElement("option");
@@ -425,8 +496,6 @@ export class Settings
             return;
         }
         const select = this.htmlControls.midi.outputSelector;
-        // no device
-        select.innerHTML = "<option value='-1' selected>Use SpessaSynth</option>";
         for(const output of handler.outputs)
         {
             const option = document.createElement("option");
@@ -465,12 +534,13 @@ export class Settings
 
         const keyboardControls = this.htmlControls.keyboard;
 
-        function createChannel()
+        const createChannel = () =>
         {
             const option = document.createElement("option");
 
             option.value = channelNumber.toString();
-            option.innerText = `Channel ${channelNumber + 1}`;
+            // Channel: {0} gets formatred to channel number
+            this.locale.bindObjectProperty(option, "textContent", "locale.settings.keyboardSettings.selectedChannel.channelOption", [channelNumber + 1]);
 
             option.style.background = synthui.channelColors[channelNumber % synthui.channelColors.length];
             option.style.color = "rgb(0, 0, 0)";
@@ -502,14 +572,6 @@ export class Settings
         // dark mode toggle
         keyboardControls.modeSelector.onclick = () => {
             keyboard.toggleMode();
-            if(keyboardControls.modeSelector.innerText === "Mode: Black")
-            {
-                keyboardControls.modeSelector.innerText = "Mode: White";
-            }
-            else
-            {
-                keyboardControls.modeSelector.innerText = "Mode: Black";
-            }
             this._saveSettings();
         }
     }

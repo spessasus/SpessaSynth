@@ -12,26 +12,29 @@ export class Meter
     /**
      * Creates a new meter
      * @param color {string} the color in css
-     * @param meterText {string}
+     * @param localePath {string} locale path, will add .title and .description to it
+     * @param locale {LocaleManager}
+     * @param localeArgs {string|number[]} args for description
      * @param max {number}
      * @param min {number}
-     * @param description {string}
      * @param editable {boolean} if the meter should be editable with mouse
      * @param editCallback {MeterCallbackFunction}
      * @param lockCallback {function}
      * @param unlockCallback {function}
      */
     constructor(color = "initial",
-                meterText="Voices: ",
+                localePath,
+                locale,
+                localeArgs,
                 min = 0,
                 max = 100,
-                description,
                 editable=false,
                 editCallback = undefined,
                 lockCallback = undefined,
                 unlockCallback = undefined)
     {
-        this.meterText = meterText;
+        this.meterText = "";
+        locale.bindObjectProperty(this, "meterText", localePath + ".title");
         this.min = min;
         this.max = max;
         this.currentValue = -1;
@@ -48,7 +51,7 @@ export class Meter
         this.div.classList.add("voice_meter");
         this.div.classList.add("controller_element");
         this.div.style.border = "1px solid "+ color;
-        this.div.title = description;
+        locale.bindObjectProperty(this.div, "title", localePath + ".description",  localeArgs);
 
         /**
          * @type {HTMLDivElement}
@@ -70,7 +73,7 @@ export class Meter
         if(editable)
         {
             if(editCallback === undefined) {
-                throw "No editable function given!";
+                throw new Error("No editable function given!");
             }
             this.div.onmousedown = e => {
                 e.preventDefault();
@@ -152,7 +155,7 @@ export class Meter
         if(!this.isVisualValueSet) {
             const percentage = Math.max(0, Math.min((this.currentValue - this.min) / (this.max - this.min), 1));
             this.bar.style.width = `${percentage * 100}%`;
-            this.text.innerText = this.meterText + (Math.round(this.currentValue * 100) / 100).toString();
+            this.text.textContent = this.meterText + (Math.round(this.currentValue * 100) / 100).toString();
             this.isVisualValueSet = true;
         }
     }
@@ -166,10 +169,11 @@ export class Meter
     /**
      * Updates a given meter to a given value
      * @param value {number}
+     * @param force {boolean}
      */
-    update(value)
+    update(value, force = false)
     {
-        if(value === this.currentValue)
+        if(value === this.currentValue && force === false)
         {
             return;
         }
@@ -177,7 +181,7 @@ export class Meter
         if(this.isShown) {
             const percentage = Math.max(0, Math.min((value - this.min) / (this.max - this.min), 1));
             this.bar.style.width = `${percentage * 100}%`;
-            this.text.innerText = this.meterText + (Math.round(value * 100) / 100).toString();
+            this.text.textContent = this.meterText + (Math.round(value * 100) / 100).toString();
             this.isVisualValueSet = true;
         }
         else

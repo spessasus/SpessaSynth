@@ -142,7 +142,8 @@ export class Renderer
         {
             // create the analyser
             const analyser = new AnalyserNode(synth.context, {
-                fftSize: this.normalAnalyserFft
+                fftSize: this.normalAnalyserFft,
+                smoothingTimeConstant: 0.4
             });
             this.channelAnalysers.push(analyser);
         }
@@ -286,7 +287,7 @@ export class Renderer
             this.drawingContext.lineWidth = this.lineThickness;
             this.drawingContext.strokeStyle = this.channelColors[channelNumber];
             this.drawingContext.beginPath();
-            this.drawingContext.moveTo(relativeX, relativeY + waveform[0] * multiplier);
+            //this.drawingContext.moveTo(relativeX, relativeY /*+ waveform[0] * multiplier*/);
 
             let xPos = relativeX;
             waveform.forEach(   val  => {

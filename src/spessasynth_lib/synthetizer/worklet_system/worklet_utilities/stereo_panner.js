@@ -29,6 +29,8 @@ export function panVoice(pan, inputBuffer, output, reverb, reverbLevel, chorus, 
     {
         const reverbLeft = reverb[0];
         const reverbRight = reverb[1];
+        // cap reverb
+        reverbLevel = Math.min(reverbLevel, 1000);
         const reverbGain = reverbLevel / WORKLET_SYSTEM_REVERB_DIVIDER;
         const reverbLeftGain = panLeft * reverbGain;
         const reverbRightGain = panRight * reverbGain;
@@ -42,6 +44,8 @@ export function panVoice(pan, inputBuffer, output, reverb, reverbLevel, chorus, 
     {
         const chorusLeft = chorus[0];
         const chorusRight = chorus[1];
+        // cap chorus
+        chorusLevel = Math.min(chorusLevel, 1000);
         const chorusGain = chorusLevel / WORKLET_SYSTEM_CHORUS_DIVIDER;
         const chorusLeftGain = panLeft * chorusGain;
         const chorusRightGain = panRight * chorusGain;

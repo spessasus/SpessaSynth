@@ -10,11 +10,15 @@ export class Selector
     /**
      * Creates a new selector
      * @param elements  {{name: string, program: number, bank: number}[]}
-     * @param description {string}
+     * @param locale {LocaleManager}
+     * @param descriptionPath {string} locale path
+     * @param descriptionArgs {string|number[]}
      * @param editCallback {function(string)}
      */
     constructor(elements,
-                description,
+                locale,
+                descriptionPath,
+                descriptionArgs,
                 editCallback = undefined)
     {
         this.isShown = true;
@@ -34,7 +38,7 @@ export class Selector
         this.mainDiv = document.createElement("select");
         this.mainDiv.classList.add("voice_selector");
         this.mainDiv.classList.add("controller_element");
-        this.mainDiv.title = description;
+        locale.bindObjectProperty(this.mainDiv, "title", descriptionPath, descriptionArgs);
 
         this.reload();
 

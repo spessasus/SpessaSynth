@@ -10,6 +10,8 @@ import { Meter } from './synthui_meter.js'
 import { Selector } from './synthui_selector.js'
 import { midiControllers } from '../../../spessasynth_lib/midi_parser/midi_message.js'
 
+
+const LOCALE_PATH = "locale.synthesizerController.";
 /**
  * synthesizer_ui.js
  * purpose: manages the graphical user interface for the synthesizer
@@ -21,8 +23,9 @@ export class SynthetizerUI
      * Creates a new instance of synthetizer UI
      * @param colors {string[]}
      * @param element {HTMLElement} the element to create synthui in
+     * @param localeManager {LocaleManager}
      */
-    constructor(colors, element) {
+    constructor(colors, element, localeManager) {
         this.channelColors = colors;
         const wrapper = element;
         this.uiDiv = document.createElement("div");
@@ -30,6 +33,7 @@ export class SynthetizerUI
         wrapper.appendChild(this.uiDiv);
         this.uiDiv.style.visibility = "visible";
         this.isShown = false;
+        this.locale = localeManager;
     }
 
     toggleDarkMode()
@@ -102,6 +106,30 @@ export class SynthetizerUI
                     break;
             }
         })
+
+        // add event listener for locale change
+        this.locale.onLocaleChanged.push(() => {
+            // reload all meters
+            // global meters
+            this.voiceMeter.update(this.voiceMeter.currentValue, true);
+            this.volumeController.update(this.volumeController.currentValue, true);
+            this.panController.update(this.panController.currentValue, true);
+            this.panController.update(this.panController.currentValue, true);
+            this.transposeController.update(this.transposeController.currentValue, true);
+            // channel controller meters
+            for(const controller of this.controllers)
+            {
+                controller.voiceMeter.update(controller.voiceMeter.currentValue, true);
+                controller.pitchWheel.update(controller.pitchWheel.currentValue, true);
+                controller.pan.update(controller.pan.currentValue, true);
+                controller.volume.update(controller.volume.currentValue, true);
+                controller.expression.update(controller.expression.currentValue, true);
+                controller.mod.update(controller.mod.currentValue, true);
+                controller.chorus.update(controller.chorus.currentValue, true);
+                controller.reverb.update(controller.reverb.currentValue, true);
+                controller.transpose.update(controller.transpose.currentValue, true);
+            }
+        })
     }
 
     createMainSynthController()
@@ -115,10 +143,11 @@ export class SynthetizerUI
          * @type {Meter}
          */
         this.voiceMeter = new Meter("#206",
-            "Voices: ",
+            LOCALE_PATH + "mainVoiceMeter",
+            this.locale,
+            [],
             0,
-            VOICE_CAP,
-            "The total amount of voices currently playing");
+            VOICE_CAP);
         this.voiceMeter.bar.classList.add("voice_meter_bar_smooth");
 
         /**
@@ -126,10 +155,11 @@ export class SynthetizerUI
          * @type {Meter}
          */
         this.volumeController = new Meter("#206",
-            "Volume: ",
+            LOCALE_PATH + "mainVolumeMeter",
+            this.locale,
+            [],
             0,
-            100,
-            "The current master volume of the synthesizer",
+            127,
             true,
                 v => {
             this.synth.setMainVolume(Math.round(v) / 100);
@@ -141,10 +171,11 @@ export class SynthetizerUI
          * @type {Meter}
          */
         this.panController = new Meter("#206",
-            "Pan: ",
+            LOCALE_PATH + "mainPanMeter",
+            this.locale,
+            [],
             -1,
             1,
-            "The current master stereo panning of the synthesizer",
             true,
             v => {
             // use roland gs master pan
@@ -157,10 +188,11 @@ export class SynthetizerUI
          * @type {Meter}
          */
         this.transposeController = new Meter("#206",
-            "Transpose: ",
+            LOCALE_PATH + "mainTransposeMeter",
+            this.locale,
+            [],
             -12,
             12,
-            "Allows to transpose the synthesizer by semitones",
             true,
                 v => {
             // limit to half semitone precision
@@ -172,14 +204,16 @@ export class SynthetizerUI
 
         // note killer
         let midiPanicButton = document.createElement("button");
-        midiPanicButton.innerText = "MIDI Panic";
-        midiPanicButton.title = "Stops all voices immediately";
+        this.locale.bindObjectProperty(midiPanicButton, "textContent", LOCALE_PATH + "midiPanic.title");
+        this.locale.bindObjectProperty(midiPanicButton, "title", LOCALE_PATH + "midiPanic.description");
+
         midiPanicButton.classList.add("synthui_button");
         midiPanicButton.onclick = () => this.synth.stopAll(true);
 
         let resetCCButton = document.createElement("button");
-        resetCCButton.innerText = "System Reset";
-        resetCCButton.title = "Resets all controllers to their default values"
+        this.locale.bindObjectProperty(resetCCButton, "textContent", LOCALE_PATH + "systemReset.title");
+        this.locale.bindObjectProperty(resetCCButton, "title", LOCALE_PATH + "systemReset.description");
+
         resetCCButton.classList.add("synthui_button");
         resetCCButton.onclick = () => this.synth.resetControllers();
 
@@ -190,13 +224,18 @@ export class SynthetizerUI
 
         // channel controller shower
         let showControllerButton = document.createElement("button");
-        showControllerButton.innerText = this.synth.synthesisMode === "legacy" ? "Synth controller (legacy mode)" : "Synthesizer controller";
-        if(showControllerButton.innerText !== "Synthesizer controller")
+        if(this.synth.synthesisMode === "legacy")
         {
+            showControllerButton.innerText = "Synthesizer controller (legacy mode)";
             showControllerButton.style.color = "red";
             showControllerButton.style.fontWeight = "bolder";
+            showControllerButton.title = "Shows the synthesizer controller"
         }
-        showControllerButton.title = "Shows the synthesizer controller"
+        else
+        {
+            this.locale.bindObjectProperty(showControllerButton, "textContent", LOCALE_PATH + "toggleButton.title");
+            this.locale.bindObjectProperty(showControllerButton, "title", LOCALE_PATH + "toggleButton.description");
+        }
         showControllerButton.classList.add("synthui_button");
         showControllerButton.onclick = () => {
             controller.classList.toggle("synthui_controller_show");
@@ -214,8 +253,9 @@ export class SynthetizerUI
 
         // black midi mode toggle
         const highPerfToggle = document.createElement("button");
-        highPerfToggle.innerText = "Black MIDI mode";
-        highPerfToggle.title = "Toggles the High Performance Mode, simplifying the look and killing the notes faster"
+        this.locale.bindObjectProperty(highPerfToggle, "textContent", LOCALE_PATH + "blackMidiMode.title");
+        this.locale.bindObjectProperty(highPerfToggle, "title", LOCALE_PATH + "blackMidiMode.description");
+
         highPerfToggle.classList.add("synthui_button");
         highPerfToggle.onclick = () => {
             this.synth.highPerformanceMode = !this.synth.highPerformanceMode;
@@ -223,8 +263,9 @@ export class SynthetizerUI
 
         // vibrato reset
         const vibratoReset = document.createElement("button");
-        vibratoReset.innerText = "Disable custom vibrato";
-        vibratoReset.title = "Disables the custom (NRPN) Vibrato permamently. Reload the website to reenable it"
+        this.locale.bindObjectProperty(vibratoReset, "textContent", LOCALE_PATH + "disableCustomVibrato.title");
+        this.locale.bindObjectProperty(vibratoReset, "title", LOCALE_PATH + "disableCustomVibrato.description");
+
         vibratoReset.classList.add("synthui_button");
         vibratoReset.onclick = () => {
             this.synth.lockAndResetChannelVibrato();
@@ -298,6 +339,7 @@ export class SynthetizerUI
      *     mod: Meter,
      *     chorus: Meter,
      *     reverb: Meter,
+     *     transpose: Meter,
      *     preset: Selector,
      *     presetReset: HTMLDivElement,
      *     drumsToggle: HTMLDivElement,
@@ -319,19 +361,21 @@ export class SynthetizerUI
 
         // voice meter
         const voiceMeter = new Meter(this.channelColors[channelNumber % this.channelColors.length],
-            "Voices: ",
+            LOCALE_PATH + "channelController.voiceMeter",
+            this.locale,
+            [channelNumber + 1],
             0,
-            100,
-            `The current amount of voices playing on channel ${channelNumber + 1}`);
+            100);
         voiceMeter.bar.classList.add("voice_meter_bar_smooth");
         controller.appendChild(voiceMeter.div);
 
         // pitch wheel
         const pitchWheel = new Meter(this.channelColors[channelNumber % this.channelColors.length],
-            "Pitch: ",
+            LOCALE_PATH + "channelController.pitchBendMeter",
+            this.locale,
+            [channelNumber + 1],
             -8192,
             8192,
-            `The current pitch bend of channel ${channelNumber + 1}`,
             true,
             val => {
                 val = Math.round(val) + 8192;
@@ -362,10 +406,11 @@ export class SynthetizerUI
 
         // pan controller
         const pan = new Meter(this.channelColors[channelNumber % this.channelColors.length],
-            "Pan: ",
+            LOCALE_PATH + "channelController.panMeter",
+            this.locale,
+            [channelNumber + 1],
             -1,
             1,
-            `The current stereo panning of channel ${channelNumber + 1}`,
             true,
             val => {
                 changeCCUserFunction(midiControllers.pan, (val / 2 + 0.5) * 127, pan);
@@ -381,10 +426,11 @@ export class SynthetizerUI
 
         // expression controller
         const expression = new Meter(this.channelColors[channelNumber % this.channelColors.length],
-            "Expression: ",
+            LOCALE_PATH + "channelController.expressionMeter",
+            this.locale,
+            [channelNumber + 1],
             0,
             127,
-            `The current expression (loudness) of channel ${channelNumber + 1}`,
             true,
             val => {
                 changeCCUserFunction(midiControllers.expressionController, val, expression);
@@ -400,10 +446,11 @@ export class SynthetizerUI
 
         // volume controller
         const volume = new Meter(this.channelColors[channelNumber % this.channelColors.length],
-            "Volume: ",
+            LOCALE_PATH + "channelController.volumeMeter",
+            this.locale,
+            [channelNumber + 1],
             0,
             127,
-            `The current volume of channel ${channelNumber + 1}`,
             true,
             val => {
                 changeCCUserFunction(midiControllers.mainVolume, val, volume);
@@ -419,10 +466,11 @@ export class SynthetizerUI
 
         // modulation wheel
         const modulation = new Meter(this.channelColors[channelNumber % this.channelColors.length],
-            "Mod Wheel: ",
+            LOCALE_PATH + "channelController.modulationWheelMeter",
+            this.locale,
+            [channelNumber + 1],
             0,
             127,
-            `The current modulation (vibrato) depth of channel ${channelNumber + 1}`,
             true,
             val => {
                 changeCCUserFunction(midiControllers.modulationWheel, val, modulation);
@@ -438,9 +486,11 @@ export class SynthetizerUI
 
         // chorus
         const chorus = new Meter(this.channelColors[channelNumber % this.channelColors.length],
-            "Chorus: ",
+            LOCALE_PATH + "channelController.chorusMeter",
+            this.locale,
+            [channelNumber + 1],
             0,
-            127, `The current level of chorus effect applied to channel ${channelNumber + 1}`,
+            127,
             true,
             val => {
                 changeCCUserFunction(midiControllers.effects3Depth, val, chorus);
@@ -456,9 +506,11 @@ export class SynthetizerUI
 
         // reverb
         const reverb = new Meter(this.channelColors[channelNumber % this.channelColors.length],
-            "Reverb: ",
+            LOCALE_PATH + "channelController.reverbMeter",
+            this.locale,
+            [channelNumber + 1],
             0,
-            127, `The current level of reverb effect applied to channel ${channelNumber + 1}`,
+            127,
             true,
             val => {
                 changeCCUserFunction(midiControllers.effects1Depth, val, reverb);
@@ -474,9 +526,11 @@ export class SynthetizerUI
 
         // transpose
         const transpose = new Meter(this.channelColors[channelNumber % this.channelColors.length],
-            "Transpose: ",
+            LOCALE_PATH + "channelController.transposeMeter",
+            this.locale,
+            [channelNumber + 1],
             -36,
-            36, `The pitch tuning applied to channel ${channelNumber + 1}`,
+            36,
             true,
             val => {
                 val = Math.round(val);
@@ -495,7 +549,9 @@ export class SynthetizerUI
         const presetSelector = new Selector((
                 channel.percussionChannel ? this.percussionList : this.instrumentList
             ),
-            `Change the instrument that channel ${channelNumber + 1} is using`,
+            this.locale,
+            LOCALE_PATH + "channelController.presetSelector.description",
+            [channelNumber + 1],
             presetName => {
                 const data = JSON.parse(presetName);
                 this.synth.synthesisSystem.midiChannels[channelNumber].lockPreset = false;
@@ -512,7 +568,7 @@ export class SynthetizerUI
 
         // preset reset
         presetReset.innerHTML = getLoopSvg(32);
-        presetReset.title = `Unlock channel ${channelNumber + 1} to allow program changes`
+        this.locale.bindObjectProperty(presetReset, "title", LOCALE_PATH + "channelController.presetReset.description", [channelNumber + 1]);
         presetReset.classList.add("controller_element");
         presetReset.classList.add("voice_reset");
         presetReset.onclick = () => {
@@ -524,7 +580,7 @@ export class SynthetizerUI
         // mute button
         const muteButton = document.createElement("div");
         muteButton.innerHTML = getVolumeSvg(32);
-        muteButton.title = `Mute channel ${channelNumber + 1}`;
+        this.locale.bindObjectProperty(muteButton, "title", LOCALE_PATH + "channelController.muteButton.description", [channelNumber + 1]);
         muteButton.classList.add("controller_element");
         muteButton.classList.add("mute_button");
         muteButton.onclick = () => {
@@ -544,7 +600,7 @@ export class SynthetizerUI
         // drums toggle
         const drumsToggle = document.createElement("div");
         drumsToggle.innerHTML = channelNumber === DEFAULT_PERCUSSION ? getDrumsSvg(32) : getNoteSvg(32);
-        drumsToggle.title = `Toggle drums on channel ${channelNumber + 1}`;
+        this.locale.bindObjectProperty(drumsToggle, "title", LOCALE_PATH + "channelController.drumToggleButton.description", [channelNumber + 1]);
         drumsToggle.classList.add("controller_element");
         drumsToggle.classList.add("mute_button");
         drumsToggle.onclick = () => {
@@ -578,7 +634,8 @@ export class SynthetizerUI
             preset: presetSelector,
             presetReset: presetReset,
             drumsToggle: drumsToggle,
-            muteButton: muteButton
+            muteButton: muteButton,
+            transpose: transpose
         };
 
     }

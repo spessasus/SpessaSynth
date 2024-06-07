@@ -3,86 +3,94 @@
  * purpose: the inner html for the settings element
  */
 
+// translate-path: only innerText: translate-path-title: inner text by adding .title and title by adding .description
 export const settingsHtml = `
-<h1>Program settings</h1>
+<h1 translate-path='locale.settings.mainTitle'></h1>
 <div class='settings_groups_parent'>
     <div class='settings_group'>
-        <h2>Renderer settings</h2>
-        <label title='How fast the notes fall (visually)'> Note falling time (miliseconds) </label>
+        <h2 translate-path='locale.settings.rendererSettings.title'></h2>
+        <label 
+        translate-path-title='locale.settings.rendererSettings.noteFallingTime'></label>
         <p style='display: flex; align-items: center; width: 100%; justify-content: center'>
             <input type='range' min='1' max='9999' value='1000' class='settings_slider' id='note_time_slider'>
             <span>1000ms</span>
             </span>
         </p>
         
-        <label title='How thick the analyser lines are'> Waveform line thickness (px) </label>
+        <label translate-path-title='locale.settings.rendererSettings.waveformThickness'></label>
         <p style='display: flex; align-items: center; width: 100%; justify-content: center'>
             <input type='range' min='0' max='10' value='2' class='settings_slider' id='analyser_thickness_slider'>
             <span>2px</span>
             </span>
         </p>
         
-        <label title='How detalied the waveforms are'> Waveform sample size </label>
+        <label 
+        translate-path-title='locale.settings.rendererSettings.waveformSampleSize'></label>
         <p style='display: flex; align-items: center; width: 100%; justify-content: center'>
             <input type='range' min='5' max='15' value='9' class='settings_slider' id='analyser_fft_slider'>
             <span>512</span>
             </span>
         </p>
         
-        <label title='How vibrant are the waveforms'> Waveform amplifier </label>
+        <label translate-path-title='locale.settings.rendererSettings.waveformAmplifier'></label>
         <p style='display: flex; align-items: center; width: 100%; justify-content: center'>
             <input type='range' min='1' max='20' value='2' class='settings_slider' id='wave_multiplier_slider'>
             <span>2</span>
             </span>
         </p>
-        <button class='seamless_button' id='analyser_toggler' title='Toggle rendering of the waveforms of the channels'>Toggle waveforms rendering</button>
+        <button class='seamless_button' id='analyser_toggler' translate-path-title='locale.settings.rendererSettings.toggleWaveformsRendering'></button>
         <br/>
-        <button class='seamless_button' id='note_toggler' title='Toggle rendering of the notes when playing a MIDI file'>Toggle notes rendering</button>
+        <button class='seamless_button' id='note_toggler' translate-path-title='locale.settings.rendererSettings.toggleNotesRendering'></button>
         <br/>
-        <button class='seamless_button' id='active_note_toggler' title='Toggle notes "lighting up" when they get active'>Toggle drawing active notes</button>
+        <button class='seamless_button' id='active_note_toggler' translate-path-title='locale.settings.rendererSettings.toggleDrawingActiveNotes'></button>
         <br/>
-        <button class='seamless_button' id='visual_pitch_toggler' title='Toggle shifting notes when pitch wheel is applied'>Toggle drawing visual pitch</button>
+        <button class='seamless_button' id='visual_pitch_toggler' translate-path-title='locale.settings.rendererSettings.toggleDrawingVisualPitch'></button>
     </div>
 
 
     <div class='settings_group'>
-        <h2>Keyboard settings</h2>
-        <p title='The channel keyboard sends messages to'>Selected channel</p>
+        <h2 translate-path='locale.settings.keyboardSettings.title'></h2>
+        <p translate-path-title='locale.settings.keyboardSettings.selectedChannel'></p>
         <select id='channel_selector'>
         </select>
         <br/>
         <br/>
-        <p title='The range of keys shown on the keyboard. Adjusts the MIDI note size accordingly'>Keyboard size</p>
+        <p translate-path-title='locale.settings.keyboardSettings.keyboardSize'></p>
         <select id='keyboard_size_selector'>
-            <option value='full'>128 keys (full)</option>
-            <option value='piano'>88 keys (piano)</option>
-            <option value='5 octaves'>5 octaves</option>
+            <option value='full' translate-path='locale.settings.keyboardSettings.keyboardSize.full'></option>
+            <option value='piano' translate-path='locale.settings.keyboardSettings.keyboardSize.piano'></option>
+            <option value='5 octaves' translate-path='locale.settings.keyboardSettings.keyboardSize.fiveOctaves'></option>
         </select>
         <br/>
         <br/>
-        <button class='seamless_button' id='mode_selector' title='Toggle the keyboard thee'>Mode: White</button>
+        <button class='seamless_button' id='mode_selector' translate-path-title='locale.settings.keyboardSettings.toggleTheme'></button>
     </div>
     
     
     <div class='settings_group'>
-        <h2>MIDI Settings</h2>
-        <p title='The port to listen on for MIDI messages'>MIDI Input</p>
+        <h2 translate-path='locale.settings.midiSettings.title'></h2>
+        <p translate-path-title='locale.settings.midiSettings.midiInput'></p>
         <select id='midi_input_selector'>
-            <option value='-1'>Disabled</option>
+            <option value='-1' translate-path='locale.settings.midiSettings.midiInput.disabled'></option>
         </select>
         
         <br/>
         <br/>
-        <p title='The port to play the MIDI file to'>MIDI Output</p>
+        <p translate-path-title='locale.settings.midiSettings.midiOutput'></p>
         <select id='midi_output_selector'>
-            <option value='-1'>Use SpessaSynth</option>
+            <option value='-1' translate-path='locale.settings.midiSettings.midiOutput.disabled'></option>
         </select>
     </div>
     
     
     <div class='settings_group'>
-        <h2>Interface Settings</h2>
-        <button class='seamless_button' id='toggle_mode_button' title='Toggle the interface theme'>Mode: Dark</button>
+        <h2 translate-path='locale.settings.interfaceSettings.title'></h2>
+        <button class='seamless_button' id='toggle_mode_button' translate-path-title='locale.settings.interfaceSettings.toggleTheme'></button>
+        <br/>
+        <br/>
+        <p translate-path-title='locale.settings.interfaceSettings.selectLanguage'></p>
+        <select id='language_selector'>
+        </select>
     </div>
 </div>
 `;

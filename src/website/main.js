@@ -176,8 +176,7 @@ async function replaceFont(fontName)
         }
         else
         {
-            window.manager.synth.reloadSoundFont(window.soundFontParser);
-            window.manager.synthUI.reloadSelectors();
+            window.manager.reloadSf(window.soundFontParser);
 
             if(window.manager.seq)
             {
@@ -319,3 +318,5 @@ window.savedSettings = new Promise(resolve => {
             resolve(parsedSettings);
         }));
 });
+
+window.isLocalEdition = true;
