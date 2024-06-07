@@ -526,50 +526,99 @@ export class Synthetizer {
 
             // this is a roland sysex
             // http://www.bandtrax.com.au/sysex.htm
+            // https://cdn.roland.com/assets/media/pdf/AT-20R_30R_MI.pdf
             case 0x41:
                 // messagedata[1] is device id (ignore as we're everything >:) )
                 if(messageData[2] === 0x42 && messageData[3] === 0x12)
                 {
                     // this is a GS sysex
-
-                    if(messageData[7] === 0x00 && messageData[6] === 0x7F)
+                    // messageData[5] and [6] is the system parameter, messageData[7] is the value
+                    if(messageData[6] === 0x7F)
                     {
-                        // this is a GS reset
-                        console.info("%cGS system on", consoleColors.info);
-                        this.system = "gs";
+                        // GS mode set
+                        if(messageData[7] === 0x00) {
+                            // this is a GS reset
+                            console.info("%cGS system on", consoleColors.info);
+                            this.system = "gs";
+                        }
+                        else if(messageData[7] === 0x7F)
+                        {
+                            // GS mode off
+                            console.info("%cGS system off, switching to GM2", consoleColors.info);
+                            this.system = "gm2";
+                        }
                         return;
                     }
                     else
-                    if(messageData[6] === 0x15 && messageData[4] === 0x40)
+                    if(messageData[4] === 0x40)
                     {
-                        // this is the Use for Drum Part sysex (multiple drums)
-                        // determine the channel 0 means channel 10 (default), 1 means 1 etc.
-                        const channel = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15][messageData[5] & 0x0F]; // for example 1A means A = 11, which corresponds to channel 12 (counting from 1)
+                        // this is a system parameter
+                        if(messageData[6] === 0x15)
+                        {
+                            // this is the Use for Drum Part sysex (multiple drums)
+                            // determine the channel 0 means channel 10 (default), 1 means 1 etc.
+                            const channel = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15][messageData[5] & 0x0F]; // for example 1A means A = 11, which corresponds to channel 12 (counting from 1)
 
-                        this.setDrums(channel, messageData[7] > 0 && messageData[5] >> 4); // if set to other than 0, is a drum channel
-                        console.info(
-                            `%cChannel %c${channel}%c ${this.synthesisSystem.midiChannels[channel].percussionChannel ? 
-                                "is now a drum channel" 
-                                : 
-                                "now isn't a drum channel"
-                            }%c via: %c${arrayToHexString(messageData)}`,
-                            consoleColors.info,
-                            consoleColors.value,
-                            consoleColors.recognized,
-                            consoleColors.info,
-                            consoleColors.value);
-
-                    }
-                    else
-                    if(messageData[4] === 0x40 && messageData[6] === 0x06 && messageData[5] === 0x00)
-                    {
-                        // roland master pan
-                        console.info(`%cRoland Master Pan set to: %c${messageData[7]}%c with: %c${arrayToHexString(messageData)}`,
-                            consoleColors.info,
-                            consoleColors.value,
-                            consoleColors.info,
-                            consoleColors.value);
-                        this.panController.pan.value = (messageData[7] - 64) / 64;
+                            this.setDrums(channel, messageData[7] > 0 && messageData[5] >> 4); // if set to other than 0, is a drum channel
+                            console.info(
+                                `%cChannel %c${channel}%c ${this.synthesisSystem.midiChannels[channel].percussionChannel ?
+                                    "is now a drum channel"
+                                    :
+                                    "now isn't a drum channel"
+                                }%c via: %c${arrayToHexString(messageData)}`,
+                                consoleColors.info,
+                                consoleColors.value,
+                                consoleColors.recognized,
+                                consoleColors.info,
+                                consoleColors.value);
+                            return;
+                        }
+                        else
+                        if(messageData[5] === 0x00 && messageData[6] === 0x06)
+                        {
+                            // roland master pan
+                            console.info(`%cRoland GS Master Pan set to: %c${messageData[7]}%c with: %c${arrayToHexString(messageData)}`,
+                                consoleColors.info,
+                                consoleColors.value,
+                                consoleColors.info,
+                                consoleColors.value);
+                            this.panController.pan.value = (messageData[7] - 64) / 64;
+                            return;
+                        }
+                        else
+                        if(messageData[5] === 0x00 && messageData[6] === 0x05)
+                        {
+                            // roland master key shift (transpose)
+                            const transpose = messageData[7] - 64;
+                            console.info(`%cRoland GS Master Key-Shift set to: %c${transpose}%c with: %c${arrayToHexString(messageData)}`,
+                                consoleColors.info,
+                                consoleColors.value,
+                                consoleColors.info,
+                                consoleColors.value);
+                            this.transpose(transpose);
+                            return;
+                        }
+                        else
+                        if(messageData[5] === 0x00 && messageData[6] === 0x04)
+                        {
+                            // roland GS master volume
+                            console.info(`%cRoland GS Master Volume set to: %c${messageData[7]}%c with: %c${arrayToHexString(messageData)}`,
+                                consoleColors.info,
+                                consoleColors.value,
+                                consoleColors.info,
+                                consoleColors.value);
+                            this.setMainVolume(messageData[7] / 127);
+                        }
+                        else
+                        {
+                            // this is some other GS sysex...
+                            console.info(`%cUnrecognized Roland %cGS %cSysEx: %c${arrayToHexString(messageData)}`,
+                                consoleColors.warn,
+                                consoleColors.recognized,
+                                consoleColors.warn,
+                                consoleColors.unrecognized);
+                            return;
+                        }
                     }
                     else
                     {
@@ -579,6 +628,7 @@ export class Synthetizer {
                             consoleColors.recognized,
                             consoleColors.warn,
                             consoleColors.unrecognized);
+                        return;
                     }
                 }
                 else
@@ -591,6 +641,7 @@ export class Synthetizer {
                         consoleColors.value,
                         consoleColors.info,
                         consoleColors.value);
+                    return;
                 }
                 else
                 {
@@ -598,6 +649,7 @@ export class Synthetizer {
                     console.info(`%cUnrecognized Roland SysEx: %c${arrayToHexString(messageData)}`,
                         consoleColors.warn,
                         consoleColors.unrecognized);
+                    return;
                 }
                 break;
 

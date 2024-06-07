@@ -617,7 +617,8 @@ export class WorkletSystem {
             case dataEntryStates.Idle:
                 break;
 
-            //https://cdn.roland.com/assets/media/pdf/SC-88PRO_OM.pdf
+            // https://cdn.roland.com/assets/media/pdf/SC-88PRO_OM.pdf
+            // http://hummer.stanford.edu/sig/doc/classes/MidiOutput/rpn.html
             case dataEntryStates.NRPFine:
                 switch(this.midiChannels[channel].NRPCoarse)
                 {
