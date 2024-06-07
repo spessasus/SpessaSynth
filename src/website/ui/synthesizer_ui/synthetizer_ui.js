@@ -409,11 +409,11 @@ export class SynthetizerUI
             LOCALE_PATH + "channelController.panMeter",
             this.locale,
             [channelNumber + 1],
-            -1,
-            1,
+            0,
+            127,
             true,
             val => {
-                changeCCUserFunction(midiControllers.pan, (val / 2 + 0.5) * 127, pan);
+                changeCCUserFunction(midiControllers.pan, Math.round(val), pan);
             },
             () => {
                 this.synth.lockController(channelNumber, midiControllers.pan, true);
@@ -421,7 +421,7 @@ export class SynthetizerUI
             () => {
                 this.synth.lockController(channelNumber, midiControllers.pan, false);
             });
-        pan.update(0);
+        pan.update(64);
         controller.appendChild(pan.div);
 
         // expression controller
@@ -433,7 +433,7 @@ export class SynthetizerUI
             127,
             true,
             val => {
-                changeCCUserFunction(midiControllers.expressionController, val, expression);
+                changeCCUserFunction(midiControllers.expressionController, Math.round(val), expression);
             },
             () => {
                 this.synth.lockController(channelNumber, midiControllers.expressionController, true);
@@ -453,7 +453,7 @@ export class SynthetizerUI
             127,
             true,
             val => {
-                changeCCUserFunction(midiControllers.mainVolume, val, volume);
+                changeCCUserFunction(midiControllers.mainVolume, Math.round(val), volume);
             },
             () => {
                 this.synth.lockController(channelNumber, midiControllers.mainVolume, true);
@@ -473,7 +473,7 @@ export class SynthetizerUI
             127,
             true,
             val => {
-                changeCCUserFunction(midiControllers.modulationWheel, val, modulation);
+                changeCCUserFunction(midiControllers.modulationWheel, Math.round(val), modulation);
             },
             () => {
                 this.synth.lockController(channelNumber, midiControllers.modulationWheel, true);
@@ -493,7 +493,7 @@ export class SynthetizerUI
             127,
             true,
             val => {
-                changeCCUserFunction(midiControllers.effects3Depth, val, chorus);
+                changeCCUserFunction(midiControllers.effects3Depth, Math.round(val), chorus);
             },
             () => {
                 this.synth.lockController(channelNumber, midiControllers.effects3Depth, true);
@@ -513,7 +513,7 @@ export class SynthetizerUI
             127,
             true,
             val => {
-                changeCCUserFunction(midiControllers.effects1Depth, val, reverb);
+                changeCCUserFunction(midiControllers.effects1Depth, Math.round(val), reverb);
             },
             () => {
                 this.synth.lockController(channelNumber, midiControllers.effects1Depth, true);
@@ -685,17 +685,17 @@ export class SynthetizerUI
 
                 case midiControllers.expressionController:
                     // expression
-                    this.controllers[channel].expression.update(Math.round(value));
+                    this.controllers[channel].expression.update(value);
                     break;
 
                 case midiControllers.mainVolume:
                     // volume
-                    this.controllers[channel].volume.update(Math.round(value));
+                    this.controllers[channel].volume.update(value);
                     break;
 
                 case midiControllers.pan:
                     // pan
-                    this.controllers[channel].pan.update((value - 63) / 64);
+                    this.controllers[channel].pan.update(value);
                     break;
 
                 case midiControllers.modulationWheel:

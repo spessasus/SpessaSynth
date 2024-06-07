@@ -1,7 +1,6 @@
 import {signedInt16, readByte, readBytesAsUintLittleEndian} from "../../utils/byte_functions.js";
 import { ShiftableByteArray } from '../../utils/shiftable_array.js';
 import { generatorTypes } from './generators.js'
-import { consoleColors } from '../../utils/other.js'
 import { midiControllers } from '../../midi_parser/midi_message.js'
 
 /**
@@ -218,8 +217,6 @@ export const defaultModulators = [
         transform: 0
     })
 ];
-
-console.log("%cDefault Modulators:", consoleColors.recognized, defaultModulators)
 
 /**
  * Reads the modulator chunk

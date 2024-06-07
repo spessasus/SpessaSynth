@@ -28,7 +28,7 @@ export class Synthetizer {
      * @param soundFont {SoundFont2}
      */
      constructor(targetNode, soundFont) {
-        console.log("%cInitializing SpessaSynth synthesizer...", consoleColors.info);
+        console.info("%cInitializing SpessaSynth synthesizer...", consoleColors.info);
         this.soundFont = soundFont;
         this.context = targetNode.context;
 
@@ -89,7 +89,7 @@ export class Synthetizer {
         this.percussionPreset = this.soundFont.getPreset(128, 0);
 
         this.initializeSynthesisSystem();
-        console.log("%cSpessaSynth is ready!", consoleColors.recognized);
+        console.info("%cSpessaSynth is ready!", consoleColors.recognized);
     }
 
     initializeSynthesisSystem()
@@ -216,7 +216,7 @@ export class Synthetizer {
      * @param force {boolean} if we should instantly kill the note, defaults to false
      */
     stopAll(force=false) {
-        console.log("%cStop all received!", consoleColors.info);
+        console.info("%cStop all received!", consoleColors.info);
         this.synthesisSystem.stopAllChannels(force);
         this.eventHandler.callEvent("stopall", {});
     }
@@ -240,7 +240,7 @@ export class Synthetizer {
                 if(this.system === "gm")
                 {
                     // gm ignores bank select
-                    console.log("%cIgnoring the Bank Select, as the synth is in GM mode.", consoleColors.info);
+                    console.info(`%cIgnoring the Bank Select (${controllerValue}), as the synth is in GM mode.`, consoleColors.info);
                     return;
                 }
                 let bankNr = controllerValue;
@@ -295,7 +295,7 @@ export class Synthetizer {
      */
     resetControllers()
     {
-        console.log("%cResetting all controllers!", consoleColors.info);
+        console.info("%cResetting all controllers!", consoleColors.info);
         for(let channelNumber = 0; channelNumber < this.synthesisSystem.channelsAmount; channelNumber++)
         {
             // reset
@@ -478,7 +478,7 @@ export class Synthetizer {
         switch (type)
         {
             default:
-                console.log(`%cUnrecognized SysEx: %c${arrayToHexString(messageData)}`,
+                console.info(`%cUnrecognized SysEx: %c${arrayToHexString(messageData)}`,
                     consoleColors.warn,
                     consoleColors.unrecognized);
                 break;
@@ -490,17 +490,17 @@ export class Synthetizer {
                 {
                     if(messageData[3] === 0x01)
                     {
-                        console.log("%cGM system on", consoleColors.info);
+                        console.info("%cGM system on", consoleColors.info);
                         this.system = "gm";
                     }
                     else if(messageData[3] === 0x03)
                     {
-                        console.log("%cGM2 system on", consoleColors.info);
+                        console.info("%cGM2 system on", consoleColors.info);
                         this.system = "gm2";
                     }
                     else
                     {
-                        console.log("%cGM system off, defaulting to GS", consoleColors.info);
+                        console.info("%cGM system off, defaulting to GS", consoleColors.info);
                         this.system = "gs";
                     }
                 }
@@ -535,7 +535,7 @@ export class Synthetizer {
                     if(messageData[7] === 0x00 && messageData[6] === 0x7F)
                     {
                         // this is a GS reset
-                        console.log("%cGS system on", consoleColors.info);
+                        console.info("%cGS system on", consoleColors.info);
                         this.system = "gs";
                         return;
                     }
@@ -547,7 +547,7 @@ export class Synthetizer {
                         const channel = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15][messageData[5] & 0x0F]; // for example 1A means A = 11, which corresponds to channel 12 (counting from 1)
 
                         this.setDrums(channel, messageData[7] > 0 && messageData[5] >> 4); // if set to other than 0, is a drum channel
-                        console.log(
+                        console.info(
                             `%cChannel %c${channel}%c ${this.synthesisSystem.midiChannels[channel].percussionChannel ? 
                                 "is now a drum channel" 
                                 : 
@@ -564,7 +564,7 @@ export class Synthetizer {
                     if(messageData[4] === 0x40 && messageData[6] === 0x06 && messageData[5] === 0x00)
                     {
                         // roland master pan
-                        console.log(`%cRoland Master Pan set to: %c${messageData[7]}%c with: %c${arrayToHexString(messageData)}`,
+                        console.info(`%cRoland Master Pan set to: %c${messageData[7]}%c with: %c${arrayToHexString(messageData)}`,
                             consoleColors.info,
                             consoleColors.value,
                             consoleColors.info,
@@ -574,7 +574,7 @@ export class Synthetizer {
                     else
                     {
                         // this is some other GS sysex...
-                        console.log(`%cUnrecognized Roland %cGS %cSysEx: %c${arrayToHexString(messageData)}`,
+                        console.info(`%cUnrecognized Roland %cGS %cSysEx: %c${arrayToHexString(messageData)}`,
                             consoleColors.warn,
                             consoleColors.recognized,
                             consoleColors.warn,
@@ -586,7 +586,7 @@ export class Synthetizer {
                 {
                     // this is a roland master volume message
                     this.volumeController.gain.value = messageData[7] / 100 * DEFAULT_GAIN;
-                    console.log(`%cRoland Master Volume control set to: %c${messageData[7]}%c via: %c${arrayToHexString(messageData)}`,
+                    console.info(`%cRoland Master Volume control set to: %c${messageData[7]}%c via: %c${arrayToHexString(messageData)}`,
                         consoleColors.info,
                         consoleColors.value,
                         consoleColors.info,
@@ -595,7 +595,7 @@ export class Synthetizer {
                 else
                 {
                     // this is something else...
-                    console.log(`%cUnrecognized Roland SysEx: %c${arrayToHexString(messageData)}`,
+                    console.info(`%cUnrecognized Roland SysEx: %c${arrayToHexString(messageData)}`,
                         consoleColors.warn,
                         consoleColors.unrecognized);
                 }
@@ -606,12 +606,12 @@ export class Synthetizer {
                 // XG on
                 if(messageData[2] === 0x4C && messageData[5] === 0x7E && messageData[6] === 0x00)
                 {
-                    console.log("%cXG system on", consoleColors.info);
+                    console.info("%cXG system on", consoleColors.info);
                     this.system = "xg";
                 }
                 else
                 {
-                    console.log(`%cUnrecognized Yamaha SysEx: %c${arrayToHexString(messageData)}`,
+                    console.info(`%cUnrecognized Yamaha SysEx: %c${arrayToHexString(messageData)}`,
                         consoleColors.warn,
                         consoleColors.unrecognized);
                 }

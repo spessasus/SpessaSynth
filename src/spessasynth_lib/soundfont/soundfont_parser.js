@@ -238,7 +238,9 @@ export class SoundFont2
                 }
             }
             if(preset) {
-                console.info(`%cPreset at bank ${bankNr} not found. Replaced with ${preset.presetName}`, consoleColors.warn);
+                console.info(`%cPreset ${bankNr}.${presetNr} not found. Replaced with %c${preset.presetName} (${preset.bank}.${preset.program})`,
+                    consoleColors.warn,
+                    consoleColors.recognized);
             }
         }
         if(!preset)

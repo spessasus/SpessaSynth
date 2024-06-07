@@ -584,7 +584,7 @@ export class WorkletSystem {
     setPitchBendRange(channel, semitones)
     {
         this.midiChannels[channel].channelPitchBendRange = semitones;
-        console.log(`%cChannel ${channel + 1} bend range. Semitones: %c${semitones}`,
+        console.info(`%cChannel ${channel} bend range. Semitones: %c${semitones}`,
             consoleColors.info,
             consoleColors.value);
         this.post({
@@ -628,6 +628,13 @@ export class WorkletSystem {
                         switch(this.midiChannels[channel].NRPFine)
                         {
                             default:
+                                console.info(`%cUnrecognized NRPN for %c${channel}%c: %c${this.midiChannels[channel].NRPCoarse} ${this.midiChannels[channel].NRPFine}%c data value: %c${dataValue}`,
+                                    consoleColors.warn,
+                                    consoleColors.recognized,
+                                    consoleColors.warn,
+                                    consoleColors.unrecognized,
+                                    consoleColors.warn,
+                                    consoleColors.value);
                                 break;
 
                             // vibrato rate
@@ -642,7 +649,7 @@ export class WorkletSystem {
                                 }
                                 addDefaultVibrato();
                                 this.midiChannels[channel].vibrato.rate = (dataValue / 64) * 8;
-                                console.log(`%cVibrato rate for channel %c${channel + 1}%c is now set to %c${this.midiChannels[channel].vibrato.rate}%cHz.`,
+                                console.info(`%cVibrato rate for channel %c${channel}%c is now set to %c${this.midiChannels[channel].vibrato.rate}%cHz.`,
                                     consoleColors.info,
                                     consoleColors.recognized,
                                     consoleColors.info,
@@ -668,7 +675,7 @@ export class WorkletSystem {
                                 }
                                 addDefaultVibrato();
                                 this.midiChannels[channel].vibrato.depth = dataValue / 2;
-                                console.log(`%cVibrato depth for %c${channel + 1}%c is now set to %c${this.midiChannels[channel].vibrato.depth} %ccents range of detune.`,
+                                console.info(`%cVibrato depth for %c${channel}%c is now set to %c${this.midiChannels[channel].vibrato.depth}%c cents range of detune.`,
                                     consoleColors.info,
                                     consoleColors.recognized,
                                     consoleColors.info,
@@ -694,7 +701,7 @@ export class WorkletSystem {
                                 }
                                 addDefaultVibrato();
                                 this.midiChannels[channel].vibrato.delay = (dataValue / 64) / 3;
-                                console.log(`%cVibrato delay for %c${channel}%c is now set to %c${this.midiChannels[channel].vibrato.delay} %cseconds.`,
+                                console.info(`%cVibrato delay for %c${channel}%c is now set to %c${this.midiChannels[channel].vibrato.delay}%c seconds.`,
                                     consoleColors.info,
                                     consoleColors.recognized,
                                     consoleColors.info,
@@ -747,7 +754,7 @@ export class WorkletSystem {
     setChannelTuning(channel, semitones)
     {
         this.midiChannels[channel].channelTuningSemitones = semitones;
-        console.log(`%cChannel ${channel + 1} tuning. Semitones: %c${semitones}`,
+        console.info(`%cChannel ${channel} tuning. Semitones: %c${semitones}`,
             consoleColors.info,
             consoleColors.value);
         this.post({

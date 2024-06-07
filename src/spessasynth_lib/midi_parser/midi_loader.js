@@ -233,14 +233,14 @@ export class MIDI{
                     {
                         const decoded = decoder.decode(messageData.slice(7, messageData.length - 3)) + "\n";
                         this.copyright += decoded;
-                        console.log(`%cDecoded Roland SC message! %c${decoded}`,
+                        console.info(`%cDecoded Roland SC message! %c${decoded}`,
                             consoleColors.recognized,
                             consoleColors.value)
                     }
                 }
             }
             this.tracks.push(track);
-            console.log(`%cParsed %c${this.tracks.length}%c / %c${this.tracksAmount}`,
+            console.info(`%cParsed %c${this.tracks.length}%c / %c${this.tracksAmount}`,
                 consoleColors.info,
                 consoleColors.value,
                 consoleColors.info,
@@ -260,7 +260,7 @@ export class MIDI{
         }
         this.firstNoteOn = Math.min(...firstNoteOns);
 
-        console.log(`%cMIDI file parsed. Total tick time: %c${this.lastVoiceEventTick}`,
+        console.info(`%cMIDI file parsed. Total tick time: %c${this.lastVoiceEventTick}`,
             consoleColors.info,
             consoleColors.recognized);
         console.groupEnd();
@@ -300,7 +300,6 @@ export class MIDI{
                 message.messageStatusByte < messageTypes.systemExclusive
             ) === undefined)
             {
-                console.log("message", this.tracks[0])
                 let name = this.tracks[0].find(message => message.messageStatusByte === messageTypes.trackName);
                 if(name)
                 {

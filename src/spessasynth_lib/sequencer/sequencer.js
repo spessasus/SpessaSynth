@@ -257,7 +257,7 @@ export class Sequencer {
          */
         this.duration = this.ticksToSeconds(this.midiData.lastVoiceEventTick);
 
-        console.log(`%cTOTAL TIME: ${formatTime(Math.round(this.duration)).time}`, consoleColors.recognized);
+        console.info(`%cTotal song time: ${formatTime(Math.round(this.duration)).time}`, consoleColors.recognized);
         this.midiPortChannelOffset = 0;
         this.midiPortChannelOffsets = {};
 
@@ -319,8 +319,6 @@ export class Sequencer {
         let elapsedTime = 0;
         let oneTickToSeconds = 60 / (120 * this.midiData.timeDivision);
         let eventIndex = 0;
-
-        console.log("%cLoading note times for note rendering...", consoleColors.warn);
         while(eventIndex < events.length)
         {
             const event = events[eventIndex];
@@ -369,7 +367,7 @@ export class Sequencer {
             elapsedTime += oneTickToSeconds * (events[eventIndex].ticks - event.ticks);
         }
 
-        console.log("%cFinished loading note times and ready to render the sequence!", consoleColors.info);
+        console.info("%cFinished loading note times and ready to render the sequence!", consoleColors.info);
         this.renderer.connectSequencer(noteTimes, this);
     }
 
@@ -823,7 +821,7 @@ export class Sequencer {
                 break;
 
             default:
-                console.log(`%cUnrecognized Event: %c${event.messageStatusByte}%c status byte: %c${Object.keys(messageTypes).find(k => messageTypes[k] === statusByteData.status)}`,
+                console.info(`%cUnrecognized Event: %c${event.messageStatusByte}%c status byte: %c${Object.keys(messageTypes).find(k => messageTypes[k] === statusByteData.status)}`,
                     consoleColors.warn,
                     consoleColors.unrecognized,
                     consoleColors.warn,
