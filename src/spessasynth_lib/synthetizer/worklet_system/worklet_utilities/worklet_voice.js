@@ -5,66 +5,59 @@
  */
 
 /**
- * @typedef {{sampleID: number,
- * playbackStep: number,
- * cursor: number,
- * rootKey: number,
- * loopStart: number,
- * loopEnd: number,
- * end: number,
- * loopingMode: 0|1|2,
- * }} WorkletSample
- *
- *
- * @typedef {{
- *     a0: number,
- *     a1: number,
- *     a2: number,
- *     a3: number,
- *     a4: number,
- *
- *     x1: number,
- *     x2: number,
- *     y1: number,
- *     y2: number
- *
- *     reasonanceCb: number,
- *     reasonanceGain: number
- *
- *     cutoffCents: number,
- *     cutoffHz: number
- * }} WorkletLowpassFilter
- *
- * @typedef {{
- * sample: WorkletSample,
- * filter: WorkletLowpassFilter
- *
- * generators: Int16Array,
- * modulators: Modulator[],
- * modulatedGenerators: Int16Array,
- *
- * finished: boolean,
- * isInRelease: boolean,
- *
- * channelNumber: number,
- * velocity: number,
- * midiNote: number,
- * targetKey: number,
- *
- * currentAttenuationDb: number,
- * volumeEnvelopeState: (0|1|2|3|4),
- * currentModEnvValue: number,
- * startTime: number,
- *
- * releaseStartTime: number,
- * releaseStartModEnv: number,
- *
- * currentTuningCents: number,
- * currentTuningCalculated: number
- * }} WorkletVoice
+ * @typedef {Object} WorkletSample
+ * @property {number} sampleID - ID of the sample
+ * @property {number} playbackStep - current playback step (rate)
+ * @property {number} cursor - current position in the sample
+ * @property {number} rootKey - root key of the sample
+ * @property {number} loopStart - start position of the loop
+ * @property {number} loopEnd - end position of the loop
+ * @property {number} end - end position of the sample
+ * @property {0|1|2} loopingMode - looping mode of the sample
  */
+
+/**
+ * @typedef {Object} WorkletLowpassFilter
+ * @property {number} a0 - filter coefficient 1
+ * @property {number} a1 - filter coefficient 2
+ * @property {number} a2 - filter coefficient 3
+ * @property {number} a3 - filter coefficient 4
+ * @property {number} a4 - filter coefficient 5
+ * @property {number} x1 - input history 1
+ * @property {number} x2 - input history 2
+ * @property {number} y1 - output history 1
+ * @property {number} y2 - output history 2
+ * @property {number} reasonanceCb - reasonance in centibels
+ * @property {number} reasonanceGain - resonance gain
+ * @property {number} cutoffCents - cutoff frequency in cents
+ * @property {number} cutoffHz - cutoff frequency in Hz
+ */
+
+/**
+ * @typedef {Object} WorkletVoice
+ * @property {WorkletSample} sample - sample ID for voice.
+ * @property {WorkletLowpassFilter} filter - lowpass filter applied to the voice
+ * @property {Int16Array} generators - the unmodulated (constant) generators of the voice
+ * @property {Modulator[]} modulators - the voice's modulators
+ * @property {Int16Array} modulatedGenerators - the generators modulated by the modulators
+ * @property {boolean} finished - indicates if the voice has finished
+ * @property {boolean} isInRelease - indicates if the voice is in the release phase
+ * @property {number} channelNumber - MIDI channel number
+ * @property {number} velocity - velocity of the note
+ * @property {number} midiNote - MIDI note number
+ * @property {number} targetKey - target key for the note
+ * @property {number} currentAttenuationDb - current attenuation in dB (used for calculating start of the release phase)
+ * @property {0|1|2|3|4} volumeEnvelopeState - state of the volume envelope.
+ * @property {number} currentModEnvValue - current value of the modulation envelope
+ * @property {number} startTime - start time of the voice
+ * @property {number} releaseStartTime - start time of the release phase
+ * @property {number} releaseStartModEnv - modenv value at the start of the release phase
+ * @property {number} currentTuningCents - current tuning adjustment in cents
+ * @property {number} currentTuningCalculated - calculated tuning adjustment
+ */
+
 import { addAndClampGenerator, generatorTypes } from '../../../soundfont/chunk/generators.js'
-import { workletMessageType } from '../worklet_system.js'
+import { workletMessageType } from './worklet_message.js'
 
 
 /**

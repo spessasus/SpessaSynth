@@ -1,8 +1,7 @@
-import { NON_CC_INDEX_OFFSET, WORKLET_PROCESSOR_NAME, workletMessageType } from './worklet_system.js'
+import { WORKLET_PROCESSOR_NAME } from './worklet_system.js'
 import { midiControllers } from '../../midi_parser/midi_message.js';
 import { generatorTypes } from '../../soundfont/chunk/generators.js';
 import { getOscillatorData } from './worklet_utilities/wavetable_oscillator.js'
-import { modulatorSources } from '../../soundfont/chunk/modulators.js';
 import { computeModulators } from './worklet_utilities/worklet_modulator.js'
 import {
     absCentsToHz,
@@ -15,39 +14,19 @@ import { applyVolumeEnvelope } from './worklet_utilities/volume_envelope.js'
 import { applyLowpassFilter } from './worklet_utilities/lowpass_filter.js'
 import { getModEnvValue } from './worklet_utilities/modulation_envelope.js'
 import { VOICE_CAP } from '../synthetizer.js'
+import {
+    CONTROLLER_TABLE_SIZE,
+    CUSTOM_CONTROLLER_TABLE_SIZE,
+    customControllers,
+    resetArray,
+} from './worklet_utilities/worklet_processor_channel.js'
+import { workletMessageType } from './worklet_utilities/worklet_message.js'
 
 /**
  * worklet_processor.js
  * purpose: manages the synthesizer from the AudioWorkletGlobalScope and renders the audio data
  */
-const CONTROLLER_TABLE_SIZE = 147;
 const MIN_NOTE_LENGTH = 0.07; // if the note is released faster than that, it forced to last that long
-
-// an array with preset default values so we can quickly use set() to reset the controllers
-const resetArray = new Int16Array(CONTROLLER_TABLE_SIZE);
-// default values
-resetArray[midiControllers.mainVolume] = 100 << 7;
-resetArray[midiControllers.expressionController] = 127 << 7;
-resetArray[midiControllers.pan] = 64 << 7;
-resetArray[midiControllers.releaseTime] = 64 << 7;
-resetArray[midiControllers.brightness] = 64 << 7;
-resetArray[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel] = 8192;
-resetArray[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] = 2 << 7;
-resetArray[NON_CC_INDEX_OFFSET + modulatorSources.channelPressure] = 127 << 7;
-resetArray[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning] = 0;
-
-/**
- * @typedef {{
- *     midiControllers: Int16Array,
- *     holdPedal: boolean,
- *     channelVibrato: {depth: number, delay: number, rate: number},
- *     isMuted: boolean,
- *
- *     voices: WorkletVoice[],
- *     sustainedVoices: WorkletVoice[],
- *
- * }} WorkletProcessorChannel
- */
 
 /**
  * @type {Float32Array[]}
@@ -87,11 +66,12 @@ class WorkletProcessor extends AudioWorkletProcessor {
     {
         this.workletProcessorChannels.push({
             midiControllers: new Int16Array(CONTROLLER_TABLE_SIZE),
+            customControllers: new Float32Array(CUSTOM_CONTROLLER_TABLE_SIZE),
             voices: [],
             sustainedVoices: [],
             holdPedal: false,
-            channelVibrato: {delay: 0, depth: 0, rate: 0}
-
+            channelVibrato: {delay: 0, depth: 0, rate: 0},
+            isMuted: false
         })
         this.resetControllers(this.workletProcessorChannels.length - 1, []);
     }
@@ -105,38 +85,6 @@ class WorkletProcessor extends AudioWorkletProcessor {
         const channel = message.channelNumber;
         const channelVoices = this.workletProcessorChannels[channel].voices;
         switch (message.messageType) {
-            default:
-                break;
-
-            // note off
-            case workletMessageType.noteOff:
-                channelVoices.forEach(v => {
-                    if(v.midiNote !== data || v.isInRelease === true)
-                    {
-                        return;
-                    }
-                    // if hold pedal, move to sustain
-                    if(this.workletProcessorChannels[channel].holdPedal) {
-                        this.workletProcessorChannels[channel].sustainedVoices.push(v);
-                    }
-                    else
-                    {
-                        this.releaseVoice(v);
-                    }
-                });
-                break;
-
-            case workletMessageType.killNote:
-                channelVoices.forEach(v => {
-                    if(v.midiNote !== data)
-                    {
-                        return;
-                    }
-                    v.modulatedGenerators[generatorTypes.releaseVolEnv] = -12000; // set release to be very short
-                    this.releaseVoice(v);
-                });
-                break;
-
             case workletMessageType.noteOn:
                 data.forEach(voice => {
                     const exclusive = voice.generators[generatorTypes.exclusiveClass];
@@ -165,6 +113,59 @@ class WorkletProcessor extends AudioWorkletProcessor {
                 else {
                     this.updateVoicesAmount();
                 }
+                break;
+
+            case workletMessageType.noteOff:
+                channelVoices.forEach(v => {
+                    if(v.midiNote !== data || v.isInRelease === true)
+                    {
+                        return;
+                    }
+                    // if hold pedal, move to sustain
+                    if(this.workletProcessorChannels[channel].holdPedal) {
+                        this.workletProcessorChannels[channel].sustainedVoices.push(v);
+                    }
+                    else
+                    {
+                        this.releaseVoice(v);
+                    }
+                });
+                break;
+
+            case workletMessageType.ccChange:
+                // special case: hold pedal
+                if(data[0] === midiControllers.sustainPedal) {
+                    if (data[1] >= 64)
+                    {
+                        this.workletProcessorChannels[channel].holdPedal = true;
+                    }
+                    else
+                    {
+                        this.workletProcessorChannels[channel].holdPedal = false;
+                        this.workletProcessorChannels[channel].sustainedVoices.forEach(v => {
+                            this.releaseVoice(v)
+                        });
+                        this.workletProcessorChannels[channel].sustainedVoices = [];
+                    }
+                }
+                this.workletProcessorChannels[channel].midiControllers[data[0]] = data[1];
+                channelVoices.forEach(v => computeModulators(v, this.workletProcessorChannels[channel].midiControllers));
+                break;
+
+            case workletMessageType.customcCcChange:
+                // custom controller change
+                this.workletProcessorChannels[channel].customControllers[data[0]] = data[1];
+                break;
+
+            case workletMessageType.killNote:
+                channelVoices.forEach(v => {
+                    if(v.midiNote !== data)
+                    {
+                        return;
+                    }
+                    v.modulatedGenerators[generatorTypes.releaseVolEnv] = -12000; // set release to be very short
+                    this.releaseVoice(v);
+                });
                 break;
 
             case workletMessageType.sampleDump:
@@ -201,28 +202,11 @@ class WorkletProcessor extends AudioWorkletProcessor {
                 this.resetControllers(channel, data);
                 break;
 
-            case workletMessageType.ccChange:
-                // special case: hold pedal
-                if(data[0] === midiControllers.sustainPedal) {
-                    if (data[1] >= 64)
-                    {
-                        this.workletProcessorChannels[channel].holdPedal = true;
-                    }
-                    else
-                    {
-                        this.workletProcessorChannels[channel].holdPedal = false;
-                        this.workletProcessorChannels[channel].sustainedVoices.forEach(v => {
-                            this.releaseVoice(v)
-                        });
-                        this.workletProcessorChannels[channel].sustainedVoices = [];
-                    }
-                }
-                this.workletProcessorChannels[channel].midiControllers[data[0]] = data[1];
-                channelVoices.forEach(v => computeModulators(v, this.workletProcessorChannels[channel].midiControllers));
-                break;
 
             case workletMessageType.setChannelVibrato:
-                this.workletProcessorChannels[channel].channelVibrato = data;
+                this.workletProcessorChannels[channel].channelVibrato.delay = data.delay;
+                this.workletProcessorChannels[channel].channelVibrato.depth = data.depth;
+                this.workletProcessorChannels[channel].channelVibrato.rate = data.rate;
                 break;
 
             case workletMessageType.clearCache:
@@ -260,6 +244,9 @@ class WorkletProcessor extends AudioWorkletProcessor {
 
             case workletMessageType.addNewChannel:
                 this.createWorkletChannel();
+                break;
+
+            default:
                 break;
         }
     }
@@ -395,8 +382,8 @@ class WorkletProcessor extends AudioWorkletProcessor {
 
         // calculate tuning
         let cents = voice.modulatedGenerators[generatorTypes.fineTune]
-            + channel.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTuning]
-            + channel.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTranspose];
+            + channel.customControllers[customControllers.channelTuning]
+            + channel.customControllers[customControllers.channelTranspose];
         let semitones = voice.modulatedGenerators[generatorTypes.coarseTune];
 
         // calculate tuning by key
@@ -411,7 +398,7 @@ class WorkletProcessor extends AudioWorkletProcessor {
             const lfoVal = getLFOValue(vibStart, vibFreqHz, currentTime);
             if(lfoVal)
             {
-                cents += lfoVal * vibratoDepth;
+                cents += lfoVal * (vibratoDepth * channel.customControllers[customControllers.modulationMultiplier]);
             }
         }
 
@@ -428,7 +415,7 @@ class WorkletProcessor extends AudioWorkletProcessor {
             const modStart = voice.startTime + timecentsToSeconds(voice.modulatedGenerators[generatorTypes.delayModLFO]);
             const modFreqHz = absCentsToHz(voice.modulatedGenerators[generatorTypes.freqModLFO]);
             const modLfoValue = getLFOValue(modStart, modFreqHz, currentTime);
-            cents += modLfoValue * modPitchDepth;
+            cents += modLfoValue * (modPitchDepth * channel.customControllers[customControllers.modulationMultiplier]);
             modLfoCentibels = modLfoValue * modVolDepth;
             lowpassCents += modLfoValue * modFilterDepth;
         }
@@ -494,19 +481,21 @@ class WorkletProcessor extends AudioWorkletProcessor {
                 ccVal: this.workletProcessorChannels[channel].midiControllers[ccNum]
             }
         });
-        // transpose does not get affected either so save
-        const transpose = this.workletProcessorChannels[channel].midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTranspose];
 
         // reset the array
         this.workletProcessorChannels[channel].midiControllers.set(resetArray);
         this.workletProcessorChannels[channel].channelVibrato = {rate: 0, depth: 0, delay: 0};
         this.workletProcessorChannels[channel].holdPedal = false;
 
-        // restore unaffected
-        this.workletProcessorChannels[channel].midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelTranspose] = transpose;
         excludedCCvalues.forEach((cc) => {
             this.workletProcessorChannels[channel].midiControllers[cc.ccNum] = cc.ccVal;
-        })
+        });
+
+        // reset custom controllers
+        // special case: transpose does not get affected
+        const transpose = this.workletProcessorChannels[channel].customControllers[customControllers.channelTranspose];
+        this.workletProcessorChannels[channel].customControllers.fill(0);
+        this.workletProcessorChannels[channel].customControllers[customControllers.channelTranspose] = transpose;
 
     }
 

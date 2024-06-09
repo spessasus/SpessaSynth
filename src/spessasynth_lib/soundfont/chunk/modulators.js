@@ -15,8 +15,6 @@ export const modulatorSources = {
     channelPressure: 13,
     pitchWheel: 14,
     pitchWheelRange: 16,
-    channelTuning: 17,
-    channelTranspose: 18,
     link: 127
 }
 

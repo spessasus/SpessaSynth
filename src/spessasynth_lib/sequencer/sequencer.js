@@ -10,7 +10,6 @@ import {readBytesAsUintBigEndian} from "../utils/byte_functions.js";
  */
 
 const MIN_NOTE_TIME = 0.02;
-const MAX_NOTEONS_PER_S = 200;
 
 // an array with preset default values
 const defaultControllerArray = new Int16Array(127);
@@ -20,6 +19,7 @@ defaultControllerArray[midiControllers.expressionController] = 127;
 defaultControllerArray[midiControllers.pan] = 64;
 defaultControllerArray[midiControllers.releaseTime] = 64;
 defaultControllerArray[midiControllers.brightness] = 64;
+defaultControllerArray[midiControllers.effects1Depth] = 40;
 
 export class Sequencer {
     /**
@@ -89,7 +89,6 @@ export class Sequencer {
          */
         this.midiPortChannelOffsets = {};
 
-        this.noteOnsPerS = 0;
 
         /**
          * @type {Object<string, function(MIDI)>}
@@ -177,8 +176,12 @@ export class Sequencer {
         this.stop();
         this.playingNotes = [];
         this.pausedTime = undefined;
-        this._playTo(time);
+        const isNotFinished = this._playTo(time);
         this.absoluteStartTime = this.now - time / this.playbackRate;
+        if(!isNotFinished)
+        {
+            return;
+        }
         this.play();
         if(this.renderer)
         {
@@ -196,8 +199,12 @@ export class Sequencer {
         }
         this.playingNotes = [];
         this.pausedTime = undefined;
-        this._playTo(0, ticks);
+        const isNotFinished = this._playTo(0, ticks);
         this.absoluteStartTime = this.now - this.playedTime / this.playbackRate;
+        if(!isNotFinished)
+        {
+            return;
+        }
         this.play();
         if(this.renderer)
         {
@@ -256,8 +263,7 @@ export class Sequencer {
          * @type {number}
          */
         this.duration = this.ticksToSeconds(this.midiData.lastVoiceEventTick);
-
-        console.info(`%cTotal song time: ${formatTime(Math.round(this.duration)).time}`, consoleColors.recognized);
+        console.info(`%cTotal song time: ${formatTime(Math.ceil(this.duration)).time}`, consoleColors.recognized);
         this.midiPortChannelOffset = 0;
         this.midiPortChannelOffsets = {};
 
@@ -269,6 +275,12 @@ export class Sequencer {
         }
 
         this.synth.resetControllers();
+        if(this.duration <= 1)
+        {
+            console.info(`%cVery short song: (${formatTime(Math.round(this.duration)).time}). Disabling loop!`,
+                consoleColors.warn);
+            this.loop = false;
+        }
         this.play(true);
     }
 
@@ -459,6 +471,7 @@ export class Sequencer {
      * @private
      * @param time {number} in seconds
      * @param ticks {number} optional MIDI ticks, when given is used instead of time
+     * @returns {boolean} true if the midi file is not finished
      */
     _playTo(time, ticks = undefined)
     {
@@ -580,6 +593,11 @@ export class Sequencer {
             // find next event
             trackIndex = this._findFirstEventIndex();
             let nextEvent = this.tracks[trackIndex][this.eventIndex[trackIndex]];
+            if(nextEvent === undefined)
+            {
+                this.stop();
+                return false;
+            }
             this.playedTime += this.oneTickToSeconds * (nextEvent.ticks - event.ticks);
         }
 
@@ -620,7 +638,7 @@ export class Sequencer {
                 }
             })
         }
-        window.abba = savedControllers;
+        return true;
     }
 
     /**
@@ -631,7 +649,8 @@ export class Sequencer {
     {
 
         // reset the time if necesarry
-        if(resetTime) {
+        if(resetTime)
+        {
             this.currentTime = 0;
             return;
         }
@@ -658,8 +677,11 @@ export class Sequencer {
             this.synth.noteOn(n.channel, n.midiNote, n.velocity);
         });
 
+        if(this.playbackInterval)
+        {
+            clearInterval(this.playbackInterval);
+        }
         this.playbackInterval = setInterval(this._processTick.bind(this));
-        setInterval( () =>this.noteOnsPerS = 0, 100);
     }
 
     /**
@@ -680,7 +702,7 @@ export class Sequencer {
 
             // find next event
             trackIndex = this._findFirstEventIndex();
-            if(this.tracks[trackIndex].length <= this.eventIndex[trackIndex])
+            if(this.tracks[trackIndex].length < this.eventIndex[trackIndex])
             {
                 // song has ended
                 if(this.loop)
@@ -699,13 +721,13 @@ export class Sequencer {
             this.playedTime += this.oneTickToSeconds * (eventNext.ticks - event.ticks);
 
             // loop
-            if((this.midiData.loop.end <= event.ticks) && this.loop)
+            if((this.midiData.loop.end < event.ticks) && this.loop)
             {
                 this.setTimeTicks(this.midiData.loop.start);
                 return;
             }
             // if song has ended
-            else if(current > this.duration + 0.1)
+            else if(current >= this.duration)
             {
                 if(this.loop)
                 {
@@ -756,11 +778,6 @@ export class Sequencer {
             case messageTypes.noteOn:
                 const velocity = event.messageData[1];
                 if(velocity > 0) {
-                    if(this.synth.highPerformanceMode && (this.noteOnsPerS > MAX_NOTEONS_PER_S && velocity < 40) || this.noteOnsPerS > MAX_NOTEONS_PER_S * 2)
-                    {
-                        return;
-                    }
-                    this.noteOnsPerS++;
                     this.synth.noteOn(statusByteData.channel, event.messageData[0], velocity);
                     this.playingNotes.push({
                         midiNote: event.messageData[0],

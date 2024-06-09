@@ -69,7 +69,7 @@ export class MidiChannel {
         });
 
         this.reverb = new GainNode(this.ctx, {
-            gain: 0
+            gain: 40 / 127
         });
         this.reverb.connect(targetReverbNode);
 
@@ -649,6 +649,12 @@ export class MidiChannel {
 
         if(!this.lockedControllers[midiControllers.effects3Depth]) {
             this.chorus.gain.value = 0;
+        }
+
+
+        if(!this.lockedControllers[midiControllers.effects1Depth])
+        {
+            this.reverb.gain.value = 40 / 127;
         }
 
 

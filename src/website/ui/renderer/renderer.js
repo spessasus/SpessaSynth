@@ -62,6 +62,12 @@ export class Renderer
             max: 127
         };
 
+        /**
+         * adds this to the synth's visual pitch in position caluclation
+         * @type {number}
+         */
+        this.visualPitchBendOffset = 0;
+
         this.lineThickness = ANALYSER_STROKE;
         this.normalAnalyserFft = CHANNEL_ANALYSER_FFT;
         this.drumAnalyserFft = DRUMS_ANALYSER_FFT;
@@ -331,7 +337,7 @@ export class Renderer
         this.synth.synthesisSystem.midiChannels.forEach(channel => {
             // pitch range * (bend - 8192) / 8192)) * key width
             if(this.showVisualPitch) {
-                pitchBendXShift.push((channel.channelPitchBendRange * ((channel.pitchBend - 8192) / 8192)) * keyStep);
+                pitchBendXShift.push((channel.channelPitchBendRange * ((channel.pitchBend - 8192 + this.visualPitchBendOffset) / 8192)) * keyStep);
             }
             else
             {

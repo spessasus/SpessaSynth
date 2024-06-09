@@ -1,6 +1,6 @@
-import { NON_CC_INDEX_OFFSET } from '../worklet_system.js'
 import { modulatorSources } from '../../../soundfont/chunk/modulators.js'
 import { getModulatorCurveValue, MOD_PRECOMPUTED_LENGTH } from './modulator_curves.js'
+import { NON_CC_INDEX_OFFSET } from './worklet_processor_channel.js'
 
 /**
  * worklet_modulator.js

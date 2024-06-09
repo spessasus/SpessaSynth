@@ -521,7 +521,7 @@ export class SynthetizerUI
             () => {
                 this.synth.lockController(channelNumber, midiControllers.effects1Depth, false);
             });
-        reverb.update(0);
+        reverb.update(40);
         controller.appendChild(reverb.div);
 
         // transpose

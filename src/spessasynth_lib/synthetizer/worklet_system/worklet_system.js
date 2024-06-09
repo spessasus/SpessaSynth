@@ -4,6 +4,8 @@ import { modulatorSources } from '../../soundfont/chunk/modulators.js'
 import { midiControllers } from '../../midi_parser/midi_message.js'
 import { clearSamplesList, getWorkletVoices } from './worklet_utilities/worklet_voice.js'
 import { DEFAULT_PERCUSSION } from '../synthetizer.js'
+import { workletMessageType } from './worklet_utilities/worklet_message.js'
+import { customControllers, NON_CC_INDEX_OFFSET } from './worklet_utilities/worklet_processor_channel.js'
 
 /**
  * worklet_system.js
@@ -16,9 +18,6 @@ export const WORKLET_SYSTEM_GAIN = 0.5;
 export const WORKLET_SYSTEM_REVERB_DIVIDER = 1000;
 export const WORKLET_SYSTEM_CHORUS_DIVIDER = 500;
 
-
-export const NON_CC_INDEX_OFFSET = 128;
-
 const dataEntryStates = {
     Idle: 0,
     RPCoarse: 1,
@@ -29,50 +28,6 @@ const dataEntryStates = {
     DataFine: 6
 };
 
-export const workletMessageType = {
-    noteOff: 0,
-    noteOn: 1,
-    ccChange: 2,
-    sampleDump: 3,
-    killNote: 4,
-    ccReset: 5,
-    setChannelVibrato: 6,
-    clearCache: 7,
-    stopAll: 8,
-    killNotes: 9,
-    muteChannel: 10,
-    addNewChannel: 11,
-};
-
-/**
- * @typedef {{
- *     channelNumber: number
- *     messageType: 0|1|2|3|4|5|6|7|8|9|10|11,
- *     messageData: (
- *     number[]
- *     |WorkletVoice[]
- *     |number
- *     |{sampleData: Float32Array, sampleID: number}
- *     |{rate: number, depth: number, delay: number}
- *     |boolean
- *     )
- * }} WorkletMessage
- * Every message needs a channel number
- * Message types:
- * 0 - noteOff              -> midiNote<number>
- * 1 - noteOn               -> [midiNote<number>, ...generators]
- * 2 - controller change    -> [ccNumber<number>, ccValue<number>]
- * 3 - sample dump          -> {sampleData: Float32Array, sampleID: number}
- * 4 - note off instantly   -> midiNote<number>
- * 5 - controllers reset    ->    array<number> excluded controller numbers (excluded from the reset)
- * 6 - channel vibrato      -> {frequencyHz: number, depthCents: number, delaySeconds: number}
- * 7 - clear cached samples ->  (no data)
- * 8 - stop all notes       -> force<number> (0 false, 1 true)
- * 9 - kill notes           -> amount<number>
- * 10 - mute channel        -> isMuted<booolean>
- * 11 - add new channel     -> (no data)
- */
-
 /**
  * @typedef {{
  *     preset: Preset,
@@ -80,8 +35,9 @@ export const workletMessageType = {
  *     bank: number,
  *     pitchBend: number,
  *     channelPitchBendRange: number,
- *     channelTuningSemitones: number
+ *     channelTuningCents: number
  *     channelTranspose: number, // In semitones, does not get affected by resetControllers
+ *     channelModulationDepthCents: number,
  *     NRPCoarse: number,
  *     NRPFine: number,
  *     RPValue: number,
@@ -221,8 +177,9 @@ export class WorkletSystem {
             bank: 0,
             pitchBend: 8192,
             channelPitchBendRange: 2,
-            channelTuningSemitones: 0,
+            channelTuningCents: 0,
             channelTranspose: 0,
+            channelModulationDepthCents: 50,
             NRPCoarse: 0,
             NRPFine: 0,
             RPValue: 0,
@@ -425,6 +382,10 @@ export class WorkletSystem {
 
             case midiControllers.dataEntryMsb:
                 this.dataEntryCoarse(channel, val);
+                break;
+
+            case midiControllers.lsbForControl6DataEntry:
+                this.dataEntryFine(channel, val);
         }
 
         return true;
@@ -451,8 +412,8 @@ export class WorkletSystem {
             this.midiChannels[channel].channelTranspose = 0;
             this.post({
                 channelNumber: channel,
-                messageType: workletMessageType.ccChange,
-                messageData: [NON_CC_INDEX_OFFSET + modulatorSources.channelTranspose, 0]
+                messageType: workletMessageType.customcCcChange,
+                messageData: [customControllers.channelTranspose, 0]
             });
         }
     }
@@ -629,7 +590,7 @@ export class WorkletSystem {
                         switch(this.midiChannels[channel].NRPFine)
                         {
                             default:
-                                console.info(`%cUnrecognized NRPN for %c${channel}%c: %c${this.midiChannels[channel].NRPCoarse} ${this.midiChannels[channel].NRPFine}%c data value: %c${dataValue}`,
+                                console.info(`%cUnrecognized NRPN for %c${channel}%c: %c(${this.midiChannels[channel].NRPCoarse} ${this.midiChannels[channel].NRPFine})%c data value: %c${dataValue}`,
                                     consoleColors.warn,
                                     consoleColors.recognized,
                                     consoleColors.warn,
@@ -735,8 +696,66 @@ export class WorkletSystem {
                     // coarse tuning
                     case 0x0002:
                         // semitones
-                        this.setChannelTuning(channel, dataValue - 64);
+                        this.setChannelTuning(channel, (dataValue - 64) * 100);
                         break;
+
+                    // fine tuning
+                    case 0x0001:
+                        // note: this will not work properly unless the lsb is sent!
+                        // here we store the raw value to then adjust in fine
+                        this.setChannelTuning(channel, (dataValue - 64));
+                        break;
+
+                    // modulation depth
+                    case 0x0005:
+                        this.setModulationDepth(channel, dataValue * 100);
+                        break
+
+                    case 0x3FFF:
+                        this.resetParameters(channel);
+                        break;
+
+                }
+
+        }
+    }
+
+    /**
+     * Executes a data entry for an RPN tuning
+     * @param channel {number}
+     * @param dataValue {number} dataEntry LSB
+     */
+    dataEntryFine(channel, dataValue)
+    {
+        switch (this.midiChannels[channel].dataEntryState)
+        {
+            default:
+                break;
+
+            case dataEntryStates.RPCoarse:
+            case dataEntryStates.RPFine:
+                switch(this.midiChannels[channel].RPValue)
+                {
+                    default:
+                        break;
+
+                    // pitch bend range fine tune is not supported in the SoundFont2 format. (pitchbend range is in semitones rather than cents)
+                    case 0x0000:
+                        break;
+
+                    // fine tuning
+                    case 0x0001:
+                        // grab the data and shift
+                        const coarse = this.midiChannels[channel].channelTuningCents;
+                        const finalTuning = (coarse << 7) | dataValue;
+                        this.setChannelTuning(channel, finalTuning * 0.0122); // multiply by 8192 / 100 (cent increment)
+                        break;
+
+                    // modulation depth
+                    case 0x0005:
+
+                        this.setModulationDepth(channel, this.midiChannels[channel].channelModulationDepthCents + (dataValue / 128) * 100);
+                        break
 
                     case 0x3FFF:
                         this.resetParameters(channel);
@@ -750,18 +769,48 @@ export class WorkletSystem {
     /**
      * Sets the channel's tuning
      * @param channel {number}
-     * @param semitones {number}
+     * @param cents {number}
      */
-    setChannelTuning(channel, semitones)
+    setChannelTuning(channel, cents)
     {
-        this.midiChannels[channel].channelTuningSemitones = semitones;
-        console.info(`%cChannel ${channel} tuning. Semitones: %c${semitones}`,
+        cents = Math.round(cents);
+        this.midiChannels[channel].channelTuningCents = cents;
+        console.info(`%cChannel ${channel} tuning. Cents: %c${cents}`,
             consoleColors.info,
             consoleColors.value);
         this.post({
             channelNumber: channel,
-            messageType: workletMessageType.ccChange,
-            messageData: [NON_CC_INDEX_OFFSET + modulatorSources.channelTuning, (this.midiChannels[channel].channelTuningSemitones) * 100]
+            messageType: workletMessageType.customcCcChange,
+            messageData: [customControllers.channelTuning, this.midiChannels[channel].channelTuningCents]
+        });
+    }
+
+    /**
+     * Sets the channel's mod depth
+     * @param channel {number}
+     * @param cents {number}
+     */
+    setModulationDepth(channel, cents)
+    {
+        cents = Math.round(cents);
+        this.midiChannels[channel].channelModulationDepthCents = cents;
+        console.info(`%cChannel ${channel} modulation depth. Cents: %c${cents}`,
+            consoleColors.info,
+            consoleColors.value);
+        /* ==============
+            IMPORTANT
+            here we convert cents into a multiplier.
+            midi spec assumes the default is 50 cents,
+            but it might be different for the soundfont
+            so we create a multiplier by divinging cents by 50.
+            for example, if we want 100 cents, then multiplier will be 2,
+            which for a preset with depth of 50 will create 100.
+         ================*/
+        const depthMultiplier = cents / 50;
+        this.post({
+            channelNumber: channel,
+            messageType: workletMessageType.customcCcChange,
+            messageData: [customControllers.modulationMultiplier, depthMultiplier]
         });
     }
 
@@ -816,8 +865,8 @@ export class WorkletSystem {
         this.midiChannels[channel].channelTranspose = semitones;
         this.post({
             channelNumber: channel,
-            messageType: workletMessageType.ccChange,
-            messageData: [NON_CC_INDEX_OFFSET + modulatorSources.channelTranspose, this.midiChannels[channel].channelTranspose * 100]
+            messageType: workletMessageType.customcCcChange,
+            messageData: [customControllers.channelTranspose, this.midiChannels[channel].channelTranspose * 100]
         });
     }
 

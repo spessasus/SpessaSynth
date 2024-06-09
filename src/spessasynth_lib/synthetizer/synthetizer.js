@@ -17,8 +17,7 @@ export const VOICE_CAP = 450;
 export const DEFAULT_GAIN = 1;
 export const DEFAULT_PERCUSSION = 9;
 export const DEFAULT_CHANNEL_COUNT = 16;
-export const REVERB_TIME_S = 2;
-export const DEFAULT_SYNTH_MODE = "gm2";
+export const DEFAULT_SYNTH_MODE = "gs";
 export const DEFAULT_SYNTHESIS_MODE = "worklet";
 
 export class Synthetizer {
@@ -237,24 +236,38 @@ export class Synthetizer {
                 break;
 
             case midiControllers.bankSelect:
-                if(this.system === "gm")
-                {
-                    // gm ignores bank select
-                    console.info(`%cIgnoring the Bank Select (${controllerValue}), as the synth is in GM mode.`, consoleColors.info);
-                    return;
-                }
                 let bankNr = controllerValue;
                 const channelObject = this.synthesisSystem.midiChannels[channel];
-
-                // for xg, if msb is 127, then it's drums
-                if(bankNr === 127 && this.system === "xg")
+                switch (this.system)
                 {
-                    channelObject.percussionChannel = true;
-                    this.eventHandler.callEvent("drumchange",{
-                        channel: channel,
-                        isDrumChannel: true
-                    });
+                    case "gm":
+                        // gm ignores bank select
+                        console.info(`%cIgnoring the Bank Select (${controllerValue}), as the synth is in GM mode.`, consoleColors.info);
+                        return;
+
+                    case "xg":
+                        // for xg, if msb is 127, then it's drums
+                        if (bankNr === 127)
+                        {
+                            channelObject.percussionChannel = true;
+                            this.eventHandler.callEvent("drumchange", {
+                                channel: channel,
+                                isDrumChannel: true
+                            });
+                        }
+                        break;
+
+                    case "gm2":
+                        if(bankNr === 120)
+                        {
+                            channelObject.percussionChannel = true;
+                            this.eventHandler.callEvent("drumchange", {
+                                channel: channel,
+                                isDrumChannel: true
+                            });
+                        }
                 }
+
                 if(channelObject.percussionChannel)
                 {
                     // 128 for percussion channel
@@ -272,8 +285,18 @@ export class Synthetizer {
             case midiControllers.lsbForControl0BankSelect:
                 if(this.system === 'xg')
                 {
+                    if(this.synthesisSystem.midiChannels[channel].bank === 0)
+                    {
+                        this.synthesisSystem.midiChannels[channel].bank = controllerValue;
+                    }
+                }
+                else
+                if(this.system === "gm2")
+                {
                     this.synthesisSystem.midiChannels[channel].bank = controllerValue;
                 }
+
+
                 break;
 
 
@@ -341,11 +364,11 @@ export class Synthetizer {
             restoreControllerValueEvent(midiControllers.expressionController, 127);
             restoreControllerValueEvent(midiControllers.modulationWheel, 0);
             restoreControllerValueEvent(midiControllers.effects3Depth, 0);
-            restoreControllerValueEvent(midiControllers.effects1Depth, 0);
+            restoreControllerValueEvent(midiControllers.effects1Depth, 40);
 
             this.eventHandler.callEvent("pitchwheel", {channel: channelNumber, MSB: 64, LSB: 0})
         }
-        this.system = "gm2";
+        this.system = DEFAULT_SYNTH_MODE;
         this.volumeController.gain.value = DEFAULT_GAIN;
         this.panController.pan.value = 0;
     }
@@ -533,15 +556,16 @@ export class Synthetizer {
                 {
                     // this is a GS sysex
                     // messageData[5] and [6] is the system parameter, messageData[7] is the value
+                    const messageValue = messageData[7];
                     if(messageData[6] === 0x7F)
                     {
                         // GS mode set
-                        if(messageData[7] === 0x00) {
+                        if(messageValue === 0x00) {
                             // this is a GS reset
                             console.info("%cGS system on", consoleColors.info);
                             this.system = "gs";
                         }
-                        else if(messageData[7] === 0x7F)
+                        else if(messageValue === 0x7F)
                         {
                             // GS mode off
                             console.info("%cGS system off, switching to GM2", consoleColors.info);
@@ -553,43 +577,63 @@ export class Synthetizer {
                     if(messageData[4] === 0x40)
                     {
                         // this is a system parameter
-                        if(messageData[6] === 0x15)
+                        if((messageData[5] & 0x10) > 0)
                         {
-                            // this is the Use for Drum Part sysex (multiple drums)
+                            // this is an individual part (channel) parameter
                             // determine the channel 0 means channel 10 (default), 1 means 1 etc.
                             const channel = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15][messageData[5] & 0x0F]; // for example 1A means A = 11, which corresponds to channel 12 (counting from 1)
+                            switch (messageData[6])
+                            {
+                                default:
+                                    break;
 
-                            this.setDrums(channel, messageData[7] > 0 && messageData[5] >> 4); // if set to other than 0, is a drum channel
-                            console.info(
-                                `%cChannel %c${channel}%c ${this.synthesisSystem.midiChannels[channel].percussionChannel ?
-                                    "is now a drum channel"
-                                    :
-                                    "now isn't a drum channel"
-                                }%c via: %c${arrayToHexString(messageData)}`,
-                                consoleColors.info,
-                                consoleColors.value,
-                                consoleColors.recognized,
-                                consoleColors.info,
-                                consoleColors.value);
-                            return;
+                                case 0x15:
+                                    // this is the Use for Drum Part sysex (multiple drums)
+                                    this.setDrums(channel, messageValue > 0 && messageData[5] >> 4); // if set to other than 0, is a drum channel
+                                    console.info(
+                                        `%cChannel %c${channel}%c ${this.synthesisSystem.midiChannels[channel].percussionChannel ?
+                                            "is now a drum channel"
+                                            :
+                                            "now isn't a drum channel"
+                                        }%c via: %c${arrayToHexString(messageData)}`,
+                                        consoleColors.info,
+                                        consoleColors.value,
+                                        consoleColors.recognized,
+                                        consoleColors.info,
+                                        consoleColors.value);
+                                    return;
+
+                                case 0x16:
+                                    // this is the pitch key shift sysex
+                                    const keyShift = messageValue - 64;
+                                    console.info(`%cChannel %c${channel}%c pitch shift. Semitones %c${keyShift}%c, with %c${arrayToHexString(messageData)}`,
+                                        consoleColors.info,
+                                        consoleColors.recognized,
+                                        consoleColors.info,
+                                        consoleColors.value,
+                                        consoleColors.info,
+                                        consoleColors.value);
+                                    return;
+                            }
                         }
                         else
+                        // this is a global system parameter
                         if(messageData[5] === 0x00 && messageData[6] === 0x06)
                         {
                             // roland master pan
-                            console.info(`%cRoland GS Master Pan set to: %c${messageData[7]}%c with: %c${arrayToHexString(messageData)}`,
+                            console.info(`%cRoland GS Master Pan set to: %c${messageValue}%c with: %c${arrayToHexString(messageData)}`,
                                 consoleColors.info,
                                 consoleColors.value,
                                 consoleColors.info,
                                 consoleColors.value);
-                            this.panController.pan.value = (messageData[7] - 64) / 64;
+                            this.panController.pan.value = (messageValue - 64) / 64;
                             return;
                         }
                         else
                         if(messageData[5] === 0x00 && messageData[6] === 0x05)
                         {
                             // roland master key shift (transpose)
-                            const transpose = messageData[7] - 64;
+                            const transpose = messageValue - 64;
                             console.info(`%cRoland GS Master Key-Shift set to: %c${transpose}%c with: %c${arrayToHexString(messageData)}`,
                                 consoleColors.info,
                                 consoleColors.value,
@@ -602,34 +646,22 @@ export class Synthetizer {
                         if(messageData[5] === 0x00 && messageData[6] === 0x04)
                         {
                             // roland GS master volume
-                            console.info(`%cRoland GS Master Volume set to: %c${messageData[7]}%c with: %c${arrayToHexString(messageData)}`,
+                            console.info(`%cRoland GS Master Volume set to: %c${messageValue}%c with: %c${arrayToHexString(messageData)}`,
                                 consoleColors.info,
                                 consoleColors.value,
                                 consoleColors.info,
                                 consoleColors.value);
-                            this.setMainVolume(messageData[7] / 127);
-                        }
-                        else
-                        {
-                            // this is some other GS sysex...
-                            console.info(`%cUnrecognized Roland %cGS %cSysEx: %c${arrayToHexString(messageData)}`,
-                                consoleColors.warn,
-                                consoleColors.recognized,
-                                consoleColors.warn,
-                                consoleColors.unrecognized);
+                            this.setMainVolume(messageValue / 127);
                             return;
                         }
                     }
-                    else
-                    {
-                        // this is some other GS sysex...
-                        console.info(`%cUnrecognized Roland %cGS %cSysEx: %c${arrayToHexString(messageData)}`,
-                            consoleColors.warn,
-                            consoleColors.recognized,
-                            consoleColors.warn,
-                            consoleColors.unrecognized);
-                        return;
-                    }
+                    // this is some other GS sysex...
+                    console.info(`%cUnrecognized Roland %cGS %cSysEx: %c${arrayToHexString(messageData)}`,
+                        consoleColors.warn,
+                        consoleColors.recognized,
+                        consoleColors.warn,
+                        consoleColors.unrecognized);
+                    return;
                 }
                 else
                 if(messageData[2] === 0x16 && messageData[3] === 0x12 && messageData[4] === 0x10)
@@ -651,7 +683,6 @@ export class Synthetizer {
                         consoleColors.unrecognized);
                     return;
                 }
-                break;
 
             // yamaha
             case 0x43:
