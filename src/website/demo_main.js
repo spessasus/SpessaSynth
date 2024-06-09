@@ -210,3 +210,28 @@ function prepareUI()
     }
 }
 
+
+/**
+ * saves the settings (settings.js) selected data to config.json
+ * (only on local edition that's why it's here and not in the demo_main.js)
+ * @param settingsData {Object}
+ */
+function saveSettings(settingsData)
+{
+    localStorage.setItem("spessasynth-settings", JSON.stringify(settingsData));
+    console.log("saved as", settingsData)
+}
+
+// expose the function
+window.saveSettings = saveSettings;
+
+const saved = localStorage.getItem("spessasynth-settings");
+if(saved !== null) {
+    /**
+     * reads the settings
+     * @type {Promise<SavedSettings>}
+     */
+    window.savedSettings = new Promise(resolve => {
+        resolve(JSON.parse(saved))
+    });
+}

@@ -238,6 +238,11 @@ export class Settings
          */
         const savedSettings = await window.savedSettings;
 
+        if(!savedSettings.interface)
+        {
+            return;
+        }
+
         // renderer
         const rendererControls = this.htmlControls.renderer;
         const renderer = this.renderer;
