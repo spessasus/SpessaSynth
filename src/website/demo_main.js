@@ -258,7 +258,7 @@ function prepareUI()
 
     if(window.audioContextMain.state !== "running")
     {
-        document.addEventListener("click", () => {
+        document.addEventListener("mousedown", () => {
             if(window.audioContextMain.state !== "running") {
                 window.audioContextMain.resume();
             }
