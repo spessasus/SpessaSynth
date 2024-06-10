@@ -34,6 +34,7 @@ export const customControllers = {
     channelTuning: 0, // cents
     channelTranspose: 1, // cents
     modulationMultiplier: 2, // cents
+    masterTuning: 3, // cents
 }
 export const CUSTOM_CONTROLLER_TABLE_SIZE = Object.keys(customControllers).length;
 export const customResetArray = new Float32Array(CUSTOM_CONTROLLER_TABLE_SIZE);

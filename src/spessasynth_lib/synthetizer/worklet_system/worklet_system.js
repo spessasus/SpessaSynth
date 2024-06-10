@@ -52,6 +52,7 @@ const dataEntryStates = {
  *     lockPreset: boolean,
  *
  *     voicesAmount: number,
+ *     velocityAddition: number
  * }} WorkletChannel
  */
 
@@ -193,7 +194,8 @@ export class WorkletSystem {
             lockVibrato: false,
             lockPreset: false,
 
-            voicesAmount: 0
+            voicesAmount: 0,
+            velocityAddition: 0,
         };
         for (let i = 0; i < 128; i++) {
             channel.cachedWorkletVoices.push([]);
@@ -436,6 +438,12 @@ export class WorkletSystem {
             return 0;
         }
 
+        velocity += this.midiChannels[channel].velocityAddition;
+        if(velocity > 127)
+        {
+            velocity = 127;
+        }
+
         if(this.midiChannels[channel].isMuted)
         {
             return 0;
@@ -584,7 +592,13 @@ export class WorkletSystem {
                 switch(this.midiChannels[channel].NRPCoarse)
                 {
                     default:
-                        console.info(`%cUnrecognized NRPN for %c${channel}%c: %c(${this.midiChannels[channel].NRPCoarse} ${this.midiChannels[channel].NRPFine})%c data value: %c${dataValue}`,
+                        if(dataValue === 64)
+                        {
+                            // default value
+                            return;
+                        }
+                        console.info(
+                            `%cUnrecognized NRPN for %c${channel}%c: %c(0x${this.midiChannels[channel].NRPCoarse.toString(16).toUpperCase()} 0x${this.midiChannels[channel].NRPFine.toString(16).toUpperCase()})%c data value: %c${dataValue}`,
                             consoleColors.warn,
                             consoleColors.recognized,
                             consoleColors.warn,
@@ -593,11 +607,17 @@ export class WorkletSystem {
                             consoleColors.value);
                         break;
 
-                    case 1:
+                    case 0x01:
                         switch(this.midiChannels[channel].NRPFine)
                         {
                             default:
-                                console.info(`%cUnrecognized NRPN for %c${channel}%c: %c(${this.midiChannels[channel].NRPCoarse} ${this.midiChannels[channel].NRPFine})%c data value: %c${dataValue}`,
+                                if(dataValue === 64)
+                                {
+                                    // default value
+                                    return;
+                                }
+                                console.info(
+                                    `%cUnrecognized NRPN for %c${channel}%c: %c(0x${this.midiChannels[channel].NRPCoarse.toString(16)} 0x${this.midiChannels[channel].NRPFine.toString(16)})%c data value: %c${dataValue}`,
                                     consoleColors.warn,
                                     consoleColors.recognized,
                                     consoleColors.warn,
@@ -607,7 +627,7 @@ export class WorkletSystem {
                                 break;
 
                             // vibrato rate
-                            case 8:
+                            case 0x08:
                                 if(this.midiChannels[channel].lockVibrato)
                                 {
                                     return;
@@ -633,7 +653,7 @@ export class WorkletSystem {
                                 break;
 
                             // vibrato depth
-                            case 9:
+                            case 0x09:
                                 if(this.midiChannels[channel].lockVibrato)
                                 {
                                     return;
@@ -659,7 +679,7 @@ export class WorkletSystem {
                                 break;
 
                             // vibrato delay
-                            case 10:
+                            case 0x0A:
                                 if(this.midiChannels[channel].lockVibrato)
                                 {
                                     return;
@@ -683,8 +703,50 @@ export class WorkletSystem {
                                     messageData: this.midiChannels[channel].vibrato
                                 });
                                 break;
+
+                            // filter cutoff
+                            case 0x20:
+                                // affect the "brightness" controller as we have a default modulator that controls it
+                                const ccValue = dataValue;
+                                this.controllerChange(channel, midiControllers.brightness, dataValue)
+                                console.info(`%cFilter cutoff for %c${channel}%c is now set to %c${ccValue}`,
+                                    consoleColors.info,
+                                    consoleColors.recognized,
+                                    consoleColors.info,
+                                    consoleColors.value);
                         }
                         break;
+
+                    // drum reverb
+                    case 0x1D:
+                        if(!this.midiChannels[channel].percussionChannel)
+                        {
+                            return;
+                        }
+                        const reverb = dataValue;
+                        this.controllerChange(channel, midiControllers.effects1Depth, reverb);
+                        console.info(
+                            `%cGS Drum reverb for %c${channel}%c: %c${reverb}`,
+                            consoleColors.info,
+                            consoleColors.recognized,
+                            consoleColors.info,
+                            consoleColors.value);
+                        break;
+
+                    // drum chorus
+                    case 0x1E:
+                        if(!this.midiChannels[channel].percussionChannel)
+                        {
+                            return;
+                        }
+                        const chorus = dataValue;
+                        this.controllerChange(channel, midiControllers.effects3Depth, chorus);
+                        console.info(
+                            `%cGS Drum chorus for %c${channel}%c: %c${chorus}`,
+                            consoleColors.info,
+                            consoleColors.recognized,
+                            consoleColors.info,
+                            consoleColors.value);
                 }
                 break;
 
@@ -770,6 +832,22 @@ export class WorkletSystem {
 
                 }
 
+        }
+    }
+
+    /**
+     * Sets the worklet's master tuning
+     * @param cents {number}
+     */
+    setMasterTuning(cents)
+    {
+        cents = Math.round(cents);
+        for (let i = 0; i < this.channelsAmount; i++) {
+            this.post({
+                channelNumber: i,
+                messageType: workletMessageType.customcCcChange,
+                messageData: [customControllers.masterTuning, cents]
+            });
         }
     }
 
@@ -890,6 +968,7 @@ export class WorkletSystem {
         this.midiChannels[channel].vibrato = {depth: 0, rate: 0, delay: 0};
         this.midiChannels[channel].pitchBend = 8192;
         this.midiChannels[channel].channelPitchBendRange = 2;
+        this.midiChannels[channel].channelTuningCents = 0;
         /**
          * get excluded (locked) cc numbers as locked ccs are unaffected by reset
          * @type {number[]}

@@ -183,17 +183,22 @@ class WorkletProcessor extends AudioWorkletProcessor {
                     v.sample.cursor = (v.sample.playbackStep * sampleRate) * (currentTime - v.startTime);
                     if(v.sample.loopingMode === 0) // no loop
                     {
-                        if (v.sample.cursor >= v.sample.end) {
+                        if (v.sample.cursor >= v.sample.end)
+                        {
                             v.finished = true;
+                            return;
                         }
                     }
                     else
                     {
                         // go through modulo (adjust cursor if the sample has looped
-                        if(v.sample.cursor > v.sample.loopEnd) {
+                        if(v.sample.cursor > v.sample.loopEnd)
+                        {
                             v.sample.cursor = v.sample.cursor % (v.sample.loopEnd - v.sample.loopStart) + v.sample.loopStart - 1;
                         }
                     }
+                    // set start time to current!
+                    v.startTime = currentTime;
                 })
 
                 break;
@@ -383,7 +388,8 @@ class WorkletProcessor extends AudioWorkletProcessor {
         // calculate tuning
         let cents = voice.modulatedGenerators[generatorTypes.fineTune]
             + channel.customControllers[customControllers.channelTuning]
-            + channel.customControllers[customControllers.channelTranspose];
+            + channel.customControllers[customControllers.channelTranspose]
+            + channel.customControllers[customControllers.masterTuning];
         let semitones = voice.modulatedGenerators[generatorTypes.coarseTune];
 
         // calculate tuning by key

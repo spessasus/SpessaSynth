@@ -34,6 +34,88 @@ let sfInput = document.getElementById("sf_file_input");
 fileInput.value = "";
 fileInput.focus();
 
+// IndexedDB stuff
+const dbName = "spessasynth-db";
+const objectStoreName = "soundFontStore";
+/**
+ * @param callback {function(IDBDatabase)}
+ */
+function initDatabase(callback) {
+    const request = indexedDB.open(dbName, 1);
+
+
+    request.onsuccess = () => {
+        const db = request.result;
+        callback(db);
+    };
+
+    request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+        db.createObjectStore(objectStoreName, { keyPath: "id" });
+    };
+}
+
+/**
+ * @returns {Promise<ArrayBuffer|undefined>}
+ */
+async function loadLastSoundFontFromDatabase()
+{
+    return await new Promise(resolve => {
+        // fetch from db
+        initDatabase(db => {
+            const transaction = db.transaction([objectStoreName], "readonly");
+            const objectStore = transaction.objectStore(objectStoreName);
+            const request = objectStore.get("buffer");
+
+            request.onerror = e => {
+                console.error("Database error");
+                throw e;
+            }
+
+            request.onsuccess = async () => {
+                const result = request.result;
+                if(!result)
+                {
+                    resolve(undefined);
+                }
+                resolve(result.data);
+            }
+        })
+    })
+}
+
+// attempt to load soundfont from indexed db
+async function demoInit()
+{
+    let soundFontBuffer = await loadLastSoundFontFromDatabase();
+    let loadedFromDb = true;
+    if (soundFontBuffer === undefined)
+    {
+        console.info("Failed to load from db, fetching online instead");
+        loadedFromDb = false;
+        soundFontBuffer = await fetchFont(`soundfonts/${SF_NAME}`, percent => titleMessage.innerText = `Loading SF3: ${percent}%`);
+    }
+    else
+    {
+        console.info("Loaded the soundfont from the database succesfully");
+    }
+
+    // parse the soundfont
+    try {
+        window.soundFontParser = new SoundFont2(soundFontBuffer);
+        if(!loadedFromDb) {
+            saveSoundFontToIndexedDB(soundFontBuffer).then();
+        }
+    }
+    catch (e)
+    {
+        titleMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
+        console.log(e);
+        return;
+    }
+    prepareUI();
+}
+
 async function fetchFont(url, callback)
 {
     let response = await fetch(url);
@@ -58,23 +140,6 @@ async function fetchFont(url, callback)
         callback(percent);
     }while(!done);
     return dataArray.buffer;
-}
-
-document.getElementById("bundled_sf").onclick = () => {
-    titleMessage.innerText = "Downloading SoundFont...";
-    fetchFont(`soundfonts/${SF_NAME}`, percent => titleMessage.innerText = `Loading SF3: ${percent}%`).then(arr => {
-        try {
-            window.soundFontParser = new SoundFont2(arr);
-            document.getElementById("sf_upload").innerText = SF_NAME;
-        }
-        catch (e)
-        {
-            titleMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
-            console.log(e);
-            return;
-        }
-        prepareUI();
-    });
 }
 
 
@@ -167,33 +232,43 @@ sfInput.onchange = async e => {
     const file = e.target.files[0];
 
     document.getElementById("sf_upload").innerText = file.name;
+    const title = titleMessage.innerText;
     titleMessage.innerText = "Parsing SoundFont...";
-
-    const arr = await file.arrayBuffer();
+    // parse the soundfont
+    const soundFontBuffer = await file.arrayBuffer();
     try {
-        window.soundFontParser = new SoundFont2(arr);
+        window.soundFontParser = new SoundFont2(soundFontBuffer);
+        saveSoundFontToIndexedDB(soundFontBuffer).then();
     }
     catch (e)
     {
-        titleMessage.innerHTML = `Error parsing SoundFont: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
+        titleMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
         console.log(e);
         return;
     }
-    prepareUI();
+    titleMessage.innerText = title;
+    manager.reloadSf(window.soundFontParser);
 }
 
 function prepareUI()
 {
     titleMessage.innerText = TITLE;
-    document.getElementById("bundled_sf").style.display = "none";
-    document.getElementById("bundled_sf").onclick = undefined;
 
     window.audioContextMain = new AudioContext({sampleRate: 44100, latencyHint: "interactive"});
+
+    if(window.audioContextMain.state !== "running")
+    {
+        document.addEventListener("click", () => {
+            if(window.audioContextMain.state !== "running") {
+                window.audioContextMain.resume();
+            }
+
+        })
+    }
 
     // prepare midi interface
     window.manager = new Manager(audioContextMain, soundFontParser);
 
-    sfInput.onchange = undefined;
     if(fileInput.files[0])
     {
         startMidi(fileInput.files);
@@ -208,6 +283,31 @@ function prepareUI()
             }
         }
     }
+}
+
+/**
+ * @param arr {ArrayBuffer}
+ */
+async function saveSoundFontToIndexedDB(arr)
+{
+    initDatabase(db => {
+        const transaction = db.transaction([objectStoreName], "readwrite");
+        const objectStore = transaction.objectStore(objectStoreName);
+        try {
+            const request = objectStore.put({ id: "buffer", data: arr });
+            request.onsuccess = () => {
+                console.log("SoundFont stored successfully");
+            };
+
+            request.onerror = e => {
+                console.error("Error saving soundfont", e)
+            }
+        }
+        catch (e)
+        {
+            console.warn("Failed saving soundfont:", e);
+        }
+    });
 }
 
 
@@ -235,3 +335,5 @@ if(saved !== null) {
         resolve(JSON.parse(saved))
     });
 }
+
+demoInit();

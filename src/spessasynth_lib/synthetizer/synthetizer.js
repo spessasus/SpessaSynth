@@ -46,6 +46,12 @@ export class Synthetizer {
             pan: 0
         });
 
+        /**
+         * In cents, master tuning
+         * @type {number}
+         */
+        this.tuning = 0;
+
         this.reverbProcessor = getReverbProcessor(this.context);
         this.chorusProcessor = new FancyChorus(this.volumeController);
 
@@ -365,6 +371,7 @@ export class Synthetizer {
         this.system = DEFAULT_SYNTH_MODE;
         this.volumeController.gain.value = DEFAULT_GAIN;
         this.panController.pan.value = 0;
+        this.tuning = 0;
     }
 
     /**
@@ -391,6 +398,16 @@ export class Synthetizer {
     {
         this.synthesisSystem.transposeAll(semitones);
         this.transposition = semitones;
+    }
+
+    /**
+     * Tunes the synthesizer (independent from transpose and gets affected by reset
+     * @param cents {number}
+     */
+    tune(cents)
+    {
+        this.synthesisSystem.setMasterTuning(cents);
+        this.tuning = cents;
     }
 
     /**
@@ -525,9 +542,9 @@ export class Synthetizer {
 
             // realtime
             case 0x7F:
-                // main volume
-                if (messageData[2] === 0x04 && messageData[3] === 0x01)
+                if(messageData[2] === 0x04 && messageData[3] === 0x01)
                 {
+                    // main volume
                     if(messageData[4])
                     {
                         const vol = messageData[5] << 7 | messageData[4];
@@ -538,6 +555,36 @@ export class Synthetizer {
                         const vol = messageData[5];
                         this.volumeController.gain.value = vol / 127 * DEFAULT_GAIN;
                     }
+                }
+                else
+                if(messageData[2] === 0x04 && messageData[3] === 0x03)
+                {
+                    // fine tuning
+                    const tuningValue = ((messageData[5] << 7) | messageData[6]) - 8192;
+                    const cents = Math.floor(tuningValue / 81.92); // [-100;+99] cents range
+                    this.tune(cents);
+                    console.info(`%cMaster Fine Tuning. Cents: %c${cents}`,
+                        consoleColors.info,
+                        consoleColors.value)
+                }
+                else
+                if(messageData[2] === 0x04 && messageData[3] === 0x04)
+                {
+                    // coarse tuning
+                    // lsb is ignored
+                    const semitones = messageData[5] - 64;
+                    const cents = semitones * 100;
+                    this.tune(cents);
+                    console.info(`%cMaster Coarse Tuning. Cents: %c${cents}`,
+                        consoleColors.info,
+                        consoleColors.value)
+                }
+                else
+                {
+                    console.info(
+                        `%cUnrecognized MIDI Real-time message: %c${arrayToHexString(messageData)}`,
+                        consoleColors.warn,
+                        consoleColors.unrecognized)
                 }
                 break;
 
@@ -600,6 +647,7 @@ export class Synthetizer {
                                 case 0x16:
                                     // this is the pitch key shift sysex
                                     const keyShift = messageValue - 64;
+                                    this.synthesisSystem.transposeChannel(channel, keyShift);
                                     console.info(`%cChannel %c${channel}%c pitch shift. Semitones %c${keyShift}%c, with %c${arrayToHexString(messageData)}`,
                                         consoleColors.info,
                                         consoleColors.recognized,
@@ -608,6 +656,29 @@ export class Synthetizer {
                                         consoleColors.info,
                                         consoleColors.value);
                                     return;
+
+                                case 0x40:
+                                case 0x41:
+                                case 0x42:
+                                case 0x43:
+                                case 0x44:
+                                case 0x45:
+                                case 0x46:
+                                case 0x47:
+                                case 0x48:
+                                case 0x49:
+                                case 0x4A:
+                                case 0x4B:
+                                    // scale tuning
+                                    const cents = messageValue - 64;
+                                    console.info(`%cChannel %c${channel}%c tuning. Cents %c${cents}%c, with %c${arrayToHexString(messageData)}`,
+                                        consoleColors.info,
+                                        consoleColors.recognized,
+                                        consoleColors.info,
+                                        consoleColors.value,
+                                        consoleColors.info,
+                                        consoleColors.value);
+                                    this.synthesisSystem.setChannelTuning(channel, cents);
                             }
                         }
                         else
