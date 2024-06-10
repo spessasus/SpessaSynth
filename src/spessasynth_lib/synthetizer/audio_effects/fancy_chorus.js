@@ -22,6 +22,7 @@ const OSC_GAIN = 0.002;
 export class FancyChorus
 {
     /**
+     * Creates a fancy chorus effect
      * @param output {AudioNode}
      */
     constructor(output) {

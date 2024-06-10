@@ -17,7 +17,7 @@ import { VOICE_CAP } from '../synthetizer.js'
 import {
     CONTROLLER_TABLE_SIZE,
     CUSTOM_CONTROLLER_TABLE_SIZE,
-    customControllers,
+    customControllers, customResetArray,
     resetArray,
 } from './worklet_utilities/worklet_processor_channel.js'
 import { workletMessageType } from './worklet_utilities/worklet_message.js'
@@ -494,7 +494,7 @@ class WorkletProcessor extends AudioWorkletProcessor {
         // reset custom controllers
         // special case: transpose does not get affected
         const transpose = this.workletProcessorChannels[channel].customControllers[customControllers.channelTranspose];
-        this.workletProcessorChannels[channel].customControllers.fill(0);
+        this.workletProcessorChannels[channel].customControllers.set(customResetArray);
         this.workletProcessorChannels[channel].customControllers[customControllers.channelTranspose] = transpose;
 
     }

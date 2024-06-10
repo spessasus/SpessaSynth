@@ -584,6 +584,13 @@ export class WorkletSystem {
                 switch(this.midiChannels[channel].NRPCoarse)
                 {
                     default:
+                        console.info(`%cUnrecognized NRPN for %c${channel}%c: %c(${this.midiChannels[channel].NRPCoarse} ${this.midiChannels[channel].NRPFine})%c data value: %c${dataValue}`,
+                            consoleColors.warn,
+                            consoleColors.recognized,
+                            consoleColors.warn,
+                            consoleColors.unrecognized,
+                            consoleColors.warn,
+                            consoleColors.value);
                         break;
 
                     case 1:

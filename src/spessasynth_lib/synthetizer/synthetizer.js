@@ -4,8 +4,9 @@ import { arrayToHexString, consoleColors } from '../utils/other.js'
 import { getEvent, messageTypes, midiControllers } from '../midi_parser/midi_message.js'
 import { WorkletSystem } from './worklet_system/worklet_system.js'
 import { EventHandler } from './synth_event_handler.js'
-import { FancyChorus } from './fancy_chorus.js'
+import { FancyChorus } from './audio_effects/fancy_chorus.js'
 import { NativeSystem } from './native_system/native_system.js'
+import { getReverbProcessor } from './audio_effects/reverb.js'
 
 /**
  * synthesizer.js
@@ -45,20 +46,13 @@ export class Synthetizer {
             pan: 0
         });
 
-        // create reverb processor and load the impulse response
-        this.reverbProcessor = new ConvolverNode(this.context);
-
-        // resolve relative url
-        const impulseURL = new URL("impulse_response.wav", import.meta.url);
-        fetch(impulseURL).then(async response => {
-            const data = await response.arrayBuffer();
-            this.reverbProcessor.buffer = await this.context.decodeAudioData(data);
-        });
+        this.reverbProcessor = getReverbProcessor(this.context);
+        this.chorusProcessor = new FancyChorus(this.volumeController);
 
         this.reverbProcessor.connect(this.volumeController);
+
         this.volumeController.connect(this.panController);
         this.panController.connect(targetNode);
-        this.chorusProcessor = new FancyChorus(this.volumeController);
 
         /**
          * For Black MIDI's - forces release time to 50ms

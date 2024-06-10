@@ -36,3 +36,5 @@ export const customControllers = {
     modulationMultiplier: 2, // cents
 }
 export const CUSTOM_CONTROLLER_TABLE_SIZE = Object.keys(customControllers).length;
+export const customResetArray = new Float32Array(CUSTOM_CONTROLLER_TABLE_SIZE);
+customResetArray[customControllers.modulationMultiplier] = 1;
