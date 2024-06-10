@@ -96,14 +96,6 @@ The program is divided into parts:
 - port the worklet system to emscripten (maybe)
 - fix rare clicking in volenv attack (TR-909 kick for example)
 
-#### Why did I make this?
-Around 1.5 years ago, 
-I discovered a game series called Touhou Project, 
-and after some time I found out that the older installments use MIDI files as the background music.
-And so the originally called "midi_tester" was born, then I rebranded it to SpessaSynth.
-The project's complexity quickly outgrew everything I've made so far and I've been working on it ever since.
-And I hope that you like my work :-)
-
 ### License
 Copyright © 2024 Spessasus. Licensed under the MIT License.
 

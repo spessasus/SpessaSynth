@@ -704,7 +704,7 @@ export class Synthetizer {
                                 consoleColors.value,
                                 consoleColors.info,
                                 consoleColors.value);
-                            this.transpose(transpose);
+                            this.tune(transpose * 100);
                             return;
                         }
                         else
