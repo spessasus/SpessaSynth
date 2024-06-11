@@ -225,6 +225,7 @@ class WorkletProcessor extends AudioWorkletProcessor {
                 {
                     // force stop all
                     channelVoices.length = 0;
+                    this.workletProcessorChannels[channel].sustainedVoices.length = 0;
                     this.updateVoicesAmount();
                 }
                 else

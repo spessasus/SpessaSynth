@@ -68,6 +68,10 @@ export class SequencerUI{
 
     createNavigatorHandler()
     {
+        if(!navigator.mediaSession)
+        {
+            return;
+        }
 
         navigator.mediaSession.metadata = new MediaMetadata({
             title: this.titles[this.seq.songIndex],
@@ -108,6 +112,10 @@ export class SequencerUI{
         this.seq.play();
         this.createNavigatorHandler();
         this.updateTitleAndMediaStatus();
+        if(!navigator.mediaSession)
+        {
+            return;
+        }
         navigator.mediaSession.playbackState = "playing";
     }
 
@@ -116,6 +124,10 @@ export class SequencerUI{
         this.seq.pause();
         this.createNavigatorHandler();
         this.updateTitleAndMediaStatus();
+        if(!navigator.mediaSession)
+        {
+            return;
+        }
         navigator.mediaSession.playbackState = "paused";
     }
 
@@ -442,6 +454,10 @@ export class SequencerUI{
         document.getElementById("title").innerText = this.titles[this.seq.songIndex];
         document.title = this.titles[this.seq.songIndex] + " - SpessaSynth"
 
+        if(!navigator.mediaSession)
+        {
+            return;
+        }
         try {
             navigator.mediaSession.setPositionState({
                 duration: this.seq.duration,

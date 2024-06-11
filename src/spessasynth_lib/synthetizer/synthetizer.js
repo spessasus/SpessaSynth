@@ -231,8 +231,11 @@ export class Synthetizer {
         let hasChanged = true;
         switch (controllerNumber) {
             case midiControllers.allNotesOff:
-            case midiControllers.allSoundOff:
                 this.stopAll();
+                break;
+
+            case midiControllers.allSoundOff:
+                this.stopAll(true);
                 break;
 
             case midiControllers.bankSelect:
@@ -842,7 +845,7 @@ export class Synthetizer {
                 break;
 
             case messageTypes.reset:
-                this.stopAll();
+                this.stopAll(true);
                 this.resetControllers();
                 break;
 

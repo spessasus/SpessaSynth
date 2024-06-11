@@ -214,8 +214,12 @@ async function replaceFont(fontName)
 document.body.onclick = () =>
 {
     // user has clicked, we can create the ui
-    if(!window.audioContextMain) {
-        navigator.mediaSession.playbackState = "playing";
+    if(!window.audioContextMain)
+    {
+        if(navigator.mediaSession)
+        {
+            navigator.mediaSession.playbackState = "playing";
+        }
         window.audioContextMain = new AudioContext({sampleRate: SAMPLE_RATE,
         latencyHint: "interactive"});
         if(window.soundFontParser) {

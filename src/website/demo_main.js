@@ -262,7 +262,14 @@ function prepareUI()
 {
     titleMessage.innerText = TITLE;
 
-    window.audioContextMain = new AudioContext({sampleRate: 44100, latencyHint: "interactive"});
+    try {
+        window.audioContextMain = new AudioContext({ sampleRate: 44100, latencyHint: "interactive" });
+    }
+    catch (e) {
+        titleMessage.innerHTML = "Your browser doesn't support WebAudio.";
+        throw e;
+
+    }
 
     if(window.audioContextMain.state !== "running")
     {
