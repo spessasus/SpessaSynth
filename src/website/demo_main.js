@@ -77,6 +77,7 @@ async function loadLastSoundFontFromDatabase()
                 if(!result)
                 {
                     resolve(undefined);
+                    return;
                 }
                 resolve(result.data);
             }
@@ -93,7 +94,14 @@ async function demoInit()
     {
         console.info("Failed to load from db, fetching online instead");
         loadedFromDb = false;
-        soundFontBuffer = await fetchFont(`soundfonts/${SF_NAME}`, percent => titleMessage.innerText = `Loading SF3: ${percent}%`);
+        const progressBar = document.getElementById("progress_bar");
+        titleMessage.innerText = "Loading bundled SoundFont, please wait.";
+        soundFontBuffer = await fetchFont(`soundfonts/${SF_NAME}`, percent =>
+        {
+            titleMessage.innerText = `Loading bundled SoundFont (${percent}%), please wait.`;
+            progressBar.style.width = `${(percent / 100) * titleMessage.offsetWidth}px`
+        });
+        progressBar.style.width = "0";
     }
     else
     {

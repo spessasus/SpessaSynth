@@ -303,17 +303,17 @@ export class Sequencer {
     {
         /**
          * an array of 16 arrays (channels) and the notes are stored there
-         * @typedef {
-         * {
-         *      notes: {
+         * @typedef {{
          *          midiNote: number,
          *          start: number,
          *          length: number,
          *          velocity: number,
-         *      }[],
+         *      }} NoteTime
+         *
+         * @typedef {{
+         *      notes: NoteTime[],
          *      renderStartIndex: number
-         * }[]
-         * } NoteTimes
+         * }[]} NoteTimes
          */
 
         /**
@@ -331,6 +331,7 @@ export class Sequencer {
         let elapsedTime = 0;
         let oneTickToSeconds = 60 / (120 * this.midiData.timeDivision);
         let eventIndex = 0;
+        let unfinished = 0;
         while(eventIndex < events.length)
         {
             const event = events[eventIndex];
@@ -346,6 +347,7 @@ export class Sequencer {
                     const time = elapsedTime - note.start;
                     note.length = (time < MIN_NOTE_TIME && channel === DEFAULT_PERCUSSION ? MIN_NOTE_TIME : time);
                 }
+                unfinished--;
             }
             // note on
             else if(status === 0x9)
@@ -358,6 +360,7 @@ export class Sequencer {
                         const time = elapsedTime - note.start;
                         note.length = (time < MIN_NOTE_TIME && channel === DEFAULT_PERCUSSION ? MIN_NOTE_TIME : time);
                     }
+                    unfinished--;
                 }
                 else {
                     noteTimes[event.messageStatusByte & 0x0F].notes.push({
@@ -366,6 +369,7 @@ export class Sequencer {
                         length: -1,
                         velocity: event.messageData[1] / 127
                     });
+                    unfinished++;
                 }
             }
             // set tempo
@@ -379,7 +383,20 @@ export class Sequencer {
             elapsedTime += oneTickToSeconds * (events[eventIndex].ticks - event.ticks);
         }
 
-        console.info("%cFinished loading note times and ready to render the sequence!", consoleColors.info);
+        // finish the unfinished notes
+        if(unfinished > 0)
+        {
+            // for every channel, for every note that is unfinished (has -1 length)
+            noteTimes.forEach((channel, channelNumber) =>
+                channel.notes.filter(n => n.length === -1).forEach(note =>
+                {
+                    const time = elapsedTime - note.start;
+                    note.length = (time < MIN_NOTE_TIME && channelNumber === DEFAULT_PERCUSSION ? MIN_NOTE_TIME : time);
+                })
+            )
+        }
+
+        console.info(`%cFinished loading note times and ready to render the sequence!`, consoleColors.info);
         this.renderer.connectSequencer(noteTimes, this);
     }
 

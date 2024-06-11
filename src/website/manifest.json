@@ -4,9 +4,8 @@
   "lang": "en",
   "icons": [
     {
-      "src": "spessasynth_logo_rounded.png",
-      "type": "image/png",
-      "sizes": "930x930"
+      "src": "favicon.ico",
+      "sizes": "32x32"
     }
   ],
   "start_url": "../../index.html",

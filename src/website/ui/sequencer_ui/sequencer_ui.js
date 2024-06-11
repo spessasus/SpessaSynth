@@ -189,8 +189,8 @@ export class SequencerUI{
                 // instantly append if lyrics and 100ms batches otherwise, to avoid that initial setup text spam (looking at you, touhou midis)
                 this.lyricsElement.text.innerText = this.text;
                 this.requiresTextUpdate = false;
+                this.lyricsElement.mainDiv.scrollTo(0, this.lyricsElement.text.scrollHeight);
             }
-            this.lyricsElement.mainDiv.scrollTo(0, this.lyricsElement.text.scrollHeight);
         }
 
         this.seq.onTimeChange = () => {
@@ -465,6 +465,7 @@ export class SequencerUI{
             if(this.requiresTextUpdate) {
                 this.lyricsElement.text.innerText = this.text;
                 this.requiresTextUpdate = false;
+                this.lyricsElement.mainDiv.scrollTo(0, this.lyricsElement.text.scrollHeight);
             }
         }, 100);
     }
