@@ -9,7 +9,8 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 # [Live demo](https://spessasus.github.io/SpessaSynth/)
 
 ## Youtube video
-[![Watch the video](https://img.youtube.com/vi/6rUjjVcMXu8/maxresdefault.jpg)](https://youtu.be/6rUjjVcMXu8)
+[<img width='500' alt="Watch the YouTube video" src="https://github.com/spessasus/SpessaSynth/assets/95608008/0fade923-1ed6-4565-8300-1f57ef70bc89">](https://youtu.be/6rUjjVcMXu8)
+
 
 ## Features
 - SoundFont2 Generator Support
