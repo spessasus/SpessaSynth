@@ -738,7 +738,7 @@ export class Sequencer {
             this.playedTime += this.oneTickToSeconds * (eventNext.ticks - event.ticks);
 
             // loop
-            if((this.midiData.loop.end < event.ticks) && this.loop)
+            if((this.midiData.loop.end <= event.ticks) && this.loop)
             {
                 this.setTimeTicks(this.midiData.loop.start);
                 return;

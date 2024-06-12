@@ -239,7 +239,7 @@ sfInput.onchange = async e => {
      */
     const file = e.target.files[0];
 
-    document.getElementById("sf_upload").innerText = file.name;
+    document.getElementById("sf_upload").firstElementChild.innerText = file.name;
     const title = titleMessage.innerText;
     titleMessage.innerText = "Parsing SoundFont...";
     // parse the soundfont
