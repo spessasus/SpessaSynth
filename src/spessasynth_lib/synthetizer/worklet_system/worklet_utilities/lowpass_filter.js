@@ -4,6 +4,9 @@ import { absCentsToHz, decibelAttenuationToGain } from './unit_converter.js'
 /**
  * lowpass_filter.js
  * purpose: applies a low pass filter to a voice
+ * note to self: most of this is code is just javascript version of the C code from fluidsynth,
+ * they are the real smart guys.
+ * Shoutout to them!
  */
 
 
@@ -15,18 +18,16 @@ import { absCentsToHz, decibelAttenuationToGain } from './unit_converter.js'
  */
 export function applyLowpassFilter(voice, outputBuffer, cutoffCents)
 {
-    if(cutoffCents > 13490)
+    if(cutoffCents > 13499)
     {
         return; // filter is open
     }
+
     // check if the frequency has changed. if so, calculate new coefficients
     if(voice.filter.cutoffCents !== cutoffCents || voice.filter.reasonanceCb !== voice.modulatedGenerators[generatorTypes.initialFilterQ])
     {
         voice.filter.cutoffCents = cutoffCents;
         voice.filter.reasonanceCb = voice.modulatedGenerators[generatorTypes.initialFilterQ];
-        voice.filter.cutoffHz = absCentsToHz(cutoffCents);
-        //                                                                                                      \/ adjust the filterQ (fluid_iir_filter.h line 204)
-        voice.filter.reasonanceGain = decibelAttenuationToGain(-1 * ((voice.filter.reasonanceCb / 10) - 3.01)); // -1 because it's attenuation that we're inverting
         calculateCoefficients(voice);
     }
 
@@ -54,14 +55,30 @@ export function applyLowpassFilter(voice, outputBuffer, cutoffCents)
  */
 function calculateCoefficients(voice)
 {
+    voice.filter.cutoffHz = absCentsToHz(voice.filter.cutoffCents);
+
+    // fix cutoff on low frequencies (fluid_iir_filter.c line 392)
+    if(voice.filter.cutoffHz > 0.45 * sampleRate)
+    {
+        voice.filter.cutoffHz = 0.45 * sampleRate;
+    }
+
+    // adjust the filterQ (fluid_iir_filter.c line 204)
+    const qDb = (voice.filter.reasonanceCb / 10) - 3.01;
+    voice.filter.reasonanceGain = decibelAttenuationToGain(-1 * qDb); // -1 because it's attenuation and we don't want attenuation
+
+    // reduce the gain by the Q factor (fluid_iir_filter.c line 250)
+    const qGain = 1 / Math.sqrt(voice.filter.reasonanceGain);
+
+
     // code is ported from https://github.com/sinshu/meltysynth/ to work with js. I'm too dumb to understand the math behind this...
     let w = 2 * Math.PI * voice.filter.cutoffHz / sampleRate; // we're in the audioworkletglobalscope so we can use sampleRate
     let cosw = Math.cos(w);
     let alpha = Math.sin(w) / (2 * voice.filter.reasonanceGain);
 
-    let b0 = (1 - cosw) / 2;
-    let b1 = 1 - cosw;
-    let b2 = (1 - cosw) / 2;
+    let b1 = (1 - cosw) * qGain;
+    let b0 = b1 / 2;
+    let b2 = b0;
     let a0 = 1 + alpha;
     let a1 = -2 * cosw;
     let a2 = 1 - alpha;

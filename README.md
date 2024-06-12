@@ -6,15 +6,6 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 
 ![SpessaSynth Promotional Image](https://github.com/spessasus/SpessaSynth/assets/95608008/307b6b55-da16-49e8-b0e8-a07e7b699a8c)
 
-
-### Light Mode now available!
-![SpessaSynth in Light mode](https://github.com/spessasus/SpessaSynth/assets/95608008/f592a15e-d9b0-47d6-9486-191951ba35c3)
-
-
-## SoundFont3 Support now available!
-
-
-
 # [Live demo](https://spessasus.github.io/SpessaSynth/)
 
 ## Youtube video
@@ -51,8 +42,18 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 - SoundFont3 support seems to be a bit wonky, so if you notice a bug, **please open an issue!**
 - only real-time, cannot render audio to file (yet)
 
-## Installation
-***When you're loading a large (>4GB) SoundFont, use Firefox because chromium has a 4GB memory limit***
+## [How to use the web app](../../wiki/How-To-Use-App)
+
+[Check out the wiki!](../../wiki/Home)
+
+> Note: the wiki is rarely updated, but it should still work.
+
+### [How to use SpessaSynth in your project](../../wiki/Usage-As-Library)
+
+[Can't use AudioWorklets because your site doesn't support HTTPS? No problem!](/src/spessasynth_lib/synthetizer/native_system/README.md)
+
+## Installation of the Local Edition
+> When you're loading a large (>4GB) SoundFont, use Firefox because chromium has a 4GB memory limit
 
 ### [Recommended high quality soundfont (better than the built-in one)](https://musical-artifacts.com/artifacts/1176)
 
@@ -71,32 +72,23 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
    ```
 2. Put your soundfonts into the `soundfonts` folder. (you can select soundfonts in the program)
 3. Enjoy!
-   
+
 (note that in KDE Plasma 6 the browser auto opening seems to be broken. You must navigate to http://localhost:8181 manually)
 
-## [How to use](../../wiki/How-To-Use-App)
-
-### [Check out the wiki!](../../wiki/Home)
-*Note: the wiki is quite outdated, but most of the methods should still work.*
-
-The program is divided into parts:
-- [Soundfont2 parser](../../wiki/SoundFont2-Class) - parses the soundfont file into an object readable by synth
-- [MIDI file parser](../../wiki/MIDI-Class) - parses the midi file into an object readable by sequencer
-- [Sequencer](../../wiki/Sequencer-Class) - plays back the parsed MIDI file. Must be connected to a synthetizer. Can be connected to a renderer
-- [Renderer](../../wiki/Renderer-Class) - renders the waveforms of the channels and the falling notes. Must be connected to a synthetizer
-- [Synthetizer](../../wiki/Synthetizer-Class) - generates the sound using the given preset
-- UI classes - used for user interface, connect to their respective parts (eg. synth, sequencer, keyboard etc)
-
-[How to use SpessaSynth in your project](../../wiki/Usage-As-Library)
-
-[Can't use AudioWorklets because your site doesn't support HTTPS? No problem!](/src/spessasynth_lib/synthetizer/native_system/README.md)
 
 #### todo
 - make the worklet system perform good
 - port the worklet system to emscripten (maybe)
 - fix rare clicking in volenv attack (TR-909 kick for example)
 
+
+### Special thanks
+ - [Fluidsynth](https://github.com/FluidSynth/fluidsynth) - the source code really helped me understand and implement a lot of functionality and fixes
+ - [Polyphone](https://www.polyphone-soundfonts.com/) - a wonderful testing tool for soundfonts and how they should sound
+ - [Meltysynth](https://github.com/sinshu/meltysynth) - for the low-pass filter implementation
+ - **You!** - for checking out this project. I hope you like it :)
+
 ### License
 Copyright © 2024 Spessasus. Licensed under the MIT License.
 
-**Please note that bundled [stbvorbis.js](https://github.com/hajimehoshi/stbvorbis.js) is licensed under the Apache-2.0 license.**
+> Please note that bundled [stbvorbis.js](https://github.com/hajimehoshi/stbvorbis.js) is licensed under the Apache-2.0 license.
