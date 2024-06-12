@@ -76,6 +76,16 @@ class WorkletProcessor extends AudioWorkletProcessor {
         this.resetControllers(this.workletProcessorChannels.length - 1, []);
     }
 
+    debugMessage()
+    {
+        console.debug({
+            channels: this.workletProcessorChannels,
+            voicesAmount: this.totalVoicesAmount,
+            outputAmount: this._outputsAmount,
+            dumpedSamples: workletDumpedSamplesList
+        });
+    }
+
     /**
      * @param message {WorkletMessage}
      */
@@ -207,7 +217,6 @@ class WorkletProcessor extends AudioWorkletProcessor {
                 this.resetControllers(channel, data);
                 break;
 
-
             case workletMessageType.setChannelVibrato:
                 this.workletProcessorChannels[channel].channelVibrato.delay = data.delay;
                 this.workletProcessorChannels[channel].channelVibrato.depth = data.depth;
@@ -250,6 +259,10 @@ class WorkletProcessor extends AudioWorkletProcessor {
 
             case workletMessageType.addNewChannel:
                 this.createWorkletChannel();
+                break;
+
+            case workletMessageType.debugMessage:
+                this.debugMessage();
                 break;
 
             default:

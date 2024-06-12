@@ -54,6 +54,11 @@ export class NativeSystem
         this.midiChannels[DEFAULT_PERCUSSION].setPreset(percussionPreset);
     }
 
+    debugMessage()
+    {
+        console.debug(this);
+    }
+
     createNewChannel()
     {
         this.midiChannels.push(new MidiChannel(

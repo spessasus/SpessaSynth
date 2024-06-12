@@ -12,12 +12,13 @@ export const workletMessageType = {
     muteChannel: 10,
     addNewChannel: 11,
     customcCcChange: 12,
+    debugMessage: 13
 };
 
 /**
  * @typedef {{
  *     channelNumber: number
- *     messageType: 0|1|2|3|4|5|6|7|8|9|10|11|12,
+ *     messageType: 0|1|2|3|4|5|6|7|8|9|10|11|12|13,
  *     messageData: (
  *     number[]
  *     |WorkletVoice[]
@@ -34,12 +35,13 @@ export const workletMessageType = {
  * 2 - controller change        -> [ccNumber<number>, ccValue<number>]
  * 3 - sample dump              -> {sampleData: Float32Array, sampleID: number}
  * 4 - note off instantly       -> midiNote<number>
- * 5 - controllers reset        ->    array<number> excluded controller numbers (excluded from the reset)
+ * 5 - controllers reset        -> array<number> excluded controller numbers (excluded from the reset)
  * 6 - channel vibrato          -> {frequencyHz: number, depthCents: number, delaySeconds: number}
- * 7 - clear cached samples     ->  (no data)
+ * 7 - clear cached samples     -> (no data)
  * 8 - stop all notes           -> force<number> (0 false, 1 true)
  * 9 - kill notes               -> amount<number>
  * 10 - mute channel            -> isMuted<booolean>
  * 11 - add new channel         -> (no data)
  * 12 - custom controller change-> [ccNumber<number>, ccValue<number>]
+ * 13 - debug message           -> (no data)
  */

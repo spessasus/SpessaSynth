@@ -214,6 +214,16 @@ export class WorkletSystem {
 
     }
 
+    debugMessage()
+    {
+        console.debug(this);
+        this.post({
+            channelNumber: 0,
+            messageType: workletMessageType.debugMessage,
+            messageData: undefined
+        });
+    }
+
     /**
      * kills the system, disconnecting everything
      */
