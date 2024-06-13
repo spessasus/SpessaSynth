@@ -548,16 +548,11 @@ export class Synthetizer {
                 if(messageData[2] === 0x04 && messageData[3] === 0x01)
                 {
                     // main volume
-                    if(messageData[4])
-                    {
-                        const vol = messageData[5] << 7 | messageData[4];
-                        this.volumeController.gain.value = vol / 16384 * DEFAULT_GAIN;
-                    }
-                    else
-                    {
-                        const vol = messageData[5];
-                        this.volumeController.gain.value = vol / 127 * DEFAULT_GAIN;
-                    }
+                    const vol = messageData[5] << 7 | messageData[4];
+                    this.volumeController.gain.value = (vol / 16384) * DEFAULT_GAIN;
+                    console.info(`%cMaster Volume. Volume: %c${vol}`,
+                        consoleColors.info,
+                        consoleColors.value);
                 }
                 else
                 if(messageData[2] === 0x04 && messageData[3] === 0x03)

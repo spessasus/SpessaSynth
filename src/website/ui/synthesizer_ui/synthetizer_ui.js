@@ -159,7 +159,7 @@ export class SynthetizerUI
             this.locale,
             [],
             0,
-            127,
+            100,
             true,
                 v => {
             this.synth.setMainVolume(Math.round(v) / 100);
