@@ -156,7 +156,7 @@ export class Renderer
 
         synth.eventHandler.addEvent("mutechannel", "renderer-mute-channel", eventData => {
             this.renderChannels[eventData.channel] = !eventData.isMuted;
-        })
+        });
     }
 
     /**
@@ -262,7 +262,17 @@ export class Renderer
             const x = channelNumber % 4;
             const y = Math.floor(channelNumber / 4);
             // if no voices, skip
-            if(this.synth.synthesisSystem.midiChannels[channelNumber].voicesAmount === 0)
+            let voicesPlaying = false;
+            for (let i = channelNumber; i < this.synth.synthesisSystem.channelsAmount; i += this.channelAnalysers.length)
+            {
+                // check every channel that is connected, because can be more outputs than just 16!!! (for example channel 17 also outputs to analyser 1)
+                if(this.synth.synthesisSystem.midiChannels[i].voicesAmount > 0)
+                {
+                    voicesPlaying = true;
+                    break;
+                }
+            }
+            if(!voicesPlaying)
             {
                 // draw a straight line
                 const waveWidth = this.canvas.width / 4;
