@@ -331,7 +331,7 @@ export class Renderer
         const fallingTime = this.noteFallingTimeMs / 1000
         const afterTime = this.noteAfterTriggerTimeMs / 1000;
 
-        const currentSeqTime = this.seq.currentTime;
+        const currentSeqTime = this.seq.currentHighResolutionTime;
         const currentStartTime = currentSeqTime - afterTime;
         const fallingTimeSeconds = fallingTime + afterTime;
         const currentEndTime = currentStartTime + fallingTimeSeconds;

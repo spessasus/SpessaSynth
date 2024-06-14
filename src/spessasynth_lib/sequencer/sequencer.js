@@ -31,6 +31,7 @@ export class Sequencer {
     {
         this.ignoreEvents = false;
         this.synth = synth;
+        this.performanceNowTimeOffset = synth.currentTime - (performance.now() / 1000);
 
         // event's number in this.events
         /**
@@ -54,13 +55,13 @@ export class Sequencer {
          * Absolute playback startTime, bases on the synth's time
          * @type {number}
          */
-        this.absoluteStartTime = this.now;
+        this.absoluteStartTime = this.synth.currentTime;
 
         /**
          * Controls the playback's rate
          * @type {number}
          */
-        this.playbackRate = 1;
+        this._playbackRate = 1;
 
         /**
          * Currently playing notes (for pausing and resuming)
@@ -105,6 +106,30 @@ export class Sequencer {
         })
     }
 
+    _recalculateStartTime(time)
+    {
+        this.absoluteStartTime = this.synth.currentTime - time / this._playbackRate;
+        this.performanceNowTimeOffset = (this.synth.currentTime - (performance.now() / 1000)) * this._playbackRate;
+    }
+
+    /**
+     * @param value {number}
+     */
+    set playbackRate(value)
+    {
+        const time = this.currentTime;
+        this._playbackRate = value;
+        this.currentTime = time;
+    }
+
+    /**
+     * @returns {number}
+     */
+    get playbackRate()
+    {
+        return this._playbackRate;
+    }
+
     /**
      * Adds a new event that gets called when the song changes
      * @param callback {function(MIDI)}
@@ -143,11 +168,6 @@ export class Sequencer {
         this.loadNewSequence(this.songs[this.songIndex]);
     }
 
-    get now()
-    {
-        return performance.now() / 1000
-    }
-
     /**
      * @returns {number} Current playback time, in seconds
      */
@@ -158,7 +178,22 @@ export class Sequencer {
         {
             return this.pausedTime;
         }
-        return (this.now - this.absoluteStartTime) * this.playbackRate;
+
+        return (this.synth.currentTime - this.absoluteStartTime) * this._playbackRate;
+    }
+
+    /**
+     * Use for visualization as it's not affected by the audioContext stutter
+     * @returns {number}
+     */
+    get currentHighResolutionTime()
+    {
+        if(this.pausedTime)
+        {
+            return this.pausedTime;
+        }
+
+        return this.performanceNowTimeOffset + ((performance.now() / 1000) - this.absoluteStartTime) * this._playbackRate;
     }
 
     set currentTime(time)
@@ -177,7 +212,7 @@ export class Sequencer {
         this.playingNotes = [];
         this.pausedTime = undefined;
         const isNotFinished = this._playTo(time);
-        this.absoluteStartTime = this.now - time / this.playbackRate;
+        this._recalculateStartTime(time);
         if(!isNotFinished)
         {
             return;
@@ -200,7 +235,7 @@ export class Sequencer {
         this.playingNotes = [];
         this.pausedTime = undefined;
         const isNotFinished = this._playTo(0, ticks);
-        this.absoluteStartTime = this.now - this.playedTime / this.playbackRate;
+        this._recalculateStartTime(this.playedTime);
         if(!isNotFinished)
         {
             return;
@@ -241,6 +276,9 @@ export class Sequencer {
 
         this.oneTickToSeconds = 60 / (120 * parsedMidi.timeDivision)
 
+        /**
+         * @type {MIDI}
+         */
         this.midiData = parsedMidi;
 
         /**
@@ -682,7 +720,7 @@ export class Sequencer {
         if(this.paused)
         {
             // adjust the start time
-            this.absoluteStartTime = this.now - this.pausedTime / this.playbackRate;
+            this._recalculateStartTime(this.pausedTime)
             this.pausedTime = undefined;
         }
 

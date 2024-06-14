@@ -1,5 +1,4 @@
 import {
-    DEFAULT_GAIN,
     DEFAULT_PERCUSSION,
     Synthetizer,
     VOICE_CAP,
@@ -657,8 +656,8 @@ export class SynthetizerUI
                 controller.controller.classList.remove("no_voices");
             }
         });
-        this.volumeController.update((this.synth.volumeController.gain.value * (1 / DEFAULT_GAIN)) * 100);
-        this.panController.update(this.synth.panController.pan.value);
+        this.volumeController.update(100);
+        this.panController.update(0);
     }
 
     setEventListeners()

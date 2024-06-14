@@ -3,8 +3,12 @@ import { modulatorSources } from '../../../soundfont/chunk/modulators.js'
 /**
  * @typedef {Object} WorkletProcessorChannel
  * @property {Int16Array} midiControllers - array of MIDI controller values
+ * @property {boolean[]} lockedControllers - array indicating if a controller is locked
  * @property {Float32Array} customControllers - array of custom (not sf2) control values such as RPN pitch tuning, transpose, modulation depth, etc.
  * @property {boolean} holdPedal - indicates whether the hold pedal is active
+ * @property {boolean} drumChannel - indicates whether the channel is a drum channel
+ * @property {number} program - the channel's program number
+ * @property {Preset} preset - the channel's preset
  * @property {Object} channelVibrato - vibrato settings for the channel
  * @property {number} channelVibrato.depth - depth of the vibrato effect (cents)
  * @property {number} channelVibrato.delay - delay before the vibrato effect starts (seconds)

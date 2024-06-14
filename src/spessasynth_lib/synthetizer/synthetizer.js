@@ -1,11 +1,10 @@
 import { SoundFont2 } from '../soundfont/soundfont_parser.js'
 import { ShiftableByteArray } from '../utils/shiftable_array.js'
-import { arrayToHexString, consoleColors } from '../utils/other.js'
+import { consoleColors } from '../utils/other.js'
 import { getEvent, messageTypes, midiControllers } from '../midi_parser/midi_message.js'
 import { WorkletSystem } from './worklet_system/worklet_system.js'
 import { EventHandler } from './synth_event_handler.js'
 import { FancyChorus } from './audio_effects/fancy_chorus.js'
-import { NativeSystem } from './native_system/native_system.js'
 import { getReverbProcessor } from './audio_effects/reverb.js'
 
 /**
@@ -15,11 +14,9 @@ import { getReverbProcessor } from './audio_effects/reverb.js'
 
 export const VOICE_CAP = 450;
 
-export const DEFAULT_GAIN = 1;
 export const DEFAULT_PERCUSSION = 9;
 export const DEFAULT_CHANNEL_COUNT = 16;
 export const DEFAULT_SYNTH_MODE = "gs";
-export const DEFAULT_SYNTHESIS_MODE = "worklet";
 
 export class Synthetizer {
     /**
@@ -38,27 +35,10 @@ export class Synthetizer {
          */
         this.eventHandler = new EventHandler();
 
-        this.volumeController = new GainNode(this.context, {
-            gain: DEFAULT_GAIN
-        });
-
-        this.panController = new StereoPannerNode(this.context, {
-            pan: 0
-        });
-
-        /**
-         * In cents, master tuning
-         * @type {number}
-         */
-        this.tuning = 0;
-
         this.reverbProcessor = getReverbProcessor(this.context);
-        this.chorusProcessor = new FancyChorus(this.volumeController);
+        this.chorusProcessor = new FancyChorus(targetNode);
 
-        this.reverbProcessor.connect(this.volumeController);
-
-        this.volumeController.connect(this.panController);
-        this.panController.connect(targetNode);
+        this.reverbProcessor.connect(targetNode);
 
         /**
          * For Black MIDI's - forces release time to 50ms
@@ -66,59 +46,28 @@ export class Synthetizer {
          */
         this.highPerformanceMode = false;
 
-        /**
-         * Controls the system
-         * @type {"gm"|"gm2"|"gs"|"xg"}
-         */
-        this.system = DEFAULT_SYNTH_MODE;
-
-        /**
-         * the system that synth uses
-         * @type {"worklet"|"legacy"}
-         * @private
-         */
-        this._synthesisMode = DEFAULT_SYNTHESIS_MODE;
-        if(window.isSecureContext === false)
-        {
-            this._synthesisMode = "legacy";
-            console.warn("%cDetected insecure context. Worklet system is unavailable, switching to legacy instead.", consoleColors.warn);
-        }
-
         this.defaultPreset = this.soundFont.getPreset(0, 0);
         this.percussionPreset = this.soundFont.getPreset(128, 0);
 
-        this.initializeSynthesisSystem();
+        this.initializeSynthesisSystem(targetNode);
         console.info("%cSpessaSynth is ready!", consoleColors.recognized);
     }
 
-    initializeSynthesisSystem()
+    initializeSynthesisSystem(targetNode)
     {
-        if(this._synthesisMode === "worklet")
-        {
-            /**
-             * The synth's core synthesis system
-             * @type {WorkletSystem}
-             */
-            this.synthesisSystem = new WorkletSystem(
-                this.volumeController,
-                this.reverbProcessor,
-                this.chorusProcessor.input,
-                this.defaultPreset,
-                this.percussionPreset,
-                DEFAULT_CHANNEL_COUNT);
-        }
-        else
-        {
-            this.synthesisSystem = new NativeSystem(
-                this.volumeController,
-                this.reverbProcessor,
-                this.chorusProcessor.input,
-                this.defaultPreset,
-                this.percussionPreset,
-                DEFAULT_CHANNEL_COUNT
-            );
-        }
-
+        /**
+         * The synth's core synthesis system
+         * @type {WorkletSystem}
+         */
+        this.synthesisSystem = new WorkletSystem(
+            targetNode,
+            this.reverbProcessor,
+            this.chorusProcessor.input,
+            this.defaultPreset,
+            this.percussionPreset,
+            DEFAULT_CHANNEL_COUNT,
+            this.eventHandler,
+            this.soundFont);
         /**
          * The synth's transposition, in semitones.
          * @type {number}
@@ -176,12 +125,6 @@ export class Synthetizer {
         }
 
         this.synthesisSystem.playNote(channel, midiNote, velocity, enableDebugging);
-
-        this.eventHandler.callEvent("noteon", {
-            midiNote: midiNote,
-            channel: channel,
-            velocity: velocity,
-        });
     }
 
     /**
@@ -195,10 +138,6 @@ export class Synthetizer {
             console.warn(`Received a noteOn for note`, midiNote, "Ignoring.");
             return;
         }
-        this.eventHandler.callEvent("noteoff", {
-            midiNote: midiNote,
-            channel: channel
-        });
 
         // if high performance mode, kill notes instead of stopping them
         if(this.highPerformanceMode)
@@ -228,92 +167,7 @@ export class Synthetizer {
      */
     controllerChange(channel, controllerNumber, controllerValue)
     {
-        let hasChanged = true;
-        switch (controllerNumber) {
-            case midiControllers.allNotesOff:
-                this.stopAll();
-                break;
-
-            case midiControllers.allSoundOff:
-                this.stopAll(true);
-                break;
-
-            case midiControllers.bankSelect:
-                let bankNr = controllerValue;
-                const channelObject = this.synthesisSystem.midiChannels[channel];
-                switch (this.system)
-                {
-                    case "gm":
-                        // gm ignores bank select
-                        console.info(`%cIgnoring the Bank Select (${controllerValue}), as the synth is in GM mode.`, consoleColors.info);
-                        return;
-
-                    case "xg":
-                        // for xg, if msb is 127, then it's drums
-                        if (bankNr === 127)
-                        {
-                            channelObject.percussionChannel = true;
-                            this.eventHandler.callEvent("drumchange", {
-                                channel: channel,
-                                isDrumChannel: true
-                            });
-                        }
-                        break;
-
-                    case "gm2":
-                        if(bankNr === 120)
-                        {
-                            channelObject.percussionChannel = true;
-                            this.eventHandler.callEvent("drumchange", {
-                                channel: channel,
-                                isDrumChannel: true
-                            });
-                        }
-                }
-
-                if(channelObject.percussionChannel)
-                {
-                    // 128 for percussion channel
-                    bankNr = 128;
-                }
-                if(bankNr === 128 && !channelObject.percussionChannel)
-                {
-                    // if channel is not for percussion, default to bank current
-                    bankNr = channelObject.bank;
-                }
-
-                channelObject.bank = bankNr;
-                break;
-
-            case midiControllers.lsbForControl0BankSelect:
-                if(this.system === 'xg')
-                {
-                    if(this.synthesisSystem.midiChannels[channel].bank === 0)
-                    {
-                        this.synthesisSystem.midiChannels[channel].bank = controllerValue;
-                    }
-                }
-                else
-                if(this.system === "gm2")
-                {
-                    this.synthesisSystem.midiChannels[channel].bank = controllerValue;
-                }
-
-
-                break;
-
-
-            default:
-                hasChanged = this.synthesisSystem.controllerChange(channel, controllerNumber, controllerValue);
-                break;
-        }
-        if(hasChanged) {
-            this.eventHandler.callEvent("controllerchange", {
-                channel: channel,
-                controllerNumber: controllerNumber,
-                controllerValue: controllerValue
-            });
-        }
+        this.synthesisSystem.controllerChange(channel, controllerNumber, controllerValue);
     }
 
     /**
@@ -372,8 +226,6 @@ export class Synthetizer {
             this.eventHandler.callEvent("pitchwheel", {channel: channelNumber, MSB: 64, LSB: 0})
         }
         this.system = DEFAULT_SYNTH_MODE;
-        this.volumeController.gain.value = DEFAULT_GAIN;
-        this.panController.pan.value = 0;
         this.tuning = 0;
     }
 
@@ -404,22 +256,21 @@ export class Synthetizer {
     }
 
     /**
-     * Tunes the synthesizer (independent from transpose and gets affected by reset
-     * @param cents {number}
-     */
-    tune(cents)
-    {
-        this.synthesisSystem.setMasterTuning(cents);
-        this.tuning = cents;
-    }
-
-    /**
      * Sets the main volume
      * @param volume {number} 0-1 the volume
      */
     setMainVolume(volume)
     {
-        this.volumeController.gain.value = volume * DEFAULT_GAIN;
+        this.synthesisSystem.setMainVolume(volume);
+    }
+
+    /**
+     * Sets the master stereo panning
+     * @param pan {number} -1 to 1, the pan (-1 is left, 0 is midde, 1 is right)
+     */
+    setMasterPan(pan)
+    {
+        this.synthesisSystem.setMasterPan(pan);
     }
 
     /**
@@ -511,260 +362,7 @@ export class Synthetizer {
      */
     systemExclusive(messageData)
     {
-        const type = messageData[0];
-        switch (type)
-        {
-            default:
-                console.info(`%cUnrecognized SysEx: %c${arrayToHexString(messageData)}`,
-                    consoleColors.warn,
-                    consoleColors.unrecognized);
-                break;
-
-            // non realtime
-            case 0x7E:
-                // gm system
-                if(messageData[2] === 0x09)
-                {
-                    if(messageData[3] === 0x01)
-                    {
-                        console.info("%cGM system on", consoleColors.info);
-                        this.system = "gm";
-                    }
-                    else if(messageData[3] === 0x03)
-                    {
-                        console.info("%cGM2 system on", consoleColors.info);
-                        this.system = "gm2";
-                    }
-                    else
-                    {
-                        console.info("%cGM system off, defaulting to GS", consoleColors.info);
-                        this.system = "gs";
-                    }
-                }
-                break;
-
-            // realtime
-            case 0x7F:
-                if(messageData[2] === 0x04 && messageData[3] === 0x01)
-                {
-                    // main volume
-                    const vol = messageData[5] << 7 | messageData[4];
-                    this.volumeController.gain.value = (vol / 16384) * DEFAULT_GAIN;
-                    console.info(`%cMaster Volume. Volume: %c${vol}`,
-                        consoleColors.info,
-                        consoleColors.value);
-                }
-                else
-                if(messageData[2] === 0x04 && messageData[3] === 0x03)
-                {
-                    // fine tuning
-                    const tuningValue = ((messageData[5] << 7) | messageData[6]) - 8192;
-                    const cents = Math.floor(tuningValue / 81.92); // [-100;+99] cents range
-                    this.tune(cents);
-                    console.info(`%cMaster Fine Tuning. Cents: %c${cents}`,
-                        consoleColors.info,
-                        consoleColors.value)
-                }
-                else
-                if(messageData[2] === 0x04 && messageData[3] === 0x04)
-                {
-                    // coarse tuning
-                    // lsb is ignored
-                    const semitones = messageData[5] - 64;
-                    const cents = semitones * 100;
-                    this.tune(cents);
-                    console.info(`%cMaster Coarse Tuning. Cents: %c${cents}`,
-                        consoleColors.info,
-                        consoleColors.value)
-                }
-                else
-                {
-                    console.info(
-                        `%cUnrecognized MIDI Real-time message: %c${arrayToHexString(messageData)}`,
-                        consoleColors.warn,
-                        consoleColors.unrecognized)
-                }
-                break;
-
-            // this is a roland sysex
-            // http://www.bandtrax.com.au/sysex.htm
-            // https://cdn.roland.com/assets/media/pdf/AT-20R_30R_MI.pdf
-            case 0x41:
-                // messagedata[1] is device id (ignore as we're everything >:) )
-                if(messageData[2] === 0x42 && messageData[3] === 0x12)
-                {
-                    // this is a GS sysex
-                    // messageData[5] and [6] is the system parameter, messageData[7] is the value
-                    const messageValue = messageData[7];
-                    if(messageData[6] === 0x7F)
-                    {
-                        // GS mode set
-                        if(messageValue === 0x00) {
-                            // this is a GS reset
-                            console.info("%cGS system on", consoleColors.info);
-                            this.system = "gs";
-                        }
-                        else if(messageValue === 0x7F)
-                        {
-                            // GS mode off
-                            console.info("%cGS system off, switching to GM2", consoleColors.info);
-                            this.system = "gm2";
-                        }
-                        return;
-                    }
-                    else
-                    if(messageData[4] === 0x40)
-                    {
-                        // this is a system parameter
-                        if((messageData[5] & 0x10) > 0)
-                        {
-                            // this is an individual part (channel) parameter
-                            // determine the channel 0 means channel 10 (default), 1 means 1 etc.
-                            const channel = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15][messageData[5] & 0x0F]; // for example 1A means A = 11, which corresponds to channel 12 (counting from 1)
-                            switch (messageData[6])
-                            {
-                                default:
-                                    break;
-
-                                case 0x15:
-                                    // this is the Use for Drum Part sysex (multiple drums)
-                                    this.setDrums(channel, messageValue > 0 && messageData[5] >> 4); // if set to other than 0, is a drum channel
-                                    console.info(
-                                        `%cChannel %c${channel}%c ${this.synthesisSystem.midiChannels[channel].percussionChannel ?
-                                            "is now a drum channel"
-                                            :
-                                            "now isn't a drum channel"
-                                        }%c via: %c${arrayToHexString(messageData)}`,
-                                        consoleColors.info,
-                                        consoleColors.value,
-                                        consoleColors.recognized,
-                                        consoleColors.info,
-                                        consoleColors.value);
-                                    return;
-
-                                case 0x16:
-                                    // this is the pitch key shift sysex
-                                    const keyShift = messageValue - 64;
-                                    this.synthesisSystem.transposeChannel(channel, keyShift);
-                                    console.info(`%cChannel %c${channel}%c pitch shift. Semitones %c${keyShift}%c, with %c${arrayToHexString(messageData)}`,
-                                        consoleColors.info,
-                                        consoleColors.recognized,
-                                        consoleColors.info,
-                                        consoleColors.value,
-                                        consoleColors.info,
-                                        consoleColors.value);
-                                    return;
-
-                                case 0x40:
-                                case 0x41:
-                                case 0x42:
-                                case 0x43:
-                                case 0x44:
-                                case 0x45:
-                                case 0x46:
-                                case 0x47:
-                                case 0x48:
-                                case 0x49:
-                                case 0x4A:
-                                case 0x4B:
-                                    // scale tuning
-                                    const cents = messageValue - 64;
-                                    console.info(`%cChannel %c${channel}%c tuning. Cents %c${cents}%c, with %c${arrayToHexString(messageData)}`,
-                                        consoleColors.info,
-                                        consoleColors.recognized,
-                                        consoleColors.info,
-                                        consoleColors.value,
-                                        consoleColors.info,
-                                        consoleColors.value);
-                                    this.synthesisSystem.setChannelTuning(channel, cents);
-                            }
-                        }
-                        else
-                        // this is a global system parameter
-                        if(messageData[5] === 0x00 && messageData[6] === 0x06)
-                        {
-                            // roland master pan
-                            console.info(`%cRoland GS Master Pan set to: %c${messageValue}%c with: %c${arrayToHexString(messageData)}`,
-                                consoleColors.info,
-                                consoleColors.value,
-                                consoleColors.info,
-                                consoleColors.value);
-                            this.panController.pan.value = (messageValue - 64) / 64;
-                            return;
-                        }
-                        else
-                        if(messageData[5] === 0x00 && messageData[6] === 0x05)
-                        {
-                            // roland master key shift (transpose)
-                            const transpose = messageValue - 64;
-                            console.info(`%cRoland GS Master Key-Shift set to: %c${transpose}%c with: %c${arrayToHexString(messageData)}`,
-                                consoleColors.info,
-                                consoleColors.value,
-                                consoleColors.info,
-                                consoleColors.value);
-                            this.tune(transpose * 100);
-                            return;
-                        }
-                        else
-                        if(messageData[5] === 0x00 && messageData[6] === 0x04)
-                        {
-                            // roland GS master volume
-                            console.info(`%cRoland GS Master Volume set to: %c${messageValue}%c with: %c${arrayToHexString(messageData)}`,
-                                consoleColors.info,
-                                consoleColors.value,
-                                consoleColors.info,
-                                consoleColors.value);
-                            this.setMainVolume(messageValue / 127);
-                            return;
-                        }
-                    }
-                    // this is some other GS sysex...
-                    console.info(`%cUnrecognized Roland %cGS %cSysEx: %c${arrayToHexString(messageData)}`,
-                        consoleColors.warn,
-                        consoleColors.recognized,
-                        consoleColors.warn,
-                        consoleColors.unrecognized);
-                    return;
-                }
-                else
-                if(messageData[2] === 0x16 && messageData[3] === 0x12 && messageData[4] === 0x10)
-                {
-                    // this is a roland master volume message
-                    this.volumeController.gain.value = messageData[7] / 100 * DEFAULT_GAIN;
-                    console.info(`%cRoland Master Volume control set to: %c${messageData[7]}%c via: %c${arrayToHexString(messageData)}`,
-                        consoleColors.info,
-                        consoleColors.value,
-                        consoleColors.info,
-                        consoleColors.value);
-                    return;
-                }
-                else
-                {
-                    // this is something else...
-                    console.info(`%cUnrecognized Roland SysEx: %c${arrayToHexString(messageData)}`,
-                        consoleColors.warn,
-                        consoleColors.unrecognized);
-                    return;
-                }
-
-            // yamaha
-            case 0x43:
-                // XG on
-                if(messageData[2] === 0x4C && messageData[5] === 0x7E && messageData[6] === 0x00)
-                {
-                    console.info("%cXG system on", consoleColors.info);
-                    this.system = "xg";
-                }
-                else
-                {
-                    console.info(`%cUnrecognized Yamaha SysEx: %c${arrayToHexString(messageData)}`,
-                        consoleColors.warn,
-                        consoleColors.unrecognized);
-                }
-                break;
-
-
-        }
+        this.synthesisSystem.systemExclusive(Array.from(messageData));
     }
 
     /**
@@ -774,25 +372,7 @@ export class Synthetizer {
      */
     setDrums(channel, isDrum)
     {
-        const channelObject = this.synthesisSystem.midiChannels[channel];
-        if(isDrum)
-        {
-            channelObject.percussionChannel = true;
-            this.synthesisSystem.setPreset(channel, this.soundFont.getPreset(128, channelObject.preset.program));
-        }
-        else
-        {
-            channelObject.percussionChannel = false;
-            this.synthesisSystem.setPreset(channel, this.soundFont.getPreset(0, channelObject.preset.program));
-        }
-        this.eventHandler.callEvent("drumchange",{
-            channel: channel,
-            isDrumChannel: channelObject.percussionChannel
-        });
-        this.eventHandler.callEvent("programchange",{
-            channel: channel,
-            preset: channelObject.preset
-        });
+        this.synthesisSystem.setDrums(channel, isDrum);
     }
 
     /**
@@ -863,26 +443,6 @@ export class Synthetizer {
     get voicesAmount()
     {
         return this.synthesisSystem.voicesAmount;
-    }
-
-    get synthesisMode()
-    {
-        return this._synthesisMode;
-    }
-
-    /**
-     * @param value {"worklet"|"legacy"}
-     */
-    set synthesisMode(value)
-    {
-        if (value !== "worklet" && value !== "legacy")
-        {
-            throw TypeError("invalid type!");
-        }
-        this._synthesisMode = value;
-        this.synthesisSystem.killSystem();
-        delete this.synthesisSystem;
-        this.initializeSynthesisSystem();
     }
 
     reverbateEverythingBecauseWhyNot()

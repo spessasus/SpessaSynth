@@ -4,23 +4,23 @@ import { generatorTypes } from '../../soundfont/chunk/generators.js';
 import { getOscillatorData } from './worklet_utilities/wavetable_oscillator.js'
 import { computeModulators } from './worklet_utilities/worklet_modulator.js'
 import {
-    absCentsToHz,
+    absCentsToHz, HALF_PI,
     timecentsToSeconds,
 } from './worklet_utilities/unit_converter.js'
 import { getLFOValue } from './worklet_utilities/lfo.js';
-import { consoleColors } from '../../utils/other.js'
+import { arrayToHexString, consoleColors } from '../../utils/other.js'
 import { panVoice } from './worklet_utilities/stereo_panner.js'
 import { applyVolumeEnvelope } from './worklet_utilities/volume_envelope.js'
 import { applyLowpassFilter } from './worklet_utilities/lowpass_filter.js'
 import { getModEnvValue } from './worklet_utilities/modulation_envelope.js'
-import { VOICE_CAP } from '../synthetizer.js'
+import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE, VOICE_CAP } from '../synthetizer.js'
 import {
     CONTROLLER_TABLE_SIZE,
     CUSTOM_CONTROLLER_TABLE_SIZE,
     customControllers, customResetArray,
     resetArray,
 } from './worklet_utilities/worklet_processor_channel.js'
-import { workletMessageType } from './worklet_utilities/worklet_message.js'
+import { returnMessageType, workletMessageType } from './worklet_utilities/worklet_message.js'
 
 /**
  * worklet_processor.js
@@ -28,23 +28,53 @@ import { workletMessageType } from './worklet_utilities/worklet_message.js'
  */
 const MIN_NOTE_LENGTH = 0.07; // if the note is released faster than that, it forced to last that long
 
-/**
- * @type {Float32Array[]}
- */
-let workletDumpedSamplesList = [];
+const SYNTHESIZER_GAIN = 0.5;
 
-class WorkletProcessor extends AudioWorkletProcessor {
+// noinspection JSUnresolvedReference
+class SpessaSynth extends AudioWorkletProcessor {
     /**
      * Creates a new worklet synthesis system. contains all channels
      * @param options {{
      * processorOptions: {
-     *      midiChannels: number
+     *      midiChannels: number,
+     *      soundfont: SoundFont2,
      * }}}
      */
     constructor(options) {
         super();
 
         this._outputsAmount = options.processorOptions.midiChannels;
+
+        /**
+         * The volume gain
+         * @type {number}
+         */
+        this.mainVolume = SYNTHESIZER_GAIN;
+        /**
+         * the pan of the left channel
+         * @type {number}
+         */
+        this.panLeft = 0.5 * this.mainVolume;
+
+        /**
+         * the pan of the right channel
+         * @type {number}
+         */
+        this.panRight = 0.5 * this.mainVolume;
+
+        console.log(AudioWorkletGlobalScope.stbvorbisDecode([]))
+        /**
+         * @type {SoundFont2}
+         */
+        this.soundfont = options.processorOptions.soundfont;
+
+        this.defaultPreset = this.soundfont.getPreset(0, 0);
+        this.drumPreset = this.soundfont.getPreset(128, 0);
+
+        /**
+         * @type {Float32Array[]}
+         */
+        this.workletDumpedSamplesList = [];
         /**
          * contains all the channels with their voices on the processor size
          * @type {WorkletProcessorChannel[]}
@@ -54,8 +84,17 @@ class WorkletProcessor extends AudioWorkletProcessor {
             this.createWorkletChannel();
         }
 
+        this.workletProcessorChannels[DEFAULT_PERCUSSION].preset = this.drumPreset;
+        this.workletProcessorChannels[DEFAULT_PERCUSSION].drumChannel = true;
+
         // in seconds, time between two samples (very, very short)
         this.sampleTime = 1 / sampleRate;
+
+        /**
+         * Controls the system
+         * @type {"gm"|"gm2"|"gs"|"xg"}
+         */
+        this.system = DEFAULT_SYNTH_MODE;
 
         this.totalVoicesAmount = 0;
 
@@ -66,12 +105,19 @@ class WorkletProcessor extends AudioWorkletProcessor {
     {
         this.workletProcessorChannels.push({
             midiControllers: new Int16Array(CONTROLLER_TABLE_SIZE),
+            lockedControllers: Array(CONTROLLER_TABLE_SIZE).fill(false),
             customControllers: new Float32Array(CUSTOM_CONTROLLER_TABLE_SIZE),
+
             voices: [],
             sustainedVoices: [],
-            holdPedal: false,
+            preset: this.defaultPreset,
+
             channelVibrato: {delay: 0, depth: 0, rate: 0},
-            isMuted: false
+            holdPedal: false,
+            isMuted: false,
+            drumChannel: false,
+            program: 0,
+
         })
         this.resetControllers(this.workletProcessorChannels.length - 1, []);
     }
@@ -82,8 +128,519 @@ class WorkletProcessor extends AudioWorkletProcessor {
             channels: this.workletProcessorChannels,
             voicesAmount: this.totalVoicesAmount,
             outputAmount: this._outputsAmount,
-            dumpedSamples: workletDumpedSamplesList
+            dumpedSamples: this.workletDumpedSamplesList
         });
+    }
+
+    /**
+     * Append the voices
+     * @param channel {number}
+     * @param voices {WorkletVoice[]}
+     */
+    noteOn(channel, voices)
+    {
+        const channelVoices = this.workletProcessorChannels[channel].voices;
+        voices.forEach(voice => {
+            const exclusive = voice.generators[generatorTypes.exclusiveClass];
+            if(exclusive !== 0)
+            {
+                channelVoices.forEach(v => {
+                    if(v.generators[generatorTypes.exclusiveClass] === exclusive)
+                    {
+                        this.releaseVoice(v);
+                        v.generators[generatorTypes.releaseVolEnv] = -7200; // make the release nearly instant
+                        computeModulators(v, this.workletProcessorChannels[channel].midiControllers);
+                    }
+                })
+            }
+            computeModulators(voice, this.workletProcessorChannels[channel].midiControllers);
+            voice.currentAttenuationDb = 100;
+        })
+        channelVoices.push(...voices);
+
+        this.totalVoicesAmount += voices.length;
+        // cap the voices
+        if(this.totalVoicesAmount > VOICE_CAP)
+        {
+            this.voiceKilling(this.totalVoicesAmount - VOICE_CAP);
+        }
+        else {
+            this.updateVoicesAmount();
+        }
+        this.callEvent("noteon", {
+            midiNote: voices[0].midiNote,
+            channel: channel,
+            velocity: voices[0].velocity,
+        });
+    }
+
+    /**
+     * Release a note
+     * @param channel {number}
+     * @param midiNote {number}
+     */
+    noteOff(channel, midiNote)
+    {
+        const channelVoices = this.workletProcessorChannels[channel].voices;
+        channelVoices.forEach(v => {
+            if(v.midiNote !== midiNote || v.isInRelease === true)
+            {
+                return;
+            }
+            // if hold pedal, move to sustain
+            if(this.workletProcessorChannels[channel].holdPedal) {
+                this.workletProcessorChannels[channel].sustainedVoices.push(v);
+            }
+            else
+            {
+                this.releaseVoice(v);
+            }
+        });
+        this.callEvent("noteoff", {
+            midiNote: midiNote,
+            channel: channel
+        });
+    }
+
+    /**
+     * Stops a note nearly instantly
+     * @param channel {number}
+     * @param midiNote {number}
+     */
+    killNote(channel, midiNote)
+    {
+        this.workletProcessorChannels[channel].voices.forEach(v => {
+            if(v.midiNote !== midiNote)
+            {
+                return;
+            }
+            v.modulatedGenerators[generatorTypes.releaseVolEnv] = -12000; // set release to be very short
+            this.releaseVoice(v);
+        });
+    }
+
+    /**
+     * saves a sample
+     * @param channel {number}
+     * @param sampleID {number}
+     * @param sampleData {Float32Array}
+     */
+    sampleDump(channel, sampleID, sampleData)
+    {
+        this.workletDumpedSamplesList[sampleID] = sampleData;
+        // the sample maybe was loaded after the voice was sent... adjust the end position!
+
+        // not for all channels because the system tells us for what channel this voice was dumped! yay!
+        this.workletProcessorChannels[channel].voices.forEach(v => {
+            if(v.sample.sampleID !== sampleID)
+            {
+                return;
+            }
+            v.sample.end = sampleData.length - 1 + v.generators[generatorTypes.endAddrOffset] + (v.generators[generatorTypes.endAddrsCoarseOffset] * 32768);
+            // calculate for how long the sample has been playing and move the cursor there
+            v.sample.cursor = (v.sample.playbackStep * sampleRate) * (currentTime - v.startTime);
+            if(v.sample.loopingMode === 0) // no loop
+            {
+                if (v.sample.cursor >= v.sample.end)
+                {
+                    v.finished = true;
+                    return;
+                }
+            }
+            else
+            {
+                // go through modulo (adjust cursor if the sample has looped
+                if(v.sample.cursor > v.sample.loopEnd)
+                {
+                    v.sample.cursor = v.sample.cursor % (v.sample.loopEnd - v.sample.loopStart) + v.sample.loopStart - 1;
+                }
+            }
+            // set start time to current!
+            v.startTime = currentTime;
+        })
+
+    }
+
+    /**
+     * stops all notes
+     * @param channel {number}
+     * @param force {boolean}
+     */
+    stopAll(channel, force = false)
+    {
+        const channelVoices = this.workletProcessorChannels[channel].voices;
+        if(force)
+        {
+            // force stop all
+            channelVoices.length = 0;
+            this.workletProcessorChannels[channel].sustainedVoices.length = 0;
+            this.updateVoicesAmount();
+        }
+        else
+        {
+            channelVoices.forEach(v => {
+                if(v.isInRelease) return;
+                this.releaseVoice(v);
+            });
+            this.workletProcessorChannels[channel].sustainedVoices.forEach(v => {
+                this.releaseVoice(v);
+            })
+        }
+    }
+
+    /**
+     * executes a program change
+     * @param channel {number}
+     * @param programNumber {number}
+     */
+    programChange(channel, programNumber)
+    {
+        const channelObject = this.workletProcessorChannels[channel];
+        const preset = this.soundfont.getPreset(channelObject.midiControllers[midiControllers.bankSelect], programNumber);
+        this.setPreset(channel, preset);
+        this.callEvent("programchange",{
+            channel: channel,
+            preset: preset
+        });
+    }
+
+    /**
+     * @param channel {number}
+     * @param preset {Preset}
+     */
+    setPreset(channel, preset)
+    {
+        this.workletProcessorChannels[channel].preset = preset;
+    }
+
+    /**
+     * Transposes the channel by given amount of semitones
+     * @param channel {number}
+     * @param semitones {number} Can be float
+     * @param force {boolean} defaults to false, if true transposes the channel even if it's a drum channel
+     */
+    transposeChannel(channel, semitones, force=false)
+    {
+        const channelObject = this.workletProcessorChannels[channel];
+        if(channelObject.drumChannel && !force)
+        {
+            return;
+        }
+        channelObject.customControllers[customControllers.channelTranspose] = semitones * 100;
+    }
+
+    /**
+     * Sets the channel's tuning
+     * @param channel {number}
+     * @param cents {number}
+     */
+    setChannelTuning(channel, cents)
+    {
+        const channelObject = this.workletProcessorChannels[channel];
+        cents = Math.round(cents);
+        channelObject.customControllers[customControllers.channelTuning] = cents;
+        console.info(`%cChannel ${channel} tuning. Cents: %c${cents}`,
+            consoleColors.info,
+            consoleColors.value);
+    }
+
+    /**
+     * Executes a system exclusive
+     * @param messageData {number[]} - the message data without f0
+     */
+    systemExclusive(messageData)
+    {
+        const type = messageData[0];
+        switch (type)
+        {
+            default:
+                console.info(`%cUnrecognized SysEx: %c${arrayToHexString(messageData)}`,
+                    consoleColors.warn,
+                    consoleColors.unrecognized);
+                break;
+
+            // non realtime
+            case 0x7E:
+                // gm system
+                if(messageData[2] === 0x09)
+                {
+                    if(messageData[3] === 0x01)
+                    {
+                        console.info("%cGM system on", consoleColors.info);
+                        this.system = "gm";
+                    }
+                    else if(messageData[3] === 0x03)
+                    {
+                        console.info("%cGM2 system on", consoleColors.info);
+                        this.system = "gm2";
+                    }
+                    else
+                    {
+                        console.info("%cGM system off, defaulting to GS", consoleColors.info);
+                        this.system = "gs";
+                    }
+                }
+                break;
+
+            // realtime
+            case 0x7F:
+                if(messageData[2] === 0x04 && messageData[3] === 0x01)
+                {
+                    // main volume
+                    const vol = messageData[5] << 7 | messageData[4];
+                    this.setMainVolume(vol / 16384);
+                    console.info(`%cMaster Volume. Volume: %c${vol}`,
+                        consoleColors.info,
+                        consoleColors.value);
+                }
+                else
+                if(messageData[2] === 0x04 && messageData[3] === 0x03)
+                {
+                    // fine tuning
+                    const tuningValue = ((messageData[5] << 7) | messageData[6]) - 8192;
+                    const cents = Math.floor(tuningValue / 81.92); // [-100;+99] cents range
+                    this.setMasterTuning(cents);
+                    console.info(`%cMaster Fine Tuning. Cents: %c${cents}`,
+                        consoleColors.info,
+                        consoleColors.value)
+                }
+                else
+                if(messageData[2] === 0x04 && messageData[3] === 0x04)
+                {
+                    // coarse tuning
+                    // lsb is ignored
+                    const semitones = messageData[5] - 64;
+                    const cents = semitones * 100;
+                    this.setMasterTuning(cents);
+                    console.info(`%cMaster Coarse Tuning. Cents: %c${cents}`,
+                        consoleColors.info,
+                        consoleColors.value)
+                }
+                else
+                {
+                    console.info(
+                        `%cUnrecognized MIDI Real-time message: %c${arrayToHexString(messageData)}`,
+                        consoleColors.warn,
+                        consoleColors.unrecognized)
+                }
+                break;
+
+            // this is a roland sysex
+            // http://www.bandtrax.com.au/sysex.htm
+            // https://cdn.roland.com/assets/media/pdf/AT-20R_30R_MI.pdf
+            case 0x41:
+                // messagedata[1] is device id (ignore as we're everything >:) )
+                if(messageData[2] === 0x42 && messageData[3] === 0x12)
+                {
+                    // this is a GS sysex
+                    // messageData[5] and [6] is the system parameter, messageData[7] is the value
+                    const messageValue = messageData[7];
+                    if(messageData[6] === 0x7F)
+                    {
+                        // GS mode set
+                        if(messageValue === 0x00) {
+                            // this is a GS reset
+                            console.info("%cGS system on", consoleColors.info);
+                            this.system = "gs";
+                        }
+                        else if(messageValue === 0x7F)
+                        {
+                            // GS mode off
+                            console.info("%cGS system off, switching to GM2", consoleColors.info);
+                            this.system = "gm2";
+                        }
+                        return;
+                    }
+                    else
+                    if(messageData[4] === 0x40)
+                    {
+                        // this is a system parameter
+                        if((messageData[5] & 0x10) > 0)
+                        {
+                            // this is an individual part (channel) parameter
+                            // determine the channel 0 means channel 10 (default), 1 means 1 etc.
+                            const channel = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15][messageData[5] & 0x0F]; // for example 1A means A = 11, which corresponds to channel 12 (counting from 1)
+                            switch (messageData[6])
+                            {
+                                default:
+                                    break;
+
+                                case 0x15:
+                                    // this is the Use for Drum Part sysex (multiple drums)
+                                    this.setDrums(channel, messageValue > 0 && messageData[5] >> 4); // if set to other than 0, is a drum channel
+                                    console.info(
+                                        `%cChannel %c${channel}%c ${messageValue > 0 && messageData[5] >> 4 ?
+                                            "is now a drum channel"
+                                            :
+                                            "now isn't a drum channel"
+                                        }%c via: %c${arrayToHexString(messageData)}`,
+                                        consoleColors.info,
+                                        consoleColors.value,
+                                        consoleColors.recognized,
+                                        consoleColors.info,
+                                        consoleColors.value);
+                                    return;
+
+                                case 0x16:
+                                    // this is the pitch key shift sysex
+                                    const keyShift = messageValue - 64;
+                                    this.transposeChannel(channel, keyShift);
+                                    console.info(`%cChannel %c${channel}%c pitch shift. Semitones %c${keyShift}%c, with %c${arrayToHexString(messageData)}`,
+                                        consoleColors.info,
+                                        consoleColors.recognized,
+                                        consoleColors.info,
+                                        consoleColors.value,
+                                        consoleColors.info,
+                                        consoleColors.value);
+                                    return;
+
+                                case 0x40:
+                                case 0x41:
+                                case 0x42:
+                                case 0x43:
+                                case 0x44:
+                                case 0x45:
+                                case 0x46:
+                                case 0x47:
+                                case 0x48:
+                                case 0x49:
+                                case 0x4A:
+                                case 0x4B:
+                                    // scale tuning
+                                    const cents = messageValue - 64;
+                                    console.info(`%cChannel %c${channel}%c tuning. Cents %c${cents}%c, with %c${arrayToHexString(messageData)}`,
+                                        consoleColors.info,
+                                        consoleColors.recognized,
+                                        consoleColors.info,
+                                        consoleColors.value,
+                                        consoleColors.info,
+                                        consoleColors.value);
+                                    this.setChannelTuning(channel, cents);
+                            }
+                        }
+                        else
+                            // this is a global system parameter
+                        if(messageData[5] === 0x00 && messageData[6] === 0x06)
+                        {
+                            // roland master pan
+                            console.info(`%cRoland GS Master Pan set to: %c${messageValue}%c with: %c${arrayToHexString(messageData)}`,
+                                consoleColors.info,
+                                consoleColors.value,
+                                consoleColors.info,
+                                consoleColors.value);
+                            this.setMasterPan((messageValue - 64) / 64);
+                            return;
+                        }
+                        else
+                        if(messageData[5] === 0x00 && messageData[6] === 0x05)
+                        {
+                            // roland master key shift (transpose)
+                            const transpose = messageValue - 64;
+                            console.info(`%cRoland GS Master Key-Shift set to: %c${transpose}%c with: %c${arrayToHexString(messageData)}`,
+                                consoleColors.info,
+                                consoleColors.value,
+                                consoleColors.info,
+                                consoleColors.value);
+                            this.setMasterTuning(transpose * 100);
+                            return;
+                        }
+                        else
+                        if(messageData[5] === 0x00 && messageData[6] === 0x04)
+                        {
+                            // roland GS master volume
+                            console.info(`%cRoland GS Master Volume set to: %c${messageValue}%c with: %c${arrayToHexString(messageData)}`,
+                                consoleColors.info,
+                                consoleColors.value,
+                                consoleColors.info,
+                                consoleColors.value);
+                            this.setMainVolume(messageValue / 127);
+                            return;
+                        }
+                    }
+                    // this is some other GS sysex...
+                    console.info(`%cUnrecognized Roland %cGS %cSysEx: %c${arrayToHexString(messageData)}`,
+                        consoleColors.warn,
+                        consoleColors.recognized,
+                        consoleColors.warn,
+                        consoleColors.unrecognized);
+                    return;
+                }
+                else
+                if(messageData[2] === 0x16 && messageData[3] === 0x12 && messageData[4] === 0x10)
+                {
+                    // this is a roland master volume message
+                    this.setMainVolume(messageData[7] / 100);
+                    console.info(`%cRoland Master Volume control set to: %c${messageData[7]}%c via: %c${arrayToHexString(messageData)}`,
+                        consoleColors.info,
+                        consoleColors.value,
+                        consoleColors.info,
+                        consoleColors.value);
+                    return;
+                }
+                else
+                {
+                    // this is something else...
+                    console.info(`%cUnrecognized Roland SysEx: %c${arrayToHexString(messageData)}`,
+                        consoleColors.warn,
+                        consoleColors.unrecognized);
+                    return;
+                }
+
+            // yamaha
+            case 0x43:
+                // XG on
+                if(messageData[2] === 0x4C && messageData[5] === 0x7E && messageData[6] === 0x00)
+                {
+                    console.info("%cXG system on", consoleColors.info);
+                    this.system = "xg";
+                }
+                else
+                {
+                    console.info(`%cUnrecognized Yamaha SysEx: %c${arrayToHexString(messageData)}`,
+                        consoleColors.warn,
+                        consoleColors.unrecognized);
+                }
+                break;
+
+
+        }
+    }
+
+
+    /**
+     * Toggles drums on a given channel
+     * @param channel {number}
+     * @param isDrum {boolean}
+     */
+    setDrums(channel, isDrum)
+    {
+        const channelObject = this.workletProcessorChannels[channel];
+        if(isDrum)
+        {
+            channelObject.drumChannel = true;
+            this.setPreset(channel, this.soundFont.getPreset(128, channelObject.preset.program));
+        }
+        else
+        {
+            channelObject.percussionChannel = false;
+            this.setPreset(channel, this.soundFont.getPreset(0, channelObject.preset.program));
+        }
+        this.callEvent("drumchange",{
+            channel: channel,
+            isDrumChannel: channelObject.drumChannel
+        });
+    }
+
+    /**
+     * Sets the worklet's master tuning
+     * @param cents {number}
+     */
+    setMasterTuning(cents)
+    {
+        cents = Math.round(cents);
+        for (let i = 0; i < this.channelsAmount; i++) {
+            this.workletProcessorChannels[i].customControllers[customControllers.masterTuning] = cents;
+        }
     }
 
     /**
@@ -93,73 +650,17 @@ class WorkletProcessor extends AudioWorkletProcessor {
     {
         const data = message.messageData;
         const channel = message.channelNumber;
-        const channelVoices = this.workletProcessorChannels[channel].voices;
         switch (message.messageType) {
             case workletMessageType.noteOn:
-                data.forEach(voice => {
-                    const exclusive = voice.generators[generatorTypes.exclusiveClass];
-                    if(exclusive !== 0)
-                    {
-                        channelVoices.forEach(v => {
-                            if(v.generators[generatorTypes.exclusiveClass] === exclusive)
-                            {
-                                this.releaseVoice(v);
-                                v.generators[generatorTypes.releaseVolEnv] = -7200; // make the release nearly instant
-                                computeModulators(v, this.workletProcessorChannels[channel].midiControllers);
-                            }
-                        })
-                    }
-                    computeModulators(voice, this.workletProcessorChannels[channel].midiControllers);
-                    voice.currentAttenuationDb = 100;
-                })
-                channelVoices.push(...data);
-
-                this.totalVoicesAmount += data.length;
-                // cap the voices
-                if(this.totalVoicesAmount > VOICE_CAP)
-                {
-                    this.voiceKilling(this.totalVoicesAmount - VOICE_CAP);
-                }
-                else {
-                    this.updateVoicesAmount();
-                }
+                this.noteOn(channel, data);
                 break;
 
             case workletMessageType.noteOff:
-                channelVoices.forEach(v => {
-                    if(v.midiNote !== data || v.isInRelease === true)
-                    {
-                        return;
-                    }
-                    // if hold pedal, move to sustain
-                    if(this.workletProcessorChannels[channel].holdPedal) {
-                        this.workletProcessorChannels[channel].sustainedVoices.push(v);
-                    }
-                    else
-                    {
-                        this.releaseVoice(v);
-                    }
-                });
+                this.noteOff(channel, data);
                 break;
 
             case workletMessageType.ccChange:
-                // special case: hold pedal
-                if(data[0] === midiControllers.sustainPedal) {
-                    if (data[1] >= 64)
-                    {
-                        this.workletProcessorChannels[channel].holdPedal = true;
-                    }
-                    else
-                    {
-                        this.workletProcessorChannels[channel].holdPedal = false;
-                        this.workletProcessorChannels[channel].sustainedVoices.forEach(v => {
-                            this.releaseVoice(v)
-                        });
-                        this.workletProcessorChannels[channel].sustainedVoices = [];
-                    }
-                }
-                this.workletProcessorChannels[channel].midiControllers[data[0]] = data[1];
-                channelVoices.forEach(v => computeModulators(v, this.workletProcessorChannels[channel].midiControllers));
+                this.controllerChange(channel, data[0], data[1]);
                 break;
 
             case workletMessageType.customcCcChange:
@@ -168,53 +669,19 @@ class WorkletProcessor extends AudioWorkletProcessor {
                 break;
 
             case workletMessageType.killNote:
-                channelVoices.forEach(v => {
-                    if(v.midiNote !== data)
-                    {
-                        return;
-                    }
-                    v.modulatedGenerators[generatorTypes.releaseVolEnv] = -12000; // set release to be very short
-                    this.releaseVoice(v);
-                });
+                this.killNote(channel, data);
                 break;
 
             case workletMessageType.sampleDump:
-                workletDumpedSamplesList[data.sampleID] = data.sampleData;
-                // the sample maybe was loaded after the voice was sent... adjust the end position!
-
-                // not for all channels because the system tells us for what channel this voice was dumped! yay!
-                channelVoices.forEach(v => {
-                    if(v.sample.sampleID !== data.sampleID)
-                    {
-                        return;
-                    }
-                    v.sample.end = data.sampleData.length - 1 + v.generators[generatorTypes.endAddrOffset] + (v.generators[generatorTypes.endAddrsCoarseOffset] * 32768);
-                    // calculate for how long the sample has been playing and move the cursor there
-                    v.sample.cursor = (v.sample.playbackStep * sampleRate) * (currentTime - v.startTime);
-                    if(v.sample.loopingMode === 0) // no loop
-                    {
-                        if (v.sample.cursor >= v.sample.end)
-                        {
-                            v.finished = true;
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        // go through modulo (adjust cursor if the sample has looped
-                        if(v.sample.cursor > v.sample.loopEnd)
-                        {
-                            v.sample.cursor = v.sample.cursor % (v.sample.loopEnd - v.sample.loopStart) + v.sample.loopStart - 1;
-                        }
-                    }
-                    // set start time to current!
-                    v.startTime = currentTime;
-                })
-
+                this.sampleDump(channel, data.sampleID, data.sampleData);
                 break;
 
             case workletMessageType.ccReset:
                 this.resetControllers(channel, data);
+                break;
+
+            case workletMessageType.systemExclusive:
+                this.systemExclusive(messageData);
                 break;
 
             case workletMessageType.setChannelVibrato:
@@ -224,29 +691,13 @@ class WorkletProcessor extends AudioWorkletProcessor {
                 break;
 
             case workletMessageType.clearCache:
-                if(workletDumpedSamplesList.length > 0) {
-                    workletDumpedSamplesList = [];
+                if(this.workletDumpedSamplesList.length > 0) {
+                    this.workletDumpedSamplesList = [];
                 }
                 break;
 
             case workletMessageType.stopAll:
-                if(data === 1)
-                {
-                    // force stop all
-                    channelVoices.length = 0;
-                    this.workletProcessorChannels[channel].sustainedVoices.length = 0;
-                    this.updateVoicesAmount();
-                }
-                else
-                {
-                    channelVoices.forEach(v => {
-                        if(v.isInRelease) return;
-                        this.releaseVoice(v);
-                    });
-                    this.workletProcessorChannels[channel].sustainedVoices.forEach(v => {
-                        this.releaseVoice(v);
-                    })
-                }
+                this.stopAll(channel, data === 1);
                 break;
 
             case workletMessageType.killNotes:
@@ -265,8 +716,151 @@ class WorkletProcessor extends AudioWorkletProcessor {
                 this.debugMessage();
                 break;
 
+            case workletMessageType.setMainVolume:
+                this.setMainVolume(data);
+                break;
+
+            case workletMessageType.setMasterPan:
+                this.setMasterPan(pan);
+                break;
+
+            case workletMessageType.setDrums:
+                this.setDrums(channel, data);
+                break;
+
             default:
                 break;
+        }
+    }
+
+    /**
+     * @param volume {number} 0-1
+     */
+    setMainVolume(volume)
+    {
+        this.mainVolume = volume * SYNTHESIZER_GAIN;
+    }
+
+    /**
+     * @param pan {number} -1 to 1
+     */
+    setMasterPan(pan)
+    {
+        // clamp to 0-1 (0 is left)
+        pan = (pan / 2) + 0.5;
+        this.panLeft = (1 - pan) * this.mainVolume;
+        this.panRight = (pan) * this.mainVolume;
+    }
+
+    /**
+     * @param channel {number}
+     * @param controllerNumber {number}
+     * @param controllerValue {number}
+     */
+    controllerChange(channel, controllerNumber, controllerValue)
+    {
+        let hasChanged = true;
+        /**
+         * @type {WorkletProcessorChannel}
+         */
+        const channelObject = this.workletProcessorChannels[channel];
+        switch (controllerNumber) {
+            case midiControllers.allNotesOff:
+                this.stopAll(channel);
+                break;
+
+            case midiControllers.allSoundOff:
+                this.stopAll(channel, true);
+                break;
+
+            case midiControllers.bankSelect:
+                let bankNr = controllerValue;
+                switch (this.system)
+                {
+                    case "gm":
+                        // gm ignores bank select
+                        console.info(`%cIgnoring the Bank Select (${controllerValue}), as the synth is in GM mode.`, consoleColors.info);
+                        return;
+
+                    case "xg":
+                        // for xg, if msb is 127, then it's drums
+                        if (bankNr === 127)
+                        {
+                            channelObject.drumChannel = true;
+                            this.callEvent("drumchange", {
+                                channel: channel,
+                                isDrumChannel: true
+                            });
+                        }
+                        break;
+
+                    case "gm2":
+                        if(bankNr === 120)
+                        {
+                            channelObject.drumChannel = true;
+                            this.callEvent("drumchange", {
+                                channel: channel,
+                                isDrumChannel: true
+                            });
+                        }
+                }
+
+                if(channelObject.drumChannel)
+                {
+                    // 128 for percussion channel
+                    bankNr = 128;
+                }
+                if(bankNr === 128 && !channelObject.drumChannel)
+                {
+                    // if channel is not for percussion, default to bank current
+                    bankNr = channelObject.midiControllers[midiControllers.bankSelect];
+                }
+
+                channelObject.midiControllers[midiControllers.bankSelect] = bankNr;
+                break;
+
+            case midiControllers.lsbForControl0BankSelect:
+                if(this.system === 'xg')
+                {
+                    if(channelObject.midiControllers[midiControllers.bankSelect] === 0)
+                    {
+                        channelObject.midiControllers[midiControllers.bankSelect] = controllerValue;
+                    }
+                }
+                else
+                if(this.system === "gm2")
+                {
+                    channelObject.midiControllers[midiControllers.bankSelect] = controllerValue;
+                }
+                break;
+
+
+            default:
+                // special case: hold pedal
+                if(controllerNumber === midiControllers.sustainPedal) {
+                    if (controllerValue >= 64)
+                    {
+                        channelObject.holdPedal = true;
+                    }
+                    else
+                    {
+                        channelObject.holdPedal = false;
+                        channelObject.sustainedVoices.forEach(v => {
+                            this.releaseVoice(v)
+                        });
+                        channelObject.sustainedVoices = [];
+                    }
+                }
+                channelObject.midiControllers[controllerNumber] = controllerValue;
+                channelObject.voices.forEach(v => computeModulators(v, channelObject.midiControllers));
+                break;
+        }
+        if(hasChanged) {
+            this.callEvent("controllerchange", {
+                channel: channel,
+                controllerNumber: controllerNumber,
+                controllerValue: controllerValue
+            });
         }
     }
 
@@ -293,9 +887,37 @@ class WorkletProcessor extends AudioWorkletProcessor {
         this.updateVoicesAmount();
     }
 
+    /**
+     * Calls synth event from the worklet side
+     * @param eventName {EventTypes} the event name
+     * @param eventData {any}
+     */
+    callEvent(eventName, eventData)
+    {
+        this.post({
+            messageType: returnMessageType.eventCall,
+            messageData: {
+                eventName: eventName,
+                eventData: eventData
+            }
+        })
+    }
+
+    /**
+     *
+     * @param data {WorkletReturnMessage}
+     */
+    post(data)
+    {
+        this.port.postMessage(data);
+    }
+
     updateVoicesAmount()
     {
-        this.port.postMessage(this.workletProcessorChannels.map(c => c.voices.length));
+        this.post({
+            messageType: returnMessageType.reportedVoicesAmount,
+            messageData: this.workletProcessorChannels.map(c => c.voices.length)
+        });
     }
 
     /**
@@ -372,7 +994,7 @@ class WorkletProcessor extends AudioWorkletProcessor {
     renderVoice(channel, voice, output, reverbOutput, chorusOutput)
     {
         // if no matching sample, perhaps it's still being loaded..? worklet_system.js line 256
-        if(workletDumpedSamplesList[voice.sample.sampleID] === undefined)
+        if(this.workletDumpedSamplesList[voice.sample.sampleID] === undefined)
         {
             return;
         }
@@ -472,7 +1094,7 @@ class WorkletProcessor extends AudioWorkletProcessor {
         const bufferOut = new Float32Array(output[0].length);
 
         // wavetable oscillator
-        getOscillatorData(voice, workletDumpedSamplesList[voice.sample.sampleID], bufferOut);
+        getOscillatorData(voice, this.workletDumpedSamplesList[voice.sample.sampleID], bufferOut);
 
 
         // lowpass filter
@@ -482,7 +1104,13 @@ class WorkletProcessor extends AudioWorkletProcessor {
         applyVolumeEnvelope(voice, bufferOut, currentTime, modLfoCentibels, this.sampleTime);
 
         // pan the voice and write out
-        panVoice(pan, bufferOut, output,
+        const panLeft = Math.cos(HALF_PI * pan) * this.panLeft;
+        const panRight = Math.sin(HALF_PI * pan) *  this.panRight;
+        panVoice(
+            panLeft,
+            panRight,
+            bufferOut,
+            output,
             reverbOutput, voice.modulatedGenerators[generatorTypes.reverbEffectsSend],
             chorusOutput, voice.modulatedGenerators[generatorTypes.chorusEffectsSend]);
     }
@@ -522,5 +1150,6 @@ class WorkletProcessor extends AudioWorkletProcessor {
 }
 
 
-registerProcessor(WORKLET_PROCESSOR_NAME, WorkletProcessor);
+// noinspection JSUnresolvedReference
+registerProcessor(WORKLET_PROCESSOR_NAME, SpessaSynth);
 console.log("%cProcessor succesfully registered!", consoleColors.recognized);

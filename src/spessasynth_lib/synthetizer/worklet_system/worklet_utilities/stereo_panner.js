@@ -1,5 +1,4 @@
-import { HALF_PI } from './unit_converter.js'
-import { WORKLET_SYSTEM_CHORUS_DIVIDER, WORKLET_SYSTEM_GAIN, WORKLET_SYSTEM_REVERB_DIVIDER } from '../worklet_system.js'
+import { WORKLET_SYSTEM_CHORUS_DIVIDER, WORKLET_SYSTEM_REVERB_DIVIDER } from '../worklet_system.js'
 
 /**
  * stereo_panner.js
@@ -8,7 +7,8 @@ import { WORKLET_SYSTEM_CHORUS_DIVIDER, WORKLET_SYSTEM_GAIN, WORKLET_SYSTEM_REVE
 
 /**
  * Pans the voice to the given output buffers
- * @param pan {number} 0-1 , 0.5 is middle
+ * @param gainLeft {number} the left channel gain
+ * @param gainRight {number} the right channel gain
  * @param inputBuffer {Float32Array} the input buffer in mono
  * @param output {Float32Array[]} stereo output buffer
  * @param reverb {Float32Array[]} stereo reverb input
@@ -16,14 +16,19 @@ import { WORKLET_SYSTEM_CHORUS_DIVIDER, WORKLET_SYSTEM_GAIN, WORKLET_SYSTEM_REVE
  * @param chorus {Float32Array[]} stereo chorus buttfer
  * @param chorusLevel {number} 0 to 1000, the level of chorus to send
  */
-export function panVoice(pan, inputBuffer, output, reverb, reverbLevel, chorus, chorusLevel)
+export function panVoice(gainLeft,
+                         gainRight,
+                         inputBuffer,
+                         output,
+                         reverb,
+                         reverbLevel,
+                         chorus,
+                         chorusLevel)
 {
     if(isNaN(inputBuffer[0]))
     {
         return;
     }
-    let panLeft = Math.cos(HALF_PI * pan) * WORKLET_SYSTEM_GAIN;
-    let panRight = Math.sin(HALF_PI * pan) * WORKLET_SYSTEM_GAIN;
 
     if(reverbLevel > 0)
     {
@@ -32,8 +37,8 @@ export function panVoice(pan, inputBuffer, output, reverb, reverbLevel, chorus, 
         // cap reverb
         reverbLevel = Math.min(reverbLevel, 1000);
         const reverbGain = reverbLevel / WORKLET_SYSTEM_REVERB_DIVIDER;
-        const reverbLeftGain = panLeft * reverbGain;
-        const reverbRightGain = panRight * reverbGain;
+        const reverbLeftGain = gainLeft * reverbGain;
+        const reverbRightGain = gainRight * reverbGain;
         for (let i = 0; i < inputBuffer.length; i++) {
             reverbLeft[i] += reverbLeftGain * inputBuffer[i];
             reverbRight[i] += reverbRightGain * inputBuffer[i];
@@ -47,8 +52,8 @@ export function panVoice(pan, inputBuffer, output, reverb, reverbLevel, chorus, 
         // cap chorus
         chorusLevel = Math.min(chorusLevel, 1000);
         const chorusGain = chorusLevel / WORKLET_SYSTEM_CHORUS_DIVIDER;
-        const chorusLeftGain = panLeft * chorusGain;
-        const chorusRightGain = panRight * chorusGain;
+        const chorusLeftGain = gainLeft * chorusGain;
+        const chorusRightGain = gainRight * chorusGain;
         for (let i = 0; i < inputBuffer.length; i++) {
             chorusLeft[i] += chorusLeftGain * inputBuffer[i];
             chorusRight[i] += chorusRightGain * inputBuffer[i];
@@ -57,22 +62,15 @@ export function panVoice(pan, inputBuffer, output, reverb, reverbLevel, chorus, 
 
     const leftChannel = output[0];
     const rightChannel = output[1];
-    // panLeft *= dryGain;
-    // panRight *= dryGain;
-    // for (let i = 0; i < inputBuffer.length; i++)
-    // {
-    //     leftChannel[i] += panLeft * inputBuffer[i];
-    //     rightChannel[i] += panRight * inputBuffer[i];
-    // }
-    if(panLeft > 0)
+    if(gainLeft > 0)
     {
         for (let i = 0; i < inputBuffer.length; i++) {
-            leftChannel[i] += panLeft * inputBuffer[i];
+            leftChannel[i] += gainLeft * inputBuffer[i];
         }
     }
-    if(panRight > 0) {
+    if(gainRight > 0) {
         for (let i = 0; i < inputBuffer.length; i++) {
-            rightChannel[i] += panRight * inputBuffer[i];
+            rightChannel[i] += gainRight * inputBuffer[i];
         }
     }
 }

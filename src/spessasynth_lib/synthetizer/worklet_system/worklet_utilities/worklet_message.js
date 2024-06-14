@@ -1,3 +1,6 @@
+/**
+ * @enum {number}
+ */
 export const workletMessageType = {
     noteOff: 0,
     noteOn: 1,
@@ -12,13 +15,17 @@ export const workletMessageType = {
     muteChannel: 10,
     addNewChannel: 11,
     customcCcChange: 12,
-    debugMessage: 13
+    debugMessage: 13,
+    systemExclusive: 14,
+    setMainVolume: 15,
+    setMasterPan: 16,
+    setDrums: 17
 };
 
 /**
  * @typedef {{
  *     channelNumber: number
- *     messageType: 0|1|2|3|4|5|6|7|8|9|10|11|12|13,
+ *     messageType: workletMessageType,
  *     messageData: (
  *     number[]
  *     |WorkletVoice[]
@@ -44,4 +51,26 @@ export const workletMessageType = {
  * 11 - add new channel         -> (no data)
  * 12 - custom controller change-> [ccNumber<number>, ccValue<number>]
  * 13 - debug message           -> (no data)
+ * 14 - system exclusive        -> message data <number[]> (without the F0 byte)
+ * 15 - set main volume         -> volume<number> (0 to 1)
+ * 16 - set master pan          -> pan<number> (-1 to 1)
+ * 17 - set drums               -> isDrums<boolean>
  */
+
+/**
+ * @typedef {Object} WorkletReturnMessage
+ * @property {returnMessageType} messageType - the message's type
+ * @property {{
+ *     eventName: string,
+ *     eventData: any
+ * }|number[]} messageData - the message's data
+ */
+
+/**
+ * @enum {number}
+ */
+export const returnMessageType = {
+    reportedVoicesAmount: 0,
+    eventCall: 1,
+    reportedCurrentTime: 2
+}

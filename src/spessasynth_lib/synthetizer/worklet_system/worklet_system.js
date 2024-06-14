@@ -4,7 +4,7 @@ import { modulatorSources } from '../../soundfont/chunk/modulators.js'
 import { midiControllers } from '../../midi_parser/midi_message.js'
 import { clearSamplesList, getWorkletVoices } from './worklet_utilities/worklet_voice.js'
 import { DEFAULT_PERCUSSION } from '../synthetizer.js'
-import { workletMessageType } from './worklet_utilities/worklet_message.js'
+import { returnMessageType, workletMessageType } from './worklet_utilities/worklet_message.js'
 import { customControllers, NON_CC_INDEX_OFFSET } from './worklet_utilities/worklet_processor_channel.js'
 
 /**
@@ -14,7 +14,6 @@ import { customControllers, NON_CC_INDEX_OFFSET } from './worklet_utilities/work
 
 export const WORKLET_PROCESSOR_NAME = "spessasynth-worklet-system";
 
-export const WORKLET_SYSTEM_GAIN = 0.5;
 export const WORKLET_SYSTEM_REVERB_DIVIDER = 1000;
 export const WORKLET_SYSTEM_CHORUS_DIVIDER = 500;
 
@@ -66,18 +65,23 @@ export class WorkletSystem {
      * @param percussionPreset {Preset}
      * @param channelsAmount {number} the new channels will have their audio modulod by this constant.
      * the worklet will have channelsAmount outputs + reverb + chorus
+     * @param eventHandler {EventHandler} the event handler to call events when called from the internal sequencer
+     * @param soundfont {SoundFont2}
      */
     constructor(targetNode,
                 reverbNode,
                 chorusNode,
                 defaultPreset,
                 percussionPreset,
-                channelsAmount) {
+                channelsAmount,
+                eventHandler,
+                soundfont) {
 
         // set the constants
         this.ctx = targetNode.context;
         this.outputNode = targetNode;
         this.percussionPreset = percussionPreset;
+        this.eventHandler = eventHandler;
         /**
          * the new channels will have their audio sent to the moduled output by this constant.
          * what does that mean? e.g. if outputsAmount is 16, then channel's 16 audio will be sent to channel 0
@@ -100,7 +104,8 @@ export class WorkletSystem {
             outputChannelCount: Array(this._outputsAmount + 2).fill(2),
             numberOfOutputs: this._outputsAmount + 2,
             processorOptions: {
-                midiChannels: this._outputsAmount
+                midiChannels: this._outputsAmount,
+                soundfont: soundfont
             }
         });
 
@@ -125,20 +130,7 @@ export class WorkletSystem {
         this.setPreset(DEFAULT_PERCUSSION, this.percussionPreset);
 
         // worklet sends us an array of voice amounts
-        this.worklet.port.onmessage = e => {
-            /**
-             * @type {number[]}
-             */
-            const channelVoiceAmounts =  e.data;
-
-            // apply the voices amount to every channel and update total
-            let totalAmount = 0;
-            for (let i = 0; i < this.channelsAmount; i++) {
-                this.midiChannels[i].voicesAmount = channelVoiceAmounts[i];
-                totalAmount += channelVoiceAmounts[i];
-            }
-            this.voicesAmount = totalAmount;
-        };
+        this.worklet.port.onmessage = e => this.handleMessage(e.data);
 
         this.worklet.connect(reverbNode, 0);
         this.worklet.connect(chorusNode, 1);
@@ -146,6 +138,58 @@ export class WorkletSystem {
         // connect all outputs to the output node
         for (let i = 2; i < channelsAmount + 2; i++) {
             this.worklet.connect(this.outputNode, i);
+        }
+    }
+
+    /**
+     * @param channel {number}
+     * @param isDrum {boolean}
+     */
+    setDrums(channel, isDrum)
+    {
+        this.post({
+            messageType: workletMessageType.setDrums,
+            messageData: isDrum
+        });
+    }
+
+    /**
+     * @param dataArray {number[]}
+     */
+    systemExclusive(dataArray)
+    {
+        this.post({
+            messageType: workletMessageType.systemExclusive,
+            messageData: dataArray
+        })
+    }
+
+    /**
+     * Handles the messages received from the worklet
+     * @param message {WorkletReturnMessage}
+     */
+    handleMessage(message)
+    {
+        const messageData = message.messageData;
+        switch (message.messageType)
+        {
+            case returnMessageType.reportedVoicesAmount:
+                /**
+                 * @type {number[]}
+                 */
+                const channelVoiceAmounts =  messageData;
+
+                // apply the voices amount to every channel and update total
+                let totalAmount = 0;
+                for (let i = 0; i < this.channelsAmount; i++) {
+                    this.midiChannels[i].voicesAmount = channelVoiceAmounts[i];
+                    totalAmount += channelVoiceAmounts[i];
+                }
+                this.voicesAmount = totalAmount;
+                break;
+
+            case returnMessageType.eventCall:
+                this.eventHandler.callEvent(messageData.eventName, messageData.eventData);
         }
     }
 
@@ -846,19 +890,27 @@ export class WorkletSystem {
     }
 
     /**
-     * Sets the worklet's master tuning
-     * @param cents {number}
+     * @param volume {number} 0-1
      */
-    setMasterTuning(cents)
+    setMainVolume(volume)
     {
-        cents = Math.round(cents);
-        for (let i = 0; i < this.channelsAmount; i++) {
-            this.post({
-                channelNumber: i,
-                messageType: workletMessageType.customcCcChange,
-                messageData: [customControllers.masterTuning, cents]
-            });
-        }
+        this.post({
+            channelNumber: -1,
+            messageType: workletMessageType.setMainVolume,
+            messageData: volume
+        });
+    }
+
+    /**
+     * @param pan {number} 0-1
+     */
+    setMasterPan(pan)
+    {
+        this.post({
+            channelNumber: -1,
+            messageType: workletMessageType.setMasterPan,
+            messageData: pan
+        });
     }
 
     /**

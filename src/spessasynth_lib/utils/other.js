@@ -43,7 +43,7 @@ export function calculateRGB(rgbString, operation)
 
 /**
  * Does what it says
- * @param arr {ShiftableByteArray}
+ * @param arr {number[]}
  * @returns {string}
  */
 export function arrayToHexString(arr) {
