@@ -144,7 +144,7 @@ export class Renderer
             this.channelAnalysers.splice(0, 1);
         }
         this.channelAnalysers = [];
-        for(let i = 0; i < synth.synthesisSystem.channelsAmount; i++)
+        for(let i = 0; i < synth.channelsAmount; i++)
         {
             // create the analyser
             const analyser = new AnalyserNode(synth.context, {
@@ -165,7 +165,7 @@ export class Renderer
      */
     connectChannelAnalysers(synth)
     {
-        synth.synthesisSystem.connectIndividualOutputs(this.channelAnalysers);
+        synth.connectIndividualOutputs(this.channelAnalysers);
     }
 
     disconnectChannelAnalysers()
@@ -249,7 +249,7 @@ export class Renderer
         // draw all 16 channel waveforms in a 4x4 pattern
         this.channelAnalysers.forEach((analyser, channelNumber) => {
             // if this channel is now a drum channel, adjust the fft
-            if (this.synth.synthesisSystem.midiChannels[channelNumber].percussionChannel) {
+            if (this.synth.midiChannels[channelNumber].percussionChannel) {
                 if (analyser.fftSize !== this.drumAnalyserFft) {
                     analyser.fftSize = this.drumAnalyserFft;
                 }
@@ -263,10 +263,10 @@ export class Renderer
             const y = Math.floor(channelNumber / 4);
             // if no voices, skip
             let voicesPlaying = false;
-            for (let i = channelNumber; i < this.synth.synthesisSystem.channelsAmount; i += this.channelAnalysers.length)
+            for (let i = channelNumber; i < this.synth.channelsAmount; i += this.channelAnalysers.length)
             {
                 // check every channel that is connected, because can be more outputs than just 16!!! (for example channel 17 also outputs to analyser 1)
-                if(this.synth.synthesisSystem.midiChannels[i].voicesAmount > 0)
+                if(this.synth.midiChannels[i].voicesAmount > 0)
                 {
                     voicesPlaying = true;
                     break;
@@ -341,7 +341,7 @@ export class Renderer
          * @type {number[]}
          */
         const pitchBendXShift = [];
-        this.synth.synthesisSystem.midiChannels.forEach(channel => {
+        this.synth.midiChannels.forEach(channel => {
             // pitch range * (bend - 8192) / 8192)) * key width
             if(this.showVisualPitch) {
                 pitchBendXShift.push((channel.channelPitchBendRange * ((channel.pitchBend - 8192 + this.visualPitchBendOffset) / 8192)) * keyStep);

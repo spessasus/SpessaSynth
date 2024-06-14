@@ -44,11 +44,11 @@ import { isMobile } from '../spessasynth_lib/utils/other.js'
     /**
      * Creates a new midi user interface.
      * @param context {BaseAudioContext}
-     * @param soundFont {SoundFont2}
+     * @param soundFontBuffer {ArrayBuffer}
      */
-    constructor(context, soundFont) {
+    constructor(context, soundFontBuffer) {
         this.context = context;
-        this.initializeContext(context, soundFont).then();
+        this.initializeContext(context, soundFontBuffer).then();
         this.ready = false;
     }
 
@@ -66,9 +66,7 @@ import { isMobile } from '../spessasynth_lib/utils/other.js'
 
         if(context.audioWorklet) {
             const workletURL = new URL("../spessasynth_lib/synthetizer/worklet_system/worklet_processor.js", import.meta.url).href;
-            const vorbisURL = new URL("../spessasynth_lib/utils/stbvorbis.js", import.meta.url).href;
             await context.audioWorklet.addModule(workletURL);
-            await context.audioWorklet.addModule(vorbisURL);
         }
         // set up soundfont
         this.soundFont = soundFont;
@@ -198,9 +196,9 @@ import { isMobile } from '../spessasynth_lib/utils/other.js'
                 case "n":
                     // secret
                     for (let i = 0; i < 16; i++) {
-                        this.synth.synthesisSystem.midiChannels[i].lockPreset = false;
-                        this.synth.programChange(i, (this.synth.synthesisSystem.midiChannels[i].preset.program + 1) % 127);
-                        this.synth.synthesisSystem.midiChannels[i].lockPreset = true;
+                        this.synth.midiChannels[i].lockPreset = false;
+                        this.synth.programChange(i, (this.synth.midiChannels[i].preset.program + 1) % 127);
+                        this.synth.midiChannels[i].lockPreset = true;
                     }
                     break;
             }
@@ -209,7 +207,7 @@ import { isMobile } from '../spessasynth_lib/utils/other.js'
     }
 
     /**
-     * @param sf {SoundFont2}
+     * @param sf {ArrayBuffer}
      */
     reloadSf(sf)
     {

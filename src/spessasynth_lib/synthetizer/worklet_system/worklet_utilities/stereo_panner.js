@@ -1,5 +1,5 @@
-import { WORKLET_SYSTEM_CHORUS_DIVIDER, WORKLET_SYSTEM_REVERB_DIVIDER } from '../worklet_system.js'
-
+export const WORKLET_SYSTEM_REVERB_DIVIDER = 1000;
+export const WORKLET_SYSTEM_CHORUS_DIVIDER = 500;
 /**
  * stereo_panner.js
  * purpose: pans a given voice out to the stereo output and to the effects' outputs

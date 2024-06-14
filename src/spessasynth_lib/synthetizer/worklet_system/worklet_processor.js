@@ -1,4 +1,3 @@
-import { WORKLET_PROCESSOR_NAME } from './worklet_system.js'
 import { midiControllers } from '../../midi_parser/midi_message.js';
 import { generatorTypes } from '../../soundfont/chunk/generators.js';
 import { getOscillatorData } from './worklet_utilities/wavetable_oscillator.js'
@@ -21,6 +20,9 @@ import {
     resetArray,
 } from './worklet_utilities/worklet_processor_channel.js'
 import { returnMessageType, workletMessageType } from './worklet_utilities/worklet_message.js'
+import { WORKLET_PROCESSOR_NAME } from '../synthetizer.js'
+import { SoundFont2 } from '../../soundfont/soundfont_parser.js'
+import { getWorkletVoices } from './worklet_utilities/worklet_voice.js'
 
 /**
  * worklet_processor.js
@@ -28,7 +30,7 @@ import { returnMessageType, workletMessageType } from './worklet_utilities/workl
  */
 const MIN_NOTE_LENGTH = 0.07; // if the note is released faster than that, it forced to last that long
 
-const SYNTHESIZER_GAIN = 0.5;
+const SYNTHESIZER_GAIN = 1.0;
 
 // noinspection JSUnresolvedReference
 class SpessaSynth extends AudioWorkletProcessor {
@@ -37,7 +39,7 @@ class SpessaSynth extends AudioWorkletProcessor {
      * @param options {{
      * processorOptions: {
      *      midiChannels: number,
-     *      soundfont: SoundFont2,
+     *      soundfont: ArrayBuffer,
      * }}}
      */
     constructor(options) {
@@ -50,6 +52,12 @@ class SpessaSynth extends AudioWorkletProcessor {
          * @type {number}
          */
         this.mainVolume = SYNTHESIZER_GAIN;
+
+        /**
+         * -1 to 1
+         * @type {number}
+         */
+        this.pan = 0.0;
         /**
          * the pan of the left channel
          * @type {number}
@@ -61,12 +69,10 @@ class SpessaSynth extends AudioWorkletProcessor {
          * @type {number}
          */
         this.panRight = 0.5 * this.mainVolume;
-
-        console.log(AudioWorkletGlobalScope.stbvorbisDecode([]))
         /**
          * @type {SoundFont2}
          */
-        this.soundfont = options.processorOptions.soundfont;
+        this.soundfont = new SoundFont2(options.processorOptions.soundfont);
 
         this.defaultPreset = this.soundfont.getPreset(0, 0);
         this.drumPreset = this.soundfont.getPreset(128, 0);
@@ -103,13 +109,14 @@ class SpessaSynth extends AudioWorkletProcessor {
 
     createWorkletChannel()
     {
-        this.workletProcessorChannels.push({
+        const channel = {
             midiControllers: new Int16Array(CONTROLLER_TABLE_SIZE),
             lockedControllers: Array(CONTROLLER_TABLE_SIZE).fill(false),
             customControllers: new Float32Array(CUSTOM_CONTROLLER_TABLE_SIZE),
 
             voices: [],
             sustainedVoices: [],
+            cachedVoices: [],
             preset: this.defaultPreset,
 
             channelVibrato: {delay: 0, depth: 0, rate: 0},
@@ -118,7 +125,11 @@ class SpessaSynth extends AudioWorkletProcessor {
             drumChannel: false,
             program: 0,
 
-        })
+        }
+        for (let i = 0; i < 128; i++) {
+            channel.cachedVoices.push([]);
+        }
+        this.workletProcessorChannels.push(channel);
         this.resetControllers(this.workletProcessorChannels.length - 1, []);
     }
 
@@ -135,10 +146,22 @@ class SpessaSynth extends AudioWorkletProcessor {
     /**
      * Append the voices
      * @param channel {number}
-     * @param voices {WorkletVoice[]}
+     * @param midiNote {number}
+     * @param velocity {number}
      */
-    noteOn(channel, voices)
+    noteOn(channel, midiNote, velocity)
     {
+        // get voices
+        const voices = getWorkletVoices(
+            channel,
+            midiNote,
+            velocity,
+            this.workletProcessorChannels[channel].preset,
+            currentTime,
+            sampleRate,
+            data => this.sampleDump(data.channel, data.sampleID, data.sampleData),
+            this.workletProcessorChannels[channel].cachedVoices,
+            false);
         const channelVoices = this.workletProcessorChannels[channel].voices;
         voices.forEach(voice => {
             const exclusive = voice.generators[generatorTypes.exclusiveClass];
@@ -292,15 +315,23 @@ class SpessaSynth extends AudioWorkletProcessor {
      * executes a program change
      * @param channel {number}
      * @param programNumber {number}
+     * @param userChange {boolean}
      */
-    programChange(channel, programNumber)
+    programChange(channel, programNumber, userChange=false)
     {
+        /**
+         * @type {WorkletProcessorChannel}
+         */
         const channelObject = this.workletProcessorChannels[channel];
-        const preset = this.soundfont.getPreset(channelObject.midiControllers[midiControllers.bankSelect], programNumber);
+        // always 128 for percussion
+        const bank = (channelObject.drumChannel ? 128 : channelObject.midiControllers[midiControllers.bankSelect]);
+        console.log(bank, channelObject)
+        const preset = this.soundfont.getPreset(bank, programNumber);
         this.setPreset(channel, preset);
         this.callEvent("programchange",{
             channel: channel,
-            preset: preset
+            preset: preset,
+            userCalled: userChange
         });
     }
 
@@ -652,7 +683,7 @@ class SpessaSynth extends AudioWorkletProcessor {
         const channel = message.channelNumber;
         switch (message.messageType) {
             case workletMessageType.noteOn:
-                this.noteOn(channel, data);
+                this.noteOn(channel, data[0], data[1]);
                 break;
 
             case workletMessageType.noteOff:
@@ -672,8 +703,8 @@ class SpessaSynth extends AudioWorkletProcessor {
                 this.killNote(channel, data);
                 break;
 
-            case workletMessageType.sampleDump:
-                this.sampleDump(channel, data.sampleID, data.sampleData);
+            case workletMessageType.programChange:
+                this.programChange(channel, data[0], data[1]);
                 break;
 
             case workletMessageType.ccReset:
@@ -681,7 +712,7 @@ class SpessaSynth extends AudioWorkletProcessor {
                 break;
 
             case workletMessageType.systemExclusive:
-                this.systemExclusive(messageData);
+                this.systemExclusive(data);
                 break;
 
             case workletMessageType.setChannelVibrato:
@@ -721,11 +752,20 @@ class SpessaSynth extends AudioWorkletProcessor {
                 break;
 
             case workletMessageType.setMasterPan:
-                this.setMasterPan(pan);
+                this.setMasterPan(data);
                 break;
 
             case workletMessageType.setDrums:
                 this.setDrums(channel, data);
+                break;
+
+            case workletMessageType.getPresetList:
+                this.post({
+                    messageType: returnMessageType.presetList,
+                    messageData: this.soundfont.presets.map(p => {
+                        return {presetName: p.presetName, bank: p.bank, program: p.program};
+                    })
+                });
                 break;
 
             default:
@@ -733,12 +773,14 @@ class SpessaSynth extends AudioWorkletProcessor {
         }
     }
 
+
     /**
      * @param volume {number} 0-1
      */
     setMainVolume(volume)
     {
         this.mainVolume = volume * SYNTHESIZER_GAIN;
+        this.setMasterPan(this.pan);
     }
 
     /**
@@ -746,6 +788,7 @@ class SpessaSynth extends AudioWorkletProcessor {
      */
     setMasterPan(pan)
     {
+        this.pan = pan;
         // clamp to 0-1 (0 is left)
         pan = (pan / 2) + 0.5;
         this.panLeft = (1 - pan) * this.mainVolume;
@@ -759,6 +802,7 @@ class SpessaSynth extends AudioWorkletProcessor {
      */
     controllerChange(channel, controllerNumber, controllerValue)
     {
+        console.log(controllerNumber, controllerValue);
         let hasChanged = true;
         /**
          * @type {WorkletProcessorChannel}
@@ -859,9 +903,10 @@ class SpessaSynth extends AudioWorkletProcessor {
             this.callEvent("controllerchange", {
                 channel: channel,
                 controllerNumber: controllerNumber,
-                controllerValue: controllerValue
+                controllerValue: controllerValue >> 7 // turn internal 14 bit value into a 7 bit one
             });
         }
+        console.log(controllerNumber, channelObject.midiControllers[controllerNumber]);
     }
 
     voiceKilling(amount)
@@ -993,7 +1038,7 @@ class SpessaSynth extends AudioWorkletProcessor {
      */
     renderVoice(channel, voice, output, reverbOutput, chorusOutput)
     {
-        // if no matching sample, perhaps it's still being loaded..? worklet_system.js line 256
+        // if no matching sample, perhaps it's still being loaded..?
         if(this.workletDumpedSamplesList[voice.sample.sampleID] === undefined)
         {
             return;

@@ -276,10 +276,6 @@ export class MidiKeyboard
      */
     selectChannel(channel)
     {
-        if(channel >= this.synth.synthesisSystem.midiChannels.length)
-        {
-            channel = 0;
-        }
         this.channel = channel;
     }
 

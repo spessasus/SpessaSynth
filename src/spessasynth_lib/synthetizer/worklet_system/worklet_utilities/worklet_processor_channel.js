@@ -16,6 +16,7 @@ import { modulatorSources } from '../../../soundfont/chunk/modulators.js'
  * @property {boolean} isMuted - indicates whether the channel is muted
  * @property {WorkletVoice[]} voices - array of voices currently active on the channel
  * @property {WorkletVoice[]} sustainedVoices - array of voices that are sustained on the channel
+ * @property {WorkletVoice[][][]} cachedVoices - first is midi note, second is velocity. output is an array of WorkletVoices
  */
 
 export const NON_CC_INDEX_OFFSET = 128;

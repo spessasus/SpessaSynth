@@ -162,8 +162,10 @@ export class SynthetizerUI
             true,
                 v => {
             this.synth.setMainVolume(Math.round(v) / 100);
+            this.volumeController.update(v);
         });
         this.volumeController.bar.classList.add("voice_meter_bar_smooth");
+        this.volumeController.update(100);
 
         /**
          * Pan controller
@@ -178,9 +180,11 @@ export class SynthetizerUI
             true,
             v => {
             // use roland gs master pan
-            this.synth.systemExclusive(new ShiftableByteArray([0x41, 0x10, 0x42, 0x12, 0x40, 0x00, 0x06, ((v + 1) / 2) * 127]));
+            this.synth.setMasterPan(v);
+            this.panController.update(v);
         });
         this.panController.bar.classList.add("voice_meter_bar_smooth");
+        this.panController.update(0);
 
         /**
          * Transpose controller
@@ -223,18 +227,8 @@ export class SynthetizerUI
 
         // channel controller shower
         let showControllerButton = document.createElement("button");
-        if(this.synth.synthesisMode === "legacy")
-        {
-            showControllerButton.innerText = "Synthesizer controller (legacy mode)";
-            showControllerButton.style.color = "red";
-            showControllerButton.style.fontWeight = "bolder";
-            showControllerButton.title = "Shows the synthesizer controller"
-        }
-        else
-        {
-            this.locale.bindObjectProperty(showControllerButton, "textContent", LOCALE_PATH + "toggleButton.title");
-            this.locale.bindObjectProperty(showControllerButton, "title", LOCALE_PATH + "toggleButton.description");
-        }
+        this.locale.bindObjectProperty(showControllerButton, "textContent", LOCALE_PATH + "toggleButton.title");
+        this.locale.bindObjectProperty(showControllerButton, "title", LOCALE_PATH + "toggleButton.description");
         showControllerButton.classList.add("synthui_button");
         showControllerButton.onclick = () => {
             controller.classList.toggle("synthui_controller_show");
@@ -314,7 +308,7 @@ export class SynthetizerUI
          * @type {ChannelController[]}
          */
         this.controllers = [];
-        for(const chan of this.synth.synthesisSystem.midiChannels)
+        for(const chan of this.synth.midiChannels)
         {
             const controller = this.createChannelController(chan, this.controllers.length);
             this.controllers.push(controller);
@@ -348,7 +342,7 @@ export class SynthetizerUI
 
     /**
      * Creates a new channel controller ui
-     * @param channel {WorkletChannel}
+     * @param channel {MidiChannel}
      * @param channelNumber {number}
      * @returns {ChannelController}
      */
@@ -535,7 +529,7 @@ export class SynthetizerUI
                 val = Math.round(val);
                 // adjust to synth's transposition
                 let transposition = this.synth.transposition + val;
-                this.synth.synthesisSystem.transposeChannel(channelNumber, transposition, true);
+                this.synth.transposeChannel(channelNumber, transposition, true);
                 transpose.update(val);
             });
         transpose.update(0);
@@ -553,13 +547,13 @@ export class SynthetizerUI
             [channelNumber + 1],
             presetName => {
                 const data = JSON.parse(presetName);
-                this.synth.synthesisSystem.midiChannels[channelNumber].lockPreset = false;
+                this.synth.midiChannels[channelNumber].lockPreset = false;
                 const sys = this.synth.system;
                 this.synth.system = "gs";
                 this.synth.controllerChange(channelNumber, midiControllers.bankSelect, data[0]);
                 this.synth.programChange(channelNumber, data[1], true);
                 presetSelector.mainDiv.classList.add("locked_selector");
-                this.synth.synthesisSystem.midiChannels[channelNumber].lockPreset = true;
+                this.synth.midiChannels[channelNumber].lockPreset = true;
                 this.synth.system = sys;
             }
         );
@@ -571,7 +565,7 @@ export class SynthetizerUI
         presetReset.classList.add("controller_element");
         presetReset.classList.add("voice_reset");
         presetReset.onclick = () => {
-            this.synth.synthesisSystem.midiChannels[channelNumber].lockPreset = false;
+            this.synth.midiChannels[channelNumber].lockPreset = false;
             presetSelector.mainDiv.classList.remove("locked_selector");
         }
         controller.appendChild(presetReset);
@@ -583,7 +577,7 @@ export class SynthetizerUI
         muteButton.classList.add("controller_element");
         muteButton.classList.add("mute_button");
         muteButton.onclick = () => {
-            if(this.synth.synthesisSystem.midiChannels[channelNumber].isMuted)
+            if(this.synth.midiChannels[channelNumber].isMuted)
             {
                 this.synth.muteChannel(channelNumber, false);
                 muteButton.innerHTML = getVolumeSvg(32);
@@ -613,7 +607,7 @@ export class SynthetizerUI
                 0x40, // drums
                 0x10 | sysexChannelNumber,
                 0x15, /// drums
-                this.synth.synthesisSystem.midiChannels[channelNumber].percussionChannel ? 0x00 : 0x01,
+                this.synth.midiChannels[channelNumber].percussionChannel ? 0x00 : 0x01,
                 0x11,
                 0xF7
             ]));
@@ -645,7 +639,7 @@ export class SynthetizerUI
 
         this.controllers.forEach((controller, i) => {
             // update channel
-            let voices = this.synth.synthesisSystem.midiChannels[i].voicesAmount;
+            let voices = this.synth.channelVoicesAmount[i];
             controller.voiceMeter.update(voices);
             if(voices < 1 && this.synth.voicesAmount > 0)
             {
@@ -656,8 +650,6 @@ export class SynthetizerUI
                 controller.controller.classList.remove("no_voices");
             }
         });
-        this.volumeController.update(100);
-        this.panController.update(0);
     }
 
     setEventListeners()
@@ -666,7 +658,7 @@ export class SynthetizerUI
         // add event listeners
         this.synth.eventHandler.addEvent("programchange", "synthui-program-change", e =>
         {
-            if(this.synth.synthesisSystem.midiChannels[e.channel].lockPreset)
+            if(this.synth.midiChannels[e.channel].lockPreset)
             {
                 return;
             }
@@ -720,7 +712,7 @@ export class SynthetizerUI
         });
 
         this.synth.eventHandler.addEvent("drumchange", "synthui-drum-change", e => {
-            if(this.synth.synthesisSystem.midiChannels[e.channel].lockPreset)
+            if(this.synth.midiChannels[e.channel].lockPreset)
             {
                 return;
             }
@@ -768,7 +760,7 @@ export class SynthetizerUI
         /**
          * @type {{name: string, program: number, bank: number}[]}
          */
-        this.instrumentList = this.synth.soundFont.presets.filter(p => p.bank !== 128)
+        this.instrumentList = this.synth.presetList.filter(p => p.bank !== 128)
             .sort((a, b) => {
                 if(a.program === b.program)
                 {
@@ -787,7 +779,7 @@ export class SynthetizerUI
         /**
          * @type {{name: string, program: number, bank: number}[]}
          */
-        this.percussionList = this.synth.soundFont.presets.filter(p => p.bank === 128)
+        this.percussionList = this.synth.presetList.filter(p => p.bank === 128)
             .sort((a, b) => a.program - b.program)
             .map(p => {
                 return {
@@ -802,7 +794,7 @@ export class SynthetizerUI
     {
         this.getInstrumentList();
         this.controllers.forEach((controller, i) => {
-            controller.preset.reload(this.synth.synthesisSystem.midiChannels[i].percussionChannel ? this.percussionList : this.instrumentList);
+            controller.preset.reload(this.synth.midiChannels[i].percussionChannel ? this.percussionList : this.instrumentList);
         })
     }
 }

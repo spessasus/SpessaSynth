@@ -555,7 +555,7 @@ export class Settings
         }
 
         // create the initial synth channels+
-        for(const channel of synthui.synth.synthesisSystem.midiChannels)
+        for(const channel of synthui.synth.midiChannels)
         {
             createChannel();
         }

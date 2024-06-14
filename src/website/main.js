@@ -3,7 +3,6 @@
 import {Manager} from "./manager.js";
 import {MIDI} from "../spessasynth_lib/midi_parser/midi_loader.js";
 
-import {SoundFont2} from "../spessasynth_lib/soundfont/soundfont_parser.js";
 import { formatTitle } from '../spessasynth_lib/utils/other.js'
 
 /**
@@ -33,7 +32,7 @@ fileInput.focus();
 let synthReady = false;
 
 /**
- * @type {{name: string, sf: SoundFont2}[]}
+ * @type {{name: string, sf: ArrayBuffer}[]}
  */
 window.loadedSoundfonts = [];
 
@@ -198,14 +197,8 @@ async function replaceFont(fontName)
 
     titleMessage.innerText = "Parsing soundfont...";
     setTimeout(() => {
-        window.soundFontParser = new SoundFont2(data);
+        window.soundFontParser = data;
         progressBar.style.width = "0";
-
-        if(window.soundFontParser.presets.length < 1)
-        {
-            titleMessage.innerText = "No presets in the soundfont! Check your file?"
-            return;
-        }
         window.loadedSoundfonts.push({name: fontName, sf: window.soundFontParser})
         replaceSf();
     });

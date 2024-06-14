@@ -1864,14 +1864,14 @@ var stbvorbis = typeof stbvorbis !== "undefined" ? stbvorbis : {};
       });
   });
   initializeWorkerP.catch(function (e) {});
-  AudioWorkletGlobalScope.stbvorbisDecode = function (buf, outCallback) {
-    var inCallback = AudioWorkletGlobalScope.stbvorbisDecodeStream(outCallback);
+  stbvorbis.decode = function (buf, outCallback) {
+    var inCallback = stbvorbis.decodeStream(outCallback);
     inCallback({ data: buf, eof: false });
     inCallback({ data: null, eof: true });
   };
   var sessionId = 0;
   var outCallbacks = {};
-  AudioWorkletGlobalScope.stbvorbisDecodeStream = function (outCallback) {
+  stbvorbis.decodeStream = function (outCallback) {
     var inCallbackImpl = null;
     var inputQueue = [];
     var inCallback = function (input) {

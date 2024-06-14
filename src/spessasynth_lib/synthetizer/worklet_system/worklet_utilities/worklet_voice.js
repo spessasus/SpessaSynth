@@ -57,7 +57,6 @@
  */
 
 import { addAndClampGenerator, generatorTypes } from '../../../soundfont/chunk/generators.js'
-import { workletMessageType } from './worklet_message.js'
 
 
 /**
@@ -84,9 +83,9 @@ function /**
  * @param channel {number} channel hint for the processor to recalculate cursor positions
  * @param sample {Sample}
  * @param id {number}
- * @param messagePort {MessagePort}
+ * @param sampleDumpCallback {function({channel: number, sampleID: number, sampleData: Float32Array})}
  */
-dumpSample(channel, sample, id, messagePort)
+dumpSample(channel, sample, id, sampleDumpCallback)
 {
     // flag as defined, so it's currently being dumped
     globalDumpedSamplesList[id] = false;
@@ -94,13 +93,10 @@ dumpSample(channel, sample, id, messagePort)
     // if uncompressed, load right away
     if(sample.isCompressed === false)
     {
-        messagePort.postMessage({
-            channelNumber: channel,
-            messageType: workletMessageType.sampleDump,
-            messageData: {
-                sampleID: id,
-                sampleData: sample.getAudioDataSync()
-            }
+        sampleDumpCallback({
+            channel: channel,
+            sampleID: id,
+            sampleData: sample.getAudioDataSync()
         });
         globalDumpedSamplesList[id] = true;
         return;
@@ -108,13 +104,10 @@ dumpSample(channel, sample, id, messagePort)
 
     // load the data
     sample.getAudioData().then(sampleData => {
-        messagePort.postMessage({
-            channelNumber: channel,
-            messageType: workletMessageType.sampleDump,
-            messageData: {
-                sampleID: id,
-                sampleData: sampleData
-            }
+        sampleDumpCallback({
+            channel: channel,
+            sampleID: id,
+            sampleData: sampleData
         });
         globalDumpedSamplesList[id] = true;
     })
@@ -125,13 +118,22 @@ dumpSample(channel, sample, id, messagePort)
  * @param midiNote {number}
  * @param velocity {number}
  * @param preset {Preset}
- * @param context {BaseAudioContext}
- * @param workletMessagePort {MessagePort}
+ * @param currentTime {number}
+ * @param sampleRate {number}
+ * @param sampleDumpCallback {function({channel: number, sampleID: number, sampleData: Float32Array})}
  * @param cachedVoices {WorkletVoice[][][]} first is midi note, second is velocity. output is an array of WorkletVoices
  * @param debug {boolean}
  * @returns {WorkletVoice[]}
  */
-export function getWorkletVoices(channel, midiNote, velocity, preset, context, workletMessagePort, cachedVoices, debug=false)
+export function getWorkletVoices(channel,
+                                 midiNote,
+                                 velocity,
+                                 preset,
+                                 currentTime,
+                                 sampleRate,
+                                 sampleDumpCallback,
+                                 cachedVoices,
+                                 debug=false)
 {
     /**
      * @type {WorkletVoice[]}
@@ -143,7 +145,7 @@ export function getWorkletVoices(channel, midiNote, velocity, preset, context, w
     {
         workletVoices = cached;
         workletVoices.forEach(v => {
-            v.startTime = context.currentTime;
+            v.startTime = currentTime;
         });
     }
     else
@@ -158,7 +160,7 @@ export function getWorkletVoices(channel, midiNote, velocity, preset, context, w
             if (globalDumpedSamplesList[sampleAndGenerators.sampleID] !== true) {
                 // if the sample is currently being loaded, don't dump again (undefined means not loaded, false means is being loaded)
                 if(globalDumpedSamplesList[sampleAndGenerators.sampleID] === undefined) {
-                    dumpSample(channel, sampleAndGenerators.sample, sampleAndGenerators.sampleID, workletMessagePort);
+                    dumpSample(channel, sampleAndGenerators.sample, sampleAndGenerators.sampleID, sampleDumpCallback);
                 }
 
                 // can't cache the voice as the end in workletSample maybe is incorrect (the sample is still loading)
@@ -200,7 +202,7 @@ export function getWorkletVoices(channel, midiNote, velocity, preset, context, w
              */
             const workletSample = {
                 sampleID: sampleAndGenerators.sampleID,
-                playbackStep: (sampleAndGenerators.sample.sampleRate / context.sampleRate) * Math.pow(2, sampleAndGenerators.sample.samplePitchCorrection / 1200),// cent tuning
+                playbackStep: (sampleAndGenerators.sample.sampleRate / sampleRate) * Math.pow(2, sampleAndGenerators.sample.samplePitchCorrection / 1200),// cent tuning
                 cursor: generators[generatorTypes.startAddrsOffset] + (generators[generatorTypes.startAddrsCoarseOffset] * 32768),
                 rootKey: rootKey,
                 loopStart: loopStart,
@@ -255,7 +257,7 @@ export function getWorkletVoices(channel, midiNote, velocity, preset, context, w
                 velocity: velocity,
                 midiNote: midiNote,
                 channelNumber: channel,
-                startTime: context.currentTime,
+                startTime: currentTime,
                 targetKey: targetKey,
                 currentTuningCalculated: 1,
                 currentTuningCents: 0,
