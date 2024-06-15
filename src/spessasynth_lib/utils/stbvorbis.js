@@ -1630,37 +1630,27 @@ var stbvorbis = typeof stbvorbis !== "undefined" ? stbvorbis : {};
     run();
     (function (Module) {
       var initializeP = new Promise(function (resolve) {
-        if (typeof useWasm !== "undefined") {
-          Module.onRuntimeInitialized = function () {
-            var fs = {};
-            fs.open = Module.cwrap("stb_vorbis_js_open", "number", []);
-            fs.close = Module.cwrap("stb_vorbis_js_close", "void", ["number"]);
-            fs.channels = Module.cwrap("stb_vorbis_js_channels", "number", [
-              "number",
-            ]);
-            fs.sampleRate = Module.cwrap(
-              "stb_vorbis_js_sample_rate",
-              "number",
-              ["number"],
-            );
-            fs.decode = Module.cwrap("stb_vorbis_js_decode", "number", [
-              "number",
-              "number",
-              "number",
-              "number",
-              "number",
-            ]);
-            resolve(fs);
-          };
-          return;
-        }
-        var fs = {};
-        fs.open = Module["_stb_vorbis_js_open"];
-        fs.close = Module["_stb_vorbis_js_close"];
-        fs.channels = Module["_stb_vorbis_js_channels"];
-        fs.sampleRate = Module["_stb_vorbis_js_sample_rate"];
-        fs.decode = Module["_stb_vorbis_js_decode"];
-        resolve(fs);
+        Module.onRuntimeInitialized = function () {
+          var fs = {};
+          fs.open = Module.cwrap("stb_vorbis_js_open", "number", []);
+          fs.close = Module.cwrap("stb_vorbis_js_close", "void", ["number"]);
+          fs.channels = Module.cwrap("stb_vorbis_js_channels", "number", [
+            "number",
+          ]);
+          fs.sampleRate = Module.cwrap(
+            "stb_vorbis_js_sample_rate",
+            "number",
+            ["number"],
+          );
+          fs.decode = Module.cwrap("stb_vorbis_js_decode", "number", [
+            "number",
+            "number",
+            "number",
+            "number",
+            "number",
+          ]);
+          resolve(fs);
+        };
       });
       function arrayBufferToHeap(buffer, byteOffset, byteLength) {
         var ptr = Module._malloc(byteLength);
@@ -1834,34 +1824,12 @@ var stbvorbis = typeof stbvorbis !== "undefined" ? stbvorbis : {};
     });
   }
   var initializeWorkerP = new Promise(function (resolve, reject) {
-    var isiOS = false;
-    if (typeof WebAssembly === "object" && !isiOS) {
-      var workerURL = URL.createObjectURL(
-        new Blob(["(" + decodeWorker.toString() + ")();"], {
-          type: "text/javascript",
-        }),
-      );
-      resolve(new Worker(workerURL));
-      return;
-    }
-    var scriptPath = document.currentScript.src;
-    var directoryPath = scriptPath.slice(0, scriptPath.lastIndexOf("/") + 1);
-    httpGet(directoryPath + "stbvorbis_asm.js")
-      .then(function (script) {
-        workerURL = URL.createObjectURL(
-          new Blob([script], { type: "text/javascript" }),
-        );
-        resolve(new Worker(workerURL));
-      })
-      .catch(function (err) {
-        reject(
-          new Error(
-            "asmjs version is not available (HTTP status: " +
-              err.status +
-              " on stbvorbis_asm.js). Deploy stbvorbis_asm.js at the same place as stbvorbis.js.",
-          ),
-        );
-      });
+    var workerURL = URL.createObjectURL(
+      new Blob(["(" + decodeWorker.toString() + ")();"], {
+        type: "text/javascript",
+      }),
+    );
+    resolve(new Worker(workerURL));
   });
   initializeWorkerP.catch(function (e) {});
   stbvorbis.decode = function (buf, outCallback) {
