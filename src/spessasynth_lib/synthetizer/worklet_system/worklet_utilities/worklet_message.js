@@ -1,5 +1,27 @@
 /**
  * @enum {number}
+ * @property {number} noteOff                  - 0  -> midiNote<number>: Every message needs a channel number (if not relevant or all, set to -1)
+ * @property {number} noteOn                   - 1  -> [midiNote<number>, velocity<number>, enableDebugging<boolean>]
+ * @property {number} ccChange                 - 2  -> [ccNumber<number>, ccValue<number>]
+ * @property {number} programChange            - 3  -> [programNumber<number>, userChange<boolean>]
+ * @property {number} killNote                 - 4  -> midiNote<number>
+ * @property {number} ccReset                  - 5  -> (no data) note: if channel is -1 then reset all channels
+ * @property {number} setChannelVibrato        - 6  -> {frequencyHz: number, depthCents: number, delaySeconds: number} note: if channel is -1 then stop all channels note 2: if rate is -1, it means locking
+ * @property {number} reloadSoundFont          - 7  -> (no data)
+ * @property {number} stopAll                  - 8  -> force<number> (0 false, 1 true) note: if channel is -1 then stop all channels
+ * @property {number} killNotes                - 9  -> amount<number>
+ * @property {number} muteChannel              - 10 -> isMuted<boolean>
+ * @property {number} addNewChannel            - 11 -> (no data)
+ * @property {number} customCcChange           - 12 -> [ccNumber<number>, ccValue<number>]
+ * @property {number} debugMessage             - 13 -> (no data)
+ * @property {number} systemExclusive          - 14 -> message data <number[]> (without the F0 byte)
+ * @property {number} setMainVolume            - 15 -> volume<number> (0 to 1)
+ * @property {number} setMasterPan             - 16 -> pan<number> (-1 to 1)
+ * @property {number} setDrums                 - 17 -> isDrums<boolean>
+ * @property {number} pitchWheel               - 18 -> [MSB<number>, LSB<number>]
+ * @property {number} transpose                - 19 -> [semitones<number>, force<boolean>] note: if channel is -1 then transpose all channels
+ * @property {number} highPerformanceMode      - 20 -> isOn<boolean>
+ * @property {number} lockController           - 21 -> [controllerNumber<number>, isLocked<boolean>]
  */
 export const workletMessageType = {
     noteOff: 0,
@@ -20,9 +42,14 @@ export const workletMessageType = {
     setMainVolume: 15,
     setMasterPan: 16,
     setDrums: 17,
-    getPresetList: 18,
+    pitchWheel: 18,
+    transpose: 19,
+    highPerformanceMode: 20,
+    lockController: 21
 };
 
+
+export const ALL_CHANNELS_OR_DIFFERENT_ACTION = -1;
 /**
  * @typedef {{
  *     channelNumber: number
@@ -37,27 +64,6 @@ export const workletMessageType = {
  *     |ArrayBuffer
  *     )
  * }} WorkletMessage
- * Every message needs a channel number (if not relevant, set to -1)
- * Message types:
- * 0 - noteOff                  -> midiNote<number>
- * 1 - noteOn                   -> [midiNote<number>, velocity<number>]
- * 2 - controller change        -> [ccNumber<number>, ccValue<number>]
- * 3 - program change           -> [programNumber<number>, userChange<boolean>]
- * 4 - note off instantly       -> midiNote<number>
- * 5 - controllers reset        -> array<number> excluded controller numbers (excluded from the reset)
- * 6 - channel vibrato          -> {frequencyHz: number, depthCents: number, delaySeconds: number}
- * 7 - reload soundfont         -> (no data)
- * 8 - stop all notes           -> force<number> (0 false, 1 true)
- * 9 - kill notes               -> amount<number>
- * 10 - mute channel            -> isMuted<booolean>
- * 11 - add new channel         -> (no data)
- * 12 - custom controller change-> [ccNumber<number>, ccValue<number>]
- * 13 - debug message           -> (no data)
- * 14 - system exclusive        -> message data <number[]> (without the F0 byte)
- * 15 - set main volume         -> volume<number> (0 to 1)
- * 16 - set master pan          -> pan<number> (-1 to 1)
- * 17 - set drums               -> isDrums<boolean>
- * 18 - get preset list         -> (no data)
  */
 
 /**
@@ -66,21 +72,19 @@ export const workletMessageType = {
  * @property {{
  *     eventName: string,
  *     eventData: any
- * }|number[]
+ * }|ChannelProperty[]
  * |PresetListElement[]} messageData - the message's data
  *
- * 0 - reported voices amount       -> [...channelVoicesAmount<number>]
+ * 0 - channel properties           -> [...<ChannelProperty>] see message_sending.js line 29
  * 1 - event call                   -> {eventName<string>, eventData:<the event's data>}
  * 2 - reported current time        -> currentTime<number>
- * 3 - preset list                  -> [...{presetName<string>, bank<number>, program<number>}]
  */
 
 /**
  * @enum {number}
  */
 export const returnMessageType = {
-    reportedVoicesAmount: 0,
+    channelProperties: 0,
     eventCall: 1,
     reportedCurrentTime: 2,
-    presetList: 3,
 }

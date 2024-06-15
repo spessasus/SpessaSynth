@@ -103,15 +103,47 @@ dumpSample(channel, sample, id, sampleDumpCallback)
     }
 
     // load the data
-    sample.getAudioData().then(sampleData => {
-        sampleDumpCallback({
-            channel: channel,
-            sampleID: id,
-            sampleData: sampleData
-        });
-        globalDumpedSamplesList[id] = true;
-    })
+    sampleDumpCallback({
+        channel: channel,
+        sampleID: id,
+        sampleData: sample.getAudioData()
+    });
+    globalDumpedSamplesList[id] = true;
 }
+
+/**
+ * Deep clone function for the WorkletVoice object and its nested structures.
+ * This function handles Int16Array, objects, arrays, and primitives.
+ * It does not handle circular references.
+ * @param {WorkletVoice} obj - The object to clone.
+ * @returns {WorkletVoice} - Cloned object.
+ */
+function deepClone(obj) {
+    if (obj === null || typeof obj !== 'object') {
+        return obj;
+    }
+
+    // Handle Int16Array separately
+    if (obj instanceof Int16Array) {
+        return new Int16Array(obj);
+    }
+
+    // Handle objects and arrays
+    const clonedObj = Array.isArray(obj) ? [] : {};
+    for (let key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            if (typeof obj[key] === 'object' && obj[key] !== null) {
+                clonedObj[key] = deepClone(obj[key]); // Recursively clone nested objects
+            } else if (obj[key] instanceof Int16Array) {
+                clonedObj[key] = new Int16Array(obj[key]); // Clone Int16Array
+            } else {
+                clonedObj[key] = obj[key]; // Copy primitives
+            }
+        }
+    }
+    return clonedObj;
+}
+
 
 /**
  * @param channel {number} a hint for the processor to recalculate sample cursors when sample dumping
@@ -143,7 +175,7 @@ export function getWorkletVoices(channel,
     const cached = cachedVoices[midiNote][velocity];
     if(cached)
     {
-        workletVoices = cached;
+        workletVoices = cached.map(deepClone);
         workletVoices.forEach(v => {
             v.startTime = currentTime;
         });
@@ -155,7 +187,6 @@ export function getWorkletVoices(channel,
          * @returns {WorkletVoice}
          */
         workletVoices = preset.getSamplesAndGenerators(midiNote, velocity).map(sampleAndGenerators => {
-
             // dump the sample if haven't already
             if (globalDumpedSamplesList[sampleAndGenerators.sampleID] !== true) {
                 // if the sample is currently being loaded, don't dump again (undefined means not loaded, false means is being loaded)
@@ -164,7 +195,10 @@ export function getWorkletVoices(channel,
                 }
 
                 // can't cache the voice as the end in workletSample maybe is incorrect (the sample is still loading)
-                canCache = false;
+                if(globalDumpedSamplesList[sampleAndGenerators.sampleID] !== true)
+                {
+                    canCache = false;
+                }
             }
 
             // create the generator list
@@ -195,6 +229,7 @@ export function getWorkletVoices(channel,
             if (loopEnd - loopStart < 1) {
                 loopingMode = 0;
             }
+
             // determine end
             /**
              * create the worklet sample
@@ -211,7 +246,6 @@ export function getWorkletVoices(channel,
                 loopingMode: loopingMode
             };
 
-
             // velocity override
             if (generators[generatorTypes.velocity] > -1) {
                 velocity = generators[generatorTypes.velocity];
@@ -220,7 +254,7 @@ export function getWorkletVoices(channel,
             if(debug)
             {
                 console.table([{
-                    Sample: sampleAndGenerators.sample,
+                    Sample: sampleAndGenerators.sample.sampleName,
                     Generators: generators,
                     Modulators: sampleAndGenerators.modulators.map(m => m.debugString()),
                     Velocity: velocity,
@@ -273,10 +307,10 @@ export function getWorkletVoices(channel,
             };
 
         });
-
         // cache the voice
         if(canCache) {
-            cachedVoices[midiNote][velocity] = workletVoices;
+            // clone it so the system won't mess with it!
+            cachedVoices[midiNote][velocity] = workletVoices.map(deepClone);
         }
     }
     return workletVoices;

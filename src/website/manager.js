@@ -3,7 +3,6 @@ import { Synthetizer } from '../spessasynth_lib/synthetizer/synthetizer.js'
 import { Renderer } from './ui/renderer/renderer.js'
 import { MIDI } from '../spessasynth_lib/midi_parser/midi_loader.js'
 
-import { SoundFont2 } from '../spessasynth_lib/soundfont/soundfont_parser.js'
 import { SequencerUI } from './ui/sequencer_ui/sequencer_ui.js'
 import { SynthetizerUI } from './ui/synthesizer_ui/synthetizer_ui.js'
 import { MIDIDeviceHandler } from '../spessasynth_lib/midi_handler/midi_handler.js'
@@ -65,10 +64,10 @@ import { isMobile } from '../spessasynth_lib/utils/other.js'
         }
 
         if(context.audioWorklet) {
-            const stbvorbisURL = new URL("../spessasynth_lib/utils/stbvorbis_sync.js", import.meta.url).href;
+            //const stbvorbisURL = new URL("../spessasynth_lib/utils/stbvorbis_sync.js", import.meta.url).href;
             const workletURL = new URL("../spessasynth_lib/synthetizer/worklet_system/worklet_processor.js", import.meta.url).href;
             await context.audioWorklet.addModule(workletURL);
-            await context.audioWorklet.addModule(stbvorbisURL);
+            //await context.audioWorklet.addModule(stbvorbisURL);
         }
         // set up soundfont
         this.soundFont = soundFont;
@@ -194,15 +193,6 @@ import { isMobile } from '../spessasynth_lib/utils/other.js'
                     })
 
                     break;
-
-                case "n":
-                    // secret
-                    for (let i = 0; i < 16; i++) {
-                        this.synth.midiChannels[i].lockPreset = false;
-                        this.synth.programChange(i, (this.synth.midiChannels[i].preset.program + 1) % 127);
-                        this.synth.midiChannels[i].lockPreset = true;
-                    }
-                    break;
             }
         });
         this.ready = true;
@@ -215,7 +205,6 @@ import { isMobile } from '../spessasynth_lib/utils/other.js'
     {
         //this.soundFontMixer.soundFontChange(sf);
         this.synth.reloadSoundFont(sf);
-        this.synthUI.reloadSelectors();
     }
 
     /**

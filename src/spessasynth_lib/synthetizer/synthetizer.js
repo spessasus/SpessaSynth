@@ -4,10 +4,12 @@ import { getEvent, messageTypes, midiControllers } from '../midi_parser/midi_mes
 import { EventHandler } from './synth_event_handler.js'
 import { FancyChorus } from './audio_effects/fancy_chorus.js'
 import { getReverbProcessor } from './audio_effects/reverb.js'
-import { returnMessageType, workletMessageType } from './worklet_system/worklet_utilities/worklet_message.js'
-import { clearSamplesList, } from './worklet_system/worklet_utilities/worklet_voice.js'
-import { customControllers, NON_CC_INDEX_OFFSET } from './worklet_system/worklet_utilities/worklet_processor_channel.js'
-import { modulatorSources } from '../soundfont/chunk/modulators.js'
+import {
+    returnMessageType,
+    ALL_CHANNELS_OR_DIFFERENT_ACTION,
+    workletMessageType,
+} from './worklet_system/worklet_utilities/worklet_message.js'
+
 
 /**
  * synthesizer.js
@@ -44,15 +46,7 @@ import { modulatorSources } from '../soundfont/chunk/modulators.js'
 
 export const WORKLET_PROCESSOR_NAME = "spessasynth-worklet-system";
 
-const dataEntryStates = {
-    Idle: 0,
-    RPCoarse: 1,
-    RPFine: 2,
-    NRPCoarse: 3,
-    NRPFine: 4,
-    DataCoarse: 5,
-    DataFine: 6
-};
+
 
 export const VOICE_CAP = 450;
 
@@ -80,19 +74,6 @@ export class Synthetizer {
         this.reverbProcessor.connect(targetNode);
 
         /**
-         * individual channel voices amount
-         * @type {number[]}
-         */
-        this.channelVoicesAmount = Array(DEFAULT_CHANNEL_COUNT).fill(0);
-        this._voicesAmount = 0;
-
-        /**
-         * For Black MIDI's - forces release time to 50ms
-         * @type {boolean}
-         */
-        this.highPerformanceMode = false;
-
-        /**
          * the new channels will have their audio sent to the moduled output by this constant.
          * what does that mean? e.g. if outputsAmount is 16, then channel's 16 audio will be sent to channel 0
          * @type {number}
@@ -104,7 +85,32 @@ export class Synthetizer {
          * the amount of midi channels
          * @type {number}
          */
-        this.channelsAmount = 0;
+        this.channelsAmount = this._outputsAmount;
+
+        /**
+         * @type {ChannelProperty}
+         */
+        const defaultProperty = {
+            voicesAmount: 0,
+            pitchBend: 0,
+            pitchBendRangeSemitones: 0,
+            isMuted: false,
+            isDrum: false
+        }
+
+        /**
+         * individual channel voices amount
+         * @type {ChannelProperty[]}
+         */
+        this.channelProperties = Array(this.channelsAmount).fill(defaultProperty);
+        this.channelProperties[DEFAULT_PERCUSSION].isDrum = true;
+        this._voicesAmount = 0;
+
+        /**
+         * For Black MIDI's - forces release time to 50ms
+         * @type {boolean}
+         */
+        this._highPerformanceMode = false;
 
         // create a worklet processor
 
@@ -119,23 +125,13 @@ export class Synthetizer {
         });
 
         /**
-         * @type {MidiChannel[]}
-         */
-        this.midiChannels = [];
-
-        /**
          * @typedef {Object} PresetListElement
          * @property {string} presetName
          * @property {number} program
          * @property {number} bank
          *
-         * @type {PresetListElement[]}
+         * used in "presetlistchange" event
          */
-        this.presetList = [];
-
-        for (let i = 0; i < this._outputsAmount; i++) {
-            this.createNewChannel(false);
-        }
 
         // worklet sends us some data back
         this.worklet.port.onmessage = e => this.handleMessage(e.data);
@@ -148,8 +144,27 @@ export class Synthetizer {
             this.worklet.connect(targetNode, i);
         }
 
-        this.requestPresetList();
+        // attach newchannel to keep track of channels count
+        this.eventHandler.addEvent("newchannel", "synth-new-channel", () => {
+            this.channelsAmount++;
+        })
+
         console.info("%cSpessaSynth is ready!", consoleColors.recognized);
+    }
+
+    /**
+     * For Black MIDI's - forces release time to 50ms
+     * @param {boolean} value
+     */
+    set highPerformanceMode(value)
+    {
+        this._highPerformanceMode = value;
+
+    }
+
+    get highPerformanceMode()
+    {
+        return this._highPerformanceMode;
     }
 
     /**
@@ -162,101 +177,19 @@ export class Synthetizer {
         const messageData = message.messageData;
         switch (message.messageType)
         {
-            case returnMessageType.reportedVoicesAmount:
+            case returnMessageType.channelProperties:
                 /**
-                 * @type {number[]}
+                 * @type {ChannelProperty[]}
                  */
-                this.channelVoicesAmount = messageData;
+                this.channelProperties = messageData;
 
-                this._voicesAmount = this.channelVoicesAmount.reduce((sum, voices) => sum + voices, 0);
+                this._voicesAmount = this.channelProperties.reduce((sum, voices) => sum + voices.voicesAmount, 0);
                 break;
 
             case returnMessageType.eventCall:
                 this.eventHandler.callEvent(messageData.eventName, messageData.eventData);
                 break;
-
-            case returnMessageType.presetList:
-                this.presetList = messageData;
         }
-    }
-
-    /**
-     * Changes preset
-     * @param channel {number}
-     * @param preset {Preset}
-     * @private
-     */
-    setPreset(channel, preset)
-    {
-        if(this.midiChannels[channel].lockPreset)
-        {
-            return;
-        }
-        this.midiChannels[channel].preset = preset;
-        this.midiChannels[channel].cachedWorkletVoices = [];
-        for (let i = 0; i < 128; i++) {
-            this.midiChannels[channel].cachedWorkletVoices.push([]);
-        }
-        if(this.midiChannels[channel].preset.bank === 128)
-        {
-            this.midiChannels[channel].channelTranspose = 0;
-            this.post({
-                channelNumber: channel,
-                messageType: workletMessageType.customcCcChange,
-                messageData: [customControllers.channelTranspose, 0]
-            });
-        }
-    }
-
-    /**
-     * @private
-     * @param sendWorkletMessage {boolean}
-     */
-    createNewChannel(sendWorkletMessage=true)
-    {
-        /**
-         * @type {MidiChannel}
-         **/
-        const channel = {
-            preset: this.defaultPreset,
-            vibrato: {depth: 0, delay: 0, rate: 0},
-            bank: 0,
-            pitchBend: 8192,
-            channelPitchBendRange: 2,
-            channelTuningCents: 0,
-            channelTranspose: 0,
-            channelModulationDepthCents: 50,
-            NRPCoarse: 0,
-            NRPFine: 0,
-            RPValue: 0,
-            dataEntryState: dataEntryStates.Idle,
-            percussionChannel: false,
-
-            cachedWorkletVoices: [],
-
-            lockedControllers: Array(128).fill(false),
-            isMuted: false,
-            lockVibrato: false,
-            lockPreset: false,
-
-            voicesAmount: 0,
-            velocityAddition: 0,
-        };
-        for (let i = 0; i < 128; i++) {
-            channel.cachedWorkletVoices.push([]);
-        }
-        this.midiChannels.push(channel);
-        this.channelsAmount++;
-        if(sendWorkletMessage) {
-            this.post({
-                channelNumber: 0,
-                messageType: workletMessageType.addNewChannel,
-                messageData: null
-            });
-        }
-
-
-
     }
 
     /**
@@ -264,8 +197,11 @@ export class Synthetizer {
      */
     addNewChannel()
     {
-        this.createNewChannel();
-        this.eventHandler.callEvent("newchannel", this.midiChannels[this.channelsAmount - 1]);
+        this.post({
+            channelNumber: 0,
+            messageType: workletMessageType.addNewChannel,
+            messageData: null
+        });
     }
 
     /**
@@ -274,16 +210,11 @@ export class Synthetizer {
      */
     setVibrato(channel, value)
     {
-        if(this.midiChannels[channel].lockVibrato)
-        {
-            return;
-        }
         this.post({
             channelNumber: channel,
             messageType: workletMessageType.setChannelVibrato,
             messageData: value
         });
-        this.midiChannels[channel].vibrato = value;
     }
 
     /**
@@ -294,9 +225,8 @@ export class Synthetizer {
     {
         if(audioNodes.length !== this._outputsAmount)
         {
-            console.trace();
-            throw `input nodes amount differs from the system's outputs amount!
-            Expected ${this._outputsAmount} got ${audioNodes.length}`;
+            throw new Error(`input nodes amount differs from the system's outputs amount!
+            Expected ${this._outputsAmount} got ${audioNodes.length}`);
         }
         for (let outputNumber = 0; outputNumber < this._outputsAmount; outputNumber++) {
             // + 2 because chorus and reverb come first!
@@ -309,11 +239,9 @@ export class Synthetizer {
      */
     lockAndResetChannelVibrato()
     {
-        for (let i = 0; i < this.channelsAmount; i++) {
-            this.midiChannels[i].lockVibrato = false;
-            this.setVibrato(i, {depth: 0, rate: 0, delay: 0});
-            this.midiChannels[i].lockVibrato = true;
-        }
+        // rate -1 disables, see worklet_message.js line 9
+        // channel -1 is all
+        this.setVibrato(ALL_CHANNELS_OR_DIFFERENT_ACTION, {depth: 0, rate: -1, delay: 0});
     }
 
     /**
@@ -337,41 +265,10 @@ export class Synthetizer {
      * @param enableDebugging {boolean} set to true to log technical details to console
      */
     noteOn(channel, midiNote, velocity, enableDebugging = false) {
-        if (velocity === 0) {
-            this.noteOff(channel, midiNote);
-            return;
-        }
-
-        if((this.highPerformanceMode && this.voicesAmount > 200 && velocity < 40)
-        ||
-        (this.highPerformanceMode && velocity < 10)
-        ||
-        (this.midiChannels[channel].isMuted))
-        {
-            return;
-        }
-
-        if(midiNote > 127 || midiNote < 0)
-        {
-            console.warn(`Received a noteOn for note`, midiNote, "Ignoring.");
-            return;
-        }
-
-        velocity += this.midiChannels[channel].velocityAddition;
-        if(velocity > 127)
-        {
-            velocity = 127;
-        }
-
-        if(this.midiChannels[channel].isMuted)
-        {
-            return 0;
-        }
-
         this.post({
             channelNumber: channel,
             messageType: workletMessageType.noteOn,
-            messageData: [midiNote, velocity]
+            messageData: [midiNote, velocity, enableDebugging]
         });
     }
 
@@ -382,21 +279,6 @@ export class Synthetizer {
      * @param force {boolean} instantly kills the note if true
      */
     noteOff(channel, midiNote, force = false) {
-        if(midiNote > 127 || midiNote < 0)
-        {
-            console.warn(`Received a noteOn for note`, midiNote, "Ignoring.");
-            return;
-        }
-
-        // if high performance mode, kill notes instead of stopping them
-        if(this.highPerformanceMode)
-        {
-            // if the channel is percussion channel, do not kill the notes
-            if(!this.midiChannels[channel].percussionChannel)
-            {
-                force = true;
-            }
-        }
         if(force)
         {
             this.post({
@@ -419,25 +301,12 @@ export class Synthetizer {
      * @param force {boolean} if we should instantly kill the note, defaults to false
      */
     stopAll(force=false) {
-        console.info("%cStop all received!", consoleColors.info);
-        for (let i = 0; i < this.channelsAmount; i++) {
-            this.stopAllNotesOnChannel(i, force);
-        }
-        this.eventHandler.callEvent("stopall", {});
-    }
-
-    /**
-     * Stops all notes on a specific channel
-     * @param channel {number} the channel's number
-     * @param force {boolean} if we should instantly kill the note, defaults to false
-     */
-    stopAllNotesOnChannel(channel, force = false)
-    {
         this.post({
-            channelNumber: channel,
+            channelNumber: ALL_CHANNELS_OR_DIFFERENT_ACTION,
             messageType: workletMessageType.stopAll,
             messageData: force ? 1 : 0
         });
+
     }
 
     /**
@@ -448,459 +317,10 @@ export class Synthetizer {
      */
     controllerChange(channel, controllerNumber, controllerValue)
     {
-        if(this.midiChannels[channel].lockedControllers[controllerNumber] === true)
-        {
-            return;
-        }
-        switch (controllerNumber) {
-            default:
-                this.post({
-                    channelNumber: channel,
-                    messageType: workletMessageType.ccChange,
-                    messageData: [controllerNumber, controllerValue << 7]
-                });
-                break;
-
-            case midiControllers.RPNLsb:
-                this.midiChannels[channel].RPValue = this.midiChannels[channel].RPValue << 7 | controllerValue;
-                this.midiChannels[channel].dataEntryState = dataEntryStates.RPFine;
-                break;
-
-            case midiControllers.RPNMsb:
-                this.midiChannels[channel].RPValue = controllerValue;
-                this.midiChannels[channel].dataEntryState = dataEntryStates.RPCoarse;
-                break;
-
-            case midiControllers.NRPNMsb:
-                this.midiChannels[channel].NRPCoarse = controllerValue;
-                this.midiChannels[channel].dataEntryState = dataEntryStates.NRPCoarse;
-                break;
-
-            case midiControllers.NRPNLsb:
-                this.midiChannels[channel].NRPFine = controllerValue;
-                this.midiChannels[channel].dataEntryState = dataEntryStates.NRPFine;
-                break;
-
-            case midiControllers.dataEntryMsb:
-                this.dataEntryCoarse(channel, controllerValue);
-                break;
-
-            case midiControllers.lsbForControl6DataEntry:
-                this.dataEntryFine(channel, controllerValue);
-        }
-    }
-
-    /**
-     * requests the preset list from the worklet
-     * @private
-     */
-    requestPresetList()
-    {
-        this.post({
-            channelNumber: -1,
-            messageType: workletMessageType.getPresetList,
-            messageData: undefined
-        });
-    }
-
-    /**
-     * Sets the channel's pitch bend range in semitones
-     * @param channel {number} the channel number
-     * @param semitones {number} the pitch bend range in semitones
-     */
-    setPitchBendRange(channel, semitones)
-    {
-        this.midiChannels[channel].channelPitchBendRange = semitones;
-        console.info(`%cChannel ${channel} bend range. Semitones: %c${semitones}`,
-            consoleColors.info,
-            consoleColors.value);
         this.post({
             channelNumber: channel,
             messageType: workletMessageType.ccChange,
-            messageData: [NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange, this.midiChannels[channel].channelPitchBendRange << 7]
-        });
-    }
-
-    /**
-     * Executes a data entry for an NRP for a sc88pro NRP (because touhou yes) and RPN tuning
-     * @param channel {number}
-     * @param dataValue {number} dataEntryCoarse MSB
-     * @private
-     */
-    dataEntryCoarse(channel, dataValue)
-    {
-        let addDefaultVibrato = () =>
-        {
-            if(this.midiChannels[channel].vibrato.delay === 0 && this.midiChannels[channel].vibrato.rate === 0 && this.midiChannels[channel].vibrato.depth === 0)
-            {
-                this.midiChannels[channel].vibrato.depth = 50;
-                this.midiChannels[channel].vibrato.rate = 8;
-                this.midiChannels[channel].vibrato.delay = 0.6;
-            }
-        }
-
-        switch(this.midiChannels[channel].dataEntryState)
-        {
-            default:
-            case dataEntryStates.Idle:
-                break;
-
-            // https://cdn.roland.com/assets/media/pdf/SC-88PRO_OM.pdf
-            // http://hummer.stanford.edu/sig/doc/classes/MidiOutput/rpn.html
-            case dataEntryStates.NRPFine:
-                switch(this.midiChannels[channel].NRPCoarse)
-                {
-                    default:
-                        if(dataValue === 64)
-                        {
-                            // default value
-                            return;
-                        }
-                        console.info(
-                            `%cUnrecognized NRPN for %c${channel}%c: %c(0x${this.midiChannels[channel].NRPCoarse.toString(16).toUpperCase()} 0x${this.midiChannels[channel].NRPFine.toString(16).toUpperCase()})%c data value: %c${dataValue}`,
-                            consoleColors.warn,
-                            consoleColors.recognized,
-                            consoleColors.warn,
-                            consoleColors.unrecognized,
-                            consoleColors.warn,
-                            consoleColors.value);
-                        break;
-
-                    case 0x01:
-                        switch(this.midiChannels[channel].NRPFine)
-                        {
-                            default:
-                                if(dataValue === 64)
-                                {
-                                    // default value
-                                    return;
-                                }
-                                console.info(
-                                    `%cUnrecognized NRPN for %c${channel}%c: %c(0x${this.midiChannels[channel].NRPCoarse.toString(16)} 0x${this.midiChannels[channel].NRPFine.toString(16)})%c data value: %c${dataValue}`,
-                                    consoleColors.warn,
-                                    consoleColors.recognized,
-                                    consoleColors.warn,
-                                    consoleColors.unrecognized,
-                                    consoleColors.warn,
-                                    consoleColors.value);
-                                break;
-
-                            // vibrato rate
-                            case 0x08:
-                                if(this.midiChannels[channel].lockVibrato)
-                                {
-                                    return;
-                                }
-                                if(dataValue === 64)
-                                {
-                                    return;
-                                }
-                                addDefaultVibrato();
-                                this.midiChannels[channel].vibrato.rate = (dataValue / 64) * 8;
-                                console.info(`%cVibrato rate for channel %c${channel}%c is now set to %c${this.midiChannels[channel].vibrato.rate}%cHz.`,
-                                    consoleColors.info,
-                                    consoleColors.recognized,
-                                    consoleColors.info,
-                                    consoleColors.value,
-                                    consoleColors.info);
-
-                                this.post({
-                                    channelNumber: channel,
-                                    messageType: workletMessageType.setChannelVibrato,
-                                    messageData: this.midiChannels[channel].vibrato
-                                });
-                                break;
-
-                            // vibrato depth
-                            case 0x09:
-                                if(this.midiChannels[channel].lockVibrato)
-                                {
-                                    return;
-                                }
-                                if(dataValue === 64)
-                                {
-                                    return;
-                                }
-                                addDefaultVibrato();
-                                this.midiChannels[channel].vibrato.depth = dataValue / 2;
-                                console.info(`%cVibrato depth for %c${channel}%c is now set to %c${this.midiChannels[channel].vibrato.depth}%c cents range of detune.`,
-                                    consoleColors.info,
-                                    consoleColors.recognized,
-                                    consoleColors.info,
-                                    consoleColors.value,
-                                    consoleColors.info);
-
-                                this.post({
-                                    channelNumber: channel,
-                                    messageType: workletMessageType.setChannelVibrato,
-                                    messageData: this.midiChannels[channel].vibrato
-                                });
-                                break;
-
-                            // vibrato delay
-                            case 0x0A:
-                                if(this.midiChannels[channel].lockVibrato)
-                                {
-                                    return;
-                                }
-                                if(dataValue === 64)
-                                {
-                                    return;
-                                }
-                                addDefaultVibrato();
-                                this.midiChannels[channel].vibrato.delay = (dataValue / 64) / 3;
-                                console.info(`%cVibrato delay for %c${channel}%c is now set to %c${this.midiChannels[channel].vibrato.delay}%c seconds.`,
-                                    consoleColors.info,
-                                    consoleColors.recognized,
-                                    consoleColors.info,
-                                    consoleColors.value,
-                                    consoleColors.info);
-
-                                this.post({
-                                    channelNumber: channel,
-                                    messageType: workletMessageType.setChannelVibrato,
-                                    messageData: this.midiChannels[channel].vibrato
-                                });
-                                break;
-
-                            // filter cutoff
-                            case 0x20:
-                                // affect the "brightness" controller as we have a default modulator that controls it
-                                const ccValue = dataValue;
-                                this.controllerChange(channel, midiControllers.brightness, dataValue)
-                                console.info(`%cFilter cutoff for %c${channel}%c is now set to %c${ccValue}`,
-                                    consoleColors.info,
-                                    consoleColors.recognized,
-                                    consoleColors.info,
-                                    consoleColors.value);
-                        }
-                        break;
-
-                    // drum reverb
-                    case 0x1D:
-                        if(!this.midiChannels[channel].percussionChannel)
-                        {
-                            return;
-                        }
-                        const reverb = dataValue;
-                        this.controllerChange(channel, midiControllers.effects1Depth, reverb);
-                        console.info(
-                            `%cGS Drum reverb for %c${channel}%c: %c${reverb}`,
-                            consoleColors.info,
-                            consoleColors.recognized,
-                            consoleColors.info,
-                            consoleColors.value);
-                        break;
-
-                    // drum chorus
-                    case 0x1E:
-                        if(!this.midiChannels[channel].percussionChannel)
-                        {
-                            return;
-                        }
-                        const chorus = dataValue;
-                        this.controllerChange(channel, midiControllers.effects3Depth, chorus);
-                        console.info(
-                            `%cGS Drum chorus for %c${channel}%c: %c${chorus}`,
-                            consoleColors.info,
-                            consoleColors.recognized,
-                            consoleColors.info,
-                            consoleColors.value);
-                }
-                break;
-
-            case dataEntryStates.RPCoarse:
-            case dataEntryStates.RPFine:
-                switch(this.midiChannels[channel].RPValue)
-                {
-                    default:
-                        break;
-
-                    // pitch bend range
-                    case 0x0000:
-                        this.setPitchBendRange(channel, dataValue);
-                        break;
-
-                    // coarse tuning
-                    case 0x0002:
-                        // semitones
-                        this.setChannelTuning(channel, (dataValue - 64) * 100);
-                        break;
-
-                    // fine tuning
-                    case 0x0001:
-                        // note: this will not work properly unless the lsb is sent!
-                        // here we store the raw value to then adjust in fine
-                        this.setChannelTuning(channel, (dataValue - 64));
-                        break;
-
-                    // modulation depth
-                    case 0x0005:
-                        this.setModulationDepth(channel, dataValue * 100);
-                        break
-
-                    case 0x3FFF:
-                        this.resetParameters(channel);
-                        break;
-
-                }
-
-        }
-    }
-
-    /**
-     * Executes a data entry for an RPN tuning
-     * @param channel {number}
-     * @param dataValue {number} dataEntry LSB
-     * @private
-     */
-    dataEntryFine(channel, dataValue)
-    {
-        switch (this.midiChannels[channel].dataEntryState)
-        {
-            default:
-                break;
-
-            case dataEntryStates.RPCoarse:
-            case dataEntryStates.RPFine:
-                switch(this.midiChannels[channel].RPValue)
-                {
-                    default:
-                        break;
-
-                    // pitch bend range fine tune is not supported in the SoundFont2 format. (pitchbend range is in semitones rather than cents)
-                    case 0x0000:
-                        break;
-
-                    // fine tuning
-                    case 0x0001:
-                        // grab the data and shift
-                        const coarse = this.midiChannels[channel].channelTuningCents;
-                        const finalTuning = (coarse << 7) | dataValue;
-                        this.setChannelTuning(channel, finalTuning * 0.0122); // multiply by 8192 / 100 (cent increment)
-                        break;
-
-                    // modulation depth
-                    case 0x0005:
-
-                        this.setModulationDepth(channel, this.midiChannels[channel].channelModulationDepthCents + (dataValue / 128) * 100);
-                        break
-
-                    case 0x3FFF:
-                        this.resetParameters(channel);
-                        break;
-
-                }
-
-        }
-    }
-
-    /**
-     * @param channel {number}
-     * @private
-     */
-    resetParameters(channel)
-    {
-        /**
-         * @type {number}
-         */
-        this.midiChannels[channel].NRPCoarse = 0;
-        /**
-         * @type {number}
-         */
-        this.midiChannels[channel].NRPFine = 0;
-        /**
-         * @type {number}
-         */
-        this.midiChannels[channel].RPValue = 0;
-        /**
-         * @type {string}
-         */
-        this.midiChannels[channel].dataEntryState = dataEntryStates.Idle;
-    }
-
-    /**
-     * Sets the channel's tuning
-     * @param channel {number}
-     * @param cents {number}
-     * @private
-     */
-    setChannelTuning(channel, cents)
-    {
-        cents = Math.round(cents);
-        this.midiChannels[channel].channelTuningCents = cents;
-        console.info(`%cChannel ${channel} tuning. Cents: %c${cents}`,
-            consoleColors.info,
-            consoleColors.value);
-        this.post({
-            channelNumber: channel,
-            messageType: workletMessageType.customcCcChange,
-            messageData: [customControllers.channelTuning, this.midiChannels[channel].channelTuningCents]
-        });
-    }
-
-
-    /**
-     * Sets the channel's mod depth
-     * @param channel {number}
-     * @param cents {number}
-     * @private
-     */
-    setModulationDepth(channel, cents)
-    {
-        cents = Math.round(cents);
-        this.midiChannels[channel].channelModulationDepthCents = cents;
-        console.info(`%cChannel ${channel} modulation depth. Cents: %c${cents}`,
-            consoleColors.info,
-            consoleColors.value);
-        /* ==============
-            IMPORTANT
-            here we convert cents into a multiplier.
-            midi spec assumes the default is 50 cents,
-            but it might be different for the soundfont
-            so we create a multiplier by divinging cents by 50.
-            for example, if we want 100 cents, then multiplier will be 2,
-            which for a preset with depth of 50 will create 100.
-         ================*/
-        const depthMultiplier = cents / 50;
-        this.post({
-            channelNumber: channel,
-            messageType: workletMessageType.customcCcChange,
-            messageData: [customControllers.modulationMultiplier, depthMultiplier]
-        });
-    }
-
-    /**
-     * Resets the channel's controllers
-     * @param channel {number} channel's number
-     */
-    resetChannelControllers(channel)
-    {
-
-        /**
-         * @type {{depth: number, delay: number, rate: number}}
-         * @private
-         */
-        this.midiChannels[channel].vibrato = {depth: 0, rate: 0, delay: 0};
-        this.midiChannels[channel].pitchBend = 8192;
-        this.midiChannels[channel].channelPitchBendRange = 2;
-        this.midiChannels[channel].channelTuningCents = 0;
-        /**
-         * get excluded (locked) cc numbers as locked ccs are unaffected by reset
-         * @type {number[]}
-         */
-        const excludedCCs = this.midiChannels[channel].lockedControllers.reduce((lockedCCs, cc, ccNum) => {
-            if(cc)
-            {
-                lockedCCs.push(ccNum);
-            }
-            return lockedCCs;
-        }, []);
-        this.resetParameters(channel);
-        this.post({
-            channelNumber: channel,
-            messageType: workletMessageType.ccReset,
-            messageData: excludedCCs
+            messageData: [controllerNumber, controllerValue]
         });
     }
 
@@ -909,57 +329,11 @@ export class Synthetizer {
      */
     resetControllers()
     {
-        console.info("%cResetting all controllers!", consoleColors.info);
-        for(let channelNumber = 0; channelNumber < this.channelsAmount; channelNumber++)
-        {
-            // reset
-            this.resetChannelControllers(channelNumber);
-            /**
-             * @type {MidiChannel}
-             **/
-            const ch = this.midiChannels[channelNumber];
-            if(!ch.lockPreset) {
-                ch.bank = 0;
-                if (channelNumber % 16 === DEFAULT_PERCUSSION) {
-                    this.setPreset(channelNumber, this.percussionPreset);
-                    ch.percussionChannel = true;
-                    this.eventHandler.callEvent("drumchange", {
-                        channel: channelNumber,
-                        isDrumChannel: true
-                    });
-                } else {
-                    ch.percussionChannel = false;
-                    this.setPreset(channelNumber, this.defaultPreset);
-                    this.eventHandler.callEvent("drumchange", {
-                        channel: channelNumber,
-                        isDrumChannel: false
-                    });
-                }
-            }
-
-            // call all the event listeners
-            this.eventHandler.callEvent("programchange", {channel: channelNumber, preset: ch.preset})
-
-            let restoreControllerValueEvent = (ccNum, value) =>
-            {
-                if(this.midiChannels[channelNumber].lockedControllers[ccNum])
-                {
-                    // locked, we did not reset it
-                    return;
-                }
-                this.eventHandler.callEvent("controllerchange", {channel: channelNumber, controllerNumber: ccNum, controllerValue: value});
-            }
-
-            restoreControllerValueEvent(midiControllers.mainVolume, 100);
-            restoreControllerValueEvent(midiControllers.pan, 64);
-            restoreControllerValueEvent(midiControllers.expressionController, 127);
-            restoreControllerValueEvent(midiControllers.modulationWheel, 0);
-            restoreControllerValueEvent(midiControllers.effects3Depth, 0);
-            restoreControllerValueEvent(midiControllers.effects1Depth, 40);
-
-            this.eventHandler.callEvent("pitchwheel", {channel: channelNumber, MSB: 64, LSB: 0})
-        }
-        this.system = DEFAULT_SYNTH_MODE;
+        this.post({
+            channelNumber: ALL_CHANNELS_OR_DIFFERENT_ACTION,
+            messageType: workletMessageType.ccReset,
+            messageData: undefined
+        })
     }
 
     /**
@@ -979,18 +353,10 @@ export class Synthetizer {
      */
     pitchWheel(channel, MSB, LSB)
     {
-        // bend all the notes
-        this.midiChannels[channel].pitchBend = (LSB | (MSB << 7)) ;
         this.post({
             channelNumber: channel,
-            messageType: workletMessageType.ccChange,
-            messageData: [NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel, this.midiChannels[channel].pitchBend]
-        });
-
-        this.eventHandler.callEvent("pitchwheel", {
-            channel: channel,
-            MSB: MSB,
-            LSB: LSB
+            messageType: workletMessageType.pitchWheel,
+            messageData: [MSB, LSB],
         });
     }
 
@@ -1003,7 +369,6 @@ export class Synthetizer {
         for (let i = 0; i < this.channelsAmount; i++) {
             this.transposeChannel(i, semitones, false);
         }
-        this.transposition = semitones;
     }
 
     /**
@@ -1014,15 +379,10 @@ export class Synthetizer {
      */
     transposeChannel(channel, semitones, force=false)
     {
-        if(this.midiChannels[channel].percussionChannel && !force)
-        {
-            return;
-        }
-        this.midiChannels[channel].channelTranspose = semitones;
         this.post({
             channelNumber: channel,
-            messageType: workletMessageType.customcCcChange,
-            messageData: [customControllers.channelTranspose, this.midiChannels[channel].channelTranspose * 100]
+            messageType: workletMessageType.transpose,
+            messageData: [semitones, force]
         });
     }
 
@@ -1033,7 +393,7 @@ export class Synthetizer {
     setMainVolume(volume)
     {
         this.post({
-            channelNumber: -1,
+            channelNumber: ALL_CHANNELS_OR_DIFFERENT_ACTION,
             messageType: workletMessageType.setMainVolume,
             messageData: volume
         });
@@ -1046,7 +406,7 @@ export class Synthetizer {
     setMasterPan(pan)
     {
         this.post({
-            channelNumber: -1,
+            channelNumber: ALL_CHANNELS_OR_DIFFERENT_ACTION,
             messageType: workletMessageType.setMasterPan,
             messageData: pan
         });
@@ -1070,12 +430,16 @@ export class Synthetizer {
     /**
      * Causes the given midi channel to ignore controller messages for the given controller number
      * @param channel {number} usually 0-15: the channel to lock
-     * @param controllerNumber {number} 0-127 MIDI CC number
+     * @param controllerNumber {number} 0-127 MIDI CC number NOTE: -1 locks the preset
      * @param isLocked {boolean} true if locked, false if unlocked
      */
     lockController(channel, controllerNumber, isLocked)
     {
-        this.midiChannels[channel].lockedControllers[controllerNumber] = isLocked;
+        this.post({
+            channelNumber: channel,
+            messageType: workletMessageType.lockController,
+            messageData: [controllerNumber, isLocked]
+        });
     }
 
     /**
@@ -1085,16 +449,10 @@ export class Synthetizer {
      */
     muteChannel(channel, isMuted)
     {
-        this.midiChannels[channel].isMuted = isMuted;
-        this.stopAllNotesOnChannel(channel, true);
         this.post({
             channelNumber: channel,
             messageType: workletMessageType.muteChannel,
             messageData: isMuted
-        });
-        this.eventHandler.callEvent("mutechannel", {
-            channel: channel,
-            isMuted: isMuted
         });
     }
 
@@ -1104,39 +462,11 @@ export class Synthetizer {
      */
     reloadSoundFont(soundFontBuffer)
     {
-        this.stopAll(true);
         this.post({
             channelNumber: 0,
             messageType: workletMessageType.reloadSoundFont,
             messageData: soundFontBuffer
         });
-
-        // check if the system supports clearing samples (only worklet does)
-        if(this.resetSamples)
-        {
-            this.resetSamples();
-        }
-        for(let i = 0; i < this.channelsAmount; i++)
-        {
-            this.midiChannels[i].lockPreset = false;
-            this.programChange(i, this.midiChannels[i].preset.program);
-        }
-    }
-
-    /**
-     * @private
-     */
-    resetSamples()
-    {
-
-        clearSamplesList();
-        for (let channel of this.midiChannels) {
-            channel.cachedWorkletVoices = [];
-            for (let i = 0; i < 128; i++) {
-                channel.cachedWorkletVoices.push([]);
-            }
-        }
-
     }
 
     /**
@@ -1146,7 +476,7 @@ export class Synthetizer {
     systemExclusive(messageData)
     {
         this.post({
-            channelNumber: -1,
+            channelNumber: ALL_CHANNELS_OR_DIFFERENT_ACTION,
             messageType: workletMessageType.systemExclusive,
             messageData: Array.from(messageData)
         });

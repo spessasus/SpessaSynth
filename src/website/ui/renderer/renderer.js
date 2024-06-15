@@ -166,6 +166,20 @@ export class Renderer
     connectChannelAnalysers(synth)
     {
         synth.connectIndividualOutputs(this.channelAnalysers);
+
+        // connect for drum change
+        synth.eventHandler.addEvent("drumchange", "renderer-drum-change", e => {
+            // if this channel is now a drum channel, adjust the fft
+            const analyser = this.channelAnalysers[e.channel % this.channelAnalysers.length];
+            if (e.isDrumChannel)
+            {
+                analyser.fftSize = this.drumAnalyserFft;
+            }
+            else
+            {
+                analyser.fftSize = this.normalAnalyserFft;
+            }
+        });
     }
 
     disconnectChannelAnalysers()
@@ -248,17 +262,6 @@ export class Renderer
     {
         // draw all 16 channel waveforms in a 4x4 pattern
         this.channelAnalysers.forEach((analyser, channelNumber) => {
-            // if this channel is now a drum channel, adjust the fft
-            if (this.synth.midiChannels[channelNumber].percussionChannel) {
-                if (analyser.fftSize !== this.drumAnalyserFft) {
-                    analyser.fftSize = this.drumAnalyserFft;
-                }
-            }
-            else if(analyser.fftSize !== this.normalAnalyserFft)
-            {
-                analyser.fftSize = this.normalAnalyserFft;
-            }
-
             const x = channelNumber % 4;
             const y = Math.floor(channelNumber / 4);
             // if no voices, skip
@@ -266,7 +269,7 @@ export class Renderer
             for (let i = channelNumber; i < this.synth.channelsAmount; i += this.channelAnalysers.length)
             {
                 // check every channel that is connected, because can be more outputs than just 16!!! (for example channel 17 also outputs to analyser 1)
-                if(this.synth.midiChannels[i].voicesAmount > 0)
+                if(this.synth.channelProperties[i].voicesAmount > 0)
                 {
                     voicesPlaying = true;
                     break;
@@ -341,10 +344,10 @@ export class Renderer
          * @type {number[]}
          */
         const pitchBendXShift = [];
-        this.synth.midiChannels.forEach(channel => {
+        this.synth.channelProperties.forEach(channel => {
             // pitch range * (bend - 8192) / 8192)) * key width
             if(this.showVisualPitch) {
-                pitchBendXShift.push((channel.channelPitchBendRange * ((channel.pitchBend - 8192 + this.visualPitchBendOffset) / 8192)) * keyStep);
+                pitchBendXShift.push((channel.pitchBendRangeSemitones * ((channel.pitchBend - 8192 + this.visualPitchBendOffset) / 8192)) * keyStep);
             }
             else
             {

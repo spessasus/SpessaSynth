@@ -106,10 +106,22 @@ export class Sequencer {
         })
     }
 
+    /**
+     * @private
+     */
+    _adjustPeformanceNowTime()
+    {
+        this.performanceNowTimeOffset = (this.synth.currentTime - (performance.now() / 1000)) * this._playbackRate;
+    }
+
+    /**
+     * @param time
+     * @private
+     */
     _recalculateStartTime(time)
     {
         this.absoluteStartTime = this.synth.currentTime - time / this._playbackRate;
-        this.performanceNowTimeOffset = (this.synth.currentTime - (performance.now() / 1000)) * this._playbackRate;
+        this._adjustPeformanceNowTime()
     }
 
     /**
@@ -188,12 +200,23 @@ export class Sequencer {
      */
     get currentHighResolutionTime()
     {
-        if(this.pausedTime)
-        {
+        if (this.pausedTime) {
             return this.pausedTime;
         }
 
-        return this.performanceNowTimeOffset + ((performance.now() / 1000) - this.absoluteStartTime) * this._playbackRate;
+        // sync performance.now to current time
+        const performanceNow = performance.now() / 1000;
+        let currentPerformanceTime = this.performanceNowTimeOffset + (performanceNow - this.absoluteStartTime) * this._playbackRate;
+        let currentAudioTime = this.currentTime;
+
+        const smoothingFactor = 0.01;
+
+        // diff times smoothing factor
+        this.performanceNowTimeOffset += (currentAudioTime - currentPerformanceTime) * smoothingFactor;
+
+        currentPerformanceTime = this.performanceNowTimeOffset + (performanceNow - this.absoluteStartTime) * this._playbackRate;
+
+        return currentPerformanceTime;
     }
 
     set currentTime(time)
@@ -332,7 +355,7 @@ export class Sequencer {
             this.synth.addNewChannel();
             if(i === 9)
             {
-                this.synth.setDrums(this.synth.synthesisSystem.midiChannels.length - 1, true);
+                this.synth.setDrums(this.synth.channelsAmount - 1, true);
             }
         }
     }
@@ -630,9 +653,9 @@ export class Sequencer {
                 // midiport: handle it and make sure that the saved controllers table is the same size as synth channels
                 case messageTypes.midiPort:
                     this._processEvent(event, trackIndex);
-                    if(this.synth.synthesisSystem.midiChannels.length > savedControllers.length)
+                    if(this.synth.channelsAmount > savedControllers.length)
                     {
-                        while(this.synth.synthesisSystem.midiChannels.length > savedControllers.length)
+                        while(this.synth.channelsAmount > savedControllers.length)
                         {
                             savedControllers.push(Array.from(defaultControllerArray));
                         }
@@ -676,7 +699,7 @@ export class Sequencer {
         else
         {
             // for all synth channels
-            this.synth.synthesisSystem.midiChannels.forEach((channel, channelNumber) => {
+            for (let channelNumber = 0; channelNumber < this.synth.channelsAmount; channelNumber++) {
                 // restore pitch bends
                 if(pitchBends[channelNumber] !== undefined) {
                     this.synth.pitchWheel(channelNumber, pitchBends[channelNumber] >> 7, pitchBends[channelNumber] & 0x7F);
@@ -691,8 +714,9 @@ export class Sequencer {
                         }
                     })
                 }
-            })
+            }
         }
+        setTimeout(this._adjustPeformanceNowTime.bind(this), 500);
         return true;
     }
 
@@ -874,7 +898,7 @@ export class Sequencer {
 
                 if(this.midiPortChannelOffsets[port] === undefined)
                 {
-                    if(this.synth.synthesisSystem.midiChannels.length < this.midiPortChannelOffset + 16) {
+                    if(this.synth.channelsAmount < this.midiPortChannelOffset + 16) {
                         this._addNewMidiPort();
                     }
                     this.midiPortChannelOffsets[port] = this.midiPortChannelOffset;

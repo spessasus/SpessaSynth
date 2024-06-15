@@ -2,6 +2,7 @@ import {RiffChunk} from "./riff_chunk.js";
 import {ShiftableByteArray} from "../../utils/shiftable_array.js";
 import {readByte, readBytesAsUintLittleEndian, readBytesAsString, signedInt8} from "../../utils/byte_functions.js";
 import { consoleColors } from '../../utils/other.js';
+import { stbvorbis} from '../../utils/stbvorbis_sync.js'
 
 /**
  * samples.js
@@ -153,7 +154,7 @@ export class Sample {
     /**
      * @param smplArr {ShiftableByteArray}
      */
-    async decodeVorbis(smplArr)
+    decodeVorbis(smplArr)
     {
         if (this.sampleLength < 1) {
             // eos, do not do anything
@@ -162,65 +163,22 @@ export class Sample {
         // get the compressed byte stream
         const smplStart = smplArr.currentIndex;
         const buff = smplArr.slice(this.sampleStartIndex / 2 + smplStart, this.sampleEndIndex / 2 + smplStart);
-        await new Promise((resolve) => {
-            // reset array and being decoding
-            this.sampleData = new Float32Array(0);
-            stbvorbis.decode(buff.buffer, decoded =>
-            {
-                // check for errors
-                if(decoded.error !== null)
-                {
-                    console.warn("%cError decoding sample! " + decoded.error,
-                        consoleColors.unrecognized);
-                    this.sampleData = new Float32Array(0);
-                }
-
-                // check if we finished decoding
-                if(decoded.eof === false)
-                {
-                    /**
-                     * @type {Float32Array}
-                     */
-                    const decodedData = decoded.data[0];
-
-                    // add the chunk of data
-                    const addedData = new Float32Array(this.sampleData.length + decodedData.length);
-                    addedData.set(this.sampleData, 0);
-                    addedData.set(decodedData, this.sampleData.length);
-                    this.sampleData = addedData;
-                }
-                else
-                {
-                    if(decoded.data) {
-                        /**
-                         * if any data remains, add it
-                         * @type {Float32Array}
-                         */
-                        const decodedData = decoded.data[0];
-                        const addedData = new Float32Array(this.sampleData.length + decodedData.length);
-                        addedData.set(this.sampleData, 0);
-                        addedData.set(decodedData, this.sampleData.length);
-                        this.sampleData = addedData;
-                    }
-
-                    // correct sample length and resolve decoding
-                    this.sampleLength = this.sampleData.length * 2;
-                    resolve();
-                }
-            })
-        });
+        // reset array and being decoding
+        this.sampleData = new Float32Array(0);
+        const vorbis = stbvorbis.decode(buff.buffer);
+        this.sampleData = vorbis.data[0];
     }
 
     /**
      * creates a sample sampleData and stores it for reuse
      * @param startAddrOffset {number}
      * @param endAddrOffset {number}
-     * @returns {Promise<Float32Array>} The audioData
+     * @returns {Float32Array} The audioData
      */
-     async getAudioData(startAddrOffset = 0, endAddrOffset = 0) {
+     getAudioData(startAddrOffset = 0, endAddrOffset = 0) {
         if (!this.isSampleLoaded) {
             // start loading data if not loaded
-            return await this.loadBufferData();
+            return this.loadBufferData();
         }
         // if no offset, return saved sampleData
         if (this.sampleData && startAddrOffset === 0 && endAddrOffset === 0) {
@@ -352,9 +310,9 @@ export class Sample {
     }
 
     /**
-     * @returns {Promise<Float32Array>}
+     * @returns {Float32Array}
      */
-    async loadBufferData() {
+    loadBufferData() {
         if (this.sampleLength < 1) {
             // eos, do not do anything
             return new Float32Array(1);
@@ -362,7 +320,7 @@ export class Sample {
 
         if(this.isCompressed)
         {
-            await this.decodeVorbis(this.sampleDataArray);
+            this.decodeVorbis(this.sampleDataArray);
             this.isSampleLoaded = true;
             return this.sampleData;
         }

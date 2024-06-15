@@ -13,7 +13,9 @@
  * "drumchange"|
  * "stopall"|
  * "newchannel"|
- * "mutechannel"} EventTypes
+ * "mutechannel"|
+ * "presetlistchange"|
+ * "allcontrollerreset"} EventTypes
  */
 export class EventHandler
 {
@@ -34,7 +36,9 @@ export class EventHandler
             "drumchange": {},
             "stopall": {},
             "newchannel": {},
-            "mutechannel": {}
+            "mutechannel": {},
+            "presetlistchange": {},
+            "allcontrollerreset": {}
         };
     }
 
@@ -42,7 +46,7 @@ export class EventHandler
      * Adds a new event listener
      * @param name {EventTypes}
      * @param id {string} the unique identifier for the event (to delete it
-     * @param callback {function(Object)}
+     * @param callback {function(Object|any[])}
      */
     addEvent(name, id, callback)
     {
