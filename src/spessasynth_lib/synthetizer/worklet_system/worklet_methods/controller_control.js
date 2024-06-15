@@ -120,6 +120,10 @@ export function controllerChange(channel, controllerNumber, controllerValue)
             break;
 
         default:
+            if(channelObject.lockedControllers[controllerNumber])
+            {
+                return;
+            }
             // special case: hold pedal
             if(controllerNumber === midiControllers.sustainPedal) {
                 if (controllerValue >= 64)
@@ -152,7 +156,7 @@ export function controllerChange(channel, controllerNumber, controllerValue)
 export function resetAllControllers()
 {
     console.info("%cResetting all controllers!", consoleColors.info);
-    this.callEvent("allcontrollerreset", {});
+    this.callEvent("allcontrollerreset", undefined);
     for (let channelNumber = 0; channelNumber < this.workletProcessorChannels.length; channelNumber++)
     {
         this.resetControllers(channelNumber);
@@ -195,7 +199,7 @@ export function resetAllControllers()
             }
         }
 
-        let restoreControllerValueEvent = (ccNum, value) =>
+        let restoreControllerValueEvent = ccNum =>
         {
             if(this.workletProcessorChannels[channelNumber].lockedControllers[ccNum])
             {
@@ -203,7 +207,7 @@ export function resetAllControllers()
                 this.callEvent("controllerchange", {
                     channel: channelNumber,
                     controllerNumber: ccNum,
-                    controllerValue: this.workletProcessorChannels[channelNumber].midiControllers[ccNum]
+                    controllerValue: this.workletProcessorChannels[channelNumber].midiControllers[ccNum] >> 7
                 });
             }
 

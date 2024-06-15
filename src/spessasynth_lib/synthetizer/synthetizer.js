@@ -366,9 +366,7 @@ export class Synthetizer {
      */
     transpose(semitones)
     {
-        for (let i = 0; i < this.channelsAmount; i++) {
-            this.transposeChannel(i, semitones, false);
-        }
+        this.transposeChannel(ALL_CHANNELS_OR_DIFFERENT_ACTION, semitones, false);
     }
 
     /**

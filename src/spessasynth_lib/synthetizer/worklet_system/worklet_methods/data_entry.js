@@ -257,14 +257,15 @@ export function dataEntryFine(channel, dataValue)
                 // fine tuning
                 case 0x0001:
                     // grab the data and shift
-                    const coarse = channelObject.channelTuningCents;
+                    const coarse = channelObject.customControllers[customControllers.channelTuning];
                     const finalTuning = (coarse << 7) | dataValue;
                     this.setChannelTuning(channel, finalTuning * 0.0122); // multiply by 8192 / 100 (cent increment)
                     break;
 
                 // modulation depth
                 case 0x0005:
-                    let cents = channelObject.customControllers[customControllers.modulationMultiplier] + (dataValue / 128) * 100;
+                    const currentModulationDepthCents = channelObject.customControllers[customControllers.modulationMultiplier] * 50;
+                    let cents = currentModulationDepthCents + (dataValue / 128) * 100;
                     this.setModulationDepth(channel, cents);
                     break
 

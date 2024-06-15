@@ -75,8 +75,8 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false)
         this.sendChannelProperties();
     }
     this.callEvent("noteon", {
-        midiNote: voices[0].midiNote,
+        midiNote: midiNote,
         channel: channel,
-        velocity: voices[0].velocity,
+        velocity: velocity,
     });
 }

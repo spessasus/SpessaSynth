@@ -12,12 +12,10 @@ import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE } from '../../synthetizer.js'
 import {
     createWorkletChannel,
     customControllers,
-    NON_CC_INDEX_OFFSET,
 } from './worklet_processor_channel.js'
 
 import { SoundFont2 } from '../../../soundfont/soundfont_parser.js'
 import { clearSamplesList } from './worklet_voice.js'
-import { modulatorSources } from '../../../soundfont/chunk/modulators.js'
 import { handleMessage } from '../worklet_methods/handle_message.js'
 import { systemExclusive } from '../worklet_methods/system_exclusive.js'
 import { noteOn } from '../worklet_methods/note_on.js'
@@ -30,7 +28,13 @@ import {
     resetParameters,
 } from '../worklet_methods/controller_control.js'
 import { callEvent, post, sendChannelProperties } from '../worklet_methods/message_sending.js'
-import { computeModulators } from './worklet_modulator.js'
+import {
+    pitchWheel,
+    setChannelTuning,
+    setMasterTuning, setModulationDepth,
+    transposeAllChannels,
+    transposeChannel,
+} from '../worklet_methods/tuning_control.js'
 
 
 /**
@@ -54,6 +58,8 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
         super();
 
         this._outputsAmount = options.processorOptions.midiChannels;
+
+        this.transposition = 0;
 
         /**
          * The volume gain
@@ -262,49 +268,6 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
     }
 
     /**
-     * Transposes all channels by given amount of semitones
-     * @param semitones {number} Can be float
-     * @param force {boolean} defaults to false, if true transposes the channel even if it's a drum channel
-     */
-    transposeAllChannels(semitones, force = false)
-    {
-        for (let i = 0; i < this.workletProcessorChannels.length; i++) {
-            this.transposeChannel(i, semitones, force);
-        }
-    }
-
-    /**
-     * Transposes the channel by given amount of semitones
-     * @param channel {number}
-     * @param semitones {number} Can be float
-     * @param force {boolean} defaults to false, if true transposes the channel even if it's a drum channel
-     */
-    transposeChannel(channel, semitones, force=false)
-    {
-        const channelObject = this.workletProcessorChannels[channel];
-        if(channelObject.drumChannel && !force)
-        {
-            return;
-        }
-        channelObject.customControllers[customControllers.channelTranspose] = semitones * 100;
-    }
-
-    /**
-     * Sets the channel's tuning
-     * @param channel {number}
-     * @param cents {number}
-     */
-    setChannelTuning(channel, cents)
-    {
-        const channelObject = this.workletProcessorChannels[channel];
-        cents = Math.round(cents);
-        channelObject.customControllers[customControllers.channelTuning] = cents;
-        console.info(`%cChannel ${channel} tuning. Cents: %c${cents}`,
-            consoleColors.info,
-            consoleColors.value);
-    }
-
-    /**
      * Toggles drums on a given channel
      * @param channel {number}
      * @param isDrum {boolean}
@@ -326,18 +289,6 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
             channel: channel,
             isDrumChannel: channelObject.drumChannel
         });
-    }
-
-    /**
-     * Sets the worklet's master tuning
-     * @param cents {number}
-     */
-    setMasterTuning(cents)
-    {
-        cents = Math.round(cents);
-        for (let i = 0; i < this.workletProcessorChannels.length; i++) {
-            this.workletProcessorChannels[i].customControllers[customControllers.masterTuning] = cents;
-        }
     }
 
     sendPresetList()
@@ -368,51 +319,13 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
         this.panRight = (pan) * this.mainVolume;
     }
 
-    setModulationDepth(channel, cents)
-    {
-        let channelObject = this.workletProcessorChannels[channel];
-        cents = Math.round(cents);
-        console.info(`%cChannel ${channel} modulation depth. Cents: %c${cents}`,
-            consoleColors.info,
-            consoleColors.value);
-        /* ==============
-            IMPORTANT
-            here we convert cents into a multiplier.
-            midi spec assumes the default is 50 cents,
-            but it might be different for the soundfont
-            so we create a multiplier by divinging cents by 50.
-            for example, if we want 100 cents, then multiplier will be 2,
-            which for a preset with depth of 50 will create 100.
-         ================*/
-        channelObject.customControllers[customControllers.modulationMultiplier] = cents / 50;
-    }
-
-    /**
-     * Sets the pitch of the given channel
-     * @param channel {number} usually 0-15: the channel to change pitch
-     * @param MSB {number} SECOND byte of the MIDI pitchWheel message
-     * @param LSB {number} FIRST byte of the MIDI pitchWheel message
-     */
-    pitchWheel(channel, MSB, LSB)
-    {
-        const bend = (LSB | (MSB << 7));
-        this.callEvent("pitchwheel", {
-            channel: channel,
-            MSB: MSB,
-            LSB: LSB
-        });
-        this.workletProcessorChannels[channel].midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel] = bend;
-        this.workletProcessorChannels[channel].voices.forEach(v => computeModulators(v, this.workletProcessorChannels[channel].midiControllers));
-        this.sendChannelProperties();
-    }
-
     stopAllChanels(force = false)
     {
         console.info("%cStop all received!", consoleColors.info);
         for (let i = 0; i < this.workletProcessorChannels.length; i++) {
             this.stopAll(i, force);
         }
-        this.callEvent("stopall", {});
+        this.callEvent("stopall", undefined);
     }
 
     /**
@@ -706,6 +619,12 @@ SpessaSynthProcessor.prototype.resetParameters = resetParameters;
 SpessaSynthProcessor.prototype.post = post;
 SpessaSynthProcessor.prototype.sendChannelProperties = sendChannelProperties;
 SpessaSynthProcessor.prototype.callEvent = callEvent;
+SpessaSynthProcessor.prototype.transposeAllChannels = transposeAllChannels;
+SpessaSynthProcessor.prototype.transposeChannel = transposeChannel;
+SpessaSynthProcessor.prototype.setChannelTuning = setChannelTuning;
+SpessaSynthProcessor.prototype.setMasterTuning = setMasterTuning;
+SpessaSynthProcessor.prototype.setModulationDepth = setModulationDepth;
+SpessaSynthProcessor.prototype.pitchWheel = pitchWheel;
 
 
-export { SpessaSynthProcessor}
+export { SpessaSynthProcessor }

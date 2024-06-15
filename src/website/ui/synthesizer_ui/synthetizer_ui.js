@@ -721,7 +721,7 @@ export class SynthetizerUI
             this.controllers[e.channel].preset.reload(e.isDrumChannel ? this.percussionList : this.instrumentList);
         });
 
-        this.synth.eventHandler.addEvent("newchannel", "synthui-new-channel", channel => {
+        this.synth.eventHandler.addEvent("newchannel", "synthui-new-channel", () => {
             const controller = this.createChannelController(this.controllers.length);
             this.controllers.push(controller);
             dropdownDiv.appendChild(controller.controller);
@@ -794,6 +794,11 @@ export class SynthetizerUI
                         program: p.program
                     };
                 });
+
+            if(this.percussionList.length === 0)
+            {
+                this.percussionList.push(this.instrumentList[0])
+            }
 
             this.controllers.forEach((controller, i) => {
                 const list = this.synth.channelProperties[i].isDrum ? this.percussionList : this.instrumentList;

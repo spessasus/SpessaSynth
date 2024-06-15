@@ -68,7 +68,7 @@ export function createWorkletChannel(sendEvent = false)
     this.resetControllers(this.workletProcessorChannels.length - 1);
     if(sendEvent)
     {
-        this.callEvent("newchannel", channel);
+        this.callEvent("newchannel", undefined);
     }
 }
 
