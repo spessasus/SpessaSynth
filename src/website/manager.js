@@ -64,10 +64,8 @@ import { isMobile } from '../spessasynth_lib/utils/other.js'
         }
 
         if(context.audioWorklet) {
-            //const stbvorbisURL = new URL("../spessasynth_lib/utils/stbvorbis_sync.js", import.meta.url).href;
             const workletURL = new URL("../spessasynth_lib/synthetizer/worklet_system/worklet_processor.js", import.meta.url).href;
             await context.audioWorklet.addModule(workletURL);
-            //await context.audioWorklet.addModule(stbvorbisURL);
         }
         // set up soundfont
         this.soundFont = soundFont;

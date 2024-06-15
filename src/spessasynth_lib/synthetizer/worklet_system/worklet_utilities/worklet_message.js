@@ -22,6 +22,7 @@
  * @property {number} transpose                - 19 -> [semitones<number>, force<boolean>] note: if channel is -1 then transpose all channels
  * @property {number} highPerformanceMode      - 20 -> isOn<boolean>
  * @property {number} lockController           - 21 -> [controllerNumber<number>, isLocked<boolean>]
+ * @property {number} sequencerSpecific        - 22 -> [messageType<WorkletSequencerMessageType> messageData<any>] note: refer to sequencer_message.js
  */
 export const workletMessageType = {
     noteOff: 0,
@@ -45,7 +46,8 @@ export const workletMessageType = {
     pitchWheel: 18,
     transpose: 19,
     highPerformanceMode: 20,
-    lockController: 21
+    lockController: 21,
+    sequencerSpecific: 22,
 };
 
 
@@ -62,6 +64,7 @@ export const ALL_CHANNELS_OR_DIFFERENT_ACTION = -1;
  *     |{rate: number, depth: number, delay: number}
  *     |boolean
  *     |ArrayBuffer
+ *     |{messageType: WorkletSequencerMessageType, messageData: any}
  *     )
  * }} WorkletMessage
  */
@@ -73,11 +76,13 @@ export const ALL_CHANNELS_OR_DIFFERENT_ACTION = -1;
  *     eventName: string,
  *     eventData: any
  * }|ChannelProperty[]
- * |PresetListElement[]} messageData - the message's data
+ * |PresetListElement[]
+ * |{messageType: WorkletSequencerReturnMessageType, messageData: any}} messageData - the message's data
  *
  * 0 - channel properties           -> [...<ChannelProperty>] see message_sending.js line 29
  * 1 - event call                   -> {eventName<string>, eventData:<the event's data>}
  * 2 - reported current time        -> currentTime<number>
+ * 3 - sequencer specific           -> [messageType<WorkletSequencerReturnMessageType> messageData<any>] note: refer to sequencer_message.js
  */
 
 /**
@@ -87,4 +92,5 @@ export const returnMessageType = {
     channelProperties: 0,
     eventCall: 1,
     reportedCurrentTime: 2,
+    sequencerSpecific: 3
 }

@@ -263,6 +263,7 @@ export class Settings
         rendererControls.analyserFftSlider.value = Math.log2(value);
         renderer.normalAnalyserFft = value;
         renderer.drumAnalyserFft = Math.pow(2, Math.min(15, Math.log2(value) + 2));
+        renderer.updateFftSize();
         rendererControls.analyserFftSlider.nextElementSibling.innerText = `${value}`;
 
         // wave multiplier
@@ -609,6 +610,7 @@ export class Settings
             let value = Math.pow(2, parseInt(rendererControls.analyserFftSlider.value));
             renderer.normalAnalyserFft = value;
             renderer.drumAnalyserFft = Math.pow(2, Math.min(15, parseInt(rendererControls.analyserFftSlider.value) + 2));
+            renderer.updateFftSize();
             rendererControls.analyserFftSlider.nextElementSibling.innerText = `${value}`;
         }
         rendererControls.analyserFftSlider.onchange = () => { this._saveSettings(); }

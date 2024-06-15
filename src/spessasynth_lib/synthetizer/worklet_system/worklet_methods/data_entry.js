@@ -19,11 +19,11 @@ export function dataEntryCoarse(channel, dataValue)
     const channelObject = this.workletProcessorChannels[channel];
     let addDefaultVibrato = () =>
     {
-        if(channelObject.vibrato.delay === 0 && channelObject.vibrato.rate === 0 && channelObject.vibrato.depth === 0)
+        if(channelObject.channelVibrato.delay === 0 && channelObject.channelVibrato.rate === 0 && channelObject.channelVibrato.depth === 0)
         {
-            channelObject.vibrato.depth = 50;
-            channelObject.vibrato.rate = 8;
-            channelObject.vibrato.delay = 0.6;
+            channelObject.channelVibrato.depth = 50;
+            channelObject.channelVibrato.rate = 8;
+            channelObject.channelVibrato.delay = 0.6;
         }
     }
     switch(channelObject.dataEntryState)
@@ -83,8 +83,8 @@ export function dataEntryCoarse(channel, dataValue)
                                 return;
                             }
                             addDefaultVibrato();
-                            channelObject.vibrato.rate = (dataValue / 64) * 8;
-                            console.info(`%cVibrato rate for channel %c${channel}%c is now set to %c${channelObject.vibrato.rate}%cHz.`,
+                            channelObject.channelVibrato.rate = (dataValue / 64) * 8;
+                            console.info(`%cVibrato rate for channel %c${channel}%c is now set to %c${channelObject.channelVibrato.rate}%cHz.`,
                                 consoleColors.info,
                                 consoleColors.recognized,
                                 consoleColors.info,
@@ -103,8 +103,8 @@ export function dataEntryCoarse(channel, dataValue)
                                 return;
                             }
                             addDefaultVibrato();
-                            channelObject.vibrato.depth = dataValue / 2;
-                            console.info(`%cVibrato depth for %c${channel}%c is now set to %c${channelObject.vibrato.depth}%c cents range of detune.`,
+                            channelObject.channelVibrato.depth = dataValue / 2;
+                            console.info(`%cVibrato depth for %c${channel}%c is now set to %c${channelObject.channelVibrato.depth}%c cents range of detune.`,
                                 consoleColors.info,
                                 consoleColors.recognized,
                                 consoleColors.info,
@@ -123,8 +123,8 @@ export function dataEntryCoarse(channel, dataValue)
                                 return;
                             }
                             addDefaultVibrato();
-                            channelObject.vibrato.delay = (dataValue / 64) / 3;
-                            console.info(`%cVibrato delay for %c${channel}%c is now set to %c${channelObject.vibrato.delay}%c seconds.`,
+                            channelObject.channelVibrato.delay = (dataValue / 64) / 3;
+                            console.info(`%cVibrato delay for %c${channel}%c is now set to %c${channelObject.channelVibrato.delay}%c seconds.`,
                                 consoleColors.info,
                                 consoleColors.recognized,
                                 consoleColors.info,

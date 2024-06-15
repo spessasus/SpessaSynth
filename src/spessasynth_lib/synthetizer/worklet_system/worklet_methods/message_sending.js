@@ -10,6 +10,10 @@ import { modulatorSources } from '../../../soundfont/chunk/modulators.js'
  */
 export function callEvent(eventName, eventData)
 {
+    if(!this.enableEventSystem)
+    {
+        return;
+    }
     this.post({
         messageType: returnMessageType.eventCall,
         messageData: {

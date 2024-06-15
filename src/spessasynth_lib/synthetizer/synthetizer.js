@@ -59,8 +59,9 @@ export class Synthetizer {
      * Creates a new instance of the SpessaSynth synthesizer
      * @param targetNode {AudioNode}
      * @param soundFontBuffer {ArrayBuffer} the soundfont file array buffer
+     * @param enableEventSystem {boolean} enables the event system. Defaults to true
      */
-     constructor(targetNode, soundFontBuffer) {
+     constructor(targetNode, soundFontBuffer, enableEventSystem = true) {
         console.info("%cInitializing SpessaSynth synthesizer...", consoleColors.info);
         this.context = targetNode.context;
 
@@ -90,7 +91,7 @@ export class Synthetizer {
         /**
          * @type {ChannelProperty}
          */
-        const defaultProperty = {
+        this.defaultChannelProperty = {
             voicesAmount: 0,
             pitchBend: 0,
             pitchBendRangeSemitones: 0,
@@ -102,7 +103,7 @@ export class Synthetizer {
          * individual channel voices amount
          * @type {ChannelProperty[]}
          */
-        this.channelProperties = Array(this.channelsAmount).fill(defaultProperty);
+        this.channelProperties = Array(this.channelsAmount).fill(this.defaultChannelProperty);
         this.channelProperties[DEFAULT_PERCUSSION].isDrum = true;
         this._voicesAmount = 0;
 
@@ -120,7 +121,8 @@ export class Synthetizer {
             numberOfOutputs: this._outputsAmount + 2,
             processorOptions: {
                 midiChannels: this._outputsAmount,
-                soundfont: soundFontBuffer
+                soundfont: soundFontBuffer,
+                enableEventSystem: enableEventSystem
             }
         });
 
@@ -135,6 +137,12 @@ export class Synthetizer {
 
         // worklet sends us some data back
         this.worklet.port.onmessage = e => this.handleMessage(e.data);
+
+        /**
+         * for the worklet sequencer's messages
+         * @type {function(WorkletSequencerReturnMessageType, any)}
+         */
+        this.sequencerCallbackFunction = undefined;
 
         this.worklet.connect(this.reverbProcessor, 0);
         this.worklet.connect(this.chorusProcessor.input, 1);
@@ -189,6 +197,12 @@ export class Synthetizer {
             case returnMessageType.eventCall:
                 this.eventHandler.callEvent(messageData.eventName, messageData.eventData);
                 break;
+
+            case returnMessageType.sequencerSpecific:
+                if(this.sequencerCallbackFunction)
+                {
+                    this.sequencerCallbackFunction(messageData.messageType, messageData.messageData);
+                }
         }
     }
 
@@ -197,6 +211,7 @@ export class Synthetizer {
      */
     addNewChannel()
     {
+        this.channelProperties.push(this.defaultChannelProperty);
         this.post({
             channelNumber: 0,
             messageType: workletMessageType.addNewChannel,
@@ -338,7 +353,6 @@ export class Synthetizer {
 
     /**
      * @param data {WorkletMessage}
-     * @private
      */
     post(data)
     {

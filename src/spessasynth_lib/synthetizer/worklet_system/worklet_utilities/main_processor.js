@@ -1,9 +1,7 @@
-import { midiControllers } from '../../../midi_parser/midi_message.js'
 import { generatorTypes } from '../../../soundfont/chunk/generators.js'
 import { getOscillatorData } from './wavetable_oscillator.js'
 import { absCentsToHz, HALF_PI, timecentsToSeconds } from './unit_converter.js'
 import { getLFOValue } from './lfo.js'
-import { consoleColors } from '../../../utils/other.js'
 import { panVoice } from './stereo_panner.js'
 import { applyVolumeEnvelope } from './volume_envelope.js'
 import { applyLowpassFilter } from './lowpass_filter.js'
@@ -15,12 +13,11 @@ import {
 } from './worklet_processor_channel.js'
 
 import { SoundFont2 } from '../../../soundfont/soundfont_parser.js'
-import { clearSamplesList } from './worklet_voice.js'
 import { handleMessage } from '../worklet_methods/handle_message.js'
 import { systemExclusive } from '../worklet_methods/system_exclusive.js'
 import { noteOn } from '../worklet_methods/note_on.js'
 import { dataEntryCoarse, dataEntryFine } from '../worklet_methods/data_entry.js'
-import { noteOff } from '../worklet_methods/note_off.js'
+import { killNote, noteOff, stopAll, stopAllChannels } from '../worklet_methods/note_off.js'
 import {
     controllerChange,
     resetAllControllers,
@@ -35,6 +32,16 @@ import {
     transposeAllChannels,
     transposeChannel,
 } from '../worklet_methods/tuning_control.js'
+import {
+    programChange,
+    reloadSoundFont,
+    sampleDump,
+    sendPresetList,
+    setDrums,
+    setPreset,
+} from '../worklet_methods/program_control.js'
+import { disableAndLockVibrato, setVibrato } from '../worklet_methods/vibrato_control.js'
+import { WorkletSequencer } from '../../../sequencer/worklet_sequencer/worklet_sequencer.js'
 
 
 /**
@@ -52,12 +59,22 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
      * processorOptions: {
      *      midiChannels: number,
      *      soundfont: ArrayBuffer,
+     *      enableEventSystem: boolean
      * }}}
      */
     constructor(options) {
         super();
 
         this._outputsAmount = options.processorOptions.midiChannels;
+
+        this.enableEventSystem = options.processorOptions.enableEventSystem;
+
+        this.sequencer = new WorkletSequencer(this);
+
+        /**
+         * @type {function}
+         */
+        this.processTickCallback = undefined;
 
         this.transposition = 0;
 
@@ -135,170 +152,6 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
     }
 
     /**
-     * Stops a note nearly instantly
-     * @param channel {number}
-     * @param midiNote {number}
-     */
-    killNote(channel, midiNote)
-    {
-        this.workletProcessorChannels[channel].voices.forEach(v => {
-            if(v.midiNote !== midiNote)
-            {
-                return;
-            }
-            v.modulatedGenerators[generatorTypes.releaseVolEnv] = -12000; // set release to be very short
-            this.releaseVoice(v);
-        });
-    }
-
-    /**
-     * saves a sample
-     * @param channel {number}
-     * @param sampleID {number}
-     * @param sampleData {Float32Array}
-     */
-    sampleDump(channel, sampleID, sampleData)
-    {
-        this.workletDumpedSamplesList[sampleID] = sampleData;
-        // the sample maybe was loaded after the voice was sent... adjust the end position!
-
-        // not for all channels because the system tells us for what channel this voice was dumped! yay!
-        this.workletProcessorChannels[channel].voices.forEach(v => {
-            if(v.sample.sampleID !== sampleID)
-            {
-                return;
-            }
-            v.sample.end = sampleData.length - 1 + v.generators[generatorTypes.endAddrOffset] + (v.generators[generatorTypes.endAddrsCoarseOffset] * 32768);
-            // calculate for how long the sample has been playing and move the cursor there
-            v.sample.cursor = (v.sample.playbackStep * sampleRate) * (currentTime - v.startTime);
-            if(v.sample.loopingMode === 0) // no loop
-            {
-                if (v.sample.cursor >= v.sample.end)
-                {
-                    v.finished = true;
-                    return;
-                }
-            }
-            else
-            {
-                // go through modulo (adjust cursor if the sample has looped
-                if(v.sample.cursor > v.sample.loopEnd)
-                {
-                    v.sample.cursor = v.sample.cursor % (v.sample.loopEnd - v.sample.loopStart) + v.sample.loopStart - 1;
-                }
-            }
-            // set start time to current!
-            v.startTime = currentTime;
-        })
-
-    }
-
-    /**
-     * stops all notes
-     * @param channel {number}
-     * @param force {boolean}
-     */
-    stopAll(channel, force = false)
-    {
-        const channelVoices = this.workletProcessorChannels[channel].voices;
-        if(force)
-        {
-            // force stop all
-            channelVoices.length = 0;
-            this.workletProcessorChannels[channel].sustainedVoices.length = 0;
-            this.sendChannelProperties();
-        }
-        else
-        {
-            channelVoices.forEach(v => {
-                if(v.isInRelease) return;
-                this.releaseVoice(v);
-            });
-            this.workletProcessorChannels[channel].sustainedVoices.forEach(v => {
-                this.releaseVoice(v);
-            })
-        }
-    }
-
-    /**
-     * executes a program change
-     * @param channel {number}
-     * @param programNumber {number}
-     * @param userChange {boolean}
-     */
-    programChange(channel, programNumber, userChange=false)
-    {
-        /**
-         * @type {WorkletProcessorChannel}
-         */
-        const channelObject = this.workletProcessorChannels[channel];
-        if(channelObject.lockPreset)
-        {
-            return;
-        }
-        // always 128 for percussion
-        const bank = (channelObject.drumChannel ? 128 : channelObject.midiControllers[midiControllers.bankSelect]);
-        const preset = this.soundfont.getPreset(bank, programNumber);
-        this.setPreset(channel, preset);
-        this.callEvent("programchange",{
-            channel: channel,
-            program: preset.program,
-            bank: preset.bank,
-            userCalled: userChange
-        });
-    }
-
-    /**
-     * @param channel {number}
-     * @param preset {Preset}
-     */
-    setPreset(channel, preset)
-    {
-        if(this.workletProcessorChannels[channel].lockPreset)
-        {
-            return;
-        }
-        this.workletProcessorChannels[channel].preset = preset;
-
-        // reset cached voices
-        this.workletProcessorChannels[channel].cachedVoices = [];
-        for (let i = 0; i < 128; i++) {
-            this.workletProcessorChannels[channel].cachedVoices.push([]);
-        }
-    }
-
-    /**
-     * Toggles drums on a given channel
-     * @param channel {number}
-     * @param isDrum {boolean}
-     */
-    setDrums(channel, isDrum)
-    {
-        const channelObject = this.workletProcessorChannels[channel];
-        if(isDrum)
-        {
-            channelObject.drumChannel = true;
-            this.setPreset(channel, this.soundfont.getPreset(128, channelObject.preset.program));
-        }
-        else
-        {
-            channelObject.percussionChannel = false;
-            this.setPreset(channel, this.soundfont.getPreset(0, channelObject.preset.program));
-        }
-        this.callEvent("drumchange",{
-            channel: channel,
-            isDrumChannel: channelObject.drumChannel
-        });
-    }
-
-    sendPresetList()
-    {
-        this.callEvent("presetlistchange", this.soundfont.presets.map(p => {
-            return {presetName: p.presetName, bank: p.bank, program: p.program};
-        }));
-    }
-
-    /**
      * @param volume {number} 0-1
      */
     setMainVolume(volume)
@@ -317,44 +170,6 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
         pan = (pan / 2) + 0.5;
         this.panLeft = (1 - pan) * this.mainVolume;
         this.panRight = (pan) * this.mainVolume;
-    }
-
-    stopAllChanels(force = false)
-    {
-        console.info("%cStop all received!", consoleColors.info);
-        for (let i = 0; i < this.workletProcessorChannels.length; i++) {
-            this.stopAll(i, force);
-        }
-        this.callEvent("stopall", undefined);
-    }
-
-    /**
-     * @param buffer {ArrayBuffer}
-     */
-    reloadSoundFont(buffer)
-    {
-        this.stopAllChanels(true);
-        delete this.soundfont;
-        clearSamplesList();
-        delete this.workletDumpedSamplesList;
-        this.workletDumpedSamplesList = [];
-
-
-        this.soundfont = new SoundFont2(buffer);
-        this.defaultPreset = this.soundfont.getPreset(0, 0);
-        this.drumPreset = this.soundfont.getPreset(128, 0);
-
-        for(let i = 0; i < this.workletProcessorChannels.length; i++)
-        {
-            const channelObject = this.workletProcessorChannels[i];
-            channelObject.cachedVoices = [];
-            for (let j = 0; j < 128; j++) {
-                channelObject.cachedVoices.push([]);
-            }
-            channelObject.lockPreset = false;
-            this.programChange(i, channelObject.preset.program);
-        }
-        this.sendPresetList();
     }
 
     voiceKilling(amount)
@@ -440,6 +255,10 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
             this.sendChannelProperties();
         }
 
+        if(this.processTickCallback)
+        {
+            this.processTickCallback();
+        }
         return true;
     }
 
@@ -574,57 +393,48 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
             reverbOutput, voice.modulatedGenerators[generatorTypes.reverbEffectsSend],
             chorusOutput, voice.modulatedGenerators[generatorTypes.chorusEffectsSend]);
     }
-
-    /**
-     * @param channel {number}
-     */
-    disableAndLockVibrato(channel)
-    {
-        this.workletProcessorChannels[channel].lockVibrato = true;
-        this.workletProcessorChannels[channel].channelVibrato.rate = 0;
-        this.workletProcessorChannels[channel].channelVibrato.delay = 0;
-        this.workletProcessorChannels[channel].channelVibrato.depth = 0;
-    }
-
-    /**
-     * @param channel {number}
-     * @param depth {number}
-     * @param rate {number}
-     * @param delay {number}
-     */
-    setVibrato(channel, depth, rate, delay)
-    {
-        if(this.workletProcessorChannels[channel].lockVibrato)
-        {
-            return;
-        }
-        this.workletProcessorChannels[channel].vibrato.rate = rate;
-        this.workletProcessorChannels[channel].vibrato.delay = delay;
-        this.workletProcessorChannels[channel].vibrato.depth = depth;
-    }
-
 }
 
+// include other methods
 SpessaSynthProcessor.prototype.handleMessage = handleMessage;
+SpessaSynthProcessor.prototype.post = post;
+SpessaSynthProcessor.prototype.sendChannelProperties = sendChannelProperties;
+SpessaSynthProcessor.prototype.callEvent = callEvent;
+
 SpessaSynthProcessor.prototype.systemExclusive = systemExclusive;
+
 SpessaSynthProcessor.prototype.noteOn = noteOn;
+SpessaSynthProcessor.prototype.noteOff = noteOff;
+SpessaSynthProcessor.prototype.killNote = killNote;
+SpessaSynthProcessor.prototype.stopAll = stopAll;
+SpessaSynthProcessor.prototype.stopAllChannels = stopAllChannels;
+
+SpessaSynthProcessor.prototype.setVibrato = setVibrato;
+SpessaSynthProcessor.prototype.disableAndLockVibrato = disableAndLockVibrato;
+
 SpessaSynthProcessor.prototype.dataEntryCoarse = dataEntryCoarse;
 SpessaSynthProcessor.prototype.dataEntryFine = dataEntryFine;
+
 SpessaSynthProcessor.prototype.createWorkletChannel = createWorkletChannel;
-SpessaSynthProcessor.prototype.noteOff = noteOff;
 SpessaSynthProcessor.prototype.controllerChange = controllerChange;
 SpessaSynthProcessor.prototype.resetAllControllers = resetAllControllers;
 SpessaSynthProcessor.prototype.resetControllers = resetControllers;
 SpessaSynthProcessor.prototype.resetParameters = resetParameters;
-SpessaSynthProcessor.prototype.post = post;
-SpessaSynthProcessor.prototype.sendChannelProperties = sendChannelProperties;
-SpessaSynthProcessor.prototype.callEvent = callEvent;
+
+
 SpessaSynthProcessor.prototype.transposeAllChannels = transposeAllChannels;
 SpessaSynthProcessor.prototype.transposeChannel = transposeChannel;
 SpessaSynthProcessor.prototype.setChannelTuning = setChannelTuning;
 SpessaSynthProcessor.prototype.setMasterTuning = setMasterTuning;
 SpessaSynthProcessor.prototype.setModulationDepth = setModulationDepth;
 SpessaSynthProcessor.prototype.pitchWheel = pitchWheel;
+
+SpessaSynthProcessor.prototype.programChange = programChange;
+SpessaSynthProcessor.prototype.setPreset = setPreset;
+SpessaSynthProcessor.prototype.setDrums = setDrums;
+SpessaSynthProcessor.prototype.reloadSoundFont = reloadSoundFont;
+SpessaSynthProcessor.prototype.sampleDump = sampleDump;
+SpessaSynthProcessor.prototype.sendPresetList = sendPresetList;
 
 
 export { SpessaSynthProcessor }

@@ -3,6 +3,8 @@ import { DEFAULT_PERCUSSION, Synthetizer } from '../synthetizer/synthetizer.js';
 import { getEvent, messageTypes, midiControllers, MidiMessage } from '../midi_parser/midi_message.js'
 import { consoleColors, formatTime } from '../utils/other.js'
 import {readBytesAsUintBigEndian} from "../utils/byte_functions.js";
+import { workletMessageType } from '../synthetizer/worklet_system/worklet_utilities/worklet_message.js'
+import { WorkletSequencerReturnMessageType } from './worklet_sequencer/sequencer_message.js'
 
 /**
  * sequencer.js
@@ -96,6 +98,8 @@ export class Sequencer {
          */
         this.onSongChange = {};
 
+        this.synth.sequencerCallbackFunction = this._handleMessage;
+
         this.loadNewSongList(parsedMidis);
 
         document.addEventListener("close", () => {
@@ -104,6 +108,53 @@ export class Sequencer {
                 this.MIDIout.send([messageTypes.reset]);
             }
         })
+    }
+
+    /**
+     * @param messageType {WorkletSequencerMessageType}
+     * @param messageData {any}
+     * @private
+     */
+    _sendMessage(messageType, messageData)
+    {
+        this.synth.post({
+            channelNumber: -1,
+            messageType: workletMessageType.sequencerSpecific,
+            messageData: {
+                messageType: messageType,
+                messageData: messageData
+            }
+        });
+    }
+
+    /**
+     * @param messageType {WorkletSequencerReturnMessageType}
+     * @param messageData {any}
+     * @private
+     */
+    _handleMessage(messageType, messageData)
+    {
+        switch (messageType)
+        {
+            default:
+                break;
+
+            case WorkletSequencerReturnMessageType.midiEvent:
+                if(this.MIDIout)
+                {
+                    if(messageData[0] >= 0x80) {
+                        this.MIDIout.send(messageData);
+                        return;
+                    }
+                }
+                break;
+
+            case WorkletSequencerReturnMessageType.textEvent:
+                if(this.onTextEvent)
+                {
+                    this.onTextEvent(messageData[0], messageData[1]);
+                }
+        }
     }
 
     /**

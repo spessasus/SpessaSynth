@@ -1,3 +1,6 @@
+import { generatorTypes } from '../../../soundfont/chunk/generators.js'
+import { consoleColors } from '../../../utils/other.js'
+
 /**
  * Release a note
  * @param channel {number}
@@ -42,4 +45,63 @@ export function noteOff(channel, midiNote)
         midiNote: midiNote,
         channel: channel
     });
+}
+
+/**
+ * Stops a note nearly instantly
+ * @param channel {number}
+ * @param midiNote {number}
+ * @this {SpessaSynthProcessor}
+ */
+export function killNote(channel, midiNote)
+{
+    this.workletProcessorChannels[channel].voices.forEach(v => {
+        if(v.midiNote !== midiNote)
+        {
+            return;
+        }
+        v.modulatedGenerators[generatorTypes.releaseVolEnv] = -12000; // set release to be very short
+        this.releaseVoice(v);
+    });
+}
+
+/**
+ * stops all notes
+ * @param channel {number}
+ * @param force {boolean}
+ * @this {SpessaSynthProcessor}
+ */
+export function stopAll(channel, force = false)
+{
+    const channelVoices = this.workletProcessorChannels[channel].voices;
+    if(force)
+    {
+        // force stop all
+        channelVoices.length = 0;
+        this.workletProcessorChannels[channel].sustainedVoices.length = 0;
+        this.sendChannelProperties();
+    }
+    else
+    {
+        channelVoices.forEach(v => {
+            if(v.isInRelease) return;
+            this.releaseVoice(v);
+        });
+        this.workletProcessorChannels[channel].sustainedVoices.forEach(v => {
+            this.releaseVoice(v);
+        })
+    }
+}
+
+/**
+ * @this {SpessaSynthProcessor}
+ * @param force {boolean}
+ */
+export function stopAllChannels(force = false)
+{
+    console.info("%cStop all received!", consoleColors.info);
+    for (let i = 0; i < this.workletProcessorChannels.length; i++) {
+        this.stopAll(i, force);
+    }
+    this.callEvent("stopall", undefined);
 }

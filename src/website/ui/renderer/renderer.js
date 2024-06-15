@@ -159,6 +159,14 @@ export class Renderer
         });
     }
 
+    updateFftSize()
+    {
+        for (let i = 0; i < this.channelAnalysers.length; i++)
+        {
+            this.channelAnalysers[i].fftSize = this.synth.channelProperties[i].isDrum ? this.drumAnalyserFft : this.normalAnalyserFft;
+        }
+    }
+
     /**
      * Connect the 16 channels to their respective analysers
      * @param synth {Synthetizer}
@@ -266,7 +274,7 @@ export class Renderer
             const y = Math.floor(channelNumber / 4);
             // if no voices, skip
             let voicesPlaying = false;
-            for (let i = channelNumber; i < this.synth.channelsAmount; i += this.channelAnalysers.length)
+            for (let i = channelNumber; i < this.synth.channelProperties.length; i += this.channelAnalysers.length)
             {
                 // check every channel that is connected, because can be more outputs than just 16!!! (for example channel 17 also outputs to analyser 1)
                 if(this.synth.channelProperties[i].voicesAmount > 0)

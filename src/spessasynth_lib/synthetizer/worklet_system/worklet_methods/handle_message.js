@@ -93,7 +93,7 @@ export function handleMessage(message)
         case workletMessageType.stopAll:
             if(channel === ALL_CHANNELS_OR_DIFFERENT_ACTION)
             {
-                this.stopAllChanels(data === 1);
+                this.stopAllChannels(data === 1);
             }
             else
             {
@@ -161,6 +161,10 @@ export function handleMessage(message)
             {
                 channelObject.lockedControllers[data[0]] = data[1];
             }
+            break;
+
+        case workletMessageType.sequencerSpecific:
+            this.sequencer.processMessage(data[0], data[1]);
             break;
 
         default:
