@@ -20,7 +20,6 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 - Render audio to file
 - A few custom modulators to support some additional controllers (see `modulators.js`)
 - Written using AudioWorklets (Firefox and Chrome both work perfectly)
-- Legacy system that doesn't use AudioWorklets (Available to use over HTTP and will switch automatically)
 - Can load really large soundfonts (4GB!) (but only on Firefox, Chromium has a memory limit)
 - Multi-port MIDIs support (more than 16 channels)
 - MIDI Controller Support (Default supported controllers can be found [here](../../wiki/Synthetizer-Class#supported-controllers)).
@@ -41,8 +40,6 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 ### Limitations
 - It might not sound as good as other synthetizers (e.g. FluidSynth or BASSMIDI)
 - The performance is questionable, especially on mobile devices
-- SoundFont3 support seems to be a bit wonky, so if you notice a bug, **please open an issue!**
-- only real-time, cannot render audio to file (yet)
 
 ## [How to use the web app](../../wiki/How-To-Use-App)
 
@@ -51,8 +48,6 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 > Note: the wiki is rarely updated, but it should still work.
 
 ### [How to use SpessaSynth in your project](../../wiki/Usage-As-Library)
-
-[Can't use AudioWorklets because your site doesn't support HTTPS? No problem!](/src/spessasynth_lib/synthetizer/native_system/README.md)
 
 ## Installation of the Local Edition
 > When you're loading a large (>4GB) SoundFont, use Firefox because chromium has a 4GB memory limit
