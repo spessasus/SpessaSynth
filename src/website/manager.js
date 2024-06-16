@@ -49,6 +49,47 @@ import { isMobile } from '../spessasynth_lib/utils/other.js'
         this.context = context;
         this.initializeContext(context, soundFontBuffer).then();
         this.ready = false;
+        this.sf = soundFontBuffer;
+    }
+
+    /**
+     * @param parsedMid {MIDI}
+     * @param callback {function(number)} progress from 0 to 1
+     * @returns {Promise<AudioBuffer>}
+     */
+    async renderAudio(parsedMid, callback=undefined)
+    {
+        const offline = new OfflineAudioContext({
+            numberOfChannels: 2,
+            sampleRate: this.context.sampleRate,
+            length: this.context.sampleRate * (parsedMid.duration + 1)
+        });
+        const workletURL = new URL("../spessasynth_lib/synthetizer/worklet_system/worklet_processor.js", import.meta.url).href;
+        await offline.audioWorklet.addModule(workletURL);
+        /**
+         * @type {Synthetizer}
+         */
+        let synth;
+        try
+        {
+            synth = new Synthetizer(offline.destination, this.sf, false, parsedMid);
+        }
+        catch (e) {
+            window.alert(`Your browser ran out of memory. Consider using Firefox or SF3 soundfont instead.\n\n (see console for error)`);
+            throw e;
+        }
+        if(callback)
+        {
+            const interval = setInterval(() => callback(synth.currentTime / parsedMid.duration), 100);
+            const buf = await offline.startRendering();
+            clearInterval(interval);
+            return buf;
+        }
+        else
+        {
+            return offline.startRendering();
+        }
+
     }
 
     async initializeContext(context, soundFont) {
@@ -203,6 +244,7 @@ import { isMobile } from '../spessasynth_lib/utils/other.js'
     {
         //this.soundFontMixer.soundFontChange(sf);
         this.synth.reloadSoundFont(sf);
+        this.sf = sf;
     }
 
     /**

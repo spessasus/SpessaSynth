@@ -2,6 +2,7 @@ import {Synthetizer} from "../../../spessasynth_lib/synthetizer/synthetizer.js";
 import { calculateRGB, consoleColors } from '../../../spessasynth_lib/utils/other.js'
 import { Sequencer } from '../../../spessasynth_lib/sequencer/sequencer.js';
 import { drawNotes } from './draw_notes.js'
+import { SpessaSynthInfo } from '../../../spessasynth_lib/utils/loggin.js'
 
 /**
  * renderer.js
@@ -195,7 +196,7 @@ export class Renderer
         for (const channelAnalyser of this.channelAnalysers) {
             channelAnalyser.disconnect();
         }
-        console.log("%cAnalysers disconnected!", consoleColors.recognized);
+        SpessaSynthInfo("%cAnalysers disconnected!", consoleColors.recognized);
     }
 
     /**

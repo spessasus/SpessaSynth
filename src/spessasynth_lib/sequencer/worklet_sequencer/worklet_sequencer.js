@@ -1,7 +1,11 @@
-import { returnMessageType } from '../../synthetizer/worklet_system/worklet_utilities/worklet_message.js'
 import { WorkletSequencerReturnMessageType } from './sequencer_message.js'
-import { _processEvent } from './process_event.js'
-import { _processTick } from './process_tick.js'
+import { _addNewMidiPort, _processEvent } from './process_event.js'
+import { _findFirstEventIndex, _processTick } from './process_tick.js'
+import { loadNewSequence, loadNewSongList, nextSong, previousSong } from './song_control.js'
+import { _playTo, _recalculateStartTime, play, setTimeTicks } from './play.js'
+import { messageTypes, midiControllers } from '../../midi_parser/midi_message.js'
+import { post, processMessage, sendMIDIMessage } from './events.js'
+import { SpessaSynthWarn } from '../../utils/loggin.js'
 
 class WorkletSequencer
 {
@@ -17,13 +21,14 @@ class WorkletSequencer
          * If the event should instead be sent back to the main thread instead of synth
          * @type {boolean}
          */
-        this.sendEventsBack = false;
+        this.sendMIDIMessages = false;
 
         // event's number in this.events
         /**
          * @type {number[]}
          */
         this.eventIndex = [];
+        this.songIndex = 0;
 
         // tracks the time that we have already played
         /**
@@ -35,7 +40,7 @@ class WorkletSequencer
          * The (relative) time when the sequencer was paused. If it's not paused then it's undefined.
          * @type {number}
          */
-        this.pausedTime = 0;
+        this.pausedTime = undefined;
 
         /**
          * Absolute playback startTime, bases on the synth's time
@@ -84,40 +89,13 @@ class WorkletSequencer
     }
 
     /**
-     * @param messageType {WorkletSequencerMessageType}
-     * @param messageData {any}
+     * @param value {number}
      */
-    processMessage(messageType, messageData)
+    set playbackRate(value)
     {
-        switch (messageType)
-        {
-            default:
-                break;
-        }
-    }
-
-    /**
-     *
-     * @param messageType {WorkletSequencerReturnMessageType}
-     * @param messageData {any}
-     */
-    post(messageType, messageData)
-    {
-        this.synth.post({
-            messageType: returnMessageType.sequencerSpecific,
-            messageData: {
-                messageType: messageType,
-                messageData: messageData
-            }
-        })
-    }
-
-    /**
-     * @param message {number[]}
-     */
-    sendMIDIMessage(message)
-    {
-        this.post(WorkletSequencerReturnMessageType.midiEvent, message);
+        const time = this.currentTime;
+        this._playbackRate = value;
+        this.currentTime = time;
     }
 
     get currentTime()
@@ -131,28 +109,107 @@ class WorkletSequencer
         return (currentTime - this.absoluteStartTime) * this._playbackRate;
     }
 
-    /**
-     * Adds 16 channels to the synth
-     * @private
-     */
-    _addNewMidiPort()
+    set currentTime(time)
     {
+        this.post(WorkletSequencerReturnMessageType.timeChange, time);
+        if(time < 0 || time > this.duration || time === 0)
+        {
+            // time is 0
+            this.setTimeTicks(this.midiData.firstNoteOn - 1);
+            return;
+        }
+        this.stop();
+        this.playingNotes = [];
+        this.pausedTime = undefined;
+        const isNotFinished = this._playTo(time);
+        this._recalculateStartTime(time);
+        if(!isNotFinished)
+        {
+            return;
+        }
+        this.play();
+        this.post(WorkletSequencerReturnMessageType.resetRendererIndexes);
+    }
+
+    /**
+     * Pauses the playback
+     */
+    pause()
+    {
+        if(this.paused)
+        {
+            SpessaSynthWarn("Already paused");
+            return;
+        }
+        this.pausedTime = this.currentTime;
+        this.stop();
+    }
+
+    /**
+     * Stops the playback
+     */
+    stop()
+    {
+        this.clearProcessHandler()
+        this.playbackInterval = undefined;
+        // disable sustain
         for (let i = 0; i < 16; i++) {
-            this.synth.createWorkletChannel(true);
-            if(i === 9)
+            this.synth.controllerChange(i, midiControllers.sustainPedal, 0);
+        }
+        this.synth.stopAllChannels();
+        if(this.sendMIDIMessages)
+        {
+            for (let c = 0; c < 16; c++)
             {
-                this.synth.setDrums(this.synth.workletProcessorChannels.length - 1, true);
+                this.sendMIDIMessage([messageTypes.controllerChange | c, 120, 0]); // all notes off
+                this.sendMIDIMessage([messageTypes.controllerChange | c, 123, 0]); // all sound off
             }
         }
     }
 
+    _resetTimers()
+    {
+        this.playedTime = 0
+        this.eventIndex = Array(this.tracks.length).fill(0);
+    }
+
+    /**
+     * true if paused, false if playing or stopped
+     * @returns {boolean}
+     */
+    get paused()
+    {
+        return this.pausedTime !== undefined;
+    }
+
     setProcessHandler()
     {
-        this.synth.processTickCallback = this._processTick;
+        this.synth.processTickCallback = this._processTick.bind(this);
+    }
+
+    clearProcessHandler()
+    {
+        this.synth.processTickCallback = undefined;
     }
 }
 
+WorkletSequencer.prototype.post = post;
+WorkletSequencer.prototype.sendMIDIMessage = sendMIDIMessage;
+WorkletSequencer.prototype.processMessage = processMessage;
+
 WorkletSequencer.prototype._processEvent = _processEvent;
+WorkletSequencer.prototype._addNewMidiPort = _addNewMidiPort;
 WorkletSequencer.prototype._processTick = _processTick;
+WorkletSequencer.prototype._findFirstEventIndex = _findFirstEventIndex;
+
+WorkletSequencer.prototype.loadNewSequence = loadNewSequence;
+WorkletSequencer.prototype.loadNewSongList = loadNewSongList;
+WorkletSequencer.prototype.nextSong = nextSong;
+WorkletSequencer.prototype.previousSong = previousSong;
+
+WorkletSequencer.prototype.play = play;
+WorkletSequencer.prototype._playTo = _playTo;
+WorkletSequencer.prototype.setTimeTicks = setTimeTicks;
+WorkletSequencer.prototype._recalculateStartTime = _recalculateStartTime;
 
 export { WorkletSequencer }

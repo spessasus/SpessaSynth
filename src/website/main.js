@@ -4,6 +4,7 @@ import {Manager} from "./manager.js";
 import {MIDI} from "../spessasynth_lib/midi_parser/midi_loader.js";
 
 import { formatTitle } from '../spessasynth_lib/utils/other.js'
+import { audioBufferToWav } from './buffer_to_wav.js'
 
 /**
  * main.js
@@ -28,6 +29,9 @@ let fileInput = document.getElementById("midi_file_input");
 // remove the old files
 fileInput.value = "";
 fileInput.focus();
+
+let exportInput = document.getElementById("export_file_input");
+exportInput.value = "";
 
 let synthReady = false;
 
@@ -68,7 +72,15 @@ async function fetchFont(fileName, callback)
     let size = response.headers.get("content-length");
     let reader = await (await response.body).getReader();
     let done = false;
-    let dataArray = new Uint8Array(parseInt(size));
+    let dataArray;
+    try {
+        dataArray = new Uint8Array(parseInt(size));
+    }
+    catch (e)
+    {
+        window.alert(`Your browser ran out of memory. Consider using Firefox or SF3 soundfont instead\n\n (see console for error)`);
+        throw e;
+    }
     let offset = 0;
     do{
         let readData = await reader.read();
@@ -136,7 +148,9 @@ async function startMidi(midiFiles)
             title = formatTitle(midiFiles[i].name);
         }
         titles.push(title);
-    }
+    }//
+
+
     titleMessage.style.fontStyle = "italic";
     document.title = titles[0];
     titleMessage.innerText = titles[0]
@@ -277,12 +291,28 @@ fetch("soundfonts").then(async r => {
     }
 
     // and add the event listener
-    fileInput.onchange = () => {
+    fileInput.onchange = async () => {
         if (!fileInput.files[0]) {
             return;
         }
         startMidi(fileInput.files);
     };
+
+    exportInput.onchange = async () => {
+        if (!exportInput.files[0]) {
+            return;
+        }
+        const mid = new MIDI(await exportInput.files[0].arrayBuffer());
+        const title = titleMessage.innerText;
+        const buffer = await window.manager.renderAudio(mid, progress => titleMessage.textContent = `Exporting... ${Math.round(progress * 100)}%`);
+        titleMessage.innerText = title;
+        const blob = audioBufferToWav(buffer);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${mid.midiName || exportInput.files[0].name}.wav`;
+        a.click();
+    }
 });
 
 /**

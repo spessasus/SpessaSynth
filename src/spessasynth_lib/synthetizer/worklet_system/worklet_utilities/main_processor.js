@@ -42,6 +42,7 @@ import {
 } from '../worklet_methods/program_control.js'
 import { disableAndLockVibrato, setVibrato } from '../worklet_methods/vibrato_control.js'
 import { WorkletSequencer } from '../../../sequencer/worklet_sequencer/worklet_sequencer.js'
+import { SpessaSynthInfo } from '../../../utils/loggin.js'
 
 
 /**
@@ -59,7 +60,8 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
      * processorOptions: {
      *      midiChannels: number,
      *      soundfont: ArrayBuffer,
-     *      enableEventSystem: boolean
+     *      enableEventSystem: boolean,
+     *      midiToRender: MIDI
      * }}}
      */
     constructor(options) {
@@ -69,12 +71,12 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
 
         this.enableEventSystem = options.processorOptions.enableEventSystem;
 
-        this.sequencer = new WorkletSequencer(this);
-
         /**
          * @type {function}
          */
         this.processTickCallback = undefined;
+
+        this.sequencer = new WorkletSequencer(this);
 
         this.transposition = 0;
 
@@ -139,11 +141,17 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
         this.totalVoicesAmount = 0;
 
         this.port.onmessage = e => this.handleMessage(e.data);
+
+        if(options.processorOptions.midiToRender)
+        {
+            this.sequencer.loadNewSongList([options.processorOptions.midiToRender]);
+            this.sequencer.loop = false;
+        }
     }
 
     debugMessage()
     {
-        console.debug({
+        SpessaSynthInfo({
             channels: this.workletProcessorChannels,
             voicesAmount: this.totalVoicesAmount,
             outputAmount: this._outputsAmount,

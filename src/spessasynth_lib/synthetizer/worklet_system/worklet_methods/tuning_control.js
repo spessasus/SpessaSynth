@@ -2,6 +2,7 @@ import { customControllers, NON_CC_INDEX_OFFSET } from '../worklet_utilities/wor
 import { consoleColors } from '../../../utils/other.js'
 import { modulatorSources } from '../../../soundfont/chunk/modulators.js'
 import { computeModulators } from '../worklet_utilities/worklet_modulator.js'
+import { SpessaSynthInfo } from '../../../utils/loggin.js'
 
 /**
  * Transposes all channels by given amount of semitones
@@ -47,7 +48,7 @@ export function setChannelTuning(channel, cents)
     const channelObject = this.workletProcessorChannels[channel];
     cents = Math.round(cents);
     channelObject.customControllers[customControllers.channelTuning] = cents;
-    console.info(`%cChannel ${channel} tuning. Cents: %c${cents}`,
+    SpessaSynthInfo(`%cChannel ${channel} tuning. Cents: %c${cents}`,
         consoleColors.info,
         consoleColors.value);
 }
@@ -74,7 +75,7 @@ export function setModulationDepth(channel, cents)
 {
     let channelObject = this.workletProcessorChannels[channel];
     cents = Math.round(cents);
-    console.info(`%cChannel ${channel} modulation depth. Cents: %c${cents}`,
+    SpessaSynthInfo(`%cChannel ${channel} modulation depth. Cents: %c${cents}`,
         consoleColors.info,
         consoleColors.value);
     /* ==============

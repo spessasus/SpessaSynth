@@ -1,3 +1,9 @@
+import { getEvent, messageTypes } from '../../midi_parser/midi_message.js'
+import { WorkletSequencerReturnMessageType } from './sequencer_message.js'
+import { consoleColors } from '../../utils/other.js'
+import { readBytesAsUintBigEndian } from '../../utils/byte_functions.js'
+import { SpessaSynthWarn } from '../../utils/loggin.js'
+
 /**
  * Processes a single event
  * @param event {MidiMessage}
@@ -8,7 +14,7 @@
 export function _processEvent(event, trackIndex)
 {
     if(this.ignoreEvents) return;
-    if(this.sendEventsBack)
+    if(this.sendMIDIMessages)
     {
         if(event.messageStatusByte >= 0x80) {
             this.sendMIDIMessage([event.messageStatusByte, ...event.messageData]);
@@ -44,11 +50,11 @@ export function _processEvent(event, trackIndex)
             break;
 
         case messageTypes.setTempo:
-            this.oneTickToSeconds = 60 / (this.getTempo(event) * this.midiData.timeDivision);
+            this.oneTickToSeconds = 60 / (getTempo(event) * this.midiData.timeDivision);
             if(this.oneTickToSeconds === 0)
             {
                 this.oneTickToSeconds = 60 / (120 * this.midiData.timeDivision);
-                console.warn("invalid tempo! falling back to 120 BPM");
+                SpessaSynthWarn("invalid tempo! falling back to 120 BPM");
             }
             break;
 
@@ -82,7 +88,7 @@ export function _processEvent(event, trackIndex)
             break;
 
         default:
-            console.info(`%cUnrecognized Event: %c${event.messageStatusByte}%c status byte: %c${Object.keys(messageTypes).find(k => messageTypes[k] === statusByteData.status)}`,
+            SpessaSynthWarn(`%cUnrecognized Event: %c${event.messageStatusByte}%c status byte: %c${Object.keys(messageTypes).find(k => messageTypes[k] === statusByteData.status)}`,
                 consoleColors.warn,
                 consoleColors.unrecognized,
                 consoleColors.warn,
@@ -120,4 +126,31 @@ export function _processEvent(event, trackIndex)
             this.synth.resetAllControllers();
             break;
     }
+}
+
+/**
+ * Adds 16 channels to the synth
+ * @this {WorkletSequencer}
+ * @private
+ */
+export function _addNewMidiPort()
+{
+    for (let i = 0; i < 16; i++) {
+        this.synth.createWorkletChannel(true);
+        if(i === 9)
+        {
+            this.synth.setDrums(this.synth.workletProcessorChannels.length - 1, true);
+        }
+    }
+}
+
+/**
+ * gets tempo from the midi message
+ * @param event {MidiMessage}
+ * @return {number} the tempo in bpm
+ */
+function getTempo(event)
+{
+    event.messageData.currentIndex = 0;
+    return 60000000 / readBytesAsUintBigEndian(event.messageData, 3);
 }

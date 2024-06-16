@@ -40,7 +40,16 @@ export function readBytesAsUintBigEndian(dataArray, bytesAmount){
  * @returns {number}
  */
 export function readByte(dataArray){
+    if(!dataArray.shift)
+    {
+        dataArray.currentIndex = 0;
+        dataArray.shift = function () {
+            this.currentIndex++;
+            return this[this.currentIndex - 1];
+        }
+    }
     return dataArray.shift();
+
 }
 
 /**

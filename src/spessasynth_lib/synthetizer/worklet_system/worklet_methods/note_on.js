@@ -2,6 +2,7 @@ import { getWorkletVoices } from '../worklet_utilities/worklet_voice.js'
 import { generatorTypes } from '../../../soundfont/chunk/generators.js'
 import { computeModulators } from '../worklet_utilities/worklet_modulator.js'
 import { VOICE_CAP } from '../../synthetizer.js'
+import { SpessaSynthWarn } from '../../../utils/loggin.js'
 
 /**
  * Append the voices
@@ -28,7 +29,7 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false)
 
     if(midiNote > 127 || midiNote < 0)
     {
-        console.warn(`Received a noteOn for note`, midiNote, "Ignoring.");
+        SpessaSynthWarn(`Received a noteOn for note`, midiNote, "Ignoring.");
         return;
     }
 

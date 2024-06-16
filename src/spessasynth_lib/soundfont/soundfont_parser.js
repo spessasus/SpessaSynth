@@ -8,6 +8,7 @@ import {readInstruments, Instrument} from "./chunk/instruments.js";
 import {readModulators, Modulator} from "./chunk/modulators.js";
 import { readRIFFChunk, RiffChunk } from './chunk/riff_chunk.js'
 import { consoleColors } from '../utils/other.js'
+import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo, SpessaSynthWarn } from '../utils/loggin.js'
 
 /**
  * soundfont_parser.js
@@ -28,7 +29,7 @@ export class SoundFont2
             return;
         }
         this.dataArray = new ShiftableByteArray(arrayBuffer);
-        console.group("%cParsing SoundFont...", consoleColors.info);
+        SpessaSynthGroup("%cParsing SoundFont...", consoleColors.info);
         if(!this.dataArray)
         {
             throw "No data!";
@@ -68,7 +69,7 @@ export class SoundFont2
                     text = readBytesAsString(chunk.chunkData, chunk.chunkData.length);
             }
 
-            console.log(`%c"${chunk.header}": %c"${text}"`,
+            SpessaSynthInfo(`%c"${chunk.header}": %c"${text}"`,
                 consoleColors.info,
                 consoleColors.recognized);
             this.soundFontInfo[chunk.header] = text;
@@ -80,18 +81,18 @@ export class SoundFont2
         this.verifyText(readBytesAsString(this.dataArray, 4), "sdta");
 
         // smpl
-        console.log("%cVerifying smpl chunk...", consoleColors.warn)
+        SpessaSynthInfo("%cVerifying smpl chunk...", consoleColors.warn)
         let sampleDataChunk = readRIFFChunk(this.dataArray, false);
         this.verifyHeader(sampleDataChunk, "smpl");
         this.sampleDataStartIndex = this.dataArray.currentIndex;
 
-        console.log(`%cSkipping sample chunk, length: %c${sdtaChunk.size - 12}`,
+        SpessaSynthInfo(`%cSkipping sample chunk, length: %c${sdtaChunk.size - 12}`,
             consoleColors.info,
             consoleColors.value);
         this.dataArray.currentIndex += sdtaChunk.size - 12;
 
         // PDTA
-        console.log("%cLoading preset data chunk...", consoleColors.warn)
+        SpessaSynthInfo("%cLoading preset data chunk...", consoleColors.warn)
         let presetChunk = readRIFFChunk(this.dataArray);
         this.verifyHeader(presetChunk, "list");
         readBytesAsString(presetChunk.chunkData, 4);
@@ -179,7 +180,7 @@ export class SoundFont2
         this.presets = readPresets(presetHeadersChunk, presetZones);
         this.presets.sort((a, b) => (a.program - b.program) + (a.bank - b.bank));
         // preload the first preset
-        console.log(`%cParsing finished! %c"${this.soundFontInfo["INAM"]}"%c has %c${this.presets.length} %cpresets,
+        SpessaSynthInfo(`%cParsing finished! %c"${this.soundFontInfo["INAM"]}"%c has %c${this.presets.length} %cpresets,
         %c${instruments.length}%c instruments and %c${this.samples.length}%c samples.`,
             consoleColors.info,
             consoleColors.recognized,
@@ -190,8 +191,7 @@ export class SoundFont2
             consoleColors.info,
             consoleColors.recognized,
             consoleColors.info);
-        console.groupEnd();
-        console.log("\n")
+        SpessaSynthGroupEnd();
     }
 
     /**
@@ -238,14 +238,14 @@ export class SoundFont2
                 }
             }
             if(preset) {
-                console.info(`%cPreset ${bankNr}.${presetNr} not found. Replaced with %c${preset.presetName} (${preset.bank}.${preset.program})`,
+                SpessaSynthWarn(`%cPreset ${bankNr}.${presetNr} not found. Replaced with %c${preset.presetName} (${preset.bank}.${preset.program})`,
                     consoleColors.warn,
                     consoleColors.recognized);
             }
         }
         if(!preset)
         {
-            console.warn(`Preset ${presetNr} not found. Defaulting to`, this.presets[0].presetName);
+            SpessaSynthWarn(`Preset ${presetNr} not found. Defaulting to`, this.presets[0].presetName);
             preset = this.presets[0];
         }
         return preset;
@@ -261,7 +261,7 @@ export class SoundFont2
         let preset = this.presets.find(p => p.presetName === presetName);
         if(!preset)
         {
-            console.warn("Preset not found. Defaulting to:", this.presets[0].presetName);
+            SpessaSynthWarn("Preset not found. Defaulting to:", this.presets[0].presetName);
             preset = this.presets[0];
         }
         return preset;

@@ -7,6 +7,7 @@ import {
     readVariableLengthQuantity
 } from "../utils/byte_functions.js";
 import { arrayToHexString, consoleColors, formatTitle } from '../utils/other.js'
+import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo } from '../utils/loggin.js'
 
 /**
  * midi_loader.js
@@ -19,7 +20,7 @@ export class MIDI{
      * @param fileName {string} optional, replaces the decoded title if empty
      */
     constructor(arrayBuffer, fileName="") {
-        console.groupCollapsed(`%cParsing MIDI File...`, consoleColors.info);
+        SpessaSynthGroupCollapsed(`%cParsing MIDI File...`, consoleColors.info);
 
         const fileByteArray = new ShiftableByteArray(arrayBuffer);
         const headerChunk = this.readMIDIChunk(fileByteArray);
@@ -233,14 +234,14 @@ export class MIDI{
                     {
                         const decoded = decoder.decode(messageData.slice(7, messageData.length - 3)) + "\n";
                         this.copyright += decoded;
-                        console.info(`%cDecoded Roland SC message! %c${decoded}`,
+                        SpessaSynthInfo(`%cDecoded Roland SC message! %c${decoded}`,
                             consoleColors.recognized,
                             consoleColors.value)
                     }
                 }
             }
             this.tracks.push(track);
-            console.info(`%cParsed %c${this.tracks.length}%c / %c${this.tracksAmount}`,
+            SpessaSynthInfo(`%cParsed %c${this.tracks.length}%c / %c${this.tracksAmount}`,
                 consoleColors.info,
                 consoleColors.value,
                 consoleColors.info,
@@ -260,10 +261,10 @@ export class MIDI{
         }
         this.firstNoteOn = Math.min(...firstNoteOns);
 
-        console.info(`%cMIDI file parsed. Total tick time: %c${this.lastVoiceEventTick}`,
+        SpessaSynthInfo(`%cMIDI file parsed. Total tick time: %c${this.lastVoiceEventTick}`,
             consoleColors.info,
             consoleColors.recognized);
-        console.groupEnd();
+        SpessaSynthGroupEnd();
         
         if(loopStart !== null && loopEnd === null)
         {
@@ -327,6 +328,12 @@ export class MIDI{
 
         // reverse the tempo changes
         this.tempoChanges.reverse();
+
+        /**
+         * The total playback time, in seconds
+         * @type {number}
+         */
+        this.duration = this._ticksToSeconds(this.lastVoiceEventTick);
     }
 
     /**
@@ -346,5 +353,25 @@ export class MIDI{
         chunk.data.set(dataSlice, 0);
         fileByteArray.currentIndex += chunk.size;
         return chunk;
+    }
+
+
+    /**
+     * Coverts ticks to time in seconds
+     * @param ticks {number}
+     * @returns {number}
+     * @private
+     */
+    _ticksToSeconds(ticks)
+    {
+        if (ticks <= 0) {
+            return 0;
+        }
+
+        // find the last tempo change that has occured
+        let tempo = this.tempoChanges.find(v => v.ticks < ticks);
+
+        let timeSinceLastTempo = ticks - tempo.ticks;
+        return this._ticksToSeconds(ticks - timeSinceLastTempo) + (timeSinceLastTempo * 60) / (tempo.tempo * this.timeDivision);
     }
 }

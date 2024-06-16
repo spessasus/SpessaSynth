@@ -3,8 +3,9 @@
 import { Manager } from './manager.js'
 import { MIDI } from '../spessasynth_lib/midi_parser/midi_loader.js'
 
-import { SoundFont2 } from '../spessasynth_lib/soundfont/soundfont_parser.js'
 import { formatTitle } from '../spessasynth_lib/utils/other.js'
+import { SpessaSynthInfo, SpessaSynthWarn } from '../spessasynth_lib/utils/loggin.js'
+import { audioBufferToWav } from './buffer_to_wav.js'
 
 /**
  * demo_main.js
@@ -33,6 +34,9 @@ let sfInput = document.getElementById("sf_file_input");
 // remove the old files
 fileInput.value = "";
 fileInput.focus();
+
+const exportInput = document.getElementById("export_file_input");
+exportInput.value = "";
 
 // IndexedDB stuff
 const dbName = "spessasynth-db";
@@ -92,7 +96,7 @@ async function demoInit()
     let loadedFromDb = true;
     if (soundFontBuffer === undefined)
     {
-        console.info("Failed to load from db, fetching online instead");
+        SpessaSynthWarn("Failed to load from db, fetching online instead");
         loadedFromDb = false;
         const progressBar = document.getElementById("progress_bar");
         titleMessage.innerText = "Loading bundled SoundFont, please wait.";
@@ -105,12 +109,12 @@ async function demoInit()
     }
     else
     {
-        console.info("Loaded the soundfont from the database succesfully");
+        SpessaSynthInfo("Loaded the soundfont from the database succesfully");
     }
 
     // parse the soundfont
     try {
-        window.soundFontParser = new SoundFont2(soundFontBuffer);
+        window.soundFontParser = soundFontBuffer;
         if(!loadedFromDb) {
             saveSoundFontToIndexedDB(soundFontBuffer).then();
         }
@@ -230,8 +234,7 @@ async function startMidi(midiFiles)
  * @return {Promise<void>}
  */
 sfInput.onchange = async e => {
-    if(!e.target.files[0])
-    {
+    if (!e.target.files[0]) {
         return;
     }
     /**
@@ -243,13 +246,18 @@ sfInput.onchange = async e => {
     const title = titleMessage.innerText;
     titleMessage.innerText = "Parsing SoundFont...";
     // parse the soundfont
-    const soundFontBuffer = await file.arrayBuffer();
+    let soundFontBuffer;
     try {
-        window.soundFontParser = new SoundFont2(soundFontBuffer);
-        saveSoundFontToIndexedDB(soundFontBuffer).then();
+        soundFontBuffer = await file.arrayBuffer();
     }
-    catch (e)
-    {
+    catch (e) {
+        window.alert(`Your browser ran out of memory. Consider using Firefox or SF3 soundfont instead.\n\n (see console for error)`);
+        throw e;
+    }
+    try {
+        window.soundFontParser = soundFontBuffer;
+        saveSoundFontToIndexedDB(soundFontBuffer).then();
+    } catch (e) {
         titleMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
         console.log(e);
         return;
@@ -297,6 +305,22 @@ function prepareUI()
                 startMidi(fileInput.files);
             }
         }
+
+        exportInput.onchange = async () => {
+            if (!exportInput.files[0]) {
+                return;
+            }
+            const mid = new MIDI(await exportInput.files[0].arrayBuffer());
+            const title = titleMessage.innerText;
+            const buffer = await window.manager.renderAudio(mid, progress => titleMessage.textContent = `Exporting... ${Math.round(progress * 100)}%`);
+            titleMessage.innerText = title;
+            const blob = audioBufferToWav(buffer);
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${mid.midiName || exportInput.files[0].name}.wav`;
+            a.click();
+        }
     }
 }
 
@@ -311,7 +335,7 @@ async function saveSoundFontToIndexedDB(arr)
         try {
             const request = objectStore.put({ id: "buffer", data: arr });
             request.onsuccess = () => {
-                console.log("SoundFont stored successfully");
+                SpessaSynthInfo("SoundFont stored successfully");
             };
 
             request.onerror = e => {
@@ -320,7 +344,7 @@ async function saveSoundFontToIndexedDB(arr)
         }
         catch (e)
         {
-            console.warn("Failed saving soundfont:", e);
+            SpessaSynthWarn("Failed saving soundfont:", e);
         }
     });
 }
@@ -334,7 +358,7 @@ async function saveSoundFontToIndexedDB(arr)
 function saveSettings(settingsData)
 {
     localStorage.setItem("spessasynth-settings", JSON.stringify(settingsData));
-    console.log("saved as", settingsData)
+    SpessaSynthInfo("saved as", settingsData)
 }
 
 // expose the function

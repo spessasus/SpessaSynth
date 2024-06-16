@@ -1,5 +1,6 @@
 import { Synthetizer } from '../synthetizer/synthetizer.js'
 import { consoleColors } from '../utils/other.js'
+import { SpessaSynthInfo } from '../utils/loggin.js'
 
 /**
  * web_midi_link.js
@@ -35,6 +36,6 @@ export class WebMidiLinkHandler
             synth.sendMessage(midiData);
         });
 
-        console.log("%cWeb MIDI Link handler created!", consoleColors.recognized);
+        SpessaSynthInfo("%cWeb MIDI Link handler created!", consoleColors.recognized);
     }
 }

@@ -57,6 +57,7 @@
  */
 
 import { addAndClampGenerator, generatorTypes } from '../../../soundfont/chunk/generators.js'
+import { SpessaSynthTable } from '../../../utils/loggin.js'
 
 
 /**
@@ -89,18 +90,6 @@ dumpSample(channel, sample, id, sampleDumpCallback)
 {
     // flag as defined, so it's currently being dumped
     globalDumpedSamplesList[id] = false;
-
-    // if uncompressed, load right away
-    if(sample.isCompressed === false)
-    {
-        sampleDumpCallback({
-            channel: channel,
-            sampleID: id,
-            sampleData: sample.getAudioDataSync()
-        });
-        globalDumpedSamplesList[id] = true;
-        return;
-    }
 
     // load the data
     sampleDumpCallback({
@@ -253,7 +242,7 @@ export function getWorkletVoices(channel,
 
             if(debug)
             {
-                console.table([{
+                SpessaSynthTable([{
                     Sample: sampleAndGenerators.sample.sampleName,
                     Generators: generators,
                     Modulators: sampleAndGenerators.modulators.map(m => m.debugString()),

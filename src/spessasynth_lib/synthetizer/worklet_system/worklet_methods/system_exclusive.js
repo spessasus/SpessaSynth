@@ -1,4 +1,5 @@
 import { arrayToHexString, consoleColors } from '../../../utils/other.js'
+import { SpessaSynthInfo, SpessaSynthWarn } from '../../../utils/loggin.js'
 /**
  * Executes a system exclusive
  * @param messageData {number[]} - the message data without f0
@@ -11,7 +12,7 @@ export function systemExclusive(messageData)
     switch (type)
     {
         default:
-            console.info(`%cUnrecognized SysEx: %c${arrayToHexString(messageData)}`,
+            SpessaSynthWarn(`%cUnrecognized SysEx: %c${arrayToHexString(messageData)}`,
                 consoleColors.warn,
                 consoleColors.unrecognized);
             break;
@@ -23,17 +24,17 @@ export function systemExclusive(messageData)
             {
                 if(messageData[3] === 0x01)
                 {
-                    console.info("%cGM system on", consoleColors.info);
+                    SpessaSynthInfo("%cGM system on", consoleColors.info);
                     this.system = "gm";
                 }
                 else if(messageData[3] === 0x03)
                 {
-                    console.info("%cGM2 system on", consoleColors.info);
+                    SpessaSynthInfo("%cGM2 system on", consoleColors.info);
                     this.system = "gm2";
                 }
                 else
                 {
-                    console.info("%cGM system off, defaulting to GS", consoleColors.info);
+                    SpessaSynthInfo("%cGM system off, defaulting to GS", consoleColors.info);
                     this.system = "gs";
                 }
             }
@@ -46,7 +47,7 @@ export function systemExclusive(messageData)
                 // main volume
                 const vol = messageData[5] << 7 | messageData[4];
                 this.setMainVolume(vol / 16384);
-                console.info(`%cMaster Volume. Volume: %c${vol}`,
+                SpessaSynthInfo(`%cMaster Volume. Volume: %c${vol}`,
                     consoleColors.info,
                     consoleColors.value);
             }
@@ -57,7 +58,7 @@ export function systemExclusive(messageData)
                 const tuningValue = ((messageData[5] << 7) | messageData[6]) - 8192;
                 const cents = Math.floor(tuningValue / 81.92); // [-100;+99] cents range
                 this.setMasterTuning(cents);
-                console.info(`%cMaster Fine Tuning. Cents: %c${cents}`,
+                SpessaSynthInfo(`%cMaster Fine Tuning. Cents: %c${cents}`,
                     consoleColors.info,
                     consoleColors.value)
             }
@@ -69,13 +70,13 @@ export function systemExclusive(messageData)
                 const semitones = messageData[5] - 64;
                 const cents = semitones * 100;
                 this.setMasterTuning(cents);
-                console.info(`%cMaster Coarse Tuning. Cents: %c${cents}`,
+                SpessaSynthInfo(`%cMaster Coarse Tuning. Cents: %c${cents}`,
                     consoleColors.info,
                     consoleColors.value)
             }
             else
             {
-                console.info(
+                SpessaSynthWarn(
                     `%cUnrecognized MIDI Real-time message: %c${arrayToHexString(messageData)}`,
                     consoleColors.warn,
                     consoleColors.unrecognized)
@@ -97,13 +98,13 @@ export function systemExclusive(messageData)
                     // GS mode set
                     if(messageValue === 0x00) {
                         // this is a GS reset
-                        console.info("%cGS system on", consoleColors.info);
+                        SpessaSynthInfo("%cGS system on", consoleColors.info);
                         this.system = "gs";
                     }
                     else if(messageValue === 0x7F)
                     {
                         // GS mode off
-                        console.info("%cGS system off, switching to GM2", consoleColors.info);
+                        SpessaSynthInfo("%cGS system off, switching to GM2", consoleColors.info);
                         this.system = "gm2";
                     }
                     return;
@@ -125,7 +126,7 @@ export function systemExclusive(messageData)
                             case 0x15:
                                 // this is the Use for Drum Part sysex (multiple drums)
                                 this.setDrums(channel, messageValue > 0 && messageData[5] >> 4); // if set to other than 0, is a drum channel
-                                console.info(
+                                SpessaSynthInfo(
                                     `%cChannel %c${channel}%c ${messageValue > 0 && messageData[5] >> 4 ?
                                         "is now a drum channel"
                                         :
@@ -142,7 +143,7 @@ export function systemExclusive(messageData)
                                 // this is the pitch key shift sysex
                                 const keyShift = messageValue - 64;
                                 this.transposeChannel(channel, keyShift);
-                                console.info(`%cChannel %c${channel}%c pitch shift. Semitones %c${keyShift}%c, with %c${arrayToHexString(messageData)}`,
+                                SpessaSynthInfo(`%cChannel %c${channel}%c pitch shift. Semitones %c${keyShift}%c, with %c${arrayToHexString(messageData)}`,
                                     consoleColors.info,
                                     consoleColors.recognized,
                                     consoleColors.info,
@@ -165,7 +166,7 @@ export function systemExclusive(messageData)
                             case 0x4B:
                                 // scale tuning
                                 const cents = messageValue - 64;
-                                console.info(`%cChannel %c${channel}%c tuning. Cents %c${cents}%c, with %c${arrayToHexString(messageData)}`,
+                                SpessaSynthInfo(`%cChannel %c${channel}%c tuning. Cents %c${cents}%c, with %c${arrayToHexString(messageData)}`,
                                     consoleColors.info,
                                     consoleColors.recognized,
                                     consoleColors.info,
@@ -180,7 +181,7 @@ export function systemExclusive(messageData)
                     if(messageData[5] === 0x00 && messageData[6] === 0x06)
                     {
                         // roland master pan
-                        console.info(`%cRoland GS Master Pan set to: %c${messageValue}%c with: %c${arrayToHexString(messageData)}`,
+                        SpessaSynthInfo(`%cRoland GS Master Pan set to: %c${messageValue}%c with: %c${arrayToHexString(messageData)}`,
                             consoleColors.info,
                             consoleColors.value,
                             consoleColors.info,
@@ -193,7 +194,7 @@ export function systemExclusive(messageData)
                     {
                         // roland master key shift (transpose)
                         const transpose = messageValue - 64;
-                        console.info(`%cRoland GS Master Key-Shift set to: %c${transpose}%c with: %c${arrayToHexString(messageData)}`,
+                        SpessaSynthInfo(`%cRoland GS Master Key-Shift set to: %c${transpose}%c with: %c${arrayToHexString(messageData)}`,
                             consoleColors.info,
                             consoleColors.value,
                             consoleColors.info,
@@ -205,7 +206,7 @@ export function systemExclusive(messageData)
                     if(messageData[5] === 0x00 && messageData[6] === 0x04)
                     {
                         // roland GS master volume
-                        console.info(`%cRoland GS Master Volume set to: %c${messageValue}%c with: %c${arrayToHexString(messageData)}`,
+                        SpessaSynthInfo(`%cRoland GS Master Volume set to: %c${messageValue}%c with: %c${arrayToHexString(messageData)}`,
                             consoleColors.info,
                             consoleColors.value,
                             consoleColors.info,
@@ -215,7 +216,7 @@ export function systemExclusive(messageData)
                     }
                 }
                 // this is some other GS sysex...
-                console.info(`%cUnrecognized Roland %cGS %cSysEx: %c${arrayToHexString(messageData)}`,
+                SpessaSynthWarn(`%cUnrecognized Roland %cGS %cSysEx: %c${arrayToHexString(messageData)}`,
                     consoleColors.warn,
                     consoleColors.recognized,
                     consoleColors.warn,
@@ -227,7 +228,7 @@ export function systemExclusive(messageData)
             {
                 // this is a roland master volume message
                 this.setMainVolume(messageData[7] / 100);
-                console.info(`%cRoland Master Volume control set to: %c${messageData[7]}%c via: %c${arrayToHexString(messageData)}`,
+                SpessaSynthInfo(`%cRoland Master Volume control set to: %c${messageData[7]}%c via: %c${arrayToHexString(messageData)}`,
                     consoleColors.info,
                     consoleColors.value,
                     consoleColors.info,
@@ -237,7 +238,7 @@ export function systemExclusive(messageData)
             else
             {
                 // this is something else...
-                console.info(`%cUnrecognized Roland SysEx: %c${arrayToHexString(messageData)}`,
+                SpessaSynthWarn(`%cUnrecognized Roland SysEx: %c${arrayToHexString(messageData)}`,
                     consoleColors.warn,
                     consoleColors.unrecognized);
                 return;
@@ -248,12 +249,12 @@ export function systemExclusive(messageData)
             // XG on
             if(messageData[2] === 0x4C && messageData[5] === 0x7E && messageData[6] === 0x00)
             {
-                console.info("%cXG system on", consoleColors.info);
+                SpessaSynthInfo("%cXG system on", consoleColors.info);
                 this.system = "xg";
             }
             else
             {
-                console.info(`%cUnrecognized Yamaha SysEx: %c${arrayToHexString(messageData)}`,
+                SpessaSynthWarn(`%cUnrecognized Yamaha SysEx: %c${arrayToHexString(messageData)}`,
                     consoleColors.warn,
                     consoleColors.unrecognized);
             }

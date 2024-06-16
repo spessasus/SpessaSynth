@@ -58,3 +58,26 @@ export function _processTick()
         }
     }
 }
+
+
+/**
+ * @returns {number} the index of the first to the current played time
+ * @this {WorkletSequencer}
+ */
+export function _findFirstEventIndex()
+{
+    let index = 0;
+    let ticks = Infinity;
+    this.tracks.forEach((track, i) => {
+        if(this.eventIndex[i] >= track.length)
+        {
+            return;
+        }
+        if(track[this.eventIndex[i]].ticks < ticks)
+        {
+            index = i;
+            ticks = track[this.eventIndex[i]].ticks;
+        }
+    });
+    return index;
+}

@@ -1,5 +1,6 @@
 import { Synthetizer } from '../synthetizer/synthetizer.js'
 import { consoleColors } from '../utils/other.js';
+import { SpessaSynthInfo, SpessaSynthWarn } from '../utils/loggin.js'
 
 /**
  * midi_handler.js
@@ -29,10 +30,10 @@ export class MIDIDeviceHandler
                 const response = await navigator.requestMIDIAccess({ sysex: true, software: true });
                 this.inputs = response.inputs;
                 this.outputs = response.outputs;
-                console.log("%cMIDI handler created!", consoleColors.recognized);
+                SpessaSynthInfo("%cMIDI handler created!", consoleColors.recognized);
             }
             catch (e) {
-                console.warn(`Could not get MIDI Devices:`, e);
+                SpessaSynthWarn(`Could not get MIDI Devices:`, e);
                 this.inputs = [];
                 this.outputs = [];
             }
@@ -53,7 +54,7 @@ export class MIDIDeviceHandler
     {
         this.selectedOutput = output;
         seq.connectMidiOutput(output);
-        console.log(`%cPlaying MIDI to %c${output.name}`,
+        SpessaSynthInfo(`%cPlaying MIDI to %c${output.name}`,
             consoleColors.info,
             consoleColors.recognized);
     }
@@ -66,7 +67,7 @@ export class MIDIDeviceHandler
     {
         this.selectedOutput = NO_INPUT;
         seq.connectMidiOutput(undefined);
-        console.log("%cDisconnected from MIDI out.",
+        SpessaSynthInfo("%cDisconnected from MIDI out.",
             consoleColors.info);
     }
 
@@ -81,7 +82,7 @@ export class MIDIDeviceHandler
         input.onmidimessage = event => {
             synth.sendMessage(event.data);
         }
-        console.log(`%cListening for messages on %c${input.name}`,
+        SpessaSynthInfo(`%cListening for messages on %c${input.name}`,
             consoleColors.info,
             consoleColors.recognized);
     }
@@ -93,7 +94,7 @@ export class MIDIDeviceHandler
     {
         this.selectedInput = NO_INPUT;
         input.onmidimessage = undefined;
-        console.log(`%cDisconnected from %c${input.name}`,
+        SpessaSynthInfo(`%cDisconnected from %c${input.name}`,
             consoleColors.info,
             consoleColors.recognized);
     }

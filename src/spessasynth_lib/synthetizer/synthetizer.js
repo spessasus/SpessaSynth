@@ -9,6 +9,7 @@ import {
     ALL_CHANNELS_OR_DIFFERENT_ACTION,
     workletMessageType,
 } from './worklet_system/worklet_utilities/worklet_message.js'
+import { SpessaSynthInfo } from '../utils/loggin.js'
 
 
 /**
@@ -60,9 +61,10 @@ export class Synthetizer {
      * @param targetNode {AudioNode}
      * @param soundFontBuffer {ArrayBuffer} the soundfont file array buffer
      * @param enableEventSystem {boolean} enables the event system. Defaults to true
+     * @param midiToRender {MIDI} if set, starts playing this immediately
      */
-     constructor(targetNode, soundFontBuffer, enableEventSystem = true) {
-        console.info("%cInitializing SpessaSynth synthesizer...", consoleColors.info);
+     constructor(targetNode, soundFontBuffer, enableEventSystem = true, midiToRender = undefined) {
+        SpessaSynthInfo("%cInitializing SpessaSynth synthesizer...", consoleColors.info);
         this.context = targetNode.context;
 
         /**
@@ -122,7 +124,8 @@ export class Synthetizer {
             processorOptions: {
                 midiChannels: this._outputsAmount,
                 soundfont: soundFontBuffer,
-                enableEventSystem: enableEventSystem
+                enableEventSystem: enableEventSystem,
+                midiToRender: midiToRender
             }
         });
 
@@ -157,7 +160,7 @@ export class Synthetizer {
             this.channelsAmount++;
         })
 
-        console.info("%cSpessaSynth is ready!", consoleColors.recognized);
+        SpessaSynthInfo("%cSpessaSynth is ready!", consoleColors.recognized);
     }
 
     /**
@@ -264,7 +267,7 @@ export class Synthetizer {
      */
     debugMessage()
     {
-        console.debug(this);
+        SpessaSynthInfo(this);
         this.post({
             channelNumber: 0,
             messageType: workletMessageType.debugMessage,

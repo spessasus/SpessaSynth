@@ -164,7 +164,7 @@ export function handleMessage(message)
             break;
 
         case workletMessageType.sequencerSpecific:
-            this.sequencer.processMessage(data[0], data[1]);
+            this.sequencer.processMessage(data.messageType, data.messageData);
             break;
 
         default:

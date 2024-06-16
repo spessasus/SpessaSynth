@@ -1,5 +1,6 @@
 import { generatorTypes } from '../../../soundfont/chunk/generators.js'
 import { consoleColors } from '../../../utils/other.js'
+import { SpessaSynthInfo, SpessaSynthWarn } from '../../../utils/loggin.js'
 
 /**
  * Release a note
@@ -11,7 +12,7 @@ export function noteOff(channel, midiNote)
 {
     if(midiNote > 127 || midiNote < 0)
     {
-        console.warn(`Received a noteOn for note`, midiNote, "Ignoring.");
+        SpessaSynthWarn(`Received a noteOn for note`, midiNote, "Ignoring.");
         return;
     }
 
@@ -99,7 +100,7 @@ export function stopAll(channel, force = false)
  */
 export function stopAllChannels(force = false)
 {
-    console.info("%cStop all received!", consoleColors.info);
+    SpessaSynthInfo("%cStop all received!", consoleColors.info);
     for (let i = 0; i < this.workletProcessorChannels.length; i++) {
         this.stopAll(i, force);
     }

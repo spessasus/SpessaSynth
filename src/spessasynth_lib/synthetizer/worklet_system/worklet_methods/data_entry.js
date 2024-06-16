@@ -6,6 +6,7 @@ import {
     NON_CC_INDEX_OFFSET,
 } from '../worklet_utilities/worklet_processor_channel.js'
 import { modulatorSources } from '../../../soundfont/chunk/modulators.js'
+import { SpessaSynthInfo, SpessaSynthWarn } from '../../../utils/loggin.js'
 
 /**
  * Executes a data entry for an NRP for a sc88pro NRP (because touhou yes) and RPN tuning
@@ -43,7 +44,7 @@ export function dataEntryCoarse(channel, dataValue)
                         // default value
                         return;
                     }
-                    console.info(
+                    SpessaSynthWarn(
                         `%cUnrecognized NRPN for %c${channel}%c: %c(0x${channelObject.NRPCoarse.toString(16).toUpperCase()} 0x${channelObject.NRPFine.toString(16).toUpperCase()})%c data value: %c${dataValue}`,
                         consoleColors.warn,
                         consoleColors.recognized,
@@ -62,7 +63,7 @@ export function dataEntryCoarse(channel, dataValue)
                                 // default value
                                 return;
                             }
-                            console.info(
+                            SpessaSynthWarn(
                                 `%cUnrecognized NRPN for %c${channel}%c: %c(0x${channelObject.NRPCoarse.toString(16)} 0x${channelObject.NRPFine.toString(16)})%c data value: %c${dataValue}`,
                                 consoleColors.warn,
                                 consoleColors.recognized,
@@ -84,7 +85,7 @@ export function dataEntryCoarse(channel, dataValue)
                             }
                             addDefaultVibrato();
                             channelObject.channelVibrato.rate = (dataValue / 64) * 8;
-                            console.info(`%cVibrato rate for channel %c${channel}%c is now set to %c${channelObject.channelVibrato.rate}%cHz.`,
+                            SpessaSynthInfo(`%cVibrato rate for channel %c${channel}%c is now set to %c${channelObject.channelVibrato.rate}%cHz.`,
                                 consoleColors.info,
                                 consoleColors.recognized,
                                 consoleColors.info,
@@ -104,7 +105,7 @@ export function dataEntryCoarse(channel, dataValue)
                             }
                             addDefaultVibrato();
                             channelObject.channelVibrato.depth = dataValue / 2;
-                            console.info(`%cVibrato depth for %c${channel}%c is now set to %c${channelObject.channelVibrato.depth}%c cents range of detune.`,
+                            SpessaSynthInfo(`%cVibrato depth for %c${channel}%c is now set to %c${channelObject.channelVibrato.depth}%c cents range of detune.`,
                                 consoleColors.info,
                                 consoleColors.recognized,
                                 consoleColors.info,
@@ -124,7 +125,7 @@ export function dataEntryCoarse(channel, dataValue)
                             }
                             addDefaultVibrato();
                             channelObject.channelVibrato.delay = (dataValue / 64) / 3;
-                            console.info(`%cVibrato delay for %c${channel}%c is now set to %c${channelObject.channelVibrato.delay}%c seconds.`,
+                            SpessaSynthInfo(`%cVibrato delay for %c${channel}%c is now set to %c${channelObject.channelVibrato.delay}%c seconds.`,
                                 consoleColors.info,
                                 consoleColors.recognized,
                                 consoleColors.info,
@@ -137,7 +138,7 @@ export function dataEntryCoarse(channel, dataValue)
                             // affect the "brightness" controller as we have a default modulator that controls it
                             const ccValue = dataValue;
                             this.controllerChange(channel, midiControllers.brightness, dataValue)
-                            console.info(`%cFilter cutoff for %c${channel}%c is now set to %c${ccValue}`,
+                            SpessaSynthInfo(`%cFilter cutoff for %c${channel}%c is now set to %c${ccValue}`,
                                 consoleColors.info,
                                 consoleColors.recognized,
                                 consoleColors.info,
@@ -153,7 +154,7 @@ export function dataEntryCoarse(channel, dataValue)
                     }
                     const reverb = dataValue;
                     this.controllerChange(channel, midiControllers.effects1Depth, reverb);
-                    console.info(
+                    SpessaSynthInfo(
                         `%cGS Drum reverb for %c${channel}%c: %c${reverb}`,
                         consoleColors.info,
                         consoleColors.recognized,
@@ -169,7 +170,7 @@ export function dataEntryCoarse(channel, dataValue)
                     }
                     const chorus = dataValue;
                     this.controllerChange(channel, midiControllers.effects3Depth, chorus);
-                    console.info(
+                    SpessaSynthInfo(
                         `%cGS Drum chorus for %c${channel}%c: %c${chorus}`,
                         consoleColors.info,
                         consoleColors.recognized,
@@ -183,7 +184,7 @@ export function dataEntryCoarse(channel, dataValue)
             switch(channelObject.RPValue)
             {
                 default:
-                    console.info(
+                    SpessaSynthWarn(
                         `%cUnrecognized RPN for %c${channel}%c: %c(0x${channelObject.RPValue.toString(16)})%c data value: %c${dataValue}`,
                         consoleColors.warn,
                         consoleColors.recognized,
@@ -196,7 +197,7 @@ export function dataEntryCoarse(channel, dataValue)
                 // pitch bend range
                 case 0x0000:
                     channelObject.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] = dataValue << 7;
-                    console.info(`%cChannel ${channel} bend range. Semitones: %c${dataValue}`,
+                    SpessaSynthInfo(`%cChannel ${channel} bend range. Semitones: %c${dataValue}`,
                         consoleColors.info,
                         consoleColors.value);
                     break;

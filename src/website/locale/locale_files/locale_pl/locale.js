@@ -15,6 +15,7 @@ export const localePolish = {
 
     // top bar buttons
     midiUploadButton: "Wgraj Twoje pliki MIDI",
+    midiRenderButton: "Eksportuj audio",
     demoSoundfontUploadButton: "Wgraj SoundFonta",
     demoGithubPage: "Strona projektu",
     demoBundledSoundfont: "Użyj wbudowanego SoundFonta (22MB)",

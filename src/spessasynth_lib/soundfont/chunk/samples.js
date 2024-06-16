@@ -1,16 +1,14 @@
 import {RiffChunk} from "./riff_chunk.js";
 import {ShiftableByteArray} from "../../utils/shiftable_array.js";
 import {readByte, readBytesAsUintLittleEndian, readBytesAsString, signedInt8} from "../../utils/byte_functions.js";
-import { consoleColors } from '../../utils/other.js';
 import { stbvorbis} from '../../utils/stbvorbis_sync.js'
+import { SpessaSynthWarn } from '../../utils/loggin.js'
 
 /**
  * samples.js
  * purpose: parses soundfont samples, resamples if needed.
  * loads sample data, handles async loading of sf3 compressed samples
  */
-
-const FIX_SAMPLERATE = 44100;
 
 /**
  * Reads the generatorTranslator from the shdr chunk
@@ -189,96 +187,6 @@ export class Sample {
     }
 
     /**
-     * creates a sample sampleData and stores it for reuse. Note: this version ONLY SUPPORTS UNCOMPRESSED SAMPLES!
-     * @param startAddrOffset {number}
-     * @param endAddrOffset {number}
-     * @returns {Float32Array} The audioData
-     */
-    getAudioDataSync(startAddrOffset = 0, endAddrOffset = 0)
-    {
-        if (!this.isSampleLoaded) {
-            // start loading data if not loaded
-            return this.loadUncompressedData(this.sampleDataArray);
-        }
-        // if no offset, return saved sampleData
-        if (this.sampleData && startAddrOffset === 0 && endAddrOffset === 0) {
-            return this.sampleData;
-        }
-
-        return this.getOffsetData(startAddrOffset, endAddrOffset);
-    }
-
-    /**
-     * Creates an audioBuffer for later reuse
-     * @param context {BaseAudioContext}
-     * @param startAddrOffset {number}
-     * @param endAddrOffset {number}
-     * @returns {Promise<AudioBuffer>}
-     */
-    async getAudioBuffer(context, startAddrOffset, endAddrOffset) {
-        // no sample data means no buffer
-        if (!this.isSampleLoaded) {
-            const data = await this.loadBufferData();
-            // try to create an audioBuffer, if unable to, resample the sample now, otherwise just load it dynamically
-            try {
-                this.buffer = new AudioBuffer({
-                    length: this.sampleLength / 2 + 1,
-                    sampleRate: this.sampleRate
-                });
-                this.buffer.getChannelData(0).set(data);
-            } catch (e) {
-                console.warn(`Error creating an audio buffer for ${this.sampleName}! Resampling the sample from ${this.sampleRate} to ${FIX_SAMPLERATE} to fix...`);
-
-                /**
-                 * @type {Float32Array}
-                 */
-                this.sampleData = this.resampleData(data);
-                this.buffer = new AudioBuffer({
-                    length: this.sampleData.length,
-                    sampleRate: FIX_SAMPLERATE
-                });
-                this.buffer.getChannelData(0).set(this.sampleData);
-            }
-        }
-        if (startAddrOffset === 0 && endAddrOffset === 0) {
-            return this.buffer;
-        }
-        const data = this.getOffsetData(startAddrOffset, endAddrOffset);
-        const buff = context.createBuffer(1, data.length, this.sampleRate);
-        buff.getChannelData(0).set(data);
-        return buff;
-    }
-
-    /**
-     *
-     * @param audioData {Float32Array}
-     * @returns {Float32Array}
-     */
-    resampleData(audioData) {
-        const lengthRatio = this.sampleRate / FIX_SAMPLERATE;
-        const outputLength = Math.round(audioData.length / lengthRatio);
-        const outputData = new Float32Array(outputLength);
-
-
-        for (let i = 0; i < outputLength; i++) {
-            const index = i * lengthRatio;
-            const indexPrev = Math.floor(index);
-            const indexNext = Math.min(indexPrev + 1, audioData.length - 1);
-            const fraction = index - indexPrev;
-
-            outputData[i] = (1 - fraction) * audioData[indexPrev] + fraction * audioData[indexNext];
-        }
-
-        // change every property correctly
-        this.sampleData = outputData;
-        this.sampleRate = FIX_SAMPLERATE;
-        this.indexRatio = 1 / lengthRatio;
-        this.sampleLoopStartIndex = Math.round(this.indexRatio * this.sampleLoopStartIndex);
-        this.sampleLoopEndIndex = Math.round(this.indexRatio * this.sampleLoopEndIndex);
-        return outputData;
-    }
-
-    /**
      * @param smplArr {ShiftableByteArray}
      * @returns {Float32Array}
      */
@@ -286,7 +194,7 @@ export class Sample {
     {
         if(this.isCompressed)
         {
-            console.warn("Trying to load a compressed sample via loadUncompressedData()... aborting!");
+            SpessaSynthWarn("Trying to load a compressed sample via loadUncompressedData()... aborting!");
             return new Float32Array(0);
         }
 

@@ -8,6 +8,7 @@ import {
     resetArray,
 } from '../worklet_utilities/worklet_processor_channel.js'
 import { computeModulators } from '../worklet_utilities/worklet_modulator.js'
+import { SpessaSynthInfo } from '../../../utils/loggin.js'
 
 /**
  * @param channel {number}
@@ -36,7 +37,7 @@ export function controllerChange(channel, controllerNumber, controllerValue)
             {
                 case "gm":
                     // gm ignores bank select
-                    console.info(`%cIgnoring the Bank Select (${controllerValue}), as the synth is in GM mode.`, consoleColors.info);
+                    SpessaSynthInfo(`%cIgnoring the Bank Select (${controllerValue}), as the synth is in GM mode.`, consoleColors.info);
                     return;
 
                 case "xg":
@@ -155,7 +156,7 @@ export function controllerChange(channel, controllerNumber, controllerValue)
  */
 export function resetAllControllers()
 {
-    console.info("%cResetting all controllers!", consoleColors.info);
+    SpessaSynthInfo("%cResetting all controllers!", consoleColors.info);
     this.callEvent("allcontrollerreset", undefined);
     for (let channelNumber = 0; channelNumber < this.workletProcessorChannels.length; channelNumber++)
     {
