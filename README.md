@@ -17,6 +17,7 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 - SoundFont2 Modulator Support
 - SoundFont3 (vorbis compressed sf2) Support (thanks to [stbvorbis.js](https://github.com/hajimehoshi/stbvorbis.js))
 - Reverb and chorus support
+- Render audio to file
 - A few custom modulators to support some additional controllers (see `modulators.js`)
 - Written using AudioWorklets (Firefox and Chrome both work perfectly)
 - Legacy system that doesn't use AudioWorklets (Available to use over HTTP and will switch automatically)
