@@ -4,7 +4,7 @@ import {Manager} from "./manager.js";
 import {MIDI} from "../spessasynth_lib/midi_parser/midi_loader.js";
 
 import { formatTitle } from '../spessasynth_lib/utils/other.js'
-import { audioBufferToWav } from './buffer_to_wav.js'
+import { audioBufferToWav } from '../spessasynth_lib/utils/buffer_to_wav.js'
 
 /**
  * main.js

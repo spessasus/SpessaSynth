@@ -134,6 +134,7 @@ export class Sequencer {
                 this.duration = this.midiData.duration;
                 this.calculateNoteTimes(songChangeData.tracks);
                 Object.entries(this.onSongChange).forEach((callback) => callback[1](songChangeData));
+                this.unpause()
                 break;
 
             case WorkletSequencerReturnMessageType.textEvent:
@@ -155,6 +156,7 @@ export class Sequencer {
                 {
                     this.onTimeChange(time);
                 }
+                this.unpause()
                 this._recalculateStartTime(time);
                 break;
 
@@ -278,7 +280,7 @@ export class Sequencer {
 
     set currentTime(time)
     {
-        this.pausedTime = undefined;
+        this.unpause()
         this._sendMessage(WorkletSequencerMessageType.setTime, time);
     }
 
@@ -440,7 +442,7 @@ export class Sequencer {
             }
         }
         this.MIDIout = output;
-        this._sendMessage(WorkletSequencerMessageType.changeMIDIMessageSending, true);
+        this._sendMessage(WorkletSequencerMessageType.changeMIDIMessageSending, output !== undefined);
         this.currentTime -= 0.1;
     }
 
@@ -456,6 +458,11 @@ export class Sequencer {
         }
         this.pausedTime = this.currentTime;
         this._sendMessage(WorkletSequencerMessageType.pause);
+    }
+
+    unpause()
+    {
+        this.pausedTime = undefined;
     }
 
     /**
@@ -474,7 +481,7 @@ export class Sequencer {
     play(resetTime = false)
     {
         this._recalculateStartTime(this.pausedTime);
-        this.pausedTime = undefined;
+        this.unpause()
         this._sendMessage(WorkletSequencerMessageType.play, resetTime);
     }
 

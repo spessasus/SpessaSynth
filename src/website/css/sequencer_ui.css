@@ -26,6 +26,7 @@
     position: relative;
     z-index: 5;
     font-size: var(--progress-bar-height);
+    line-height: var(--progress-bar-height);
     text-align: center;
     color: var(--font-color);
     margin: auto;

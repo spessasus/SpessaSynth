@@ -5,7 +5,7 @@ import { MIDI } from '../spessasynth_lib/midi_parser/midi_loader.js'
 
 import { formatTitle } from '../spessasynth_lib/utils/other.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../spessasynth_lib/utils/loggin.js'
-import { audioBufferToWav } from './buffer_to_wav.js'
+import { audioBufferToWav } from '../spessasynth_lib/utils/buffer_to_wav.js'
 
 /**
  * demo_main.js
