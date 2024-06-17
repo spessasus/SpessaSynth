@@ -90,22 +90,15 @@ export class Synthetizer {
          */
         this.channelsAmount = this._outputsAmount;
 
-        /**
-         * @type {ChannelProperty}
-         */
-        this.defaultChannelProperty = {
-            voicesAmount: 0,
-            pitchBend: 0,
-            pitchBendRangeSemitones: 0,
-            isMuted: false,
-            isDrum: false
-        }
 
         /**
          * individual channel voices amount
          * @type {ChannelProperty[]}
          */
-        this.channelProperties = Array(this.channelsAmount).fill(this.defaultChannelProperty);
+        this.channelProperties = [];
+        for (let i = 0; i < this.channelsAmount; i++) {
+            this.addNewChannel(false);
+        }
         this.channelProperties[DEFAULT_PERCUSSION].isDrum = true;
         this._voicesAmount = 0;
 
@@ -211,10 +204,21 @@ export class Synthetizer {
 
     /**
      * Adds a new channel to the synthesizer
+     * @param postMessage {boolean} leave at true, set to false only at initialization
      */
-    addNewChannel()
+    addNewChannel(postMessage = true)
     {
-        this.channelProperties.push(this.defaultChannelProperty);
+        this.channelProperties.push({
+            voicesAmount: 0,
+            pitchBend: 0,
+            pitchBendRangeSemitones: 0,
+            isMuted: false,
+            isDrum: false
+        });
+        if(!postMessage)
+        {
+            return;
+        }
         this.post({
             channelNumber: 0,
             messageType: workletMessageType.addNewChannel,

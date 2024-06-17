@@ -70,8 +70,8 @@ export class Renderer
         this.visualPitchBendOffset = 0;
 
         this.lineThickness = ANALYSER_STROKE;
-        this.normalAnalyserFft = CHANNEL_ANALYSER_FFT;
-        this.drumAnalyserFft = DRUMS_ANALYSER_FFT;
+        this._normalAnalyserFft = CHANNEL_ANALYSER_FFT;
+        this._drumAnalyserFft = DRUMS_ANALYSER_FFT;
         this.waveMultiplier = WAVE_MULTIPLIER;
 
 
@@ -128,6 +128,28 @@ export class Renderer
         this.connectChannelAnalysers(synth);
     }
 
+    get normalAnalyserFft()
+    {
+        return this._normalAnalyserFft
+    }
+
+    get drumAnalyserFft()
+    {
+        return this._drumAnalyserFft;
+    }
+
+    set normalAnalyserFft(value)
+    {
+        this._normalAnalyserFft = value;
+        this.updateFftSize();
+    }
+
+    set drumAnalyserFft(value)
+    {
+        this._drumAnalyserFft = value;
+        this.updateFftSize();
+    }
+
     toggleDarkMode()
     {
         this.canvas.classList.toggle("light_mode");
@@ -149,7 +171,7 @@ export class Renderer
         {
             // create the analyser
             const analyser = new AnalyserNode(synth.context, {
-                fftSize: this.normalAnalyserFft,
+                fftSize: this._normalAnalyserFft,
                 smoothingTimeConstant: 0.4
             });
             this.channelAnalysers.push(analyser);
@@ -158,13 +180,14 @@ export class Renderer
         synth.eventHandler.addEvent("mutechannel", "renderer-mute-channel", eventData => {
             this.renderChannels[eventData.channel] = !eventData.isMuted;
         });
+        this.updateFftSize();
     }
 
     updateFftSize()
     {
         for (let i = 0; i < this.channelAnalysers.length; i++)
         {
-            this.channelAnalysers[i].fftSize = this.synth.channelProperties[i].isDrum ? this.drumAnalyserFft : this.normalAnalyserFft;
+            this.channelAnalysers[i].fftSize = this.synth.channelProperties[i].isDrum ? this._drumAnalyserFft : this._normalAnalyserFft;
         }
     }
 
@@ -182,11 +205,11 @@ export class Renderer
             const analyser = this.channelAnalysers[e.channel % this.channelAnalysers.length];
             if (e.isDrumChannel)
             {
-                analyser.fftSize = this.drumAnalyserFft;
+                analyser.fftSize = this._drumAnalyserFft;
             }
             else
             {
-                analyser.fftSize = this.normalAnalyserFft;
+                analyser.fftSize = this._normalAnalyserFft;
             }
         });
     }
