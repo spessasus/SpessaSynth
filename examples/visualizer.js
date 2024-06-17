@@ -16,18 +16,18 @@ fetch("../soundfonts/SGM.sf3").then(async response => {
             return;
         }
         const file = event.target.files[0];
-        const arrayBuffer = await file.arrayBuffer();                           // convert the file to array buffer
+        const arrayBuffer = await file.arrayBuffer();                                                 // convert the file to array buffer
         const parsedMidi = new MIDI(arrayBuffer);                                               // parse the MIDI file
         const context = new AudioContext();                                              // create an audioContext
         // add the worklet
-        await context.audioWorklet.addModule("./spessasynth_lib/synthetizer/worklet_system/worklet_processor.js");
+        await context.audioWorklet.addModule("../src/spessasynth_lib/synthetizer/worklet_system/worklet_processor.js");
 
         // prepare and play
         const synth = new Synthetizer(context.destination, soundFontArrayBuffer);            // create the synthetizer
         const seq = new Sequencer([parsedMidi], synth);                            // create the sequencer (it can accept multiple files so we need to pass an array)
         seq.play();                                                                                     // play the midi
 
-        const canvas = document.getElementById("canvas");                       // get canvas
+        const canvas = document.getElementById("canvas");                         // get canvas
         const drawingContext = canvas.getContext("2d");
         /**
          * create the AnalyserNodes for the channels

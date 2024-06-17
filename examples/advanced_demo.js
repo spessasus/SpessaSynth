@@ -24,7 +24,7 @@ fetch("../soundfonts/SGM.sf3").then(async response => {
         }
         // create the context and add audio worklet
         const context = new AudioContext();
-        await context.audioWorklet.addModule("./spessasynth_lib/synthetizer/worklet_system/worklet_processor.js")
+        await context.audioWorklet.addModule("../src/spessasynth_lib/synthetizer/worklet_system/worklet_processor.js")
         const synth = new Synthetizer(context.destination, soundFontBuffer);          // create the synthetizer
         const seq = new Sequencer(parsedSongs, synth);                          // create the sequencer without parsed midis
         seq.play();                                                             // play the midi

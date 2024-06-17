@@ -25,7 +25,7 @@ fetch("../soundfonts/SGM.sf3").then(async response => {
                 length: sampleRate * (parsedMidi.duration + 1), // sample rate times duration plus one second (for the sound to fade away rather than cut)
         });
         // add the worklet
-        await context.audioWorklet.addModule("./spessasynth_lib/synthetizer/worklet_system/worklet_processor.js");
+        await context.audioWorklet.addModule("../src/spessasynth_lib/synthetizer/worklet_system/worklet_processor.js");
         // here we set the event system to disabled as it's not needed. Also, we need to pass the parsed MIDI here for the synthesizer to start rendering it
         const synth = new Synthetizer(context.destination, soundFontArrayBuffer, false, {
             parsedMIDI: parsedMidi,

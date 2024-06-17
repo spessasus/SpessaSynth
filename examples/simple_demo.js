@@ -20,7 +20,7 @@ fetch("../soundfonts/SGM.sf3").then(async response => {
         const parsedMidi = new MIDI(arrayBuffer);                             // parse the MIDI file
         const context = new AudioContext();                                     // create an audioContext
         // add the worklet
-        await context.audioWorklet.addModule("./spessasynth_lib/synthetizer/worklet_system/worklet_processor.js")
+        await context.audioWorklet.addModule("../src/spessasynth_lib/synthetizer/worklet_system/worklet_processor.js")
         const synth = new Synthetizer(context.destination, soundFontArrayBuffer);          // create the synthetizer
         const seq = new Sequencer([parsedMidi], synth);                         // create the sequencer (it can accept multiple files, so we need to pass an array)
         seq.play();
