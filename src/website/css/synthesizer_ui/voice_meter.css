@@ -36,7 +36,8 @@
     text-shadow: 1px 1px 2px #000;
     user-select: none;
     white-space: nowrap;
-    overflow: scroll;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .voice_meter .voice_meter_text_light{
