@@ -43,12 +43,15 @@ import {
 import { disableAndLockVibrato, setVibrato } from '../worklet_methods/vibrato_control.js'
 import { WorkletSequencer } from '../../../sequencer/worklet_sequencer/worklet_sequencer.js'
 import { SpessaSynthInfo } from '../../../utils/loggin.js'
+import { applySynthesizerSnapshot, sendSynthesizerSnapshot } from '../worklet_methods/snapshot.js'
+import { consoleColors } from '../../../utils/other.js'
 
 
 /**
  * worklet_processor.js
- * purpose: manages the synthesizer from the AudioWorkletGlobalScope and renders the audio data
+ * purpose: manages the synthesizer (and worklet sequencer) from the AudioWorkletGlobalScope and renders the audio data
  */
+
 const MIN_NOTE_LENGTH = 0.07; // if the note is released faster than that, it forced to last that long
 
 const SYNTHESIZER_GAIN = 1.0;
@@ -61,7 +64,10 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
      *      midiChannels: number,
      *      soundfont: ArrayBuffer,
      *      enableEventSystem: boolean,
-     *      midiToRender: MIDI
+     *      startRenderingData: {
+     *          parsedMIDI: MIDI,
+     *          snapshot: SynthesizerSnapshot
+     *      }
      * }}}
      */
     constructor(options) {
@@ -134,7 +140,8 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
 
         /**
          * Controls the system
-         * @type {"gm"|"gm2"|"gs"|"xg"}
+         * @typedef {"gm"|"gm2"|"gs"|"xg"} SynthSystem
+         * @type {SynthSystem}
          */
         this.system = DEFAULT_SYNTH_MODE;
 
@@ -142,10 +149,19 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
 
         this.port.onmessage = e => this.handleMessage(e.data);
 
-        if(options.processorOptions.midiToRender)
+        // if sent, start rendering
+        if(options.processorOptions.startRenderingData)
         {
-            this.sequencer.loadNewSongList([options.processorOptions.midiToRender]);
-            this.sequencer.loop = false;
+            SpessaSynthInfo("%cRendering enabled! Starting render.", consoleColors.info)
+            if (options.processorOptions.startRenderingData.parsedMIDI) {
+                this.sequencer.loadNewSongList([options.processorOptions.startRenderingData.parsedMIDI]);
+                this.sequencer.loop = false;
+            }
+
+            if (options.processorOptions.startRenderingData.snapshot)
+            {
+                this.applySynthesizerSnapshot(options.processorOptions.startRenderingData.snapshot);
+            }
         }
     }
 
@@ -178,6 +194,23 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
         pan = (pan / 2) + 0.5;
         this.panLeft = (1 - pan) * this.mainVolume;
         this.panRight = (pan) * this.mainVolume;
+    }
+
+    /**
+     * @param channel {number}
+     * @param isMuted {boolean}
+     */
+    muteChannel(channel, isMuted)
+    {
+        if(isMuted)
+        {
+            this.stopAll(channel, true);
+        }
+        this.callEvent("mutechannel", {
+            channel: channel,
+            isMuted: isMuted
+        });
+        this.workletProcessorChannels[channel].isMuted = isMuted;
     }
 
     voiceKilling(amount)
@@ -443,6 +476,9 @@ SpessaSynthProcessor.prototype.setDrums = setDrums;
 SpessaSynthProcessor.prototype.reloadSoundFont = reloadSoundFont;
 SpessaSynthProcessor.prototype.sampleDump = sampleDump;
 SpessaSynthProcessor.prototype.sendPresetList = sendPresetList;
+
+SpessaSynthProcessor.prototype.sendSynthesizerSnapshot = sendSynthesizerSnapshot;
+SpessaSynthProcessor.prototype.applySynthesizerSnapshot = applySynthesizerSnapshot;
 
 
 export { SpessaSynthProcessor }

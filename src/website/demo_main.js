@@ -35,8 +35,11 @@ let sfInput = document.getElementById("sf_file_input");
 fileInput.value = "";
 fileInput.focus();
 
-const exportInput = document.getElementById("export_file_input");
-exportInput.value = "";
+/**
+ * @type {HTMLButtonElement}
+ */
+const exportButton = document.getElementById("export_button");
+exportButton.style.display = "none";
 
 // IndexedDB stuff
 const dbName = "spessasynth-db";
@@ -227,6 +230,23 @@ async function startMidi(midiFiles)
         manager.play(parsed);
     }
     manager.seqUI.setSongTitles(titles);
+
+    exportButton.style.display = "initial";
+    exportButton.onclick = async () => {
+        const title = titleMessage.innerText;
+        const message = manager.localeManager.getLocaleString("locale.exportingAudio");
+
+        const buffer = await window.manager.renderAudio(progress => titleMessage.textContent = `${message} ${Math.round(progress * 100)}%`);
+
+        titleMessage.innerText = title;
+
+        const blob = audioBufferToWav(buffer);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${window.manager.seq.midiData.midiName || 'song'}.wav`;
+        a.click();
+    }
 }
 
 /**
@@ -251,7 +271,7 @@ sfInput.onchange = async e => {
         soundFontBuffer = await file.arrayBuffer();
     }
     catch (e) {
-        window.alert(`Your browser ran out of memory. Consider using Firefox or SF3 soundfont instead.\n\n (see console for error)`);
+        window.alert(manager.localeManager.getLocaleString("locale.outOfMemory"));
         throw e;
     }
     try {
@@ -283,7 +303,7 @@ function prepareUI()
     {
         document.addEventListener("mousedown", () => {
             if(window.audioContextMain.state !== "running") {
-                window.audioContextMain.resume();
+                window.audioContextMain.resume().then();
             }
 
         })
@@ -294,32 +314,16 @@ function prepareUI()
 
     if(fileInput.files[0])
     {
-        startMidi(fileInput.files);
+        startMidi(fileInput.files).then();
     }
     else
     {
         fileInput.onclick = undefined;
-        fileInput.onchange = e => {
-            if(e.target.files[0])
+        fileInput.onchange = () => {
+            if(fileInput.files[0])
             {
-                startMidi(fileInput.files);
+                startMidi(fileInput.files).then();
             }
-        }
-
-        exportInput.onchange = async () => {
-            if (!exportInput.files[0]) {
-                return;
-            }
-            const mid = new MIDI(await exportInput.files[0].arrayBuffer());
-            const title = titleMessage.innerText;
-            const buffer = await window.manager.renderAudio(mid, progress => titleMessage.textContent = `Exporting... ${Math.round(progress * 100)}%`);
-            titleMessage.innerText = title;
-            const blob = audioBufferToWav(buffer);
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `${mid.midiName || exportInput.files[0].name}.wav`;
-            a.click();
         }
     }
 }
@@ -375,4 +379,4 @@ if(saved !== null) {
     });
 }
 
-demoInit();
+demoInit().then();

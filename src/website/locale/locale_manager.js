@@ -7,6 +7,7 @@
  *  isEdited: boolean
  * }} PropertyType
  */
+import { SpessaSynthInfo } from '../../spessasynth_lib/utils/loggin.js'
 
 export class LocaleManager
 {
@@ -23,6 +24,16 @@ export class LocaleManager
          * @private
          */
         this._boundObjectProperties = [];
+    }
+
+    /**
+     * Resolves and gets a the localized string for the current path
+     * @param localePath {string} The locale path to the text, written as JS object path, starts with "locale."
+     * @returns {string} The localized string
+     */
+    getLocaleString(localePath)
+    {
+        return this._resolveLocalePath(localePath);
     }
 
     /**
@@ -155,6 +166,7 @@ export class LocaleManager
      */
     changeGlobalLocale(newLocale)
     {
+        SpessaSynthInfo("Changing locale to", newLocale.localeName)
         // check if the property has been changed to something else. If so, don't change it back.
         this._boundObjectProperties.forEach(property => {
             this._validatePropertyIntegrity(property);

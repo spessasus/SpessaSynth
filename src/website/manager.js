@@ -14,6 +14,7 @@ import { MusicModeUI } from './ui/music_mode_ui.js'
 import { LocaleManager } from './locale/locale_manager.js'
 import { DEFAULT_LOCALE, localeList } from './locale/locale_files/locale_list.js'
 import { isMobile } from '../spessasynth_lib/utils/other.js'
+import { SpessaSynthInfo, SpessaSynthWarn } from '../spessasynth_lib/utils/loggin.js'
 
 /**
  * manager.js
@@ -53,12 +54,17 @@ import { isMobile } from '../spessasynth_lib/utils/other.js'
     }
 
     /**
-     * @param parsedMid {MIDI}
      * @param callback {function(number)} progress from 0 to 1
      * @returns {Promise<AudioBuffer>}
      */
-    async renderAudio(parsedMid, callback=undefined)
+    async renderAudio(callback=undefined)
     {
+        if(!this.seq)
+        {
+            throw new Error("No sequencer active");
+        }
+        const parsedMid = this.seq.midiData;
+        // prepare audio context
         const offline = new OfflineAudioContext({
             numberOfChannels: 2,
             sampleRate: this.context.sampleRate,
@@ -66,16 +72,26 @@ import { isMobile } from '../spessasynth_lib/utils/other.js'
         });
         const workletURL = new URL("../spessasynth_lib/synthetizer/worklet_system/worklet_processor.js", import.meta.url).href;
         await offline.audioWorklet.addModule(workletURL);
+
         /**
+         * take snapshot of the real synth
+         * @type {SynthesizerSnapshot}
+         */
+        const snapshot = await this.synth.getSynthesizerSnapshot();
+        /**
+         * Prepare synthesizer
          * @type {Synthetizer}
          */
         let synth;
         try
         {
-            synth = new Synthetizer(offline.destination, this.sf, false, parsedMid);
+            synth = new Synthetizer(offline.destination, this.sf, false, {
+                parsedMIDI: parsedMid,
+                snapshot: snapshot
+            });
         }
         catch (e) {
-            window.alert(`Your browser ran out of memory. Consider using Firefox or SF3 soundfont instead.\n\n (see console for error)`);
+            window.alert(this.localeManager.getLocaleString("locale.outOfMemory"));
             throw e;
         }
         if(callback)
@@ -95,7 +111,18 @@ import { isMobile } from '../spessasynth_lib/utils/other.js'
     async initializeContext(context, soundFont) {
 
         // initialize the locale management system. do it here because we want it ready before all ui classes do their things
-        this.localeManager = new LocaleManager(localeList[DEFAULT_LOCALE]);
+        // get locale from user "en-US" will turn into just "en"
+        let locale = navigator.language.split("-")[0].toLowerCase();
+        if(localeList[locale])
+        {
+            SpessaSynthInfo(`Locale ${locale} found! using it.`)
+        }
+        else
+        {
+            SpessaSynthWarn(`Locale ${locale} not found. Using ${DEFAULT_LOCALE}.`)
+            locale = DEFAULT_LOCALE;
+        }
+        this.localeManager = new LocaleManager(localeList[locale]);
 
 
         // bind every element with translate-path to translation
@@ -257,6 +284,7 @@ import { isMobile } from '../spessasynth_lib/utils/other.js'
         {
             return;
         }
+
         // create a new sequencer
         this.seq = new Sequencer(parsedMidi, this.synth);
 

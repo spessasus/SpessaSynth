@@ -160,6 +160,10 @@ export class Sequencer {
 
             case WorkletSequencerReturnMessageType.resetRendererIndexes:
                 this.resetRendererIndexes();
+                break;
+
+            case WorkletSequencerReturnMessageType.pause:
+                this.pausedTime = this.currentTime;
         }
     }
 

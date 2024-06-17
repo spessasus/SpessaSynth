@@ -143,6 +143,7 @@ class WorkletSequencer
         }
         this.pausedTime = this.currentTime;
         this.stop();
+        this.post(WorkletSequencerReturnMessageType.pause);
     }
 
     /**

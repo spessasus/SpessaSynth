@@ -1,4 +1,5 @@
 import { ALL_CHANNELS_OR_DIFFERENT_ACTION, workletMessageType } from '../worklet_utilities/worklet_message.js'
+import { SpessaSynthWarn } from '../../../utils/loggin.js'
 
 /**
  * @this {SpessaSynthProcessor}
@@ -106,15 +107,7 @@ export function handleMessage(message)
             break;
 
         case workletMessageType.muteChannel:
-            if(data)
-            {
-                this.stopAll(channel, true);
-            }
-            this.callEvent("mutechannel", {
-                channel: channel,
-                isMuted: data
-            });
-            channelObject.isMuted = data;
+            this.muteChannel(channel, data);
             break;
 
         case workletMessageType.addNewChannel:
@@ -167,7 +160,12 @@ export function handleMessage(message)
             this.sequencer.processMessage(data.messageType, data.messageData);
             break;
 
+        case workletMessageType.requestSynthesizerSnapshot:
+            this.sendSynthesizerSnapshot();
+            break;
+
         default:
+            SpessaSynthWarn("Unrecognized event:", data);
             break;
     }
 }

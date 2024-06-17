@@ -5,8 +5,8 @@ import { EventHandler } from './synth_event_handler.js'
 import { FancyChorus } from './audio_effects/fancy_chorus.js'
 import { getReverbProcessor } from './audio_effects/reverb.js'
 import {
-    returnMessageType,
     ALL_CHANNELS_OR_DIFFERENT_ACTION,
+    returnMessageType,
     workletMessageType,
 } from './worklet_system/worklet_utilities/worklet_message.js'
 import { SpessaSynthInfo } from '../utils/loggin.js'
@@ -61,9 +61,12 @@ export class Synthetizer {
      * @param targetNode {AudioNode}
      * @param soundFontBuffer {ArrayBuffer} the soundfont file array buffer
      * @param enableEventSystem {boolean} enables the event system. Defaults to true
-     * @param midiToRender {MIDI} if set, starts playing this immediately
+     * @param startRenderingData {{
+     *          parsedMIDI: MIDI,
+     *          snapshot: SynthesizerSnapshot
+     *      }} if set, starts playing this immediately and restores the values
      */
-     constructor(targetNode, soundFontBuffer, enableEventSystem = true, midiToRender = undefined) {
+     constructor(targetNode, soundFontBuffer, enableEventSystem = true, startRenderingData = undefined) {
         SpessaSynthInfo("%cInitializing SpessaSynth synthesizer...", consoleColors.info);
         this.context = targetNode.context;
 
@@ -118,7 +121,7 @@ export class Synthetizer {
                 midiChannels: this._outputsAmount,
                 soundfont: soundFontBuffer,
                 enableEventSystem: enableEventSystem,
-                midiToRender: midiToRender
+                startRenderingData: startRenderingData
             }
         });
 
@@ -133,6 +136,12 @@ export class Synthetizer {
 
         // worklet sends us some data back
         this.worklet.port.onmessage = e => this.handleMessage(e.data);
+
+        /**
+         * @type {function(SynthesizerSnapshot)}
+         * @private
+         */
+        this._snapshotCallback = undefined;
 
         /**
          * for the worklet sequencer's messages
@@ -199,7 +208,33 @@ export class Synthetizer {
                 {
                     this.sequencerCallbackFunction(messageData.messageType, messageData.messageData);
                 }
+                break;
+
+            case returnMessageType.synthesizerSnapshot:
+                if(this._snapshotCallback)
+                {
+                    this._snapshotCallback(messageData);
+                }
         }
+    }
+
+    /**
+     * Gets a complete snapshot of the synthesizer, including controllers
+     * @returns {Promise<SynthesizerSnapshot>}
+     */
+    async getSynthesizerSnapshot()
+    {
+        return new Promise(resolve => {
+            this._snapshotCallback = s => {
+                this._snapshotCallback = undefined;
+                resolve(s);
+            };
+            this.post({
+                messageType: workletMessageType.requestSynthesizerSnapshot,
+                messageData: undefined,
+                channelNumber: ALL_CHANNELS_OR_DIFFERENT_ACTION
+            });
+        });
     }
 
     /**

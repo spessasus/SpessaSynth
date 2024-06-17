@@ -30,8 +30,8 @@ let fileInput = document.getElementById("midi_file_input");
 fileInput.value = "";
 fileInput.focus();
 
-let exportInput = document.getElementById("export_file_input");
-exportInput.value = "";
+let exportButton = document.getElementById("export_button");
+exportButton.style.display = "none";
 
 let synthReady = false;
 
@@ -78,7 +78,12 @@ async function fetchFont(fileName, callback)
     }
     catch (e)
     {
-        window.alert(`Your browser ran out of memory. Consider using Firefox or SF3 soundfont instead\n\n (see console for error)`);
+        let message = `Your browser ran out of memory. Consider using Firefox or SF3 soundfont instead\n\n (see console for error)`;
+        if(window.manager)
+        {
+            message = manager.localeManager.getLocaleString("locale.outOfMemory");
+        }
+        window.alert(message);
         throw e;
     }
     let offset = 0;
@@ -164,6 +169,22 @@ async function startMidi(midiFiles)
         manager.play(parsed);
     }
     manager.seqUI.setSongTitles(titles);
+    exportButton.style.display = "initial";
+    exportButton.onclick = async () => {
+        const title = titleMessage.innerText;
+        const message = manager.localeManager.getLocaleString("locale.exportingAudio");
+
+        const buffer = await window.manager.renderAudio(progress => titleMessage.textContent = `${message} ${Math.round(progress * 100)}%`);
+
+        titleMessage.innerText = title;
+
+        const blob = audioBufferToWav(buffer);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${window.manager.seq.midiData.midiName || 'song'}.wav`;
+        a.click();
+    }
 }
 
 /**
@@ -295,24 +316,8 @@ fetch("soundfonts").then(async r => {
         if (!fileInput.files[0]) {
             return;
         }
-        startMidi(fileInput.files);
+        await startMidi(fileInput.files);
     };
-
-    exportInput.onchange = async () => {
-        if (!exportInput.files[0]) {
-            return;
-        }
-        const mid = new MIDI(await exportInput.files[0].arrayBuffer());
-        const title = titleMessage.innerText;
-        const buffer = await window.manager.renderAudio(mid, progress => titleMessage.textContent = `Exporting... ${Math.round(progress * 100)}%`);
-        titleMessage.innerText = title;
-        const blob = audioBufferToWav(buffer);
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${mid.midiName || exportInput.files[0].name}.wav`;
-        a.click();
-    }
 });
 
 /**

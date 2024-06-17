@@ -1,6 +1,7 @@
 import { settingsHtml } from './settings_html.js'
 import { getDownArrowSvg, getGearSvg } from '../icons.js'
 import { DEFAULT_LOCALE } from '../../locale/locale_files/locale_list.js'
+import { SpessaSynthInfo } from '../../../spessasynth_lib/utils/loggin.js'
 
 /**
  * settings.js
@@ -242,6 +243,8 @@ export class Settings
         {
             return;
         }
+
+        SpessaSynthInfo("Loading saved settings...", savedSettings)
 
         // renderer
         const rendererControls = this.htmlControls.renderer;

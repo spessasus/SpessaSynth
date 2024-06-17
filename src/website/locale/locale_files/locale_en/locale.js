@@ -16,9 +16,13 @@ export const localeEnglish = {
     // top bar buttons
     midiUploadButton: "Upload your MIDI files",
     midiRenderButton: "Export MIDI audio",
+    exportingAudio: "Exporting audio...",
+
     demoSoundfontUploadButton: "Upload the soundfont",
     demoGithubPage: "Project's page",
     demoBundledSoundfont: "Use the bundled SoundFont (22MB)",
+
+    outOfMemory: "Your browser ran out of memory. Consider using Firefox or SF3 soundfont instead.\n\n (see console for error).",
 
     hideTopBar: {
         title: "Hide top bar",

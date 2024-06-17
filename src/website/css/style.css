@@ -8,7 +8,7 @@
 * {
     --font-color: #ccc;
     --top-buttons-color: linear-gradient(201deg, #222, #333);
-    font-family: "Open Sans Light", sans-serif;
+    font-family: "Noto Sans Light", "Open Sans Light", sans-serif;
     color: var(--font-color);
     text-align: center;
     margin: 0;
