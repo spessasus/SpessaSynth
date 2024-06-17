@@ -1,31 +1,32 @@
 
 /**
- * @typedef {Object} ChannelSnapshot
+ * @typedef {Object} ChannelSnapshot - a snapshot of the channe;
  *
- * @property {number} program
- * @property {number} bank
- * @property {boolean} lockPreset
+ * @property {number} program - the channel's program
+ * @property {number} bank - the channel's bank
+ * @property {boolean} lockPreset - indicates whether the channel's program change is disabled
  *
- * @property {Int16Array} midiControllers
- * @property {boolean[]} lockedControllers
- * @property {Float32Array} customControllers
+ * @property {Int16Array} midiControllers - the array of all midi controllers (in 14-bit values), including pitch bend
+ * @property {boolean[]} lockedControllers - an array of booleans, indicating if the controller with a current index is locked
+ * @property {Float32Array} customControllers - array of custom (not sf2) control values such as RPN pitch tuning, transpose, modulation depth, etc.
  *
- * @property {boolean} lockVibrato
- * @property {Object} channelVibrato
- * @property {number} channelVibrato.depth
- * @property {number} channelVibrato.delay
- * @property {number} channelVibrato.rate
+ * // note: this is a custom vibrato object, set by NRPN messages
+ * @property {boolean} lockVibrato - indicates whether the channel vibrato is locked
+ * @property {Object} channelVibrato - the channel's vibrato
+ * @property {number} channelVibrato.depth - vibrato depth, in gain
+ * @property {number} channelVibrato.delay - vibrato delay from note on in seconds
+ * @property {number} channelVibrato.rate - vibrato rate in Hz
  *
- * @property {boolean} isMuted
- * @property {boolean} drumChannel
+ * @property {boolean} isMuted - indicates whether the channel is muted
+ * @property {boolean} drumChannel - indicates whether the channel is a drum channel
  */
 /**
  * @typedef {Object} SynthesizerSnapshot
- * @property {ChannelSnapshot[]} channelSnapshots
- * @property {number} mainVolume
- * @property {number} pan
- * @property {SynthSystem} system
- * @property {number} transposition
+ * @property {ChannelSnapshot[]} channelSnapshots - the individual channel snapshots
+ * @property {number} mainVolume - main synth volume, from 0 to 1
+ * @property {number} pan - master stereo panning, from -1 to 1
+ * @property {SynthSystem} system - the synths system. Values can be "gs", "gm", "gm2" or "xg"
+ * @property {number} transposition - the current synth transpositon in semitones. can be a float
  */
 
 import { returnMessageType } from '../worklet_utilities/worklet_message.js'
