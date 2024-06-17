@@ -13,24 +13,29 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 
 
 ## Features
+### Web app / Local Edition
+- Visualization of the played sequence with effects like visual pitch bend and note on effects
+- Playable keyboard with various sizes
+- Integrated controller for the synthetizer with a lot of options
+- Mutliple languages support, currently: english, polish, japanese
+- `Web MIDI API` support (Enables physical MIDI devices to be used with the program)
+- [WebMidiLink](https://www.g200kg.com/en/docs/webmidilink/) support
+- Play around with the MIDI file, edit instruments controllers and more!
+- Render the MIDI file (either modified or unmodified) to wav
+### spessasynth_lib
 - SoundFont2 Generator Support
 - SoundFont2 Modulator Support
 - SoundFont3 (vorbis compressed sf2) Support (thanks to [stbvorbis.js](https://github.com/hajimehoshi/stbvorbis.js))
 - Reverb and chorus support
 - Render audio to file
 - A few custom modulators to support some additional controllers (see `modulators.js`)
+- - Can provide very hiqh quality audio while being relatively light on file size thanks to sf3 support
 - Written using AudioWorklets (Firefox and Chrome both work perfectly)
 - Can load really large soundfonts (4GB!) (but only on Firefox, Chromium has a memory limit)
 - Multi-port MIDIs support (more than 16 channels)
 - MIDI Controller Support (Default supported controllers can be found [here](../../wiki/Synthetizer-Class#supported-controllers)).
 - Supports some Roland GS and Yamaha XG sysex messages
 - High performance mode for playing black MIDIs (Don't go too crazy with the amount of notes though)
-- Visualization of the played sequence with effects like visual pitch bend and note on effects
-- Playable keyboard with various sizes
-- Integrated controller for the synthetizer
-- Can provide very hiqh quality audio while being relatively light on file size thanks to sf3 support
-- `Web MIDI API` support (Enables physical MIDI devices to be used with the program)
-- [WebMidiLink](https://www.g200kg.com/en/docs/webmidilink/) support
 - Can be used as a library ([learn more here](../../wiki/Usage-As-Library))
 - Modular design allows easy integrations into other projects
 - Written in pure JavaScript using WebAudio API (Every modern browser supports it)
@@ -50,7 +55,8 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 ### [How to use SpessaSynth in your project](../../wiki/Usage-As-Library)
 
 ## Installation of the Local Edition
-> When you're loading a large (>4GB) SoundFont, use Firefox because chromium has a 4GB memory limit
+> [!IMPORTANT]
+> Firefox is recommended, due to unconstrained memory size.
 
 ### [Recommended high quality soundfont (better than the built-in one)](https://musical-artifacts.com/artifacts/1176)
 
@@ -88,4 +94,4 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 ### License
 Copyright © 2024 Spessasus. Licensed under the MIT License.
 
-> Please note that bundled [stbvorbis.js](https://github.com/hajimehoshi/stbvorbis.js) is licensed under the Apache-2.0 license.
+> Please note that bundled `stb_vorbis_sync.js` is a fork of [stbvorbis.js](https://github.com/hajimehoshi/stbvorbis.js) licensed under the Apache-2.0 license.
