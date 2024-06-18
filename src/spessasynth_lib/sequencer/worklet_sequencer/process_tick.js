@@ -17,7 +17,7 @@ export function _processTick()
 
         // find next event
         trackIndex = this._findFirstEventIndex();
-        if(this.tracks[trackIndex].length < this.eventIndex[trackIndex])
+        if(this.tracks[trackIndex].length <= this.eventIndex[trackIndex])
         {
             // song has ended
             if(this.loop)
