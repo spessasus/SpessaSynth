@@ -110,6 +110,11 @@ import { SpessaSynthInfo, SpessaSynthWarn } from '../spessasynth_lib/utils/loggi
 
     async initializeContext(context, soundFont) {
 
+        if(!context.audioWorklet)
+        {
+            alert("Audio worklet is not supported on your browser. Sorry!")
+            throw "Not supported."
+        }
         // initialize the locale management system. do it here because we want it ready before all ui classes do their things
         // get locale from user "en-US" will turn into just "en"
         let locale = navigator.language.split("-")[0].toLowerCase();
