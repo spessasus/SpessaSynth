@@ -374,6 +374,8 @@ export class Synthetizer {
      */
     controllerChange(channel, controllerNumber, controllerValue)
     {
+        controllerValue = Math.floor(controllerValue);
+        controllerNumber = Math.floor(controllerNumber);
         this.post({
             channelNumber: channel,
             messageType: workletMessageType.ccChange,
@@ -464,6 +466,23 @@ export class Synthetizer {
             messageType: workletMessageType.setMasterPan,
             messageData: pan
         });
+    }
+
+    /**
+     * Sets the channel's pitch bend range, in semitones
+     * @param channel {number} usually 0-15: the channel to change
+     * @param pitchBendRangeSemitones {number} the bend range in semitones
+     */
+    setPitchBendRange(channel, pitchBendRangeSemitones)
+    {
+        // set range
+        this.controllerChange(channel, midiControllers.RPNMsb, 0);
+        this.controllerChange(channel, midiControllers.dataEntryMsb, pitchBendRangeSemitones);
+
+        // reset rpn
+        this.controllerChange(channel, midiControllers.RPNMsb, 127);
+        this.controllerChange(channel, midiControllers.RPNLsb, 127);
+        this.controllerChange(channel, midiControllers.dataEntryMsb, 0);
     }
 
     /**
