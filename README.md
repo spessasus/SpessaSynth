@@ -46,13 +46,9 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 - It might not sound as good as other synthetizers (e.g. FluidSynth or BASSMIDI)
 - The performance is questionable, especially on mobile devices
 
-## [How to use the web app](../../wiki/How-To-Use-App)
+## [How to use the web app](../../wiki/How-To-Use-App) / [Check out the library documentation](../../wiki/Home)
 
-[Check out the wiki!](../../wiki/Home)
-
-> Note: the wiki is rarely updated, but it should still work.
-
-### [How to use SpessaSynth in your project](../../wiki/Usage-As-Library)
+[How to use SpessaSynth in your project](../../wiki/Usage-As-Library)
 
 ## Installation of the Local Edition
 > [!IMPORTANT]
@@ -94,4 +90,5 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 ### License
 Copyright © 2024 Spessasus. Licensed under the MIT License.
 
+> [!IMPORTANT]
 > Please note that bundled `stb_vorbis_sync.js` is a fork of [stbvorbis.js](https://github.com/hajimehoshi/stbvorbis.js) licensed under the Apache-2.0 license.
