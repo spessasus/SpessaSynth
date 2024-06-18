@@ -25,7 +25,8 @@ export function _processTick()
                 this.setTimeTicks(this.midiData.loop.start);
                 return;
             }
-            this.pause();
+            this.eventIndex[trackIndex]--;
+            this.pause(true);
             if(this.songs.length > 1)
             {
                 this.nextSong();
@@ -49,7 +50,8 @@ export function _processTick()
                 this.setTimeTicks(this.midiData.loop.start);
                 return;
             }
-            this.pause();
+            this.eventIndex[trackIndex]--;
+            this.pause(true);
             if(this.songs.length > 1)
             {
                 this.nextSong();

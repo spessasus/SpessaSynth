@@ -133,8 +133,9 @@ class WorkletSequencer
 
     /**
      * Pauses the playback
+     * @param isFinished {boolean}
      */
-    pause()
+    pause(isFinished = false)
     {
         if(this.paused)
         {
@@ -143,7 +144,7 @@ class WorkletSequencer
         }
         this.pausedTime = this.currentTime;
         this.stop();
-        this.post(WorkletSequencerReturnMessageType.pause);
+        this.post(WorkletSequencerReturnMessageType.pause, isFinished);
     }
 
     /**
@@ -152,7 +153,6 @@ class WorkletSequencer
     stop()
     {
         this.clearProcessHandler()
-        this.playbackInterval = undefined;
         // disable sustain
         for (let i = 0; i < 16; i++) {
             this.synth.controllerChange(i, midiControllers.sustainPedal, 0);

@@ -1,7 +1,7 @@
 /**
  * @enum {number}
  * @property {number} loadNewSongList          - 0 -> [...song<MIDI>]
- * @property {number} pause                    - 1 -> (no data)
+ * @property {number} pause                    - 1 -> isFinished<boolean>
  * @property {number} stop                     - 2 -> (no data)
  * @property {number} play                     - 3 -> resetTime<boolean>
  * @property {number} setTime                  - 4 -> time<number>

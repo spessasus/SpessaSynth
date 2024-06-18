@@ -44,6 +44,12 @@ export class Sequencer {
         this._loop = true;
 
         /**
+         * Indicates whether the sequencer has finished playing a sequence
+         * @type {boolean}
+         */
+        this.isFinished = false;
+
+        /**
          * The current sequence's length, in seconds
          * @type {number}
          */
@@ -166,6 +172,7 @@ export class Sequencer {
 
             case WorkletSequencerReturnMessageType.pause:
                 this.pausedTime = this.currentTime;
+                this.isFinished = messageData;
         }
     }
 
@@ -463,6 +470,7 @@ export class Sequencer {
     unpause()
     {
         this.pausedTime = undefined;
+        this.isFinished = false;
     }
 
     /**
@@ -480,6 +488,10 @@ export class Sequencer {
      */
     play(resetTime = false)
     {
+        if(this.isFinished)
+        {
+            resetTime = true;
+        }
         this._recalculateStartTime(this.pausedTime);
         this.unpause()
         this._sendMessage(WorkletSequencerMessageType.play, resetTime);
