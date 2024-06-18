@@ -145,7 +145,7 @@ export class Sequencer {
 
             case WorkletSequencerReturnMessageType.textEvent:
                 /**
-                 * @type {[number[], number]}
+                 * @type {[Uint8Array, number]}
                  */
                 let textEventData = messageData;
                 if (this.onTextEvent) {
@@ -507,7 +507,7 @@ export class Sequencer {
 
     /**
      * Fires on text event
-     * @param data {ShiftableByteArray} the data text
+     * @param data {Uint8Array} the data text
      * @param type {number} the status byte of the message (the meta status byte)
      */
     onTextEvent;

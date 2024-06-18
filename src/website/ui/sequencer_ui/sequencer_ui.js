@@ -31,7 +31,7 @@ export class SequencerUI{
         this.controls = element;
         this.encoding = DEFAULT_ENCODING;
         this.decoder = new TextDecoder(this.encoding);
-        this.encoder = new TextEncoder(this.encoding);
+        this.encoder = new TextEncoder();
         this.text = "";
         this.requiresTextUpdate = false;
         this.rawText = [];

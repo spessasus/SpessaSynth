@@ -40,6 +40,7 @@ export class MIDIDeviceHandler
         }
         else
         {
+            SpessaSynthWarn("Web MIDI Api not supported!", consoleColors.unrecognized);
             this.inputs = [];
             this.outputs = [];
         }
