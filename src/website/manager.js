@@ -88,7 +88,7 @@ import { SpessaSynthInfo, SpessaSynthWarn } from '../spessasynth_lib/utils/loggi
             synth = new Synthetizer(offline.destination, this.sf, false, {
                 parsedMIDI: parsedMid,
                 snapshot: snapshot
-            });
+            }, this.impulseResponse);
         }
         catch (e) {
             window.alert(this.localeManager.getLocaleString("locale.outOfMemory"));
@@ -108,6 +108,11 @@ import { SpessaSynthInfo, SpessaSynthWarn } from '../spessasynth_lib/utils/loggi
 
     }
 
+    /**
+     * @param context {BaseAudioContext}
+     * @param soundFont {ArrayBuffer}
+     * @returns {Promise<void>}
+     */
     async initializeContext(context, soundFont) {
 
         if(!context.audioWorklet)
@@ -143,8 +148,14 @@ import { SpessaSynthInfo, SpessaSynthWarn } from '../spessasynth_lib/utils/loggi
         // set up soundfont
         this.soundFont = soundFont;
 
+        // set up buffer here (if we let spessasynth use the default buffer, there's no reverb for the first second.)
+        const impulseURL = new URL("../spessasynth_lib/synthetizer/audio_effects/impulse_response.wav", import.meta.url);
+        const response = await fetch(impulseURL)
+        const data = await response.arrayBuffer();
+        this.impulseResponse = await context.decodeAudioData(data);
+
         // set up synthetizer
-        this.synth = new Synthetizer(context.destination, this.soundFont);
+        this.synth = new Synthetizer(context.destination, this.soundFont, undefined, undefined, this.impulseResponse);
 
         // set up midi access
         this.midHandler = new MIDIDeviceHandler();

@@ -65,8 +65,13 @@ export class Synthetizer {
      *          parsedMIDI: MIDI,
      *          snapshot: SynthesizerSnapshot
      *      }} if set, starts playing this immediately and restores the values
+     * @param reverbBuffer {AudioBuffer} optional impulse response for the convolver.
      */
-     constructor(targetNode, soundFontBuffer, enableEventSystem = true, startRenderingData = undefined) {
+     constructor(targetNode,
+                 soundFontBuffer,
+                 enableEventSystem = true,
+                 startRenderingData = undefined,
+                 reverbBuffer = undefined) {
         SpessaSynthInfo("%cInitializing SpessaSynth synthesizer...", consoleColors.info);
         this.context = targetNode.context;
 
@@ -75,7 +80,7 @@ export class Synthetizer {
          * @type {EventHandler}
          */
         this.eventHandler = new EventHandler();
-        this.reverbProcessor = getReverbProcessor(this.context);
+        this.reverbProcessor = getReverbProcessor(this.context, reverbBuffer);
         this.chorusProcessor = new FancyChorus(targetNode);
         this.reverbProcessor.connect(targetNode);
 
