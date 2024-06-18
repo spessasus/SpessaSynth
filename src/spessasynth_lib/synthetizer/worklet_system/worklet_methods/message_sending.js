@@ -29,6 +29,10 @@ export function callEvent(eventName, eventData)
  */
 export function post(data)
 {
+    if(!this.enableEventSystem)
+    {
+        return;
+    }
     this.port.postMessage(data);
 }
 
@@ -46,6 +50,10 @@ export function post(data)
  */
 export function sendChannelProperties()
 {
+    if(!this.enableEventSystem)
+    {
+        return;
+    }
     /**
      * @type {ChannelProperty[]}
      */

@@ -1,29 +1,42 @@
-const ENABLE_INFO = true;
-const ENABLE_WARN = true;
-const ENABLE_GROUP = true;
-const ENABLE_TABLE = true;
+let ENABLE_INFO = true;
+let ENABLE_WARN = true;
+let ENABLE_GROUP = true;
+let ENABLE_TABLE = true;
 
 /**
- * @param message {string} the message
- * @param colors {...string} colors to use
+ * Enables or disables looging
+ * @param enableInfo {boolean} - enables info
+ * @param enableWarn {boolean} - enables warning
+ * @param enableGroup {boolean} - enables groups
+ * @param enableTable {boolean} - enables tables
  */
-export function SpessaSynthInfo(message, ...colors)
+export function SpessaSynthLogging(enableInfo, enableWarn, enableGroup, enableTable)
+{
+    ENABLE_INFO = enableInfo;
+    ENABLE_WARN = enableWarn;
+    ENABLE_GROUP = enableGroup;
+    ENABLE_TABLE = enableTable;
+}
+
+/**
+ * @param message {...any}
+ */
+export function SpessaSynthInfo(...message)
 {
     if(ENABLE_INFO)
     {
-        console.info(message, ...colors);
+        console.info(...message);
     }
 }
 
 /**
- * @param message {string} the message
- * @param colors {...string} colors to use
+ * @param message {...any}
  */
-export function SpessaSynthWarn(message, ...colors)
+export function SpessaSynthWarn(...message)
 {
     if(ENABLE_WARN)
     {
-        console.warn(message, ...colors);
+        console.warn(...message);
     }
 }
 
@@ -36,26 +49,24 @@ export function SpessaSynthTable(...args)
 }
 
 /**
- * @param message {string} the message
- * @param colors {...string} colors to use
+ * @param message {...any} the message
  */
-export function SpessaSynthGroup(message, ...colors)
+export function SpessaSynthGroup(...message)
 {
     if(ENABLE_GROUP)
     {
-        console.group(message, ...colors);
+        console.group(...message);
     }
 }
 
 /**
- * @param message {string} the message
- * @param colors {...string} colors to use
+ * @param message {...any} the message
  */
-export function SpessaSynthGroupCollapsed(message, ...colors)
+export function SpessaSynthGroupCollapsed(...message)
 {
     if(ENABLE_GROUP)
     {
-        console.groupCollapsed(message, ...colors);
+        console.groupCollapsed(...message);
     }
 }
 

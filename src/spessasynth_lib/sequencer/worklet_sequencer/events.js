@@ -65,6 +65,10 @@ export function processMessage(messageType, messageData)
  */
 export function post(messageType, messageData = undefined)
 {
+    if(!this.synth.enableEventSystem)
+    {
+        return;
+    }
     this.synth.post({
         messageType: returnMessageType.sequencerSpecific,
         messageData: {

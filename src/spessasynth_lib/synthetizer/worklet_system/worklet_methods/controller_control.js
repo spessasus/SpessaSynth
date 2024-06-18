@@ -9,6 +9,7 @@ import {
 } from '../worklet_utilities/worklet_processor_channel.js'
 import { computeModulators } from '../worklet_utilities/worklet_modulator.js'
 import { SpessaSynthInfo } from '../../../utils/loggin.js'
+import { SYNTHESIZER_GAIN } from '../worklet_utilities/main_processor.js'
 
 /**
  * @param channel {number}
@@ -295,4 +296,46 @@ export function resetParameters(channel)
      * @type {string}
      */
     channelObject.dataEntryState = dataEntryStates.Idle;
+}
+
+/**
+ * @param volume {number} 0-1
+ * @this {SpessaSynthProcessor}
+ */
+export function setMainVolume(volume)
+{
+    this.mainVolume = volume * SYNTHESIZER_GAIN;
+    this.setMasterPan(this.pan);
+}
+
+/**
+ * @param pan {number} -1 to 1
+ * @this {SpessaSynthProcessor}
+ */
+
+export function setMasterPan(pan)
+{
+    this.pan = pan;
+    // clamp to 0-1 (0 is left)
+    pan = (pan / 2) + 0.5;
+    this.panLeft = (1 - pan) * this.mainVolume;
+    this.panRight = (pan) * this.mainVolume;
+}
+
+/**
+ * @param channel {number}
+ * @param isMuted {boolean}
+ * @this {SpessaSynthProcessor}
+ */
+export function muteChannel(channel, isMuted)
+{
+    if(isMuted)
+    {
+        this.stopAll(channel, true);
+    }
+    this.callEvent("mutechannel", {
+        channel: channel,
+        isMuted: isMuted
+    });
+    this.workletProcessorChannels[channel].isMuted = isMuted;
 }

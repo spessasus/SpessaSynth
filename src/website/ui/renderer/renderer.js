@@ -100,21 +100,7 @@ export class Renderer
         // note colors
         this.plainColors = channelColors;
 
-        this.channelColors = channelColors.map(c => {
-            const gradient = this.drawingContext.createLinearGradient(0, 0,
-                this.canvas.width / 128, 0);
-            gradient.addColorStop(0, calculateRGB(c, v => v * GRADIENT_DARKEN)); // darker color
-            gradient.addColorStop(1, c); // brighter color
-            return gradient;
-        });
-        this.darkerColors = channelColors.map(c => {
-            const gradient = this.drawingContext.createLinearGradient(0, 0,
-                this.canvas.width / 128, 0);
-
-            gradient.addColorStop(0, calculateRGB(c, v => v * GRADIENT_DARKEN * DARKER_MULTIPLIER)); // darker color
-            gradient.addColorStop(1, calculateRGB(c, v => v * DARKER_MULTIPLIER)); // brighter color
-            return gradient;
-        });
+        this.computeColors()
 
         // synth and analysers
         this.synth = synth;
@@ -126,6 +112,25 @@ export class Renderer
         this.channelAnalysers = [];
         this.createChannelAnalysers(synth);
         this.connectChannelAnalysers(synth);
+    }
+
+    computeColors()
+    {
+        this.channelColors = this.plainColors.map(c => {
+            const gradient = this.drawingContext.createLinearGradient(0, 0,
+                this.canvas.width / 128, 0);
+            gradient.addColorStop(0, calculateRGB(c, v => v * GRADIENT_DARKEN)); // darker color
+            gradient.addColorStop(1, c); // brighter color
+            return gradient;
+        });
+        this.darkerColors = this.plainColors.map(c => {
+            const gradient = this.drawingContext.createLinearGradient(0, 0,
+                this.canvas.width / 128, 0);
+
+            gradient.addColorStop(0, calculateRGB(c, v => v * GRADIENT_DARKEN * DARKER_MULTIPLIER)); // darker color
+            gradient.addColorStop(1, calculateRGB(c, v => v * DARKER_MULTIPLIER)); // brighter color
+            return gradient;
+        });
     }
 
     get normalAnalyserFft()

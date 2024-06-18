@@ -156,13 +156,14 @@ import { SpessaSynthInfo, SpessaSynthWarn } from '../spessasynth_lib/utils/loggi
         canvas.width = window.innerWidth * window.devicePixelRatio;
         canvas.height = window.innerHeight * window.devicePixelRatio;
 
+        this.renderer = new Renderer(this.channelColors, this.synth, canvas);
+        this.renderer.render(true);
+
         window.addEventListener("resize", () => {
             canvas.width = window.innerWidth * window.devicePixelRatio;
             canvas.height = window.innerHeight * window.devicePixelRatio;
+            this.renderer.computeColors()
         });
-
-        this.renderer = new Renderer(this.channelColors, this.synth, canvas);
-        this.renderer.render(true);
 
         // if on mobile, switch to a 5 octave keyboard
 
