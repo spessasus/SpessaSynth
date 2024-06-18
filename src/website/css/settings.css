@@ -45,14 +45,13 @@
     max-width: 100%;
     min-height: 100%;
     z-index: 256;
-    display: block;
     opacity: 0;
     backdrop-filter: blur(2px) brightness(0.5);
     background: rgba(3, 3, 3, 0.8);
     transition: opacity 100ms ease-in-out;
     scroll-behavior: smooth;
     overflow-y: auto;
-    visibility: hidden;
+    display: none;
     border-radius: 10px;
 }
 
@@ -62,7 +61,7 @@
 }
 
 .settings_menu_show{
-    visibility: visible !important;
+    display: block !important;
     opacity: 1 !important;
 }
 
