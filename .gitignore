@@ -1,5 +1,5 @@
 /node_modules/
 /disabled_sf2s/
-/config.json
 /.idea
 /src/spessasynth_lib/synthetizer/freeverb_unused/
+/src/website/config.json

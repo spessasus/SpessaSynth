@@ -32,7 +32,8 @@ export class SoundFont2
         SpessaSynthGroup("%cParsing SoundFont...", consoleColors.info);
         if(!this.dataArray)
         {
-            throw "No data!";
+            SpessaSynthGroupEnd();
+            throw new TypeError("No data!");
         }
 
         // read the main chunk
@@ -202,7 +203,8 @@ export class SoundFont2
     {
         if(chunk.header.toLowerCase() !== expected.toLowerCase())
         {
-            throw `Invalid chunk header! Expected "${expected.toLowerCase()}" got "${chunk.header.toLowerCase()}"`;
+            SpessaSynthGroupEnd();
+            throw new SyntaxError(`Invalid chunk header! Expected "${expected.toLowerCase()}" got "${chunk.header.toLowerCase()}"`);
         }
     }
 
@@ -214,7 +216,8 @@ export class SoundFont2
     {
         if(text.toLowerCase() !== expected.toLowerCase())
         {
-            throw `Invalid soundFont! Expected "${expected.toLowerCase()}" got "${text.toLowerCase()}"`;
+            SpessaSynthGroupEnd();
+            throw new SyntaxError(`Invalid soundFont! Expected "${expected.toLowerCase()}" got "${text.toLowerCase()}"`);
         }
     }
 

@@ -26,12 +26,14 @@ export class MIDI{
         const headerChunk = this.readMIDIChunk(fileByteArray);
         if(headerChunk.type !== "MThd")
         {
-            throw `Invalid MIDI Header! Expected "MThd", got "${headerChunk.type}"`;
+            SpessaSynthGroupEnd();
+            throw new SyntaxError(`Invalid MIDI Header! Expected "MThd", got "${headerChunk.type}"`);
         }
 
         if(headerChunk.size !== 6)
         {
-            throw `Invalid MIDI header chunk size! Expected 6, got ${headerChunk.size}`;
+            SpessaSynthGroupEnd();
+            throw new RangeError(`Invalid MIDI header chunk size! Expected 6, got ${headerChunk.size}`);
         }
 
         // format (ignore)
@@ -82,7 +84,8 @@ export class MIDI{
 
             if(trackChunk.type !== "MTrk")
             {
-                throw `Invalid track header! Expected "MTrk" got "${trackChunk.type}"`;
+                SpessaSynthGroupEnd();
+                throw new SyntaxError(`Invalid track header! Expected "MTrk" got "${trackChunk.type}"`);
             }
 
             /**
@@ -109,7 +112,8 @@ export class MIDI{
                 else if(!runningByte && statusByteCheck < 0x80)
                 {
                     // if we don't have a running byte and the status byte isn't valid, it's an error.
-                    throw `Unexpected byte with no running byte. (${statusByteCheck})`;
+                    SpessaSynthGroupEnd();
+                    throw new SyntaxError(`Unexpected byte with no running byte. (${statusByteCheck})`);
                 }
                 else
                 {

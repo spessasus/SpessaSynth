@@ -16,17 +16,20 @@ app.use(express.static("src"));
 app.use(express.static("soundfonts"));
 app.use(express.json());
 
-fs.writeFile("config.json", "{}", {flag: "wx"}, () => {});
+const configPath = path.join(__dirname, "config.json");
+const soundfontsPath = path.join(__dirname, "../../soundfonts");
+
+fs.writeFile(configPath, "{}", {flag: "wx"}, () => {});
 
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "src", "website", "local_edition_index.html"));
+    res.sendFile(path.join(__dirname, "local_edition_index.html"));
 })
 
 app.get("/soundfonts", (req, res) => {
-    const fileNames = fs.readdirSync("soundfonts").filter(fName => fName.slice(-3).toLowerCase() === "sf2" || fName.slice(-3).toLowerCase() === "sf3" );
+    const fileNames = fs.readdirSync(soundfontsPath).filter(fName => fName.slice(-3).toLowerCase() === "sf2" || fName.slice(-3).toLowerCase() === "sf3" );
 
     // check for last used soundfont
-    const config = JSON.parse(fs.readFileSync("config.json", "utf-8"));
+    const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
     if(config['lastUsedSf2'])
     {
         if(fileNames.includes(config['lastUsedSf2']))
@@ -52,15 +55,19 @@ app.get("/soundfonts", (req, res) => {
 })
 
 app.get("/setlastsf2", (req) => {
-    const config = JSON.parse(fs.readFileSync("config.json", "utf-8"));
+    const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+
     config["lastUsedSf2"] = req.query['sfname'];
-    fs.writeFile("config.json", JSON.stringify(config), { flag: "w"}, () => {});
+
+    fs.writeFile(configPath, JSON.stringify(config), { flag: "w"}, () => {});
 });
 
 app.post("/savesettings", (req) => {
-    const config = JSON.parse(fs.readFileSync("config.json", "utf-8"));
+    const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+
     config.settings = req.body;
-    fs.writeFile("config.json", JSON.stringify(config), { flag: "w"}, () => {});
+
+    fs.writeFile(configPath, JSON.stringify(config), { flag: "w"}, () => {});
 })
 
 app.get("/getsettings", (req, res) => {
@@ -70,7 +77,7 @@ app.get("/getsettings", (req, res) => {
      *     settings: SavedSettings
      * }}
      */
-    const config = JSON.parse(fs.readFileSync("config.json", "utf-8"));
+    const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
     res.send(config.settings);
 })
 
