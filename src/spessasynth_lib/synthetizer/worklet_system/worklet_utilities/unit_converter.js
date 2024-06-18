@@ -13,8 +13,6 @@ for (let i = 0; i < timecentLookupTable.length; i++) {
     timecentLookupTable[i] = Math.pow(2, timecents / 1200);
 }
 
-export const HALF_PI = Math.PI / 2;
-
 /**
  * Converts timecents to seconds
  * @param timecents {number} timecents

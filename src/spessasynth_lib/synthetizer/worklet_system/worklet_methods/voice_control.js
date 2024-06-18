@@ -1,5 +1,5 @@
 import { generatorTypes } from '../../../soundfont/chunk/generators.js'
-import { absCentsToHz, HALF_PI, timecentsToSeconds } from '../worklet_utilities/unit_converter.js'
+import { absCentsToHz, timecentsToSeconds } from '../worklet_utilities/unit_converter.js'
 import { getLFOValue } from '../worklet_utilities/lfo.js'
 import { customControllers } from '../worklet_utilities/worklet_processor_channel.js'
 import { getModEnvValue } from '../worklet_utilities/modulation_envelope.js'
@@ -131,8 +131,9 @@ export function renderVoice(channel, voice, output, reverbOutput, chorusOutput)
     applyVolumeEnvelope(voice, bufferOut, currentTime, modLfoCentibels, this.sampleTime);
 
     // pan the voice and write out
-    const panLeft = Math.cos(HALF_PI * pan) * this.panLeft;
-    const panRight = Math.sin(HALF_PI * pan) *  this.panRight;
+    voice.currentPan += (pan - voice.currentPan) * 0.3; // smooth out pan to prevent clicking
+    const panLeft = (1 - voice.currentPan) * this.panLeft;
+    const panRight = voice.currentPan *  this.panRight;
     panVoice(
         panLeft,
         panRight,

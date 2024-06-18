@@ -40,20 +40,26 @@
  * @property {Int16Array} generators - the unmodulated (constant) generators of the voice
  * @property {Modulator[]} modulators - the voice's modulators
  * @property {Int16Array} modulatedGenerators - the generators modulated by the modulators
+ *
  * @property {boolean} finished - indicates if the voice has finished
  * @property {boolean} isInRelease - indicates if the voice is in the release phase
+ *
  * @property {number} channelNumber - MIDI channel number
  * @property {number} velocity - velocity of the note
  * @property {number} midiNote - MIDI note number
  * @property {number} targetKey - target key for the note
+ *
  * @property {number} currentAttenuationDb - current attenuation in dB (used for calculating start of the release phase)
  * @property {0|1|2|3|4} volumeEnvelopeState - state of the volume envelope.
  * @property {number} currentModEnvValue - current value of the modulation envelope
+ *
  * @property {number} startTime - start time of the voice
  * @property {number} releaseStartTime - start time of the release phase
  * @property {number} releaseStartModEnv - modenv value at the start of the release phase
+ *
  * @property {number} currentTuningCents - current tuning adjustment in cents
  * @property {number} currentTuningCalculated - calculated tuning adjustment
+ * @property {number} currentPan - from 0 to 1
  */
 
 import { addAndClampGenerator, generatorTypes } from '../../../soundfont/chunk/generators.js'
@@ -292,7 +298,8 @@ export function getWorkletVoices(channel,
                 currentAttenuationDb: 100,
                 currentModEnvValue: 0,
                 releaseStartModEnv: 1,
-                volumeEnvelopeState: 0
+                volumeEnvelopeState: 0,
+                currentPan: 0.5
             };
 
         });
