@@ -22,14 +22,16 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 - [WebMidiLink](https://www.g200kg.com/en/docs/webmidilink/) support
 - Play around with the MIDI file, edit instruments controllers and more!
 - Render the MIDI file (either modified or unmodified) to wav
+- Comes bundled with a compressed [SGM](https://musical-artifacts.com/artifacts/855) SoundFont to get you started
+ 
 ### spessasynth_lib
 - SoundFont2 Generator Support
 - SoundFont2 Modulator Support
 - SoundFont3 (vorbis compressed sf2) Support (thanks to [stbvorbis.js](https://github.com/hajimehoshi/stbvorbis.js))
+- - Can provide very hiqh quality audio while being relatively light on file size thanks to sf3 support
 - Reverb and chorus support
 - Render audio to file
 - A few custom modulators to support some additional controllers (see `modulators.js`)
-- - Can provide very hiqh quality audio while being relatively light on file size thanks to sf3 support
 - Written using AudioWorklets (Firefox and Chrome both work perfectly)
 - Can load really large soundfonts (4GB!) (but only on Firefox, Chromium has a memory limit)
 - Multi-port MIDIs support (more than 16 channels)
@@ -39,8 +41,7 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 - Can be used as a library ([learn more here](../../wiki/Usage-As-Library))
 - Modular design allows easy integrations into other projects
 - Written in pure JavaScript using WebAudio API (Every modern browser supports it)
-- No dependencies (Node.js is only required for the local app, the frontend and audio are vanilla JavaScript)
-- Comes bundled with a compressed [SGM](https://musical-artifacts.com/artifacts/855) SoundFont to get you started
+- No dependencies
 
 ### Limitations
 - It might not sound as good as other synthetizers (e.g. FluidSynth or BASSMIDI)
