@@ -3,7 +3,7 @@
 import { Manager } from './manager.js'
 import { MIDI } from '../spessasynth_lib/midi_parser/midi_loader.js'
 
-import { formatTitle } from '../spessasynth_lib/utils/other.js'
+import { formatTime, formatTitle } from '../spessasynth_lib/utils/other.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../spessasynth_lib/utils/loggin.js'
 import { audioBufferToWav } from '../spessasynth_lib/utils/buffer_to_wav.js'
 
@@ -240,7 +240,7 @@ async function startMidi(midiFiles)
         const duration = window.manager.seq.midiData.duration;
         const buffer = await window.manager.renderAudio((progress, speed) => {
             const estimated = (1 - progress) / speed * duration;
-            titleMessage.innerText = `${message} ${Math.round(progress * 100)}%\n ${estimatedMessage} ${Math.round(estimated)}s`
+            titleMessage.innerText = `${message} ${Math.round(progress * 100)}%\n ${estimatedMessage} ${formatTime(estimated).time}s`
         });
 
         titleMessage.textContent = title;

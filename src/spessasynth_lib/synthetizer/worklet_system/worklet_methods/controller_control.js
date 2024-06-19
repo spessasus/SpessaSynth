@@ -168,16 +168,7 @@ export function resetAllControllers()
          **/
         const ch = this.workletProcessorChannels[channelNumber];
 
-        // call all the event listeners
-        this.callEvent("programchange", {
-            channel: channelNumber,
-            program: ch.preset.program,
-            bank: ch.preset.bank,
-            userCalled: false
-        });
-
-
-        // if preset is unlocked, switch to non drums
+        // if preset is unlocked, switch to non drums and call event
         if(!ch.lockPreset)
         {
             ch.midiControllers[midiControllers.bankSelect] = 0;
@@ -200,6 +191,14 @@ export function resetAllControllers()
                 });
             }
         }
+
+        // call program change
+        this.callEvent("programchange", {
+            channel: channelNumber,
+            program: ch.preset.program,
+            bank: ch.preset.bank,
+            userCalled: false
+        });
 
         let restoreControllerValueEvent = ccNum =>
         {

@@ -12,7 +12,6 @@ import { modulatorSources } from '../../../soundfont/chunk/modulators.js'
  * @property {number} NRPFine - the current fine value of the Non-Registered Parameter
  * @property {number} RPValue - the current value of the Registered Parameter
  *
- * @property {number} program - the channel's program number
  * @property {Preset} preset - the channel's preset
  * @property {boolean} lockPreset - indicates whether the program on the channel is locked
  *
@@ -58,7 +57,6 @@ export function createWorkletChannel(sendEvent = false)
         isMuted: false,
         drumChannel: false,
         lockPreset: false,
-        program: 0,
 
     }
     for (let i = 0; i < 128; i++) {

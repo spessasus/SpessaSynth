@@ -128,6 +128,10 @@ export class Selector
         this.value = value;
         if(this.isShown)
         {
+            if(!this.isReloaded)
+            {
+                this.reload();
+            }
             this.mainDiv.value = value;
         }
     }
@@ -135,7 +139,8 @@ export class Selector
     show()
     {
         this.isShown = true;
-        if(!this.isReloaded) {
+        if(!this.isReloaded)
+        {
             this.reload();
         }
         this.mainDiv.value = this.value;
