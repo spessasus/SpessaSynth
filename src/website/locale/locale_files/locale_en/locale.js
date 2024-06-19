@@ -15,8 +15,16 @@ export const localeEnglish = {
 
     // top bar buttons
     midiUploadButton: "Upload your MIDI files",
-    midiRenderButton: "Export MIDI audio",
-    exportingAudio: "Exporting audio...",
+
+    midiRenderButton: {
+        title: "Export audio",
+        description: "Save audio to a WAV file"
+    },
+
+    exportAudio: {
+        message: "Exporting audio...",
+        estimated: "Remaining:"
+    },
 
     demoSoundfontUploadButton: "Upload the soundfont",
     demoGithubPage: "Project's page",

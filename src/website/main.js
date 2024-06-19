@@ -171,12 +171,17 @@ async function startMidi(midiFiles)
     manager.seqUI.setSongTitles(titles);
     exportButton.style.display = "initial";
     exportButton.onclick = async () => {
-        const title = titleMessage.innerText;
-        const message = manager.localeManager.getLocaleString("locale.exportingAudio");
+        const title = titleMessage.textContent;
+        const message = manager.localeManager.getLocaleString("locale.exportAudio.message");
+        const estimatedMessage = manager.localeManager.getLocaleString("locale.exportAudio.estimated");
 
-        const buffer = await window.manager.renderAudio(progress => titleMessage.textContent = `${message} ${Math.round(progress * 100)}%`);
+        const duration = window.manager.seq.midiData.duration;
+        const buffer = await window.manager.renderAudio((progress, speed) => {
+            const estimated = (1 - progress) / speed * duration;
+            titleMessage.innerText = `${message} ${Math.round(progress * 100)}%\n ${estimatedMessage} ${Math.round(estimated)}s`
+        });
 
-        titleMessage.innerText = title;
+        titleMessage.textContent = title;
 
         const blob = audioBufferToWav(buffer);
         const url = URL.createObjectURL(blob);
@@ -248,8 +253,8 @@ document.body.onclick = () =>
         {
             navigator.mediaSession.playbackState = "playing";
         }
-        window.audioContextMain = new AudioContext({sampleRate: SAMPLE_RATE,
-        latencyHint: "interactive"});
+        const context = window.AudioContext || window.webkitAudioContext;
+        window.audioContextMain = new context({sampleRate: SAMPLE_RATE});
         if(window.soundFontParser) {
             titleMessage.innerText = TITLE;
             // prepare midi interface

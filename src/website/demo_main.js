@@ -233,12 +233,17 @@ async function startMidi(midiFiles)
 
     exportButton.style.display = "initial";
     exportButton.onclick = async () => {
-        const title = titleMessage.innerText;
-        const message = manager.localeManager.getLocaleString("locale.exportingAudio");
+        const title = titleMessage.textContent;
+        const message = manager.localeManager.getLocaleString("locale.exportAudio.message");
+        const estimatedMessage = manager.localeManager.getLocaleString("locale.exportAudio.estimated");
 
-        const buffer = await window.manager.renderAudio(progress => titleMessage.textContent = `${message} ${Math.round(progress * 100)}%`);
+        const duration = window.manager.seq.midiData.duration;
+        const buffer = await window.manager.renderAudio((progress, speed) => {
+            const estimated = (1 - progress) / speed * duration;
+            titleMessage.innerText = `${message} ${Math.round(progress * 100)}%\n ${estimatedMessage} ${Math.round(estimated)}s`
+        });
 
-        titleMessage.innerText = title;
+        titleMessage.textContent = title;
 
         const blob = audioBufferToWav(buffer);
         const url = URL.createObjectURL(blob);
@@ -291,7 +296,8 @@ function prepareUI()
     titleMessage.innerText = TITLE;
 
     try {
-        window.audioContextMain = new AudioContext({ sampleRate: 44100, latencyHint: "interactive" });
+        const context = window.AudioContext || window.webkitAudioContext;
+        window.audioContextMain = new context({ sampleRate: 44100 });
     }
     catch (e) {
         titleMessage.innerHTML = "Your browser doesn't support WebAudio.";

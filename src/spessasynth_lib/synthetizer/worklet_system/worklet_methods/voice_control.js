@@ -131,7 +131,7 @@ export function renderVoice(channel, voice, output, reverbOutput, chorusOutput)
     applyVolumeEnvelope(voice, bufferOut, currentTime, modLfoCentibels, this.sampleTime);
 
     // pan the voice and write out
-    voice.currentPan += (pan - voice.currentPan) * 0.3; // smooth out pan to prevent clicking
+    voice.currentPan += (pan - voice.currentPan) * 0.1; // smooth out pan to prevent clicking
     const panLeft = (1 - voice.currentPan) * this.panLeft;
     const panRight = voice.currentPan *  this.panRight;
     panVoice(

@@ -16,6 +16,8 @@ import { DEFAULT_LOCALE, localeList } from './locale/locale_files/locale_list.js
 import { isMobile } from '../spessasynth_lib/utils/other.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../spessasynth_lib/utils/loggin.js'
 
+const RENDER_AUDIO_TIME_INTERVAL = 500;
+
 /**
  * manager.js
  * purpose: connects every element of spessasynth together
@@ -54,7 +56,7 @@ import { SpessaSynthInfo, SpessaSynthWarn } from '../spessasynth_lib/utils/loggi
     }
 
     /**
-     * @param callback {function(number)} progress from 0 to 1
+     * @param callback {function(number, number)} progress from 0 to 1, speed multiplier
      * @returns {Promise<AudioBuffer>}
      */
     async renderAudio(callback=undefined)
@@ -96,7 +98,13 @@ import { SpessaSynthInfo, SpessaSynthWarn } from '../spessasynth_lib/utils/loggi
         }
         if(callback)
         {
-            const interval = setInterval(() => callback(synth.currentTime / parsedMid.duration), 100);
+            const RATI_SECONDS = RENDER_AUDIO_TIME_INTERVAL / 1000;
+            let rendered = synth.currentTime;
+            const interval = setInterval(() => {
+                let hasRendered = synth.currentTime - rendered;
+                rendered = synth.currentTime;
+                callback(synth.currentTime / parsedMid.duration, hasRendered / RATI_SECONDS)
+            }, RENDER_AUDIO_TIME_INTERVAL);
             const buf = await offline.startRendering();
             clearInterval(interval);
             return buf;
