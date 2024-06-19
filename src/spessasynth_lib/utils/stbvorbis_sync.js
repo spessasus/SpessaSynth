@@ -1780,6 +1780,11 @@ var isInitialized = false;
       Module["noExitRuntime"] = true;
       run();
   Module.onRuntimeInitialized = () => isInitialized = true;
+
+  /**
+   * @param buf {Uint8Array|ArrayBuffer}
+   * @returns {{data: any[], error: null, sampleRate, eof: boolean}}
+   */
   function decodeVorbis(buf) {
     if(!isInitialized)
     {
@@ -1847,6 +1852,11 @@ var isInitialized = false;
     };
   }
 
+  /**
+   *
+   * @param buf {Uint8Array|ArrayBuffer}
+   * @returns {{data: Float32Array[], error: null|string, sampleRate: number, eof: boolean}}
+   */
   stbvorbis.decode = function (buf) {
     if (!Module.onRuntimeInitialized) {
       throw new Error("Module not initialized");

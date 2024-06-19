@@ -1,7 +1,7 @@
 import {RiffChunk} from "./riff_chunk.js";
 import {ShiftableByteArray} from "../../utils/shiftable_array.js";
 import {readByte, readBytesAsUintLittleEndian, readBytesAsString, signedInt8} from "../../utils/byte_functions.js";
-import { stbvorbis} from '../../utils/stbvorbis_sync.js'
+import { stbvorbis } from '../../utils/stbvorbis_sync.js'
 import { SpessaSynthWarn } from '../../utils/loggin.js'
 
 /**
@@ -163,6 +163,9 @@ export class Sample {
         const buff = smplArr.slice(this.sampleStartIndex / 2 + smplStart, this.sampleEndIndex / 2 + smplStart);
         // reset array and being decoding
         this.sampleData = new Float32Array(0);
+        /**
+         * @type {{data: Float32Array[], error: (string|null), sampleRate: number, eof: boolean}}
+         */
         const vorbis = stbvorbis.decode(buff.buffer);
         this.sampleData = vorbis.data[0];
     }

@@ -91,4 +91,4 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 Copyright © 2024 Spessasus. Licensed under the MIT License.
 
 > [!IMPORTANT]
-> Please note that bundled `stb_vorbis_sync.js` is a fork of [stbvorbis.js](https://github.com/hajimehoshi/stbvorbis.js) licensed under the Apache-2.0 license.
+> Please note that bundled [stbvorbis_sync.js](https://github.com/spessasus/stbvorbis_sync.js) licensed under the Apache-2.0 license.
