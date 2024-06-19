@@ -1,22 +1,19 @@
 import {MIDI} from "../midi_parser/midi_loader.js";
-import { DEFAULT_PERCUSSION, Synthetizer } from '../synthetizer/synthetizer.js';
-import {  messageTypes, MidiMessage } from '../midi_parser/midi_message.js'
-import { consoleColors } from '../utils/other.js'
+import { Synthetizer } from '../synthetizer/synthetizer.js';
+import {  messageTypes } from '../midi_parser/midi_message.js'
 import { workletMessageType } from '../synthetizer/worklet_system/worklet_utilities/worklet_message.js'
 import {
     WorkletSequencerMessageType,
     WorkletSequencerReturnMessageType,
 } from './worklet_sequencer/sequencer_message.js'
-import { readBytesAsUintBigEndian } from '../utils/byte_functions.js'
-import { ShiftableByteArray } from '../utils/shiftable_array.js'
-import { SpessaSynthInfo, SpessaSynthWarn } from '../utils/loggin.js'
+import { SpessaSynthWarn } from '../utils/loggin.js'
 
 /**
  * sequencer.js
  * purpose: plays back the midi file decoded by midi_loader.js, including support for multi-channel midis (adding channels when more than 1 midi port is detected)
  */
 
-const MIN_NOTE_TIME = 0.02;
+
 export class Sequencer {
     /**
      * Creates a new Midi sequencer for playing back MIDI files
@@ -54,11 +51,6 @@ export class Sequencer {
          * @type {number}
          */
         this.duration = 0;
-
-        /**
-         * @type {Object<string, function(MIDI)>}
-         */
-        this.onSongChange = {};
 
         this.synth.sequencerCallbackFunction = this._handleMessage.bind(this);
 
@@ -138,7 +130,6 @@ export class Sequencer {
                 this.songIndex = messageData[1];
                 this.midiData = songChangeData;
                 this.duration = this.midiData.duration;
-                this.calculateNoteTimes(songChangeData.tracks);
                 Object.entries(this.onSongChange).forEach((callback) => callback[1](songChangeData));
                 this.unpause()
                 break;
@@ -158,16 +149,9 @@ export class Sequencer {
                  * @type {number}
                  */
                 const time = messageData;
-                if(this.onTimeChange)
-                {
-                    this.onTimeChange(time);
-                }
+                Object.entries(this.onTimeChange).forEach((callback) => callback[1](time));
                 this.unpause()
                 this._recalculateStartTime(time);
-                break;
-
-            case WorkletSequencerReturnMessageType.resetRendererIndexes:
-                this.resetRendererIndexes();
                 break;
 
             case WorkletSequencerReturnMessageType.pause:
@@ -221,6 +205,16 @@ export class Sequencer {
     {
         this.onSongChange[id] = callback;
         callback(this.midiData);
+    }
+
+    /**
+     * Adds a new event that gets called when the time changes
+     * @param callback {function(number)} the new time, in seconds
+     * @param id {string} must be unique
+     */
+    addOnTimeChangeEvent(callback, id)
+    {
+        this.onTimeChange[id] = callback;
     }
 
     /**
@@ -289,151 +283,6 @@ export class Sequencer {
     {
         this.unpause()
         this._sendMessage(WorkletSequencerMessageType.setTime, time);
-    }
-
-    resetRendererIndexes()
-    {
-        if(!this.renderer)
-        {
-            return;
-        }
-        this.renderer.noteStartTime = this.absoluteStartTime;
-        this.renderer.noteTimes.forEach(n => n.renderStartIndex = 0);
-    }
-
-    /**
-     * Connects a midi renderer
-     * @param renderer {Renderer}
-     */
-    connectRenderer(renderer)
-    {
-        this.renderer = renderer;
-        this.calculateNoteTimes(this.midiData.tracks);
-    }
-
-    /**
-     * @param trackData {MidiMessage[][]}
-     */
-    calculateNoteTimes(trackData)
-    {
-        if(this.midiData === undefined)
-        {
-            return;
-        }
-
-        /**
-         * gets tempo from the midi message
-         * @param event {MidiMessage}
-         * @return {number} the tempo in bpm
-         */
-        function getTempo(event)
-        {
-            // simulate shiftableByteArray
-            event.messageData = new ShiftableByteArray(event.messageData.buffer);
-            event.messageData.currentIndex = 0;
-            return 60000000 / readBytesAsUintBigEndian(event.messageData, 3);
-        }
-
-        /**
-         * an array of 16 arrays (channels) and the notes are stored there
-         * @typedef {{
-         *          midiNote: number,
-         *          start: number,
-         *          length: number,
-         *          velocity: number,
-         *      }} NoteTime
-         *
-         * @typedef {{
-         *      notes: NoteTime[],
-         *      renderStartIndex: number
-         * }[]} NoteTimes
-         */
-
-        /**
-         * @type {NoteTimes}
-         */
-
-
-        const noteTimes = [];
-        let events = trackData.flat();
-        events.sort((e1, e2) => e1.ticks - e2.ticks);
-        for (let i = 0; i < 16; i++)
-        {
-            noteTimes.push({renderStartIndex: 0, notes: []});
-        }
-        let elapsedTime = 0;
-        let oneTickToSeconds = 60 / (120 * this.midiData.timeDivision);
-        let eventIndex = 0;
-        let unfinished = 0;
-        while(eventIndex < events.length)
-        {
-            const event = events[eventIndex];
-
-            const status = event.messageStatusByte >> 4;
-            const channel = event.messageStatusByte & 0x0F;
-
-            // note off
-            if(status === 0x8)
-            {
-                const note = noteTimes[channel].notes.findLast(n => n.midiNote === event.messageData[0] && n.length === -1)
-                if(note) {
-                    const time = elapsedTime - note.start;
-                    note.length = (time < MIN_NOTE_TIME && channel === DEFAULT_PERCUSSION ? MIN_NOTE_TIME : time);
-                }
-                unfinished--;
-            }
-            // note on
-            else if(status === 0x9)
-            {
-                if(event.messageData[1] === 0)
-                {
-                    // nevermind, its note off
-                    const note = noteTimes[channel].notes.findLast(n => n.midiNote === event.messageData[0] && n.length === -1)
-                    if(note) {
-                        const time = elapsedTime - note.start;
-                        note.length = (time < MIN_NOTE_TIME && channel === DEFAULT_PERCUSSION ? MIN_NOTE_TIME : time);
-                    }
-                    unfinished--;
-                }
-                else {
-                    noteTimes[event.messageStatusByte & 0x0F].notes.push({
-                        midiNote: event.messageData[0],
-                        start: elapsedTime,
-                        length: -1,
-                        velocity: event.messageData[1] / 127
-                    });
-                    unfinished++;
-                }
-            }
-            // set tempo
-            else if(event.messageStatusByte === 0x51)
-            {
-                oneTickToSeconds = 60 / (getTempo(event) * this.midiData.timeDivision);
-            }
-
-            if(++eventIndex >= events.length) break;
-
-            elapsedTime += oneTickToSeconds * (events[eventIndex].ticks - event.ticks);
-        }
-
-        // finish the unfinished notes
-        if(unfinished > 0)
-        {
-            // for every channel, for every note that is unfinished (has -1 length)
-            noteTimes.forEach((channel, channelNumber) =>
-                channel.notes.filter(n => n.length === -1).forEach(note =>
-                {
-                    const time = elapsedTime - note.start;
-                    note.length = (time < MIN_NOTE_TIME && channelNumber === DEFAULT_PERCUSSION ? MIN_NOTE_TIME : time);
-                })
-            )
-        }
-
-        SpessaSynthInfo(`%cFinished loading note times and ready to render the sequence!`, consoleColors.info);
-        if(this.renderer)
-        {
-            this.renderer.connectSequencer(noteTimes, this);
-        }
     }
 
     /**
@@ -506,6 +355,12 @@ export class Sequencer {
     }
 
     /**
+     * @type {Object<string, function(MIDI)>}
+     * @private
+     */
+    onSongChange = {};
+
+    /**
      * Fires on text event
      * @param data {Uint8Array} the data text
      * @param type {number} the status byte of the message (the meta status byte)
@@ -514,7 +369,8 @@ export class Sequencer {
 
     /**
      * Fires when CurrentTime changes
-     * @param time {number} the time that was changed to
+     * @type {Object<string, function(number)>} the time that was changed to
+     * @private
      */
-    onTimeChange;
+    onTimeChange = {};
 }

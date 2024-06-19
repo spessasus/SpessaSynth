@@ -31,6 +31,5 @@ export const WorkletSequencerReturnMessageType = {
     songChange: 1,              // [midiData<MIDI>, songIndex<number>]
     textEvent: 2,               // [messageData<number[]>, statusByte<number]
     timeChange: 3,              // newTime<number>
-    resetRendererIndexes: 4,    // no data
-    pause: 5,                   // no data
+    pause: 4,                   // no data
 }

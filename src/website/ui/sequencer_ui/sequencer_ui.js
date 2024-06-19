@@ -205,10 +205,10 @@ export class SequencerUI{
             }
         }
 
-        this.seq.onTimeChange = () => {
+        this.seq.addOnTimeChangeEvent(() => {
             this.text = "";
             this.rawText = [];
-        }
+        }, "sequi-time-change");
 
         this.seq.addOnSongChangeEvent(() => {
             this.updateTitleAndMediaStatus();

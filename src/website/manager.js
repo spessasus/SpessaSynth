@@ -320,9 +320,13 @@ const RENDER_AUDIO_TIME_INTERVAL = 500;
         this.playerUI.connectSequencer(this.seq);
 
         // connect to the renderer;
-        this.seq.connectRenderer(this.renderer);
+        this.renderer.connectSequencer(this.seq);
 
         // play the midi
         this.seq.play(true);
+
+        // this.renderer.onRender = () => {
+        //     console.log("frame")
+        // }
     }
 }

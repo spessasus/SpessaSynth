@@ -128,7 +128,6 @@ class WorkletSequencer
             return;
         }
         this.play();
-        this.post(WorkletSequencerReturnMessageType.resetRendererIndexes);
     }
 
     /**

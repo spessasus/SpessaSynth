@@ -240,7 +240,6 @@ export function setTimeTicks(ticks)
     }
     this.play();
     this.post(WorkletSequencerReturnMessageType.timeChange, this.currentTime);
-    this.post(WorkletSequencerReturnMessageType.resetRendererIndexes);
 }
 
 /**
