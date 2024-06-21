@@ -14,7 +14,9 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 
 This repo is essentially 2 programs in one:
 # spessasynth_lib
-A flexible, powerful, and feature-packed soundfont synthesizer library for JavaScript.
+A flexible, powerful, and feature-packed soundfont synthesizer library for the WebAudio API.
+> [!TIP]
+> Looking for a Node.js version? try [spessasynth_core](https://www.npmjs.com/package/spessasynth_core)
 
 [Documentation](../../wiki/Home)
 ## Features
