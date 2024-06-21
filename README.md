@@ -12,19 +12,12 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 [<img width='500' alt="Watch the YouTube video" src="https://github.com/spessasus/SpessaSynth/assets/95608008/0fade923-1ed6-4565-8300-1f57ef70bc89">](https://youtu.be/6rUjjVcMXu8)
 
 
+This repo is essentially 2 programs in one:
+# spessasynth_lib
+A flexible, powerful, and feature-packed soundfont synthesizer library for JavaScript.
+
+[Documentation](../../wiki/Home)
 ## Features
-### Web app / Local Edition
-- Visualization of the played sequence with effects like visual pitch bend and note on effects
-- Playable keyboard with various sizes
-- Integrated controller for the synthetizer with a lot of options
-- Mutliple languages support, currently: english, polish, japanese
-- `Web MIDI API` support (Enables physical MIDI devices to be used with the program)
-- [WebMidiLink](https://www.g200kg.com/en/docs/webmidilink/) support
-- Play around with the MIDI file, edit instruments controllers and more!
-- Render the MIDI file (either modified or unmodified) to wav
-- Comes bundled with a compressed [SGM](https://musical-artifacts.com/artifacts/855) SoundFont to get you started
- 
-### spessasynth_lib
 - SoundFont2 Generator Support
 - SoundFont2 Modulator Support
 - SoundFont3 (vorbis compressed sf2) Support (thanks to [stbvorbis.js](https://github.com/hajimehoshi/stbvorbis.js))
@@ -43,28 +36,43 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 - Written in pure JavaScript using WebAudio API (Every modern browser supports it)
 - No dependencies
 
-### Limitations
-- It might not sound as good as other synthetizers (e.g. FluidSynth or BASSMIDI)
-- The performance is questionable, especially on mobile devices
+## Limitations
+- The performance is questionable, especially on mobile devices.
 
-## [How to use the web app](../../wiki/How-To-Use-App) / [Check out the library documentation](../../wiki/Home)
+### Installation
+1. Clone this repository.
+2. copy `src/spessasynth_lib` to your project.
+3. [Use the library](../../wiki/Home)
 
-[How to use SpessaSynth in your project](../../wiki/Usage-As-Library)
+# Web app / Local Edition
+The complete GUI for spessasynth_lib, allowing remixing experimenting and playing MIDIs in the coolest way possible.
 
-## Installation of the Local Edition
+[How to use](../../wiki/How-To-Use-App)
+## Features
+- Visualization of the played sequence with effects like visual pitch bend and note on effects
+- Playable keyboard with various sizes
+- Integrated controller for the synthetizer with a lot of options
+- Mutliple languages support, currently: english, polish, japanese
+- `Web MIDI API` support (Enables physical MIDI devices to be used with the program)
+- [WebMidiLink](https://www.g200kg.com/en/docs/webmidilink/) support
+- Play around with the MIDI file, edit instruments controllers and more!
+- Render the MIDI file (either modified or unmodified) to wav
+- Comes bundled with a compressed [SGM](https://musical-artifacts.com/artifacts/855) SoundFont to get you started
+
+### Installation
 > [!IMPORTANT]
 > Firefox is recommended, due to unconstrained memory size.
 
-### [Recommended high quality soundfont (better than the built-in one)](https://musical-artifacts.com/artifacts/1176)
+[Recommended high quality soundfont (better than the built-in one)](https://musical-artifacts.com/artifacts/1176)
 
 **Requires Node.js**
-### Windows
+#### Windows
 1. Download the code as zip and extract or use `git clone https://github.com/spessasus/SpessaSynth`
 2. Put your soundfonts into the `soundfonts` folder. (you can select soundfonts in the program)
 3. Double click the `start.bat`
 4. Enjoy!
 
-### Linux
+#### Linux
 1. ```shell
    git clone https://github.com/spessasus/SpessaSynth
    cd SpessaSynth
@@ -79,7 +87,6 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 #### todo
 - make the worklet system perform good
 - port the worklet system to emscripten (maybe)
-- fix rare clicking in volenv attack (TR-909 kick for example)
 
 
 ### Special thanks

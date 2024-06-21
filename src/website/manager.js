@@ -107,6 +107,7 @@ const RENDER_AUDIO_TIME_INTERVAL = 500;
             }, RENDER_AUDIO_TIME_INTERVAL);
             const buf = await offline.startRendering();
             clearInterval(interval);
+            SpessaSynthInfo(buf)
             return buf;
         }
         else
