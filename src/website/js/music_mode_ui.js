@@ -63,7 +63,7 @@ export class MusicModeUI {
                 document.getElementById("player_info_detail").textContent = mid.fileName;
             }
             document.getElementById("player_info_time").textContent = formatTime(this.seq.duration).time;
-        }, "player-ui-song-change");
+        }, "player-js-song-change");
     }
 
     togglevisibility()

@@ -1,19 +1,19 @@
-import { MidiKeyboard } from './ui/midi_keyboard.js'
+import { MidiKeyboard } from './js/midi_keyboard.js'
 import { Synthetizer } from '../spessasynth_lib/synthetizer/synthetizer.js'
-import { Renderer } from './ui/renderer/renderer.js'
+import { Renderer } from './js/renderer/renderer.js'
 import { MIDI } from '../spessasynth_lib/midi_parser/midi_loader.js'
 
-import { SequencerUI } from './ui/sequencer_ui/sequencer_ui.js'
-import { SynthetizerUI } from './ui/synthesizer_ui/synthetizer_ui.js'
+import { SequencerUI } from './js/sequencer_ui/sequencer_ui.js'
+import { SynthetizerUI } from './js/synthesizer_ui/synthetizer_ui.js'
 import { MIDIDeviceHandler } from '../spessasynth_lib/midi_handler/midi_handler.js'
 import { WebMidiLinkHandler } from '../spessasynth_lib/midi_handler/web_midi_link.js'
 import { Sequencer } from '../spessasynth_lib/sequencer/sequencer.js'
-import { Settings } from './ui/settings_ui/settings.js'
-import { MusicModeUI } from './ui/music_mode_ui.js'
-//import { SoundFontMixer } from './ui/soundfont_mixer.js'
+import { Settings } from './js/settings_ui/settings.js'
+import { MusicModeUI } from './js/music_mode_ui.js'
+//import { SoundFontMixer } from './js/soundfont_mixer.js'
 import { LocaleManager } from './locale/locale_manager.js'
 import { DEFAULT_LOCALE, localeList } from './locale/locale_files/locale_list.js'
-import { isMobile } from '../spessasynth_lib/utils/other.js'
+import { isMobile } from './utils/is_mobile.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../spessasynth_lib/utils/loggin.js'
 
 const RENDER_AUDIO_TIME_INTERVAL = 500;
@@ -129,7 +129,7 @@ const RENDER_AUDIO_TIME_INTERVAL = 500;
             alert("Audio worklet is not supported on your browser. Sorry!")
             throw "Not supported."
         }
-        // initialize the locale management system. do it here because we want it ready before all ui classes do their things
+        // initialize the locale management system. do it here because we want it ready before all js classes do their things
         // get locale from user "en-US" will turn into just "en"
         let locale = navigator.language.split("-")[0].toLowerCase();
         if(localeList[locale])

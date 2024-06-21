@@ -1,5 +1,5 @@
 import {Synthetizer} from "../../../spessasynth_lib/synthetizer/synthetizer.js";
-import { calculateRGB } from '../../../spessasynth_lib/utils/other.js'
+import { calculateRGB } from '../../utils/calculate_rgb.js'
 import { render } from './render.js'
 import { computeNotePositions } from './compute_note_positions.js'
 import {

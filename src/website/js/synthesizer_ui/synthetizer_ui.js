@@ -344,7 +344,7 @@ export class SynthetizerUI
      */
 
     /**
-     * Creates a new channel controller ui
+     * Creates a new channel controller js
      * @param channelNumber {number}
      * @returns {ChannelController}
      */

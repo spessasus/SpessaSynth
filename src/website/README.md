@@ -4,7 +4,7 @@ the GUI, such as the renderer, keyboard, etc.
 
 `css` folder contains all the CSS.
 
-`ui` folder contains all the frontend JavaScript.
+`js` folder contains all the frontend JavaScript.
 
 Some of these could be reused in your project as they usually can work on their own
 (like keyboard finds the div with id of `keyboard`),

@@ -1,4 +1,4 @@
-import { midiPatchNames } from '../../../spessasynth_lib/utils/other.js'
+import { midiPatchNames } from '../../utils/patch_names.js'
 
 /**
  * syntui_selector.js
