@@ -90,7 +90,12 @@ const RENDER_AUDIO_TIME_INTERVAL = 500;
             synth = new Synthetizer(offline.destination, this.sf, false, {
                 parsedMIDI: parsedMid,
                 snapshot: snapshot
-            }, this.impulseResponse);
+            }, {
+                reverbEnabled: true,
+                chorusEnabled: true,
+                chorusConfig: undefined,
+                reverbImpulseResponse: this.impulseResponse
+            });
         }
         catch (e) {
             window.alert(this.localeManager.getLocaleString("locale.outOfMemory"));
@@ -164,7 +169,17 @@ const RENDER_AUDIO_TIME_INTERVAL = 500;
         this.impulseResponse = await context.decodeAudioData(data);
 
         // set up synthetizer
-        this.synth = new Synthetizer(context.destination, this.soundFont, undefined, undefined, this.impulseResponse);
+        this.synth = new Synthetizer(
+            context.destination,
+            this.soundFont,
+            undefined,
+            undefined,
+            {
+                chorusEnabled: true,
+                chorusConfig: undefined,
+                reverbImpulseResponse:  this.impulseResponse,
+                reverbEnabled: true
+            });
 
         // set up midi access
         this.midHandler = new MIDIDeviceHandler();

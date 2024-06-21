@@ -10,6 +10,7 @@ import {
     workletMessageType,
 } from './worklet_system/worklet_utilities/worklet_message.js'
 import { SpessaSynthInfo } from '../utils/loggin.js'
+import { DEFAULT_EFFECTS_CONFIG } from './audio_effects/effects_config.js'
 
 
 /**
@@ -65,13 +66,13 @@ export class Synthetizer {
      *          parsedMIDI: MIDI,
      *          snapshot: SynthesizerSnapshot
      *      }} if set, starts playing this immediately and restores the values
-     * @param reverbBuffer {AudioBuffer} optional impulse response for the convolver.
+     * @param effectsConfig {EffectsConfig} optional configuration for the audio effects.
      */
      constructor(targetNode,
                  soundFontBuffer,
                  enableEventSystem = true,
                  startRenderingData = undefined,
-                 reverbBuffer = undefined) {
+                 effectsConfig = DEFAULT_EFFECTS_CONFIG) {
         SpessaSynthInfo("%cInitializing SpessaSynth synthesizer...", consoleColors.info);
         this.context = targetNode.context;
 
@@ -80,9 +81,7 @@ export class Synthetizer {
          * @type {EventHandler}
          */
         this.eventHandler = new EventHandler();
-        this.reverbProcessor = getReverbProcessor(this.context, reverbBuffer);
-        this.chorusProcessor = new FancyChorus(targetNode);
-        this.reverbProcessor.connect(targetNode);
+
 
         /**
          * the new channels will have their audio sent to the moduled output by this constant.
@@ -154,8 +153,19 @@ export class Synthetizer {
          */
         this.sequencerCallbackFunction = undefined;
 
-        this.worklet.connect(this.reverbProcessor, 0);
-        this.worklet.connect(this.chorusProcessor.input, 1);
+        // add reverb
+        if(effectsConfig.reverbEnabled)
+        {
+            this.reverbProcessor = getReverbProcessor(this.context, effectsConfig.reverbImpulseResponse);
+            this.reverbProcessor.connect(targetNode);
+            this.worklet.connect(this.reverbProcessor, 0);
+        }
+
+        if(effectsConfig.chorusEnabled)
+        {
+            this.chorusProcessor = new FancyChorus(targetNode, effectsConfig.chorusConfig);
+            this.worklet.connect(this.chorusProcessor.input, 1);
+        }
 
         // connect all outputs to the output node
         for (let i = 2; i < this.channelsAmount + 2; i++) {

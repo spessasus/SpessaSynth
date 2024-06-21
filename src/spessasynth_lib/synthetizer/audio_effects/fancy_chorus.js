@@ -11,6 +11,19 @@
  * }} ChorusNode
  */
 
+/**
+ * @typedef {Object} ChorusConfig
+ * @property {number} nodesAmount - the amount of delay nodes (for each channel) and the corresponding oscillators
+ * @property {number} defaultDelay - the initial delay, in seconds
+ * @property {number} delayVariation - the difference between delays in the delay nodes
+ * @property {number} stereoDifference - the difference of delays between two channels (added to the left channel and subtracted from the right)
+ *
+ * @property {number} oscillatorFrequency - the initial delay oscillator frequency, in Hz.
+ * @property {number} oscillatorFrequencyVariation - the difference between frequencies of oscillators, in Hz
+ * @property {number} oscillatorGain - how much will oscillator alter the delay in delay nodes, in seconds
+ */
+
+
 const NODES_AMOUNT = 3;
 const DEFAULT_DELAY = 0.02;
 const DELAY_VARIATION = 0.01;
@@ -19,13 +32,25 @@ const STEREO_DIFF = 0.01;
 const OSC_FREQ = 0.3;
 const OSC_FREQ_VARIATION = 0.1;
 const OSC_GAIN = 0.002;
+
+export const DEFAULT_CHORUS_CONFIG = {
+    nodesAmount: NODES_AMOUNT,
+    defaultDelay: DEFAULT_DELAY,
+    delayVariation: DELAY_VARIATION,
+    stereoDifference: STEREO_DIFF,
+    oscillatorFrequency: OSC_FREQ,
+    oscillatorFrequencyVariation: OSC_FREQ_VARIATION,
+    oscillatorGain: OSC_GAIN
+};
+
 export class FancyChorus
 {
     /**
      * Creates a fancy chorus effect
      * @param output {AudioNode}
+     * @param config {ChorusConfig}
      */
-    constructor(output) {
+    constructor(output, config = DEFAULT_CHORUS_CONFIG) {
         const context = output.context;
 
         this.input = new ChannelSplitterNode(context,
@@ -46,15 +71,15 @@ export class FancyChorus
          * @type {ChorusNode[]}
          */
         const chorusNodesRight = [];
-        let freq = OSC_FREQ;
-        let delay = DEFAULT_DELAY;
-        for (let i = 0; i < NODES_AMOUNT; i++) {
+        let freq = config.oscillatorFrequency;
+        let delay = config.defaultDelay;
+        for (let i = 0; i < config.nodesAmount; i++) {
             // left node
-            this.createChorusNode(freq, delay - STEREO_DIFF, chorusNodesLeft, 0, merger, 0, context);
+            this.createChorusNode(freq, delay - config.stereoDifference, chorusNodesLeft, 0, merger, 0, context, config);
             // right node
-            this.createChorusNode(freq, delay + STEREO_DIFF, chorusNodesRight, 1, merger, 1, context);
-            freq += OSC_FREQ_VARIATION;
-            delay += DELAY_VARIATION;
+            this.createChorusNode(freq, delay + config.stereoDifference, chorusNodesRight, 1, merger, 1, context, config);
+            freq += config.oscillatorFrequencyVariation;
+            delay += config.delayVariation;
         }
 
         merger.connect(output);
@@ -68,15 +93,16 @@ export class FancyChorus
      * @param output {AudioNode}
      * @param outputNum {number}
      * @param context {BaseAudioContext}
+     * @param config {ChorusConfig}
      */
-    createChorusNode(freq, delay, list, input, output, outputNum, context)
+    createChorusNode(freq, delay, list, input, output, outputNum, context, config)
     {
         const oscillator = new OscillatorNode(context, {
             type: "triangle",
             frequency: freq
         });
         const gainNode = new GainNode(context, {
-            gain: OSC_GAIN
+            gain: config.oscillatorGain
         });
         const delayNode = new DelayNode(context, {
             delayTime: delay
