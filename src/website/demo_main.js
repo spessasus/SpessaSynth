@@ -6,6 +6,7 @@ import { MIDI } from '../spessasynth_lib/midi_parser/midi_loader.js'
 import { formatTime, formatTitle } from '../spessasynth_lib/utils/other.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../spessasynth_lib/utils/loggin.js'
 import { audioBufferToWav } from '../spessasynth_lib/utils/buffer_to_wav.js'
+import { isMobile } from './utils/is_mobile.js'
 
 /**
  * demo_main.js
@@ -14,6 +15,21 @@ import { audioBufferToWav } from '../spessasynth_lib/utils/buffer_to_wav.js'
 
 const SF_NAME = "SGM.sf3";
 const TITLE = "SpessaSynth: SoundFont2 Javascript Synthetizer Online Demo";
+
+// check for chrome android
+if(isMobile())
+{
+    if(!!window.chrome)
+    {
+        alert("Chrome Mobile detected.\nSpessaSynth performs poorly on Chrome Mobile, consider using Firefox Android instead.");
+    }
+}
+
+// check for safari
+if(/constructor/i.test(window.HTMLElement))
+{
+    alert("Safari Detected.\n MIDI Inputs are not supported by this browser, consider using Chrome or Firefox.");
+}
 
 /**
  * @type {HTMLHeadingElement}

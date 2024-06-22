@@ -33,29 +33,32 @@ export function renderWaveforms()
             this.drawingContext.stroke();
             return;
         }
+
         const waveform = new Float32Array(analyser.frequencyBinCount);
         analyser.getFloatTimeDomainData(waveform);
+
         const waveWidth = this.canvas.width / 4;
         const waveHeight = this.canvas.height / 4
         const relativeX = waveWidth * x;
         const relativeY = waveHeight * y + waveHeight / 2;
-        const step = waveWidth / waveform.length;
         const multiplier = this.waveMultiplier * waveHeight;
 
         // draw
         this.drawingContext.lineWidth = this.lineThickness;
         this.drawingContext.strokeStyle = this.channelColors[channelNumber];
         this.drawingContext.beginPath();
-        //this.drawingContext.moveTo(relativeX, relativeY /*+ waveform[0] * multiplier*/);
+
+        const step = waveWidth / waveform.length;
 
         let xPos = relativeX;
-        waveform.forEach(   val  => {
+
+        for (let i = 0; i < waveform.length; i++) {
             this.drawingContext.lineTo(
                 xPos,
-                relativeY + val * multiplier);
+                relativeY + waveform[i] * multiplier);
             xPos += step;
+        }
 
-        });
         this.drawingContext.stroke();
         channelNumber++;
     });
