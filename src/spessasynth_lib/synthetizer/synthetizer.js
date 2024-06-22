@@ -18,37 +18,7 @@ import { DEFAULT_EFFECTS_CONFIG } from './audio_effects/effects_config.js'
  * purpose: responds to midi messages and called functions, managing the channels and passing the messages to them
  */
 
-/**
- * @typedef {{
- *     preset: Preset,
- *     vibrato: {depth: number, delay: number, rate: number},
- *     bank: number,
- *     pitchBend: number,
- *     channelPitchBendRange: number,
- *     channelTuningCents: number
- *     channelTranspose: number, // In semitones, does not get affected by resetControllers
- *     channelModulationDepthCents: number,
- *     NRPCoarse: number,
- *     NRPFine: number,
- *     RPValue: number,
- *     dataEntryState: number,
- *     percussionChannel: boolean
- *
- *     cachedWorkletVoices: WorkletVoice[][][], // index 1: midi note, index 2: velocity (the 3rd array is the group of worklet voices
- *
- *     lockedControllers: boolean[], // These controllers cannot be changed via controller change
- *     isMuted: boolean,
- *     lockVibrato: boolean,
- *     lockPreset: boolean,
- *
- *     voicesAmount: number,
- *     velocityAddition: number
- * }} MidiChannel
- */
-
 export const WORKLET_PROCESSOR_NAME = "spessasynth-worklet-system";
-
-
 
 export const VOICE_CAP = 450;
 

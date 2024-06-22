@@ -191,6 +191,13 @@ export function resetAllControllers()
                 });
             }
         }
+        else
+        {
+            this.callEvent("drumchange", {
+                channel: channelNumber,
+                isDrumChannel: ch.drumChannel
+            })
+        }
 
         // call program change
         this.callEvent("programchange", {

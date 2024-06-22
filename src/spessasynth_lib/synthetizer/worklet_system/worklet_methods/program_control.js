@@ -68,7 +68,7 @@ export function setDrums(channel, isDrum)
     }
     else
     {
-        channelObject.percussionChannel = false;
+        channelObject.drumChannel = false;
         this.setPreset(channel, this.soundfont.getPreset(0, channelObject.preset.program));
     }
     this.callEvent("drumchange",{

@@ -49,6 +49,10 @@ export function connectChannelAnalysers(synth)
 
     // connect for drum change
     synth.eventHandler.addEvent("drumchange", "renderer-drum-change", e => {
+        if(e.channel > this.channelAnalysers.length)
+        {
+            return
+        }
         // if this channel is now a drum channel, adjust the fft
         const analyser = this.channelAnalysers[e.channel % this.channelAnalysers.length];
         if (e.isDrumChannel)
