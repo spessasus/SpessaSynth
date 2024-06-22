@@ -1,6 +1,6 @@
 import { ShiftableByteArray } from '../../utils/shiftable_array.js'
 import { RiffChunk } from './riff_chunk.js'
-import { readByte, signedInt16 } from '../../utils/byte_functions.js'
+import { signedInt16 } from '../../utils/byte_functions.js'
 
 /**
  * generators.js
@@ -177,8 +177,10 @@ export class Generator{
      */
     constructor(dataArray) {
         // 4 bytes:
-        // type, value, type, value
-        let bytes = [readByte(dataArray), readByte(dataArray), readByte(dataArray), readByte(dataArray)];
+        // type, type, type, value
+        const i = dataArray.currentIndex;
+        let bytes = [dataArray[i], dataArray[i + 1], dataArray[i + 2], dataArray[i + 3]];
+        dataArray.currentIndex += 4;
 
         /**
          * @type {number}

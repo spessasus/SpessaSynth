@@ -65,7 +65,11 @@ export function readBytesAsString(dataArray, bytes, encoding=undefined, trimEnd=
         let string = "";
         for (let i = 0; i < bytes; i++) {
             let byte = readByte(dataArray);
-            if(byte < 32 || byte > 127 || finished)
+            if(finished)
+            {
+                continue;
+            }
+            if(byte < 32 || byte > 127)
             {
                 if(trimEnd) {
                     finished = true;
