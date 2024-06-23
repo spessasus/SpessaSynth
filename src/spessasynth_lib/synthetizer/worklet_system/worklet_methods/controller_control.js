@@ -82,7 +82,9 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
             {
                 if(channelObject.midiControllers[midiControllers.bankSelect] === 0)
                 {
-                    channelObject.midiControllers[midiControllers.bankSelect] = controllerValue;
+                    // some soundfonts use 127 as drums and if it's not marked as drums by bank MSB (line 47), then it's NOT drums
+                    if(controllerValue !== 127)
+                        channelObject.midiControllers[midiControllers.bankSelect] = controllerValue;
                 }
             }
             else
