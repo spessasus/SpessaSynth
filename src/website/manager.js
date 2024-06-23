@@ -322,10 +322,10 @@ const RENDER_AUDIO_TIME_INTERVAL = 500;
     /**
      * @param sf {ArrayBuffer}
      */
-    reloadSf(sf)
+    async reloadSf(sf)
     {
         //this.soundFontMixer.soundFontChange(sf);
-        this.synth.reloadSoundFont(sf);
+        await this.synth.reloadSoundFont(sf);
         this.sf = sf;
     }
 

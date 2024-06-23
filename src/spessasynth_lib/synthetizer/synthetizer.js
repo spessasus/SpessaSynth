@@ -532,13 +532,17 @@ export class Synthetizer {
     /**
      * Reloads the sounfont.
      * @param soundFontBuffer {ArrayBuffer} the new soundfont file array buffer
+     * @return {Promise<void>}
      */
-    reloadSoundFont(soundFontBuffer)
+    async reloadSoundFont(soundFontBuffer)
     {
-        this.post({
-            channelNumber: 0,
-            messageType: workletMessageType.reloadSoundFont,
-            messageData: soundFontBuffer
+        await new Promise(resolve => {
+            this._resolveReady = resolve;
+            this.post({
+                channelNumber: 0,
+                messageType: workletMessageType.reloadSoundFont,
+                messageData: soundFontBuffer
+            });
         });
     }
 

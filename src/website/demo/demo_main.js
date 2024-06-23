@@ -392,6 +392,10 @@ demoInit().then(() => {
          */
         const file = e.target.files[0];
 
+        if(window.manager.seq)
+        {
+            window.manager.seq.pause()
+        }
         document.getElementById("sf_upload").firstElementChild.innerText = file.name;
         const title = titleMessage.innerText;
         titleMessage.innerText = "Parsing SoundFont...";
@@ -399,20 +403,21 @@ demoInit().then(() => {
         let soundFontBuffer;
         try {
             soundFontBuffer = await file.arrayBuffer();
+            window.soundFontParser = soundFontBuffer;
         }
         catch (e) {
             window.alert(manager.localeManager.getLocaleString("locale.warnings.outOfMemory"));
             throw e;
         }
-        try {
-            window.soundFontParser = soundFontBuffer;
-            saveSoundFontToIndexedDB(soundFontBuffer).then();
-        } catch (e) {
+        window.manager.sfError = e => {
             titleMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
             console.log(e);
-            return;
+        }
+        await window.manager.reloadSf(soundFontBuffer);
+        if(window.manager.seq)
+        {
+            window.manager.seq.currentTime -= 0.1;
         }
         titleMessage.innerText = title;
-        manager.reloadSf(window.soundFontParser);
     }
 });

@@ -125,6 +125,7 @@ export function reloadSoundFont(buffer)
         channelObject.lockPreset = false;
         this.programChange(i, channelObject.preset.program);
     }
+    this.post({messageType: returnMessageType.ready, messageData: undefined})
     this.sendPresetList();
 }
 

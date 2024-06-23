@@ -211,13 +211,17 @@ async function replaceFont(fontName)
         }
         else
         {
-            window.manager.reloadSf(window.soundFontParser);
-
             if(window.manager.seq)
             {
-                // resets controllers
-                window.manager.seq.currentTime -= 0.1;
+                window.manager.seq.pause();
             }
+            window.manager.reloadSf(window.soundFontParser).then(() => {
+                if(window.manager.seq)
+                {
+                    // resets controllers
+                    window.manager.seq.currentTime -= 0.1;
+                }
+            });
         }
         synthReady = true;
     }
