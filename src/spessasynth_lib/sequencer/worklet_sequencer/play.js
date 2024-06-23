@@ -229,6 +229,7 @@ export function play(resetTime = false)
  */
 export function setTimeTicks(ticks)
 {
+    this.post(WorkletSequencerReturnMessageType.timeChange, this.currentTime);
     this.stop();
     this.playingNotes = [];
     this.pausedTime = undefined;
@@ -239,7 +240,6 @@ export function setTimeTicks(ticks)
         return;
     }
     this.play();
-    this.post(WorkletSequencerReturnMessageType.timeChange, this.currentTime);
 }
 
 /**
