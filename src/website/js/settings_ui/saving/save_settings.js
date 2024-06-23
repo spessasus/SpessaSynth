@@ -1,6 +1,6 @@
 // if window.saveSettings function is exposed, call it with _serializeSettings
 /**
- * @this {Settings}
+ * @this {SpessaSynthSettings}
  * @private
  */
 export function _saveSettings()

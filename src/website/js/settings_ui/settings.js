@@ -17,7 +17,7 @@ import { _createKeyboardHandler } from './handlers/keyboard_handler.js'
  * purpose: manages the gui settings, controlling things like render settings, light mode etc.
  */
 
-class Settings
+class SpessaSynthSettings
 {
     /**
      * Creates a new instance of synthetizer UI
@@ -204,17 +204,17 @@ class Settings
         }
     }
 }
-Settings.prototype._toggleDarkMode = _toggleDarkMode;
-Settings.prototype._createInterfaceSettingsHandler = _createInterfaceSettingsHandler;
-Settings.prototype._createRendererHandler = _createRendererHandler;
+SpessaSynthSettings.prototype._toggleDarkMode = _toggleDarkMode;
+SpessaSynthSettings.prototype._createInterfaceSettingsHandler = _createInterfaceSettingsHandler;
+SpessaSynthSettings.prototype._createRendererHandler = _createRendererHandler;
 
-Settings.prototype._createMidiSettingsHandler = _createMidiSettingsHandler;
-Settings.prototype._createMidiInputHandler = _createMidiInputHandler;
-Settings.prototype._createMidiOutputHandler = _createMidiOutputHandler;
-Settings.prototype._createKeyboardHandler = _createKeyboardHandler;
+SpessaSynthSettings.prototype._createMidiSettingsHandler = _createMidiSettingsHandler;
+SpessaSynthSettings.prototype._createMidiInputHandler = _createMidiInputHandler;
+SpessaSynthSettings.prototype._createMidiOutputHandler = _createMidiOutputHandler;
+SpessaSynthSettings.prototype._createKeyboardHandler = _createKeyboardHandler;
 
-Settings.prototype._loadSettings = _loadSettings;
-Settings.prototype._serializeSettings = _serializeSettings;
-Settings.prototype._saveSettings = _saveSettings;
+SpessaSynthSettings.prototype._loadSettings = _loadSettings;
+SpessaSynthSettings.prototype._serializeSettings = _serializeSettings;
+SpessaSynthSettings.prototype._saveSettings = _saveSettings;
 
-export {Settings}
+export {SpessaSynthSettings}

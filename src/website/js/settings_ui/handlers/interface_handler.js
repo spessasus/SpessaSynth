@@ -1,5 +1,5 @@
 /**
- * @this {Settings}
+ * @this {SpessaSynthSettings}
  * @private
  */
 export function _toggleDarkMode()
@@ -42,7 +42,7 @@ export function _toggleDarkMode()
 }
 
 /**
- * @this {Settings}
+ * @this {SpessaSynthSettings}
  * @private
  */
 export function _createInterfaceSettingsHandler()

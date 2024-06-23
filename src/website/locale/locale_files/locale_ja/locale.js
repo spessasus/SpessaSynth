@@ -29,7 +29,10 @@ export const localeJapanese = {
     demoGithubPage: "プロジェクトのページ",
     demoBundledSoundfont: "バンドルされたSoundFontを使用 (22MB)",
 
-    outOfMemory: "ブラウザのメモリが不足しました。FirefoxやSF3サウンドフォントの使用を検討してください。\n\n（エラーについてはコンソールを参照してください）。",
+    warnings: {
+        noMidiSupport: "このブラウザはMIDI入力をサポートしていないため、この機能は利用できません。ChromeまたはFirefoxを使用することを検討してください。",
+        outOfMemory: "ブラウザのメモリが不足しました。FirefoxやSF3サウンドフォントの使用を検討してください。\n\n（エラーについてはコンソールを参照してください）。",
+    },
 
     hideTopBar: {
         title: "トップバーを隠す",

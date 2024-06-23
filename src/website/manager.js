@@ -8,12 +8,12 @@ import { SynthetizerUI } from './js/synthesizer_ui/synthetizer_ui.js'
 import { MIDIDeviceHandler } from '../spessasynth_lib/midi_handler/midi_handler.js'
 import { WebMidiLinkHandler } from '../spessasynth_lib/midi_handler/web_midi_link.js'
 import { Sequencer } from '../spessasynth_lib/sequencer/sequencer.js'
-import { Settings } from './js/settings_ui/settings.js'
+import { SpessaSynthSettings } from './js/settings_ui/settings.js'
 import { MusicModeUI } from './js/music_mode_ui.js'
 //import { SoundFontMixer } from './js/soundfont_mixer.js'
 import { LocaleManager } from './locale/locale_manager.js'
 import { DEFAULT_LOCALE, localeList } from './locale/locale_files/locale_list.js'
-import { isMobile } from './utils/is_mobile.js'
+import { isMobile } from './js/utils/is_mobile.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../spessasynth_lib/utils/loggin.js'
 
 const RENDER_AUDIO_TIME_INTERVAL = 500;
@@ -50,8 +50,11 @@ const RENDER_AUDIO_TIME_INTERVAL = 500;
      */
     constructor(context, soundFontBuffer) {
         this.context = context;
-        this.initializeContext(context, soundFontBuffer).then();
-        this.ready = false;
+        let solve;
+        this.ready = new Promise(resolve => solve = resolve);
+        this.initializeContext(context, soundFontBuffer).then(() => {
+            solve();
+        });
         this.sf = soundFontBuffer;
     }
 
@@ -98,7 +101,7 @@ const RENDER_AUDIO_TIME_INTERVAL = 500;
             });
         }
         catch (e) {
-            window.alert(this.localeManager.getLocaleString("locale.outOfMemory"));
+            window.alert(this.localeManager.getLocaleString("locale.warnings.outOfMemory"));
             throw e;
         }
         if(callback)
@@ -224,7 +227,7 @@ const RENDER_AUDIO_TIME_INTERVAL = 500;
         this.playerUI = new MusicModeUI(document.getElementById("player_info"), this.localeManager);
 
         // set up settings UI
-        this.settingsUI = new Settings(
+        this.settingsUI = new SpessaSynthSettings(
             document.getElementById("settings_div"),
             this.synthUI,
             this.seqUI,
@@ -302,7 +305,7 @@ const RENDER_AUDIO_TIME_INTERVAL = 500;
                     break;
             }
         });
-        this.ready = true;
+        await this.synth.isReady;
     }
 
     /**

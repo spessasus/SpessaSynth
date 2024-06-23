@@ -2,7 +2,7 @@
  * Serializes settings into a nice object
  * @private
  * @returns {SavedSettings}
- * @this {Settings}
+ * @this {SpessaSynthSettings}
  */
 export function _serializeSettings()
 {

@@ -11,7 +11,7 @@ import { audioBufferToWav } from '../spessasynth_lib/utils/buffer_to_wav.js'
  * purpose: main script for the local edition, loads the soundfont and passes it to the manager.js, reloads soundfonts when needed and saves the settings
  */
 
-const TITLE = "SpessaSynth: SoundFont2 Javascript Synthetizer";
+const TITLE = "SpessaSynth: SoundFont2 Javascript Synthesizer";
 const SAMPLE_RATE = 44100;
 
 /**
@@ -81,7 +81,7 @@ async function fetchFont(fileName, callback)
         let message = `Your browser ran out of memory. Consider using Firefox or SF3 soundfont instead\n\n (see console for error)`;
         if(window.manager)
         {
-            message = manager.localeManager.getLocaleString("locale.outOfMemory");
+            message = manager.localeManager.getLocaleString("locale.warnings.outOfMemory");
         }
         window.alert(message);
         throw e;
@@ -110,11 +110,7 @@ async function startMidi(midiFiles)
         setTimeout(() => startMidi(midiFiles), 100);
         return;
     }
-    else if(!manager.ready)
-    {
-        setTimeout(() => startMidi(midiFiles), 100);
-        return;
-    }
+    await manager.ready;
     let fName;
     if(midiFiles[0].name.length > 20)
     {

@@ -1,6 +1,6 @@
 /**
  * @param renderer {Renderer}
- * @this {Settings}
+ * @this {SpessaSynthSettings}
  * @private
  */
 export function _createRendererHandler(renderer)

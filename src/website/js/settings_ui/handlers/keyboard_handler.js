@@ -3,7 +3,7 @@
  * @param keyboard {MidiKeyboard}
  * @param synthui {SynthetizerUI}
  * @param renderer {Renderer}
- * @this {Settings}
+ * @this {SpessaSynthSettings}
  * @private
  */
 export function _createKeyboardHandler( keyboard, synthui, renderer)

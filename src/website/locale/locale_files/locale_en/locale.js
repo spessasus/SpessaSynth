@@ -10,8 +10,8 @@ import { sequencerControllerLocale } from './sequencer_controller.js'
 export const localeEnglish = {
     localeName: "English",
     // title messsage
-    titleMessage: "SpessaSynth: SoundFont2 Javascript Synthetizer",
-    demoTitleMessage: "SpessaSynth: SoundFont2 Javascript Synthetizer Online Demo",
+    titleMessage: "SpessaSynth: SoundFont2 Javascript Synthesizer",
+    demoTitleMessage: "SpessaSynth: SoundFont2 Javascript Synthesizer Online Demo",
 
     // top bar buttons
     midiUploadButton: "Upload your MIDI files",
@@ -30,8 +30,10 @@ export const localeEnglish = {
     demoGithubPage: "Project's page",
     demoBundledSoundfont: "Use the bundled SoundFont (22MB)",
 
-    outOfMemory: "Your browser ran out of memory. Consider using Firefox or SF3 soundfont instead.\n\n (see console for error).",
-
+    warnings: {
+        outOfMemory: "Your browser ran out of memory. Consider using Firefox or SF3 soundfont instead.\n\n (see console for error).",
+        noMidiSupport: "MIDI Inputs are not supported by this browser, this functionality will not be available. Consider using Chrome or Firefox."
+    },
     hideTopBar: {
         title: "Hide top bar",
         description: "Hide the top (title) bar to provide a more seamless experience",

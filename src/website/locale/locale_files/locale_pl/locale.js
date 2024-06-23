@@ -29,7 +29,11 @@ export const localePolish = {
     demoGithubPage: "Strona projektu",
     demoBundledSoundfont: "Użyj wbudowanego SoundFonta (22MB)",
 
-    outOfMemory: "Twojej przeglądarce skończyła się pamięć. Rozważ użycie Firefoxa albo plików SF3.\n\n(Zobacz błąd w konsoli)",
+    warnings: {
+        outOfMemory: "Twojej przeglądarce skończyła się pamięć. Rozważ użycie Firefoxa albo plików SF3.\n\n(Zobacz błąd w konsoli)",
+        noMidiSupport: "Twoja przeglądarka nie wspiera Web MIDI. Korzystanie z portów MIDI nie będzie dostępne. Rozważ użycie Chrome albo Firefoxa.",
+
+    },
 
     hideTopBar: {
         title: "Ukryj górny pasek",

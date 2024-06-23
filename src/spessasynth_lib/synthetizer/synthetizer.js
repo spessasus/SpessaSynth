@@ -67,6 +67,12 @@ export class Synthetizer {
          */
         this.channelsAmount = this._outputsAmount;
 
+        /**
+         * Indicates if the synth is fully ready
+         * @type {Promise<void>}
+         */
+        this.isReady = new Promise(resolve => this._resolveReady = resolve);
+
 
         /**
          * individual channel voices amount
@@ -145,9 +151,7 @@ export class Synthetizer {
         // attach newchannel to keep track of channels count
         this.eventHandler.addEvent("newchannel", "synth-new-channel", () => {
             this.channelsAmount++;
-        })
-
-        SpessaSynthInfo("%cSpessaSynth is ready!", consoleColors.recognized);
+        });
     }
 
     /**
@@ -200,6 +204,11 @@ export class Synthetizer {
                 {
                     this._snapshotCallback(messageData);
                 }
+                break;
+
+            case returnMessageType.ready:
+                this._resolveReady();
+                SpessaSynthInfo("%cSpessaSynth is ready!", consoleColors.recognized);
         }
     }
 

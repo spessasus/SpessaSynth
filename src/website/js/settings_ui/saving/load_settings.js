@@ -3,7 +3,7 @@ import { DEFAULT_LOCALE } from '../../../locale/locale_files/locale_list.js'
 
 /**
  * @private
- * @this {Settings}
+ * @this {SpessaSynthSettings}
  */
 export async function _loadSettings()
 {

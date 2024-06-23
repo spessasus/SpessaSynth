@@ -1,5 +1,10 @@
 export var stbvorbis = typeof stbvorbis !== "undefined" ? stbvorbis : {};
-var isInitialized = false;
+let isReady = false;
+let readySolver;
+/**
+ * @type {Promise<void>}
+ */
+stbvorbis.isInitialized = new Promise(resolve => readySolver = resolve);
 
 // my own synchronous, es6 port of stbvorbis.js as the creator archived the repo when i suggested that feature
 
@@ -1779,14 +1784,17 @@ var isInitialized = false;
       }
       Module["noExitRuntime"] = true;
       run();
-  Module.onRuntimeInitialized = () => isInitialized = true;
+  Module.onRuntimeInitialized = () => {
+    isReady = true;
+    readySolver();
+  }
 
   /**
    * @param buf {Uint8Array|ArrayBuffer}
    * @returns {{data: any[], error: null, sampleRate, eof: boolean}}
    */
   function decodeVorbis(buf) {
-    if(!isInitialized)
+    if(!isReady)
     {
       throw new Error("Not initialized");
     }
@@ -1858,9 +1866,6 @@ var isInitialized = false;
    * @returns {{data: Float32Array[], error: null|string, sampleRate: number, eof: boolean}}
    */
   stbvorbis.decode = function (buf) {
-    if (!Module.onRuntimeInitialized) {
-      throw new Error("Module not initialized");
-    }
     return decodeVorbis(buf);
   };
 })();

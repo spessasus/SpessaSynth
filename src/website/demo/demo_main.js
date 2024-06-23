@@ -1,12 +1,12 @@
 "use strict"
 
-import { Manager } from './manager.js'
-import { MIDI } from '../spessasynth_lib/midi_parser/midi_loader.js'
+import { Manager } from '../manager.js'
+import { MIDI } from '../../spessasynth_lib/midi_parser/midi_loader.js'
 
-import { formatTime, formatTitle } from '../spessasynth_lib/utils/other.js'
-import { SpessaSynthInfo, SpessaSynthWarn } from '../spessasynth_lib/utils/loggin.js'
-import { audioBufferToWav } from '../spessasynth_lib/utils/buffer_to_wav.js'
-import { isMobile } from './utils/is_mobile.js'
+import { formatTime, formatTitle } from '../../spessasynth_lib/utils/other.js'
+import { SpessaSynthInfo, SpessaSynthWarn } from '../../spessasynth_lib/utils/loggin.js'
+import { audioBufferToWav } from '../../spessasynth_lib/utils/buffer_to_wav.js'
+import { isMobile } from '../js/utils/is_mobile.js'
 
 /**
  * demo_main.js
@@ -15,47 +15,24 @@ import { isMobile } from './utils/is_mobile.js'
 
 const SF_NAME = "SGM.sf3";
 const TITLE = "SpessaSynth: SoundFont2 Javascript Synthetizer Online Demo";
-
-// check for chrome android
-if(isMobile())
-{
-    if(!!window.chrome)
-    {
-        alert("Chrome Mobile detected.\nSpessaSynth performs poorly on Chrome Mobile, consider using Firefox Android instead.");
-    }
-}
-
-// check for safari
-if(!navigator.requestMIDIAccess)
-{
-    alert("MIDI Inputs are not supported by this browser, consider using Chrome or Firefox.");
-}
-
 /**
  * @type {HTMLHeadingElement}
  */
 let titleMessage = document.getElementById("title");
 
+
 /**
  * @type {HTMLInputElement}
  */
 let fileInput = document.getElementById("midi_file_input");
-fileInput.onclick = e => {
-    e.preventDefault();
-    titleMessage.innerText = "You need to upload a SoundFont first";
-}
 
 
 let sfInput = document.getElementById("sf_file_input");
-// remove the old files
-fileInput.value = "";
-fileInput.focus();
 
 /**
  * @type {HTMLButtonElement}
  */
 const exportButton = document.getElementById("export_button");
-exportButton.style.display = "none";
 
 // IndexedDB stuff
 const dbName = "spessasynth-db";
@@ -135,7 +112,7 @@ async function demoInit()
     try {
         window.soundFontParser = soundFontBuffer;
         if(!loadedFromDb) {
-            saveSoundFontToIndexedDB(soundFontBuffer).then();
+            await saveSoundFontToIndexedDB(soundFontBuffer);
         }
     }
     catch (e)
@@ -144,7 +121,7 @@ async function demoInit()
         console.log(e);
         return;
     }
-    prepareUI();
+    await prepareUI();
 }
 
 async function fetchFont(url, callback)
@@ -270,44 +247,7 @@ async function startMidi(midiFiles)
     }
 }
 
-/**
- * @param e {{target: HTMLInputElement}}
- * @return {Promise<void>}
- */
-sfInput.onchange = async e => {
-    if (!e.target.files[0]) {
-        return;
-    }
-    /**
-     * @type {File}
-     */
-    const file = e.target.files[0];
-
-    document.getElementById("sf_upload").firstElementChild.innerText = file.name;
-    const title = titleMessage.innerText;
-    titleMessage.innerText = "Parsing SoundFont...";
-    // parse the soundfont
-    let soundFontBuffer;
-    try {
-        soundFontBuffer = await file.arrayBuffer();
-    }
-    catch (e) {
-        window.alert(manager.localeManager.getLocaleString("locale.outOfMemory"));
-        throw e;
-    }
-    try {
-        window.soundFontParser = soundFontBuffer;
-        saveSoundFontToIndexedDB(soundFontBuffer).then();
-    } catch (e) {
-        titleMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
-        console.log(e);
-        return;
-    }
-    titleMessage.innerText = title;
-    manager.reloadSf(window.soundFontParser);
-}
-
-function prepareUI()
+async function prepareUI()
 {
     titleMessage.innerText = TITLE;
 
@@ -333,10 +273,11 @@ function prepareUI()
 
     // prepare midi interface
     window.manager = new Manager(audioContextMain, soundFontParser);
+    await manager.ready;
 
     if(fileInput.files[0])
     {
-        startMidi(fileInput.files).then();
+        await startMidi(fileInput.files);
     }
     else
     {
@@ -387,9 +328,12 @@ function saveSettings(settingsData)
     SpessaSynthInfo("saved as", settingsData)
 }
 
-// expose the function
+// INIT STARTS HERE
+
+// expose the save function
 window.saveSettings = saveSettings;
 
+// load saved settings
 const saved = localStorage.getItem("spessasynth-settings");
 if(saved !== null) {
     /**
@@ -401,4 +345,66 @@ if(saved !== null) {
     });
 }
 
-demoInit().then();
+// remove the old files
+fileInput.value = "";
+fileInput.focus();
+// set initial styles
+exportButton.style.display = "none";
+titleMessage.innerText = "Loading...";
+document.getElementById("sf_upload").style.display = "none";
+document.getElementById("file_upload").style.display = "none";
+
+demoInit().then(() => {
+    document.getElementById("sf_upload").style.display = "flex";
+    document.getElementById("file_upload").style.display = "flex";
+    const loading = document.getElementsByClassName("loading")[0];
+    loading.style.opacity = "0";
+    setTimeout(() => {
+        loading.style.display = "none";
+
+        // check for chrome android
+        if(isMobile())
+        {
+            if(window.chrome)
+            {
+                alert("Chrome Mobile detected.\nSpessaSynth performs poorly on Chrome Mobile, consider using Firefox Android instead.");
+            }
+        }
+    }, 100)
+    /**
+     * @param e {{target: HTMLInputElement}}
+     * @return {Promise<void>}
+     */
+    sfInput.onchange = async e => {
+        if (!e.target.files[0]) {
+            return;
+        }
+        /**
+         * @type {File}
+         */
+        const file = e.target.files[0];
+
+        document.getElementById("sf_upload").firstElementChild.innerText = file.name;
+        const title = titleMessage.innerText;
+        titleMessage.innerText = "Parsing SoundFont...";
+        // parse the soundfont
+        let soundFontBuffer;
+        try {
+            soundFontBuffer = await file.arrayBuffer();
+        }
+        catch (e) {
+            window.alert(manager.localeManager.getLocaleString("locale.warnings.outOfMemory"));
+            throw e;
+        }
+        try {
+            window.soundFontParser = soundFontBuffer;
+            saveSoundFontToIndexedDB(soundFontBuffer).then();
+        } catch (e) {
+            titleMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
+            console.log(e);
+            return;
+        }
+        titleMessage.innerText = title;
+        manager.reloadSf(window.soundFontParser);
+    }
+});

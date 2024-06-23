@@ -37,6 +37,8 @@ import { SpessaSynthInfo } from '../../../utils/loggin.js'
 import { applySynthesizerSnapshot, sendSynthesizerSnapshot } from '../worklet_methods/snapshot.js'
 import { consoleColors } from '../../../utils/other.js'
 import { releaseVoice, renderVoice, voiceKilling } from '../worklet_methods/voice_control.js'
+import { returnMessageType } from './worklet_message.js'
+import { stbvorbis } from '../../../utils/stbvorbis_sync.js'
 
 
 /**
@@ -156,6 +158,13 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
                 this.sequencer.loop = false;
             }
         }
+
+        stbvorbis.isInitialized.then(() => {
+            this.post({
+                messageType: returnMessageType.ready,
+                messageData: undefined
+            });
+        });
     }
 
     debugMessage()

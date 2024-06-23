@@ -1,6 +1,6 @@
 import { Sequencer } from '../../../spessasynth_lib/sequencer/sequencer.js'
 import { formatTime } from '../../../spessasynth_lib/utils/other.js'
-import { supportedEncodings } from '../../utils/encodings.js'
+import { supportedEncodings } from '../utils/encodings.js'
 import { getBackwardSvg, getForwardSvg, getLoopSvg, getPauseSvg, getPlaySvg, getTextSvg } from '../icons.js'
 import { messageTypes } from '../../../spessasynth_lib/midi_parser/midi_message.js'
 import { getSeqUIButton } from './sequi_button.js'

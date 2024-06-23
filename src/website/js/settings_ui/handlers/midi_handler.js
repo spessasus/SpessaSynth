@@ -2,11 +2,18 @@
  * @param handler {MIDIDeviceHandler}
  * @param sequi {SequencerUI}
  * @param synthui {SynthetizerUI}
- * @this {Settings}
+ * @this {SpessaSynthSettings}
  * @private
  */
 export function _createMidiSettingsHandler(handler, sequi, synthui)
 {
+    if(!window.isLocalEdition)
+    {
+        if(!navigator.requestMIDIAccess)
+        {
+            alert(this.locale.getLocaleString("locale.warnings.noMidiSupport"))
+        }
+    }
     handler.createMIDIDeviceHandler().then(success => {
         if(success)
         {
@@ -23,7 +30,7 @@ export function _createMidiSettingsHandler(handler, sequi, synthui)
 /**
  * @param handler {MIDIDeviceHandler}
  * @param synth {Synthetizer}
- * @this {Settings}
+ * @this {SpessaSynthSettings}
  * @private
  */
 export function _createMidiInputHandler(handler, synth)
@@ -59,7 +66,7 @@ export function _createMidiInputHandler(handler, synth)
  * note that using sequi allows us to obtain the sequencer after it has been created
  * @param handler {MIDIDeviceHandler}
  * @param sequi {SequencerUI}
- * @this {Settings}
+ * @this {SpessaSynthSettings}
  * @private
  */
 export function _createMidiOutputHandler(handler, sequi)
