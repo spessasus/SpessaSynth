@@ -26,9 +26,9 @@ if(isMobile())
 }
 
 // check for safari
-if(/constructor/i.test(window.HTMLElement))
+if(!navigator.requestMIDIAccess)
 {
-    alert("Safari Detected.\n MIDI Inputs are not supported by this browser, consider using Chrome or Firefox.");
+    alert("MIDI Inputs are not supported by this browser, consider using Chrome or Firefox.");
 }
 
 /**

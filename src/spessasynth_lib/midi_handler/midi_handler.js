@@ -13,6 +13,10 @@ export class MIDIDeviceHandler
 {
     constructor()
     {}
+
+    /**
+     * @returns {Promise<boolean>} if succeded
+     */
     async createMIDIDeviceHandler()
     {
         /**
@@ -31,11 +35,13 @@ export class MIDIDeviceHandler
                 this.inputs = response.inputs;
                 this.outputs = response.outputs;
                 SpessaSynthInfo("%cMIDI handler created!", consoleColors.recognized);
+                return true;
             }
             catch (e) {
                 SpessaSynthWarn(`Could not get MIDI Devices:`, e);
                 this.inputs = [];
                 this.outputs = [];
+                return false
             }
         }
         else
@@ -43,6 +49,7 @@ export class MIDIDeviceHandler
             SpessaSynthWarn("Web MIDI Api not supported!", consoleColors.unrecognized);
             this.inputs = [];
             this.outputs = [];
+            return false
         }
     }
 

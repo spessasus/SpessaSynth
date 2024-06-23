@@ -1,3 +1,6 @@
+import { SpessaSynthInfo } from '../../../spessasynth_lib/utils/loggin.js'
+import { consoleColors } from '../../../spessasynth_lib/utils/other.js'
+
 /**
  * @param synth {Synthetizer}
  * @this {Renderer}

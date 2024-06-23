@@ -445,9 +445,16 @@ export class Settings
      */
     _createMidiSettingsHandler(handler, sequi, synthui)
     {
-        handler.createMIDIDeviceHandler().then(() => {
-            this._createMidiInputHandler(handler, synthui.synth);
-            this._createMidiOutputHandler(handler, sequi);
+        handler.createMIDIDeviceHandler().then(success => {
+            if(success)
+            {
+                this._createMidiInputHandler(handler, synthui.synth);
+                this._createMidiOutputHandler(handler, sequi);
+            }
+            else
+            {
+                document.getElementById("midi_settings").style.display = "none";
+            }
         });
     }
 

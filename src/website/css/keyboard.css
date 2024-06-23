@@ -16,6 +16,7 @@
     user-select: none;
     transform-origin: center top;
     --pressed-transform: matrix3d(1,0,0.00,0,0.00,1,0.00,0.0007,0,0,1,0,0,0,0,1);
+    cursor: default;
 }
 
 #keyboard .flat_key{

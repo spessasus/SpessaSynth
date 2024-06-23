@@ -67,7 +67,7 @@ export const settingsHtml = `
     </div>
     
     
-    <div class='settings_group'>
+    <div class='settings_group' id='midi_settings'>
         <h2 translate-path='locale.settings.midiSettings.title'></h2>
         <p translate-path-title='locale.settings.midiSettings.midiInput'></p>
         <select id='midi_input_selector'>
