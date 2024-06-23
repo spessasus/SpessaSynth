@@ -1,3 +1,5 @@
+const STABILIZE_WAVEFORMS_LENGTH_DIVIDER = 1.5;
+
 /**
  * @this {Renderer}
  */
@@ -49,7 +51,7 @@ export function renderWaveforms()
         this.drawingContext.beginPath();
         if(this.stabilizeWaveforms)
         {
-            const length = waveform.length / 2;
+            const length = waveform.length / STABILIZE_WAVEFORMS_LENGTH_DIVIDER;
             // Oscilloscope triggering
             let triggerPoint = 0;
             const threshold = 0; // Adjust this if necessary

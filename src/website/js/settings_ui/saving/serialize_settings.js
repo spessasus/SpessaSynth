@@ -12,7 +12,7 @@ export function _serializeSettings()
             waveformThickness: this.renderer.lineThickness,
             sampleSize: this.renderer.normalAnalyserFft,
             amplifier: this.renderer.waveMultiplier,
-            renderWaveforms:  this.renderer.renderNotes,
+            renderWaveforms:  this.renderer.renderAnalysers,
             renderNotes: this.renderer.renderNotes,
             drawActiveNotes: this.renderer.drawActiveNotes,
             showVisualPitch: this.renderer.showVisualPitch,
