@@ -1,3 +1,5 @@
+import { isMobile } from '../../utils/is_mobile.js'
+
 /**
  * @param handler {MIDIDeviceHandler}
  * @param sequi {SequencerUI}
@@ -7,7 +9,7 @@
  */
 export function _createMidiSettingsHandler(handler, sequi, synthui)
 {
-    if(!window.isLocalEdition)
+    if(!window.isLocalEdition && !isMobile())
     {
         if(!navigator.requestMIDIAccess)
         {
