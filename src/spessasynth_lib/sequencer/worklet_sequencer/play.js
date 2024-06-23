@@ -227,9 +227,10 @@ export function play(resetTime = false)
  * Coverts ticks to time in seconds
  * @param changes {{tempo: number, ticks: number}[]}
  * @param ticks {number}
+ * @param division {number}
  * @returns {number}
  */
-function ticksToSeconds(changes, ticks)
+function ticksToSeconds(changes, ticks, division)
 {
     if (ticks <= 0) {
         return 0;
@@ -239,7 +240,7 @@ function ticksToSeconds(changes, ticks)
     let tempo = changes.find(v => v.ticks < ticks);
 
     let timeSinceLastTempo = ticks - tempo.ticks;
-    return this._ticksToSeconds(ticks - timeSinceLastTempo) + (timeSinceLastTempo * 60) / (tempo.tempo * this.timeDivision);
+    return ticksToSeconds(changes, ticks - timeSinceLastTempo, division) + (timeSinceLastTempo * 60) / (tempo.tempo * division);
 }
 
 /**
@@ -248,7 +249,7 @@ function ticksToSeconds(changes, ticks)
  */
 export function setTimeTicks(ticks)
 {
-    this.post(WorkletSequencerReturnMessageType.timeChange, ticksToSeconds(this.midiData.tempoChanges, ticks));
+    this.post(WorkletSequencerReturnMessageType.timeChange, ticksToSeconds(this.midiData.tempoChanges, ticks, this.midiData.timeDivision));
     this.stop();
     this.playingNotes = [];
     this.pausedTime = undefined;
