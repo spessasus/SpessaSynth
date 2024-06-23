@@ -1,8 +1,7 @@
 {
   "name": "SpessaSynth",
-  "version": "3.2.1",
+  "version": "3.2.4",
   "dependencies": {
-    "@types/webaudioapi": "^0.0.27",
     "express": "^4.18.2",
     "open": "^9.1.0"
   },
