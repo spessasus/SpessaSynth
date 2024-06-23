@@ -2,6 +2,7 @@ import { midiControllers } from '../../../midi_parser/midi_message.js'
 import { SoundFont2 } from '../../../soundfont/soundfont_parser.js'
 import { clearSamplesList } from '../worklet_utilities/worklet_voice.js'
 import { generatorTypes } from '../../../soundfont/chunk/generators.js'
+import { returnMessageType } from '../worklet_utilities/worklet_message.js'
 
 /**
  * executes a program change
@@ -95,12 +96,22 @@ export function reloadSoundFont(buffer)
 {
     this.stopAllChannels(true);
     delete this.soundfont;
+
+
+    try {
+        this.soundfont = new SoundFont2(buffer);
+    }
+    catch (e)
+    {
+        this.post({
+            messageType: returnMessageType.soundfontError,
+            messageData: e
+        });
+        return;
+    }
     clearSamplesList();
     delete this.workletDumpedSamplesList;
     this.workletDumpedSamplesList = [];
-
-
-    this.soundfont = new SoundFont2(buffer);
     this.defaultPreset = this.soundfont.getPreset(0, 0);
     this.drumPreset = this.soundfont.getPreset(128, 0);
 

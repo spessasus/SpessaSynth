@@ -107,7 +107,17 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
         /**
          * @type {SoundFont2}
          */
-        this.soundfont = new SoundFont2(options.processorOptions.soundfont);
+        try {
+            this.soundfont = new SoundFont2(options.processorOptions.soundfont);
+        }
+        catch (e)
+        {
+            this.post({
+                messageType: returnMessageType.soundfontError,
+                messageData: e
+            });
+            throw e;
+        }
         this.sendPresetList();
 
         this.defaultPreset = this.soundfont.getPreset(0, 0);

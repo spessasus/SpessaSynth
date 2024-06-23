@@ -52,6 +52,8 @@
  *     LSB: number
  * }} PitchWheelCallback
  *
+ * @typedef {string} SoundfontErrorCallback
+ *
  *
  * @typedef {
  *     NoteOnCallback |
@@ -62,6 +64,7 @@
  *     MuteChannelCallback |
  *     PresetListChangeCallback |
  *     PitchWheelCallback |
+ *     SoundfontErrorCallback |
  *     undefined
  * } EventCallbackData
  */
@@ -78,7 +81,8 @@
  * "newchannel"|
  * "mutechannel"|
  * "presetlistchange"|
- * "allcontrollerreset"} EventTypes
+ * "allcontrollerreset"|
+ * "soundfonterror"} EventTypes
  */
 export class EventHandler
 {
@@ -101,7 +105,8 @@ export class EventHandler
             "newchannel": {},
             "mutechannel": {},
             "presetlistchange": {},
-            "allcontrollerreset": {}
+            "allcontrollerreset": {},
+            "soundfonterror": {}
         };
     }
 

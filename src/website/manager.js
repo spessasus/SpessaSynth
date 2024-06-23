@@ -126,6 +126,11 @@ const RENDER_AUDIO_TIME_INTERVAL = 500;
     }
 
     /**
+     * @type {function(string)}
+     */
+    sfError;
+
+    /**
      * @param context {BaseAudioContext}
      * @param soundFont {ArrayBuffer}
      * @returns {Promise<void>}
@@ -183,6 +188,12 @@ const RENDER_AUDIO_TIME_INTERVAL = 500;
                 reverbImpulseResponse:  this.impulseResponse,
                 reverbEnabled: true
             });
+        this.synth.eventHandler.addEvent("soundfonterror", "manager-sf-error", e => {
+            if(this.sfError)
+            {
+                this.sfError(e);
+            }
+        });
 
         // set up midi access
         this.midHandler = new MIDIDeviceHandler();

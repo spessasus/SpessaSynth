@@ -9,7 +9,7 @@ import {
     returnMessageType,
     workletMessageType,
 } from './worklet_system/worklet_utilities/worklet_message.js'
-import { SpessaSynthInfo } from '../utils/loggin.js'
+import { SpessaSynthInfo, SpessaSynthWarn } from '../utils/loggin.js'
 import { DEFAULT_EFFECTS_CONFIG } from './audio_effects/effects_config.js'
 
 
@@ -209,6 +209,11 @@ export class Synthetizer {
             case returnMessageType.ready:
                 this._resolveReady();
                 SpessaSynthInfo("%cSpessaSynth is ready!", consoleColors.recognized);
+                break;
+
+            case returnMessageType.soundfontError:
+                SpessaSynthWarn(new Error(messageData));
+                this.eventHandler.callEvent("soundfonterror", messageData);
         }
     }
 

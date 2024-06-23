@@ -82,6 +82,31 @@ async function loadLastSoundFontFromDatabase()
     })
 }
 
+/**
+ * @param arr {ArrayBuffer}
+ */
+async function saveSoundFontToIndexedDB(arr)
+{
+    initDatabase(db => {
+        const transaction = db.transaction([objectStoreName], "readwrite");
+        const objectStore = transaction.objectStore(objectStoreName);
+        try {
+            const request = objectStore.put({ id: "buffer", data: arr });
+            request.onsuccess = () => {
+                SpessaSynthInfo("SoundFont stored successfully");
+            };
+
+            request.onerror = e => {
+                console.error("Error saving soundfont", e)
+            }
+        }
+        catch (e)
+        {
+            SpessaSynthWarn("Failed saving soundfont:", e);
+        }
+    });
+}
+
 // attempt to load soundfont from indexed db
 async function demoInit()
 {
@@ -103,22 +128,78 @@ async function demoInit()
     {
         SpessaSynthInfo("Loaded the soundfont from the database succesfully");
     }
+    loadingMessage.textContent = "Loaded soundfont!"
+    window.soundFontParser = soundFontBuffer;
+    if(!loadedFromDb) {
+        await saveSoundFontToIndexedDB(soundFontBuffer);
+    }
 
-    // parse the soundfont
+    titleMessage.innerText = TITLE;
     try {
-        window.soundFontParser = soundFontBuffer;
-        if(!loadedFromDb) {
-            await saveSoundFontToIndexedDB(soundFontBuffer);
+        /**
+         *
+         * @type {AudioContextConstructor}
+         */
+        const context = window.AudioContext || window.webkitAudioContext;
+        window.audioContextMain = new context({ sampleRate: 44100 });
+    }
+    catch (e) {
+        loadingMessage.textContent = "Your browser doesn't support WebAudio.";
+        throw e;
+
+    }
+
+    if(window.audioContextMain.state !== "running")
+    {
+        document.addEventListener("mousedown", () => {
+            if(window.audioContextMain.state !== "running") {
+                window.audioContextMain.resume().then();
+            }
+
+        })
+    }
+
+    // prepare midi interface
+    loadingMessage.textContent = "Initializing synthesizer...";
+    window.manager = new Manager(audioContextMain, soundFontParser);
+    window.manager.sfError = e => {
+        if(loadedFromDb)
+        {
+            SpessaSynthWarn("Invalid soundfont in the database. Resetting.")
+            // restore to default
+            initDatabase(db => {
+                const transaction = db.transaction([objectStoreName], "readwrite");
+                const objectStore = transaction.objectStore(objectStoreName);
+                const request = objectStore.delete("buffer");
+                request.onsuccess = () => {
+                    location.reload();
+                }
+            });
+
+        }
+        else
+        {
+            titleMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
+        }
+        loadingMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
+    }
+    await manager.ready;
+
+    if(fileInput.files[0])
+    {
+        await startMidi(fileInput.files);
+    }
+    else
+    {
+        fileInput.onclick = undefined;
+        fileInput.onchange = () => {
+            if(fileInput.files[0])
+            {
+                startMidi(fileInput.files).then();
+            }
         }
     }
-    catch (e)
-    {
 
-        titleMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
-        console.log(e);
-        return;
-    }
-    await prepareUI();
     loadingMessage.textContent = "Ready!";
 }
 
@@ -243,75 +324,6 @@ async function startMidi(midiFiles)
         a.download = `${window.manager.seq.midiData.midiName || 'song'}.wav`;
         a.click();
     }
-}
-
-async function prepareUI()
-{
-    titleMessage.innerText = TITLE;
-    try {
-        const context = window.AudioContext || window.webkitAudioContext;
-        window.audioContextMain = new context({ sampleRate: 44100 });
-    }
-    catch (e) {
-        titleMessage.innerHTML = "Your browser doesn't support WebAudio.";
-        throw e;
-
-    }
-
-    if(window.audioContextMain.state !== "running")
-    {
-        document.addEventListener("mousedown", () => {
-            if(window.audioContextMain.state !== "running") {
-                window.audioContextMain.resume().then();
-            }
-
-        })
-    }
-
-    // prepare midi interface
-    loadingMessage.textContent = "Initializing synthesizer...";
-    window.manager = new Manager(audioContextMain, soundFontParser);
-    await manager.ready;
-
-    if(fileInput.files[0])
-    {
-        await startMidi(fileInput.files);
-    }
-    else
-    {
-        fileInput.onclick = undefined;
-        fileInput.onchange = () => {
-            if(fileInput.files[0])
-            {
-                startMidi(fileInput.files).then();
-            }
-        }
-    }
-}
-
-/**
- * @param arr {ArrayBuffer}
- */
-async function saveSoundFontToIndexedDB(arr)
-{
-    initDatabase(db => {
-        const transaction = db.transaction([objectStoreName], "readwrite");
-        const objectStore = transaction.objectStore(objectStoreName);
-        try {
-            const request = objectStore.put({ id: "buffer", data: arr });
-            request.onsuccess = () => {
-                SpessaSynthInfo("SoundFont stored successfully");
-            };
-
-            request.onerror = e => {
-                console.error("Error saving soundfont", e)
-            }
-        }
-        catch (e)
-        {
-            SpessaSynthWarn("Failed saving soundfont:", e);
-        }
-    });
 }
 
 

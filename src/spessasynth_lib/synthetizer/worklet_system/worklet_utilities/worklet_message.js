@@ -79,6 +79,7 @@ export const ALL_CHANNELS_OR_DIFFERENT_ACTION = -1;
  *     eventData: any
  * }|ChannelProperty[]
  * |PresetListElement[]
+ * |string
  * |{messageType: WorkletSequencerReturnMessageType, messageData: any}
  * |SynthesizerSnapshot} messageData - the message's data
  *
@@ -88,6 +89,7 @@ export const ALL_CHANNELS_OR_DIFFERENT_ACTION = -1;
  * 3 - sequencer specific           -> [messageType<WorkletSequencerReturnMessageType> messageData<any>] note: refer to sequencer_message.js
  * 4 - synthesizer snapshot         -> snapshot<SynthesizerSnapshot> note: refer to snapshot.js
  * 5 - ready                        -> (no data)
+ * 6 - soundfontError               -> errorMessage<string>
  */
 
 /**
@@ -100,4 +102,5 @@ export const returnMessageType = {
     sequencerSpecific: 3,
     synthesizerSnapshot: 4,
     ready: 5,
+    soundfontError: 6,
 }
