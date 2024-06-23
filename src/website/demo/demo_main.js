@@ -319,7 +319,7 @@ async function startMidi(midiFiles)
         const duration = window.manager.seq.midiData.duration;
         const buffer = await window.manager.renderAudio((progress, speed) => {
             const estimated = (1 - progress) / speed * duration;
-            titleMessage.innerText = `${message} ${Math.round(progress * 100)}%\n ${estimatedMessage} ${formatTime(estimated).time}s`
+            titleMessage.innerText = `${message} ${Math.round(progress * 100)}%\n ${estimatedMessage} ${formatTime(estimated).time}`
         });
 
         titleMessage.textContent = title;
