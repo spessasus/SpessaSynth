@@ -38,5 +38,10 @@ export const rendererSettingsLocale = {
     toggleDrawingVisualPitch: {
         title: "Toggle drawing visual pitch",
         description: "Toggle notes sliding left or right when the pitch wheel is applied"
+    },
+
+    toggleStabilizeWaveforms: {
+        title: "Stabilize waveforms",
+        description: "Enable oscilloscope triggering"
     }
 }

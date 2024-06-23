@@ -38,5 +38,10 @@ export const rendererSettingsLocale = {
     toggleDrawingVisualPitch: {
         title: "Przełącz wizualizację wysokości tonu",
         description: "Przełącz przesuwanie nut w lewo lub w prawo gdy wysokość nut jest zmieniana"
+    },
+
+    toggleStabilizeWaveforms: {
+        title: "Przełącz stabilizację fal",
+        description: "Przełącz stabilizowanie fal dźwiękowych"
     }
 }

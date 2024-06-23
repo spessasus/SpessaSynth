@@ -38,5 +38,10 @@ export const rendererSettingsLocale = {
     toggleDrawingVisualPitch: {
         title: "ビジュアルピッチ描画の切り替え",
         description: "ピッチホイールが適用されたときにノートが左右にスライドする描画を切り替えます"
+    },
+
+    toggleStabilizeWaveforms: {
+        title: "波形を安定させる",
+        description: "オーディオ波形を安定させる設定を切り替え、波形を固定します。"
     }
 }

@@ -2,7 +2,7 @@
  * @enum {number}
  * @property {number} noteOff                    - 0  -> midiNote<number>: Every message needs a channel number (if not relevant or all, set to -1)
  * @property {number} noteOn                     - 1  -> [midiNote<number>, velocity<number>, enableDebugging<boolean>]
- * @property {number} ccChange                   - 2  -> [ccNumber<number>, ccValue<number>]
+ * @property {number} ccChange                   - 2  -> [ccNumber<number>, ccValue<number>, force<boolean>]
  * @property {number} programChange              - 3  -> [programNumber<number>, userChange<boolean>]
  * @property {number} killNote                   - 4  -> midiNote<number>
  * @property {number} ccReset                    - 5  -> (no data) note: if channel is -1 then reset all channels

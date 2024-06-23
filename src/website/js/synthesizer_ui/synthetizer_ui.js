@@ -545,10 +545,10 @@ export class SynthetizerUI
             this.locale,
             LOCALE_PATH + "channelController.presetSelector.description",
             [channelNumber + 1],
-            presetName => {
+            async presetName => {
                 const data = JSON.parse(presetName);
                 this.synth.lockController(channelNumber, ALL_CHANNELS_OR_DIFFERENT_ACTION, false);
-                this.synth.controllerChange(channelNumber, midiControllers.bankSelect, data[0]);
+                this.synth.controllerChange(channelNumber, midiControllers.bankSelect, data[0], true);
                 this.synth.programChange(channelNumber, data[1], true);
                 presetSelector.mainDiv.classList.add("locked_selector");
                 this.synth.lockController(channelNumber, ALL_CHANNELS_OR_DIFFERENT_ACTION, true);

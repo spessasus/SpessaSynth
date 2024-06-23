@@ -47,16 +47,39 @@ export function renderWaveforms()
         this.drawingContext.lineWidth = this.lineThickness;
         this.drawingContext.strokeStyle = this.channelColors[channelNumber];
         this.drawingContext.beginPath();
+        if(this.stabilizeWaveforms)
+        {
+            const length = waveform.length / 2;
+            // Oscilloscope triggering
+            let triggerPoint = 0;
+            const threshold = 0; // Adjust this if necessary
+            for (let i = 1; i < waveform.length; i++) {
+                if (waveform[i - 1] < threshold && waveform[i] >= threshold) {
+                    triggerPoint = i;
+                    break;
+                }
+            }
+            const step = waveWidth / length;
 
-        const step = waveWidth / waveform.length;
+            let xPos = relativeX;
+            for (let i = triggerPoint; i < triggerPoint + length; i++) {
+                this.drawingContext.lineTo(
+                    xPos,
+                    relativeY + waveform[i] * multiplier);
+                xPos += step;
+            }
+        }
+        else
+        {
+            const step = waveWidth / waveform.length;
 
-        let xPos = relativeX;
-
-        for (let i = 0; i < waveform.length; i++) {
-            this.drawingContext.lineTo(
-                xPos,
-                relativeY + waveform[i] * multiplier);
-            xPos += step;
+            let xPos = relativeX;
+            for (let i = 0; i < waveform.length; i++) {
+                this.drawingContext.lineTo(
+                    xPos,
+                    relativeY + waveform[i] * multiplier);
+                xPos += step;
+            }
         }
 
         this.drawingContext.stroke();

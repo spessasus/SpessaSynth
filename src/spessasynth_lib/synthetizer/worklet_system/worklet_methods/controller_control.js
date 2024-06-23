@@ -15,9 +15,10 @@ import { SYNTHESIZER_GAIN } from '../worklet_utilities/main_processor.js'
  * @param channel {number}
  * @param controllerNumber {number}
  * @param controllerValue {number}
+ * @param force {boolean}
  * @this {SpessaSynthProcessor}
  */
-export function controllerChange(channel, controllerNumber, controllerValue)
+export function controllerChange(channel, controllerNumber, controllerValue, force = false)
 {
     /**
      * @type {WorkletProcessorChannel}
@@ -34,45 +35,43 @@ export function controllerChange(channel, controllerNumber, controllerValue)
 
         case midiControllers.bankSelect:
             let bankNr = controllerValue;
-            switch (this.system)
+            if(!force)
             {
-                case "gm":
-                    // gm ignores bank select
-                    SpessaSynthInfo(`%cIgnoring the Bank Select (${controllerValue}), as the synth is in GM mode.`, consoleColors.info);
-                    return;
+                switch (this.system) {
+                    case "gm":
+                        // gm ignores bank select
+                        SpessaSynthInfo(`%cIgnoring the Bank Select (${controllerValue}), as the synth is in GM mode.`, consoleColors.info);
+                        return;
 
-                case "xg":
-                    // for xg, if msb is 127, then it's drums
-                    if (bankNr === 127)
-                    {
-                        channelObject.drumChannel = true;
-                        this.callEvent("drumchange", {
-                            channel: channel,
-                            isDrumChannel: true
-                        });
-                    }
-                    break;
+                    case "xg":
+                        // for xg, if msb is 127, then it's drums
+                        if (bankNr === 127) {
+                            channelObject.drumChannel = true;
+                            this.callEvent("drumchange", {
+                                channel: channel,
+                                isDrumChannel: true
+                            });
+                        }
+                        break;
 
-                case "gm2":
-                    if(bankNr === 120)
-                    {
-                        channelObject.drumChannel = true;
-                        this.callEvent("drumchange", {
-                            channel: channel,
-                            isDrumChannel: true
-                        });
-                    }
-            }
+                    case "gm2":
+                        if (bankNr === 120) {
+                            channelObject.drumChannel = true;
+                            this.callEvent("drumchange", {
+                                channel: channel,
+                                isDrumChannel: true
+                            });
+                        }
+                }
 
-            if(channelObject.drumChannel)
-            {
-                // 128 for percussion channel
-                bankNr = 128;
-            }
-            if(bankNr === 128 && !channelObject.drumChannel)
-            {
-                // if channel is not for percussion, default to bank current
-                bankNr = channelObject.midiControllers[midiControllers.bankSelect];
+                if (channelObject.drumChannel) {
+                    // 128 for percussion channel
+                    bankNr = 128;
+                }
+                if (bankNr === 128 && !channelObject.drumChannel) {
+                    // if channel is not for percussion, default to bank current
+                    bankNr = channelObject.midiControllers[midiControllers.bankSelect];
+                }
             }
 
             channelObject.midiControllers[midiControllers.bankSelect] = bankNr;

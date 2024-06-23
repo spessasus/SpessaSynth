@@ -356,15 +356,16 @@ export class Synthetizer {
      * @param channel {number} usually 0-15: the channel to change the controller
      * @param controllerNumber {number} 0-127 the MIDI CC number
      * @param controllerValue {number} 0-127 the controller value
+     * @param force {boolean} forces the controller change, even if it's locked or gm system is set and the cc is bank select
      */
-    controllerChange(channel, controllerNumber, controllerValue)
+    controllerChange(channel, controllerNumber, controllerValue, force=false)
     {
         controllerValue = Math.floor(controllerValue);
         controllerNumber = Math.floor(controllerNumber);
         this.post({
             channelNumber: channel,
             messageType: workletMessageType.ccChange,
-            messageData: [controllerNumber, controllerValue]
+            messageData: [controllerNumber, controllerValue, force]
         });
     }
 

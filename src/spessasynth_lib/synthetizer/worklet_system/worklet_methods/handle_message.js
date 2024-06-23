@@ -31,7 +31,7 @@ export function handleMessage(message)
             break;
 
         case workletMessageType.ccChange:
-            this.controllerChange(channel, data[0], data[1]);
+            this.controllerChange(channel, data[0], data[1], data[2]);
             break;
 
         case workletMessageType.customcCcChange:

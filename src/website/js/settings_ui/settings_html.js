@@ -45,6 +45,8 @@ export const settingsHtml = `
         <button class='seamless_button' id='active_note_toggler' translate-path-title='locale.settings.rendererSettings.toggleDrawingActiveNotes'></button>
         <br/>
         <button class='seamless_button' id='visual_pitch_toggler' translate-path-title='locale.settings.rendererSettings.toggleDrawingVisualPitch'></button>
+        <br/>
+        <button class='seamless_button' id='stabilize_waveforms_toggler' translate-path-title='locale.settings.rendererSettings.toggleStabilizeWaveforms'></button>
     </div>
 
 
