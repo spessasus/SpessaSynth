@@ -19,20 +19,17 @@ const TITLE = "SpessaSynth: SoundFont2 Javascript Synthetizer Online Demo";
  * @type {HTMLHeadingElement}
  */
 let titleMessage = document.getElementById("title");
-
-
 /**
  * @type {HTMLInputElement}
  */
 let fileInput = document.getElementById("midi_file_input");
-
-
 let sfInput = document.getElementById("sf_file_input");
-
 /**
  * @type {HTMLButtonElement}
  */
 const exportButton = document.getElementById("export_button");
+const loading = document.getElementsByClassName("loading")[0];
+const loadingMessage = document.getElementById("loading_message");
 
 // IndexedDB stuff
 const dbName = "spessasynth-db";
@@ -95,11 +92,10 @@ async function demoInit()
         SpessaSynthWarn("Failed to load from db, fetching online instead");
         loadedFromDb = false;
         const progressBar = document.getElementById("progress_bar");
-        titleMessage.innerText = "Loading bundled SoundFont, please wait.";
+        loadingMessage.innerText = "Loading bundled soundfont...";
         soundFontBuffer = await fetchFont(`soundfonts/${SF_NAME}`, percent =>
         {
-            titleMessage.innerText = `Loading bundled SoundFont (${percent}%), please wait.`;
-            progressBar.style.width = `${(percent / 100) * titleMessage.offsetWidth}px`
+            loadingMessage.textContent =`Loading bundled SoundFont.. ${percent}%`;
         });
         progressBar.style.width = "0";
     }
@@ -117,11 +113,13 @@ async function demoInit()
     }
     catch (e)
     {
+
         titleMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
         console.log(e);
         return;
     }
     await prepareUI();
+    loadingMessage.textContent = "Ready!";
 }
 
 async function fetchFont(url, callback)
@@ -250,7 +248,6 @@ async function startMidi(midiFiles)
 async function prepareUI()
 {
     titleMessage.innerText = TITLE;
-
     try {
         const context = window.AudioContext || window.webkitAudioContext;
         window.audioContextMain = new context({ sampleRate: 44100 });
@@ -272,6 +269,7 @@ async function prepareUI()
     }
 
     // prepare midi interface
+    loadingMessage.textContent = "Initializing synthesizer...";
     window.manager = new Manager(audioContextMain, soundFontParser);
     await manager.ready;
 
@@ -350,14 +348,12 @@ fileInput.value = "";
 fileInput.focus();
 // set initial styles
 exportButton.style.display = "none";
-titleMessage.innerText = "Loading...";
 document.getElementById("sf_upload").style.display = "none";
 document.getElementById("file_upload").style.display = "none";
 
 demoInit().then(() => {
     document.getElementById("sf_upload").style.display = "flex";
     document.getElementById("file_upload").style.display = "flex";
-    const loading = document.getElementsByClassName("loading")[0];
     loading.style.opacity = "0";
     setTimeout(() => {
         loading.style.display = "none";

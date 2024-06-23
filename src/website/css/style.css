@@ -198,6 +198,7 @@ button{
 }
 
 .loading {
+    flex-direction: column;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -211,6 +212,7 @@ button{
 }
 
 .loading svg {
+    margin: 3em;
     animation: spin 1s ease-in-out infinite;
 }
 
