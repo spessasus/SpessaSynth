@@ -7,6 +7,7 @@ import { formatTime, formatTitle } from '../../spessasynth_lib/utils/other.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../../spessasynth_lib/utils/loggin.js'
 import { audioBufferToWav } from '../../spessasynth_lib/utils/buffer_to_wav.js'
 import { isMobile } from '../js/utils/is_mobile.js'
+import { getExclamationSvg } from '../js/icons.js'
 
 /**
  * demo_main.js
@@ -82,6 +83,12 @@ async function loadLastSoundFontFromDatabase()
     })
 }
 
+function showExclamation()
+{
+    loadingMessage.previousElementSibling.outerHTML = getExclamationSvg(256);
+    loadingMessage.previousElementSibling.style.animation = "none";
+}
+
 /**
  * @param arr {ArrayBuffer}
  */
@@ -110,6 +117,7 @@ async function saveSoundFontToIndexedDB(arr)
 // attempt to load soundfont from indexed db
 async function demoInit()
 {
+    loadingMessage.textContent = "Loading soundfont..."
     let soundFontBuffer = await loadLastSoundFontFromDatabase();
     let loadedFromDb = true;
     if (soundFontBuffer === undefined)
@@ -131,19 +139,17 @@ async function demoInit()
     loadingMessage.textContent = "Loaded soundfont!"
     window.soundFontParser = soundFontBuffer;
     if(!loadedFromDb) {
+        loadingMessage.textContent = "Saving soundfont to the browser..."
         await saveSoundFontToIndexedDB(soundFontBuffer);
     }
 
     titleMessage.innerText = TITLE;
     try {
-        /**
-         *
-         * @type {AudioContextConstructor}
-         */
         const context = window.AudioContext || window.webkitAudioContext;
         window.audioContextMain = new context({ sampleRate: 44100 });
     }
     catch (e) {
+        showExclamation();
         loadingMessage.textContent = "Your browser doesn't support WebAudio.";
         throw e;
 
@@ -163,6 +169,7 @@ async function demoInit()
     loadingMessage.textContent = "Initializing synthesizer...";
     window.manager = new Manager(audioContextMain, soundFontParser);
     window.manager.sfError = e => {
+        showExclamation();
         if(loadedFromDb)
         {
             SpessaSynthWarn("Invalid soundfont in the database. Resetting.")
@@ -419,5 +426,6 @@ demoInit().then(() => {
             window.manager.seq.currentTime -= 0.1;
         }
         titleMessage.innerText = title;
+        await saveSoundFontToIndexedDB(soundFontBuffer);
     }
 });
