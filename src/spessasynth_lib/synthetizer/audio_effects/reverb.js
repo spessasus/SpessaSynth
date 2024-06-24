@@ -14,7 +14,7 @@ export function getReverbProcessor(context, reverbBuffer = undefined)
     else
     {
         // resolve relative url
-        const impulseURL = new URL("impulse_response.wav", import.meta.url);
+        const impulseURL = new URL("impulse_response_2.flac", import.meta.url);
         fetch(impulseURL).then(async response => {
             const data = await response.arrayBuffer();
             convolver.buffer = await context.decodeAudioData(data);

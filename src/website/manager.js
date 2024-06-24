@@ -172,7 +172,7 @@ const RENDER_AUDIO_TIME_INTERVAL = 500;
         this.soundFont = soundFont;
 
         // set up buffer here (if we let spessasynth use the default buffer, there's no reverb for the first second.)
-        const impulseURL = new URL("../spessasynth_lib/synthetizer/audio_effects/impulse_response.wav", import.meta.url);
+        const impulseURL = new URL("../spessasynth_lib/synthetizer/audio_effects/impulse_response_2.flac", import.meta.url);
         const response = await fetch(impulseURL)
         const data = await response.arrayBuffer();
         this.impulseResponse = await context.decodeAudioData(data);
