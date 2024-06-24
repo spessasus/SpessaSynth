@@ -36,6 +36,8 @@ export class SynthetizerUI
         this.uiDiv.style.visibility = "visible";
         this.isShown = false;
         this.locale = localeManager;
+
+        this.hideOnDocClick = true;
     }
 
     toggleDarkMode()
@@ -234,6 +236,7 @@ export class SynthetizerUI
         this.locale.bindObjectProperty(showControllerButton, "title", LOCALE_PATH + "toggleButton.description");
         showControllerButton.classList.add("synthui_button");
         showControllerButton.onclick = () => {
+            this.hideOnDocClick = false;
             controller.classList.toggle("synthui_controller_show");
             controlsWrapper.classList.toggle("controls_wrapper_show");
             this.isShown = !this.isShown;
@@ -301,6 +304,20 @@ export class SynthetizerUI
         this.uiDiv.appendChild(showControllerButton);
         controller.appendChild(controlsWrapper);
         this.mainControllerDiv = controller;
+        // stop propagation to not hide
+        this.mainControllerDiv.onclick = e => e.stopPropagation();
+        // hide if clicked outside
+        document.addEventListener("click", () => {
+            if(!this.hideOnDocClick)
+            {
+                this.hideOnDocClick = true;
+                return;
+            }
+            controller.classList.remove("synthui_controller_show");
+            controlsWrapper.classList.remove("controls_wrapper_show");
+            this.isShown = false;
+            this.hideControllers();
+        })
     }
 
     createChannelControllers()

@@ -85,7 +85,7 @@ class SpessaSynthSettings
         this.mainDiv.classList.add("settings_menu");
         settingsButton.onclick = e => {
             this.mainDiv.classList.toggle("settings_menu_show");
-            e.stopPropagation();
+            this.hideOnDocClick = false;
         }
         settingsWrapper.appendChild(this.mainDiv);
 
@@ -113,11 +113,19 @@ class SpessaSynthSettings
 
         }
 
+        this.hideOnDocClick = true;
         // stop propagation to disable hide on click outside
-        this.mainDiv.onclick = e => e.stopPropagation();
+        this.mainDiv.onclick = () => {
+            this.hideOnDocClick = false;
+        };
 
         // hide if clicked outside
         document.addEventListener("click", () => {
+            if(!this.hideOnDocClick)
+            {
+                this.hideOnDocClick = true;
+                return;
+            }
             this.mainDiv.classList.remove("settings_menu_show")
         })
 
