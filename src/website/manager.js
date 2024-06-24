@@ -319,10 +319,10 @@ const RENDER_AUDIO_TIME_INTERVAL = 500;
         });
         await this.synth.isReady;
 
-        // if on mobile, cap voices to 120
+        // if on mobile, cap voices to 100
         if(isMobile())
         {
-            this.synth.voiceCap = 120;
+            this.synth.voiceCap = 100;
         }
     }
 
