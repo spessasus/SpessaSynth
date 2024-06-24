@@ -34,8 +34,32 @@ export function loadNewSequence(parsedMidi)
      */
     this.tracks = this.midiData.tracks;
 
-    // copy over the port data (can be overwritten in real time if needed)
+    // clear last port data
+    this.midiPortChannelOffset = 0;
+    this.midiPortChannelOffsets = {};
+    // copy over the port data
     this.midiPorts = this.midiData.midiPorts;
+
+    // assign port offsets
+    this.midiData.midiPorts.forEach((port, trackIndex) => {
+            // assign new 16 channels if the port is not occupied yet
+            if(this.midiPortChannelOffset === 0)
+            {
+                this.midiPortChannelOffset += 16;
+                this.midiPortChannelOffsets[port] = 0;
+            }
+
+            if(this.midiPortChannelOffsets[port] === undefined)
+            {
+                if(this.synth.workletProcessorChannels.length < this.midiPortChannelOffset + 16) {
+                    this._addNewMidiPort();
+                }
+                this.midiPortChannelOffsets[port] = this.midiPortChannelOffset;
+                this.midiPortChannelOffset += 16;
+            }
+
+            this.midiPorts[trackIndex] = port;
+    })
 
     /**
      * Same as Audio.duration (seconds)
@@ -43,8 +67,6 @@ export function loadNewSequence(parsedMidi)
      */
     this.duration = this.midiData.duration;
     SpessaSynthInfo(`%cTotal song time: ${formatTime(Math.ceil(this.duration)).time}`, consoleColors.recognized);
-    this.midiPortChannelOffset = 0;
-    this.midiPortChannelOffsets = {};
 
     this.post(WorkletSequencerReturnMessageType.songChange, [this.midiData, this.songIndex]);
 

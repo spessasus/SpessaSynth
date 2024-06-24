@@ -58,27 +58,8 @@ export function _processEvent(event, trackIndex)
             }
             break;
 
+        // recongized but ignored
         case messageTypes.midiPort:
-            const port = event.messageData[0];
-            // assign new 16 channels if the port is not occupied yet
-            if(this.midiPortChannelOffset === 0)
-            {
-                this.midiPortChannelOffset += 16;
-                this.midiPortChannelOffsets[port] = 0;
-            }
-
-            if(this.midiPortChannelOffsets[port] === undefined)
-            {
-                if(this.synth.workletProcessorChannels.length < this.midiPortChannelOffset + 16) {
-                    this._addNewMidiPort();
-                }
-                this.midiPortChannelOffsets[port] = this.midiPortChannelOffset;
-                this.midiPortChannelOffset += 16;
-            }
-
-            this.midiPorts[trackIndex] = port;
-            break;
-
         case messageTypes.endOfTrack:
         case messageTypes.midiChannelPrefix:
         case messageTypes.timeSignature:
