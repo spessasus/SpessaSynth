@@ -30,9 +30,10 @@ export const localePolish = {
     demoBundledSoundfont: "Użyj wbudowanego SoundFonta (22MB)",
 
     warnings: {
-        outOfMemory: "Twojej przeglądarce skończyła się pamięć. Rozważ użycie Firefoxa albo plików SF3.\n\n(Zobacz błąd w konsoli)",
+        outOfMemory: "Twojej przeglądarce skończyła się pamięć. Rozważ użycie Firefoxa albo plików SF3.<br><br>(Zobacz błąd w konsoli)",
         noMidiSupport: "Twoja przeglądarka nie wspiera Web MIDI. Korzystanie z portów MIDI nie będzie dostępne. Rozważ użycie Chrome albo Firefoxa.",
-
+        chromeMobile: "SpessaSynth działa wolno na Chromie na telefon. <br>Rozważ użycie Firefoxa Android.",
+        warning: "Uwaga"
     },
 
     hideTopBar: {

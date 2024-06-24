@@ -1,4 +1,5 @@
 import { isMobile } from '../../utils/is_mobile.js'
+import { showNotification } from '../../notification.js'
 
 /**
  * @param handler {MIDIDeviceHandler}
@@ -13,7 +14,8 @@ export function _createMidiSettingsHandler(handler, sequi, synthui)
     {
         if(!navigator.requestMIDIAccess)
         {
-            alert(this.locale.getLocaleString("locale.warnings.noMidiSupport"))
+            showNotification(this.locale.getLocaleString("locale.warnings.warning"),
+                this.locale.getLocaleString("locale.warnings.noMidiSupport"));
         }
     }
     handler.createMIDIDeviceHandler().then(success => {

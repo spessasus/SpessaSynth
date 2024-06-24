@@ -15,6 +15,7 @@ import { LocaleManager } from './locale/locale_manager.js'
 import { DEFAULT_LOCALE, localeList } from './locale/locale_files/locale_list.js'
 import { isMobile } from './js/utils/is_mobile.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../spessasynth_lib/utils/loggin.js'
+import { showNotification } from './js/notification.js'
 
 const RENDER_AUDIO_TIME_INTERVAL = 500;
 
@@ -101,7 +102,7 @@ const RENDER_AUDIO_TIME_INTERVAL = 500;
             });
         }
         catch (e) {
-            window.alert(this.localeManager.getLocaleString("locale.warnings.outOfMemory"));
+            showNotification(this.localeManager.getLocaleString("locale.warnings.warning"), this.localeManager.getLocaleString("locale.warnings.outOfMemory"))
             throw e;
         }
         if(callback)

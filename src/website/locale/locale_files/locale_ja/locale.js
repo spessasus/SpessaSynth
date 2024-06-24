@@ -31,7 +31,9 @@ export const localeJapanese = {
 
     warnings: {
         noMidiSupport: "このブラウザはMIDI入力をサポートしていないため、この機能は利用できません。ChromeまたはFirefoxを使用することを検討してください。",
-        outOfMemory: "ブラウザのメモリが不足しました。FirefoxやSF3サウンドフォントの使用を検討してください。\n\n（エラーについてはコンソールを参照してください）。",
+        outOfMemory: "ブラウザのメモリが不足しました。FirefoxやSF3サウンドフォントの使用を検討してください。<br><br>（エラーについてはコンソールを参照してください）。",
+        chromeMobile: "SpessaSynthはChrome Mobileでの動作が良くありません。<br><br>代わりにFirefox Androidを使用することを検討してください。",
+        warning: "注意"
     },
 
     hideTopBar: {

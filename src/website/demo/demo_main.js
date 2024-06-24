@@ -7,7 +7,8 @@ import { formatTime, formatTitle } from '../../spessasynth_lib/utils/other.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../../spessasynth_lib/utils/loggin.js'
 import { audioBufferToWav } from '../../spessasynth_lib/utils/buffer_to_wav.js'
 import { isMobile } from '../js/utils/is_mobile.js'
-import { getExclamationSvg } from '../js/icons.js'
+import { getCheckSvg, getExclamationSvg } from '../js/icons.js'
+import { showNotification } from '../js/notification.js'
 
 /**
  * demo_main.js
@@ -83,10 +84,12 @@ async function loadLastSoundFontFromDatabase()
     })
 }
 
-function showExclamation()
+function changeIcon(html)
 {
-    loadingMessage.previousElementSibling.outerHTML = getExclamationSvg(256);
-    loadingMessage.previousElementSibling.style.animation = "none";
+    console.log(loading)
+    const icon = loading.getElementsByClassName("loading_icon")[0];
+    icon.innerHTML = html;
+    icon.style.animation = "none";
 }
 
 /**
@@ -149,7 +152,7 @@ async function demoInit()
         window.audioContextMain = new context({ sampleRate: 44100 });
     }
     catch (e) {
-        showExclamation();
+        changeIcon(getExclamationSvg(256));
         loadingMessage.textContent = "Your browser doesn't support WebAudio.";
         throw e;
 
@@ -169,7 +172,7 @@ async function demoInit()
     loadingMessage.textContent = "Initializing synthesizer...";
     window.manager = new Manager(audioContextMain, soundFontParser);
     window.manager.sfError = e => {
-        showExclamation();
+        changeIcon(getExclamationSvg(256));
         if(loadedFromDb)
         {
             SpessaSynthWarn("Invalid soundfont in the database. Resetting.")
@@ -207,6 +210,7 @@ async function demoInit()
         }
     }
 
+    changeIcon(getCheckSvg(256))
     loadingMessage.textContent = "Ready!";
 }
 
@@ -328,7 +332,7 @@ async function startMidi(midiFiles)
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `${window.manager.seq.midiData.midiName || 'song'}.wav`;
+        a.download = `${window.manager.seq.midiData.midiName || 'unnamed_song'}.wav`;
         a.click();
     }
 }
@@ -382,10 +386,14 @@ demoInit().then(() => {
         {
             if(window.chrome)
             {
-                alert("Chrome Mobile detected.\nSpessaSynth performs poorly on Chrome Mobile, consider using Firefox Android instead.");
+                showNotification(
+                    window.manager.localeManager.getLocaleString("locale.warnings.warning"),
+                    window.manager.localeManager.getLocaleString("locale.warnings.chromeMobile"),
+                    5000
+                )
             }
         }
-    }, 100)
+    }, 500)
     /**
      * @param e {{target: HTMLInputElement}}
      * @return {Promise<void>}
@@ -413,7 +421,10 @@ demoInit().then(() => {
             window.soundFontParser = soundFontBuffer;
         }
         catch (e) {
-            window.alert(manager.localeManager.getLocaleString("locale.warnings.outOfMemory"));
+            showNotification(
+                manager.localeManager.getLocaleString("locale.warnings.warning"),
+                manager.localeManager.getLocaleString("locale.warnings.outOfMemory")
+            );
             throw e;
         }
         window.manager.sfError = e => {

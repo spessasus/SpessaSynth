@@ -4,11 +4,14 @@
 @import "music_mode_ui.css";
 @import "synthesizer_ui/synthesizer_ui.css";
 @import "soundfont_mixer.css";
+@import "notification.css";
 
 * {
     --font-color: #ccc;
+    --top-index: 32767;
     --top-buttons-color: linear-gradient(201deg, #222, #333);
-    font-family: "Noto Sans Light", "Open Sans Light", sans-serif;
+    --top-color: linear-gradient(31deg, #101010, #212121);
+    font-family: "Noto Sans", "Open Sans", sans-serif;
     color: var(--font-color);
     text-align: center;
     margin: 0;
@@ -45,7 +48,6 @@ a{
 /*Top*/
 .top_part
 {
-    --top-color: linear-gradient(31deg, #101010, #212121);
     position: relative;
     background: var(--top-color);
     border-radius: 0 0 15px 15px;
@@ -56,10 +58,6 @@ a{
     justify-content: space-around;
     align-items: center;
     z-index: 50;
-}
-
-.top_part_light{
-    --top-color: linear-gradient(20deg, #bbb, #ddd) !important;
 }
 
 input[type="file"] {
@@ -205,13 +203,13 @@ button{
     position: absolute;
     width: 100%;
     height: 100%;
-    z-index: 999999;
+    z-index: var(--top-index);
     left: 0;
-    background: linear-gradient(31deg, #101010, #212121);
-    transition: opacity 0.1s ease-in-out;
+    background: var(--top-color);
+    transition: all 0.5s ease-in-out;
 }
 
-.loading svg {
+.loading .loading_icon {
     margin: 3em;
     animation: spin 1s ease-in-out infinite;
 }

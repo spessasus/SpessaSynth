@@ -139,6 +139,30 @@ class SpessaSynthSettings
 
         this.getHtmlControls();
 
+
+        // key bind is "R"
+        document.addEventListener("keydown", e => {
+            if(e.key.toLowerCase() === "r")
+            {
+                this.mainDiv.classList.toggle("settings_menu_show");
+            }
+        })
+
+        // if window.savedSettings exists, load it
+        if(window.savedSettings)
+        {
+            this._loadSettings().then(() => {
+                this.createHandlers(renderer, midiKeyboard, midiDeviceHandler, sequi, sythui)
+            });
+        }
+        else
+        {
+            this.createHandlers(renderer, midiKeyboard, midiDeviceHandler, sequi, sythui)
+        }
+    }
+
+    createHandlers(renderer, midiKeyboard, midiDeviceHandler, sequi, sythui)
+    {
         // create handlers for all settings
         this._createRendererHandler(renderer);
 
@@ -153,20 +177,6 @@ class SpessaSynthSettings
         );
 
         this._createInterfaceSettingsHandler();
-
-        // key bind is "R"
-        document.addEventListener("keydown", e => {
-            if(e.key.toLowerCase() === "r")
-            {
-                this.mainDiv.classList.toggle("settings_menu_show");
-            }
-        })
-
-        // if window.savedSettings exists, load it
-        if(window.savedSettings)
-        {
-            this._loadSettings().then();
-        }
     }
 
     getHtmlControls()

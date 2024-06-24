@@ -5,6 +5,7 @@ import {MIDI} from "../spessasynth_lib/midi_parser/midi_loader.js";
 
 import { formatTime, formatTitle } from '../spessasynth_lib/utils/other.js'
 import { audioBufferToWav } from '../spessasynth_lib/utils/buffer_to_wav.js'
+import { showNotification } from './js/notification.js'
 
 /**
  * main.js
@@ -78,12 +79,12 @@ async function fetchFont(fileName, callback)
     }
     catch (e)
     {
-        let message = `Your browser ran out of memory. Consider using Firefox or SF3 soundfont instead\n\n (see console for error)`;
+        let message = `Your browser ran out of memory. Consider using Firefox or SF3 soundfont instead<br><br> (see console for error)`;
         if(window.manager)
         {
             message = manager.localeManager.getLocaleString("locale.warnings.outOfMemory");
         }
-        window.alert(message);
+        showNotification("Warning", message);
         throw e;
     }
     let offset = 0;

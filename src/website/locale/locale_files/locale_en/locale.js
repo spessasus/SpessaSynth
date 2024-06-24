@@ -31,8 +31,10 @@ export const localeEnglish = {
     demoBundledSoundfont: "Use the bundled SoundFont (22MB)",
 
     warnings: {
-        outOfMemory: "Your browser ran out of memory. Consider using Firefox or SF3 soundfont instead.\n\n (see console for error).",
-        noMidiSupport: "MIDI Inputs are not supported by this browser, this functionality will not be available. Consider using Chrome or Firefox."
+        outOfMemory: "Your browser ran out of memory. Consider using Firefox or SF3 soundfont instead.<br><br> (see console for error).",
+        noMidiSupport: "MIDI Inputs are not supported by this browser, this functionality will not be available. Consider using Chrome or Firefox.",
+        chromeMobile: "SpessaSynth performs poorly on Chrome Mobile.<br/>Consider using Firefox Android instead.",
+        warning: "Warning"
     },
     hideTopBar: {
         title: "Hide top bar",

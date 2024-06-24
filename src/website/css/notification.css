@@ -1,0 +1,58 @@
+.notification {
+    background: var(--top-color);
+    color: var(--font-color);
+    position: fixed;
+    border: solid 1px #333;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    font-size: large;
+    top: 0;
+    z-index: var(--top-index);
+    left: 50%;
+    transform: translate(-50%, 5rem);
+    transition: transform 0.5s ease, opacity 0.5s ease;
+    opacity: 0;
+    animation-duration: 0.5s;
+    animation-fill-mode: forwards;
+    box-shadow: #333 0 0 10px;
+    width: max-content;
+    max-width: 80%
+}
+
+.notification.drop{
+    opacity: 1;
+    transform: translate(-50%, 10rem);
+}
+
+.notification .top {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: solid 1px #555;
+    align-items: center;
+}
+
+.notification h2{
+    text-align: start;
+    font-size: 1.5rem;
+    line-height: 2rem;
+    margin-left: 1rem;
+}
+
+.notification p{
+    padding: 1rem;
+}
+
+.notification .close_btn{
+    text-align: end;
+    font-weight: bolder;
+    font-size: 2rem;
+    margin-right: 1rem;
+}
+
+.notification .close_btn:hover{
+    cursor: pointer;
+}

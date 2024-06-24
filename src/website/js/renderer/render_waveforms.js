@@ -51,9 +51,13 @@ export function renderWaveforms()
         this.drawingContext.beginPath();
         if(this.stabilizeWaveforms)
         {
-            const length = waveform.length / STABILIZE_WAVEFORMS_LENGTH_DIVIDER;
-            // Oscilloscope triggering
+            let length = waveform.length / STABILIZE_WAVEFORMS_LENGTH_DIVIDER;
             let triggerPoint = 0;
+            if(this.synth.channelProperties[channelNumber].isDrum)
+            {
+                length /= STABILIZE_WAVEFORMS_LENGTH_DIVIDER;
+            }
+            // Oscilloscope triggering
             const threshold = 0; // Adjust this if necessary
             for (let i = 1; i < waveform.length; i++) {
                 if (waveform[i - 1] < threshold && waveform[i] >= threshold) {

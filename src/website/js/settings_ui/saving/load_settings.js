@@ -88,7 +88,11 @@ export async function _loadSettings()
     if(savedSettings.interface.language !== DEFAULT_LOCALE)
     {
         this.locale.changeGlobalLocale(this.locales[savedSettings.interface.language]);
-        this.htmlControls.interface.languageSelector.value = savedSettings.interface.language;
+
+        // using set timeout here fixes it for some reason
+        setTimeout(() => {
+            this.htmlControls.interface.languageSelector.value = savedSettings.interface.language;
+        }, 100);
     }
     if(savedSettings.interface.mode === "light")
     {

@@ -35,6 +35,14 @@ export function _toggleDarkMode()
         {
             rule.style.setProperty("--font-color",  this.mode === "dark" ? "#eee" : "#333");
             rule.style.setProperty("--top-buttons-color",  this.mode === "dark" ? "linear-gradient(201deg, #222, #333)" : "linear-gradient(270deg, #ddd, #fff)");
+            if(this.mode === "dark")
+            {
+                rule.style.setProperty("--top-color", "linear-gradient(31deg, #101010, #212121)");
+            }
+            else
+            {
+                rule.style.setProperty("--top-color", "linear-gradient(20deg, #bbb, #ddd)")
+            }
             break;
         }
     }
