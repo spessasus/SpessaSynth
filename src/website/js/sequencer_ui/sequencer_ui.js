@@ -108,9 +108,14 @@ export class SequencerUI{
         navigator.mediaSession.playbackState = "playing";
     }
 
-    seqPlay()
+    seqPlay(sendPlay = true)
     {
-        this.seq.play();
+        if(sendPlay)
+        {
+            this.seq.play();
+        }
+        this.playPause.innerHTML = getPauseSvg(ICON_SIZE);
+        console.log(this.playPause)
         this.createNavigatorHandler();
         this.updateTitleAndMediaStatus();
         if(!navigator.mediaSession)
@@ -120,9 +125,13 @@ export class SequencerUI{
         navigator.mediaSession.playbackState = "playing";
     }
 
-    seqPause()
+    seqPause(sendPause = true)
     {
-        this.seq.pause();
+        if(sendPause)
+        {
+            this.seq.pause();
+        }
+        this.playPause.innerHTML = getPlaySvg(ICON_SIZE);
         this.createNavigatorHandler();
         this.updateTitleAndMediaStatus();
         if(!navigator.mediaSession)
@@ -209,10 +218,12 @@ export class SequencerUI{
         this.seq.addOnTimeChangeEvent(() => {
             this.text = "";
             this.rawText = [];
+            this.seqPlay(false);
         }, "sequi-time-change");
 
         this.seq.addOnSongChangeEvent(() => {
             this.updateTitleAndMediaStatus();
+            this.seqPlay(false);
         }, "sequi-song-change");
 
         if(this.requiresThemeUpdate)
@@ -311,17 +322,16 @@ export class SequencerUI{
         // play pause
         const playPauseButton = getSeqUIButton("Play/Pause",
             getPauseSvg(ICON_SIZE));
+        this.playPause = playPauseButton;
         this.locale.bindObjectProperty(playPauseButton, "title", "locale.sequencerController.playPause");
         const togglePlayback = () => {
             if(this.seq.paused)
             {
-                playPauseButton.innerHTML = getPauseSvg(ICON_SIZE);
                 this.seqPlay();
             }
             else
             {
                 this.seqPause()
-                playPauseButton.innerHTML = getPlaySvg(ICON_SIZE);
             }
         }
         playPauseButton.onclick = togglePlayback;
