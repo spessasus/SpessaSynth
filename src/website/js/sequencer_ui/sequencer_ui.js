@@ -115,7 +115,6 @@ export class SequencerUI{
             this.seq.play();
         }
         this.playPause.innerHTML = getPauseSvg(ICON_SIZE);
-        console.log(this.playPause)
         this.createNavigatorHandler();
         this.updateTitleAndMediaStatus();
         if(!navigator.mediaSession)

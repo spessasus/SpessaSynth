@@ -318,6 +318,12 @@ const RENDER_AUDIO_TIME_INTERVAL = 500;
             }
         });
         await this.synth.isReady;
+
+        // if on mobile, cap voices to 120
+        if(isMobile())
+        {
+            this.synth.voiceCap = 120;
+        }
     }
 
     /**

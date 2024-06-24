@@ -7,7 +7,7 @@ import { getOscillatorData } from '../worklet_utilities/wavetable_oscillator.js'
 import { panVoice } from '../worklet_utilities/stereo_panner.js'
 import { applyVolumeEnvelope } from '../worklet_utilities/volume_envelope.js'
 import { applyLowpassFilter } from '../worklet_utilities/lowpass_filter.js'
-import { MIN_NOTE_LENGTH } from '../worklet_utilities/main_processor.js'
+import { MIN_NOTE_LENGTH } from '../main_processor.js'
 
 /**
  * Renders a voice to the stereo output buffer
@@ -145,30 +145,66 @@ export function renderVoice(channel, voice, output, reverbOutput, chorusOutput)
 
 
 /**
+ * @param channel {WorkletProcessorChannel}
+ * @param voice {WorkletVoice}
+ * @return {number}
+ */
+function getPriority(channel, voice)
+{
+    let priority = 0;
+    if(channel.drumChannel)
+    {
+        // important
+        priority += 5;
+    }
+    if(voice.isInRelease)
+    {
+        // not important
+        priority -= 5;
+    }
+    // less velocity = less important
+    priority += voice.velocity / 25; // map to 0-5
+    // the newer, more important
+    priority -= voice.volumeEnvelopeState;
+    if(voice.isInRelease)
+    {
+        priority -= 5;
+    }
+    priority -= voice.currentAttenuationDb / 50;
+    return priority;
+}
+
+/**
  * @this {SpessaSynthProcessor}
  * @param amount {number}
  */
 export function voiceKilling(amount)
 {
-    // kill the smallest velocity voices
-    let voicesOrderedByVelocity = this.workletProcessorChannels.map(channel => channel.voices);
-
-    /**
-     * @type {WorkletVoice[]}
-     */
-    voicesOrderedByVelocity = voicesOrderedByVelocity.flat();
-    voicesOrderedByVelocity.sort((v1, v2) => v1.velocity - v2.velocity);
-    if(voicesOrderedByVelocity.length < amount)
+    let allVoices = [];
+    for (const channel of this.workletProcessorChannels)
     {
-        amount = voicesOrderedByVelocity.length;
+        for (const voice of channel.voices)
+        {
+            if (!voice.finished)
+            {
+                const priority = getPriority(channel, voice);
+                allVoices.push({ channel, voice, priority });
+            }
+        }
     }
-    for (let i = 0; i < amount; i++) {
-        const voice = voicesOrderedByVelocity[i];
-        this.workletProcessorChannels[voice.channelNumber].voices
-            .splice(this.workletProcessorChannels[voice.channelNumber].voices.indexOf(voice), 1);
-        this.totalVoicesAmount--;
+
+    // Step 2: Sort voices by priority (ascending order)
+    allVoices.sort((a, b) => a.priority - b.priority);
+    const voicesToRemove = allVoices.slice(0, amount);
+
+    for (const { channel, voice } of voicesToRemove)
+    {
+        const index = channel.voices.indexOf(voice);
+        if (index > -1)
+        {
+            channel.voices.splice(index, 1);
+        }
     }
-    this.sendChannelProperties();
 }
 
 /**

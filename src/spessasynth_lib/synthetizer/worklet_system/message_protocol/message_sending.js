@@ -1,4 +1,4 @@
-import { returnMessageType } from '../worklet_utilities/worklet_message.js'
+import { returnMessageType } from './worklet_message.js'
 import { NON_CC_INDEX_OFFSET } from '../worklet_utilities/worklet_processor_channel.js'
 import { modulatorSources } from '../../../soundfont/chunk/modulators.js'
 

@@ -1,7 +1,6 @@
 import { getWorkletVoices } from '../worklet_utilities/worklet_voice.js'
 import { generatorTypes } from '../../../soundfont/chunk/generators.js'
 import { computeModulators } from '../worklet_utilities/worklet_modulator.js'
-import { VOICE_CAP } from '../../synthetizer.js'
 import { SpessaSynthWarn } from '../../../utils/loggin.js'
 
 /**
@@ -64,17 +63,15 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false)
         computeModulators(voice, this.workletProcessorChannels[channel].midiControllers);
         voice.currentAttenuationDb = 100;
     })
-    channelVoices.push(...voices);
 
     this.totalVoicesAmount += voices.length;
     // cap the voices
-    if(this.totalVoicesAmount > VOICE_CAP)
+    if(this.totalVoicesAmount > this.voiceCap)
     {
-        this.voiceKilling(this.totalVoicesAmount - VOICE_CAP);
+        this.voiceKilling(voices.length);
     }
-    else {
-        this.sendChannelProperties();
-    }
+    channelVoices.push(...voices);
+    this.sendChannelProperties();
     this.callEvent("noteon", {
         midiNote: midiNote,
         channel: channel,

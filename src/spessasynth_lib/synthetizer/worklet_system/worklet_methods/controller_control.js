@@ -9,7 +9,7 @@ import {
 } from '../worklet_utilities/worklet_processor_channel.js'
 import { computeModulators } from '../worklet_utilities/worklet_modulator.js'
 import { SpessaSynthInfo } from '../../../utils/loggin.js'
-import { SYNTHESIZER_GAIN } from '../worklet_utilities/main_processor.js'
+import { SYNTHESIZER_GAIN } from '../main_processor.js'
 
 /**
  * @param channel {number}

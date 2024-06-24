@@ -1,4 +1,4 @@
-import { ALL_CHANNELS_OR_DIFFERENT_ACTION, workletMessageType } from '../worklet_utilities/worklet_message.js'
+import { ALL_CHANNELS_OR_DIFFERENT_ACTION, masterParameterType, workletMessageType } from './worklet_message.js'
 import { SpessaSynthWarn } from '../../../utils/loggin.js'
 
 /**
@@ -118,12 +118,26 @@ export function handleMessage(message)
             this.debugMessage();
             break;
 
-        case workletMessageType.setMainVolume:
-            this.setMainVolume(data);
-            break;
+        case workletMessageType.setMasterParameter:
+            /**
+             * @type {masterParameterType}
+             */
+            const type = data[0];
+            const value = data[1];
+            switch (type)
+            {
+                case masterParameterType.masterPan:
+                    this.setMasterPan(value);
+                    break;
 
-        case workletMessageType.setMasterPan:
-            this.setMasterPan(data);
+                case masterParameterType.mainVolume:
+                    this.setMainVolume(value);
+                    break;
+
+                case masterParameterType.voicesCap:
+                    this.voiceCap = value;
+                    break;
+            }
             break;
 
         case workletMessageType.setDrums:

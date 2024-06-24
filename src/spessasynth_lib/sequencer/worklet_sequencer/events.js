@@ -1,4 +1,4 @@
-import { returnMessageType } from '../../synthetizer/worklet_system/worklet_utilities/worklet_message.js'
+import { returnMessageType } from '../../synthetizer/worklet_system/message_protocol/worklet_message.js'
 import { WorkletSequencerMessageType, WorkletSequencerReturnMessageType } from './sequencer_message.js'
 
 /**

@@ -49,8 +49,8 @@
  * @property {number} midiNote - MIDI note number
  * @property {number} targetKey - target key for the note
  *
- * @property {number} currentAttenuationDb - current attenuation in dB (used for calculating start of the release phase)
- * @property {0|1|2|3|4} volumeEnvelopeState - state of the volume envelope.
+ * @property {number} currentAttenuationDb - current voice attenuation in dB
+ * @property {0|1|2|3|4} volumeEnvelopeState - state of the volume envelope. 0 is delay, 1 is attack, 2 is hold, 3 is decay, 4 is sustain
  * @property {number} currentModEnvValue - current value of the modulation envelope
  *
  * @property {number} startTime - start time of the voice

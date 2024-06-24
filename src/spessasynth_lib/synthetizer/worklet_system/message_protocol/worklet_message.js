@@ -15,15 +15,14 @@
  * @property {number} customCcChange             - 12 -> [ccNumber<number>, ccValue<number>]
  * @property {number} debugMessage               - 13 -> (no data)
  * @property {number} systemExclusive            - 14 -> message data <number[]> (without the F0 byte)
- * @property {number} setMainVolume              - 15 -> volume<number> (0 to 1)
- * @property {number} setMasterPan               - 16 -> pan<number> (-1 to 1)
- * @property {number} setDrums                   - 17 -> isDrums<boolean>
- * @property {number} pitchWheel                 - 18 -> [MSB<number>, LSB<number>]
- * @property {number} transpose                  - 19 -> [semitones<number>, force<boolean>] note: if channel is -1 then transpose all channels
- * @property {number} highPerformanceMode        - 20 -> isOn<boolean>
- * @property {number} lockController             - 21 -> [controllerNumber<number>, isLocked<boolean>]
- * @property {number} sequencerSpecific          - 22 -> [messageType<WorkletSequencerMessageType> messageData<any>] note: refer to sequencer_message.js
- * @property {number} requestSynthesizerSnapshot - 23 -> (no data)
+ * @property {number} setMasterParameter         - 15 -> [parameter<masterParameterType>, value<number>]
+ * @property {number} setDrums                   - 16 -> isDrums<boolean>
+ * @property {number} pitchWheel                 - 17 -> [MSB<number>, LSB<number>]
+ * @property {number} transpose                  - 18 -> [semitones<number>, force<boolean>] note: if channel is -1 then transpose all channels
+ * @property {number} highPerformanceMode        - 19 -> isOn<boolean>
+ * @property {number} lockController             - 20 -> [controllerNumber<number>, isLocked<boolean>]
+ * @property {number} sequencerSpecific          - 21 -> [messageType<WorkletSequencerMessageType> messageData<any>] note: refer to sequencer_message.js
+ * @property {number} requestSynthesizerSnapshot - 22 -> (no data)
  */
 export const workletMessageType = {
     noteOff: 0,
@@ -41,16 +40,24 @@ export const workletMessageType = {
     customcCcChange: 12,
     debugMessage: 13,
     systemExclusive: 14,
-    setMainVolume: 15,
-    setMasterPan: 16,
-    setDrums: 17,
-    pitchWheel: 18,
-    transpose: 19,
-    highPerformanceMode: 20,
-    lockController: 21,
-    sequencerSpecific: 22,
-    requestSynthesizerSnapshot: 23,
+    setMasterParameter: 15,
+    setDrums: 16,
+    pitchWheel: 17,
+    transpose: 18,
+    highPerformanceMode: 19,
+    lockController: 20,
+    sequencerSpecific: 21,
+    requestSynthesizerSnapshot: 22,
 };
+
+/**
+ * @enum {number}
+ */
+export const masterParameterType = {
+    mainVolume: 0,
+    masterPan: 1,
+    voicesCap: 2,
+}
 
 
 export const ALL_CHANNELS_OR_DIFFERENT_ACTION = -1;

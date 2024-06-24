@@ -2,7 +2,7 @@ import { midiControllers } from '../../../midi_parser/midi_message.js'
 import { SoundFont2 } from '../../../soundfont/soundfont_parser.js'
 import { clearSamplesList } from '../worklet_utilities/worklet_voice.js'
 import { generatorTypes } from '../../../soundfont/chunk/generators.js'
-import { returnMessageType } from '../worklet_utilities/worklet_message.js'
+import { returnMessageType } from '../message_protocol/worklet_message.js'
 
 /**
  * executes a program change

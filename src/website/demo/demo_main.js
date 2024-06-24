@@ -86,7 +86,6 @@ async function loadLastSoundFontFromDatabase()
 
 function changeIcon(html)
 {
-    console.log(loading)
     const icon = loading.getElementsByClassName("loading_icon")[0];
     icon.innerHTML = html;
     icon.style.animation = "none";

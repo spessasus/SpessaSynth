@@ -29,7 +29,7 @@
  * @property {number} transposition - the current synth transpositon in semitones. can be a float
  */
 
-import { returnMessageType } from '../worklet_utilities/worklet_message.js'
+import { returnMessageType } from '../message_protocol/worklet_message.js'
 import { SpessaSynthInfo } from '../../../utils/loggin.js'
 import { consoleColors } from '../../../utils/other.js'
 import { midiControllers } from '../../../midi_parser/midi_message.js'

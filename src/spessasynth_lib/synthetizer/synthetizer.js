@@ -5,10 +5,10 @@ import { EventHandler } from './synth_event_handler.js'
 import { FancyChorus } from './audio_effects/fancy_chorus.js'
 import { getReverbProcessor } from './audio_effects/reverb.js'
 import {
-    ALL_CHANNELS_OR_DIFFERENT_ACTION,
+    ALL_CHANNELS_OR_DIFFERENT_ACTION, masterParameterType,
     returnMessageType,
     workletMessageType,
-} from './worklet_system/worklet_utilities/worklet_message.js'
+} from './worklet_system/message_protocol/worklet_message.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../utils/loggin.js'
 import { DEFAULT_EFFECTS_CONFIG } from './audio_effects/effects_config.js'
 
@@ -52,6 +52,7 @@ export class Synthetizer {
          */
         this.eventHandler = new EventHandler();
 
+        this._voiceCap = VOICE_CAP;
 
         /**
          * the new channels will have their audio sent to the moduled output by this constant.
@@ -152,6 +153,28 @@ export class Synthetizer {
         this.eventHandler.addEvent("newchannel", "synth-new-channel", () => {
             this.channelsAmount++;
         });
+    }
+
+    /**
+     * The maximum amount of voices allowed at once
+     * @returns {number}
+     */
+    get voiceCap()
+    {
+        return this._voiceCap;
+    }
+
+    /**
+     * The maximum amount of voices allowed at once
+     * @param value {number}
+     */
+    set voiceCap(value)
+    {
+        this.post({
+            messageType: workletMessageType.setMasterParameter,
+            messageData: [masterParameterType.voicesCap, value]
+        })
+        this._voiceCap = value;
     }
 
     /**
@@ -450,8 +473,8 @@ export class Synthetizer {
     {
         this.post({
             channelNumber: ALL_CHANNELS_OR_DIFFERENT_ACTION,
-            messageType: workletMessageType.setMainVolume,
-            messageData: volume
+            messageType: workletMessageType.setMasterParameter,
+            messageData: [masterParameterType.mainVolume, volume]
         });
     }
 
@@ -463,8 +486,8 @@ export class Synthetizer {
     {
         this.post({
             channelNumber: ALL_CHANNELS_OR_DIFFERENT_ACTION,
-            messageType: workletMessageType.setMasterPan,
-            messageData: pan
+            messageType: workletMessageType.setMasterParameter,
+            messageData: [masterParameterType.masterPan, pan]
         });
     }
 

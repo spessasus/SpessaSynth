@@ -10,7 +10,7 @@ import { Selector } from './synthui_selector.js'
 import { midiControllers } from '../../../spessasynth_lib/midi_parser/midi_message.js'
 import {
     ALL_CHANNELS_OR_DIFFERENT_ACTION
-} from '../../../spessasynth_lib/synthetizer/worklet_system/worklet_utilities/worklet_message.js'
+} from '../../../spessasynth_lib/synthetizer/worklet_system/message_protocol/worklet_message.js'
 
 
 const LOCALE_PATH = "locale.synthesizerController.";

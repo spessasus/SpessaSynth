@@ -1,28 +1,28 @@
-import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE } from '../../synthetizer.js'
+import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE, VOICE_CAP } from '../synthetizer.js'
 import {
     createWorkletChannel,
-} from './worklet_processor_channel.js'
+} from './worklet_utilities/worklet_processor_channel.js'
 
-import { SoundFont2 } from '../../../soundfont/soundfont_parser.js'
-import { handleMessage } from '../worklet_methods/handle_message.js'
-import { systemExclusive } from '../worklet_methods/system_exclusive.js'
-import { noteOn } from '../worklet_methods/note_on.js'
-import { dataEntryCoarse, dataEntryFine } from '../worklet_methods/data_entry.js'
-import { killNote, noteOff, stopAll, stopAllChannels } from '../worklet_methods/note_off.js'
+import { SoundFont2 } from '../../soundfont/soundfont_parser.js'
+import { handleMessage } from './message_protocol/handle_message.js'
+import { systemExclusive } from './worklet_methods/system_exclusive.js'
+import { noteOn } from './worklet_methods/note_on.js'
+import { dataEntryCoarse, dataEntryFine } from './worklet_methods/data_entry.js'
+import { killNote, noteOff, stopAll, stopAllChannels } from './worklet_methods/note_off.js'
 import {
     controllerChange, muteChannel,
     resetAllControllers,
     resetControllers,
     resetParameters, setMainVolume, setMasterPan,
-} from '../worklet_methods/controller_control.js'
-import { callEvent, post, sendChannelProperties } from '../worklet_methods/message_sending.js'
+} from './worklet_methods/controller_control.js'
+import { callEvent, post, sendChannelProperties } from './message_protocol/message_sending.js'
 import {
     pitchWheel,
     setChannelTuning,
     setMasterTuning, setModulationDepth,
     transposeAllChannels,
     transposeChannel,
-} from '../worklet_methods/tuning_control.js'
+} from './worklet_methods/tuning_control.js'
 import {
     programChange,
     reloadSoundFont,
@@ -30,15 +30,15 @@ import {
     sendPresetList,
     setDrums,
     setPreset,
-} from '../worklet_methods/program_control.js'
-import { disableAndLockVibrato, setVibrato } from '../worklet_methods/vibrato_control.js'
-import { WorkletSequencer } from '../../../sequencer/worklet_sequencer/worklet_sequencer.js'
-import { SpessaSynthInfo } from '../../../utils/loggin.js'
-import { applySynthesizerSnapshot, sendSynthesizerSnapshot } from '../worklet_methods/snapshot.js'
-import { consoleColors } from '../../../utils/other.js'
-import { releaseVoice, renderVoice, voiceKilling } from '../worklet_methods/voice_control.js'
-import { returnMessageType } from './worklet_message.js'
-import { stbvorbis } from '../../../utils/stbvorbis_sync.js'
+} from './worklet_methods/program_control.js'
+import { disableAndLockVibrato, setVibrato } from './worklet_methods/vibrato_control.js'
+import { WorkletSequencer } from '../../sequencer/worklet_sequencer/worklet_sequencer.js'
+import { SpessaSynthInfo } from '../../utils/loggin.js'
+import { applySynthesizerSnapshot, sendSynthesizerSnapshot } from './worklet_methods/snapshot.js'
+import { consoleColors } from '../../utils/other.js'
+import { releaseVoice, renderVoice, voiceKilling } from './worklet_methods/voice_control.js'
+import { returnMessageType } from './message_protocol/worklet_message.js'
+import { stbvorbis } from '../../utils/stbvorbis_sync.js'
 
 
 /**
@@ -85,6 +85,12 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
          * @type {number}
          */
         this.mainVolume = SYNTHESIZER_GAIN;
+
+        /**
+         * Maximum number of voices allowed at once
+         * @type {number}
+         */
+        this.voiceCap = VOICE_CAP;
 
         /**
          * -1 to 1
