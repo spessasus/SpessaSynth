@@ -22,7 +22,8 @@ export function _processEvent(event, trackIndex)
         }
     }
     const statusByteData = getEvent(event.messageStatusByte);
-    statusByteData.channel += this.midiPortChannelOffsets[this.midiPorts[trackIndex]] || 0;
+    const offset = this.midiPortChannelOffsets[this.midiPorts[trackIndex]] || 0
+    statusByteData.channel += offset;
     // process the event
     switch (statusByteData.status) {
         case messageTypes.noteOn:
@@ -89,7 +90,7 @@ export function _processEvent(event, trackIndex)
             break;
 
         case messageTypes.systemExclusive:
-            this.synth.systemExclusive(event.messageData);
+            this.synth.systemExclusive(event.messageData, offset);
             break;
 
         case messageTypes.text:

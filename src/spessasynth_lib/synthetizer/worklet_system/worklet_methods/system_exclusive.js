@@ -3,10 +3,11 @@ import { SpessaSynthInfo, SpessaSynthWarn } from '../../../utils/loggin.js'
 /**
  * Executes a system exclusive
  * @param messageData {number[]} - the message data without f0
+ * @param channelOffset {number}
  * @this {SpessaSynthProcessor}
  */
 
-export function systemExclusive(messageData)
+export function systemExclusive(messageData, channelOffset = 0)
 {
     const type = messageData[0];
     switch (type)
@@ -117,7 +118,8 @@ export function systemExclusive(messageData)
                     {
                         // this is an individual part (channel) parameter
                         // determine the channel 0 means channel 10 (default), 1 means 1 etc.
-                        const channel = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15][messageData[5] & 0x0F]; // for example 1A means A = 11, which corresponds to channel 12 (counting from 1)
+                        let channel = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15][messageData[5] & 0x0F] + channelOffset;
+                        // for example 1A means A = 11, which corresponds to channel 12 (counting from 1)
                         switch (messageData[6])
                         {
                             default:

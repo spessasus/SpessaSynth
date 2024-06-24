@@ -82,6 +82,8 @@ export function _playTo(time, ticks = undefined)
                 break;
 
             case messageTypes.controllerChange:
+                // Keep in mind midi ports to determine channel!!
+                const channel = info.channel + (this.midiPortChannelOffsets[this.midiPorts[trackIndex]] || 0);
                 // do not skip data entries
                 const controllerNumber = event.messageData[0];
                 if(
@@ -100,34 +102,20 @@ export function _playTo(time, ticks = undefined)
                 {
                     if(this.sendMIDIMessages)
                     {
-                        this.sendMIDIMessage([messageTypes.controllerChange | info.channel, controllerNumber, event.messageData[1]])
+                        this.sendMIDIMessage([messageTypes.controllerChange | channel, controllerNumber, event.messageData[1]])
                     }
                     else
                     {
-                        this.synth.controllerChange(info.channel, controllerNumber, event.messageData[1]);
+                        this.synth.controllerChange(channel, controllerNumber, event.messageData[1]);
                     }
                 }
                 else
                 {
-                    // Keep in mind midi ports to determine channel!!
-                    const channel = info.channel + (this.midiPortChannelOffsets[this.midiPorts[trackIndex]] || 0);
                     if(savedControllers[channel] === undefined)
                     {
                         savedControllers[channel] = Array.from(defaultControllerArray);
                     }
                     savedControllers[channel][controllerNumber] = event.messageData[1];
-                }
-                break;
-
-            // midiport: handle it and make sure that the saved controllers table is the same size as synth channels
-            case messageTypes.midiPort:
-                this._processEvent(event, trackIndex);
-                if(this.synth.workletProcessorChannels.length > savedControllers.length)
-                {
-                    while(this.synth.workletProcessorChannels.length > savedControllers.length)
-                    {
-                        savedControllers.push(Array.from(defaultControllerArray));
-                    }
                 }
                 break;
 
