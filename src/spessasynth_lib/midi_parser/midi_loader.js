@@ -80,7 +80,7 @@ export class MIDI{
              */
             const track = [];
             const trackChunk = this.readMIDIChunk(fileByteArray);
-            this.midiPorts.push(0)
+            this.midiPorts.push(-1)
 
             if(trackChunk.type !== "MTrk")
             {
@@ -285,6 +285,22 @@ export class MIDI{
                 loopEnd = this.lastVoiceEventTick;
             }
         }
+
+        // fix midi ports:
+        // midi tracks without ports will have a value of -1
+        // if all ports have a value of -1, set it to 0, otherwise take the first midi port and replace all -1 with it
+        // why do this? some midis (for some reason) specify all channels to port 1 or else, but leave the conductor track with no port pref.
+        // this spessasynth to reserve the first 16 channels for the conductor track (which doesn't play anything) and use additional 16 for the actual ports.
+        let defaultPort = 0;
+        for(let port of this.midiPorts)
+        {
+            if(port !== -1)
+            {
+                defaultPort = port;
+                break;
+            }
+        }
+        this.midiPorts = this.midiPorts.map(port => port === -1 ? defaultPort : port);
 
         /**
          *
