@@ -1,0 +1,83 @@
+name: Create Release with Multiple ZIPs
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install zip
+        run: sudo apt-get install zip -y
+
+      - name: Get previous tag
+        id: prev_tag
+        run: echo "::set-output name=tag::$(git describe --tags --abbrev=0 HEAD^)"
+
+      - name: Get current tag
+        id: curr_tag
+        run: echo "::set-output name=tag::$(git describe --tags --abbrev=0 HEAD)"
+
+      - name: Get current commit
+        id: curr_commit
+        run: echo "::set-output name=commit::$(git rev-parse HEAD)"
+
+      - name: Create Local_Edition.zip
+        run: |
+          zip -r Local_Edition.zip LICENSE README.md start.bat soundfonts/ src/ package.json package-lock.json
+
+      - name: Create spessasynth_lib.zip
+        run: |
+          mkdir -p spessasynth_lib
+          cp -r src/spessasynth_lib spessasynth_lib/
+          cp LICENSE spessasynth_lib/
+          zip -r spessasynth_lib.zip spessasynth_lib/
+
+      - name: Create changelog URL
+        id: changelog
+        run: |
+          echo "::set-output name=url::https://github.com/spessasus/SpessaSynth/compare/${{ steps.prev_tag.outputs.tag }}...${{ steps.curr_commit.outputs.commit }}"
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            Full changelog: ${{ steps.changelog.outputs.url }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Local_Edition.zip
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./Local_Edition.zip
+          asset_name: Local_Edition.zip
+          asset_content_type: application/zip
+
+      - name: Upload spessasynth_lib.zip
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./spessasynth_lib.zip
+          asset_name: spessasynth_lib.zip
+          asset_content_type: application/zip
