@@ -89,7 +89,7 @@ class Renderer
         this.renderNotes = true;
         this.drawActiveNotes = true;
         this.showVisualPitch = true;
-        this.stabilizeWaveforms = false;
+        this.stabilizeWaveforms = true;
         /**
          * @type {boolean[]}
          */
