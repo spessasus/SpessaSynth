@@ -53,16 +53,16 @@ jobs:
           body: |
             Full changelog: ${{ steps.changelog.outputs.url }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
 
       - name: Upload Local_Edition.zip
         run: |
           gh release upload ${{ github.ref }} Local_Edition.zip --clobber
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
 
       - name: Upload spessasynth_lib.zip
         run: |
           gh release upload ${{ github.ref }} spessasynth_lib.zip --clobber
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
