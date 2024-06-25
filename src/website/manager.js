@@ -222,7 +222,7 @@ const RENDER_AUDIO_TIME_INTERVAL = 500;
 
         // if on mobile, switch to a 5 octave keyboard
 
-        if(isMobile())
+        if(isMobile)
         {
             this.renderer.keyRange = {min: 36, max: 96};
             this.keyboard.keyRange = {min: 36, max: 96};
@@ -320,10 +320,11 @@ const RENDER_AUDIO_TIME_INTERVAL = 500;
         await this.synth.isReady;
 
         // if on mobile, cap voices to 100
-        if(isMobile())
+        if(isMobile)
         {
             this.synth.voiceCap = 100;
         }
+        console.log(isMobile)
     }
 
     /**

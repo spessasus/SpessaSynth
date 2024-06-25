@@ -1,5 +1,6 @@
 import {Synthetizer} from "../../spessasynth_lib/synthetizer/synthetizer.js";
 import { midiControllers } from '../../spessasynth_lib/midi_parser/midi_message.js'
+import { isMobile } from './utils/is_mobile.js'
 
 /**
  * midi_keyboard.js
@@ -110,8 +111,7 @@ export class MidiKeyboard
 
         // MOUSE HANDLING
         keyElement.onpointerover = e => {
-            if(!this.mouseHeld)
-            {
+            if (!this.mouseHeld) {
                 return
             }
             e.stopPropagation();
@@ -122,7 +122,12 @@ export class MidiKeyboard
             const rect = keyElement.getBoundingClientRect();
             const relativeMouseY = e.clientY - rect.top;
             const keyHeight = rect.height;
-            const velocity = Math.floor(relativeMouseY / keyHeight * 127);
+            let velocity = Math.floor(relativeMouseY / keyHeight * 127);
+            if (isMobile)
+            {
+                // ignore precise key velocity on mobile (keys are too small anyways)
+                velocity = 127;
+            }
             this.synth.noteOn(this.channel, midiNote, velocity, this.enableDebugging);
         }
         keyElement.onpointerdown = e =>
@@ -135,7 +140,12 @@ export class MidiKeyboard
             const rect = keyElement.getBoundingClientRect();
             const relativeMouseY = e.clientY - rect.top;
             const keyHeight = rect.height;
-            const velocity = Math.floor(relativeMouseY / keyHeight * 127);
+            let velocity = Math.floor(relativeMouseY / keyHeight * 127);
+            if (isMobile)
+            {
+                // ignore precise key velocity on mobile (keys are too small anyways)
+                velocity = 127;
+            }
             this.synth.noteOn(this.channel, midiNote, velocity, this.enableDebugging);
         }
         keyElement.onpointerout = () => {

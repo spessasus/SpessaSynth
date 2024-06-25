@@ -381,7 +381,7 @@ demoInit().then(() => {
         loading.style.display = "none";
 
         // check for chrome android
-        if(isMobile())
+        if(isMobile)
         {
             if(window.chrome)
             {

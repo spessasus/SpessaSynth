@@ -10,7 +10,7 @@ import { showNotification } from '../../notification.js'
  */
 export function _createMidiSettingsHandler(handler, sequi, synthui)
 {
-    if(!window.isLocalEdition && !isMobile())
+    if(!window.isLocalEdition && !isMobile)
     {
         if(!navigator.requestMIDIAccess)
         {
