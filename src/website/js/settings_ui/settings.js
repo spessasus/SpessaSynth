@@ -11,6 +11,7 @@ import {
     _createMidiSettingsHandler,
 } from './handlers/midi_handler.js'
 import { _createKeyboardHandler } from './handlers/keyboard_handler.js'
+import { localeList } from '../../locale/locale_files/locale_list.js'
 
 /**
  * settings.js
@@ -29,7 +30,6 @@ class SpessaSynthSettings
      * @param midiDeviceHandler {MIDIDeviceHandler}
      * @param playerInfo {MusicModeUI}
      * @param localeManager {LocaleManager}
-     * @param locales {Object<string, CompleteLocaleTypedef>}
      */
     constructor(settingsWrapper,
                 sythui,
@@ -38,8 +38,7 @@ class SpessaSynthSettings
                 midiKeyboard,
                 midiDeviceHandler,
                 playerInfo,
-                localeManager,
-                locales) {
+                localeManager) {
         this.mode = "dark";
         this.renderer = renderer;
         this.midiKeyboard = midiKeyboard;
@@ -47,7 +46,7 @@ class SpessaSynthSettings
         this.synthui = sythui;
         this.sequi = sequi;
         this.locale = localeManager;
-        this.locales = locales;
+        this.locales = localeList;
         this.keyboardSizes = {
             "full": { min: 0, max: 127 },
             "piano": { min: 21, max: 108 },
@@ -83,7 +82,7 @@ class SpessaSynthSettings
 
         this.mainDiv = document.createElement("div");
         this.mainDiv.classList.add("settings_menu");
-        settingsButton.onclick = e => {
+        settingsButton.onclick = () => {
             this.mainDiv.classList.toggle("settings_menu_show");
             this.hideOnDocClick = false;
         }

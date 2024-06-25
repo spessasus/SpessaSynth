@@ -1,6 +1,6 @@
 {
   "name": "SpessaSynth",
-  "version": "3.2.13",
+  "version": "3.2.14",
   "dependencies": {
     "express": "^4.18.2",
     "open": "^9.1.0"

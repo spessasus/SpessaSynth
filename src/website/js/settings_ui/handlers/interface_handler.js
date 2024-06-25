@@ -70,7 +70,7 @@ export function _createInterfaceSettingsHandler()
         select.appendChild(option);
     }
     select.onchange = () => {
-        this.locale.changeGlobalLocale(this.locales[select.value]);
+        this.locale.changeGlobalLocale(select.value);
         this._saveSettings();
     }
 }

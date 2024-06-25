@@ -85,9 +85,9 @@ export async function _loadSettings()
 
 
     // interface
-    if(savedSettings.interface.language !== DEFAULT_LOCALE)
+    if(savedSettings.interface.language !== this.locale.localeCode)
     {
-        this.locale.changeGlobalLocale(this.locales[savedSettings.interface.language]);
+        this.locale.changeGlobalLocale(savedSettings.interface.language);
 
         // using set timeout here fixes it for some reason
         setTimeout(() => {

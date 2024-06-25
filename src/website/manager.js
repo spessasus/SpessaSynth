@@ -12,9 +12,8 @@ import { SpessaSynthSettings } from './js/settings_ui/settings.js'
 import { MusicModeUI } from './js/music_mode_ui.js'
 //import { SoundFontMixer } from './js/soundfont_mixer.js'
 import { LocaleManager } from './locale/locale_manager.js'
-import { DEFAULT_LOCALE, localeList } from './locale/locale_files/locale_list.js'
 import { isMobile } from './js/utils/is_mobile.js'
-import { SpessaSynthInfo, SpessaSynthWarn } from '../spessasynth_lib/utils/loggin.js'
+import { SpessaSynthInfo } from '../spessasynth_lib/utils/loggin.js'
 import { showNotification } from './js/notification.js'
 
 const RENDER_AUDIO_TIME_INTERVAL = 500;
@@ -146,16 +145,7 @@ const RENDER_AUDIO_TIME_INTERVAL = 500;
         // initialize the locale management system. do it here because we want it ready before all js classes do their things
         // get locale from user "en-US" will turn into just "en"
         let locale = navigator.language.split("-")[0].toLowerCase();
-        if(localeList[locale])
-        {
-            SpessaSynthInfo(`Locale ${locale} found! using it.`)
-        }
-        else
-        {
-            SpessaSynthWarn(`Locale ${locale} not found. Using ${DEFAULT_LOCALE}.`)
-            locale = DEFAULT_LOCALE;
-        }
-        this.localeManager = new LocaleManager(localeList[locale]);
+        this.localeManager = new LocaleManager(locale);
 
 
         // bind every element with translate-path to translation
@@ -247,8 +237,7 @@ const RENDER_AUDIO_TIME_INTERVAL = 500;
             this.keyboard,
             this.midHandler,
             this.playerUI,
-            this.localeManager,
-            localeList);
+            this.localeManager);
 
         // set up soundfont mixer (unfinished)
         //this.soundFontMixer = new SoundFontMixer(document.getElementsByClassName("midi_and_sf_controller")[0], this.synth, this.synthUI);

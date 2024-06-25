@@ -7,17 +7,25 @@
  *  isEdited: boolean
  * }} PropertyType
  */
-import { SpessaSynthInfo } from '../../spessasynth_lib/utils/loggin.js'
+import { SpessaSynthInfo, SpessaSynthWarn } from '../../spessasynth_lib/utils/loggin.js'
+import { localeList } from './locale_files/locale_list.js'
 
 export class LocaleManager
 {
     /**
      * Creates a new locale manager, responsible for managing and binding text values, then changing them when the locale changes
-     * @param initialLocale {CompleteLocaleTypedef}
+     * @param initialLocale {LocaleList}
      */
     constructor(initialLocale) {
-        this.locale = initialLocale;
+        /**
+         * @type {CompleteLocaleTypedef}
+         */
+        this.locale = localeList[initialLocale];
 
+        /**
+         * @type {LocaleList}
+         */
+        this.localeCode = initialLocale;
         /**
          * All bound object properties and their respective objects
          * @type {PropertyType[]}
@@ -162,16 +170,26 @@ export class LocaleManager
 
     /**
      * Changes the global locale and all bound text
-     * @param newLocale {CompleteLocaleTypedef}
+     * @param newLocale {LocaleList}
      */
     changeGlobalLocale(newLocale)
     {
-        SpessaSynthInfo("Changing locale to", newLocale.localeName)
+        /**
+         * @type {CompleteLocaleTypedef}
+         */
+        const newLocaleObject = localeList[newLocale];
+        if(!newLocaleObject)
+        {
+            SpessaSynthWarn(`Locale ${newLocale} not found. Not switching.`);
+            return;
+        }
+        this.localeCode = newLocale;
+        SpessaSynthInfo("Changing locale to", newLocaleObject.localeName)
         // check if the property has been changed to something else. If so, don't change it back.
         this._boundObjectProperties.forEach(property => {
             this._validatePropertyIntegrity(property);
         })
-        this.locale = newLocale;
+        this.locale = newLocaleObject;
         // apply the new locale to bound elements
         this._boundObjectProperties.forEach(property => {
             this._applyPropertyInternal(property);
