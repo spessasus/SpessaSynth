@@ -1,4 +1,4 @@
-name: Create Release with Multiple ZIPs
+name: Create a new Release
 
 on:
   push:
