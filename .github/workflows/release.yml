@@ -11,23 +11,23 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: '20'
 
       - name: Install zip
-        run: sudo apt-get install zip -y
+        run: sudo apt-get install zip gh -y
 
       - name: Get previous tag
         id: prev_tag
-        run: echo "::set-output name=tag::$(git describe --tags --abbrev=0 HEAD^)"
+        run: echo "tag=$(git describe --tags --abbrev=0 HEAD^)" >> $GITHUB_ENV
 
       - name: Get current commit
         id: curr_commit
-        run: echo "::set-output name=commit::$(git rev-parse HEAD)"
+        run: echo "commit=$(git rev-parse HEAD)" >> $GITHUB_ENV
 
       - name: Create Local_Edition.zip
         run: |
@@ -42,12 +42,11 @@ jobs:
 
       - name: Create changelog URL
         id: changelog
-        run: |
-          echo "::set-output name=url::https://github.com/spessasus/SpessaSynth/compare/${{ steps.prev_tag.outputs.tag }}...${{ steps.curr_commit.outputs.commit }}"
+        run: echo "url=https://github.com/spessasus/SpessaSynth/compare/${{ env.tag }}...${{ env.commit }}" >> $GITHUB_ENV
 
       - name: Create GitHub Release
         id: create_release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref }}
           name: Release ${{ github.ref }}
@@ -57,21 +56,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Local_Edition.zip
-        uses: actions/upload-release-asset@v1
+        run: |
+          gh release upload ${{ github.ref }} Local_Edition.zip --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./Local_Edition.zip
-          asset_name: Local_Edition.zip
-          asset_content_type: application/zip
 
       - name: Upload spessasynth_lib.zip
-        uses: actions/upload-release-asset@v1
+        run: |
+          gh release upload ${{ github.ref }} spessasynth_lib.zip --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./spessasynth_lib.zip
-          asset_name: spessasynth_lib.zip
-          asset_content_type: application/zip
