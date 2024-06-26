@@ -36,8 +36,8 @@ export class MIDI{
             throw new RangeError(`Invalid MIDI header chunk size! Expected 6, got ${headerChunk.size}`);
         }
 
-        // format (ignore)
-        readBytesAsUintBigEndian(headerChunk.data, 2);
+        // format
+        const format = readBytesAsUintBigEndian(headerChunk.data, 2);
         // tracks count
         this.tracksAmount = readBytesAsUintBigEndian(headerChunk.data, 2);
         // time division
@@ -95,6 +95,11 @@ export class MIDI{
             let runningByte = undefined;
 
             let totalTicks = 0;
+            // format 2 plays sequentially
+            if(format === 2 && i > 0)
+            {
+                totalTicks += this.tracks[i - 1][this.tracks[i - 1].length - 1].ticks;
+            }
             // loop until we reach the end of track
             while(trackChunk.data.currentIndex < trackChunk.size)
             {
