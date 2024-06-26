@@ -32,9 +32,15 @@ fetch("../soundfonts/SGM.sf3").then(async response => {
             snapshot: undefined // this is used to copy the data of another synthesizer, so no need to use it here
         });
 
+        // show progress
+        const showRendering = setInterval(() => {
+            const progress = Math.floor(synth.currentTime / parsedMidi.duration * 100);
+            document.getElementById("message").innerText = `Rendering... ${progress}%`;
+        }, 500);
+
         // start rendering the audio
-        document.getElementById("message").innerText = "Started rendering... please wait.";
         const outputBuffer = await context.startRendering();
+        clearInterval(showRendering);
 
         // convert the buffer to wav file
         const wavFile = audioBufferToWav(outputBuffer);
