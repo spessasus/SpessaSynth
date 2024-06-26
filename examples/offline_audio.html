@@ -1,11 +1,12 @@
+<!DOCTYPE html>
 <html lang='en'>
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport'
           content='width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0'>
     <meta http-equiv='X-UA-Compatible' content='ie=edge'>
-    <title>SpessaSynth advanced example</title>
-    <link rel='icon' href='../../src/website/favicon.ico'>
+    <link rel='icon' href='../src/website/favicon.ico'>
+    <title>SpessaSynth render audio to file example</title>
     <style>
         * {
             font-family: "Noto Sans Light", "Open Sans Light", sans-serif;
@@ -13,19 +14,13 @@
     </style>
 </head>
 <body>
-    <h1>SpessaSynth demo: advanced</h1>
+    <h1>SpessaSynth demo: render audio to file</h1>
     <h2><a href='https://spessasus.github.io/SpessaSynth'>Main page</a></h2>
     <p id="message">Please wait for the soundFont to load.</p>
-    <input type="file" id="midi_input" multiple accept="audio/mid">
+    <input type="file" id="midi_input" accept="audio/mid">
     <br><br>
-    <input type="range" min="0" max="1000" value="0" id="progress">
-    <br>
-
-    <button id="previous">Previous song</button>
-    <button id="pause">Pause</button>
-    <button id="next">Next song</button>
 
     <!-- note the type="module" -->
-    <script src='advanced_demo.js' type="module"></script>
+    <script src='offline_audio.js' type="module"></script>
 </body>
 </html>

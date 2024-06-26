@@ -1,7 +1,7 @@
 // import the modules
-import { MIDI } from '../../src/spessasynth_lib/midi_parser/midi_loader.js'
-import { Sequencer } from '../../src/spessasynth_lib/sequencer/sequencer.js'
-import { Synthetizer } from '../../src/spessasynth_lib/synthetizer/synthetizer.js'
+import { MIDI } from '../src/spessasynth_lib/midi_parser/midi_loader.js'
+import { Sequencer } from '../src/spessasynth_lib/sequencer/sequencer.js'
+import { Synthetizer } from '../src/spessasynth_lib/synthetizer/synthetizer.js'
 
 // load the soundfont
 fetch("../soundfonts/SGM.sf3").then(async response => {
