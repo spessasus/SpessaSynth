@@ -313,7 +313,6 @@ const RENDER_AUDIO_TIME_INTERVAL = 500;
         {
             this.synth.voiceCap = 100;
         }
-        console.log(isMobile)
     }
 
     /**
@@ -351,9 +350,5 @@ const RENDER_AUDIO_TIME_INTERVAL = 500;
 
         // play the midi
         this.seq.play(true);
-
-        // this.renderer.onRender = () => {
-        //     console.log("frame")
-        // }
     }
 }

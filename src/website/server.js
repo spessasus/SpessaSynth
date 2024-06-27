@@ -78,7 +78,7 @@ app.get("/getsettings", (req, res) => {
      * }}
      */
     const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
-    res.send(config.settings);
+    res.send(config.settings || {});
 })
 
 app.listen(PORT,  HOST, undefined, () =>{
