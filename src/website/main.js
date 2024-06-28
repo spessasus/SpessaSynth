@@ -195,9 +195,8 @@ async function startMidi(midiFiles)
  */
 async function replaceFont(fontName)
 {
-    function replaceSf()
+    async function replaceSf()
     {
-        titleMessage.innerText = TITLE;
 
         // prompt the user to click if needed
         if(!window.audioContextMain)
@@ -209,6 +208,10 @@ async function replaceFont(fontName)
         if(!window.manager) {
             // prepare the manager
             window.manager = new Manager(audioContextMain, soundFontParser);
+            const t = titleMessage.innerText;
+            titleMessage.innerText = "Initializing...";
+            await manager.ready;
+            titleMessage.innerText = t;
         }
         else
         {
@@ -216,21 +219,21 @@ async function replaceFont(fontName)
             {
                 window.manager.seq.pause();
             }
-            window.manager.reloadSf(window.soundFontParser).then(() => {
-                if(window.manager.seq)
-                {
-                    // resets controllers
-                    window.manager.seq.currentTime -= 0.1;
-                }
-            });
+            await window.manager.reloadSf(window.soundFontParser);
+            if(window.manager.seq)
+            {
+                // resets controllers
+                window.manager.seq.currentTime -= 0.1;
+            }
         }
         synthReady = true;
+        titleMessage.innerText = TITLE;
     }
 
     if(window.loadedSoundfonts.find(sf => sf.name === fontName))
     {
         window.soundFontParser = window.loadedSoundfonts.find(sf => sf.name === fontName).sf;
-        replaceSf();
+        await replaceSf();
         return;
     }
     titleMessage.innerText = "Downloading soundfont...";
@@ -245,7 +248,7 @@ async function replaceFont(fontName)
     });
 }
 
-document.body.onclick = () =>
+document.body.onclick = async () =>
 {
     // user has clicked, we can create the js
     if(!window.audioContextMain)
@@ -257,9 +260,12 @@ document.body.onclick = () =>
         const context = window.AudioContext || window.webkitAudioContext;
         window.audioContextMain = new context({sampleRate: SAMPLE_RATE});
         if(window.soundFontParser) {
-            titleMessage.innerText = TITLE;
             // prepare midi interface
             window.manager = new Manager(audioContextMain, soundFontParser);
+            const t = titleMessage.innerText;
+            titleMessage.innerText = "Initializing..."
+            await manager.ready;
+            titleMessage.innerText = t;
             synthReady = true;
         }
     }

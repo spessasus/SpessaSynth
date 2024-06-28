@@ -61,14 +61,16 @@ The complete GUI for spessasynth_lib, allowing remixing experimenting and playin
 - Play around with the MIDI file, edit instruments controllers and more!
 - Render the MIDI file (either modified or unmodified) to wav
 - Comes bundled with a compressed [SGM](https://musical-artifacts.com/artifacts/855) SoundFont to get you started
+- Also no dependencies!
 
 ### Installation
 > [!IMPORTANT]
 > Firefox is recommended, due to unconstrained memory size.
+> Also a decent computer for large soundfonts.
 
 [Recommended high quality soundfont (better than the built-in one)](https://musical-artifacts.com/artifacts/1176)
 
-**Requires Node.js**
+**Requires node.js to be installed**
 #### Windows
 1. Download the code as zip and extract or use `git clone https://github.com/spessasus/SpessaSynth`
 2. Put your soundfonts into the `soundfonts` folder. (you can select soundfonts in the program)
@@ -79,24 +81,23 @@ The complete GUI for spessasynth_lib, allowing remixing experimenting and playin
 1. ```shell
    git clone https://github.com/spessasus/SpessaSynth
    cd SpessaSynth
-   npm install && node server.js 
+   node src/website/server.js
    ```
 2. Put your soundfonts into the `soundfonts` folder. (you can select soundfonts in the program)
 3. Enjoy!
 
-(note that in KDE Plasma 6 the browser auto opening seems to be broken. You must navigate to http://localhost:8181 manually)
-
-
 #### todo
 - make the worklet system perform good
-- port the worklet system to emscripten (maybe)
+- port the worklet system to emscripten (maybe) (not really)
 
 
 ### Special thanks
  - [Fluidsynth](https://github.com/FluidSynth/fluidsynth) - the source code really helped me understand and implement a lot of functionality and fixes
  - [Polyphone](https://www.polyphone-soundfonts.com/) - a wonderful testing tool for soundfonts and how they should sound
- - [Meltysynth](https://github.com/sinshu/meltysynth) - for the low-pass filter implementation
- - **You!** - for checking out this project. I hope you like it :)
+ - [Meltysynth](https://github.com/sinshu/meltysynth) - for the initial low-pass filter implementation
+ - [RecordingBlogs](https://www.recordingblogs.com/) - for the detailed explanations on MIDI messages
+ - 
+ - **And You!** - for checking out this project. I hope you like it :)
 
 ### License
 Copyright © 2024 Spessasus. Licensed under the MIT License.
