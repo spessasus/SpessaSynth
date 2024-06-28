@@ -2,4 +2,4 @@
 /disabled_sf2s/
 /.idea
 /src/spessasynth_lib/synthetizer/freeverb_unused/
-/src/website/config.json
+/src/website/server/config.json
