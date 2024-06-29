@@ -7,7 +7,7 @@ export function openURL(url)
             child_process.exec(`xdg-open ${url}`);
             break;
         case 'win32':
-            child_process.exec(`explorer "${url}"`);
+            child_process.exec(`start "" ${url}`);
             break;
         case 'darwin':
             child_process.exec(`open "${url}"`);
