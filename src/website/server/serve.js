@@ -42,7 +42,7 @@ export async function serveSfont(path, res)
 export function serveStaticFile(res, filePath, mimeType=undefined)
 {
     filePath = decodeURIComponent(filePath);
-    if(filePath.endsWith(".sf3") || filePath.endsWith(".sf2"))
+    if(filePath.toLowerCase().endsWith(".sf3") || filePath.toLowerCase().endsWith(".sf2"))
     {
         filePath = path.join(path.dirname(filePath), "../soundfonts", path.basename(filePath));
         serveSfont(filePath, res).then();
