@@ -89,6 +89,7 @@ The complete GUI for spessasynth_lib, allowing remixing experimenting and playin
 #### todo
 - make the worklet system perform good
 - port the worklet system to emscripten (maybe) (not really)
+- improve the built-in chorus and reverb effects
 
 
 ### Special thanks
@@ -96,7 +97,6 @@ The complete GUI for spessasynth_lib, allowing remixing experimenting and playin
  - [Polyphone](https://www.polyphone-soundfonts.com/) - a wonderful testing tool for soundfonts and how they should sound
  - [Meltysynth](https://github.com/sinshu/meltysynth) - for the initial low-pass filter implementation
  - [RecordingBlogs](https://www.recordingblogs.com/) - for the detailed explanations on MIDI messages
- - 
  - **And You!** - for checking out this project. I hope you like it :)
 
 ### License

@@ -53,11 +53,25 @@ export function audioBufferToWav(audioBuffer)
 
     // Interleave audio data (combine channels)
     let offset = headerSize;
+    // find min and max values to prevent clipping when converting to 16 bits
+    const initialMultiplier = 32767;
+
+    const max = Math.max(
+        channel1Data.reduce((max, value) => (value > max ? value : max), -Infinity),
+        channel2Data.reduce((max, value) => (value > max ? value : max), -Infinity)
+    );
+
+    const min = Math.min(
+        channel1Data.reduce((min, value) => (value < min ? value : min), Infinity),
+        channel2Data.reduce((min, value) => (value < min ? value : min), Infinity)
+    );
+    const maxAbsValue = Math.max(max, Math.abs(min));
+    const normalizedMultiplier = initialMultiplier / maxAbsValue;
     for (let i = 0; i < length; i++)
     {
         // interleave both channels
-        const sample1 = Math.max(-1, Math.min(1, channel1Data[i])) * 0x7FFF;
-        const sample2 = Math.max(-1, Math.min(1, channel2Data[i])) * 0x7FFF;
+        const sample1 = channel1Data[i] * normalizedMultiplier;
+        const sample2 = channel2Data[i] * normalizedMultiplier;
 
         // convert to 16-bit
         wavData[offset++] = sample1 & 0xff;

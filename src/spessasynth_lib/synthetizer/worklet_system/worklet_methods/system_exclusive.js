@@ -97,7 +97,8 @@ export function systemExclusive(messageData, channelOffset = 0)
                 if(messageData[6] === 0x7F)
                 {
                     // GS mode set
-                    if(messageValue === 0x00) {
+                    if(messageValue === 0x00)
+                    {
                         // this is a GS reset
                         SpessaSynthInfo("%cGS system on", consoleColors.info);
                         this.system = "gs";

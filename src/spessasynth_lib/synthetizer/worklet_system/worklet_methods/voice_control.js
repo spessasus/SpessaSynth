@@ -9,6 +9,8 @@ import { applyVolumeEnvelope } from '../worklet_utilities/volume_envelope.js'
 import { applyLowpassFilter } from '../worklet_utilities/lowpass_filter.js'
 import { MIN_NOTE_LENGTH } from '../main_processor.js'
 
+
+const HALF_PI = Math.PI / 2;
 /**
  * Renders a voice to the stereo output buffer
  * @param channel {WorkletProcessorChannel} the voice's channel
@@ -132,8 +134,8 @@ export function renderVoice(channel, voice, output, reverbOutput, chorusOutput)
 
     // pan the voice and write out
     voice.currentPan += (pan - voice.currentPan) * 0.1; // smooth out pan to prevent clicking
-    const panLeft = (1 - voice.currentPan) * this.panLeft;
-    const panRight = voice.currentPan *  this.panRight;
+    const panLeft = Math.cos(HALF_PI * pan) * this.panLeft;
+    const panRight = Math.sin(HALF_PI * pan) *  this.panRight;
     panVoice(
         panLeft,
         panRight,

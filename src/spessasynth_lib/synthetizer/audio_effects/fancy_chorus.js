@@ -17,21 +17,19 @@
  * @property {number} defaultDelay - the initial delay, in seconds
  * @property {number} delayVariation - the difference between delays in the delay nodes
  * @property {number} stereoDifference - the difference of delays between two channels (added to the left channel and subtracted from the right)
- *
  * @property {number} oscillatorFrequency - the initial delay oscillator frequency, in Hz.
  * @property {number} oscillatorFrequencyVariation - the difference between frequencies of oscillators, in Hz
  * @property {number} oscillatorGain - how much will oscillator alter the delay in delay nodes, in seconds
  */
 
-
-const NODES_AMOUNT = 3;
-const DEFAULT_DELAY = 0.02;
+const NODES_AMOUNT = 4;
+const DEFAULT_DELAY = 0.03;
 const DELAY_VARIATION = 0.01;
-const STEREO_DIFF = 0.01;
+const STEREO_DIFF = 0.02;
 
 const OSC_FREQ = 0.3;
-const OSC_FREQ_VARIATION = 0.1;
-const OSC_GAIN = 0.002;
+const OSC_FREQ_VARIATION = 0.05;
+const OSC_GAIN = 0.003;
 
 export const DEFAULT_CHORUS_CONFIG = {
     nodesAmount: NODES_AMOUNT,
@@ -53,11 +51,9 @@ export class FancyChorus
     constructor(output, config = DEFAULT_CHORUS_CONFIG) {
         const context = output.context;
 
-        this.input = new ChannelSplitterNode(context,
-            {
-                numberOfOutputs: 2
-            }
-        );
+        this.input = new ChannelSplitterNode(context, {
+            numberOfOutputs: 2
+        });
 
         const merger = new ChannelMergerNode(context, {
             numberOfInputs: 2
@@ -98,24 +94,27 @@ export class FancyChorus
     createChorusNode(freq, delay, list, input, output, outputNum, context, config)
     {
         const oscillator = new OscillatorNode(context, {
-            type: "triangle",
-            frequency: freq
+            type: 'sine',
+            frequency: freq + (Math.random() - 0.5) * config.oscillatorFrequencyVariation
         });
         const gainNode = new GainNode(context, {
-            gain: config.oscillatorGain
+            gain: config.oscillatorGain + (Math.random() - 0.5) * config.oscillatorGain * 0.5
         });
         const delayNode = new DelayNode(context, {
             delayTime: delay
         });
+
         oscillator.connect(gainNode);
         gainNode.connect(delayNode.delayTime);
         oscillator.start(context.currentTime + delay);
+
         this.input.connect(delayNode, input);
         delayNode.connect(output, 0, outputNum);
+
         list.push({
             oscillator: oscillator,
             oscillatorGain: gainNode,
             delay: delayNode
-        })
+        });
     }
 }
