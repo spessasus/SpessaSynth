@@ -1,16 +1,17 @@
 import { generatorTypes } from '../../../soundfont/chunk/generators.js'
-import { absCentsToHz, timecentsToSeconds } from '../worklet_utilities/unit_converter.js'
+import { absCentsToHz, decibelAttenuationToGain, timecentsToSeconds } from '../worklet_utilities/unit_converter.js'
 import { getLFOValue } from '../worklet_utilities/lfo.js'
 import { customControllers } from '../worklet_utilities/worklet_processor_channel.js'
 import { getModEnvValue } from '../worklet_utilities/modulation_envelope.js'
 import { getOscillatorData } from '../worklet_utilities/wavetable_oscillator.js'
 import { panVoice } from '../worklet_utilities/stereo_panner.js'
-import { applyVolumeEnvelope } from '../worklet_utilities/volume_envelope.js'
+import { applyVolumeEnvelope, recalculateVolumeEnvelope } from '../worklet_utilities/volume_envelope.js'
 import { applyLowpassFilter } from '../worklet_utilities/lowpass_filter.js'
 import { MIN_NOTE_LENGTH } from '../main_processor.js'
 
 
 const HALF_PI = Math.PI / 2;
+export const PAN_SMOOTHING_FACTOR = 0.01;
 /**
  * Renders a voice to the stereo output buffer
  * @param channel {WorkletProcessorChannel} the voice's channel
@@ -29,11 +30,14 @@ export function renderVoice(channel, voice, output, reverbOutput, chorusOutput)
     }
 
     // check if release
-    if(!voice.isInRelease) {
+    if(!voice.isInRelease)
+    {
         // if not in release, check if the release time is
         if (currentTime >= voice.releaseStartTime) {
             voice.releaseStartModEnv = voice.currentModEnvValue;
             voice.isInRelease = true;
+            recalculateVolumeEnvelope(voice);
+            voice.volumeEnvelope.currentReleaseGain = decibelAttenuationToGain(voice.volumeEnvelope.currentAttenuationDb);
         }
     }
 
@@ -117,7 +121,7 @@ export function renderVoice(channel, voice, output, reverbOutput, chorusOutput)
     }
 
     // PANNING
-    const pan = ( (Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan] )) + 500) / 1000) ; // 0 to 1
+    const pan = ((Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan] )) + 500) / 1000) ; // 0 to 1
 
     // SYNTHESIS
     const bufferOut = new Float32Array(output[0].length);
@@ -130,12 +134,12 @@ export function renderVoice(channel, voice, output, reverbOutput, chorusOutput)
     applyLowpassFilter(voice, bufferOut, lowpassCents);
 
     // volenv
-    applyVolumeEnvelope(voice, bufferOut, currentTime, modLfoCentibels, this.sampleTime);
+    applyVolumeEnvelope(voice, bufferOut, currentTime, modLfoCentibels, this.sampleTime, this.volumeEnvelopeSmoothingFactor);
 
     // pan the voice and write out
-    voice.currentPan += (pan - voice.currentPan) * 0.1; // smooth out pan to prevent clicking
-    const panLeft = Math.cos(HALF_PI * pan) * this.panLeft;
-    const panRight = Math.sin(HALF_PI * pan) *  this.panRight;
+    voice.currentPan += (pan - voice.currentPan) * this.panSmoothingFactor; // smooth out pan to prevent clicking
+    const panLeft = Math.cos(HALF_PI * voice.currentPan) * this.panLeft;
+    const panRight = Math.sin(HALF_PI * voice.currentPan) *  this.panRight;
     panVoice(
         panLeft,
         panRight,
@@ -167,12 +171,12 @@ function getPriority(channel, voice)
     // less velocity = less important
     priority += voice.velocity / 25; // map to 0-5
     // the newer, more important
-    priority -= voice.volumeEnvelopeState;
+    priority -= voice.volumeEnvelope.state;
     if(voice.isInRelease)
     {
         priority -= 5;
     }
-    priority -= voice.currentAttenuationDb / 50;
+    priority -= voice.volumeEnvelope.currentAttenuationDb / 50;
     return priority;
 }
 

@@ -1,6 +1,7 @@
 import { modulatorSources } from '../../../soundfont/chunk/modulators.js'
 import { getModulatorCurveValue, MOD_PRECOMPUTED_LENGTH } from './modulator_curves.js'
 import { NON_CC_INDEX_OFFSET } from './worklet_processor_channel.js'
+import { recalculateVolumeEnvelope } from './volume_envelope.js'
 
 /**
  * worklet_modulator.js
@@ -103,10 +104,13 @@ export function computeWorkletModulator(controllerTable, modulator, midiNote, ve
  */
 export function computeModulators(voice, controllerTable)
 {
+    // reset generators to their initial state
     voice.modulatedGenerators.set(voice.generators);
+    // add modulated values
     voice.modulators.forEach(mod => {
         voice.modulatedGenerators[mod.modulatorDestination] += computeWorkletModulator(controllerTable, mod, voice.midiNote, voice.velocity);
     });
+    recalculateVolumeEnvelope(voice)
 }
 
 /**

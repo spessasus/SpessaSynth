@@ -90,6 +90,7 @@ The complete GUI for spessasynth_lib, allowing remixing experimenting and playin
 - make the worklet system perform good
 - port the worklet system to emscripten (maybe) (not really)
 - improve the built-in chorus and reverb effects
+- fix release during attack
 
 
 ### Special thanks

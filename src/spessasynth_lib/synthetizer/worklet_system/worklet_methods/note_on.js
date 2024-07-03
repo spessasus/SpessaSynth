@@ -55,13 +55,13 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false)
                 if(v.generators[generatorTypes.exclusiveClass] === exclusive)
                 {
                     this.releaseVoice(v);
-                    v.generators[generatorTypes.releaseVolEnv] = -7200; // make the release nearly instant
+                    v.generators[generatorTypes.releaseVolEnv] = -7000; // make the release nearly instant
+                    v.generators[generatorTypes.releaseModEnv] = -7000;
                     computeModulators(v, this.workletProcessorChannels[channel].midiControllers);
                 }
             })
         }
         computeModulators(voice, this.workletProcessorChannels[channel].midiControllers);
-        voice.currentAttenuationDb = 100;
         // set initial pan to avoid split second changing from middle to the correct value
         voice.currentPan = ( (Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan] )) + 500) / 1000) // 0 to 1
     });

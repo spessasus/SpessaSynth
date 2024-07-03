@@ -11,6 +11,23 @@ import { absCentsToHz, decibelAttenuationToGain } from './unit_converter.js'
 
 
 /**
+ * @typedef {Object} WorkletLowpassFilter
+ * @property {number} a0 - filter coefficient 1
+ * @property {number} a1 - filter coefficient 2
+ * @property {number} a2 - filter coefficient 3
+ * @property {number} a3 - filter coefficient 4
+ * @property {number} a4 - filter coefficient 5
+ * @property {number} x1 - input history 1
+ * @property {number} x2 - input history 2
+ * @property {number} y1 - output history 1
+ * @property {number} y2 - output history 2
+ * @property {number} reasonanceCb - reasonance in centibels
+ * @property {number} reasonanceGain - resonance gain
+ * @property {number} cutoffCents - cutoff frequency in cents
+ * @property {number} cutoffHz - cutoff frequency in Hz
+ */
+
+/**
  * Applies a low-pass filter to the given buffer
  * @param voice {WorkletVoice} the voice we're working on
  * @param outputBuffer {Float32Array} the buffer to apply the filter to

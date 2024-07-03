@@ -106,6 +106,7 @@ export function pitchWheel(channel, MSB, LSB)
         LSB: LSB
     });
     this.workletProcessorChannels[channel].midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel] = bend;
-    this.workletProcessorChannels[channel].voices.forEach(v => computeModulators(v, this.workletProcessorChannels[channel].midiControllers));
+    this.workletProcessorChannels[channel].voices.forEach(v =>
+        computeModulators(v, this.workletProcessorChannels[channel].midiControllers));
     this.sendChannelProperties();
 }
