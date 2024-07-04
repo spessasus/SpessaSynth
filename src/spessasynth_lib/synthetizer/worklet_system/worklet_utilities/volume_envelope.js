@@ -45,7 +45,7 @@ export const DEFAULT_WORKLET_VOLUME_ENVELOPE = {
     currentReleaseGain: 1,
 }
 
-export const VOLUME_ENVELOPE_SMOOTHING_FACTOR = 0.001;
+export const VOLUME_ENVELOPE_SMOOTHING_FACTOR = 0.005;
 
 const DB_SILENCE = 100;
 const GAIN_SILENCE = 0.005;

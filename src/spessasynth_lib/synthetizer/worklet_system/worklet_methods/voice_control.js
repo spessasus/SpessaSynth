@@ -33,7 +33,8 @@ export function renderVoice(channel, voice, output, reverbOutput, chorusOutput)
     if(!voice.isInRelease)
     {
         // if not in release, check if the release time is
-        if (currentTime >= voice.releaseStartTime) {
+        if (currentTime >= voice.releaseStartTime)
+        {
             voice.releaseStartModEnv = voice.currentModEnvValue;
             voice.isInRelease = true;
             recalculateVolumeEnvelope(voice);

@@ -20,13 +20,15 @@ const ICON_DISABLED_COLOR_L = "#ddd";
 
 const DEFAULT_ENCODING = "Shift_JIS";
 
-export class SequencerUI{
+export class SequencerUI
+{
     /**
      * Creates a new User Interface for the given MidiSequencer
      * @param element {HTMLElement} the element to create sequi in
      * @param locale {LocaleManager}
      */
-    constructor(element, locale) {
+    constructor(element, locale)
+    {
         this.iconColor = ICON_COLOR;
         this.iconDisabledColor = ICON_DISABLED_COLOR;
         this.controls = element;
@@ -63,7 +65,7 @@ export class SequencerUI{
         this.progressBar.classList.toggle("note_progress_light");
         this.progressBarBackground.classList.toggle("note_progress_background_light");
         this.lyricsElement.mainDiv.classList.toggle("lyrics_light");
-        this.lyricsElement.text.classList.toggle("lyrics_light");
+        this.lyricsElement.titleWrapper.classList.toggle("lyrics_light");
         this.lyricsElement.selector.classList.toggle("lyrics_light");
     }
 
@@ -263,6 +265,7 @@ export class SequencerUI{
          * LYRICS
          * @type {{
          *     mainDiv: HTMLDivElement,
+         *     titleWrapper: HTMLDivElement,
          *     title: HTMLHeadingElement,
          *     text: HTMLParagraphElement,
          *     selector: HTMLSelectElement
@@ -272,12 +275,20 @@ export class SequencerUI{
         // main div
         const mainLyricsDiv  = document.createElement("div");
         mainLyricsDiv.classList.add("lyrics");
+
+        // title wrapper
+        const titleWrapper = document.createElement("div");
+        titleWrapper.classList.add("lyrics_title_wrapper");
+        mainLyricsDiv.append(titleWrapper);
+        this.lyricsElement.titleWrapper = titleWrapper;
+
         // title
         const lyricsTitle = document.createElement("h2");
         this.locale.bindObjectProperty(lyricsTitle, "textContent", "locale.sequencerController.lyrics.title");
         lyricsTitle.classList.add("lyrics_title");
-        mainLyricsDiv.appendChild(lyricsTitle);
+        titleWrapper.appendChild(lyricsTitle);
         this.lyricsElement.title = lyricsTitle;
+
         // encoding selector
         const encodingSelector = document.createElement("select");
         supportedEncodings.forEach(encoding => {
@@ -289,7 +300,8 @@ export class SequencerUI{
         encodingSelector.value = this.encoding;
         encodingSelector.onchange = () => this.changeEncoding(encodingSelector.value);
         encodingSelector.classList.add("lyrics_selector");
-        mainLyricsDiv.appendChild(encodingSelector);
+        titleWrapper.appendChild(encodingSelector);
+
         // the actual text
         const text = document.createElement("p");
         text.classList.add("lyrics_text");
