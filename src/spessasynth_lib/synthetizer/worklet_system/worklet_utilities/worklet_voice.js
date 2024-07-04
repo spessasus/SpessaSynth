@@ -49,6 +49,7 @@
 import { addAndClampGenerator, generatorTypes } from '../../../soundfont/chunk/generators.js'
 import { SpessaSynthTable } from '../../../utils/loggin.js'
 import { DEFAULT_WORKLET_VOLUME_ENVELOPE } from './volume_envelope.js'
+import { DEFAULT_WORKLET_LOWPASS_FILTER } from './lowpass_filter.js'
 
 
 /**
@@ -245,22 +246,7 @@ export function getWorkletVoices(channel,
             }
 
             return {
-                filter: {
-                    a0: 0,
-                    a1: 0,
-                    a2: 0,
-                    a3: 0,
-                    a4: 0,
-
-                    x1: 0,
-                    x2: 0,
-                    y1: 0,
-                    y2: 0,
-                    reasonanceCb: 0,
-                    reasonanceGain: 1,
-                    cutoffCents: 13500,
-                    cutoffHz: 20000
-                },
+                filter: deepClone(DEFAULT_WORKLET_LOWPASS_FILTER),
                 // generators and modulators
                 generators: generators,
                 modulators: sampleAndGenerators.modulators,

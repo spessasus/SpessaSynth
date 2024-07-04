@@ -152,7 +152,6 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
         // these smoothing factors were tested on 44100Hz, adjust them here
         this.volumeEnvelopeSmoothingFactor = VOLUME_ENVELOPE_SMOOTHING_FACTOR * (sampleRate / 44100);
         this.panSmoothingFactor = PAN_SMOOTHING_FACTOR * (sampleRate / 44100);
-        console.log(this.volumeEnvelopeSmoothingFactor, this.panSmoothingFactor);
 
         /**
          * Controls the system

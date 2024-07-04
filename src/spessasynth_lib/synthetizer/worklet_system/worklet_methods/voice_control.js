@@ -23,12 +23,6 @@ export const PAN_SMOOTHING_FACTOR = 0.01;
  */
 export function renderVoice(channel, voice, output, reverbOutput, chorusOutput)
 {
-    // if no matching sample, perhaps it's still being loaded..?
-    if(this.workletDumpedSamplesList[voice.sample.sampleID] === undefined)
-    {
-        return;
-    }
-
     // check if release
     if(!voice.isInRelease)
     {
@@ -67,7 +61,7 @@ export function renderVoice(channel, voice, output, reverbOutput, chorusOutput)
 
     // vibrato LFO
     const vibratoDepth = voice.modulatedGenerators[generatorTypes.vibLfoToPitch];
-    if(vibratoDepth > 0)
+    if(vibratoDepth !== 0)
     {
         const vibStart = voice.startTime + timecentsToSeconds(voice.modulatedGenerators[generatorTypes.delayVibLFO]);
         const vibFreqHz = absCentsToHz(voice.modulatedGenerators[generatorTypes.freqVibLFO]);
@@ -86,7 +80,7 @@ export function renderVoice(channel, voice, output, reverbOutput, chorusOutput)
     const modVolDepth = voice.modulatedGenerators[generatorTypes.modLfoToVolume];
     const modFilterDepth = voice.modulatedGenerators[generatorTypes.modLfoToFilterFc];
     let modLfoCentibels = 0;
-    if(modPitchDepth + modFilterDepth + modVolDepth > 0)
+    if(modPitchDepth + modFilterDepth + modVolDepth !== 0)
     {
         const modStart = voice.startTime + timecentsToSeconds(voice.modulatedGenerators[generatorTypes.delayModLFO]);
         const modFreqHz = absCentsToHz(voice.modulatedGenerators[generatorTypes.freqModLFO]);
@@ -132,7 +126,7 @@ export function renderVoice(channel, voice, output, reverbOutput, chorusOutput)
 
 
     // lowpass filter
-    applyLowpassFilter(voice, bufferOut, lowpassCents);
+    applyLowpassFilter(voice, bufferOut, lowpassCents, this.lowpassFilterSmoothingFactor);
 
     // volenv
     applyVolumeEnvelope(voice, bufferOut, currentTime, modLfoCentibels, this.sampleTime, this.volumeEnvelopeSmoothingFactor);

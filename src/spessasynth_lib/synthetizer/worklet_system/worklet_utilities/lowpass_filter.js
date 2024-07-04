@@ -28,6 +28,27 @@ import { absCentsToHz, decibelAttenuationToGain } from './unit_converter.js'
  */
 
 /**
+ * @type {WorkletLowpassFilter}
+ */
+export const DEFAULT_WORKLET_LOWPASS_FILTER = {
+    a0: 0,
+    a1: 0,
+    a2: 0,
+    a3: 0,
+    a4: 0,
+
+    x1: 0,
+    x2: 0,
+    y1: 0,
+    y2: 0,
+
+    reasonanceCb: 0,
+    reasonanceGain: 1,
+    cutoffCents: 13500,
+    cutoffHz: 20000
+}
+
+/**
  * Applies a low-pass filter to the given buffer
  * @param voice {WorkletVoice} the voice we're working on
  * @param outputBuffer {Float32Array} the buffer to apply the filter to

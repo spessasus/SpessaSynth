@@ -13,7 +13,8 @@ import { SpessaSynthWarn } from '../../../utils/loggin.js'
  */
 export function noteOn(channel, midiNote, velocity, enableDebugging = false)
 {
-    if (velocity === 0) {
+    if (velocity === 0)
+    {
         this.noteOff(channel, midiNote);
         return;
     }
@@ -22,7 +23,8 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false)
         (this.highPerformanceMode && this.totalVoicesAmount > 200 && velocity < 40) ||
         (this.highPerformanceMode && velocity < 10) ||
         (this.workletProcessorChannels[channel].isMuted)
-    ) {
+    )
+    {
         return;
     }
 

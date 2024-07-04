@@ -173,84 +173,100 @@ export function applyVolumeEnvelope(voice, audioBuffer, currentTime, centibelOff
     }
 
     let currentFrameTime = currentTime;
-    let dbAttenuation;
-    for (let i = 0; i < audioBuffer.length; i++)
+    let filledBuffer = 0;
+    switch(env.state)
     {
-        switch(env.state)
-        {
-            case 0:
-                // delay phase, no sound is produced
-                if(currentFrameTime >= env.delayEnd)
-                {
-                    env.state++;
-                }
-                else
-                {
-                    dbAttenuation = DB_SILENCE;
-                    audioBuffer[i] = 0;
+        case 0:
+            // delay phase, no sound is produced
+            while(currentFrameTime < env.delayEnd)
+            {
+                env.currentAttenuationDb = DB_SILENCE;
+                audioBuffer[filledBuffer] = 0;
 
-                    // no need to go through the hassle of converting. Skip
-                    currentFrameTime += sampleTime;
-                    continue;
-                }
-            // fallthrough
-
-            case 1:
-                // attack phase: ramp from 0 to attenuation
-                if(currentFrameTime >= env.attackEnd)
+                currentFrameTime += sampleTime;
+                if(++filledBuffer >= audioBuffer.length)
                 {
-                    env.state++;
+                    return;
                 }
-                else
-                {
-                    // Special case: linear gain ramp instead of linear db ramp
-                    let linearAttenuation = 1 - (env.attackEnd - currentFrameTime) / env.attackDuration; // 0 to 1
-                    const gain = linearAttenuation * decibelAttenuationToGain(env.attenuation + decibelOffset)
-                    audioBuffer[i] *= gain;
-                    // set current attenuation to peak as its invalid during this phase
-                    env.currentAttenuationDb = env.attenuation;
-                    currentFrameTime += sampleTime;
-                    continue;
+            }
+            env.state++;
+        // fallthrough
 
-                }
-            // fallthrough
+        case 1:
+            // attack phase: ramp from 0 to attenuation
+            while(currentFrameTime < env.attackEnd)
+            {
+                // Special case: linear gain ramp instead of linear db ramp
+                let linearAttenuation = 1 - (env.attackEnd - currentFrameTime) / env.attackDuration; // 0 to 1
+                const gain = linearAttenuation * decibelAttenuationToGain(env.attenuation + decibelOffset)
+                audioBuffer[filledBuffer] *= gain;
 
-            case 2:
-                // hold/peak phase: stay at attenuation
-                if(currentFrameTime >= env.holdEnd)
-                {
-                    env.state++;
-                }
-                else
-                {
-                    dbAttenuation = env.attenuation;
-                    break;
-                }
-            // fallthrough
+                // set current attenuation to peak as its invalid during this phase
+                env.currentAttenuationDb = env.attenuation;
 
-            case 3:
-                // decay phase: linear ramp from attenuation to sustain
-                if(currentFrameTime >= env.decayEnd)
+                currentFrameTime += sampleTime;
+                if(++filledBuffer >= audioBuffer.length)
                 {
-                    env.state++;
+                    return;
                 }
-                else
+            }
+            env.state++;
+        // fallthrough
+
+        case 2:
+            // hold/peak phase: stay at attenuation
+            while(currentFrameTime < env.holdEnd)
+            {
+                const newAttenuation = env.attenuation
+                    + decibelOffset;
+
+                // interpolate attenuation to prevent clicking
+                env.currentAttenuationDb += (newAttenuation - env.currentAttenuationDb) * smoothingFactor;
+                audioBuffer[filledBuffer] *= decibelAttenuationToGain(env.currentAttenuationDb);
+
+                currentFrameTime += sampleTime;
+                if(++filledBuffer >= audioBuffer.length)
                 {
-                    dbAttenuation = (1 - (env.decayEnd - currentFrameTime) / env.decayDuration) * (env.sustainDb - env.attenuation) + env.attenuation;
-                    break;
+                    return;
                 }
-            // fallthrough
+            }
+            env.state++;
+        // fallthrough
 
-            case 4:
-                // sustain phase: stay at sustain
-                dbAttenuation = env.sustainDb;
+        case 3:
+            // decay phase: linear ramp from attenuation to sustain
+            while(currentFrameTime < env.decayEnd)
+            {
+                const newAttenuation = (1 - (env.decayEnd - currentFrameTime) / env.decayDuration) * (env.sustainDb - env.attenuation) + env.attenuation
+                    + decibelOffset;
 
-        }
-        // interpolate attenuation to prevent clicking
-        const newAttenuation = dbAttenuation + decibelOffset;
-        env.currentAttenuationDb += (newAttenuation - env.currentAttenuationDb) * smoothingFactor;
-        const gain = decibelAttenuationToGain(env.currentAttenuationDb);
-        audioBuffer[i] *= gain;
-        currentFrameTime += sampleTime;
+                // interpolate attenuation to prevent clicking
+                env.currentAttenuationDb += (newAttenuation - env.currentAttenuationDb) * smoothingFactor;
+                audioBuffer[filledBuffer] *= decibelAttenuationToGain(env.currentAttenuationDb);
+
+                currentFrameTime += sampleTime;
+                if(++filledBuffer >= audioBuffer.length)
+                {
+                    return;
+                }
+            }
+            env.state++;
+        // fallthrough
+
+        case 4:
+            // sustain phase: stay at sustain
+            while(true)
+            {
+                // interpolate attenuation to prevent clicking
+                const newAttenuation = env.sustainDb
+                    + decibelOffset;
+                env.currentAttenuationDb += (newAttenuation - env.currentAttenuationDb) * smoothingFactor;
+                audioBuffer[filledBuffer] *= decibelAttenuationToGain(env.currentAttenuationDb);
+                if(++filledBuffer >= audioBuffer.length)
+                {
+                    return;
+                }
+            }
+
     }
 }
