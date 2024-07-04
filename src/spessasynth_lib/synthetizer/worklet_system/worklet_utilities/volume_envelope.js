@@ -45,7 +45,7 @@ export const DEFAULT_WORKLET_VOLUME_ENVELOPE = {
     currentReleaseGain: 1,
 }
 
-export const VOLUME_ENVELOPE_SMOOTHING_FACTOR = 0.005;
+export const VOLUME_ENVELOPE_SMOOTHING_FACTOR = 0.001;
 
 const DB_SILENCE = 100;
 const GAIN_SILENCE = 0.005;
@@ -143,6 +143,8 @@ export function applyVolumeEnvelope(voice, audioBuffer, currentTime, centibelOff
     // RELEASE PHASE
     if(voice.isInRelease)
     {
+        // release needs a more aggressive smoothing factor as the instant notes don't end instantly when they should
+        const releaseSmoothingFactor = smoothingFactor * 10;
         const releaseStartDb = env.releaseStartDb + decibelOffset;
         let elapsedRelease = currentTime - voice.releaseStartTime;
         let dbDifference = DB_SILENCE - releaseStartDb;
@@ -151,7 +153,7 @@ export function applyVolumeEnvelope(voice, audioBuffer, currentTime, centibelOff
         {
             let db = (elapsedRelease / env.releaseDuration) * dbDifference + releaseStartDb;
             gain = decibelAttenuationToGain(db + decibelOffset);
-            env.currentReleaseGain += (gain - env.currentReleaseGain) * smoothingFactor;
+            env.currentReleaseGain += (gain - env.currentReleaseGain) * releaseSmoothingFactor;
             audioBuffer[i] *= env.currentReleaseGain;
             elapsedRelease += sampleTime;
         }
