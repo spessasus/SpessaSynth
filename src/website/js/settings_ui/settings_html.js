@@ -42,7 +42,7 @@ export const settingsHtml = `
         <div class='switch_label'>
             <label translate-path-title='locale.settings.rendererSettings.toggleWaveformsRendering'></label>
             <label class='switch'>
-                <input type='checkbox' id='analyser_toggler'>
+                <input type='checkbox' checked id='analyser_toggler'>
                 <span class='switch_slider'></span>
             </label>
         </div>
@@ -50,7 +50,7 @@ export const settingsHtml = `
         <div class='switch_label'>
             <label translate-path-title='locale.settings.rendererSettings.toggleNotesRendering'></label>
             <label class='switch'>
-                <input type='checkbox' id='note_toggler'>
+                <input type='checkbox' checked id='note_toggler'>
                 <span class='switch_slider'></span>
             </label>
         </div>
@@ -58,7 +58,7 @@ export const settingsHtml = `
         <div class='switch_label'>
             <label translate-path-title='locale.settings.rendererSettings.toggleDrawingActiveNotes'></label>
             <label class='switch'>
-                <input type='checkbox' id='active_note_toggler'>
+                <input type='checkbox' checked id='active_note_toggler'>
                 <span class='switch_slider'></span>
             </label>
         </div>
@@ -66,7 +66,7 @@ export const settingsHtml = `
         <div class='switch_label'>
             <label translate-path-title='locale.settings.rendererSettings.toggleDrawingVisualPitch'></label>
             <label class='switch'>
-                <input type='checkbox' id='visual_pitch_toggler'>
+                <input type='checkbox' checked id='visual_pitch_toggler'>
                 <span class='switch_slider'></span>
             </label>
         </div>
@@ -74,7 +74,7 @@ export const settingsHtml = `
         <div class='switch_label'>
             <label translate-path-title='locale.settings.rendererSettings.toggleStabilizeWaveforms'></label>
             <label class='switch'>
-                <input type='checkbox' id='stabilize_waveforms_toggler'>
+                <input type='checkbox' checked id='stabilize_waveforms_toggler'>
                 <span class='switch_slider'></span>
             </label>
         </div>
@@ -123,7 +123,7 @@ export const settingsHtml = `
         <div class='switch_label'>
             <label translate-path-title='locale.settings.interfaceSettings.toggleTheme'></label>
             <label class='switch'>
-                <input type='checkbox' id='toggle_mode_button'>
+                <input type='checkbox' checked id='toggle_mode_button'>
                 <span class='switch_slider'></span>
             </label>
         </div>
