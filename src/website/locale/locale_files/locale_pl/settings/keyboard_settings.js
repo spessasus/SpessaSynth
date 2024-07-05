@@ -17,7 +17,7 @@ export const keyboardSettingsLocale = {
     },
 
     toggleTheme: {
-        title: "Przełącz motyw",
-        description: "Przełącz motyw wbudowanego pianina",
+        title: "Włącz ciemny motyw",
+        description: "Włącz ciemny motyw wbudowanego pianina",
     }
 }

@@ -122,6 +122,10 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
             this.dataEntryFine(channel, controllerValue);
             break;
 
+        case midiControllers.resetAllControllers:
+            this.resetControllers(channel);
+            break;
+
         default:
             if(channelObject.lockedControllers[controllerNumber])
             {

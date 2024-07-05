@@ -28,7 +28,8 @@ export function _processEvent(event, trackIndex)
     switch (statusByteData.status) {
         case messageTypes.noteOn:
             const velocity = event.messageData[1];
-            if(velocity > 0) {
+            if(velocity > 0)
+            {
                 this.synth.noteOn(statusByteData.channel, event.messageData[0], velocity);
                 this.playingNotes.push({
                     midiNote: event.messageData[0],

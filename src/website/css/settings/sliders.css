@@ -1,0 +1,109 @@
+.settings_slider {
+    --track-height: 10px;
+    --thumb-size: 24px;
+    --active-brightness: 0.9;
+    height: 2rem;
+    -webkit-appearance: none;
+    margin: 0 0 10px 0;
+    background: transparent;
+    flex-grow: 1;
+    cursor: col-resize;
+    overflow: hidden;
+    transition: all 0.2s;
+}
+
+.settings_slider:hover{
+    filter: brightness(1.1);
+}
+
+.settings_slider:focus {
+    outline: none;
+}
+
+.settings_slider + span{
+    margin-bottom: 10px;
+    margin-left: 5px;
+}
+
+.settings_slider:active {
+    filter: brightness(var(--active-brightness));
+}
+
+/*MOZILLA*/
+.settings_slider::-moz-range-track {
+    height: 10px;
+    background: var(--track-color);
+    border-radius: 5px;
+    border: 1px solid var(--track-border-color);
+}
+
+.settings_slider::-moz-range-progress{
+    background: var(--primary-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--track-height);
+    height: var(--track-height);
+}
+
+.settings_slider::-moz-range-thumb {
+    box-shadow: 0 0 1rem var(--track-color);
+    background-color: var(--track-color);
+    border: 1px solid var(--track-border-color);
+    height: var(--thumb-size);
+    width: var(--thumb-size);
+    border-radius: 50%;
+}
+.settings_slider:hover::-moz-range-thumb {
+    border: 1px solid var(--primary-color);
+}
+
+/*WEBKIT*/
+.settings_slider::-webkit-slider-runnable-track {
+    position: relative;
+    -webkit-appearance: none;
+    height: var(--track-height);
+
+    background: var(--track-color);
+
+    border-radius: var(--track-height);
+    border: 1px solid var(--track-border-color);
+}
+
+.settings_slider::-webkit-slider-thumb {
+    position: relative;
+    border: 1px solid var(--track-border-color);
+    background: var(--track-color);
+
+    height: var(--thumb-size);
+    width: var(--thumb-size);
+
+    border-radius: 50px;
+    -webkit-appearance: none;
+    margin-top: -7.5px;
+
+    /*shameless copy from https://codepen.io/ShadowShahriar/pen/zYPPYrQ
+    i have no idea why or how it works, but it does so i appreciate it my guy*/
+    --clip-top: calc((var(--thumb-size) - var(--track-height)) * 0.5 + 0.5px);
+    --clip-bottom: calc(var(--thumb-size) - var(--clip-top) - 1px);
+
+    box-shadow: calc(-100vmax - var(--thumb-size)) 0 0
+    100vmax var(--primary-color);
+
+    clip-path: polygon(
+            100% -1px,
+            0.125rem -1px,
+            0 var(--clip-top),
+            -100vmax var(--clip-top),
+            -100vmax var(--clip-bottom),
+            0 var(--clip-bottom),
+            0.125rem 100%,
+            100% 100%
+    );
+}
+
+.settings_slider:active::-webkit-slider-thumb {
+    filter: brightness(var(--active-brightness));
+}
+
+.settings_slider:hover::-webkit-slider-thumb {
+    border: 1px solid var(--primary-color);
+}

@@ -17,8 +17,8 @@ export const settingsLocale = {
         title: "Interface settings",
 
         toggleTheme: {
-            title: "Toggle theme",
-            description: "Toggle the program theme"
+            title: "Use dark theme",
+            description: "Enable the dark theme for the interface"
         },
 
         selectLanguage: {

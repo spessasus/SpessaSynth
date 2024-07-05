@@ -18,8 +18,8 @@ export const settingsLocale = {
         title: "Ustawienia interfejsu",
 
         toggleTheme: {
-            title: "Przełącz motyw",
-            description: "Przełącz motyw programu"
+            title: "Włącz ciemny motyw",
+            description: "Włącz ciemny motyw programu"
         },
 
         selectLanguage: {

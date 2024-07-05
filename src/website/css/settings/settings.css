@@ -1,0 +1,67 @@
+@import "sliders.css";
+@import "buttons.css";
+@import "groups.css";
+@import "switches.css";
+
+.settings_menu{
+    position: absolute;
+    top: 100%;
+    right: 0;
+    min-width: 30%;
+    max-width: 100%;
+    min-height: 100%;
+    z-index: 256;
+    opacity: 0;
+    background: var(--top-color);
+    transition: opacity 100ms ease-in-out;
+    scroll-behavior: smooth;
+    overflow-y: auto;
+    display: none;
+    border-radius: 0 0 10px 10px;
+
+    /*switch colors*/
+    --primary-color: #510087;
+    --border-color: #6e00b7;
+    --track-color: #333;
+    --track-border-color: #444;
+    --shadow-color: #000;
+}
+
+.settings_menu * {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.settings_menu.settings_menu_light{
+    --primary-color: #a93bff;
+    --border-color: #510087;
+    --track-color: #ccc;
+    --track-border-color: #444;
+    --shadow-color: #fff;
+}
+
+.settings_menu_show{
+    display: block !important;
+    opacity: 1 !important;
+}
+
+.settings_menu select{
+    background: transparent;
+    border: solid 1px transparent; /*to keep the same size when adding one*/
+    font-size: larger;
+    border-radius: 1rem;
+    padding: .5rem;
+}
+
+.settings_menu select option{
+    background: black;
+    color: white;
+    border: none;
+}
+
+.settings_menu select:hover{
+    cursor: pointer;
+    text-shadow: 0 0 5px white;
+    border: 1px solid var(--top-buttons-color-end);
+    background: var(--top-buttons-color);
+}

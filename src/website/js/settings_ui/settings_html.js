@@ -38,15 +38,46 @@ export const settingsHtml = `
             <span>2</span>
             </span>
         </p>
-        <button class='seamless_button' id='analyser_toggler' translate-path-title='locale.settings.rendererSettings.toggleWaveformsRendering'></button>
-        <br/>
-        <button class='seamless_button' id='note_toggler' translate-path-title='locale.settings.rendererSettings.toggleNotesRendering'></button>
-        <br/>
-        <button class='seamless_button' id='active_note_toggler' translate-path-title='locale.settings.rendererSettings.toggleDrawingActiveNotes'></button>
-        <br/>
-        <button class='seamless_button' id='visual_pitch_toggler' translate-path-title='locale.settings.rendererSettings.toggleDrawingVisualPitch'></button>
-        <br/>
-        <button class='seamless_button' id='stabilize_waveforms_toggler' translate-path-title='locale.settings.rendererSettings.toggleStabilizeWaveforms'></button>
+        
+        <div class='switch_label'>
+            <label translate-path-title='locale.settings.rendererSettings.toggleWaveformsRendering'></label>
+            <label class='switch'>
+                <input type='checkbox' id='analyser_toggler'>
+                <span class='switch_slider'></span>
+            </label>
+        </div>
+        
+        <div class='switch_label'>
+            <label translate-path-title='locale.settings.rendererSettings.toggleNotesRendering'></label>
+            <label class='switch'>
+                <input type='checkbox' id='note_toggler'>
+                <span class='switch_slider'></span>
+            </label>
+        </div>
+        
+        <div class='switch_label'>
+            <label translate-path-title='locale.settings.rendererSettings.toggleDrawingActiveNotes'></label>
+            <label class='switch'>
+                <input type='checkbox' id='active_note_toggler'>
+                <span class='switch_slider'></span>
+            </label>
+        </div>
+        
+        <div class='switch_label'>
+            <label translate-path-title='locale.settings.rendererSettings.toggleDrawingVisualPitch'></label>
+            <label class='switch'>
+                <input type='checkbox' id='visual_pitch_toggler'>
+                <span class='switch_slider'></span>
+            </label>
+        </div>
+        
+        <div class='switch_label'>
+            <label translate-path-title='locale.settings.rendererSettings.toggleStabilizeWaveforms'></label>
+            <label class='switch'>
+                <input type='checkbox' id='stabilize_waveforms_toggler'>
+                <span class='switch_slider'></span>
+            </label>
+        </div>
     </div>
 
 
@@ -55,17 +86,21 @@ export const settingsHtml = `
         <p translate-path-title='locale.settings.keyboardSettings.selectedChannel'></p>
         <select id='channel_selector'>
         </select>
-        <br/>
-        <br/>
+        
         <p translate-path-title='locale.settings.keyboardSettings.keyboardSize'></p>
         <select id='keyboard_size_selector'>
             <option value='full' translate-path='locale.settings.keyboardSettings.keyboardSize.full'></option>
             <option value='piano' translate-path='locale.settings.keyboardSettings.keyboardSize.piano'></option>
             <option value='5 octaves' translate-path='locale.settings.keyboardSettings.keyboardSize.fiveOctaves'></option>
         </select>
-        <br/>
-        <br/>
-        <button class='seamless_button' id='mode_selector' translate-path-title='locale.settings.keyboardSettings.toggleTheme'></button>
+        
+        <div class='switch_label'>
+            <label translate-path-title='locale.settings.keyboardSettings.toggleTheme'></label>
+            <label class='switch'>
+                <input type='checkbox' id='mode_selector'>
+                <span class='switch_slider'></span>
+            </label>
+        </div>
     </div>
     
     
@@ -76,8 +111,6 @@ export const settingsHtml = `
             <option value='-1' translate-path='locale.settings.midiSettings.midiInput.disabled'></option>
         </select>
         
-        <br/>
-        <br/>
         <p translate-path-title='locale.settings.midiSettings.midiOutput'></p>
         <select id='midi_output_selector'>
             <option value='-1' translate-path='locale.settings.midiSettings.midiOutput.disabled'></option>
@@ -87,9 +120,14 @@ export const settingsHtml = `
     
     <div class='settings_group'>
         <h2 translate-path='locale.settings.interfaceSettings.title'></h2>
-        <button class='seamless_button' id='toggle_mode_button' translate-path-title='locale.settings.interfaceSettings.toggleTheme'></button>
-        <br/>
-        <br/>
+        <div class='switch_label'>
+            <label translate-path-title='locale.settings.interfaceSettings.toggleTheme'></label>
+            <label class='switch'>
+                <input type='checkbox' id='toggle_mode_button'>
+                <span class='switch_slider'></span>
+            </label>
+        </div>
+        
         <p translate-path-title='locale.settings.interfaceSettings.selectLanguage'></p>
         <select id='language_selector'>
         </select>

@@ -3,7 +3,8 @@ import { getDownArrowSvg, getGearSvg } from '../icons.js'
 import { _loadSettings } from './saving/load_settings.js'
 import { _saveSettings } from './saving/save_settings.js'
 import { _serializeSettings } from './saving/serialize_settings.js'
-import { _createInterfaceSettingsHandler, _toggleDarkMode } from './handlers/interface_handler.js'
+import { _createInterfaceSettingsHandler } from './handlers/interface_handler.js'
+import { _toggleDarkMode } from './handlers/toggle_dark_mode.js'
 import { _createRendererHandler } from './handlers/renderer_handler.js'
 import {
     _createMidiInputHandler,
@@ -38,7 +39,8 @@ class SpessaSynthSettings
                 midiKeyboard,
                 midiDeviceHandler,
                 playerInfo,
-                localeManager) {
+                localeManager)
+    {
         this.mode = "dark";
         this.renderer = renderer;
         this.midiKeyboard = midiKeyboard;
@@ -83,6 +85,7 @@ class SpessaSynthSettings
         this.mainDiv = document.createElement("div");
         this.mainDiv.classList.add("settings_menu");
         settingsButton.onclick = () => {
+            document.getElementsByClassName("top_part")[0].classList.toggle("settings_shown");
             this.mainDiv.classList.toggle("settings_menu_show");
             this.hideOnDocClick = false;
         }
@@ -125,6 +128,7 @@ class SpessaSynthSettings
                 this.hideOnDocClick = true;
                 return;
             }
+            document.getElementsByClassName("top_part")[0].classList.remove("settings_shown");
             this.mainDiv.classList.remove("settings_menu_show")
         })
 
@@ -151,6 +155,7 @@ class SpessaSynthSettings
         document.addEventListener("keydown", e => {
             if(e.key.toLowerCase() === "r")
             {
+                document.getElementsByClassName("top_part")[0].classList.toggle("settings_shown");
                 this.mainDiv.classList.toggle("settings_menu_show");
             }
         })

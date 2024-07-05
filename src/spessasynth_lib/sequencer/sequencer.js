@@ -14,7 +14,8 @@ import { SpessaSynthWarn } from '../utils/loggin.js'
  */
 
 
-export class Sequencer {
+export class Sequencer
+{
     /**
      * Creates a new Midi sequencer for playing back MIDI files
      * @param parsedMidis {MIDI[]} List of the parsed midi
@@ -353,6 +354,11 @@ export class Sequencer {
     {
         this._sendMessage(WorkletSequencerMessageType.stop);
     }
+
+    /**
+     * @type {MIDI}
+     */
+    midiData;
 
     /**
      * @type {Object<string, function(MIDI)>}

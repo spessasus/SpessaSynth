@@ -21,23 +21,23 @@ export const rendererSettingsLocale = {
     },
 
     toggleWaveformsRendering: {
-        title: "Toggle waveforms rendering",
-        description: "Toggle rendering the channel waveforms (colorful lines showing audio)"
+        title: "Enable waveforms rendering",
+        description: "Enable rendering the channel waveforms (colorful lines showing audio)"
     },
 
     toggleNotesRendering: {
-        title: "Toggle notes rendering",
-        description: "Toggle rendering of the falling notes when playing a MIDI file",
+        title: "Enable notes rendering",
+        description: "Enable rendering of the falling notes when playing a MIDI file",
     },
 
     toggleDrawingActiveNotes: {
-        title: "Toggle drawing active notes",
-        description: "Toggle notes lighting up and glowing when they get pressed"
+        title: "Enable drawing active notes",
+        description: "Enable notes lighting up and glowing when they get pressed"
     },
 
     toggleDrawingVisualPitch: {
-        title: "Toggle drawing visual pitch",
-        description: "Toggle notes sliding left or right when the pitch wheel is applied"
+        title: "Enable drawing visual pitch",
+        description: "Enable notes sliding left or right when the pitch wheel is applied"
     },
 
     toggleStabilizeWaveforms: {

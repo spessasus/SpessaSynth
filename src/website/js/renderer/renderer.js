@@ -31,7 +31,7 @@ import { calculateNoteTimes } from './calculate_note_times.js'
  */
 
 // analysers
-const CHANNEL_ANALYSER_FFT = 512;
+const CHANNEL_ANALYSER_FFT = 1024;
 const DRUMS_ANALYSER_FFT = 2048;
 const WAVE_MULTIPLIER = 2;
 const ANALYSER_STROKE = 2;
@@ -60,6 +60,10 @@ class Renderer
     constructor(channelColors, synth, canvas)
     {
         // variables
+        /**
+         * falling time in miliseconds
+         * @type {number}
+         */
         this.noteFallingTimeMs = 1000;
         this.noteAfterTriggerTimeMs = 0;
         /**

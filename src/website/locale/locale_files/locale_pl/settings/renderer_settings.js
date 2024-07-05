@@ -21,27 +21,27 @@ export const rendererSettingsLocale = {
     },
 
     toggleWaveformsRendering: {
-        title: "Przełącz rysowanie fal",
-        description: "Przełącz rysowanie fal dźwiękowych (16-tu kolorowych linii z tyłu)"
+        title: "Włącz rysowanie fal",
+        description: "Włącz rysowanie fal dźwiękowych (16-tu kolorowych linii z tyłu)"
     },
 
     toggleNotesRendering: {
-        title: "Przełącz rysowanie nut",
-        description: "Przełącz rysowanie spadających nut podczas odtwarzania pliku MIDI",
+        title: "Włącz rysowanie nut",
+        description: "Włącz rysowanie spadających nut podczas odtwarzania pliku MIDI",
     },
 
     toggleDrawingActiveNotes: {
-        title: "Przełącz rysowanie aktywnych nut",
-        description: "Przełącz efekt podświetlania się nut przy aktywacji"
+        title: "Włącz rysowanie aktywnych nut",
+        description: "Włącz efekt podświetlania się nut przy aktywacji"
     },
 
     toggleDrawingVisualPitch: {
-        title: "Przełącz wizualizację wysokości tonu",
-        description: "Przełącz przesuwanie nut w lewo lub w prawo gdy wysokość nut jest zmieniana"
+        title: "Włącz wizualizację wysokości tonu",
+        description: "Włącz przesuwanie nut w lewo lub w prawo gdy wysokość nut jest zmieniana"
     },
 
     toggleStabilizeWaveforms: {
-        title: "Przełącz stabilizację fal",
-        description: "Przełącz stabilizowanie fal dźwiękowych"
+        title: "Włącz stabilizację fal",
+        description: "Włącz stabilizowanie fal dźwiękowych"
     }
 }

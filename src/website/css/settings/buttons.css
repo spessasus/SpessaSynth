@@ -1,0 +1,38 @@
+.seamless_button{
+    font-size: larger;
+    background: transparent;
+    margin: auto;
+    border: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.settings_button
+{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.settings_button span{
+    text-align: end;
+    font-size: larger;
+}
+
+.seamless_button:hover
+{
+    cursor: pointer;
+    text-shadow: 0 0 5px white;
+}
+
+
+.gear {
+    transition: all 0.3s ease;
+    padding: 5px;
+    align-content: center;
+    display: flex;
+}
+
+.settings_button:hover .gear{
+    transform: rotate(45deg);
+}

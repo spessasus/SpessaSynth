@@ -17,7 +17,7 @@ export const keyboardSettingsLocale = {
     },
 
     toggleTheme: {
-        title: "Toggle theme",
-        description: "Toggle the keyboard theme",
+        title: "Use dark theme",
+        description: "Use the dark keyboard theme",
     }
 }

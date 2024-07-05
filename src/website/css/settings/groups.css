@@ -1,0 +1,23 @@
+.settings_groups_parent{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+}
+
+.settings_group{
+    border-radius: 10px;
+    border: solid #333 1px;
+    margin: 1em;
+    padding: 1em;
+    background: var(--top-buttons-color);
+    transition: 0.2s;
+}
+
+.settings_group:hover{
+    filter: brightness(1.2);
+    box-shadow: 0 0 5px var(--top-buttons-color-end);
+}
+
+.settings_group p{
+    margin-top: 1em;
+}

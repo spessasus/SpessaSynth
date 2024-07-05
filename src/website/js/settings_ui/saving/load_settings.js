@@ -1,5 +1,4 @@
 import { SpessaSynthInfo } from '../../../../spessasynth_lib/utils/loggin.js'
-import { DEFAULT_LOCALE } from '../../../locale/locale_files/locale_list.js'
 
 /**
  * @private
@@ -48,10 +47,13 @@ export async function _loadSettings()
     rendererControls.waveMultiplierSlizer.nextElementSibling.innerText = rendererValues.amplifier;
 
     // render waveforms
+    let controls = this.htmlControls.renderer;
     renderer.renderAnalysers = rendererValues.renderWaveforms;
+    controls.analyserToggler.checked = rendererValues.renderWaveforms;
 
     // render notes
     renderer.renderNotes = rendererValues.renderNotes;
+    controls.noteToggler.checked = rendererValues.renderNotes;
 
     // render active notes effect
     renderer.drawActiveNotes = rendererValues.drawActiveNotes;
@@ -81,6 +83,7 @@ export async function _loadSettings()
     if(keyboardValues.mode === "dark")
     {
         keyboard.toggleMode();
+        this.htmlControls.keyboard.modeSelector.checked = true;
     }
 
 
@@ -97,5 +100,9 @@ export async function _loadSettings()
     if(savedSettings.interface.mode === "light")
     {
         this._toggleDarkMode();
+    }
+    else
+    {
+        this.htmlControls.interface.themeSelector.checked = true;
     }
 }

@@ -74,6 +74,7 @@ export function _playTo(time, ticks = undefined)
             // skip note messages
             case messageTypes.noteOn:
             case messageTypes.noteOff:
+            case messageTypes.keySignature:
                 break;
 
             // skip pitch bend

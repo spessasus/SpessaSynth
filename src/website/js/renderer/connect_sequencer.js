@@ -5,9 +5,8 @@
 export function connectSequencer(sequencer)
 {
     this.seq = sequencer;
-    this.calculateNoteTimes(sequencer.midiData);
 
-    this.seq.addOnSongChangeEvent(midi => this.calculateNoteTimes(midi), "renderer-song-change");
+    this.seq.addOnSongChangeEvent(midi => { this.calculateNoteTimes(midi)}, "renderer-song-change");
     this.seq.addOnTimeChangeEvent(() => this.resetIndexes(), "renderer-time-change");
 }
 

@@ -18,6 +18,9 @@ import { showNotification } from './js/notification.js'
 
 const RENDER_AUDIO_TIME_INTERVAL = 500;
 
+// this enables transitions on body because if we enable them on load, it flashbangs us with white
+document.body.classList.add("load");
+
 /**
  * manager.js
  * purpose: connects every element of spessasynth together
@@ -244,10 +247,9 @@ const RENDER_AUDIO_TIME_INTERVAL = 500;
         //this.soundFontMixer.soundFontChange(soundFont);
 
         // add keypresses
-        document.addEventListener("keypress", e => {
+        canvas.addEventListener("keypress", e => {
             switch (e.key.toLowerCase()) {
                 case "c":
-                    e.preventDefault();
                     if(this.seq)
                     {
                         this.seq.pause();
@@ -267,7 +269,6 @@ const RENDER_AUDIO_TIME_INTERVAL = 500;
                     break;
 
                 case "v":
-                    e.preventDefault();
                     if(this.seq)
                     {
                         this.seq.pause();
