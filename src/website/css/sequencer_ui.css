@@ -4,7 +4,7 @@
     position: relative;
     margin: auto auto 2px;
 
-    --progress-bar-height: 1.4em;
+    --progress-bar-height: 2rem;
 }
 
 #sequencer_controls #note_progress
@@ -25,11 +25,11 @@
 {
     position: relative;
     z-index: 5;
-    font-size: var(--progress-bar-height);
+    font-size: calc(var(--progress-bar-height) * 0.8);
     line-height: var(--progress-bar-height);
     text-align: center;
     color: var(--font-color);
-    margin: auto;
+    margin: 0.2rem;
     width: 100%;
 }
 

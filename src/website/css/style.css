@@ -5,12 +5,16 @@
 @import "synthesizer_ui/synthesizer_ui.css";
 @import "soundfont_mixer.css";
 @import "notification.css";
+@import "note_canvas.css";
+@import "top_part.css";
 
 * {
     /*global variables*/
     --top-buttons-color-start: #222;
     --top-buttons-color-end: #333;
     --top-buttons-color: linear-gradient(201deg, var(--top-buttons-color-start), var(--top-buttons-color-end));
+
+    --hide-top-duration: 0.2s;
 
     --font-color: #ccc;
     --top-index: 32767;
@@ -19,11 +23,17 @@
     --top-color-end: #212121;
     --top-color: linear-gradient(31deg, var(--top-color-start), var(--top-color-end));
 
+    /*thanks for this bezier mozilla devtools*/
+    --bouncy-transition: cubic-bezier(.68,-0.55,.27,1.55);
+
+    --music-mode-transition: 0.5s ease;
+
     /*global styles*/
     font-family: "Noto Sans", "Open Sans", sans-serif;
     color: var(--font-color);
     text-align: center;
     margin: 0;
+    box-sizing: border-box;
 }
 
 html, body {
@@ -34,13 +44,14 @@ html, body {
 }
 
 body.load{
-    transition: background 0.4s;
+    transition: background 0.2s;
 }
 
 .spessasynth_main{
     display: flex;
     flex-direction: column;
-    height: 99%; /*i cant believe i have to do this crap*/
+    height: 100vh;
+    width: 100vw;
 }
 
 a{
@@ -56,140 +67,6 @@ a{
 ::-webkit-scrollbar-thumb{
     background-color: #777;
     border-radius: 50px;
-}
-
-
-/*Top*/
-.top_part
-{
-    position: relative;
-    background: var(--top-color);
-    border-radius: 0 0 15px 15px;
-    padding: 3px;
-    display: flex;
-    flex-wrap: wrap;
-    align-content: space-around;
-    justify-content: space-around;
-    align-items: center;
-    z-index: 50;
-}
-
-.top_part.settings_shown {
-    border-radius: 0 0 0 15px;
-}
-
-input[type="file"] {
-    display: none;
-}
-
-#title
-{
-    position: relative;
-    z-index: 1;
-    margin: 0.2em auto;
-    display: block;
-    line-height: 100%;
-    font-weight: lighter;
-    font-size: 2.1em;
-    text-shadow: 0 0 5px var(--font-color);
-}
-
-#progress_bar
-{
-    background: #206;
-    display: block;
-    position: absolute;
-    width: 0;
-    height: 2.1em;
-    border-radius: 10px;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 0.4em;
-    padding-top: 5px;
-    padding-bottom: 5px;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 0;
-    transition: width ease 0.5s;
-}
-
-.midi_and_sf_controller {
-    position: relative;
-    display: flex;
-    width: fit-content;
-    margin: auto auto 5px;
-    flex-wrap: wrap;
-    justify-content: space-around;
-}
-
-.midi_and_sf_controller label
-{
-    padding: 6px;
-    border-radius: 5px;
-    cursor: pointer;
-    background: var(--top-buttons-color);
-    font-weight: bolder;
-    margin: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-#sf_selector option
-{
-    background: #000;
-    text-align: center;
-}
-
-#sf_selector
-{
-    display: block;
-    border: none;
-    font-size: 15px;
-    background: var(--top-buttons-color);
-    text-align: center;
-    margin: 5px;
-    padding: 6px;
-    border-radius: 5px;
-    font-weight: bolder;
-}
-
-.show_top_button{
-    background: var(--top-buttons-color);
-    width: fit-content;
-    padding: 0.1em 2em;
-    border-radius: 0.5em;
-    margin: auto;
-    display: none;
-    position: absolute;
-    z-index: 100;
-    left: 0;
-    right: 0;
-}
-
-.show_top_button:hover{
-    cursor: pointer;
-}
-
-.show_top_button.shown{
-    display: flex !important;
-}
-
-/*Center*/
-#note_canvas
-{
-    width: 100%;
-    display: block;
-    filter: saturate(1.23);
-    flex: 1;
-    background-size: cover;
-    height: 1px; /*I have absolutely no idea how this works but whatever ¯\_(ツ)_/¯*/
-    z-index: 1;
-}
-
-#note_canvas.light_mode{
-    background: linear-gradient(45deg, var(--top-buttons-color-start), var(--top-buttons-color-end));
 }
 
 /*Bottom*/

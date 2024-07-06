@@ -10,6 +10,7 @@
 #synthetizer_controls * {
     user-select: none;
     -webkit-user-select: none;
+    --synthui-margin: 0.2em;
 }
 
 .wrapper{
@@ -38,29 +39,29 @@
     height: var(--voice-meter-height);
     flex: 1;
     border-radius: 5px;
-    margin: 2px;
+    margin: var(--synthui-margin);
 }
 
 .synthui_controller{
     left: 0;
     display: none;
     position: absolute;
-    backdrop-filter: blur(2px) brightness(0.5);
-    background: rgba(3, 3, 3, 0.3);
+    background: rgb(3, 3, 3);
     top: 100%;
-    border-radius: 15px;
+    border-radius: 0 0 1em 1em;
+    transform: scaleX(0);
+    transition: transform 0.2s ease;
     width: 100%;
     z-index: 127;
 }
 
 .synthui_controller_light
 {
-    backdrop-filter: blur(2px) brightness(1.5) !important;
-    background: linear-gradient(115deg, rgba(200, 200, 200, 0.7), rgba(255, 255, 255, 0.7), rgba(200, 200, 200, 0.7)) !important;
+    background: linear-gradient(115deg, rgb(200, 200, 200), rgba(255, 255, 255), rgba(200, 200, 200)) !important;
 }
 
 .synthui_controller_show{
-    display: block !important;
+    transform: scaleX(1) !important;
 }
 
 .channel_controller{

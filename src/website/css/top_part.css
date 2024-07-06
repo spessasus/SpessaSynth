@@ -1,0 +1,140 @@
+/*Top*/
+.top_part
+{
+    position: relative;
+    background: var(--top-color);
+    border-radius: 0 0 1em 1em;
+    padding: 3px;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: space-around;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 50;
+    transform-origin: top;
+    transform: scaleY(1);
+    transition: var(--hide-top-duration) ease;
+}
+
+.top_part * {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.top_part_hidden{
+    position: fixed;
+    width: 100%;
+    transform: scaleY(0);
+}
+
+.top_part.settings_shown {
+    border-radius: 0 0 0 1em;
+}
+
+.top_part.synthui_shown{
+    border-radius: 0;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+#title
+{
+    position: relative;
+    z-index: 1;
+    margin: 0.2em auto;
+    display: block;
+    line-height: 100%;
+    font-weight: lighter;
+    font-size: 2.1em;
+    text-shadow: 0 0 5px var(--font-color);
+}
+
+#progress_bar
+{
+    background: #206;
+    display: block;
+    position: absolute;
+    width: 0;
+    height: 2.1em;
+    border-radius: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 0.4em;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 0;
+    transition: width ease 0.5s;
+}
+
+.midi_and_sf_controller {
+    position: relative;
+    display: flex;
+    width: fit-content;
+    margin: auto auto 5px;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+.midi_and_sf_controller label
+{
+    padding: 6px;
+    border-radius: 5px;
+    cursor: pointer;
+    background: var(--top-buttons-color);
+    font-weight: bolder;
+    margin: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#sf_selector option
+{
+    background: #000;
+    text-align: center;
+}
+
+#sf_selector
+{
+    display: block;
+    border: none;
+    font-size: 1em;
+    background: var(--top-buttons-color);
+    text-align: center;
+    margin: 5px;
+    padding: 6px;
+    border-radius: 5px;
+    font-weight: bolder;
+}
+
+.show_top_button{
+    background: var(--top-buttons-color);
+    width: fit-content;
+    padding: 0.1em 2em;
+    border-radius: 0 0 0.5em 0.5em;
+    transition: all calc(var(--hide-top-duration) * 2) var(--bouncy-transition);
+    transition-delay: calc(var(--hide-top-duration) / 2);
+    transform-origin: top;
+    margin: auto;
+    display: none;
+    opacity: 0;
+    position: absolute;
+    z-index: 100;
+    left: 0;
+    right: 0;
+    cursor: pointer;
+}
+
+.show_top_button:hover{
+    filter: brightness(1.1);
+    transform: scaleY(1.3);
+}
+
+.show_top_button.shown{
+    opacity: 1;
+}

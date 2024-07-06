@@ -11,9 +11,9 @@
     max-width: 100%;
     min-height: 100%;
     z-index: 256;
-    opacity: 0;
+    transform: scaleX(0);
     background: var(--top-color);
-    transition: opacity 100ms ease-in-out;
+    transition: transform 0.2s ease;
     scroll-behavior: smooth;
     overflow-y: auto;
     display: none;
@@ -27,6 +27,11 @@
     --shadow-color: #000;
 }
 
+.settings_menu_show{
+    display: block !important;
+    transform: scaleX(1) !important;
+}
+
 .settings_menu * {
     -webkit-user-select: none;
     user-select: none;
@@ -38,11 +43,6 @@
     --track-color: #ccc;
     --track-border-color: #444;
     --shadow-color: #fff;
-}
-
-.settings_menu_show{
-    display: block !important;
-    opacity: 1 !important;
 }
 
 .settings_menu select{

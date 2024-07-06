@@ -128,37 +128,38 @@ function transitionColor(initialColor, targetColor, duration, cssRule, propertyN
     /**
      * @param start {number}
      * @param end {number}
-     * @param step {number}
-     * @param maxSteps {number}
+     * @param progress {number}
      * @return {number}
      */
-    function interpolate(start, end, step, maxSteps)
+    function interpolate(start, end, progress)
     {
-        return start + ((end - start) * step / maxSteps);
+        return start + ((end - start) * progress);
     }
 
     // Parse initial and target colors
     const startColor = hexToRgb(initialColor);
     const endColor = hexToRgb(targetColor);
 
-    const steps = 60 * duration;
-    let step = 0;
+    const startTime = performance.now() / 1000;
 
-    intervals[propertyName] = setInterval(() => {
-        if (step <= steps)
-        {
-            const r = Math.round(interpolate(startColor.r, endColor.r, step, steps));
-            const g = Math.round(interpolate(startColor.g, endColor.g, step, steps));
-            const b = Math.round(interpolate(startColor.b, endColor.b, step, steps));
+    function step()
+    {
+        const currentTime = performance.now() / 1000;
+        const elapsedTime = currentTime - startTime;
+        const progress = Math.min(elapsedTime / duration, 1);
 
-            cssRule.style.setProperty(propertyName, `rgb(${r}, ${g}, ${b})`);
+        const r = Math.round(interpolate(startColor.r, endColor.r, progress));
+        const g = Math.round(interpolate(startColor.g, endColor.g, progress));
+        const b = Math.round(interpolate(startColor.b, endColor.b, progress));
 
-            step++;
-        }
-        else
+        cssRule.style.setProperty(propertyName, `rgb(${r}, ${g}, ${b})`);
+
+        if (progress >= 1)
         {
             clearInterval(intervals[propertyName]);
             intervals[propertyName] = undefined;
         }
-    }, 1000 / 60); // 60 fps
+    }
+
+    intervals[propertyName] = setInterval(step, 1000 / 60); // 60 FPS should be enough
 }

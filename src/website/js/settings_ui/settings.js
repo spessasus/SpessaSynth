@@ -14,6 +14,8 @@ import {
 import { _createKeyboardHandler } from './handlers/keyboard_handler.js'
 import { localeList } from '../../locale/locale_files/locale_list.js'
 
+
+const TRANSITION_TIME = 0.2;
 /**
  * settings.js
  * purpose: manages the gui settings, controlling things like render settings, light mode etc.
@@ -42,12 +44,15 @@ class SpessaSynthSettings
                 localeManager)
     {
         this.mode = "dark";
+
         this.renderer = renderer;
         this.midiKeyboard = midiKeyboard;
         this.midiDeviceHandler = midiDeviceHandler;
         this.synthui = sythui;
         this.sequi = sequi;
         this.locale = localeManager;
+        this.playerInfo = playerInfo;
+
         this.locales = localeList;
         this.keyboardSizes = {
             "full": { min: 0, max: 127 },
@@ -73,6 +78,10 @@ class SpessaSynthSettings
         this.locale.bindObjectProperty(hideTopButton, "title", "locale.hideTopBar.description");
         settingsWrapper.appendChild(hideTopButton);
 
+        // add svg to show top button
+        const showTopButton =  document.getElementsByClassName("show_top_button")[0];
+        showTopButton.innerHTML = getDownArrowSvg(20);
+
         let text = document.createElement('span');
         this.locale.bindObjectProperty(text, "innerText", "locale.settings.toggleButton");
         settingsButton.appendChild(text);
@@ -84,36 +93,14 @@ class SpessaSynthSettings
 
         this.mainDiv = document.createElement("div");
         this.mainDiv.classList.add("settings_menu");
-        settingsButton.onclick = () => {
-            document.getElementsByClassName("top_part")[0].classList.toggle("settings_shown");
-            this.mainDiv.classList.toggle("settings_menu_show");
-            this.hideOnDocClick = false;
-        }
+        this.visible = false;
+        settingsButton.onclick = () => this.setVisibility(!this.visible);
         settingsWrapper.appendChild(this.mainDiv);
 
-        musicModeButton.onclick = () => {
-            playerInfo.togglevisibility();
-            renderer.canvas.classList.toggle("hidden");
-            midiKeyboard.keyboard.classList.toggle("hidden");
+        this.musicPlayerMode = false;
+        musicModeButton.onclick = this.toggleMusicPlayerMode.bind(this);
 
-            // disable rendering when hidden
-            renderer.renderBool = !renderer.canvas.classList.contains("hidden");
-        }
-
-        hideTopButton.onclick = () => {
-            // hide top
-            document.getElementsByClassName("top_part")[0].classList.toggle("hidden");
-            // show button to get it back
-            const showTopButton =  document.getElementsByClassName("show_top_button")[0];
-            // add the svg
-            showTopButton.innerHTML = getDownArrowSvg(20);
-            showTopButton.classList.toggle("shown");
-            showTopButton.onclick = () => {
-                document.getElementsByClassName("top_part")[0].classList.toggle("hidden");
-                showTopButton.classList.toggle("shown");
-            }
-
-        }
+        hideTopButton.onclick = this.hideTopPart;
 
         this.hideOnDocClick = true;
         // stop propagation to disable hide on click outside
@@ -128,8 +115,7 @@ class SpessaSynthSettings
                 this.hideOnDocClick = true;
                 return;
             }
-            document.getElementsByClassName("top_part")[0].classList.remove("settings_shown");
-            this.mainDiv.classList.remove("settings_menu_show")
+            this.setVisibility(false);
         })
 
         // load the html
@@ -155,8 +141,7 @@ class SpessaSynthSettings
         document.addEventListener("keydown", e => {
             if(e.key.toLowerCase() === "r")
             {
-                document.getElementsByClassName("top_part")[0].classList.toggle("settings_shown");
-                this.mainDiv.classList.toggle("settings_menu_show");
+                this.setVisibility(!this.visible);
             }
         })
 
@@ -171,6 +156,64 @@ class SpessaSynthSettings
         {
             this.createHandlers(renderer, midiKeyboard, midiDeviceHandler, sequi, sythui)
         }
+    }
+
+    toggleMusicPlayerMode()
+    {
+        this.musicPlayerMode = !this.musicPlayerMode;
+        this.renderer.renderBool = !this.musicPlayerMode;
+        this.playerInfo.setVisibility(this.musicPlayerMode, this.renderer.canvas, this.midiKeyboard.keyboard);
+    }
+
+    hideTopPart()
+    {
+        // hide top
+        const topPart = document.getElementsByClassName("top_part")[0];
+        topPart.classList.add("top_part_hidden");
+        setTimeout(() => {
+            topPart.style.display = "none";
+        }, 200);
+
+        // show button to get it back
+        const showTopButton =  document.getElementsByClassName("show_top_button")[0];
+        showTopButton.style.display = "flex";
+        setTimeout(() => {
+            showTopButton.classList.add("shown");
+        }, 10);
+
+        showTopButton.onclick = () => {
+            topPart.style.display = "";
+            setTimeout(() => {
+                topPart.classList.remove("top_part_hidden");
+            }, 10);
+            showTopButton.classList.remove("shown");
+            showTopButton.style.display = "none";
+        }
+    }
+
+    /**
+     * @param visible {boolean}
+     */
+    setVisibility(visible)
+    {
+        if(visible)
+        {
+            this.mainDiv.style.display = "block";
+            setTimeout(() => {
+                document.getElementsByClassName("top_part")[0].classList.add("settings_shown");
+                this.mainDiv.classList.add("settings_menu_show");
+            }, 10);
+            this.hideOnDocClick = false;
+        }
+        else
+        {
+            document.getElementsByClassName("top_part")[0].classList.remove("settings_shown");
+            this.mainDiv.classList.remove("settings_menu_show");
+            setTimeout(() => {
+                this.mainDiv.style.display = "none";
+            }, TRANSITION_TIME * 1000);
+        }
+        this.visible = visible;
     }
 
     createHandlers(renderer, midiKeyboard, midiDeviceHandler, sequi, sythui)

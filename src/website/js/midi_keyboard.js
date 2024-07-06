@@ -7,7 +7,7 @@ import { isMobile } from './utils/is_mobile.js'
  * purpose: creates and manages the on-screen virtual keyboard
  */
 
-const GLOW_PX = 75;
+const GLOW_PX = 150;
 
 export class MidiKeyboard
 {
@@ -18,6 +18,7 @@ export class MidiKeyboard
      */
     constructor(channelColors, synth) {
         this.mouseHeld = false;
+        this.lastKeyPressed = -1;
         this.heldKeys = [];
         /**
          * @type {"light"|"dark"}
@@ -39,6 +40,7 @@ export class MidiKeyboard
         }
         document.onpointerup = () => {
             this.mouseHeld = false;
+            this.lastKeyPressed = -1;
             for(let key of this.heldKeys)
             {
                 // user note off
@@ -95,6 +97,109 @@ export class MidiKeyboard
     }
 
     /**
+     * @private
+     */
+    _createKeyboard()
+    {
+        /**
+         * @type {HTMLDivElement}
+         */
+        this.keyboard = document.getElementById("keyboard");
+        this.keyboard.innerHTML = "";
+
+        /**
+         *
+         * @type {HTMLDivElement[]}
+         */
+        this.keys = [];
+
+        /**
+         * @type {string[][]}
+         */
+        this.keyColors = [];
+        // create keyboard
+        for (let midiNote = this._keyRange.min; midiNote < this._keyRange.max + 1; midiNote++) {
+
+            const keyElement = this._createKey(midiNote);
+            this.keyColors.push([]);
+            this.keyboard.appendChild(keyElement);
+            this.keys.push(keyElement);
+        }
+
+        /**
+         * @param keyElement {HTMLDivElement}
+         * @param e {PointerEvent}
+         */
+        const noteOnHandler = (keyElement, e) => {
+            if (!this.mouseHeld)
+            {
+                return;
+            }
+
+            e.stopPropagation();
+            e.preventDefault();
+            const midiNote = parseInt(keyElement.id.replace("note", ""));
+
+            if(this.lastKeyPressed === midiNote || isNaN(midiNote))
+            {
+                return;
+            }
+
+            if(this.lastKeyPressed !== -1)
+            {
+                // user note off
+                this.heldKeys.splice(this.heldKeys.indexOf(this.lastKeyPressed), 1);
+                this.releaseNote(this.lastKeyPressed, this.channel);
+                this.synth.noteOff(this.channel, this.lastKeyPressed);
+            }
+
+            this.lastKeyPressed = midiNote;
+
+            // user note on
+            if (!this.heldKeys.includes(midiNote))
+            {
+                this.heldKeys.push(midiNote);
+            }
+
+            let velocity ;
+            if (isMobile)
+            {
+                // ignore precise key velocity on mobile (keys are too small anyways)
+                velocity = 127;
+            }
+            else
+            {
+                // determine velocity. lower = more velocity
+                const rect = keyElement.getBoundingClientRect();
+                const relativeY = e.clientY; // Handle both mouse and touch events
+                const relativeMouseY = relativeY - rect.top;
+                const keyHeight = rect.height;
+                velocity = Math.floor(relativeMouseY / keyHeight * 127);
+            }
+            this.synth.noteOn(this.channel, midiNote, velocity, this.enableDebugging);
+        };
+
+        // POINTER HANDLING
+        this.keyboard.onpointerdown = e => {
+            this.mouseHeld = true;
+            noteOnHandler(document.elementFromPoint(e.clientX, e.clientY), e);
+        }
+
+        this.keyboard.onpointermove = e => {
+            noteOnHandler(document.elementFromPoint(e.clientX, e.clientY), e);
+        };
+
+        this.keyboard.onpointerleave = () => {
+            const midiNote = this.lastKeyPressed;
+            // user note off
+            this.heldKeys.splice(this.heldKeys.indexOf(midiNote), 1);
+            this.releaseNote(midiNote, this.channel);
+            this.synth.noteOff(this.channel, midiNote);
+            this.lastKeyPressed = -1;
+        };
+    }
+
+    /**
      * @param midiNote {number}
      * @returns {HTMLDivElement}
      * @private
@@ -108,53 +213,6 @@ export class MidiKeyboard
         let keyElement = document.createElement("div");
         keyElement.classList.add("key");
         keyElement.id = `note${midiNote}`;
-
-        // MOUSE HANDLING
-        keyElement.onpointerover = e => {
-            if (!this.mouseHeld) {
-                return
-            }
-            e.stopPropagation();
-
-            // user note on
-            this.heldKeys.push(midiNote);
-            // determine velocity. lower = more velocity
-            const rect = keyElement.getBoundingClientRect();
-            const relativeMouseY = e.clientY - rect.top;
-            const keyHeight = rect.height;
-            let velocity = Math.floor(relativeMouseY / keyHeight * 127);
-            if (isMobile)
-            {
-                // ignore precise key velocity on mobile (keys are too small anyways)
-                velocity = 127;
-            }
-            this.synth.noteOn(this.channel, midiNote, velocity, this.enableDebugging);
-        }
-        keyElement.onpointerdown = e =>
-        {
-            e.stopPropagation();
-            this.mouseHeld = true;
-            // user note on
-            this.heldKeys.push(midiNote);
-            // determine velocity. lower = more velocity
-            const rect = keyElement.getBoundingClientRect();
-            const relativeMouseY = e.clientY - rect.top;
-            const keyHeight = rect.height;
-            let velocity = Math.floor(relativeMouseY / keyHeight * 127);
-            if (isMobile)
-            {
-                // ignore precise key velocity on mobile (keys are too small anyways)
-                velocity = 127;
-            }
-            this.synth.noteOn(this.channel, midiNote, velocity, this.enableDebugging);
-        }
-        keyElement.onpointerout = () => {
-            // user note off
-            this.heldKeys.splice(this.heldKeys.indexOf(midiNote), 1);
-            this.releaseNote(midiNote, this.channel);
-            this.synth.noteOff(this.channel, midiNote);
-        };
-        keyElement.onpointerleave = keyElement.onpointerup;
 
 
         let isBlack = isBlackNoteNumber(midiNote);
@@ -193,37 +251,6 @@ export class MidiKeyboard
 
         }
         return keyElement;
-    }
-
-    /**
-     * @private
-     */
-    _createKeyboard()
-    {
-        /**
-         * @type {HTMLDivElement}
-         */
-        this.keyboard = document.getElementById("keyboard");
-        this.keyboard.innerHTML = "";
-
-        /**
-         *
-         * @type {HTMLDivElement[]}
-         */
-        this.keys = [];
-
-        /**
-         * @type {string[][]}
-         */
-        this.keyColors = [];
-        // create keyboard
-        for (let midiNote = this._keyRange.min; midiNote < this._keyRange.max + 1; midiNote++) {
-
-            const keyElement = this._createKey(midiNote);
-            this.keyColors.push([]);
-            this.keyboard.appendChild(keyElement);
-            this.keys.push(keyElement);
-        }
     }
 
     toggleMode()
@@ -328,7 +355,9 @@ export class MidiKeyboard
         key.style.background = color;
         if(this.mode === "dark")
         {
-            key.style.boxShadow = `0px 0px ${GLOW_PX * brightness}px ${color}`;
+            const spread = GLOW_PX * brightness;
+            key.style.boxShadow = `${color} 0px 0px ${spread}px ${spread / 5}px`;
+            console.log(spread, spread / 10)
         }
         /**
          * @type {string[]}

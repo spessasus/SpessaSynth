@@ -13,7 +13,7 @@
 }
 
 .settings_slider:hover{
-    filter: brightness(1.1);
+    filter: brightness(1.2);
 }
 
 .settings_slider:focus {
@@ -40,7 +40,7 @@
 .settings_slider::-moz-range-progress{
     background: var(--primary-color);
     border: 1px solid var(--border-color);
-    border-radius: var(--track-height);
+    border-radius: var(--track-height) 0 0 var(--track-height);
     height: var(--track-height);
 }
 
@@ -106,4 +106,9 @@
 
 .settings_slider:hover::-webkit-slider-thumb {
     border: 1px solid var(--primary-color);
+}
+
+.settings_slider + span {
+    min-width: 5em;
+    text-align: center;
 }

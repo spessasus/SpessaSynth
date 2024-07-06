@@ -57,12 +57,15 @@ export async function _loadSettings()
 
     // render active notes effect
     renderer.drawActiveNotes = rendererValues.drawActiveNotes;
+    controls.activeNoteToggler.checked = rendererValues.drawActiveNotes;
 
     // show visual pitch
     renderer.showVisualPitch = rendererValues.showVisualPitch;
+    controls.visualPitchToggler.checked = rendererValues.showVisualPitch;
 
     // stabilize waveforms
     renderer.stabilizeWaveforms = rendererValues.stabilizeWaveforms;
+    controls.stabilizeWaveformsToggler.checked = rendererValues.stabilizeWaveforms;
 
     // keyboard size
     renderer.keyRange = rendererValues.keyRange;

@@ -30,7 +30,11 @@
     transition: all 0.3s ease;
     padding: 5px;
     align-content: center;
+    align-items: center;
+    justify-content: center;
     display: flex;
+    height: 2em;
+    width: 2em;
 }
 
 .settings_button:hover .gear{

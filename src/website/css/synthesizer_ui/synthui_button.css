@@ -2,9 +2,9 @@
 {
     background: #000;
     border: 1px #333 solid;
-    margin: 2px;
+    margin: var(--synthui-margin);
     border-radius: 5px;
-    font-size: 16px;
+    font-size: 1em;
     display: block;
     min-height: var(--voice-meter-height);
     white-space: nowrap;
@@ -22,9 +22,9 @@
 .synthui_button_light{
     background: #fff;
     border: 1px #ccc solid;
-    margin: 2px;
+    margin: var(--synthui-margin);
     border-radius: 5px;
-    font-size: 16px;
+    font-size: 1em;
     display: block;
     min-height: var(--voice-meter-height);
     white-space: nowrap;

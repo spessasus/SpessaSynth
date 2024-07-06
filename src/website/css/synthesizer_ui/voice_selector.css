@@ -2,7 +2,7 @@
     border: #777 1px solid;
     line-height: var(--voice-meter-height);
     background-color: rgba(1, 1, 1, 0.5);
-    font-size: 16px;
+    font-size: 1em;
     font-weight: bold;
     min-width: 8em;
     text-align-last: center;

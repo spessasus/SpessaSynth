@@ -3,9 +3,10 @@
     width: 100%;
     display: none;
     flex: 1;
-    height: 1px;
     align-items: center;
     justify-content: center;
+    transform: translateX(100%);
+    transition: var(--music-mode-transition) transform;
 }
 
 .player_info_wrapper{
@@ -27,5 +28,5 @@
 }
 
 .player_info_show{
-    display: flex !important;
+    transform: translateX(0%) !important;
 }
