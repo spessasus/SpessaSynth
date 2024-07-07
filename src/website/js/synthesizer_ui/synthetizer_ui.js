@@ -1,15 +1,12 @@
 import {
     Synthetizer,
-    VOICE_CAP,
 } from '../../../spessasynth_lib/synthetizer/synthetizer.js'
-import { getDrumsSvg, getNoteSvg } from '../icons.js'
-import { Meter } from './methods/synthui_meter.js'
-import { midiControllers } from '../../../spessasynth_lib/midi_parser/midi_message.js'
 import { hideControllers, showControllers } from './methods/hide_show_controllers.js'
 import { toggleDarkMode } from './methods/toggle_dark_mode.js'
 import { createChannelController, createChannelControllers } from './methods/create_channel_controller.js'
 import { createMainSynthController } from './methods/create_main_controller.js'
 import { setEventListeners } from './methods/set_event_listeners.js'
+import { keybinds } from '../keybinds.js'
 
 
 export const LOCALE_PATH = "locale.synthesizerController.";
@@ -34,8 +31,8 @@ class SynthetizerUI
         wrapper.appendChild(this.uiDiv);
         this.uiDiv.style.visibility = "visible";
         this.isShown = false;
+        this.animationId = -1;
         this.locale = localeManager;
-
         this.hideOnDocClick = true;
     }
 
@@ -55,28 +52,23 @@ class SynthetizerUI
         document.addEventListener("keydown", e => {
             switch (e.key.toLowerCase())
             {
-                case "s":
+                case keybinds.synthesizerUIShow:
                     e.preventDefault();
-                    const controller = this.uiDiv.getElementsByClassName("synthui_controller")[0];
-                    controller.classList.toggle("synthui_controller_show");
-                    controller.getElementsByClassName("controls_wrapper")[0].classList.toggle("controls_wrapper_show");
-                    this.isShown = !this.isShown;
-                    if(this.isShown)
-                    {
-                        this.showControllers();
-                    }
-                    else
-                    {
-                        this.hideControllers()
-                    }
+                    this.toggleVisibility();
                     break;
 
-                case "b":
+                //
+                case keybinds.settingsShow:
+                    this.isShown = true;
+                    this.toggleVisibility();
+                    break;
+
+                case keybinds.blackMidiMode:
                     e.preventDefault();
                     this.synth.highPerformanceMode = !this.synth.highPerformanceMode;
                     break;
 
-                case "backspace":
+                case keybinds.midiPanic:
                     e.preventDefault();
                     this.synth.stopAll(true);
                     break;
@@ -106,6 +98,38 @@ class SynthetizerUI
                 controller.transpose.update(controller.transpose.currentValue, true);
             }
         })
+    }
+
+    toggleVisibility()
+    {
+        if(this.animationId !== -1)
+        {
+            clearTimeout(this.animationId);
+        }
+        const controller = document.getElementsByClassName("synthui_controller")[0];
+        const controlsWrapper = controller.getElementsByClassName("controls_wrapper")[0];
+        this.isShown = !this.isShown;
+        if(this.isShown)
+        {
+            controlsWrapper.classList.add("controls_wrapper_show");
+            controller.style.display = "block";
+            document.getElementsByClassName("top_part")[0].classList.add("synthui_shown");
+            this.showControllers();
+
+            setTimeout(() => {
+                controller.classList.add("synthui_controller_show");
+            }, 10);
+        }
+        else
+        {
+            document.getElementsByClassName("top_part")[0].classList.remove("synthui_shown");
+            this.hideControllers();
+            controller.classList.remove("synthui_controller_show");
+            this.animationId = setTimeout(() => {
+                controlsWrapper.classList.remove("controls_wrapper_show");
+                controller.style.display = "none";
+            }, 200);
+        }
     }
 
     updateVoicesAmount()

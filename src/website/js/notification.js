@@ -1,4 +1,4 @@
-const NOTIFICATION_TIME = 7000;
+const NOTIFICATION_TIME = 13000;
 /**
  * @param title {string}
  * @param message {string}

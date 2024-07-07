@@ -93,7 +93,7 @@ export async function _loadSettings()
     // interface
     if(savedSettings.interface.language !== this.locale.localeCode)
     {
-        this.locale.changeGlobalLocale(savedSettings.interface.language);
+        this.locale.changeGlobalLocale(savedSettings.interface.language, true);
 
         // using set timeout here fixes it for some reason
         setTimeout(() => {
@@ -103,6 +103,7 @@ export async function _loadSettings()
     if(savedSettings.interface.mode === "light")
     {
         this._toggleDarkMode();
+        this.htmlControls.interface.themeSelector.checked = false;
     }
     else
     {

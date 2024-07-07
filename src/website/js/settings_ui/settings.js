@@ -13,6 +13,7 @@ import {
 } from './handlers/midi_handler.js'
 import { _createKeyboardHandler } from './handlers/keyboard_handler.js'
 import { localeList } from '../../locale/locale_files/locale_list.js'
+import { keybinds } from '../keybinds.js'
 
 
 const TRANSITION_TIME = 0.2;
@@ -94,6 +95,7 @@ class SpessaSynthSettings
         this.mainDiv = document.createElement("div");
         this.mainDiv.classList.add("settings_menu");
         this.visible = false;
+        this.animationId = -1;
         settingsButton.onclick = () => this.setVisibility(!this.visible);
         settingsWrapper.appendChild(this.mainDiv);
 
@@ -139,9 +141,15 @@ class SpessaSynthSettings
 
         // key bind is "R"
         document.addEventListener("keydown", e => {
-            if(e.key.toLowerCase() === "r")
+            switch (e.key.toLowerCase())
             {
-                this.setVisibility(!this.visible);
+                case keybinds.settingsShow:
+                    this.setVisibility(!this.visible);
+                    break;
+
+                // hide when synth controller shown
+                case keybinds.synthesizerUIShow:
+                    this.setVisibility(false);
             }
         })
 
@@ -196,6 +204,10 @@ class SpessaSynthSettings
      */
     setVisibility(visible)
     {
+        if(this.animationId)
+        {
+            clearTimeout(this.animationId);
+        }
         if(visible)
         {
             this.mainDiv.style.display = "block";
@@ -209,7 +221,7 @@ class SpessaSynthSettings
         {
             document.getElementsByClassName("top_part")[0].classList.remove("settings_shown");
             this.mainDiv.classList.remove("settings_menu_show");
-            setTimeout(() => {
+            this.animationId = setTimeout(() => {
                 this.mainDiv.style.display = "none";
             }, TRANSITION_TIME * 1000);
         }

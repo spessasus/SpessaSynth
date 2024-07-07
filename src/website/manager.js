@@ -1,4 +1,4 @@
-import { MidiKeyboard } from './js/midi_keyboard.js'
+import { MidiKeyboard } from './js/midi_keyboard/midi_keyboard.js'
 import { Synthetizer } from '../spessasynth_lib/synthetizer/synthetizer.js'
 import { Renderer } from './js/renderer/renderer.js'
 import { MIDI } from '../spessasynth_lib/midi_parser/midi_loader.js'
@@ -15,6 +15,7 @@ import { LocaleManager } from './locale/locale_manager.js'
 import { isMobile } from './js/utils/is_mobile.js'
 import { SpessaSynthInfo } from '../spessasynth_lib/utils/loggin.js'
 import { showNotification } from './js/notification.js'
+import { keybinds } from './js/keybinds.js'
 
 const RENDER_AUDIO_TIME_INTERVAL = 500;
 
@@ -249,7 +250,7 @@ document.body.classList.add("load");
         // add keypresses
         canvas.addEventListener("keypress", e => {
             switch (e.key.toLowerCase()) {
-                case "c":
+                case keybinds.cinematicMode:
                     if(this.seq)
                     {
                         this.seq.pause();
@@ -268,7 +269,7 @@ document.body.classList.add("load");
                     document.body.requestFullscreen().then();
                     break;
 
-                case "v":
+                case keybinds.videoMode:
                     if(this.seq)
                     {
                         this.seq.pause();

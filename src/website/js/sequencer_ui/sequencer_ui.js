@@ -4,6 +4,7 @@ import { supportedEncodings } from '../utils/encodings.js'
 import { getBackwardSvg, getForwardSvg, getLoopSvg, getPauseSvg, getPlaySvg, getTextSvg } from '../icons.js'
 import { messageTypes } from '../../../spessasynth_lib/midi_parser/midi_message.js'
 import { getSeqUIButton } from './sequi_button.js'
+import { keybinds } from '../keybinds.js'
 
 /**
  * sequencer_ui.js
@@ -398,17 +399,17 @@ export class SequencerUI
         document.addEventListener("keypress", event => {
             switch(event.key.toLowerCase())
             {
-                case " ":
+                case keybinds.playPause:
                     event.preventDefault();
                     togglePlayback();
                     break;
 
-                case "l":
+                case keybinds.toggleLoop:
                     event.preventDefault();
                     toggleLoop();
                     break;
 
-                case "t":
+                case keybinds.toggleLyrics:
                     event.preventDefault();
                     toggleLyrics();
                     break;
@@ -435,23 +436,23 @@ export class SequencerUI
 
             switch (e.key.toLowerCase())
             {
-                case "arrowleft":
+                case keybinds.seekBackwards:
                     e.preventDefault();
                     this.seq.currentTime -= 5;
                     playPauseButton.innerHTML = getPauseSvg(ICON_SIZE);
                     break;
 
-                case "arrowright":
+                case keybinds.seekForwards:
                     e.preventDefault();
                     this.seq.currentTime += 5;
                     playPauseButton.innerHTML = getPauseSvg(ICON_SIZE);
                     break;
 
-                case "[":
+                case keybinds.previousSong:
                     this.switchToPreviousSong();
                     break;
 
-                case "]":
+                case keybinds.nextSong:
                     this.switchToNextSong();
                     break;
 

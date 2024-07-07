@@ -47,9 +47,18 @@ export function _createKeyboardHandler( keyboard, synthui, renderer)
         createChannel();
     });
 
+    // QoL: change keyboard channel to the changed one when user changed it: adjust selector here
+    synthui.synth.eventHandler.addEvent("programchange", "settings-keyboard-program-change", e => {
+        if(e.userCalled)
+        {
+            keyboardControls.channelSelector.value = e.channel;
+        }
+    })
+
     // dark mode toggle
     keyboardControls.modeSelector.onclick = () => {
         keyboard.toggleMode();
         this._saveSettings();
     }
+
 }

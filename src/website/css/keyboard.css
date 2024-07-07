@@ -10,6 +10,7 @@
     background: black;
     width: 100%;
     transition: var(--music-mode-transition) transform;
+    touch-action: none;
 }
 
 #keyboard.out_animation{
@@ -20,6 +21,7 @@
 {
     -webkit-user-select: none;
     user-select: none;
+    touch-action: none;
 
     flex: 1;
     transition: transform 0.1s ease;

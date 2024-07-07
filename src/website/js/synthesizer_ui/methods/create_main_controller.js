@@ -106,29 +106,7 @@ export function createMainSynthController()
     showControllerButton.classList.add("synthui_button");
     showControllerButton.onclick = () => {
         this.hideOnDocClick = false;
-
-        this.isShown = !this.isShown;
-        if(this.isShown)
-        {
-            controlsWrapper.classList.add("controls_wrapper_show");
-            controller.style.display = "block";
-            document.getElementsByClassName("top_part")[0].classList.add("synthui_shown");
-            this.showControllers();
-
-            setTimeout(() => {
-                controller.classList.add("synthui_controller_show");
-            }, 10);
-        }
-        else
-        {
-            document.getElementsByClassName("top_part")[0].classList.remove("synthui_shown");
-            this.hideControllers();
-            controller.classList.remove("synthui_controller_show");
-            setTimeout(() => {
-                controlsWrapper.classList.remove("controls_wrapper_show");
-                controller.style.display = "none";
-            }, 200);
-        }
+        this.toggleVisibility();
     }
 
     // black midi mode toggle

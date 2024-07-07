@@ -78,6 +78,7 @@ export class LocaleManager
         }
         if(property.object[property.propertyName] !== textValue)
         {
+            console.log("edited. Expected", textValue, "got", property.object[property.propertyName]);
             property.isEdited = true;
         }
     }
@@ -171,8 +172,9 @@ export class LocaleManager
     /**
      * Changes the global locale and all bound text
      * @param newLocale {LocaleList}
+     * @param force {boolean} if the locale should be applied even to changed values
      */
-    changeGlobalLocale(newLocale)
+    changeGlobalLocale(newLocale, force = false)
     {
         /**
          * @type {CompleteLocaleTypedef}
@@ -185,10 +187,13 @@ export class LocaleManager
         }
         this.localeCode = newLocale;
         SpessaSynthInfo("Changing locale to", newLocaleObject.localeName)
-        // check if the property has been changed to something else. If so, don't change it back.
-        this._boundObjectProperties.forEach(property => {
-            this._validatePropertyIntegrity(property);
-        })
+        if(!force)
+        {
+            // check if the property has been changed to something else. If so, don't change it back.
+            this._boundObjectProperties.forEach(property => {
+                this._validatePropertyIntegrity(property);
+            });
+        }
         this.locale = newLocaleObject;
         // apply the new locale to bound elements
         this._boundObjectProperties.forEach(property => {

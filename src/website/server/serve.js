@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path'
+import { configPath, soundfontsPath } from './server.js'
 /**
  * @param res {ServerResponse}
  * @param path {string}
@@ -32,6 +33,47 @@ export async function serveSfont(path, res)
         fileStream.close();
         res.end();
     })
+}
+
+/**
+ * @param res {ServerResponse}
+ */
+export function serveSfontList(res)
+{
+    const fileNames = fs.readdirSync(soundfontsPath).filter(fName => {
+        return fName.slice(-3).toLowerCase() === 'sf2' || fName.slice(-3).toLowerCase() === 'sf3';
+    });
+
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    if (config['lastUsedSf2'])
+    {
+        if (fileNames.includes(config['lastUsedSf2']))
+        {
+            fileNames.splice(fileNames.indexOf(config['lastUsedSf2']), 1);
+            fileNames.unshift(config['lastUsedSf2']);
+        }
+    }
+    else
+    {
+        config['lastUsedSf2'] = fileNames[0];
+    }
+
+    const files = fileNames.map(file => {
+        return { name: file };
+    });
+
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(files));
+}
+
+/**
+ * @param res {ServerResponse}
+ */
+export function serveSettings(res)
+{
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(config.settings || {}));
 }
 
 /**

@@ -68,10 +68,11 @@
     display: flex;
     align-items: stretch;
     flex-wrap: wrap;
+    transition: 0.2s ease;
 }
 
-.no_voices {
-    filter: brightness(80%);
+.channel_controller.no_voices{
+    filter: brightness(0.8);
 }
 
 .mute_button

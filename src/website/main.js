@@ -11,8 +11,6 @@ import { showNotification } from './js/notification.js'
  * main.js
  * purpose: main script for the local edition, loads the soundfont and passes it to the manager.js, reloads soundfonts when needed and saves the settings
  */
-
-const TITLE = "SpessaSynth: SoundFont2 Javascript Synthesizer";
 const SAMPLE_RATE = 44100;
 
 /**
@@ -208,10 +206,9 @@ async function replaceFont(fontName)
         if(!window.manager) {
             // prepare the manager
             window.manager = new Manager(audioContextMain, soundFontParser);
-            const t = titleMessage.innerText;
+            window.TITLE = window.manager.localeManager.getLocaleString("locale.titleMessage");
             titleMessage.innerText = "Initializing...";
             await manager.ready;
-            titleMessage.innerText = t;
         }
         else
         {
@@ -227,7 +224,6 @@ async function replaceFont(fontName)
             }
         }
         synthReady = true;
-        titleMessage.innerText = TITLE;
     }
 
     if(window.loadedSoundfonts.find(sf => sf.name === fontName))
@@ -262,10 +258,9 @@ document.body.onclick = async () =>
         if(window.soundFontParser) {
             // prepare midi interface
             window.manager = new Manager(audioContextMain, soundFontParser);
-            const t = titleMessage.innerText;
+            window.TITLE = window.manager.localeManager.getLocaleString("locale.titleMessage")
             titleMessage.innerText = "Initializing..."
             await manager.ready;
-            titleMessage.innerText = t;
             synthReady = true;
         }
     }
@@ -310,7 +305,7 @@ fetch("soundfonts").then(async r => {
 
         if(window.manager.seq)
         {
-            titleMessage.innerText = window.manager.seq.midiData.midiName || TITLE;
+            titleMessage.innerText = window.manager.seq.midiData.midiName || window.TITLE;
         }
 
     }
