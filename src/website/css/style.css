@@ -37,7 +37,7 @@
 }
 
 html, body {
-    height: 100%;
+    height: 100lvh;
     width: 100%;
     background: black;
     overflow-x: clip;
@@ -47,11 +47,32 @@ body.load{
     transition: background 0.2s;
 }
 
+body.no_scroll,
+html.no_scroll{
+    max-height: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+}
+
 .spessasynth_main{
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    width: 100vw;
+    height: 100%;
+
+    /*switch colors*/
+    --primary-color: #510087;
+    --border-color: #6e00b7;
+    --track-color: #333;
+    --track-border-color: #444;
+    --shadow-color: #000;
+}
+
+.spessasynth_main.light_mode{
+    --primary-color: #a93bff;
+    --border-color: #510087;
+    --track-color: #ccc;
+    --track-border-color: #444;
+    --shadow-color: #fff;
 }
 
 a{
@@ -96,19 +117,25 @@ button{
     display: flex;
     justify-content: center;
     align-items: center;
-    position: absolute;
+    position: fixed;
     width: 100%;
     height: 100%;
     z-index: var(--top-index);
     left: 0;
     background: var(--top-color);
-    transition: all 0.5s ease-in-out;
+    transition: all 1s var(--bouncy-transition);
     cursor: wait;
 }
 
 .loading .loading_icon {
-    margin: 3em;
+    max-width: 100%;
+    max-height: 100%;
+    margin: 1em;
     animation: spin 1s ease-in-out infinite;
+}
+
+.loading.done{
+    transform: translateY(-100%);
 }
 
 @keyframes spin {

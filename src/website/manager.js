@@ -14,8 +14,10 @@ import { MusicModeUI } from './js/music_mode_ui.js'
 import { LocaleManager } from './locale/locale_manager.js'
 import { isMobile } from './js/utils/is_mobile.js'
 import { SpessaSynthInfo } from '../spessasynth_lib/utils/loggin.js'
-import { showNotification } from './js/notification.js'
+import { closeNotification, showNotification } from './js/notification.js'
 import { keybinds } from './js/keybinds.js'
+import { formatTime } from '../spessasynth_lib/utils/other.js'
+import { audioBufferToWav } from '../spessasynth_lib/utils/buffer_to_wav.js'
 
 const RENDER_AUDIO_TIME_INTERVAL = 500;
 
@@ -23,11 +25,12 @@ const RENDER_AUDIO_TIME_INTERVAL = 500;
 document.body.classList.add("load");
 
 /**
- * manager.js
- * purpose: connects every element of spessasynth together
- */
+* manager.js
+* purpose: connects every element of spessasynth together
+*/
 
-    export class Manager {
+export class Manager
+{
     channelColors = [
         'rgba(255, 99, 71, 1)',   // tomato
         'rgba(255, 165, 0, 1)',   // orange
@@ -52,7 +55,8 @@ document.body.classList.add("load");
      * @param context {BaseAudioContext}
      * @param soundFontBuffer {ArrayBuffer}
      */
-    constructor(context, soundFontBuffer) {
+    constructor(context, soundFontBuffer)
+    {
         this.context = context;
         let solve;
         this.ready = new Promise(resolve => solve = resolve);
@@ -61,12 +65,7 @@ document.body.classList.add("load");
         });
         this.sf = soundFontBuffer;
     }
-
-    /**
-     * @param callback {function(number, number)} progress from 0 to 1, speed multiplier
-     * @returns {Promise<AudioBuffer>}
-     */
-    async renderAudio(callback=undefined)
+    async renderAudio()
     {
         if(!this.seq)
         {
@@ -108,24 +107,48 @@ document.body.classList.add("load");
             showNotification(this.localeManager.getLocaleString("locale.warnings.warning"), this.localeManager.getLocaleString("locale.warnings.outOfMemory"))
             throw e;
         }
-        if(callback)
-        {
-            const RATI_SECONDS = RENDER_AUDIO_TIME_INTERVAL / 1000;
-            let rendered = synth.currentTime;
-            const interval = setInterval(() => {
-                let hasRendered = synth.currentTime - rendered;
-                rendered = synth.currentTime;
-                callback(synth.currentTime / parsedMid.duration, hasRendered / RATI_SECONDS)
-            }, RENDER_AUDIO_TIME_INTERVAL);
-            const buf = await offline.startRendering();
-            clearInterval(interval);
-            SpessaSynthInfo(buf)
-            return buf;
-        }
-        else
-        {
-            return offline.startRendering();
-        }
+
+
+        // get locales
+        const exportingMessage = manager.localeManager.getLocaleString("locale.exportAudio.message");
+        const estimatedMessage = manager.localeManager.getLocaleString("locale.exportAudio.estimated");
+        const duration = window.manager.seq.midiData.duration;
+
+        const notification = showNotification(exportingMessage, estimatedMessage, duration * 1000, false, true);
+        const detailMessage = notification.div.getElementsByClassName("notification_message")[0];
+        const progressDiv = notification.div.getElementsByClassName("notification_progress")[0];
+
+        const RATI_SECONDS = RENDER_AUDIO_TIME_INTERVAL / 1000;
+        let rendered = synth.currentTime;
+        let estimatedTime = duration;
+
+        const interval = setInterval(() => {
+            // calculate estimated time
+            let hasRendered = synth.currentTime - rendered;
+            rendered = synth.currentTime;
+            const progress = synth.currentTime / parsedMid.duration;
+            progressDiv.style.width = `${progress * 100}%`;
+            const speed = hasRendered / RATI_SECONDS;
+            const estimated = (1 - progress) / speed * duration;
+            // smooth out estimated
+
+            estimatedTime = (estimated + estimatedTime) / 2;
+            detailMessage.innerText = `${estimatedMessage} ${formatTime(estimatedTime).time}`
+
+        }, RENDER_AUDIO_TIME_INTERVAL);
+
+        const buf = await offline.startRendering();
+        progressDiv.style.width = "100%";
+        // clear intervals and save file
+        clearInterval(interval);
+        closeNotification(notification.id);
+        const blob = audioBufferToWav(buf);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${window.manager.seq.midiData.midiName || 'unnamed_song'}.wav`;
+        a.click();
+        SpessaSynthInfo(a);
 
     }
 
@@ -139,7 +162,8 @@ document.body.classList.add("load");
      * @param soundFont {ArrayBuffer}
      * @returns {Promise<void>}
      */
-    async initializeContext(context, soundFont) {
+    async initializeContext(context, soundFont)
+    {
 
         if(!context.audioWorklet)
         {
@@ -208,11 +232,36 @@ document.body.classList.add("load");
         this.renderer = new Renderer(this.channelColors, this.synth, canvas);
         this.renderer.render(true);
 
-        window.addEventListener("resize", () => {
+        let titleSwappedWithSettings = false;
+        const checkResize = () => {
             canvas.width = window.innerWidth * window.devicePixelRatio;
             canvas.height = window.innerHeight * window.devicePixelRatio;
-            this.renderer.computeColors()
-        });
+            this.renderer.computeColors();
+            if(isMobile)
+            {
+                if(window.innerWidth / window.innerHeight > 1)
+                {
+                    if(!titleSwappedWithSettings)
+                    {
+                        const title = document.getElementById("title_wrapper");
+                        const settings = document.getElementById("settings_div");
+                        titleSwappedWithSettings = true;
+                        title.parentElement.insertBefore(settings, title);
+                    }
+                }
+                else if(titleSwappedWithSettings)
+                {
+                    const title = document.getElementById("title_wrapper");
+                    const settings = document.getElementById("settings_div");
+                    titleSwappedWithSettings = false;
+                    title.parentElement.insertBefore(title, settings);
+                }
+
+            }
+        }
+        checkResize();
+        window.addEventListener("resize", checkResize.bind(this));
+        window.addEventListener("orientationchange", checkResize.bind(this))
 
         // if on mobile, switch to a 5 octave keyboard
 
@@ -309,12 +358,6 @@ document.body.classList.add("load");
             }
         });
         await this.synth.isReady;
-
-        // if on mobile, cap voices to 100
-        if(isMobile)
-        {
-            this.synth.voiceCap = 100;
-        }
     }
 
     /**

@@ -3,8 +3,7 @@
 import {Manager} from "./manager.js";
 import {MIDI} from "../spessasynth_lib/midi_parser/midi_loader.js";
 
-import { formatTime, formatTitle } from '../spessasynth_lib/utils/other.js'
-import { audioBufferToWav } from '../spessasynth_lib/utils/buffer_to_wav.js'
+import { formatTitle } from '../spessasynth_lib/utils/other.js'
 import { showNotification } from './js/notification.js'
 
 /**
@@ -165,26 +164,7 @@ async function startMidi(midiFiles)
     }
     manager.seqUI.setSongTitles(titles);
     exportButton.style.display = "initial";
-    exportButton.onclick = async () => {
-        const title = titleMessage.textContent;
-        const message = manager.localeManager.getLocaleString("locale.exportAudio.message");
-        const estimatedMessage = manager.localeManager.getLocaleString("locale.exportAudio.estimated");
-
-        const duration = window.manager.seq.midiData.duration;
-        const buffer = await window.manager.renderAudio((progress, speed) => {
-            const estimated = (1 - progress) / speed * duration;
-            titleMessage.innerText = `${message} ${Math.round(progress * 100)}%\n ${estimatedMessage} ${formatTime(estimated).time}`
-        });
-
-        titleMessage.textContent = title;
-
-        const blob = audioBufferToWav(buffer);
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${window.manager.seq.midiData.midiName || 'song'}.wav`;
-        a.click();
-    }
+    exportButton.onclick = window.manager.renderAudio.bind(window.manager);
 }
 
 /**
@@ -242,6 +222,7 @@ async function replaceFont(fontName)
         window.loadedSoundfonts.push({name: fontName, sf: window.soundFontParser})
         replaceSf();
     });
+    titleMessage.innerText = window.TITLE;
 }
 
 document.body.onclick = async () =>

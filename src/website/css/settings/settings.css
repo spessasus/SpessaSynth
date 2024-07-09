@@ -18,13 +18,6 @@
     overflow-y: auto;
     display: none;
     border-radius: 0 0 10px 10px;
-
-    /*switch colors*/
-    --primary-color: #510087;
-    --border-color: #6e00b7;
-    --track-color: #333;
-    --track-border-color: #444;
-    --shadow-color: #000;
 }
 
 .settings_menu_show{
@@ -35,14 +28,6 @@
 .settings_menu * {
     -webkit-user-select: none;
     user-select: none;
-}
-
-.settings_menu.settings_menu_light{
-    --primary-color: #a93bff;
-    --border-color: #510087;
-    --track-color: #ccc;
-    --track-border-color: #444;
-    --shadow-color: #fff;
 }
 
 .settings_menu select{

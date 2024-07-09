@@ -39,11 +39,12 @@
     text-align: start;
     font-size: 1.5rem;
     line-height: 2rem;
-    margin-left: 1rem;
+    margin: 1rem;
 }
 
 .notification p{
-    padding: 1rem;
+    margin: 1rem;
+    margin-bottom: 0;
 }
 
 .notification .close_btn{
@@ -55,4 +56,29 @@
 
 .notification .close_btn:hover{
     cursor: pointer;
+}
+
+.notification .notification_progress_background{
+    height: 1rem;
+    margin: 1rem;
+    background: var(--track-color);
+    border: solid 1px var(--track-border-color);
+    border-radius: 1rem;
+    width: 80%;
+    box-sizing: content-box; /*HERESY*/
+}
+
+.notification .notification_progress{
+    height: 100%;
+    width: 0;
+    background: var(--primary-color);
+    border-right: solid 1px var(--border-color);
+    border-top: solid 1px var(--border-color);
+    border-bottom: solid 1px var(--border-color);
+    border-radius: 1rem;
+    top: -1px;
+    left: -1px;
+    position: relative;
+    transition: 0.1s width ease;
+    box-sizing: content-box; /*HERESY*/
 }

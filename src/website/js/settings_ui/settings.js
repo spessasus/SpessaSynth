@@ -88,7 +88,7 @@ class SpessaSynthSettings
         settingsButton.appendChild(text);
 
         let gear = document.createElement('div');
-        gear.innerHTML = getGearSvg(32);
+        gear.innerHTML = getGearSvg(24);
         gear.classList.add("gear");
         settingsButton.appendChild(gear);
 

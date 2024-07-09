@@ -3,9 +3,8 @@
 import { Manager } from '../manager.js'
 import { MIDI } from '../../spessasynth_lib/midi_parser/midi_loader.js'
 
-import { formatTime, formatTitle } from '../../spessasynth_lib/utils/other.js'
+import { formatTitle } from '../../spessasynth_lib/utils/other.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../../spessasynth_lib/utils/loggin.js'
-import { audioBufferToWav } from '../../spessasynth_lib/utils/buffer_to_wav.js'
 import { isMobile } from '../js/utils/is_mobile.js'
 import { getCheckSvg, getExclamationSvg } from '../js/icons.js'
 import { showNotification } from '../js/notification.js'
@@ -14,9 +13,7 @@ import { showNotification } from '../js/notification.js'
  * demo_main.js
  * purpose: main script for the demo, loads the soundfont and passes it to the manager.js
  */
-
 const SF_NAME = "SGM.sf3";
-const TITLE = "SpessaSynth: SoundFont2 Javascript Synthetizer Online Demo";
 /**
  * @type {HTMLHeadingElement}
  */
@@ -119,6 +116,16 @@ async function saveSoundFontToIndexedDB(arr)
 // attempt to load soundfont from indexed db
 async function demoInit()
 {
+    try {
+        const context = window.AudioContext || window.webkitAudioContext;
+        window.audioContextMain = new context({ sampleRate: 44100 });
+    }
+    catch (e) {
+        changeIcon(getExclamationSvg(256));
+        loadingMessage.textContent = "Your browser doesn't support WebAudio.";
+        throw e;
+
+    }
     loadingMessage.textContent = "Loading soundfont..."
     let soundFontBuffer = await loadLastSoundFontFromDatabase();
     let loadedFromDb = true;
@@ -143,18 +150,6 @@ async function demoInit()
     if(!loadedFromDb) {
         loadingMessage.textContent = "Saving soundfont to the browser..."
         await saveSoundFontToIndexedDB(soundFontBuffer);
-    }
-
-    titleMessage.innerText = TITLE;
-    try {
-        const context = window.AudioContext || window.webkitAudioContext;
-        window.audioContextMain = new context({ sampleRate: 44100 });
-    }
-    catch (e) {
-        changeIcon(getExclamationSvg(256));
-        loadingMessage.textContent = "Your browser doesn't support WebAudio.";
-        throw e;
-
     }
 
     if(window.audioContextMain.state !== "running")
@@ -314,26 +309,7 @@ async function startMidi(midiFiles)
     manager.seqUI.setSongTitles(titles);
 
     exportButton.style.display = "initial";
-    exportButton.onclick = async () => {
-        const title = titleMessage.textContent;
-        const message = manager.localeManager.getLocaleString("locale.exportAudio.message");
-        const estimatedMessage = manager.localeManager.getLocaleString("locale.exportAudio.estimated");
-
-        const duration = window.manager.seq.midiData.duration;
-        const buffer = await window.manager.renderAudio((progress, speed) => {
-            const estimated = (1 - progress) / speed * duration;
-            titleMessage.innerText = `${message} ${Math.round(progress * 100)}%\n ${estimatedMessage} ${formatTime(estimated).time}`
-        });
-
-        titleMessage.textContent = title;
-
-        const blob = audioBufferToWav(buffer);
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${window.manager.seq.midiData.midiName || 'unnamed_song'}.wav`;
-        a.click();
-    }
+    exportButton.onclick = window.manager.renderAudio.bind(window.manager);
 }
 
 
@@ -376,9 +352,13 @@ document.getElementById("file_upload").style.display = "none";
 demoInit().then(() => {
     document.getElementById("sf_upload").style.display = "flex";
     document.getElementById("file_upload").style.display = "flex";
-    loading.style.opacity = "0";
+    loading.classList.add("done")
+    document.documentElement.classList.add("no_scroll");
+    document.body.classList.add("no_scroll");
     setTimeout(() => {
         loading.style.display = "none";
+        document.body.classList.remove("no_scroll");
+        document.documentElement.classList.remove("no_scroll");
 
         // check for chrome android
         if(isMobile)
@@ -389,10 +369,10 @@ demoInit().then(() => {
                     window.manager.localeManager.getLocaleString("locale.warnings.warning"),
                     window.manager.localeManager.getLocaleString("locale.warnings.chromeMobile"),
                     5000
-                )
+                );
             }
         }
-    }, 500)
+    }, 1000)
     /**
      * @param e {{target: HTMLInputElement}}
      * @return {Promise<void>}

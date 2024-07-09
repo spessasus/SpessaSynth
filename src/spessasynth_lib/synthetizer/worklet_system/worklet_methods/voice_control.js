@@ -126,7 +126,7 @@ export function renderVoice(channel, voice, output, reverbOutput, chorusOutput)
 
 
     // lowpass filter
-    applyLowpassFilter(voice, bufferOut, lowpassCents, this.lowpassFilterSmoothingFactor);
+    applyLowpassFilter(voice, bufferOut, lowpassCents);
 
     // volenv
     applyVolumeEnvelope(voice, bufferOut, currentTime, modLfoCentibels, this.sampleTime, this.volumeEnvelopeSmoothingFactor);

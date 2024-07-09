@@ -46,6 +46,8 @@ export function _toggleDarkMode()
     this.synthui.toggleDarkMode();
     this.sequi.toggleDarkMode()
 
+    document.getElementsByClassName("spessasynth_main")[0].classList.toggle("light_mode");
+
     // top part
     document.getElementsByClassName("top_part")[0].classList.toggle("top_part_light");
 

@@ -110,7 +110,7 @@ export function computeModulators(voice, controllerTable)
     voice.modulators.forEach(mod => {
         voice.modulatedGenerators[mod.modulatorDestination] += computeWorkletModulator(controllerTable, mod, voice.midiNote, voice.velocity);
     });
-    recalculateVolumeEnvelope(voice)
+    recalculateVolumeEnvelope(voice);
 }
 
 /**
