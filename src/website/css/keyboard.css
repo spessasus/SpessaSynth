@@ -11,10 +11,16 @@
     width: 100%;
     transition: var(--music-mode-transition) transform;
     touch-action: none;
+    transform-origin: bottom center;
+    --key-border-radius: 0.4vmin;
 }
 
 #keyboard.out_animation{
     transform: translateX(-100%);
+}
+
+#keyboard.mode_transform{
+    transform: translateY(150%);
 }
 
 #keyboard .key
@@ -24,8 +30,8 @@
     touch-action: none;
 
     flex: 1;
-    transition: transform 0.1s ease;
-    border-radius: 0 0 0.4vmin 0.4vmin;
+    transition: transform 0.1s ease, border-radius 0.5s ease;
+    border-radius: 0 0 var(--key-border-radius) var(--key-border-radius);
     position: relative;
     transform-origin: center top;
     --pressed-transform: matrix3d(1,0,0.00,0,0.00,1,0.00,0.0007,0,0,1,0,0,0,0,1);

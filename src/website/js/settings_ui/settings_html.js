@@ -9,35 +9,19 @@ export const settingsHtml = `
 <div class='settings_groups_parent'>
     <div class='settings_group'>
         <h2 translate-path='locale.settings.rendererSettings.title'></h2>
-        <label 
-        translate-path-title='locale.settings.rendererSettings.noteFallingTime'></label>
-        <p style='display: flex; align-items: center; width: 100%; justify-content: center'>
-            <input type='range' min='1' max='9999' value='1000' class='settings_slider' id='note_time_slider'>
-            <span>1000ms</span>
-            </span>
-        </p>
+        <label
+         translate-path-title='locale.settings.rendererSettings.noteFallingTime'></label>
+        <spessarange min='1' max='9999' value='1000' class='settings_slider' input_id='note_time_slider' units='ms'></spessarange>
         
         <label translate-path-title='locale.settings.rendererSettings.waveformThickness'></label>
-        <p style='display: flex; align-items: center; width: 100%; justify-content: center'>
-            <input type='range' min='0' max='10' value='2' class='settings_slider' id='analyser_thickness_slider'>
-            <span>2px</span>
-            </span>
-        </p>
+        <spessarange min='0' max='10' value='2' class='settings_slider' input_id='analyser_thickness_slider' units='px'></spessarange>
         
         <label 
         translate-path-title='locale.settings.rendererSettings.waveformSampleSize'></label>
-        <p style='display: flex; align-items: center; width: 100%; justify-content: center'>
-            <input type='range' min='5' max='15' value='9' class='settings_slider' id='analyser_fft_slider'>
-            <span>512</span>
-            </span>
-        </p>
+        <spessarange min='5' max='15' value='10' class='settings_slider' input_id='analyser_fft_slider' units=''></spessarange>
         
         <label translate-path-title='locale.settings.rendererSettings.waveformAmplifier'></label>
-        <p style='display: flex; align-items: center; width: 100%; justify-content: center'>
-            <input type='range' min='1' max='20' value='2' class='settings_slider' id='wave_multiplier_slider'>
-            <span>2</span>
-            </span>
-        </p>
+        <spessarange min='1' max='20' value='2' class='settings_slider' input_id='wave_multiplier_slider' units=''></spessarange>
         
         <div class='switch_label'>
             <label translate-path-title='locale.settings.rendererSettings.toggleWaveformsRendering'></label>

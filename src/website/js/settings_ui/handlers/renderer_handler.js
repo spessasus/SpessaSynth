@@ -1,3 +1,5 @@
+import { getSpan } from '../sliders.js'
+
 /**
  * @param renderer {Renderer}
  * @this {SpessaSynthSettings}
@@ -8,35 +10,35 @@ export function _createRendererHandler(renderer)
     const rendererControls = this.htmlControls.renderer;
 
     // note falling time
-    rendererControls.noteTimeSlider.oninput = () => {
+    rendererControls.noteTimeSlider.addEventListener("input", () => {
         renderer.noteFallingTimeMs = rendererControls.noteTimeSlider.value;
-        rendererControls.noteTimeSlider.nextElementSibling.innerText = `${rendererControls.noteTimeSlider.value}ms`
-    }
+        getSpan(rendererControls.noteTimeSlider).innerText = `${rendererControls.noteTimeSlider.value}ms`
+    });
     // bind to onchange instead of oniinput to prevent spam
     rendererControls.noteTimeSlider.onchange = () => { this._saveSettings(); }
 
     // waveform line thickness
-    rendererControls.analyserThicknessSlider.oninput = () => {
+    rendererControls.analyserThicknessSlider.addEventListener("input", () => {
         renderer.lineThickness = parseInt(rendererControls.analyserThicknessSlider.value);
-        rendererControls.analyserThicknessSlider.nextElementSibling.innerText = `${rendererControls.analyserThicknessSlider.value}px`;
-    }
+        getSpan(rendererControls.analyserThicknessSlider).innerText = `${rendererControls.analyserThicknessSlider.value}px`;
+    });
     rendererControls.analyserThicknessSlider.onchange = () => { this._saveSettings(); }
 
     // fft size (sample size)
-    rendererControls.analyserFftSlider.oninput = () => {
+    rendererControls.analyserFftSlider.addEventListener("input", () => {
         let value = Math.pow(2, parseInt(rendererControls.analyserFftSlider.value));
         renderer.normalAnalyserFft = value;
         renderer.drumAnalyserFft = Math.pow(2, Math.min(15, parseInt(rendererControls.analyserFftSlider.value) + 2));
         renderer.updateFftSize();
-        rendererControls.analyserFftSlider.nextElementSibling.innerText = `${value}`;
-    }
+        getSpan(rendererControls.analyserFftSlider).innerText = `${value}`;
+    });
     rendererControls.analyserFftSlider.onchange = () => { this._saveSettings(); }
 
     // wave multiplier
-    rendererControls.waveMultiplierSlizer.oninput = () => {
+    rendererControls.waveMultiplierSlizer.addEventListener("input", () => {
         renderer.waveMultiplier = parseInt(rendererControls.waveMultiplierSlizer.value);
-        rendererControls.waveMultiplierSlizer.nextElementSibling.innerText = rendererControls.waveMultiplierSlizer.value;
-    }
+        getSpan(rendererControls.waveMultiplierSlizer).innerText = rendererControls.waveMultiplierSlizer.value;
+    });
     rendererControls.waveMultiplierSlizer.onchange = () => { this._saveSettings(); }
 
     // render waveforms

@@ -79,132 +79,60 @@ export function createChannelController(channelNumber)
             this.synth.controllerChange(channelNumber, cc, val);
             this.synth.lockController(channelNumber, cc, true);
         }
-        else {
+        else
+        {
             this.synth.controllerChange(channelNumber, cc, val);
         }
     }
 
+    /**
+     * @param ccNum {number}
+     * @param localePath {string}
+     * @param defaultValue {number}
+     * @returns {Meter}
+     */
+    const createCCMeterHelper = (ccNum, localePath, defaultValue) => {
+        const meter = new Meter(
+            this.channelColors[channelNumber % this.channelColors.length],
+            LOCALE_PATH + localePath,
+            this.locale,
+            [channelNumber + 1],
+            0,
+            127,
+            true,
+            val => changeCCUserFunction(ccNum, Math.round(val), meter),
+            () => this.synth.lockController(channelNumber, ccNum, true),
+            () => this.synth.lockController(channelNumber, ccNum, false)
+        );
+        meter.update(defaultValue);
+        return meter;
+    }
+
     // pan controller
-    const pan = new Meter(this.channelColors[channelNumber % this.channelColors.length],
-        LOCALE_PATH + "channelController.panMeter",
-        this.locale,
-        [channelNumber + 1],
-        0,
-        127,
-        true,
-        val => {
-            changeCCUserFunction(midiControllers.pan, Math.round(val), pan);
-        },
-        () => {
-            this.synth.lockController(channelNumber, midiControllers.pan, true);
-        },
-        () => {
-            this.synth.lockController(channelNumber, midiControllers.pan, false);
-        });
-    pan.update(64);
+    const pan = createCCMeterHelper(midiControllers.pan, "channelController.panMeter", 64);
     controller.appendChild(pan.div);
 
     // expression controller
-    const expression = new Meter(this.channelColors[channelNumber % this.channelColors.length],
-        LOCALE_PATH + "channelController.expressionMeter",
-        this.locale,
-        [channelNumber + 1],
-        0,
-        127,
-        true,
-        val => {
-            changeCCUserFunction(midiControllers.expressionController, Math.round(val), expression);
-        },
-        () => {
-            this.synth.lockController(channelNumber, midiControllers.expressionController, true);
-        },
-        () => {
-            this.synth.lockController(channelNumber, midiControllers.expressionController, false);
-        });
-    expression.update(127);
+    const expression = createCCMeterHelper(midiControllers.expressionController, "channelController.expressionMeter", 127);
     controller.appendChild(expression.div);
 
     // volume controller
-    const volume = new Meter(this.channelColors[channelNumber % this.channelColors.length],
-        LOCALE_PATH + "channelController.volumeMeter",
-        this.locale,
-        [channelNumber + 1],
-        0,
-        127,
-        true,
-        val => {
-            changeCCUserFunction(midiControllers.mainVolume, Math.round(val), volume);
-        },
-        () => {
-            this.synth.lockController(channelNumber, midiControllers.mainVolume, true);
-        },
-        () => {
-            this.synth.lockController(channelNumber, midiControllers.mainVolume, false);
-        });
-    volume.update(100);
+    const volume = createCCMeterHelper(midiControllers.mainVolume, "channelController.volumeMeter", 100);
     controller.appendChild(volume.div);
 
     // modulation wheel
-    const modulation = new Meter(this.channelColors[channelNumber % this.channelColors.length],
-        LOCALE_PATH + "channelController.modulationWheelMeter",
-        this.locale,
-        [channelNumber + 1],
-        0,
-        127,
-        true,
-        val => {
-            changeCCUserFunction(midiControllers.modulationWheel, Math.round(val), modulation);
-        },
-        () => {
-            this.synth.lockController(channelNumber, midiControllers.modulationWheel, true);
-        },
-        () => {
-            this.synth.lockController(channelNumber, midiControllers.modulationWheel, false);
-        });
-    modulation.update(0);
+    const modulation = createCCMeterHelper(midiControllers.modulationWheel, "channelController.modulationWheelMeter", 127);
     controller.appendChild(modulation.div);
 
     // chorus
-    const chorus = new Meter(this.channelColors[channelNumber % this.channelColors.length],
-        LOCALE_PATH + "channelController.chorusMeter",
-        this.locale,
-        [channelNumber + 1],
-        0,
-        127,
-        true,
-        val => {
-            changeCCUserFunction(midiControllers.effects3Depth, Math.round(val), chorus);
-        },
-        () => {
-            this.synth.lockController(channelNumber, midiControllers.effects3Depth, true);
-        },
-        () => {
-            this.synth.lockController(channelNumber, midiControllers.effects3Depth, false);
-        });
-    chorus.update(0);
+    const chorus = createCCMeterHelper(midiControllers.effects3Depth, "channelController.chorusMeter", 0);
     controller.appendChild(chorus.div);
 
     // reverb
-    const reverb = new Meter(this.channelColors[channelNumber % this.channelColors.length],
-        LOCALE_PATH + "channelController.reverbMeter",
-        this.locale,
-        [channelNumber + 1],
-        0,
-        127,
-        true,
-        val => {
-            changeCCUserFunction(midiControllers.effects1Depth, Math.round(val), reverb);
-        },
-        () => {
-            this.synth.lockController(channelNumber, midiControllers.effects1Depth, true);
-        },
-        () => {
-            this.synth.lockController(channelNumber, midiControllers.effects1Depth, false);
-        });
-    reverb.update(40);
+    const reverb = createCCMeterHelper(midiControllers.effects1Depth, "channelController.reverbMeter", 40);
     controller.appendChild(reverb.div);
 
-    // transpose
+    // transpose is not a cc, add it manually
     const transpose = new Meter(this.channelColors[channelNumber % this.channelColors.length],
         LOCALE_PATH + "channelController.transposeMeter",
         this.locale,
@@ -224,17 +152,16 @@ export function createChannelController(channelNumber)
     const presetReset = document.createElement("div");
 
     // preset controller
-    const presetSelector = new Selector((
-            []
-        ),
+    const presetSelector = new Selector(
+        ([]), // empty for now
         this.locale,
         LOCALE_PATH + "channelController.presetSelector.description",
         [channelNumber + 1],
         async presetName => {
-            const data = JSON.parse(presetName);
+            const data = presetName.split(":");
             this.synth.lockController(channelNumber, ALL_CHANNELS_OR_DIFFERENT_ACTION, false);
-            this.synth.controllerChange(channelNumber, midiControllers.bankSelect, data[0], true);
-            this.synth.programChange(channelNumber, data[1], true);
+            this.synth.controllerChange(channelNumber, midiControllers.bankSelect, parseInt(data[0]), true);
+            this.synth.programChange(channelNumber, parseInt(data[1]), true);
             presetSelector.mainDiv.classList.add("locked_selector");
             this.synth.lockController(channelNumber, ALL_CHANNELS_OR_DIFFERENT_ACTION, true);
         }

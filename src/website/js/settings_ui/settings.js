@@ -14,6 +14,7 @@ import {
 import { _createKeyboardHandler } from './handlers/keyboard_handler.js'
 import { localeList } from '../../locale/locale_files/locale_list.js'
 import { keybinds } from '../keybinds.js'
+import { handleSliders } from './sliders.js'
 
 
 const TRANSITION_TIME = 0.2;
@@ -52,7 +53,7 @@ class SpessaSynthSettings
         this.synthui = sythui;
         this.sequi = sequi;
         this.locale = localeManager;
-        this.playerInfo = playerInfo;
+        this.musicMode = playerInfo;
 
         this.locales = localeList;
         this.keyboardSizes = {
@@ -99,7 +100,6 @@ class SpessaSynthSettings
         settingsButton.onclick = () => this.setVisibility(!this.visible);
         settingsWrapper.appendChild(this.mainDiv);
 
-        this.musicPlayerMode = false;
         musicModeButton.onclick = this.toggleMusicPlayerMode.bind(this);
 
         hideTopButton.onclick = this.hideTopPart;
@@ -122,6 +122,9 @@ class SpessaSynthSettings
 
         // load the html
         this.mainDiv.innerHTML = settingsHtml;
+        // load input type range
+        handleSliders(this.mainDiv);
+
         // bind all translations to the html
         for (const element of this.mainDiv.querySelectorAll("*[translate-path]"))
         {
@@ -168,9 +171,8 @@ class SpessaSynthSettings
 
     toggleMusicPlayerMode()
     {
-        this.musicPlayerMode = !this.musicPlayerMode;
-        this.renderer.renderBool = !this.musicPlayerMode;
-        this.playerInfo.setVisibility(this.musicPlayerMode, this.renderer.canvas, this.midiKeyboard.keyboard);
+        this.renderer.renderBool = !this.musicMode.visible;
+        this.musicMode.setVisibility(!this.musicMode.visible, this.renderer.canvas, this.midiKeyboard.keyboard);
     }
 
     hideTopPart()

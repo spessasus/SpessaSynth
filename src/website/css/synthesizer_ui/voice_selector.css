@@ -34,9 +34,11 @@
 }
 
 .voice_selector optgroup{
-    font-weight: bolder;
+    font-weight: bold;
+    font-style: normal;
     background-color: #141414;
     text-align: left;
+    text-shadow: none !important;
 }
 
 .voice_selector .selector_option:hover

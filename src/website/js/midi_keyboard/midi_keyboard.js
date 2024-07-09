@@ -27,6 +27,8 @@ class MidiKeyboard
          */
         this.mode = "light";
         this.enableDebugging = false;
+        this.sizeChangeAnimationId = -1;
+        this.modeChangeAnimationId = -1;
 
         /**
          * @type {{min: number, max: number}}
@@ -171,7 +173,7 @@ class MidiKeyboard
         return keyElement;
     }
 
-    toggleMode()
+    toggleMode(animate = true)
     {
         if(this.mode === "light")
         {
@@ -181,12 +183,37 @@ class MidiKeyboard
         {
             this.mode = "light";
         }
-        this.keys.forEach(k => {
-            if(k.classList.contains("flat_key"))
-            {
-                k.classList.toggle("flat_dark_key");
-            }
-        })
+        if(!animate)
+        {
+            this.keys.forEach(k => {
+                if(k.classList.contains("flat_key"))
+                {
+                    k.classList.toggle("flat_dark_key");
+                }
+            });
+            return;
+        }
+        if(this.modeChangeAnimationId)
+        {
+            clearTimeout(this.modeChangeAnimationId);
+        }
+        this.keyboard.classList.add("mode_transform");
+        const disableScroll = document.body.scrollHeight <= window.innerHeight;
+        if(disableScroll)
+        {
+            document.body.classList.add("no_scroll");
+        }
+        this.modeChangeAnimationId = setTimeout(() => {
+            this.keys.forEach(k => {
+                if(k.classList.contains("flat_key"))
+                {
+                    k.classList.toggle("flat_dark_key");
+                }
+            });
+            this.keyboard.classList.remove("mode_transform");
+            // restore scrolling
+            setTimeout(() => document.body.classList.remove("no_scroll"), 500);
+        }, 500);
     }
 
     /**
@@ -216,13 +243,78 @@ class MidiKeyboard
         }
         value.min = Math.max(0, value.min);
         value.max = Math.min(127, value.max);
-        this._keyRange = value;
-        this._createKeyboard();
+        this.setKeyRange(value, true);
 
+    }
+
+    /**
+     * @param range {{min: number, max: number}}
+     * @param animate {boolean}
+     */
+    setKeyRange(range, animate = true)
+    {
         // adjust height
         // according to my testing, this function seems to calculate the height well:
         // 900 / (keys + 5)
-        this.keyboard.style.minHeight = `${900 / ((value.max - value.min) + 5)}vw`;
+        const newHeight = 900 / ((range.max - range.min) + 5);
+        if(animate)
+        {
+            if(this.sizeChangeAnimationId)
+            {
+                clearTimeout(this.sizeChangeAnimationId);
+            }
+            // do a cool animation
+            // get height ratio for anumation
+            const currentHeight = parseFloat(this.keyboard.style.minHeight.replace(/[^\d.]+/g, ""));
+            const currentHeightPx = this.keyboard.getBoundingClientRect().height;
+            const heightRatio = newHeight / currentHeight;
+            const heightDifferencePx = currentHeightPx * heightRatio - currentHeightPx;
+
+            // get key shift ratio for anumation
+            const currentCenterKey = (this._keyRange.min + this._keyRange.max) / 2;
+            const newCenterKey = (range.min + range.max) / 2;
+
+            this._keyRange = range;
+
+            // get key width for calculation
+            const keyWidth = this.keys.find(k => k.classList.contains("sharp_key")).getBoundingClientRect().width;
+            const pixelShift = (currentCenterKey - newCenterKey) * keyWidth;
+
+            // get the new border radius
+            const currentBorderRadius = parseFloat(
+                getComputedStyle(this.keyboard)
+                    .getPropertyValue("--key-border-radius")
+                    .replace(/[^\d.]+/g, "")
+            );
+
+            // add margin so the keyboard takes up the new amount of space
+            this.keyboard.style.marginTop = `${heightDifferencePx}px`;
+            this.keyboard.style.transition = "";
+
+            // being the transition
+            this.keyboard.style.transform = `scale(${heightRatio}) translateX(${pixelShift}px)`;
+            this.keyboard.style.setProperty("--key-border-radius", `${currentBorderRadius / heightRatio}vmin`);
+
+            // animation end
+            this.sizeChangeAnimationId = setTimeout(() => {
+                this.keyboard.style.minHeight = `${newHeight}vw`;
+                // restore values and disable transition
+                this.keyboard.style.transition = "none";
+                this.keyboard.style.transform = "";
+                this.keyboard.style.marginTop = "";
+                this.keyboard.style.setProperty("--key-border-radius", "");
+                // update size
+                this._createKeyboard();
+                // restore transition
+                setTimeout(() => this.keyboard.style.transition = "", 50);
+            }, 500);
+        }
+        else
+        {
+            this.keyboard.style.minHeight = `${newHeight}vw`;
+            this._keyRange = range;
+            this._createKeyboard();
+        }
     }
 
     /**

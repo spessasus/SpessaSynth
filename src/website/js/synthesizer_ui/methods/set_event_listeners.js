@@ -10,7 +10,7 @@ export function setEventListeners()
     // add event listeners
     this.synth.eventHandler.addEvent("programchange", "synthui-program-change", e =>
     {
-        this.controllers[e.channel].preset.set(JSON.stringify([e.bank, e.program]));
+        this.controllers[e.channel].preset.set(`${e.bank}:${e.program}`);
     });
 
     this.synth.eventHandler.addEvent("allcontrollerreset", "synthui-all-controller-reset", () => {

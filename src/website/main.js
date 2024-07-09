@@ -322,7 +322,6 @@ function saveSettings(settingsData)
             "Content-type": "application/json; charset=UTF-8"
         }
     }).then();
-    console.log("saved as", settingsData)
 }
 
 // expose the function

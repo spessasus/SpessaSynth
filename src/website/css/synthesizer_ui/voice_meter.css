@@ -5,7 +5,7 @@
 }
 
 .voice_meter.editable{
-    cursor: col-resize;
+    cursor: e-resize;
 }
 
 .voice_meter .voice_meter_bar{

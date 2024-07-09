@@ -1,4 +1,5 @@
 import { SpessaSynthInfo } from '../../../../spessasynth_lib/utils/loggin.js'
+import { getSpan } from '../sliders.js'
 
 /**
  * @private
@@ -25,12 +26,12 @@ export async function _loadSettings()
     // note falling time
     renderer.noteFallingTimeMs = rendererValues.noteFallingTimeMs;
     rendererControls.noteTimeSlider.value = rendererValues.noteFallingTimeMs;
-    rendererControls.noteTimeSlider.nextElementSibling.innerText = `${rendererValues.noteFallingTimeMs}ms`
+    getSpan(rendererControls.noteTimeSlider).innerText = `${rendererValues.noteFallingTimeMs}ms`
 
     // waveform line thickness
     rendererControls.analyserThicknessSlider.value = rendererValues.waveformThickness
     renderer.lineThickness = rendererValues.waveformThickness;
-    rendererControls.analyserThicknessSlider.nextElementSibling.innerText = `${rendererValues.waveformThickness}px`;
+    getSpan(rendererControls.analyserThicknessSlider).innerText = `${rendererValues.waveformThickness}px`;
 
     // fft size (sample size)
     let value = rendererValues.sampleSize;
@@ -39,12 +40,12 @@ export async function _loadSettings()
     renderer.normalAnalyserFft = value;
     renderer.drumAnalyserFft = Math.pow(2, Math.min(15, Math.log2(value) + 2));
     renderer.updateFftSize();
-    rendererControls.analyserFftSlider.nextElementSibling.innerText = `${value}`;
+    getSpan(rendererControls.analyserFftSlider).innerText = `${value}`;
 
     // wave multiplier
     renderer.waveMultiplier = rendererValues.amplifier;
     rendererControls.waveMultiplierSlizer.value = rendererValues.amplifier;
-    rendererControls.waveMultiplierSlizer.nextElementSibling.innerText = rendererValues.amplifier;
+    getSpan(rendererControls.waveMultiplierSlizer).innerText = rendererValues.amplifier;
 
     // render waveforms
     let controls = this.htmlControls.renderer;
@@ -78,14 +79,14 @@ export async function _loadSettings()
     // removed selected channel because it's not something you want to save
 
     // keyboard size
-    keyboard.keyRange = keyboardValues.keyRange;
+    keyboard.setKeyRange(keyboardValues.keyRange, false);
     // find the correct option for the size
     keyboardControls.sizeSelector.value = Object.keys(this.keyboardSizes)
         .find(size => this.keyboardSizes[size].min === keyboardValues.keyRange.min && this.keyboardSizes[size].max === keyboardValues.keyRange.max);
     // keyboard theme
     if(keyboardValues.mode === "dark")
     {
-        keyboard.toggleMode();
+        keyboard.toggleMode(false);
         this.htmlControls.keyboard.modeSelector.checked = true;
     }
 

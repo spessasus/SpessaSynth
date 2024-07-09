@@ -198,7 +198,7 @@ class SynthetizerUI
             this.controllers.forEach((controller, i) => {
                 const list = this.synth.channelProperties[i].isDrum ? this.percussionList : this.instrumentList;
                 controller.preset.reload(list);
-                controller.preset.set(JSON.stringify([list[0].bank, list[0].program]))
+                controller.preset.set(`${list[0].bank}:${list[0].program}`)
             });
         });
     }

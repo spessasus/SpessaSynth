@@ -37,6 +37,16 @@ export function _createKeyboardHandler( keyboard, synthui, renderer)
     }
 
     keyboardControls.sizeSelector.onchange = () => {
+        if(this.musicMode.visible)
+        {
+            this.musicMode.setVisibility(false, this.renderer.canvas, keyboard.keyboard);
+            setTimeout(() => {
+                keyboard.keyRange = this.keyboardSizes[keyboardControls.sizeSelector.value];
+                renderer.keyRange = this.keyboardSizes[keyboardControls.sizeSelector.value];
+                this._saveSettings();
+            }, 600);
+            return;
+        }
         keyboard.keyRange = this.keyboardSizes[keyboardControls.sizeSelector.value];
         renderer.keyRange = this.keyboardSizes[keyboardControls.sizeSelector.value];
         this._saveSettings();
@@ -57,6 +67,15 @@ export function _createKeyboardHandler( keyboard, synthui, renderer)
 
     // dark mode toggle
     keyboardControls.modeSelector.onclick = () => {
+        if(this.musicMode.visible)
+        {
+            this.musicMode.setVisibility(false, this.renderer.canvas, keyboard.keyboard);
+            setTimeout(() => {
+                keyboard.toggleMode();
+                this._saveSettings();
+            }, 600);
+            return;
+        }
         keyboard.toggleMode();
         this._saveSettings();
     }

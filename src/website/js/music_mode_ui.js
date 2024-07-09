@@ -39,6 +39,7 @@ export class MusicModeUI {
 
         this.savedKeyboardHeight = 0;
         this.timeoutId = -1;
+        this.visible = false;
     }
 
     /**
@@ -79,6 +80,11 @@ export class MusicModeUI {
      */
     setVisibility(visible, canvas, keyboard)
     {
+        if(visible === this.visible)
+        {
+            return;
+        }
+        this.visible = visible;
         if(this.timeoutId)
         {
             clearTimeout(this.timeoutId);

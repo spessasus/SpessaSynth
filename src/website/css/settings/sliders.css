@@ -1,15 +1,42 @@
-.settings_slider {
-    --track-height: 10px;
-    --thumb-size: 24px;
-    --active-brightness: 0.9;
-    height: 2rem;
-    -webkit-appearance: none;
-    margin: 0 0 10px 0;
-    background: transparent;
+.settings_slider_wrapper{
+    display: flex;
+    align-items: center;
+    width: 100%;
+    justify-content: center;
+    margin-top: 0.5rem !important;
+    position: relative;
+    --track-height: 0.8rem;
+    --thumb-size: 1.5rem;
+    --active-brightness: 0.75;
+    --slider-border-thickness: 1px;
+}
+
+.settings_visual_wrapper{
+    --visual-width: 0%;
+    display: flex;
+    position: relative;
+    margin: 0 1rem 1rem 0;
     flex-grow: 1;
-    cursor: col-resize;
-    overflow: hidden;
-    transition: all 0.2s;
+    height: var(--track-height);
+    transition: all 0.1s;
+    cursor: e-resize;
+    background: var(--track-color);
+    border: solid var(--slider-border-thickness) var(--track-border-color);
+    border-radius: var(--track-height);
+}
+
+.settings_visual_wrapper:has(.settings_slider:active){
+    filter: brightness(var(--active-brightness));
+}
+
+.settings_slider {
+    cursor: e-resize;
+    width: 100%;
+    opacity: 0;
+    -webkit-appearance: none;
+    top: calc((var(--thumb-size) / 4) * -1);
+    height: var(--thumb-size);
+    position: relative;
 }
 
 .settings_slider:hover{
@@ -21,94 +48,41 @@
 }
 
 .settings_slider + span{
-    margin-bottom: 10px;
-    margin-left: 5px;
-}
-
-.settings_slider:active {
-    filter: brightness(var(--active-brightness));
-}
-
-/*MOZILLA*/
-.settings_slider::-moz-range-track {
-    height: 10px;
-    background: var(--track-color);
-    border-radius: 5px;
-    border: 1px solid var(--track-border-color);
-}
-
-.settings_slider::-moz-range-progress{
-    background: var(--primary-color);
-    border: 1px solid var(--border-color);
-    border-radius: var(--track-height) 0 0 var(--track-height);
-    height: var(--track-height);
-}
-
-.settings_slider::-moz-range-thumb {
-    box-shadow: 0 0 1rem var(--track-color);
-    background-color: var(--track-color);
-    border: 1px solid var(--track-border-color);
-    height: var(--thumb-size);
-    width: var(--thumb-size);
-    border-radius: 50%;
-}
-.settings_slider:hover::-moz-range-thumb {
-    border: 1px solid var(--primary-color);
-}
-
-/*WEBKIT*/
-.settings_slider::-webkit-slider-runnable-track {
-    position: relative;
-    -webkit-appearance: none;
-    height: var(--track-height);
-
-    background: var(--track-color);
-
-    border-radius: var(--track-height);
-    border: 1px solid var(--track-border-color);
-}
-
-.settings_slider::-webkit-slider-thumb {
-    position: relative;
-    border: 1px solid var(--track-border-color);
-    background: var(--track-color);
-
-    height: var(--thumb-size);
-    width: var(--thumb-size);
-
-    border-radius: 50px;
-    -webkit-appearance: none;
-    margin-top: -7.5px;
-
-    /*shameless copy from https://codepen.io/ShadowShahriar/pen/zYPPYrQ
-    i have no idea why or how it works, but it does so i appreciate it my guy*/
-    --clip-top: calc((var(--thumb-size) - var(--track-height)) * 0.5 + 0.5px);
-    --clip-bottom: calc(var(--thumb-size) - var(--clip-top) - 1px);
-
-    box-shadow: calc(-100vmax - var(--thumb-size)) 0 0
-    100vmax var(--primary-color);
-
-    clip-path: polygon(
-            100% -1px,
-            0.125rem -1px,
-            0 var(--clip-top),
-            -100vmax var(--clip-top),
-            -100vmax var(--clip-bottom),
-            0 var(--clip-bottom),
-            0.125rem 100%,
-            100% 100%
-    );
-}
-
-.settings_slider:active::-webkit-slider-thumb {
-    filter: brightness(var(--active-brightness));
-}
-
-.settings_slider:hover::-webkit-slider-thumb {
-    border: 1px solid var(--primary-color);
+    margin-bottom: 1rem;
 }
 
 .settings_slider + span {
     min-width: 5em;
     text-align: center;
+}
+
+.settings_slider_progress{
+    width: calc(var(--visual-width) + 2 * var(--slider-border-thickness));
+    position: absolute;
+    background: var(--primary-color);
+    border: solid var(--slider-border-thickness) var(--border-color);
+    height: calc(100% + 2 * var(--slider-border-thickness));
+    border-radius: var(--track-height);
+    top: calc(-1 * var(--slider-border-thickness));
+    left: calc(-1 * var(--slider-border-thickness));
+}
+
+.settings_slider_thumb{
+    border: solid var(--slider-border-thickness) var(--track-border-color);
+    background: var(--track-color);
+    height: var(--thumb-size);
+    width: var(--thumb-size);
+    border-radius: 50%;
+    position: absolute;
+    top: -0.4rem;
+    left: calc(var(--visual-width) - var(--thumb-size) / 2);
+}
+
+.settings_slider_wrapper:hover .settings_slider_thumb{
+    border-color: var(--primary-color);
+}
+
+.settings_slider_transition .settings_slider_thumb,
+.settings_slider_transition .settings_slider_progress{
+    transition: all 0.2s ease;
 }
