@@ -171,8 +171,8 @@ class SpessaSynthSettings
 
     toggleMusicPlayerMode()
     {
-        this.renderer.renderBool = !this.musicMode.visible;
         this.musicMode.setVisibility(!this.musicMode.visible, this.renderer.canvas, this.midiKeyboard.keyboard);
+        this.renderer.renderBool = !this.musicMode.visible;
     }
 
     hideTopPart()

@@ -26,10 +26,12 @@ export async function _loadSettings()
     // note falling time
     renderer.noteFallingTimeMs = rendererValues.noteFallingTimeMs;
     rendererControls.noteTimeSlider.value = rendererValues.noteFallingTimeMs;
+    rendererControls.noteTimeSlider.dispatchEvent(new Event('input'));
     getSpan(rendererControls.noteTimeSlider).innerText = `${rendererValues.noteFallingTimeMs}ms`
 
     // waveform line thickness
-    rendererControls.analyserThicknessSlider.value = rendererValues.waveformThickness
+    rendererControls.analyserThicknessSlider.value = rendererValues.waveformThickness;
+    rendererControls.analyserThicknessSlider.dispatchEvent(new Event('input'));
     renderer.lineThickness = rendererValues.waveformThickness;
     getSpan(rendererControls.analyserThicknessSlider).innerText = `${rendererValues.waveformThickness}px`;
 
@@ -37,6 +39,7 @@ export async function _loadSettings()
     let value = rendererValues.sampleSize;
     // Math.pow(2, parseInt(rendererControls.analyserFftSlider.value)); we need to invert this
     rendererControls.analyserFftSlider.value = Math.log2(value);
+    rendererControls.analyserFftSlider.dispatchEvent(new Event('input'));
     renderer.normalAnalyserFft = value;
     renderer.drumAnalyserFft = Math.pow(2, Math.min(15, Math.log2(value) + 2));
     renderer.updateFftSize();
@@ -45,7 +48,8 @@ export async function _loadSettings()
     // wave multiplier
     renderer.waveMultiplier = rendererValues.amplifier;
     rendererControls.waveMultiplierSlizer.value = rendererValues.amplifier;
-    getSpan(rendererControls.waveMultiplierSlizer).innerText = rendererValues.amplifier;
+    rendererControls.waveMultiplierSlizer.dispatchEvent(new Event('input'));
+    getSpan(rendererControls.waveMultiplierSlizer).innerText = rendererValues.amplifier.toString();
 
     // render waveforms
     let controls = this.htmlControls.renderer;
