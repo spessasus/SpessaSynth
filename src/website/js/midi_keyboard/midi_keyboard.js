@@ -117,6 +117,12 @@ class MidiKeyboard
         }
 
         this._handlePointers();
+
+        if(this.mode === "dark")
+        {
+            this.mode = "light"
+            this.toggleMode(false);
+        }
     }
 
     /**
