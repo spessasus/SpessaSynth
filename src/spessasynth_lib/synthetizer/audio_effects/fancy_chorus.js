@@ -95,10 +95,10 @@ export class FancyChorus
     {
         const oscillator = new OscillatorNode(context, {
             type: 'sine',
-            frequency: freq + (Math.random() - 0.5) * config.oscillatorFrequencyVariation
+            frequency: freq
         });
         const gainNode = new GainNode(context, {
-            gain: config.oscillatorGain + (Math.random() - 0.5) * config.oscillatorGain * 0.5
+            gain: config.oscillatorGain
         });
         const delayNode = new DelayNode(context, {
             delayTime: delay

@@ -10,14 +10,6 @@ import { showNotification } from '../../notification.js'
  */
 export function _createMidiSettingsHandler(handler, sequi, synthui)
 {
-    if(!window.isLocalEdition && !isMobile)
-    {
-        if(!navigator.requestMIDIAccess)
-        {
-            showNotification(this.locale.getLocaleString("locale.warnings.warning"),
-                this.locale.getLocaleString("locale.warnings.noMidiSupport"));
-        }
-    }
     handler.createMIDIDeviceHandler().then(success => {
         if(success)
         {
@@ -26,6 +18,11 @@ export function _createMidiSettingsHandler(handler, sequi, synthui)
         }
         else
         {
+            if(!isMobile)
+            {
+                showNotification(this.locale.getLocaleString("locale.warnings.warning"),
+                    this.locale.getLocaleString("locale.warnings.noMidiSupport"));
+            }
             document.getElementById("midi_settings").style.display = "none";
         }
     });

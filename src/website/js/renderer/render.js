@@ -53,6 +53,7 @@ export function render(auto = true)
     this.drawingContext.textAlign = "end";
     this.drawingContext.fillStyle = "white";
     this.drawingContext.strokeStyle = "white";
+    this.drawingContext.font = "1em sans";
     this.drawingContext.fillText(`${this.notesOnScreen} notes`, this.canvas.width, FONT_SIZE + 5);
     this.drawingContext.fillText(Math.round(fps).toString() + " FPS", this.canvas.width, 5);
     if(this.onRender)

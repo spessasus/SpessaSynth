@@ -91,7 +91,23 @@ export function serveStaticFile(res, filePath, mimeType=undefined)
         return;
 
     }
-    const file = fs.readFileSync(filePath);
+    let file;
+    try {
+        file = fs.readFileSync(filePath);
+    }
+    catch (e) {
+        res.writeHead(404);
+        res.end(`
+<html lang='en'>
+    <head>
+        <meta http-equiv='Refresh' content='0; URL=/' /><title>Not found</title>
+    </head>
+    <body>
+    <h1><pre>${filePath}</pre> not Found!</h1>
+</body>
+</html>`);
+        return;
+    }
     let type = {};
     if(mimeType)
     {

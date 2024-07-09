@@ -14,7 +14,7 @@ import { MusicModeUI } from './js/music_mode_ui.js'
 import { LocaleManager } from './locale/locale_manager.js'
 import { isMobile } from './js/utils/is_mobile.js'
 import { SpessaSynthInfo } from '../spessasynth_lib/utils/loggin.js'
-import { closeNotification, showNotification } from './js/notification.js'
+import { showNotification } from './js/notification.js'
 import { keybinds } from './js/keybinds.js'
 import { formatTime } from '../spessasynth_lib/utils/other.js'
 import { audioBufferToWav } from '../spessasynth_lib/utils/buffer_to_wav.js'
@@ -141,7 +141,7 @@ export class Manager
         progressDiv.style.width = "100%";
         // clear intervals and save file
         clearInterval(interval);
-        closeNotification(notification.id);
+        //closeNotification(notification.id);
         const blob = audioBufferToWav(buf);
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");

@@ -308,7 +308,7 @@ async function startMidi(midiFiles)
     }
     manager.seqUI.setSongTitles(titles);
 
-    exportButton.style.display = "initial";
+    exportButton.style.display = "flex";
     exportButton.onclick = window.manager.renderAudio.bind(window.manager);
 }
 

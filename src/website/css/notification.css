@@ -44,7 +44,6 @@
 
 .notification p{
     margin: 1rem;
-    margin-bottom: 0;
 }
 
 .notification .close_btn{
@@ -60,7 +59,7 @@
 
 .notification .notification_progress_background{
     height: 1rem;
-    margin: 1rem;
+    margin: 0 1rem 1rem;
     background: var(--track-color);
     border: solid 1px var(--track-border-color);
     border-radius: 1rem;
@@ -72,9 +71,7 @@
     height: 100%;
     width: 0;
     background: var(--primary-color);
-    border-right: solid 1px var(--border-color);
-    border-top: solid 1px var(--border-color);
-    border-bottom: solid 1px var(--border-color);
+    border: solid 1px var(--border-color);
     border-radius: 1rem;
     top: -1px;
     left: -1px;
