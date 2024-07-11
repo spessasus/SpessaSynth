@@ -56,6 +56,7 @@ The complete GUI for spessasynth_lib, allowing remixing experimenting and playin
 - Visualization of the played sequence with effects like visual pitch bend and note on effects
 - Playable keyboard with various sizes
 - Integrated controller for the synthetizer with a lot of options
+- Mobile friendly ~the ui, not the synthesizer~
 - Mutliple languages support, currently: english, polish, japanese
 - `Web MIDI API` support (Enables physical MIDI devices to be used with the program)
 - [WebMidiLink](https://www.g200kg.com/en/docs/webmidilink/) support
@@ -64,6 +65,14 @@ The complete GUI for spessasynth_lib, allowing remixing experimenting and playin
 - Export the modified MIDI file to .mid
 - Comes bundled with a compressed [SGM](https://musical-artifacts.com/artifacts/855) SoundFont to get you started
 - Also no dependencies!
+
+### Still not convinced? Here are some more screenshots:
+<img src="https://github.com/user-attachments/assets/b0c9a1f3-3278-4208-8d35-f63b0943ae39" width="45%"></img> 
+<img src="https://github.com/user-attachments/assets/3bfd9de0-ed13-4667-b843-47c956454136" width="45%"></img>
+<img src="https://github.com/user-attachments/assets/7499503e-9dec-4f7c-8c58-b4960f63bc39" width="45%"></img>
+<img src="https://github.com/user-attachments/assets/688b4ecc-0ba5-4990-92a5-8b567e08d7d6" width="45%"></img> 
+
+
 
 ### Installation
 > [!IMPORTANT]
