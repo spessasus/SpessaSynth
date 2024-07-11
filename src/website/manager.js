@@ -18,6 +18,8 @@ import { closeNotification, showNotification } from './js/notification.js'
 import { keybinds } from './js/keybinds.js'
 import { formatTime } from '../spessasynth_lib/utils/other.js'
 import { audioBufferToWav } from '../spessasynth_lib/utils/buffer_to_wav.js'
+import { applySnapshotToMIDI } from '../spessasynth_lib/midi_parser/apply_snapshot.js'
+import { writeMIDIFile } from '../spessasynth_lib/midi_parser/midi_writer.js'
 
 const RENDER_AUDIO_TIME_INTERVAL = 500;
 
@@ -29,7 +31,7 @@ document.body.classList.add("load");
 * purpose: connects every element of spessasynth together
 */
 
-export class Manager
+class Manager
 {
     channelColors = [
         'rgba(255, 99, 71, 1)',   // tomato
@@ -58,6 +60,7 @@ export class Manager
     constructor(context, soundFontBuffer)
     {
         this.context = context;
+        this.isExporting = false;
         let solve;
         this.ready = new Promise(resolve => solve = resolve);
         this.initializeContext(context, soundFontBuffer).then(() => {
@@ -65,8 +68,53 @@ export class Manager
         });
         this.sf = soundFontBuffer;
     }
-    async renderAudio()
+
+    async exportSong()
     {
+        showNotification(
+            this.localeManager.getLocaleString("locale.midiRenderButton.title"),
+            [
+                {
+                    type: "button",
+                    textContent: "WAV",
+                    onClick: n => {
+                        closeNotification(n.id);
+                        this.exportWav()
+                    }
+                },
+                {
+                    type: "button",
+                    textContent: "MIDI",
+                    onClick: n => {
+                        closeNotification(n.id);
+                        this.exportMidi();
+                    }
+                }
+            ],
+            999999
+        )
+    }
+
+    /**
+     * Changes the MIDI according to locked controllers and programs and exports it as a file
+     */
+    async exportMidi()
+    {
+        const mid = this.seq.midiData;
+        applySnapshotToMIDI(mid, await this.synth.getSynthesizerSnapshot());
+        // export modified midi and write out
+        const file = writeMIDIFile(mid);
+        const blob = new Blob([file], { type: "audio/mid" });
+        this.saveBlob(blob, `${mid.midiName || "unnamed_song"}.mid`)
+    }
+
+    async exportWav()
+    {
+        if(this.isExporting)
+        {
+            return;
+        }
+        this.isExporting = true;
         if(!this.seq)
         {
             throw new Error("No sequencer active");
@@ -103,8 +151,15 @@ export class Manager
                 reverbImpulseResponse: this.impulseResponse
             });
         }
-        catch (e) {
-            showNotification(this.localeManager.getLocaleString("locale.warnings.warning"), this.localeManager.getLocaleString("locale.warnings.outOfMemory"))
+        catch (e)
+        {
+            showNotification(
+                this.localeManager.getLocaleString("locale.warnings.warning"),
+                [{
+                    type: "text",
+                    textContent: this.localeManager.getLocaleString("locale.warnings.outOfMemory")
+                }]
+            )
             throw e;
         }
 
@@ -114,8 +169,16 @@ export class Manager
         const estimatedMessage = manager.localeManager.getLocaleString("locale.exportAudio.estimated");
         const duration = window.manager.seq.midiData.duration;
 
-        const notification = showNotification(exportingMessage, estimatedMessage, duration * 1000, false, true);
-        const detailMessage = notification.div.getElementsByClassName("notification_message")[0];
+        const notification = showNotification(
+            exportingMessage,
+            [
+                { type: 'text', textContent: estimatedMessage },
+                { type: 'progress' }
+            ],
+            9999999,
+            false
+        );
+        const detailMessage = notification.div.getElementsByTagName("p")[0];
         const progressDiv = notification.div.getElementsByClassName("notification_progress")[0];
 
         const RATI_SECONDS = RENDER_AUDIO_TIME_INTERVAL / 1000;
@@ -142,14 +205,18 @@ export class Manager
         // clear intervals and save file
         clearInterval(interval);
         closeNotification(notification.id);
-        const blob = audioBufferToWav(buf);
+        this.saveBlob(audioBufferToWav(buf), `${window.manager.seq.midiData.midiName || 'unnamed_song'}.wav`)
+        this.isExporting = false;
+    }
+
+    saveBlob(blob, name)
+    {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `${window.manager.seq.midiData.midiName || 'unnamed_song'}.wav`;
+        a.download = name;
         a.click();
         SpessaSynthInfo(a);
-
     }
 
     /**
@@ -296,7 +363,7 @@ export class Manager
         //this.soundFontMixer.soundFontChange(soundFont);
 
         // add keypresses
-        canvas.addEventListener("keypress", e => {
+        canvas.addEventListener("keydown", e => {
             switch (e.key.toLowerCase()) {
                 case keybinds.cinematicMode:
                     if(this.seq)
@@ -339,7 +406,7 @@ export class Manager
                         video.play();
                         this.seq.currentTime = 0;
                     }
-                    document.addEventListener("keypress", e => {
+                    document.addEventListener("keydown", e => {
                         if(e.key === " ")
                         {
                             if(video.paused)
@@ -394,5 +461,14 @@ export class Manager
 
         // play the midi
         this.seq.play(true);
+
+        // const a = document.createElement("a");
+        // const out = writeMIDI(parsedMidi[0]);
+        // const blob = new Blob([out.buffer], { type: "audio/mid" });
+        // const url = URL.createObjectURL(blob);
+        // a.download = "saved.mid";
+        // a.href = url;
+        // a.click()
     }
 }
+export { Manager }

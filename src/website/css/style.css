@@ -41,6 +41,7 @@ html, body {
     width: 100%;
     background: black;
     overflow-x: clip;
+    scrollbar-width: thin;
 }
 
 body.load{

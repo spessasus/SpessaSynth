@@ -20,8 +20,13 @@ export function _createMidiSettingsHandler(handler, sequi, synthui)
         {
             if(!isMobile)
             {
-                showNotification(this.locale.getLocaleString("locale.warnings.warning"),
-                    this.locale.getLocaleString("locale.warnings.noMidiSupport"));
+                showNotification(
+                    this.locale.getLocaleString("locale.warnings.warning"),
+                    [{
+                        type: "text",
+                        textContent: this.locale.getLocaleString("locale.warnings.noMidiSupport")
+                    }]
+                );
             }
             document.getElementById("midi_settings").style.display = "none";
         }

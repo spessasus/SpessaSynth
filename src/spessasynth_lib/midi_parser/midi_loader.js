@@ -13,7 +13,7 @@ import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo } from 
  * midi_loader.js
  * purpose: parses a midi file for the seqyencer, including things like marker or CC 2/4 loop detection, copyright detection etc.
  */
-export class MIDI{
+class MIDI{
     /**
      * Parses a given midi file
      * @param arrayBuffer {ArrayBuffer}
@@ -69,6 +69,12 @@ export class MIDI{
         this.midiPorts = [];
 
         /**
+         * All channels that each track uses
+         * @type {Set<number>[]}
+         */
+        this.usedChannelsOnTrack = [];
+
+        /**
          * Read all the tracks
          * @type {MidiMessage[][]}
          */
@@ -80,7 +86,8 @@ export class MIDI{
              */
             const track = [];
             const trackChunk = this.readMIDIChunk(fileByteArray);
-            this.midiPorts.push(-1)
+            const usedChannels = new Set();
+            this.midiPorts.push(-1);
 
             if(trackChunk.type !== "MTrk")
             {
@@ -153,6 +160,8 @@ export class MIDI{
                             this.lastVoiceEventTick = totalTicks;
                         }
                         eventDataLength = dataBytesAmount[statusByte >> 4];
+                        usedChannels.add(statusByteChannel);
+
                         // save the status byte
                         runningByte = statusByte;
                         break;
@@ -250,6 +259,7 @@ export class MIDI{
                 }
             }
             this.tracks.push(track);
+            this.usedChannelsOnTrack.push(usedChannels);
             SpessaSynthInfo(`%cParsed %c${this.tracks.length}%c / %c${this.tracksAmount}`,
                 consoleColors.info,
                 consoleColors.value,
@@ -400,3 +410,4 @@ export class MIDI{
         return this._ticksToSeconds(ticks - timeSinceLastTempo) + (timeSinceLastTempo * 60) / (tempo.tempo * this.timeDivision);
     }
 }
+export { MIDI }

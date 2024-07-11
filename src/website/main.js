@@ -81,7 +81,11 @@ async function fetchFont(fileName, callback)
         {
             message = manager.localeManager.getLocaleString("locale.warnings.outOfMemory");
         }
-        showNotification("Warning", message);
+        showNotification("Warning",
+            [{
+                type: "text",
+                textContent: message
+            }]);
         throw e;
     }
     let offset = 0;
@@ -164,7 +168,7 @@ async function startMidi(midiFiles)
     }
     manager.seqUI.setSongTitles(titles);
     exportButton.style.display = "flex";
-    exportButton.onclick = window.manager.renderAudio.bind(window.manager);
+    exportButton.onclick = window.manager.exportSong.bind(window.manager);
 }
 
 /**

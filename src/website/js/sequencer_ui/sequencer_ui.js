@@ -396,7 +396,7 @@ export class SequencerUI
         textButton.onclick = toggleLyrics;
 
         // keyboard control
-        document.addEventListener("keypress", event => {
+        document.addEventListener("keydown", event => {
             switch(event.key.toLowerCase())
             {
                 case keybinds.playPause:

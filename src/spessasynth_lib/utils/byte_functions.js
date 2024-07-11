@@ -36,6 +36,23 @@ export function readBytesAsUintBigEndian(dataArray, bytesAmount){
 }
 
 /**
+ * @param number {number}
+ * @param bytesAmount {number}
+ * @returns {number[]}
+ */
+export function writeBytesAsUintBigEndian(number, bytesAmount)
+{
+    const bytes = new Array(bytesAmount).fill(0);
+    for (let i = bytesAmount - 1; i >= 0; i--)
+    {
+        bytes[i] = number & 0xFF;
+        number >>= 8;
+    }
+
+    return bytes;
+}
+
+/**
  * @param dataArray {ShiftableByteArray}
  * @returns {number}
  */
@@ -142,4 +159,27 @@ export function readVariableLengthQuantity(MIDIbyteArray){
         }
     }
     return out;
+}
+
+/**
+ * Write a VLQ from a number to a byte array
+ * @param number {number}
+ * @returns {number[]}
+ */
+export function writeVariableLengthQuantity(number) {
+    let bytes = [];
+
+    // Add the first byte
+    bytes.push(number & 127);
+    number >>= 7;
+
+    // Continue processing the remaining bytes
+    while (number > 0) {
+        bytes.push((number & 127) | 128);
+        number >>= 7;
+    }
+
+    // Reverse the array to get the correct order
+    bytes.reverse();
+    return bytes;
 }

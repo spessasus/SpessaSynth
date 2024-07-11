@@ -17,7 +17,7 @@ export const localeJapanese = {
     midiUploadButton: "MIDIファイルをアップロード",
     midiRenderButton: {
         title: "音声を保存する",
-        description: "MIDI音声をWAVファイルに保存する"
+        description: "オーディオをWAVまたはMIDIファイルに保存する"
     },
 
     exportAudio: {

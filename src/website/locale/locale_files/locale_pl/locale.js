@@ -17,7 +17,7 @@ export const localePolish = {
     midiUploadButton: "Wgraj Twoje pliki MIDI",
     midiRenderButton: {
         title: "Eksportuj audio",
-        description: "Zapisz audio do pliku WAV"
+        description: "Zapisz audio do pliku WAV lub MIDI"
     },
 
     exportAudio: {

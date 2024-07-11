@@ -62,6 +62,10 @@ export function setPreset(channel, preset)
 export function setDrums(channel, isDrum)
 {
     const channelObject = this.workletProcessorChannels[channel];
+    if(channelObject.lockPreset)
+    {
+        return;
+    }
     if(isDrum)
     {
         channelObject.drumChannel = true;

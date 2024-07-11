@@ -6,6 +6,7 @@ SoundFont2 based realtime synthetizer and MIDI player written in JavaScript usin
 
 ![SpessaSynth Promotional Image](https://github.com/spessasus/SpessaSynth/assets/95608008/e2e6c4c6-0762-4c11-8887-a2318d431854)
 
+## Exporting modified MIDIs now available!
 
 # [Live demo](https://spessasus.github.io/SpessaSynth/)
 
@@ -60,6 +61,7 @@ The complete GUI for spessasynth_lib, allowing remixing experimenting and playin
 - [WebMidiLink](https://www.g200kg.com/en/docs/webmidilink/) support
 - Play around with the MIDI file, edit instruments controllers and more!
 - Render the MIDI file (either modified or unmodified) to wav
+- Export the modified MIDI file to .mid
 - Comes bundled with a compressed [SGM](https://musical-artifacts.com/artifacts/855) SoundFont to get you started
 - Also no dependencies!
 

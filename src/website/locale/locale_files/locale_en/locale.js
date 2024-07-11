@@ -18,7 +18,7 @@ export const localeEnglish = {
 
     midiRenderButton: {
         title: "Export audio",
-        description: "Save audio to a WAV file"
+        description: "Save audio to a WAV or a MIDI file"
     },
 
     exportAudio: {

@@ -23,7 +23,7 @@ export function computeWorkletModulator(controllerTable, modulator, midiNote, ve
         return 0;
     }
     // mapped to 0-16384
-    let rawSourceValue = 0;
+    let rawSourceValue;
     if(modulator.sourceUsesCC)
     {
         rawSourceValue = controllerTable[modulator.sourceIndex];
@@ -34,7 +34,8 @@ export function computeWorkletModulator(controllerTable, modulator, midiNote, ve
         switch (modulator.sourceIndex)
         {
             case modulatorSources.noController:
-                return 0;// fluid_mod.c line 374 (0 times secondary times amount is still zero)
+                rawSourceValue = 16383;
+                break;
 
             case modulatorSources.noteOnKeyNum:
                 rawSourceValue = midiNote << 7;

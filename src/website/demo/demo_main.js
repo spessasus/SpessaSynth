@@ -309,7 +309,7 @@ async function startMidi(midiFiles)
     manager.seqUI.setSongTitles(titles);
 
     exportButton.style.display = "flex";
-    exportButton.onclick = window.manager.renderAudio.bind(window.manager);
+    exportButton.onclick = window.manager.exportSong.bind(window.manager);
 }
 
 
@@ -367,8 +367,11 @@ demoInit().then(() => {
             {
                 showNotification(
                     window.manager.localeManager.getLocaleString("locale.warnings.warning"),
-                    window.manager.localeManager.getLocaleString("locale.warnings.chromeMobile"),
-                    5000
+                    [{
+                        type: "text",
+                        textContent: window.manager.localeManager.getLocaleString("locale.warnings.chromeMobile"),
+                    }],
+                    7
                 );
             }
         }
@@ -402,7 +405,10 @@ demoInit().then(() => {
         catch (e) {
             showNotification(
                 manager.localeManager.getLocaleString("locale.warnings.warning"),
-                manager.localeManager.getLocaleString("locale.warnings.outOfMemory")
+                [{
+                    type: "text",
+                    textContent: window.manager.localeManager.getLocaleString("locale.warnings.chromeMobile"),
+                }]
             );
             throw e;
         }

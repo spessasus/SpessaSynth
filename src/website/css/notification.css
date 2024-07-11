@@ -3,7 +3,7 @@
     color: var(--font-color);
     position: fixed;
     border: solid 1px #333;
-    border-radius: 10px;
+    border-radius: 0.5rem;
     display: flex;
     justify-content: center;
     flex-direction: column;
@@ -19,7 +19,7 @@
     animation-fill-mode: forwards;
     box-shadow: #333 0 0 10px;
     width: max-content;
-    max-width: 80%
+    max-width: 80%;
 }
 
 .notification.drop{
@@ -42,8 +42,39 @@
     margin: 1rem;
 }
 
+.notification_content{
+    margin: 1rem;
+    width: 90%;
+}
+
 .notification p{
     margin: 1rem;
+}
+
+.notification button{
+    background: var(--top-color);
+    padding: 0.5rem;
+    border: solid 1px #333;
+    margin: 0.5rem;
+    cursor: pointer;
+    border-radius: 0.5rem;
+    font-size: 1em;
+    width: 70%;
+    min-width: fit-content;
+}
+
+.notification input{
+    margin: 1rem;
+}
+
+.notification input[type='text']{
+    display: block;
+    background: var(--top-buttons-color);
+    border: solid 1px #333;
+    font-size: 1em;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    width: 25rem;
 }
 
 .notification .close_btn{
@@ -59,11 +90,10 @@
 
 .notification .notification_progress_background{
     height: 1rem;
-    margin: 0 1rem 1rem;
+    margin: 1rem;
     background: var(--track-color);
     border: solid 1px var(--track-border-color);
     border-radius: 1rem;
-    width: 80%;
     box-sizing: content-box; /*HERESY*/
 }
 
