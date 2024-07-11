@@ -363,7 +363,7 @@ class Manager
         //this.soundFontMixer.soundFontChange(soundFont);
 
         // add keypresses
-        canvas.addEventListener("keydown", e => {
+        document.addEventListener("keydown", e => {
             switch (e.key.toLowerCase()) {
                 case keybinds.cinematicMode:
                     if(this.seq)
