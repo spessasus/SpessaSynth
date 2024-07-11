@@ -37,7 +37,7 @@ export class MIDI{
         }
 
         // format
-        const format = readBytesAsUintBigEndian(headerChunk.data, 2);
+        this.format = readBytesAsUintBigEndian(headerChunk.data, 2);
         // tracks count
         this.tracksAmount = readBytesAsUintBigEndian(headerChunk.data, 2);
         // time division
@@ -96,7 +96,7 @@ export class MIDI{
 
             let totalTicks = 0;
             // format 2 plays sequentially
-            if(format === 2 && i > 0)
+            if(this.format === 2 && i > 0)
             {
                 totalTicks += this.tracks[i - 1][this.tracks[i - 1].length - 1].ticks;
             }
@@ -153,6 +153,8 @@ export class MIDI{
                             this.lastVoiceEventTick = totalTicks;
                         }
                         eventDataLength = dataBytesAmount[statusByte >> 4];
+                        // save the status byte
+                        runningByte = statusByte;
                         break;
                 }
 
@@ -161,8 +163,6 @@ export class MIDI{
                 const messageData = trackChunk.data.slice(trackChunk.data.currentIndex, trackChunk.data.currentIndex + eventDataLength);
                 trackChunk.data.currentIndex += eventDataLength;
                 eventData.set(messageData, 0);
-
-                runningByte = statusByte;
 
                 const message = new MidiMessage(totalTicks, statusByte, eventData);
                 track.push(message);
