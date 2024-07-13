@@ -120,13 +120,13 @@ class WorkletSequencer
         this.stop();
         this.playingNotes = [];
         this.pausedTime = undefined;
+        this.post(WorkletSequencerReturnMessageType.timeChange, time);
         const isNotFinished = this._playTo(time);
         this._recalculateStartTime(time);
         if(!isNotFinished)
         {
             return;
         }
-        this.post(WorkletSequencerReturnMessageType.timeChange, this.currentTime);
         this.play();
     }
 
