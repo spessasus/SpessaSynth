@@ -1,9 +1,16 @@
+@import "buttons.css";
+@import "texts.css";
+@import "inputs.css";
+@import "progresses.css";
+@import "toggles.css";
+
 .notification {
+    --notification-border-radius: var(--primary-border-radius);
     background: var(--top-color);
     color: var(--font-color);
     position: fixed;
     border: solid 1px #333;
-    border-radius: 0.5rem;
+    border-radius: var(--notification-border-radius);
     display: flex;
     justify-content: center;
     flex-direction: column;
@@ -47,36 +54,6 @@
     width: 90%;
 }
 
-.notification p{
-    margin: 1rem;
-}
-
-.notification button{
-    background: var(--top-color);
-    padding: 0.5rem;
-    border: solid 1px #333;
-    margin: 0.5rem;
-    cursor: pointer;
-    border-radius: 0.5rem;
-    font-size: 1em;
-    width: 70%;
-    min-width: fit-content;
-}
-
-.notification input{
-    margin: 1rem;
-}
-
-.notification input[type='text']{
-    display: block;
-    background: var(--top-buttons-color);
-    border: solid 1px #333;
-    font-size: 1em;
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-    width: 25rem;
-}
-
 .notification .close_btn{
     text-align: end;
     font-weight: bolder;
@@ -86,26 +63,4 @@
 
 .notification .close_btn:hover{
     cursor: pointer;
-}
-
-.notification .notification_progress_background{
-    height: 1rem;
-    margin: 1rem;
-    background: var(--track-color);
-    border: solid 1px var(--track-border-color);
-    border-radius: 1rem;
-    box-sizing: content-box; /*HERESY*/
-}
-
-.notification .notification_progress{
-    height: 100%;
-    width: 0;
-    background: var(--primary-color);
-    border: solid 1px var(--border-color);
-    border-radius: 1rem;
-    top: -1px;
-    left: -1px;
-    position: relative;
-    transition: 0.1s width ease;
-    box-sizing: content-box; /*HERESY*/
 }

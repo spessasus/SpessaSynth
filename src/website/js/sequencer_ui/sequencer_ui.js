@@ -324,7 +324,7 @@ export class SequencerUI
         this.progressBar = document.createElement("div");
         this.progressBar.id = "note_progress";
         this.progressBar.min = (0).toString();
-        this.progressBar.max =  this.seq.duration.toString();
+        this.progressBar.max = this.seq.duration.toString();
 
 
         // control buttons
@@ -427,7 +427,7 @@ export class SequencerUI
         controlsDiv.appendChild(nextSongButton);     // >|
 
         this.controls.appendChild(progressBarBg);
-        this.controls.appendChild(this.progressBar);
+        progressBarBg.appendChild(this.progressBar);
         this.controls.appendChild(this.progressTime);
         this.controls.appendChild(controlsDiv);
 
@@ -494,18 +494,21 @@ export class SequencerUI
         }
     }
 
-    setSliderInterval(){
-        setInterval(() => {
-            //this.updateTitleAndMediaStatus();
-            this.progressBar.style.width = `${(this.seq.currentTime / this.seq.duration) * 100}%`;
-            const time = formatTime(this.seq.currentTime);
-            const total = formatTime(this.seq.duration);
-            this.progressTime.innerText = `${time.time} / ${total.time}`;
-            if(this.requiresTextUpdate) {
-                this.lyricsElement.text.innerText = this.text;
-                this.requiresTextUpdate = false;
-                this.lyricsElement.mainDiv.scrollTo(0, this.lyricsElement.text.scrollHeight);
-            }
-        }, 100);
+    _updateInterval()
+    {
+        this.progressBar.style.width = `${(this.seq.currentTime / this.seq.duration) * 100}%`;
+        const time = formatTime(this.seq.currentTime);
+        const total = formatTime(this.seq.duration);
+        this.progressTime.innerText = `${time.time} / ${total.time}`;
+        if(this.requiresTextUpdate) {
+            this.lyricsElement.text.innerText = this.text;
+            this.requiresTextUpdate = false;
+            this.lyricsElement.mainDiv.scrollTo(0, this.lyricsElement.text.scrollHeight);
+        }
+    }
+
+    setSliderInterval()
+    {
+        setInterval(this._updateInterval.bind(this), 100);
     }
 }

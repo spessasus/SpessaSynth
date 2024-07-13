@@ -7,7 +7,7 @@ import { formatTitle } from '../../spessasynth_lib/utils/other.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../../spessasynth_lib/utils/loggin.js'
 import { isMobile } from '../js/utils/is_mobile.js'
 import { getCheckSvg, getExclamationSvg } from '../js/icons.js'
-import { showNotification } from '../js/notification.js'
+import { showNotification } from '../js/notification/notification.js'
 
 /**
  * demo_main.js

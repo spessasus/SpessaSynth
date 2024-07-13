@@ -14,7 +14,7 @@ import { MusicModeUI } from './js/music_mode_ui.js'
 import { LocaleManager } from './locale/locale_manager.js'
 import { isMobile } from './js/utils/is_mobile.js'
 import { SpessaSynthInfo } from '../spessasynth_lib/utils/loggin.js'
-import { closeNotification, showNotification } from './js/notification.js'
+import { closeNotification, showNotification } from './js/notification/notification.js'
 import { keybinds } from './js/keybinds.js'
 import { formatTime } from '../spessasynth_lib/utils/other.js'
 import { audioBufferToWav } from '../spessasynth_lib/utils/buffer_to_wav.js'
@@ -78,16 +78,16 @@ class Manager
                     type: "button",
                     textContent: "WAV",
                     onClick: n => {
+                        this._exportWav();
                         closeNotification(n.id);
-                        this.exportWav()
                     }
                 },
                 {
                     type: "button",
                     textContent: "MIDI",
                     onClick: n => {
-                        closeNotification(n.id);
                         this.exportMidi();
+                        closeNotification(n.id);
                     }
                 }
             ],
@@ -108,12 +108,8 @@ class Manager
         this.saveBlob(blob, `${mid.midiName || "unnamed_song"}.mid`)
     }
 
-    async exportWav()
+    async _doExporWav(normalizeAudio = true, additionalTime = 2)
     {
-        if(this.isExporting)
-        {
-            return;
-        }
         this.isExporting = true;
         if(!this.seq)
         {
@@ -137,7 +133,7 @@ class Manager
         const offline = new OfflineAudioContext({
             numberOfChannels: 2,
             sampleRate: this.context.sampleRate,
-            length: this.context.sampleRate * (parsedMid.duration + 1)
+            length: this.context.sampleRate * (parsedMid.duration + additionalTime)
         });
         const workletURL = new URL("../spessasynth_lib/synthetizer/worklet_system/worklet_processor.js", import.meta.url).href;
         await offline.audioWorklet.addModule(workletURL);
@@ -206,8 +202,51 @@ class Manager
         // clear intervals and save file
         clearInterval(interval);
         closeNotification(notification.id);
-        this.saveBlob(audioBufferToWav(buf), `${window.manager.seq.midiData.midiName || 'unnamed_song'}.wav`)
+        this.saveBlob(audioBufferToWav(buf, normalizeAudio), `${window.manager.seq.midiData.midiName || 'unnamed_song'}.wav`)
         this.isExporting = false;
+    }
+
+    async _exportWav()
+    {
+        if(this.isExporting)
+        {
+            return;
+        }
+        showNotification(
+            this.localeManager.getLocaleString("locale.exportAudioOptions.title"),
+            [
+                {
+                    type: "toggle",
+                    textContent: this.localeManager.getLocaleString("locale.exportAudioOptions.normalizeVolume.title"),
+                    attributes: {
+                        "title": this.localeManager.getLocaleString("locale.exportAudioOptions.normalizeVolume.description"),
+                        "normalize-volume-toggle": "1",
+                        "checked": "true"
+                    }
+                },
+                {
+                    type: "input",
+                    textContent: this.localeManager.getLocaleString("locale.exportAudioOptions.additionalTime.title"),
+                    attributes: {
+                        "value": "2",
+                        "type": "number",
+                        "title": this.localeManager.getLocaleString("locale.exportAudioOptions.additionalTime.description")
+                    }
+                },
+                {
+                    type: "button",
+                    textContent: this.localeManager.getLocaleString("locale.exportAudioOptions.confirm"),
+                    onClick: n => {
+                        closeNotification(n.id);
+                        const normalizeVolume = n.div.querySelector("input[normalize-volume-toggle='1']").checked;
+                        const additionalTime = n.div.querySelector("input[type='number']").value;
+                        this._doExporWav(normalizeVolume, additionalTime);
+                    }
+                }
+            ],
+            9999999,
+            true
+        );
     }
 
     saveBlob(blob, name)

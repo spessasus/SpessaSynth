@@ -19,7 +19,7 @@
 .soundfont_mixer .soundfont_entry{
     background: var(--top-buttons-color);
     margin: 0.2em;
-    border-radius: 0.5em;
+    border-radius: var(--primary-border-radius);
     text-align: start;
     width: fit-content;
     display: flex;

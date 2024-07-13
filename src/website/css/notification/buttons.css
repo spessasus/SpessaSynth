@@ -1,0 +1,11 @@
+.notification button{
+    background: var(--top-color);
+    padding: 0.5rem;
+    border: solid 1px #333;
+    margin: 0.5rem;
+    cursor: pointer;
+    border-radius: var(--notification-border-radius);
+    font-size: 1em;
+    width: 70%;
+    min-width: fit-content;
+}

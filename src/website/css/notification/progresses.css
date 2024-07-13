@@ -1,0 +1,21 @@
+.notification .notification_progress_background{
+    height: 1rem;
+    margin: 1rem;
+    background: var(--track-color);
+    border: solid 1px var(--track-border-color);
+    border-radius: 1rem;
+    box-sizing: content-box; /*HERESY*/
+}
+
+.notification .notification_progress{
+    height: 100%;
+    width: 0;
+    background: var(--primary-color);
+    border: solid 1px var(--border-color);
+    border-radius: 1rem;
+    top: -1px;
+    left: -1px;
+    position: relative;
+    transition: 0.1s width ease;
+    box-sizing: content-box; /*HERESY*/
+}

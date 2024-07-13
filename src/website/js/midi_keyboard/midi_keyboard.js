@@ -1,6 +1,7 @@
 import {Synthetizer} from "../../../spessasynth_lib/synthetizer/synthetizer.js";
 import { midiControllers } from '../../../spessasynth_lib/midi_parser/midi_message.js'
 import { _handlePointers } from './pointer_handling.js'
+import { ANIMATION_REFLOW_TIME } from '../utils/animation_utils.js'
 
 /**
  * midi_keyboard.js
@@ -263,6 +264,12 @@ class MidiKeyboard
         // according to my testing, this function seems to calculate the height well:
         // 900 / (keys + 5)
         const newHeight = 900 / ((range.max - range.min) + 5);
+        /**
+         * adjust key pressing skew (hacky!!!)
+         * @type {CSSStyleRule}
+         */
+        const rule = document.styleSheets[0].cssRules[1].styleSheet.cssRules[0].styleSheet.cssRules[0];
+        rule.style.setProperty("--pressed-transform-skew", `${0.0008 / (newHeight / 7)}`);
         if(animate)
         {
             if(this.sizeChangeAnimationId)
@@ -271,7 +278,8 @@ class MidiKeyboard
             }
             // do a cool animation
             // get height ratio for anumation
-            const currentHeight = parseFloat(this.keyboard.style.minHeight.replace(/[^\d.]+/g, ""));
+            const computedStyle = getComputedStyle(this.keyboard);
+            const currentHeight = parseFloat(computedStyle.getPropertyValue("--current-min-height").replace(/[^\d.]+/g, ""));
             const currentHeightPx = this.keyboard.getBoundingClientRect().height;
             const heightRatio = newHeight / currentHeight;
             const heightDifferencePx = currentHeightPx * heightRatio - currentHeightPx;
@@ -288,11 +296,10 @@ class MidiKeyboard
 
             // get the new border radius
             const currentBorderRadius = parseFloat(
-                getComputedStyle(this.keyboard)
+                computedStyle
                     .getPropertyValue("--key-border-radius")
                     .replace(/[^\d.]+/g, "")
             );
-
             // add margin so the keyboard takes up the new amount of space
             this.keyboard.style.marginTop = `${heightDifferencePx}px`;
             this.keyboard.style.transition = "";
@@ -303,7 +310,7 @@ class MidiKeyboard
 
             // animation end
             this.sizeChangeAnimationId = setTimeout(() => {
-                this.keyboard.style.minHeight = `${newHeight}vw`;
+                this.keyboard.style.setProperty("--current-min-height", `${newHeight}vw`);
                 // restore values and disable transition
                 this.keyboard.style.transition = "none";
                 this.keyboard.style.transform = "";
@@ -312,12 +319,12 @@ class MidiKeyboard
                 // update size
                 this._createKeyboard();
                 // restore transition
-                setTimeout(() => this.keyboard.style.transition = "", 50);
+                setTimeout(() => this.keyboard.style.transition = "", ANIMATION_REFLOW_TIME);
             }, 500);
         }
         else
         {
-            this.keyboard.style.minHeight = `${newHeight}vw`;
+            this.keyboard.style.setProperty("--current-min-height", `${newHeight}vw`);
             this._keyRange = range;
             this._createKeyboard();
         }

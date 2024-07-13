@@ -7,6 +7,7 @@ import { createChannelController, createChannelControllers } from './methods/cre
 import { createMainSynthController } from './methods/create_main_controller.js'
 import { setEventListeners } from './methods/set_event_listeners.js'
 import { keybinds } from '../keybinds.js'
+import { ANIMATION_REFLOW_TIME } from '../utils/animation_utils.js'
 
 
 export const LOCALE_PATH = "locale.synthesizerController.";
@@ -118,7 +119,7 @@ class SynthetizerUI
 
             setTimeout(() => {
                 controller.classList.add("synthui_controller_show");
-            }, 10);
+            }, ANIMATION_REFLOW_TIME);
         }
         else
         {

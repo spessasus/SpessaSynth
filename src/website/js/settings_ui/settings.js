@@ -15,6 +15,7 @@ import { _createKeyboardHandler } from './handlers/keyboard_handler.js'
 import { localeList } from '../../locale/locale_files/locale_list.js'
 import { keybinds } from '../keybinds.js'
 import { handleSliders } from './sliders.js'
+import { ANIMATION_REFLOW_TIME } from '../utils/animation_utils.js'
 
 
 const TRANSITION_TIME = 0.2;
@@ -189,13 +190,13 @@ class SpessaSynthSettings
         showTopButton.style.display = "flex";
         setTimeout(() => {
             showTopButton.classList.add("shown");
-        }, 10);
+        }, ANIMATION_REFLOW_TIME);
 
         showTopButton.onclick = () => {
             topPart.style.display = "";
             setTimeout(() => {
                 topPart.classList.remove("top_part_hidden");
-            }, 10);
+            }, ANIMATION_REFLOW_TIME);
             showTopButton.classList.remove("shown");
             showTopButton.style.display = "none";
         }
@@ -216,7 +217,7 @@ class SpessaSynthSettings
             setTimeout(() => {
                 document.getElementsByClassName("top_part")[0].classList.add("settings_shown");
                 this.mainDiv.classList.add("settings_menu_show");
-            }, 10);
+            }, ANIMATION_REFLOW_TIME);
             this.hideOnDocClick = false;
         }
         else

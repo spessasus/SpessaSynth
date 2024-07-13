@@ -78,7 +78,6 @@ export class LocaleManager
         }
         if(property.object[property.propertyName] !== textValue)
         {
-            console.log("edited. Expected", textValue, "got", property.object[property.propertyName]);
             property.isEdited = true;
         }
     }

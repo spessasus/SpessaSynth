@@ -15,7 +15,7 @@ export function createMainSynthController()
      * Voice meter
      * @type {Meter}
      */
-    this.voiceMeter = new Meter("#206",
+    this.voiceMeter = new Meter("",
         LOCALE_PATH + "mainVoiceMeter",
         this.locale,
         [],
@@ -27,7 +27,7 @@ export function createMainSynthController()
      * Volume controller
      * @type {Meter}
      */
-    this.volumeController = new Meter("#206",
+    this.volumeController = new Meter("",
         LOCALE_PATH + "mainVolumeMeter",
         this.locale,
         [],
@@ -45,7 +45,7 @@ export function createMainSynthController()
      * Pan controller
      * @type {Meter}
      */
-    this.panController = new Meter("#206",
+    this.panController = new Meter("",
         LOCALE_PATH + "mainPanMeter",
         this.locale,
         [],
@@ -64,7 +64,7 @@ export function createMainSynthController()
      * Transpose controller
      * @type {Meter}
      */
-    this.transposeController = new Meter("#206",
+    this.transposeController = new Meter("",
         LOCALE_PATH + "mainTransposeMeter",
         this.locale,
         [],

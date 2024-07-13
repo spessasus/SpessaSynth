@@ -1,0 +1,24 @@
+.notification_input_wrapper
+{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0.5rem;
+}
+
+input:not([type='checkbox'])::-webkit-outer-spin-button,
+input:not([type='checkbox'])::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.notification input:not([type='checkbox']){
+    display: block;
+    background: var(--top-buttons-color);
+    border: solid 1px #333;
+    font-size: 1em;
+    padding: var(--notification-border-radius);
+    border-radius: var(--notification-border-radius);
+    width: 5rem;
+    -moz-appearance: textfield;
+}

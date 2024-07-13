@@ -1,7 +1,7 @@
 .voice_selector{
     border: #777 1px solid;
     line-height: var(--voice-meter-height);
-    background-color: rgba(1, 1, 1, 0.5);
+    background-color: var(--synthui-background);
     font-size: 1em;
     font-weight: bold;
     min-width: 8em;

@@ -4,7 +4,7 @@ import {Manager} from "./manager.js";
 import {MIDI} from "../spessasynth_lib/midi_parser/midi_loader.js";
 
 import { formatTitle } from '../spessasynth_lib/utils/other.js'
-import { showNotification } from './js/notification.js'
+import { showNotification } from './js/notification/notification.js'
 
 /**
  * main.js

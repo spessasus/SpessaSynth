@@ -1,5 +1,6 @@
 import { getDoubleNoteSvg } from './icons.js'
 import { formatTime } from '../../spessasynth_lib/utils/other.js'
+import { ANIMATION_REFLOW_TIME } from './utils/animation_utils.js'
 
 /**
  * music_mode_ui.js
@@ -111,7 +112,7 @@ export class MusicModeUI {
             setTimeout(() => {
                 playerDiv.classList.add("player_info_show");
                 document.body.style.overflow = "hidden";
-            }, 10);
+            }, ANIMATION_REFLOW_TIME);
 
             // FINISH
             this.timeoutId = setTimeout(() => {
@@ -153,7 +154,7 @@ export class MusicModeUI {
                 canvas.classList.remove("out_animation");
                 keyboard.classList.remove("out_animation");
                 document.body.style.overflow = "hidden";
-            }, 10);
+            }, ANIMATION_REFLOW_TIME);
 
             // FINISH
             this.timeoutId = setTimeout(() => {

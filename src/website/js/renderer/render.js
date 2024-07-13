@@ -19,12 +19,6 @@ export function render(auto = true)
         this.drawingContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
-    this.drawingContext.textAlign = "start";
-    this.drawingContext.textBaseline = "hanging";
-    this.drawingContext.fillStyle = "#ccc";
-    this.drawingContext.font = `${FONT_SIZE}px Sans`;
-
-
     if (this.renderAnalysers && !this.synth.highPerformanceMode) {
         // draw the individual analysers
         this.renderWaveforms();
@@ -50,10 +44,11 @@ export function render(auto = true)
     let fps = 1000 / timeSinceLastFrame;
 
     // draw note count and fps
+    this.drawingContext.textBaseline = "hanging";
     this.drawingContext.textAlign = "end";
+    this.drawingContext.font = `${FONT_SIZE}px Verdana`;
     this.drawingContext.fillStyle = "white";
     this.drawingContext.strokeStyle = "white";
-    this.drawingContext.font = "1em sans";
     this.drawingContext.fillText(`${this.notesOnScreen} notes`, this.canvas.width, FONT_SIZE + 5);
     this.drawingContext.fillText(Math.round(fps).toString() + " FPS", this.canvas.width, 5);
     if(this.onRender)

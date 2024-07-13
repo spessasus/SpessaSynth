@@ -1,9 +1,10 @@
 /*Top*/
 .top_part
 {
+    --top-part-border-radius: 1.5rem;
     position: relative;
     background: var(--top-color);
-    border-radius: 0 0 1em 1em;
+    border-radius: 0 0 var(--top-part-border-radius) var(--top-part-border-radius);
     padding: 3px;
     display: flex;
     flex-wrap: wrap;
@@ -28,7 +29,7 @@
 }
 
 .top_part.settings_shown {
-    border-radius: 0 0 0 1em;
+    border-radius: 0 0 0 var(--top-part-border-radius);
 }
 
 .top_part.synthui_shown{
@@ -57,7 +58,7 @@ input[type="file"] {
     position: absolute;
     width: 0;
     height: 2.1em;
-    border-radius: 10px;
+    border-radius: var(--primary-border-radius);
     margin-left: auto;
     margin-right: auto;
     margin-top: 0.4em;
@@ -82,7 +83,7 @@ input[type="file"] {
 .midi_and_sf_controller label
 {
     padding: 6px;
-    border-radius: 5px;
+    border-radius: var(--primary-border-radius);
     cursor: pointer;
     background: var(--top-buttons-color);
     font-weight: bolder;
@@ -107,7 +108,7 @@ input[type="file"] {
     text-align: center;
     margin: 5px;
     padding: 6px;
-    border-radius: 5px;
+    border-radius: var(--primary-border-radius);
     font-weight: bolder;
 }
 
@@ -115,7 +116,7 @@ input[type="file"] {
     background: var(--top-buttons-color);
     width: fit-content;
     padding: 0.1em 2em;
-    border-radius: 0 0 0.5em 0.5em;
+    border-radius: 0 0 var(--primary-border-radius) var(--primary-border-radius);
     transition: all calc(var(--hide-top-duration) * 2) var(--bouncy-transition);
     transition-delay: calc(var(--hide-top-duration) / 2);
     transform-origin: top;

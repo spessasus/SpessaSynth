@@ -3,7 +3,7 @@
     background: #000;
     border: 1px #333 solid;
     margin: var(--synthui-margin);
-    border-radius: 5px;
+    border-radius: var(--synthui-border-radius);
     font-size: 1em;
     display: block;
     min-height: var(--voice-meter-height);
@@ -20,10 +20,10 @@
 }
 
 .synthui_button_light{
+    border-radius: var(--synthui-border-radius);
     background: #fff;
     border: 1px #ccc solid;
     margin: var(--synthui-margin);
-    border-radius: 5px;
     font-size: 1em;
     display: block;
     min-height: var(--voice-meter-height);

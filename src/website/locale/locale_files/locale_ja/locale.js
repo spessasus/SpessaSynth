@@ -25,6 +25,20 @@ export const localeJapanese = {
         estimated: "予想時間:"
     },
 
+    exportAudioOptions: {
+        title: "オーディオエクスポートオプション",
+        confirm: "エクスポート",
+        normalizeVolume: {
+            title: "音量の正規化",
+            description: "MIDIの音量に関わらず、常に同じレベルに保つ。推奨。",
+        },
+        additionalTime: {
+            title: "追加時間 (秒)",
+            description: "音がフェードするための曲の終わりに追加する時間。（秒）",
+        }
+    },
+
+
     demoSoundfontUploadButton: "サウンドフォントをアップロード",
     demoGithubPage: "プロジェクトのページ",
     demoBundledSoundfont: "バンドルされたSoundFontを使用 (22MB)",

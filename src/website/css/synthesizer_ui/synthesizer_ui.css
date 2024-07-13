@@ -5,6 +5,8 @@
 #synthetizer_controls
 {
     --voice-meter-height: 2.5em;
+    --synthui-background: black;
+    --synthui-border-radius: var(--primary-border-radius);
 }
 
 #synthetizer_controls * {
@@ -38,7 +40,7 @@
     position: relative;
     height: var(--voice-meter-height);
     flex: 1;
-    border-radius: 5px;
+    border-radius: var(--synthui-border-radius);
     margin: var(--synthui-margin);
 }
 
@@ -46,7 +48,7 @@
     left: 0;
     display: none;
     position: absolute;
-    background: rgb(3, 3, 3);
+    background: var(--synthui-background);
     top: 100%;
     border-radius: 0 0 1em 1em;
     transform: scaleX(0);

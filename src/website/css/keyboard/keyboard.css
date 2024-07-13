@@ -1,0 +1,25 @@
+@import "key.css"; /*DO NOT CHANGE POSITION OF THIS IMPORT*/
+#keyboard {
+    -webkit-user-select: none;
+    user-select: none;
+
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    --current-min-height: 7vw;
+    min-height: var(--current-min-height);
+    background: black;
+    width: 100%;
+    transition: var(--music-mode-transition) transform;
+    touch-action: none;
+    transform-origin: bottom center;
+    --key-border-radius: 0.4vmin;
+}
+
+#keyboard.out_animation{
+    transform: translateX(-100%);
+}
+
+#keyboard.mode_transform{
+    transform: translateY(250%);
+}

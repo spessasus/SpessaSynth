@@ -1,7 +1,10 @@
 .voice_meter{
     cursor: not-allowed;
-    border: solid 1px rgba(1, 1, 1, 0.5);
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--border-color);
     min-width: 7em;
+    overflow: hidden;
 }
 
 .voice_meter.editable{
@@ -12,9 +15,9 @@
     position: relative;
     display: block;
     height: 100%;
-    border-radius: 3px;
     margin-top: auto;
-    background-color: #406;
+    background-color: var(--primary-color);
+    border-radius: var(--notification-border-radius);
 }
 
 .voice_meter_light_color{

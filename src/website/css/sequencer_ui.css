@@ -5,17 +5,19 @@
     margin: auto auto 2px;
 
     --progress-bar-height: 2rem;
+    --sequi-border-radius: var(--primary-border-radius);
 }
 
 #sequencer_controls #note_progress
 {
     border-radius: var(--progress-bar-height);
-    background: linear-gradient(95deg, #306, #406);
-    height: var(--progress-bar-height);
-    padding: 5px;
-    transition: all 100ms linear;
+    background: linear-gradient(185deg, #306, var(--primary-color));
+    height: 100%;
+    transition: width 100ms linear;
     position: absolute;
+    left: 0;
 }
+
 
 #sequencer_controls .note_progress_light{
     filter: brightness(3);
@@ -24,12 +26,11 @@
 #sequencer_controls #note_time
 {
     position: relative;
-    z-index: 5;
     font-size: calc(var(--progress-bar-height) * 0.8);
     line-height: var(--progress-bar-height);
     text-align: center;
     color: var(--font-color);
-    margin: 0.2rem;
+    margin: 0.5rem;
     width: 100%;
 }
 
@@ -54,8 +55,8 @@
     background: linear-gradient(90deg, #454545, #343434);
     height: var(--progress-bar-height);
     position: absolute;
-    padding: 5px;
     width: 100%;
+    overflow: hidden;
 }
 
 #sequencer_controls .note_progress_background_light
@@ -79,7 +80,7 @@
     scroll-behavior: smooth;
     overflow-y: auto;
     visibility: hidden;
-    border-radius: 10px;
+    border-radius: var(--sequi-border-radius);
     box-shadow: #666 -2px 2px 20px;
 }
 
@@ -87,7 +88,7 @@
     position: sticky;
     background: black;
     top: 0;
-    border-radius: 10px;
+    border-radius: var(--sequi-border-radius);
 }
 
 .lyrics_selector{

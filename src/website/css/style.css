@@ -1,10 +1,10 @@
 @import "settings/settings.css";
-@import "keyboard.css";
+@import "keyboard/keyboard.css"; /*DO NOT CHANGE POSITION OF THIS IMPORT*/
 @import "sequencer_ui.css";
 @import "music_mode_ui.css";
 @import "synthesizer_ui/synthesizer_ui.css";
 @import "soundfont_mixer.css";
-@import "notification.css";
+@import "notification/notification.css";
 @import "note_canvas.css";
 @import "top_part.css";
 
@@ -22,6 +22,8 @@
     --top-color-start: #101010;
     --top-color-end: #212121;
     --top-color: linear-gradient(31deg, var(--top-color-start), var(--top-color-end));
+
+    --primary-border-radius: 0.5rem;
 
     /*thanks for this bezier mozilla devtools*/
     --bouncy-transition: cubic-bezier(.68,-0.55,.27,1.55);
@@ -60,7 +62,7 @@ html.no_scroll{
     flex-direction: column;
     height: 100%;
 
-    /*switch colors*/
+    /* theme colors */
     --primary-color: #510087;
     --border-color: #6e00b7;
     --track-color: #333;

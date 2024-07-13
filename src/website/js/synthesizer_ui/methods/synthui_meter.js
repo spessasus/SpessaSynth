@@ -22,7 +22,7 @@ export class Meter
      * @param lockCallback {function}
      * @param unlockCallback {function}
      */
-    constructor(color = "initial",
+    constructor(color = "none",
                 localePath,
                 locale,
                 localeArgs,
@@ -50,7 +50,10 @@ export class Meter
         this.div = document.createElement("div");
         this.div.classList.add("voice_meter");
         this.div.classList.add("controller_element");
-        this.div.style.border = "1px solid "+ color;
+        if(color !== "none" && color !== "")
+        {
+            this.div.style.borderColor = color;
+        }
         locale.bindObjectProperty(this.div, "title", localePath + ".description",  localeArgs);
 
         /**

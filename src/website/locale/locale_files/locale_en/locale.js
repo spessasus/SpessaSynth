@@ -26,6 +26,19 @@ export const localeEnglish = {
         estimated: "Remaining:"
     },
 
+    exportAudioOptions: {
+        title: "Audio export options",
+        confirm: "Export",
+        normalizeVolume: {
+            title: "Normalize volume",
+            description: "Keep the volume at the same level, no matter how loud or quiet the MIDI is. Recommended.",
+        },
+        additionalTime: {
+            title: "Additional time (s)",
+            description: "Additional time at the end of the song to allow for the sound to fade. (seconds)",
+        }
+    },
+
     demoSoundfontUploadButton: "Upload the soundfont",
     demoGithubPage: "Project's page",
     demoBundledSoundfont: "Use the bundled SoundFont (22MB)",

@@ -1,5 +1,5 @@
 import { isMobile } from '../../utils/is_mobile.js'
-import { showNotification } from '../../notification.js'
+import { showNotification } from '../../notification/notification.js'
 
 /**
  * @param handler {MIDIDeviceHandler}

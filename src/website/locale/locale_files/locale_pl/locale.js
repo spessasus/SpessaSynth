@@ -25,6 +25,19 @@ export const localePolish = {
         estimated: "Pozostało:"
     },
 
+    exportAudioOptions: {
+        title: "Opcje eksportowania",
+        confirm: "Eksportuj",
+        normalizeVolume: {
+            title: "Normalizuj głośność",
+            description: "Eksportuj audio z taką samą głośnością, niezależnie od głośności MIDI.",
+        },
+        additionalTime: {
+            title: "Dodatkowy czas (s)",
+            description: "Dodatkowy czas na końcu utworu aby pozwolić na wyciszenie się dźwięku. (sekundy)",
+        }
+    },
+
     demoSoundfontUploadButton: "Wgraj SoundFonta",
     demoGithubPage: "Strona projektu",
     demoBundledSoundfont: "Użyj wbudowanego SoundFonta (22MB)",
