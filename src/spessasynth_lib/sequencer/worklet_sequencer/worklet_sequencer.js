@@ -111,8 +111,7 @@ class WorkletSequencer
 
     set currentTime(time)
     {
-        this.post(WorkletSequencerReturnMessageType.timeChange, time);
-        if(time < 0 || time > this.duration || time === 0)
+        if(time < this.firstNoteTime || time > this.duration)
         {
             // time is 0
             this.setTimeTicks(this.midiData.firstNoteOn - 1);
@@ -127,6 +126,7 @@ class WorkletSequencer
         {
             return;
         }
+        this.post(WorkletSequencerReturnMessageType.timeChange, this.currentTime);
         this.play();
     }
 

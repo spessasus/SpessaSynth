@@ -1,6 +1,7 @@
 import { WorkletSequencerReturnMessageType } from './sequencer_message.js'
 import { consoleColors, formatTime } from '../../utils/other.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../../utils/loggin.js'
+import { ticksToSeconds } from './play.js'
 
 /**
  * Loads a new sequence
@@ -67,6 +68,7 @@ export function loadNewSequence(parsedMidi)
      * @type {number}
      */
     this.duration = this.midiData.duration;
+    this.firstNoteTime = ticksToSeconds(this.midiData.tempoChanges, this.midiData.firstNoteOn, this.midiData.timeDivision);
     SpessaSynthInfo(`%cTotal song time: ${formatTime(Math.ceil(this.duration)).time}`, consoleColors.recognized);
 
     this.post(WorkletSequencerReturnMessageType.songChange, [this.midiData, this.songIndex]);

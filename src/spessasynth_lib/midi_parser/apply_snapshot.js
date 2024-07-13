@@ -199,6 +199,12 @@ export function applySnapshotToMIDI(midi, snapshot)
                     addedGs = true;
                 }
             }
+
+            SpessaSynthInfo(`%cSetting %c${channelNumber}%c to %c${desiredBank}:${desiredProgram}`,
+                consoleColors.info,
+                consoleColors.recognized,
+                consoleColors.info,
+                consoleColors.recognized);
             // find the first program change and delete it from deletion list
             const firstIndex = programChanges.reduce((first, change) => change.ticks < first.ticks ? change : first);
             programChanges.splice(programChanges.indexOf(firstIndex), 1);
@@ -217,11 +223,6 @@ export function applySnapshotToMIDI(midi, snapshot)
                 bankChanges.forEach(c => {if(c.track === change.track && c.index > change.index) c.index--});
             }
             const newFirstChangeIndex = midi.tracks[firstIndex.track].indexOf(firstChange);
-            SpessaSynthInfo(`%cSetting %c${channelNumber}%c to %c${desiredBank}:${desiredProgram}`,
-                consoleColors.info,
-                consoleColors.recognized,
-                consoleColors.info,
-                consoleColors.recognized);
 
             // set the instrument
             firstChange.messageData.set([desiredProgram]);

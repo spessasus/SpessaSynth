@@ -219,7 +219,7 @@ export function play(resetTime = false)
  * @param division {number}
  * @returns {number}
  */
-function ticksToSeconds(changes, ticks, division)
+export function ticksToSeconds(changes, ticks, division)
 {
     if (ticks <= 0) {
         return 0;
@@ -238,12 +238,12 @@ function ticksToSeconds(changes, ticks, division)
  */
 export function setTimeTicks(ticks)
 {
-    this.post(WorkletSequencerReturnMessageType.timeChange, ticksToSeconds(this.midiData.tempoChanges, ticks, this.midiData.timeDivision));
     this.stop();
     this.playingNotes = [];
     this.pausedTime = undefined;
     const isNotFinished = this._playTo(0, ticks);
     this._recalculateStartTime(this.playedTime);
+    this.post(WorkletSequencerReturnMessageType.timeChange, this.currentTime);
     if(!isNotFinished)
     {
         return;

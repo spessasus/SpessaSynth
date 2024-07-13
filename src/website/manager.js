@@ -21,7 +21,7 @@ import { audioBufferToWav } from '../spessasynth_lib/utils/buffer_to_wav.js'
 import { applySnapshotToMIDI } from '../spessasynth_lib/midi_parser/apply_snapshot.js'
 import { writeMIDIFile } from '../spessasynth_lib/midi_parser/midi_writer.js'
 
-const RENDER_AUDIO_TIME_INTERVAL = 500;
+const RENDER_AUDIO_TIME_INTERVAL = 1000;
 
 // this enables transitions on body because if we enable them on load, it flashbangs us with white
 document.body.classList.add("load");
@@ -119,6 +119,19 @@ class Manager
         {
             throw new Error("No sequencer active");
         }
+        // get locales
+        const exportingMessage = manager.localeManager.getLocaleString("locale.exportAudio.message");
+        const estimatedMessage = manager.localeManager.getLocaleString("locale.exportAudio.estimated");
+        const duration = window.manager.seq.midiData.duration;
+        const notification = showNotification(
+            exportingMessage,
+            [
+                { type: 'text', textContent: estimatedMessage + " (...)" },
+                { type: 'progress' }
+            ],
+            9999999,
+            false
+        );
         const parsedMid = this.seq.midiData;
         // prepare audio context
         const offline = new OfflineAudioContext({
@@ -164,26 +177,13 @@ class Manager
         }
 
 
-        // get locales
-        const exportingMessage = manager.localeManager.getLocaleString("locale.exportAudio.message");
-        const estimatedMessage = manager.localeManager.getLocaleString("locale.exportAudio.estimated");
-        const duration = window.manager.seq.midiData.duration;
-
-        const notification = showNotification(
-            exportingMessage,
-            [
-                { type: 'text', textContent: estimatedMessage },
-                { type: 'progress' }
-            ],
-            9999999,
-            false
-        );
         const detailMessage = notification.div.getElementsByTagName("p")[0];
         const progressDiv = notification.div.getElementsByClassName("notification_progress")[0];
 
         const RATI_SECONDS = RENDER_AUDIO_TIME_INTERVAL / 1000;
         let rendered = synth.currentTime;
         let estimatedTime = duration;
+        const smoothingFactor = 0.1; // for smoothing estimated time
 
         const interval = setInterval(() => {
             // calculate estimated time
@@ -193,11 +193,12 @@ class Manager
             progressDiv.style.width = `${progress * 100}%`;
             const speed = hasRendered / RATI_SECONDS;
             const estimated = (1 - progress) / speed * duration;
-            // smooth out estimated
-
-            estimatedTime = (estimated + estimatedTime) / 2;
+            if (estimated === Infinity) {
+                return;
+            }
+            // smooth out estimated using exponential moving average
+            estimatedTime = smoothingFactor * estimated + (1 - smoothingFactor) * estimatedTime;
             detailMessage.innerText = `${estimatedMessage} ${formatTime(estimatedTime).time}`
-
         }, RENDER_AUDIO_TIME_INTERVAL);
 
         const buf = await offline.startRendering();

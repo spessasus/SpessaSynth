@@ -132,7 +132,7 @@ export class Sequencer
                 this.midiData = songChangeData;
                 this.duration = this.midiData.duration;
                 Object.entries(this.onSongChange).forEach((callback) => callback[1](songChangeData));
-                this.unpause()
+                this.unpause();
                 break;
 
             case WorkletSequencerReturnMessageType.textEvent:
@@ -151,7 +151,7 @@ export class Sequencer
                  */
                 const time = messageData;
                 Object.entries(this.onTimeChange).forEach((callback) => callback[1](time));
-                this.unpause()
+                this.unpause();
                 this._recalculateStartTime(time);
                 break;
 
