@@ -6,8 +6,9 @@ import { MIDI } from '../../spessasynth_lib/midi_parser/midi_loader.js'
 import { formatTitle } from '../../spessasynth_lib/utils/other.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../../spessasynth_lib/utils/loggin.js'
 import { isMobile } from '../js/utils/is_mobile.js'
-import { getCheckSvg, getExclamationSvg } from '../js/icons.js'
+import { getCheckSvg, getExclamationSvg, getHourglassSvg } from '../js/icons.js'
 import { showNotification } from '../js/notification/notification.js'
+import { ANIMATION_REFLOW_TIME } from '../js/utils/animation_utils.js'
 
 /**
  * demo_main.js
@@ -81,11 +82,11 @@ async function loadLastSoundFontFromDatabase()
     })
 }
 
-function changeIcon(html)
+function changeIcon(html, disableAnimation = true)
 {
     const icon = loading.getElementsByClassName("loading_icon")[0];
     icon.innerHTML = html;
-    icon.style.animation = "none";
+    icon.style.animation = disableAnimation ? "none" : "";
 }
 
 /**
@@ -378,9 +379,8 @@ demoInit().then(() => {
     }, 1000)
     /**
      * @param e {{target: HTMLInputElement}}
-     * @return {Promise<void>}
      */
-    sfInput.onchange = async e => {
+    sfInput.onchange = e => {
         if (!e.target.files[0]) {
             return;
         }
@@ -394,34 +394,59 @@ demoInit().then(() => {
             window.manager.seq.pause()
         }
         document.getElementById("sf_upload").firstElementChild.innerText = file.name;
-        const title = titleMessage.innerText;
-        titleMessage.innerText = "Parsing SoundFont...";
-        // parse the soundfont
-        let soundFontBuffer;
-        try {
-            soundFontBuffer = await file.arrayBuffer();
-            window.soundFontParser = soundFontBuffer;
-        }
-        catch (e) {
-            showNotification(
-                manager.localeManager.getLocaleString("locale.warnings.warning"),
-                [{
-                    type: "text",
-                    textContent: window.manager.localeManager.getLocaleString("locale.warnings.chromeMobile"),
-                }]
-            );
-            throw e;
-        }
-        window.manager.sfError = e => {
-            titleMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
-            console.log(e);
-        }
-        await window.manager.reloadSf(soundFontBuffer);
-        if(window.manager.seq)
-        {
-            window.manager.seq.currentTime -= 0.1;
-        }
-        titleMessage.innerText = title;
-        await saveSoundFontToIndexedDB(soundFontBuffer);
+        loading.style.display = "";
+        setTimeout(async () => {
+            loading.classList.remove("done");
+            changeIcon(getHourglassSvg(256), false);
+            loadingMessage.textContent = "Loading soundfont...";
+            const parseStart = performance.now() / 1000;
+            // parse the soundfont
+            let soundFontBuffer;
+            try
+            {
+                soundFontBuffer = await file.arrayBuffer();
+                window.soundFontParser = soundFontBuffer;
+            }
+            catch (e)
+            {
+                loadingMessage.textContent = "Out of memory!";
+                changeIcon(getExclamationSvg(256));
+                showNotification(
+                    manager.localeManager.getLocaleString("locale.warnings.warning"),
+                    [{
+                        type: "text",
+                        textContent: window.manager.localeManager.getLocaleString("locale.warnings.chromeMobile"),
+                    }]
+                );
+                throw e;
+            }
+            window.manager.sfError = e => {
+                loadingMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
+                changeIcon(getExclamationSvg(256));
+                console.log(e);
+            }
+            loadingMessage.textContent = "Initializing synthesizer...";
+            await window.manager.reloadSf(soundFontBuffer);
+            if(window.manager.seq)
+            {
+                window.manager.seq.currentTime -= 0.1;
+            }
+            loadingMessage.textContent = "Saving the soundfont for reuse...";
+            await saveSoundFontToIndexedDB(soundFontBuffer);
+            // wait to make sure that the animation has finished
+            const elapsed = (performance.now() / 1000) - parseStart;
+            await new Promise(r => setTimeout(r, 1000 - elapsed));
+            // DONE
+            changeIcon(getCheckSvg(256))
+            loadingMessage.textContent = "Ready!";
+            loading.classList.add("done");
+            document.documentElement.classList.add("no_scroll");
+            document.body.classList.add("no_scroll");
+            setTimeout(() => {
+                loading.style.display = "none";
+                document.body.classList.remove("no_scroll");
+                document.documentElement.classList.remove("no_scroll");
+            }, 1000)
+        }, ANIMATION_REFLOW_TIME);
     }
 });
