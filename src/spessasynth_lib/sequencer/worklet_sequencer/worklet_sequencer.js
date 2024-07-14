@@ -120,9 +120,9 @@ class WorkletSequencer
         this.stop();
         this.playingNotes = [];
         this.pausedTime = undefined;
+        this.post(WorkletSequencerReturnMessageType.timeChange, currentTime - time / this._playbackRate);
         const isNotFinished = this._playTo(time);
         this._recalculateStartTime(time);
-        this.post(WorkletSequencerReturnMessageType.timeChange, this.absoluteStartTime);
         if(!isNotFinished)
         {
             return;

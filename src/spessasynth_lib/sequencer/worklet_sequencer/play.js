@@ -241,9 +241,12 @@ export function setTimeTicks(ticks)
     this.stop();
     this.playingNotes = [];
     this.pausedTime = undefined;
+    this.post(
+        WorkletSequencerReturnMessageType.timeChange,
+        (currentTime - ticksToSeconds(this.midiData.tempoChanges, ticks, this.midiData.timeDivision)) / this._playbackRate
+    );
     const isNotFinished = this._playTo(0, ticks);
     this._recalculateStartTime(this.playedTime);
-    this.post(WorkletSequencerReturnMessageType.timeChange, this.absoluteStartTime);
     if(!isNotFinished)
     {
         return;
