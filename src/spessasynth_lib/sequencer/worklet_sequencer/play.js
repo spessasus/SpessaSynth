@@ -243,7 +243,7 @@ export function setTimeTicks(ticks)
     this.pausedTime = undefined;
     const isNotFinished = this._playTo(0, ticks);
     this._recalculateStartTime(this.playedTime);
-    this.post(WorkletSequencerReturnMessageType.timeChange, this.currentTime);
+    this.post(WorkletSequencerReturnMessageType.timeChange, this.absoluteStartTime);
     if(!isNotFinished)
     {
         return;

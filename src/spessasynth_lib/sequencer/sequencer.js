@@ -1,6 +1,6 @@
-import {MIDI} from "../midi_parser/midi_loader.js";
-import { Synthetizer } from '../synthetizer/synthetizer.js';
-import {  messageTypes } from '../midi_parser/midi_message.js'
+import { MIDI } from '../midi_parser/midi_loader.js'
+import { Synthetizer } from '../synthetizer/synthetizer.js'
+import { messageTypes } from '../midi_parser/midi_message.js'
 import { workletMessageType } from '../synthetizer/worklet_system/message_protocol/worklet_message.js'
 import {
     WorkletSequencerMessageType,
@@ -25,7 +25,7 @@ export class Sequencer
     {
         this.ignoreEvents = false;
         this.synth = synth;
-        this.performanceNowTimeOffset = synth.currentTime - (performance.now() / 1000);
+        this.highResTimeOffset = 0;
 
         /**
          * Absolute playback startTime, bases on the synth's time
@@ -130,6 +130,7 @@ export class Sequencer
                 let songChangeData = messageData[0];
                 this.songIndex = messageData[1];
                 this.midiData = songChangeData;
+                this.absoluteStartTime = 0;
                 this.duration = this.midiData.duration;
                 Object.entries(this.onSongChange).forEach((callback) => callback[1](songChangeData));
                 this.unpause();
@@ -146,10 +147,8 @@ export class Sequencer
                 break;
 
             case WorkletSequencerReturnMessageType.timeChange:
-                /**
-                 * @type {number}
-                 */
-                const time = messageData;
+                // message data is absolute time
+                const time = this.synth.currentTime - messageData;
                 Object.entries(this.onTimeChange).forEach((callback) => callback[1](time));
                 this.unpause();
                 this._recalculateStartTime(time);
@@ -159,25 +158,6 @@ export class Sequencer
                 this.pausedTime = this.currentTime;
                 this.isFinished = messageData;
         }
-    }
-
-
-    /**
-     * @private
-     */
-    _adjustPeformanceNowTime()
-    {
-        this.performanceNowTimeOffset = (this.synth.currentTime - (performance.now() / 1000)) * this._playbackRate;
-    }
-
-    /**
-     * @param time
-     * @private
-     */
-    _recalculateStartTime(time)
-    {
-        this.absoluteStartTime = this.synth.currentTime - time / this._playbackRate;
-        this._adjustPeformanceNowTime()
     }
 
     /**
@@ -254,31 +234,47 @@ export class Sequencer
         return (this.synth.currentTime - this.absoluteStartTime) * this._playbackRate;
     }
 
+    /**
+     * @param time
+     * @private
+     */
+    _recalculateStartTime(time)
+    {
+        this.absoluteStartTime = (this.synth.currentTime - time) / this._playbackRate;
+        this.highResTimeOffset = (this.synth.currentTime - (performance.now() / 1000)) * this._playbackRate;
+    }
 
     /**
      * Use for visualization as it's not affected by the audioContext stutter
      * @returns {number}
      */
-    get currentHighResolutionTime()
-    {
+    get currentHighResolutionTime() {
         if (this.pausedTime) {
             return this.pausedTime;
         }
 
+        const playbackRate = this._playbackRate;
+        const highResTimeOffset = this.highResTimeOffset;
+        const absoluteStartTime = this.absoluteStartTime;
+
         // sync performance.now to current time
         const performanceNow = performance.now() / 1000;
-        let currentPerformanceTime = this.performanceNowTimeOffset + (performanceNow - this.absoluteStartTime) * this._playbackRate;
-        let currentAudioTime = this.currentTime;
+        const performanceElapsedTime = (performanceNow - absoluteStartTime) * playbackRate;
+
+        let currentPerformanceTime = highResTimeOffset + performanceElapsedTime;
+        const currentAudioTime = this.currentTime;
 
         const smoothingFactor = 0.01;
 
         // diff times smoothing factor
-        this.performanceNowTimeOffset += (currentAudioTime - currentPerformanceTime) * smoothingFactor;
+        const timeDifference = currentAudioTime - currentPerformanceTime;
+        this.highResTimeOffset += timeDifference * smoothingFactor;
 
-        currentPerformanceTime = this.performanceNowTimeOffset + (performanceNow - this.absoluteStartTime) * this._playbackRate;
-
+        // return a smoothed performance time
+        currentPerformanceTime = this.highResTimeOffset + performanceElapsedTime;
         return currentPerformanceTime;
     }
+
 
     set currentTime(time)
     {
@@ -342,7 +338,7 @@ export class Sequencer
         {
             resetTime = true;
         }
-        this._recalculateStartTime(this.pausedTime);
+        this._recalculateStartTime(this.pausedTime || 0);
         this.unpause()
         this._sendMessage(WorkletSequencerMessageType.play, resetTime);
     }
