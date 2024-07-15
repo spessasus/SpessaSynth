@@ -61,10 +61,10 @@ export function _processEvent(event, trackIndex)
             break;
 
         // recongized but ignored
+        case messageTypes.timeSignature:
         case messageTypes.midiPort:
         case messageTypes.endOfTrack:
         case messageTypes.midiChannelPrefix:
-        case messageTypes.timeSignature:
         case messageTypes.songPosition:
         case messageTypes.activeSensing:
         case messageTypes.keySignature:

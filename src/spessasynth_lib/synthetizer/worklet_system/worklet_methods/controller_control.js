@@ -44,12 +44,21 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
                         return;
 
                     case "xg":
-                        // for xg, if msb is 127, then it's drums
-                        if (bankNr === 127) {
+                        // for xg, if msb is 120, 126 or 127, then it's drums
+                        if (bankNr === 120 || bankNr === 126 || bankNr === 127)
+                        {
                             channelObject.drumChannel = true;
                             this.callEvent("drumchange", {
                                 channel: channel,
                                 isDrumChannel: true
+                            });
+                        }
+                        else
+                        {
+                            channelObject.drumChannel = false;
+                            this.callEvent("drumchange", {
+                                channel: channel,
+                                isDrumChannel: false
                             });
                         }
                         break;
@@ -80,9 +89,10 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
         case midiControllers.lsbForControl0BankSelect:
             if(this.system === 'xg')
             {
-                if(channelObject.midiControllers[midiControllers.bankSelect] === 0)
+                if(!channelObject.drumChannel)
                 {
-                    // some soundfonts use 127 as drums and if it's not marked as drums by bank MSB (line 47), then it's NOT drums
+                    // some soundfonts use 127 as drums and
+                    // if it's not marked as drums by bank MSB (line 47), then we DO NOT want the drums!
                     if(controllerValue !== 127)
                         channelObject.midiControllers[midiControllers.bankSelect] = controllerValue;
                 }
