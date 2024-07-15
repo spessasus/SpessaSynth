@@ -2,11 +2,14 @@
  * @type {string[]}
  */
 export const supportedEncodings = [
+    "Shift_JIS",
+    "windows-1250",
     "utf-8",
     "utf-16",
     "utf-16le",
     "utf-16be",
     "latin1",
+    "ISO-8859-1",
     "ISO-8859-2",
     "ISO-8859-3",
     "ISO-8859-4",
@@ -21,7 +24,6 @@ export const supportedEncodings = [
     "ISO-8859-14",
     "ISO-8859-15",
     "ISO-8859-16",
-    "windows-1250",
     "windows-1251",
     "windows-1252",
     "windows-1253",
@@ -30,7 +32,6 @@ export const supportedEncodings = [
     "windows-1256",
     "windows-1257",
     "windows-1258",
-    "Shift_JIS",
     "EUC-JP",
     "ISO-2022-JP",
     "EUC-KR",

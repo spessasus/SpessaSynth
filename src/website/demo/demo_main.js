@@ -9,6 +9,7 @@ import { isMobile } from '../js/utils/is_mobile.js'
 import { getCheckSvg, getExclamationSvg, getHourglassSvg } from '../js/icons.js'
 import { showNotification } from '../js/notification/notification.js'
 import { ANIMATION_REFLOW_TIME } from '../js/utils/animation_utils.js'
+import { LocaleManager } from '../locale/locale_manager.js'
 
 /**
  * demo_main.js
@@ -115,19 +116,23 @@ async function saveSoundFontToIndexedDB(arr)
 }
 
 // attempt to load soundfont from indexed db
-async function demoInit()
+async function demoInit(initLocale)
 {
-    try {
+    // initialize the locale management system. do it here because we want it ready before all js classes do their things
+    const localeManager = new LocaleManager(initLocale);
+    try
+    {
         const context = window.AudioContext || window.webkitAudioContext;
         window.audioContextMain = new context({ sampleRate: 44100 });
     }
-    catch (e) {
+    catch (e)
+    {
         changeIcon(getExclamationSvg(256));
-        loadingMessage.textContent = "Your browser doesn't support WebAudio.";
+        loadingMessage.textContent = localeManager.getLocaleString("locale.synthInit.noWebAudio");
         throw e;
 
     }
-    loadingMessage.textContent = "Loading soundfont..."
+    loadingMessage.textContent = localeManager.getLocaleString("locale.synthInit.loadingSoundfont");
     let soundFontBuffer = await loadLastSoundFontFromDatabase();
     let loadedFromDb = true;
     if (soundFontBuffer === undefined)
@@ -135,10 +140,11 @@ async function demoInit()
         SpessaSynthWarn("Failed to load from db, fetching online instead");
         loadedFromDb = false;
         const progressBar = document.getElementById("progress_bar");
-        loadingMessage.innerText = "Loading bundled soundfont...";
+        const sFontLoadMessage = localeManager.getLocaleString("locale.synthInit.loadingBundledSoundfont");
+        loadingMessage.textContent = sFontLoadMessage;
         soundFontBuffer = await fetchFont(`soundfonts/${SF_NAME}`, percent =>
         {
-            loadingMessage.textContent =`Loading bundled SoundFont.. ${percent}%`;
+            loadingMessage.textContent =`${sFontLoadMessage} ${percent}%`;
         });
         progressBar.style.width = "0";
     }
@@ -146,10 +152,10 @@ async function demoInit()
     {
         SpessaSynthInfo("Loaded the soundfont from the database succesfully");
     }
-    loadingMessage.textContent = "Loaded soundfont!"
     window.soundFontParser = soundFontBuffer;
-    if(!loadedFromDb) {
-        loadingMessage.textContent = "Saving soundfont to the browser..."
+    if(!loadedFromDb)
+    {
+        loadingMessage.textContent = localeManager.getLocaleString("locale.synthInit.savingSoundfont");
         await saveSoundFontToIndexedDB(soundFontBuffer);
     }
 
@@ -164,8 +170,8 @@ async function demoInit()
     }
 
     // prepare midi interface
-    loadingMessage.textContent = "Initializing synthesizer...";
-    window.manager = new Manager(audioContextMain, soundFontParser);
+    loadingMessage.textContent = localeManager.getLocaleString("locale.synthInit.startingSynthesizer");
+    window.manager = new Manager(audioContextMain, soundFontParser, localeManager);
     window.manager.sfError = e => {
         changeIcon(getExclamationSvg(256));
         if(loadedFromDb)
@@ -206,7 +212,7 @@ async function demoInit()
     }
 
     changeIcon(getCheckSvg(256))
-    loadingMessage.textContent = "Ready!";
+    loadingMessage.textContent = localeManager.getLocaleString("locale.synthInit.done");
 }
 
 async function fetchFont(url, callback)
@@ -331,16 +337,28 @@ function saveSettings(settingsData)
 window.saveSettings = saveSettings;
 
 // load saved settings
-const saved = localStorage.getItem("spessasynth-settings");
-if(saved !== null) {
+const saved = JSON.parse(localStorage.getItem("spessasynth-settings"));
+if(saved !== null)
+{
     /**
      * reads the settings
      * @type {Promise<SavedSettings>}
      */
     window.savedSettings = new Promise(resolve => {
-        resolve(JSON.parse(saved))
+        resolve(saved);
     });
 }
+let initLocale;
+// get locale from saved settings or browser: "en-US" will turn into just "en"
+if(saved && saved.interface && saved.interface.language)
+{
+    initLocale = ((await savedSettings).interface.language) || navigator.language.split("-")[0].toLowerCase();
+}
+else
+{
+    initLocale = navigator.language.split("-")[0].toLowerCase();
+}
+
 
 // remove the old files
 fileInput.value = "";
@@ -350,7 +368,7 @@ exportButton.style.display = "none";
 document.getElementById("sf_upload").style.display = "none";
 document.getElementById("file_upload").style.display = "none";
 
-demoInit().then(() => {
+demoInit(initLocale).then(() => {
     document.getElementById("sf_upload").style.display = "flex";
     document.getElementById("file_upload").style.display = "flex";
     loading.classList.add("done")
@@ -398,7 +416,7 @@ demoInit().then(() => {
         setTimeout(async () => {
             loading.classList.remove("done");
             changeIcon(getHourglassSvg(256), false);
-            loadingMessage.textContent = "Loading soundfont...";
+            loadingMessage.textContent = window.manager.localeManager.getLocaleString("locale.synthInit.loadingSoundfont");
             const parseStart = performance.now() / 1000;
             // parse the soundfont
             let soundFontBuffer;
@@ -409,13 +427,13 @@ demoInit().then(() => {
             }
             catch (e)
             {
-                loadingMessage.textContent = "Out of memory!";
+                loadingMessage.textContent = window.manager.localeManager.getLocaleString("locale.warnings.outOfMemory");
                 changeIcon(getExclamationSvg(256));
                 showNotification(
                     manager.localeManager.getLocaleString("locale.warnings.warning"),
                     [{
                         type: "text",
-                        textContent: window.manager.localeManager.getLocaleString("locale.warnings.chromeMobile"),
+                        textContent: window.manager.localeManager.getLocaleString("locale.warnings.outOfMemory"),
                     }]
                 );
                 throw e;
@@ -425,20 +443,20 @@ demoInit().then(() => {
                 changeIcon(getExclamationSvg(256));
                 console.log(e);
             }
-            loadingMessage.textContent = "Initializing synthesizer...";
+            loadingMessage.textContent = window.manager.localeManager.getLocaleString("locale.synthInit.startingSynthesizer");
             await window.manager.reloadSf(soundFontBuffer);
             if(window.manager.seq)
             {
                 window.manager.seq.currentTime -= 0.1;
             }
-            loadingMessage.textContent = "Saving the soundfont for reuse...";
+            loadingMessage.textContent = window.manager.localeManager.getLocaleString("locale.synthInit.savingSoundfont");
             await saveSoundFontToIndexedDB(soundFontBuffer);
             // wait to make sure that the animation has finished
             const elapsed = (performance.now() / 1000) - parseStart;
             await new Promise(r => setTimeout(r, 1000 - elapsed));
             // DONE
             changeIcon(getCheckSvg(256))
-            loadingMessage.textContent = "Ready!";
+            loadingMessage.textContent = window.manager.localeManager.getLocaleString("locale.synthInit.done");
             loading.classList.add("done");
             document.documentElement.classList.add("no_scroll");
             document.body.classList.add("no_scroll");

@@ -4,6 +4,33 @@ import { SpessaSynthInfo, SpessaSynthWarn } from '../../utils/loggin.js'
 import { ticksToSeconds } from './play.js'
 
 /**
+ * @param trackNum {number}
+ * @param port {number}
+ * @this {WorkletSequencer}
+ */
+export function assignMIDIPort(trackNum, port)
+{
+    // assign new 16 channels if the port is not occupied yet
+    if(this.midiPortChannelOffset === 0)
+    {
+        this.midiPortChannelOffset += 16;
+        this.midiPortChannelOffsets[port] = 0;
+    }
+
+    if(this.midiPortChannelOffsets[port] === undefined)
+    {
+        if(this.synth.workletProcessorChannels.length < this.midiPortChannelOffset + 15)
+        {
+            this._addNewMidiPort();
+        }
+        this.midiPortChannelOffsets[port] = this.midiPortChannelOffset;
+        this.midiPortChannelOffset += 16;
+    }
+
+    this.midiPorts[trackNum] = port;
+}
+
+/**
  * Loads a new sequence
  * @param parsedMidi {MIDI}
  * @this {WorkletSequencer}
@@ -43,24 +70,7 @@ export function loadNewSequence(parsedMidi)
 
     // assign port offsets
     this.midiData.midiPorts.forEach((port, trackIndex) => {
-            // assign new 16 channels if the port is not occupied yet
-            if(this.midiPortChannelOffset === 0)
-            {
-                this.midiPortChannelOffset += 16;
-                this.midiPortChannelOffsets[port] = 0;
-            }
-
-            if(this.midiPortChannelOffsets[port] === undefined)
-            {
-                if(this.synth.workletProcessorChannels.length < this.midiPortChannelOffset + 15)
-                {
-                    this._addNewMidiPort();
-                }
-                this.midiPortChannelOffsets[port] = this.midiPortChannelOffset;
-                this.midiPortChannelOffset += 16;
-            }
-
-            this.midiPorts[trackIndex] = port;
+        this.assignMIDIPort(trackIndex, port);
     })
 
     /**

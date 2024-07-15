@@ -34,7 +34,9 @@ export class SequencerUI
         this.iconDisabledColor = ICON_DISABLED_COLOR;
         this.controls = element;
         this.encoding = DEFAULT_ENCODING;
-        this.decoder = new TextDecoder(this.encoding);
+        this.decoder = new TextDecoder(this.encoding, {
+            fatal: true
+        });
         this.encoder = new TextEncoder();
         this.text = "";
         this.requiresTextUpdate = false;
@@ -175,6 +177,28 @@ export class SequencerUI
     }
 
     /**
+     * @param text {ArrayBuffer}
+     * @returns {string}
+     */
+    decodeTextFix(text)
+    {
+        let encodingIndex = 0;
+        while(true)
+        {
+            try
+            {
+                return this.decoder.decode(text);
+            }
+            catch (e)
+            {
+                encodingIndex++;
+                this.decoder = new TextDecoder(supportedEncodings[encodingIndex]);
+                this.encodingSelector.value = supportedEncodings[encodingIndex];
+            }
+        }
+    }
+
+    /**
      *
      * @param sequencer {Sequencer} the sequencer to be used
      */
@@ -204,7 +228,7 @@ export class SequencerUI
 
                     break;
             }
-            const text = this.decoder.decode(data.buffer);
+            const text = this.decodeTextFix(data.buffer);
             this.text += text + end;
             this.requiresTextUpdate = true;
             this.rawText.push(...data, ...this.encoder.encode(end));
@@ -243,8 +267,10 @@ export class SequencerUI
     changeEncoding(encoding)
     {
         this.encoding = encoding;
-        this.decoder = new TextDecoder(encoding);
-        this.text = this.decoder.decode(new Uint8Array(this.rawText).buffer);
+        this.decoder = new TextDecoder(encoding, {
+            fatal: true
+        });
+        this.text = this.decodeTextFix(new Uint8Array(this.rawText).buffer);
     }
 
     createControls() {
@@ -301,6 +327,7 @@ export class SequencerUI
         encodingSelector.value = this.encoding;
         encodingSelector.onchange = () => this.changeEncoding(encodingSelector.value);
         encodingSelector.classList.add("lyrics_selector");
+        this.encodingSelector = encodingSelector;
         titleWrapper.appendChild(encodingSelector);
 
         // the actual text

@@ -28,10 +28,11 @@ A flexible, powerful, and feature-packed soundfont synthesizer library for the W
 - - Can provide very hiqh quality audio while being relatively light on file size thanks to sf3 support
 - Reverb and chorus support
 - Render audio to file
+- Read and write .mid files
 - A few custom modulators to support some additional controllers (see `modulators.js`)
 - Written using AudioWorklets (Firefox and Chrome both work perfectly)
 - Can load really large soundfonts (4GB!) (but only on Firefox, Chromium has a memory limit)
-- Multi-port MIDIs support (more than 16 channels)
+- [Multi Port MIDIs support](../../wiki/About-Multi-Port) (more than 16 channels)
 - MIDI Controller Support (Default supported controllers can be found [here](../../wiki/Synthetizer-Class#supported-controllers)).
 - Supports some Roland GS and Yamaha XG sysex messages
 - High performance mode for playing black MIDIs (Don't go too crazy with the amount of notes though)

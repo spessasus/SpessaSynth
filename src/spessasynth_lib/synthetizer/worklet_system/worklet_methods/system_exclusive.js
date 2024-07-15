@@ -2,7 +2,7 @@ import { arrayToHexString, consoleColors } from '../../../utils/other.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../../../utils/loggin.js'
 /**
  * Executes a system exclusive
- * @param messageData {number[]} - the message data without f0
+ * @param messageData {number[]|ShiftableByteArray} - the message data without f0
  * @param channelOffset {number}
  * @this {SpessaSynthProcessor}
  */

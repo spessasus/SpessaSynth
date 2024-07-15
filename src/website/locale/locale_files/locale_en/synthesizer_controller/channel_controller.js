@@ -53,7 +53,7 @@ export const channelControllerLocale = {
     },
 
     muteButton: {
-        description: "Mute/unmute channel {0}"
+        description: "Solo on channel {0}"
     },
 
     drumToggleButton: {

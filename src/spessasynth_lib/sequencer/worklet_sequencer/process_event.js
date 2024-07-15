@@ -51,33 +51,6 @@ export function _processEvent(event, trackIndex)
                 n.midiNote === event.messageData[0] && n.channel === statusByteData.channel), 1);
             break;
 
-        case messageTypes.setTempo:
-            this.oneTickToSeconds = 60 / (getTempo(event) * this.midiData.timeDivision);
-            if(this.oneTickToSeconds === 0)
-            {
-                this.oneTickToSeconds = 60 / (120 * this.midiData.timeDivision);
-                SpessaSynthWarn("invalid tempo! falling back to 120 BPM");
-            }
-            break;
-
-        // recongized but ignored
-        case messageTypes.timeSignature:
-        case messageTypes.midiPort:
-        case messageTypes.endOfTrack:
-        case messageTypes.midiChannelPrefix:
-        case messageTypes.songPosition:
-        case messageTypes.activeSensing:
-        case messageTypes.keySignature:
-            break;
-
-        default:
-            SpessaSynthWarn(`%cUnrecognized Event: %c${event.messageStatusByte}%c status byte: %c${Object.keys(messageTypes).find(k => messageTypes[k] === statusByteData.status)}`,
-                consoleColors.warn,
-                consoleColors.unrecognized,
-                consoleColors.warn,
-                consoleColors.value);
-            break;
-
         case messageTypes.pitchBend:
             this.synth.pitchWheel(statusByteData.channel, event.messageData[1], event.messageData[0]);
             break;
@@ -94,6 +67,24 @@ export function _processEvent(event, trackIndex)
             this.synth.systemExclusive(event.messageData, offset);
             break;
 
+        case messageTypes.setTempo:
+            this.oneTickToSeconds = 60 / (getTempo(event) * this.midiData.timeDivision);
+            if(this.oneTickToSeconds === 0)
+            {
+                this.oneTickToSeconds = 60 / (120 * this.midiData.timeDivision);
+                SpessaSynthWarn("invalid tempo! falling back to 120 BPM");
+            }
+            break;
+
+        // recongized but ignored
+        case messageTypes.timeSignature:
+        case messageTypes.endOfTrack:
+        case messageTypes.midiChannelPrefix:
+        case messageTypes.songPosition:
+        case messageTypes.activeSensing:
+        case messageTypes.keySignature:
+            break;
+
         case messageTypes.text:
         case messageTypes.lyric:
         case messageTypes.copyright:
@@ -104,9 +95,21 @@ export function _processEvent(event, trackIndex)
             this.post(WorkletSequencerReturnMessageType.textEvent, [event.messageData, statusByteData.status])
             break;
 
+        case messageTypes.midiPort:
+            this.assignMIDIPort(trackIndex, event.messageData[0]);
+            break;
+
         case messageTypes.reset:
             this.synth.stopAllChannels();
             this.synth.resetAllControllers();
+            break;
+
+        default:
+            SpessaSynthWarn(`%cUnrecognized Event: %c${event.messageStatusByte}%c status byte: %c${Object.keys(messageTypes).find(k => messageTypes[k] === statusByteData.status)}`,
+                consoleColors.warn,
+                consoleColors.unrecognized,
+                consoleColors.warn,
+                consoleColors.value);
             break;
     }
 }

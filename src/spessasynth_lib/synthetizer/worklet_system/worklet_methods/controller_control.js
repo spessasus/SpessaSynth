@@ -359,4 +359,5 @@ export function muteChannel(channel, isMuted)
         isMuted: isMuted
     });
     this.workletProcessorChannels[channel].isMuted = isMuted;
+    this.sendChannelProperties();
 }

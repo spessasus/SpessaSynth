@@ -56,9 +56,11 @@ class Manager
      * Creates a new midi user interface.
      * @param context {BaseAudioContext}
      * @param soundFontBuffer {ArrayBuffer}
+     * @param locale {LocaleManager}
      */
-    constructor(context, soundFontBuffer)
+    constructor(context, soundFontBuffer, locale)
     {
+        this.localeManager = locale;
         this.context = context;
         this.isExporting = false;
         let solve;
@@ -277,11 +279,6 @@ class Manager
             alert("Audio worklet is not supported on your browser. Sorry!")
             throw "Not supported."
         }
-        // initialize the locale management system. do it here because we want it ready before all js classes do their things
-        // get locale from user "en-US" will turn into just "en"
-        let locale = navigator.language.split("-")[0].toLowerCase();
-        this.localeManager = new LocaleManager(locale);
-
 
         // bind every element with translate-path to translation
         for(const element of document.querySelectorAll("*[translate-path]"))

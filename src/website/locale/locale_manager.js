@@ -8,7 +8,7 @@
  * }} PropertyType
  */
 import { SpessaSynthInfo, SpessaSynthWarn } from '../../spessasynth_lib/utils/loggin.js'
-import { localeList } from './locale_files/locale_list.js'
+import { DEFAULT_LOCALE, localeList } from './locale_files/locale_list.js'
 
 export class LocaleManager
 {
@@ -20,7 +20,7 @@ export class LocaleManager
         /**
          * @type {CompleteLocaleTypedef}
          */
-        this.locale = localeList[initialLocale];
+        this.locale = localeList[initialLocale] || localeList[DEFAULT_LOCALE];
 
         /**
          * @type {LocaleList}

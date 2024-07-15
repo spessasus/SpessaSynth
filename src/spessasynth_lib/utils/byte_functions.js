@@ -105,7 +105,8 @@ export function readBytesAsString(dataArray, bytes, encoding=undefined, trimEnd=
         }
         return string;
     }
-    else {
+    else
+    {
         let byteBuffer = dataArray.slice(dataArray.currentIndex, dataArray.currentIndex + bytes)
         dataArray.currentIndex += bytes;
         let decoder = new TextDecoder(encoding);

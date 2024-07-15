@@ -13,6 +13,15 @@ export const localePolish = {
     titleMessage: "SpessaSynth: JavaScriptowy Syntezator SoundFont2",
     demoTitleMessage: "SpessaSynth: JavaScriptowy Syntezator SoundFont2 Wersja Demo",
 
+    synthInit: {
+        loadingSoundfont: "Wczytywanie SoundFonta...",
+        loadingBundledSoundfont: "Wczytywanie wbudowanego SoundFonta...",
+        startingSynthesizer: "Uruchamianie syntezatora...",
+        savingSoundfont: "Zapisywanie SoundFonta do przeglądarki...",
+        noWebAudio: "Twoja przeglądarka nie wspiera Web Audio.",
+        done: "Gotowe!"
+    },
+
     // top bar buttons
     midiUploadButton: "Wgraj Twoje pliki MIDI",
     midiRenderButton: {

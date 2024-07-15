@@ -20,7 +20,7 @@
 import { Meter } from './synthui_meter.js'
 import { LOCALE_PATH } from '../synthetizer_ui.js'
 import { midiControllers } from '../../../../spessasynth_lib/midi_parser/midi_message.js'
-import { getDrumsSvg, getLoopSvg, getMuteSvg, getNoteSvg, getVolumeSvg } from '../../icons.js'
+import { getDrumsSvg, getLoopSvg, getMicSvg, getMuteSvg, getNoteSvg, getVolumeSvg } from '../../icons.js'
 import { DEFAULT_PERCUSSION } from '../../../../spessasynth_lib/synthetizer/synthetizer.js'
 import { Selector } from './synthui_selector.js'
 import {
@@ -35,6 +35,10 @@ import {
  */
 export function createChannelController(channelNumber)
 {
+    /**
+     * @type {Set<number>}
+     */
+    this.soloChannels = new Set();
     // controller
     const controller = document.createElement("div");
     controller.classList.add("channel_controller");
@@ -121,7 +125,7 @@ export function createChannelController(channelNumber)
     controller.appendChild(volume.div);
 
     // modulation wheel
-    const modulation = createCCMeterHelper(midiControllers.modulationWheel, "channelController.modulationWheelMeter", 127);
+    const modulation = createCCMeterHelper(midiControllers.modulationWheel, "channelController.modulationWheelMeter", 0);
     controller.appendChild(modulation.div);
 
     // chorus
@@ -186,15 +190,35 @@ export function createChannelController(channelNumber)
     muteButton.classList.add("controller_element");
     muteButton.classList.add("mute_button");
     muteButton.onclick = () => {
-        if(this.synth.channelProperties[channelNumber].isMuted)
+        if(this.soloChannels.has(channelNumber))
         {
-            this.synth.muteChannel(channelNumber, false);
-            muteButton.innerHTML = getVolumeSvg(32);
+            this.soloChannels.delete(channelNumber);
         }
         else
         {
-            this.synth.muteChannel(channelNumber, true);
-            muteButton.innerHTML = getMuteSvg(32);
+            this.soloChannels.add(channelNumber);
+        }
+        if(this.soloChannels.size === 0)
+        {
+            for (let i = 0; i < this.synth.channelsAmount; i++)
+            {
+                this.controllers[i].muteButton.innerHTML = getVolumeSvg(32);
+                this.synth.muteChannel(i, false);
+            }
+            return;
+        }
+        for (let i = 0; i < this.synth.channelsAmount; i++)
+        {
+            if(this.soloChannels.has(i))
+            {
+                this.controllers[i].muteButton.innerHTML = getMicSvg(32);
+                this.synth.muteChannel(i, false);
+            }
+            else
+            {
+                this.controllers[i].muteButton.innerHTML = getMuteSvg(32);
+                this.synth.muteChannel(i, true);
+            }
         }
     }
     controller.appendChild(muteButton);

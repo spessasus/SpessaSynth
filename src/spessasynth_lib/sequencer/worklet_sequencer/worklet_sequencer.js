@@ -1,7 +1,7 @@
 import { WorkletSequencerReturnMessageType } from './sequencer_message.js'
 import { _addNewMidiPort, _processEvent } from './process_event.js'
 import { _findFirstEventIndex, _processTick } from './process_tick.js'
-import { loadNewSequence, loadNewSongList, nextSong, previousSong } from './song_control.js'
+import { assignMIDIPort, loadNewSequence, loadNewSongList, nextSong, previousSong } from './song_control.js'
 import { _playTo, _recalculateStartTime, play, setTimeTicks } from './play.js'
 import { messageTypes, midiControllers } from '../../midi_parser/midi_message.js'
 import { post, processMessage, sendMIDIMessage } from './events.js'
@@ -195,6 +195,7 @@ class WorkletSequencer
 
 WorkletSequencer.prototype.post = post;
 WorkletSequencer.prototype.sendMIDIMessage = sendMIDIMessage;
+WorkletSequencer.prototype.assignMIDIPort = assignMIDIPort;
 WorkletSequencer.prototype.processMessage = processMessage;
 
 WorkletSequencer.prototype._processEvent = _processEvent;

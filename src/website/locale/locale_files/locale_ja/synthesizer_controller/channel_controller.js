@@ -53,7 +53,7 @@ export const channelControllerLocale = {
     },
 
     muteButton: {
-        description: "チャンネル {0} をミュート/ミュート解除"
+        description: "チャンネル {0} を単独再生"
     },
 
     drumToggleButton: {

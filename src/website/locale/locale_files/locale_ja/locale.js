@@ -13,6 +13,15 @@ export const localeJapanese = {
     titleMessage: "SpessaSynth: SoundFont2 Javascript シンセサイザー",
     demoTitleMessage: "SpessaSynth: SoundFont2 Javascript シンセサイザー オンラインデモ",
 
+    synthInit: {
+        loadingSoundfont: "サウンドフォントを読み込んでいます...",
+        loadingBundledSoundfont: "バンドルされたサウンドフォントを読み込んでいます...",
+        startingSynthesizer: "シンセサイザーを起動しています...",
+        savingSoundfont: "再利用のためにサウンドフォントを保存しています...",
+        noWebAudio: "お使いのブラウザはWeb Audioをサポートしていません。",
+        done: "準備完了！"
+    },
+
     // top bar buttons
     midiUploadButton: "MIDIファイルをアップロード",
     midiRenderButton: {

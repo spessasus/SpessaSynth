@@ -77,13 +77,55 @@ function getDrumChange(channel, ticks)
 }
 
 /**
- * Modifies the sequence according to the locked presets and controllers in the given snapshot
+ * Modifies the sequence according to the desired programs and controllers
  * @param midi {MIDI}
- * @param snapshot {SynthesizerSnapshot}
+ * @param desiredProgramChanges {{
+ *     channel: number,
+ *     program: number,
+ *     bank: number,
+ *     isDrum: boolean
+ * }[]} the programs to set on given channels. Note that the channel may be more than 16, function will adjust midi ports automatically
+ * @param desiredControllerChanges {{
+ *     channel: number,
+ *     controllerNumber: number,
+ *     controllerValue: number,
+ * }[]} the controllers to set on given channels. Note that the channel may be more than 16, function will adjust midi ports automatically
+ * @param desiredChannelsToClear {number[]} the channels to remove from the sequence. Note that the channel may be more than 16, function will adjust midi ports automatically
  */
-export function applySnapshotToMIDI(midi, snapshot)
+export function modifyMIDI(midi, desiredProgramChanges = [], desiredControllerChanges = [], desiredChannelsToClear = [])
 {
-    SpessaSynthGroupCollapsed("%cExporting the MIDI file...", consoleColors.info);
+    SpessaSynthGroupCollapsed("%cApplying changes to the MIDI file...", consoleColors.info);
+    /**
+     * @param channel {number}
+     * @param port {number}
+     */
+    const clearChannelMessages = (channel, port) => {
+        midi.tracks.forEach((track, trackNum) => {
+            if(midi.midiPorts[trackNum] !== port)
+            {
+                return;
+            }
+            for(let i = track.length - 1; i >= 0; i--) // iterate in reverse to not mess up indexes
+            {
+                if(track[i].messageStatusByte >= 0x80 && track[i].messageStatusByte < 0xF0) // do not clear sysexes
+                {
+                    if((track[i].messageStatusByte & 0xF) === channel)
+                    {
+                        track.splice(i, 1);
+                    }
+                }
+            }
+        });
+    }
+    desiredChannelsToClear.forEach(c => {
+        const port = Math.floor(c / 16);
+        const channel = c % 16;
+        clearChannelMessages(channel, port);
+        SpessaSynthInfo(`%Removing channel %c${c}%c!`,
+            consoleColors.info,
+            consoleColors.recognized,
+            consoleColors.info);
+    });
     let addedGs = false;
     /**
      * find all controller changes in the file
@@ -123,6 +165,8 @@ export function applySnapshotToMIDI(midi, snapshot)
             }
         })
     });
+
+
     /**
      * @param channel {number}
      * @param port {number}
@@ -142,18 +186,63 @@ export function applySnapshotToMIDI(midi, snapshot)
         }
 
     }
-    snapshot.channelSnapshots.forEach((channel, channelNumber) => {
-        const midiChannel = channelNumber % 16;
-        const port = Math.floor(channelNumber / 16);
-        // preset locked on this channel. Find all program (and bank) changes related for this channel.
-        if(channel.lockPreset)
+    desiredControllerChanges.forEach(desiredChange => {
+        const channel = desiredChange.channel;
+        const midiChannel = channel % 16;
+        const port = Math.floor(channel / 16);
+        const targetValue = desiredChange.controllerValue;
+        const ccNumber = desiredChange.controllerNumber;
+        // the controller is locked. Clear all controllers
+        clearControllers(midiChannel, port, ccNumber);
+        // since we've removed all ccs, we need to add the first one.
+        SpessaSynthInfo(`%cNo controller %c${ccNumber}%c on channel %c${channel}%c found. Adding it!`,
+            consoleColors.info,
+            consoleColors.unrecognized,
+            consoleColors.info,
+            consoleColors.value,
+            consoleColors.info
+        );
+        const noteOnByte = messageTypes.noteOn | midiChannel;
+        /**
+         * @type {{index: number, track: number}[]}
+         */
+        const firstNoteOnForTrack = midi.tracks
+            .reduce((noteOns, track, trackNum) => {
+                if(midi.usedChannelsOnTrack[trackNum].has(midiChannel) && midi.midiPorts[trackNum] === port)
+                {
+                    const eventIndex = track.findIndex(event =>
+                        event.messageStatusByte === noteOnByte);
+                    if(eventIndex !== -1)
+                    {
+                        noteOns.push({
+                            index: eventIndex,
+                            track: trackNum
+                        });
+                    }
+                }
+                return noteOns;
+            }, []);
+        if(firstNoteOnForTrack.length === 0)
         {
-            const desiredBank = channel.drumChannel ? 0 : channel.bank;
-            const desiredProgram = channel.program;
+            SpessaSynthWarn("Program change but no notes... ignoring!");
+            return;
+        }
+        const firstNoteOn = firstNoteOnForTrack.reduce((first, current) =>
+            midi.tracks[current.track][current.index].ticks < midi.tracks[first.track][first.index] ? current : first);
+        // prepend with controller change
+        const ccChange = getControllerChange(midiChannel, ccNumber, targetValue, midi.tracks[firstNoteOn.track][firstNoteOn.index].ticks);
+        midi.tracks[firstNoteOn.track].splice(firstNoteOn.index, 0, ccChange);
+    });
+
+    desiredProgramChanges.forEach(change => {
+        const midiChannel = change.channel % 16;
+        const port = Math.floor(change.channel / 16);
+            const desiredBank = change.isDrum ? 0 : change.bank;
+            const desiredProgram = change.program;
 
             // get the program changes that are relevant for this channel (and port)
             const thisProgramChanges = programChanges.filter(c => midi.midiPorts[c.track] === port && c.channel === midiChannel);
-            const isDrum = channel.drumChannel && midiChannel !== DEFAULT_PERCUSSION;
+            const isDrum = change.isDrum && midiChannel !== DEFAULT_PERCUSSION;
 
             // clear bank selects
             clearControllers(midiChannel, port, midiControllers.bankSelect);
@@ -204,7 +293,7 @@ export function applySnapshotToMIDI(midi, snapshot)
                 }
             }
 
-            SpessaSynthInfo(`%cSetting %c${channelNumber}%c to %c${desiredBank}:${desiredProgram}`,
+            SpessaSynthInfo(`%cSetting %c${change.channel}%c to %c${desiredBank}:${desiredProgram}`,
                 consoleColors.info,
                 consoleColors.recognized,
                 consoleColors.info,
@@ -215,7 +304,6 @@ export function applySnapshotToMIDI(midi, snapshot)
             {
                 midi.tracks[change.track].splice(midi.tracks[change.track].indexOf(change.message), 1);
             }
-
             const noteOnByte = messageTypes.noteOn | midiChannel;
             /**
              * Find the first note on for the channel
@@ -256,7 +344,7 @@ export function applySnapshotToMIDI(midi, snapshot)
                     consoleColors.recognized,
                     consoleColors.value
                 );
-                midi.tracks[firstNoteOn.track].splice(firstIndex, 0, getDrumChange(channelNumber, ticks));
+                midi.tracks[firstNoteOn.track].splice(firstIndex, 0, getDrumChange(change.channel, ticks));
                 firstIndex++;
             }
 
@@ -277,8 +365,56 @@ export function applySnapshotToMIDI(midi, snapshot)
                 ])
             );
             midi.tracks[firstNoteOn.track].splice(firstIndex, 0, programChange);
-        }
 
+
+    });
+    SpessaSynthGroupEnd();
+}
+
+/**
+ * Modifies the sequence according to the locked presets and controllers in the given snapshot
+ * @param midi {MIDI}
+ * @param snapshot {SynthesizerSnapshot}
+ */
+export function applySnapshotToMIDI(midi, snapshot)
+{
+    /**
+     * @type {number[]}
+     */
+    const channelsToClear = [];
+    /**
+     * @type {{
+     *     channel: number,
+     *     program: number,
+     *     bank: number,
+     *     isDrum: boolean
+     * }[]}
+     */
+    const programChanges = [];
+    /**
+     *
+     * @type {{
+     *     channel: number,
+     *     controllerNumber: number,
+     *     controllerValue: number
+     * }[]}
+     */
+    const controllerChanges = [];
+    snapshot.channelSnapshots.forEach((channel, channelNumber) => {
+        if(channel.isMuted)
+        {
+            channelsToClear.push(channelNumber);
+            return;
+        }
+        if(channel.lockPreset)
+        {
+            programChanges.push({
+                channel: channelNumber,
+                program: channel.program,
+                bank: channel.bank,
+                isDrum: channel.drumChannel
+            });
+        }
         // check for locked controllers and change them appropriately
         channel.lockedControllers.forEach((l, ccNumber) => {
             if(!l)
@@ -286,46 +422,12 @@ export function applySnapshotToMIDI(midi, snapshot)
                 return;
             }
             const targetValue = channel.midiControllers[ccNumber] >> 7; // channel controllers are stored as 14 bit values
-            // the controller is locked. Clear all controllers
-            clearControllers(midiChannel, port, ccNumber);
-            // since we've removed all ccs, we need to add the first one.
-            SpessaSynthInfo(`%cNo controller %c${ccNumber}%c on channel %c${channelNumber}%c found. Adding it!`,
-                consoleColors.info,
-                consoleColors.unrecognized,
-                consoleColors.info,
-                consoleColors.value,
-                consoleColors.info
-            );
-            const noteOnByte = messageTypes.noteOn | midiChannel;
-            /**
-             * @type {{index: number, track: number}[]}
-             */
-            const firstNoteOnForTrack = midi.tracks
-                .reduce((noteOns, track, trackNum) => {
-                    if(midi.usedChannelsOnTrack[trackNum].has(midiChannel) && midi.midiPorts[trackNum] === port)
-                    {
-                        const eventIndex = track.findIndex(event =>
-                            event.messageStatusByte === noteOnByte);
-                        if(eventIndex !== -1)
-                        {
-                            noteOns.push({
-                                index: eventIndex,
-                                track: trackNum
-                            });
-                        }
-                    }
-                    return noteOns;
-                }, []);
-            if(firstNoteOnForTrack.length === 0)
-            {
-                SpessaSynthWarn("Program change but no notes... ignoring!");
-                return;
-            }
-            const firstNoteOn = firstNoteOnForTrack[0];
-            // prepend with controller change
-            const ccChange = getControllerChange(midiChannel, ccNumber, targetValue, midi.tracks[firstNoteOn.track][firstNoteOn.index].ticks);
-            midi.tracks[firstNoteOn.track].splice(firstNoteOn.index, 0, ccChange);
+            controllerChanges.push({
+                channel: channelNumber,
+                controllerNumber: ccNumber,
+                controllerValue: targetValue
+            });
         });
-    });
-    SpessaSynthGroupEnd();
+    })
+    modifyMIDI(midi, programChanges, controllerChanges, channelsToClear);
 }
