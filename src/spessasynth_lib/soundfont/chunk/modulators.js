@@ -166,6 +166,9 @@ export const defaultModulators = [
         secSrcEnum: 0x0,
         transform: 0}),
 
+    // channel pressure to vibrato
+    new Modulator({srcEnum: 0x000D, dest: generatorTypes.vibLfoToPitch, amt: 50, secSrcEnum: 0x0, transform: 0}),
+
     // pitch wheel to tuning
     new Modulator({srcEnum: 0x020E, dest: generatorTypes.fineTune, amt: 12700, secSrcEnum: 0x0010, transform: 0}),
 
@@ -178,7 +181,8 @@ export const defaultModulators = [
         dest: generatorTypes.initialAttenuation,
         amt: DEFAULT_ATTENUATION_MOD_AMOUNT,
         secSrcEnum: 0x0,
-        transform: 0}),
+        transform: 0
+    }),
 
     // reverb effects to send
     // 1000 to align with the reverbSend (overriding it works anyways)
@@ -188,6 +192,15 @@ export const defaultModulators = [
     new Modulator({srcEnum: 0x00DD, dest: generatorTypes.chorusEffectsSend, amt: 200, secSrcEnum: 0x0, transform: 0}),
 
     // custom modulators heck yeah
+    // poly pressure to vibrato
+    new Modulator({
+        srcEnum: getModSourceEnum(modulatorCurveTypes.linear, 0, 0, 0, modulatorSources.polyPressure),
+        dest: generatorTypes.vibLfoToPitch,
+        amt: 50,
+        secSrcEnum: 0x0,
+        transform: 0
+    }),
+
     // cc 92 (tremolo) to modLFO volume
     new Modulator({
         srcEnum: getModSourceEnum(modulatorCurveTypes.linear, 0, 0, 1, midiControllers.effects2Depth), /*linear forward unipolar cc 92 */

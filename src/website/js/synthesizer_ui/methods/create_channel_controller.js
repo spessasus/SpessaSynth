@@ -26,6 +26,10 @@ import { Selector } from './synthui_selector.js'
 import {
     ALL_CHANNELS_OR_DIFFERENT_ACTION
 } from '../../../../spessasynth_lib/synthetizer/worklet_system/message_protocol/worklet_message.js'
+import {
+    NON_CC_INDEX_OFFSET
+} from '../../../../spessasynth_lib/synthetizer/worklet_system/worklet_utilities/worklet_processor_channel.js'
+import { modulatorSources } from '../../../../spessasynth_lib/soundfont/chunk/modulators.js'
 
 /**
  * Creates a new channel controller js
@@ -62,12 +66,23 @@ export function createChannelController(channelNumber)
         8192,
         true,
         val => {
+            const meterLocked = pitchWheel.isLocked;
+            if(meterLocked)
+            {
+                this.synth.lockController(channelNumber, NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel, false);
+            }
             val = Math.round(val) + 8192;
             // get bend values
             const msb = val >> 7;
             const lsb = val & 0x7F;
             this.synth.pitchWheel(channelNumber, msb, lsb);
-        });
+            if(meterLocked)
+            {
+                this.synth.lockController(channelNumber, NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel, true);
+            }
+        },
+        () => this.synth.lockController(channelNumber, NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel, true),
+        () => this.synth.lockController(channelNumber, NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel, false));
     pitchWheel.update(0);
     controller.appendChild(pitchWheel.div);
 

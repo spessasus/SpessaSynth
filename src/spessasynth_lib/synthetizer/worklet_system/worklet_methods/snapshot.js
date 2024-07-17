@@ -1,12 +1,12 @@
 
 /**
- * @typedef {Object} ChannelSnapshot - a snapshot of the channe;
+ * @typedef {Object} ChannelSnapshot - a snapshot of the channel.
  *
  * @property {number} program - the channel's program
  * @property {number} bank - the channel's bank
  * @property {boolean} lockPreset - indicates whether the channel's program change is disabled
  *
- * @property {Int16Array} midiControllers - the array of all midi controllers (in 14-bit values), including pitch bend
+ * @property {Int16Array} midiControllers - the array of all midi controllers (in 14-bit values) with the modulator sources at the end. See Synthesizer Class on wiki (lockController section)
  * @property {boolean[]} lockedControllers - an array of booleans, indicating if the controller with a current index is locked
  * @property {Float32Array} customControllers - array of custom (not sf2) control values such as RPN pitch tuning, transpose, modulation depth, etc.
  *
@@ -17,6 +17,7 @@
  * @property {number} channelVibrato.delay - vibrato delay from note on in seconds
  * @property {number} channelVibrato.rate - vibrato rate in Hz
  *
+ * @property {number} channelTranspose - key shift for the channel
  * @property {boolean} isMuted - indicates whether the channel is muted
  * @property {boolean} drumChannel - indicates whether the channel is a drum channel
  */
@@ -56,6 +57,7 @@ export function sendSynthesizerSnapshot()
             channelVibrato: channel.channelVibrato,
             lockVibrato: channel.lockVibrato,
 
+            channelTranspose: channel.channelTranspose,
             isMuted: channel.isMuted,
             drumChannel: channel.drumChannel
         }
@@ -110,9 +112,10 @@ export function applySynthesizerSnapshot(snapshot)
         channelObject.lockedControllers = channelSnapshot.lockedControllers;
         channelObject.customControllers = channelSnapshot.customControllers;
 
-        // restore vibrato
+        // restore vibrato and transpose
         channelObject.channelVibrato = channelSnapshot.channelVibrato;
         channelObject.lockVibrato = channelSnapshot.lockVibrato;
+        channelObject.channelTranspose = channelSnapshot.channelTranspose;
 
         // restore preset and lock
         channelObject.lockPreset = false;

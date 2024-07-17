@@ -15,6 +15,7 @@ export function noteOff(channel, midiNote)
         SpessaSynthWarn(`Received a noteOn for note`, midiNote, "Ignoring.");
         return;
     }
+    midiNote += this.workletProcessorChannels[channel].channelTranspose;
 
     // if high performance mode, kill notes instead of stopping them
     if(this.highPerformanceMode)
@@ -43,7 +44,7 @@ export function noteOff(channel, midiNote)
         }
     });
     this.callEvent("noteoff", {
-        midiNote: midiNote,
+        midiNote: midiNote - this.workletProcessorChannels[channel].channelTranspose,
         channel: channel
     });
 }

@@ -2,11 +2,14 @@ import { midiControllers } from '../../../midi_parser/midi_message.js'
 import { modulatorSources } from '../../../soundfont/chunk/modulators.js'
 /**
  * @typedef {Object} WorkletProcessorChannel
- * @property {Int16Array} midiControllers - array of MIDI controller values
+ * @property {Int16Array} midiControllers - array of MIDI controller values + the values used by modulators as source (pitch bend, bend range etc.)
  * @property {boolean[]} lockedControllers - array indicating if a controller is locked
  * @property {Float32Array} customControllers - array of custom (not sf2) control values such as RPN pitch tuning, transpose, modulation depth, etc.
+ *
+ * @property {number} channelTranspose - key shift of the channel
  * @property {boolean} holdPedal - indicates whether the hold pedal is active
  * @property {boolean} drumChannel - indicates whether the channel is a drum channel
+ *
  * @property {dataEntryStates} dataEntryState - the current state of the data entry
  * @property {number} NRPCoarse - the current coarse value of the Non-Registered Parameter
  * @property {number} NRPFine - the current fine value of the Non-Registered Parameter
@@ -51,6 +54,7 @@ export function createWorkletChannel(sendEvent = false)
         cachedVoices: [],
         preset: this.defaultPreset,
 
+        channelTranspose: 0,
         channelVibrato: {delay: 0, depth: 0, rate: 0},
         lockVibrato: false,
         holdPedal: false,
@@ -74,7 +78,7 @@ export function createWorkletChannel(sendEvent = false)
 export const NON_CC_INDEX_OFFSET = 128;
 export const CONTROLLER_TABLE_SIZE = 147;
 // an array with preset default values so we can quickly use set() to reset the controllers
-export const resetArray = new Int16Array(CONTROLLER_TABLE_SIZE);
+export const resetArray = new Int16Array(CONTROLLER_TABLE_SIZE).fill(0);
 // default values (the array is 14 bit so shift the 7 bit values by 7 bits)
 resetArray[midiControllers.mainVolume] = 100 << 7;
 resetArray[midiControllers.expressionController] = 127 << 7;
@@ -84,7 +88,6 @@ resetArray[midiControllers.brightness] = 64 << 7;
 resetArray[midiControllers.effects1Depth] = 40 << 7;
 resetArray[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel] = 8192;
 resetArray[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] = 2 << 7;
-resetArray[NON_CC_INDEX_OFFSET + modulatorSources.channelPressure] = 127 << 7;
 
 /**
  * @enum {number}
@@ -101,10 +104,10 @@ export const dataEntryStates = {
 
 
 export const customControllers = {
-    channelTuning: 0, // cents
-    channelTranspose: 1, // cents
-    modulationMultiplier: 2, // cents
-    masterTuning: 3, // cents
+    channelTuning: 0, // cents, RPN for tuning
+    channelTranspose: 1, // cents, only the decimal tuning, (e.g. transpose is 4.5, then shift by 4 keys + tune by 50 cents)
+    modulationMultiplier: 2, // cents, set by moduldation depth RPN
+    masterTuning: 3, // cents, set by system exclusive
 }
 export const CUSTOM_CONTROLLER_TABLE_SIZE = Object.keys(customControllers).length;
 export const customResetArray = new Float32Array(CUSTOM_CONTROLLER_TABLE_SIZE);

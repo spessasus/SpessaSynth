@@ -166,6 +166,7 @@ export class Sequencer
     set playbackRate(value)
     {
         this._sendMessage(WorkletSequencerMessageType.setPlaybackRate, value);
+        this.highResTimeOffset *= (value / this._playbackRate);
         this._playbackRate = value;
     }
 
@@ -240,7 +241,7 @@ export class Sequencer
      */
     _recalculateStartTime(time)
     {
-        this.absoluteStartTime = (this.synth.currentTime - time) / this._playbackRate;
+        this.absoluteStartTime = this.synth.currentTime - time / this._playbackRate;
         this.highResTimeOffset = (this.synth.currentTime - (performance.now() / 1000)) * this._playbackRate;
     }
 
@@ -252,19 +253,16 @@ export class Sequencer
         if (this.pausedTime) {
             return this.pausedTime;
         }
-
-        const playbackRate = this._playbackRate;
         const highResTimeOffset = this.highResTimeOffset;
         const absoluteStartTime = this.absoluteStartTime;
 
         // sync performance.now to current time
-        const performanceNow = performance.now() / 1000;
-        const performanceElapsedTime = (performanceNow - absoluteStartTime) * playbackRate;
+        const performanceElapsedTime = ((performance.now() / 1000) - absoluteStartTime) * this._playbackRate;
 
         let currentPerformanceTime = highResTimeOffset + performanceElapsedTime;
         const currentAudioTime = this.currentTime;
 
-        const smoothingFactor = 0.01;
+        const smoothingFactor = 0.01 * this._playbackRate;
 
         // diff times smoothing factor
         const timeDifference = currentAudioTime - currentPerformanceTime;

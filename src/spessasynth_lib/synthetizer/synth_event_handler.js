@@ -52,6 +52,11 @@
  *     LSB: number
  * }} PitchWheelCallback
  *
+ * @typedef {{
+ *     channel: number,
+ *     pressure: number
+ * }} ChannelPressureCallback
+ *
  * @typedef {string} SoundfontErrorCallback
  *
  *
@@ -65,6 +70,7 @@
  *     PresetListChangeCallback |
  *     PitchWheelCallback |
  *     SoundfontErrorCallback |
+ *     ChannelPressureCallback |
  *     undefined
  * } EventCallbackData
  */
@@ -76,6 +82,8 @@
  * "pitchwheel"|
  * "controllerchange"|
  * "programchange"|
+ * "channelpressure"|
+ * "polypressure" |
  * "drumchange"|
  * "stopall"|
  * "newchannel"|
@@ -100,6 +108,8 @@ export class EventHandler
             "pitchwheel": {},
             "controllerchange": {},
             "programchange": {},
+            "channelpressure": {},
+            "polypressure": {},
             "drumchange": {},
             "stopall": {},
             "newchannel": {},

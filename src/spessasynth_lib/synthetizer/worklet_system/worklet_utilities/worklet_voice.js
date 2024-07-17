@@ -31,6 +31,7 @@
  * @property {number} channelNumber - MIDI channel number
  * @property {number} velocity - velocity of the note
  * @property {number} midiNote - MIDI note number
+ * @property {number} pressure - the pressure of the note
  * @property {number} targetKey - target key for the note
  *
  * @property {WorkletVolumeEnvelope} volumeEnvelope
@@ -256,6 +257,7 @@ export function getWorkletVoices(channel,
                 sample: workletSample,
                 velocity: velocity,
                 midiNote: midiNote,
+                pressure: 0,
                 channelNumber: channel,
                 startTime: currentTime,
                 targetKey: targetKey,

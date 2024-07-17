@@ -419,6 +419,35 @@ export class Synthetizer {
     }
 
     /**
+     * Applies pressure to a given channel
+     * @param channel {number} usually 0-15: the channel to change the controller
+     * @param pressure {number} 0-127: the pressure to apply
+     */
+    channelPressure(channel, pressure)
+    {
+        this.post({
+            channelNumber: channel,
+            messageType: workletMessageType.channelPressure,
+            messageData: pressure
+        });
+    }
+
+    /**
+     * Applies pressure to a given note
+     * @param channel {number} usually 0-15: the channel to change the controller
+     * @param midiNote {number} 0-127: the MIDI note
+     * @param pressure {number} 0-127: the pressure to apply
+     */
+    polyPressure(channel, midiNote, pressure)
+    {
+        this.post({
+            channelNumber: channel,
+            messageType: workletMessageType.polyPressure,
+            messageData: [midiNote, pressure]
+        });
+    }
+
+    /**
      * @param data {WorkletMessage}
      */
     post(data)
@@ -634,6 +663,14 @@ export class Synthetizer {
 
             case messageTypes.programChange:
                 this.programChange(statusByteData.channel, message[1]);
+                break;
+
+            case messageTypes.polyPressure:
+                this.polyPressure(statusByteData.channel, message[0], message[1]);
+                break;
+
+            case messageTypes.channelPressure:
+                this.channelPressure(statusByteData.channel, message[1]);
                 break;
 
             case messageTypes.systemExclusive:

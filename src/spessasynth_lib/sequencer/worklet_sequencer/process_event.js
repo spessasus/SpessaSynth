@@ -40,15 +40,23 @@ export function _processEvent(event, trackIndex)
             else
             {
                 this.synth.noteOff(statusByteData.channel, event.messageData[0]);
-                this.playingNotes.splice(this.playingNotes.findIndex(n =>
-                    n.midiNote === event.messageData[0] && n.channel === statusByteData.channel), 1);
+                const toDelete = this.playingNotes.findIndex(n =>
+                    n.midiNote === event.messageData[0] && n.channel === statusByteData.channel);
+                if(toDelete !== -1)
+                {
+                    this.playingNotes.splice(toDelete, 1);
+                }
             }
             break;
 
         case messageTypes.noteOff:
             this.synth.noteOff(statusByteData.channel, event.messageData[0]);
-            this.playingNotes.splice(this.playingNotes.findIndex(n =>
-                n.midiNote === event.messageData[0] && n.channel === statusByteData.channel), 1);
+            const toDelete = this.playingNotes.findIndex(n =>
+                n.midiNote === event.messageData[0] && n.channel === statusByteData.channel);
+            if(toDelete !== -1)
+            {
+                this.playingNotes.splice(toDelete, 1);
+            }
             break;
 
         case messageTypes.pitchBend:
@@ -61,6 +69,14 @@ export function _processEvent(event, trackIndex)
 
         case messageTypes.programChange:
             this.synth.programChange(statusByteData.channel, event.messageData[0]);
+            break;
+
+        case messageTypes.polyPressure:
+            this.synth.polyPressure(statusByteData.channel, event.messageData[0], event.messageData[1]);
+            break;
+
+        case messageTypes.channelPressure:
+            this.synth.channelPressure(statusByteData.channel, event.messageData[0]);
             break;
 
         case messageTypes.systemExclusive:

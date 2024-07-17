@@ -2,7 +2,8 @@
 <img src="src/website/spessasynth_logo_rounded.png" width='300' alt='SpessaSynth logo'>
 </p>
 
-SoundFont2 based realtime synthetizer and MIDI player written in JavaScript using Web Audio API. Can also be used as a synthesis library.
+SoundFont2 based realtime synthetizer and MIDI player written in JavaScript using Web Audio API. 
+Can also be used as a library for playing/rendering WAV and MIDI files.
 
 ![SpessaSynth Promotional Image](https://github.com/spessasus/SpessaSynth/assets/95608008/e2e6c4c6-0762-4c11-8887-a2318d431854)
 
@@ -33,7 +34,7 @@ A flexible, powerful, and feature-packed soundfont synthesizer library for the W
 - Written using AudioWorklets (Firefox and Chrome both work perfectly)
 - Can load really large soundfonts (4GB!) (but only on Firefox, Chromium has a memory limit)
 - [Multi Port MIDIs support](../../wiki/About-Multi-Port) (more than 16 channels)
-- MIDI Controller Support (Default supported controllers can be found [here](../../wiki/Synthetizer-Class#supported-controllers)).
+- MIDI Controller Support (Default supported controllers can be found [here](../../wiki/MIDI-Implementation#supported-controllers)).
 - Supports some Roland GS and Yamaha XG sysex messages
 - High performance mode for playing black MIDIs (Don't go too crazy with the amount of notes though)
 - Can be used as a library ([learn more here](../../wiki/Usage-As-Library))

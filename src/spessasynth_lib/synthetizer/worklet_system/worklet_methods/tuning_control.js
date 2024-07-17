@@ -28,13 +28,25 @@ export function transposeAllChannels(semitones, force = false)
  */
 export function transposeChannel(channel, semitones, force=false)
 {
-    semitones += this.transposition;
     const channelObject = this.workletProcessorChannels[channel];
-    if(channelObject.drumChannel && !force)
+    if(!channelObject.drumChannel)
+    {
+        semitones += this.transposition;
+    }
+    const keyShift = Math.floor(semitones);
+    const currentTranspose = channelObject.channelTranspose + channelObject.customControllers[customControllers.channelTranspose] / 100;
+    if(
+        (channelObject.drumChannel && !force)
+        || semitones === currentTranspose
+    )
     {
         return;
     }
-    channelObject.customControllers[customControllers.channelTranspose] = semitones * 100;
+
+    this.stopAll(channel, false);
+    // apply transpose
+    channelObject.channelTranspose = keyShift;
+    channelObject.customControllers[customControllers.channelTranspose] = (semitones - keyShift) * 100;
 }
 
 /**
@@ -86,7 +98,7 @@ export function setModulationDepth(channel, cents)
         so we create a multiplier by divinging cents by 50.
         for example, if we want 100 cents, then multiplier will be 2,
         which for a preset with depth of 50 will create 100.
-     ================*/
+     ================ */
     channelObject.customControllers[customControllers.modulationMultiplier] = cents / 50;
 }
 
@@ -99,6 +111,10 @@ export function setModulationDepth(channel, cents)
  */
 export function pitchWheel(channel, MSB, LSB)
 {
+    if(this.workletProcessorChannels[channel].lockedControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel])
+    {
+        return;
+    }
     const bend = (LSB | (MSB << 7));
     this.callEvent("pitchwheel", {
         channel: channel,
@@ -109,4 +125,46 @@ export function pitchWheel(channel, MSB, LSB)
     this.workletProcessorChannels[channel].voices.forEach(v =>
         computeModulators(v, this.workletProcessorChannels[channel].midiControllers));
     this.sendChannelProperties();
+}
+
+/**
+ * Sets the pressure of the given channel
+ * @this {SpessaSynthProcessor}
+ * @param channel {number} usually 0-15: the channel to change pitch
+ * @param pressure {number} the pressure of the channel
+ */
+export function channelPressure(channel, pressure)
+{
+    const channelObject = this.workletProcessorChannels[channel];
+    channelObject.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelPressure] = pressure << 7;
+    this.workletProcessorChannels[channel].voices.forEach(v =>
+        computeModulators(v, channelObject.midiControllers));
+    this.callEvent("channelpressure",{
+        channel: channel,
+        pressure: pressure
+    });
+}
+
+/**
+ * Sets the pressure of the given note on a specific channel
+ * @this {SpessaSynthProcessor}
+ * @param channel {number} usually 0-15: the channel to change pitch
+ * @param midiNote {number} 0-127
+ * @param pressure {number} the pressure of the note
+ */
+export function polyPressure(channel, midiNote, pressure)
+{
+    this.workletProcessorChannels[channel].voices.forEach(v => {
+        if(v.midiNote !== midiNote)
+        {
+            return;
+        }
+        v.pressure = pressure;
+        computeModulators(v, this.workletProcessorChannels[channel].midiControllers);
+    });
+    this.callEvent("polypressure", {
+        channel: channel,
+        midiNote: midiNote,
+        pressure: pressure
+    });
 }

@@ -1,7 +1,6 @@
 import { getWorkletVoices } from '../worklet_utilities/worklet_voice.js'
 import { generatorTypes } from '../../../soundfont/chunk/generators.js'
 import { computeModulators } from '../worklet_utilities/worklet_modulator.js'
-import { SpessaSynthWarn } from '../../../utils/loggin.js'
 
 /**
  * Append the voices
@@ -9,9 +8,11 @@ import { SpessaSynthWarn } from '../../../utils/loggin.js'
  * @param midiNote {number}
  * @param velocity {number}
  * @param enableDebugging {boolean}
+ * @param sendEvent {boolean}
+ * @param startTime {number}
  * @this {SpessaSynthProcessor}
  */
-export function noteOn(channel, midiNote, velocity, enableDebugging = false)
+export function noteOn(channel, midiNote, velocity, enableDebugging = false, sendEvent = true, startTime = currentTime)
 {
     if (velocity === 0)
     {
@@ -28,12 +29,12 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false)
         return;
     }
 
+    midiNote += this.workletProcessorChannels[channel].channelTranspose;
+
     if(midiNote > 127 || midiNote < 0)
     {
-        SpessaSynthWarn(`Received a noteOn for note`, midiNote, "Ignoring.");
         return;
     }
-
 
     // get voices
     const voices = getWorkletVoices(
@@ -41,7 +42,7 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false)
         midiNote,
         velocity,
         this.workletProcessorChannels[channel].preset,
-        currentTime,
+        startTime,
         sampleRate,
         data => this.sampleDump(data.channel, data.sampleID, data.sampleData),
         this.workletProcessorChannels[channel].cachedVoices,
@@ -65,7 +66,7 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false)
         }
         computeModulators(voice, this.workletProcessorChannels[channel].midiControllers);
         // set initial pan to avoid split second changing from middle to the correct value
-        voice.currentPan = ( (Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan] )) + 500) / 1000) // 0 to 1
+        voice.currentPan = ((Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan] )) + 500) / 1000) // 0 to 1
     });
 
     this.totalVoicesAmount += voices.length;
@@ -75,10 +76,13 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false)
         this.voiceKilling(voices.length);
     }
     channelVoices.push(...voices);
-    this.sendChannelProperties();
-    this.callEvent("noteon", {
-        midiNote: midiNote,
-        channel: channel,
-        velocity: velocity,
-    });
+    if(sendEvent)
+    {
+        this.sendChannelProperties();
+        this.callEvent("noteon", {
+            midiNote: midiNote - this.workletProcessorChannels[channel].channelTranspose,
+            channel: channel,
+            velocity: velocity,
+        });
+    }
 }

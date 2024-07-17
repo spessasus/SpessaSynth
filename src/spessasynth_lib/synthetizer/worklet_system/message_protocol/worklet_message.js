@@ -1,53 +1,58 @@
 /**
  * @enum {number}
- * @property {number} noteOff                    - 0  -> midiNote<number>: Every message needs a channel number (if not relevant or all, set to -1)
+ * // NOTE: Every message needs a channel number (if not relevant or all, set to -1)
+ * @property {number} noteOff                    - 0  -> midiNote<number>
  * @property {number} noteOn                     - 1  -> [midiNote<number>, velocity<number>, enableDebugging<boolean>]
  * @property {number} ccChange                   - 2  -> [ccNumber<number>, ccValue<number>, force<boolean>]
  * @property {number} programChange              - 3  -> [programNumber<number>, userChange<boolean>]
- * @property {number} killNote                   - 4  -> midiNote<number>
- * @property {number} ccReset                    - 5  -> (no data) note: if channel is -1 then reset all channels
- * @property {number} setChannelVibrato          - 6  -> {frequencyHz: number, depthCents: number, delaySeconds: number} note: if channel is -1 then stop all channels note 2: if rate is -1, it means locking
- * @property {number} reloadSoundFont            - 7  -> (no data)
- * @property {number} stopAll                    - 8  -> force<number> (0 false, 1 true) note: if channel is -1 then stop all channels
- * @property {number} killNotes                  - 9  -> amount<number>
- * @property {number} muteChannel                - 10 -> isMuted<boolean>
- * @property {number} addNewChannel              - 11 -> (no data)
- * @property {number} customCcChange             - 12 -> [ccNumber<number>, ccValue<number>]
- * @property {number} debugMessage               - 13 -> (no data)
- * @property {number} systemExclusive            - 14 -> message data <number[]> (without the F0 byte)
- * @property {number} setMasterParameter         - 15 -> [parameter<masterParameterType>, value<number>]
- * @property {number} setDrums                   - 16 -> isDrums<boolean>
- * @property {number} pitchWheel                 - 17 -> [MSB<number>, LSB<number>]
- * @property {number} transpose                  - 18 -> [semitones<number>, force<boolean>] note: if channel is -1 then transpose all channels
- * @property {number} highPerformanceMode        - 19 -> isOn<boolean>
- * @property {number} lockController             - 20 -> [controllerNumber<number>, isLocked<boolean>]
- * @property {number} sequencerSpecific          - 21 -> [messageType<WorkletSequencerMessageType> messageData<any>] note: refer to sequencer_message.js
- * @property {number} requestSynthesizerSnapshot - 22 -> (no data)
+ * @property {number} channelPressure            - 4  -> pressure<number>
+ * @property {number} polyPressure               - 5  -> [midiNote<number>, pressure<number>]
+ * @property {number} killNote                   - 6  -> midiNote<number>
+ * @property {number} ccReset                    - 7  -> (no data) note: if channel is -1 then reset all channels
+ * @property {number} setChannelVibrato          - 8  -> {frequencyHz: number, depthCents: number, delaySeconds: number} note: if channel is -1 then stop all channels note 2: if rate is -1, it means locking
+ * @property {number} reloadSoundFont            - 9  -> (no data)
+ * @property {number} stopAll                    - 10  -> force<number> (0 false, 1 true) note: if channel is -1 then stop all channels
+ * @property {number} killNotes                  - 11  -> amount<number>
+ * @property {number} muteChannel                - 12 -> isMuted<boolean>
+ * @property {number} addNewChannel              - 13 -> (no data)
+ * @property {number} customCcChange             - 14 -> [ccNumber<number>, ccValue<number>]
+ * @property {number} debugMessage               - 15 -> (no data)
+ * @property {number} systemExclusive            - 16 -> message data <number[]> (without the F0 byte)
+ * @property {number} setMasterParameter         - 17 -> [parameter<masterParameterType>, value<number>]
+ * @property {number} setDrums                   - 18 -> isDrums<boolean>
+ * @property {number} pitchWheel                 - 19 -> [MSB<number>, LSB<number>]
+ * @property {number} transpose                  - 20 -> [semitones<number>, force<boolean>] note: if channel is -1 then transpose all channels
+ * @property {number} highPerformanceMode        - 21 -> isOn<boolean>
+ * @property {number} lockController             - 22 -> [controllerNumber<number>, isLocked<boolean>]
+ * @property {number} sequencerSpecific          - 23 -> [messageType<WorkletSequencerMessageType> messageData<any>] note: refer to sequencer_message.js
+ * @property {number} requestSynthesizerSnapshot - 24 -> (no data)
  */
 export const workletMessageType = {
-    noteOff: 0,
-    noteOn: 1,
-    ccChange: 2,
-    programChange: 3,
-    killNote: 4,
-    ccReset: 5,
-    setChannelVibrato: 6,
-    reloadSoundFont: 7,
-    stopAll: 8,
-    killNotes: 9,
-    muteChannel: 10,
-    addNewChannel: 11,
-    customcCcChange: 12,
-    debugMessage: 13,
-    systemExclusive: 14,
-    setMasterParameter: 15,
-    setDrums: 16,
-    pitchWheel: 17,
-    transpose: 18,
-    highPerformanceMode: 19,
-    lockController: 20,
-    sequencerSpecific: 21,
-    requestSynthesizerSnapshot: 22,
+    noteOff:                    0,
+    noteOn:                     1,
+    ccChange:                   2,
+    programChange:              3,
+    channelPressure:            4,
+    polyPressure:               5,
+    killNote:                   6,
+    ccReset:                    7,
+    setChannelVibrato:          8,
+    reloadSoundFont:            9,
+    stopAll:                    10,
+    killNotes:                  11,
+    muteChannel:                12,
+    addNewChannel:              13,
+    customcCcChange:            14,
+    debugMessage:               15,
+    systemExclusive:            16,
+    setMasterParameter:         17,
+    setDrums:                   18,
+    pitchWheel:                 19,
+    transpose:                  20,
+    highPerformanceMode:        21,
+    lockController:             22,
+    sequencerSpecific:          23,
+    requestSynthesizerSnapshot: 24,
 };
 
 /**

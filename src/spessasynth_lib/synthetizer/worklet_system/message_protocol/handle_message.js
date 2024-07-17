@@ -47,6 +47,14 @@ export function handleMessage(message)
             this.programChange(channel, data[0], data[1]);
             break;
 
+        case workletMessageType.channelPressure:
+            this.channelPressure(channel, data);
+            break;
+
+        case workletMessageType.polyPressure:
+            this.polyPressure(channel, data[0], data[1]);
+            break;
+
         case workletMessageType.ccReset:
             if(channel === ALL_CHANNELS_OR_DIFFERENT_ACTION)
             {

@@ -4,12 +4,13 @@ import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE } from '../../synthetizer.js'
 import {
     customControllers,
     customResetArray,
-    dataEntryStates,
+    dataEntryStates, NON_CC_INDEX_OFFSET,
     resetArray,
 } from '../worklet_utilities/worklet_processor_channel.js'
 import { computeModulators } from '../worklet_utilities/worklet_modulator.js'
 import { SpessaSynthInfo } from '../../../utils/loggin.js'
 import { SYNTHESIZER_GAIN } from '../main_processor.js'
+import { modulatorSources } from '../../../soundfont/chunk/modulators.js'
 
 /**
  * @param channel {number}
@@ -24,6 +25,23 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
      * @type {WorkletProcessorChannel}
      */
     const channelObject = this.workletProcessorChannels[channel];
+    // lsb controller values: append them as the lower nibble of the 14 bit value
+    // excluding bank select and data entry as it's handled separately
+    if(
+        controllerNumber >= midiControllers.lsbForControl1ModulationWheel
+        && controllerNumber <= midiControllers.lsbForControl13EffectControl2
+        && controllerNumber !== midiControllers.lsbForControl6DataEntry
+    )
+    {
+        const actualCCNum = controllerNumber - 32;
+        if(channelObject.lockedControllers[actualCCNum])
+        {
+            return;
+        }
+        // append the lower nibble to the main controller
+        channelObject.midiControllers[actualCCNum] = (channelObject.midiControllers[actualCCNum] & 0x3F80) | (controllerValue & 0x7F);
+        channelObject.voices.forEach(v => computeModulators(v, channelObject.midiControllers));
+    }
     switch (controllerNumber) {
         case midiControllers.allNotesOff:
             this.stopAll(channel);
@@ -33,6 +51,7 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
             this.stopAll(channel, true);
             break;
 
+        // special case: bank select
         case midiControllers.bankSelect:
             let bankNr = controllerValue;
             if(!force)
@@ -104,6 +123,7 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
             }
             break;
 
+        // check for RPN and NPRN and data entry
         case midiControllers.RPNLsb:
             channelObject.RPValue = channelObject.RPValue << 7 | controllerValue;
             channelObject.dataEntryState = dataEntryStates.RPFine;
@@ -136,25 +156,26 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
             this.resetControllers(channel);
             break;
 
+        case midiControllers.sustainPedal:
+            if (controllerValue >= 64)
+            {
+                channelObject.holdPedal = true;
+            }
+            else
+            {
+                channelObject.holdPedal = false;
+                channelObject.sustainedVoices.forEach(v => {
+                    this.releaseVoice(v)
+                });
+                channelObject.sustainedVoices = [];
+            }
+            break;
+
+        // default: apply the controller to the table
         default:
             if(channelObject.lockedControllers[controllerNumber])
             {
                 return;
-            }
-            // special case: hold pedal
-            if(controllerNumber === midiControllers.sustainPedal) {
-                if (controllerValue >= 64)
-                {
-                    channelObject.holdPedal = true;
-                }
-                else
-                {
-                    channelObject.holdPedal = false;
-                    channelObject.sustainedVoices.forEach(v => {
-                        this.releaseVoice(v)
-                    });
-                    channelObject.sustainedVoices = [];
-                }
             }
             channelObject.midiControllers[controllerNumber] = controllerValue << 7;
             channelObject.voices.forEach(v => computeModulators(v, channelObject.midiControllers));
@@ -242,6 +263,19 @@ export function resetAllControllers()
         restoreControllerValueEvent(midiControllers.modulationWheel);
         restoreControllerValueEvent(midiControllers.effects3Depth);
         restoreControllerValueEvent(midiControllers.effects1Depth);
+
+        // restore pitch wheel
+        if(this.workletProcessorChannels[channelNumber].lockedControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel])
+        {
+            const val = this.workletProcessorChannels[channelNumber].midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel];
+            const msb = val >> 7;
+            const lsb = val & 0x7F;
+            this.callEvent("pitchwheel", {
+                channel: channelNumber,
+                MSB: msb,
+                LSB: lsb
+            })
+        }
     }
     this.system = DEFAULT_SYNTH_MODE;
 }
@@ -333,7 +367,6 @@ export function setMainVolume(volume)
  * @param pan {number} -1 to 1
  * @this {SpessaSynthProcessor}
  */
-
 export function setMasterPan(pan)
 {
     this.pan = pan;

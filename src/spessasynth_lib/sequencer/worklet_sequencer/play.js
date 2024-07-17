@@ -243,7 +243,7 @@ export function setTimeTicks(ticks)
     this.pausedTime = undefined;
     this.post(
         WorkletSequencerReturnMessageType.timeChange,
-        (currentTime - ticksToSeconds(this.midiData.tempoChanges, ticks, this.midiData.timeDivision)) / this._playbackRate
+        currentTime - ticksToSeconds(this.midiData.tempoChanges, ticks, this.midiData.timeDivision)
     );
     const isNotFinished = this._playTo(0, ticks);
     this._recalculateStartTime(this.playedTime);

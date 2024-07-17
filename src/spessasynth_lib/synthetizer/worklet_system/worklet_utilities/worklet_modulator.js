@@ -12,11 +12,10 @@ import { recalculateVolumeEnvelope } from './volume_envelope.js'
  * Computes a given modulator
  * @param controllerTable {Int16Array} all midi controllers as 14bit values + the non controller indexes, starting at 128
  * @param modulator {Modulator} the modulator to compute
- * @param midiNote {number} the midiNote of the voice belonging to the modulator
- * @param velocity {number} the velocity of the voice belonging to the modulator
+ * @param voice {WorkletVoice} the voice belonging to the modulator
  * @returns {number} the computed value
  */
-export function computeWorkletModulator(controllerTable, modulator, midiNote, velocity)
+export function computeWorkletModulator(controllerTable, modulator, voice)
 {
     if(modulator.transformAmount === 0)
     {
@@ -34,20 +33,23 @@ export function computeWorkletModulator(controllerTable, modulator, midiNote, ve
         switch (modulator.sourceIndex)
         {
             case modulatorSources.noController:
-                rawSourceValue = 16383;
+                rawSourceValue = 16383; // equals to 1
                 break;
 
             case modulatorSources.noteOnKeyNum:
-                rawSourceValue = midiNote << 7;
+                rawSourceValue = voice.midiNote << 7;
                 break;
 
             case modulatorSources.noteOnVelocity:
+                rawSourceValue = voice.velocity << 7;
+                break;
+
             case modulatorSources.polyPressure:
-                rawSourceValue = velocity << 7;
+                rawSourceValue = voice.pressure << 7;
                 break;
 
             default:
-                rawSourceValue = controllerTable[index]; // use the 7 bit value
+                rawSourceValue = controllerTable[index]; // pitch bend and range are stored in the cc table
                 break;
         }
 
@@ -67,20 +69,23 @@ export function computeWorkletModulator(controllerTable, modulator, midiNote, ve
         switch (modulator.secSrcIndex)
         {
             case modulatorSources.noController:
-                rawSecondSrcValue = 16383;// fluid_mod.c line 376
+                rawSecondSrcValue = 16383; // equals to 1
                 break;
 
             case modulatorSources.noteOnKeyNum:
-                rawSecondSrcValue = midiNote << 7;
+                rawSecondSrcValue = voice.midiNote << 7;
                 break;
 
             case modulatorSources.noteOnVelocity:
+                rawSecondSrcValue = voice.velocity << 7;
+                break;
+
             case modulatorSources.polyPressure:
-                rawSecondSrcValue = velocity << 7;
+                rawSecondSrcValue = voice.pressure << 7;
                 break;
 
             default:
-                rawSecondSrcValue = controllerTable[index];
+                rawSecondSrcValue = controllerTable[index]; // pitch bend and range are stored in the cc table
         }
 
     }
@@ -109,7 +114,7 @@ export function computeModulators(voice, controllerTable)
     voice.modulatedGenerators.set(voice.generators);
     // add modulated values
     voice.modulators.forEach(mod => {
-        voice.modulatedGenerators[mod.modulatorDestination] += computeWorkletModulator(controllerTable, mod, voice.midiNote, voice.velocity);
+        voice.modulatedGenerators[mod.modulatorDestination] += computeWorkletModulator(controllerTable, mod, voice);
     });
     recalculateVolumeEnvelope(voice);
 }

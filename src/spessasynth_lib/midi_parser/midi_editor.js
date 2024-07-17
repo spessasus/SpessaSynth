@@ -1,10 +1,6 @@
 import { messageTypes, midiControllers, MidiMessage } from './midi_message.js'
 import { ShiftableByteArray } from '../utils/shiftable_array.js'
-import {
-    SpessaSynthGroupCollapsed,
-    SpessaSynthGroupEnd,
-    SpessaSynthInfo, SpessaSynthWarn,
-} from '../utils/loggin.js'
+import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo, SpessaSynthWarn } from '../utils/loggin.js'
 import { consoleColors } from '../utils/other.js'
 import { DEFAULT_PERCUSSION } from '../synthetizer/synthetizer.js'
 
@@ -77,7 +73,7 @@ function getDrumChange(channel, ticks)
 }
 
 /**
- * Modifies the sequence according to the desired programs and controllers
+ * Allows easy editing of the file
  * @param midi {MIDI}
  * @param desiredProgramChanges {{
  *     channel: number,
@@ -91,8 +87,18 @@ function getDrumChange(channel, ticks)
  *     controllerValue: number,
  * }[]} the controllers to set on given channels. Note that the channel may be more than 16, function will adjust midi ports automatically
  * @param desiredChannelsToClear {number[]} the channels to remove from the sequence. Note that the channel may be more than 16, function will adjust midi ports automatically
+ * @param desiredChannelsToTranspose {{
+ *     channel: number,
+ *     keyShift: number
+ * }[]} the channels to transpose. Note that the channel may be more than 16, function will adjust midi ports automatically
  */
-export function modifyMIDI(midi, desiredProgramChanges = [], desiredControllerChanges = [], desiredChannelsToClear = [])
+export function modifyMIDI(
+    midi,
+    desiredProgramChanges = [],
+    desiredControllerChanges = [],
+    desiredChannelsToClear = [],
+    desiredChannelsToTranspose = []
+)
 {
     SpessaSynthGroupCollapsed("%cApplying changes to the MIDI file...", consoleColors.info);
     /**
@@ -368,6 +374,42 @@ export function modifyMIDI(midi, desiredProgramChanges = [], desiredControllerCh
 
 
     });
+
+    // transpose channels
+    for(const transpose of desiredChannelsToTranspose)
+    {
+        const midiChannel = transpose.channel % 16;
+        const port = Math.floor(transpose.channel / 16);
+        const keyShift = transpose.keyShift;
+        SpessaSynthInfo(`%cTransposing channel %c${transpose.channel}%c by %c${keyShift}`,
+            consoleColors.info,
+            consoleColors.recognized,
+            consoleColors.info,
+            consoleColors.value);
+        midi.tracks.forEach((track, trackNum)=> {
+            if(
+                midi.midiPorts[trackNum] !== port
+                || !midi.usedChannelsOnTrack[trackNum].has(midiChannel)
+            )
+            {
+                return;
+            }
+            const onStatus = messageTypes.noteOn | midiChannel;
+            const offStatus = messageTypes.noteOff | midiChannel;
+            const polyStatus = messageTypes.polyPressure | midiChannel;
+            track.forEach(event => {
+                if(
+                    (event.messageStatusByte !== onStatus
+                    && event.messageStatusByte !== offStatus
+                    && event.messageStatusByte !== polyStatus)
+                )
+                {
+                    return;
+                }
+                event.messageData[0] = Math.max(0, Math.min(127, event.messageData[0] + keyShift));
+            })
+        });
+    }
     SpessaSynthGroupEnd();
 }
 
@@ -378,6 +420,13 @@ export function modifyMIDI(midi, desiredProgramChanges = [], desiredControllerCh
  */
 export function applySnapshotToMIDI(midi, snapshot)
 {
+    /**
+     * @type {{
+     *     channel: number,
+     *     keyShift: number
+     * }[]}
+     */
+    const channelsToTranspose = [];
     /**
      * @type {number[]}
      */
@@ -406,6 +455,13 @@ export function applySnapshotToMIDI(midi, snapshot)
             channelsToClear.push(channelNumber);
             return;
         }
+        if(channel.channelTranspose !== 0)
+        {
+            channelsToTranspose.push({
+                channel: channelNumber,
+                keyShift: channel.channelTranspose,
+            });
+        }
         if(channel.lockPreset)
         {
             programChanges.push({
@@ -417,7 +473,7 @@ export function applySnapshotToMIDI(midi, snapshot)
         }
         // check for locked controllers and change them appropriately
         channel.lockedControllers.forEach((l, ccNumber) => {
-            if(!l)
+            if(!l || ccNumber > 127)
             {
                 return;
             }
@@ -429,5 +485,5 @@ export function applySnapshotToMIDI(midi, snapshot)
             });
         });
     })
-    modifyMIDI(midi, programChanges, controllerChanges, channelsToClear);
+    modifyMIDI(midi, programChanges, controllerChanges, channelsToClear, channelsToTranspose);
 }

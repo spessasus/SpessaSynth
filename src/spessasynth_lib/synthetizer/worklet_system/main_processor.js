@@ -17,7 +17,8 @@ import {
 } from './worklet_methods/controller_control.js'
 import { callEvent, post, sendChannelProperties } from './message_protocol/message_sending.js'
 import {
-    pitchWheel,
+    channelPressure,
+    pitchWheel, polyPressure,
     setChannelTuning,
     setMasterTuning, setModulationDepth,
     transposeAllChannels,
@@ -269,12 +270,13 @@ SpessaSynthProcessor.prototype.systemExclusive = systemExclusive;
 // note messages related
 SpessaSynthProcessor.prototype.noteOn = noteOn;
 SpessaSynthProcessor.prototype.noteOff = noteOff;
+SpessaSynthProcessor.prototype.polyPressure = polyPressure;
 SpessaSynthProcessor.prototype.killNote = killNote;
 SpessaSynthProcessor.prototype.stopAll = stopAll;
 SpessaSynthProcessor.prototype.stopAllChannels = stopAllChannels;
 SpessaSynthProcessor.prototype.muteChannel = muteChannel;
 
-// vustom vibrato related
+// custom vibrato related
 SpessaSynthProcessor.prototype.setVibrato = setVibrato;
 SpessaSynthProcessor.prototype.disableAndLockVibrato = disableAndLockVibrato;
 
@@ -285,6 +287,7 @@ SpessaSynthProcessor.prototype.dataEntryFine = dataEntryFine;
 // channel related
 SpessaSynthProcessor.prototype.createWorkletChannel = createWorkletChannel;
 SpessaSynthProcessor.prototype.controllerChange = controllerChange;
+SpessaSynthProcessor.prototype.channelPressure = channelPressure;
 SpessaSynthProcessor.prototype.resetAllControllers = resetAllControllers;
 SpessaSynthProcessor.prototype.resetControllers = resetControllers;
 SpessaSynthProcessor.prototype.resetParameters = resetParameters;

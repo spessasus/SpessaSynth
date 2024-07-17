@@ -83,10 +83,10 @@ export function getChannel(statusByte) {
 export const messageTypes = {
     noteOff: 0x80,
     noteOn: 0x90,
-    noteAftertouch: 0xA0,
+    polyPressure: 0xA0,
     controllerChange: 0xB0,
     programChange: 0xC0,
-    channelAftertouch: 0xD0,
+    channelPressure: 0xD0,
     pitchBend: 0xE0,
     systemExclusive: 0xF0,
     timecode: 0xF1,

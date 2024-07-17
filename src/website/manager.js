@@ -18,7 +18,7 @@ import { closeNotification, showNotification } from './js/notification/notificat
 import { keybinds } from './js/keybinds.js'
 import { formatTime } from '../spessasynth_lib/utils/other.js'
 import { audioBufferToWav } from '../spessasynth_lib/utils/buffer_to_wav.js'
-import { applySnapshotToMIDI } from '../spessasynth_lib/midi_parser/apply_snapshot.js'
+import { applySnapshotToMIDI } from '../spessasynth_lib/midi_parser/midi_editor.js'
 import { writeMIDIFile } from '../spessasynth_lib/midi_parser/midi_writer.js'
 
 const RENDER_AUDIO_TIME_INTERVAL = 1000;
@@ -308,7 +308,7 @@ class Manager
             {
                 chorusEnabled: true,
                 chorusConfig: undefined,
-                reverbImpulseResponse:  this.impulseResponse,
+                reverbImpulseResponse: this.impulseResponse,
                 reverbEnabled: true
             });
         this.synth.eventHandler.addEvent("soundfonterror", "manager-sf-error", e => {
