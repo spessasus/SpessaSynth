@@ -5,6 +5,7 @@ import {MIDI} from "../spessasynth_lib/midi_parser/midi_loader.js";
 
 import { formatTitle } from '../spessasynth_lib/utils/other.js'
 import { showNotification } from './js/notification/notification.js'
+import { LocaleManager } from './locale/locale_manager.js'
 
 /**
  * main.js
@@ -189,7 +190,7 @@ async function replaceFont(fontName)
 
         if(!window.manager) {
             // prepare the manager
-            window.manager = new Manager(audioContextMain, soundFontParser);
+            window.manager = new Manager(audioContextMain, soundFontParser, localeManager);
             window.TITLE = window.manager.localeManager.getLocaleString("locale.titleMessage");
             titleMessage.innerText = "Initializing...";
             await manager.ready;
@@ -242,7 +243,7 @@ document.body.onclick = async () =>
         window.audioContextMain = new context({sampleRate: SAMPLE_RATE});
         if(window.soundFontParser) {
             // prepare midi interface
-            window.manager = new Manager(audioContextMain, soundFontParser);
+            window.manager = new Manager(audioContextMain, soundFontParser, localeManager);
             window.TITLE = window.manager.localeManager.getLocaleString("locale.titleMessage")
             titleMessage.innerText = "Initializing..."
             await manager.ready;
@@ -256,6 +257,8 @@ document.body.onclick = async () =>
  * @type {{name: string, size: number}[]}
  */
 let soundFonts = [];
+
+const localeManager = new LocaleManager(navigator.language.split("-")[0].toLowerCase());
 
 // load the list of soundfonts
 fetch("soundfonts").then(async r => {
