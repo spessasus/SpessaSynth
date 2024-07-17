@@ -206,6 +206,11 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
      * @returns {boolean} true
      */
     process(inputs, outputs) {
+        if(this.processTickCallback)
+        {
+            this.processTickCallback();
+        }
+
         // for every channel
         let totalCurrentVoices = 0;
         this.workletProcessorChannels.forEach((channel, index) => {
@@ -242,11 +247,6 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
         {
             this.totalVoicesAmount = totalCurrentVoices;
             this.sendChannelProperties();
-        }
-
-        if(this.processTickCallback)
-        {
-            this.processTickCallback();
         }
         return true;
     }

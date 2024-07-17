@@ -6,6 +6,7 @@ import { _playTo, _recalculateStartTime, play, setTimeTicks } from './play.js'
 import { messageTypes, midiControllers } from '../../midi_parser/midi_message.js'
 import { post, processMessage, sendMIDIMessage } from './events.js'
 import { SpessaSynthWarn } from '../../utils/loggin.js'
+import { MIDI_CHANNEL_COUNT } from '../../synthetizer/synthetizer.js'
 
 class WorkletSequencer
 {
@@ -159,7 +160,7 @@ class WorkletSequencer
         this.synth.stopAllChannels();
         if(this.sendMIDIMessages)
         {
-            for (let c = 0; c < 16; c++)
+            for (let c = 0; c < MIDI_CHANNEL_COUNT; c++)
             {
                 this.sendMIDIMessage([messageTypes.controllerChange | c, 120, 0]); // all notes off
                 this.sendMIDIMessage([messageTypes.controllerChange | c, 123, 0]); // all sound off

@@ -1,5 +1,6 @@
 import { getEvent, messageTypes, midiControllers } from '../../midi_parser/midi_message.js'
 import { WorkletSequencerReturnMessageType } from './sequencer_message.js'
+import { MIDI_CHANNEL_COUNT } from '../../synthetizer/synthetizer.js'
 
 
 // an array with preset default values
@@ -23,14 +24,18 @@ defaultControllerArray[midiControllers.effects1Depth] = 40;
 export function _playTo(time, ticks = undefined)
 {
     this.oneTickToSeconds = 60 / (120 * this.midiData.timeDivision);
-    // process every non note message from the start
+    // reset
     this.synth.resetAllControllers();
     if(this.sendMIDIMessages)
     {
         this.sendMIDIMessage([messageTypes.reset]);
+        for(let ch = 0; ch < MIDI_CHANNEL_COUNT; ch++)
+        {
+            this.sendMIDIMessage([messageTypes.controllerChange | ch, midiControllers.resetAllControllers, 0]);
+        }
     }
-
     this._resetTimers()
+
     /**
      * save pitch bends here and send them only after
      * @type {number[]}
@@ -89,6 +94,7 @@ export function _playTo(time, ticks = undefined)
                 const controllerNumber = event.messageData[0];
                 if(
                     controllerNumber === midiControllers.dataDecrement           ||
+                    controllerNumber === midiControllers.dataIncrement           ||
                     controllerNumber === midiControllers.dataEntryMsb            ||
                     controllerNumber === midiControllers.dataDecrement           ||
                     controllerNumber === midiControllers.lsbForControl6DataEntry ||
@@ -103,7 +109,7 @@ export function _playTo(time, ticks = undefined)
                 {
                     if(this.sendMIDIMessages)
                     {
-                        this.sendMIDIMessage([messageTypes.controllerChange | channel, controllerNumber, event.messageData[1]])
+                        this.sendMIDIMessage([messageTypes.controllerChange | (channel % 16), controllerNumber, event.messageData[1]])
                     }
                     else
                     {
@@ -143,13 +149,13 @@ export function _playTo(time, ticks = undefined)
         // for all 16 channels
         for (let channelNumber = 0; channelNumber < 16; channelNumber++) {
             // send saved pitch bend
-            this.sendMIDIMessage([messageTypes.pitchBend | channelNumber, pitchBends[channelNumber] & 0x7F, pitchBends[channelNumber] >> 7]);
+            this.sendMIDIMessage([messageTypes.pitchBend | (channelNumber % 16), pitchBends[channelNumber] & 0x7F, pitchBends[channelNumber] >> 7]);
 
             // every controller that has changed
             savedControllers[channelNumber].forEach((value, index) => {
-                if(value !== defaultControllerArray[channelNumber])
+                if(value !== defaultControllerArray[index])
                 {
-                    this.sendMIDIMessage([messageTypes.controllerChange | channelNumber, index, value])
+                    this.sendMIDIMessage([messageTypes.controllerChange | (channelNumber % 16), index, value])
                 }
             })
         }

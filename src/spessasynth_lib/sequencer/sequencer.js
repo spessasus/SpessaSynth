@@ -57,12 +57,21 @@ export class Sequencer
 
         this.loadNewSongList(parsedMidis);
 
-        document.addEventListener("close", () => {
-            if(this.MIDIout)
-            {
-                this.MIDIout.send([messageTypes.reset]);
-            }
-        })
+        window.addEventListener("beforeunload", this.resetMIDIOut.bind(this))
+    }
+
+    resetMIDIOut()
+    {
+        if(!this.MIDIout)
+        {
+            return;
+        }
+        for (let i = 0; i < 16; i++)
+        {
+            this.MIDIout.send([messageTypes.controllerChange | i, 120, 0]); // all notes off
+            this.MIDIout.send([messageTypes.controllerChange | i, 123, 0]); // all sound off
+        }
+        this.MIDIout.send([messageTypes.reset]); // reset
     }
 
     set loop(value)
@@ -285,13 +294,7 @@ export class Sequencer
      */
     connectMidiOutput(output)
     {
-        if(this.MIDIout)
-        {
-            for (let i = 0; i < 16; i++) {
-                this.MIDIout.send([messageTypes.controllerChange | i, 120, 0]); // all notes off
-                this.MIDIout.send([messageTypes.controllerChange | i, 123, 0]); // all sound off
-            }
-        }
+        this.resetMIDIOut();
         this.MIDIout = output;
         this._sendMessage(WorkletSequencerMessageType.changeMIDIMessageSending, output !== undefined);
         this.currentTime -= 0.1;

@@ -16,7 +16,8 @@ export function _processEvent(event, trackIndex)
     if(this.ignoreEvents) return;
     if(this.sendMIDIMessages)
     {
-        if(event.messageStatusByte >= 0x80) {
+        if(event.messageStatusByte >= 0x80)
+        {
             this.sendMIDIMessage([event.messageStatusByte, ...event.messageData]);
             return;
         }

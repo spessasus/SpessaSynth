@@ -23,7 +23,7 @@ export const WORKLET_PROCESSOR_NAME = "spessasynth-worklet-system";
 export const VOICE_CAP = 450;
 
 export const DEFAULT_PERCUSSION = 9;
-export const DEFAULT_CHANNEL_COUNT = 16;
+export const MIDI_CHANNEL_COUNT = 16;
 export const DEFAULT_SYNTH_MODE = "gs";
 
 export class Synthetizer {
@@ -60,7 +60,7 @@ export class Synthetizer {
          * @type {number}
          * @private
          */
-        this._outputsAmount = DEFAULT_CHANNEL_COUNT;
+        this._outputsAmount = MIDI_CHANNEL_COUNT;
 
         /**
          * the amount of midi channels
