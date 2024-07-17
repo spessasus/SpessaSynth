@@ -116,10 +116,10 @@ The complete GUI for spessasynth_lib, allowing remixing experimenting and playin
  - **And You!** - for checking out this project. I hope you like it :)
 
 ### Major releases
-- 0.0.1 - bc5c6516ae7edc94656b5df75d254a29280caa18 - the initial release
-- 1.0.0 - 45c23d1c2906b2dec202c0533a9737bd1fa6b3c4 - removed the 2 sample limit(the biggest problem program faced so far)
-- 2.0.0 - 350e4db90210375da27e393393df743be2137d59 - implemented the worklet system and added support for modulators
-- 3.0.0 - b7f9e382a2f62eef462755ac9ebfe603663e4106 - everything moved to audioWorkletGlobalScope which allows for offline audio rendering
+- [0.0.1](https://github.com/spessasus/SpessaSynth/commit/bc5c6516ae7edc94656b5df75d254a29280caa18) - the initial release
+- [1.0.0](https://github.com/spessasus/SpessaSynth/commit/45c23d1c2906b2dec202c0533a9737bd1fa6b3c4) - removed the 2 sample limit(the biggest problem program faced so far)
+- [2.0.0](https://github.com/spessasus/SpessaSynth/commit/350e4db90210375da27e393393df743be2137d59) - implemented the worklet system and added support for modulators
+- [3.0.0](https://github.com/spessasus/SpessaSynth/commit/b7f9e382a2f62eef462755ac9ebfe603663e4106) - everything moved to audioWorkletGlobalScope which allows for offline audio rendering
 
 ### License
 Copyright © 2024 Spessasus. Licensed under the MIT License.
