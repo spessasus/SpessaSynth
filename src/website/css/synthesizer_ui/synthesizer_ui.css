@@ -24,15 +24,17 @@
 }
 
 .controls_wrapper{
-    display: none;
+    display: flex;
     flex-wrap: wrap;
     align-items: stretch;
     justify-content: center;
     margin: 1em;
 }
 
-.controls_wrapper_show{
-    display: flex !important;
+.main_controller_element
+{
+    margin-left: 0.5em;
+    margin-right: 0.5em;
 }
 
 .controller_element
@@ -55,6 +57,7 @@
     transition: transform 0.2s ease;
     width: 100%;
     z-index: 127;
+    padding: 0.5em;
 }
 
 .synthui_controller_light
@@ -91,9 +94,25 @@
     color: black;
 }
 
+.mute_button svg{
+    transition: transform 0.2s ease;
+}
+
+.mute_button:active{
+    filter: brightness(0.8);
+    transform: scale(var(--active-scale));
+}
+
 .mute_button:hover{
     cursor: pointer;
+}
 
+.mute_button:hover svg{
+    transform: scale(1.1) rotate(5deg);
+}
+
+.mute_button:hover path{
+    filter: drop-shadow(0 0 1px currentColor);
 }
 
 .voice_reset{

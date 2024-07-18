@@ -108,11 +108,9 @@ class SynthetizerUI
             clearTimeout(this.animationId);
         }
         const controller = document.getElementsByClassName("synthui_controller")[0];
-        const controlsWrapper = controller.getElementsByClassName("controls_wrapper")[0];
         this.isShown = !this.isShown;
         if(this.isShown)
         {
-            controlsWrapper.classList.add("controls_wrapper_show");
             controller.style.display = "block";
             document.getElementsByClassName("top_part")[0].classList.add("synthui_shown");
             this.showControllers();
@@ -127,7 +125,6 @@ class SynthetizerUI
             this.hideControllers();
             controller.classList.remove("synthui_controller_show");
             this.animationId = setTimeout(() => {
-                controlsWrapper.classList.remove("controls_wrapper_show");
                 controller.style.display = "none";
             }, 200);
         }

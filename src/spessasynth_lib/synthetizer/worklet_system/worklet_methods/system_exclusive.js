@@ -47,7 +47,7 @@ export function systemExclusive(messageData, channelOffset = 0)
             {
                 // main volume
                 const vol = messageData[5] << 7 | messageData[4];
-                this.setMainVolume(vol / 16384);
+                this.setMIDIVolume(vol / 16384);
                 SpessaSynthInfo(`%cMaster Volume. Volume: %c${vol}`,
                     consoleColors.info,
                     consoleColors.value);
@@ -214,7 +214,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                             consoleColors.value,
                             consoleColors.info,
                             consoleColors.value);
-                        this.setMainVolume(messageValue / 127);
+                        this.setMIDIVolume(messageValue / 127);
                         return;
                     }
                 }
@@ -230,7 +230,7 @@ export function systemExclusive(messageData, channelOffset = 0)
             if(messageData[2] === 0x16 && messageData[3] === 0x12 && messageData[4] === 0x10)
             {
                 // this is a roland master volume message
-                this.setMainVolume(messageData[7] / 100);
+                this.setMIDIVolume(messageData[7] / 100);
                 SpessaSynthInfo(`%cRoland Master Volume control set to: %c${messageData[7]}%c via: %c${arrayToHexString(messageData)}`,
                     consoleColors.info,
                     consoleColors.value,

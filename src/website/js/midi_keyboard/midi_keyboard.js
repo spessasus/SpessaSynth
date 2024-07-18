@@ -84,7 +84,17 @@ class MidiKeyboard
             {
                 this.selectChannel(e.channel);
             }
-        })
+        });
+
+        this.synth.eventHandler.addEvent("mutechannel", "keyboard-mute-channel", e => {
+            if(e.isMuted)
+            {
+                for (let i = 0; i < 128; i++)
+                {
+                    this.releaseNote(i, e.channel);
+                }
+            }
+        });
     }
 
     /**
@@ -380,7 +390,6 @@ class MidiKeyboard
         {
             const spread = GLOW_PX * brightness;
             key.style.boxShadow = `${color} 0px 0px ${spread}px ${spread / 5}px`;
-            console.log(spread, spread / 10)
         }
         /**
          * @type {string[]}
@@ -412,7 +421,12 @@ class MidiKeyboard
         {
             return;
         }
-        pressedColors.splice(pressedColors.findLastIndex(v => v === this.channelColors[channel]), 1);
+        const colorIndex = pressedColors.findLastIndex(v => v === this.channelColors[channel]);
+        if(colorIndex === -1)
+        {
+            return;
+        }
+        pressedColors.splice(colorIndex, 1);
         key.style.background = pressedColors[pressedColors.length - 1];
         if(this.mode === "dark")
         {

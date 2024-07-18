@@ -22,6 +22,7 @@ export function createMainSynthController()
         0,
         VOICE_CAP);
     this.voiceMeter.bar.classList.add("voice_meter_bar_smooth");
+    this.voiceMeter.div.classList.add("main_controller_element");
 
     /**
      * Volume controller
@@ -32,13 +33,14 @@ export function createMainSynthController()
         this.locale,
         [],
         0,
-        100,
+        200,
         true,
         v => {
             this.synth.setMainVolume(Math.round(v) / 100);
             this.volumeController.update(v);
         });
     this.volumeController.bar.classList.add("voice_meter_bar_smooth");
+    this.volumeController.div.classList.add("main_controller_element");
     this.volumeController.update(100);
 
     /**
@@ -58,6 +60,7 @@ export function createMainSynthController()
             this.panController.update(v);
         });
     this.panController.bar.classList.add("voice_meter_bar_smooth");
+    this.panController.div.classList.add("main_controller_element");
     this.panController.update(0);
 
     /**
@@ -77,6 +80,7 @@ export function createMainSynthController()
             this.transposeController.update(Math.round(v * 2) / 2)
         });
     this.transposeController.bar.classList.add("voice_meter_bar_smooth");
+    this.transposeController.div.classList.add("main_controller_element");
     this.transposeController.update(0);
 
     // note killer
@@ -85,16 +89,53 @@ export function createMainSynthController()
     this.locale.bindObjectProperty(midiPanicButton, "title", LOCALE_PATH + "midiPanic.description");
 
     midiPanicButton.classList.add("synthui_button");
+    midiPanicButton.classList.add("main_controller_element");
     midiPanicButton.onclick = () => this.synth.stopAll(true);
 
+    // system reset button
     let resetCCButton = document.createElement("button");
     this.locale.bindObjectProperty(resetCCButton, "textContent", LOCALE_PATH + "systemReset.title");
     this.locale.bindObjectProperty(resetCCButton, "title", LOCALE_PATH + "systemReset.description");
 
     resetCCButton.classList.add("synthui_button");
+    resetCCButton.classList.add("main_controller_element");
     resetCCButton.onclick = () => this.synth.resetControllers();
 
-    // create the main controller now, to give the button a variable to work with
+
+
+    // black midi mode toggle
+    const highPerfToggle = document.createElement("button");
+    this.locale.bindObjectProperty(highPerfToggle, "textContent", LOCALE_PATH + "blackMidiMode.title");
+    this.locale.bindObjectProperty(highPerfToggle, "title", LOCALE_PATH + "blackMidiMode.description");
+
+    highPerfToggle.classList.add("synthui_button");
+    highPerfToggle.classList.add("main_controller_element");
+    highPerfToggle.onclick = () => {
+        this.synth.highPerformanceMode = !this.synth.highPerformanceMode;
+    }
+
+    // vibrato reset
+    const vibratoReset = document.createElement("button");
+    this.locale.bindObjectProperty(vibratoReset, "textContent", LOCALE_PATH + "disableCustomVibrato.title");
+    this.locale.bindObjectProperty(vibratoReset, "title", LOCALE_PATH + "disableCustomVibrato.description");
+
+    vibratoReset.classList.add("synthui_button");
+    vibratoReset.classList.add("main_controller_element");
+    vibratoReset.onclick = () => {
+        this.synth.lockAndResetChannelVibrato();
+        vibratoReset.parentNode.removeChild(vibratoReset);
+    }
+
+    // help button
+    const helpButton = document.createElement("a");
+    helpButton.href = "https://github.com/spessasus/SpessaSynth/wiki/How-To-Use-App#synthesizer-controller";
+    helpButton.target = "#";
+    helpButton.classList.add("main_controller_element");
+    helpButton.classList.add("synthui_button");
+    this.locale.bindObjectProperty(helpButton, "textContent", LOCALE_PATH + "helpButton.title");
+    this.locale.bindObjectProperty(helpButton, "title", LOCALE_PATH + "helpButton.description");
+
+    // main controller
     let controller = document.createElement("div");
     controller.classList.add("synthui_controller");
     this.uiDiv.appendChild(controller);
@@ -109,27 +150,6 @@ export function createMainSynthController()
         this.toggleVisibility();
     }
 
-    // black midi mode toggle
-    const highPerfToggle = document.createElement("button");
-    this.locale.bindObjectProperty(highPerfToggle, "textContent", LOCALE_PATH + "blackMidiMode.title");
-    this.locale.bindObjectProperty(highPerfToggle, "title", LOCALE_PATH + "blackMidiMode.description");
-
-    highPerfToggle.classList.add("synthui_button");
-    highPerfToggle.onclick = () => {
-        this.synth.highPerformanceMode = !this.synth.highPerformanceMode;
-    }
-
-    // vibrato reset
-    const vibratoReset = document.createElement("button");
-    this.locale.bindObjectProperty(vibratoReset, "textContent", LOCALE_PATH + "disableCustomVibrato.title");
-    this.locale.bindObjectProperty(vibratoReset, "title", LOCALE_PATH + "disableCustomVibrato.description");
-
-    vibratoReset.classList.add("synthui_button");
-    vibratoReset.onclick = () => {
-        this.synth.lockAndResetChannelVibrato();
-        vibratoReset.parentNode.removeChild(vibratoReset);
-    }
-
     // meters
     controlsWrapper.appendChild(this.volumeController.div);
     controlsWrapper.appendChild(this.panController.div);
@@ -139,6 +159,7 @@ export function createMainSynthController()
     controlsWrapper.appendChild(resetCCButton);
     controlsWrapper.appendChild(highPerfToggle);
     controlsWrapper.appendChild(vibratoReset);
+    controlsWrapper.appendChild(helpButton);
 
     /**
      * @type {Meter[]}
@@ -157,7 +178,9 @@ export function createMainSynthController()
         resetCCButton,
         highPerfToggle,
         vibratoReset,
-        showControllerButton];
+        showControllerButton,
+        helpButton
+    ];
     // main synth div
     this.uiDiv.appendChild(this.voiceMeter.div);
     this.uiDiv.appendChild(showControllerButton);
@@ -173,7 +196,6 @@ export function createMainSynthController()
             return;
         }
         controller.classList.remove("synthui_controller_show");
-        controlsWrapper.classList.remove("controls_wrapper_show");
         this.isShown = false;
         this.hideControllers();
     })

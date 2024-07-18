@@ -82,6 +82,7 @@ export function setDrums(channel, isDrum)
         channel: channel,
         isDrumChannel: channelObject.drumChannel
     });
+    this.sendChannelProperties();
 }
 
 /**

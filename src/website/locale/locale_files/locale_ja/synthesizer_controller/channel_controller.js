@@ -52,8 +52,12 @@ export const channelControllerLocale = {
         description: "プログラム変更を許可するためにチャンネル {0} のロックを解除"
     },
 
-    muteButton: {
+    soloButton: {
         description: "チャンネル {0} を単独再生"
+    },
+
+    muteButton: {
+        description: "チャンネル {0} をミュート/ミュート解除"
     },
 
     drumToggleButton: {

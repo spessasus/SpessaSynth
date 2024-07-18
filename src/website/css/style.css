@@ -24,6 +24,7 @@
     --top-color: linear-gradient(31deg, var(--top-color-start), var(--top-color-end));
 
     --primary-border-radius: 0.5rem;
+    --active-scale: 0.9;
 
     /*thanks for this bezier mozilla devtools*/
     --bouncy-transition: cubic-bezier(.68,-0.55,.27,1.55);

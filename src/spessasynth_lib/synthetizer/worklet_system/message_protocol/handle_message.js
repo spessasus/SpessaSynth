@@ -139,7 +139,7 @@ export function handleMessage(message)
                     break;
 
                 case masterParameterType.mainVolume:
-                    this.setMainVolume(value);
+                    this.setMasterGain(value);
                     break;
 
                 case masterParameterType.voicesCap:

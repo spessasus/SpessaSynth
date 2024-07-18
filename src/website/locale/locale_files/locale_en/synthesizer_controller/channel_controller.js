@@ -52,8 +52,12 @@ export const channelControllerLocale = {
         description: "Unlock channel {0} to allow program changes"
     },
 
-    muteButton: {
+    soloButton: {
         description: "Solo on channel {0}"
+    },
+
+    muteButton: {
+        description: "Mute/unmute channel {0}"
     },
 
     drumToggleButton: {

@@ -64,6 +64,14 @@ input:checked + .switch_slider {
     border: var(--border-color) 1px solid;
 }
 
-input:checked + .switch_slider:before {
+input:checked + .switch_slider::before {
     transform: translate(calc(var(--track-width) - var(--thumb-size) * 0.66), -50%);
+}
+
+.switch:active .switch_slider::before{
+    transform: translate(calc(var(--track-width) - var(--thumb-size) * 1.2), -50%);
+}
+
+.switch:active input:checked + .switch_slider::before{
+    transform: translate(calc(var(--track-width) - var(--thumb-size) * 0.95), -50%);
 }

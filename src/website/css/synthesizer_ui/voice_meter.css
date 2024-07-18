@@ -21,7 +21,7 @@
 }
 
 .voice_meter_light_color{
-    filter: brightness(3);
+    filter: brightness(1.4);
 }
 
 .voice_meter_bar_smooth{

@@ -52,5 +52,11 @@ export const synthesizerControllerLocale = {
         description: "カスタム（NRPN）ビブラートを永久に無効化。再度有効化するにはウェブサイトをリロード"
     },
 
+    helpButton: {
+        title: "ヘルプ",
+        description: "使用ガイドを表示します"
+    },
+
+
     channelController: channelControllerLocale
 }

@@ -5,7 +5,7 @@ const TC_DARK = {
 };
 const TC_LIGHT = {
     start: "#bbb",
-    end: "#ddd"
+    end: "#f0f0f0"
 };
 
 // font color

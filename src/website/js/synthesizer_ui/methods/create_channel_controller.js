@@ -13,6 +13,7 @@
  *     preset: Selector,
  *     presetReset: HTMLDivElement,
  *     drumsToggle: HTMLDivElement,
+ *     soloButton: HTMLDivElement,
  *     muteButton: HTMLDivElement
  * }} ChannelController
  */
@@ -20,7 +21,14 @@
 import { Meter } from './synthui_meter.js'
 import { LOCALE_PATH } from '../synthetizer_ui.js'
 import { midiControllers } from '../../../../spessasynth_lib/midi_parser/midi_message.js'
-import { getDrumsSvg, getLoopSvg, getMicSvg, getMuteSvg, getNoteSvg, getVolumeSvg } from '../../icons.js'
+import {
+    getDrumsSvg,
+    getEmptyMicSvg,
+    getMicSvg,
+    getMuteSvg,
+    getNoteSvg, getUnlockSVG,
+    getVolumeSvg,
+} from '../../icons.js'
 import { DEFAULT_PERCUSSION } from '../../../../spessasynth_lib/synthetizer/synthetizer.js'
 import { Selector } from './synthui_selector.js'
 import {
@@ -30,6 +38,8 @@ import {
     NON_CC_INDEX_OFFSET
 } from '../../../../spessasynth_lib/synthetizer/worklet_system/worklet_utilities/worklet_processor_channel.js'
 import { modulatorSources } from '../../../../spessasynth_lib/soundfont/chunk/modulators.js'
+
+const ICON_SIZE = 32;
 
 /**
  * Creates a new channel controller js
@@ -188,7 +198,7 @@ export function createChannelController(channelNumber)
     controller.appendChild(presetSelector.mainDiv);
 
     // preset reset
-    presetReset.innerHTML = getLoopSvg(32);
+    presetReset.innerHTML = getUnlockSVG(ICON_SIZE);
     this.locale.bindObjectProperty(presetReset, "title", LOCALE_PATH + "channelController.presetReset.description", [channelNumber + 1]);
     presetReset.classList.add("controller_element");
     presetReset.classList.add("voice_reset");
@@ -198,13 +208,14 @@ export function createChannelController(channelNumber)
     }
     controller.appendChild(presetReset);
 
-    // mute button
-    const muteButton = document.createElement("div");
-    muteButton.innerHTML = getVolumeSvg(32);
-    this.locale.bindObjectProperty(muteButton, "title", LOCALE_PATH + "channelController.muteButton.description", [channelNumber + 1]);
-    muteButton.classList.add("controller_element");
-    muteButton.classList.add("mute_button");
-    muteButton.onclick = () => {
+    // solo button
+    const soloButton = document.createElement("div");
+    soloButton.innerHTML = getEmptyMicSvg(ICON_SIZE);
+    this.locale.bindObjectProperty(soloButton, "title", LOCALE_PATH + "channelController.soloButton.description", [channelNumber + 1]);
+    soloButton.classList.add("controller_element");
+    soloButton.classList.add("mute_button");
+    soloButton.onclick = () => {
+        // toggle solo
         if(this.soloChannels.has(channelNumber))
         {
             this.soloChannels.delete(channelNumber);
@@ -213,34 +224,68 @@ export function createChannelController(channelNumber)
         {
             this.soloChannels.add(channelNumber);
         }
-        if(this.soloChannels.size === 0)
+        if(this.soloChannels.size === 0 || this.soloChannels.size >= this.synth.channelsAmount)
         {
+            // no channels or all channels are soloed, unmute everything
             for (let i = 0; i < this.synth.channelsAmount; i++)
             {
-                this.controllers[i].muteButton.innerHTML = getVolumeSvg(32);
-                this.synth.muteChannel(i, false);
+                this.controllers[i].soloButton.innerHTML = getEmptyMicSvg(ICON_SIZE);
+                this.synth.muteChannel(i, this.controllers[i].muteButton.hasAttribute("is_muted"));
+            }
+            if(this.soloChannels.size >= this.synth.channelsAmount)
+            {
+                // all channels are soloed, return to normal
+                this.soloChannels.clear();
             }
             return;
         }
+        // unmute every solo channel and mute others
         for (let i = 0; i < this.synth.channelsAmount; i++)
         {
             if(this.soloChannels.has(i))
             {
-                this.controllers[i].muteButton.innerHTML = getMicSvg(32);
-                this.synth.muteChannel(i, false);
+                this.controllers[i].soloButton.innerHTML = getMicSvg(ICON_SIZE);
+                this.synth.muteChannel(i, this.controllers[i].muteButton.hasAttribute("is_muted"));
             }
             else
             {
-                this.controllers[i].muteButton.innerHTML = getMuteSvg(32);
+                this.controllers[i].soloButton.innerHTML = getEmptyMicSvg(ICON_SIZE);
                 this.synth.muteChannel(i, true);
             }
         }
     }
+    controller.appendChild(soloButton);
+
+    // mute button
+    const muteButton = document.createElement("div");
+    muteButton.innerHTML = getVolumeSvg(ICON_SIZE);
+    this.locale.bindObjectProperty(muteButton, "title", LOCALE_PATH + "channelController.muteButton.description", [channelNumber + 1]);
+    muteButton.classList.add("controller_element");
+    muteButton.classList.add("mute_button");
+    muteButton.onclick = () => {
+        if(muteButton.hasAttribute("is_muted"))
+        {
+            // unmute
+            muteButton.removeAttribute("is_muted");
+            const canBeUnmuted = this.soloChannels.size === 0 || this.soloChannels.has(channelNumber);
+            this.synth.muteChannel(channelNumber, !canBeUnmuted);
+            muteButton.innerHTML = getVolumeSvg(ICON_SIZE);
+
+        }
+        else
+        {
+            // mute
+            this.synth.muteChannel(channelNumber, true);
+            muteButton.setAttribute("is_muted", "true");
+            muteButton.innerHTML = getMuteSvg(ICON_SIZE);
+        }
+    }
+
     controller.appendChild(muteButton);
 
     // drums toggle
     const drumsToggle = document.createElement("div");
-    drumsToggle.innerHTML = channelNumber === DEFAULT_PERCUSSION ? getDrumsSvg(32) : getNoteSvg(32);
+    drumsToggle.innerHTML = channelNumber === DEFAULT_PERCUSSION ? getDrumsSvg(ICON_SIZE) : getNoteSvg(ICON_SIZE);
     this.locale.bindObjectProperty(drumsToggle, "title", LOCALE_PATH + "channelController.drumToggleButton.description", [channelNumber + 1]);
     drumsToggle.classList.add("controller_element");
     drumsToggle.classList.add("mute_button");
@@ -262,6 +307,7 @@ export function createChannelController(channelNumber)
         preset: presetSelector,
         presetReset: presetReset,
         drumsToggle: drumsToggle,
+        soloButton: soloButton,
         muteButton: muteButton,
         transpose: transpose
     };

@@ -51,5 +51,10 @@ export const synthesizerControllerLocale = {
         description: "Wyłącza niestandardowe (NRPN) vibrato. Wymaga przeładowania strony aby je ponownie włączyć"
     },
 
+    helpButton: {
+        title: "Pomoc",
+        description: "Pokaż instrukcję obsługi"
+    },
+
     channelController: channelControllerLocale
 }

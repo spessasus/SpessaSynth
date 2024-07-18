@@ -52,5 +52,10 @@ export const synthesizerControllerLocale = {
         description: "Disables the custom (NRPN) Vibrato permamently. Reload the website to reenable it"
     },
 
+    helpButton: {
+        title: "Help",
+        description: "Opens an external website with the usage guide"
+    },
+
     channelController: channelControllerLocale
 }

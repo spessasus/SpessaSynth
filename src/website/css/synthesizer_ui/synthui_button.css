@@ -5,11 +5,14 @@
     margin: var(--synthui-margin);
     border-radius: var(--synthui-border-radius);
     font-size: 1em;
-    display: block;
     min-height: var(--voice-meter-height);
     white-space: nowrap;
     color: var(--font-color);
     flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.1s ease;
 }
 .synthui_button:hover
 {
@@ -19,18 +22,26 @@
     text-shadow: 0 0 5px white;
 }
 
+.synthui_button:active{
+    filter: brightness(0.9);
+    transform: scale(var(--active-scale));
+}
+
 .synthui_button_light{
     border-radius: var(--synthui-border-radius);
     background: #fff;
     border: 1px #ccc solid;
     margin: var(--synthui-margin);
     font-size: 1em;
-    display: block;
     min-height: var(--voice-meter-height);
     white-space: nowrap;
     color: #333;
     flex: 1;
     text-shadow: 1px 1px 2px #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.1s ease;
 }
 
 .synthui_button_light:hover
@@ -38,4 +49,9 @@
     cursor: pointer;
     color: #666;
     text-shadow: 0 0 5px #666;
+}
+
+.synthui_button_light:active{
+    filter: brightness(0.9);
+    transform: scale(var(--active-scale));
 }

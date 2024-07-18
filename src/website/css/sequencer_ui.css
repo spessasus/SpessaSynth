@@ -45,6 +45,10 @@
     transition: all 0.1s ease;
 }
 
+#sequencer_controls .control_buttons:active{
+    transform: scale(var(--active-scale));
+}
+
 #sequencer_controls .control_buttons:hover{
     cursor: pointer;
 }
@@ -74,19 +78,18 @@
     height: 50%;
     z-index: 256;
     display: block;
-    opacity: 0;
-    background: black;
-    transition: opacity 100ms ease-in-out;
+    transform: scaleX(0);
+    background: var(--top-color);
+    transition: all 0.2s ease;
     scroll-behavior: smooth;
     overflow-y: auto;
     visibility: hidden;
     border-radius: var(--sequi-border-radius);
-    box-shadow: #666 -2px 2px 20px;
 }
 
 .lyrics_title_wrapper{
     position: sticky;
-    background: black;
+    background: transparent;
     top: 0;
     border-radius: var(--sequi-border-radius);
 }
@@ -94,24 +97,20 @@
 .lyrics_selector{
     width: 100%;
     border: none;
-    font-size: large;
+    font-size: 1.3rem;
     padding: 0.5em;
+    background: transparent;
+}
+
+.lyrics_selector option{
     background: black;
 }
 
 .lyrics_show{
-    opacity: 1 !important;
+    transform: scaleX(1) !important;
     visibility: visible !important;
 }
 
 .lyrics_text{
     margin: 2em;
-}
-
-#sequencer_controls .lyrics_light{
-    background: #ccc;
-}
-
-#sequencer_controls.lyrics_light{
-    box-shadow: #333 -2px 2px 20px;
 }

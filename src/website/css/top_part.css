@@ -91,6 +91,12 @@ input[type="file"] {
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.1s ease;
+}
+
+.midi_and_sf_controller label:active{
+    filter: brightness(0.9);
+    transform: scale(var(--active-scale));
 }
 
 #sf_selector option

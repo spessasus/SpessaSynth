@@ -24,7 +24,7 @@
 /**
  * @typedef {Object} SynthesizerSnapshot
  * @property {ChannelSnapshot[]} channelSnapshots - the individual channel snapshots
- * @property {number} mainVolume - main synth volume, from 0 to 1
+ * @property {number} mainVolume - main synth volume (set by MIDI), from 0 to 1
  * @property {number} pan - master stereo panning, from -1 to 1
  * @property {SynthSystem} system - the synths system. Values can be "gs", "gm", "gm2" or "xg"
  * @property {number} transposition - the current synth transpositon in semitones. can be a float
@@ -68,7 +68,7 @@ export function sendSynthesizerSnapshot()
      */
     const synthesizerSnapshot = {
         channelSnapshots: channelSnapshots,
-        mainVolume: this.mainVolume,
+        mainVolume: this.midiVolume,
         pan: this.pan,
         transposition: this.transposition,
         system: this.system
@@ -91,7 +91,7 @@ export function applySynthesizerSnapshot(snapshot)
     this.system = snapshot.system;
 
     // restore pan and volume
-    this.setMainVolume(snapshot.mainVolume);
+    this.setMasterGain(snapshot.mainVolume);
     this.setMasterPan(snapshot.pan);
     this.transposeAllChannels(snapshot.transposition);
 

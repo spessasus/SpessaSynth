@@ -10,10 +10,7 @@ import { noteOn } from './worklet_methods/note_on.js'
 import { dataEntryCoarse, dataEntryFine } from './worklet_methods/data_entry.js'
 import { killNote, noteOff, stopAll, stopAllChannels } from './worklet_methods/note_off.js'
 import {
-    controllerChange, muteChannel,
-    resetAllControllers,
-    resetControllers,
-    resetParameters, setMainVolume, setMasterPan,
+    controllerChange, muteChannel, setMasterGain, setMasterPan, setMIDIVolume,
 } from './worklet_methods/controller_control.js'
 import { callEvent, post, sendChannelProperties } from './message_protocol/message_sending.js'
 import {
@@ -41,6 +38,7 @@ import { PAN_SMOOTHING_FACTOR, releaseVoice, renderVoice, voiceKilling } from '.
 import { returnMessageType } from './message_protocol/worklet_message.js'
 import { stbvorbis } from '../../utils/stbvorbis_sync.js'
 import { VOLUME_ENVELOPE_SMOOTHING_FACTOR } from './worklet_utilities/volume_envelope.js'
+import { resetAllControllers, resetControllers, resetParameters } from './worklet_methods/reset_controllers.js'
 
 
 /**
@@ -83,10 +81,12 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
         this.transposition = 0;
 
         /**
-         * The volume gain
+         * The volume gain, set by user
          * @type {number}
          */
-        this.mainVolume = SYNTHESIZER_GAIN;
+        this.masterGain = SYNTHESIZER_GAIN;
+
+        this.midiVolume = 1;
 
         /**
          * Maximum number of voices allowed at once
@@ -103,7 +103,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
          * the pan of the left channel
          * @type {number}
          */
-        this.panLeft = 0.5 * this.mainVolume;
+        this.panLeft = 0.5 * this.currentGain;
 
         this.highPerformanceMode = false;
 
@@ -111,7 +111,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
          * the pan of the right channel
          * @type {number}
          */
-        this.panRight = 0.5 * this.mainVolume;
+        this.panRight = 0.5 * this.currentGain;
         /**
          * @type {SoundFont2}
          */
@@ -187,6 +187,14 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
                 messageData: undefined
             });
         });
+    }
+
+    /**
+     * @returns {number}
+     */
+    get currentGain()
+    {
+        return this.masterGain * this.midiVolume;
     }
 
     debugMessage()
@@ -293,8 +301,9 @@ SpessaSynthProcessor.prototype.resetControllers = resetControllers;
 SpessaSynthProcessor.prototype.resetParameters = resetParameters;
 
 // master parameter related
-SpessaSynthProcessor.prototype.setMainVolume = setMainVolume;
+SpessaSynthProcessor.prototype.setMasterGain = setMasterGain;
 SpessaSynthProcessor.prototype.setMasterPan = setMasterPan;
+SpessaSynthProcessor.prototype.setMIDIVolume = setMIDIVolume;
 
 // tuning related
 SpessaSynthProcessor.prototype.transposeAllChannels = transposeAllChannels;
