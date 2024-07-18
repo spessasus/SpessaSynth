@@ -120,7 +120,6 @@ class Manager
         // get locales
         const exportingMessage = manager.localeManager.getLocaleString("locale.exportAudio.message");
         const estimatedMessage = manager.localeManager.getLocaleString("locale.exportAudio.estimated");
-        const duration = window.manager.seq.midiData.duration;
         const notification = showNotification(
             exportingMessage,
             [
@@ -131,11 +130,12 @@ class Manager
             false
         );
         const parsedMid = this.seq.midiData;
+        const duration = parsedMid.duration + additionalTime;
         // prepare audio context
         const offline = new OfflineAudioContext({
             numberOfChannels: 2,
             sampleRate: this.context.sampleRate,
-            length: this.context.sampleRate * (parsedMid.duration + additionalTime)
+            length: this.context.sampleRate * duration
         });
         const workletURL = new URL("../spessasynth_lib/synthetizer/worklet_system/worklet_processor.js", import.meta.url).href;
         await offline.audioWorklet.addModule(workletURL);
@@ -174,7 +174,6 @@ class Manager
             throw e;
         }
 
-
         const detailMessage = notification.div.getElementsByTagName("p")[0];
         const progressDiv = notification.div.getElementsByClassName("notification_progress")[0];
 
@@ -187,11 +186,12 @@ class Manager
             // calculate estimated time
             let hasRendered = synth.currentTime - rendered;
             rendered = synth.currentTime;
-            const progress = synth.currentTime / parsedMid.duration;
+            const progress = synth.currentTime / duration;
             progressDiv.style.width = `${progress * 100}%`;
             const speed = hasRendered / RATI_SECONDS;
             const estimated = (1 - progress) / speed * duration;
-            if (estimated === Infinity) {
+            if (estimated === Infinity)
+            {
                 return;
             }
             // smooth out estimated using exponential moving average
@@ -242,7 +242,7 @@ class Manager
                         closeNotification(n.id);
                         const normalizeVolume = n.div.querySelector("input[normalize-volume-toggle='1']").checked;
                         const additionalTime = n.div.querySelector("input[type='number']").value;
-                        this._doExporWav(normalizeVolume, additionalTime);
+                        this._doExporWav(normalizeVolume, parseInt(additionalTime));
                     }
                 }
             ],
