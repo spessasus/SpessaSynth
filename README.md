@@ -96,7 +96,7 @@ The complete GUI for spessasynth_lib, allowing remixing experimenting and playin
 1. ```shell
    git clone https://github.com/spessasus/SpessaSynth
    cd SpessaSynth
-   node src/website/server.js
+   npm start
    ```
 2. Put your soundfonts into the `soundfonts` folder. (you can select soundfonts in the program)
 3. Enjoy!
