@@ -165,13 +165,6 @@ export function applyVolumeEnvelope(voice, audioBuffer, currentTime, centibelOff
         return;
     }
 
-    if(!voice.hasStarted)
-    {
-        voice.startTime = currentTime;
-        recalculateVolumeEnvelope(voice);
-        voice.hasStarted = true;
-    }
-
     let currentFrameTime = currentTime;
     let filledBuffer = 0;
     switch(env.state)

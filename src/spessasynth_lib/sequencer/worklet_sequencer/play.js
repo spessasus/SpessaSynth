@@ -36,18 +36,25 @@ export function _playTo(time, ticks = undefined)
     }
     this._resetTimers()
 
+    const channelsToSave = this.synth.workletProcessorChannels.length;
     /**
      * save pitch bends here and send them only after
      * @type {number[]}
      */
-    const pitchBends = Array(16).fill(8192);
+    const pitchBends = Array(channelsToSave).fill(8192);
+
+    /**
+     * Save programs here and send them only after
+     * @type {number[]}
+     */
+    const programs = Array(channelsToSave).fill(0);
 
     /**
      * Save controllers here and send them only after
      * @type {number[][]}
      */
     const savedControllers = [];
-    for (let i = 0; i < 16; i++)
+    for (let i = 0; i < channelsToSave; i++)
     {
         savedControllers.push(Array.from(defaultControllerArray));
     }
@@ -74,6 +81,8 @@ export function _playTo(time, ticks = undefined)
 
         // skip note ons
         const info = getEvent(event.messageStatusByte);
+        // Keep in mind midi ports to determine channel!!
+        const channel = info.channel + (this.midiPortChannelOffsets[this.midiPorts[trackIndex]] || 0);
         switch(info.status)
         {
             // skip note messages
@@ -84,12 +93,14 @@ export function _playTo(time, ticks = undefined)
 
             // skip pitch bend
             case messageTypes.pitchBend:
-                pitchBends[info.channel] = event.messageData[1] << 7 | event.messageData[0];
+                pitchBends[channel] = event.messageData[1] << 7 | event.messageData[0];
+                break;
+
+            case messageTypes.programChange:
+                programs[channel] = event.messageData[0];
                 break;
 
             case messageTypes.controllerChange:
-                // Keep in mind midi ports to determine channel!!
-                const channel = info.channel + (this.midiPortChannelOffsets[this.midiPorts[trackIndex]] || 0);
                 // do not skip data entries
                 const controllerNumber = event.messageData[0];
                 if(
@@ -147,7 +158,7 @@ export function _playTo(time, ticks = undefined)
     if(this.sendMIDIMessages)
     {
         // for all 16 channels
-        for (let channelNumber = 0; channelNumber < 16; channelNumber++) {
+        for (let channelNumber = 0; channelNumber < channelsToSave; channelNumber++) {
             // send saved pitch bend
             this.sendMIDIMessage([messageTypes.pitchBend | (channelNumber % 16), pitchBends[channelNumber] & 0x7F, pitchBends[channelNumber] >> 7]);
 
@@ -157,15 +168,23 @@ export function _playTo(time, ticks = undefined)
                 {
                     this.sendMIDIMessage([messageTypes.controllerChange | (channelNumber % 16), index, value])
                 }
-            })
+            });
+
+            // restore programs
+            if(programs[channelNumber] !== 0)
+            {
+                this.sendMIDIMessage([messageTypes.programChange | (channelNumber % 16), programs[channelNumber]]);
+            }
         }
     }
     else
     {
         // for all synth channels
-        for (let channelNumber = 0; channelNumber < this.synth.workletProcessorChannels.length; channelNumber++) {
+        for (let channelNumber = 0; channelNumber < channelsToSave; channelNumber++)
+        {
             // restore pitch bends
-            if(pitchBends[channelNumber] !== undefined) {
+            if(pitchBends[channelNumber] !== undefined)
+            {
                 this.synth.pitchWheel(channelNumber, pitchBends[channelNumber] >> 7, pitchBends[channelNumber] & 0x7F);
             }
             if(savedControllers[channelNumber] !== undefined)
@@ -177,6 +196,11 @@ export function _playTo(time, ticks = undefined)
                         this.synth.controllerChange(channelNumber, index, value);
                     }
                 })
+            }
+            // restore programs
+            if(programs[channelNumber] !== 0)
+            {
+                this.synth.programChange(channelNumber, programs[channelNumber]);
             }
         }
     }
@@ -211,10 +235,14 @@ export function play(resetTime = false)
         this._recalculateStartTime(this.pausedTime)
         this.pausedTime = undefined;
     }
-
-    this.playingNotes.forEach(n => {
-        this.synth.noteOn(n.channel, n.midiNote, n.velocity);
-    });
+    if(!this.sendMIDIMessages)
+    {
+        const time = this.currentTime;
+        this.playingNotes.forEach(n => {
+            const timeOffset = n.startTime - time;
+            this.synth.noteOn(n.channel, n.midiNote, n.velocity, false, true, currentTime + timeOffset);
+        });
+    }
     this.setProcessHandler();
 }
 

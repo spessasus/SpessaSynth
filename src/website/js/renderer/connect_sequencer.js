@@ -6,7 +6,10 @@ export function connectSequencer(sequencer)
 {
     this.seq = sequencer;
 
-    this.seq.addOnSongChangeEvent(midi => { this.calculateNoteTimes(midi)}, "renderer-song-change");
+    this.seq.addOnSongChangeEvent(async () => {
+        this.calculateNoteTimes(await this.seq.getMIDI());
+        this.resetIndexes();
+    }, "renderer-song-change");
     this.seq.addOnTimeChangeEvent(() => this.resetIndexes(), "renderer-time-change");
 }
 
@@ -15,6 +18,10 @@ export function connectSequencer(sequencer)
  */
 export function resetIndexes()
 {
+    if(!this.noteTimes)
+    {
+        return;
+    }
     this.noteStartTime = this.seq.absoluteStartTime;
     this.noteTimes.forEach(n => n.renderStartIndex = 0);
 }

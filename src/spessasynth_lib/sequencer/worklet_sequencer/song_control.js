@@ -2,6 +2,8 @@ import { WorkletSequencerReturnMessageType } from './sequencer_message.js'
 import { consoleColors, formatTime } from '../../utils/other.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../../utils/loggin.js'
 import { ticksToSeconds } from './play.js'
+import { MidiData } from '../../midi_parser/midi_data.js'
+import { MIDI } from '../../midi_parser/midi_loader.js'
 
 /**
  * @param trackNum {number}
@@ -81,7 +83,7 @@ export function loadNewSequence(parsedMidi)
     this.firstNoteTime = ticksToSeconds(this.midiData.tempoChanges, this.midiData.firstNoteOn, this.midiData.timeDivision);
     SpessaSynthInfo(`%cTotal song time: ${formatTime(Math.ceil(this.duration)).time}`, consoleColors.recognized);
 
-    this.post(WorkletSequencerReturnMessageType.songChange, [this.midiData, this.songIndex]);
+    this.post(WorkletSequencerReturnMessageType.songChange, [new MidiData(this.midiData), this.songIndex]);
 
     this.synth.resetAllControllers();
     if(this.duration <= 1)
@@ -94,13 +96,18 @@ export function loadNewSequence(parsedMidi)
 }
 
 /**
- * @param parsedMidis {MIDI[]}
+ * @param midiBuffers {MIDIFile[]}
  * @this {WorkletSequencer}
  */
-export function loadNewSongList(parsedMidis)
+export function loadNewSongList(midiBuffers)
 {
-    this.songs = parsedMidis;
+    // parse the MIDIs
+    this.songs = midiBuffers.map(b => new MIDI(b.binary, b.altName || ""));
     this.songIndex = 0;
+    if(this.songs.length > 1)
+    {
+        this.loop = false;
+    }
     this.loadNewSequence(this.songs[this.songIndex]);
 }
 
@@ -109,6 +116,11 @@ export function loadNewSongList(parsedMidis)
  */
 export function nextSong()
 {
+    if(this.songs.length === 1)
+    {
+        this.currentTime = 0;
+        return;
+    }
     this.songIndex++;
     this.songIndex %= this.songs.length;
     this.loadNewSequence(this.songs[this.songIndex]);
@@ -119,6 +131,11 @@ export function nextSong()
  */
 export function previousSong()
 {
+    if(this.songs.length === 1)
+    {
+        this.currentTime = 0;
+        return;
+    }
     this.songIndex--;
     if(this.songIndex < 0)
     {

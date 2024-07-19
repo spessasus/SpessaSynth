@@ -5,6 +5,10 @@ export const sequencerControllerLocale = {
     playPause: "再生/一時停止",
     lyrics: {
         show: "歌詞を表示",
-        title: "デコードされたテキスト"
+        title: "デコードされたテキスト",
+        noLyrics: "歌詞がありません...",
+        otherText: {
+            title: "その他のテキスト"
+        }
     }
 }

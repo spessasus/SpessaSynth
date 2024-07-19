@@ -39,6 +39,10 @@
     box-sizing: border-box;
 }
 
+pre{
+    font-family: monospace !important;
+}
+
 html, body {
     height: 100lvh;
     width: 100%;

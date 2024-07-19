@@ -172,13 +172,13 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
             }
             channelObject.midiControllers[controllerNumber] = controllerValue << 7;
             channelObject.voices.forEach(v => computeModulators(v, channelObject.midiControllers));
+            this.callEvent("controllerchange", {
+                channel: channel,
+                controllerNumber: controllerNumber,
+                controllerValue: controllerValue
+            });
             break;
     }
-    this.callEvent("controllerchange", {
-        channel: channel,
-        controllerNumber: controllerNumber,
-        controllerValue: controllerValue
-    });
 }
 
 /**

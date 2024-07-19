@@ -35,7 +35,8 @@ export function _processEvent(event, trackIndex)
                 this.playingNotes.push({
                     midiNote: event.messageData[0],
                     channel: statusByteData.channel,
-                    velocity: velocity
+                    velocity: velocity,
+                    startTime: this.currentTime
                 });
             }
             else

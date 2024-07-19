@@ -412,6 +412,7 @@ class MidiKeyboard
             return;
         }
         let key = this.keys[midiNote - this._keyRange.min];
+        channel %= this.channelColors.length;
 
         /**
          * @type {string[]}

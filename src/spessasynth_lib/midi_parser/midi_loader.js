@@ -43,10 +43,18 @@ class MIDI{
         // time division
         this.timeDivision = readBytesAsUintBigEndian(headerChunk.data, 2);
 
-        const decoder = new TextDecoder('shift-jis');
-
-        // read the copyright
+        /**
+         * Contains the copyright strings
+         * @type {string}
+         */
         this.copyright = "";
+
+
+        /**
+         * Contains the lyrics as binary chunks
+         * @type {Uint8Array[]}
+         */
+        this.lyrics = [];
 
         /**
          * Contains all the tempo changes in the file. (Ordered from last to first)
@@ -143,15 +151,18 @@ class MIDI{
                         // system common/realtime (no length)
                         eventDataLength = 0;
                         break;
+
                     case -2:
                         // meta (the next is the actual status byte)
                         statusByte = readByte(trackChunk.data);
                         eventDataLength = readVariableLengthQuantity(trackChunk.data);
                         break;
+
                     case -3:
                         // sysex
                         eventDataLength = readVariableLengthQuantity(trackChunk.data);
                         break;
+
                     default:
                         // voice message
                         // get the midi message length
@@ -176,86 +187,97 @@ class MIDI{
                 const message = new MidiMessage(totalTicks, statusByte, eventData);
                 track.push(message);
 
-                // check for tempo change
-                if(statusByte === messageTypes.setTempo)
+                switch(statusByteChannel)
                 {
-                    this.tempoChanges.push({
-                        ticks: totalTicks,
-                        tempo: 60000000 / readBytesAsUintBigEndian(messageData, 3)
-                    });
-                }
-                else
-                // check for loop start (Marker "start")
+                    case -2:
+                        // since this is a meta message
+                        switch(statusByte)
+                        {
+                            case messageTypes.setTempo:
+                                // add the tempo change
+                                this.tempoChanges.push({
+                                    ticks: totalTicks,
+                                    tempo: 60000000 / readBytesAsUintBigEndian(messageData, 3)
+                                });
+                                break;
 
-                if(statusByte === messageTypes.marker)
-                {
-                    const text = readBytesAsString(eventData, eventData.length).trim().toLowerCase();
-                    switch (text)
-                    {
-                        default:
-                            break;
+                            case messageTypes.marker:
+                                // check for loop markers
+                                const text = readBytesAsString(eventData, eventData.length).trim().toLowerCase();
+                                switch (text)
+                                {
+                                    default:
+                                        break;
 
-                        case "start":
-                        case "loopstart":
-                            loopStart = totalTicks;
-                            break;
+                                    case "start":
+                                    case "loopstart":
+                                        loopStart = totalTicks;
+                                        break;
 
-                        case "loopend":
-                            loopEnd = totalTicks;
-                    }
-                    eventData.currentIndex = 0;
+                                    case "loopend":
+                                        loopEnd = totalTicks;
+                                }
+                                eventData.currentIndex = 0;
+                                break;
 
-                }
-                else
-                // check for loop (CC 2/4)
-                if((statusByte & 0xF0) === messageTypes.controllerChange)
-                {
-                    switch(eventData[0])
-                    {
-                        case 2:
-                        case 116:
-                            loopStart = totalTicks;
-                            break;
+                            case messageTypes.midiPort:
+                                this.midiPorts[i] = eventData[0];
+                                break;
 
-                        case 4:
-                        case 117:
-                            if(loopEnd === null)
+                            case messageTypes.copyright:
+                                this.copyright += readBytesAsString(eventData, eventData.length) + "\n";
+                                break;
+
+                            case messageTypes.lyric:
+                                this.lyrics.push(eventData);
+                        }
+                        break;
+
+                    case -3:
+                        // since this is a sysex message
+                        // check for embedded copyright (roland SC display sysex) http://www.bandtrax.com.au/sysex.htm
+                        // header goes like this: 41 10 45 12 10 00 00
+                        if(arrayToHexString(eventData.slice(0, 7)).trim() === "41 10 45 12 10 00 00")
+                        {
+                            /**
+                             * @type {ShiftableByteArray}
+                             */
+                            const cutText = eventData.slice(7, messageData.length - 3);
+                            const decoded = readBytesAsString(cutText, cutText.length) + "\n";
+                            this.copyright += decoded;
+                            SpessaSynthInfo(`%cDecoded Roland SC message! %c${decoded}`,
+                                consoleColors.recognized,
+                                consoleColors.value)
+                        }
+                        break;
+
+
+                    default:
+                        // since this is a voice message
+                        // check for loop (CC 2/4)
+                        if((statusByte & 0xF0) === messageTypes.controllerChange)
+                        {
+                            switch(eventData[0])
                             {
-                                loopEnd = totalTicks;
-                            }
-                            else
-                            {
-                                // this controller has occured more than once, this means that it doesnt indicate the loop
-                                loopEnd = 0;
-                            }
-                            break;
-                    }
-                }
-                else
-                // check for midi port
-                if(statusByte === messageTypes.midiPort)
-                {
-                    this.midiPorts[i] = eventData[0];
-                }
-                else
-                // check for copyright
-                if(statusByte === messageTypes.copyright)
-                {
-                    this.copyright += decoder.decode(eventData) + "\n";
-                }
+                                case 2:
+                                case 116:
+                                    loopStart = totalTicks;
+                                    break;
 
-                // check for embedded copyright (roland SC display sysex) http://www.bandtrax.com.au/sysex.htm
-                if(statusByte === messageTypes.systemExclusive)
-                {
-                    // header goes like this: 41 10 45 12 10 00 00
-                    if(arrayToHexString(messageData.slice(0, 7)).trim() === "41 10 45 12 10 00 00")
-                    {
-                        const decoded = decoder.decode(messageData.slice(7, messageData.length - 3)) + "\n";
-                        this.copyright += decoded;
-                        SpessaSynthInfo(`%cDecoded Roland SC message! %c${decoded}`,
-                            consoleColors.recognized,
-                            consoleColors.value)
-                    }
+                                case 4:
+                                case 117:
+                                    if(loopEnd === null)
+                                    {
+                                        loopEnd = totalTicks;
+                                    }
+                                    else
+                                    {
+                                        // this controller has occured more than once, this means that it doesnt indicate the loop
+                                        loopEnd = 0;
+                                    }
+                                    break;
+                            }
+                        }
                 }
             }
             this.tracks.push(track);
@@ -267,8 +289,6 @@ class MIDI{
                 consoleColors.value);
         }
 
-        //this.lastVoiceEventTick = Math.max(...this.tracks.map(track =>
-        //track[track.length - 1].ticks));
         const firstNoteOns = [];
         for(const t of this.tracks)
         {
@@ -326,6 +346,8 @@ class MIDI{
         // get track name
         this.midiName = "";
 
+        this.rawMidiName = new Uint8Array(0);
+
         // midi name
         if(this.tracks.length > 1)
         {
@@ -339,7 +361,8 @@ class MIDI{
                 let name = this.tracks[0].find(message => message.messageStatusByte === messageTypes.trackName);
                 if(name)
                 {
-                    this.midiName = decoder.decode(name.messageData);
+                    this.rawMidiName = name.messageData;
+                    this.midiName = readBytesAsString(name.messageData, name.messageData.length);
                 }
             }
         }
@@ -349,16 +372,23 @@ class MIDI{
             let name = this.tracks[0].find(message => message.messageStatusByte === messageTypes.trackName);
             if(name)
             {
-                this.midiName = decoder.decode(name.messageData);
+                this.rawMidiName = name.messageData;
+                this.midiName = readBytesAsString(name.messageData, name.messageData.length);
             }
         }
 
         this.fileName = fileName;
 
         // if midiName is "", use the file name
-        if(this.midiName.trim().length === 0 && fileName.length > 0)
+        if(this.midiName.trim().length === 0)
         {
             this.midiName = formatTitle(fileName);
+            // encode it too
+            this.rawMidiName = new Uint8Array(this.midiName.length);
+            for(let i = 0; i < this.midiName.length; i++)
+            {
+                this.rawMidiName[i] = this.midiName.charCodeAt(i);
+            }
         }
 
         // reverse the tempo changes

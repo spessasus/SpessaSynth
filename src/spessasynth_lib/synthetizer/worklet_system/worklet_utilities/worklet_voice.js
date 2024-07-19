@@ -26,7 +26,6 @@
  *
  * @property {boolean} finished - indicates if the voice has finished
  * @property {boolean} isInRelease - indicates if the voice is in the release phase
- * @property {boolean} hasStarted - indicates if the voice has started rendering
  *
  * @property {number} channelNumber - MIDI channel number
  * @property {number} velocity - velocity of the note
@@ -268,7 +267,6 @@ export function getWorkletVoices(channel,
                 // envelope data
                 finished: false,
                 isInRelease: false,
-                hasStarted: false,
                 currentModEnvValue: 0,
                 releaseStartModEnv: 1,
                 currentPan: 0.5,

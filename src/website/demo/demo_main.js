@@ -1,9 +1,6 @@
 "use strict"
 
 import { Manager } from '../manager.js'
-import { MIDI } from '../../spessasynth_lib/midi_parser/midi_loader.js'
-
-import { formatTitle } from '../../spessasynth_lib/utils/other.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../../spessasynth_lib/utils/loggin.js'
 import { isMobile } from '../js/utils/is_mobile.js'
 import { getCheckSvg, getExclamationSvg, getHourglassSvg } from '../js/icons.js'
@@ -241,23 +238,6 @@ async function fetchFont(url, callback)
     return dataArray.buffer;
 }
 
-
-/**
- * @param midiFile {File}
- * @returns {Promise<MIDI>}
- */
-async function parseMidi(midiFile)
-{
-    const buffer = await midiFile.arrayBuffer();
-    try {
-        return new MIDI(buffer, midiFile.name);
-    }
-    catch (e) {
-        titleMessage.innerHTML = `Error parsing MIDI: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
-        throw e;
-    }
-}
-
 /**
  * @param midiFiles {FileList}
  */
@@ -278,42 +258,26 @@ async function startMidi(midiFiles)
     }
     document.getElementById("file_upload").innerText = fName;
     /**
-     * @type {MIDI[]}
+     * @type {MIDIFile[]}
      */
     const parsed = [];
-
-    /**
-     * @type {string[]}
-     */
-    const titles = [];
-    for (let i = 0; i < midiFiles.length; i++) {
-        titleMessage.innerText = `Parsing ${midiFiles[i].name}`;
-        parsed.push(await parseMidi(midiFiles[i]));
-
-        let title;
-        if(parsed[i].midiName.trim().length > 0)
-        {
-            title = parsed[i].midiName.trim();
-        }
-        else
-        {
-            title = formatTitle(midiFiles[i].name);
-        }
-        titles.push(title);
+    for(const file of midiFiles)
+    {
+        parsed.push({
+            binary: await file.arrayBuffer(),
+            altName: file.name
+        })
     }
-    titleMessage.style.fontStyle = "italic";
-    document.title = titles[0];
-    titleMessage.innerText = titles[0]
 
     if(manager.seq)
     {
         manager.seq.loadNewSongList(parsed);
 
     }
-    else {
+    else
+    {
         manager.play(parsed);
     }
-    manager.seqUI.setSongTitles(titles);
 
     exportButton.style.display = "flex";
     exportButton.onclick = window.manager.exportSong.bind(window.manager);

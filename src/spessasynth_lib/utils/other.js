@@ -21,7 +21,7 @@ export function formatTime(totalSeconds) {
  */
 export function formatTitle(fileName)
 {
-    return fileName.replaceAll(".mid", "").replaceAll("_", " ");
+    return fileName.trim().replaceAll(".mid", "").replaceAll("_", " ");
 }
 
 /**

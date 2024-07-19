@@ -23,6 +23,11 @@ export class LocaleManager
         this.locale = localeList[initialLocale] || localeList[DEFAULT_LOCALE];
 
         /**
+         * @type {CompleteLocaleTypedef}
+         */
+        this.fallbackLocale = localeList[DEFAULT_LOCALE];
+
+        /**
          * @type {LocaleList}
          */
         this.localeCode = initialLocale;
@@ -131,10 +136,11 @@ export class LocaleManager
     /**
      * Resolves the locale path to get the string value from the locale object
      * @param path {string} The locale path to the text, written as JS object path, starts with "locale."
+     * @param fallback {boolean} If the locale being searched is the fallback locale. If false and no valid path was found,
      * @returns {string} The string value from the path
      * @private
      */
-    _resolveLocalePath(path)
+    _resolveLocalePath(path, fallback = false)
     {
         if (!path.startsWith("locale."))
         {
@@ -147,15 +153,23 @@ export class LocaleManager
          * Traverse the locale object to get the value
          * @type {Object|string}
           */
-        let current = this.locale;
+        let current = fallback ? this.fallbackLocale : this.locale;
         for (let i = 1; i < parts.length; i++) // Start from 1 to skip "locale"
         {
             if (current[parts[i]] !== undefined)
             {
                 current = current[parts[i]];
-            } else
+            }
+            else
             {
-                throw new Error(`Invalid locale path: ${path}: part "${parts[i]}" does not exist`);
+                if(fallback)
+                {
+                    throw new Error(`Invalid locale path: ${path}: part "${parts[i]}" does not exist`);
+                }
+                else
+                {
+                    return this._resolveLocalePath(path, true);
+                }
             }
         }
 

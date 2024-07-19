@@ -5,6 +5,10 @@ export const sequencerControllerLocale = {
     playPause: "Odtwórz/wstrzymaj",
     lyrics: {
         show: "Pokaż tekst",
-        title: "Odczytany tekst"
+        title: "Odczytany tekst",
+        noLyrics: "Brak dostępnego tekstu...",
+        otherText: {
+            title: "Inny tekst"
+        }
     }
 }

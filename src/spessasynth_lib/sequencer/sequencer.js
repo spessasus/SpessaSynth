@@ -7,21 +7,27 @@ import {
     WorkletSequencerReturnMessageType,
 } from './worklet_sequencer/sequencer_message.js'
 import { SpessaSynthWarn } from '../utils/loggin.js'
+import { DUMMY_MIDI_DATA, MidiData } from '../midi_parser/midi_data.js'
 
 /**
  * sequencer.js
  * purpose: plays back the midi file decoded by midi_loader.js, including support for multi-channel midis (adding channels when more than 1 midi port is detected)
  */
 
+/**
+ * @typedef MIDIFile {Object}
+ * @property {ArrayBuffer} binary - the binary data of the file.
+ * @property {string} altName - the alternative name for the file
+ */
 
 export class Sequencer
 {
     /**
      * Creates a new Midi sequencer for playing back MIDI files
-     * @param parsedMidis {MIDI[]} List of the parsed midi
+     * @param midiBinaries {MIDIFile[]} List of the buffers of the MIDI files
      * @param synth {Synthetizer} synth to send events to
      */
-    constructor(parsedMidis, synth)
+    constructor(midiBinaries, synth)
     {
         this.ignoreEvents = false;
         this.synth = synth;
@@ -34,10 +40,18 @@ export class Sequencer
         this.absoluteStartTime = this.synth.currentTime;
 
         /**
+         * @type {function(MIDI)}
+         * @private
+         */
+        this._getMIDIResolve = undefined;
+
+        /**
          * Controls the playback's rate
          * @type {number}
          */
         this._playbackRate = 1;
+
+        this.songIndex = 0;
 
         this._loop = true;
 
@@ -55,7 +69,7 @@ export class Sequencer
 
         this.synth.sequencerCallbackFunction = this._handleMessage.bind(this);
 
-        this.loadNewSongList(parsedMidis);
+        this.loadNewSongList(midiBinaries);
 
         window.addEventListener("beforeunload", this.resetMIDIOut.bind(this))
     }
@@ -132,9 +146,9 @@ export class Sequencer
                 break;
 
             case WorkletSequencerReturnMessageType.songChange:
-                // messageData is expected to be {MIDI}
                 /**
-                 * @type {MIDI}
+                 * messageData is expected to be {MidiData}
+                 * @type {MidiData}
                  */
                 let songChangeData = messageData[0];
                 this.songIndex = messageData[1];
@@ -166,6 +180,13 @@ export class Sequencer
             case WorkletSequencerReturnMessageType.pause:
                 this.pausedTime = this.currentTime;
                 this.isFinished = messageData;
+                break;
+
+            case WorkletSequencerReturnMessageType.getMIDI:
+                if(this._getMIDIResolve)
+                {
+                    this._getMIDIResolve(messageData);
+                }
         }
     }
 
@@ -189,7 +210,7 @@ export class Sequencer
 
     /**
      * Adds a new event that gets called when the song changes
-     * @param callback {function(MIDI)}
+     * @param callback {function(MidiData)}
      * @param id {string} must be unique
      */
     addOnSongChangeEvent(callback, id)
@@ -209,20 +230,36 @@ export class Sequencer
     }
 
     /**
-     * @param parsedMidis {MIDI[]}
+     * @returns {Promise<MIDI>}
      */
-    loadNewSongList(parsedMidis)
+    async getMIDI()
     {
-        this.midiData = parsedMidis[0];
-        this.duration = parsedMidis[0].duration;
-        this._sendMessage(WorkletSequencerMessageType.loadNewSongList, parsedMidis);
+        return new Promise(resolve => {
+            this._getMIDIResolve = resolve;
+            this._sendMessage(WorkletSequencerMessageType.getMIDI, undefined);
+        });
+    }
+
+    /**
+     * @param midiBuffers {MIDIFile[]}
+     */
+    loadNewSongList(midiBuffers)
+    {
+        // add some dummy data
+        this.midiData = DUMMY_MIDI_DATA;
+        this.duration = 99999;
+        this._sendMessage(WorkletSequencerMessageType.loadNewSongList, midiBuffers);
         this.songIndex = 0;
+        this.songsAmount = midiBuffers.length;
+        if(this.songsAmount > 1)
+        {
+            this.loop = false;
+        }
     }
 
     nextSong()
     {
         this._sendMessage(WorkletSequencerMessageType.changeSong, true);
-        this.songIndex++;
     }
 
     previousSong()
@@ -353,12 +390,13 @@ export class Sequencer
     }
 
     /**
-     * @type {MIDI}
+     * The sequence's data, except for the track data.
+     *  @type {MidiData}
      */
     midiData;
 
     /**
-     * @type {Object<string, function(MIDI)>}
+     * @type {Object<string, function(MidiData)>}
      * @private
      */
     onSongChange = {};

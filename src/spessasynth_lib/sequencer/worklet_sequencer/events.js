@@ -54,6 +54,10 @@ export function processMessage(messageType, messageData)
             {
                 this.previousSong();
             }
+            break;
+
+        case WorkletSequencerMessageType.getMIDI:
+            this.post(WorkletSequencerReturnMessageType.getMIDI, this.midiData);
     }
 }
 

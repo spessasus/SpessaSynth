@@ -102,7 +102,7 @@ class Manager
      */
     async exportMidi()
     {
-        const mid = this.seq.midiData;
+        const mid = await this.seq.getMIDI();
         applySnapshotToMIDI(mid, await this.synth.getSynthesizerSnapshot());
         // export modified midi and write out
         const file = writeMIDIFile(mid);
@@ -129,7 +129,7 @@ class Manager
             9999999,
             false
         );
-        const parsedMid = this.seq.midiData;
+        const parsedMid = await this.seq.getMIDI();
         const duration = parsedMid.duration + additionalTime;
         // prepare audio context
         const offline = new OfflineAudioContext({
@@ -475,7 +475,7 @@ class Manager
 
     /**
      * starts playing and rendering the midi file
-     * @param parsedMidi {MIDI[]}
+     * @param parsedMidi {MIDIFile[]}
      */
     play(parsedMidi)
     {
@@ -498,14 +498,6 @@ class Manager
 
         // play the midi
         this.seq.play(true);
-
-        // const a = document.createElement("a");
-        // const out = writeMIDI(parsedMidi[0]);
-        // const blob = new Blob([out.buffer], { type: "audio/mid" });
-        // const url = URL.createObjectURL(blob);
-        // a.download = "saved.mid";
-        // a.href = url;
-        // a.click()
     }
 }
 export { Manager }
