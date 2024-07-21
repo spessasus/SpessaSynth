@@ -1,7 +1,6 @@
 import { dataBytesAmount, getChannel, messageTypes, MidiMessage } from './midi_message.js'
 import { ShiftableByteArray } from '../utils/shiftable_array.js'
 import {
-    readByte,
     readBytesAsString,
     readBytesAsUintBigEndian,
     readVariableLengthQuantity,
@@ -39,12 +38,12 @@ class MIDI{
         this.copyright = "";
 
         const initialString = readBytesAsString(binaryData, 4);
-        binaryData.shift(-4);
+        binaryData.currentIndex -= 4;
         if(initialString === "RIFF")
         {
             // possibly an RMID file (https://web.archive.org/web/20110610135604/http://www.midi.org/about-midi/rp29spec(rmid).pdf)
             // skip size
-            binaryData.shift(8);
+            binaryData.currentIndex += 4;
             const rmid = readBytesAsString(binaryData, 4, undefined, false);
             if(rmid !== "RMID")
             {
@@ -188,7 +187,7 @@ class MIDI{
                 else
                 {
                     // if the status byte is valid, just use that
-                    statusByte = readByte(trackChunk.data);
+                    statusByte = trackChunk.data[trackChunk.data.currentIndex++];
                 }
                 const statusByteChannel = getChannel(statusByte);
 
@@ -204,7 +203,7 @@ class MIDI{
 
                     case -2:
                         // meta (the next is the actual status byte)
-                        statusByte = readByte(trackChunk.data);
+                        statusByte = trackChunk.data[trackChunk.data.currentIndex++];
                         eventDataLength = readVariableLengthQuantity(trackChunk.data);
                         break;
 

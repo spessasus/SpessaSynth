@@ -122,13 +122,14 @@
     opacity: 0.5;
     font-style: italic;
     font-size: 1rem;
+    font-weight: bold;
 }
 
 .lyrics_text_highlight {
     font-weight: bold;
     font-style: italic;
-    color: var(--border-color);
-    text-shadow: 1px 1px 3px var(--primary-color);
+    color: var(--font-color);
+    text-shadow: 1px 1px 1px var(--font-color);
     font-size: 1rem;
 }
 

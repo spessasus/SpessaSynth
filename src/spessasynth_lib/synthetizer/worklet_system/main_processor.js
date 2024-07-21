@@ -115,7 +115,8 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
         /**
          * @type {SoundFont2}
          */
-        try {
+        try
+        {
             this.soundfont = new SoundFont2(options.processorOptions.soundfont);
         }
         catch (e)
@@ -186,6 +187,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
                 messageType: returnMessageType.ready,
                 messageData: undefined
             });
+            SpessaSynthInfo("%cSpessaSynth is ready!", consoleColors.recognized);
         });
     }
 

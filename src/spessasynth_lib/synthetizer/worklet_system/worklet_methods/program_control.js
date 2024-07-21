@@ -3,6 +3,8 @@ import { SoundFont2 } from '../../../soundfont/soundfont_parser.js'
 import { clearSamplesList } from '../worklet_utilities/worklet_voice.js'
 import { generatorTypes } from '../../../soundfont/chunk/generators.js'
 import { returnMessageType } from '../message_protocol/worklet_message.js'
+import { SpessaSynthInfo } from '../../../utils/loggin.js'
+import { consoleColors } from '../../../utils/other.js'
 
 /**
  * executes a program change
@@ -132,8 +134,9 @@ export function reloadSoundFont(buffer)
         channelObject.lockPreset = false;
         this.programChange(i, channelObject.preset.program);
     }
-    this.post({messageType: returnMessageType.ready, messageData: undefined})
+    this.post({messageType: returnMessageType.ready, messageData: undefined});
     this.sendPresetList();
+    SpessaSynthInfo("%cSpessaSynth is ready!", consoleColors.recognized);
 }
 
 /**

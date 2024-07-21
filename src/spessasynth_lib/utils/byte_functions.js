@@ -15,7 +15,7 @@ export function readBytesAsUintLittleEndian(dataArray, bytesAmount){
     let out = 0;
     for(let i = 0; i < bytesAmount; i++)
     {
-        out |= (readByte(dataArray) << i * 8);
+        out |= (dataArray[dataArray.currentIndex++] << i * 8);
     }
     // make sure it stays unsigned
     return out >>> 0;
@@ -27,10 +27,12 @@ export function readBytesAsUintLittleEndian(dataArray, bytesAmount){
  * @param bytesAmount {number}
  * @returns {number}
  */
-export function readBytesAsUintBigEndian(dataArray, bytesAmount){
+export function readBytesAsUintBigEndian(dataArray, bytesAmount)
+{
     let out = 0;
-    for (let i = 8 * (bytesAmount - 1); i >= 0; i -= 8) {
-        out |= (readByte(dataArray) << i);
+    for (let i = 8 * (bytesAmount - 1); i >= 0; i -= 8)
+    {
+        out |= (dataArray[dataArray.currentIndex++] << i);
     }
     return out >>> 0;
 }
@@ -51,24 +53,6 @@ export function writeBytesAsUintBigEndian(number, bytesAmount)
 
     return bytes;
 }
-
-/**
- * @param dataArray {ShiftableByteArray}
- * @returns {number}
- */
-export function readByte(dataArray){
-    if(!dataArray.shift)
-    {
-        dataArray.currentIndex = 0;
-        dataArray.shift = function () {
-            this.currentIndex++;
-            return this[this.currentIndex - 1];
-        }
-    }
-    return dataArray.shift();
-
-}
-
 /**
  * @param dataArray {ShiftableByteArray}
  * @param bytes {number}
@@ -77,11 +61,12 @@ export function readByte(dataArray){
  * @returns {string}
  */
 export function readBytesAsString(dataArray, bytes, encoding=undefined, trimEnd=true){
-    if(!encoding) {
+    if(!encoding)
+    {
         let finished = false;
         let string = "";
         for (let i = 0; i < bytes; i++) {
-            let byte = readByte(dataArray);
+            let byte = dataArray[dataArray.currentIndex++];
             if(finished)
             {
                 continue;
@@ -149,7 +134,7 @@ export function readVariableLengthQuantity(MIDIbyteArray){
     let out = 0;
     while(MIDIbyteArray)
     {
-        const byte = readByte(MIDIbyteArray);
+        const byte = MIDIbyteArray[MIDIbyteArray.currentIndex++];
         // extract the first 7 bytes
         out = (out << 7) | (byte & 127);
 
@@ -167,20 +152,17 @@ export function readVariableLengthQuantity(MIDIbyteArray){
  * @param number {number}
  * @returns {number[]}
  */
-export function writeVariableLengthQuantity(number) {
-    let bytes = [];
-
+export function writeVariableLengthQuantity(number)
+{
     // Add the first byte
-    bytes.push(number & 127);
+    let bytes = [number & 127];
     number >>= 7;
 
     // Continue processing the remaining bytes
-    while (number > 0) {
-        bytes.push((number & 127) | 128);
+    while (number > 0)
+    {
+        bytes.unshift((number & 127) | 128);
         number >>= 7;
     }
-
-    // Reverse the array to get the correct order
-    bytes.reverse();
     return bytes;
 }

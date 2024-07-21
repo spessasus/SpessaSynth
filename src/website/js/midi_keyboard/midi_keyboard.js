@@ -78,14 +78,6 @@ class MidiKeyboard
             this.clearNotes();
         });
 
-        // QoL: change keyboard channel to the changed one when user changed it
-        this.synth.eventHandler.addEvent("programchange", "keyboard-program-change", e => {
-            if(e.userCalled)
-            {
-                this.selectChannel(e.channel);
-            }
-        });
-
         this.synth.eventHandler.addEvent("mutechannel", "keyboard-mute-channel", e => {
             if(e.isMuted)
             {

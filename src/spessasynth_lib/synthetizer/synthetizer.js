@@ -231,7 +231,6 @@ export class Synthetizer {
 
             case returnMessageType.ready:
                 this._resolveReady();
-                SpessaSynthInfo("%cSpessaSynth is ready!", consoleColors.recognized);
                 break;
 
             case returnMessageType.soundfontError:
@@ -588,13 +587,15 @@ export class Synthetizer {
      */
     async reloadSoundFont(soundFontBuffer)
     {
+        // copy and use transferable
+        const bufferCopy = soundFontBuffer.slice(0);
         await new Promise(resolve => {
             this._resolveReady = resolve;
-            this.post({
+            this.worklet.port.postMessage({
                 channelNumber: 0,
                 messageType: workletMessageType.reloadSoundFont,
-                messageData: soundFontBuffer
-            });
+                messageData: bufferCopy
+            }, [bufferCopy]);
         });
     }
 

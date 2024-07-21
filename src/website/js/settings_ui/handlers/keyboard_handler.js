@@ -61,7 +61,29 @@ export function _createKeyboardHandler( keyboard, synthui, renderer)
     synthui.synth.eventHandler.addEvent("programchange", "settings-keyboard-program-change", e => {
         if(e.userCalled)
         {
+            keyboard.selectChannel(e.channel);
             keyboardControls.channelSelector.value = e.channel;
+        }
+    });
+
+    // QoL: change selected channel if the given channel is muted
+    synthui.synth.eventHandler.addEvent("mutechannel", "settings-keuboard-mute-channel", e => {
+        if(e.isMuted)
+        {
+            if(e.channel === keyboard.channel)
+            {
+                // find the first non selected channel
+                let channelNumber = 0;
+                while(synthui.synth.channelProperties[channelNumber].isMuted)
+                {
+                    channelNumber++;
+                }
+                if(channelNumber < synthui.synth.channelsAmount)
+                {
+                    keyboard.selectChannel(channelNumber);
+                    keyboardControls.channelSelector.value = channelNumber;
+                }
+            }
         }
     })
 

@@ -1,4 +1,4 @@
-import {signedInt16, readByte, readBytesAsUintLittleEndian} from "../../utils/byte_functions.js";
+import {signedInt16, readBytesAsUintLittleEndian} from "../../utils/byte_functions.js";
 import { ShiftableByteArray } from '../../utils/shiftable_array.js';
 import { generatorTypes } from './generators.js'
 import { midiControllers } from '../../midi_parser/midi_message.js'
@@ -49,10 +49,11 @@ export class Modulator{
             this.transformAmount = dataArray.amt;
             this.transformType = dataArray.transform;
         }
-        else {
+        else
+        {
             this.modulatorSource = readBytesAsUintLittleEndian(dataArray, 2);
             this.modulatorDestination = readBytesAsUintLittleEndian(dataArray, 2);
-            this.transformAmount = signedInt16(readByte(dataArray), readByte(dataArray));
+            this.transformAmount = signedInt16(dataArray[dataArray.currentIndex++], dataArray[dataArray.currentIndex++]);
             this.modulationSecondarySrc = readBytesAsUintLittleEndian(dataArray, 2);
             this.transformType = readBytesAsUintLittleEndian(dataArray, 2);
         }

@@ -224,10 +224,10 @@ export function muteChannel(channel, isMuted)
     {
         this.stopAll(channel, true);
     }
+    this.workletProcessorChannels[channel].isMuted = isMuted;
+    this.sendChannelProperties();
     this.callEvent("mutechannel", {
         channel: channel,
         isMuted: isMuted
     });
-    this.workletProcessorChannels[channel].isMuted = isMuted;
-    this.sendChannelProperties();
 }

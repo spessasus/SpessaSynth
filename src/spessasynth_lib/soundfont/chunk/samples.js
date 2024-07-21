@@ -1,6 +1,6 @@
 import {RiffChunk} from "./riff_chunk.js";
 import {ShiftableByteArray} from "../../utils/shiftable_array.js";
-import {readByte, readBytesAsUintLittleEndian, readBytesAsString, signedInt8} from "../../utils/byte_functions.js";
+import { readBytesAsUintLittleEndian, readBytesAsString, signedInt8} from "../../utils/byte_functions.js";
 import { stbvorbis } from '../../utils/stbvorbis_sync.js'
 import { SpessaSynthWarn } from '../../utils/loggin.js'
 
@@ -57,7 +57,7 @@ function readSample(sampleHeaderData, smplArrayData) {
     let sampleRate = readBytesAsUintLittleEndian(sampleHeaderData, 4);
 
     // read the original sample pitch
-    let samplePitch = readByte(sampleHeaderData);
+    let samplePitch = sampleHeaderData[sampleHeaderData.currentIndex++];
     if(samplePitch === 255)
     {
         // if it's 255, then default to 60
@@ -65,7 +65,7 @@ function readSample(sampleHeaderData, smplArrayData) {
     }
 
     // readt the sample pitch correction
-    let samplePitchCorrection = signedInt8(readByte(sampleHeaderData));
+    let samplePitchCorrection = signedInt8(sampleHeaderData[sampleHeaderData.currentIndex++]);
 
 
     // read the link to the other channel
