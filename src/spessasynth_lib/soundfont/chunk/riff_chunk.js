@@ -26,20 +26,22 @@ export class RiffChunk
 /**
  * @param dataArray {ShiftableByteArray}
  * @param readData {boolean}
+ * @param forceShift {boolean}
  * @returns {RiffChunk}
  */
-export function readRIFFChunk(dataArray, readData = true) {
+export function readRIFFChunk(dataArray, readData = true, forceShift = false) {
     let header = readBytesAsString(dataArray, 4)
 
     let size = readBytesAsUintLittleEndian(dataArray, 4)
     let chunkData = undefined
-    if (readData) {
+    if (readData)
+    {
         chunkData = new ShiftableByteArray(size)
         chunkData.set(dataArray.slice(dataArray.currentIndex, dataArray.currentIndex + size))
-        dataArray.currentIndex += size
-        // for (let i = 0; i < size; i++) {
-        //     chunkData[i] = readByte(dataArray);
-        // }
+    }
+    if(readData || forceShift)
+    {
+        dataArray.currentIndex += size;
     }
 
     return new RiffChunk(header, size, chunkData)

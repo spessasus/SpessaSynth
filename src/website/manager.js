@@ -145,6 +145,8 @@ class Manager
          * @type {SynthesizerSnapshot}
          */
         const snapshot = await this.synth.getSynthesizerSnapshot();
+
+        const soundfont = parsedMid.embeddedSoundFont || this.sf;
         /**
          * Prepare synthesizer
          * @type {Synthetizer}
@@ -152,7 +154,7 @@ class Manager
         let synth;
         try
         {
-            synth = new Synthetizer(offline.destination, this.sf, false, {
+            synth = new Synthetizer(offline.destination, soundfont, false, {
                 parsedMIDI: parsedMid,
                 snapshot: snapshot
             }, {

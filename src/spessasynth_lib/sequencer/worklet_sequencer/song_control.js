@@ -51,12 +51,11 @@ export function loadNewSequence(parsedMidi)
      */
     this.midiData = parsedMidi;
 
-    /**
-     * merge the tracks
-     * @type {MidiMessage[]}
-     */
-    //this.events = this.midiData.tracks.flat();
-    //this.events.sort((e1, e2) => e1.ticks - e2.ticks);
+    // check for embedded soundfont
+    if(this.midiData.embeddedSoundFont !== undefined)
+    {
+        this.synth.reloadSoundFont(this.midiData.embeddedSoundFont);
+    }
 
     /**
      * the midi track data
@@ -73,7 +72,7 @@ export function loadNewSequence(parsedMidi)
     // assign port offsets
     this.midiData.midiPorts.forEach((port, trackIndex) => {
         this.assignMIDIPort(trackIndex, port);
-    })
+    });
 
     /**
      * Same as Audio.duration (seconds)

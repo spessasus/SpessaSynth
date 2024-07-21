@@ -1,13 +1,14 @@
 import { dataBytesAmount, getChannel, messageTypes, MidiMessage } from './midi_message.js'
-import {ShiftableByteArray} from "../utils/shiftable_array.js";
+import { ShiftableByteArray } from '../utils/shiftable_array.js'
 import {
     readByte,
     readBytesAsString,
     readBytesAsUintBigEndian,
-    readVariableLengthQuantity
-} from "../utils/byte_functions.js";
+    readVariableLengthQuantity,
+} from '../utils/byte_functions.js'
 import { arrayToHexString, consoleColors, formatTitle } from '../utils/other.js'
 import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo } from '../utils/loggin.js'
+import { readRIFFChunk } from '../soundfont/chunk/riff_chunk.js'
 
 /**
  * midi_loader.js
@@ -21,8 +22,64 @@ class MIDI{
      */
     constructor(arrayBuffer, fileName="") {
         SpessaSynthGroupCollapsed(`%cParsing MIDI File...`, consoleColors.info);
+        const binaryData = new ShiftableByteArray(arrayBuffer);
+        let fileByteArray;
 
-        const fileByteArray = new ShiftableByteArray(arrayBuffer);
+        // check for rmid
+        /**
+         * If the RMI file has an embedded sf2 in it, it will appeear here, otherwise undefined
+         * @type {ArrayBuffer}
+         */
+        this.embeddedSoundFont = undefined;
+
+        /**
+         * Contains the copyright strings
+         * @type {string}
+         */
+        this.copyright = "";
+
+        const initialString = readBytesAsString(binaryData, 4);
+        binaryData.shift(-4);
+        if(initialString === "RIFF")
+        {
+            // possibly an RMID file (https://web.archive.org/web/20110610135604/http://www.midi.org/about-midi/rp29spec(rmid).pdf)
+            // skip size
+            binaryData.shift(8);
+            const rmid = readBytesAsString(binaryData, 4, undefined, false);
+            if(rmid !== "RMID")
+            {
+                SpessaSynthGroupEnd();
+                throw new SyntaxError(`Invalid RMIDI Header! Expected "RMID", got "${rmid}"`);
+            }
+            const riff = readRIFFChunk(binaryData);
+            if(riff.header !== 'data')
+            {
+                SpessaSynthGroupEnd();
+                throw new SyntaxError(`Invalid RMIDI Chunk header! Expected "data", got "${rmid}"`);
+            }
+            // this is an rmid, load the midi into array for parsing
+            fileByteArray = riff.chunkData;
+
+            // keep loading chunks until we get sfbk
+            while(binaryData.currentIndex <= binaryData.length)
+            {
+                const startIndex = binaryData.currentIndex;
+                const currentChunk = readRIFFChunk(binaryData, true);
+                if(currentChunk.header === "RIFF")
+                {
+                    const type = readBytesAsString(currentChunk.chunkData, 4);
+                    if(type === "sfbk")
+                    {
+                        SpessaSynthInfo("%cFound embedded soundfont!", consoleColors.recognized);
+                        this.embeddedSoundFont = binaryData.slice(startIndex, startIndex + currentChunk.size).buffer;
+                    }
+                }
+            }
+        }
+        else
+        {
+            fileByteArray = binaryData;
+        }
         const headerChunk = this.readMIDIChunk(fileByteArray);
         if(headerChunk.type !== "MThd")
         {
@@ -42,13 +99,6 @@ class MIDI{
         this.tracksAmount = readBytesAsUintBigEndian(headerChunk.data, 2);
         // time division
         this.timeDivision = readBytesAsUintBigEndian(headerChunk.data, 2);
-
-        /**
-         * Contains the copyright strings
-         * @type {string}
-         */
-        this.copyright = "";
-
 
         /**
          * Contains the lyrics as binary chunks
