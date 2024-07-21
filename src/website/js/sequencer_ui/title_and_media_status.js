@@ -64,6 +64,7 @@ export function updateTitleAndMediaStatus()
         }
         this.currentLyricsString = this.decodeTextFix(this.currentLyrics.buffer) || this.locale.getLocaleString("locale.sequencerController.lyrics.noLyrics");
         this.setLyricsText("");
+        this.rawOtherTextEvents = [];
     }
     document.getElementById("title").innerText = this.currentSongTitle;
     document.title = this.currentSongTitle + " - SpessaSynth"

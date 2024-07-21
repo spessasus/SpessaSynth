@@ -6,6 +6,8 @@ the GUI, such as the renderer, keyboard, etc.
 
 `js` folder contains all the frontend JavaScript.
 
+`locale` folder contains the locale (languages and translations) and the locale manager.
+
 Some of these could be reused in your project as they usually can work on their own
 (like keyboard finds the div with id of `keyboard`),
 so maybe give them a try!

@@ -15,9 +15,13 @@ import { DUMMY_MIDI_DATA, MidiData } from '../midi_parser/midi_data.js'
  */
 
 /**
- * @typedef MIDIFile {Object}
+ * @typedef MidFile {Object}
  * @property {ArrayBuffer} binary - the binary data of the file.
  * @property {string} altName - the alternative name for the file
+ */
+
+/**
+ * @typedef {MIDI|MidFile} MIDIFile
  */
 
 export class Sequencer

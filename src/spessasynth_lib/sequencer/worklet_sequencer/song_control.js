@@ -101,8 +101,17 @@ export function loadNewSequence(parsedMidi)
  */
 export function loadNewSongList(midiBuffers)
 {
-    // parse the MIDIs
-    this.songs = midiBuffers.map(b => new MIDI(b.binary, b.altName || ""));
+    /**
+     * parse the MIDIs
+     * @type {MIDI[]}
+     */
+    this.songs = midiBuffers.map(b => {
+        if(b.duration)
+        {
+            return b;
+        }
+        return new MIDI(b.binary, b.altName || "")
+    });
     this.songIndex = 0;
     if(this.songs.length > 1)
     {
