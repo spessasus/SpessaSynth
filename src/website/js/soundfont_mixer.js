@@ -1,5 +1,5 @@
 import { getSf2LogoSvg } from './icons.js'
-import { SoundFont2 } from '../../spessasynth_lib/soundfont/soundfont_parser.js'
+import { SoundFont2 } from '../../spessasynth_lib/soundfont/soundfont.js'
 
 export class SoundFontMixer
 {
@@ -76,7 +76,7 @@ export class SoundFontMixer
     {
         // compile the soundfont from first to last
         let soundfont = SoundFont2.mergeSoundfonts(...this.soundfontList.map(s => s.soundFont));
-        this.synth.reloadSoundFont(soundfont);
+        this.synth.reloadSoundFont(soundfont.write()).then();
     }
 
     /**

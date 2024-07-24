@@ -1,5 +1,5 @@
-import {readBytesAsUintLittleEndian} from "../../utils/byte_functions.js";
-import {ShiftableByteArray} from "../../utils/shiftable_array.js";
+import {readBytesAsUintLittleEndian} from "../../utils/byte_functions/little_endian.js";
+import {IndexedByteArray} from "../../utils/indexed_array.js";
 import {RiffChunk} from "./riff_chunk.js";
 import {Generator, generatorTypes} from "./generators.js";
 import {Sample} from "./samples.js";
@@ -14,16 +14,21 @@ import {Modulator} from "./modulators.js";
 export class InstrumentZone {
     /**
      * Creates a zone (instrument)
-     * @param dataArray {ShiftableByteArray}
+     * @param dataArray {IndexedByteArray}
+     * @param index {number}
      */
-    constructor(dataArray) {
+    constructor(dataArray, index)
+    {
         this.generatorZoneStartIndex = readBytesAsUintLittleEndian(dataArray, 2);
         this.modulatorZoneStartIndex = readBytesAsUintLittleEndian(dataArray, 2);
         this.modulatorZoneSize = 0;
         this.generatorZoneSize = 0;
+        this.zoneID = index;
         this.keyRange = {min: 0, max: 127};
         this.velRange = {min: 0, max: 127}
         this.isGlobal = true;
+        this.useCount = 0;
+
         /**
          * @type {Generator[]}
          */
@@ -32,6 +37,16 @@ export class InstrumentZone {
          * @type {Modulator[]}
          */
         this.modulators = [];
+    }
+
+    deleteZone()
+    {
+        this.useCount--;
+        if(this.isGlobal)
+        {
+            return;
+        }
+        this.sample.useCount--;
     }
 
     setZoneSize(modulatorZoneSize, generatorZoneSize)
@@ -68,12 +83,14 @@ export class InstrumentZone {
      * Loads the zone's sample
      * @param samples {Sample[]}
      */
-    getSample(samples) {
+    getSample(samples)
+    {
         let sampleID = this.generators.find(g => g.generatorType === generatorTypes.sampleID);
         if (sampleID)
         {
             this.sample = samples[sampleID.generatorValue];
             this.isGlobal = false;
+            this.sample.useCount++;
         }
     }
 
@@ -105,7 +122,7 @@ export class InstrumentZone {
 }
 
 /**
- * Reads the given instrument zone chunk
+ * Reads the given instrument zone read
  * @param zonesChunk {RiffChunk}
  * @param instrumentGenerators {Generator[]}
  * @param instrumentModulators {Modulator[]}
@@ -118,9 +135,10 @@ export function readInstrumentZones(zonesChunk, instrumentGenerators, instrument
      * @type {InstrumentZone[]}
      */
     let zones = [];
+    let index = 0;
     while(zonesChunk.chunkData.length > zonesChunk.chunkData.currentIndex)
     {
-        let zone = new InstrumentZone(zonesChunk.chunkData);
+        let zone = new InstrumentZone(zonesChunk.chunkData, index);
         if(zones.length > 0)
         {
             let modulatorZoneSize = zone.modulatorZoneStartIndex - zones[zones.length - 1].modulatorZoneStartIndex;
@@ -133,20 +151,30 @@ export function readInstrumentZones(zonesChunk, instrumentGenerators, instrument
             zones[zones.length - 1].getVelRange();
         }
         zones.push(zone);
+        index++;
+    }
+    if(zones.length > 1)
+    {
+        // remove terminal
+        zones.pop();
     }
     return zones;
 }
 
-export class PresetZone {
+export class
+PresetZone
+{
     /**
      * Creates a zone (preset)
-     * @param dataArray {ShiftableByteArray}
+     * @param dataArray {IndexedByteArray}
+     * @param index {number}
      */
-    constructor(dataArray) {
+    constructor(dataArray, index) {
         this.generatorZoneStartIndex = readBytesAsUintLittleEndian(dataArray, 2);
         this.modulatorZoneStartIndex = readBytesAsUintLittleEndian(dataArray, 2);
         this.modulatorZoneSize = 0;
         this.generatorZoneSize = 0;
+        this.zoneID = index;
         this.keyRange = {min: 0, max: 127};
         this.velRange = {min: 0, max: 127}
         this.isGlobal = true;
@@ -164,6 +192,15 @@ export class PresetZone {
     {
         this.modulatorZoneSize = modulatorZoneSize;
         this.generatorZoneSize = generatorZoneSize;
+    }
+
+    deleteZone()
+    {
+        if(this.isGlobal)
+        {
+            return;
+        }
+        this.instrument.removeUseCount();
     }
 
     /**
@@ -197,8 +234,10 @@ export class PresetZone {
     getInstrument(instruments)
     {
         let instrumentID = this.generators.find(g => g.generatorType === generatorTypes.instrument);
-        if(instrumentID) {
+        if(instrumentID)
+        {
             this.instrument = instruments[instrumentID.generatorValue];
+            this.instrument.addUseCount();
             this.isGlobal = false;
         }
     }
@@ -231,7 +270,7 @@ export class PresetZone {
 }
 
 /**
- * Reads the given preset zone chunk
+ * Reads the given preset zone read
  * @param zonesChunk {RiffChunk}
  * @param presetGenerators {Generator[]}
  * @param instruments {Instrument[]}
@@ -244,9 +283,10 @@ export function readPresetZones(zonesChunk, presetGenerators, presetModulators, 
      * @type {PresetZone[]}
      */
     let zones = [];
+    let index = 0;
     while(zonesChunk.chunkData.length > zonesChunk.chunkData.currentIndex)
     {
-        let zone = new PresetZone(zonesChunk.chunkData);
+        let zone = new PresetZone(zonesChunk.chunkData, index);
         if(zones.length > 0)
         {
             let modulatorZoneSize = zone.modulatorZoneStartIndex - zones[zones.length - 1].modulatorZoneStartIndex;
@@ -259,6 +299,12 @@ export function readPresetZones(zonesChunk, presetGenerators, presetModulators, 
             zones[zones.length - 1].getVelRange();
         }
         zones.push(zone);
+        index++;
+    }
+    if(zones.length > 1)
+    {
+        // remove terminal
+        zones.pop();
     }
     return zones;
 }

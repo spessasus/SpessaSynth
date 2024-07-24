@@ -19,6 +19,7 @@ const notifications = {};
  * @typedef {Object} NotificationContent
  * @property {"button"|"progress"|"text"|"input"|"toggle"} type
  * @property {string|undefined} textContent
+ * @property {string|undefined} translatePathTitle
  * @property {Object<string, string>|undefined} attributes
  * @property {function(NotificationType)|undefined} onClick
  */
@@ -28,13 +29,15 @@ const notifications = {};
  * @param contents {NotificationContent[]}
  * @param time {number} seconds
  * @param allowClosing {boolean}
+ * @param locale {LocaleManager}
  * @returns {NotificationType}
  */
 export function showNotification(
     title,
     contents,
     time = NOTIFICATION_TIME,
-    allowClosing = true)
+    allowClosing = true,
+    locale = undefined)
 {
     const notification = document.createElement("div");
     const notificationID = notificationCounter++;
@@ -50,7 +53,7 @@ export function showNotification(
     notification.appendChild(contentWrapper);
     for(const content of contents)
     {
-        const element = getContent(content);
+        const element = getContent(content, locale);
         if(content.onClick)
         {
             element.onclick = () => content.onClick({div: notification, id: notificationID});

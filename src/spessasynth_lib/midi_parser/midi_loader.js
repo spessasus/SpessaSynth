@@ -1,13 +1,11 @@
 import { dataBytesAmount, getChannel, messageTypes, MidiMessage } from './midi_message.js'
-import { ShiftableByteArray } from '../utils/shiftable_array.js'
-import {
-    readBytesAsString,
-    readBytesAsUintBigEndian,
-    readVariableLengthQuantity,
-} from '../utils/byte_functions.js'
+import { IndexedByteArray } from '../utils/indexed_array.js'
 import { arrayToHexString, consoleColors, formatTitle } from '../utils/other.js'
 import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo } from '../utils/loggin.js'
-import { readRIFFChunk } from '../soundfont/chunk/riff_chunk.js'
+import { readRIFFChunk } from '../soundfont/read/riff_chunk.js'
+import { readVariableLengthQuantity } from '../utils/byte_functions/variable_length_quantity.js'
+import { readBytesAsUintBigEndian } from '../utils/byte_functions/big_endian.js'
+import { readBytesAsString } from '../utils/byte_functions/string.js'
 
 /**
  * midi_loader.js
@@ -21,7 +19,7 @@ class MIDI{
      */
     constructor(arrayBuffer, fileName="") {
         SpessaSynthGroupCollapsed(`%cParsing MIDI File...`, consoleColors.info);
-        const binaryData = new ShiftableByteArray(arrayBuffer);
+        const binaryData = new IndexedByteArray(arrayBuffer);
         let fileByteArray;
 
         // check for rmid
@@ -43,7 +41,7 @@ class MIDI{
         {
             // possibly an RMID file (https://web.archive.org/web/20110610135604/http://www.midi.org/about-midi/rp29spec(rmid).pdf)
             // skip size
-            binaryData.currentIndex += 4;
+            binaryData.currentIndex += 8;
             const rmid = readBytesAsString(binaryData, 4, undefined, false);
             if(rmid !== "RMID")
             {
@@ -228,7 +226,7 @@ class MIDI{
                 }
 
                 // put the event data into the array
-                const eventData = new ShiftableByteArray(eventDataLength);
+                const eventData = new IndexedByteArray(eventDataLength);
                 const messageData = trackChunk.data.slice(trackChunk.data.currentIndex, trackChunk.data.currentIndex + eventDataLength);
                 trackChunk.data.currentIndex += eventDataLength;
                 eventData.set(messageData, 0);
@@ -289,7 +287,7 @@ class MIDI{
                         if(arrayToHexString(eventData.slice(0, 7)).trim() === "41 10 45 12 10 00 00")
                         {
                             /**
-                             * @type {ShiftableByteArray}
+                             * @type {IndexedByteArray}
                              */
                             const cutText = eventData.slice(7, messageData.length - 3);
                             const decoded = readBytesAsString(cutText, cutText.length) + "\n";
@@ -451,8 +449,8 @@ class MIDI{
     }
 
     /**
-     * @param fileByteArray {ShiftableByteArray}
-     * @returns {{type: string, size: number, data: ShiftableByteArray}}
+     * @param fileByteArray {IndexedByteArray}
+     * @returns {{type: string, size: number, data: IndexedByteArray}}
      */
     readMIDIChunk(fileByteArray)
     {
@@ -462,7 +460,7 @@ class MIDI{
         // size
         chunk.size = readBytesAsUintBigEndian(fileByteArray, 4);
         // data
-        chunk.data = new ShiftableByteArray(chunk.size);
+        chunk.data = new IndexedByteArray(chunk.size);
         const dataSlice = fileByteArray.slice(fileByteArray.currentIndex, fileByteArray.currentIndex + chunk.size);
         chunk.data.set(dataSlice, 0);
         fileByteArray.currentIndex += chunk.size;

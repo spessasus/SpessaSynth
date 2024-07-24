@@ -1,5 +1,5 @@
-import {signedInt16, readBytesAsUintLittleEndian} from "../../utils/byte_functions.js";
-import { ShiftableByteArray } from '../../utils/shiftable_array.js';
+import {signedInt16, readBytesAsUintLittleEndian} from "../../utils/byte_functions/little_endian.js";
+import { IndexedByteArray } from '../../utils/indexed_array.js';
 import { generatorTypes } from './generators.js'
 import { midiControllers } from '../../midi_parser/midi_message.js'
 
@@ -38,7 +38,7 @@ for (let i = 0; i < 4; i++) {
 export class Modulator{
     /**
      * Creates a modulator
-     * @param dataArray {ShiftableByteArray|{srcEnum: number, secSrcEnum: number, dest:number, amt: number, transform: number}}
+     * @param dataArray {IndexedByteArray|{srcEnum: number, secSrcEnum: number, dest:number, amt: number, transform: number}}
      */
     constructor(dataArray) {
         if(dataArray.srcEnum)
@@ -231,7 +231,7 @@ export const defaultModulators = [
 ];
 
 /**
- * Reads the modulator chunk
+ * Reads the modulator read
  * @param modulatorChunk {RiffChunk}
  * @returns {Modulator[]}
  */

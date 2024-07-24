@@ -1,8 +1,8 @@
-import { ShiftableByteArray } from '../../../spessasynth_lib/utils/shiftable_array.js'
-import { readBytesAsUintBigEndian } from '../../../spessasynth_lib/utils/byte_functions.js'
+import { IndexedByteArray } from '../../../spessasynth_lib/utils/indexed_array.js'
 import { SpessaSynthInfo } from '../../../spessasynth_lib/utils/loggin.js'
 import { consoleColors } from '../../../spessasynth_lib/utils/other.js'
 import { DEFAULT_PERCUSSION } from '../../../spessasynth_lib/synthetizer/synthetizer.js'
+import { readBytesAsUintBigEndian } from '../../../spessasynth_lib/utils/byte_functions/big_endian.js'
 
 const MIN_NOTE_TIME = 0.02;
 
@@ -20,8 +20,8 @@ export function calculateNoteTimes(midi)
      */
     function getTempo(event)
     {
-        // simulate shiftableByteArray
-        event.messageData = new ShiftableByteArray(event.messageData.buffer);
+        // simulate IndexedByteArray
+        event.messageData = new IndexedByteArray(event.messageData.buffer);
         event.messageData.currentIndex = 0;
         return 60000000 / readBytesAsUintBigEndian(event.messageData, 3);
     }

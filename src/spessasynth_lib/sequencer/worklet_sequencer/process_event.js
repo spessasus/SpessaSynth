@@ -1,8 +1,9 @@
-import { getEvent, messageTypes } from '../../midi_parser/midi_message.js'
+import { getEvent, messageTypes, midiControllers } from '../../midi_parser/midi_message.js'
 import { WorkletSequencerReturnMessageType } from './sequencer_message.js'
 import { consoleColors } from '../../utils/other.js'
-import { readBytesAsUintBigEndian } from '../../utils/byte_functions.js'
 import { SpessaSynthWarn } from '../../utils/loggin.js'
+import { readBytesAsUintBigEndian } from '../../utils/byte_functions/big_endian.js'
+import { DEFAULT_PERCUSSION } from '../../synthetizer/synthetizer.js'
 
 /**
  * Processes a single event
@@ -66,7 +67,13 @@ export function _processEvent(event, trackIndex)
             break;
 
         case messageTypes.controllerChange:
-            this.synth.controllerChange(statusByteData.channel, event.messageData[0], event.messageData[1]);
+            // special case if the RMID is embedded: subtract 1 from bank. See wiki About-RMIDI.md
+            let v = event.messageData[1];
+            if(this.midiData.embeddedSoundFont && event.messageData[0] === midiControllers.bankSelect)
+            {
+                v--;
+            }
+            this.synth.controllerChange(statusByteData.channel, event.messageData[0], v);
             break;
 
         case messageTypes.programChange:
@@ -141,7 +148,7 @@ export function _addNewMidiPort()
 {
     for (let i = 0; i < 16; i++) {
         this.synth.createWorkletChannel(true);
-        if(i === 9)
+        if(i === DEFAULT_PERCUSSION)
         {
             this.synth.setDrums(this.synth.workletProcessorChannels.length - 1, true);
         }

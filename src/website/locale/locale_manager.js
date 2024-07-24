@@ -1,6 +1,6 @@
 /**
  * @typedef {{
- *  object: Object,
+ *  object: HTMLElement,
  *  propertyName: string,
  *  localePath: string,
  *  formattingArguments: string|number[],
@@ -109,7 +109,7 @@ export class LocaleManager
 
     /**
      * Binds a given object's property to a locale path and applies it
-     * @param object {Object} the object that holds the bound property
+     * @param object {HTMLElement} the object that holds the bound property
      * @param propertyName {string} the object's property to bind
      * @param localePath {string} The locale path to the text, written as JS object path, starts with "locale."
      * @param formattingArguments {string|number[]} optional arguments if the locale uses formatting ("{0} {1}") etc.
@@ -164,7 +164,7 @@ export class LocaleManager
             {
                 if(fallback)
                 {
-                    throw new Error(`Invalid locale path: ${path}: part "${parts[i]}" does not exist`);
+                    throw new Error(`Invalid locale path: ${path}: part "${parts[i]}" does not exist. Available paths: ${Object.keys(current).join(", ")}`);
                 }
                 else
                 {
@@ -189,6 +189,7 @@ export class LocaleManager
      */
     changeGlobalLocale(newLocale, force = false)
     {
+        document.documentElement.lang = newLocale;
         /**
          * @type {CompleteLocaleTypedef}
          */

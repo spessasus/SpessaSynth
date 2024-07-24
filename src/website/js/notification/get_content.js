@@ -1,20 +1,43 @@
 /**
+ * @param el {HTMLElement}
  * @param content {NotificationContent}
+ * @param locale {LocaleManager}
+ */
+function applyTextContent(el, content, locale)
+{
+    if(content.textContent)
+    {
+        el.textContent = content.textContent;
+    }
+    if(content.translatePathTitle)
+    {
+        if(!locale)
+        {
+            throw new Error("Translate path title provided but no locale provided.");
+        }
+        locale.bindObjectProperty(el, "textContent", content.translatePathTitle + ".title");
+        locale.bindObjectProperty(el, "title", content.translatePathTitle + ".description");
+    }
+}
+
+/**
+ * @param content {NotificationContent}
+ * @param locale {LocaleManager}
  * @returns {HTMLElement}
  */
-export function getContent(content)
+export function getContent(content, locale)
 {
     switch(content.type)
     {
         case "button":
             const btn = document.createElement("button");
-            btn.textContent = content.textContent;
+            applyTextContent(btn, content, locale);
             applyAttributes(content, [btn])
             return btn;
 
         case "text":
             const p = document.createElement("p");
-            p.textContent = content.textContent;
+            applyTextContent(p, content, locale);
             applyAttributes(content, [p]);
             return p;
 
@@ -22,10 +45,10 @@ export function getContent(content)
             const inputWrapper = document.createElement("div");
             inputWrapper.classList.add("notification_input_wrapper");
             const input = document.createElement("input");
-            input.textContent = content.textContent;
+            applyTextContent(input, content, locale);
             input.addEventListener("keydown", e => e.stopPropagation());
             const inputLabel = document.createElement("label");
-            inputLabel.textContent = content.textContent;
+            applyTextContent(inputLabel, content, locale);
 
             applyAttributes(content, [input, inputLabel]);
             inputWrapper.append(inputLabel);
@@ -42,7 +65,7 @@ export function getContent(content)
             return background;
 
         case "toggle":
-            return getSwitch(content);
+            return getSwitch(content, locale);
     }
 }
 
@@ -66,20 +89,24 @@ function applyAttributes(content, elements)
 
 /**
  * @param content {NotificationContent}
+ * @param locale {LocaleManager}
  * @returns {HTMLLabelElement}
  */
-function getSwitch(content)
+function getSwitch(content, locale)
 {
     const switchWrapper = document.createElement("label");
     switchWrapper.classList.add("notification_switch_wrapper");
     const toggleText= document.createElement("label");
-    toggleText.textContent = content.textContent;
+    applyTextContent(toggleText, content, locale);
+
     const toggleInput = document.createElement("input");
     toggleInput.type = "checkbox";
     applyAttributes(content, [toggleText, toggleInput]);
+
     const toggle = document.createElement("div");
     toggle.classList.add("notification_switch");
     toggle.appendChild(toggleInput);
+
     const slider = document.createElement("div");
     slider.classList.add("notification_switch_slider");
     toggle.appendChild(slider);

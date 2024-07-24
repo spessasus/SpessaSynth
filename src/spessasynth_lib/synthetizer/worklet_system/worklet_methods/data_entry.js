@@ -5,7 +5,7 @@ import {
     dataEntryStates,
     NON_CC_INDEX_OFFSET,
 } from '../worklet_utilities/worklet_processor_channel.js'
-import { modulatorSources } from '../../../soundfont/chunk/modulators.js'
+import { modulatorSources } from '../../../soundfont/read/modulators.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../../../utils/loggin.js'
 
 /**
@@ -17,6 +17,9 @@ import { SpessaSynthInfo, SpessaSynthWarn } from '../../../utils/loggin.js'
  */
 export function dataEntryCoarse(channel, dataValue)
 {
+    /**
+     * @type {WorkletProcessorChannel}
+     */
     const channelObject = this.workletProcessorChannels[channel];
     let addDefaultVibrato = () =>
     {
@@ -148,7 +151,7 @@ export function dataEntryCoarse(channel, dataValue)
 
                 // drum reverb
                 case 0x1D:
-                    if(!channelObject.percussionChannel)
+                    if(!channelObject.drumChannel)
                     {
                         return;
                     }
@@ -161,21 +164,6 @@ export function dataEntryCoarse(channel, dataValue)
                         consoleColors.info,
                         consoleColors.value);
                     break;
-
-                // drum chorus
-                case 0x1E:
-                    if(!channelObject.percussionChannel)
-                    {
-                        return;
-                    }
-                    const chorus = dataValue;
-                    this.controllerChange(channel, midiControllers.effects3Depth, chorus);
-                    SpessaSynthInfo(
-                        `%cGS Drum chorus for %c${channel}%c: %c${chorus}`,
-                        consoleColors.info,
-                        consoleColors.recognized,
-                        consoleColors.info,
-                        consoleColors.value);
             }
             break;
 
@@ -251,8 +239,17 @@ export function dataEntryFine(channel, dataValue)
                 default:
                     break;
 
-                // pitch bend range fine tune is not supported in the SoundFont2 format. (pitchbend range is in semitones rather than cents)
+                // pitch bend range fine tune
                 case 0x0000:
+                    if(dataValue === 0)
+                    {
+                        break;
+                    }
+                    channelObject.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] |= dataValue; // 14 bit value so upper 7 are coarse and lower 7 are fine!
+                    const actualTune = (channelObject.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] >> 7) + dataValue / 127;
+                    SpessaSynthInfo(`%cChannel ${channel} bend range. Semitones: %c${actualTune}`,
+                        consoleColors.info,
+                        consoleColors.value);
                     break;
 
                 // fine tuning

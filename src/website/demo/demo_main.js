@@ -1,6 +1,6 @@
 "use strict"
 
-import { Manager } from '../manager.js'
+import { Manager } from '../manager/manager.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../../spessasynth_lib/utils/loggin.js'
 import { isMobile } from '../js/utils/is_mobile.js'
 import { getCheckSvg, getExclamationSvg, getHourglassSvg } from '../js/icons.js'
@@ -257,6 +257,7 @@ async function startMidi(midiFiles)
         fName += ` and ${midiFiles.length - 1} others`;
     }
     document.getElementById("file_upload").innerText = fName;
+    document.getElementById("file_upload").title = midiFiles[0].name;
     /**
      * @type {MIDIFile[]}
      */

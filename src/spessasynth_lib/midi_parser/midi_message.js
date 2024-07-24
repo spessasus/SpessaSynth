@@ -1,4 +1,4 @@
-import {ShiftableByteArray} from "../utils/shiftable_array.js";
+import {IndexedByteArray} from "../utils/indexed_array.js";
 
 /**
  * midi_message.js
@@ -10,13 +10,16 @@ export class MidiMessage
     /**
      * @param ticks {number}
      * @param byte {number} the message status byte
-     * @param data {ShiftableByteArray}
+     * @param data {IndexedByteArray}
      */
     constructor(ticks, byte, data) {
         // absolute ticks from the start
         this.ticks = ticks;
         // message status byte (for meta it's the second byte)
         this.messageStatusByte = byte;
+        /**
+         * @type {IndexedByteArray}
+         */
         this.messageData = data;
     }
 }
@@ -143,7 +146,7 @@ export function getEvent(statusByte) {
 
 
 /**
- * @type {{timbreHarmonicContent: number, omniModeOn: number, polyModeOn: number, localControlOnOff: number, NRPNLsb: number, allNotesOff: number, footController: number, effects2Depth: number, lsbForControl7MainVolume: number, expressionController: number, monoModeOn: number, balance: number, effectControl1: number, effectControl2: number, modulationWheel: number, lsbForControl1ModulationWheel: number, allSoundOff: number, pan: number, effects1Depth: number, effects3Depth: number, attackTime: number, dataEntryMsb: number, portamentoControl: number, sostenutoPedal: number, lsbForControl5PortamentoTime: number, RPNLsb: number, bankSelect: number, portamentoTime: number, mainVolume: number, hold2Pedal: number, releaseTime: number, dataDecrement: number, NRPNMsb: number, legatoFootswitch: number, sustainPedal: number, portamentoOnOff: number, lsbForControl0BankSelect: number, lsbForControl13EffectControl2: number, effects5Depth: number, generalPurposeController2: number, lsbForControl6DataEntry: number, resetAllControllers: number, generalPurposeController3: number, generalPurposeController4: number, generalPurposeController5: number, softPedal: number, generalPurposeController6: number, lsbForControl4FootController: number, lsbForControl12EffectControl1: number, generalPurposeController7: number, generalPurposeController8: number, effects4Depth: number, lsbForControl8Balance: number, soundController9: number, soundVariation: number, soundController8: number, soundController7: number, soundController6: number, soundController10: number, dataIncrement: number, generalPurposeController1: number, lsbForControl2BreathController: number, lsbForControl11ExpressionController: number, brightness: number, lsbForControl10Pan: number, RPNMsb: number, breathController: number, omniModeOff: number}}
+ * @enum {number}
  */
 export const midiControllers = {
     bankSelect: 0,

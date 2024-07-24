@@ -1,6 +1,6 @@
 import { returnMessageType } from './worklet_message.js'
 import { NON_CC_INDEX_OFFSET } from '../worklet_utilities/worklet_processor_channel.js'
-import { modulatorSources } from '../../../soundfont/chunk/modulators.js'
+import { modulatorSources } from '../../../soundfont/read/modulators.js'
 
 /**
  * Calls synth event from the worklet side
@@ -58,10 +58,11 @@ export function sendChannelProperties()
      * @type {ChannelProperty[]}
      */
     const data = this.workletProcessorChannels.map(c => {
+        const range = (c.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] >> 7) + (c.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] & 0x7F) / 127;
         return {
             voicesAmount: c.voices.length,
             pitchBend: c.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel],
-            pitchBendRangeSemitones: c.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] >> 7,
+            pitchBendRangeSemitones: range,
             isMuted: c.isMuted,
             isDrum: c.drumChannel
         }

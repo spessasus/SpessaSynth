@@ -1,6 +1,6 @@
 import { customControllers, NON_CC_INDEX_OFFSET } from '../worklet_utilities/worklet_processor_channel.js'
 import { consoleColors } from '../../../utils/other.js'
-import { modulatorSources } from '../../../soundfont/chunk/modulators.js'
+import { modulatorSources } from '../../../soundfont/read/modulators.js'
 import { computeModulators } from '../worklet_utilities/worklet_modulator.js'
 import { SpessaSynthInfo } from '../../../utils/loggin.js'
 

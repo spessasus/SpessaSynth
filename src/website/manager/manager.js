@@ -1,27 +1,24 @@
-import { MidiKeyboard } from './js/midi_keyboard/midi_keyboard.js'
-import { Synthetizer } from '../spessasynth_lib/synthetizer/synthetizer.js'
-import { Renderer } from './js/renderer/renderer.js'
-import { MIDI } from '../spessasynth_lib/midi_parser/midi_loader.js'
+import { MidiKeyboard } from '../js/midi_keyboard/midi_keyboard.js'
+import { Synthetizer } from '../../spessasynth_lib/synthetizer/synthetizer.js'
+import { Renderer } from '../js/renderer/renderer.js'
 
-import { SequencerUI } from './js/sequencer_ui/sequencer_ui.js'
-import { SynthetizerUI } from './js/synthesizer_ui/synthetizer_ui.js'
-import { MIDIDeviceHandler } from '../spessasynth_lib/midi_handler/midi_handler.js'
-import { WebMidiLinkHandler } from '../spessasynth_lib/midi_handler/web_midi_link.js'
-import { Sequencer } from '../spessasynth_lib/sequencer/sequencer.js'
-import { SpessaSynthSettings } from './js/settings_ui/settings.js'
-import { MusicModeUI } from './js/music_mode_ui.js'
+import { SequencerUI } from '../js/sequencer_ui/sequencer_ui.js'
+import { SynthetizerUI } from '../js/synthesizer_ui/synthetizer_ui.js'
+import { MIDIDeviceHandler } from '../../spessasynth_lib/midi_handler/midi_handler.js'
+import { WebMidiLinkHandler } from '../../spessasynth_lib/midi_handler/web_midi_link.js'
+import { Sequencer } from '../../spessasynth_lib/sequencer/sequencer.js'
+import { SpessaSynthSettings } from '../js/settings_ui/settings.js'
+import { MusicModeUI } from '../js/music_mode_ui.js'
 //import { SoundFontMixer } from './js/soundfont_mixer.js'
-import { LocaleManager } from './locale/locale_manager.js'
-import { isMobile } from './js/utils/is_mobile.js'
-import { SpessaSynthInfo } from '../spessasynth_lib/utils/loggin.js'
-import { closeNotification, showNotification } from './js/notification/notification.js'
-import { keybinds } from './js/keybinds.js'
-import { formatTime } from '../spessasynth_lib/utils/other.js'
-import { audioBufferToWav } from '../spessasynth_lib/utils/buffer_to_wav.js'
-import { applySnapshotToMIDI } from '../spessasynth_lib/midi_parser/midi_editor.js'
-import { writeMIDIFile } from '../spessasynth_lib/midi_parser/midi_writer.js'
-
-const RENDER_AUDIO_TIME_INTERVAL = 1000;
+import { LocaleManager } from '../locale/locale_manager.js'
+import { isMobile } from '../js/utils/is_mobile.js'
+import { SpessaSynthInfo } from '../../spessasynth_lib/utils/loggin.js'
+import { keybinds } from '../js/keybinds.js'
+import { _doExporWav, _exportWav } from './export_wav.js'
+import { exportMidi } from './export_midi.js'
+import { _exportSoundfont } from './export_soundfont.js'
+import { exportSong } from './export_song.js'
+import { _exportRMIDI } from './export_rmidi.js'
 
 // this enables transitions on body because if we enable them on load, it flashbangs us with white
 document.body.classList.add("load");
@@ -68,189 +65,6 @@ class Manager
         this.initializeContext(context, soundFontBuffer).then(() => {
             solve();
         });
-        this.sf = soundFontBuffer;
-    }
-
-    async exportSong()
-    {
-        showNotification(
-            this.localeManager.getLocaleString("locale.midiRenderButton.title"),
-            [
-                {
-                    type: "button",
-                    textContent: "WAV",
-                    onClick: n => {
-                        this._exportWav();
-                        closeNotification(n.id);
-                    }
-                },
-                {
-                    type: "button",
-                    textContent: "MIDI",
-                    onClick: n => {
-                        this.exportMidi();
-                        closeNotification(n.id);
-                    }
-                }
-            ],
-            999999
-        )
-    }
-
-    /**
-     * Changes the MIDI according to locked controllers and programs and exports it as a file
-     */
-    async exportMidi()
-    {
-        const mid = await this.seq.getMIDI();
-        applySnapshotToMIDI(mid, await this.synth.getSynthesizerSnapshot());
-        // export modified midi and write out
-        const file = writeMIDIFile(mid);
-        const blob = new Blob([file], { type: "audio/mid" });
-        this.saveBlob(blob, `${mid.midiName || "unnamed_song"}.mid`)
-    }
-
-    async _doExporWav(normalizeAudio = true, additionalTime = 2)
-    {
-        this.isExporting = true;
-        if(!this.seq)
-        {
-            throw new Error("No sequencer active");
-        }
-        // get locales
-        const exportingMessage = manager.localeManager.getLocaleString("locale.exportAudio.message");
-        const estimatedMessage = manager.localeManager.getLocaleString("locale.exportAudio.estimated");
-        const notification = showNotification(
-            exportingMessage,
-            [
-                { type: 'text', textContent: estimatedMessage + " (...)" },
-                { type: 'progress' }
-            ],
-            9999999,
-            false
-        );
-        const parsedMid = await this.seq.getMIDI();
-        const duration = parsedMid.duration + additionalTime;
-        // prepare audio context
-        const offline = new OfflineAudioContext({
-            numberOfChannels: 2,
-            sampleRate: this.context.sampleRate,
-            length: this.context.sampleRate * duration
-        });
-        const workletURL = new URL("../spessasynth_lib/synthetizer/worklet_system/worklet_processor.js", import.meta.url).href;
-        await offline.audioWorklet.addModule(workletURL);
-
-        /**
-         * take snapshot of the real synth
-         * @type {SynthesizerSnapshot}
-         */
-        const snapshot = await this.synth.getSynthesizerSnapshot();
-
-        const soundfont = parsedMid.embeddedSoundFont || this.sf;
-        /**
-         * Prepare synthesizer
-         * @type {Synthetizer}
-         */
-        let synth;
-        try
-        {
-            synth = new Synthetizer(offline.destination, soundfont, false, {
-                parsedMIDI: parsedMid,
-                snapshot: snapshot
-            }, {
-                reverbEnabled: true,
-                chorusEnabled: true,
-                chorusConfig: undefined,
-                reverbImpulseResponse: this.impulseResponse
-            });
-        }
-        catch (e)
-        {
-            showNotification(
-                this.localeManager.getLocaleString("locale.warnings.warning"),
-                [{
-                    type: "text",
-                    textContent: this.localeManager.getLocaleString("locale.warnings.outOfMemory")
-                }]
-            )
-            throw e;
-        }
-
-        const detailMessage = notification.div.getElementsByTagName("p")[0];
-        const progressDiv = notification.div.getElementsByClassName("notification_progress")[0];
-
-        const RATI_SECONDS = RENDER_AUDIO_TIME_INTERVAL / 1000;
-        let rendered = synth.currentTime;
-        let estimatedTime = duration;
-        const smoothingFactor = 0.1; // for smoothing estimated time
-
-        const interval = setInterval(() => {
-            // calculate estimated time
-            let hasRendered = synth.currentTime - rendered;
-            rendered = synth.currentTime;
-            const progress = synth.currentTime / duration;
-            progressDiv.style.width = `${progress * 100}%`;
-            const speed = hasRendered / RATI_SECONDS;
-            const estimated = (1 - progress) / speed * duration;
-            if (estimated === Infinity)
-            {
-                return;
-            }
-            // smooth out estimated using exponential moving average
-            estimatedTime = smoothingFactor * estimated + (1 - smoothingFactor) * estimatedTime;
-            detailMessage.innerText = `${estimatedMessage} ${formatTime(estimatedTime).time}`
-        }, RENDER_AUDIO_TIME_INTERVAL);
-
-        const buf = await offline.startRendering();
-        progressDiv.style.width = "100%";
-        // clear intervals and save file
-        clearInterval(interval);
-        closeNotification(notification.id);
-        this.saveBlob(audioBufferToWav(buf, normalizeAudio), `${window.manager.seq.midiData.midiName || 'unnamed_song'}.wav`)
-        this.isExporting = false;
-    }
-
-    async _exportWav()
-    {
-        if(this.isExporting)
-        {
-            return;
-        }
-        showNotification(
-            this.localeManager.getLocaleString("locale.exportAudioOptions.title"),
-            [
-                {
-                    type: "toggle",
-                    textContent: this.localeManager.getLocaleString("locale.exportAudioOptions.normalizeVolume.title"),
-                    attributes: {
-                        "title": this.localeManager.getLocaleString("locale.exportAudioOptions.normalizeVolume.description"),
-                        "normalize-volume-toggle": "1",
-                        "checked": "true"
-                    }
-                },
-                {
-                    type: "input",
-                    textContent: this.localeManager.getLocaleString("locale.exportAudioOptions.additionalTime.title"),
-                    attributes: {
-                        "value": "2",
-                        "type": "number",
-                        "title": this.localeManager.getLocaleString("locale.exportAudioOptions.additionalTime.description")
-                    }
-                },
-                {
-                    type: "button",
-                    textContent: this.localeManager.getLocaleString("locale.exportAudioOptions.confirm"),
-                    onClick: n => {
-                        closeNotification(n.id);
-                        const normalizeVolume = n.div.querySelector("input[normalize-volume-toggle='1']").checked;
-                        const additionalTime = n.div.querySelector("input[type='number']").value;
-                        this._doExporWav(normalizeVolume, parseInt(additionalTime));
-                    }
-                }
-            ],
-            9999999,
-            true
-        );
     }
 
     saveBlob(blob, name)
@@ -288,15 +102,22 @@ class Manager
             this.localeManager.bindObjectProperty(element, "innerText", element.getAttribute("translate-path"));
         }
 
+        // same with title
+        for(const element of document.querySelectorAll("*[translate-path-title]"))
+        {
+            this.localeManager.bindObjectProperty(element, "innerText", element.getAttribute("translate-path-title") + ".title");
+            this.localeManager.bindObjectProperty(element, "title", element.getAttribute("translate-path-title") + ".description");
+        }
+
         if(context.audioWorklet) {
-            const workletURL = new URL("../spessasynth_lib/synthetizer/worklet_system/worklet_processor.js", import.meta.url).href;
+            const workletURL = new URL("../../spessasynth_lib/synthetizer/worklet_system/worklet_processor.js", import.meta.url).href;
             await context.audioWorklet.addModule(workletURL);
         }
         // set up soundfont
         this.soundFont = soundFont;
 
         // set up buffer here (if we let spessasynth use the default buffer, there's no reverb for the first second.)
-        const impulseURL = new URL("../spessasynth_lib/synthetizer/audio_effects/impulse_response_2.flac", import.meta.url);
+        const impulseURL = new URL("../../spessasynth_lib/synthetizer/audio_effects/impulse_response_2.flac", import.meta.url);
         const response = await fetch(impulseURL)
         const data = await response.arrayBuffer();
         this.impulseResponse = await context.decodeAudioData(data);
@@ -472,7 +293,7 @@ class Manager
     {
         //this.soundFontMixer.soundFontChange(sf);
         await this.synth.reloadSoundFont(sf);
-        this.sf = sf;
+        this.soundFont = sf;
     }
 
     /**
@@ -502,4 +323,10 @@ class Manager
         this.seq.play(true);
     }
 }
+Manager.prototype.exportSong = exportSong;
+Manager.prototype._exportWav = _exportWav;
+Manager.prototype._doExportWav = _doExporWav;
+Manager.prototype.exportMidi = exportMidi;
+Manager.prototype._exportSoundfont = _exportSoundfont;
+Manager.prototype._exportRMIDI = _exportRMIDI;
 export { Manager }

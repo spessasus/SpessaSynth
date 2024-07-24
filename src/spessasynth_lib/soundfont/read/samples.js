@@ -1,8 +1,9 @@
 import {RiffChunk} from "./riff_chunk.js";
-import {ShiftableByteArray} from "../../utils/shiftable_array.js";
-import { readBytesAsUintLittleEndian, readBytesAsString, signedInt8} from "../../utils/byte_functions.js";
-import { stbvorbis } from '../../utils/stbvorbis_sync.js'
+import {IndexedByteArray} from "../../utils/indexed_array.js";
+import { readBytesAsUintLittleEndian, signedInt8} from "../../utils/byte_functions/little_endian.js";
+import { stbvorbis } from '../../utils/stbvorbis_sync.min.js'
 import { SpessaSynthWarn } from '../../utils/loggin.js'
+import { readBytesAsString } from '../../utils/byte_functions/string.js'
 
 /**
  * samples.js
@@ -11,9 +12,9 @@ import { SpessaSynthWarn } from '../../utils/loggin.js'
  */
 
 /**
- * Reads the generatorTranslator from the shdr chunk
+ * Reads the generatorTranslator from the shdr read
  * @param sampleHeadersChunk {RiffChunk}
- * @param smplChunkData {ShiftableByteArray}
+ * @param smplChunkData {IndexedByteArray}
  * @returns {Sample[]}
  */
 export function readSamples(sampleHeadersChunk, smplChunkData)
@@ -22,21 +23,29 @@ export function readSamples(sampleHeadersChunk, smplChunkData)
      * @type {Sample[]}
      */
     let samples = [];
+    let index = 0;
     while(sampleHeadersChunk.chunkData.length > sampleHeadersChunk.chunkData.currentIndex)
     {
-        const sample = readSample(sampleHeadersChunk.chunkData, smplChunkData);
+        const sample = readSample(index, sampleHeadersChunk.chunkData, smplChunkData);
         samples.push(sample);
+        index++;
+    }
+    // remove EOS
+    if (samples.length > 1)
+    {
+        samples.pop();
     }
     return samples;
 }
 
 /**
  * Reads it into a sample
- * @param sampleHeaderData {ShiftableByteArray}
- * @param smplArrayData {ShiftableByteArray}
+ * @param index {number}
+ * @param sampleHeaderData {IndexedByteArray}
+ * @param smplArrayData {IndexedByteArray}
  * @returns {Sample}
  */
-function readSample(sampleHeaderData, smplArrayData) {
+function readSample(index, sampleHeaderData, smplArrayData) {
 
     // read the sample name
     let sampleName = readBytesAsString(sampleHeaderData, 20);
@@ -84,7 +93,8 @@ function readSample(sampleHeaderData, smplArrayData) {
         samplePitchCorrection,
         sampleLink,
         sampleType,
-        smplArrayData);
+        smplArrayData,
+        index);
 }
 
 export class Sample {
@@ -100,7 +110,8 @@ export class Sample {
      * @param samplePitchCorrection {number}
      * @param sampleLink {number}
      * @param sampleType {number}
-     * @param smplArr {ShiftableByteArray}
+     * @param smplArr {IndexedByteArray}
+     * @param sampleIndex {number} initial sample index when loading the sfont
      */
     constructor(sampleName,
                 sampleStartIndex,
@@ -112,12 +123,17 @@ export class Sample {
                 samplePitchCorrection,
                 sampleLink,
                 sampleType,
-                smplArr) {
+                smplArr,
+                sampleIndex
+                )
+    {
         this.sampleName = sampleName
         // in bytes
         this.sampleStartIndex = sampleStartIndex;
         this.sampleEndIndex = sampleEndIndex;
         this.isSampleLoaded = false;
+        this.sampleID = sampleIndex;
+        this.useCount = 0;
 
         this.sampleLoopStartIndex = sampleLoopStartIndex - sampleStartIndex;
         this.sampleLoopEndIndex = sampleLoopEndIndex - sampleStartIndex;
@@ -134,11 +150,6 @@ export class Sample {
         this.sampleLengthSeconds = this.sampleLength / (this.sampleRate * 2);
         this.loopAllowed = this.sampleLoopStartIndex !== this.sampleLoopEndIndex;
         this.isCompressed = (this.sampleType & 0x10) > 0;
-
-        if (this.sampleLength < 1 || this.sampleName.substring(0, 3).toLowerCase() === "eos") {
-            return;
-        }
-
         if(this.isCompressed)
         {
             // correct loop points
@@ -150,11 +161,12 @@ export class Sample {
     }
 
     /**
-     * @param smplArr {ShiftableByteArray}
+     * @param smplArr {IndexedByteArray}
      */
     decodeVorbis(smplArr)
     {
-        if (this.sampleLength < 1) {
+        if (this.sampleLength < 1)
+        {
             // eos, do not do anything
             return;
         }
@@ -171,26 +183,21 @@ export class Sample {
     }
 
     /**
-     * creates a sample sampleData and stores it for reuse
-     * @param startAddrOffset {number}
-     * @param endAddrOffset {number}
+     * Loads the audio data and stores it for reuse
      * @returns {Float32Array} The audioData
      */
-     getAudioData(startAddrOffset = 0, endAddrOffset = 0) {
-        if (!this.isSampleLoaded) {
+    getAudioData()
+    {
+        if (!this.isSampleLoaded)
+        {
             // start loading data if not loaded
             return this.loadBufferData();
         }
-        // if no offset, return saved sampleData
-        if (this.sampleData && startAddrOffset === 0 && endAddrOffset === 0) {
-            return this.sampleData;
-        }
-
-        return this.getOffsetData(startAddrOffset, endAddrOffset);
+        return this.sampleData;
     }
 
     /**
-     * @param smplArr {ShiftableByteArray}
+     * @param smplArr {IndexedByteArray}
      * @returns {Float32Array}
      */
     loadUncompressedData(smplArr)
@@ -223,8 +230,10 @@ export class Sample {
     /**
      * @returns {Float32Array}
      */
-    loadBufferData() {
-        if (this.sampleLength < 1) {
+    loadBufferData()
+    {
+        if (this.sampleLength < 1)
+        {
             // eos, do not do anything
             return new Float32Array(1);
         }
@@ -236,15 +245,5 @@ export class Sample {
             return this.sampleData;
         }
         return this.loadUncompressedData(this.sampleDataArray);
-    }
-
-    /**
-     * Creates a sample sampleData
-     * @param startOffset {number}
-     * @param endOffset {number}
-     * @returns {Float32Array}
-     */
-    getOffsetData(startOffset, endOffset) {
-        return this.sampleData.subarray(startOffset, this.sampleData.length - endOffset + 1);
     }
 }

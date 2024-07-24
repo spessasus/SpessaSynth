@@ -1,7 +1,7 @@
 import { midiControllers } from '../../../midi_parser/midi_message.js'
-import { SoundFont2 } from '../../../soundfont/soundfont_parser.js'
+import { SoundFont2 } from '../../../soundfont/soundfont.js'
 import { clearSamplesList } from '../worklet_utilities/worklet_voice.js'
-import { generatorTypes } from '../../../soundfont/chunk/generators.js'
+import { generatorTypes } from '../../../soundfont/read/generators.js'
 import { returnMessageType } from '../message_protocol/worklet_message.js'
 import { SpessaSynthInfo } from '../../../utils/loggin.js'
 import { consoleColors } from '../../../utils/other.js'
@@ -78,7 +78,7 @@ export function setDrums(channel, isDrum)
     else
     {
         channelObject.drumChannel = false;
-        this.setPreset(channel, this.soundfont.getPreset(0, channelObject.preset.program));
+        this.setPreset(channel, this.soundfont.getPreset(channelObject.midiControllers[midiControllers.bankSelect], channelObject.preset.program));
     }
     this.callEvent("drumchange",{
         channel: channel,

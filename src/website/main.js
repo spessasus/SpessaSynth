@@ -1,6 +1,6 @@
 "use strict"
 
-import {Manager} from "./manager.js";
+import {Manager} from "./manager/manager.js";
 import { showNotification } from './js/notification/notification.js'
 import { LocaleManager } from './locale/locale_manager.js'
 

@@ -22,6 +22,6 @@ export function resetIndexes()
     {
         return;
     }
-    this.noteStartTime = this.seq.absoluteStartTime;
+
     this.noteTimes.forEach(n => n.renderStartIndex = 0);
 }

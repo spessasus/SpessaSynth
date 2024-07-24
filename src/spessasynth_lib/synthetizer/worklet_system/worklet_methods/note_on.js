@@ -1,5 +1,5 @@
 import { getWorkletVoices } from '../worklet_utilities/worklet_voice.js'
-import { generatorTypes } from '../../../soundfont/chunk/generators.js'
+import { generatorTypes } from '../../../soundfont/read/generators.js'
 import { computeModulators } from '../worklet_utilities/worklet_modulator.js'
 
 /**
@@ -46,7 +46,8 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
         sampleRate,
         data => this.sampleDump(data.channel, data.sampleID, data.sampleData),
         this.workletProcessorChannels[channel].cachedVoices,
-        enableDebugging);
+        enableDebugging
+    );
 
     // add voices and exclusive class apply
     const channelVoices = this.workletProcessorChannels[channel].voices;

@@ -2,6 +2,7 @@ import { settingsLocale } from './settings/settings.js'
 import { musicPlayerModeLocale } from './music_player_mode.js'
 import { synthesizerControllerLocale } from './synthesizer_controller/synthesizer_controller.js'
 import { sequencerControllerLocale } from './sequencer_controller.js'
+import { exportAudio } from './export_audio.js'
 
 /**
  *
@@ -29,23 +30,7 @@ export const localePolish = {
         description: "Zapisz audio do pliku WAV lub MIDI"
     },
 
-    exportAudio: {
-        message: "Eksportowanie audio...",
-        estimated: "Pozostało:"
-    },
-
-    exportAudioOptions: {
-        title: "Opcje eksportowania",
-        confirm: "Eksportuj",
-        normalizeVolume: {
-            title: "Normalizuj głośność",
-            description: "Eksportuj audio z taką samą głośnością, niezależnie od głośności MIDI.",
-        },
-        additionalTime: {
-            title: "Dodatkowy czas (s)",
-            description: "Dodatkowy czas na końcu utworu aby pozwolić na wyciszenie się dźwięku. (sekundy)",
-        }
-    },
+    exportAudio: exportAudio,
 
     demoSoundfontUploadButton: "Wgraj SoundFonta",
     demoGithubPage: "Strona projektu",

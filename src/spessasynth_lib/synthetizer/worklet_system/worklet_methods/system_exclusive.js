@@ -2,7 +2,7 @@ import { arrayToHexString, consoleColors } from '../../../utils/other.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../../../utils/loggin.js'
 /**
  * Executes a system exclusive
- * @param messageData {number[]|ShiftableByteArray} - the message data without f0
+ * @param messageData {number[]|IndexedByteArray} - the message data without f0
  * @param channelOffset {number}
  * @this {SpessaSynthProcessor}
  */
@@ -128,9 +128,10 @@ export function systemExclusive(messageData, channelOffset = 0)
 
                             case 0x15:
                                 // this is the Use for Drum Part sysex (multiple drums)
-                                this.setDrums(channel, messageValue > 0 && messageData[5] >> 4); // if set to other than 0, is a drum channel
+                                const isDrums = messageValue > 0 && messageData[5] >> 4; // if set to other than 0, is a drum channel
+                                this.setDrums(channel, isDrums);
                                 SpessaSynthInfo(
-                                    `%cChannel %c${channel}%c ${messageValue > 0 && messageData[5] >> 4 ?
+                                    `%cChannel %c${channel}%c ${isDrums ?
                                         "is now a drum channel"
                                         :
                                         "now isn't a drum channel"

@@ -1,4 +1,4 @@
-import { ShiftableByteArray } from '../utils/shiftable_array.js'
+import { IndexedByteArray } from '../utils/indexed_array.js'
 import { consoleColors } from '../utils/other.js'
 import { getEvent, messageTypes, midiControllers } from '../midi_parser/midi_message.js'
 import { EventHandler } from './synth_event_handler.js'
@@ -601,7 +601,7 @@ export class Synthetizer {
 
     /**
      * Sends a MIDI Sysex message to the synthesizer
-     * @param messageData {ShiftableByteArray} the message's data (excluding the F0 byte, but including the F7 at the end)
+     * @param messageData {IndexedByteArray} the message's data (excluding the F0 byte, but including the F7 at the end)
      */
     systemExclusive(messageData)
     {
@@ -675,7 +675,7 @@ export class Synthetizer {
                 break;
 
             case messageTypes.systemExclusive:
-                this.systemExclusive(new ShiftableByteArray(message.slice(1)));
+                this.systemExclusive(new IndexedByteArray(message.slice(1)));
                 break;
 
             case messageTypes.reset:

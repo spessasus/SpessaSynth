@@ -23,7 +23,7 @@ export function setVibrato(channel, depth, rate, delay)
     {
         return;
     }
-    this.workletProcessorChannels[channel].vibrato.rate = rate;
-    this.workletProcessorChannels[channel].vibrato.delay = delay;
-    this.workletProcessorChannels[channel].vibrato.depth = depth;
+    this.workletProcessorChannels[channel].channelVibrato.rate = rate;
+    this.workletProcessorChannels[channel].channelVibrato.delay = delay;
+    this.workletProcessorChannels[channel].channelVibrato.depth = depth;
 }

@@ -40,8 +40,7 @@ fetch("../soundfonts/SGM.sf3").then(async response => {
         // add time adjustment
         slider.onchange = () => {
             // calculate the time
-            let targetTime = (slider.value / 1000) * seq.duration;
-            seq.currentTime = targetTime; // switch the time (the sequencer adjusts automatically)
+            seq.currentTime = (slider.value / 1000) * seq.duration; // switch the time (the sequencer adjusts automatically)
         }
 
         // add button controls

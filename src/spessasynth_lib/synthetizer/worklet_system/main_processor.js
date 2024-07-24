@@ -3,7 +3,7 @@ import {
     createWorkletChannel,
 } from './worklet_utilities/worklet_processor_channel.js'
 
-import { SoundFont2 } from '../../soundfont/soundfont_parser.js'
+import { SoundFont2 } from '../../soundfont/soundfont.js'
 import { handleMessage } from './message_protocol/handle_message.js'
 import { systemExclusive } from './worklet_methods/system_exclusive.js'
 import { noteOn } from './worklet_methods/note_on.js'
@@ -36,7 +36,7 @@ import { applySynthesizerSnapshot, sendSynthesizerSnapshot } from './worklet_met
 import { consoleColors } from '../../utils/other.js'
 import { PAN_SMOOTHING_FACTOR, releaseVoice, renderVoice, voiceKilling } from './worklet_methods/voice_control.js'
 import { returnMessageType } from './message_protocol/worklet_message.js'
-import { stbvorbis } from '../../utils/stbvorbis_sync.js'
+import { stbvorbis } from '../../utils/stbvorbis_sync.min.js'
 import { VOLUME_ENVELOPE_SMOOTHING_FACTOR } from './worklet_utilities/volume_envelope.js'
 import { resetAllControllers, resetControllers, resetParameters } from './worklet_methods/reset_controllers.js'
 

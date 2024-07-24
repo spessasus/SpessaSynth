@@ -1,4 +1,4 @@
-import { modulatorCurveTypes } from '../../../soundfont/chunk/modulators.js'
+import { modulatorCurveTypes } from '../../../soundfont/read/modulators.js'
 
 /**
  * modulator_curves.js

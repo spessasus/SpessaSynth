@@ -46,7 +46,7 @@
  * @property {number} currentPan - from 0 to 1
  */
 
-import { addAndClampGenerator, generatorTypes } from '../../../soundfont/chunk/generators.js'
+import { addAndClampGenerator, generatorTypes } from '../../../soundfont/read/generators.js'
 import { SpessaSynthTable } from '../../../utils/loggin.js'
 import { DEFAULT_WORKLET_VOLUME_ENVELOPE } from './volume_envelope.js'
 import { DEFAULT_WORKLET_LOWPASS_FILTER } from './lowpass_filter.js'

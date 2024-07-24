@@ -5,6 +5,8 @@ const STABILIZE_WAVEFORMS_LENGTH_DIVIDER = 1.5;
  */
 export function renderWaveforms()
 {
+    const waveWidth = this.canvas.width / 4;
+    const waveHeight = this.canvas.height / 4
     // draw all 16 channel waveforms in a 4x4 pattern
     this.channelAnalysers.forEach((analyser, channelNumber) => {
         const x = channelNumber % 4;
@@ -39,8 +41,6 @@ export function renderWaveforms()
         const waveform = new Float32Array(analyser.frequencyBinCount);
         analyser.getFloatTimeDomainData(waveform);
 
-        const waveWidth = this.canvas.width / 4;
-        const waveHeight = this.canvas.height / 4
         const relativeX = waveWidth * x;
         const relativeY = waveHeight * y + waveHeight / 2;
         const multiplier = this.waveMultiplier * waveHeight;
@@ -58,9 +58,10 @@ export function renderWaveforms()
                 length /= STABILIZE_WAVEFORMS_LENGTH_DIVIDER;
             }
             // Oscilloscope triggering
-            const threshold = 0; // Adjust this if necessary
-            for (let i = 1; i < waveform.length; i++) {
-                if (waveform[i - 1] < threshold && waveform[i] >= threshold) {
+            for (let i = 1; i < waveform.length; i++)
+            {
+                if (waveform[i - 1] < 0 && waveform[i] >= 0)
+                {
                     triggerPoint = i;
                     break;
                 }
@@ -68,7 +69,8 @@ export function renderWaveforms()
             const step = waveWidth / length;
 
             let xPos = relativeX;
-            for (let i = triggerPoint; i < triggerPoint + length; i++) {
+            for (let i = triggerPoint; i < triggerPoint + length; i++)
+            {
                 this.drawingContext.lineTo(
                     xPos,
                     relativeY + waveform[i] * multiplier);
@@ -80,7 +82,8 @@ export function renderWaveforms()
             const step = waveWidth / waveform.length;
 
             let xPos = relativeX;
-            for (let i = 0; i < waveform.length; i++) {
+            for (let i = 0; i < waveform.length; i++)
+            {
                 this.drawingContext.lineTo(
                     xPos,
                     relativeY + waveform[i] * multiplier);

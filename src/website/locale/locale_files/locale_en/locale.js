@@ -2,6 +2,7 @@ import { settingsLocale } from './settings/settings.js'
 import { musicPlayerModeLocale } from './music_player_mode.js'
 import { synthesizerControllerLocale } from './synthesizer_controller/synthesizer_controller.js'
 import { sequencerControllerLocale } from './sequencer_controller.js'
+import { exportAudio } from './export_audio.js'
 
 /**
  *
@@ -25,28 +26,8 @@ export const localeEnglish = {
     // top bar buttons
     midiUploadButton: "Upload your MIDI files",
 
-    midiRenderButton: {
-        title: "Export audio",
-        description: "Save audio to a WAV or a MIDI file"
-    },
+    exportAudio: exportAudio,
 
-    exportAudio: {
-        message: "Exporting audio...",
-        estimated: "Remaining:"
-    },
-
-    exportAudioOptions: {
-        title: "Audio export options",
-        confirm: "Export",
-        normalizeVolume: {
-            title: "Normalize volume",
-            description: "Keep the volume at the same level, no matter how loud or quiet the MIDI is. Recommended.",
-        },
-        additionalTime: {
-            title: "Additional time (s)",
-            description: "Additional time at the end of the song to allow for the sound to fade. (seconds)",
-        }
-    },
 
     demoSoundfontUploadButton: "Upload the soundfont",
     demoGithubPage: "Project's page",

@@ -3,11 +3,11 @@
 </p>
 
 SoundFont2 based realtime synthetizer and MIDI player written in JavaScript using Web Audio API. 
-Can also be used for playing/rendering WAV and MIDI files.
+MIDI file reader and writer. SF2 Reader and writer. [RMIDI file](../../wiki/MIDI/About-RMIDI) reader and writer.
 
 ![SpessaSynth Promotional Image](https://github.com/spessasus/SpessaSynth/assets/95608008/e2e6c4c6-0762-4c11-8887-a2318d431854)
 
-## Exporting as a MIDI file now available!
+## Exporting Soundfonts and RMIDIs now available!
 
 # [Live demo (no download needed!)](https://spessasus.github.io/SpessaSynth/)
 
@@ -18,6 +18,7 @@ Can also be used for playing/rendering WAV and MIDI files.
 This repository is essentially 2 programs in one:
 # spessasynth_lib
 A flexible, powerful, and feature-packed soundfont synthesizer library for the WebAudio API.
+Comes with the ability to edit midis and soundfonts!
 > [!TIP]
 > Looking for a Node.js version? try [spessasynth_core](https://www.npmjs.com/package/spessasynth_core)
 
@@ -30,12 +31,14 @@ A flexible, powerful, and feature-packed soundfont synthesizer library for the W
 - Reverb and chorus support (customizable0
 - Render audio to a .wav file
 - Read and write .mid files
+- Read and write [.rmi files with embbedded SF2 soundfonts](../../wiki/MIDI/About-RMIDI)
+- Read and write .sf2 files
 - A few custom modulators to support some additional controllers (see `modulators.js`)
 - Written using AudioWorklets (Firefox and Chrome both work perfectly)
 - Can load really large soundfonts (4GB!) (but only on Firefox, Chromium has a memory limit)
-- [Multi Port MIDIs support](../../wiki/About-Multi-Port) (more than 16 channels)
+- [Multi Port MIDIs support](../../wiki/MIDI/About-Multi-Port) (more than 16 channels)
 - MIDI Controller Support (Default supported controllers can be found [here](../../wiki/MIDI-Implementation#supported-controllers)).
-- [RPN and NRPN support](../../wiki/MIDI-Implementation#supported-registered-parameters)
+- [RPN and NRPN support](../../wiki/MIDI/MIDI-Implementation#supported-registered-parameters)
 - Supports some Roland GS and Yamaha XG sysex messages
 - High performance mode for playing black MIDIs (Don't go too crazy with the amount of notes though)
 - Modular design allows easy integrations into other projects
@@ -67,6 +70,8 @@ The complete GUI for spessasynth_lib, allowing remixing experimenting and playin
 - Play around with the MIDI file, edit instruments controllers and more!
 - Render the MIDI file (either modified or unmodified) to .wav
 - Export the modified MIDI file to .mid
+- Export the trimmed soundfont to .sf2
+- Or bundle both as .rmi!
 - Comes bundled with a compressed [SGM](https://web.archive.org/web/20130616094125/http://www.geocities.jp/shansoundfont/) SoundFont to get you started
 - Also no dependencies!
 

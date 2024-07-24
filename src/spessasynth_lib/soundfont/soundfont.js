@@ -1,21 +1,23 @@
-import {ShiftableByteArray} from "../utils/shiftable_array.js";
-import {readSamples} from "./chunk/samples.js";
-import { readBytesAsString, readBytesAsUintLittleEndian } from '../utils/byte_functions.js'
-import {readGenerators, Generator} from "./chunk/generators.js";
-import {readInstrumentZones, InstrumentZone, readPresetZones} from "./chunk/zones.js";
-import {Preset, readPresets} from "./chunk/presets.js";
-import {readInstruments, Instrument} from "./chunk/instruments.js";
-import {readModulators, Modulator} from "./chunk/modulators.js";
-import { readRIFFChunk, RiffChunk } from './chunk/riff_chunk.js'
+import { IndexedByteArray } from '../utils/indexed_array.js'
+import {readSamples} from "./read/samples.js";
+import { readBytesAsUintLittleEndian } from '../utils/byte_functions/little_endian.js'
+import { readGenerators, Generator } from './read/generators.js'
+import {readInstrumentZones, InstrumentZone, readPresetZones} from "./read/zones.js";
+import {Preset, readPresets} from "./read/presets.js";
+import {readInstruments, Instrument} from "./read/instruments.js";
+import {readModulators, Modulator} from "./read/modulators.js";
+import { readRIFFChunk, RiffChunk } from './read/riff_chunk.js'
 import { consoleColors } from '../utils/other.js'
 import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo, SpessaSynthWarn } from '../utils/loggin.js'
+import { readBytesAsString } from '../utils/byte_functions/string.js'
+import { write } from './write/write.js'
 
 /**
- * soundfont_parser.js
+ * soundfont.js
  * purpose: parses a soundfont2 file
  */
 
-export class SoundFont2
+class SoundFont2
 {
     /**
      * Initializes a new SoundFont2 Parser and parses the given data array
@@ -28,7 +30,7 @@ export class SoundFont2
             this.soundFontInfo = arrayBuffer.info;
             return;
         }
-        this.dataArray = new ShiftableByteArray(arrayBuffer);
+        this.dataArray = new IndexedByteArray(arrayBuffer);
         SpessaSynthGroup("%cParsing SoundFont...", consoleColors.info);
         if(!this.dataArray)
         {
@@ -36,7 +38,7 @@ export class SoundFont2
             throw new TypeError("No data!");
         }
 
-        // read the main chunk
+        // read the main read
         let firstChunk = readRIFFChunk(this.dataArray, false);
         this.verifyHeader(firstChunk, "riff");
 
@@ -59,6 +61,7 @@ export class SoundFont2
             switch (chunk.header.toLowerCase())
             {
                 case  "ifil":
+                case "iver":
                     text = `${readBytesAsUintLittleEndian(chunk.chunkData, 2)}.${readBytesAsUintLittleEndian(chunk.chunkData, 2)}`;
                     break;
 
@@ -82,7 +85,7 @@ export class SoundFont2
         this.verifyText(readBytesAsString(this.dataArray, 4), "sdta");
 
         // smpl
-        SpessaSynthInfo("%cVerifying smpl chunk...", consoleColors.warn)
+        SpessaSynthInfo("%cVerifying smpl read...", consoleColors.warn)
         let sampleDataChunk = readRIFFChunk(this.dataArray, false);
         this.verifyHeader(sampleDataChunk, "smpl");
         this.sampleDataStartIndex = this.dataArray.currentIndex;
@@ -93,7 +96,7 @@ export class SoundFont2
         this.dataArray.currentIndex += sdtaChunk.size - 12;
 
         // PDTA
-        SpessaSynthInfo("%cLoading preset data chunk...", consoleColors.warn)
+        SpessaSynthInfo("%cLoading preset data read...", consoleColors.warn)
         let presetChunk = readRIFFChunk(this.dataArray);
         this.verifyHeader(presetChunk, "list");
         readBytesAsString(presetChunk.chunkData, 4);
@@ -128,7 +131,7 @@ export class SoundFont2
 
         /**
          * read all the samples
-         * (the current index points to start of the smpl chunk)
+         * (the current index points to start of the smpl read)
          */
         this.dataArray.currentIndex = this.sampleDataStartIndex
         this.samples = readSamples(presetSamplesChunk, this.dataArray);
@@ -158,7 +161,7 @@ export class SoundFont2
          * read all the instruments
          * @type {Instrument[]}
          */
-        let instruments = readInstruments(presetInstrumentsChunk, instrumentZones);
+       this.instruments = readInstruments(presetInstrumentsChunk, instrumentZones);
 
         /**
          * read all the preset generators
@@ -172,8 +175,7 @@ export class SoundFont2
          */
         let presetModulators = readModulators(presetModulatorsChunk);
 
-        let presetZones = readPresetZones(presetZonesChunk, presetGenerators, presetModulators, instruments);
-
+        let presetZones = readPresetZones(presetZonesChunk, presetGenerators, presetModulators, this.instruments);
         /**
          * Finally, read all the presets
          * @type {Preset[]}
@@ -182,7 +184,7 @@ export class SoundFont2
         this.presets.sort((a, b) => (a.program - b.program) + (a.bank - b.bank));
         // preload the first preset
         SpessaSynthInfo(`%cParsing finished! %c"${this.soundFontInfo["INAM"]}"%c has %c${this.presets.length} %cpresets,
-        %c${instruments.length}%c instruments and %c${this.samples.length}%c samples.`,
+        %c${this.instruments.length}%c instruments and %c${this.samples.length}%c samples.`,
             consoleColors.info,
             consoleColors.recognized,
             consoleColors.info,
@@ -193,6 +195,55 @@ export class SoundFont2
             consoleColors.recognized,
             consoleColors.info);
         SpessaSynthGroupEnd();
+    }
+
+    removeUnusedElements()
+    {
+        this.instruments.forEach(i => {
+            if(i.useCount < 1)
+            {
+                i.instrumentZones.forEach(z => {if(!z.isGlobal) z.sample.useCount--});
+            }
+        })
+        this.instruments = this.instruments.filter(i => i.useCount > 0);
+        this.samples = this.samples.filter(s => s.useCount > 0);
+    }
+
+    /**
+     * @param instrument {Instrument}
+     */
+    deleteInstrument(instrument)
+    {
+        if(instrument.useCount > 0)
+        {
+            throw new Error(`Cannot delete an instrument that has ${instrument.useCount} usages.`);
+        }
+        this.instruments.splice(this.instruments.indexOf(instrument), 1);
+        instrument.deleteInstrument();
+        this.removeUnusedElements();
+    }
+
+    /**
+     * @param sample {Sample}
+     */
+    deleteSample(sample)
+    {
+        if(sample.useCount > 0)
+        {
+            throw new Error(`Cannot delete sample that has ${sample.useCount} usages.`);
+        }
+        this.samples.splice(this.samples.indexOf(sample), 1);
+        this.removeUnusedElements();
+    }
+
+    /**
+     * @param preset {Preset}
+     */
+    deletePreset(preset)
+    {
+        preset.deletePreset();
+        this.presets.splice(this.presets.indexOf(preset), 1);
+        this.removeUnusedElements();
     }
 
     /**
@@ -227,7 +278,8 @@ export class SoundFont2
      * @param presetNr {number}
      * @returns {Preset}
      */
-    getPreset(bankNr, presetNr) {
+    getPreset(bankNr, presetNr)
+    {
         let preset = this.presets.find(p => p.bank === bankNr && p.program === presetNr);
         if (!preset)
         {
@@ -240,7 +292,8 @@ export class SoundFont2
                     preset = this.presets.find(p => p.bank === 128);
                 }
             }
-            if(preset) {
+            if(preset)
+            {
                 SpessaSynthWarn(`%cPreset ${bankNr}.${presetNr} not found. Replaced with %c${preset.presetName} (${preset.bank}.${preset.program})`,
                     consoleColors.warn,
                     consoleColors.recognized);
@@ -272,7 +325,7 @@ export class SoundFont2
 
 
     /**
-     * Merges soundfonts with the given order. Keep in mind that the info chunk is copied from the first one
+     * Merges soundfonts with the given order. Keep in mind that the info read is copied from the first one
      * @param soundfonts {...SoundFont2} the soundfonts to merge, the first overwrites the last
      * @returns {SoundFont2}
      */
@@ -299,3 +352,6 @@ export class SoundFont2
         return new SoundFont2({presets: presets, info: mainSf.soundFontInfo});
     }
 }
+SoundFont2.prototype.write = write;
+
+export { SoundFont2 }

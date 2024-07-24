@@ -32,7 +32,7 @@ import { calculateNoteTimes } from './calculate_note_times.js'
 
 // analysers
 const CHANNEL_ANALYSER_FFT = 1024;
-const DRUMS_ANALYSER_FFT = 2048;
+const DRUMS_ANALYSER_FFT = 4096;
 const WAVE_MULTIPLIER = 2;
 const ANALYSER_STROKE = 2;
 

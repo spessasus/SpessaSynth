@@ -6,7 +6,7 @@ export const sequencerControllerLocale = {
     lyrics: {
         show: "Show lyrics",
         title: "Decoded text",
-        noLyrics: "No lyrics available...",
+        noLyrics    : "No lyrics available...",
         otherText: {
             title: "Other text"
         }

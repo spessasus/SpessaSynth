@@ -1,4 +1,4 @@
-import { generatorTypes } from '../../../soundfont/chunk/generators.js'
+import { generatorTypes } from '../../../soundfont/read/generators.js'
 import { absCentsToHz, decibelAttenuationToGain } from './unit_converter.js'
 
 /**

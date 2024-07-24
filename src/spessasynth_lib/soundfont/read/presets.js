@@ -1,9 +1,10 @@
 import {RiffChunk} from "./riff_chunk.js";
 import {PresetZone} from "./zones.js";
-import {readBytesAsString, readBytesAsUintLittleEndian} from "../../utils/byte_functions.js";
+import {readBytesAsUintLittleEndian} from "../../utils/byte_functions/little_endian.js";
 import {Sample} from "./samples.js";
 import { Generator, generatorTypes } from './generators.js'
 import { defaultModulators } from './modulators.js'
+import { readBytesAsString } from '../../utils/byte_functions/string.js'
 
 /**
  * parses soundfont presets, also includes function for getting the generators and samples from midi note and velocity
@@ -14,7 +15,8 @@ export class Preset {
      * Creates a preset
      * @param presetChunk {RiffChunk}
      */
-    constructor(presetChunk) {
+    constructor(presetChunk)
+    {
         this.presetName = readBytesAsString(presetChunk.chunkData, 20)
             .trim()
             .replace(/\d{3}:\d{3}/, ""); // remove those pesky "000:001"
@@ -38,8 +40,10 @@ export class Preset {
             this.foundSamplesAndGenerators[i] = [];
         }
 
-        // skip the DWORDs (4bytes times 3)
-        readBytesAsUintLittleEndian(presetChunk.chunkData, 12);
+        // read the dwords
+        this.library = readBytesAsUintLittleEndian(presetChunk.chunkData, 4);
+        this.genre = readBytesAsUintLittleEndian(presetChunk.chunkData, 4);
+        this.morphology = readBytesAsUintLittleEndian(presetChunk.chunkData, 4);
     }
 
     /**
@@ -47,11 +51,28 @@ export class Preset {
      * @param amount {number}
      * @param zones {PresetZone[]}
      */
-    getPresetZones(amount, zones) {
+    getPresetZones(amount, zones)
+    {
         this.presetZonesAmount = amount;
-        for (let i = this.presetZoneStartIndex; i < this.presetZonesAmount + this.presetZoneStartIndex; i++) {
+        for (let i = this.presetZoneStartIndex; i < this.presetZonesAmount + this.presetZoneStartIndex; i++)
+        {
             this.presetZones.push(zones[i]);
         }
+    }
+
+    deletePreset()
+    {
+        this.presetZones.forEach(z => z.deleteZone());
+        this.presetZones.length = 0;
+    }
+
+    /**
+     * @param index {number}
+     */
+    deleteZone(index)
+    {
+        this.presetZones[index].deleteZone();
+        this.presetZones.splice(index, 1);
     }
 
     /**
@@ -65,8 +86,9 @@ export class Preset {
             {
                 setTimeout(() => {
                     this.getSamplesAndGenerators(key, velocity).forEach(samandgen => {
-                        if(!samandgen.sample.isSampleLoaded) {
-                            samandgen.sample.loadBufferData().then();
+                        if(!samandgen.sample.isSampleLoaded)
+                        {
+                            samandgen.sample.getAudioData();
                         }
                     })
                 });
@@ -257,7 +279,8 @@ export function readPresets(presetChunk, presetZones)
         presets.push(preset);
     }
     // remove EOP
-    if (presets.length > 1) {
+    if (presets.length > 1)
+    {
         presets.pop();
     }
     return presets;

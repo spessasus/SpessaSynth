@@ -1,18 +1,21 @@
-import { ShiftableByteArray } from '../../utils/shiftable_array.js'
+import { IndexedByteArray } from '../../utils/indexed_array.js'
 import { RiffChunk } from './riff_chunk.js'
-import { signedInt16 } from '../../utils/byte_functions.js'
+import { signedInt16 } from '../../utils/byte_functions/little_endian.js'
 
 /**
  * generators.js
  * purpose: contains enums for generators and their limis parses reads soundfont generators, sums them and applies limits
  */
 
+/**
+ * @enum {number}
+ */
 export const generatorTypes = {
     startAddrsOffset: 0,                // sample control - moves sample start point
     endAddrOffset: 1,                   // sample control - moves sample end point
     startloopAddrsOffset: 2,            // loop control - moves loop start point
     endloopAddrsOffset: 3,              // loop control - moves loop end point
-    startAddrsCoarseOffset: 4,          // ?
+    startAddrsCoarseOffset: 4,          // sample control - moves sample start point in 32767 increments
     modLfoToPitch: 5,                   // pitch modulation - modulation lfo pitch modulation in cents
     vibLfoToPitch: 6,                   // pitch modulation - vibrato lfo pitch modulation in cents
     modEnvToPitch: 7,                   // pitch modulation - modulation envelope pitch modulation in cents
@@ -20,7 +23,7 @@ export const generatorTypes = {
     initialFilterQ: 9,                  // filter - lowpass filter resonance
     modLfoToFilterFc: 10,               // filter modulation - modulation lfo lowpass filter cutoff in cents
     modEnvToFilterFc: 11,               // filter modulation - modulation envelope lowpass filter cutoff in cents
-    endAddrsCoarseOffset: 12,           // ?
+    endAddrsCoarseOffset: 12,           // ample control - moves sample end point in 32767 increments
     modLfoToVolume: 13,                 // modulation lfo - volume (tremolo), where 100 = 10dB
     unused1: 14,
     chorusEffectsSend: 15,              // effect send - how much is sent to chorus 0 - 1000
@@ -53,12 +56,12 @@ export const generatorTypes = {
     reserved1: 42,
     keyRange: 43,                       // zone - key range for which preset / instrument zone is active
     velRange: 44,                       // zone - velocity range for which preset / instrument zone is active
-    startloopAddrsCoarseOffset: 45,     // ?
+    startloopAddrsCoarseOffset: 45,     // ample control - moves sample loop start point in 32767 increments
     keyNum: 46,                         // zone - instrument only: always use this midi number (ignore what's pressed)
     velocity: 47,                       // zone - instrument only: always use this velocity (ignore what's pressed)
     initialAttenuation: 48,             // zone - allows turning down the volume, 10 = -1dB
     reserved2: 49,
-    endloopAddrsCoarseOffset: 50,       // ?
+    endloopAddrsCoarseOffset: 50,       // ample control - moves sample loop end point in 32767 increments
     coarseTune: 51,                     // tune - pitch offset in semitones
     fineTune: 52,                       // tune - pitch offset in cents
     sampleID: 53,                       // sample - instrument zone only: which sample to use
@@ -173,26 +176,23 @@ export function addAndClampGenerator(generatorType, presetGens, instrumentGens)
 export class Generator{
     /**
      * Creates a generator
-     * @param dataArray {ShiftableByteArray}
+     * @param dataArray {IndexedByteArray}
      */
     constructor(dataArray) {
         // 4 bytes:
         // type, type, type, value
         const i = dataArray.currentIndex;
-        let bytes = [dataArray[i], dataArray[i + 1], dataArray[i + 2], dataArray[i + 3]];
-        dataArray.currentIndex += 4;
-
         /**
-         * @type {number}
+         * @type {generatorTypes}
          **/
-        this.generatorType = (bytes[1] << 8) | bytes[0];
-
-        this.generatorValue = signedInt16(bytes[2], bytes[3]);
+        this.generatorType = (dataArray[i + 1] << 8) | dataArray[i];
+        this.generatorValue = signedInt16(dataArray[i + 2], dataArray[i + 3]);
+        dataArray.currentIndex += 4;
     }
 }
 
 /**
- * Reads the generator chunk
+ * Reads the generator read
  * @param generatorChunk {RiffChunk}
  * @returns {Generator[]}
  */
@@ -202,6 +202,11 @@ export function readGenerators(generatorChunk)
     while(generatorChunk.chunkData.length > generatorChunk.chunkData.currentIndex)
     {
         gens.push(new Generator(generatorChunk.chunkData));
+    }
+    if(gens.length > 1)
+    {
+        // remove terminal
+        gens.pop();
     }
     return gens;
 }

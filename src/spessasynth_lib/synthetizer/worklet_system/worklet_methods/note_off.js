@@ -1,4 +1,4 @@
-import { generatorTypes } from '../../../soundfont/chunk/generators.js'
+import { generatorTypes } from '../../../soundfont/read/generators.js'
 import { consoleColors } from '../../../utils/other.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../../../utils/loggin.js'
 
