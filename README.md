@@ -16,39 +16,65 @@ MIDI file reader and writer. SF2 Reader and writer. [RMIDI file](../../wiki/MIDI
 
 <h2 align="center">Youtube video</h2>
 <p align="center">
-<a href="https://youtu.be/6rUjjVcMXu8"><img width='500' alt="Watch the YouTube video" src="https://github.com/spessasus/SpessaSynth/assets/95608008/0fade923-1ed6-4565-8300-1f57ef70bc89">
+<a href="https://youtu.be/6rUjjVcMXu8"><img width='500' alt="Watch the YouTube video" src="https://github.com/spessasus/SpessaSynth/assets/95608008/0fade923-1ed6-4565-8300-1f57ef70bc89"></a>
 </p>
 
 
 This repository is essentially 2 programs in one:
-# spessasynth_lib
-A flexible, powerful, and feature-packed soundfont synthesizer library for the WebAudio API.
-Comes with the ability to edit midis and soundfonts!
+<h1 align='center'>spessasynth_lib</h1></h1>
+<p align='center'>A flexible, powerful, and feature-packed soundfont synthesizer library for the WebAudio API.
+Comes with the ability to edit midis and soundfonts!</p>
+
 > [!TIP]
 > Looking for a Node.js version? try [spessasynth_core](https://www.npmjs.com/package/spessasynth_core)
 
-**[Documentation can be found here](../../wiki/Home)**
-## Features
-- SoundFont2 Generator Support
-- SoundFont2 Modulator Support
-- SoundFont3 (vorbis compressed sf2) Support (thanks to [stbvorbis.js](https://github.com/hajimehoshi/stbvorbis.js))
-- - Can provide very hiqh quality audio while being relatively light on file size thanks to sf3 support
-- Reverb and chorus support (customizable0
-- Render audio to a .wav file
-- Read and write .mid files
-- Read and write [.rmi files with embbedded SF2 soundfonts](../../wiki/MIDI/About-RMIDI)
-- Read and write .sf2 files
-- A few custom modulators to support some additional controllers (see `modulators.js`)
-- Written using AudioWorklets (Firefox and Chrome both work perfectly)
-- Can load really large soundfonts (4GB!) (but only on Firefox, Chromium has a memory limit)
-- [Multi Port MIDIs support](../../wiki/MIDI/About-Multi-Port) (more than 16 channels)
-- MIDI Controller Support (Default supported controllers can be found [here](../../wiki/MIDI-Implementation#supported-controllers)).
-- [RPN and NRPN support](../../wiki/MIDI/MIDI-Implementation#supported-registered-parameters)
-- Supports some Roland GS and Yamaha XG sysex messages
-- High performance mode for playing black MIDIs (Don't go too crazy with the amount of notes though)
-- Modular design allows easy integrations into other projects
-- Written in pure JavaScript using WebAudio API (Every modern browser supports it)
-- No dependencies
+<p align='center'><strong><a href="../../wiki/Home">Documentation can be found here</a></strong></p>
+
+<h2 align='center'>Features</h2>
+<ul>
+  <li>SoundFont2 Generator Support</li>
+  <li>SoundFont2 Modulator Support</li>
+  <li>
+    SoundFont3 (vorbis compressed sf2) Support 
+    (thanks to <a href="https://github.com/hajimehoshi/stbvorbis.js">stbvorbis.js</a>)
+  </li>
+  <li>
+    Can provide very high quality audio while being relatively light on file size thanks to sf3 support
+  </li>
+  <li>Reverb and chorus support (customizable)</li>
+  <li>Render audio to a .wav file</li>
+  <li>Read and write .mid files</li>
+  <li>
+    Read and write <a href="../../wiki/MIDI/About-RMIDI">.rmi files with embedded SF2 soundfonts</a>
+  </li>
+  <li>Read and write .sf2 files</li>
+  <li>
+    A few custom modulators to support some additional controllers (see <code>modulators.js</code>)
+  </li>
+  <li>Written using AudioWorklets (Firefox and Chrome both work perfectly)</li>
+  <li>
+    Can load really large soundfonts (4GB!) 
+    (but only on Firefox, Chromium has a memory limit)
+  </li>
+  <li>
+    <a href="../../wiki/MIDI/About-Multi-Port">Multi Port MIDIs support</a> (more than 16 channels)
+  </li>
+  <li>
+    MIDI Controller Support (Default supported controllers can be found 
+    <a href="../../wiki/MIDI-Implementation#supported-controllers">here</a>)
+  </li>
+  <li>
+    <a href="../../wiki/MIDI/MIDI-Implementation#supported-registered-parameters">RPN and NRPN support</a>
+  </li>
+  <li>Supports some Roland GS and Yamaha XG sysex messages</li>
+  <li>
+    High performance mode for playing black MIDIs 
+    (Don't go too crazy with the amount of notes though)
+  </li>
+  <li>Modular design allows easy integrations into other projects</li>
+  <li>Written in pure JavaScript using WebAudio API (Every modern browser supports it)</li>
+  <li>No dependencies</li>
+</ul>
 
 ## Limitations
 - The performance is questionable, especially on mobile devices.
@@ -58,11 +84,11 @@ Comes with the ability to edit midis and soundfonts!
 2. copy `src/spessasynth_lib` to your project.
 3. [Use the library](../../wiki/Home)
 
-# Web app / Local Edition
-The complete GUI for spessasynth_lib, allowing remixing experimenting and playing MIDIs in the coolest way possible.
+<h1 align='center'>Web app / Local Edition</h1>
+<p align='center'>The complete GUI for spessasynth_lib, allowing remixing experimenting and playing MIDIs in the coolest way possible.</p>
+<h3 align='center'><a href='../../wiki/How-To-Use-App'>Usage Guide</a></h3>
 
-[How to use](../../wiki/How-To-Use-App)
-## Features
+<h2 align='center'>Features</h2>
 - Visualization of the played sequence with effects like visual pitch bend and note on effects
 - Playable keyboard with various sizes
 - Integrated controller for the synthetizer with a lot of options
@@ -80,7 +106,7 @@ The complete GUI for spessasynth_lib, allowing remixing experimenting and playin
 - Comes bundled with a compressed [SGM](https://web.archive.org/web/20130616094125/http://www.geocities.jp/shansoundfont/) SoundFont to get you started
 - Also no dependencies!
 
-### Still not convinced? Here are some more screenshots:
+<h3 align='center'>Still not convinced? Here are some more screenshots:</h3>
 <img src="https://github.com/user-attachments/assets/b0c9a1f3-3278-4208-8d35-f63b0943ae39" width="45%"></img> 
 <img src="https://github.com/user-attachments/assets/3bfd9de0-ed13-4667-b843-47c956454136" width="45%"></img>
 <img src="https://github.com/user-attachments/assets/7499503e-9dec-4f7c-8c58-b4960f63bc39" width="45%"></img>
@@ -90,6 +116,7 @@ The complete GUI for spessasynth_lib, allowing remixing experimenting and playin
 
 
 ### Installation
+
 > [!IMPORTANT]
 > Firefox is recommended, due to unconstrained memory size.
 > Also a decent computer for large soundfonts.

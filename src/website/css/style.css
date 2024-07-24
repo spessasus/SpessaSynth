@@ -32,7 +32,7 @@
     --music-mode-transition: 0.5s ease;
 
     /*global styles*/
-    font-family: "Noto Sans", "Open Sans", sans-serif;
+    font-family: system-ui, "Noto Sans", "Open Sans", sans-serif;
     color: var(--font-color);
     text-align: center;
     margin: 0;
