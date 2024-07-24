@@ -7,12 +7,17 @@ MIDI file reader and writer. SF2 Reader and writer. [RMIDI file](../../wiki/MIDI
 
 ![SpessaSynth Promotional Image](https://github.com/spessasus/SpessaSynth/assets/95608008/e2e6c4c6-0762-4c11-8887-a2318d431854)
 
-## Exporting Soundfonts and RMIDIs now available!
+<h3 align='center'>Exporting Soundfonts and RMIDIs now available!</h3>
+<p align='center'>
+   <img src="https://github.com/user-attachments/assets/0aba6293-0458-401f-91fc-71f7a4a7640c" width="50%"></img>
+</p>
 
-# [Live demo (no download needed!)](https://spessasus.github.io/SpessaSynth/)
+<h1 align="center"><a href="https://spessasus.github.io/SpessaSynth/">Live demo (no download needed!)</a></h1>
 
-## Youtube video
-[<img width='500' alt="Watch the YouTube video" src="https://github.com/spessasus/SpessaSynth/assets/95608008/0fade923-1ed6-4565-8300-1f57ef70bc89">](https://youtu.be/6rUjjVcMXu8)
+<h2 align="center">Youtube video</h2>
+<p align="center">
+<a href="https://youtu.be/6rUjjVcMXu8"><img width='500' alt="Watch the YouTube video" src="https://github.com/spessasus/SpessaSynth/assets/95608008/0fade923-1ed6-4565-8300-1f57ef70bc89">
+</p>
 
 
 This repository is essentially 2 programs in one:
@@ -80,6 +85,7 @@ The complete GUI for spessasynth_lib, allowing remixing experimenting and playin
 <img src="https://github.com/user-attachments/assets/3bfd9de0-ed13-4667-b843-47c956454136" width="45%"></img>
 <img src="https://github.com/user-attachments/assets/7499503e-9dec-4f7c-8c58-b4960f63bc39" width="45%"></img>
 <img src="https://github.com/user-attachments/assets/688b4ecc-0ba5-4990-92a5-8b567e08d7d6" width="45%"></img> 
+
 
 
 
