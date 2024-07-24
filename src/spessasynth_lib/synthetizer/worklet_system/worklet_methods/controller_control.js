@@ -59,19 +59,11 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
                         // for xg, if msb is 120, 126 or 127, then it's drums
                         if (bankNr === 120 || bankNr === 126 || bankNr === 127)
                         {
-                            channelObject.drumChannel = true;
-                            this.callEvent("drumchange", {
-                                channel: channel,
-                                isDrumChannel: true
-                            });
+                            this.setDrums(channel, true);
                         }
                         else
                         {
-                            channelObject.drumChannel = false;
-                            this.callEvent("drumchange", {
-                                channel: channel,
-                                isDrumChannel: false
-                            });
+                            this.setDrums(channel, false);
                         }
                         break;
 
@@ -85,11 +77,13 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
                         }
                 }
 
-                if (channelObject.drumChannel) {
+                if (channelObject.drumChannel)
+                {
                     // 128 for percussion channel
                     bankNr = 128;
                 }
-                if (bankNr === 128 && !channelObject.drumChannel) {
+                if (bankNr === 128 && !channelObject.drumChannel)
+                {
                     // if channel is not for percussion, default to bank current
                     bankNr = channelObject.midiControllers[midiControllers.bankSelect];
                 }
@@ -106,7 +100,9 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
                     // some soundfonts use 127 as drums and
                     // if it's not marked as drums by bank MSB (line 47), then we DO NOT want the drums!
                     if(controllerValue !== 127)
+                    {
                         channelObject.midiControllers[midiControllers.bankSelect] = controllerValue;
+                    }
                 }
             }
             else
