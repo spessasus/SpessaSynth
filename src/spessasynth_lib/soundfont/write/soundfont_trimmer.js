@@ -95,12 +95,20 @@ export function getTrimmedSoundfont(soundfont, mid)
     function updateString(ch)
     {
         // check if this exists in the soundfont
-        const exists = soundfont.getPreset(ch.bank, ch.program);
+        let exists = soundfont.getPreset(ch.bank, ch.program);
+        if(exists.bank !== ch.bank && mid.embeddedSoundFont)
+        {
+            // maybe it doesn't exists becase RMIDI has a bank shift?
+            exists = soundfont.getPreset(ch.bank - 1, ch.program);
+        }
         ch.bank = exists.bank;
         ch.program = exists.program;
         ch.string = ch.bank + ":" + ch.program;
         if(!usedProgramsAndKeys[ch.string])
         {
+            SpessaSynthInfo(`%cDetected a new preset: %c${ch.string}`,
+                consoleColors.info,
+                consoleColors.recognized);
             usedProgramsAndKeys[ch.string] = new Set();
         }
     }
@@ -208,6 +216,9 @@ export function getTrimmedSoundfont(soundfont, mid)
     {
         if(usedProgramsAndKeys[key].size === 0)
         {
+            SpessaSynthInfo(`%cDetected change but no keys for %c${key}`,
+                consoleColors.info,
+                consoleColors.value)
             delete usedProgramsAndKeys[key];
         }
     }
@@ -215,6 +226,7 @@ export function getTrimmedSoundfont(soundfont, mid)
 
     SpessaSynthGroupCollapsed("%cModifying soundfont...",
         consoleColors.info);
+    SpessaSynthInfo("Detected keys for midi:", usedProgramsAndKeys);
     // modify the soundfont to only include programs and samples that are used
     for (let presetIndex = 0; presetIndex < soundfont.presets.length; presetIndex++)
     {
