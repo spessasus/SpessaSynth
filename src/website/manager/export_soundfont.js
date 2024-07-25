@@ -21,6 +21,7 @@ export async function _exportSoundfont()
     applySnapshotToMIDI(mid, await this.synth.getSynthesizerSnapshot());
     const binary = getTrimmedSoundfont(soundfont, mid);
     const blob = new Blob([binary.buffer], {type: "audio/soundfont"});
-    this.saveBlob(blob, `${soundfont.soundFontInfo['INAM'] || "unnamed"}.sf2`);
+    let extension = soundfont.soundFontInfo["ifil"].split(".")[0] === "3" ? "sf3" : "sf2";
+    this.saveBlob(blob, `${soundfont.soundFontInfo['INAM'] || "unnamed"}.${extension}`);
     SpessaSynthGroupEnd();
 }

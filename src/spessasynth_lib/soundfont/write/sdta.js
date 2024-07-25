@@ -13,26 +13,35 @@ export function getSDTA(smplStartOffsets, smplEndOffsets)
 {
     // write smpl: write int16 data of each sample linearly
     // get size (calling getAudioData twice doesn't matter since it gets cached)
-    const smplSize = this.samples.reduce((total, sample) => total + sample.getAudioData().length * 2 + 46, 0);
+    const sampleDatas = this.samples.map(s => s.getRawData());
+    const smplSize = this.samples.reduce((total, s, i) => {
+        return total + sampleDatas[i].length  + 46;
+    }, 0);
     const smplData = new IndexedByteArray(smplSize);
     // resample to int16 and write out
     this.samples.forEach((sample, i) => {
-        // this is a float32, resample to int16
-        const data = sample.getAudioData();
-        const sampleSize = data.length - (sample.isCompressed ? 0 : 1);
-        // sfspec24 section 6.1: 46 pad bytes
-        const resampled = new IndexedByteArray(sampleSize * 2 + 46);
-        for (let i = 0; i < sampleSize; i++)
+        const data = sampleDatas[i];
+        let startOffset;
+        let endOffset;
+        let jump = data.length;
+        if(sample.isCompressed)
         {
-            const int16 = data[i] * 32767;
-            resampled[resampled.currentIndex++] = int16 & 0xFF; // lsb
-            resampled[resampled.currentIndex++] = int16 >> 8;   // msb
+            // sf3 offset is in bytes
+            startOffset = smplData.currentIndex;
+            endOffset = startOffset + data.length;
         }
-        smplStartOffsets.push(smplData.currentIndex / 2); // sample data points, not bytes
-        smplData.set(resampled, smplData.currentIndex);
-        smplData.currentIndex += resampled.length - 46;
-        smplEndOffsets.push(smplData.currentIndex / 2);
-        SpessaSynthInfo(`%cSaved sample %c${i}%c of %c${this.samples.length}`,
+        else
+        {
+            // sf2 in sample data points
+            startOffset = smplData.currentIndex / 2;
+            endOffset = startOffset + data.length / 2;
+            jump += 46;
+        }
+        smplStartOffsets.push(startOffset);
+        smplData.set(data, smplData.currentIndex);
+        smplData.currentIndex += jump;
+        smplEndOffsets.push(endOffset);
+        SpessaSynthInfo(`%cSaved sample %c${i}. ${sample.sampleName}%c of %c${this.samples.length}`,
             consoleColors.info,
             consoleColors.recognized,
             consoleColors.info,

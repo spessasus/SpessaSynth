@@ -23,19 +23,24 @@ export function getSHDR(smplStartOffsets, smplEndOffsets)
         const dwEnd = smplEndOffsets[index];
         writeDword(shdrData, dwEnd);
         // loop is stored as relative in sample points, change it to absolute sample points here
-        writeDword(shdrData, sample.sampleLoopStartIndex / 2 + dwStart);
-        writeDword(shdrData, sample.sampleLoopEndIndex / 2 + dwStart);
+        let loopStart = sample.sampleLoopStartIndex / 2 + dwStart;
+        let loopEnd = sample.sampleLoopEndIndex / 2 + dwStart;
+        if(sample.isCompressed)
+        {
+            // https://github.com/FluidSynth/fluidsynth/wiki/SoundFont3Format
+            loopStart -= dwStart;
+            loopEnd -= dwStart;
+        }
+        writeDword(shdrData, loopStart);
+        writeDword(shdrData, loopEnd);
         // sample rate
         writeDword(shdrData, sample.sampleRate);
         // pitch and correction
         shdrData[shdrData.currentIndex++] = sample.samplePitch;
         shdrData[shdrData.currentIndex++] = sample.samplePitchCorrection;
-        // sample link is not supported
-        shdrData[shdrData.currentIndex++] = 0;
-        shdrData[shdrData.currentIndex++] = 0;
-        // sample type
-        // unflag from compression if compressed
-        sample.sampleType &= -17; // -17 is all 1 except bit 4
+        // sample link
+        writeWord(shdrData, sample.sampleLink);
+        // sample type: write raw because we simply copy compressed samples
         writeWord(shdrData, sample.sampleType);
     });
 

@@ -36,7 +36,7 @@ export function write()
      */
     const infoArrays = [];
     this.soundFontInfo["ISFT"] = "SpessaSynth"; // ( ͡° ͜ʖ ͡°)
-    this.soundFontInfo['ifil'] = "2.4"; // always!
+    this.soundFontInfo["ifil"] = this.soundFontInfo["ifil"].split(".")[0] + ".4"; // always vesrion 4
     for (const [type, data] of Object.entries(this.soundFontInfo))
     {
         if(type === "ifil" || type === "iver")

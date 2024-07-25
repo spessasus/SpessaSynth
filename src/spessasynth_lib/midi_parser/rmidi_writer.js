@@ -59,7 +59,6 @@ export function writeRMIDI(soundfontBinary, mid, soundfont)
                         e.messageData[6] === 0x00
                     )
                     {
-                        console.log("xg on")
                         system = "xg";
                     }
                     return;

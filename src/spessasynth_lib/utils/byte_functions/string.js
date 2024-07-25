@@ -8,22 +8,30 @@ import { IndexedByteArray } from '../indexed_array.js'
  * @returns {string}
  */
 export function readBytesAsString(dataArray, bytes, encoding = undefined, trimEnd = true) {
-    if (!encoding) {
+    if (!encoding)
+    {
         let finished = false
         let string = ''
-        for (let i = 0; i < bytes; i++) {
+        for (let i = 0; i < bytes; i++)
+        {
             let byte = dataArray[dataArray.currentIndex++]
-            if (finished) {
+            if (finished)
+            {
                 continue
             }
-            if (byte < 32 || byte > 127) {
-                if (trimEnd) {
+            if (byte < 32 || byte > 127)
+            {
+                if (trimEnd)
+                {
                     finished = true
                     continue
-                } else {
-                    if (byte === 0) {
-                        finished = true
-                        continue
+                }
+                else
+                {
+                    if (byte === 0)
+                    {
+                        finished = true;
+                        continue;
                     }
                 }
             }
