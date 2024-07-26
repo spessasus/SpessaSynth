@@ -1,6 +1,6 @@
 {
   "name": "SpessaSynth",
-  "version": "3.7.0",
+  "version": "3.8.6",
   "type": "module",
   "scripts": {
     "start": "node src/website/server/server.js",

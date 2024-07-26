@@ -6,6 +6,8 @@
 
 .notification {
     --notification-border-radius: var(--primary-border-radius);
+    --notification-font-size: 1.3rem;
+
     background: var(--top-color);
     color: var(--font-color);
     position: fixed;
@@ -44,14 +46,13 @@
 
 .notification h2{
     text-align: start;
-    font-size: 1.5rem;
     line-height: 2rem;
     margin: 1rem;
 }
 
 .notification_content{
     margin: 1rem;
-    width: 90%;
+    min-width: 90%;
 }
 
 .notification .close_btn{

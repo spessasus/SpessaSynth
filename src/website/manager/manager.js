@@ -14,7 +14,7 @@ import { LocaleManager } from '../locale/locale_manager.js'
 import { isMobile } from '../js/utils/is_mobile.js'
 import { SpessaSynthInfo } from '../../spessasynth_lib/utils/loggin.js'
 import { keybinds } from '../js/keybinds.js'
-import { _doExporWav, _exportWav } from './export_wav.js'
+import { _doExportAudioData, _exportAudioData } from './export_audio.js'
 import { exportMidi } from './export_midi.js'
 import { _exportSoundfont } from './export_soundfont.js'
 import { exportSong } from './export_song.js'
@@ -51,7 +51,7 @@ class Manager
 
     /**
      * Creates a new midi user interface.
-     * @param context {BaseAudioContext}
+     * @param context {AudioContext}
      * @param soundFontBuffer {ArrayBuffer}
      * @param locale {LocaleManager}
      */
@@ -324,8 +324,8 @@ class Manager
     }
 }
 Manager.prototype.exportSong = exportSong;
-Manager.prototype._exportWav = _exportWav;
-Manager.prototype._doExportWav = _doExporWav;
+Manager.prototype._exportAudioData = _exportAudioData;
+Manager.prototype._doExportAudioData = _doExportAudioData;
 Manager.prototype.exportMidi = exportMidi;
 Manager.prototype._exportSoundfont = _exportSoundfont;
 Manager.prototype._exportRMIDI = _exportRMIDI;

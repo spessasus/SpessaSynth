@@ -13,7 +13,7 @@ import { messageTypes, midiControllers } from '../../midi_parser/midi_message.js
  * @param mid {MIDI}
  * @returns {Uint8Array}
  */
-export function getTrimmedSoundfont(soundfont, mid)
+export function trimSoundfont(soundfont, mid)
 {
     /**
      * @param instrument {Instrument}
@@ -317,5 +317,4 @@ export function getTrimmedSoundfont(soundfont, mid)
         consoleColors.recognized)
     SpessaSynthGroupEnd();
     SpessaSynthGroupEnd();
-    return soundfont.write();
 }

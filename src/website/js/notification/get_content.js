@@ -1,3 +1,5 @@
+import { createSlider } from '../settings_ui/sliders.js'
+
 /**
  * @param el {HTMLElement}
  * @param content {NotificationContent}
@@ -66,6 +68,20 @@ export function getContent(content, locale)
 
         case "toggle":
             return getSwitch(content, locale);
+
+        case "range":
+            const range = document.createElement("input");
+            range.type = "range";
+            const label = document.createElement("label");
+            applyAttributes(content, [range, label]);
+            applyTextContent(label, content, locale);
+            const slider = createSlider(range, false);
+            const wrapper = document.createElement("div");
+            wrapper.classList.add("notification_slider_wrapper");
+            wrapper.appendChild(label);
+            wrapper.appendChild(slider);
+            return wrapper;
+
     }
 }
 

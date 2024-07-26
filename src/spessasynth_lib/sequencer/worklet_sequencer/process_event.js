@@ -67,7 +67,7 @@ export function _processEvent(event, trackIndex)
             break;
 
         case messageTypes.controllerChange:
-            // special case if the RMID is embedded: subtract 1 from bank. See wiki About-RMIDI.md
+            // special case if the RMID is embedded: subtract 1 from bank. See wiki About-RMIDI
             let v = event.messageData[1];
             if(this.midiData.embeddedSoundFont && event.messageData[0] === midiControllers.bankSelect)
             {

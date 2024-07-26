@@ -8,7 +8,7 @@ import { DEFAULT_PERCUSSION } from '../synthetizer/synthetizer.js'
  * @param ticks {number}
  * @returns {MidiMessage}
  */
-function getGsOn(ticks)
+export function getGsOn(ticks)
 {
     return new MidiMessage(
         ticks,
@@ -324,8 +324,11 @@ export function modifyMIDI(
                 });
                 if(!addedGs)
                 {
-                    // gs is not on, add it on the first track at index 0
-                    midi.tracks[0].splice(0, 0, getGsOn(0));
+                    // gs is not on, add it on the first track at index 0 (or 1 if track name is first)
+                    let index = 0;
+                    if(midi.tracks[0][0].messageStatusByte === messageTypes.trackName)
+                        index++;
+                    midi.tracks[0].splice(index, 0, getGsOn(0));
                     SpessaSynthInfo("%cGS on not detected. Adding it.", consoleColors.info);
                     addedGs = true;
                 }

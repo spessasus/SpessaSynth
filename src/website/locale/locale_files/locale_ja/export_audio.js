@@ -41,6 +41,19 @@ export const exportAudio = {
                 button: {
                     title: "トリミングされたサウンドフォント",
                     description: "MIDIファイルで使用されている楽器とサンプルだけにトリミングされたサウンドフォントをエクスポートします"
+                },
+                options: {
+                    title: "SFエクスポートオプション",
+                    confirm: "エクスポート",
+                    compress: {
+                        title: "圧縮",
+                        description: "未圧縮のサンプルをOgg Vorbisのロス圧縮で圧縮します。ファイルサイズが大幅に削減されます。" +
+                            "サウンドフォントがすでに圧縮されている場合は、このオプションを無効にしても再圧縮されることはありません"
+                    },
+                    quality: {
+                        title: "圧縮品質",
+                        description: "圧縮の品質です。高いほど良い"
+                    }
                 }
             },
 
@@ -50,7 +63,6 @@ export const exportAudio = {
                     description: "変更されたMIDIとトリミングされたサウンドフォントを1つのファイルに埋め込んでエクスポートします。 " +
                         "この形式は広くサポートされていないことに注意してください"
                 },
-
                 progress: {
                     title: "埋め込まれたMIDIをエクスポート中...",
                     loading: "サウンドフォントとMIDIを読み込み中...",
@@ -58,6 +70,18 @@ export const exportAudio = {
                     modifyingSoundfont: "サウンドフォントをトリミング中...",
                     saving: "RMIDIを保存中...",
                     done: "完了しました！"
+                },
+                options: {
+                    title: "RMIDIエクスポートオプション",
+                    confirm: "エクスポート",
+                    compress: {
+                        title: "圧縮",
+                        description: "サウンドフォントをOgg Vorbisのロス圧縮で圧縮します。ファイルサイズが大幅に削減されます。推奨設定です。"
+                    },
+                    quality: {
+                        title: "圧縮品質",
+                        description: "圧縮の品質です。高いほど良い"
+                    }
                 }
             }
         }

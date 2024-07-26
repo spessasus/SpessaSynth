@@ -17,7 +17,7 @@ const notifications = {};
 
 /**
  * @typedef {Object} NotificationContent
- * @property {"button"|"progress"|"text"|"input"|"toggle"} type
+ * @property {"button"|"progress"|"text"|"input"|"toggle"|"range"} type
  * @property {string|undefined} textContent
  * @property {string|undefined} translatePathTitle
  * @property {Object<string, string>|undefined} attributes
@@ -30,6 +30,7 @@ const notifications = {};
  * @param time {number} seconds
  * @param allowClosing {boolean}
  * @param locale {LocaleManager}
+ * @param contentStyling {Object<string, string>}
  * @returns {NotificationType}
  */
 export function showNotification(
@@ -37,7 +38,8 @@ export function showNotification(
     contents,
     time = NOTIFICATION_TIME,
     allowClosing = true,
-    locale = undefined)
+    locale = undefined,
+    contentStyling = undefined)
 {
     const notification = document.createElement("div");
     const notificationID = notificationCounter++;
@@ -50,6 +52,13 @@ export function showNotification(
     </div>`;
     const contentWrapper = document.createElement("div");
     contentWrapper.classList.add("notification_content");
+    if(contentStyling)
+    {
+        for(const [key, value] of Object.entries(contentStyling))
+        {
+            contentWrapper.style[key] = value;
+        }
+    }
     notification.appendChild(contentWrapper);
     for(const content of contents)
     {

@@ -127,7 +127,7 @@ export function _playTo(time, ticks = undefined)
                         let ccV = event.messageData[1];
                         if(this.midiData.embeddedSoundFont && controllerNumber === midiControllers.bankSelect)
                         {
-                            // special case if the RMID is embedded: subtract 1 from bank. See wiki About-RMIDI.md
+                            // special case if the RMID is embedded: subtract 1 from bank. See wiki About-RMIDI
                             ccV--;
                         }
                         this.synth.controllerChange(channel, controllerNumber, ccV);

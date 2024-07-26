@@ -4,6 +4,7 @@ import { RiffChunk, writeRIFFChunk } from '../soundfont/read/riff_chunk.js'
 import { getStringBytes } from '../utils/byte_functions/string.js'
 import { messageTypes, midiControllers, MidiMessage } from './midi_message.js'
 import { DEFAULT_PERCUSSION } from '../synthetizer/synthetizer.js'
+import { getGsOn } from './midi_editor.js'
 
 /**
  *
@@ -14,9 +15,14 @@ import { DEFAULT_PERCUSSION } from '../synthetizer/synthetizer.js'
  */
 export function writeRMIDI(soundfontBinary, mid, soundfont)
 {
-    // add 1 to bank. See wiki About-RMIDI.md
+    // add 1 to bank. See wiki About-RMIDI
     // also fix presets that don't exists since midiplayer6 doesn't seem to default to 0 when nonextistent...
-    let system = "gs";
+    let system = "gm";
+    /**
+     * The unwanted system messages such as gm/gm2 on
+     * @type {{tNum: number, e: MidiMessage}[]}
+     */
+    let unwantedSystems = [];
     mid.tracks.forEach((t, trackNum) => {
         let hasBankSelects = false;
         /**
@@ -61,6 +67,27 @@ export function writeRMIDI(soundfontBinary, mid, soundfont)
                     {
                         system = "xg";
                     }
+                    else
+                    if(
+                        e.messageData[0] === 0x41    // roland
+                        && e.messageData[2] === 0x42 // GS
+                        && e.messageData[6] === 0x7F // Mode set
+                    )
+                    {
+                        system = "gs";
+                    }
+                    else
+                    if(
+                        e.messageData[0] === 0x7E // non realtime
+                        && e.messageData[2] === 0x09 // gm system
+                    )
+                    {
+                        system = "gm";
+                        unwantedSystems.push({
+                            tNum: trackNum,
+                            e: e
+                        });
+                    }
                     return;
                 }
                 const sysexChannel = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15][e.messageData[5] & 0x0F];
@@ -76,14 +103,14 @@ export function writeRMIDI(soundfontBinary, mid, soundfont)
                 {
                     if(soundfont.presets.findIndex(p => p.program === e.messageData[0] && p.bank === 128) === -1)
                     {
-                        e.messageData[0] = soundfont.presets.find(p => p.bank === 128).program;
+                        e.messageData[0] = soundfont.presets.find(p => p.bank === 128)?.program || 0;
                     }
                 }
                 else
                 {
                     if (soundfont.presets.findIndex(p => p.program === e.messageData[0] && p.bank !== 128) === -1)
                     {
-                        e.messageData[0] = soundfont.presets.find(p => p.bank !== 128).program;
+                        e.messageData[0] = soundfont.presets.find(p => p.bank !== 128)?.program || 0;
                     }
                 }
                 // check if this preset exists for program and bank
@@ -144,7 +171,19 @@ export function writeRMIDI(soundfontBinary, mid, soundfont)
                 ));
             }
         }
-    })
+    });
+    // make sure to put xg if gm
+    if(system !== "gs" && system !== "xg")
+    {
+        for(const m of unwantedSystems)
+        {
+            mid.tracks[m.tNum].splice(mid.tracks[m.tNum].indexOf(m.e), 1);
+        }
+        let index = 0;
+        if(mid.tracks[0][0].messageStatusByte === messageTypes.trackName)
+            index++;
+            mid.tracks[0].splice(index, 0, getGsOn(0));
+    }
     const newMid = new IndexedByteArray(writeMIDIFile(mid).buffer);
 
     // infodata for MidiPlayer6

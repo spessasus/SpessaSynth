@@ -15,7 +15,7 @@ export async function exportSong()
                 translatePathTitle: path + "formats.wav.button",
                 onClick: n => {
                     closeNotification(n.id);
-                    this._exportWav();
+                    this._exportAudioData();
                 }
             },
             {
@@ -71,6 +71,11 @@ export async function exportSong()
         ],
         999999,
         true,
-        this.localeManager
+        this.localeManager,
+        {
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "center"
+        }
     )
 }

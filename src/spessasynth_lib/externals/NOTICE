@@ -1,0 +1,5 @@
+LICENSE is for stbvorbis_sync.js which is licensed under Apache-2.0
+
+OggVorbisEncoder (https://github.com/higuma/ogg-vorbis-encoder-js)
+is licensed under MIT.
+The file provided is a slight modification to work with es6.

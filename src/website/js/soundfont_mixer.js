@@ -76,7 +76,7 @@ export class SoundFontMixer
     {
         // compile the soundfont from first to last
         let soundfont = SoundFont2.mergeSoundfonts(...this.soundfontList.map(s => s.soundFont));
-        this.synth.reloadSoundFont(soundfont.write()).then();
+        this.synth.reloadSoundFont(soundfont.write().buffer).then();
     }
 
     /**

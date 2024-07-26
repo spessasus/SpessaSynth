@@ -12,7 +12,7 @@ const RENDER_AUDIO_TIME_INTERVAL = 1000;
  * @returns {Promise<void>}
  * @private
  */
-export async function _doExporWav(normalizeAudio = true, additionalTime = 2)
+export async function _doExportAudioData(normalizeAudio = true, additionalTime = 2)
 {
     this.isExporting = true;
     if(!this.seq)
@@ -20,8 +20,8 @@ export async function _doExporWav(normalizeAudio = true, additionalTime = 2)
         throw new Error("No sequencer active");
     }
     // get locales
-    const exportingMessage = manager.localeManager.getLocaleString("locale.exportAudio.formats.formats.wav.exportMessage.message");
-    const estimatedMessage = manager.localeManager.getLocaleString("locale.exportAudio.formats.formats.wav.exportMessage.estimated");
+    const exportingMessage = manager.localeManager.getLocaleString(`locale.exportAudio.formats.formats.wav.exportMessage.message`);
+    const estimatedMessage = manager.localeManager.getLocaleString(`locale.exportAudio.formats.formats.wav.exportMessage.estimated`);
     const notification = showNotification(
         exportingMessage,
         [
@@ -108,7 +108,7 @@ export async function _doExporWav(normalizeAudio = true, additionalTime = 2)
     // clear intervals and save file
     clearInterval(interval);
     closeNotification(notification.id);
-    this.saveBlob(audioBufferToWav(buf, normalizeAudio), `${window.manager.seq.midiData.midiName || 'unnamed_song'}.wav`)
+    this.saveBlob(audioBufferToWav(buf, normalizeAudio), `${this.seq.midiData.midiName || 'unnamed_song'}.wav`);
     this.isExporting = false;
 }
 
@@ -117,43 +117,51 @@ export async function _doExporWav(normalizeAudio = true, additionalTime = 2)
  * @returns {Promise<void>}
  * @private
  */
-export async function _exportWav()
+export async function _exportAudioData()
 {
     if(this.isExporting)
     {
         return;
     }
-    const path = "locale.exportAudio.formats.formats.wav.options.";
-    showNotification(
-        this.localeManager.getLocaleString(path + "title"),
-        [
-            {
-                type: "toggle",
-                translatePathTitle: path + "normalizeVolume",
-                attributes: {
-                    "normalize-volume-toggle": "1",
-                    "checked": "true"
-                }
-            },
-            {
-                type: "input",
-                translatePathTitle: path + "additionalTime",
-                attributes: {
-                    "value": "2",
-                    "type": "number"
-                }
-            },
-            {
-                type: "button",
-                textContent: this.localeManager.getLocaleString(path + "confirm"),
-                onClick: n => {
-                    closeNotification(n.id);
-                    const normalizeVolume = n.div.querySelector("input[normalize-volume-toggle='1']").checked;
-                    const additionalTime = n.div.querySelector("input[type='number']").value;
-                    this._doExportWav(normalizeVolume, parseInt(additionalTime));
-                }
+    const wavPath = `locale.exportAudio.formats.formats.wav.options.`;
+    /**
+     * @type {NotificationContent[]}
+     */
+    const WAV_OPTIONS = [
+        {
+            type: "toggle",
+            translatePathTitle: wavPath + "normalizeVolume",
+            attributes: {
+                "normalize-volume-toggle": "1",
+                "checked": "true"
             }
-        ],
+        },
+        {
+            type: "input",
+            translatePathTitle: wavPath + "additionalTime",
+            attributes: {
+                "value": "2",
+                "type": "number"
+            }
+        },
+        {
+            type: "button",
+            textContent: this.localeManager.getLocaleString(wavPath + "confirm"),
+            onClick: n => {
+                closeNotification(n.id);
+                const normalizeVolume = n.div.querySelector("input[normalize-volume-toggle='1']").checked;
+                const additionalTime = n.div.querySelector("input[type='number']").value;
+                this._doExportAudioData(normalizeVolume, parseInt(additionalTime));
+            }
+        }
+    ];
+
+    /**
+     * @type {NotificationContent[]}
+     */
+    showNotification(
+        this.localeManager.getLocaleString(wavPath + "title"),
+        WAV_OPTIONS,
         9999999,
         true,
         this.localeManager

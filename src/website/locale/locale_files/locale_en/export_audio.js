@@ -13,7 +13,7 @@ export const exportAudio = {
                     description: "Export the song with modifications as a .wav audio file"
                 },
                 options: {
-                    title: "Audio export options",
+                    title: "WAV export options",
                     confirm: "Export",
                     normalizeVolume: {
                         title: "Normalize volume",
@@ -25,7 +25,7 @@ export const exportAudio = {
                     }
                 },
                 exportMessage: {
-                    message: "Exporting audio...",
+                    message: "Exporting WAV audio...",
                     estimated: "Remaining:"
                 }
             },
@@ -41,6 +41,20 @@ export const exportAudio = {
                 button: {
                     title: "Trimmed soundfont",
                     description: "Export the soundfont trimmed to only use instruments and samples that the MIDI file uses"
+                },
+
+                options: {
+                    title: "SF export options",
+                    confirm: "Export",
+                    compress: {
+                        title: "Compress",
+                        description: "Compress samples with lossy Ogg Vorbis compression if uncompressed. Significantly reduces the file size." +
+                            "If the soundfont was already compressed, it won't be uncompressed even if this option is disabled"
+                    },
+                    quality: {
+                        title: "Compression quality",
+                        description: "The quality of compression. Higher is better"
+                    }
                 }
             },
 
@@ -58,6 +72,19 @@ export const exportAudio = {
                     modifyingSoundfont: "Trimming Soundfont...",
                     saving: "Saving RMIDI...",
                     done: "Done!"
+                },
+
+                options: {
+                    title: "RMIDI export options",
+                    confirm: "Export",
+                    compress: {
+                        title: "Compress",
+                        description: "Compress the Soundfont with lossy Ogg Vorbis compression. Significantly reduces the file size. Recommended."
+                    },
+                    quality: {
+                        title: "Compression quality",
+                        description: "The quality of compression. Higher is better."
+                    }
                 }
             }
         }

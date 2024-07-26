@@ -6,13 +6,13 @@
     margin: 0.5rem;
 }
 
-input:not([type='checkbox'])::-webkit-outer-spin-button,
-input:not([type='checkbox'])::-webkit-inner-spin-button {
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
 
-.notification input:not([type='checkbox']){
+.notification input[type='number']{
     display: block;
     background: var(--top-buttons-color);
     border: solid 1px #333;
@@ -21,4 +21,22 @@ input:not([type='checkbox'])::-webkit-inner-spin-button {
     border-radius: var(--notification-border-radius);
     width: 5rem;
     -moz-appearance: textfield;
+}
+
+.notification_slider_wrapper{
+    display: flex;
+    justify-content: space-between;
+    margin: 0.5rem;
+}
+
+.notification_slider_wrapper label{
+    margin-right: 2rem;
+}
+
+.notification_slider_wrapper .settings_visual_wrapper{
+    margin: 0 !important;
+}
+
+.notification_slider_wrapper .settings_slider_wrapper{
+    width: auto !important;
 }

@@ -2,12 +2,12 @@
 <img src="src/website/spessasynth_logo_rounded.png" width='300' alt='SpessaSynth logo'>
 </p>
 
-SoundFont2 based realtime synthetizer and MIDI player written in JavaScript using Web Audio API. 
-MIDI file reader and writer. SF2 Reader and writer. [RMIDI file](../../wiki/MIDI/About-RMIDI) reader and writer.
+**SpessaSynth is SoundFont2 based realtime synthetizer and MIDI player written in JavaScript using Web Audio API. 
+A powerful library that allows you to read, write or play MIDI files and read/write SF2/SF3 files.**
 
 ![SpessaSynth Promotional Image](https://github.com/spessasus/SpessaSynth/assets/95608008/e2e6c4c6-0762-4c11-8887-a2318d431854)
 
-<h3 align='center'>Exporting Soundfonts and RMIDIs now available!</h3>
+<h3 align='center'>Exporting Soundfonts and RMIDIs now available! With compression too!</h3>
 <p align='center'>
    <img src="https://github.com/user-attachments/assets/0aba6293-0458-401f-91fc-71f7a4a7640c" width="50%"></img>
 </p>
@@ -20,61 +20,35 @@ MIDI file reader and writer. SF2 Reader and writer. [RMIDI file](../../wiki/MIDI
 </p>
 
 
-This repository is essentially 2 programs in one:
-<h1 align='center'>spessasynth_lib</h1></h1>
+This repository contains both the library and a complete musical web application. See below
+<h1 align='center'>spessasynth_lib</h1>
 <p align='center'>A flexible, powerful, and feature-packed soundfont synthesizer library for the WebAudio API.
-Comes with the ability to edit midis and soundfonts!</p>
+Comes with the ability to edit MIDIs and soundfonts!</p>
 
-> [!TIP]
-> Looking for a Node.js version? try [spessasynth_core](https://www.npmjs.com/package/spessasynth_core)
-
-<p align='center'><strong><a href="../../wiki/Home">Documentation can be found here</a></strong></p>
+<h3 align='center'><a href="../../wiki/Home">Documentation can be found here</a></h3>
 
 <h2 align='center'>Features</h2>
-<ul>
-  <li>SoundFont2 Generator Support</li>
-  <li>SoundFont2 Modulator Support</li>
-  <li>
-    SoundFont3 (vorbis compressed sf2) Support 
-    (thanks to <a href="https://github.com/hajimehoshi/stbvorbis.js">stbvorbis.js</a>)
-  </li>
-  <li>
-    Can provide very high quality audio while being relatively light on file size thanks to sf3 support
-  </li>
-  <li>Reverb and chorus support (customizable)</li>
-  <li>Render audio to a .wav file</li>
-  <li>Read and write .mid files</li>
-  <li>
-    Read and write <a href="../../wiki/MIDI/About-RMIDI">.rmi files with embedded SF2 soundfonts</a>
-  </li>
-  <li>Read and write .sf2 files</li>
-  <li>
-    A few custom modulators to support some additional controllers (see <code>modulators.js</code>)
-  </li>
-  <li>Written using AudioWorklets (Firefox and Chrome both work perfectly)</li>
-  <li>
-    Can load really large soundfonts (4GB!) 
-    (but only on Firefox, Chromium has a memory limit)
-  </li>
-  <li>
-    <a href="../../wiki/MIDI/About-Multi-Port">Multi Port MIDIs support</a> (more than 16 channels)
-  </li>
-  <li>
-    MIDI Controller Support (Default supported controllers can be found 
-    <a href="../../wiki/MIDI-Implementation#supported-controllers">here</a>)
-  </li>
-  <li>
-    <a href="../../wiki/MIDI/MIDI-Implementation#supported-registered-parameters">RPN and NRPN support</a>
-  </li>
-  <li>Supports some Roland GS and Yamaha XG sysex messages</li>
-  <li>
-    High performance mode for playing black MIDIs 
-    (Don't go too crazy with the amount of notes though)
-  </li>
-  <li>Modular design allows easy integrations into other projects</li>
-  <li>Written in pure JavaScript using WebAudio API (Every modern browser supports it)</li>
-  <li>No dependencies</li>
-</ul>
+- SoundFont2 Generator Support
+- SoundFont2 Modulator Support
+- SoundFont3 (vorbis compressed sf2) Support (thanks to [stbvorbis.js](https://github.com/hajimehoshi/stbvorbis.js))
+- Can provide very high quality audio while being relatively light on file size thanks to sf3 support
+- Reverb and chorus support (customizable)
+- Render audio to a .wav file
+- Read and write .mid files
+- Read and write [.rmi files with embedded SF2 soundfonts](../../wiki/MIDI/About-RMIDI)
+- Read and write .sf2 files (or compress them to sf3)
+- Read and write .sf3 files
+- A few custom modulators to support some additional controllers (see `modulators.js`)
+- Written using AudioWorklets (Firefox and Chrome both work perfectly)
+- Can load really large soundfonts (4GB!) (but only on Firefox, Chromium has a memory limit)
+- [Multi Port MIDIs support](../../wiki/MIDI/About-Multi-Port) (more than 16 channels)
+- MIDI Controller Support (Default supported controllers can be found [here](../../wiki/MIDI-Implementation#supported-controllers))
+- [RPN and NRPN support](../../wiki/MIDI/MIDI-Implementation#supported-registered-parameters)
+- Supports some Roland GS and Yamaha XG sysex messages
+- High performance mode for playing black MIDIs (Don't go too crazy with the amount of notes though)
+- Modular design allows easy integrations into other projects
+- Written in pure JavaScript using WebAudio API (Every modern browser supports it)
+- No dependencies
 
 ## Limitations
 - The performance is questionable, especially on mobile devices.
@@ -83,6 +57,10 @@ Comes with the ability to edit midis and soundfonts!</p>
 1. Clone this repository.
 2. copy `src/spessasynth_lib` to your project.
 3. [Use the library](../../wiki/Home)
+
+
+> [!TIP]
+> Looking for a Node.js version? try [spessasynth_core](https://www.npmjs.com/package/spessasynth_core)!
 
 <h1 align='center'>Web app / Local Edition</h1>
 <p align='center'>The complete GUI for spessasynth_lib, allowing remixing experimenting and playing MIDIs in the coolest way possible.</p>
@@ -101,7 +79,7 @@ Comes with the ability to edit midis and soundfonts!</p>
 - Play around with the MIDI file, edit instruments controllers and more!
 - Render the MIDI file (either modified or unmodified) to .wav
 - Export the modified MIDI file to .mid
-- Export the trimmed soundfont to .sf2
+- Export the trimmed soundfont to .sf2 or compressed .sf3
 - Or bundle both as .rmi!
 - Comes bundled with a compressed [SGM](https://web.archive.org/web/20130616094125/http://www.geocities.jp/shansoundfont/) SoundFont to get you started
 - Also no dependencies!
@@ -151,13 +129,14 @@ Comes with the ability to edit midis and soundfonts!</p>
  - [Polyphone](https://www.polyphone-soundfonts.com/) - a wonderful testing and editing tool for soundfonts and how they should sound
  - [Meltysynth](https://github.com/sinshu/meltysynth) - for the initial low-pass filter implementation
  - [RecordingBlogs](https://www.recordingblogs.com/) - for the detailed explanations on MIDI messages
+ - [OggVorbisEncoder](https://github.com/higuma/ogg-vorbis-encoder-js) - for the MIT vorbis encoder.
  - **And You!** - for checking out this project. I hope you like it :)
 
 ### Major releases
 - [0.0.1](https://github.com/spessasus/SpessaSynth/commit/bc5c6516ae7edc94656b5df75d254a29280caa18) - the initial release
 - [1.0.0](https://github.com/spessasus/SpessaSynth/commit/45c23d1c2906b2dec202c0533a9737bd1fa6b3c4) - removed the 2 sample limit(the biggest problem program faced so far)
 - [2.0.0](https://github.com/spessasus/SpessaSynth/commit/350e4db90210375da27e393393df743be2137d59) - implemented the worklet system and added support for modulators
-- [3.0.0](https://github.com/spessasus/SpessaSynth/commit/b7f9e382a2f62eef462755ac9ebfe603663e4106) - everything moved to audioWorkletGlobalScope which allows for offline audio rendering
+- [3.0.0](https://github.com/spessasus/SpessaSynth/commit/b7f9e382a2f62eef462755ac9ebfe603663e4106) - everything moved to audioWorkletGlobalScope which allows for offline audio rendering. (We are here)
 
 ### License
 Copyright © 2024 Spessasus. Licensed under the MIT License.

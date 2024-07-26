@@ -41,6 +41,20 @@ export const exportAudio = {
                 button: {
                     title: "Zmniejszony soundfont",
                     description: "Eksportuj soundfont zawierający tylko klawisze użyte w MIDI"
+                },
+
+                options: {
+                    title: "Opcje eksportu soundfonta",
+                    confirm: "Eksportuj",
+                    compress: {
+                        title: "Kompresuj",
+                        description: "Zkompresuj próbki które nie są zkompresowane przy użyciu stratnego kodeka Ogg Vorbis. Znacznie zmniejsza rozmiar pliku." +
+                            "Jeśli soundfont był już skompresowany, nie zostanie zdekompresowany nawet gdy ta opcja jest wyłączona"
+                    },
+                    quality: {
+                        title: "Jakość kompresji",
+                        description: "Jakość skompresowanych próbek. Im wyższa tym lepsza"
+                    }
                 }
             },
 
@@ -58,6 +72,19 @@ export const exportAudio = {
                     modifyingSoundfont: "Zmniejszanie Soundfonta...",
                     saving: "Zapisywanie RMIDI...",
                     done: "Gotowe!"
+                },
+
+                options: {
+                    title: "Opcje eksportu RMIDI",
+                    confirm: "Eksportuj",
+                    compress: {
+                        title: "Kompresuj",
+                        description: "Skompresuj osadzonego soundfonta za pomocą stratnego kodeka Ogg Vorbis. Znacznie zmniejsza rozmiar pliku. Zalecane."
+                    },
+                    quality: {
+                        title: "Jakość kompresji",
+                        description: "Jakość skompresowanych próbek. Im wyższa tym lepsza"
+                    }
                 }
             }
         }

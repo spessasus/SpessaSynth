@@ -20,14 +20,34 @@ import {
 } from '../../utils/loggin.js'
 
 /**
+ * @typedef {Object} SoundFont2WriteOptions
+ * @property {boolean} compress - if the soundfont should be compressed with the ogg vorbis codec
+ * @property {number} compressionQuality - the vorbis compression quality, from -0.1 to 1
+ */
+
+/**
+ * @type {SoundFont2WriteOptions}
+ */
+const DEFAULT_WRITE_OPTIONS = {
+    compress: false,
+    compressionQuality: 0.5
+}
+
+/**
  * Write the soundfont as an .sf2 file. This method is DESTRUCTIVE
  * @this {SoundFont2}
+ * @param {SoundFont2WriteOptions} options
  * @returns {Uint8Array}
  */
-export function write()
+export function write(options = DEFAULT_WRITE_OPTIONS)
 {
     SpessaSynthGroupCollapsed("%cSaving soundfont...",
         consoleColors.info);
+    SpessaSynthInfo(`%cCompression: %c${options?.compress || "false"}%c quality: %c${options?.compressionQuality || "none"}`,
+        consoleColors.info,
+        consoleColors.recognized,
+        consoleColors.info,
+        consoleColors.recognized)
     SpessaSynthInfo("%cWriting INFO...",
         consoleColors.info);
     /**
@@ -36,13 +56,16 @@ export function write()
      */
     const infoArrays = [];
     this.soundFontInfo["ISFT"] = "SpessaSynth"; // ( ͡° ͜ʖ ͡°)
-    this.soundFontInfo["ifil"] = this.soundFontInfo["ifil"].split(".")[0] + ".4"; // always vesrion 4
+    if(options?.compress)
+    {
+        this.soundFontInfo["ifil"] = "3.0"; // set version to 3
+    }
     for (const [type, data] of Object.entries(this.soundFontInfo))
     {
         if(type === "ifil" || type === "iver")
         {
             const major= parseInt(data.split(".")[0]);
-            const minor = parseInt(data.split(".")[1]);
+            const minor= parseInt(data.split(".")[1]);
             const ckdata = new IndexedByteArray(4);
             writeWord(ckdata, major);
             writeWord(ckdata, minor);
@@ -74,7 +97,7 @@ export function write()
     // write sdata
     const smplStartOffsets = [];
     const smplEndOffsets = [];
-    const sdtaChunk = getSDTA.bind(this)(smplStartOffsets, smplEndOffsets);
+    const sdtaChunk = getSDTA.bind(this)(smplStartOffsets, smplEndOffsets, options?.compress, options?.compressionQuality || 0.5);
 
     SpessaSynthInfo("%cWriting PDTA...",
         consoleColors.info);

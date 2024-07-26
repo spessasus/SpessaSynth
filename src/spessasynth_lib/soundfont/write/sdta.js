@@ -7,13 +7,21 @@ import { consoleColors } from '../../utils/other.js'
  * @this {SoundFont2}
  * @param smplStartOffsets {number[]}
  * @param smplEndOffsets {number[]}
+ * @param compress {boolean}
+ * @param quality {number}
  * @returns {IndexedByteArray}
  */
-export function getSDTA(smplStartOffsets, smplEndOffsets)
+export function getSDTA(smplStartOffsets, smplEndOffsets, compress, quality)
 {
     // write smpl: write int16 data of each sample linearly
     // get size (calling getAudioData twice doesn't matter since it gets cached)
-    const sampleDatas = this.samples.map(s => s.getRawData());
+    const sampleDatas = this.samples.map(s => {
+        if(compress)
+        {
+            s.compressSample(quality);
+        }
+        return s.getRawData();
+    });
     const smplSize = this.samples.reduce((total, s, i) => {
         return total + sampleDatas[i].length  + 46;
     }, 0);
