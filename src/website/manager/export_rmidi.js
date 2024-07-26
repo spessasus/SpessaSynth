@@ -5,6 +5,7 @@ import { closeNotification, showNotification } from '../js/notification/notifica
 import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd } from '../../spessasynth_lib/utils/loggin.js'
 import { consoleColors } from '../../spessasynth_lib/utils/other.js'
 import { writeRMIDI } from '../../spessasynth_lib/midi_parser/rmidi_writer.js'
+import { ANIMATION_REFLOW_TIME } from '../js/utils/animation_utils.js'
 
 /**
  * @this {Manager}
@@ -64,18 +65,18 @@ export async function _exportRMIDI()
                     const font = new SoundFont2(mid.embeddedSoundFont || this.soundFont);
 
                     message.textContent = this.localeManager.getLocaleString(localePath + "modifyingMIDI");
-                    await new Promise(r => setTimeout(r, 10));
+                    await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
 
                     applySnapshotToMIDI(mid, await this.synth.getSynthesizerSnapshot());
 
                     message.textContent = this.localeManager.getLocaleString(localePath + "modifyingSoundfont");
-                    await new Promise(r => setTimeout(r, 10));
+                    await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
 
                     trimSoundfont(font, mid);
                     const newFont = font.write({compress: compressed, compressionQuality: quality});
 
                     message.textContent = this.localeManager.getLocaleString(localePath + "saving");
-                    await new Promise(r => setTimeout(r, 10));
+                    await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
 
                     const rmidBinary = writeRMIDI(newFont, mid, font);
                     const blob = new Blob([rmidBinary.buffer], {type: "audio/rmid"})

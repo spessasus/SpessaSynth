@@ -1,4 +1,4 @@
-import { libvorbis } from '../externals/OggVorbisEncoder.js'
+import { libvorbis } from '../externals/libvorbis/OggVorbisEncoder.min.js'
 
 /**
  * @param channelAudioData {Float32Array[]}

@@ -15,12 +15,18 @@ export function getSDTA(smplStartOffsets, smplEndOffsets, compress, quality)
 {
     // write smpl: write int16 data of each sample linearly
     // get size (calling getAudioData twice doesn't matter since it gets cached)
-    const sampleDatas = this.samples.map(s => {
+    const sampleDatas = this.samples.map((s, i) => {
         if(compress)
         {
             s.compressSample(quality);
         }
-        return s.getRawData();
+        const r=  s.getRawData();
+        SpessaSynthInfo(`%cEncoded sample %c${i}. ${s.sampleName}%c of %c${this.samples.length}`,
+            consoleColors.info,
+            consoleColors.recognized,
+            consoleColors.info,
+            consoleColors.recognized);
+        return r;
     });
     const smplSize = this.samples.reduce((total, s, i) => {
         return total + sampleDatas[i].length  + 46;
@@ -49,11 +55,6 @@ export function getSDTA(smplStartOffsets, smplEndOffsets, compress, quality)
         smplData.set(data, smplData.currentIndex);
         smplData.currentIndex += jump;
         smplEndOffsets.push(endOffset);
-        SpessaSynthInfo(`%cSaved sample %c${i}. ${sample.sampleName}%c of %c${this.samples.length}`,
-            consoleColors.info,
-            consoleColors.recognized,
-            consoleColors.info,
-            consoleColors.recognized);
     });
 
     const smplChunk = writeRIFFChunk(new RiffChunk(

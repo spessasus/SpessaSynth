@@ -36,7 +36,7 @@ import { applySynthesizerSnapshot, sendSynthesizerSnapshot } from './worklet_met
 import { consoleColors } from '../../utils/other.js'
 import { PAN_SMOOTHING_FACTOR, releaseVoice, renderVoice, voiceKilling } from './worklet_methods/voice_control.js'
 import { returnMessageType } from './message_protocol/worklet_message.js'
-import { stbvorbis } from '../../externals/stbvorbis_sync.min.js'
+import { stbvorbis } from '../../externals/stbvorbis_sync/stbvorbis_sync.min.js'
 import { VOLUME_ENVELOPE_SMOOTHING_FACTOR } from './worklet_utilities/volume_envelope.js'
 import { resetAllControllers, resetControllers, resetParameters } from './worklet_methods/reset_controllers.js'
 

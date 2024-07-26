@@ -47,7 +47,7 @@ export function _playTo(time, ticks = undefined)
      * Save programs here and send them only after
      * @type {number[]}
      */
-    const programs = Array(channelsToSave).fill(0);
+    const programs = Array(channelsToSave).fill(-1  );
 
     /**
      * Save controllers here and send them only after
@@ -125,7 +125,7 @@ export function _playTo(time, ticks = undefined)
                     else
                     {
                         let ccV = event.messageData[1];
-                        if(this.midiData.embeddedSoundFont && controllerNumber === midiControllers.bankSelect)
+                        if(this.midiData.embeddedSoundFont !== undefined && controllerNumber === midiControllers.bankSelect)
                         {
                             // special case if the RMID is embedded: subtract 1 from bank. See wiki About-RMIDI
                             ccV--;
@@ -204,7 +204,7 @@ export function _playTo(time, ticks = undefined)
                 })
             }
             // restore programs
-            if(programs[channelNumber] !== 0)
+            if(programs[channelNumber] !== -1)
             {
                 this.synth.programChange(channelNumber, programs[channelNumber]);
             }

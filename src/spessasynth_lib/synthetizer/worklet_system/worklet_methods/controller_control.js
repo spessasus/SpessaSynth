@@ -68,7 +68,8 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
                         break;
 
                     case "gm2":
-                        if (bankNr === 120) {
+                        if (bankNr === 120)
+                        {
                             channelObject.drumChannel = true;
                             this.callEvent("drumchange", {
                                 channel: channel,

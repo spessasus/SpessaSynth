@@ -47,7 +47,7 @@
  */
 
 import { addAndClampGenerator, generatorTypes } from '../../../soundfont/read/generators.js'
-import { SpessaSynthTable } from '../../../utils/loggin.js'
+import { SpessaSynthTable, SpessaSynthWarn } from '../../../utils/loggin.js'
 import { DEFAULT_WORKLET_VOLUME_ENVELOPE } from './volume_envelope.js'
 import { DEFAULT_WORKLET_LOWPASS_FILTER } from './lowpass_filter.js'
 
@@ -154,7 +154,7 @@ export function getWorkletVoices(channel,
     let workletVoices;
 
     const cached = cachedVoices[midiNote][velocity];
-    if(cached)
+    if(cached !== undefined)
     {
         workletVoices = cached.map(deepClone);
         workletVoices.forEach(v => {
@@ -163,29 +163,26 @@ export function getWorkletVoices(channel,
     }
     else
     {
-        let canCache = true;
         /**
-         * @returns {WorkletVoice}
+         * @returns {WorkletVoice[]}
          */
-        workletVoices = preset.getSamplesAndGenerators(midiNote, velocity).map(sampleAndGenerators => {
+        workletVoices = preset.getSamplesAndGenerators(midiNote, velocity).reduce((voices, sampleAndGenerators) => {
             // dump the sample if haven't already
-            if (globalDumpedSamplesList[sampleAndGenerators.sampleID] !== true) {
-                // if the sample is currently being loaded, don't dump again (undefined means not loaded, false means is being loaded)
-                if(globalDumpedSamplesList[sampleAndGenerators.sampleID] === undefined) {
-                    dumpSample(channel, sampleAndGenerators.sample, sampleAndGenerators.sampleID, sampleDumpCallback);
-                }
-
-                // can't cache the voice as the end in workletSample maybe is incorrect (the sample is still loading)
-                if(globalDumpedSamplesList[sampleAndGenerators.sampleID] !== true)
-                {
-                    canCache = false;
-                }
+            if (globalDumpedSamplesList[sampleAndGenerators.sampleID] !== true)
+            {
+                dumpSample(channel, sampleAndGenerators.sample, sampleAndGenerators.sampleID, sampleDumpCallback);
+            }
+            if(sampleAndGenerators.sample.sampleData === undefined)
+            {
+                SpessaSynthWarn(`Discarding invalid sample: ${sampleAndGenerators.sample.sampleName}`);
+                return voices;
             }
 
             // create the generator list
             const generators = new Int16Array(60);
             // apply and sum the gens
-            for (let i = 0; i < 60; i++) {
+            for (let i = 0; i < 60; i++)
+            {
                 generators[i] = addAndClampGenerator(i, sampleAndGenerators.presetGenerators, sampleAndGenerators.instrumentGenerators);
             }
 
@@ -245,7 +242,7 @@ export function getWorkletVoices(channel,
                 }]);
             }
 
-            return {
+            voices.push({
                 filter: deepClone(DEFAULT_WORKLET_LOWPASS_FILTER),
                 // generators and modulators
                 generators: generators,
@@ -272,14 +269,12 @@ export function getWorkletVoices(channel,
                 currentPan: 0.5,
 
                 volumeEnvelope: deepClone(DEFAULT_WORKLET_VOLUME_ENVELOPE)
-            };
-
-        });
+            });
+            return voices;
+        }, []);
         // cache the voice
-        if(canCache) {
-            // clone it so the system won't mess with it!
-            cachedVoices[midiNote][velocity] = workletVoices.map(deepClone);
-        }
+        // clone it so the system won't mess with it!
+        cachedVoices[midiNote][velocity] = workletVoices.map(deepClone);
     }
     return workletVoices;
 }

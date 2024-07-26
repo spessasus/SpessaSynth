@@ -5,6 +5,8 @@ import { getStringBytes } from '../utils/byte_functions/string.js'
 import { messageTypes, midiControllers, MidiMessage } from './midi_message.js'
 import { DEFAULT_PERCUSSION } from '../synthetizer/synthetizer.js'
 import { getGsOn } from './midi_editor.js'
+import { SpessaSynthInfo } from '../utils/loggin.js'
+import { consoleColors } from '../utils/other.js'
 
 /**
  *
@@ -24,7 +26,15 @@ export function writeRMIDI(soundfontBinary, mid, soundfont)
      */
     let unwantedSystems = [];
     mid.tracks.forEach((t, trackNum) => {
-        let hasBankSelects = false;
+        /**
+         * @type {boolean[]}
+         */
+        let hasBankSelects = Array(16).fill(true);
+        mid.usedChannelsOnTrack[trackNum].forEach(c => {
+            // fill with true, only the channels on this track are set to false
+            // (so we won't add banks for channels the track isn't refering to)
+            hasBankSelects[c] = false;
+        });
         /**
          * @type {MidiMessage[]}
          */
@@ -34,6 +44,7 @@ export function writeRMIDI(soundfontBinary, mid, soundfont)
          */
         let drums = Array(16).fill(false);
         drums[DEFAULT_PERCUSSION] = true;
+        let programs = Array(16).fill(0);
         t.forEach(e => {
             const status = e.messageStatusByte & 0xF0;
             if(
@@ -95,11 +106,11 @@ export function writeRMIDI(soundfontBinary, mid, soundfont)
                 return;
             }
 
+            const chNum = e.messageStatusByte & 0xF;
             if(status === messageTypes.programChange)
             {
-                const ch = e.messageStatusByte & 0xf;
                 // check if the preset for this program exists
-                if(drums[ch])
+                if(drums[chNum])
                 {
                     if(soundfont.presets.findIndex(p => p.program === e.messageData[0] && p.bank === 128) === -1)
                     {
@@ -113,29 +124,37 @@ export function writeRMIDI(soundfontBinary, mid, soundfont)
                         e.messageData[0] = soundfont.presets.find(p => p.bank !== 128)?.program || 0;
                     }
                 }
+                programs[e.messageStatusByte & 0xf] = e.messageData[0];
                 // check if this preset exists for program and bank
-                const bank = lastBankChanges[ch]?.messageData[1];
+                const bank = lastBankChanges[chNum]?.messageData[1];
                 if(bank === undefined)
                 {
                     return;
                 }
-                if(system === "xg" && drums[ch])
+                if(system === "xg" && drums[chNum])
                 {
                     // drums override: set bank to 127
-                    lastBankChanges[ch].messageData[1] = 127;
+                    lastBankChanges[chNum].messageData[1] = 127;
                     return;
                 }
 
                 if(soundfont.presets.findIndex(p => p.bank === bank && p.program === e.messageData[0]) === -1)
                 {
                     // no preset with this bank. set to 1 (0)
-                    lastBankChanges[ch].messageData[1] = 1;
-
+                    lastBankChanges[chNum].messageData[1] = 1;
+                    SpessaSynthInfo(`%cNo preset %c${bank}:${e.messageData[0]}%c. Changing bank to 1.`,
+                        consoleColors.info,
+                        consoleColors.recognized,
+                        consoleColors.info);
                 }
                 else
                 {
                     // there is a preset with this bank. add 1
-                    lastBankChanges[ch].messageData[1]++;
+                    lastBankChanges[chNum].messageData[1]++;
+                    SpessaSynthInfo(`%cPreset %c${bank}:${e.messageData[0]}%c exists. Changing bank to ${lastBankChanges[chNum].messageData[1]}.`,
+                        consoleColors.info,
+                        consoleColors.recognized,
+                        consoleColors.info);
                 }
                 return;
             }
@@ -143,34 +162,50 @@ export function writeRMIDI(soundfontBinary, mid, soundfont)
             {
                 return;
             }
-            hasBankSelects = true;
+            hasBankSelects[chNum] = true;
             if(system === "xg")
             {
                 // check for xg drums
-                drums[e.messageStatusByte & 0xF] = e.messageData[1] === 120 || e.messageData[1] === 126 || e.messageData[1] === 127;
+                drums[chNum] = e.messageData[1] === 120 || e.messageData[1] === 126 || e.messageData[1] === 127;
             }
-            lastBankChanges[e.messageStatusByte & 0xF] = e;
+            lastBankChanges[chNum] = e;
         });
-        if(!hasBankSelects)
-        {
-            // track has no bank selects. Add them at the start
-            // find first program change
-            const indexToAdd = t.findIndex(e => e.messageStatusByte & 0xF0 === messageTypes.programChange);
-            if(indexToAdd === -1)
+        // add all bank selects that are missing for this track
+        hasBankSelects.forEach((has, ch) => {
+            if(has === true)
             {
-                // no program change... skip!
                 return;
             }
-            const ticks = t[indexToAdd].ticks;
-            for(const channel of mid.usedChannelsOnTrack[trackNum].values())
+            // find first program change (for the given channel)
+            const status = messageTypes.programChange | ch;
+            let indexToAdd = t.findIndex(e => e.messageStatusByte === status);
+            if(indexToAdd === -1)
             {
-                t.splice(indexToAdd,0, new MidiMessage(
-                    ticks,
-                    messageTypes.controllerChange | (channel % 16),
-                    new IndexedByteArray([midiControllers.bankSelect, 1])
+                // no program change...
+                    // add programs if they are missing from the track (need them to activate bank 1 for the embedded sfont)
+                const programIndex = t.findIndex(e => (e.messageStatusByte > 0x80 && e.messageStatusByte < 0xF0) && (e.messageStatusByte & 0xF) === ch);
+                if(programIndex === -1)
+                {
+                    // no voices??? skip
+                    return;
+                }
+                const programTicks = t[programIndex].ticks;
+                const targetProgram = soundfont.getPreset(0, 0).program;
+                t.splice(programIndex, 0, new MidiMessage(
+                    programTicks,
+                    messageTypes.programChange | ch,
+                    new IndexedByteArray([targetProgram])
                 ));
+                indexToAdd = programIndex;
             }
-        }
+            const ticks = t[indexToAdd].ticks;
+            const targetBank = (soundfont.getPreset(0, programs[ch])?.bank + 1) || 1;
+            t.splice(indexToAdd,0, new MidiMessage(
+                ticks,
+                messageTypes.controllerChange | ch,
+                new IndexedByteArray([midiControllers.bankSelect, targetBank])
+            ));
+        });
     });
     // make sure to put xg if gm
     if(system !== "gs" && system !== "xg")

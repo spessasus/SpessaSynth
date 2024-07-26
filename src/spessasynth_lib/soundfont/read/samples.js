@@ -1,7 +1,7 @@
 import {RiffChunk} from "./riff_chunk.js";
 import {IndexedByteArray} from "../../utils/indexed_array.js";
 import { readBytesAsUintLittleEndian, signedInt8} from "../../utils/byte_functions/little_endian.js";
-import { stbvorbis } from '../../externals/stbvorbis_sync.min.js'
+import { stbvorbis } from '../../externals/stbvorbis_sync/stbvorbis_sync.min.js'
 import { SpessaSynthWarn } from '../../utils/loggin.js'
 import { readBytesAsString } from '../../utils/byte_functions/string.js'
 import { encodeVorbis } from '../../utils/encode_vorbis.js'
@@ -188,7 +188,6 @@ export class Sample extends BasicSample
         this.useCount = 0;
         // in bytes
         this.sampleLength = this.sampleEndIndex - this.sampleStartIndex;
-        this.indexRatio = 1;
         this.sampleDataArray = smplArr;
         this.sampleData = new Float32Array(0);
         if(this.isCompressed)
