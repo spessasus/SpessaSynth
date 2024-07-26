@@ -28,6 +28,7 @@ Comes with the ability to edit MIDIs and soundfonts!</p>
 <h3 align='center'><a href="../../wiki/Home">Documentation can be found here</a></h3>
 
 <h2 align='center'>Features</h2>
+
 - SoundFont2 Generator Support
 - SoundFont2 Modulator Support
 - SoundFont3 (vorbis compressed sf2) Support (thanks to [stbvorbis.js](https://github.com/hajimehoshi/stbvorbis.js))
