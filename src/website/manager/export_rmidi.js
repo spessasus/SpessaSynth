@@ -2,7 +2,7 @@ import { SoundFont2 } from '../../spessasynth_lib/soundfont/soundfont.js'
 import { trimSoundfont } from '../../spessasynth_lib/soundfont/write/soundfont_trimmer.js'
 import { applySnapshotToMIDI } from '../../spessasynth_lib/midi_parser/midi_editor.js'
 import { closeNotification, showNotification } from '../js/notification/notification.js'
-import { SpessaSynthGroup, SpessaSynthGroupCollapsed, SpessaSynthGroupEnd } from '../../spessasynth_lib/utils/loggin.js'
+import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd } from '../../spessasynth_lib/utils/loggin.js'
 import { consoleColors } from '../../spessasynth_lib/utils/other.js'
 import { writeRMIDI } from '../../spessasynth_lib/midi_parser/rmidi_writer.js'
 
