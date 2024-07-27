@@ -16,12 +16,18 @@ const notifications = {};
  */
 
 /**
+ * @typedef {function} NotificationContentCallback
+ * @param {NotificationType} notification - the notification
+ * @param {HTMLElement} target - the element that caused this callback
+ */
+
+/**
  * @typedef {Object} NotificationContent
  * @property {"button"|"progress"|"text"|"input"|"toggle"|"range"} type
  * @property {string|undefined} textContent
  * @property {string|undefined} translatePathTitle
  * @property {Object<string, string>|undefined} attributes
- * @property {function(NotificationType)|undefined} onClick
+ * @property {NotificationContentCallback|undefined} onClick
  */
 
 /**
@@ -65,7 +71,7 @@ export function showNotification(
         const element = getContent(content, locale);
         if(content.onClick)
         {
-            element.onclick = () => content.onClick({div: notification, id: notificationID});
+            element.onclick = () => content.onClick({div: notification, id: notificationID}, element);
         }
         contentWrapper.appendChild(element);
     }

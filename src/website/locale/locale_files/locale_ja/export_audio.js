@@ -22,11 +22,20 @@ export const exportAudio = {
                     additionalTime: {
                         title: "追加時間（秒）",
                         description: "音がフェードアウトするために曲の最後に追加する時間です。 (秒)",
+                    },
+                    separateChannels: {
+                        title: "チャンネルを分割",
+                        description: "各チャンネルを別々のファイルとして保存します。オシロスコープビューアなどに便利です。このオプションを使用するとリバーブやコーラスが無効になります。",
+                        saving: {
+                            title: "チャンネルファイル",
+                            save: "チャンネル {0} を保存"
+                        }
                     }
                 },
                 exportMessage: {
                     message: "音声をエクスポートしています...",
-                    estimated: "残り時間:"
+                    estimated: "残り時間:",
+                    convertWav: "WAVに変換中..."
                 }
             },
 

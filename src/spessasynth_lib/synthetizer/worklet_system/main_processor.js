@@ -60,14 +60,15 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
      *      enableEventSystem: boolean,
      *      startRenderingData: {
      *          parsedMIDI: MIDI,
-     *          snapshot: SynthesizerSnapshot
+     *          snapshot: SynthesizerSnapshot,
+     *          oneOutput: boolean
      *      }
      * }}}
      */
     constructor(options) {
         super();
-
-        this._outputsAmount = options.processorOptions.midiChannels;
+        this.oneOutputMode = options.processorOptions?.startRenderingData?.oneOutput === true;
+        this._outputsAmount = this.oneOutputMode ? 1 : options.processorOptions.midiChannels;
 
         this.enableEventSystem = options.processorOptions.enableEventSystem;
 
@@ -141,7 +142,8 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
          * @type {WorkletProcessorChannel[]}
          */
         this.workletProcessorChannels = [];
-        for (let i = 0; i < this._outputsAmount; i++) {
+        for (let i = 0; i < options.processorOptions.midiChannels; i++)
+        {
             this.createWorkletChannel(false);
         }
 
@@ -176,7 +178,8 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
             }
 
             SpessaSynthInfo("%cRendering enabled! Starting render.", consoleColors.info)
-            if (options.processorOptions.startRenderingData.parsedMIDI) {
+            if (options.processorOptions.startRenderingData.parsedMIDI)
+            {
                 this.sequencer.loadNewSongList([options.processorOptions.startRenderingData.parsedMIDI]);
                 this.sequencer.loop = false;
             }
@@ -229,10 +232,30 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
                 // skip the channels
                 return;
             }
-            const outputIndex = (index % this._outputsAmount) + 2;
-            const outputChannels = outputs[outputIndex];
-            const reverbChannels = outputs[0];
-            const chorusChannels = outputs[1];
+            let outputIndex;
+            let outputLeft;
+            let outputRight;
+            let reverbChannels;
+            let chorusChannels;
+            if(this.oneOutputMode)
+            {
+                // first output only
+                const output = outputs[0];
+                // reverb and chorus are disabled. 32 output channels: two for each midi channels
+                outputIndex = (index % 16) * 2;
+                outputLeft = output[outputIndex];
+                outputRight = output[outputIndex + 1];
+            }
+            else
+            {
+                // 2 first outputs are reverb and chorus, other are for channels
+                outputIndex = (index % this._outputsAmount) + 2;
+                outputLeft = outputs[outputIndex][0];
+                outputRight = outputs[outputIndex][1];
+                reverbChannels = outputs[0];
+                chorusChannels = outputs[1];
+            }
+
             const tempV = channel.voices;
 
             // reset voices
@@ -241,7 +264,13 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
             // for every voice
             tempV.forEach(v => {
                 // render voice
-                this.renderVoice(channel, v, outputChannels, reverbChannels, chorusChannels);
+                this.renderVoice(
+                    channel,
+                    v,
+                    outputLeft, outputRight,
+                    reverbChannels,
+                    chorusChannels
+                );
                 if(!v.finished)
                 {
                     // if not finished, add it back

@@ -22,11 +22,20 @@ export const exportAudio = {
                     additionalTime: {
                         title: "Dodatkowy czas (s)",
                         description: "Dodatkowy czas na końcu utworu aby pozwolić na wyciszenie się dźwięku. (sekundy)",
+                    },
+                    separateChannels: {
+                        title: "Rozdziel kanały",
+                        description: "Zapisz każdy kanał w osobnym pliuku. Przydatne dla rzeczy jak widok oscyloskopowy. Należy pamiętać że to wyłącza ekfet pogłosu i chóru",
+                        saving: {
+                            title: "Pliki audio kanałów",
+                            save: "Zapisz kanał {0}"
+                        }
                     }
                 },
                 exportMessage: {
                     message: "Eksportowanie audio...",
-                    estimated: "Pozostało:"
+                    estimated: "Pozostało:",
+                    convertWav: "Konwertowanie do wav..."
                 }
             },
 

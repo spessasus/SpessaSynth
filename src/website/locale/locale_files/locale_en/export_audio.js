@@ -22,11 +22,21 @@ export const exportAudio = {
                     additionalTime: {
                         title: "Additional time (s)",
                         description: "Additional time at the end of the song to allow for the sound to fade. (seconds)",
+                    },
+
+                    separateChannels: {
+                        title: "Separate channels",
+                        description: "Save each channel as a separate file. Useful for things like oscilloscope viewers. Note that this disables reverb and chorus.",
+                        saving: {
+                            title: "Channel files",
+                            save: "Save channel {0}"
+                        }
                     }
                 },
                 exportMessage: {
                     message: "Exporting WAV audio...",
-                    estimated: "Remaining:"
+                    estimated: "Remaining:",
+                    convertWav: "Converting to wav...",
                 }
             },
 

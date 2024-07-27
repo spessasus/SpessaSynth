@@ -10,7 +10,8 @@ export const WORKLET_SYSTEM_CHORUS_DIVIDER = 500;
  * @param gainLeft {number} the left channel gain
  * @param gainRight {number} the right channel gain
  * @param inputBuffer {Float32Array} the input buffer in mono
- * @param output {Float32Array[]} stereo output buffer
+ * @param outputLeft {Float32Array} left output buffer
+ * @param outputRight {Float32Array} right output buffer
  * @param reverb {Float32Array[]} stereo reverb input
  * @param reverbLevel {number} 0 to 1000, the level of reverb to send
  * @param chorus {Float32Array[]} stereo chorus buttfer
@@ -19,7 +20,7 @@ export const WORKLET_SYSTEM_CHORUS_DIVIDER = 500;
 export function panVoice(gainLeft,
                          gainRight,
                          inputBuffer,
-                         output,
+                         outputLeft, outputRight,
                          reverb,
                          reverbLevel,
                          chorus,
@@ -39,7 +40,8 @@ export function panVoice(gainLeft,
         const reverbGain = reverbLevel / WORKLET_SYSTEM_REVERB_DIVIDER;
         const reverbLeftGain = gainLeft * reverbGain;
         const reverbRightGain = gainRight * reverbGain;
-        for (let i = 0; i < inputBuffer.length; i++) {
+        for (let i = 0; i < inputBuffer.length; i++)
+        {
             reverbLeft[i] += reverbLeftGain * inputBuffer[i];
             reverbRight[i] += reverbRightGain * inputBuffer[i];
         }
@@ -54,23 +56,26 @@ export function panVoice(gainLeft,
         const chorusGain = chorusLevel / WORKLET_SYSTEM_CHORUS_DIVIDER;
         const chorusLeftGain = gainLeft * chorusGain;
         const chorusRightGain = gainRight * chorusGain;
-        for (let i = 0; i < inputBuffer.length; i++) {
+        for (let i = 0; i < inputBuffer.length; i++)
+        {
             chorusLeft[i] += chorusLeftGain * inputBuffer[i];
             chorusRight[i] += chorusRightGain * inputBuffer[i];
         }
     }
 
-    const leftChannel = output[0];
-    const rightChannel = output[1];
+    // mix out the audio data
     if(gainLeft > 0)
     {
-        for (let i = 0; i < inputBuffer.length; i++) {
-            leftChannel[i] += gainLeft * inputBuffer[i];
+        for (let i = 0; i < inputBuffer.length; i++)
+        {
+            outputLeft[i] += gainLeft * inputBuffer[i];
         }
     }
-    if(gainRight > 0) {
-        for (let i = 0; i < inputBuffer.length; i++) {
-            rightChannel[i] += gainRight * inputBuffer[i];
+    if(gainRight > 0)
+    {
+        for (let i = 0; i < inputBuffer.length; i++)
+        {
+            outputRight[i] += gainRight * inputBuffer[i];
         }
     }
 }

@@ -2,6 +2,8 @@ import { closeNotification, showNotification } from '../js/notification/notifica
 import { Synthetizer } from '../../spessasynth_lib/synthetizer/synthetizer.js'
 import { formatTime } from '../../spessasynth_lib/utils/other.js'
 import { audioBufferToWav } from '../../spessasynth_lib/utils/buffer_to_wav.js'
+import { WORKLET_URL } from '../../spessasynth_lib/synthetizer/worklet_url.js'
+import { ANIMATION_REFLOW_TIME } from '../js/utils/animation_utils.js'
 
 const RENDER_AUDIO_TIME_INTERVAL = 1000;
 
@@ -9,10 +11,11 @@ const RENDER_AUDIO_TIME_INTERVAL = 1000;
  * @this {Manager}
  * @param normalizeAudio {boolean}
  * @param additionalTime {number}
+ * @param separateChannels {boolean}
  * @returns {Promise<void>}
  * @private
  */
-export async function _doExportAudioData(normalizeAudio = true, additionalTime = 2)
+export async function _doExportAudioData(normalizeAudio = true, additionalTime = 2, separateChannels = false)
 {
     this.isExporting = true;
     if(!this.seq)
@@ -35,12 +38,11 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
     const duration = parsedMid.duration + additionalTime;
     // prepare audio context
     const offline = new OfflineAudioContext({
-        numberOfChannels: 2,
+        numberOfChannels: separateChannels ? 32 : 2,
         sampleRate: this.context.sampleRate,
         length: this.context.sampleRate * duration
     });
-    const workletURL = new URL("../../spessasynth_lib/synthetizer/worklet_system/worklet_processor.js", import.meta.url).href;
-    await offline.audioWorklet.addModule(workletURL);
+    await offline.audioWorklet.addModule(WORKLET_URL);
 
     /**
      * take snapshot of the real synth
@@ -58,7 +60,8 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
     {
         synth = new Synthetizer(offline.destination, soundfont, false, {
             parsedMIDI: parsedMid,
-            snapshot: snapshot
+            snapshot: snapshot,
+            oneOutput: separateChannels
         }, {
             reverbEnabled: true,
             chorusEnabled: true,
@@ -107,8 +110,63 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
     progressDiv.style.width = "100%";
     // clear intervals and save file
     clearInterval(interval);
+    detailMessage.innerText = this.localeManager.getLocaleString("locale.exportAudio.formats.formats.wav.exportMessage.convertWav");
+    // let the browser show
+    await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
+    if(!separateChannels)
+    {
+        this.saveBlob(audioBufferToWav(buf, normalizeAudio), `${this.seq.midiData.midiName || 'unnamed_song'}.wav`);
+    }
+    else
+    {
+        const separatePath = `locale.exportAudio.formats.formats.wav.options.separateChannels.saving.`;
+        /**
+         * @type {NotificationContent[]}
+         */
+        const content = [];
+        const usedChannels = new Set();
+        for(const p of parsedMid.usedChannelsOnTrack)
+        {
+            p.forEach(c => usedChannels.add(c));
+        }
+        for (let i = 0; i < 16; i++)
+        {
+            if(!usedChannels.has(i))
+            {
+                continue;
+            }
+            content.push({
+                type: "button",
+                textContent: this.localeManager.getLocaleString(separatePath + "save", [i + 1]),
+                onClick: async (n, target) => {
+
+                    const text = target.textContent;
+                    target.textContent = this.localeManager.getLocaleString("locale.exportAudio.formats.formats.wav.exportMessage.convertWav");
+                    await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
+
+                    const audioOut = audioBufferToWav(buf, false, i * 2);
+                    const fileName = `${i + 1} - ${snapshot.channelSnapshots[i].patchName}.wav`;
+                    this.saveBlob(audioOut, fileName);
+                    target.classList.add("green_button");
+                    target.textContent = text;
+                }
+            });
+        }
+        const n = showNotification(
+            this.localeManager.getLocaleString(separatePath + "title"),
+            content,
+            99999999,
+            true,
+            undefined,
+            {
+                display: "flex",
+                flexWrap: "wrap",
+                justifyContent: "space-around"
+            }
+        );
+        n.div.style.width = '30rem'
+    }
     closeNotification(notification.id);
-    this.saveBlob(audioBufferToWav(buf, normalizeAudio), `${this.seq.midiData.midiName || 'unnamed_song'}.wav`);
     this.isExporting = false;
 }
 
@@ -145,13 +203,21 @@ export async function _exportAudioData()
             }
         },
         {
+            type: "toggle",
+            translatePathTitle: wavPath + "separateChannels",
+            attributes: {
+                "separate-channels-toggle": "1"
+            }
+        },
+        {
             type: "button",
             textContent: this.localeManager.getLocaleString(wavPath + "confirm"),
             onClick: n => {
                 closeNotification(n.id);
-                const normalizeVolume = n.div.querySelector("input[normalize-volume-toggle='1']").checked;
+                const normalizeVolume = n.div.querySelector("input[normalize-volume-toggle]").checked;
                 const additionalTime = n.div.querySelector("input[type='number']").value;
-                this._doExportAudioData(normalizeVolume, parseInt(additionalTime));
+                const separateChannels = n.div.querySelector("input[separate-channels-toggle]").checked;
+                this._doExportAudioData(normalizeVolume, parseInt(additionalTime), separateChannels);
             }
         }
     ];

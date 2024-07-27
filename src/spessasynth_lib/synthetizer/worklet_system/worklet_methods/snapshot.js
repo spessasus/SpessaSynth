@@ -4,6 +4,7 @@
  *
  * @property {number} program - the channel's program
  * @property {number} bank - the channel's bank
+ * @property {string} patchName - the channel's patch name
  * @property {boolean} lockPreset - indicates whether the channel's program change is disabled
  *
  * @property {Int16Array} midiControllers - the array of all midi controllers (in 14-bit values) with the modulator sources at the end. See Synthesizer Class on wiki (lockController section)
@@ -49,6 +50,7 @@ export function sendSynthesizerSnapshot()
             program: channel.preset.program,
             bank: channel.preset.bank,
             lockPreset: channel.lockPreset,
+            patchName: channel.preset.presetName,
 
             midiControllers: channel.midiControllers,
             lockedControllers: channel.lockedControllers,

@@ -7,4 +7,14 @@
     border-radius: var(--notification-border-radius);
     font-size: var(--notification-font-size);
     min-width: fit-content;
+    transition: transform 0.1s ease;
+}
+
+.notification button:active{
+    transform: scale(var(--active-scale));
+}
+
+.notification .green_button{
+    color: green;
+    border-color: green;
 }

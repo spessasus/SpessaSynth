@@ -1,6 +1,6 @@
 import { WorkletSequencerReturnMessageType } from './sequencer_message.js'
 import { consoleColors, formatTime } from '../../utils/other.js'
-import { SpessaSynthInfo, SpessaSynthWarn } from '../../utils/loggin.js'
+import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo, SpessaSynthWarn } from '../../utils/loggin.js'
 import { ticksToSeconds } from './play.js'
 import { MidiData } from '../../midi_parser/midi_data.js'
 import { MIDI } from '../../midi_parser/midi_loader.js'
@@ -57,20 +57,29 @@ export function loadNewSequence(parsedMidi)
     if(this.midiData.embeddedSoundFont !== undefined)
     {
         this.synth.reloadSoundFont(this.midiData.embeddedSoundFont);
+        // preload all samples
+        this.synth.soundfont.samples.forEach(s => s.getAudioData());
     }
-
-    // smart preloading: load only samples used in the midi!
-    const used = getUsedProgramsAndKeys(this.midiData, this.synth.soundfont);
-    for(const [programBank, combos] of Object.entries(used))
+    else
     {
-        const bank = parseInt(programBank.split(":")[0]);
-        const program = parseInt(programBank.split(":")[1]);
-        const preset = this.synth.soundfont.getPreset(bank, program);
-        for (const combo of combos)
+        SpessaSynthGroupCollapsed("%cPreloading samples...", consoleColors.info);
+        // smart preloading: load only samples used in the midi!
+        const used = getUsedProgramsAndKeys(this.midiData, this.synth.soundfont);
+        for (const [programBank, combos] of Object.entries(used))
         {
-            const split = combo.split("-");
-            preset.preloadSpecific(parseInt(split[0]), parseInt(split[1]));
+            const bank = parseInt(programBank.split(":")[0]);
+            const program = parseInt(programBank.split(":")[1]);
+            const preset = this.synth.soundfont.getPreset(bank, program);
+            SpessaSynthInfo(`%cPreloading used samples on %c${preset.presetName}%c...`,
+                consoleColors.info,
+                consoleColors.recognized,
+                consoleColors.info)
+            for (const combo of combos) {
+                const split = combo.split("-");
+                preset.preloadSpecific(parseInt(split[0]), parseInt(split[1]));
+            }
         }
+        SpessaSynthGroupEnd();
     }
 
     /**

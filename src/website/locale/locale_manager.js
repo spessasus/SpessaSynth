@@ -42,11 +42,17 @@ export class LocaleManager
     /**
      * Resolves and gets a the localized string for the current path
      * @param localePath {string} The locale path to the text, written as JS object path, starts with "locale."
+     * @param formattingArguments {string|number[]} optional arguments if the locale uses formatting ("{0} {1}") etc.
      * @returns {string} The localized string
      */
-    getLocaleString(localePath)
+    getLocaleString(localePath, formattingArguments = [])
     {
-        return this._resolveLocalePath(localePath);
+        const locale = this._resolveLocalePath(localePath);
+        if(formattingArguments.length > 0)
+        {
+            return this._formatLocale(locale, formattingArguments);
+        }
+        return locale;
     }
 
     /**

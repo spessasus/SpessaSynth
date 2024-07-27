@@ -16,12 +16,19 @@ export const PAN_SMOOTHING_FACTOR = 0.01;
  * Renders a voice to the stereo output buffer
  * @param channel {WorkletProcessorChannel} the voice's channel
  * @param voice {WorkletVoice} the voice to render
- * @param output {Float32Array[]} the output buffer
+ * @param outputLeft {Float32Array} the left output buffer
+ * @param outputRight {Float32Array} the right output buffer
  * @param reverbOutput {Float32Array[]} output for reverb
  * @param chorusOutput {Float32Array[]} output for chorus
  * @this {SpessaSynthProcessor}
  */
-export function renderVoice(channel, voice, output, reverbOutput, chorusOutput)
+export function renderVoice(
+    channel,
+    voice,
+    outputLeft, outputRight,
+    reverbOutput,
+    chorusOutput
+)
 {
     // check if release
     if(!voice.isInRelease)
@@ -119,11 +126,10 @@ export function renderVoice(channel, voice, output, reverbOutput, chorusOutput)
     const pan = ((Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan] )) + 500) / 1000) ; // 0 to 1
 
     // SYNTHESIS
-    const bufferOut = new Float32Array(output[0].length);
+    const bufferOut = new Float32Array(outputLeft.length);
 
     // wavetable oscillator
     getOscillatorData(voice, this.workletDumpedSamplesList[voice.sample.sampleID], bufferOut);
-
 
     // lowpass filter
     applyLowpassFilter(voice, bufferOut, lowpassCents);
@@ -135,13 +141,15 @@ export function renderVoice(channel, voice, output, reverbOutput, chorusOutput)
     voice.currentPan += (pan - voice.currentPan) * this.panSmoothingFactor; // smooth out pan to prevent clicking
     const panLeft = Math.cos(HALF_PI * voice.currentPan) * this.panLeft;
     const panRight = Math.sin(HALF_PI * voice.currentPan) *  this.panRight;
+    const reverb = this.oneOutputMode ? 0 : voice.modulatedGenerators[generatorTypes.reverbEffectsSend];
+    const chorus = this.oneOutputMode ? 0 : voice.modulatedGenerators[generatorTypes.chorusEffectsSend];
     panVoice(
         panLeft,
         panRight,
         bufferOut,
-        output,
-        reverbOutput, voice.modulatedGenerators[generatorTypes.reverbEffectsSend],
-        chorusOutput, voice.modulatedGenerators[generatorTypes.chorusEffectsSend]);
+        outputLeft, outputRight,
+        reverbOutput, reverb,
+        chorusOutput, chorus);
 }
 
 

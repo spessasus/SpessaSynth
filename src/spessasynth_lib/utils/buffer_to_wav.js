@@ -2,13 +2,14 @@
  *
  * @param audioBuffer {AudioBuffer}
  * @param normalizeAudio {boolean} find the max sample point and set it to 1, and scale others with it
+ * @param channelOffset {number} channel offset and channel offset + 1 get saved
  * @returns {Blob}
  */
-export function audioBufferToWav(audioBuffer, normalizeAudio = true)
+export function audioBufferToWav(audioBuffer, normalizeAudio = true, channelOffset = 0)
 {
 
-    const channel1Data = audioBuffer.getChannelData(0);
-    const channel2Data = audioBuffer.getChannelData(1);
+    const channel1Data = audioBuffer.getChannelData(channelOffset);
+    const channel2Data = audioBuffer.getChannelData(channelOffset + 1);
     const length = channel1Data.length;
 
     const bytesPerSample = 2; // 16-bit PCM

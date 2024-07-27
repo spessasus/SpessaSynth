@@ -18,6 +18,13 @@ import { DEFAULT_EFFECTS_CONFIG } from './audio_effects/effects_config.js'
  * purpose: responds to midi messages and called functions, managing the channels and passing the messages to them
  */
 
+/**
+ * @typedef {Object} StartRenderingDataConfig
+ * @property {MIDI} parsedMIDI - the MIDI to render
+ * @property {SynthesizerSnapshot} snapshot - the snapshot to apply
+ * @property {boolean|undefined} oneOutput - if synth should use one output with 32 channels (2 audio channels for each midi channel). this disables chorus and reverb.
+ */
+
 export const WORKLET_PROCESSOR_NAME = "spessasynth-worklet-system";
 
 export const VOICE_CAP = 450;
@@ -26,16 +33,21 @@ export const DEFAULT_PERCUSSION = 9;
 export const MIDI_CHANNEL_COUNT = 16;
 export const DEFAULT_SYNTH_MODE = "gs";
 
+/**
+ * Creates a new instance of the SpessaSynth synthesizer
+ * @param targetNode {AudioNode}
+ * @param soundFontBuffer {ArrayBuffer} the soundfont file array buffer
+ * @param enableEventSystem {boolean} enables the event system. Defaults to true
+ * @param startRenderingData {StartRenderingDataConfig} if set, starts playing this immediately and restores the values
+ * @param effectsConfig {EffectsConfig} optional configuration for the audio effects.
+ */
 export class Synthetizer {
     /**
      * Creates a new instance of the SpessaSynth synthesizer
      * @param targetNode {AudioNode}
      * @param soundFontBuffer {ArrayBuffer} the soundfont file array buffer
      * @param enableEventSystem {boolean} enables the event system. Defaults to true
-     * @param startRenderingData {{
-     *          parsedMIDI: MIDI,
-     *          snapshot: SynthesizerSnapshot
-     *      }} if set, starts playing this immediately and restores the values
+     * @param startRenderingData {StartRenderingDataConfig} if set, starts playing this immediately and restores the values
      * @param effectsConfig {EffectsConfig} optional configuration for the audio effects.
      */
      constructor(targetNode,
@@ -45,6 +57,7 @@ export class Synthetizer {
                  effectsConfig = DEFAULT_EFFECTS_CONFIG) {
         SpessaSynthInfo("%cInitializing SpessaSynth synthesizer...", consoleColors.info);
         this.context = targetNode.context;
+        const oneOutputMode = startRenderingData?.oneOutput === true;
 
         /**
          * Allows to set up custom event listeners for the synthesizer
@@ -80,7 +93,8 @@ export class Synthetizer {
          * @type {ChannelProperty[]}
          */
         this.channelProperties = [];
-        for (let i = 0; i < this.channelsAmount; i++) {
+        for (let i = 0; i < this.channelsAmount; i++)
+        {
             this.addNewChannel(false);
         }
         this.channelProperties[DEFAULT_PERCUSSION].isDrum = true;
@@ -93,12 +107,19 @@ export class Synthetizer {
         this._highPerformanceMode = false;
 
         // create a worklet processor
+        let processorChannelCount = Array(this._outputsAmount + 2).fill(2);
+        let processorOutputsCount = this._outputsAmount  + 2;
+        if(oneOutputMode)
+        {
+            processorOutputsCount = 1;
+            processorChannelCount = [32];
+        }
 
         // first two outputs: reverb, chorsu, the others are the channel outputs
         try {
             this.worklet = new AudioWorkletNode(this.context, WORKLET_PROCESSOR_NAME, {
-                outputChannelCount: Array(this._outputsAmount + 2).fill(2),
-                numberOfOutputs: this._outputsAmount + 2,
+                outputChannelCount: processorChannelCount,
+                numberOfOutputs: processorOutputsCount,
                 processorOptions: {
                     midiChannels: this._outputsAmount,
                     soundfont: soundFontBuffer,
@@ -137,22 +158,31 @@ export class Synthetizer {
         this.sequencerCallbackFunction = undefined;
 
         // add reverb
-        if(effectsConfig.reverbEnabled)
+        if(effectsConfig.reverbEnabled && !oneOutputMode)
         {
             this.reverbProcessor = getReverbProcessor(this.context, effectsConfig.reverbImpulseResponse);
             this.reverbProcessor.connect(targetNode);
             this.worklet.connect(this.reverbProcessor, 0);
         }
 
-        if(effectsConfig.chorusEnabled)
+        if(effectsConfig.chorusEnabled && !oneOutputMode)
         {
             this.chorusProcessor = new FancyChorus(targetNode, effectsConfig.chorusConfig);
             this.worklet.connect(this.chorusProcessor.input, 1);
         }
 
-        // connect all outputs to the output node
-        for (let i = 2; i < this.channelsAmount + 2; i++) {
-            this.worklet.connect(targetNode, i);
+        if(oneOutputMode)
+        {
+            // one output mode: one output (duh)
+            this.worklet.connect(targetNode, 0);
+        }
+        else
+        {
+            // connect all outputs to the output node
+            for (let i = 2; i < this.channelsAmount + 2; i++)
+            {
+                this.worklet.connect(targetNode, i);
+            }
         }
 
         // attach newchannel to keep track of channels count
