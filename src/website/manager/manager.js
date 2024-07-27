@@ -19,7 +19,7 @@ import { exportMidi } from './export_midi.js'
 import { _exportSoundfont } from './export_soundfont.js'
 import { exportSong } from './export_song.js'
 import { _exportRMIDI } from './export_rmidi.js'
-import { WORKLET_URL } from '../../spessasynth_lib/synthetizer/worklet_system/worklet_url.js'
+import { WORKLET_URL } from '../../spessasynth_lib/synthetizer/worklet_url.js'
 
 // this enables transitions on body because if we enable them on load, it flashbangs us with white
 document.body.classList.add("load");

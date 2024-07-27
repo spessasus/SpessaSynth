@@ -17,7 +17,7 @@ import { DUMMY_MIDI_DATA, MidiData } from '../midi_parser/midi_data.js'
 /**
  * @typedef MidFile {Object}
  * @property {ArrayBuffer} binary - the binary data of the file.
- * @property {string} altName - the alternative name for the file
+ * @property {string|undefined} altName - the alternative name for the file
  */
 
 /**
@@ -197,6 +197,10 @@ export class Sequencer
                 {
                     this.onError(messageData);
                 }
+                else
+                {
+                    throw new Error(messageData);
+                }
                 return;
 
             case WorkletSequencerReturnMessageType.getMIDI:
@@ -262,6 +266,7 @@ export class Sequencer
      */
     loadNewSongList(midiBuffers)
     {
+        this.pause();
         // add some dummy data
         this.midiData = DUMMY_MIDI_DATA;
         this.duration = 99999;

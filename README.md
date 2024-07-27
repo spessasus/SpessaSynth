@@ -35,6 +35,7 @@ Comes with the ability to edit MIDIs and soundfonts!</p>
 - Easy to use. Basic setup is just [two lines of code!](../../wiki/Usage-As-Library#minimal-setup)
 - Batteries included. No dependencies!
 #### Powerful SoundFont Synthesizer
+- Suitable for both real-time and offline synthesis
 - SoundFont2 Generator Support
 - SoundFont2 Modulator Support
 - SoundFont3 (compressed sf2) Support
@@ -43,15 +44,23 @@ Comes with the ability to edit MIDIs and soundfonts!</p>
 - A few custom modulators to support some additional controllers (see `modulators.js`)
 - Written using AudioWorklets (Firefox and Chrome both work perfectly)
 - Can load really large soundfonts (4GB!) (but only on Firefox, Chromium has a memory limit)
-- [Multi Port MIDIs support](../../wiki/About-Multi-Port) (more than 16 channels!)
+- Unlimited channel count (your CPU is the limit ;-)
 - MIDI Controller Support (Default supported controllers can be found [here](../../wiki/MIDI-Implementation#supported-controllers))
 - [RPN and NRPN support](../../wiki/MIDI-Implementation#supported-registered-parameters)
 - Supports some [Roland GS and Yamaha XG system exclusives](../../wiki/MIDI-Implementation#supported-system-exclusives)
 - High performance mode for playing black MIDIs (Don't go too crazy with the amount of notes though)
 - Written in pure JavaScript using WebAudio API (Every modern browser supports it)
-- Built-in MIDI sequencer optimized for performance
+#### Built-in Powerful and Fast Sequencer
+- Supports MIDI formats 0, 1 and 2
+- [Multi Port MIDIs support](../../wiki/About-Multi-Port) (more than 16 channels!)
+- Smart preloading: It will preload only the samples used in the MIDI file for smooth playback. (down to the key and velocity!)
+- Lyrics support. Add karaoke to your program!
+- Raw lyrics available: decode in any encoding! Kanji? No problem!
 #### Read and write SoundFont and MIDI files
 - Read and write .mid files
+- - Smart name detection: will ignore first track name if first track isn't a conductor track
+- - Port detection during load time
+- - Used channels on track: detects what channels are used on which track
 - Read and write [.rmi files with embedded SF2 soundfonts](../../wiki/About-RMIDI)
 - Read and write .sf2 files (or compress them to sf3!)
 - Read and write .sf3 files

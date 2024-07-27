@@ -4,6 +4,7 @@ import { SpessaSynthInfo, SpessaSynthWarn } from '../../utils/loggin.js'
 import { ticksToSeconds } from './play.js'
 import { MidiData } from '../../midi_parser/midi_data.js'
 import { MIDI } from '../../midi_parser/midi_loader.js'
+import { getUsedProgramsAndKeys } from '../../midi_parser/used_keys_loaded.js'
 
 /**
  * @param trackNum {number}
@@ -56,6 +57,20 @@ export function loadNewSequence(parsedMidi)
     if(this.midiData.embeddedSoundFont !== undefined)
     {
         this.synth.reloadSoundFont(this.midiData.embeddedSoundFont);
+    }
+
+    // smart preloading: load only samples used in the midi!
+    const used = getUsedProgramsAndKeys(this.midiData, this.synth.soundfont);
+    for(const [programBank, combos] of Object.entries(used))
+    {
+        const bank = parseInt(programBank.split(":")[0]);
+        const program = parseInt(programBank.split(":")[1]);
+        const preset = this.synth.soundfont.getPreset(bank, program);
+        for (const combo of combos)
+        {
+            const split = combo.split("-");
+            preset.preloadSpecific(parseInt(split[0]), parseInt(split[1]));
+        }
     }
 
     /**

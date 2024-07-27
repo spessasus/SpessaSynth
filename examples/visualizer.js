@@ -1,7 +1,30 @@
 // import the modules
-import { MIDI } from '../src/spessasynth_lib/midi_parser/midi_loader.js'
 import { Sequencer } from '../src/spessasynth_lib/sequencer/sequencer.js'
 import { Synthetizer } from '../src/spessasynth_lib/synthetizer/synthetizer.js'
+import { WORKLET_URL } from '../src/spessasynth_lib/synthetizer/worklet_url.js'
+
+// add different colors to channels!
+const channelColors = [
+    'rgba(255, 99, 71, 1)',   // tomato
+    'rgba(255, 165, 0, 1)',   // orange
+    'rgba(255, 215, 0, 1)',   // gold
+    'rgba(50, 205, 50, 1)',   // limegreen
+    'rgba(60, 179, 113, 1)',  // mediumseagreen
+    'rgba(0, 128, 0, 1)',     // green
+    'rgba(0, 191, 255, 1)',   // deepskyblue
+    'rgba(65, 105, 225, 1)',  // royalblue
+    'rgba(138, 43, 226, 1)',  // blueviolet
+    'rgba(50, 120, 125, 1)',  //'rgba(218, 112, 214, 1)', // percission color
+    'rgba(255, 0, 255, 1)',   // magenta
+    'rgba(255, 20, 147, 1)',  // deeppink
+    'rgba(218, 112, 214, 1)', // orchid
+    'rgba(240, 128, 128, 1)', // lightcoral
+    'rgba(255, 192, 203, 1)', // pink
+    'rgba(255, 255, 0, 1)'    // yellow
+];
+
+// adjust this to your liking
+const VISUALIZER_GAIN = 2;
 
 // load the soundfont
 fetch("../soundfonts/SGM.sf3").then(async response => {
@@ -9,25 +32,31 @@ fetch("../soundfonts/SGM.sf3").then(async response => {
     let soundFontArrayBuffer = await response.arrayBuffer();
     document.getElementById("message").innerText = "SoundFont has been loaded!";
 
+    // create the context and add audio worklet
+    const context = new AudioContext();
+    await context.audioWorklet.addModule(WORKLET_URL)
+    const synth = new Synthetizer(context.destination, soundFontArrayBuffer);     // create the synthetizer
+    let seq;
+
     // add an event listener for the file inout
     document.getElementById("midi_input").addEventListener("change", async event => {
         // check if any files are added
         if (!event.target.files[0]) {
             return;
         }
-        const file = event.target.files[0];
-        const arrayBuffer = await file.arrayBuffer();                                                 // convert the file to array buffer
-        const parsedMidi = new MIDI(arrayBuffer);                                               // parse the MIDI file
-        const context = new AudioContext();                                              // create an audioContext
-        // add the worklet
-        await context.audioWorklet.addModule("../src/spessasynth_lib/synthetizer/worklet_system/worklet_processor.js");
+        await context.resume();
+        const midiFile = await event.target.files[0].arrayBuffer(); // convert the file to array buffer
+        if(seq === undefined)
+        {
+            seq = new Sequencer([{binary: midiFile}], synth); // create the sequencer with the parsed midis
+            seq.play();                                                  // play the midi
+        }
+        else
+        {
+            seq.loadNewSongList([{binary: midiFile}]); // the sequencer is alreadu created, no need to create a new one.
+        }
 
-        // prepare and play
-        const synth = new Synthetizer(context.destination, soundFontArrayBuffer);            // create the synthetizer
-        const seq = new Sequencer([parsedMidi], synth);                            // create the sequencer (it can accept multiple files so we need to pass an array)
-        seq.play();                                                                                     // play the midi
-
-        const canvas = document.getElementById("canvas");                         // get canvas
+        const canvas = document.getElementById("canvas"); // get canvas
         const drawingContext = canvas.getContext("2d");
         /**
          * create the AnalyserNodes for the channels
@@ -53,15 +82,17 @@ fetch("../soundfonts/SGM.sf3").then(async response => {
                 const x = width * (channelIndex % 4); // channelIndex % 4 gives us 0 to 2 range
                 const y = height * Math.floor(channelIndex / 4) + height / 2;
 
-                // draw the waveform
-                const waveData = new Float32Array(analyser.frequencyBinCount);
                 // get the data from analyser
+                const waveData = new Float32Array(analyser.frequencyBinCount);
                 analyser.getFloatTimeDomainData(waveData);
-                drawingContext.beginPath();
+                // set the color
+                drawingContext.strokeStyle = channelColors[channelIndex % channelColors.length];
+                // draw the waveform
                 drawingContext.moveTo(x, y);
+                drawingContext.beginPath();
                 for (let i = 0; i < waveData.length; i++)
                 {
-                    drawingContext.lineTo(x + step * i, y + waveData[i] * height);
+                    drawingContext.lineTo(x + step * i, y + waveData[i] * height * VISUALIZER_GAIN);
                 }
                 drawingContext.stroke();
             });
@@ -89,12 +120,17 @@ fetch("../soundfonts/SGM.sf3").then(async response => {
 
         // add note on listener
         synth.eventHandler.addEvent("noteon", "demo-keyboard-note-on", event => {
-            keys[event.midiNote].style.background = "green"
+            keys[event.midiNote].style.background = channelColors[event.channel % channelColors.length];
         });
 
         // add note off listener
         synth.eventHandler.addEvent("noteoff", "demo-keyboard-note-off", event => {
-            keys[event.midiNote].style.background = "white";
+            keys[event.midiNote].style.background = "";
+        });
+
+        // add stop all listener
+        synth.eventHandler.addEvent("stopall", "demo-keyboard-stop-all", () => {
+            keys.forEach(key => key.style.background = "");
         })
-    })
+    });
 });

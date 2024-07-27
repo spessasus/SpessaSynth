@@ -7,26 +7,26 @@
     <meta http-equiv='X-UA-Compatible' content='ie=edge'>
     <title>SpessaSynth advanced example</title>
     <link rel='icon' href='../src/website/favicon.ico'>
-    <style>
-        * {
-            font-family: "Noto Sans Light", "Open Sans Light", sans-serif;
-        }
-    </style>
+    <link rel='stylesheet' href='examples.css'>
 </head>
 <body>
-    <h1>SpessaSynth demo: advanced</h1>
-    <h2><a href='https://spessasus.github.io/SpessaSynth'>Main page</a></h2>
-    <p id="message">Please wait for the soundFont to load.</p>
-    <input type="file" id="midi_input" multiple accept="audio/mid">
-    <br><br>
-    <input type="range" min="0" max="1000" value="0" id="progress">
-    <br>
+    <h1>spessasynth_lib example: advanced demo</h1>
+    <a href='https://spessasus.github.io/SpessaSynth'>Main page</a>
+    <a href='https://github.com/spessasus/SpessaSynth/wiki/'>Documentation</a>
 
-    <button id="previous">Previous song</button>
-    <button id="pause">Pause</button>
-    <button id="next">Next song</button>
+    <div class='example_content'>
+        <p id="message">Please wait for the soundFont to load.</p>
+        <input type="file" id="midi_input" multiple accept=".mid, .rmi">
+        <br><br>
+        <input type="range" min="0" max="1000" value="0" id="progress">
+        <br>
 
-    <!-- note the type="module" -->
-    <script src='advanced_demo.js' type="module"></script>
+        <button id="previous">Previous song</button>
+        <button id="pause">Pause</button>
+        <button id="next">Next song</button>
+
+        <!-- note the type="module" -->
+        <script src='advanced_demo.js' type="module"></script>
+    </div>
 </body>
 </html>

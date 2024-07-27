@@ -108,7 +108,7 @@ export const DUMMY_MIDI_DATA = {
     tempoChanges: [{ticks: 0, tempo: 120}],
     fileName: "Placeholder.mid",
     midiName: "Placeholder",
-    rawMidiName: new Uint8Array(0),
+    rawMidiName: new Uint8Array([76, 111, 97, 100, 105, 110, 103, 46, 46, 46]), // "Loading..."
     usedChannelsOnTrack: [],
     timeDivision: 0,
 };

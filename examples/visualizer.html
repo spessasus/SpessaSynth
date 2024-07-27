@@ -7,26 +7,26 @@
     <meta http-equiv='X-UA-Compatible' content='ie=edge'>
     <link rel='icon' href='../src/website/favicon.ico'>
     <title>SpessaSynth visualization example</title>
-    <style>
-        * {
-            font-family: "Noto Sans Light", "Open Sans Light", sans-serif;
-        }
-    </style>
+    <link rel='stylesheet' href='examples.css'>
 </head>
 <body>
-<h1>SpessaSynth demo: visualizer</h1>
-<h2><a href='https://spessasus.github.io/SpessaSynth'>Main page</a></h2>
-<p id="message">Please wait for the soundFont to load.</p>
-<input type="file" id="midi_input" multiple accept="audio/mid">
-<br><br>
-<canvas id="canvas" width="500" height="500"></canvas>
-<table>
-    <tbody>
-        <tr id="keyboard"></tr>
-    </tbody>
-</table>
+<h1>spessasynth_lib example: visualizations</h1>
+<a href='https://spessasus.github.io/SpessaSynth'>Main page</a>
+<a href='https://github.com/spessasus/SpessaSynth/wiki/'>Documentation</a>
 
-<!-- note the type="module" -->
-<script src='visualizer.js' type="module"></script>
+<div class='example_content'>
+    <p id="message">Please wait for the soundFont to load.</p>
+    <input type="file" id="midi_input" multiple accept=".mid, .rmi">
+    <br><br>
+    <canvas id="canvas" width="1000" height="500"></canvas>
+    <table>
+        <tbody>
+        <tr id="keyboard"></tr>
+        </tbody>
+    </table>
+
+    <!-- note the type="module" -->
+    <script src='visualizer.js' type="module"></script>
+</div>
 </body>
 </html>

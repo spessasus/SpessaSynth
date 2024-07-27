@@ -1,7 +1,8 @@
 // import the modules
-import { MIDI } from '../src/spessasynth_lib/midi_parser/midi_loader.js'
+import { WORKLET_URL } from '../src/spessasynth_lib/synthetizer/worklet_url.js'
 import { Synthetizer } from '../src/spessasynth_lib/synthetizer/synthetizer.js'
 import { audioBufferToWav } from '../src/spessasynth_lib/utils/buffer_to_wav.js'
+import { MIDI } from '../src/spessasynth_lib/midi_parser/midi_loader.js'
 
 // load the soundfont
 fetch("../soundfonts/SGM.sf3").then(async response => {
@@ -15,9 +16,13 @@ fetch("../soundfonts/SGM.sf3").then(async response => {
         if (!event.target.files[0]) {
             return;
         }
+        // hide the input
+        document.getElementById("midi_input").style.display = "none";
         const file = event.target.files[0];
-        const arrayBuffer = await file.arrayBuffer(); // convert the file to array buffer
-        const parsedMidi = new MIDI(arrayBuffer, file.name); // parse the MIDI file
+        const arrayBuffer = await file.arrayBuffer();
+        const parsedMidi = new MIDI(arrayBuffer, file.name);
+
+        // create the rendering context
         const sampleRate = 44100; // 44100Hz
         const context = new OfflineAudioContext({
                 numberOfChannels: 2, // stereo
@@ -25,7 +30,8 @@ fetch("../soundfonts/SGM.sf3").then(async response => {
                 length: sampleRate * (parsedMidi.duration + 1), // sample rate times duration plus one second (for the sound to fade away rather than cut)
         });
         // add the worklet
-        await context.audioWorklet.addModule("../src/spessasynth_lib/synthetizer/worklet_system/worklet_processor.js");
+        await context.audioWorklet.addModule(WORKLET_URL);
+
         // here we set the event system to disabled as it's not needed. Also, we need to pass the parsed MIDI here for the synthesizer to start rendering it
         const synth = new Synthetizer(context.destination, soundFontArrayBuffer, false, {
             parsedMIDI: parsedMidi,
@@ -35,7 +41,7 @@ fetch("../soundfonts/SGM.sf3").then(async response => {
         // show progress
         const showRendering = setInterval(() => {
             const progress = Math.floor(synth.currentTime / parsedMidi.duration * 100);
-            document.getElementById("message").innerText = `Rendering... ${progress}%`;
+            document.getElementById("message").innerText = `Rendering "${parsedMidi.midiName}"... ${progress}%`;
         }, 500);
 
         // start rendering the audio

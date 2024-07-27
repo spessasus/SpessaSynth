@@ -1,0 +1,44 @@
+* {
+    font-family: "Noto Sans Light", "Open Sans Light", sans-serif;
+    color: #ccc;
+    font-size: 1.1rem;
+}
+
+button {
+    background: #444;
+    border: solid #555;
+    padding: 1rem;
+    border-radius: 1rem;
+    cursor: pointer;
+}
+
+canvas{
+    width: 100%;
+    min-height: 0;
+    max-height: 40vh;
+}
+
+input[type='range']
+{
+    width: 100%;
+}
+
+body {
+    background: #111;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-height: 100vh;
+}
+
+.example_content{
+    width: 80%;
+    background: #333;
+    padding: 5em;
+    margin: 1rem;
+    border-radius: 1rem;
+    box-shadow: black 0 0 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}

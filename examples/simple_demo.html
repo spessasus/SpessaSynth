@@ -6,19 +6,19 @@
           content='width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0'>
     <meta http-equiv='X-UA-Compatible' content='ie=edge'>
     <link rel='icon' href='../src/website/favicon.ico'>
-    <title>SpessaSynth simple example</title>
-    <style>
-        * {
-            font-family: "Noto Sans Light", "Open Sans Light", sans-serif;
-        }
-    </style>
+    <link rel='stylesheet' href='examples.css'>
+    <title>spessasynth_lib simple example</title>
 </head>
 <body>
-    <h1>SpessaSynth demo: simple demo</h1>
-    <h2><a href='https://spessasus.github.io/SpessaSynth'>Main page</a></h2>
-    <p id="message">Please wait for the soundFont to load.</p>
-    <input type="file" id="midi_input" accept="audio/mid">
-    <!-- note the type="module" -->
-    <script src='simple_demo.js' type="module"></script>
+    <h1>spessasynth_lib example: simple demo</h1>
+    <a href='https://spessasus.github.io/SpessaSynth'>Main page</a>
+    <a href='https://github.com/spessasus/SpessaSynth/wiki/'>Documentation</a>
+
+    <div class='example_content'>
+        <p id="message">Please wait for the soundFont to load.</p>
+        <input type="file" id="midi_input" accept=".mid, .rmi">
+        <!-- note the type="module" -->
+        <script src='simple_demo.js' type="module"></script>
+    </div>
 </body>
 </html>
