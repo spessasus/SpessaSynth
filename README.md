@@ -29,30 +29,35 @@ Comes with the ability to edit MIDIs and soundfonts!</p>
 
 <h2 align='center'>Features</h2>
 
+#### Easy integration
+- Modular design allows easy integration into other projects
+- [Detailed documentation](../../wiki/Home) with examples
+- Easy to use. Basic setup is just [two lines of code!](../../wiki/Usage-As-Library#minimal-setup)
+- Batteries included. No dependencies!
+#### Powerful SoundFont Synthesizer
 - SoundFont2 Generator Support
 - SoundFont2 Modulator Support
-- SoundFont3 (vorbis compressed sf2) Support (thanks to [stbvorbis.js](https://github.com/hajimehoshi/stbvorbis.js))
-- Can provide very high quality audio while being relatively light on file size thanks to sf3 support
-- Reverb and chorus support (customizable)
-- Render audio to a .wav file
-- Read and write .mid files
-- Read and write [.rmi files with embedded SF2 soundfonts](../../wiki/About-RMIDI)
-- Read and write .sf2 files (or compress them to sf3)
-- Read and write .sf3 files
+- SoundFont3 (compressed sf2) Support
+- Reverb and chorus support ([customizable!](../../wiki/Synthetizer-Class#effects-configuration-object))
+- Render audio file using [OfflineAudioContext](https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext)
 - A few custom modulators to support some additional controllers (see `modulators.js`)
 - Written using AudioWorklets (Firefox and Chrome both work perfectly)
 - Can load really large soundfonts (4GB!) (but only on Firefox, Chromium has a memory limit)
-- [Multi Port MIDIs support](../../wiki/About-Multi-Port) (more than 16 channels)
+- [Multi Port MIDIs support](../../wiki/About-Multi-Port) (more than 16 channels!)
 - MIDI Controller Support (Default supported controllers can be found [here](../../wiki/MIDI-Implementation#supported-controllers))
 - [RPN and NRPN support](../../wiki/MIDI-Implementation#supported-registered-parameters)
-- Supports some Roland GS and Yamaha XG sysex messages
+- Supports some [Roland GS and Yamaha XG system exclusives](../../wiki/MIDI-Implementation#supported-system-exclusives)
 - High performance mode for playing black MIDIs (Don't go too crazy with the amount of notes though)
-- Modular design allows easy integrations into other projects
 - Written in pure JavaScript using WebAudio API (Every modern browser supports it)
-- No dependencies
+- Built-in MIDI sequencer optimized for performance
+#### Read and write SoundFont and MIDI files
+- Read and write .mid files
+- Read and write [.rmi files with embedded SF2 soundfonts](../../wiki/About-RMIDI)
+- Read and write .sf2 files (or compress them to sf3!)
+- Read and write .sf3 files
 
 ## Limitations
-- The performance is questionable, especially on mobile devices.
+- The performance of the synthesizer is questionable, especially on mobile devices.
 
 ### Installation
 1. Clone this repository.
@@ -131,7 +136,8 @@ Comes with the ability to edit MIDIs and soundfonts!</p>
  - [Polyphone](https://www.polyphone-soundfonts.com/) - a wonderful testing and editing tool for soundfonts and how they should sound
  - [Meltysynth](https://github.com/sinshu/meltysynth) - for the initial low-pass filter implementation
  - [RecordingBlogs](https://www.recordingblogs.com/) - for the detailed explanations on MIDI messages
- - [OggVorbisEncoder](https://github.com/higuma/ogg-vorbis-encoder-js) - for the MIT vorbis encoder.
+ - [stbvorbis.js](https://github.com/hajimehoshi/stbvorbis.js) - for the vorbis decoder
+ - [OggVorbisEncoder](https://github.com/higuma/ogg-vorbis-encoder-js) - for the MIT vorbis encoder
  - **And You!** - for checking out this project. I hope you like it :)
 
 ### Major releases
