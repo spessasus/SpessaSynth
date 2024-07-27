@@ -2,6 +2,7 @@ import { modulatorSources } from '../../../soundfont/read/modulators.js'
 import { getModulatorCurveValue, MOD_PRECOMPUTED_LENGTH } from './modulator_curves.js'
 import { NON_CC_INDEX_OFFSET } from './worklet_processor_channel.js'
 import { recalculateVolumeEnvelope } from './volume_envelope.js'
+import { generatorTypes } from '../../../soundfont/read/generators.js'
 
 /**
  * worklet_modulator.js
@@ -104,20 +105,70 @@ export function computeWorkletModulator(controllerTable, modulator, voice)
 }
 
 /**
- * Computes all modulators of a given voice
+ * Computes modulators of a given voice. Source and index indicate what modulators shall be computed
  * @param voice {WorkletVoice} the voice to compute modulators for
  * @param controllerTable {Int16Array} all midi controllers as 14bit values + the non controller indexes, starting at 128
+ * @param sourceUsesCC {number} what modulators should be computed, -1 means all, 0 means modulator source enum 1 means midi controller
+ * @param sourceIndex {number} enum for the source
  */
-export function computeModulators(voice, controllerTable)
-{
-    // reset generators to their initial state
-    voice.modulatedGenerators.set(voice.generators);
-    // add modulated values
-    voice.modulators.forEach(mod => {
-        voice.modulatedGenerators[mod.modulatorDestination] += computeWorkletModulator(controllerTable, mod, voice);
+export function computeModulators(voice, controllerTable, sourceUsesCC = -1, sourceIndex = 0) {
+    const { modulators, generators, modulatedGenerators } = voice;
+
+    if (sourceUsesCC === -1)
+    {
+        // All modulators mode: compute all modulators
+        modulatedGenerators.set(generators);
+        modulators.forEach(mod => {
+            modulatedGenerators[mod.modulatorDestination] += computeWorkletModulator(controllerTable, mod, voice);
+        });
+        recalculateVolumeEnvelope(voice);
+        return;
+    }
+
+    // Optimized mode: calculate only modulators that use the given source
+    const volenvNeedsRecalculation = new Set([
+        generatorTypes.initialAttenuation,
+        generatorTypes.delayVolEnv,
+        generatorTypes.attackVolEnv,
+        generatorTypes.holdVolEnv,
+        generatorTypes.decayVolEnv,
+        generatorTypes.sustainVolEnv,
+        generatorTypes.releaseVolEnv,
+        generatorTypes.keyNumToVolEnvHold,
+        generatorTypes.keyNumToVolEnvDecay
+    ]);
+
+    const computedDestinations = new Set();
+
+    modulators.forEach(mod => {
+        if (
+            (mod.sourceUsesCC === sourceUsesCC && mod.sourceIndex === sourceIndex) ||
+            (mod.secSrcUsesCC === sourceUsesCC && mod.secSrcIndex === sourceIndex)
+        ) {
+            const destination = mod.modulatorDestination;
+            if (!computedDestinations.has(destination))
+            {
+                // Reset this destination
+                modulatedGenerators[destination] = generators[destination];
+                // Compute all modulators for this destination
+                modulators.forEach(m => {
+                    if (m.modulatorDestination === destination)
+                    {
+                        modulatedGenerators[destination] += computeWorkletModulator(controllerTable, m, voice);
+                    }
+                });
+                computedDestinations.add(destination);
+            }
+        }
     });
-    recalculateVolumeEnvelope(voice);
+
+    // Recalculate volume envelope if necessary
+    if ([...computedDestinations].some(dest => volenvNeedsRecalculation.has(dest)))
+    {
+        recalculateVolumeEnvelope(voice);
+    }
 }
+
 
 /**
  * as follows: transforms[curveType][polarity][direction] is an array

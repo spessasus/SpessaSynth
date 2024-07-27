@@ -21,7 +21,7 @@
  * @property {WorkletSample} sample - sample ID for voice.
  * @property {WorkletLowpassFilter} filter - lowpass filter applied to the voice
  * @property {Int16Array} generators - the unmodulated (constant) generators of the voice
- * @property {Modulator[]} modulators - the voice's modulators
+ * @property {Modulator[]} modulators - the voice's modulators. Grouped by the destination
  * @property {Int16Array} modulatedGenerators - the generators modulated by the modulators
  *
  * @property {boolean} finished - indicates if the voice has finished
@@ -64,15 +64,6 @@ export function clearSamplesList()
 }
 
 function /**
- * This is how the logic works: since sf3 is compressed, we rely on an async decoder.
- * So, if the sample isn't loaded yet:
- * send the workletVoice (generators, modulators, etc) and the WorkletSample(sampleID + end offset + loop)
- * once the voice is done, then we dump it.
- *
- * on the WorkletScope side:
- * skip the voice if sampleID isn't valid
- * once we receive a sample dump, adjust all voice endOffsets (loop is already correct in sf3)
- * now the voice starts playing, yay!
  * @param channel {number} channel hint for the processor to recalculate cursor positions
  * @param sample {Sample}
  * @param id {number}
@@ -241,6 +232,7 @@ export function getWorkletVoices(channel,
                     WorkletSample: workletSample
                 }]);
             }
+
 
             voices.push({
                 filter: deepClone(DEFAULT_WORKLET_LOWPASS_FILTER),

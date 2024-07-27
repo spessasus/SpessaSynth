@@ -7,7 +7,7 @@ import { SYNTHESIZER_GAIN } from '../main_processor.js'
 
 /**
  * @param channel {number}
- * @param controllerNumber {number}
+ * @param controllerNumber {midiControllers}
  * @param controllerValue {number}
  * @param force {boolean}
  * @this {SpessaSynthProcessor}
@@ -33,7 +33,7 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
         }
         // append the lower nibble to the main controller
         channelObject.midiControllers[actualCCNum] = (channelObject.midiControllers[actualCCNum] & 0x3F80) | (controllerValue & 0x7F);
-        channelObject.voices.forEach(v => computeModulators(v, channelObject.midiControllers));
+        channelObject.voices.forEach(v => computeModulators(v, channelObject.midiControllers, 1, actualCCNum));
     }
     switch (controllerNumber) {
         case midiControllers.allNotesOff:
@@ -168,7 +168,7 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
                 return;
             }
             channelObject.midiControllers[controllerNumber] = controllerValue << 7;
-            channelObject.voices.forEach(v => computeModulators(v, channelObject.midiControllers));
+            channelObject.voices.forEach(v => computeModulators(v, channelObject.midiControllers, 1, controllerNumber));
             this.callEvent("controllerchange", {
                 channel: channel,
                 controllerNumber: controllerNumber,

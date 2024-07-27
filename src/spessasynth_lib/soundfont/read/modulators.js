@@ -44,6 +44,9 @@ export class Modulator{
         if(dataArray.srcEnum)
         {
             this.modulatorSource = dataArray.srcEnum;
+            /**
+             * @type {generatorTypes}
+             */
             this.modulatorDestination = dataArray.dest;
             this.modulationSecondarySrc = dataArray.secSrcEnum;
             this.transformAmount = dataArray.amt;

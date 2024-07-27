@@ -123,7 +123,8 @@ export function pitchWheel(channel, MSB, LSB)
     });
     this.workletProcessorChannels[channel].midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel] = bend;
     this.workletProcessorChannels[channel].voices.forEach(v =>
-        computeModulators(v, this.workletProcessorChannels[channel].midiControllers));
+        // compute pitch modulators
+        computeModulators(v, this.workletProcessorChannels[channel].midiControllers, 0, modulatorSources.pitchWheel));
     this.sendChannelProperties();
 }
 
@@ -138,7 +139,7 @@ export function channelPressure(channel, pressure)
     const channelObject = this.workletProcessorChannels[channel];
     channelObject.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelPressure] = pressure << 7;
     this.workletProcessorChannels[channel].voices.forEach(v =>
-        computeModulators(v, channelObject.midiControllers));
+        computeModulators(v, channelObject.midiControllers, 0, modulatorSources.channelPressure));
     this.callEvent("channelpressure",{
         channel: channel,
         pressure: pressure
@@ -160,7 +161,7 @@ export function polyPressure(channel, midiNote, pressure)
             return;
         }
         v.pressure = pressure;
-        computeModulators(v, this.workletProcessorChannels[channel].midiControllers);
+        computeModulators(v, this.workletProcessorChannels[channel].midiControllers, 0, modulatorSources.polyPressure);
     });
     this.callEvent("polypressure", {
         channel: channel,

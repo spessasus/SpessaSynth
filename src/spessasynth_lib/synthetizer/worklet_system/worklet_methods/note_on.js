@@ -1,6 +1,7 @@
 import { getWorkletVoices } from '../worklet_utilities/worklet_voice.js'
 import { generatorTypes } from '../../../soundfont/read/generators.js'
 import { computeModulators } from '../worklet_utilities/worklet_modulator.js'
+import { recalculateVolumeEnvelope } from '../worklet_utilities/volume_envelope.js'
 
 /**
  * Append the voices
@@ -59,12 +60,13 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
                 if(v.generators[generatorTypes.exclusiveClass] === exclusive)
                 {
                     this.releaseVoice(v);
-                    v.generators[generatorTypes.releaseVolEnv] = -7000; // make the release nearly instant
-                    v.generators[generatorTypes.releaseModEnv] = -7000;
-                    computeModulators(v, this.workletProcessorChannels[channel].midiControllers);
+                    v.modulatedGenerators[generatorTypes.releaseVolEnv] = -7000; // make the release nearly instant
+                    v.modulatedGenerators[generatorTypes.releaseModEnv] = -7000;
+                    recalculateVolumeEnvelope(v);
                 }
             })
         }
+        // compute all modulators
         computeModulators(voice, this.workletProcessorChannels[channel].midiControllers);
         // set initial pan to avoid split second changing from middle to the correct value
         voice.currentPan = ((Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan] )) + 500) / 1000) // 0 to 1

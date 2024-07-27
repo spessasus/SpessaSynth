@@ -409,7 +409,7 @@ class MIDI{
                 if(name)
                 {
                     this.rawMidiName = name.messageData;
-                    this.midiName = readBytesAsString(name.messageData, name.messageData.length);
+                    this.midiName = readBytesAsString(name.messageData, name.messageData.length, undefined, false);
                 }
             }
         }
@@ -420,14 +420,14 @@ class MIDI{
             if(name)
             {
                 this.rawMidiName = name.messageData;
-                this.midiName = readBytesAsString(name.messageData, name.messageData.length);
+                this.midiName = readBytesAsString(name.messageData, name.messageData.length, undefined, false);
             }
         }
 
         this.fileName = fileName;
 
         // if midiName is "", use the file name
-        if(this.midiName.trim().length === 0)
+        if(this.midiName.replace(" ", "").length === 0)
         {
             this.midiName = formatTitle(fileName);
             // encode it too
