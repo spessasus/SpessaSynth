@@ -36,15 +36,15 @@ Comes with the ability to edit MIDIs and soundfonts!</p>
 - Reverb and chorus support (customizable)
 - Render audio to a .wav file
 - Read and write .mid files
-- Read and write [.rmi files with embedded SF2 soundfonts](../../wiki/MIDI/About-RMIDI)
+- Read and write [.rmi files with embedded SF2 soundfonts](../../wiki/About-RMIDI)
 - Read and write .sf2 files (or compress them to sf3)
 - Read and write .sf3 files
 - A few custom modulators to support some additional controllers (see `modulators.js`)
 - Written using AudioWorklets (Firefox and Chrome both work perfectly)
 - Can load really large soundfonts (4GB!) (but only on Firefox, Chromium has a memory limit)
-- [Multi Port MIDIs support](../../wiki/MIDI/About-Multi-Port) (more than 16 channels)
+- [Multi Port MIDIs support](../../wiki/About-Multi-Port) (more than 16 channels)
 - MIDI Controller Support (Default supported controllers can be found [here](../../wiki/MIDI-Implementation#supported-controllers))
-- [RPN and NRPN support](../../wiki/MIDI/MIDI-Implementation#supported-registered-parameters)
+- [RPN and NRPN support](../../wiki/MIDI-Implementation#supported-registered-parameters)
 - Supports some Roland GS and Yamaha XG sysex messages
 - High performance mode for playing black MIDIs (Don't go too crazy with the amount of notes though)
 - Modular design allows easy integrations into other projects
