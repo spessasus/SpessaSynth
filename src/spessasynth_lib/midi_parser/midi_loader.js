@@ -425,9 +425,9 @@ class MIDI{
         }
 
         this.fileName = fileName;
-
+        this.midiName = this.midiName.trim();
         // if midiName is "", use the file name
-        if(this.midiName.replace(" ", "").length === 0)
+        if(this.midiName.length === 0)
         {
             this.midiName = formatTitle(fileName);
             // encode it too
