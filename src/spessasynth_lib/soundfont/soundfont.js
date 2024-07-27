@@ -85,7 +85,7 @@ class SoundFont2
         this.verifyText(readBytesAsString(this.dataArray, 4), "sdta");
 
         // smpl
-        SpessaSynthInfo("%cVerifying smpl read...", consoleColors.warn)
+        SpessaSynthInfo("%cVerifying smpl chunk...", consoleColors.warn)
         let sampleDataChunk = readRIFFChunk(this.dataArray, false);
         this.verifyHeader(sampleDataChunk, "smpl");
         this.sampleDataStartIndex = this.dataArray.currentIndex;
@@ -96,7 +96,7 @@ class SoundFont2
         this.dataArray.currentIndex += sdtaChunk.size - 12;
 
         // PDTA
-        SpessaSynthInfo("%cLoading preset data read...", consoleColors.warn)
+        SpessaSynthInfo("%cLoading preset data chunk...", consoleColors.warn)
         let presetChunk = readRIFFChunk(this.dataArray);
         this.verifyHeader(presetChunk, "list");
         readBytesAsString(presetChunk.chunkData, 4);

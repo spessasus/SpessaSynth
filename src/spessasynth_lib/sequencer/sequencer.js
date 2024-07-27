@@ -121,6 +121,12 @@ export class Sequencer
     }
 
     /**
+     * Executes when MIDI parsing has an error.
+     * @type {function(string)}
+     */
+    onError;
+
+    /**
      * @param {WorkletSequencerReturnMessageType} messageType
      * @param {any} messageData
      * @private
@@ -185,6 +191,13 @@ export class Sequencer
                 this.pausedTime = this.currentTime;
                 this.isFinished = messageData;
                 break;
+
+            case WorkletSequencerReturnMessageType.midiError:
+                if(this.onError)
+                {
+                    this.onError(messageData);
+                }
+                return;
 
             case WorkletSequencerReturnMessageType.getMIDI:
                 if(this._getMIDIResolve)

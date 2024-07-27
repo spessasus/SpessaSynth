@@ -220,6 +220,10 @@ export function _playTo(time, ticks = undefined)
  */
 export function play(resetTime = false)
 {
+    if(this.midiData === undefined)
+    {
+        return;
+    }
 
     // reset the time if necesarry
     if(resetTime)

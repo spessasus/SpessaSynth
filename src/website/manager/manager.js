@@ -19,6 +19,7 @@ import { exportMidi } from './export_midi.js'
 import { _exportSoundfont } from './export_soundfont.js'
 import { exportSong } from './export_song.js'
 import { _exportRMIDI } from './export_rmidi.js'
+import { WORKLET_URL } from '../../spessasynth_lib/synthetizer/worklet_system/worklet_url.js'
 
 // this enables transitions on body because if we enable them on load, it flashbangs us with white
 document.body.classList.add("load");
@@ -109,9 +110,9 @@ class Manager
             this.localeManager.bindObjectProperty(element, "title", element.getAttribute("translate-path-title") + ".description");
         }
 
-        if(context.audioWorklet) {
-            const workletURL = new URL("../../spessasynth_lib/synthetizer/worklet_system/worklet_processor.js", import.meta.url).href;
-            await context.audioWorklet.addModule(workletURL);
+        if(context.audioWorklet)
+        {
+            await context.audioWorklet.addModule(WORKLET_URL);
         }
         // set up soundfont
         this.soundFont = soundFont;
@@ -309,6 +310,10 @@ class Manager
 
         // create a new sequencer
         this.seq = new Sequencer(parsedMidi, this.synth);
+
+        this.seq.onError = e => {
+            document.getElementById("title").textContent = e;
+        }
 
         // connect to the UI
         this.seqUI.connectSequencer(this.seq);

@@ -112,11 +112,11 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
          * @type {number}
          */
         this.panRight = 0.5 * this.currentGain;
-        /**
-         * @type {SoundFont2}
-         */
         try
         {
+            /**
+             * @type {SoundFont2}
+             */
             this.soundfont = new SoundFont2(options.processorOptions.soundfont);
         }
         catch (e)

@@ -84,16 +84,29 @@ export class Preset {
         {
             for (let velocity = 0; velocity < 128; velocity++)
             {
-                setTimeout(() => {
-                    this.getSamplesAndGenerators(key, velocity).forEach(samandgen => {
-                        if(!samandgen.sample.isSampleLoaded)
-                        {
-                            samandgen.sample.getAudioData();
-                        }
-                    })
-                });
+                this.getSamplesAndGenerators(key, velocity).forEach(samandgen => {
+                    if(!samandgen.sample.isSampleLoaded)
+                    {
+                        samandgen.sample.getAudioData();
+                    }
+                })
             }
         }
+    }
+
+    /**
+     * Preloads a specific key/velocity combo
+     * @param key {number}
+     * @param velocity {number}
+     */
+    preloadSpecific(key, velocity)
+    {
+        this.getSamplesAndGenerators(key, velocity).forEach(samandgen => {
+            if(!samandgen.sample.isSampleLoaded)
+            {
+                samandgen.sample.getAudioData();
+            }
+        })
     }
 
     /**

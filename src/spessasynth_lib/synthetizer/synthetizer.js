@@ -95,16 +95,22 @@ export class Synthetizer {
         // create a worklet processor
 
         // first two outputs: reverb, chorsu, the others are the channel outputs
-        this.worklet = new AudioWorkletNode(this.context, WORKLET_PROCESSOR_NAME, {
-            outputChannelCount: Array(this._outputsAmount + 2).fill(2),
-            numberOfOutputs: this._outputsAmount + 2,
-            processorOptions: {
-                midiChannels: this._outputsAmount,
-                soundfont: soundFontBuffer,
-                enableEventSystem: enableEventSystem,
-                startRenderingData: startRenderingData
-            }
-        });
+        try {
+            this.worklet = new AudioWorkletNode(this.context, WORKLET_PROCESSOR_NAME, {
+                outputChannelCount: Array(this._outputsAmount + 2).fill(2),
+                numberOfOutputs: this._outputsAmount + 2,
+                processorOptions: {
+                    midiChannels: this._outputsAmount,
+                    soundfont: soundFontBuffer,
+                    enableEventSystem: enableEventSystem,
+                    startRenderingData: startRenderingData
+                }
+            });
+        }
+        catch (e)
+        {
+            throw new Error("Could not create the audioWorklet. Did you forget to addModule()?");
+        }
 
         /**
          * @typedef {Object} PresetListElement

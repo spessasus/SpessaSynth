@@ -40,7 +40,8 @@ export function assignMIDIPort(trackNum, port)
 export function loadNewSequence(parsedMidi)
 {
     this.stop();
-    if (!parsedMidi.tracks) {
+    if (!parsedMidi.tracks)
+    {
         throw "No tracks supplied!";
     }
 
@@ -101,16 +102,31 @@ export function loadNewSequence(parsedMidi)
 export function loadNewSongList(midiBuffers)
 {
     /**
-     * parse the MIDIs
+     * parse the MIDIs (only the array buffers, MIDI is unchanged)
      * @type {MIDI[]}
      */
-    this.songs = midiBuffers.map(b => {
+    this.songs = midiBuffers.reduce((mids, b) => {
         if(b.duration)
         {
-            return b;
+            mids.push(b);
+            return mids;
         }
-        return new MIDI(b.binary, b.altName || "")
-    });
+        try
+        {
+            mids.push(new MIDI(b.binary, b.altName || ""));
+        }
+        catch (e)
+        {
+            this.post(WorkletSequencerReturnMessageType.midiError, e.message);
+            return mids;
+        }
+        return mids;
+    }, []);
+    if(this.songs.length < 1)
+    {
+        console.log("no valid songs!")
+        return;
+    }
     this.songIndex = 0;
     if(this.songs.length > 1)
     {
