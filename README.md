@@ -27,13 +27,13 @@ This repository contains both the library and a complete musical web application
 
 <h2 align='center'>Features</h2>
 
-#### Easy Integration
+### Easy Integration
 - Modular design for easy integration into other projects
 - [Detailed documentation](../../wiki/Home) with examples
 - Simple setup: just [two lines of code!](../../wiki/Usage-As-Library#minimal-setup)
 - No dependencies—batteries included!
 
-#### Powerful SoundFont Synthesizer
+### Powerful SoundFont Synthesizer
 - Suitable for both **real-time** and **offline** synthesis
 - **SoundFont2 Generator Support**
 - **SoundFont2 Modulator Support:** A feature that many SF2 synths lack!
@@ -50,32 +50,32 @@ This repository contains both the library and a complete musical web application
 - **High-performance mode:** Play Rush E! _note: may kill your browser. But rendering to file works fine!_
 - **Written in pure JavaScript using the WebAudio API:** Supported by all modern browsers!
 
-#### Built-in Powerful and Fast Sequencer
+### Built-in Powerful and Fast Sequencer
 - **Supports MIDI formats 0, 1, and 2:** _note: format 2 support is experimental as it's very, very rare_
 - **[Multi-Port MIDI](../../wiki/About-Multi-Port) support:** More than 16 channels!
 - **Smart preloading:** Only preloads the samples used in the MIDI file for smooth playback (down to key and velocity!)
 - **Lyrics support:** Add karaoke to your program!
 - **Raw lyrics available:** Decode in any encoding (Kanji? No problem!)
 
-#### Read and Write SoundFont and MIDI Files with Ease
-- **Read and write MIDI files**
-    - **Smart name detection:** Handles incorrectly formatted MIDIs and non-standard track names
-    - **Port detection during load time:** Manage ports and channels easily
-    - **Used channels on track:** Quickly determine which channels are used
-    - **Key range detection:** Detect the key range of the MIDI
-    - **Easy MIDI editing:** Use [helper functions](../../wiki/Writing-MIDI-Files#modifymidi) to modify the song
-    - **Loop detection:** Automatically detects loops in MIDIs (e.g., from _Touhou Project_)
-    - **First note detection:** Skip unnecessary silence at the start by jumping to the first note
-    - **Easy saving:** Save with just [one function!](../../wiki/Writing-MIDI-Files#writemidifile)
-- **Read and write [RMID files with embedded SF2 soundfonts](../../wiki/About-RMIDI)**
-    - Compression and trimming support: Reduce a MIDI file with a 1GB soundfont to as small as 5MB!
-    - Easy saving: As simple as saving a MIDI file
-- **Read and write .sf2 files (or compress them to .sf3!)**
-    - **Smart trimming:** Trim the SoundFont to only include samples used in the MIDI (down to key and velocity!)
-- **Read and write .sf3 files**
-    - Same features as .sf2 but with now with **Ogg Vorbis compression!**
-    - **Variable compression quality:** You choose between file size and quality!
-    - **Compression preserving:** Avoid decompressing and recompressing uncompressed samples for minimal quality loss!
+### Read and Write SoundFont and MIDI Files with Ease
+#### Read and write MIDI files
+  - **Smart name detection:** Handles incorrectly formatted MIDIs and non-standard track names
+  - **Port detection during load time:** Manage ports and channels easily
+  - **Used channels on track:** Quickly determine which channels are used
+  - **Key range detection:** Detect the key range of the MIDI
+  - **Easy MIDI editing:** Use [helper functions](../../wiki/Writing-MIDI-Files#modifymidi) to modify the song to your needs!
+  - **Loop detection:** Automatically detects loops in MIDIs (e.g., from _Touhou Project_)
+  - **First note detection:** Skip unnecessary silence at the start by jumping to the first note!
+  - **Easy saving:** Save with just [one function!](../../wiki/Writing-MIDI-Files#writemidifile)
+#### Read and write [RMID files with embedded SF2 soundfonts](../../wiki/About-RMIDI)
+  - Compression and trimming support: Reduce a MIDI file with a 1GB soundfont to as small as 5MB!
+  - Easy saving: As simple as saving a MIDI file
+#### Read and write .sf2 files (or compress them to .sf3!)
+  - **Smart trimming:** Trim the SoundFont to only include samples used in the MIDI (down to key and velocity!)
+#### Read and write .sf3 files
+  - Same features as .sf2 but with now with **Ogg Vorbis compression!**
+  - **Variable compression quality:** You choose between file size and quality!
+  - **Compression preserving:** Avoid decompressing and recompressing uncompressed samples for minimal quality loss!
 
 ## Limitations
 - Performance may be suboptimal, especially on mobile devices.
