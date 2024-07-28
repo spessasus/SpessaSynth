@@ -94,6 +94,7 @@ Comes with the ability to edit MIDIs and soundfonts!</p>
 - [WebMidiLink](https://www.g200kg.com/en/docs/webmidilink/) support
 - Play around with the MIDI file, edit instruments controllers and more!
 - Render the MIDI file (either modified or unmodified) to .wav
+- Render each channel as a separate .wav file
 - Export the modified MIDI file to .mid
 - Export the trimmed soundfont to .sf2 or compressed .sf3
 - Or bundle both as .rmi!
