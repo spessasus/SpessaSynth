@@ -100,11 +100,6 @@ export function computeNotePositions(renderImmediately=false)
                     const correctedNote = note.midiNote - this.keyRange.min;
                     let noteX = keyStep * correctedNote + NOTE_MARGIN;
 
-                    if(this.showVisualPitch)
-                    {
-                        noteX += pitchBendXShift[channelNumder];
-                    }
-
                     let finalX, finalY, finalWidth, finalHeight;
                     if(this.sideways)
                     {
@@ -140,7 +135,9 @@ export function computeNotePositions(renderImmediately=false)
                         // save the notes to draw
                         // determine if notes are active or not (i.e. currently playing)
                         // not active notes
-                        if ((note.start > currentSeqTime || noteSum < currentSeqTime)) {
+                        if ((note.start > currentSeqTime || noteSum < currentSeqTime))
+                        {
+                            // this note is not presed
                             if(this.sideways)
                             {
                                 if(this.drawActiveNotes)
@@ -174,12 +171,21 @@ export function computeNotePositions(renderImmediately=false)
                         }
                         else
                         {
+                            // this note is pressed
                             if(this.sideways)
                             {
+                                if(this.showVisualPitch)
+                                {
+                                    finalY += pitchBendXShift[channelNumder];
+                                }
                                 color = this.sidewaysChannelColors[channelNumder];
                             }
                             else
                             {
+                                if(this.showVisualPitch)
+                                {
+                                    finalX += pitchBendXShift[channelNumder];
+                                }
                                 color = this.channelColors[channelNumder];
                             }
                             // determine for how long the note has been pressed
