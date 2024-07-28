@@ -133,7 +133,7 @@ This repository contains both the library and a complete musical web application
 2. Put your SoundFonts into the `soundfonts` folder (you can select SoundFonts in the program).
 3. Enjoy!
 
-[If you would like to help translate SpessaSynth, please read this guide (and thank you!)](src/website/locale/locale_files/README)
+[If you would like to help translate SpessaSynth, please read this guide (and thank you!)](src/website/locale/locale_files/README.md)
 
 #### TODO
 - Improve the performance of the worklet system
