@@ -100,6 +100,11 @@ export function computeNotePositions(renderImmediately=false)
                     const correctedNote = note.midiNote - this.keyRange.min;
                     let noteX = keyStep * correctedNote + NOTE_MARGIN;
 
+                    if(this.showVisualPitch)
+                    {
+                        noteX += pitchBendXShift[channelNumder];
+                    }
+
                     let finalX, finalY, finalWidth, finalHeight;
                     if(this.sideways)
                     {
@@ -189,7 +194,7 @@ export function computeNotePositions(renderImmediately=false)
                             }
                             // active notes
                             notesToDraw.push({
-                                xPos: finalX + pitchBendXShift[channelNumder], // add pitch bend shift only to active notes
+                                xPos: finalX,
                                 yPos: finalY,
                                 height: finalHeight,
                                 width: finalWidth,

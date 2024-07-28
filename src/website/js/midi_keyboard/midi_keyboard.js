@@ -262,6 +262,12 @@ class MidiKeyboard
      */
     setKeyRange(range, animate = true)
     {
+        const diff = Math.abs(range.max - range.min)
+        if(diff < 24)
+        {
+            range.min -= 12;
+            range.max = range.min + 24;
+        }
         // adjust height
         // according to my testing, this function seems to calculate the height well:
         // 900 / (keys + 5)
