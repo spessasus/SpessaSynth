@@ -28,43 +28,54 @@ This repository contains both the library and a complete musical web application
 <h2 align='center'>Features</h2>
 
 #### Easy Integration
-- Modular design allows easy integration into other projects
+- Modular design for easy integration into other projects
 - [Detailed documentation](../../wiki/Home) with examples
-- Easy to use. Basic setup is just [two lines of code!](../../wiki/Usage-As-Library#minimal-setup)
-- Batteries included. No dependencies!
+- Simple setup: just [two lines of code!](../../wiki/Usage-As-Library#minimal-setup)
+- No dependencies—batteries included!
 
 #### Powerful SoundFont Synthesizer
-- Suitable for both real-time and offline synthesis
-- SoundFont2 Generator support
-- **SoundFont2 Modulator Support** - a feature which many sf2 synths lack!
-- SoundFont3 (compressed sf2) Support
-- Reverb and chorus support ([customizable!](../../wiki/Synthetizer-Class#effects-configuration-object))
+- Suitable for both **real-time** and **offline** synthesis
+- **SoundFont2 Generator Support**
+- **SoundFont2 Modulator Support:** A feature that many SF2 synths lack!
+- **SoundFont3 Support:** With a custom fork of an stbvorbis for AudioWorklet compability!
+- **Reverb and chorus support:** [customizable!](../../wiki/Synthetizer-Class#effects-configuration-object)
 - Render audio files using [OfflineAudioContext](https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext)
-- Custom modulators for additional controllers ([See this](../../wiki/Modulator-Class#default-modulators)
-- Written using AudioWorklets (works perfectly in Firefox and Chrome and runs in a separate thread for maximum performance)
-- Can load very large SoundFonts (up to 4GB!) (Note: Only Firefox handles this well; Chromium has a memory limit)
-- Unlimited channel count (CPU is the limit ;-)
-- MIDI Controller Support (Default supported controllers [here](../../wiki/MIDI-Implementation#supported-controllers))
+- **[Custom modulators for additional controllers](../../wiki/Modulator-Class#default-modulators):** Why not?
+- **Written using AudioWorklets:** runs in a separate thread for maximum performance, works perfectly in Firefox and Chrome!
+- **Can load very large SoundFonts:** up to 4GB! _Note: Only Firefox handles this well; Chromium has a memory limit_
+- **Unlimited channel count:** Your CPU is the limit!
+- **MIDI Controller Support:** Default supported controllers [here](../../wiki/MIDI-Implementation#supported-controllers)
 - [RPN and NRPN support](../../wiki/MIDI-Implementation#supported-registered-parameters)
 - Supports some [Roland GS and Yamaha XG system exclusives](../../wiki/MIDI-Implementation#supported-system-exclusives)
-- High performance mode for playing complex MIDIs (Avoid excessive notes)
-- Written in pure JavaScript using the WebAudio API (Supported by all modern browsers)
+- **High-performance mode:** Play Rush E! _note: may kill your browser. But rendering to file works fine!_
+- **Written in pure JavaScript using the WebAudio API:** Supported by all modern browsers!
 
 #### Built-in Powerful and Fast Sequencer
-- Supports MIDI formats 0, 1, and 2
-- [Multi-Port MIDI support](../../wiki/About-Multi-Port) (More than 16 channels!)
-- Smart preloading: Preloads only the samples used in the MIDI file for smooth playback (down to the key and velocity!)
-- Lyrics support: Add karaoke to your program!
-- Raw lyrics available: Decode in any encoding (Kanji? No problem!)
+- **Supports MIDI formats 0, 1, and 2:** _note: format 2 support is experimental as it's very, very rare_
+- **[Multi-Port MIDI](../../wiki/About-Multi-Port) support:** More than 16 channels!
+- **Smart preloading:** Only preloads the samples used in the MIDI file for smooth playback (down to key and velocity!)
+- **Lyrics support:** Add karaoke to your program!
+- **Raw lyrics available:** Decode in any encoding (Kanji? No problem!)
 
-#### Read and Write SoundFont and MIDI Files
-- Read and write .mid files
-    - Smart name detection: Ignores first track name if not a conductor track
-    - Port detection during load time
-    - Used channels on track: Detects channels used on each track
-- Read and write [.rmi files with embedded SF2 soundfonts](../../wiki/About-RMIDI)
-- Read and write .sf2 files (or compress them to .sf3!)
-- Read and write .sf3 files
+#### Read and Write SoundFont and MIDI Files with Ease
+- **Read and write MIDI files**
+    - **Smart name detection:** Handles incorrectly formatted MIDIs and non-standard track names
+    - **Port detection during load time:** Manage ports and channels easily
+    - **Used channels on track:** Quickly determine which channels are used
+    - **Key range detection:** Detect the key range of the MIDI
+    - **Easy MIDI editing:** Use [helper functions](../../wiki/Writing-MIDI-Files#modifymidi) to modify the song
+    - **Loop detection:** Automatically detects loops in MIDIs (e.g., from _Touhou Project_)
+    - **First note detection:** Skip unnecessary silence at the start by jumping to the first note
+    - **Easy saving:** Save with just [one function!](../../wiki/Writing-MIDI-Files#writemidifile)
+- **Read and write [RMID files with embedded SF2 soundfonts](../../wiki/About-RMIDI)**
+    - Compression and trimming support: Reduce a MIDI file with a 1GB soundfont to as small as 5MB!
+    - Easy saving: As simple as saving a MIDI file
+- **Read and write .sf2 files (or compress them to .sf3!)**
+    - **Smart trimming:** Trim the SoundFont to only include samples used in the MIDI (down to key and velocity!)
+- **Read and write .sf3 files**
+    - Same features as .sf2 but with now with **Ogg Vorbis compression!**
+    - **Variable compression quality:** You choose between file size and quality!
+    - **Compression preserving:** Avoid decompressing and recompressing uncompressed samples for minimal quality loss!
 
 ## Limitations
 - Performance may be suboptimal, especially on mobile devices.
