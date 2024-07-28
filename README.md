@@ -111,7 +111,8 @@ This repository contains both the library and a complete musical web application
 
 ### Installation
 
-> **Important:** Firefox is recommended for large SoundFonts due to memory constraints. A decent computer is also recommended for handling large SoundFonts.
+> [!IMPORTANT]
+> Firefox is recommended for large SoundFonts due to memory constraints. A decent computer is also recommended for handling large SoundFonts.
 
 [Recommended high-quality SoundFont (better than the built-in one)](https://musical-artifacts.com/artifacts/1176)
 
@@ -135,6 +136,8 @@ This repository contains both the library and a complete musical web application
 
 [If you would like to help translate SpessaSynth, please read this guide (and thank you!)](src/website/locale/locale_files/README.md)
 
+**If you like this project, consider giving it a star. It really helps out!**
+
 #### TODO
 - Improve the performance of the worklet system
 - Potentially port the worklet system to Emscripten
@@ -155,8 +158,6 @@ This repository contains both the library and a complete musical web application
 - [1.0.0](https://github.com/spessasus/SpessaSynth/commit/45c23d1c2906b2dec202c0533a9737bd1fa6b3c4) - Removed the 2-sample limit
 - [2.0.0](https://github.com/spessasus/SpessaSynth/commit/350e4db90210375da27e393393df743be2137d59) - Implemented the worklet system and added support for modulators
 - [3.0.0](https://github.com/spessasus/SpessaSynth/commit/b7f9e382a2f62eef462755ac9ebfe603663e4106) - Moved to audioWorkletGlobalScope for offline audio rendering
-
-If you like this project, consider giving it a star. It really helps out!
 
 ### License
 Copyright © 2024 Spessasus. Licensed under the MIT License.
