@@ -117,7 +117,7 @@ export function applySynthesizerSnapshot(snapshot)
         // restore vibrato and transpose
         channelObject.channelVibrato = channelSnapshot.channelVibrato;
         channelObject.lockVibrato = channelSnapshot.lockVibrato;
-        channelObject.channelTransposeKeyShift = channelSnapshot.channelTranspose;
+        channelObject.channelTransposeKeyShift = channelSnapshot.channelTransposeKeyShift;
 
         // restore preset and lock
         channelObject.lockPreset = false;

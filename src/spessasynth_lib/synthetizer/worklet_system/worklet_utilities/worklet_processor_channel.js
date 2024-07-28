@@ -63,7 +63,8 @@ export function createWorkletChannel(sendEvent = false)
         lockPreset: false,
 
     }
-    for (let i = 0; i < 128; i++) {
+    for (let i = 0; i < 128; i++)
+    {
         channel.cachedVoices.push([]);
     }
     this.workletProcessorChannels.push(channel);
