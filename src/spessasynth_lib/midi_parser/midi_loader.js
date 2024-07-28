@@ -218,7 +218,10 @@ class MIDI{
                             this.lastVoiceEventTick = totalTicks;
                         }
                         eventDataLength = dataBytesAmount[statusByte >> 4];
-                        usedChannels.add(statusByteChannel);
+                        if((statusByte & 0xF0) === messageTypes.noteOn)
+                        {
+                            usedChannels.add(statusByteChannel);
+                        }
 
                         // save the status byte
                         runningByte = statusByte;
