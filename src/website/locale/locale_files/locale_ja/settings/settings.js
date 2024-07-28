@@ -24,6 +24,17 @@ export const settingsLocale = {
         selectLanguage: {
             title: "言語",
             description: "プログラムの言語を変更します"
+        },
+
+        layoutDirection: {
+            title: "レイアウトの方向",
+            description: "レンダラーとキーボードのレイアウト方向",
+            values: {
+                downwards: "下向き",
+                upwards: "上向き",
+                leftToRight: "左から右",
+                rightToLeft: "右から左"
+            }
         }
     }
 };

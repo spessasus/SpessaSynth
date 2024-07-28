@@ -10,17 +10,52 @@
     position: relative;
     transform-origin: center top;
     --pressed-transform-skew: 0.0007;
-    --pressed-transform: matrix3d(1,0,0.00,0,0.00,1,0.00,var(--pressed-transform-skew),0,0,1,0,0,0,0,1);
+    --pressed-transform: matrix3d(
+            1,0,0,
+            0,0,1,
+            0,var(--pressed-transform-skew),0,
+            0,1,0,
+            0,0,0,
+            1);
     cursor: default;
+
+    /*specific key transforms*/
+    --flat-half-width: 1.4;
+    --flat-half-translate: 18%;
+    --sharp-transform: scale(1, 0.7);
+
+    --flat-between-transform: scale(1.9, 1);
+    --flat-left-transform: scale(var(--flat-half-width), 1) translateX(calc(var(--flat-half-translate) * -1));
+    --flat-right-transform: scale(var(--flat-half-width), 1) translateX(var(--flat-half-translate));
 }
 
+/*
+SIDEWAYS KEYS
+instead of "pressing" from top center, press and scale from center right!
+*/
+
+#keyboard.sideways .key{
+    border-radius: var(--key-border-radius) 0 0 var(--key-border-radius) !important;
+    transform-origin: right center !important;
+    --pressed-transform: matrix3d(
+            1,0,0,
+            calc(var(--pressed-transform-skew) * -1),0,1,
+            0,0,0,
+            0,1,0,
+            0,0,0
+            ,1) !important;
+
+    --sharp-transform: scale(0.7, 1) !important;
+
+    --flat-between-transform: scale(1, 1.9) !important;
+    --flat-left-transform: scale(1, var(--flat-half-width)) translateY(calc(var(--flat-half-translate) * -1)) !important;
+    --flat-right-transform: scale(1, var(--flat-half-width)) translateY(var(--flat-half-translate)) !important;
+}
 
 
 #keyboard .flat_key{
     background: linear-gradient(90deg, #bbb, white);
     z-index: 1;
-    --flat-half-width: 1.4;
-    --flat-half-translate: 18%;
 }
 
 #keyboard .flat_dark_key{
@@ -28,24 +63,20 @@
 }
 
 #keyboard .sharp_key{
-    --sharp-transform: scale(1, 0.7);
     transform: var(--sharp-transform);
     z-index: 10;
     background: linear-gradient(140deg, #222, black);
 }
 
 #keyboard .flat_key.between_sharps{
-    --flat-between-transform: scale(1.9, 1);
     transform: var(--flat-between-transform);
 }
 
 #keyboard .flat_key.left_sharp{
-    --flat-left-transform: scale(var(--flat-half-width), 1) translateX(calc(var(--flat-half-translate) * -1));
     transform: var(--flat-left-transform);
 }
 
 #keyboard .flat_key.right_sharp{
-    --flat-right-transform: scale(var(--flat-half-width), 1) translateX(var(--flat-half-translate));
     transform: var(--flat-right-transform);
 }
 

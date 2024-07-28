@@ -312,7 +312,7 @@ class MidiKeyboard
 
             // animation end
             this.sizeChangeAnimationId = setTimeout(() => {
-                this.keyboard.style.setProperty("--current-min-height", `${newHeight}vw`);
+                this.keyboard.style.setProperty("--current-min-height", `${newHeight}`);
                 // restore values and disable transition
                 this.keyboard.style.transition = "none";
                 this.keyboard.style.transform = "";
@@ -326,7 +326,7 @@ class MidiKeyboard
         }
         else
         {
-            this.keyboard.style.setProperty("--current-min-height", `${newHeight}vw`);
+            this.keyboard.style.setProperty("--current-min-height", `${newHeight}`);
             this._keyRange = range;
             this._createKeyboard();
         }

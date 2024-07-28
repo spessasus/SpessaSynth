@@ -98,6 +98,12 @@ class MIDI{
         this.timeDivision = readBytesAsUintBigEndian(headerChunk.data, 2);
 
         /**
+         * The MIDI's key range
+         * @type {{min: number, max: number}}
+         */
+        this.keyRange = {min: 127, max: 0};
+
+        /**
          * Contains the lyrics as binary chunks
          * @type {Uint8Array[]}
          */
@@ -221,6 +227,9 @@ class MIDI{
                         if((statusByte & 0xF0) === messageTypes.noteOn)
                         {
                             usedChannels.add(statusByteChannel);
+                            const note = trackChunk.data[trackChunk.data.currentIndex]
+                            this.keyRange.min = Math.min(this.keyRange.min, note);
+                            this.keyRange.max = Math.max(this.keyRange.max, note);
                         }
 
                         // save the status byte

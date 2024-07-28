@@ -43,7 +43,10 @@ export class Selector
         this.reload();
 
 
-        this.mainDiv.onchange = () => editCallback(this.mainDiv.value);
+        this.mainDiv.onchange = () => {
+            editCallback(this.mainDiv.value);
+            this.mainDiv.blur();
+        };
     }
 
     toggleMode()

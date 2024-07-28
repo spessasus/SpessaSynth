@@ -6,7 +6,8 @@
  *       max: number
  *     },
  *     mode: ("light" | "dark"),
- *     selectedChannel: number
+ *     selectedChannel: number,
+ *     autoRange: boolean,
  *   },
  *   renderer: {
  *     renderNotes: boolean,
@@ -29,7 +30,8 @@
  *   },
  *   interface: {
  *     mode: ("light" | "dark"),
- *     language: string
+ *     language: string,
+ *     layout: string
  *   }
  * }} SavedSettings
  */

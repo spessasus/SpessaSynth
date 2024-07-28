@@ -25,6 +25,17 @@ export const settingsLocale = {
         selectLanguage: {
             title: "Język",
             description: "Zmień język programu"
+        },
+
+        layoutDirection: {
+            title: "Układ",
+            description: "Kierunek układu wizualizacji i pianina",
+            values: {
+                downwards: "W dół",
+                upwards: "W górę",
+                leftToRight: "Od lewej do prawej",
+                rightToLeft: "Od prawej do lewej",
+            }
         }
     }
 };

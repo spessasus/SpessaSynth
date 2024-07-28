@@ -34,7 +34,7 @@ export function render(auto = true)
         // draw the notes from longest to shortest (non black midi mode)
         if(!this.synth.highPerformanceMode)
         {
-            drawNotes(notesToDraw, this.drawingContext);
+            drawNotes(notesToDraw, this.drawingContext, this.sideways);
         }
     }
 

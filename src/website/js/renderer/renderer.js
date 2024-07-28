@@ -86,6 +86,13 @@ class Renderer
         this._drumAnalyserFft = DRUMS_ANALYSER_FFT;
         this.waveMultiplier = WAVE_MULTIPLIER;
 
+        /**
+         * @type {boolean}
+         * @private
+         */
+        this._notesFall = true;
+        this.sideways = false;
+
 
         // booleans
         this._renderBool = true;
@@ -127,6 +134,22 @@ class Renderer
         this.connectChannelAnalysers(synth);
     }
 
+    /**
+     * @param val {"down"|"up"}
+     */
+    set direction(val)
+    {
+        this._notesFall = val === "down";
+    }
+
+    /**
+     * @returns {"down"|"up"}
+     */
+    get direction()
+    {
+        return this._notesFall ? "down" : "up";
+    }
+
     computeColors()
     {
         this.channelColors = this.plainColors.map(c => {
@@ -139,6 +162,22 @@ class Renderer
         this.darkerColors = this.plainColors.map(c => {
             const gradient = this.drawingContext.createLinearGradient(0, 0,
                 this.canvas.width / 128, 0);
+
+            gradient.addColorStop(0, calculateRGB(c, v => v * GRADIENT_DARKEN * DARKER_MULTIPLIER)); // darker color
+            gradient.addColorStop(1, calculateRGB(c, v => v * DARKER_MULTIPLIER)); // brighter color
+            return gradient;
+        });
+
+        this.sidewaysChannelColors = this.plainColors.map(c => {
+            const gradient = this.drawingContext.createLinearGradient(0, 0,
+                0, this.canvas.width / 128);
+            gradient.addColorStop(0, calculateRGB(c, v => v * GRADIENT_DARKEN)); // darker color
+            gradient.addColorStop(1, c); // brighter color
+            return gradient;
+        });
+        this.sidewaysDarkerColors = this.plainColors.map(c => {
+            const gradient = this.drawingContext.createLinearGradient(0, 0,
+                0, this.canvas.width / 128);
 
             gradient.addColorStop(0, calculateRGB(c, v => v * GRADIENT_DARKEN * DARKER_MULTIPLIER)); // darker color
             gradient.addColorStop(1, calculateRGB(c, v => v * DARKER_MULTIPLIER)); // brighter color

@@ -324,6 +324,9 @@ class Manager
         // connect to the renderer;
         this.renderer.connectSequencer(this.seq);
 
+        // connect to settings
+        this.settingsUI.addSequencer(this.seq);
+
         // play the midi
         this.seq.play(true);
     }

@@ -1,3 +1,5 @@
+export const USE_MIDI_RANGE = 'midi range';
+
 /**
  * The channel colors are taken from synthui
  * @param keyboard {MidiKeyboard}
@@ -39,17 +41,56 @@ export function _createKeyboardHandler( keyboard, synthui, renderer)
     keyboardControls.sizeSelector.onchange = () => {
         if(this.musicMode.visible)
         {
-            this.musicMode.setVisibility(false, this.renderer.canvas, keyboard.keyboard);
+            this.musicMode.setVisibility(false, document.getElementById("keyboard_canvas_wrapper"));
             setTimeout(() => {
-                keyboard.keyRange = this.keyboardSizes[keyboardControls.sizeSelector.value];
-                renderer.keyRange = this.keyboardSizes[keyboardControls.sizeSelector.value];
+                if(keyboardControls.sizeSelector.value === USE_MIDI_RANGE)
+                {
+                    this.autoKeyRange = true;
+                    if(this?.sequi?.seq)
+                    {
+                        keyboard.keyRange = this.sequi.seq.midiData.keyRange;
+                        renderer.keyRange = this.sequi.seq.midiData.keyRange;
+                    }
+                }
+                else
+                {
+                    this.autoKeyRange = false;
+                    keyboard.keyRange = this.keyboardSizes[keyboardControls.sizeSelector.value];
+                    renderer.keyRange = this.keyboardSizes[keyboardControls.sizeSelector.value];
+                }
                 this._saveSettings();
             }, 600);
             return;
         }
-        keyboard.keyRange = this.keyboardSizes[keyboardControls.sizeSelector.value];
-        renderer.keyRange = this.keyboardSizes[keyboardControls.sizeSelector.value];
+        if(keyboardControls.sizeSelector.value === USE_MIDI_RANGE)
+        {
+            this.autoKeyRange = true;
+            if(this?.sequi?.seq)
+            {
+                keyboard.keyRange = this.sequi.seq.midiData.keyRange;
+                renderer.keyRange = this.sequi.seq.midiData.keyRange;
+            }
+        }
+        else
+        {
+            this.autoKeyRange = false;
+            keyboard.keyRange = this.keyboardSizes[keyboardControls.sizeSelector.value];
+            renderer.keyRange = this.keyboardSizes[keyboardControls.sizeSelector.value];
+        }
         this._saveSettings();
+    }
+
+    /**
+     * @param seq {Sequencer}
+     */
+    this.addSequencer = seq => {
+        seq.addOnSongChangeEvent(mid => {
+            if (this.autoKeyRange)
+            {
+                keyboard.keyRange = mid.keyRange;
+                renderer.keyRange = mid.keyRange;
+            }
+        }, "settings-keyboard-handler-song-change");
     }
 
     // listen for new channels
@@ -91,7 +132,7 @@ export function _createKeyboardHandler( keyboard, synthui, renderer)
     keyboardControls.modeSelector.onclick = () => {
         if(this.musicMode.visible)
         {
-            this.musicMode.setVisibility(false, this.renderer.canvas, keyboard.keyboard);
+            this.musicMode.setVisibility(false, document.getElementById("keyboard_canvas_wrapper"));
             setTimeout(() => {
                 keyboard.toggleMode();
                 this._saveSettings();

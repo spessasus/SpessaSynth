@@ -9,8 +9,9 @@ const PRESSED_EFFECT_OPACITY = 0.5;
 /**
  * @param notesToDraw {NoteToRender[]}
  * @param drawingContext {CanvasRenderingContext2D}
+ * @param sideways {boolean}
  */
-export function drawNotes(notesToDraw, drawingContext)
+export function drawNotes(notesToDraw, drawingContext, sideways)
 {
     // render the pressed effect first
     notesToDraw.forEach(n => {
@@ -21,6 +22,12 @@ export function drawNotes(notesToDraw, drawingContext)
         drawingContext.fillStyle = n.color;
         const effectStrength = n.pressedProgress * n.velocity;
         drawingContext.globalAlpha = PRESSED_EFFECT_OPACITY * effectStrength;
+        if(sideways)
+        {
+            drawingContext.fillRect(n.xPos, n.yPos - n.height * effectStrength, n.width, n.height * (effectStrength * 2 + 1));
+            drawingContext.globalAlpha = 1;
+            return;
+        }
         drawingContext.fillRect(n.xPos - n.width * effectStrength, n.yPos, n.width * (effectStrength * 2 + 1), n.height);
         drawingContext.globalAlpha = 1;
     })

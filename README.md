@@ -156,6 +156,8 @@ This repository contains both the library and a complete musical web application
 - [2.0.0](https://github.com/spessasus/SpessaSynth/commit/350e4db90210375da27e393393df743be2137d59) - Implemented the worklet system and added support for modulators
 - [3.0.0](https://github.com/spessasus/SpessaSynth/commit/b7f9e382a2f62eef462755ac9ebfe603663e4106) - Moved to audioWorkletGlobalScope for offline audio rendering
 
+If you like this project, consider giving it a star. It really helps out!
+
 ### License
 Copyright © 2024 Spessasus. Licensed under the MIT License.
 

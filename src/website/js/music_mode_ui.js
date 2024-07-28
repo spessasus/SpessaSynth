@@ -37,8 +37,6 @@ export class MusicModeUI {
         {
             localeManager.bindObjectProperty(el, "textContent", el.getAttribute("translate-path"));
         }
-
-        this.savedKeyboardHeight = 0;
         this.timeoutId = -1;
         this.visible = false;
     }
@@ -76,10 +74,9 @@ export class MusicModeUI {
 
     /**
      * @param visible {boolean}
-     * @param canvas {HTMLCanvasElement}
-     * @param keyboard {HTMLDivElement}
+     * @param keyboardCanvasWrapper {HTMLDivElement}
      */
-    setVisibility(visible, canvas, keyboard)
+    setVisibility(visible, keyboardCanvasWrapper)
     {
         if(visible === this.visible)
         {
@@ -95,14 +92,13 @@ export class MusicModeUI {
         {
             // PREPARATION
             // renderer and keyboard
-            canvas.classList.add("out_animation");
-            keyboard.classList.add("out_animation");
-            this.savedKeyboardHeight = keyboard.clientHeight;
+            keyboardCanvasWrapper.classList.add("out_animation");
+            this.savedCKWrapperHeight = keyboardCanvasWrapper.clientHeight;
 
             // music mode
-            // hacky: get position of the canvas and temporarily set to absolute (set to normal after finish)
-            const playerHeight = canvas.clientHeight + keyboard.clientHeight;
-            const playerTop = canvas.getBoundingClientRect().top;
+            // hacky: get position of the wrapper and temporarily set to absolute (set to normal after finish)
+            const playerHeight = keyboardCanvasWrapper.clientHeight;
+            const playerTop = keyboardCanvasWrapper.getBoundingClientRect().top;
             playerDiv.style.position = "absolute";
             playerDiv.style.top = `${playerTop}px`;
             playerDiv.style.height = `${playerHeight}px`;
@@ -116,8 +112,7 @@ export class MusicModeUI {
 
             // FINISH
             this.timeoutId = setTimeout(() => {
-                canvas.style.display = "none";
-                keyboard.style.display = "none";
+                keyboardCanvasWrapper.style.display = "none";
 
                 playerDiv.style.position = "";
                 playerDiv.style.top = "";
@@ -129,30 +124,20 @@ export class MusicModeUI {
         else
         {
             // PREPARATION
-            // renderer and keyboard
+            // wrapper
             // hacky: get position of the music mode and temporarily set to absolute (set to normal after finish)
-            const canvasHeight = playerDiv.clientHeight - this.savedKeyboardHeight;
-            const canvasTop = playerDiv.getBoundingClientRect().top;
-            canvas.style.display = "";
-            canvas.style.position = "absolute";
-            canvas.style.top = `${canvasTop}px`;
-            canvas.style.height = `${canvasHeight}px`;
-
-            const keyboardTop = canvasTop + canvasHeight;
-            const keyboardMinHeight = keyboard.style.minHeight;
-            keyboard.style.display = "";
-            keyboard.style.position = "absolute";
-            keyboard.style.top = `${keyboardTop}px`;
-            keyboard.style.height = `${this.savedKeyboardHeight}px`;
-            keyboard.style.minHeight = `${this.savedKeyboardHeight}px`;
+            const rootTop = playerDiv.getBoundingClientRect().top;
+            keyboardCanvasWrapper.style.display = "";
+            keyboardCanvasWrapper.style.position = "absolute";
+            keyboardCanvasWrapper.style.top = `${rootTop}px`;
+            keyboardCanvasWrapper.style.height = `${this.savedCKWrapperHeight}px`;
 
             // music mode
             playerDiv.classList.remove("player_info_show");
 
             // START
             setTimeout(() => {
-                canvas.classList.remove("out_animation");
-                keyboard.classList.remove("out_animation");
+                keyboardCanvasWrapper.classList.remove("out_animation");
                 document.body.style.overflow = "hidden";
             }, ANIMATION_REFLOW_TIME);
 
@@ -160,14 +145,9 @@ export class MusicModeUI {
             this.timeoutId = setTimeout(() => {
                 playerDiv.style.display = "none";
 
-                canvas.style.position = "";
-                canvas.style.top = "";
-                canvas.style.height = "";
-
-                keyboard.style.top = "";
-                keyboard.style.height = "";
-                keyboard.style.minHeight = keyboardMinHeight;
-                keyboard.style.position = "";
+                keyboardCanvasWrapper.style.position = "";
+                keyboardCanvasWrapper.style.top = "";
+                keyboardCanvasWrapper.style.height = "";
 
                 document.body.style.overflow = "";
             }, TRANSITION_TIME * 1000);

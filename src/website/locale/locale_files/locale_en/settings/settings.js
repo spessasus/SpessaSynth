@@ -24,6 +24,17 @@ export const settingsLocale = {
         selectLanguage: {
             title: "Language",
             description: "Change the program language"
+        },
+
+        layoutDirection: {
+            title: "Layout direction",
+            description: "The layout direction of the renderer and keyboard",
+            values: {
+                downwards: "Downwards",
+                upwards: "Upwards",
+                leftToRight: "Left to right",
+                rightToLeft: "Right to left",
+            }
         }
     }
 };

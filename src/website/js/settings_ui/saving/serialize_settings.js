@@ -1,3 +1,5 @@
+import { USE_MIDI_RANGE } from '../handlers/keyboard_handler.js'
+
 /**
  * Serializes settings into a nice object
  * @private
@@ -23,7 +25,8 @@ export function _serializeSettings()
         keyboard: {
             selectedChannel: this.midiKeyboard.channel,
             keyRange: this.midiKeyboard.keyRange,
-            mode: this.midiKeyboard.mode
+            mode: this.midiKeyboard.mode,
+            autoRange: this.htmlControls.keyboard.sizeSelector.value === USE_MIDI_RANGE
         },
 
         midi: {
@@ -33,7 +36,8 @@ export function _serializeSettings()
 
         interface: {
             mode: this.mode,
-            language: this.htmlControls.interface.languageSelector.value
+            language: this.htmlControls.interface.languageSelector.value,
+            layout: this.htmlControls.interface.layoutSelector.value,
         }
     }
 }

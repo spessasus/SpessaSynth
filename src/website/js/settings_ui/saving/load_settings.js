@@ -1,5 +1,6 @@
 import { SpessaSynthInfo } from '../../../../spessasynth_lib/utils/loggin.js'
 import { getSpan } from '../sliders.js'
+import { USE_MIDI_RANGE } from '../handlers/keyboard_handler.js'
 
 /**
  * @private
@@ -85,8 +86,17 @@ export async function _loadSettings()
     // keyboard size
     keyboard.setKeyRange(keyboardValues.keyRange, false);
     // find the correct option for the size
-    keyboardControls.sizeSelector.value = Object.keys(this.keyboardSizes)
-        .find(size => this.keyboardSizes[size].min === keyboardValues.keyRange.min && this.keyboardSizes[size].max === keyboardValues.keyRange.max);
+    if(keyboardValues.autoRange)
+    {
+        keyboardControls.sizeSelector.value = USE_MIDI_RANGE;
+        this.autoKeyRange = true;
+    }
+    else
+    {
+        this.autoKeyRange = false;
+        keyboardControls.sizeSelector.value = Object.keys(this.keyboardSizes)
+            .find(size => this.keyboardSizes[size].min === keyboardValues.keyRange.min && this.keyboardSizes[size].max === keyboardValues.keyRange.max);
+    }
     // keyboard theme
     if(keyboardValues.mode === "dark")
     {
@@ -111,4 +121,7 @@ export async function _loadSettings()
     {
         this.htmlControls.interface.themeSelector.checked = true;
     }
+
+    this.htmlControls.interface.layoutSelector.value = savedSettings.interface.layout || "downwards";
+    this._changeLayout(savedSettings.interface.layout || "downwards");
 }

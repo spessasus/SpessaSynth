@@ -14,6 +14,7 @@ export const keyboardSettingsLocale = {
         full: "128キー（全体）",
         piano: "88キー（ピアノ）",
         fiveOctaves: "5オクターブ",
+        useSongKeyRange: "曲のキー範囲を使用"
     },
 
     toggleTheme: {

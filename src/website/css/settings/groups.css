@@ -18,6 +18,7 @@
     box-shadow: 0 0 5px var(--top-buttons-color-end);
 }
 
-.settings_group p{
+.settings_group label, .settings_group p{
     margin-top: 1em;
+    display: block;
 }

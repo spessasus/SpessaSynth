@@ -42,7 +42,13 @@ export class MidiData
          */
         this.lyrics = midi.lyrics;
 
-        this.firstNoteOn = midi.firstNoteOn
+        this.firstNoteOn = midi.firstNoteOn;
+
+        /**
+         * The MIDI's key range
+         * @type {{min: number, max: number}}
+         */
+        this.keyRange = midi.keyRange;
 
         /**
          * The last voice (note on, off, cc change etc.) event tick
@@ -111,4 +117,5 @@ export const DUMMY_MIDI_DATA = {
     rawMidiName: new Uint8Array([76, 111, 97, 100, 105, 110, 103, 46, 46, 46]), // "Loading..."
     usedChannelsOnTrack: [],
     timeDivision: 0,
+    keyRange: {min: 0, max: 127}
 };

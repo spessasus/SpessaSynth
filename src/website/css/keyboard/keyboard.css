@@ -2,24 +2,27 @@
 #keyboard {
     -webkit-user-select: none;
     user-select: none;
-
+    transition: var(--music-mode-transition) transform; /*for the dark mode transition*/
     display: flex;
     flex-wrap: nowrap;
     align-items: stretch;
-    --current-min-height: 7vw;
-    min-height: var(--current-min-height);
+    --current-min-height: 7;
+    min-height: calc(var(--current-min-height) * 1vw);
     background: black;
     width: 100%;
-    transition: var(--music-mode-transition) transform;
     touch-action: none;
     transform-origin: bottom center;
     --key-border-radius: 0.4vmin;
 }
 
-#keyboard.out_animation{
-    transform: translateX(-100%);
-}
-
 #keyboard.mode_transform{
     transform: translateY(250%);
+}
+
+#keyboard.sideways{
+    min-height: unset;
+    height: 100%;
+    width: unset;
+    min-width: calc(var(--current-min-height) * 1vh);
+    flex-direction: column;
 }

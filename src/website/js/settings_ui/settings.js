@@ -3,7 +3,7 @@ import { getDownArrowSvg, getGearSvg } from '../icons.js'
 import { _loadSettings } from './saving/load_settings.js'
 import { _saveSettings } from './saving/save_settings.js'
 import { _serializeSettings } from './saving/serialize_settings.js'
-import { _createInterfaceSettingsHandler } from './handlers/interface_handler.js'
+import { _changeLayout, _createInterfaceSettingsHandler } from './handlers/interface_handler.js'
 import { _toggleDarkMode } from './handlers/toggle_dark_mode.js'
 import { _createRendererHandler } from './handlers/renderer_handler.js'
 import {
@@ -47,6 +47,7 @@ class SpessaSynthSettings
                 localeManager)
     {
         this.mode = "dark";
+        this.autoKeyRange = false;
 
         this.renderer = renderer;
         this.midiKeyboard = midiKeyboard;
@@ -170,9 +171,15 @@ class SpessaSynthSettings
         }
     }
 
+    /**
+     * @type {function}
+     * @param {Sequencer} seq
+     */
+    addSequencer;
+
     toggleMusicPlayerMode()
     {
-        this.musicMode.setVisibility(!this.musicMode.visible, this.renderer.canvas, this.midiKeyboard.keyboard);
+        this.musicMode.setVisibility(!this.musicMode.visible, document.getElementById("keyboard_canvas_wrapper"));
         this.renderer.renderBool = !this.musicMode.visible;
     }
 
@@ -279,13 +286,15 @@ class SpessaSynthSettings
 
             interface: {
                 themeSelector: document.getElementById("toggle_mode_button"),
-                languageSelector: document.getElementById("language_selector")
+                languageSelector: document.getElementById("language_selector"),
+                layoutSelector: document.getElementById("layout_selector")
             }
         }
     }
 }
 SpessaSynthSettings.prototype._toggleDarkMode = _toggleDarkMode;
 SpessaSynthSettings.prototype._createInterfaceSettingsHandler = _createInterfaceSettingsHandler;
+SpessaSynthSettings.prototype._changeLayout = _changeLayout;
 SpessaSynthSettings.prototype._createRendererHandler = _createRendererHandler;
 
 SpessaSynthSettings.prototype._createMidiSettingsHandler = _createMidiSettingsHandler;
@@ -297,4 +306,4 @@ SpessaSynthSettings.prototype._loadSettings = _loadSettings;
 SpessaSynthSettings.prototype._serializeSettings = _serializeSettings;
 SpessaSynthSettings.prototype._saveSettings = _saveSettings;
 
-export {SpessaSynthSettings}
+export { SpessaSynthSettings }

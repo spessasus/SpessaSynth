@@ -13,7 +13,11 @@ export function _handlePointers()
         this.synth.noteOff(this.channel, note);
     }
 
-    const userNoteOn = (note, clientY) => {
+    /**
+     * @param note {number}
+     * @param touch {Touch|MouseEvent}
+     */
+    const userNoteOn = (note, touch) => {
         // user note on
         let velocity;
         if (isMobile)
@@ -26,10 +30,19 @@ export function _handlePointers()
             // determine velocity. lower = more velocity
             const keyElement = this.keys[0]; // all keys have the same top
             const rect = keyElement.getBoundingClientRect();
-             // Handle both mouse and touch events
-            const relativeMouseY = clientY - rect.top;
-            const keyHeight = rect.height;
-            velocity = Math.floor(relativeMouseY / keyHeight * 127);
+            if(this.keyboard.classList.contains("sideways"))
+            {
+                const relativeMouseX = touch.clientX - rect.left;
+                const keyWidth = rect.width;
+                velocity = Math.floor((keyWidth - relativeMouseX) / keyWidth * 127);
+            }
+            else
+            {
+                // Handle both mouse and touch events
+                const relativeMouseY = touch.clientY - rect.top;
+                const keyHeight = rect.height;
+                velocity = Math.floor(relativeMouseY / keyHeight * 127);
+            }
         }
         this.synth.noteOn(this.channel, note, velocity, this.enableDebugging);
     }
@@ -57,7 +70,7 @@ export function _handlePointers()
                 return;
             }
             this.pressedKeys.add(midiNote);
-            userNoteOn(midiNote, touch.clientY);
+            userNoteOn(midiNote, touch);
         });
         this.pressedKeys.forEach(key => {
             if(!currentlyTouchedKeys.has(key))

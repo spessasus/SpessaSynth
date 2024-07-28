@@ -1,18 +1,18 @@
-#note_canvas
-{
+#note_canvas {
     width: 100%;
     filter: saturate(1.23);
     flex: 1;
     background-size: cover;
     min-height: 0;
     z-index: 1;
-    transition: var(--music-mode-transition) transform;
+}
+
+#note_canvas.sideways{
+    height: 100% !important;
+    width: unset !important;
+    min-height: unset !important;
 }
 
 #note_canvas.light_mode{
     background: linear-gradient(45deg, var(--top-buttons-color-start), var(--top-buttons-color-end));
-}
-
-#note_canvas.out_animation{
-    transform: translateX(-100%);
 }
