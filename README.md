@@ -70,8 +70,9 @@ This repository contains both the library and a complete musical web application
 #### Read and write [RMID files with embedded SF2 soundfonts](../../wiki/About-RMIDI)
   - Compression and trimming support: Reduce a MIDI file with a 1GB soundfont to as small as 5MB!
   - Easy saving: As simple as saving a MIDI file
-#### Read and write .sf2 files (or compress them to .sf3!)
+#### Read and write .sf2 files
   - **Smart trimming:** Trim the SoundFont to only include samples used in the MIDI (down to key and velocity!)
+  - **sf3 conversion:** Compress .sf2 files!
 #### Read and write .sf3 files
   - Same features as .sf2 but with now with **Ogg Vorbis compression!**
   - **Variable compression quality:** You choose between file size and quality!
