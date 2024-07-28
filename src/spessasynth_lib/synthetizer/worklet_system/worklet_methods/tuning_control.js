@@ -13,7 +13,8 @@ import { SpessaSynthInfo } from '../../../utils/loggin.js'
 export function transposeAllChannels(semitones, force = false)
 {
     this.transposition = 0;
-    for (let i = 0; i < this.workletProcessorChannels.length; i++) {
+    for (let i = 0; i < this.workletProcessorChannels.length; i++)
+    {
         this.transposeChannel(i, semitones, force);
     }
     this.transposition = semitones;
@@ -33,8 +34,8 @@ export function transposeChannel(channel, semitones, force=false)
     {
         semitones += this.transposition;
     }
-    const keyShift = Math.floor(semitones);
-    const currentTranspose = channelObject.channelTranspose + channelObject.customControllers[customControllers.channelTranspose] / 100;
+    const keyShift = Math.trunc(semitones);
+    const currentTranspose = channelObject.channelTransposeKeyShift + channelObject.customControllers[customControllers.channelTransposeFine] / 100;
     if(
         (channelObject.drumChannel && !force)
         || semitones === currentTranspose
@@ -42,11 +43,13 @@ export function transposeChannel(channel, semitones, force=false)
     {
         return;
     }
-
-    this.stopAll(channel, false);
+    if(keyShift !== channelObject.channelTransposeKeyShift)
+    {
+        this.stopAll(channel, false);
+    }
     // apply transpose
-    channelObject.channelTranspose = keyShift;
-    channelObject.customControllers[customControllers.channelTranspose] = (semitones - keyShift) * 100;
+    channelObject.channelTransposeKeyShift = keyShift;
+    channelObject.customControllers[customControllers.channelTransposeFine] = (semitones - keyShift) * 100;
 }
 
 /**
@@ -54,13 +57,34 @@ export function transposeChannel(channel, semitones, force=false)
  * @this {SpessaSynthProcessor}
  * @param channel {number}
  * @param cents {number}
+ * @param log {boolean}
  */
-export function setChannelTuning(channel, cents)
+export function setChannelTuning(channel, cents, log = true)
 {
     const channelObject = this.workletProcessorChannels[channel];
     cents = Math.round(cents);
     channelObject.customControllers[customControllers.channelTuning] = cents;
-    SpessaSynthInfo(`%cChannel ${channel} tuning. Cents: %c${cents}`,
+    if(!log)
+    {
+        return;
+    }
+    SpessaSynthInfo(`%cChannel ${channel} fine tuning. Cents: %c${cents}`,
+        consoleColors.info,
+        consoleColors.value);
+}
+
+/**
+ * Sets the channel's tuning in semitones
+ * @param channel {number}
+ * @param semitones {number}
+ * @this {SpessaSynthProcessor}
+ */
+export function setChannelTuningSemitones(channel, semitones)
+{
+    const channelObject = this.workletProcessorChannels[channel];
+    semitones = Math.round(semitones);
+    channelObject.customControllers[customControllers.channelTuningSemitones] = semitones;
+    SpessaSynthInfo(`%cChannel ${channel} coarse tuning. Semitones: %c${semitones}`,
         consoleColors.info,
         consoleColors.value);
 }

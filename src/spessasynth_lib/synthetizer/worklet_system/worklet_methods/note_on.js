@@ -30,7 +30,7 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
         return;
     }
 
-    midiNote += this.workletProcessorChannels[channel].channelTranspose;
+    midiNote += this.workletProcessorChannels[channel].channelTransposeKeyShift;
 
     if(midiNote > 127 || midiNote < 0)
     {
@@ -83,7 +83,7 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
     {
         this.sendChannelProperties();
         this.callEvent("noteon", {
-            midiNote: midiNote - this.workletProcessorChannels[channel].channelTranspose,
+            midiNote: midiNote - this.workletProcessorChannels[channel].channelTransposeKeyShift,
             channel: channel,
             velocity: velocity,
         });

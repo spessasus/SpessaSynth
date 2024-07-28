@@ -71,7 +71,7 @@ export function setDrums(channel, isDrum)
     if(isDrum)
     {
         // clear transpose
-        channelObject.channelTranspose = 0;
+        channelObject.channelTransposeKeyShift = 0;
         channelObject.drumChannel = true;
         this.setPreset(channel, this.soundfont.getPreset(128, channelObject.preset.program));
     }

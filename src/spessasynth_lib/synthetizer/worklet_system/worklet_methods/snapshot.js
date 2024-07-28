@@ -18,7 +18,7 @@
  * @property {number} channelVibrato.delay - vibrato delay from note on in seconds
  * @property {number} channelVibrato.rate - vibrato rate in Hz
  *
- * @property {number} channelTranspose - key shift for the channel
+ * @property {number} channelTransposeKeyShift - key shift for the channel
  * @property {boolean} isMuted - indicates whether the channel is muted
  * @property {boolean} drumChannel - indicates whether the channel is a drum channel
  */
@@ -59,7 +59,7 @@ export function sendSynthesizerSnapshot()
             channelVibrato: channel.channelVibrato,
             lockVibrato: channel.lockVibrato,
 
-            channelTranspose: channel.channelTranspose,
+            channelTransposeKeyShift: channel.channelTransposeKeyShift,
             isMuted: channel.isMuted,
             drumChannel: channel.drumChannel
         }
@@ -117,7 +117,7 @@ export function applySynthesizerSnapshot(snapshot)
         // restore vibrato and transpose
         channelObject.channelVibrato = channelSnapshot.channelVibrato;
         channelObject.lockVibrato = channelSnapshot.lockVibrato;
-        channelObject.channelTranspose = channelSnapshot.channelTranspose;
+        channelObject.channelTransposeKeyShift = channelSnapshot.channelTranspose;
 
         // restore preset and lock
         channelObject.lockPreset = false;

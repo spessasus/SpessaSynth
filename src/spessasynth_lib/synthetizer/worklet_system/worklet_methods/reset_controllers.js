@@ -141,9 +141,9 @@ export function resetControllers(channel)
 
     // reset custom controllers
     // special case: transpose does not get affected
-    const transpose = channelObject.customControllers[customControllers.channelTranspose];
+    const transpose = channelObject.customControllers[customControllers.channelTransposeFine];
     channelObject.customControllers.set(customResetArray);
-    channelObject.customControllers[customControllers.channelTranspose] = transpose;
+    channelObject.customControllers[customControllers.channelTransposeFine] = transpose;
 
     this.resetParameters(channel);
 

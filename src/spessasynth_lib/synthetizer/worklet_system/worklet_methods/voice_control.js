@@ -59,9 +59,10 @@ export function renderVoice(
     // calculate tuning
     let cents = voice.modulatedGenerators[generatorTypes.fineTune]
         + channel.customControllers[customControllers.channelTuning]
-        + channel.customControllers[customControllers.channelTranspose]
+        + channel.customControllers[customControllers.channelTransposeFine]
         + channel.customControllers[customControllers.masterTuning];
-    let semitones = voice.modulatedGenerators[generatorTypes.coarseTune];
+    let semitones = voice.modulatedGenerators[generatorTypes.coarseTune]
+        + channel.customControllers[customControllers.channelTuningSemitones];
 
     // calculate tuning by key
     cents += (voice.targetKey - voice.sample.rootKey) * voice.modulatedGenerators[generatorTypes.scaleTuning];

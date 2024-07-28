@@ -3,6 +3,7 @@ import { IndexedByteArray } from '../utils/indexed_array.js'
 import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo, SpessaSynthWarn } from '../utils/loggin.js'
 import { consoleColors } from '../utils/other.js'
 import { DEFAULT_PERCUSSION } from '../synthetizer/synthetizer.js'
+import { customControllers } from '../synthetizer/worklet_system/worklet_utilities/worklet_processor_channel.js'
 
 /**
  * @param ticks {number}
@@ -90,7 +91,7 @@ function getDrumChange(channel, ticks)
  * @param desiredChannelsToTranspose {{
  *     channel: number,
  *     keyShift: number
- * }[]} the channels to transpose. Note that the channel may be more than 16, function will adjust midi ports automatically
+ * }[]} the channels to transpose. if keyShift is float, rpn fine tuning will be applied as well. Note that the channel may be more than 16, function will adjust midi ports automatically
  */
 export function modifyMIDI(
     midi,
@@ -417,35 +418,72 @@ export function modifyMIDI(
     {
         const midiChannel = transpose.channel % 16;
         const port = Math.floor(transpose.channel / 16);
-        const keyShift = transpose.keyShift;
-        SpessaSynthInfo(`%cTransposing channel %c${transpose.channel}%c by %c${keyShift}`,
+        const keyShift = Math.trunc(transpose.keyShift);
+        const fineTune = transpose.keyShift - keyShift;
+        SpessaSynthInfo(`%cTransposing channel %c${transpose.channel}%c by %c${transpose.keyShift}%c semitones`,
             consoleColors.info,
             consoleColors.recognized,
             consoleColors.info,
-            consoleColors.value);
-        midi.tracks.forEach((track, trackNum)=> {
-            if(
-                midi.midiPorts[trackNum] !== port
-                || !midi.usedChannelsOnTrack[trackNum].has(midiChannel)
-            )
-            {
-                return;
-            }
-            const onStatus = messageTypes.noteOn | midiChannel;
-            const offStatus = messageTypes.noteOff | midiChannel;
-            const polyStatus = messageTypes.polyPressure | midiChannel;
-            track.forEach(event => {
-                if(
-                    (event.messageStatusByte !== onStatus
-                    && event.messageStatusByte !== offStatus
-                    && event.messageStatusByte !== polyStatus)
-                )
-                {
+            consoleColors.value,
+            consoleColors.info);
+        if(keyShift !== 0)
+        {
+            midi.tracks.forEach((track, trackNum) => {
+                if (
+                    midi.midiPorts[trackNum] !== port ||
+                    !midi.usedChannelsOnTrack[trackNum].has(midiChannel)
+                ) {
                     return;
                 }
-                event.messageData[0] = Math.max(0, Math.min(127, event.messageData[0] + keyShift));
-            })
-        });
+                const onStatus = messageTypes.noteOn | midiChannel;
+                const offStatus = messageTypes.noteOff | midiChannel;
+                const polyStatus = messageTypes.polyPressure | midiChannel;
+                track.forEach(event => {
+                    if (
+                        event.messageStatusByte !== onStatus  &&
+                        event.messageStatusByte !== offStatus &&
+                        event.messageStatusByte !== polyStatus
+                    ) {
+                        return;
+                    }
+                    event.messageData[0] = Math.max(0, Math.min(127, event.messageData[0] + keyShift));
+                })
+            });
+        }
+
+        if(fineTune !== 0)
+        {
+            // find the first track that uses this channel
+            const track = midi.tracks.find((t, tNum) => midi.usedChannelsOnTrack[tNum].has(transpose.channel));
+            if(track === undefined)
+            {
+                SpessaSynthWarn(`Channel ${transpose.channel} unused but transpose requested???`);
+                continue;
+            }
+            // find first noteon for this channel
+            const noteOn = messageTypes.noteOn | (transpose.channel % 16);
+            const noteIndex = track.findIndex(n => n.messageStatusByte === noteOn);
+            if(noteIndex === -1)
+            {
+                SpessaSynthWarn(`No notes on channel ${transpose.channel} but transpose requested???`);
+                continue;
+            }
+            const ticks = track[noteIndex].ticks;
+            // add rpn
+            // 64 is the center, 96 = 50 cents up
+            const centsCoarse = (fineTune * 64) + 64;
+            const ccChange = messageTypes.controllerChange | (transpose.channel % 16);
+            const rpnCoarse = new MidiMessage(ticks, ccChange, new IndexedByteArray([midiControllers.RPNMsb, 0]));
+            const rpnFine = new MidiMessage(ticks, ccChange, new IndexedByteArray([midiControllers.RPNLsb, 1]));
+            const deCoarse = new MidiMessage(ticks, ccChange, new IndexedByteArray([midiControllers.dataEntryMsb, centsCoarse]));
+            const deFine = new MidiMessage(ticks, ccChange, new IndexedByteArray([midiControllers.lsbForControl6DataEntry, 0]));
+            // add in reverse
+            track.splice(noteIndex, 0, deFine);
+            track.splice(noteIndex, 0, deCoarse);
+            track.splice(noteIndex, 0, rpnFine);
+            track.splice(noteIndex, 0, rpnCoarse);
+
+        }
     }
     SpessaSynthGroupEnd();
 }
@@ -492,11 +530,12 @@ export function applySnapshotToMIDI(midi, snapshot)
             channelsToClear.push(channelNumber);
             return;
         }
-        if(channel.channelTranspose !== 0)
+        const transposeFloat = channel.channelTransposeKeyShift + channel.customControllers[customControllers.channelTransposeFine] / 100;
+        if(transposeFloat !== 0)
         {
             channelsToTranspose.push({
                 channel: channelNumber,
-                keyShift: channel.channelTranspose,
+                keyShift: transposeFloat,
             });
         }
         if(channel.lockPreset)
@@ -521,6 +560,6 @@ export function applySnapshotToMIDI(midi, snapshot)
                 controllerValue: targetValue
             });
         });
-    })
+    });
     modifyMIDI(midi, programChanges, controllerChanges, channelsToClear, channelsToTranspose);
 }

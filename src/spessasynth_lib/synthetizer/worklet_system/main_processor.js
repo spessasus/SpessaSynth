@@ -16,7 +16,7 @@ import { callEvent, post, sendChannelProperties } from './message_protocol/messa
 import {
     channelPressure,
     pitchWheel, polyPressure,
-    setChannelTuning,
+    setChannelTuning, setChannelTuningSemitones,
     setMasterTuning, setModulationDepth,
     transposeAllChannels,
     transposeChannel,
@@ -340,6 +340,7 @@ SpessaSynthProcessor.prototype.setMIDIVolume = setMIDIVolume;
 SpessaSynthProcessor.prototype.transposeAllChannels = transposeAllChannels;
 SpessaSynthProcessor.prototype.transposeChannel = transposeChannel;
 SpessaSynthProcessor.prototype.setChannelTuning = setChannelTuning;
+SpessaSynthProcessor.prototype.setChannelTuningSemitones = setChannelTuningSemitones;
 SpessaSynthProcessor.prototype.setMasterTuning = setMasterTuning;
 SpessaSynthProcessor.prototype.setModulationDepth = setModulationDepth;
 SpessaSynthProcessor.prototype.pitchWheel = pitchWheel;

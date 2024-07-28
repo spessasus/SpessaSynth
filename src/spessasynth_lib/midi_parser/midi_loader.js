@@ -124,7 +124,7 @@ class MIDI{
         this.midiPorts = [];
 
         /**
-         * All channels that each track uses
+         * All channels that each track uses. Note: these channels range from 0 to 15, excluding the port offsets!
          * @type {Set<number>[]}
          */
         this.usedChannelsOnTrack = [];

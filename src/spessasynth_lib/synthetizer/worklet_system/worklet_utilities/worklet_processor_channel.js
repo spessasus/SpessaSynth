@@ -6,7 +6,7 @@ import { modulatorSources } from '../../../soundfont/read/modulators.js'
  * @property {boolean[]} lockedControllers - array indicating if a controller is locked
  * @property {Float32Array} customControllers - array of custom (not sf2) control values such as RPN pitch tuning, transpose, modulation depth, etc.
  *
- * @property {number} channelTranspose - key shift of the channel
+ * @property {number} channelTransposeKeyShift - key shift of the channel
  * @property {boolean} holdPedal - indicates whether the hold pedal is active
  * @property {boolean} drumChannel - indicates whether the channel is a drum channel
  *
@@ -54,7 +54,7 @@ export function createWorkletChannel(sendEvent = false)
         cachedVoices: [],
         preset: this.defaultPreset,
 
-        channelTranspose: 0,
+        channelTransposeKeyShift: 0,
         channelVibrato: {delay: 0, depth: 0, rate: 0},
         lockVibrato: false,
         holdPedal: false,
@@ -104,10 +104,11 @@ export const dataEntryStates = {
 
 
 export const customControllers = {
-    channelTuning: 0, // cents, RPN for tuning
-    channelTranspose: 1, // cents, only the decimal tuning, (e.g. transpose is 4.5, then shift by 4 keys + tune by 50 cents)
+    channelTuning: 0, // cents, RPN for fine tuning
+    channelTransposeFine: 1, // cents, only the decimal tuning, (e.g. transpose is 4.5, then shift by 4 keys + tune by 50 cents)
     modulationMultiplier: 2, // cents, set by moduldation depth RPN
     masterTuning: 3, // cents, set by system exclusive
+    channelTuningSemitones: 4, // semitones, for RPN coarse tuning
 }
 export const CUSTOM_CONTROLLER_TABLE_SIZE = Object.keys(customControllers).length;
 export const customResetArray = new Float32Array(CUSTOM_CONTROLLER_TABLE_SIZE);

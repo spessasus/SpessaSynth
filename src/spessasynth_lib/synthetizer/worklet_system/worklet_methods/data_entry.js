@@ -193,14 +193,14 @@ export function dataEntryCoarse(channel, dataValue)
                 // coarse tuning
                 case 0x0002:
                     // semitones
-                    this.setChannelTuning(channel, (dataValue - 64) * 100);
+                    this.setChannelTuningSemitones(channel, dataValue - 64);
                     break;
 
                 // fine tuning
                 case 0x0001:
                     // note: this will not work properly unless the lsb is sent!
                     // here we store the raw value to then adjust in fine
-                    this.setChannelTuning(channel, (dataValue - 64));
+                    this.setChannelTuning(channel, (dataValue - 64), false);
                     break;
 
                 // modulation depth
@@ -257,7 +257,7 @@ export function dataEntryFine(channel, dataValue)
                     // grab the data and shift
                     const coarse = channelObject.customControllers[customControllers.channelTuning];
                     const finalTuning = (coarse << 7) | dataValue;
-                    this.setChannelTuning(channel, finalTuning * 0.0122); // multiply by 8192 / 100 (cent increment)
+                    this.setChannelTuning(channel, finalTuning * 0.01220703125); // multiply by 8192 / 100 (cent increment)
                     break;
 
                 // modulation depth
