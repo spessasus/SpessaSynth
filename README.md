@@ -2,7 +2,7 @@
 <img src="src/website/spessasynth_logo_rounded.png" width='300' alt='SpessaSynth logo'>
 </p>
 
-**SpessaSynth** is a SoundFont2-based real-time synthesizer and MIDI player written in JavaScript using the Web Audio API. It’s a powerful library that allows you to read, write, or play MIDI files and read/write SF2/SF3 files.
+**SpessaSynth** is a SoundFont2-based real-time synthesizer and MIDI player written in vanilla JavaScript. It’s a powerful library that allows you to read, write, or play MIDI files and read/write SF2/SF3 files with ease.
 
 ![SpessaSynth Promotional Image](https://github.com/spessasus/SpessaSynth/assets/95608008/e2e6c4c6-0762-4c11-8887-a2318d431854)
 
@@ -28,26 +28,26 @@ This repository contains both the library and a complete musical web application
 <h2 align='center'>Features</h2>
 
 ### Easy Integration
-- Modular design for easy integration into other projects
-- [Detailed documentation](https://github.com/spessasus/SpessaSynth/wiki/Home) with examples
-- Simple setup: just [two lines of code!](https://github.com/spessasus/SpessaSynth/wiki/Usage-As-Library#minimal-setup)
-- No dependencies—batteries included!
+- **Modular design:** Easy integration into other projects (load what you need)
+- **[Detailed documentation:](https://github.com/spessasus/SpessaSynth/wiki/Home)** _With examples!_
+- **Easy to Use:** basic setup is just [two lines of code!](https://github.com/spessasus/SpessaSynth/wiki/Usage-As-Library#minimal-setup)
+- **No dependencies:** _batteries included!_
 
 ### Powerful SoundFont Synthesizer
 - Suitable for both **real-time** and **offline** synthesis
 - **SoundFont2 Generator Support**
 - **SoundFont2 Modulator Support:** A feature that many SF2 synths lack!
-- **SoundFont3 Support:** With a custom fork of an stbvorbis for AudioWorklet compability!
+- **SoundFont3 Support:** Play compressed SoundFonts (_Made with a custom fork of an stbvorbis for AudioWorklet compability!_)
 - **Reverb and chorus support:** [customizable!](https://github.com/spessasus/SpessaSynth/wiki/Synthetizer-Class#effects-configuration-object)
-- Render audio files using [OfflineAudioContext](https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext)
+- **Export audio files** using [OfflineAudioContext](https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext)
 - **[Custom modulators for additional controllers](https://github.com/spessasus/SpessaSynth/wiki/Modulator-Class#default-modulators):** Why not?
 - **Written using AudioWorklets:** runs in a separate thread for maximum performance, works perfectly in Firefox and Chrome!
 - **Can load very large SoundFonts:** up to 4GB! _Note: Only Firefox handles this well; Chromium has a memory limit_
 - **Unlimited channel count:** Your CPU is the limit!
 - **MIDI Controller Support:** Default supported controllers [here](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-controllers)
 - [RPN and NRPN support](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-registered-parameters)
-- Supports some [Roland GS and Yamaha XG system exclusives](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-system-exclusives)
-- **High-performance mode:** Play Rush E! _note: may kill your browser. But rendering to file works fine!_
+- Supports some [**Roland GS** and **Yamaha XG** system exclusives](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-system-exclusives)
+- **High-performance mode:** Play Rush E! _note: may kill your browser. But exporting to file works fine!_
 - **Written in pure JavaScript using the WebAudio API:** Supported by all modern browsers!
 
 ### Built-in Powerful and Fast Sequencer
