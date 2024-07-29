@@ -1,5 +1,5 @@
 import { midiControllers } from '../../../../spessasynth_lib/midi_parser/midi_message.js'
-import { getDrumsSvg, getNoteSvg } from '../../icons.js'
+import { getDrumsSvg, getNoteSvg } from '../../utils/icons.js'
 
 /**
  * @this {SynthetizerUI}

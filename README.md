@@ -8,7 +8,7 @@
 
 <h3 align='center'>Exporting SoundFonts and RMIDIs now available! With compression too!</h3>
 <p align='center'>
-   <img src="https://github.com/user-attachments/assets/0aba6293-0458-401f-91fc-71f7a4a7640c" width="50%" alt="Exporting SoundFonts and RMIDIs"></img>
+   <img src="https://github.com/user-attachments/assets/0aba6293-0458-401f-91fc-71f7a4a7640c" width="50%" alt="Exporting SoundFonts and RMIDIs">
 </p>
 
 <h1 align="center"><a href="https://spessasus.github.io/SpessaSynth/">Live Demo (no download needed!)</a></h1>
@@ -23,14 +23,14 @@ This repository contains both the library and a complete musical web application
 <h1 align='center'>spessasynth_lib</h1>
 <p align='center'>A flexible, powerful, and feature-packed SoundFont synthesizer library for the WebAudio API. Comes with the ability to edit MIDIs and SoundFonts!</p>
 
-<h3 align='center'><a href="../../wiki/Home">Documentation</a></h3>
+<h3 align='center'><a href="https://github.com/spessasus/SpessaSynth/wiki/Home">Documentation</a></h3>
 
 <h2 align='center'>Features</h2>
 
 ### Easy Integration
 - Modular design for easy integration into other projects
-- [Detailed documentation](../../wiki/Home) with examples
-- Simple setup: just [two lines of code!](../../wiki/Usage-As-Library#minimal-setup)
+- [Detailed documentation](https://github.com/spessasus/SpessaSynth/wiki/Home) with examples
+- Simple setup: just [two lines of code!](https://github.com/spessasus/SpessaSynth/wiki/Usage-As-Library#minimal-setup)
 - No dependencies—batteries included!
 
 ### Powerful SoundFont Synthesizer
@@ -38,21 +38,21 @@ This repository contains both the library and a complete musical web application
 - **SoundFont2 Generator Support**
 - **SoundFont2 Modulator Support:** A feature that many SF2 synths lack!
 - **SoundFont3 Support:** With a custom fork of an stbvorbis for AudioWorklet compability!
-- **Reverb and chorus support:** [customizable!](../../wiki/Synthetizer-Class#effects-configuration-object)
+- **Reverb and chorus support:** [customizable!](https://github.com/spessasus/SpessaSynth/wiki/Synthetizer-Class#effects-configuration-object)
 - Render audio files using [OfflineAudioContext](https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext)
-- **[Custom modulators for additional controllers](../../wiki/Modulator-Class#default-modulators):** Why not?
+- **[Custom modulators for additional controllers](https://github.com/spessasus/SpessaSynth/wiki/Modulator-Class#default-modulators):** Why not?
 - **Written using AudioWorklets:** runs in a separate thread for maximum performance, works perfectly in Firefox and Chrome!
 - **Can load very large SoundFonts:** up to 4GB! _Note: Only Firefox handles this well; Chromium has a memory limit_
 - **Unlimited channel count:** Your CPU is the limit!
-- **MIDI Controller Support:** Default supported controllers [here](../../wiki/MIDI-Implementation#supported-controllers)
-- [RPN and NRPN support](../../wiki/MIDI-Implementation#supported-registered-parameters)
-- Supports some [Roland GS and Yamaha XG system exclusives](../../wiki/MIDI-Implementation#supported-system-exclusives)
+- **MIDI Controller Support:** Default supported controllers [here](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-controllers)
+- [RPN and NRPN support](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-registered-parameters)
+- Supports some [Roland GS and Yamaha XG system exclusives](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-system-exclusives)
 - **High-performance mode:** Play Rush E! _note: may kill your browser. But rendering to file works fine!_
 - **Written in pure JavaScript using the WebAudio API:** Supported by all modern browsers!
 
 ### Built-in Powerful and Fast Sequencer
 - **Supports MIDI formats 0, 1, and 2:** _note: format 2 support is experimental as it's very, very rare_
-- **[Multi-Port MIDI](../../wiki/About-Multi-Port) support:** More than 16 channels!
+- **[Multi-Port MIDI](https://github.com/spessasus/SpessaSynth/wiki/About-Multi-Port) support:** More than 16 channels!
 - **Smart preloading:** Only preloads the samples used in the MIDI file for smooth playback (down to key and velocity!)
 - **Lyrics support:** Add karaoke to your program!
 - **Raw lyrics available:** Decode in any encoding (Kanji? No problem!)
@@ -63,11 +63,11 @@ This repository contains both the library and a complete musical web application
   - **Port detection during load time:** Manage ports and channels easily
   - **Used channels on track:** Quickly determine which channels are used
   - **Key range detection:** Detect the key range of the MIDI
-  - **Easy MIDI editing:** Use [helper functions](../../wiki/Writing-MIDI-Files#modifymidi) to modify the song to your needs!
+  - **Easy MIDI editing:** Use [helper functions](https://github.com/spessasus/SpessaSynth/wiki/Writing-MIDI-Files#modifymidi) to modify the song to your needs!
   - **Loop detection:** Automatically detects loops in MIDIs (e.g., from _Touhou Project_)
   - **First note detection:** Skip unnecessary silence at the start by jumping to the first note!
-  - **Easy saving:** Save with just [one function!](../../wiki/Writing-MIDI-Files#writemidifile)
-#### Read and write [RMID files with embedded SF2 soundfonts](../../wiki/About-RMIDI)
+  - **Easy saving:** Save with just [one function!](https://github.com/spessasus/SpessaSynth/wiki/Writing-MIDI-Files#writemidifile)
+#### Read and write [RMID files with embedded SF2 soundfonts](https://github.com/spessasus/SpessaSynth/wiki/About-RMIDI)
   - Compression and trimming support: Reduce a MIDI file with a 1GB soundfont to as small as 5MB!
   - Easy saving: As simple as saving a MIDI file
 #### Read and write .sf2 files
@@ -84,14 +84,14 @@ This repository contains both the library and a complete musical web application
 ### Installation
 1. Clone this repository.
 2. Copy `src/spessasynth_lib` to your project.
-3. [Use the library](../../wiki/Home)
+3. [Use the library](https://github.com/spessasus/SpessaSynth/wiki/Home)
 
 > [!TIP]
 > Looking for a Node.js version? Try [spessasynth_core](https://www.npmjs.com/package/spessasynth_core)!
 
 <h1 align='center'>Web App / Local Edition</h1>
 <p align='center'>The complete GUI for spessasynth_lib, allowing remixing, experimenting, and playing MIDIs in the coolest way possible.</p>
-<h3 align='center'><a href='../../wiki/How-To-Use-App'>Usage Guide</a></h3>
+<h3 align='center'><a href='https://github.com/spessasus/SpessaSynth/wiki/How-To-Use-App'>Usage Guide</a></h3>
 
 <h2 align='center'>Features</h2>
 
@@ -115,10 +115,10 @@ This repository contains both the library and a complete musical web application
 
 <h3 align='center'>Still not convinced? Check out these screenshots:</h3>
 <p align='center'>
-<img src="https://github.com/user-attachments/assets/b0c9a1f3-3278-4208-8d35-f63b0943ae39" width="45%" alt="Screenshot 1"></img> 
-<img src="https://github.com/user-attachments/assets/3bfd9de0-ed13-4667-b843-47c956454136" width="45%" alt="Screenshot 2"></img>
-<img src="https://github.com/user-attachments/assets/7499503e-9dec-4f7c-8c58-b4960f63bc39" width="45%" alt="Screenshot 3"></img>
-<img src="https://github.com/user-attachments/assets/688b4ecc-0ba5-4990-92a5-8b567e08d7d6" width="45%" alt="Screenshot 4"></img>
+<img src="https://github.com/user-attachments/assets/b0c9a1f3-3278-4208-8d35-f63b0943ae39" width="45%" alt="Screenshot 1"> 
+<img src="https://github.com/user-attachments/assets/3bfd9de0-ed13-4667-b843-47c956454136" width="45%" alt="Screenshot 2">
+<img src="https://github.com/user-attachments/assets/7499503e-9dec-4f7c-8c58-b4960f63bc39" width="45%" alt="Screenshot 3">
+<img src="https://github.com/user-attachments/assets/688b4ecc-0ba5-4990-92a5-8b567e08d7d6" width="45%" alt="Screenshot 4">
 </p>
 
 ### Installation

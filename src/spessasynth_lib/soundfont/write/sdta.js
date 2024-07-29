@@ -9,16 +9,17 @@ import { consoleColors } from '../../utils/other.js'
  * @param smplEndOffsets {number[]}
  * @param compress {boolean}
  * @param quality {number}
+ * @param vorbisFunc {EncodeVorbisFunction}
  * @returns {IndexedByteArray}
  */
-export function getSDTA(smplStartOffsets, smplEndOffsets, compress, quality)
+export function getSDTA(smplStartOffsets, smplEndOffsets, compress, quality, vorbisFunc)
 {
     // write smpl: write int16 data of each sample linearly
     // get size (calling getAudioData twice doesn't matter since it gets cached)
     const sampleDatas = this.samples.map((s, i) => {
         if(compress)
         {
-            s.compressSample(quality);
+            s.compressSample(quality, vorbisFunc);
         }
         const r=  s.getRawData();
         SpessaSynthInfo(`%cEncoded sample %c${i}. ${s.sampleName}%c of %c${this.samples.length}`,

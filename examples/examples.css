@@ -7,9 +7,19 @@
 button {
     background: #444;
     border: solid #555;
-    padding: 1rem;
+    padding: 0.5rem;
     border-radius: 1rem;
     cursor: pointer;
+    margin: 0.3rem;
+    display: inline-block;
+}
+
+button:hover{
+    filter: brightness(1.1);
+}
+
+button:active{
+    transform: scale(0.9);
 }
 
 canvas{

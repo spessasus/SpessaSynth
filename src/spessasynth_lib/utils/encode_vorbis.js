@@ -1,6 +1,7 @@
 import { libvorbis } from '../externals/libvorbis/OggVorbisEncoder.min.js'
 
 /**
+ * @typedef {function} EncodeVorbisFunction
  * @param channelAudioData {Float32Array[]}
  * @param sampleRate {number}
  * @param channels {number}

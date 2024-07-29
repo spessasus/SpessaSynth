@@ -23,6 +23,7 @@ import {
  * @typedef {Object} SoundFont2WriteOptions
  * @property {boolean} compress - if the soundfont should be compressed with the ogg vorbis codec
  * @property {number} compressionQuality - the vorbis compression quality, from -0.1 to 1
+ * @property {EncodeVorbisFunction|undefined} compressionFunction - the encode vorbis function. Can be undefined if not compressing.
  */
 
 /**
@@ -30,7 +31,8 @@ import {
  */
 const DEFAULT_WRITE_OPTIONS = {
     compress: false,
-    compressionQuality: 0.5
+    compressionQuality: 0.5,
+    compressionFunction: undefined
 }
 
 /**
@@ -41,6 +43,13 @@ const DEFAULT_WRITE_OPTIONS = {
  */
 export function write(options = DEFAULT_WRITE_OPTIONS)
 {
+    if(options.compress)
+    {
+        if(typeof options.compressionFunction !== "function")
+        {
+            throw new TypeError("No compression function supplied but compression enabled.");
+        }
+    }
     SpessaSynthGroupCollapsed("%cSaving soundfont...",
         consoleColors.info);
     SpessaSynthInfo(`%cCompression: %c${options?.compress || "false"}%c quality: %c${options?.compressionQuality || "none"}`,
@@ -97,7 +106,7 @@ export function write(options = DEFAULT_WRITE_OPTIONS)
     // write sdata
     const smplStartOffsets = [];
     const smplEndOffsets = [];
-    const sdtaChunk = getSDTA.bind(this)(smplStartOffsets, smplEndOffsets, options?.compress, options?.compressionQuality || 0.5);
+    const sdtaChunk = getSDTA.call(this, smplStartOffsets, smplEndOffsets, options?.compress, options?.compressionQuality || 0.5, options.compressionFunction);
 
     SpessaSynthInfo("%cWriting PDTA...",
         consoleColors.info);
@@ -106,30 +115,30 @@ export function write(options = DEFAULT_WRITE_OPTIONS)
     // instruments
     SpessaSynthInfo("%cWriting SHDR...",
         consoleColors.info);
-    const shdrChunk = getSHDR.bind(this)(smplStartOffsets, smplEndOffsets);
+    const shdrChunk = getSHDR.call(this, smplStartOffsets, smplEndOffsets);
     SpessaSynthInfo("%cWriting IGEN...",
         consoleColors.info);
-    const igenChunk = getIGEN.bind(this)();
+    const igenChunk = getIGEN.call(this);
     SpessaSynthInfo("%cWriting IMOD...",
         consoleColors.info);
-    const imodChunk = getIMOD.bind(this)();
+    const imodChunk = getIMOD.call(this);
     SpessaSynthInfo("%cWriting IBAG...",
         consoleColors.info);
-    const ibagChunk = getIBAG.bind(this)();
+    const ibagChunk = getIBAG.call(this);
     SpessaSynthInfo("%cWriting INST...",
         consoleColors.info);
-    const instChunk = getINST.bind(this)();
+    const instChunk = getINST.call(this);
     // presets
-    const pgenChunk = getPGEN.bind(this)();
+    const pgenChunk = getPGEN.call(this);
     SpessaSynthInfo("%cWriting PMOD...",
         consoleColors.info);
-    const pmodChunk = getPMOD.bind(this)();
+    const pmodChunk = getPMOD.call(this);
     SpessaSynthInfo("%cWriting PBAG...",
         consoleColors.info);
-    const pbagChunk = getPBAG.bind(this)();
+    const pbagChunk = getPBAG.call(this);
     SpessaSynthInfo("%cWriting PHDR...",
         consoleColors.info);
-    const phdrChunk = getPHDR.bind(this)();
+    const phdrChunk = getPHDR.call(this);
     // combine in the sfspec order
     const pdtadata = combineArrays([
         new IndexedByteArray([112, 100, 116, 97]), // "ptda"

@@ -28,7 +28,7 @@ import {
     getMuteSvg,
     getNoteSvg, getUnlockSVG,
     getVolumeSvg,
-} from '../../icons.js'
+} from '../../utils/icons.js'
 import { DEFAULT_PERCUSSION } from '../../../../spessasynth_lib/synthetizer/synthetizer.js'
 import { Selector } from './synthui_selector.js'
 import {

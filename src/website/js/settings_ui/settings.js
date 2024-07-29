@@ -1,5 +1,5 @@
 import { settingsHtml } from './settings_html.js'
-import { getDownArrowSvg, getGearSvg } from '../icons.js'
+import { getDownArrowSvg, getGearSvg } from '../utils/icons.js'
 import { _loadSettings } from './saving/load_settings.js'
 import { _saveSettings } from './saving/save_settings.js'
 import { _serializeSettings } from './saving/serialize_settings.js'
@@ -13,7 +13,7 @@ import {
 } from './handlers/midi_handler.js'
 import { _createKeyboardHandler } from './handlers/keyboard_handler.js'
 import { localeList } from '../../locale/locale_files/locale_list.js'
-import { keybinds } from '../keybinds.js'
+import { keybinds } from '../utils/keybinds.js'
 import { handleSliders } from './sliders.js'
 import { ANIMATION_REFLOW_TIME } from '../utils/animation_utils.js'
 

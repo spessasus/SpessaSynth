@@ -8,18 +8,18 @@ import { MIDIDeviceHandler } from '../../spessasynth_lib/midi_handler/midi_handl
 import { WebMidiLinkHandler } from '../../spessasynth_lib/midi_handler/web_midi_link.js'
 import { Sequencer } from '../../spessasynth_lib/sequencer/sequencer.js'
 import { SpessaSynthSettings } from '../js/settings_ui/settings.js'
-import { MusicModeUI } from '../js/music_mode_ui.js'
-//import { SoundFontMixer } from './js/soundfont_mixer.js'
+import { MusicModeUI } from '../js/music_mode_ui/music_mode_ui.js'
 import { LocaleManager } from '../locale/locale_manager.js'
 import { isMobile } from '../js/utils/is_mobile.js'
 import { SpessaSynthInfo } from '../../spessasynth_lib/utils/loggin.js'
-import { keybinds } from '../js/keybinds.js'
+import { keybinds } from '../js/utils/keybinds.js'
 import { _doExportAudioData, _exportAudioData } from './export_audio.js'
 import { exportMidi } from './export_midi.js'
 import { _exportSoundfont } from './export_soundfont.js'
 import { exportSong } from './export_song.js'
 import { _exportRMIDI } from './export_rmidi.js'
-import { WORKLET_URL } from '../../spessasynth_lib/synthetizer/worklet_url.js'
+import { WORKLET_URL_ABSOLUTE } from '../../spessasynth_lib/synthetizer/worklet_url.js'
+import { encodeVorbis } from '../../spessasynth_lib/utils/encode_vorbis.js'
 
 // this enables transitions on body because if we enable them on load, it flashbangs us with white
 document.body.classList.add("load");
@@ -61,6 +61,7 @@ class Manager
         this.localeManager = locale;
         this.context = context;
         this.isExporting = false;
+        this.compressionFunc = encodeVorbis;
         let solve;
         this.ready = new Promise(resolve => solve = resolve);
         this.initializeContext(context, soundFontBuffer).then(() => {
@@ -112,7 +113,7 @@ class Manager
 
         if(context.audioWorklet)
         {
-            await context.audioWorklet.addModule(WORKLET_URL);
+            await context.audioWorklet.addModule(new URL ("../../" + WORKLET_URL_ABSOLUTE, import.meta.url));
         }
         // set up soundfont
         this.soundFont = soundFont;

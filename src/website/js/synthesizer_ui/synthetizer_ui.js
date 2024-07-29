@@ -6,7 +6,7 @@ import { toggleDarkMode } from './methods/toggle_dark_mode.js'
 import { createChannelController, createChannelControllers } from './methods/create_channel_controller.js'
 import { createMainSynthController } from './methods/create_main_controller.js'
 import { setEventListeners } from './methods/set_event_listeners.js'
-import { keybinds } from '../keybinds.js'
+import { keybinds } from '../utils/keybinds.js'
 import { ANIMATION_REFLOW_TIME } from '../utils/animation_utils.js'
 
 

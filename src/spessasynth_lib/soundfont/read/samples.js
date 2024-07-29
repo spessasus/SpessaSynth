@@ -4,7 +4,6 @@ import { readBytesAsUintLittleEndian, signedInt8} from "../../utils/byte_functio
 import { stbvorbis } from '../../externals/stbvorbis_sync/stbvorbis_sync.min.js'
 import { SpessaSynthWarn } from '../../utils/loggin.js'
 import { readBytesAsString } from '../../utils/byte_functions/string.js'
-import { encodeVorbis } from '../../utils/encode_vorbis.js'
 
 /**
  * samples.js
@@ -102,8 +101,9 @@ export class BasicSample
 
     /**
      * @param quality {number}
+     * @param encodeVorbis {EncodeVorbisFunction}
      */
-    compressSample(quality)
+    compressSample(quality, encodeVorbis)
     {
         // no need to compress
         if(this.isCompressed)

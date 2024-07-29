@@ -5,7 +5,7 @@ import { showNotification } from './js/notification/notification.js'
 import { LocaleManager } from './locale/locale_manager.js'
 
 /**
- * main.js
+ * local_main.js
  * purpose: main script for the local edition, loads the soundfont and passes it to the manager.js, reloads soundfonts when needed and saves the settings
  */
 const SAMPLE_RATE = 44100;

@@ -272,12 +272,21 @@ class MidiKeyboard
         // according to my testing, this function seems to calculate the height well:
         // 900 / (keys + 5)
         const newHeight = 900 / ((range.max - range.min) + 5);
+        const rules = document.styleSheets[0].cssRules;
         /**
          * adjust key pressing skew (hacky!!!)
          * @type {CSSStyleRule}
          */
-        const rule = document.styleSheets[0].cssRules[1].styleSheet.cssRules[0].styleSheet.cssRules[0];
-        rule.style.setProperty("--pressed-transform-skew", `${0.0008 / (newHeight / 7)}`);
+        let keyRule;
+        for(const rule of rules)
+        {
+            if(rule.selectorText === "#keyboard .key")
+            {
+                keyRule = rule;
+                break;
+            }
+        }
+        keyRule.style.setProperty("--pressed-transform-skew", `${0.0008 / (newHeight / 7)}`);
         if(animate)
         {
             if(this.sizeChangeAnimationId)

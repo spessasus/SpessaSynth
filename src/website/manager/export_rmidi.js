@@ -73,7 +73,11 @@ export async function _exportRMIDI()
                     await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
 
                     trimSoundfont(font, mid);
-                    const newFont = font.write({compress: compressed, compressionQuality: quality});
+                    const newFont = font.write({
+                        compress: compressed,
+                        compressionQuality: quality,
+                        compressionFunction: this.compressionFunc
+                    });
 
                     message.textContent = this.localeManager.getLocaleString(localePath + "saving");
                     await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
