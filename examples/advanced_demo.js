@@ -1,5 +1,5 @@
 // import the modules
-import { WORKLET_URL } from '../src/spessasynth_lib/synthetizer/worklet_url.js'
+import { WORKLET_URL_ABSOLUTE } from '../src/spessasynth_lib/synthetizer/worklet_url.js'
 import { Sequencer } from '../src/spessasynth_lib/sequencer/sequencer.js'
 import { Synthetizer } from '../src/spessasynth_lib/synthetizer/synthetizer.js'
 
@@ -11,7 +11,7 @@ fetch("../soundfonts/SGM.sf3").then(async response => {
 
     // create the context and add audio worklet
     const context = new AudioContext();
-    await context.audioWorklet.addModule(WORKLET_URL)
+    await context.audioWorklet.addModule(new URL("../src/spessasynth_lib/" + WORKLET_URL_ABSOLUTE, import.meta.url));
     const synth = new Synthetizer(context.destination, soundFontBuffer);     // create the synthetizer
     let seq;
 

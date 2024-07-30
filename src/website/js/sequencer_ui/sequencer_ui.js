@@ -36,9 +36,7 @@ class SequencerUI
         this.iconDisabledColor = ICON_DISABLED_COLOR;
         this.controls = element;
         this.encoding = DEFAULT_ENCODING;
-        this.decoder = new TextDecoder(this.encoding, {
-            fatal: true
-        });
+        this.decoder = new TextDecoder(this.encoding);
         // the currently displayed (highlighted) lyrics text
         this.text = "";
         this.requiresTextUpdate = false;
@@ -221,9 +219,7 @@ class SequencerUI
     changeEncoding(encoding)
     {
         this.encoding = encoding;
-        this.decoder = new TextDecoder(encoding, {
-            fatal: true
-        });
+        this.decoder = new TextDecoder(encoding);
         this.text = this.decodeTextFix(new Uint8Array(this.rawLyrics).buffer);
         this.setLyricsText(this.text);
         this.updateTitleAndMediaStatus();

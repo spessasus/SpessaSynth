@@ -42,7 +42,7 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
         sampleRate: this.context.sampleRate,
         length: this.context.sampleRate * duration
     });
-    await offline.audioWorklet.addModule(new URL("../../" + WORKLET_URL_ABSOLUTE, import.meta.url));
+    await offline.audioWorklet.addModule(new URL("../../spessasynth_lib/" + WORKLET_URL_ABSOLUTE, import.meta.url));
 
     /**
      * take snapshot of the real synth

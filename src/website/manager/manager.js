@@ -113,7 +113,7 @@ class Manager
 
         if(context.audioWorklet)
         {
-            await context.audioWorklet.addModule(new URL ("../../" + WORKLET_URL_ABSOLUTE, import.meta.url));
+            await context.audioWorklet.addModule(new URL ("../../spessasynth_lib/" + WORKLET_URL_ABSOLUTE, import.meta.url));
         }
         // set up soundfont
         this.soundFont = soundFont;

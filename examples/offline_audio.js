@@ -1,5 +1,5 @@
 // import the modules
-import { WORKLET_URL } from '../src/spessasynth_lib/synthetizer/worklet_url.js'
+import { WORKLET_URL_ABSOLUTE } from '../src/spessasynth_lib/synthetizer/worklet_url.js'
 import { Synthetizer } from '../src/spessasynth_lib/synthetizer/synthetizer.js'
 import { audioBufferToWav } from '../src/spessasynth_lib/utils/buffer_to_wav.js'
 import { MIDI } from '../src/spessasynth_lib/midi_parser/midi_loader.js'
@@ -30,7 +30,7 @@ fetch("../soundfonts/SGM.sf3").then(async response => {
                 length: sampleRate * (parsedMidi.duration + 1), // sample rate times duration plus one second (for the sound to fade away rather than cut)
         });
         // add the worklet
-        await context.audioWorklet.addModule(WORKLET_URL);
+        await context.audioWorklet.addModule(new URL("../src/spessasynth_lib/" + WORKLET_URL_ABSOLUTE, import.meta.url));
 
         // here we set the event system to disabled as it's not needed. Also, we need to pass the parsed MIDI here for the synthesizer to start rendering it
         const synth = new Synthetizer(context.destination, soundFontArrayBuffer, false, {

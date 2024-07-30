@@ -29,25 +29,27 @@ This repository contains both the library and a complete musical web application
 
 ### Easy Integration
 - **Modular design:** Easy integration into other projects (load what you need)
-- **[Detailed documentation:](https://github.com/spessasus/SpessaSynth/wiki/Home)** _With examples!_
+- **[Detailed documentation:](https://github.com/spessasus/SpessaSynth/wiki/Home)** With [examples!](https://github.com/spessasus/SpessaSynth/wiki/Usage-As-Library#examples)
 - **Easy to Use:** basic setup is just [two lines of code!](https://github.com/spessasus/SpessaSynth/wiki/Usage-As-Library#minimal-setup)
 - **No dependencies:** _batteries included!_
 
 ### Powerful SoundFont Synthesizer
 - Suitable for both **real-time** and **offline** synthesis
-- **SoundFont2 Generator Support**
-- **SoundFont2 Modulator Support:** A feature that many SF2 synths lack!
-- **SoundFont3 Support:** Play compressed SoundFonts (_Made with a custom fork of an stbvorbis for AudioWorklet compability!_)
+- **Excellent SoundFont support:**
+- - **Generator Support**
+- - **Modulator Support:** _First (to my knowledge) JavaScript SoundFont synth with that feature!_
+- - **SoundFont3 Support:** Play compressed SoundFonts!
+- - **Can load very large SoundFonts:** up to 4GB! _Note: Only Firefox handles this well; Chromium has a hard-coded memory limit_
 - **Reverb and chorus support:** [customizable!](https://github.com/spessasus/SpessaSynth/wiki/Synthetizer-Class#effects-configuration-object)
 - **Export audio files** using [OfflineAudioContext](https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext)
 - **[Custom modulators for additional controllers](https://github.com/spessasus/SpessaSynth/wiki/Modulator-Class#default-modulators):** Why not?
 - **Written using AudioWorklets:** runs in a separate thread for maximum performance, works perfectly in Firefox and Chrome!
-- **Can load very large SoundFonts:** up to 4GB! _Note: Only Firefox handles this well; Chromium has a memory limit_
 - **Unlimited channel count:** Your CPU is the limit!
-- **MIDI Controller Support:** Default supported controllers [here](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-controllers)
-- [RPN and NRPN support](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-registered-parameters)
-- Supports some [**Roland GS** and **Yamaha XG** system exclusives](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-system-exclusives)
-- **High-performance mode:** Play Rush E! _note: may kill your browser. But exporting to file works fine!_
+- **Various MIDI Standards Support:**
+- - **MIDI Controller Support:** Default supported controllers [here](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-controllers)
+- - [Full **RPN** and limited **NRPN** support](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-registered-parameters)
+- - Supports some [**Roland GS** and **Yamaha XG** system exclusives](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-system-exclusives)
+- **High-performance mode:** Play Rush E! _note: may kill your browser ;)_
 - **Written in pure JavaScript using the WebAudio API:** Supported by all modern browsers!
 
 ### Built-in Powerful and Fast Sequencer
@@ -55,12 +57,12 @@ This repository contains both the library and a complete musical web application
 - **[Multi-Port MIDI](https://github.com/spessasus/SpessaSynth/wiki/About-Multi-Port) support:** More than 16 channels!
 - **Smart preloading:** Only preloads the samples used in the MIDI file for smooth playback (down to key and velocity!)
 - **Lyrics support:** Add karaoke to your program!
-- **Raw lyrics available:** Decode in any encoding (Kanji? No problem!)
+- **Raw lyrics available:** Decode in any encoding! (Kanji? No problem!)
 
 ### Read and Write SoundFont and MIDI Files with Ease
 #### Read and write MIDI files
-  - **Smart name detection:** Handles incorrectly formatted MIDIs and non-standard track names
-  - **Port detection during load time:** Manage ports and channels easily
+  - **Smart name detection:** Handles incorrectly formatted and non-standard track names
+  - **Port detection during load time:** Manage ports and channels easily!
   - **Used channels on track:** Quickly determine which channels are used
   - **Key range detection:** Detect the key range of the MIDI
   - **Easy MIDI editing:** Use [helper functions](https://github.com/spessasus/SpessaSynth/wiki/Writing-MIDI-Files#modifymidi) to modify the song to your needs!
@@ -68,18 +70,19 @@ This repository contains both the library and a complete musical web application
   - **First note detection:** Skip unnecessary silence at the start by jumping to the first note!
   - **Easy saving:** Save with just [one function!](https://github.com/spessasus/SpessaSynth/wiki/Writing-MIDI-Files#writemidifile)
 #### Read and write [RMID files with embedded SF2 soundfonts](https://github.com/spessasus/SpessaSynth/wiki/About-RMIDI)
-  - Compression and trimming support: Reduce a MIDI file with a 1GB soundfont to as small as 5MB!
-  - Easy saving: As simple as saving a MIDI file
-#### Read and write .sf2 files
+  - **Compression and trimming support:** Reduce a MIDI file with a 1GB soundfont to **as small as 5MB**!
+  - **Easy saving:** [As simple as saving a MIDI file!](https://github.com/spessasus/SpessaSynth/wiki/Writing-MIDI-Files#writermidi)
+#### Read and write SoundFont2 files
   - **Smart trimming:** Trim the SoundFont to only include samples used in the MIDI (down to key and velocity!)
-  - **sf3 conversion:** Compress .sf2 files!
-#### Read and write .sf3 files
-  - Same features as .sf2 but with now with **Ogg Vorbis compression!**
+  - **sf3 conversion:** Compress SoundFont2 files to SoundFont3!
+  - **Easy saving:** Also just [one function!](https://github.com/spessasus/SpessaSynth/wiki/SoundFont2-Class#write)
+#### Read and write SoundFont3 files
+  - Same features as SoundFont2 but with now with **Ogg Vorbis compression!**
   - **Variable compression quality:** You choose between file size and quality!
   - **Compression preserving:** Avoid decompressing and recompressing uncompressed samples for minimal quality loss!
 
 ## Limitations
-- Performance may be suboptimal, especially on mobile devices.
+- Synth's performance may be suboptimal, especially on mobile devices.
 
 ### Installation
 1. Clone this repository.
