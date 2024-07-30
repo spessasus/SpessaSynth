@@ -1,9 +1,28 @@
 # spessasynth_lib
 A powerful soundfont/MIDI JavaScript library.
 
+```shell
+npm install --save spessasynth_lib
+```
+
 ## [Project site (consider giving it a star!)](https://github.com/spessasus/SpessaSynth)
 
 ## [Complete documentation](https://github.com/spessasus/SpessaSynth/wiki/Usage-As-Library)
+
+### Basic example: play a single note
+```js
+import {Synthetizer} from "spessasynth_lib"
+const sfont = await (await fetch("soundfont.sf3")).arrayBuffer();
+const ctx = new AudioContext();
+// make sure you copied the worklet processor!
+await ctx.audioWorklet.addModule("./worklet_processor.min.js");
+const synth = new Synthetizer(ctx.destination, sfont);
+document.getElementById("button").onclick = async () => {
+    await ctx.resume();
+    synth.programChange(0, 48); // strings ensemble
+    synth.noteOn(0, 52, 127);
+}
+```
 
 ## Current Features
 ### Easy Integration

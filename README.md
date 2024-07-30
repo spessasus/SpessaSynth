@@ -6,10 +6,10 @@
 
 ![SpessaSynth Promotional Image](https://github.com/spessasus/SpessaSynth/assets/95608008/e2e6c4c6-0762-4c11-8887-a2318d431854)
 
-<h3 align='center'>Exporting SoundFonts and RMIDIs now available! With compression too!</h3>
-<p align='center'>
-   <img src="https://github.com/user-attachments/assets/0aba6293-0458-401f-91fc-71f7a4a7640c" width="50%" alt="Exporting SoundFonts and RMIDIs">
-</p>
+### npm package now available!
+```shell
+npm install --save spessasynth_lib
+```
 
 <h1 align="center"><a href="https://spessasus.github.io/SpessaSynth/">Live Demo (no download needed!)</a></h1>
 
