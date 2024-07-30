@@ -128,7 +128,7 @@ export function modifyMIDI(
         const port = Math.floor(c / 16);
         const channel = c % 16;
         clearChannelMessages(channel, port);
-        SpessaSynthInfo(`%Removing channel %c${c}%c!`,
+        SpessaSynthInfo(`%cRemoving channel %c${c}%c!`,
             consoleColors.info,
             consoleColors.recognized,
             consoleColors.info);
@@ -280,14 +280,14 @@ export function modifyMIDI(
 
             // get the program changes that are relevant for this channel (and port)
             const thisProgramChanges = programChanges.filter(c => midi.midiPorts[c.track] === port && c.channel === midiChannel);
-            const isDrum = change.isDrum && midiChannel !== DEFAULT_PERCUSSION;
+
 
             // clear bank selects
             clearControllers(midiChannel, port, midiControllers.bankSelect);
             clearControllers(midiChannel, port, midiControllers.lsbForControl0BankSelect);
 
             // if drums or the program uses bank select, flag as gs
-            if((isDrum || desiredBank > 0) && !addedGs)
+            if((change.isDrum || desiredBank > 0) && !addedGs)
             {
                 // make sure that GS is on
                 // GS on: F0 41 10 42 12 40 00 7F 00 41 F7
@@ -335,12 +335,6 @@ export function modifyMIDI(
                 }
             }
 
-            SpessaSynthInfo(`%cSetting %c${change.channel}%c to %c${desiredBank}:${desiredProgram}`,
-                consoleColors.info,
-                consoleColors.recognized,
-                consoleColors.info,
-                consoleColors.recognized);
-
             // remove all program changes
             for(const change of thisProgramChanges)
             {
@@ -364,9 +358,10 @@ export function modifyMIDI(
             const ticks = midi.tracks[firstVoice.track][firstVoice.index].ticks;
 
             // add drums if needed
-            if(isDrum)
+            if(change.isDrum)
             {
-                if(midiSystem === "gs")
+                // do not add gs drum change on drum channel
+                if(midiSystem === "gs" && midiChannel !== DEFAULT_PERCUSSION)
                 {
                     SpessaSynthInfo(`%cAdding GS Drum change on track %c${firstVoice.track}`,
                         consoleColors.recognized,
@@ -375,30 +370,27 @@ export function modifyMIDI(
                     midi.tracks[firstVoice.track].splice(firstIndex, 0, getDrumChange(change.channel, ticks));
                     firstIndex++;
                 }
-                else
+                else if(midiSystem === "xg")
                 {
-                    // system is xg. drums are on msb bank 120.
-                    const bankChange = getControllerChange(midiChannel, midiControllers.bankSelect, 120, ticks);
-                    midi.tracks[firstVoice.track].splice(firstIndex, 0, bankChange);
-                    firstIndex++;
+                    SpessaSynthInfo(`%cAdding XG Drum change on track %c${firstVoice.track}`,
+                        consoleColors.recognized,
+                        consoleColors.value
+                    );
+                    // system is xg. drums are on msb bank 127.
+                    desiredBank = 127;
                 }
             }
-            else if(midiSystem === "xg")
-            {
-                // add lsb
-                const lsbBankChange = getControllerChange(midiChannel, midiControllers.lsbForControl0BankSelect, desiredBank, ticks);
-                midi.tracks[firstVoice.track].splice(firstIndex, 0, lsbBankChange);
-                firstIndex++;
-            }
 
-            // we already added the drum bank on xg
-            if(midiSystem !== "xg" || !isDrum)
-            {
-                // add bank
-                const bankChange = getControllerChange(midiChannel, midiControllers.bankSelect, desiredBank, ticks);
-                midi.tracks[firstVoice.track].splice(firstIndex, 0, bankChange);
-                firstIndex++;
-            }
+            SpessaSynthInfo(`%cSetting %c${change.channel}%c to %c${desiredBank}:${desiredProgram}`,
+                consoleColors.info,
+                consoleColors.recognized,
+                consoleColors.info,
+                consoleColors.recognized);
+
+            // add bank
+            const bankChange = getControllerChange(midiChannel, midiControllers.bankSelect, desiredBank, ticks);
+            midi.tracks[firstVoice.track].splice(firstIndex, 0, bankChange);
+            firstIndex++;
 
             // add program change
             const programChange = new MidiMessage(

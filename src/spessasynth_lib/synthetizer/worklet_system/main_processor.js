@@ -160,6 +160,8 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
         /**
          * Controls the system
          * @typedef {"gm"|"gm2"|"gs"|"xg"} SynthSystem
+         */
+        /*
          * @type {SynthSystem}
          */
         this.system = DEFAULT_SYNTH_MODE;

@@ -258,9 +258,12 @@ export function systemExclusive(messageData, channelOffset = 0)
             }
             else
             {
-                SpessaSynthWarn(`%cUnrecognized Yamaha SysEx: %c${arrayToHexString(messageData)}`,
-                    consoleColors.warn,
-                    consoleColors.unrecognized);
+                if(this.system === "xg")
+                {
+                    SpessaSynthWarn(`%cUnrecognized Yamaha SysEx: %c${arrayToHexString(messageData)}`,
+                        consoleColors.warn,
+                        consoleColors.unrecognized);
+                }
             }
             break;
 

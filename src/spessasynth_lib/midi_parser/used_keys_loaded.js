@@ -91,9 +91,18 @@ export function getUsedProgramsAndKeys(mid, soundfont)
                     const bank = event.messageData[1];
                     if(system === "xg")
                     {
-                        ch.drums = bank === 120 || bank === 126 || bank === 127;
-                        ch.bank = ch.drums ? 128 : bank;
-                        updateString(ch);
+                        const drumsBool = bank === 120 || bank === 126 || bank === 127;
+                        if(drumsBool !== ch.drums)
+                        {
+                            // drum change is a program change
+                            ch.drums = drumsBool;
+                            ch.bank = ch.drums ? 128 : bank;
+                            updateString(ch);
+                        }
+                        else
+                        {
+                            ch.bank = ch.drums ? 128 : bank;
+                        }
                         continue;
                     }
                     channelPresets[channel].bank = bank;

@@ -162,6 +162,7 @@ export function writeRMIDI(soundfontBinary, mid, soundfont)
             {
                 return;
             }
+            // bank select
             hasBankSelects[chNum] = true;
             if(system === "xg")
             {
