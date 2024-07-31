@@ -229,6 +229,22 @@ export class Synthetizer {
     }
 
     /**
+     * Sets the SpessaSynth's log level
+     * @param enableInfo {boolean} - enable info (verbose)
+     * @param enableWarning {boolean} - enable warnings (unrecognized messages)
+     * @param enableGroup {boolean} - enable groups (recomended)
+     * @param enableTable {boolean} - enable table (debug message)
+     */
+    setLogLevel(enableInfo, enableWarning, enableGroup, enableTable)
+    {
+        this.post({
+            channelNumber: -1,
+            messageType: workletMessageType.setLogLevel,
+            messageData: [enableInfo, enableWarning, enableGroup, enableTable]
+        });
+    }
+
+    /**
      * Handles the messages received from the worklet
      * @param message {WorkletReturnMessage}
      * @private

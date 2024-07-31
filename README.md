@@ -85,6 +85,11 @@ This repository contains both the library and a complete musical web application
 - Synth's performance may be suboptimal, especially on mobile devices.
 
 ### Installation
+#### Npm package
+```shell
+npm install --save spessasynth_lib
+```
+#### Or
 1. Clone this repository.
 2. Copy `src/spessasynth_lib` to your project.
 3. [Use the library](https://github.com/spessasus/SpessaSynth/wiki/Home)

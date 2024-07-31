@@ -1,5 +1,5 @@
 import { ALL_CHANNELS_OR_DIFFERENT_ACTION, masterParameterType, workletMessageType } from './worklet_message.js'
-import { SpessaSynthWarn } from '../../../utils/loggin.js'
+import { SpessaSynthLogging, SpessaSynthWarn } from '../../../utils/loggin.js'
 
 /**
  * @this {SpessaSynthProcessor}
@@ -184,6 +184,10 @@ export function handleMessage(message)
 
         case workletMessageType.requestSynthesizerSnapshot:
             this.sendSynthesizerSnapshot();
+            break;
+
+        case workletMessageType.setLogLevel:
+            SpessaSynthLogging(data[0], data[1], data[2], data[3]);
             break;
 
         default:

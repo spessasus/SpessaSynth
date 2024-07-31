@@ -26,6 +26,7 @@
  * @property {number} lockController             - 22 -> [controllerNumber<number>, isLocked<boolean>]
  * @property {number} sequencerSpecific          - 23 -> [messageType<WorkletSequencerMessageType> messageData<any>] note: refer to sequencer_message.js
  * @property {number} requestSynthesizerSnapshot - 24 -> (no data)
+ * @property {number} setLogLevel                - 25 -> [enableInfo<boolean>, enableWarning<boolean>, enableGroup<boolean>, enableTable<boolean>]
  */
 export const workletMessageType = {
     noteOff:                    0,
@@ -53,6 +54,7 @@ export const workletMessageType = {
     lockController:             22,
     sequencerSpecific:          23,
     requestSynthesizerSnapshot: 24,
+    setLogLevel:                25
 };
 
 /**
@@ -72,6 +74,7 @@ export const ALL_CHANNELS_OR_DIFFERENT_ACTION = -1;
  *     messageType: workletMessageType,
  *     messageData: (
  *     number[]
+ *     |boolean[]
  *     |WorkletVoice[]
  *     |number
  *     |{sampleData: Float32Array, sampleID: number}
