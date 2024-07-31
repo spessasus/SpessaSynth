@@ -190,6 +190,10 @@ export class Sequencer
             case WorkletSequencerReturnMessageType.pause:
                 this.pausedTime = this.currentTime;
                 this.isFinished = messageData;
+                if(this.isFinished)
+                {
+                    Object.entries(this.onSongEnded).forEach((callback) => callback[1]());
+                }
                 break;
 
             case WorkletSequencerReturnMessageType.midiError:
@@ -238,6 +242,17 @@ export class Sequencer
     {
         this.onSongChange[id] = callback;
         callback(this.midiData);
+    }
+
+
+    /**
+     * Adds a new event that gets called when the song ends
+     * @param callback {function}
+     * @param id {string} must be unique
+     */
+    addOnSongEndedEvent(callback, id)
+    {
+        this.onSongEnded[id] = callback;
     }
 
     /**
@@ -436,4 +451,10 @@ export class Sequencer
      * @private
      */
     onTimeChange = {};
+
+    /**
+     * @type {Object<string, function>}
+     * @private
+     */
+    onSongEnded = {};
 }
