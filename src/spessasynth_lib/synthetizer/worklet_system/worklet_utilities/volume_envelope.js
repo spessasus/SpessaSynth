@@ -97,6 +97,7 @@ export function recalculateVolumeEnvelope(voice)
                 break;
 
             case 1:
+                // FIXME: this does not work
                 // attack phase
                 // attack is linear (in gain) so we need to do get db from that
                 let elapsed = 1 - ((env.attackEnd - voice.releaseStartTime) / env.attackDuration);

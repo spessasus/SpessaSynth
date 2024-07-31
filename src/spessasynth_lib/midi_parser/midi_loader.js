@@ -129,6 +129,13 @@ class MIDI{
          */
         this.midiPorts = [];
 
+        let portOffset = 0
+        /**
+         * Channel offsets for each port, using the SpessaSynth method
+         * @type {number[]}
+         */
+        this.midiPortChannelOffsets = [];
+
         /**
          * All channels that each track uses. Note: these channels range from 0 to 15, excluding the port offsets!
          * @type {Set<number>[]}
@@ -280,7 +287,13 @@ class MIDI{
                                 break;
 
                             case messageTypes.midiPort:
-                                this.midiPorts[i] = eventData[0];
+                                const port = eventData[0];
+                                this.midiPorts[i] = port;
+                                if(this.midiPortChannelOffsets[port] === undefined)
+                                {
+                                    this.midiPortChannelOffsets[port] = portOffset;
+                                    portOffset += 16;
+                                }
                                 break;
 
                             case messageTypes.copyright:
@@ -395,6 +408,11 @@ class MIDI{
             }
         }
         this.midiPorts = this.midiPorts.map(port => port === -1 ? defaultPort : port);
+        // add dummy port if empty
+        if(this.midiPortChannelOffsets.length === 0)
+        {
+            this.midiPortChannelOffsets = [0];
+        }
 
         /**
          *

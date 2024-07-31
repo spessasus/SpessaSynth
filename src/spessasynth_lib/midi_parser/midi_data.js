@@ -63,6 +63,12 @@ export class MidiData
         this.midiPorts = midi.midiPorts;
 
         /**
+         * Channel offsets for each port, using the SpessaSynth method
+         * @type {number[]}
+         */
+        this.midiPortChannelOffsets = midi.midiPortChannelOffsets;
+
+        /**
          * All channels that each track uses
          * @type {Set<number>[]}
          */
@@ -110,6 +116,7 @@ export const DUMMY_MIDI_DATA = {
     lyrics: [],
     copyright: "",
     midiPorts: [],
+    midiPortChannelOffsets: [],
     tracksAmount: 0,
     tempoChanges: [{ticks: 0, tempo: 120}],
     fileName: "NOT_LOADED.mid",

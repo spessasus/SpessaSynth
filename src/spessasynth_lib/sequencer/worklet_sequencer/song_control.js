@@ -88,12 +88,12 @@ export function loadNewSequence(parsedMidi)
      */
     this.tracks = this.midiData.tracks;
 
-    // clear last port data
-    this.midiPortChannelOffset = 0;
-    this.midiPortChannelOffsets = {};
     // copy over the port data
     this.midiPorts = this.midiData.midiPorts;
 
+    // clear last port data
+    this.midiPortChannelOffset = 0;
+    this.midiPortChannelOffsets = {};
     // assign port offsets
     this.midiData.midiPorts.forEach((port, trackIndex) => {
         this.assignMIDIPort(trackIndex, port);

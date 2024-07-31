@@ -12,9 +12,8 @@ export function getUsedProgramsAndKeys(mid, soundfont)
     SpessaSynthGroupCollapsed("%cSearching for all used programs and keys...",
         consoleColors.info);
     // find every bank:program combo and every key:velocity for each. Make sure to care about ports and drums
-    const channelsAmount = 16 +  Math.max.apply(undefined, mid.midiPorts) * 16;
+    const channelsAmount = 16 + Math.max.apply(undefined, mid.midiPortChannelOffsets);
     /**
-     *
      * @type {{program: number, bank: number, drums: boolean, string: string}[]}
      */
     const channelPresets = [];
@@ -24,7 +23,7 @@ export function getUsedProgramsAndKeys(mid, soundfont)
             program: 0,
             bank: bank,
             drums: i % 16 === DEFAULT_PERCUSSION, // drums appear on 9 every 16 channels,
-            string: `${bank}:0`
+            string: `${bank}:0`,
         });
     }
 
@@ -54,109 +53,145 @@ export function getUsedProgramsAndKeys(mid, soundfont)
      * @type {Object<string, Set<string>>}
      */
     const usedProgramsAndKeys = {};
+
+    /**
+     * indexes for tracks
+     * @type {number[]}
+     */
+    const eventIndexes = Array(mid.tracks.length).fill(0);
+    let remainingTracks = mid.tracks.length;
+    function findFirstEventIndex()
+    {
+        let index = 0;
+        let ticks = Infinity;
+        mid.tracks.forEach((track, i) => {
+            if(eventIndexes[i] >= track.length)
+            {
+                return;
+            }
+            if(track[eventIndexes[i]].ticks < ticks)
+            {
+                index = i;
+                ticks = track[eventIndexes[i]].ticks;
+            }
+        });
+        return index;
+    }
+    const ports = mid.midiPorts.slice();
     // check for xg
     let system = "gs";
-    mid.tracks.forEach((t, trackNum) => {
-        const portOffset = mid.midiPorts[trackNum] * 16;
-        for(const event of t)
+    while(remainingTracks > 0)
+    {
+        let trackNum = findFirstEventIndex();
+        const track = mid.tracks[trackNum];
+        if(eventIndexes[trackNum] >= track.length)
         {
-            const status = event.messageStatusByte & 0xF0;
-            if(
-                status !== messageTypes.noteOn &&
-                status !== messageTypes.controllerChange &&
-                status !== messageTypes.programChange &&
-                status !== messageTypes.systemExclusive
-            )
-            {
-                continue;
-            }
-            const channel = (event.messageStatusByte & 0xF) + portOffset;
-            let ch = channelPresets[channel];
-            switch(status)
-            {
-                case messageTypes.programChange:
-                    ch.program = event.messageData[0];
-                    updateString(ch);
-                    break;
+            remainingTracks--;
+            continue;
+        }
+        const event = track[eventIndexes[trackNum]];
+        eventIndexes[trackNum]++;
 
-                case messageTypes.controllerChange:
-                    if(event.messageData[0] !== midiControllers.bankSelect)
-                    {
-                        continue;
-                    }
-                    if(system === "gs" && ch.drums)
-                    {
-                        continue;
-                    }
-                    const bank = event.messageData[1];
-                    if(system === "xg")
-                    {
-                        const drumsBool = bank === 120 || bank === 126 || bank === 127;
-                        if(drumsBool !== ch.drums)
-                        {
-                            // drum change is a program change
-                            ch.drums = drumsBool;
-                            ch.bank = ch.drums ? 128 : bank;
-                            updateString(ch);
-                        }
-                        else
-                        {
-                            ch.bank = ch.drums ? 128 : bank;
-                        }
-                        continue;
-                    }
-                    channelPresets[channel].bank = bank;
-                    // do not update the data, bank change doesnt change the preset
-                    break;
+        if(event.messageStatusByte === messageTypes.midiPort)
+        {
+            ports[trackNum] = event.messageData[0];
+            continue;
+        }
+        const status = event.messageStatusByte & 0xF0;
+        if(
+            status !== messageTypes.noteOn &&
+            status !== messageTypes.controllerChange &&
+            status !== messageTypes.programChange &&
+            status !== messageTypes.systemExclusive
+        )
+        {
+            continue;
+        }
+        const channel = (event.messageStatusByte & 0xF) + mid.midiPortChannelOffsets[ports[trackNum]] || 0;
+        let ch = channelPresets[channel];
+        switch(status)
+        {
+            case messageTypes.programChange:
+                ch.program = event.messageData[0];
+                updateString(ch);
+                break;
 
-                case messageTypes.noteOn:
-                    if(event.messageData[1] === 0)
+            case messageTypes.controllerChange:
+                if(event.messageData[0] !== midiControllers.bankSelect)
+                {
+                    // we only care about bank select
+                    continue;
+                }
+                if(system === "gs" && ch.drums)
+                {
+                    // gs drums get changed via sysex, ignore here
+                    continue;
+                }
+                const bank = event.messageData[1];
+                if(system === "xg")
+                {
+                    // check for xg drums
+                    const drumsBool = bank === 120 || bank === 126 || bank === 127;
+                    if(drumsBool !== ch.drums)
                     {
-                        // that's a note off
-                        continue;
+                        // drum change is a program change
+                        ch.drums = drumsBool;
+                        ch.bank = ch.drums ? 128 : bank;
+                        updateString(ch);
                     }
-                    if(!usedProgramsAndKeys[ch.string])
+                    else
                     {
-                        usedProgramsAndKeys[ch.string] = new Set();
+                        ch.bank = ch.drums ? 128 : bank;
                     }
-                    usedProgramsAndKeys[ch.string].add(`${event.messageData[0]}-${event.messageData[1]}`);
-                    break;
+                    continue;
+                }
+                channelPresets[channel].bank = bank;
+                // do not update the data, bank change doesnt change the preset
+                break;
 
-                case messageTypes.systemExclusive:
-                    // check for drum sysex
+            case messageTypes.noteOn:
+                if(event.messageData[1] === 0)
+                {
+                    // that's a note off
+                    continue;
+                }
+                usedProgramsAndKeys[ch.string].add(`${event.messageData[0]}-${event.messageData[1]}`);
+                break;
+
+            case messageTypes.systemExclusive:
+                // check for drum sysex
+                if(
+                    event.messageData[0] !== 0x41 || // roland
+                    event.messageData[2] !== 0x42 || // GS
+                    event.messageData[3] !== 0x12 || // GS
+                    event.messageData[4] !== 0x40 || // system parameter
+                    (event.messageData[5] & 0x10 ) === 0 || // part parameter
+                    event.messageData[6] !== 0x15 // drum pars
+
+                )
+                {
+                    // check for XG
                     if(
-                        event.messageData[0] !== 0x41 || // roland
-                        event.messageData[2] !== 0x42 || // GS
-                        event.messageData[3] !== 0x12 || // GS
-                        event.messageData[4] !== 0x40 || // system parameter
-                        (event.messageData[5] & 0x10 ) === 0 || // part parameter
-                        event.messageData[6] !== 0x15 // drum pars
-
+                        event.messageData[0] === 0x43 && // yamaha
+                        event.messageData[2] === 0x4C && // sXG ON
+                        event.messageData[5] === 0x7E &&
+                        event.messageData[6] === 0x00
                     )
                     {
-                        // check for XG
-                        if(
-                            event.messageData[0] === 0x43 && // yamaha
-                            event.messageData[2] === 0x4C && // sXG ON
-                            event.messageData[5] === 0x7E &&
-                            event.messageData[6] === 0x00
-                        )
-                        {
-                            system = "xg";
-                        }
-                        continue;
+                        system = "xg";
                     }
-                    const sysexChannel = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15][event.messageData[5] & 0x0F] + portOffset;
-                    const isDrum = !!(event.messageData[7] > 0 && event.messageData[5] >> 4);
-                    ch = channelPresets[sysexChannel];
-                    ch.drums = isDrum;
-                    ch.bank = isDrum ? 128 : 0;
-                    updateString(ch);
-                    break;
+                    continue;
+                }
+                const sysexChannel = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15][event.messageData[5] & 0x0F] + mid.midiPortChannelOffsets[ports[trackNum]];
+                const isDrum = !!(event.messageData[7] > 0 && event.messageData[5] >> 4);
+                ch = channelPresets[sysexChannel];
+                ch.drums = isDrum;
+                ch.bank = isDrum ? 128 : 0;
+                updateString(ch);
+                break;
 
-            }
         }
-    });
+    }
     for(const key of Object.keys(usedProgramsAndKeys))
     {
         if(usedProgramsAndKeys[key].size === 0)

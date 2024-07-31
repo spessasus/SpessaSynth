@@ -16,3 +16,5 @@ Note: All these are not documented in the wiki as they are not the part of the S
 You're on your own!
 
 Note 2: Pretty much all of these require a SpessaSynth instance to work, so they can't be used for different synths without large modifications.
+
+Note 3: use `minify_website.sh` to minify the code.
