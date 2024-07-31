@@ -91,7 +91,7 @@ export class Selector
                     htmlString += "</optgroup>";
                 }
             }
-            if(isInGroup)
+            if(isInGroup || (preset.bank !== 0 && preset.bank !== 128))
             {
                 htmlString += `<option class='selector_option' value='${preset.bank}:${preset.program}'>${preset.bank}:${preset.program}. ${preset.name}</option>`;
             }
