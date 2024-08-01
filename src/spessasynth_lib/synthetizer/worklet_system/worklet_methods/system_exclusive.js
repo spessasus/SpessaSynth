@@ -42,45 +42,69 @@ export function systemExclusive(messageData, channelOffset = 0)
             break;
 
         // realtime
+        // https://midi.org/midi-1-0-universal-system-exclusive-messages
         case 0x7F:
-            if(messageData[2] === 0x04 && messageData[3] === 0x01)
+            if(messageData[2] === 0x04)
             {
-                // main volume
-                const vol = messageData[5] << 7 | messageData[4];
-                this.setMIDIVolume(vol / 16384);
-                SpessaSynthInfo(`%cMaster Volume. Volume: %c${vol}`,
-                    consoleColors.info,
-                    consoleColors.value);
-            }
-            else
-            if(messageData[2] === 0x04 && messageData[3] === 0x03)
-            {
-                // fine tuning
-                const tuningValue = ((messageData[5] << 7) | messageData[6]) - 8192;
-                const cents = Math.floor(tuningValue / 81.92); // [-100;+99] cents range
-                this.setMasterTuning(cents);
-                SpessaSynthInfo(`%cMaster Fine Tuning. Cents: %c${cents}`,
-                    consoleColors.info,
-                    consoleColors.value)
-            }
-            else
-            if(messageData[2] === 0x04 && messageData[3] === 0x04)
-            {
-                // coarse tuning
-                // lsb is ignored
-                const semitones = messageData[5] - 64;
-                const cents = semitones * 100;
-                this.setMasterTuning(cents);
-                SpessaSynthInfo(`%cMaster Coarse Tuning. Cents: %c${cents}`,
-                    consoleColors.info,
-                    consoleColors.value)
+                let cents
+                // device control
+                switch(messageData[3])
+                {
+                    case 0x01:
+                        // main volume
+                        const vol = messageData[5] << 7 | messageData[4];
+                        this.setMIDIVolume(vol / 16384);
+                        SpessaSynthInfo(`%cMaster Volume. Volume: %c${vol}`,
+                            consoleColors.info,
+                            consoleColors.value);
+                        break;
+
+                    case 0x02:
+                        // main balance
+                        // midi spec page 62
+                        const balance = messageData[5] << 7 | messageData[4];
+                        const pan = (balance - 8192) / 8192;
+                        this.setMasterPan(pan);
+                        SpessaSynthInfo(`%cMaster Pan. Pan: %c${pan}`,
+                            consoleColors.info,
+                            consoleColors.value);
+                        break;
+
+
+                    case 0x03:
+                        // fine tuning
+                        const tuningValue = ((messageData[5] << 7) | messageData[6]) - 8192;
+                        cents = Math.floor(tuningValue / 81.92); // [-100;+99] cents range
+                        this.setMasterTuning(cents);
+                        SpessaSynthInfo(`%cMaster Fine Tuning. Cents: %c${cents}`,
+                            consoleColors.info,
+                            consoleColors.value);
+                        break;
+
+                    case 0x04:
+                        // coarse tuning
+                        // lsb is ignored
+                        const semitones = messageData[5] - 64;
+                        cents = semitones * 100;
+                        this.setMasterTuning(cents);
+                        SpessaSynthInfo(`%cMaster Coarse Tuning. Cents: %c${cents}`,
+                            consoleColors.info,
+                            consoleColors.value)
+                        break;
+
+                    default:
+                        SpessaSynthWarn(
+                            `%cUnrecognized MIDI Device Control Real-time message: %c${arrayToHexString(messageData)}`,
+                            consoleColors.warn,
+                            consoleColors.unrecognized);
+                }
             }
             else
             {
                 SpessaSynthWarn(
                     `%cUnrecognized MIDI Real-time message: %c${arrayToHexString(messageData)}`,
                     consoleColors.warn,
-                    consoleColors.unrecognized)
+                    consoleColors.unrecognized);
             }
             break;
 
@@ -181,7 +205,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                         }
                     }
                     else
-                        // this is a global system parameter
+                    // this is a global system parameter
                     if(messageData[5] === 0x00 && messageData[6] === 0x06)
                     {
                         // roland master pan
