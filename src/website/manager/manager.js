@@ -203,11 +203,11 @@ class Manager
         this.synthUI = new SynthetizerUI(this.channelColors, document.getElementById("synthetizer_controls"), this.localeManager);
         this.synthUI.connectSynth(this.synth);
 
-        // create an UI for sequencer
-        this.seqUI = new SequencerUI(document.getElementById("sequencer_controls"), this.localeManager);
-
         // create an UI for music player mode
         this.playerUI = new MusicModeUI(document.getElementById("player_info"), this.localeManager);
+
+        // create an UI for sequencer
+        this.seqUI = new SequencerUI(document.getElementById("sequencer_controls"), this.localeManager, this.playerUI);
 
         // set up settings UI
         this.settingsUI = new SpessaSynthSettings(

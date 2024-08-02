@@ -12,7 +12,7 @@ export function getUsedProgramsAndKeys(mid, soundfont)
     SpessaSynthGroupCollapsed("%cSearching for all used programs and keys...",
         consoleColors.info);
     // find every bank:program combo and every key:velocity for each. Make sure to care about ports and drums
-    const channelsAmount = 16 + Math.max.apply(undefined, mid.midiPortChannelOffsets);
+    const channelsAmount = 16 + mid.midiPortChannelOffsets.reduce((max, cur) => cur > max ? cur: max);
     /**
      * @type {{program: number, bank: number, drums: boolean, string: string}[]}
      */

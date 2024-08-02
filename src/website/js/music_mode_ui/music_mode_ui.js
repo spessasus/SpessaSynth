@@ -42,23 +42,21 @@ export class MusicModeUI {
     }
 
     /**
+     * @param title {string}
+     */
+    setTitle(title)
+    {
+        // get the title
+        document.getElementById("player_info_title").textContent = title;
+    }
+
+    /**
      * @param seq {Sequencer}
      */
     connectSequencer(seq)
     {
         this.seq = seq;
         this.seq.addOnSongChangeEvent(mid => {
-            // get the title
-            let title;
-            if(mid.midiName.length > 0)
-            {
-                title = mid.midiName;
-            }
-            else
-            {
-                title =  mid.fileName;
-            }
-            document.getElementById("player_info_title").textContent = title;
             // use file name if no copyright detected
             if(mid.copyright.replaceAll("\n", "").length > 0)
             {

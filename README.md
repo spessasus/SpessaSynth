@@ -43,25 +43,29 @@ This repository contains both the library and a complete musical web application
 - **Reverb and chorus support:** [customizable!](https://github.com/spessasus/SpessaSynth/wiki/Synthetizer-Class#effects-configuration-object)
 - **Export audio files** using [OfflineAudioContext](https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext)
 - **[Custom modulators for additional controllers](https://github.com/spessasus/SpessaSynth/wiki/Modulator-Class#default-modulators):** Why not?
-- **Written using AudioWorklets:** runs in a separate thread for maximum performance, works perfectly in Firefox and Chrome!
+- **Written using AudioWorklets:** 
+- - Runs in a **separate thread** for maximum performance
+- - Supported by all modern browsers
 - **Unlimited channel count:** Your CPU is the limit!
 - **Various MIDI Standards Support:**
 - - **MIDI Controller Support:** Default supported controllers [here](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-controllers)
 - - [Full **RPN** and limited **NRPN** support](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-registered-parameters)
 - - Supports some [**Roland GS** and **Yamaha XG** system exclusives](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-system-exclusives)
 - **High-performance mode:** Play Rush E! _note: may kill your browser ;)_
-- **Written in pure JavaScript using the WebAudio API:** Supported by all modern browsers!
 
 ### Built-in Powerful and Fast Sequencer
 - **Supports MIDI formats 0, 1, and 2:** _note: format 2 support is experimental as it's very, very rare_
 - **[Multi-Port MIDI](https://github.com/spessasus/SpessaSynth/wiki/About-Multi-Port) support:** More than 16 channels!
 - **Smart preloading:** Only preloads the samples used in the MIDI file for smooth playback (down to key and velocity!)
 - **Lyrics support:** Add karaoke to your program!
-- **Raw lyrics available:** Decode in any encoding! (Kanji? No problem!)
+- **Raw lyrics available:** Decode in any encoding! *(Kanji? No problem!)*
+- **Runs in Audio Thread as well:** Never blocks the main thread
+- **Loop points support:** Ensures seamless loops
 
 ### Read and Write SoundFont and MIDI Files with Ease
 #### Read and write MIDI files
   - **Smart name detection:** Handles incorrectly formatted and non-standard track names
+  - **Raw name available:** Decode in any encoding! *(Kanji? No problem!)*
   - **Port detection during load time:** Manage ports and channels easily!
   - **Used channels on track:** Quickly determine which channels are used
   - **Key range detection:** Detect the key range of the MIDI
@@ -73,7 +77,8 @@ This repository contains both the library and a complete musical web application
   - **Compression and trimming support:** Reduce a MIDI file with a 1GB soundfont to **as small as 5MB**!
   - **Easy saving:** [As simple as saving a MIDI file!](https://github.com/spessasus/SpessaSynth/wiki/Writing-MIDI-Files#writermidi)
 #### Read and write SoundFont2 files
-  - **Smart trimming:** Trim the SoundFont to only include samples used in the MIDI (down to key and velocity!)
+  - **Easy info access:** Just an [object of strings!](https://github.com/spessasus/SpessaSynth/wiki/SoundFont2-Class#soundfontinfo)
+  - **Smart trimming:** Trim the SoundFont to only include samples used in the MIDI *(down to key and velocity!)*
   - **sf3 conversion:** Compress SoundFont2 files to SoundFont3!
   - **Easy saving:** Also just [one function!](https://github.com/spessasus/SpessaSynth/wiki/SoundFont2-Class#write)
 #### Read and write SoundFont3 files

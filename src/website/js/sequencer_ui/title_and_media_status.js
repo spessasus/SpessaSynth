@@ -67,7 +67,8 @@ export function updateTitleAndMediaStatus()
         this.rawOtherTextEvents = [];
     }
     document.getElementById("title").innerText = this.currentSongTitle;
-    document.title = this.currentSongTitle + " - SpessaSynth"
+    document.title = this.currentSongTitle + " - SpessaSynth";
+    this.musicModeUI.setTitle(this.currentSongTitle);
 
     if(!navigator.mediaSession)
     {
