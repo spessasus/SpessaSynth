@@ -217,12 +217,14 @@ export function modifyMIDI(
                             (event.messageStatusByte > 0x80 && event.messageStatusByte < 0xF0) &&
                             // event has the channel we want
                             (event.messageStatusByte & 0xF) === chan &&
-                            // event is not a controller change which resets all controllers or kills all sounds
-                            (
-                                (event.messageStatusByte & 0xF0) === messageTypes.controllerChange &&
-                                event.messageData[0] !== midiControllers.resetAllControllers &&
-                                event.messageData[0] !== midiControllers.allNotesOff &&
-                                event.messageData[0] !== midiControllers.allSoundOff
+                            // event is not one of the controller changes that reset things
+                            !(
+                                (event.messageStatusByte & 0xF0 === messageTypes.controllerChange) &&
+                                (
+                                    event.messageData[0] === midiControllers.resetAllControllers ||
+                                    event.messageData[0] === midiControllers.allNotesOff ||
+                                    event.messageData[0] === midiControllers.allSoundOff
+                                )
                             )
                         );
                     }
