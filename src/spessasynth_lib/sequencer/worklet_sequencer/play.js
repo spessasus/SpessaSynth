@@ -45,9 +45,32 @@ export function _playTo(time, ticks = undefined)
 
     /**
      * Save programs here and send them only after
-     * @type {number[]}
+     * @type {{program: number, bank: number, actualBank: number}[]}
      */
-    const programs = Array(channelsToSave).fill(-1  );
+    const programs = [];
+    for (let i = 0; i < channelsToSave; i++)
+    {
+        programs.push({
+            program: -1,
+            bank: 0,
+            actualBank: 0,
+        });
+    }
+
+    const isCCNonSkippable = controllerNumber => (
+        controllerNumber === midiControllers.dataDecrement           ||
+        controllerNumber === midiControllers.dataIncrement           ||
+        controllerNumber === midiControllers.dataEntryMsb            ||
+        controllerNumber === midiControllers.dataDecrement           ||
+        controllerNumber === midiControllers.lsbForControl6DataEntry ||
+        controllerNumber === midiControllers.RPNLsb                  ||
+        controllerNumber === midiControllers.RPNMsb                  ||
+        controllerNumber === midiControllers.NRPNLsb                 ||
+        controllerNumber === midiControllers.NRPNMsb                 ||
+        controllerNumber === midiControllers.bankSelect              ||
+        controllerNumber === midiControllers.lsbForControl0BankSelect||
+        controllerNumber === midiControllers.resetAllControllers
+    );
 
     /**
      * Save controllers here and send them only after
@@ -97,26 +120,15 @@ export function _playTo(time, ticks = undefined)
                 break;
 
             case messageTypes.programChange:
-                programs[channel] = event.messageData[0];
+                const p = programs[channel];
+                p.program = event.messageData[0];
+                p.actualBank = p.bank;
                 break;
 
             case messageTypes.controllerChange:
                 // do not skip data entries
                 const controllerNumber = event.messageData[0];
-                if(
-                    controllerNumber === midiControllers.dataDecrement           ||
-                    controllerNumber === midiControllers.dataIncrement           ||
-                    controllerNumber === midiControllers.dataEntryMsb            ||
-                    controllerNumber === midiControllers.dataDecrement           ||
-                    controllerNumber === midiControllers.lsbForControl6DataEntry ||
-                    controllerNumber === midiControllers.RPNLsb                  ||
-                    controllerNumber === midiControllers.RPNMsb                  ||
-                    controllerNumber === midiControllers.NRPNLsb                 ||
-                    controllerNumber === midiControllers.NRPNMsb                 ||
-                    controllerNumber === midiControllers.bankSelect              ||
-                    controllerNumber === midiControllers.lsbForControl0BankSelect||
-                    controllerNumber === midiControllers.resetAllControllers
-                )
+                if(isCCNonSkippable(controllerNumber))
                 {
                     if(this.sendMIDIMessages)
                     {
@@ -125,10 +137,16 @@ export function _playTo(time, ticks = undefined)
                     else
                     {
                         let ccV = event.messageData[1];
-                        if(this.midiData.embeddedSoundFont !== undefined && controllerNumber === midiControllers.bankSelect)
+                        if(controllerNumber === midiControllers.bankSelect)
                         {
-                            // special case if the RMID is embedded: subtract 1 from bank. See wiki About-RMIDI
-                            ccV--;
+                            if(this.midiData.embeddedSoundFont !== undefined)
+                            {
+                                // special case if the RMID is embedded: subtract 1 from bank. See wiki About-RMIDI
+                                ccV--;
+                            }
+                            // add the bank to saved
+                            programs[channel].bank = ccV;
+                            break;
                         }
                         this.synth.controllerChange(channel, controllerNumber, ccV);
                     }
@@ -170,16 +188,18 @@ export function _playTo(time, ticks = undefined)
 
             // every controller that has changed
             savedControllers[channelNumber].forEach((value, index) => {
-                if(value !== defaultControllerArray[index])
+                if(value !== defaultControllerArray[index] && !isCCNonSkippable(index))
                 {
                     this.sendMIDIMessage([messageTypes.controllerChange | (channelNumber % 16), index, value])
                 }
             });
 
             // restore programs
-            if(programs[channelNumber] !== 0)
+            if(programs[channelNumber].program !== -1)
             {
-                this.sendMIDIMessage([messageTypes.programChange | (channelNumber % 16), programs[channelNumber]]);
+                const bank = programs[channelNumber].actualBank;
+                this.sendMIDIMessage([messageTypes.controllerChange | (channelNumber % 16), midiControllers.bankSelect, bank]);
+                this.sendMIDIMessage([messageTypes.programChange | (channelNumber % 16), programs[channelNumber].program]);
             }
         }
     }
@@ -197,16 +217,18 @@ export function _playTo(time, ticks = undefined)
             {
                 // every controller that has changed
                 savedControllers[channelNumber].forEach((value, index) => {
-                    if(value !== defaultControllerArray[index])
+                    if(value !== defaultControllerArray[index] && !isCCNonSkippable(index))
                     {
                         this.synth.controllerChange(channelNumber, index, value);
                     }
                 })
             }
             // restore programs
-            if(programs[channelNumber] !== -1)
+            if(programs[channelNumber].program !== -1)
             {
-                this.synth.programChange(channelNumber, programs[channelNumber]);
+                const bank = programs[channelNumber].actualBank;
+                this.synth.controllerChange(channelNumber, midiControllers.bankSelect, bank);
+                this.synth.programChange(channelNumber, programs[channelNumber].program);
             }
         }
     }
