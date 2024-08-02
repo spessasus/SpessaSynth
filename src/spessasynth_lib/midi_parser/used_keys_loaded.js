@@ -155,6 +155,7 @@ export function getUsedProgramsAndKeys(mid, soundfont)
                     // that's a note off
                     continue;
                 }
+                updateString(ch);
                 usedProgramsAndKeys[ch.string].add(`${event.messageData[0]}-${event.messageData[1]}`);
                 break;
 
