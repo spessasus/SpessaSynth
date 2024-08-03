@@ -148,7 +148,6 @@ export function loadNewSongList(midiBuffers)
     }, []);
     if(this.songs.length < 1)
     {
-        console.log("no valid songs!")
         return;
     }
     this.songIndex = 0;

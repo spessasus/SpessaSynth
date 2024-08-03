@@ -58,6 +58,11 @@ export function processMessage(messageType, messageData)
 
         case WorkletSequencerMessageType.getMIDI:
             this.post(WorkletSequencerReturnMessageType.getMIDI, this.midiData);
+            break;
+
+        case WorkletSequencerMessageType.setSkipToFirstNote:
+            this._skipToFirstNoteOn = messageData;
+            break;
     }
 }
 

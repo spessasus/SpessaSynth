@@ -88,6 +88,12 @@ class WorkletSequencer
          * @type {Object<number, number>}
          */
         this.midiPortChannelOffsets = {};
+
+        /**
+         * @type {boolean}
+         * @private
+         */
+        this._skipToFirstNoteOn = true;
     }
 
     /**
@@ -113,11 +119,26 @@ class WorkletSequencer
 
     set currentTime(time)
     {
-        if(time < this.firstNoteTime || time > this.duration)
+        if(time > this.duration || time < 0)
         {
             // time is 0
-            this.setTimeTicks(this.midiData.firstNoteOn - 1);
+            if(this._skipToFirstNoteOn)
+            {
+                this.setTimeTicks(this.midiData.firstNoteOn - 1);
+            }
+            else
+            {
+                this.setTimeTicks(0);
+            }
             return;
+        }
+        if(this._skipToFirstNoteOn)
+        {
+            if(time < this.firstNoteTime)
+            {
+                this.setTimeTicks(this.midiData.firstNoteOn - 1);
+                return;
+            }
         }
         this.stop();
         this.playingNotes = [];

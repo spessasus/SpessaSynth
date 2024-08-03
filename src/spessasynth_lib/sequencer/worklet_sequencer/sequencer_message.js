@@ -10,6 +10,7 @@
  * @property {number} setLoop                  - 7 -> loop<boolean>
  * @property {number} changeSong               - 8 -> goForwards<boolean> if true, next song, if false, previous
  * @property {number} getMIDI                  - 9 -> (no data)
+ * @property {number} setSkipToFirstNote       -10 -> skipToFirstNoteOn<boolean>
  */
 export const WorkletSequencerMessageType = {
     loadNewSongList: 0,
@@ -21,7 +22,8 @@ export const WorkletSequencerMessageType = {
     setPlaybackRate: 6,
     setLoop: 7,
     changeSong: 8,
-    getMIDI: 9
+    getMIDI: 9,
+    setSkipToFirstNote: 10
 }
 
 /**

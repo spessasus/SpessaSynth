@@ -24,14 +24,26 @@ import { DUMMY_MIDI_DATA, MidiData } from '../midi_parser/midi_data.js'
  * @typedef {MIDI|MidFile} MIDIFile
  */
 
+/**
+ * @typedef {Object} SequencerOptions
+ * @property {boolean} skipToFirstNoteOn - if true, the sequencer will skip to the first note
+ */
+
+/**
+ * @type {SequencerOptions}
+ */
+const DEFAULT_OPTIONS = {
+    skipToFirstNoteOn: true,
+}
 export class Sequencer
 {
     /**
      * Creates a new Midi sequencer for playing back MIDI files
      * @param midiBinaries {MIDIFile[]} List of the buffers of the MIDI files
      * @param synth {Synthetizer} synth to send events to
+     * @param options {SequencerOptions} the sequencer's options
      */
-    constructor(midiBinaries, synth)
+    constructor(midiBinaries, synth, options = DEFAULT_OPTIONS)
     {
         this.ignoreEvents = false;
         this.synth = synth;
@@ -73,9 +85,40 @@ export class Sequencer
 
         this.synth.sequencerCallbackFunction = this._handleMessage.bind(this);
 
+        /**
+         * @type {boolean}
+         * @private
+         */
+        this._skipToFirstNoteOn = options?.skipToFirstNoteOn ?? true;
+
+        if(this._skipToFirstNoteOn === false)
+        {
+            // setter sends message
+            this._sendMessage(WorkletSequencerMessageType.setSkipToFirstNote, false);
+        }
+
         this.loadNewSongList(midiBinaries);
 
         window.addEventListener("beforeunload", this.resetMIDIOut.bind(this))
+    }
+
+    /**
+     * Indicates if the sequencer should skip to first note on
+     * @return {boolean}
+     */
+    get skipToFirstNoteOn()
+    {
+        return this._skipToFirstNoteOn;
+    }
+
+    /**
+     * Indicates if the sequencer should skip to first note on
+     * @param val {boolean}
+     */
+    set skipToFirstNoteOn(val)
+    {
+        this._skipToFirstNoteOn = val;
+        this._sendMessage(WorkletSequencerMessageType.setSkipToFirstNote, this._skipToFirstNoteOn);
     }
 
     resetMIDIOut()
