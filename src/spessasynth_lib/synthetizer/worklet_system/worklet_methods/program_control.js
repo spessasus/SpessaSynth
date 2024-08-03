@@ -24,7 +24,7 @@ export function programChange(channel, programNumber, userChange=false)
         return;
     }
     // always 128 for percussion
-    const bank = channelObject.drumChannel ? 128 : channelObject.midiControllers[midiControllers.bankSelect];
+    const bank = channelObject.drumChannel ? 128 : channelObject.midiControllers[midiControllers.bankSelect] - this.soundfontBankOffset;
     const preset = this.soundfont.getPreset(bank, programNumber);
     this.setPreset(channel, preset);
     this.callEvent("programchange",{

@@ -139,11 +139,6 @@ export function _playTo(time, ticks = undefined)
                         let ccV = event.messageData[1];
                         if(controllerNumber === midiControllers.bankSelect)
                         {
-                            if(this.midiData.embeddedSoundFont !== undefined)
-                            {
-                                // special case if the RMID is embedded: subtract 1 from bank. See wiki About-RMIDI
-                                ccV--;
-                            }
                             // add the bank to saved
                             programs[channel].bank = ccV;
                             break;

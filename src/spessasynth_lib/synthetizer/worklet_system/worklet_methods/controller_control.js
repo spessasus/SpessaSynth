@@ -179,6 +179,7 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
 }
 
 /**
+ * @param volume {number} 0 to 1
  * @this {SpessaSynthProcessor}
  */
 export function setMIDIVolume(volume)

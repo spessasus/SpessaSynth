@@ -1,5 +1,6 @@
 import { arrayToHexString, consoleColors } from '../../../utils/other.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../../../utils/loggin.js'
+import { midiControllers } from '../../../midi_parser/midi_message.js'
 /**
  * Executes a system exclusive
  * @param messageData {number[]|IndexedByteArray} - the message data without f0
@@ -273,12 +274,108 @@ export function systemExclusive(messageData, channelOffset = 0)
             }
 
         // yamaha
+        // http://www.studio4all.de/htmle/main91.html
         case 0x43:
-            // XG on
-            if(messageData[2] === 0x4C && messageData[5] === 0x7E && messageData[6] === 0x00)
+            // XG sysex
+            if(messageData[2] === 0x4C)
             {
-                SpessaSynthInfo("%cXG system on", consoleColors.info);
-                this.system = "xg";
+                // XG system parameter
+                if(messageData[3] === 0x00 && messageData[4] === 0x00)
+                {
+                    switch (messageData[5])
+                    {
+                        // master volume
+                        case 0x04:
+                            const vol = messageData[6];
+                            this.setMIDIVolume(vol / 127);
+                            SpessaSynthInfo(`%cXG master volume. Volume: %c${vol}`,
+                                consoleColors.info,
+                                consoleColors.recognized);
+                            break;
+
+                        // master transpose
+                        case 0x06:
+                            const transpose = messageData[6] - 64;
+                            this.transposeAllChannels(transpose);
+                            SpessaSynthInfo(`%cXG master transpose. Volume: %c${transpose}`,
+                                consoleColors.info,
+                                consoleColors.recognized);
+                            break;
+
+                        // XG on
+                        case 0x7E:
+                            SpessaSynthInfo("%cXG system on", consoleColors.info);
+                            this.system = "xg";
+                            break;
+                    }
+                }
+                else
+                // XG part parameter
+                if(messageData[3] === 0x08)
+                {
+                    if(this.system !== "xg")
+                    {
+                        return;
+                    }
+                    const channel = messageData[4] + channelOffset;
+                    const value = messageData[6]
+                    switch (messageData[5])
+                    {
+                        // bank select
+                        case 0x01:
+                            this.controllerChange(channel, midiControllers.bankSelect, value);
+                            break;
+
+                        // bank select lsb
+                        case 0x02:
+                            this.controllerChange(channel, midiControllers.lsbForControl0BankSelect, value);
+                            break;
+
+                        // program change
+                        case 0x03:
+                            this.programChange(channel, value);
+                            break;
+
+                        // volume
+                        case 0x0B:
+                            this.controllerChange(channel, midiControllers.mainVolume, value);
+                            break;
+
+                        // panpot
+                        case 0x0E:
+                            let pan = value;
+                            if(pan === 0)
+                            {
+                                // 0 means random
+                                pan = Math.floor(Math.random() * 127);
+                            }
+                            this.controllerChange(channel, midiControllers.pan, pan);
+                            break;
+
+                        // reverb
+                        case 0x13:
+                            this.controllerChange(channel, midiControllers.effects1Depth, value);
+                            break;
+
+                        // chorus
+                        case 0x12:
+                            this.controllerChange(channel, midiControllers.effects3Depth, value);
+                            break;
+
+                        default:
+                            SpessaSynthWarn(`%cUnrecognized Yamaha XG Part Setup: %c${messageData[5].toString(16).toUpperCase()}`,
+                                consoleColors.warn,
+                                consoleColors.unrecognized);
+                    }
+                }
+                else
+                if(this.system === "xg")
+                {
+                    SpessaSynthWarn(`%cUnrecognized Yamaha XG SysEx: %c${arrayToHexString(messageData)}`,
+                        consoleColors.warn,
+                        consoleColors.unrecognized);
+                }
+
             }
             else
             {

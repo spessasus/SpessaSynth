@@ -39,6 +39,10 @@ export function dataEntryCoarse(channel, dataValue)
         // https://cdn.roland.com/assets/media/pdf/SC-88PRO_OM.pdf
         // http://hummer.stanford.edu/sig/doc/classes/MidiOutput/rpn.html
         case dataEntryStates.NRPFine:
+            if(this.system !== "gs")
+            {
+                return;
+            }
             switch(channelObject.NRPCoarse)
             {
                 default:

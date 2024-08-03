@@ -82,6 +82,12 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
         this.transposition = 0;
 
         /**
+         * Bank offset for things like embedded RMIDIS. Added for every program change
+         * @type {number}
+         */
+        this.soundfontBankOffset = 0;
+
+        /**
          * The volume gain, set by user
          * @type {number}
          */

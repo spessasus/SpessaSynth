@@ -1,4 +1,4 @@
-import { getEvent, messageTypes, midiControllers } from '../../midi_parser/midi_message.js'
+import { getEvent, messageTypes } from '../../midi_parser/midi_message.js'
 import { WorkletSequencerReturnMessageType } from './sequencer_message.js'
 import { consoleColors } from '../../utils/other.js'
 import { SpessaSynthWarn } from '../../utils/loggin.js'
@@ -67,13 +67,7 @@ export function _processEvent(event, trackIndex)
             break;
 
         case messageTypes.controllerChange:
-            // special case if the RMID is embedded: subtract 1 from bank. See wiki About-RMIDI
-            let v = event.messageData[1];
-            if(this.midiData.embeddedSoundFont && event.messageData[0] === midiControllers.bankSelect)
-            {
-                v--;
-            }
-            this.synth.controllerChange(statusByteData.channel, event.messageData[0], v);
+            this.synth.controllerChange(statusByteData.channel, event.messageData[0], event.messageData[1]);
             break;
 
         case messageTypes.programChange:

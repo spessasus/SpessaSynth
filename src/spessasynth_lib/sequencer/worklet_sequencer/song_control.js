@@ -57,6 +57,8 @@ export function loadNewSequence(parsedMidi)
     if(this.midiData.embeddedSoundFont !== undefined)
     {
         this.synth.reloadSoundFont(this.midiData.embeddedSoundFont);
+        // set offet
+        this.synth.soundfontBankOffset = 1;
         // preload all samples
         this.synth.soundfont.samples.forEach(s => s.getAudioData());
     }
