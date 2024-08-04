@@ -36,11 +36,22 @@ export async function _exportRMIDI()
                 }
             },
             {
+                type: "input",
+                translatePathTitle: path + "bankOffset",
+                attributes: {
+                    "type": "number",
+                    "min": "0",
+                    "max": "127",
+                    "value": "0",
+                }
+            },
+            {
                 type: "button",
                 textContent: this.localeManager.getLocaleString(path + "confirm"),
                 onClick: async n => {
                     const compressed = n.div.querySelector("input[compress-toggle='1']").checked;
                     const quality = parseInt(n.div.querySelector("input[type='range']").value) / 10;
+                    const bankOffset = parseInt(n.div.querySelector("input[type='number']").value);
                     closeNotification(n.id);
 
                     SpessaSynthGroupCollapsed("%cExporting RMIDI...",
@@ -82,7 +93,7 @@ export async function _exportRMIDI()
                     message.textContent = this.localeManager.getLocaleString(localePath + "saving");
                     await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
 
-                    const rmidBinary = writeRMIDI(newFont, mid, font);
+                    const rmidBinary = writeRMIDI(newFont, mid, font, bankOffset, this.seqUI.encoding);
                     const blob = new Blob([rmidBinary.buffer], {type: "audio/rmid"})
                     this.saveBlob(blob, `${mid.midiName || "unnamed_song"}.rmi`);
                     message.textContent = this.localeManager.getLocaleString(localePath + "done");

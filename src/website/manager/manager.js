@@ -111,9 +111,13 @@ class Manager
             this.localeManager.bindObjectProperty(element, "title", element.getAttribute("translate-path-title") + ".description");
         }
 
+        const DEBUG_PATH = "synthetizer/worklet_system/worklet_processor.js";
+        const D = false;
+        const WORKLET_PATH = D ? DEBUG_PATH : WORKLET_URL_ABSOLUTE;
+
         if(context.audioWorklet)
         {
-            await context.audioWorklet.addModule(new URL ("../../spessasynth_lib/" + WORKLET_URL_ABSOLUTE, import.meta.url));
+            await context.audioWorklet.addModule(new URL ("../../spessasynth_lib/" + WORKLET_PATH, import.meta.url));
         }
         // set up soundfont
         this.soundFont = soundFont;

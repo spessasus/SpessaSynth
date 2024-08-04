@@ -190,7 +190,7 @@ export function _playTo(time, ticks = undefined)
             });
 
             // restore programs
-            if(programs[channelNumber].program !== -1)
+            if(programs[channelNumber].program >= 0 && programs[channelNumber].actualBank >= 0)
             {
                 const bank = programs[channelNumber].actualBank;
                 this.sendMIDIMessage([messageTypes.controllerChange | (channelNumber % 16), midiControllers.bankSelect, bank]);
@@ -219,7 +219,7 @@ export function _playTo(time, ticks = undefined)
                 })
             }
             // restore programs
-            if(programs[channelNumber].program !== -1)
+            if(programs[channelNumber].program >= 0 && programs[channelNumber].actualBank >= 0)
             {
                 const bank = programs[channelNumber].actualBank;
                 this.synth.controllerChange(channelNumber, midiControllers.bankSelect, bank);

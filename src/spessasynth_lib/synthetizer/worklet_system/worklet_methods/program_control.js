@@ -24,7 +24,8 @@ export function programChange(channel, programNumber, userChange=false)
         return;
     }
     // always 128 for percussion
-    const bank = channelObject.drumChannel ? 128 : channelObject.midiControllers[midiControllers.bankSelect] - this.soundfontBankOffset;
+    const bankWithOffset = Math.max(0, channelObject.midiControllers[midiControllers.bankSelect] - this.soundfontBankOffset);
+    const bank = channelObject.drumChannel ? 128 : bankWithOffset;
     const preset = this.soundfont.getPreset(bank, programNumber);
     this.setPreset(channel, preset);
     this.callEvent("programchange",{
@@ -65,6 +66,10 @@ export function setDrums(channel, isDrum)
 {
     const channelObject = this.workletProcessorChannels[channel];
     if(channelObject.lockPreset)
+    {
+        return;
+    }
+    if(channelObject.drumChannel === isDrum)
     {
         return;
     }
@@ -128,7 +133,8 @@ export function reloadSoundFont(buffer)
     {
         const channelObject = this.workletProcessorChannels[i];
         channelObject.cachedVoices = [];
-        for (let j = 0; j < 128; j++) {
+        for (let j = 0; j < 128; j++)
+        {
             channelObject.cachedVoices.push([]);
         }
         channelObject.lockPreset = false;

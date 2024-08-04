@@ -6,6 +6,8 @@ import { readRIFFChunk } from '../soundfont/read/riff_chunk.js'
 import { readVariableLengthQuantity } from '../utils/byte_functions/variable_length_quantity.js'
 import { readBytesAsUintBigEndian } from '../utils/byte_functions/big_endian.js'
 import { readBytesAsString } from '../utils/byte_functions/string.js'
+import { readBytesAsUintLittleEndian } from '../utils/byte_functions/little_endian.js'
+import { RMIDINFOChunks } from './rmidi_writer.js'
 
 /**
  * midi_loader.js
@@ -30,16 +32,35 @@ class MIDI{
         this.embeddedSoundFont = undefined;
 
         /**
+         * The RMID Info data if RMID, otherwise undefined
+         * @type {Object<string, IndexedByteArray>}
+         */
+        this.RMIDInfo = undefined;
+        /**
+         * The bank offset for RMIDI
+         * @type {number}
+         */
+        this.bankOffset = 0;
+
+        /**
          * Contains the copyright strings
          * @type {string}
          */
         this.copyright = "";
 
+        /**
+         * The MIDI name
+         * @type {string}
+         */
+        this.midiName = "";
+
+        this.rawMidiName = new Uint8Array(0);
+
         const initialString = readBytesAsString(binaryData, 4);
         binaryData.currentIndex -= 4;
         if(initialString === "RIFF")
         {
-            // possibly an RMID file (https://web.archive.org/web/20110610135604/http://www.midi.org/about-midi/rp29spec(rmid).pdf)
+            // possibly an RMID file (https://github.com/spessasus/SpessaSynth/wiki/About-RMIDI)
             // skip size
             binaryData.currentIndex += 8;
             const rmid = readBytesAsString(binaryData, 4, undefined, false);
@@ -69,6 +90,34 @@ class MIDI{
                     {
                         SpessaSynthInfo("%cFound embedded soundfont!", consoleColors.recognized);
                         this.embeddedSoundFont = binaryData.slice(startIndex, startIndex + currentChunk.size).buffer;
+                    }
+                }
+                else if(currentChunk.header === "LIST")
+                {
+                    const type = readBytesAsString(currentChunk.chunkData, 4);
+                    if(type === "INFO")
+                    {
+                        SpessaSynthInfo("%cFound RMIDI INFO chunk!", consoleColors.recognized);
+                        this.RMIDInfo = {};
+                        while(currentChunk.chunkData.currentIndex <= currentChunk.size)
+                        {
+                            const infoChunk = readRIFFChunk(currentChunk.chunkData, true);
+                            this.RMIDInfo[infoChunk.header] = infoChunk.chunkData;
+                        }
+                        if(this.RMIDInfo['ICOP'])
+                        {
+                            this.copyright += readBytesAsString(this.RMIDInfo['ICOP'], this.RMIDInfo['ICOP'].length);
+                        }
+                        if(this.RMIDInfo['INAM'])
+                        {
+                            this.rawMidiName = this.RMIDInfo[RMIDINFOChunks.name];
+                            this.midiName = readBytesAsString(this.rawMidiName,  this.rawMidiName.length);
+                        }
+                        this.bankOffset = 1; // defaults to 1
+                        if(this.RMIDInfo[RMIDINFOChunks.bankOffset])
+                        {
+                            this.bankOffset = readBytesAsUintLittleEndian(this.RMIDInfo[RMIDINFOChunks.bankOffset], 2);
+                        }
                     }
                 }
             }
@@ -420,37 +469,38 @@ class MIDI{
          */
         this.loop = {start: loopStart, end: loopEnd};
 
-        // get track name
-        this.midiName = "";
-
-        this.rawMidiName = new Uint8Array(0);
-
         // midi name
-        if(this.tracks.length > 1)
+        if(this.midiName.length < 1)
         {
-            // if more than 1 track and the first track has no notes, just find the first trackName in the first track
-            if(this.tracks[0].find(
-                message => message.messageStatusByte >= messageTypes.noteOn
-                &&
-                message.messageStatusByte < messageTypes.systemExclusive
-            ) === undefined)
+            if (this.tracks.length > 1)
             {
+                // if more than 1 track and the first track has no notes, just find the first trackName in the first track
+                if (
+                    this.tracks[0].find(
+                    message => message.messageStatusByte >= messageTypes.noteOn
+                        &&
+                        message.messageStatusByte < messageTypes.systemExclusive
+                    ) === undefined
+                )
+                {
+
+                    let name = this.tracks[0].find(message => message.messageStatusByte === messageTypes.trackName);
+                    if (name)
+                    {
+                        this.rawMidiName = name.messageData;
+                        this.midiName = readBytesAsString(name.messageData, name.messageData.length, undefined, false);
+                    }
+                }
+            }
+            else
+            {
+                // if only 1 track, find the first "track name" event
                 let name = this.tracks[0].find(message => message.messageStatusByte === messageTypes.trackName);
-                if(name)
+                if (name)
                 {
                     this.rawMidiName = name.messageData;
                     this.midiName = readBytesAsString(name.messageData, name.messageData.length, undefined, false);
                 }
-            }
-        }
-        else
-        {
-            // if only 1 track, find the first "track name" event
-            let name = this.tracks[0].find(message => message.messageStatusByte === messageTypes.trackName);
-            if(name)
-            {
-                this.rawMidiName = name.messageData;
-                this.midiName = readBytesAsString(name.messageData, name.messageData.length, undefined, false);
             }
         }
 

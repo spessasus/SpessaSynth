@@ -190,7 +190,11 @@ class SynthetizerUI
 
             if(this.percussionList.length === 0)
             {
-                this.percussionList.push(this.instrumentList[0])
+                this.percussionList = this.instrumentList;
+            }
+            else if(this.instrumentList.length === 0)
+            {
+                this.instrumentList = this.percussionList;
             }
 
             this.controllers.forEach((controller, i) => {

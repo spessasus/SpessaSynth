@@ -7,6 +7,7 @@ import { getSeqUIButton } from './sequi_button.js'
 import { keybinds } from '../utils/keybinds.js'
 import { createNavigatorHandler, updateTitleAndMediaStatus } from './title_and_media_status.js'
 import { createLyrics, setLyricsText, updateOtherTextEvents } from './lyrics.js'
+import { RMIDINFOChunks } from '../../../spessasynth_lib/midi_parser/rmidi_writer.js'
 
 /**
  * sequencer_ui.js
@@ -194,7 +195,7 @@ class SequencerUI
             this.seqPlay(false);
         }, "sequi-time-change");
 
-        this.seq.addOnSongChangeEvent(() => {
+        this.seq.addOnSongChangeEvent(data => {
             this.createNavigatorHandler();
             this.updateTitleAndMediaStatus();
             this.seqPlay(false);
@@ -203,6 +204,14 @@ class SequencerUI
             {
                 this.seq.loop = false;
                 this.loopButton.firstElementChild.setAttribute("fill", this.iconDisabledColor);
+            }
+
+            // use encoding suggested by the rmidi if available
+            if(data.isEmbedded)
+            {
+                const dec = new TextDecoder();
+                const encoding = dec.decode(data.RMIDInfo[RMIDINFOChunks.encoding].buffer).replace(/\0$/, '');
+                this.changeEncoding(encoding);
             }
         }, "sequi-song-change");
 

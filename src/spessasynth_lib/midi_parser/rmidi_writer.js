@@ -5,19 +5,42 @@ import { getStringBytes } from '../utils/byte_functions/string.js'
 import { messageTypes, midiControllers, MidiMessage } from './midi_message.js'
 import { DEFAULT_PERCUSSION } from '../synthetizer/synthetizer.js'
 import { getGsOn } from './midi_editor.js'
-import { SpessaSynthInfo } from '../utils/loggin.js'
+import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo } from '../utils/loggin.js'
 import { consoleColors } from '../utils/other.js'
+import { writeLittleEndian } from '../utils/byte_functions/little_endian.js'
+
+/**
+ * @enum {string}
+ */
+export const RMIDINFOChunks = {
+    name: "INAM",
+    copyright: "ICOP",
+    creationDate: "ICRT",
+    comment: "ICMT",
+    engineer: "IENG",
+    software: "ISFT",
+    encoding: "IENC",
+    bankOffset: "DBNK"
+}
 
 /**
  *
  * @param soundfontBinary {Uint8Array}
  * @param mid {MIDI}
  * @param soundfont {SoundFont2}
+ * @param bankOffset {number} the bank offset for RMIDI
+ * @param encoding {string} the encoding of the RMIDI info chunk
  * @returns {IndexedByteArray}
  */
-export function writeRMIDI(soundfontBinary, mid, soundfont)
+export function writeRMIDI(soundfontBinary, mid, soundfont, bankOffset = 0, encoding = "Shift_JIS")
 {
-    // add 1 to bank. See wiki About-RMIDI
+    SpessaSynthGroup("%cWriting the RMIDI File...", consoleColors.info);
+    SpessaSynthInfo(`%cConfiguration: Bank offset: %c${bankOffset}%c, encoding: %c${encoding}`,
+        consoleColors.info,
+        consoleColors.value,
+        consoleColors.info,
+        consoleColors.value);
+    // add offset to bank. See wiki About-RMIDI
     // also fix presets that don't exists since midiplayer6 doesn't seem to default to 0 when nonextistent...
     let system = "gm";
     /**
@@ -25,6 +48,8 @@ export function writeRMIDI(soundfontBinary, mid, soundfont)
      * @type {{tNum: number, e: MidiMessage}[]}
      */
     let unwantedSystems = [];
+    const channelsAmount = 16 + mid.midiPortChannelOffsets.reduce((max, cur) => cur > max ? cur: max);
+    const channelHasBankSelects = Array(channelsAmount).fill(false);
     mid.tracks.forEach((t, trackNum) => {
         /**
          * @type {boolean[]}
@@ -45,6 +70,7 @@ export function writeRMIDI(soundfontBinary, mid, soundfont)
         let drums = Array(16).fill(false);
         drums[DEFAULT_PERCUSSION] = true;
         let programs = Array(16).fill(0);
+        const portOffset = mid.midiPortChannelOffsets[mid.midiPorts[trackNum]];
         t.forEach(e => {
             const status = e.messageStatusByte & 0xF0;
             if(
@@ -114,6 +140,7 @@ export function writeRMIDI(soundfontBinary, mid, soundfont)
                 {
                     if(soundfont.presets.findIndex(p => p.program === e.messageData[0] && p.bank === 128) === -1)
                     {
+                        // doesn't exist. pick any preset that has the 128 bank.
                         e.messageData[0] = soundfont.presets.find(p => p.bank === 128)?.program || 0;
                     }
                 }
@@ -121,12 +148,14 @@ export function writeRMIDI(soundfontBinary, mid, soundfont)
                 {
                     if (soundfont.presets.findIndex(p => p.program === e.messageData[0] && p.bank !== 128) === -1)
                     {
+                        // doesn't exist. pick any preset that does not have the 128 bank.
                         e.messageData[0] = soundfont.presets.find(p => p.bank !== 128)?.program || 0;
                     }
                 }
                 programs[e.messageStatusByte & 0xf] = e.messageData[0];
                 // check if this preset exists for program and bank
-                const bank = lastBankChanges[chNum]?.messageData[1];
+                const realBank = lastBankChanges[chNum]?.messageData[1] - mid.bankOffset; // make sure to take the previous bank offset into account
+                const bank = drums[chNum] ? 128 : realBank;
                 if(bank === undefined)
                 {
                     return;
@@ -140,17 +169,18 @@ export function writeRMIDI(soundfontBinary, mid, soundfont)
 
                 if(soundfont.presets.findIndex(p => p.bank === bank && p.program === e.messageData[0]) === -1)
                 {
-                    // no preset with this bank. set to 1 (0)
-                    lastBankChanges[chNum].messageData[1] = 1;
-                    SpessaSynthInfo(`%cNo preset %c${bank}:${e.messageData[0]}%c. Changing bank to 1.`,
+                    // no preset with this bank. find this program with any bank
+                    const targetPreset = (soundfont.presets.find(p => p.program === e.messageData[0])?.bank + bankOffset) || bankOffset;
+                    lastBankChanges[chNum].messageData[1] = targetPreset;
+                    SpessaSynthInfo(`%cNo preset %c${bank}:${e.messageData[0]}%c. Changing bank to ${targetPreset}.`,
                         consoleColors.info,
                         consoleColors.recognized,
                         consoleColors.info);
                 }
                 else
                 {
-                    // there is a preset with this bank. add 1
-                    lastBankChanges[chNum].messageData[1]++;
+                    // there is a preset with this bank. add offset
+                    lastBankChanges[chNum].messageData[1] = realBank + bankOffset;
                     SpessaSynthInfo(`%cPreset %c${bank}:${e.messageData[0]}%c exists. Changing bank to ${lastBankChanges[chNum].messageData[1]}.`,
                         consoleColors.info,
                         consoleColors.recognized,
@@ -164,6 +194,7 @@ export function writeRMIDI(soundfontBinary, mid, soundfont)
             }
             // bank select
             hasBankSelects[chNum] = true;
+            channelHasBankSelects[chNum + portOffset] = true;
             if(system === "xg")
             {
                 // check for xg drums
@@ -174,6 +205,11 @@ export function writeRMIDI(soundfontBinary, mid, soundfont)
         // add all bank selects that are missing for this track
         hasBankSelects.forEach((has, ch) => {
             if(has === true)
+            {
+                return;
+            }
+            // if this channel has bank selects but not in this track specifically, ignore too
+            if(channelHasBankSelects[ch + portOffset] === true)
             {
                 return;
             }
@@ -200,7 +236,7 @@ export function writeRMIDI(soundfontBinary, mid, soundfont)
                 indexToAdd = programIndex;
             }
             const ticks = t[indexToAdd].ticks;
-            const targetBank = (soundfont.getPreset(0, programs[ch])?.bank + 1) || 1;
+            const targetBank = (soundfont.getPreset(0, programs[ch])?.bank + bankOffset) || bankOffset;
             t.splice(indexToAdd,0, new MidiMessage(
                 ticks,
                 messageTypes.controllerChange | ch,
@@ -222,29 +258,59 @@ export function writeRMIDI(soundfontBinary, mid, soundfont)
     }
     const newMid = new IndexedByteArray(writeMIDIFile(mid).buffer);
 
-    // infodata for MidiPlayer6
+    // infodata for RMID
     const today = new Date().toLocaleString();
+    const DBNK = new IndexedByteArray(2);
+    writeLittleEndian(DBNK, bankOffset, 2);
+    const ICOP = mid.copyright.length > 0 ? getStringBytes(mid.copyright) : getStringBytes("Created by SpessaSynth");
     const infodata = combineArrays([
+        // icop: copyright
         writeRIFFChunk(
             new RiffChunk(
-                "ICOP",
-                11,
-                getStringBytes("SpessaSynth")
+                RMIDINFOChunks.copyright,
+                ICOP.length,
+                ICOP
             ),
             new IndexedByteArray([73, 78, 70, 79]) // "INFO"
         ),
+        // inam: name
         writeRIFFChunk(
             new RiffChunk(
-                "INAM",
+                RMIDINFOChunks.name,
                 mid.rawMidiName.length,
                 new IndexedByteArray(mid.rawMidiName.buffer)
             ),
         ),
+        // icrd: creation date
         writeRIFFChunk(
             new RiffChunk(
-                "ICRD",
+                RMIDINFOChunks.creationDate,
                 today.length,
                 getStringBytes(today)
+            )
+        ),
+        // isft: software used
+        writeRIFFChunk(
+            new RiffChunk(
+                RMIDINFOChunks.software,
+                11,
+                getStringBytes("SpessaSynth"),
+            )
+        ),
+        // ienc: encoding for the info chunk
+        writeRIFFChunk(
+            new RiffChunk(
+                RMIDINFOChunks.encoding,
+                encoding.length,
+                getStringBytes(encoding)
+            )
+        ),
+        // dbnk: bank offset
+        writeRIFFChunk(
+            new RiffChunk(
+                RMIDINFOChunks.bankOffset,
+                2,
+                DBNK
             )
         )
     ]);
@@ -263,6 +329,8 @@ export function writeRMIDI(soundfontBinary, mid, soundfont)
         )),
         soundfontBinary
     ]);
+    SpessaSynthInfo("%cFinished!", consoleColors.info)
+    SpessaSynthGroupEnd();
     return writeRIFFChunk(new RiffChunk(
         "RIFF",
         rmiddata.length,

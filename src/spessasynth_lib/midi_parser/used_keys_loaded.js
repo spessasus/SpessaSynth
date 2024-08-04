@@ -31,11 +31,6 @@ export function getUsedProgramsAndKeys(mid, soundfont)
     {
         // check if this exists in the soundfont
         let exists = soundfont.getPreset(ch.bank, ch.program);
-        if(exists.bank !== ch.bank && mid.embeddedSoundFont)
-        {
-            // maybe it doesn't exists becase RMIDI has a bank shift?
-            exists = soundfont.getPreset(ch.bank - 1, ch.program);
-        }
         ch.bank = exists.bank;
         ch.program = exists.program;
         ch.string = ch.bank + ":" + ch.program;
@@ -128,6 +123,7 @@ export function getUsedProgramsAndKeys(mid, soundfont)
                     continue;
                 }
                 const bank = event.messageData[1];
+                const realBank = Math.max(0, bank - mid.bankOffset);
                 if(system === "xg")
                 {
                     // check for xg drums
@@ -136,16 +132,16 @@ export function getUsedProgramsAndKeys(mid, soundfont)
                     {
                         // drum change is a program change
                         ch.drums = drumsBool;
-                        ch.bank = ch.drums ? 128 : bank;
+                        ch.bank = ch.drums ? 128 : realBank;
                         updateString(ch);
                     }
                     else
                     {
-                        ch.bank = ch.drums ? 128 : bank;
+                        ch.bank = ch.drums ? 128 : realBank;
                     }
                     continue;
                 }
-                channelPresets[channel].bank = bank;
+                channelPresets[channel].bank = realBank;
                 // do not update the data, bank change doesnt change the preset
                 break;
 

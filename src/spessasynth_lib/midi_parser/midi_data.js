@@ -97,6 +97,23 @@ export class MidiData
          * @type {Uint8Array}
          */
         this.rawMidiName = midi.rawMidiName;
+
+        /**
+         * Indicates if the midi has an embedded soundfont
+         * @type {boolean}
+         */
+        this.isEmbedded = midi.embeddedSoundFont !== undefined;
+
+        /**
+         * The RMID Info data if RMID, otherwise undefined
+         * @type {Object<string, IndexedByteArray>}
+         */
+        this.RMIDInfo = midi.RMIDInfo;
+        /**
+         * The bank offset for RMIDI
+         * @type {number}
+         */
+        this.bankOffset = midi.bankOffset;
     }
 }
 
@@ -124,5 +141,8 @@ export const DUMMY_MIDI_DATA = {
     rawMidiName: new Uint8Array([76, 111, 97, 100, 105, 110, 103, 46, 46, 46]), // "Loading..."
     usedChannelsOnTrack: [],
     timeDivision: 0,
-    keyRange: {min: 0, max: 127}
+    keyRange: {min: 0, max: 127},
+    isEmbedded: false,
+    RMIDInfo: undefined,
+    bankOffset: 0
 };
