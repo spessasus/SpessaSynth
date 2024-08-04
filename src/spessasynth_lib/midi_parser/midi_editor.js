@@ -186,6 +186,21 @@ export function modifyMIDI(
                     midiSystem = "xg";
                     addedGs = true; // flag as true so gs won't get added
                 }
+                else
+                // check for xg program change
+                if (
+                    message.messageData[0] === 0x43 // yamaha
+                    && message.messageData[2] === 0x4C // XG
+                    && message.messageData[3] === 0x08 // part parameter
+                    && message.messageData[5] === 0x03 // program change
+                )
+                {
+                    programChanges.push({
+                        track: trackNum,
+                        message: message,
+                        channel: message.messageData[4]
+                    });
+                }
             }
         })
     });

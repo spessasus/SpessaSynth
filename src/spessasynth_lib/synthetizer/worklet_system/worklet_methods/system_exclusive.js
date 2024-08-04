@@ -318,7 +318,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                         return;
                     }
                     const channel = messageData[4] + channelOffset;
-                    const value = messageData[6]
+                    const value = messageData[6];
                     switch (messageData[5])
                     {
                         // bank select
