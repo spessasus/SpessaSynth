@@ -115,7 +115,7 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
     await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
     if(!separateChannels)
     {
-        this.saveBlob(audioBufferToWav(buf, normalizeAudio), `${this.seq.midiData.midiName || 'unnamed_song'}.wav`);
+        this.saveBlob(audioBufferToWav(buf, normalizeAudio), `${this.seqUI.currentSongTitle || 'unnamed_song'}.wav`);
     }
     else
     {

@@ -93,6 +93,10 @@ export const exportAudio = {
                     quality: {
                         title: "Jakość kompresji",
                         description: "Jakość skompresowanych próbek. Im wyższa tym lepsza"
+                    },
+                    bankOffset: {
+                        title: "Przesunięcie banku",
+                        description: "Przesunięcie banku w pliku. Zalecane 0. Zmień tylko jeśli wiesz co robisz.",
                     }
                 }
             }

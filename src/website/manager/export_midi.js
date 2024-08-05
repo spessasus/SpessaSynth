@@ -13,5 +13,5 @@ export async function exportMidi()
     // export modified midi and write out
     const file = writeMIDIFile(mid);
     const blob = new Blob([file], { type: "audio/mid" });
-    this.saveBlob(blob, `${mid.midiName || "unnamed_song"}.mid`)
+    this.saveBlob(blob, `${this.seqUI.currentSongTitle || "unnamed_song"}.mid`)
 }

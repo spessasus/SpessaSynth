@@ -95,7 +95,7 @@ export async function _exportRMIDI()
 
                     const rmidBinary = writeRMIDI(newFont, mid, font, bankOffset, this.seqUI.encoding);
                     const blob = new Blob([rmidBinary.buffer], {type: "audio/rmid"})
-                    this.saveBlob(blob, `${mid.midiName || "unnamed_song"}.rmi`);
+                    this.saveBlob(blob, `${this.seqUI.currentSongTitle || "unnamed_song"}.rmi`);
                     message.textContent = this.localeManager.getLocaleString(localePath + "done");
                     closeNotification(notification.id);
                     SpessaSynthGroupEnd();

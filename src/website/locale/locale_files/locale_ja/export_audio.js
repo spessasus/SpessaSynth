@@ -90,6 +90,10 @@ export const exportAudio = {
                     quality: {
                         title: "圧縮品質",
                         description: "圧縮の品質です。高いほど良い"
+                    },
+                    bankOffset: {
+                        title: "銀行の相殺",
+                        description: "ファイルのバンク オフセット。値 0 が推奨されます。何をしているのかわかっている場合にのみ変更してください。",
                     }
                 }
             }

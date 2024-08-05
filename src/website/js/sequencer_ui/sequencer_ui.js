@@ -209,6 +209,10 @@ class SequencerUI
             // use encoding suggested by the rmidi if available
             if(data.isEmbedded)
             {
+                if(data.RMIDInfo[RMIDINFOChunks.encoding] === undefined)
+                {
+                    return;
+                }
                 const dec = new TextDecoder();
                 const encoding = dec.decode(data.RMIDInfo[RMIDINFOChunks.encoding].buffer).replace(/\0$/, '');
                 this.changeEncoding(encoding);
