@@ -45,6 +45,11 @@ export function readRIFFChunk(dataArray, readData = true, forceShift = false) {
         dataArray.currentIndex += size;
     }
 
+    if(size % 2 !== 0)
+    {
+        dataArray.currentIndex++;
+    }
+
     return new RiffChunk(header, size, chunkData)
 }
 
