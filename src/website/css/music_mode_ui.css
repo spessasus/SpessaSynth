@@ -30,17 +30,16 @@
 
 .player_info_wrapper{
     display: flex;
-    border: #333 solid 1px;
     border-radius: 1rem;
     align-items: center;
     max-width: 90%;
-    backdrop-filter: brightness(0.4) blur(50px);
+    backdrop-filter: brightness(0.3) blur(50px);
     flex-wrap: wrap;
     justify-content: center;
 }
 
 .player_info_wrapper.light_mode{
-    backdrop-filter: brightness(1.1) blur(50px) !important;
+    backdrop-filter: brightness(1.8) blur(50px) !important;
 }
 
 .player_info_note_icon {
