@@ -26,11 +26,41 @@ export class MusicModeUI {
                 ${getDoubleNoteSvg("100%")}
                 <img src='' alt='' style='display: none'>
             </div>
-            <div class='player_info_details'>
+            <div class='player_info_details_wrapper'>
                 <p style='font-size: small'><i translate-path='locale.musicPlayerMode.currentlyPlaying'></i></p>
-                <h1 id='player_info_title' translate-path='locale.musicPlayerMode.nothingPlaying'></h1>
-                <h3><i id='player_info_detail' translate-path='locale.musicPlayerMode.nothingPlayingCopyright'></i></h3>
-                <h3 id='player_info_time'></h3>
+                <h2  id='player_info_title' translate-path='locale.musicPlayerMode.nothingPlaying'></h2>
+                
+                <div class='player_info_detail_element'>
+                    <i id='player_info_detail' translate-path='locale.musicPlayerMode.nothingPlayingCopyright'></i>
+                </div>
+                
+                <div class='player_info_detail_element'>
+                    <b translate-path-title='locale.exportAudio.formats.metadata.artist'></b><i id='player_info_artist'></i>
+                </div>
+                
+                <div class='player_info_detail_element'>
+                    <b translate-path-title='locale.exportAudio.formats.metadata.album'></b><i id='player_info_album'></i>
+                </div>
+                
+                <div class='player_info_detail_element'>
+                    <b translate-path-title='locale.exportAudio.formats.metadata.genre'></b><i id='player_info_genre'></i>
+                </div>
+                
+                <div class='player_info_detail_element'>
+                    <b translate-path-title='locale.exportAudio.formats.metadata.creationDate'></b><i id='player_info_creation'></i>
+                </div>
+                
+                <div class='player_info_detail_element'>
+                    <b translate-path-title='locale.exportAudio.formats.metadata.comment'></b><i id='player_info_comment'></i>
+                </div>
+                
+                <div class='player_info_detail_element'>
+                    <b translate-path-title='locale.exportAudio.formats.metadata.duration'></b><i id='player_info_time'></i>
+                </div>
+                
+                <div class='player_info_detail_element'>
+                    <pre id='player_info_file_name'></pre>
+                </div>
             </div>
         </div>`;
 
@@ -39,9 +69,19 @@ export class MusicModeUI {
         {
             localeManager.bindObjectProperty(el, "textContent", el.getAttribute("translate-path"));
         }
+        for (const el of this.mainDiv.querySelectorAll("*[translate-path-title]"))
+        {
+            localeManager.bindObjectProperty(el, "textContent", el.getAttribute("translate-path-title") + ".title");
+            localeManager.bindObjectProperty(el, "title", el.getAttribute("translate-path-title") + ".description");
+        }
         this.timeoutId = -1;
         this.visible = false;
         this.locale = localeManager;
+    }
+
+    toggleDarkMode()
+    {
+        this.mainDiv.getElementsByClassName("player_info_wrapper")[0].classList.toggle("light_mode");
     }
 
     /**
@@ -58,27 +98,44 @@ export class MusicModeUI {
      */
     connectSequencer(seq)
     {
-        const detail = document.getElementById("player_info_detail");
         this.seq = seq;
         this.seq.addOnSongChangeEvent(mid => {
             // use file name if no copyright detected
             const midcopy = mid.copyright.replaceAll("\n", "");
-            if(midcopy.length > 0)
-            {
-                detail.textContent = midcopy + "\n" + mid.fileName;
-            }
-            else
-            {
-                detail.textContent = mid.fileName;
-            }
-            document.getElementById("player_info_time").textContent = formatTime(this.seq.duration).time;
+            const setInfoText = (id, text) => {
+                const el = document.getElementById(id);
+                if(text.length > 0)
+                {
+                    el.parentElement.classList.remove("hidden");
+                    el.innerHTML = "";
+                    // add scroll if needed
+                    if(text.length > 30)
+                    {
+                        el.classList.add("marquee");
 
-            // embedded stuff
-            if(!mid.isEmbedded)
-            {
-                return;
+                        const textWrap = document.createElement("span");
+                        textWrap.textContent = text;
+                        el.appendChild(textWrap);
+                    }
+                    else
+                    {
+                        el.textContent = text;
+                    }
+                }
+                else
+                {
+                    el.parentElement.classList.add("hidden");
+                }
             }
+            // copyright
+            setInfoText("player_info_detail", midcopy);
+            // time
+            setInfoText("player_info_time", formatTime(this.seq.duration).time);
 
+            // file name
+            setInfoText("player_info_file_name", mid.fileName);
+
+            // embedded things
             // add album and artist meta
             /**
              * @param type {string}
@@ -90,15 +147,22 @@ export class MusicModeUI {
             const verifyDecode = (type, def, decoder, prepend = "") => {
                 return this.seq.midiData.RMIDInfo?.[type] === undefined ? def : prepend + decoder.decode(this.seq.midiData.RMIDInfo?.[type])
             }
+            // initialize decoder
             let encoding = this.seq.midiData.RMIDInfo?.["IENC"] === undefined ? "ascii" : (new TextDecoder()).decode(this.seq.midiData.RMIDInfo?.["IENC"]).replace(/\0$/, '');
             const decoder = new TextDecoder(encoding);
 
-            const localePath = "locale.exportAudio.formats.formats.rmidi.options.";
             // artist, album, creation date
-            detail.textContent += verifyDecode('IART', "", decoder, `\n${this.locale.getLocaleString(localePath + "artist.title")}: `);
-            detail.textContent += verifyDecode('IPRD', "", decoder, `\n${this.locale.getLocaleString(localePath + "album.title")}: `);
-            detail.textContent += verifyDecode('ICRD', "", decoder, "\n");
+            setInfoText("player_info_album", verifyDecode('IPRD', "", decoder));
+            setInfoText("player_info_artist", verifyDecode('IART', "", decoder));
+            setInfoText("player_info_genre", verifyDecode('IGNR', "", decoder));
+            setInfoText("player_info_creation", verifyDecode('ICRD', "", decoder) + verifyDecode('ICRT', "", decoder, "\n"));
+            setInfoText("player_info_comment", verifyDecode('ICMT', "", decoder));
 
+            // embedded stuff
+            if(!mid.isEmbedded)
+            {
+                return;
+            }
             // add album cover if available
             const svg = this.mainDiv.getElementsByTagName("svg")[0];
             const img = this.mainDiv.getElementsByTagName("img")[0];
@@ -116,6 +180,9 @@ export class MusicModeUI {
             const url = URL.createObjectURL(pic);
             img.src = url;
             bg.style.setProperty("--bg-image", `url('${url}')`);
+
+            // switch to music mode if picture available
+            this.setVisibility(true, document.getElementById("keyboard_canvas_wrapper"));
         }, "player-js-song-change");
     }
 

@@ -45,6 +45,7 @@ export function _toggleDarkMode()
     this.renderer.toggleDarkMode();
     this.synthui.toggleDarkMode();
     this.sequi.toggleDarkMode()
+    this.musicMode.toggleDarkMode();
 
     document.getElementsByClassName("spessasynth_main")[0].classList.toggle("light_mode");
 
@@ -53,6 +54,7 @@ export function _toggleDarkMode()
 
     // settings
     this.mainDiv.classList.toggle("settings_menu_light");
+
 
     // rest
     // things get hacky here: change the global (*) --font-color to black:

@@ -16,7 +16,7 @@
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
-    filter: blur(10px);
+    filter: blur(1rem);
     --bg-image: "undefined";
     background-image: var(--bg-image);
     z-index: -100;
@@ -25,31 +25,80 @@
 
 .player_info_note_icon img{
     max-width: 20rem;
-    margin: 1rem;
     border-radius: 1rem;
 }
 
 .player_info_wrapper{
     display: flex;
     border: #333 solid 1px;
-    border-radius: 15px;
-    padding: 10px;
+    border-radius: 1rem;
     align-items: center;
     max-width: 90%;
     backdrop-filter: brightness(0.4) blur(50px);
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.player_info_wrapper.light_mode{
+    backdrop-filter: brightness(1.1) blur(50px) !important;
+}
+
+.player_info_note_icon {
+    margin: 1rem;
 }
 
 #player_info_detail{
     white-space: preserve;
 }
 
-.player_info_details{
+.player_info_detail_element{
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+}
+
+.player_info_detail_element * {
+    display: inline-block;
+}
+
+.player_info_detail_element b{
+    margin-right: 1ch;
+}
+
+.player_info_detail_element.hidden{
+    display: none;
+}
+
+.player_info_details_wrapper{
     max-width: 80%;
+    margin: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.marquee {
+    overflow: hidden;
+    max-width: 30ch;
+    white-space: nowrap;
+}
+
+.marquee span{
+    white-space: nowrap;
+    padding-left: 100%;
+    animation: 15s linear infinite marquee;
+}
+
+@keyframes marquee {
+    0% {
+        transform: translateX(0);
+    }
+    100%{
+        transform: translateX(-100%);
+    }
 }
 
 .player_info_wrapper *{
-    text-align: left;
-    overflow-wrap: anywhere;
+    text-align: center;
 }
 
 .player_info_show{

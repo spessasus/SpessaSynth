@@ -60,6 +60,7 @@ export function writeRMIDI(soundfontBinary, mid, soundfont, bankOffset = 0, enco
         consoleColors.value,
         consoleColors.info,
         consoleColors.value);
+    SpessaSynthInfo("metadata", metadata);
     // add offset to bank. See wiki About-RMIDI
     // also fix presets that don't exists since midiplayer6 doesn't seem to default to 0 when nonextistent...
     let system = "gm";
@@ -284,7 +285,10 @@ export function writeRMIDI(soundfontBinary, mid, soundfont, bankOffset = 0, enco
      */
     const infoContent = [getStringBytes("INFO")];
     const encoder = new TextEncoder();
-
+    // software
+    infoContent.push(
+        writeRIFFOddSize(RMIDINFOChunks.software, encoder.encode("SpessaSynth"))
+    );
     // name
     if(metadata.name !== undefined)
     {

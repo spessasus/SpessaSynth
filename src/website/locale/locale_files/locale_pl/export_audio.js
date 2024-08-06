@@ -94,27 +94,45 @@ export const exportAudio = {
                         title: "Jakość kompresji",
                         description: "Jakość skompresowanych próbek. Im wyższa tym lepsza"
                     },
-                    songTitle: {
-                        title: "Tytuł",
-                        description: "Tytuł utworu",
-                    },
-                    album: {
-                        title: "Album",
-                        description: "Album utworu"
-                    },
-                    artist: {
-                        title: "Twórca",
-                        description: "Twórca utworu"
-                    },
-                    albumCover: {
-                        title: "Okładka albumu",
-                        description: "Okładka albumu utworu",
-                    },
                     bankOffset: {
                         title: "Przesunięcie banku",
                         description: "Przesunięcie banku w pliku. Zalecane 0. Zmień tylko jeśli wiesz co robisz.",
                     }
                 }
+            }
+        },
+        metadata: {
+            songTitle: {
+                title: "Tytuł:",
+                description: "Tytuł utworu",
+            },
+            album: {
+                title: "Album:",
+                description: "Album utworu"
+            },
+            artist: {
+                title: "Twórca:",
+                description: "Twórca utworu"
+            },
+            albumCover: {
+                title: "Okładka albumu:",
+                description: "Okładka albumu utworu",
+            },
+            creationDate: {
+                title: "Stworzono:",
+                description: "Data stworzenia utworu"
+            },
+            genre: {
+                title: "Gatunek:",
+                description: "Gatunek utworu"
+            },
+            comment: {
+                title: "Komentarz:",
+                description: "Komentarz do utworu"
+            },
+            duration: {
+                title: "Czas trwania:",
+                description: "Czas trwania utworu"
             }
         }
     }

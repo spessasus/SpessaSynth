@@ -25,9 +25,14 @@ export async function _exportRMIDI()
     }
     const encoding = verifyDecode("IENC", "ascii", new TextDecoder());
     const decoder = new TextDecoder(encoding);
+
     const startAlbum = verifyDecode("IPRD", "", decoder);
     const startArtist = verifyDecode("IART", "", decoder);
+    const startGenre = verifyDecode("IGNR", "", decoder);
+    const startComment = verifyDecode("ICMT", "Created using SpessaSynth: https://spessasus.github.io/SpessaSynth", decoder);
+
     const path = "locale.exportAudio.formats.formats.rmidi.options.";
+    const metadataPath = "locale.exportAudio.formats.metadata.";
     const n = showNotification(
         this.localeManager.getLocaleString(path + "title"),
         [
@@ -50,7 +55,7 @@ export async function _exportRMIDI()
             },
             {
                 type: "input",
-                translatePathTitle: path + "songTitle",
+                translatePathTitle: metadataPath + "songTitle",
                 attributes: {
                     "name": "song_title",
                     "type": "text",
@@ -59,7 +64,7 @@ export async function _exportRMIDI()
             },
             {
                 type: "input",
-                translatePathTitle: path + "album",
+                translatePathTitle: metadataPath + "album",
                 attributes: {
                     "value": startAlbum,
                     "name": "album",
@@ -68,7 +73,7 @@ export async function _exportRMIDI()
             },
             {
                 type: "input",
-                translatePathTitle: path + "artist",
+                translatePathTitle: metadataPath + "artist",
                 attributes: {
                     "value": startArtist,
                     "name": "artist",
@@ -76,8 +81,26 @@ export async function _exportRMIDI()
                 }
             },
             {
+                type: "input",
+                translatePathTitle: metadataPath + "genre",
+                attributes: {
+                    "value": startGenre,
+                    "name": "genre",
+                    "type": "text"
+                }
+            },
+            {
+                type: "input",
+                translatePathTitle: metadataPath + "comment",
+                attributes: {
+                    "value": startComment,
+                    "name": "comment",
+                    "type": "text"
+                }
+            },
+            {
                 type: "file",
-                translatePathTitle: path + "albumCover",
+                translatePathTitle: metadataPath + "albumCover",
                 attributes: {
                     "value": this.seq.midiData.RMIDInfo?.IPIC !== undefined ? this.seq.midiData.RMIDInfo.IPIC : "",
                     "name": "cover",
@@ -104,6 +127,9 @@ export async function _exportRMIDI()
                     const album = n.div.querySelector("input[name='album']").value;
                     const artist = n.div.querySelector("input[name='artist']").value;
                     const songTitle = n.div.querySelector("input[name='song_title']").value;
+                    const comment = n.div.querySelector("input[name='comment']").value;
+                    const genre = n.div.querySelector("input[name='genre']").value;
+
                     /**
                      * @type {File}
                      */
@@ -154,14 +180,19 @@ export async function _exportRMIDI()
                     {
                         fileBuffer = await picture.arrayBuffer();
                     }
+                    else if(mid.RMIDInfo?.["IPIC"] !== undefined)
+                    {
+                        fileBuffer = mid.RMIDInfo["IPIC"].buffer;
+                    }
 
                     const rmidBinary = writeRMIDI(newFont, mid, font, bankOffset, this.seqUI.encoding, {
                         name: songTitle,
-                        comment: "Created using SpessaSynth: https://spessasus.github.io/SpessaSynth",
+                        comment: comment,
                         engineer: font.soundFontInfo["IENG"],
                         picture: fileBuffer,
                         album: album.length > 0 ? album : undefined,
-                        artist: artist.length > 0 ? artist : undefined
+                        artist: artist.length > 0 ? artist : undefined,
+                        genre: genre.length > 0 ? genre : undefined
                     });
                     const blob = new Blob([rmidBinary.buffer], {type: "audio/rmid"})
                     this.saveBlob(blob, `${songTitle || "unnamed_song"}.rmi`);
