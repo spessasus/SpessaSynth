@@ -158,15 +158,18 @@ export class MusicModeUI {
             setInfoText("player_info_creation", verifyDecode('ICRD', "", decoder) + verifyDecode('ICRT', "", decoder, "\n"));
             setInfoText("player_info_comment", verifyDecode('ICMT', "", decoder));
 
-            // embedded stuff
-            if(!mid.isEmbedded)
-            {
-                return;
-            }
-            // add album cover if available
+            // image
             const svg = this.mainDiv.getElementsByTagName("svg")[0];
             const img = this.mainDiv.getElementsByTagName("img")[0];
             const bg = document.getElementById("player_info_background_image");
+            if(!mid.isEmbedded)
+            {
+                svg.style.display = "";
+                img.style.display = "none";
+                bg.style.setProperty("--bg-image", "undefined");
+                return;
+            }
+            // add album cover if available
             if(mid.RMIDInfo["IPIC"] === undefined)
             {
                 svg.style.display = "";
