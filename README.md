@@ -75,11 +75,14 @@ This repository contains both the library and a complete musical web application
   - **Easy saving:** Save with just [one function!](https://github.com/spessasus/SpessaSynth/wiki/Writing-MIDI-Files#writemidifile)
 #### Read and write [RMID files with embedded SF2 soundfonts](https://github.com/spessasus/SpessaSynth/wiki/About-RMIDI)
   - **Compression and trimming support:** Reduce a MIDI file with a 1GB soundfont to **as small as 5MB**!
+  - **Automatic bank shifting and validation:** Every soundfont *just works!*
+  - **Metadata support:** Add title, artist, album name and cover and more! And of course read them too! *(In any encoding!)*
+  - **Compatible with [Falcosoft Midi Player 6!](https://falcosoft.hu/softwares.html#midiplayer)**
   - **Easy saving:** [As simple as saving a MIDI file!](https://github.com/spessasus/SpessaSynth/wiki/Writing-MIDI-Files#writermidi)
 #### Read and write SoundFont2 files
   - **Easy info access:** Just an [object of strings!](https://github.com/spessasus/SpessaSynth/wiki/SoundFont2-Class#soundfontinfo)
   - **Smart trimming:** Trim the SoundFont to only include samples used in the MIDI *(down to key and velocity!)*
-  - **sf3 conversion:** Compress SoundFont2 files to SoundFont3!
+  - **sf3 conversion:** Compress SoundFont2 files to SoundFont3 with variable quality!
   - **Easy saving:** Also just [one function!](https://github.com/spessasus/SpessaSynth/wiki/SoundFont2-Class#write)
 #### Read and write SoundFont3 files
   - Same features as SoundFont2 but with now with **Ogg Vorbis compression!**
