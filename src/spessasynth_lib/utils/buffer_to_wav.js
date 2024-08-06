@@ -1,4 +1,11 @@
 /**
+ * @typedef {Object} WaveMetadata
+ * @property {string} title - the song's title
+ * @property {string} album - the song's album
+ * @property {string} genre - the song's genre
+ */
+
+/**
  *
  * @param audioBuffer {AudioBuffer}
  * @param normalizeAudio {boolean} find the max sample point and set it to 1, and scale others with it
@@ -7,7 +14,7 @@
  */
 export function audioBufferToWav(audioBuffer, normalizeAudio = true, channelOffset = 0)
 {
-
+    // this code currently doesn't add any metadata
     const channel1Data = audioBuffer.getChannelData(channelOffset);
     const channel2Data = audioBuffer.getChannelData(channelOffset + 1);
     const length = channel1Data.length;

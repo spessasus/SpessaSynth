@@ -14,8 +14,21 @@ import { ANIMATION_REFLOW_TIME } from '../js/utils/animation_utils.js'
  */
 export async function _exportRMIDI()
 {
+    /**
+     * @param type {string}
+     * @param def {string}
+     * @param decoder {TextDecoder}
+     * @return {string}
+     */
+    const verifyDecode = (type, def, decoder) => {
+        return this.seq.midiData.RMIDInfo?.[type] === undefined ? def : decoder.decode(this.seq.midiData.RMIDInfo?.[type])
+    }
+    const encoding = verifyDecode("IENC", "ascii", new TextDecoder());
+    const decoder = new TextDecoder(encoding);
+    const startAlbum = verifyDecode("IPRD", "", decoder);
+    const startArtist = verifyDecode("IART", "", decoder);
     const path = "locale.exportAudio.formats.formats.rmidi.options.";
-    showNotification(
+    const n = showNotification(
         this.localeManager.getLocaleString(path + "title"),
         [
             {
@@ -37,6 +50,42 @@ export async function _exportRMIDI()
             },
             {
                 type: "input",
+                translatePathTitle: path + "songTitle",
+                attributes: {
+                    "name": "song_title",
+                    "type": "text",
+                    "value": this.seqUI.currentSongTitle
+                }
+            },
+            {
+                type: "input",
+                translatePathTitle: path + "album",
+                attributes: {
+                    "value": startAlbum,
+                    "name": "album",
+                    "type": "text"
+                }
+            },
+            {
+                type: "input",
+                translatePathTitle: path + "artist",
+                attributes: {
+                    "value": startArtist,
+                    "name": "artist",
+                    "type": "text"
+                }
+            },
+            {
+                type: "file",
+                translatePathTitle: path + "albumCover",
+                attributes: {
+                    "value": this.seq.midiData.RMIDInfo?.IPIC !== undefined ? this.seq.midiData.RMIDInfo.IPIC : "",
+                    "name": "cover",
+                    "accept": "image/*"
+                }
+            },
+            {
+                type: "input",
                 translatePathTitle: path + "bankOffset",
                 attributes: {
                     "type": "number",
@@ -52,6 +101,13 @@ export async function _exportRMIDI()
                     const compressed = n.div.querySelector("input[compress-toggle='1']").checked;
                     const quality = parseInt(n.div.querySelector("input[type='range']").value) / 10;
                     const bankOffset = parseInt(n.div.querySelector("input[type='number']").value);
+                    const album = n.div.querySelector("input[name='album']").value;
+                    const artist = n.div.querySelector("input[name='artist']").value;
+                    const songTitle = n.div.querySelector("input[name='song_title']").value;
+                    /**
+                     * @type {File}
+                     */
+                    const picture = n.div.querySelector("input[type='file']")?.files[0];
                     closeNotification(n.id);
 
                     SpessaSynthGroupCollapsed("%cExporting RMIDI...",
@@ -93,9 +149,22 @@ export async function _exportRMIDI()
                     message.textContent = this.localeManager.getLocaleString(localePath + "saving");
                     await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
 
-                    const rmidBinary = writeRMIDI(newFont, mid, font, bankOffset, this.seqUI.encoding);
+                    let fileBuffer = undefined;
+                    if(picture?.type.split("/")[0] === "image")
+                    {
+                        fileBuffer = await picture.arrayBuffer();
+                    }
+
+                    const rmidBinary = writeRMIDI(newFont, mid, font, bankOffset, this.seqUI.encoding, {
+                        name: songTitle,
+                        comment: "Created using SpessaSynth: https://spessasus.github.io/SpessaSynth",
+                        engineer: font.soundFontInfo["IENG"],
+                        picture: fileBuffer,
+                        album: album.length > 0 ? album : undefined,
+                        artist: artist.length > 0 ? artist : undefined
+                    });
                     const blob = new Blob([rmidBinary.buffer], {type: "audio/rmid"})
-                    this.saveBlob(blob, `${this.seqUI.currentSongTitle || "unnamed_song"}.rmi`);
+                    this.saveBlob(blob, `${songTitle || "unnamed_song"}.rmi`);
                     message.textContent = this.localeManager.getLocaleString(localePath + "done");
                     closeNotification(notification.id);
                     SpessaSynthGroupEnd();
@@ -105,5 +174,12 @@ export async function _exportRMIDI()
         9999999,
         true,
         this.localeManager
-    )
+    );
+    const input = n.div.querySelector("input[type='file']");
+    input.oninput = () => {
+        if(input.files[0])
+        {
+            input.parentElement.firstChild.textContent = input.files[0].name;
+        }
+    }
 }

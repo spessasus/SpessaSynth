@@ -95,6 +95,22 @@ export const exportAudio = {
                         title: "Compression quality",
                         description: "The quality of compression. Higher is better."
                     },
+                    songTitle: {
+                        title: "Title",
+                        description: "The song's title",
+                    },
+                    album: {
+                        title: "Album",
+                        description: "The song's album"
+                    },
+                    artist: {
+                        title: "Artist",
+                        description: "The song's artist"
+                    },
+                    albumCover: {
+                        title: "Album cover",
+                        description: "The song's album cover",
+                    },
                     bankOffset: {
                         title: "Bank offset",
                         description: "The bank offset of the file. Value of 0 is recommended. Only change if you know what you're doing.",

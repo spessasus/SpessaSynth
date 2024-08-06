@@ -20,9 +20,11 @@ export class MusicModeUI {
         this.mainDiv = element;
         // load html
         this.mainDiv.innerHTML = `
+        <div id='player_info_background_image'></div>
         <div class='player_info_wrapper'>
             <div class="player_info_note_icon">
                 ${getDoubleNoteSvg("100%")}
+                <img src='' alt='' style='display: none'>
             </div>
             <div class='player_info_details'>
                 <p style='font-size: small'><i translate-path='locale.musicPlayerMode.currentlyPlaying'></i></p>
@@ -39,6 +41,7 @@ export class MusicModeUI {
         }
         this.timeoutId = -1;
         this.visible = false;
+        this.locale = localeManager;
     }
 
     /**
@@ -55,18 +58,64 @@ export class MusicModeUI {
      */
     connectSequencer(seq)
     {
+        const detail = document.getElementById("player_info_detail");
         this.seq = seq;
         this.seq.addOnSongChangeEvent(mid => {
             // use file name if no copyright detected
-            if(mid.copyright.replaceAll("\n", "").length > 0)
+            const midcopy = mid.copyright.replaceAll("\n", "");
+            if(midcopy.length > 0)
             {
-                document.getElementById("player_info_detail").textContent = mid.copyright + mid.fileName;
+                detail.textContent = midcopy + "\n" + mid.fileName;
             }
             else
             {
-                document.getElementById("player_info_detail").textContent = mid.fileName;
+                detail.textContent = mid.fileName;
             }
             document.getElementById("player_info_time").textContent = formatTime(this.seq.duration).time;
+
+            // embedded stuff
+            if(!mid.isEmbedded)
+            {
+                return;
+            }
+
+            // add album and artist meta
+            /**
+             * @param type {string}
+             * @param def {string}
+             * @param decoder {TextDecoder}
+             * @param prepend {string}
+             * @return {string}
+             */
+            const verifyDecode = (type, def, decoder, prepend = "") => {
+                return this.seq.midiData.RMIDInfo?.[type] === undefined ? def : prepend + decoder.decode(this.seq.midiData.RMIDInfo?.[type])
+            }
+            let encoding = this.seq.midiData.RMIDInfo?.["IENC"] === undefined ? "ascii" : (new TextDecoder()).decode(this.seq.midiData.RMIDInfo?.["IENC"]).replace(/\0$/, '');
+            const decoder = new TextDecoder(encoding);
+
+            const localePath = "locale.exportAudio.formats.formats.rmidi.options.";
+            // artist, album, creation date
+            detail.textContent += verifyDecode('IART', "", decoder, `\n${this.locale.getLocaleString(localePath + "artist.title")}: `);
+            detail.textContent += verifyDecode('IPRD', "", decoder, `\n${this.locale.getLocaleString(localePath + "album.title")}: `);
+            detail.textContent += verifyDecode('ICRD', "", decoder, "\n");
+
+            // add album cover if available
+            const svg = this.mainDiv.getElementsByTagName("svg")[0];
+            const img = this.mainDiv.getElementsByTagName("img")[0];
+            const bg = document.getElementById("player_info_background_image");
+            if(mid.RMIDInfo["IPIC"] === undefined)
+            {
+                svg.style.display = "";
+                img.style.display = "none";
+                bg.style.setProperty("--bg-image", "undefined");
+                return;
+            }
+            svg.style.display = "none";
+            img.style.display = "";
+            const pic = new Blob([mid.RMIDInfo["IPIC"].buffer]);
+            const url = URL.createObjectURL(pic);
+            img.src = url;
+            bg.style.setProperty("--bg-image", `url('${url}')`);
         }, "player-js-song-change");
     }
 

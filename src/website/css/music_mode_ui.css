@@ -9,6 +9,26 @@
     transition: var(--music-mode-transition) transform;
 }
 
+#player_info_background_image{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    filter: blur(10px);
+    --bg-image: "undefined";
+    background-image: var(--bg-image);
+    z-index: -100;
+    left: 0;
+}
+
+.player_info_note_icon img{
+    max-width: 20rem;
+    margin: 1rem;
+    border-radius: 1rem;
+}
+
 .player_info_wrapper{
     display: flex;
     border: #333 solid 1px;
@@ -16,6 +36,11 @@
     padding: 10px;
     align-items: center;
     max-width: 90%;
+    backdrop-filter: brightness(0.4) blur(50px);
+}
+
+#player_info_detail{
+    white-space: preserve;
 }
 
 .player_info_details{

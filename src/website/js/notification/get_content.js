@@ -57,6 +57,24 @@ export function getContent(content, locale)
             inputWrapper.appendChild(input);
             return inputWrapper;
 
+        case "file":
+            const fileWrapper = document.createElement("label");
+            fileWrapper.classList.add("notification_input_wrapper");
+            const file = document.createElement("input");
+            file.type = "file";
+            const fileButton = document.createElement("label");
+            fileButton.classList.add("notification_file_button");
+            applyTextContent(fileButton, content, locale);
+
+            const fileLabel = document.createElement("label");
+            applyTextContent(fileLabel, content, locale);
+
+            applyAttributes(content, [fileButton, file, fileLabel]);
+            fileButton.appendChild(file);
+            fileWrapper.append(fileLabel);
+            fileWrapper.appendChild(fileButton);
+            return fileWrapper;
+
         case "progress":
             const background = document.createElement("div");
             background.classList.add("notification_progress_background");

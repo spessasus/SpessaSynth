@@ -87,3 +87,22 @@ export function writeRIFFChunk(chunk, prepend = undefined)
     array.set(chunk.chunkData, array.currentIndex);
     return array;
 }
+
+/**
+ * @param header {string}
+ * @param data {Uint8Array}
+ * @returns {IndexedByteArray}
+ */
+export function writeRIFFOddSize(header, data)
+{
+    let finalSize = 8 + data.length;
+    if(finalSize % 2 !== 0)
+    {
+        finalSize++;
+    }
+    const outArray = new IndexedByteArray(finalSize);
+    writeStringAsBytes(outArray, header);
+    writeDword(outArray, data.length);
+    outArray.set(data, 8);
+    return outArray;
+}

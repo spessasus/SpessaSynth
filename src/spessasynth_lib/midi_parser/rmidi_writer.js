@@ -1,6 +1,6 @@
 import { combineArrays, IndexedByteArray } from '../utils/indexed_array.js'
 import { writeMIDIFile } from './midi_writer.js'
-import { RiffChunk, writeRIFFChunk } from '../soundfont/read/riff_chunk.js'
+import { writeRIFFOddSize } from '../soundfont/read/riff_chunk.js'
 import { getStringBytes } from '../utils/byte_functions/string.js'
 import { messageTypes, midiControllers, MidiMessage } from './midi_message.js'
 import { DEFAULT_PERCUSSION } from '../synthetizer/synthetizer.js'
@@ -8,14 +8,17 @@ import { getGsOn } from './midi_editor.js'
 import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo } from '../utils/loggin.js'
 import { consoleColors } from '../utils/other.js'
 import { writeLittleEndian } from '../utils/byte_functions/little_endian.js'
-
 /**
  * @enum {string}
  */
 export const RMIDINFOChunks = {
     name: "INAM",
+    album: "IPRD",
+    artist: "IART",
+    genre: "IGNR",
+    picture: "IPIC",
     copyright: "ICOP",
-    creationDate: "ICRT",
+    creationDate: "ICRD",
     comment: "ICMT",
     engineer: "IENG",
     software: "ISFT",
@@ -23,16 +26,33 @@ export const RMIDINFOChunks = {
     bankOffset: "DBNK"
 }
 
+const FORCED_ENCODING = "utf-8";
+const DEFAULT_COPYRIGHT = "Created by SpessaSynth";
+
 /**
- *
+ * @typedef {Object} RMIDMetadata
+ * @property {string|undefined} name - the name of the file
+ * @property {string|undefined} engineer - the engineer who worked on the file
+ * @property {string|undefined} artist - the artist
+ * @property {string|undefined} album - the album
+ * @property {string|undefined} genre - the genre of the song
+ * @property {ArrayBuffer|undefined} picture - the image for the file (album cover)
+ * @property {string|undefined} comment - the coment of the file
+ * @property {string|undefined} creationDate - the creation date of the file
+ * @property {string|undefined} copyright - the copyright of the file
+ */
+
+/**
+ * Writes an RMIDI file
  * @param soundfontBinary {Uint8Array}
  * @param mid {MIDI}
  * @param soundfont {SoundFont2}
  * @param bankOffset {number} the bank offset for RMIDI
  * @param encoding {string} the encoding of the RMIDI info chunk
+ * @param metadata {RMIDMetadata} the metadata of the file. Optional. If provided, the encoding is forced to utf-8/
  * @returns {IndexedByteArray}
  */
-export function writeRMIDI(soundfontBinary, mid, soundfont, bankOffset = 0, encoding = "Shift_JIS")
+export function writeRMIDI(soundfontBinary, mid, soundfont, bankOffset = 0, encoding = "Shift_JIS", metadata = {})
 {
     SpessaSynthGroup("%cWriting the RMIDI File...", consoleColors.info);
     SpessaSynthInfo(`%cConfiguration: Bank offset: %c${bankOffset}%c, encoding: %c${encoding}`,
@@ -156,7 +176,7 @@ export function writeRMIDI(soundfontBinary, mid, soundfont, bankOffset = 0, enco
                 // check if this preset exists for program and bank
                 const realBank = lastBankChanges[chNum]?.messageData[1] - mid.bankOffset; // make sure to take the previous bank offset into account
                 const bank = drums[chNum] ? 128 : realBank;
-                if(bank === undefined)
+                if(lastBankChanges[chNum] === undefined)
                 {
                     return;
                 }
@@ -259,81 +279,136 @@ export function writeRMIDI(soundfontBinary, mid, soundfont, bankOffset = 0, enco
     const newMid = new IndexedByteArray(writeMIDIFile(mid).buffer);
 
     // infodata for RMID
-    const today = new Date().toLocaleString();
+    /**
+     * @type {Uint8Array[]}
+     */
+    const infoContent = [getStringBytes("INFO")];
+    const encoder = new TextEncoder();
+
+    // name
+    if(metadata.name !== undefined)
+    {
+
+        infoContent.push(
+            writeRIFFOddSize(RMIDINFOChunks.name, encoder.encode(metadata.name))
+        );
+        encoding = FORCED_ENCODING;
+    }
+    else
+    {
+        infoContent.push(
+            writeRIFFOddSize(RMIDINFOChunks.name, mid.rawMidiName)
+        );
+    }
+    // creation date
+    if(metadata.creationDate !== undefined)
+    {
+        encoding = FORCED_ENCODING;
+        infoContent.push(
+            writeRIFFOddSize(RMIDINFOChunks.creationDate, encoder.encode(metadata.creationDate))
+        );
+    }
+    else
+    {
+        const today = new Date().toLocaleString(undefined, {
+        weekday: "long",
+        year: 'numeric',
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric"
+    });
+        infoContent.push(
+            writeRIFFOddSize(RMIDINFOChunks.creationDate, getStringBytes(today))
+        );
+    }
+    // comment
+    if(metadata.comment !== undefined)
+    {
+        encoding = FORCED_ENCODING;
+        infoContent.push(
+            writeRIFFOddSize(RMIDINFOChunks.comment, encoder.encode(metadata.comment))
+        );
+    }
+    // engineer
+    if(metadata.engineer !== undefined)
+    {
+        infoContent.push(
+            writeRIFFOddSize(RMIDINFOChunks.engineer, encoder.encode(metadata.engineer))
+        )
+    }
+    // album
+    if(metadata.album !== undefined)
+    {
+        encoding = FORCED_ENCODING;
+        infoContent.push(
+            writeRIFFOddSize(RMIDINFOChunks.album, encoder.encode(metadata.album))
+        );
+    }
+    // artist
+    if(metadata.artist !== undefined)
+    {
+        encoding = FORCED_ENCODING;
+        infoContent.push(
+            writeRIFFOddSize(RMIDINFOChunks.artist, encoder.encode(metadata.artist))
+        );
+    }
+    // genre
+    if(metadata.genre !== undefined)
+    {
+        encoding = FORCED_ENCODING;
+        infoContent.push(
+            writeRIFFOddSize(RMIDINFOChunks.genre, encoder.encode(metadata.genre))
+        );
+    }
+    // picture
+    if(metadata.picture !== undefined)
+    {
+        infoContent.push(
+            writeRIFFOddSize(RMIDINFOChunks.picture, new Uint8Array(metadata.picture))
+        );
+    }
+    // copyright
+    if(metadata.copyright !== undefined)
+    {
+        encoding = FORCED_ENCODING;
+        infoContent.push(
+            writeRIFFOddSize(RMIDINFOChunks.copyright, encoder.encode(metadata.copyright))
+        );
+    }
+    else
+    {
+        // use midi copyright if possible
+        const copyright = mid.copyright.length > 0 ? mid.copyright : DEFAULT_COPYRIGHT;
+        infoContent.push(
+            writeRIFFOddSize(RMIDINFOChunks.copyright, getStringBytes(copyright))
+        );
+    }
+
+    // bank offset
     const DBNK = new IndexedByteArray(2);
     writeLittleEndian(DBNK, bankOffset, 2);
-    const ICOP = mid.copyright.length > 0 ? getStringBytes(mid.copyright) : getStringBytes("Created by SpessaSynth");
-    const infodata = combineArrays([
-        // icop: copyright
-        writeRIFFChunk(
-            new RiffChunk(
-                RMIDINFOChunks.copyright,
-                ICOP.length,
-                ICOP
-            ),
-            new IndexedByteArray([73, 78, 70, 79]) // "INFO"
-        ),
-        // inam: name
-        writeRIFFChunk(
-            new RiffChunk(
-                RMIDINFOChunks.name,
-                mid.rawMidiName.length,
-                new IndexedByteArray(mid.rawMidiName.buffer)
-            ),
-        ),
-        // icrd: creation date
-        writeRIFFChunk(
-            new RiffChunk(
-                RMIDINFOChunks.creationDate,
-                today.length,
-                getStringBytes(today)
-            )
-        ),
-        // isft: software used
-        writeRIFFChunk(
-            new RiffChunk(
-                RMIDINFOChunks.software,
-                11,
-                getStringBytes("SpessaSynth"),
-            )
-        ),
-        // ienc: encoding for the info chunk
-        writeRIFFChunk(
-            new RiffChunk(
-                RMIDINFOChunks.encoding,
-                encoding.length,
-                getStringBytes(encoding)
-            )
-        ),
-        // dbnk: bank offset
-        writeRIFFChunk(
-            new RiffChunk(
-                RMIDINFOChunks.bankOffset,
-                2,
-                DBNK
-            )
-        )
-    ]);
+    infoContent.push(writeRIFFOddSize(RMIDINFOChunks.bankOffset, DBNK));
+    // encoding
+    infoContent.push(writeRIFFOddSize(RMIDINFOChunks.encoding, getStringBytes(encoding)));
+    const infodata = combineArrays(infoContent);
 
     const rmiddata = combineArrays([
-        new Uint8Array([82, 77, 73, 68]), // "RMID"
-        writeRIFFChunk(new RiffChunk(
+        getStringBytes("RMID"),
+        writeRIFFOddSize(
             "data",
-            newMid.length, // "data", size, midi binary
             newMid
-        )),
-        writeRIFFChunk(new RiffChunk(
+        ),
+        writeRIFFOddSize(
             "LIST",
-            infodata.length,
             infodata
-        )),
+        ),
         soundfontBinary
     ]);
     SpessaSynthInfo("%cFinished!", consoleColors.info)
     SpessaSynthGroupEnd();
-    return writeRIFFChunk(new RiffChunk(
+    return writeRIFFOddSize(
         "RIFF",
-        rmiddata.length,
         rmiddata
-    ));
+    );
 }

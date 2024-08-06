@@ -23,7 +23,7 @@ const notifications = {};
 
 /**
  * @typedef {Object} NotificationContent
- * @property {"button"|"progress"|"text"|"input"|"toggle"|"range"} type
+ * @property {"button"|"progress"|"text"|"input"|"toggle"|"range"|"file"} type
  * @property {string|undefined} textContent
  * @property {string|undefined} translatePathTitle
  * @property {Object<string, string>|undefined} attributes

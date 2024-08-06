@@ -47,6 +47,7 @@ class MIDI{
          * @type {string}
          */
         this.copyright = "";
+        let copyrightDetected = false;
 
         /**
          * The MIDI name
@@ -55,6 +56,7 @@ class MIDI{
         this.midiName = "";
 
         this.rawMidiName = new Uint8Array(0);
+        let nameDetected = false;
 
         const initialString = readBytesAsString(binaryData, 4);
         binaryData.currentIndex -= 4;
@@ -106,12 +108,14 @@ class MIDI{
                         }
                         if(this.RMIDInfo['ICOP'])
                         {
-                            this.copyright += readBytesAsString(this.RMIDInfo['ICOP'], this.RMIDInfo['ICOP'].length);
+                            copyrightDetected = true;
+                            this.copyright = readBytesAsString(this.RMIDInfo['ICOP'], this.RMIDInfo['ICOP'].length);
                         }
                         if(this.RMIDInfo['INAM'])
                         {
                             this.rawMidiName = this.RMIDInfo[RMIDINFOChunks.name];
-                            this.midiName = readBytesAsString(this.rawMidiName,  this.rawMidiName.length);
+                            this.midiName = readBytesAsString(this.rawMidiName, this.rawMidiName.length, undefined, false);
+                            nameDetected = true;
                         }
                         this.bankOffset = 1; // defaults to 1
                         if(this.RMIDInfo[RMIDINFOChunks.bankOffset])
@@ -346,7 +350,10 @@ class MIDI{
                                 break;
 
                             case messageTypes.copyright:
-                                this.copyright += readBytesAsString(eventData, eventData.length) + "\n";
+                                if(!copyrightDetected)
+                                {
+                                    this.copyright += readBytesAsString(eventData, eventData.length, undefined, false) + "\n";
+                                }
                                 break;
 
                             case messageTypes.lyric:
@@ -432,8 +439,10 @@ class MIDI{
             loopStart = this.firstNoteOn;
             loopEnd = this.lastVoiceEventTick;
         }
-        else {
-            if (loopStart === null) {
+        else
+        {
+            if (loopStart === null)
+            {
                 loopStart = this.firstNoteOn;
             }
 
@@ -470,7 +479,7 @@ class MIDI{
         this.loop = {start: loopStart, end: loopEnd};
 
         // midi name
-        if(this.midiName.length < 1)
+        if(!nameDetected)
         {
             if (this.tracks.length > 1)
             {
@@ -479,7 +488,7 @@ class MIDI{
                     this.tracks[0].find(
                     message => message.messageStatusByte >= messageTypes.noteOn
                         &&
-                        message.messageStatusByte < messageTypes.systemExclusive
+                        message.messageStatusByte < messageTypes.polyPressure
                     ) === undefined
                 )
                 {

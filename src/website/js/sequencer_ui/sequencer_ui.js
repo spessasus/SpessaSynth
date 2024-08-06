@@ -236,6 +236,7 @@ class SequencerUI
         this.encoding = encoding;
         this.decoder = new TextDecoder(encoding);
         this.text = this.decodeTextFix(new Uint8Array(this.rawLyrics).buffer);
+        this.lyricsElement.selector.value = encoding;
         this.setLyricsText(this.text);
         this.updateTitleAndMediaStatus();
     }

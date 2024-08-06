@@ -364,11 +364,11 @@ class MidiKeyboard
      */
     pressNote(midiNote, channel, velocity)
     {
-        if(midiNote > this._keyRange.max || midiNote < this._keyRange.min)
+        let key = this.keys[midiNote - this._keyRange.min];
+        if(key === undefined)
         {
             return;
         }
-        let key = this.keys[midiNote - this._keyRange.min];
         key.classList.add("pressed");
 
         let isSharp = key.classList.contains("sharp_key");
@@ -410,15 +410,12 @@ class MidiKeyboard
      */
     releaseNote(midiNote, channel)
     {
-        if(midiNote > this._keyRange.max || midiNote < this._keyRange.min)
-        {
-            return;
-        }
-        if(midiNote > 127 || midiNote < 0)
-        {
-            return;
-        }
         let key = this.keys[midiNote - this._keyRange.min];
+        if(key === undefined)
+        {
+            return;
+        }
+
         channel %= this.channelColors.length;
 
         /**

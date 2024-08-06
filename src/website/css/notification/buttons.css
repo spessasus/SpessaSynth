@@ -1,4 +1,5 @@
-.notification button{
+.notification button,
+.notification_file_button {
     background: var(--top-color);
     padding: 0.5rem;
     border: solid 1px #333;
@@ -10,7 +11,9 @@
     transition: transform 0.1s ease;
 }
 
-.notification button:active{
+
+.notification button:active,
+.notification_file_button:active{
     transform: scale(var(--active-scale));
 }
 

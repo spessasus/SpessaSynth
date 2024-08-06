@@ -91,6 +91,22 @@ export const exportAudio = {
                         title: "圧縮品質",
                         description: "圧縮の品質です。高いほど良い"
                     },
+                    songTitle: {
+                        title: "タイトル",
+                        description: "曲のタイトル"
+                    },
+                    album: {
+                        title: "アルバム",
+                        description: "曲のアルバム"
+                    },
+                    artist: {
+                        title: "アーティスト",
+                        description: "曲のアーティスト"
+                    },
+                    albumCover: {
+                        title: "アルバムカバー",
+                        description: "曲のアルバムカバー"
+                    },
                     bankOffset: {
                         title: "銀行の相殺",
                         description: "ファイルのバンク オフセット。値 0 が推奨されます。何をしているのかわかっている場合にのみ変更してください。",

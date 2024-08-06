@@ -12,7 +12,8 @@ input[type='number']::-webkit-inner-spin-button {
     margin: 0;
 }
 
-.notification input[type='number']{
+.notification input[type='number'],
+.notification input[type='text']{
     display: block;
     background: var(--top-buttons-color);
     border: solid 1px #333;
@@ -21,6 +22,10 @@ input[type='number']::-webkit-inner-spin-button {
     border-radius: var(--notification-border-radius);
     width: 5rem;
     -moz-appearance: textfield;
+}
+
+.notification input[type='text'] {
+    width: auto !important;
 }
 
 .notification_slider_wrapper{

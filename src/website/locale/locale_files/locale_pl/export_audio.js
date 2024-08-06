@@ -94,6 +94,22 @@ export const exportAudio = {
                         title: "Jakość kompresji",
                         description: "Jakość skompresowanych próbek. Im wyższa tym lepsza"
                     },
+                    songTitle: {
+                        title: "Tytuł",
+                        description: "Tytuł utworu",
+                    },
+                    album: {
+                        title: "Album",
+                        description: "Album utworu"
+                    },
+                    artist: {
+                        title: "Twórca",
+                        description: "Twórca utworu"
+                    },
+                    albumCover: {
+                        title: "Okładka albumu",
+                        description: "Okładka albumu utworu",
+                    },
                     bankOffset: {
                         title: "Przesunięcie banku",
                         description: "Przesunięcie banku w pliku. Zalecane 0. Zmień tylko jeśli wiesz co robisz.",
