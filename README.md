@@ -4,8 +4,6 @@
 
 **SpessaSynth** is a SoundFont2-based real-time synthesizer and MIDI player written in vanilla JavaScript. It’s a powerful library that allows you to read, write, or play MIDI files and read/write SF2/SF3 files with ease.
 
-![SpessaSynth Promotional Image](https://github.com/spessasus/SpessaSynth/assets/95608008/e2e6c4c6-0762-4c11-8887-a2318d431854)
-
 ### npm package now available!
 ```shell
 npm install --save spessasynth_lib
@@ -107,8 +105,11 @@ npm install --save spessasynth_lib
 
 <h1 align='center'>Web App / Local Edition</h1>
 <p align='center'>The complete GUI for spessasynth_lib, allowing remixing, experimenting, and playing MIDIs in the coolest way possible.</p>
-<h3 align='center'><a href='https://github.com/spessasus/SpessaSynth/wiki/How-To-Use-App'>Usage Guide</a></h3>
 
+<p align='center'>
+<img src="https://github.com/spessasus/SpessaSynth/assets/95608008/e2e6c4c6-0762-4c11-8887-a2318d431854" alt="SpessaSynth promotional image" width="75%">
+</p>
+<h3 align='center'><a href='https://github.com/spessasus/SpessaSynth/wiki/How-To-Use-App'>Usage Guide</a></h3>
 <h2 align='center'>Features</h2>
 
 - Visualization of the played sequence with effects like visual pitch bend and note-on effects
@@ -130,11 +131,23 @@ npm install --save spessasynth_lib
 - No additional dependencies!
 
 <h3 align='center'>Still not convinced? Check out these screenshots:</h3>
+
+<!--
+MARKDOWN VERSION
+![image](https://github.com/user-attachments/assets/b0c9a1f3-3278-4208-8d35-f63b0943ae39)
+![image](https://github.com/user-attachments/assets/b7aeef1d-3f9a-4bff-a5cc-cdee700a8a54)
+![image](https://github.com/user-attachments/assets/7499503e-9dec-4f7c-8c58-b4960f63bc39)
+![image](https://github.com/user-attachments/assets/772c1636-26cb-4efd-a9d1-daef5f12c566)
+![image](https://github.com/user-attachments/assets/0c98f317-69d1-499c-968d-0870d9f5bec5)
+![image](https://github.com/user-attachments/assets/c57c4229-92e1-4ab3-81ef-b1162a917220)
+-->
 <p align='center'>
-<img src="https://github.com/user-attachments/assets/b0c9a1f3-3278-4208-8d35-f63b0943ae39" width="45%" alt="Screenshot 1"> 
-<img src="https://github.com/user-attachments/assets/3bfd9de0-ed13-4667-b843-47c956454136" width="45%" alt="Screenshot 2">
-<img src="https://github.com/user-attachments/assets/7499503e-9dec-4f7c-8c58-b4960f63bc39" width="45%" alt="Screenshot 3">
-<img src="https://github.com/user-attachments/assets/688b4ecc-0ba5-4990-92a5-8b567e08d7d6" width="45%" alt="Screenshot 4">
+<img src="https://github.com/user-attachments/assets/b0c9a1f3-3278-4208-8d35-f63b0943ae39" width="45%"></img>
+<img src="https://github.com/user-attachments/assets/b7aeef1d-3f9a-4bff-a5cc-cdee700a8a54" width="45%"></img> 
+<img src="https://github.com/user-attachments/assets/7499503e-9dec-4f7c-8c58-b4960f63bc39" width="45%"></img>
+<img src="https://github.com/user-attachments/assets/772c1636-26cb-4efd-a9d1-daef5f12c566" width="45%"></img>
+<img src="https://github.com/user-attachments/assets/0c98f317-69d1-499c-968d-0870d9f5bec5" width="45%"></img>
+<img src="https://github.com/user-attachments/assets/c57c4229-92e1-4ab3-81ef-b1162a917220" width="45%"></img> 
 </p>
 
 ### Installation
