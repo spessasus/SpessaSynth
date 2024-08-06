@@ -57,14 +57,19 @@ export function loadNewSequence(parsedMidi)
     if(this.midiData.embeddedSoundFont !== undefined)
     {
         SpessaSynthInfo("%cEmbedded soundfont detected! Using it.", consoleColors.recognized);
-        this.synth.reloadSoundFont(this.midiData.embeddedSoundFont);
         // set offet
         this.synth.soundfontBankOffset = this.midiData.bankOffset;
+        this.synth.reloadSoundFont(this.midiData.embeddedSoundFont, true);
         // preload all samples
-        this.synth.soundfont.samples.forEach(s => s.getAudioData());
+        this.synth.overrideSoundfont.samples.forEach(s => s.getAudioData());
     }
     else
     {
+        if(this.synth.overrideSoundfont)
+        {
+            // clean up the emdeeded soundfont
+            this.synth.clearSoundFont();
+        }
         SpessaSynthGroupCollapsed("%cPreloading samples...", consoleColors.info);
         // smart preloading: load only samples used in the midi!
         const used = getUsedProgramsAndKeys(this.midiData, this.synth.soundfont);
@@ -72,7 +77,7 @@ export function loadNewSequence(parsedMidi)
         {
             const bank = parseInt(programBank.split(":")[0]);
             const program = parseInt(programBank.split(":")[1]);
-            const preset = this.synth.soundfont.getPreset(bank, program);
+            const preset = this.synth.getPreset(bank, program);
             SpessaSynthInfo(`%cPreloading used samples on %c${preset.presetName}%c...`,
                 consoleColors.info,
                 consoleColors.recognized,

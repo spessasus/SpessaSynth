@@ -29,6 +29,8 @@ document.body.classList.add("load");
 * purpose: connects every element of spessasynth together
 */
 
+const ENABLE_DEBUG = false;
+
 class Manager
 {
     channelColors = [
@@ -112,8 +114,7 @@ class Manager
         }
 
         const DEBUG_PATH = "synthetizer/worklet_system/worklet_processor.js";
-        const D = false;
-        const WORKLET_PATH = D ? DEBUG_PATH : WORKLET_URL_ABSOLUTE;
+        const WORKLET_PATH = ENABLE_DEBUG ? DEBUG_PATH : WORKLET_URL_ABSOLUTE;
 
         if(context.audioWorklet)
         {

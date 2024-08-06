@@ -17,6 +17,7 @@ import { modulatorSources } from '../../../soundfont/read/modulators.js'
  *
  * @property {Preset} preset - the channel's preset
  * @property {boolean} lockPreset - indicates whether the program on the channel is locked
+ * @property {boolean} presetUsesOverride - indcates if the channel uses a preset from the override soundfont.
  *
  * @property {boolean} lockVibrato - indicates whether the custom vibrato is locked
  * @property {Object} channelVibrato - vibrato settings for the channel
@@ -53,6 +54,7 @@ export function createWorkletChannel(sendEvent = false)
         sustainedVoices: [],
         cachedVoices: [],
         preset: this.defaultPreset,
+        presetUsesOverride: false,
 
         channelTransposeKeyShift: 0,
         channelVibrato: {delay: 0, depth: 0, rate: 0},

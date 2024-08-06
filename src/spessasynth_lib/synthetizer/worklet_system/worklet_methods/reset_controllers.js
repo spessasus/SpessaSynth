@@ -29,6 +29,7 @@ export function resetAllControllers()
         // if preset is unlocked, switch to non drums and call event
         if(!ch.lockPreset)
         {
+            ch.presetUsesOverride = true;
             ch.midiControllers[midiControllers.bankSelect] = 0;
             if (channelNumber % 16 === DEFAULT_PERCUSSION)
             {

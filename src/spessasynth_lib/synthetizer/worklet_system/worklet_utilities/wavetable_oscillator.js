@@ -69,6 +69,10 @@ export function getOscillatorData(voice, sampleData, outputBuffer)
                 return;
             }
 
+            // cur += voice.sample.playbackStep * voice.currentTuningCalculated;
+            // outputBuffer[i] = sampleData[ceil];
+            // continue;
+
             const fraction = cur - floor;
 
             // grab the samples and interpolate

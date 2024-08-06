@@ -21,16 +21,17 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
         return;
     }
 
+    const channelObject = this.workletProcessorChannels[channel]
     if (
         (this.highPerformanceMode && this.totalVoicesAmount > 200 && velocity < 40) ||
         (this.highPerformanceMode && velocity < 10) ||
-        (this.workletProcessorChannels[channel].isMuted)
+        (channelObject.isMuted)
     )
     {
         return;
     }
 
-    midiNote += this.workletProcessorChannels[channel].channelTransposeKeyShift;
+    midiNote += channelObject.channelTransposeKeyShift;
 
     if(midiNote > 127 || midiNote < 0)
     {
@@ -42,16 +43,21 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
         channel,
         midiNote,
         velocity,
-        this.workletProcessorChannels[channel].preset,
+        channelObject.preset,
         startTime,
         sampleRate,
-        data => this.sampleDump(data.channel, data.sampleID, data.sampleData),
-        this.workletProcessorChannels[channel].cachedVoices,
+        data => this.sampleDump(
+            data.channel,
+            data.sampleID,
+            data.sampleData
+        ),
+        channelObject.cachedVoices,
+        channelObject.presetUsesOverride ? this.soundfont.samples.length : 0, // this is done to prevent samples overlapping
         enableDebugging
     );
 
     // add voices and exclusive class apply
-    const channelVoices = this.workletProcessorChannels[channel].voices;
+    const channelVoices = channelObject.voices;
     voices.forEach(voice => {
         const exclusive = voice.generators[generatorTypes.exclusiveClass];
         if(exclusive !== 0)
@@ -67,7 +73,7 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
             })
         }
         // compute all modulators
-        computeModulators(voice, this.workletProcessorChannels[channel].midiControllers);
+        computeModulators(voice, channelObject.midiControllers);
         // set initial pan to avoid split second changing from middle to the correct value
         voice.currentPan = ((Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan] )) + 500) / 1000) // 0 to 1
     });
@@ -83,7 +89,7 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
     {
         this.sendChannelProperties();
         this.callEvent("noteon", {
-            midiNote: midiNote - this.workletProcessorChannels[channel].channelTransposeKeyShift,
+            midiNote: midiNote - channelObject.channelTransposeKeyShift,
             channel: channel,
             velocity: velocity,
         });

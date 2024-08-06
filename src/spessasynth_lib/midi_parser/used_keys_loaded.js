@@ -6,6 +6,7 @@ import { messageTypes, midiControllers } from './midi_message.js'
 /**
  * @param mid {MIDI}
  * @param soundfont {SoundFont2}
+ * @returns {Object<string, Set<string>>}
  */
 export function getUsedProgramsAndKeys(mid, soundfont)
 {

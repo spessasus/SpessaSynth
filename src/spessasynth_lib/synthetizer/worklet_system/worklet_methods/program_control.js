@@ -24,17 +24,66 @@ export function programChange(channel, programNumber, userChange=false)
         return;
     }
     // always 128 for percussion
-    const bankWithOffset = Math.max(0, channelObject.midiControllers[midiControllers.bankSelect] - this.soundfontBankOffset);
-    const bank = channelObject.drumChannel ? 128 : bankWithOffset;
-    const preset = this.soundfont.getPreset(bank, programNumber);
+    const bank = channelObject.drumChannel ? 128 : channelObject.midiControllers[midiControllers.bankSelect];
+    let sentBank;
+    let preset;
+
+    // check if override
+    if(this.overrideSoundfont)
+    {
+        const bankWithOffset = bank === 128 ? 128 : Math.max(0, bank - this.soundfontBankOffset);
+        const p = this.overrideSoundfont.presets.find(p => p.program === programNumber && p.bank === bankWithOffset);
+        if(p)
+        {
+            sentBank = bank;
+            preset = p;
+            channelObject.presetUsesOverride = true;
+        }
+        else
+        {
+            preset = this.soundfont.getPreset(bank, programNumber);
+            sentBank = preset.bank;
+            channelObject.presetUsesOverride = false;
+        }
+    }
+    else
+    {
+        preset = this.soundfont.getPreset(bank, programNumber);
+        sentBank = preset.bank;
+        channelObject.presetUsesOverride = false;
+    }
+
     this.setPreset(channel, preset);
     this.callEvent("programchange",{
         channel: channel,
         program: preset.program,
-        bank: preset.bank,
+        bank: sentBank,
         userCalled: userChange
     });
 }
+
+/**
+ * @this {SpessaSynthProcessor}
+ * @param program {number}
+ * @param bank {number}
+ * @returns {Preset}
+ */
+export function getPreset(bank, program)
+{
+    if(this.overrideSoundfont)
+    {
+        // if overriden soundfont
+        const bankWithOffset = bank === 128 ? 128 : Math.max(0, bank - this.soundfontBankOffset);
+        const preset = this.overrideSoundfont.presets.find(p => p.program === program && p.bank === bankWithOffset);
+        if(preset)
+        {
+            return preset;
+        }
+    }
+    return this.soundfont.getPreset(bank, program);
+}
+
+
 
 /**
  * @param channel {number}
@@ -51,7 +100,8 @@ export function setPreset(channel, preset)
 
     // reset cached voices
     this.workletProcessorChannels[channel].cachedVoices = [];
-    for (let i = 0; i < 128; i++) {
+    for (let i = 0; i < 128; i++)
+    {
         this.workletProcessorChannels[channel].cachedVoices.push([]);
     }
 }
@@ -78,13 +128,14 @@ export function setDrums(channel, isDrum)
         // clear transpose
         channelObject.channelTransposeKeyShift = 0;
         channelObject.drumChannel = true;
-        this.setPreset(channel, this.soundfont.getPreset(128, channelObject.preset.program));
+        this.setPreset(channel, this.getPreset(128, channelObject.preset.program));
     }
     else
     {
         channelObject.drumChannel = false;
-        this.setPreset(channel, this.soundfont.getPreset(channelObject.midiControllers[midiControllers.bankSelect], channelObject.preset.program));
+        this.setPreset(channel, this.getPreset(channelObject.midiControllers[midiControllers.bankSelect], channelObject.preset.program));
     }
+    channelObject.presetUsesOverride = false;
     this.callEvent("drumchange",{
         channel: channel,
         isDrumChannel: channelObject.drumChannel
@@ -97,37 +148,44 @@ export function setDrums(channel, isDrum)
  */
 export function sendPresetList()
 {
-    this.callEvent("presetlistchange", this.soundfont.presets.map(p => {
+    const mainFont =  this.soundfont.presets.map(p => {
         return {presetName: p.presetName, bank: p.bank, program: p.program};
-    }));
+    });
+    if(this.overrideSoundfont !== undefined)
+    {
+        this.overrideSoundfont.presets.forEach(p => {
+            const bankCheck = p.bank === 128 ? 128 : p.bank + this.soundfontBankOffset;
+            const exists = mainFont.find(pr => pr.bank === bankCheck && pr.program === p.program);
+            if(exists !== undefined)
+            {
+                exists.presetName = p.presetName;
+            }
+            else
+            {
+                mainFont.push({presetName: p.presetName, bank: bankCheck, program: p.program});
+            }
+        });
+    }
+    this.callEvent("presetlistchange", mainFont);
 }
 
 /**
- * @param buffer {ArrayBuffer}
  * @this {SpessaSynthProcessor}
+ * @param sendPresets {boolean}
+ * @param clearOverride {boolean}
  */
-export function reloadSoundFont(buffer)
+export function clearSoundFont(sendPresets = true, clearOverride = true)
 {
     this.stopAllChannels(true);
-    delete this.soundfont;
-
-
-    try {
-        this.soundfont = new SoundFont2(buffer);
-    }
-    catch (e)
-    {
-        this.post({
-            messageType: returnMessageType.soundfontError,
-            messageData: e
-        });
-        return;
-    }
     clearSamplesList();
+    if(clearOverride)
+    {
+        delete this.overrideSoundfont;
+    }
     delete this.workletDumpedSamplesList;
     this.workletDumpedSamplesList = [];
-    this.defaultPreset = this.soundfont.getPreset(0, 0);
-    this.drumPreset = this.soundfont.getPreset(128, 0);
+    this.defaultPreset = this.getPreset(0, 0);
+    this.drumPreset = this.getPreset(128, 0);
 
     for(let i = 0; i < this.workletProcessorChannels.length; i++)
     {
@@ -139,6 +197,43 @@ export function reloadSoundFont(buffer)
         }
         channelObject.lockPreset = false;
         this.programChange(i, channelObject.preset.program);
+    }
+    if(sendPresets)
+    {
+        this.sendPresetList();
+    }
+}
+
+/**
+ * @param buffer {ArrayBuffer}
+ * @param isOverride {Boolean}
+ * @this {SpessaSynthProcessor}
+ */
+export function reloadSoundFont(buffer, isOverride = false)
+{
+    this.clearSoundFont(false, isOverride);
+    if(!isOverride)
+    {
+        delete this.soundfont;
+    }
+    try
+    {
+        if(isOverride)
+        {
+            this.overrideSoundfont = new SoundFont2(buffer);
+        }
+        else
+        {
+            this.soundfont = new SoundFont2(buffer);
+        }
+    }
+    catch (e)
+    {
+        this.post({
+            messageType: returnMessageType.soundfontError,
+            messageData: e
+        });
+        return;
     }
     this.post({messageType: returnMessageType.ready, messageData: undefined});
     this.sendPresetList();

@@ -126,6 +126,7 @@ function deepClone(obj) {
  * @param sampleRate {number}
  * @param sampleDumpCallback {function({channel: number, sampleID: number, sampleData: Float32Array})}
  * @param cachedVoices {WorkletVoice[][][]} first is midi note, second is velocity. output is an array of WorkletVoices
+ * @param sampleIDOffset {number}
  * @param debug {boolean}
  * @returns {WorkletVoice[]}
  */
@@ -137,6 +138,7 @@ export function getWorkletVoices(channel,
                                  sampleRate,
                                  sampleDumpCallback,
                                  cachedVoices,
+                                 sampleIDOffset,
                                  debug=false)
 {
     /**
@@ -159,9 +161,10 @@ export function getWorkletVoices(channel,
          */
         workletVoices = preset.getSamplesAndGenerators(midiNote, velocity).reduce((voices, sampleAndGenerators) => {
             // dump the sample if haven't already
-            if (globalDumpedSamplesList[sampleAndGenerators.sampleID] !== true)
+            const sampleID = sampleAndGenerators.sampleID + sampleIDOffset;
+            if (globalDumpedSamplesList[sampleID] !== true)
             {
-                dumpSample(channel, sampleAndGenerators.sample, sampleAndGenerators.sampleID, sampleDumpCallback);
+                dumpSample(channel, sampleAndGenerators.sample, sampleID, sampleDumpCallback);
             }
             if(sampleAndGenerators.sample.sampleData === undefined)
             {
@@ -205,7 +208,7 @@ export function getWorkletVoices(channel,
              * @type {WorkletSample}
              */
             const workletSample = {
-                sampleID: sampleAndGenerators.sampleID,
+                sampleID: sampleID,
                 playbackStep: (sampleAndGenerators.sample.sampleRate / sampleRate) * Math.pow(2, sampleAndGenerators.sample.samplePitchCorrection / 1200),// cent tuning
                 cursor: generators[generatorTypes.startAddrsOffset] + (generators[generatorTypes.startAddrsCoarseOffset] * 32768),
                 rootKey: rootKey,

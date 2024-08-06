@@ -22,6 +22,7 @@ import {
     transposeChannel,
 } from './worklet_methods/tuning_control.js'
 import {
+    clearSoundFont, getPreset,
     programChange,
     reloadSoundFont,
     sampleDump,
@@ -115,6 +116,12 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
         this.highPerformanceMode = false;
 
         /**
+         * Overrides the main soundfont (embedded for example
+         * @type {SoundFont2}
+         */
+        this.overrideSoundfont = undefined;
+
+        /**
          * the pan of the right channel
          * @type {number}
          */
@@ -136,8 +143,8 @@ class SpessaSynthProcessor extends AudioWorkletProcessor {
         }
         this.sendPresetList();
 
-        this.defaultPreset = this.soundfont.getPreset(0, 0);
-        this.drumPreset = this.soundfont.getPreset(128, 0);
+        this.defaultPreset = this.getPreset(0, 0);
+        this.drumPreset = this.getPreset(128, 0);
 
         /**
          * @type {Float32Array[]}
@@ -355,9 +362,11 @@ SpessaSynthProcessor.prototype.pitchWheel = pitchWheel;
 
 // program related
 SpessaSynthProcessor.prototype.programChange = programChange;
+SpessaSynthProcessor.prototype.getPreset = getPreset;
 SpessaSynthProcessor.prototype.setPreset = setPreset;
 SpessaSynthProcessor.prototype.setDrums = setDrums;
 SpessaSynthProcessor.prototype.reloadSoundFont = reloadSoundFont;
+SpessaSynthProcessor.prototype.clearSoundFont = clearSoundFont;
 SpessaSynthProcessor.prototype.sampleDump = sampleDump;
 SpessaSynthProcessor.prototype.sendPresetList = sendPresetList;
 
