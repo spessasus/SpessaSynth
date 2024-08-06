@@ -112,21 +112,22 @@ npm install --save spessasynth_lib
 <h3 align='center'><a href='https://github.com/spessasus/SpessaSynth/wiki/How-To-Use-App'>Usage Guide</a></h3>
 <h2 align='center'>Features</h2>
 
-- Visualization of the played sequence with effects like visual pitch bend and note-on effects
-- Playable keyboard with various sizes (mobile friendly!)
-- Integrated controller for the synthesizer with numerous options
-- Support for lyrics embedded in the file (karaoke feature)
-- Music player mode if you prefer not to use visualizations
+- **Visualization of the played sequence:** with cool effects like visual pitch bend and note-on effects!
+- **Playable keyboard with various sizes:** mobile friendly!
+- **Integrated controller for the synthesizer with numerous options:** Edit instruments, controllers, and more!
+- **Lyrics support:** Karaoke!
+- **Music player mode:** with support for album covers in .rmi files!
 - Mobile-friendly UI (_synthesizer performance not optimized for mobile... don't tell anyone!_)
-- Multiple language support: English, Polish, Japanese
-- `Web MIDI API` support (Enables use of actual MIDI devices)
+- **Multiple language support:** English, Polish, Japanese
+- **`Web MIDI API` support:** Use your physical MIDI devices!
 - [WebMidiLink](https://www.g200kg.com/en/docs/webmidilink/) support
-- Edit instruments, controllers, and more!
-- Render the MIDI file (modified or unmodified) to .wav
-- Render each channel as a separate .wav file
-- Export the modified MIDI file to .mid
-- Export the trimmed SoundFont to .sf2 or compressed .sf3
-- Bundle both as .rmi!
+- **Numerous exporting options:**
+- - Render the MIDI file (modified or unmodified) to .wav
+- - Render each channel as a separate .wav file
+- - Export the modified MIDI file to .mid
+- - Export the trimmed SoundFont to .sf2
+- - Or compress it as .sf3!
+- - Bundle both as .rmi with metadata such as album cover!
 - Comes bundled with a compressed [SGM](https://web.archive.org/web/20130616094125/http://www.geocities.jp/shansoundfont/) SoundFont to get you started
 - No additional dependencies!
 
@@ -150,14 +151,15 @@ MARKDOWN VERSION
 <img src="https://github.com/user-attachments/assets/c57c4229-92e1-4ab3-81ef-b1162a917220" width="45%"></img> 
 </p>
 
-### Installation
+### Installation (Local Edition)
+Local edition comes with easier soundfont management than the demo version.
 
 > [!IMPORTANT]
 > Firefox is recommended for large SoundFonts due to memory constraints. A decent computer is also recommended for handling large SoundFonts.
 
 [Recommended high-quality SoundFont (better than the built-in one)](https://musical-artifacts.com/artifacts/1176)
 
-**Requires Node.js**
+**Local Edition requires Node.js**
 
 #### Windows
 1. Download the code as a ZIP file and extract, or use `git clone https://github.com/spessasus/SpessaSynth`.
@@ -192,6 +194,7 @@ MARKDOWN VERSION
 - [RecordingBlogs](https://www.recordingblogs.com/) - for detailed explanations on MIDI messages
 - [stbvorbis.js](https://github.com/hajimehoshi/stbvorbis.js) - for the Vorbis decoder
 - [OggVorbisEncoder](https://github.com/higuma/ogg-vorbis-encoder-js) - for the MIT Vorbis encoder
+- [Falcosoft](https://falcosoft.hu) - for help with the RMIDI format
 - **And You!** - for checking out this project. I hope you like it :)
 
 ### Major Releases
@@ -205,3 +208,4 @@ Copyright © 2024 Spessasus. Licensed under the MIT License.
 
 > [!IMPORTANT]
 > Please note that the bundled [stbvorbis_sync.js](https://github.com/spessasus/stbvorbis_sync.js) is licensed under the Apache-2.0 license.
+> The license and the file can be found in the `externals` folder in the spessasynth_lib directory.
