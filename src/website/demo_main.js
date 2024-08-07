@@ -274,7 +274,7 @@ async function startMidi(midiFiles)
             altName: file.name
         })
     }
-
+    manager.synth.setLogLevel(false, false, false, false);
     if(manager.seq)
     {
         manager.seq.loadNewSongList(parsed);
