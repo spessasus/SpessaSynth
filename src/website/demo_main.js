@@ -22,6 +22,7 @@ let titleMessage = document.getElementById("title");
  */
 let fileInput = document.getElementById("midi_file_input");
 let sfInput = document.getElementById("sf_file_input");
+let demoSongButton = document.getElementById("demo_song");
 /**
  * @type {HTMLButtonElement}
  */
@@ -239,10 +240,14 @@ async function fetchFont(url, callback)
 }
 
 /**
- * @param midiFiles {FileList}
+ * @param midiFiles {{
+ *     name: string,
+ *     arrayBuffer: function
+ * }[]}
  */
 async function startMidi(midiFiles)
 {
+    demoSongButton.style.display  = "none"
     let fName;
     if(midiFiles[0].name.length > 20)
     {
@@ -332,6 +337,15 @@ fileInput.focus();
 exportButton.style.display = "none";
 document.getElementById("sf_upload").style.display = "none";
 document.getElementById("file_upload").style.display = "none";
+
+async function playDemoSong()
+{
+    console.log(window.manager.localeManager.localeCode);
+    titleMessage.textContent = window.manager.localeManager.getLocaleString("locale.synthInit.genericLoading");
+    const r = await fetch("demo_songs/Field of Hopes and Dreams.rmi");
+    r.name = "Field of Hopes and Dreams"
+    await startMidi([r]);
+}
 
 demoInit(initLocale).then(() => {
     document.getElementById("sf_upload").style.display = "flex";
@@ -432,4 +446,5 @@ demoInit(initLocale).then(() => {
             }, 1000)
         }, ANIMATION_REFLOW_TIME);
     }
+    demoSongButton.onclick = playDemoSong;
 });

@@ -15,6 +15,7 @@ export const localeEnglish = {
     demoTitleMessage: "SpessaSynth: SoundFont2 Javascript Synthesizer Online Demo",
 
     synthInit: {
+        genericLoading: "Loading...",
         loadingSoundfont: "Loading SoundFont...",
         loadingBundledSoundfont: "Loading bundled SoundFont...",
         startingSynthesizer: "Starting Synthesizer...",
@@ -31,12 +32,12 @@ export const localeEnglish = {
 
     demoSoundfontUploadButton: "Upload the soundfont",
     demoGithubPage: "Project's page",
-    demoBundledSoundfont: "Use the bundled SoundFont (22MB)",
+    demoSongButton: "Demo Song",
 
     warnings: {
-        outOfMemory: "Your browser ran out of memory. Consider using Firefox or SF3 soundfont instead.<br><br> (see console for error).",
+        outOfMemory: "Your browser ran out of memory. Consider using Firefox or SF3 soundfont instead. (see console for error).",
         noMidiSupport: "MIDI Inputs are not supported by this browser, this functionality will not be available. Consider using Chrome or Firefox.",
-        chromeMobile: "SpessaSynth performs poorly on Chrome Mobile.<br/>Consider using Firefox Android instead.",
+        chromeMobile: "SpessaSynth performs poorly on Chrome Mobile. Consider using Firefox Android instead.",
         warning: "Warning"
     },
     hideTopBar: {

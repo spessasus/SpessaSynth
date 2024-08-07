@@ -26,10 +26,11 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
     // get locales
     const exportingMessage = manager.localeManager.getLocaleString(`locale.exportAudio.formats.formats.wav.exportMessage.message`);
     const estimatedMessage = manager.localeManager.getLocaleString(`locale.exportAudio.formats.formats.wav.exportMessage.estimated`);
+    const loadingMessage =  manager.localeManager.getLocaleString(`locale.synthInit.genericLoading`);
     const notification = showNotification(
         exportingMessage,
         [
-            { type: 'text', textContent: estimatedMessage + " (...)" },
+            { type: 'text', textContent: loadingMessage },
             { type: 'progress' }
         ],
         9999999,

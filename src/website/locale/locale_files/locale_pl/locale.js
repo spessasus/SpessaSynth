@@ -15,6 +15,7 @@ export const localePolish = {
     demoTitleMessage: "SpessaSynth: JavaScriptowy Syntezator SoundFont2 Wersja Demo",
 
     synthInit: {
+        genericLoading: "Wczytywanie...",
         loadingSoundfont: "Wczytywanie SoundFonta...",
         loadingBundledSoundfont: "Wczytywanie wbudowanego SoundFonta...",
         startingSynthesizer: "Uruchamianie syntezatora...",
@@ -34,12 +35,12 @@ export const localePolish = {
 
     demoSoundfontUploadButton: "Wgraj SoundFonta",
     demoGithubPage: "Strona projektu",
-    demoBundledSoundfont: "Użyj wbudowanego SoundFonta (22MB)",
+    demoSongButton: "Piosenka demo",
 
     warnings: {
-        outOfMemory: "Twojej przeglądarce skończyła się pamięć. Rozważ użycie Firefoxa albo plików SF3.<br><br>(Zobacz błąd w konsoli)",
+        outOfMemory: "Twojej przeglądarce skończyła się pamięć. Rozważ użycie Firefoxa albo plików SF3. (Zobacz błąd w konsoli)",
         noMidiSupport: "Twoja przeglądarka nie wspiera Web MIDI. Korzystanie z portów MIDI nie będzie dostępne. Rozważ użycie Chrome albo Firefoxa.",
-        chromeMobile: "SpessaSynth działa wolno na Chromie na telefon. <br>Rozważ użycie Firefoxa Android.",
+        chromeMobile: "SpessaSynth działa wolno na Chromie na telefon. Rozważ użycie Firefoxa Android.",
         warning: "Uwaga"
     },
 

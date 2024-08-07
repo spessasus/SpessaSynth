@@ -27,7 +27,7 @@ export const RMIDINFOChunks = {
 }
 
 const FORCED_ENCODING = "utf-8";
-const DEFAULT_COPYRIGHT = "Created by SpessaSynth";
+const DEFAULT_COPYRIGHT = "Created using SpessaSynth";
 
 /**
  * @typedef {Object} RMIDMetadata

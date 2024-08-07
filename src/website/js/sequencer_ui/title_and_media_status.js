@@ -49,8 +49,15 @@ export function createNavigatorHandler()
  */
 export function updateTitleAndMediaStatus()
 {
-    const text = this.decodeTextFix(this.seq.midiData.rawMidiName.buffer);
-    this.currentSongTitle = formatTitle(text);
+    if(this.seq?.hasDummyData === true)
+    {
+        this.currentSongTitle = this.locale.getLocaleString("locale.synthInit.genericLoading");
+    }
+    else
+    {
+        const text = this.decodeTextFix(this.seq.midiData.rawMidiName.buffer);
+        this.currentSongTitle = formatTitle(text);
+    }
     if(this.seq.midiData)
     {
         // combine lyrics into one binary array

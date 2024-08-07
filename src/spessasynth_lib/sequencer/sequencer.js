@@ -69,6 +69,12 @@ export class Sequencer
 
         this.songIndex = 0;
 
+        /**
+         * Indicates if the current midiData property has dummy data in it (not yet loaded)
+         * @type {boolean}
+         */
+        this.hasDummyData = true;
+
         this._loop = true;
 
         /**
@@ -206,6 +212,7 @@ export class Sequencer
                 let songChangeData = messageData[0];
                 this.songIndex = messageData[1];
                 this.midiData = songChangeData;
+                this.hasDummyData = false;
                 this.absoluteStartTime = 0;
                 this.duration = this.midiData.duration;
                 Object.entries(this.onSongChange).forEach((callback) => callback[1](songChangeData));
@@ -327,6 +334,7 @@ export class Sequencer
         this.pause();
         // add some dummy data
         this.midiData = DUMMY_MIDI_DATA;
+        this.hasDummyData = true;
         this.duration = 99999;
         this._sendMessage(WorkletSequencerMessageType.loadNewSongList, midiBuffers);
         this.songIndex = 0;

@@ -15,6 +15,7 @@ export const localeJapanese = {
     demoTitleMessage: "SpessaSynth: SoundFont2 Javascript シンセサイザー オンラインデモ",
 
     synthInit: {
+        genericLoading: "読み込み中...",
         loadingSoundfont: "サウンドフォントを読み込んでいます...",
         loadingBundledSoundfont: "バンドルされたサウンドフォントを読み込んでいます...",
         startingSynthesizer: "シンセサイザーを起動しています...",
@@ -30,7 +31,7 @@ export const localeJapanese = {
 
     demoSoundfontUploadButton: "サウンドフォントをアップロード",
     demoGithubPage: "プロジェクトのページ",
-    demoBundledSoundfont: "バンドルされたSoundFontを使用 (22MB)",
+    demoSongButton: "デモソング",
 
     warnings: {
         noMidiSupport: "このブラウザはMIDI入力をサポートしていないため、この機能は利用できません。ChromeまたはFirefoxを使用することを検討してください。",
