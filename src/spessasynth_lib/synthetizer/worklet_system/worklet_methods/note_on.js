@@ -38,9 +38,9 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
         return;
     }
     const program = channelObject.preset.program;
-    if(this.tunings[program][midiNote]?.midiNote >= 0)
+    if(this.tunings[program]?.[midiNote]?.midiNote >= 0)
     {
-        sentMidiNote = this.tunings[program][midiNote].midiNote;
+        sentMidiNote = this.tunings[program]?.[midiNote].midiNote;
     }
 
     // get voices

@@ -102,14 +102,19 @@ export class MusicModeUI {
         this.seq.addOnSongChangeEvent(mid => {
             // use file name if no copyright detected
             const midcopy = mid.copyright.replaceAll("\n", "");
-            const setInfoText = (id, text) => {
+            /**
+             * @param id {string}
+             * @param text {string}
+             * @param enableMarquee {boolean}
+             */
+            const setInfoText = (id, text, enableMarquee = true) => {
                 const el = document.getElementById(id);
                 if(text.length > 0)
                 {
                     el.parentElement.classList.remove("hidden");
                     el.innerHTML = "";
                     // add scroll if needed
-                    if(text.length > 30)
+                    if(text.length > 30 && enableMarquee)
                     {
                         el.classList.add("marquee");
 
@@ -133,7 +138,7 @@ export class MusicModeUI {
             setInfoText("player_info_time", formatTime(this.seq.duration).time);
 
             // file name
-            setInfoText("player_info_file_name", mid.fileName);
+            setInfoText("player_info_file_name", mid.fileName, false);
 
             // embedded things
             // add album and artist meta

@@ -67,7 +67,7 @@ export function renderVoice(
         + channel.customControllers[customControllers.channelTuningSemitones];
 
     // midi tuning standard
-    const tuning = this.tunings[channel.preset.program][targetKey];
+    const tuning = this.tunings[channel.preset.program]?.[targetKey];
     if(tuning?.midiNote >= 0)
     {
         targetKey = tuning.midiNote;
