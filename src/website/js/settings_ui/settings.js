@@ -170,6 +170,7 @@ class SpessaSynthSettings
             this.createHandlers(renderer, midiKeyboard, midiDeviceHandler, sequi, sythui)
         }
 
+        this.topPartVisible = true;
         let fullscreen = false
 
         // detect fullscreen (even f11)
@@ -179,7 +180,7 @@ class SpessaSynthSettings
                 curHeight = window.outerHeight,
                 curWidth = window.outerWidth;
 
-            let screen = false;
+            let screen;
             screen = maxWidth === curWidth && maxHeight === curHeight;
             if(screen !== fullscreen)
             {
@@ -194,6 +195,17 @@ class SpessaSynthSettings
                 }
             }
         });
+
+        document.addEventListener("fullscreenchange", () => {
+            if(document.fullscreenElement === null)
+            {
+                this.showTopPart();
+            }
+            else
+            {
+                this.hideTopPart();
+            }
+        })
     }
 
     /**
@@ -210,6 +222,11 @@ class SpessaSynthSettings
 
     showTopPart()
     {
+        if(this.topPartVisible === true)
+        {
+            return;
+        }
+        this.topPartVisible = true;
         const topPart = document.getElementsByClassName("top_part")[0];
         const showTopButton =  document.getElementsByClassName("show_top_button")[0];
         topPart.style.display = "";
@@ -222,6 +239,11 @@ class SpessaSynthSettings
 
     hideTopPart()
     {
+        if(this.topPartVisible === false)
+        {
+            return;
+        }
+        this.topPartVisible = false;
         // hide top
         const topPart = document.getElementsByClassName("top_part")[0];
         topPart.classList.add("top_part_hidden");
