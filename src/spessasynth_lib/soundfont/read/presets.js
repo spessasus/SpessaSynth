@@ -133,6 +133,11 @@ export class Preset {
             return memorized;
         }
 
+        if(this.presetZones.length < 1)
+        {
+            return [];
+        }
+
         function isInRange(min, max, number) {
             return number >= min && number <= max;
         }
@@ -191,6 +196,10 @@ export class Preset {
 
         presetZonesInRange.forEach(zone =>
         {
+            if(zone.instrument.instrumentZones.length < 1)
+            {
+                return;
+            }
             let presetGenerators = zone.generators;
             let presetModulators = zone.modulators;
             /**

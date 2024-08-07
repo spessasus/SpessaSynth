@@ -18,9 +18,11 @@ export function getOscillatorData(voice, sampleData, outputBuffer)
 
     if(loop)
     {
-        for (let i = 0; i < outputBuffer.length; i++) {
+        for (let i = 0; i < outputBuffer.length; i++)
+        {
             // check for loop
-            while(cur >= voice.sample.loopEnd) {
+            while(cur >= voice.sample.loopEnd)
+            {
                 cur -= loopLength;
             }
 
@@ -28,9 +30,15 @@ export function getOscillatorData(voice, sampleData, outputBuffer)
             const floor = ~~cur;
             let ceil = floor + 1;
 
-            while(ceil >= voice.sample.loopEnd) {
+            while(ceil >= voice.sample.loopEnd)
+            {
                 ceil -= loopLength;
             }
+
+            // nearest neighbor (uncomment to use)
+            // outputBuffer[i] = sampleData[ceil];
+            // cur += voice.sample.playbackStep * voice.currentTuningCalculated;
+            // continue;
 
             const fraction = cur - floor;
 
@@ -69,8 +77,9 @@ export function getOscillatorData(voice, sampleData, outputBuffer)
                 return;
             }
 
-            // cur += voice.sample.playbackStep * voice.currentTuningCalculated;
+            // nearest neighbor (uncomment to use)
             // outputBuffer[i] = sampleData[ceil];
+            // cur += voice.sample.playbackStep * voice.currentTuningCalculated;
             // continue;
 
             const fraction = cur - floor;
