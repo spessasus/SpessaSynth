@@ -31,17 +31,22 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
         return;
     }
 
-    midiNote += channelObject.channelTransposeKeyShift;
+    let sentMidiNote = midiNote + channelObject.channelTransposeKeyShift;
 
     if(midiNote > 127 || midiNote < 0)
     {
         return;
     }
+    const program = channelObject.preset.program;
+    if(this.tunings[program][midiNote]?.midiNote >= 0)
+    {
+        sentMidiNote = this.tunings[program][midiNote].midiNote;
+    }
 
     // get voices
     const voices = getWorkletVoices(
         channel,
-        midiNote,
+        sentMidiNote,
         velocity,
         channelObject.preset,
         startTime,
@@ -89,7 +94,7 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
     {
         this.sendChannelProperties();
         this.callEvent("noteon", {
-            midiNote: midiNote - channelObject.channelTransposeKeyShift,
+            midiNote: midiNote,
             channel: channel,
             velocity: velocity,
         });

@@ -55,6 +55,7 @@ export function renderVoice(
     }
 
     // TUNING
+    let targetKey = voice.targetKey;
 
     // calculate tuning
     let cents = voice.modulatedGenerators[generatorTypes.fineTune]
@@ -65,8 +66,16 @@ export function renderVoice(
     let semitones = voice.modulatedGenerators[generatorTypes.coarseTune]
         + channel.customControllers[customControllers.channelTuningSemitones];
 
+    // midi tuning standard
+    const tuning = this.tunings[channel.preset.program][targetKey];
+    if(tuning?.midiNote >= 0)
+    {
+        targetKey = tuning.midiNote;
+        cents += tuning.centTuning;
+    }
+
     // calculate tuning by key
-    cents += (voice.targetKey - voice.sample.rootKey) * voice.modulatedGenerators[generatorTypes.scaleTuning];
+    cents += (targetKey - voice.sample.rootKey) * voice.modulatedGenerators[generatorTypes.scaleTuning];
 
     // vibrato LFO
     const vibratoDepth = voice.modulatedGenerators[generatorTypes.vibLfoToPitch];

@@ -3,34 +3,37 @@ import { SpessaSynthInfo, SpessaSynthWarn } from '../../../utils/loggin.js'
 import { midiControllers } from '../../../midi_parser/midi_message.js'
 import { ALL_CHANNELS_OR_DIFFERENT_ACTION } from '../message_protocol/worklet_message.js'
 
+/**
+ * KeyNum: tuning
+ * @typedef {MTSNoteTuning[]} MTSProgramTuning
+ */
+
+/**
+ * @typedef {Object} MTSNoteTuning
+ * @property {number} midiNote - the base midi note to use, -1 means no change
+ * @property {number} centTuning - additional tuning
+ */
 
 /**
  * Calculates freqency for MIDI Tuning Standard
  * @param byte1 {number}
  * @param byte2 {number}
  * @param byte3 {number}
- * @return {number|null}
+ * @return {{midiNote: number, centTuning: number|null}}
  */
-function calculateFrequency(byte1, byte2, byte3)
+function getTuning(byte1, byte2, byte3)
 {
-    // handle special case of "no change"
+    const midiNote = byte1;
+    const fraction = (byte2 << 7) | byte3; // Combine byte2 and byte3 into a 14-bit number
+
+    // no change
     if (byte1 === 0x7F && byte2 === 0x7F && byte3 === 0x7F)
     {
-        return null;
+        return { midiNote: -1, centTuning: null };
     }
 
-    // Frequency base for MIDI note number 0
-    const baseFrequency = 8.1758;
-
-    const semitone = byte1;
-
-    // combine byte2 and byte3
-    const fraction = (byte2 << 7) | byte3;
-
-    // get total cents
-    const totalCents = semitone * 100 + (fraction / 16384) * 100;
-
-    return baseFrequency * Math.pow(2, totalCents / 1200);
+    // calculate cent tuning
+    return { midiNote: midiNote, centTuning: fraction * 0.0061 };
 }
 
 
@@ -144,26 +147,32 @@ export function systemExclusive(messageData, channelOffset = 0)
                     switch(messageData[3])
                     {
                         // single note change
+                        // single note change bank
                         case 0x02:
-                            const tuningProgram = messageData[4];
-                            const numberOfChanges = messageData[5];
-                            const keys = [];
-                            let currentMessageIndex = 6
-                            for (let i = 0; i < numberOfChanges; i++)
+                        case 0x07:
+                            let currentMessageIndex = 4;
+                            if(messageData[3] === 0x07)
                             {
-                                keys.push(messageData[currentMessageIndex]);
+                                // skip bank
                                 currentMessageIndex++;
                             }
-                            const frequencies = [];
+                            // get program and number of cahnges
+                            const tuningProgram = messageData[currentMessageIndex++];
+                            const numberOfChanges = messageData[currentMessageIndex++];
                             for (let i = 0; i < numberOfChanges; i++)
                             {
-                                frequencies.push(calculateFrequency(
+                                // set the given tuning to the program
+                                this.tunings[tuningProgram][messageData[currentMessageIndex++]] = getTuning(
                                     messageData[currentMessageIndex++],
                                     messageData[currentMessageIndex++],
                                     messageData[currentMessageIndex++],
-                                ));
+                                );
                             }
-                            console.log(tuningProgram, numberOfChanges, keys, frequencies)
+                            SpessaSynthInfo(`%cSingle Note Tuning. Program: %c${tuningProgram}%c Keys affected: ${numberOfChanges}`,
+                                consoleColors.info,
+                                consoleColors.recognized,
+                                consoleColors.info,
+                                consoleColors.recognized)
                             break;
 
                         // octave tuning (1 byte)
@@ -250,7 +259,6 @@ export function systemExclusive(messageData, channelOffset = 0)
         // http://www.bandtrax.com.au/sysex.htm
         // https://cdn.roland.com/assets/media/pdf/AT-20R_30R_MI.pdf
         case 0x41:
-            // messagedata[1] is device id (ignore as we're everything >:) )
             if(messageData[2] === 0x42 && messageData[3] === 0x12)
             {
                 // this is a GS sysex

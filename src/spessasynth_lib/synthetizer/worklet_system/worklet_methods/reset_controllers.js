@@ -100,6 +100,13 @@ export function resetAllControllers()
             })
         }
     }
+    this.tunings = [];
+    this.tunings = [];
+    for (let i = 0; i < 127; i++)
+    {
+        this.tunings.push([]);
+    }
+
     this.setMIDIVolume(1);
     this.system = DEFAULT_SYNTH_MODE;
 }

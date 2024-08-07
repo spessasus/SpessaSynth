@@ -58,6 +58,16 @@ export class SpessaSynthProcessor extends AudioWorkletProcessor
         this.transposition = 0;
 
         /**
+         * this.tunings[program][key] = tuning
+         * @type {MTSProgramTuning[]}
+         */
+        this.tunings = [];
+        for (let i = 0; i < 127; i++)
+        {
+            this.tunings.push([]);
+        }
+
+        /**
          * Bank offset for things like embedded RMIDIS. Added for every program change
          * @type {number}
          */
