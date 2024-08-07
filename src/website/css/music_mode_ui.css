@@ -24,8 +24,9 @@
 }
 
 .player_info_note_icon img{
-    max-width: 20rem;
+    max-width: 100%;
     border-radius: 1rem;
+    width: 20rem;
 }
 
 .player_info_wrapper{
@@ -54,6 +55,7 @@
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
+    justify-content: space-between;
 }
 
 .player_info_detail_element * {
@@ -69,8 +71,8 @@
 }
 
 .player_info_details_wrapper{
-    max-width: 80%;
-    margin: 1rem;
+    max-width: 100%;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
 }
