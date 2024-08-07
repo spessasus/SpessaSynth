@@ -7,6 +7,7 @@ import { modulatorSources } from '../../../soundfont/read/modulators.js'
  * @property {Float32Array} customControllers - array of custom (not sf2) control values such as RPN pitch tuning, transpose, modulation depth, etc.
  *
  * @property {number} channelTransposeKeyShift - key shift of the channel
+ * @property {Int8Array} channelOctaveTuning - the tuning for octave on this channel
  * @property {boolean} holdPedal - indicates whether the hold pedal is active
  * @property {boolean} drumChannel - indicates whether the channel is a drum channel
  *
@@ -57,6 +58,7 @@ export function createWorkletChannel(sendEvent = false)
         presetUsesOverride: false,
 
         channelTransposeKeyShift: 0,
+        channelOctaveTuning: new Int8Array(12),
         channelVibrato: {delay: 0, depth: 0, rate: 0},
         lockVibrato: false,
         holdPedal: false,

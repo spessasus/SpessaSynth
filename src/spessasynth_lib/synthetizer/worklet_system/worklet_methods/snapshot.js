@@ -19,6 +19,7 @@
  * @property {number} channelVibrato.rate - vibrato rate in Hz
  *
  * @property {number} channelTransposeKeyShift - key shift for the channel
+ * @property {Int8Array} channelOctaveTuning - the channel's octave tuning in cents
  * @property {boolean} isMuted - indicates whether the channel is muted
  * @property {boolean} drumChannel - indicates whether the channel is a drum channel
  */
@@ -60,6 +61,7 @@ export function sendSynthesizerSnapshot()
             lockVibrato: channel.lockVibrato,
 
             channelTransposeKeyShift: channel.channelTransposeKeyShift,
+            channelOctaveTuning: channel.channelOctaveTuning,
             isMuted: channel.isMuted,
             drumChannel: channel.drumChannel
         }
@@ -118,6 +120,7 @@ export function applySynthesizerSnapshot(snapshot)
         channelObject.channelVibrato = channelSnapshot.channelVibrato;
         channelObject.lockVibrato = channelSnapshot.lockVibrato;
         channelObject.channelTransposeKeyShift = channelSnapshot.channelTransposeKeyShift;
+        channelObject.channelOctaveTuning = channelSnapshot.channelOctaveTuning;
 
         // restore preset and lock
         channelObject.lockPreset = false;

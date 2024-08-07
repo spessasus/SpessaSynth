@@ -60,7 +60,8 @@ export function renderVoice(
     let cents = voice.modulatedGenerators[generatorTypes.fineTune]
         + channel.customControllers[customControllers.channelTuning]
         + channel.customControllers[customControllers.channelTransposeFine]
-        + channel.customControllers[customControllers.masterTuning];
+        + channel.customControllers[customControllers.masterTuning]
+        + channel.channelOctaveTuning[voice.midiNote % 12];
     let semitones = voice.modulatedGenerators[generatorTypes.coarseTune]
         + channel.customControllers[customControllers.channelTuningSemitones];
 

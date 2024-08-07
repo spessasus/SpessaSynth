@@ -34,21 +34,23 @@ This repository contains both the library and a complete musical web application
 ### Powerful SoundFont Synthesizer
 - Suitable for both **real-time** and **offline** synthesis
 - **Excellent SoundFont support:**
-- - **Generator Support**
-- - **Modulator Support:** _First (to my knowledge) JavaScript SoundFont synth with that feature!_
-- - **SoundFont3 Support:** Play compressed SoundFonts!
-- - **Can load very large SoundFonts:** up to 4GB! _Note: Only Firefox handles this well; Chromium has a hard-coded memory limit_
+  - **Generator Support**
+  - **Modulator Support:** _First (to my knowledge) JavaScript SoundFont synth with that feature!_
+  - **SoundFont3 Support:** Play compressed SoundFonts!
+  - **Can load very large SoundFonts:** up to 4GB! _Note: Only Firefox handles this well; Chromium has a hard-coded memory limit_
 - **Reverb and chorus support:** [customizable!](https://github.com/spessasus/SpessaSynth/wiki/Synthetizer-Class#effects-configuration-object)
 - **Export audio files** using [OfflineAudioContext](https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext)
 - **[Custom modulators for additional controllers](https://github.com/spessasus/SpessaSynth/wiki/Modulator-Class#default-modulators):** Why not?
 - **Written using AudioWorklets:** 
-- - Runs in a **separate thread** for maximum performance
-- - Supported by all modern browsers
+  - Runs in a **separate thread** for maximum performance
+  - Supported by all modern browsers
 - **Unlimited channel count:** Your CPU is the limit!
 - **Various MIDI Standards Support:**
-- - **MIDI Controller Support:** Default supported controllers [here](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-controllers)
-- - [Full **RPN** and limited **NRPN** support](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-registered-parameters)
-- - Supports some [**Roland GS** and **Yamaha XG** system exclusives](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-system-exclusives)
+  - **MIDI Controller Support:** Default supported controllers [here](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-controllers)
+  - **MIDI Tuning Standard Support:** [more info here](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#midi-tuning-standard)
+  - [Full **RPN** and limited **NRPN** support](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-registered-parameters)
+  - Supports some [**Roland GS** and **Yamaha XG** system exclusives](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-system-exclusives)
+
 - **High-performance mode:** Play Rush E! _note: may kill your browser ;)_
 
 ### Built-in Powerful and Fast Sequencer

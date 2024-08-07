@@ -1,16 +1,56 @@
 import { arrayToHexString, consoleColors } from '../../../utils/other.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../../../utils/loggin.js'
 import { midiControllers } from '../../../midi_parser/midi_message.js'
+import { ALL_CHANNELS_OR_DIFFERENT_ACTION } from '../message_protocol/worklet_message.js'
+
+
+/**
+ * Calculates freqency for MIDI Tuning Standard
+ * @param byte1 {number}
+ * @param byte2 {number}
+ * @param byte3 {number}
+ * @return {number|null}
+ */
+function calculateFrequency(byte1, byte2, byte3)
+{
+    // handle special case of "no change"
+    if (byte1 === 0x7F && byte2 === 0x7F && byte3 === 0x7F)
+    {
+        return null;
+    }
+
+    // Frequency base for MIDI note number 0
+    const baseFrequency = 8.1758;
+
+    const semitone = byte1;
+
+    // combine byte2 and byte3
+    const fraction = (byte2 << 7) | byte3;
+
+    // get total cents
+    const totalCents = semitone * 100 + (fraction / 16384) * 100;
+
+    return baseFrequency * Math.pow(2, totalCents / 1200);
+}
+
+
 /**
  * Executes a system exclusive
  * @param messageData {number[]|IndexedByteArray} - the message data without f0
  * @param channelOffset {number}
  * @this {SpessaSynthProcessor}
  */
-
 export function systemExclusive(messageData, channelOffset = 0)
 {
     const type = messageData[0];
+    if(this.deviceID !== ALL_CHANNELS_OR_DIFFERENT_ACTION && messageData[1] !== 0x7F)
+    {
+        if(this.deviceID !== messageData[1])
+        {
+            // not our device ID
+            return;
+        }
+    }
     switch (type)
     {
         default:
@@ -21,91 +61,188 @@ export function systemExclusive(messageData, channelOffset = 0)
 
         // non realtime
         case 0x7E:
-            // gm system
-            if(messageData[2] === 0x09)
-            {
-                if(messageData[3] === 0x01)
-                {
-                    SpessaSynthInfo("%cGM system on", consoleColors.info);
-                    this.system = "gm";
-                }
-                else if(messageData[3] === 0x03)
-                {
-                    SpessaSynthInfo("%cGM2 system on", consoleColors.info);
-                    this.system = "gm2";
-                }
-                else
-                {
-                    SpessaSynthInfo("%cGM system off, defaulting to GS", consoleColors.info);
-                    this.system = "gs";
-                }
-            }
-            break;
-
-        // realtime
-        // https://midi.org/midi-1-0-universal-system-exclusive-messages
         case 0x7F:
-            if(messageData[2] === 0x04)
+            switch(messageData[2])
             {
-                let cents
-                // device control
-                switch(messageData[3])
-                {
-                    case 0x01:
-                        // main volume
-                        const vol = messageData[5] << 7 | messageData[4];
-                        this.setMIDIVolume(vol / 16384);
-                        SpessaSynthInfo(`%cMaster Volume. Volume: %c${vol}`,
-                            consoleColors.info,
-                            consoleColors.value);
-                        break;
+                case 0x04:
+                    let cents
+                    // device control
+                    switch(messageData[3])
+                    {
+                        case 0x01:
+                            // main volume
+                            const vol = messageData[5] << 7 | messageData[4];
+                            this.setMIDIVolume(vol / 16384);
+                            SpessaSynthInfo(`%cMaster Volume. Volume: %c${vol}`,
+                                consoleColors.info,
+                                consoleColors.value);
+                            break;
 
-                    case 0x02:
-                        // main balance
-                        // midi spec page 62
-                        const balance = messageData[5] << 7 | messageData[4];
-                        const pan = (balance - 8192) / 8192;
-                        this.setMasterPan(pan);
-                        SpessaSynthInfo(`%cMaster Pan. Pan: %c${pan}`,
-                            consoleColors.info,
-                            consoleColors.value);
-                        break;
+                        case 0x02:
+                            // main balance
+                            // midi spec page 62
+                            const balance = messageData[5] << 7 | messageData[4];
+                            const pan = (balance - 8192) / 8192;
+                            this.setMasterPan(pan);
+                            SpessaSynthInfo(`%cMaster Pan. Pan: %c${pan}`,
+                                consoleColors.info,
+                                consoleColors.value);
+                            break;
 
 
-                    case 0x03:
-                        // fine tuning
-                        const tuningValue = ((messageData[5] << 7) | messageData[6]) - 8192;
-                        cents = Math.floor(tuningValue / 81.92); // [-100;+99] cents range
-                        this.setMasterTuning(cents);
-                        SpessaSynthInfo(`%cMaster Fine Tuning. Cents: %c${cents}`,
-                            consoleColors.info,
-                            consoleColors.value);
-                        break;
+                        case 0x03:
+                            // fine tuning
+                            const tuningValue = ((messageData[5] << 7) | messageData[6]) - 8192;
+                            cents = Math.floor(tuningValue / 81.92); // [-100;+99] cents range
+                            this.setMasterTuning(cents);
+                            SpessaSynthInfo(`%cMaster Fine Tuning. Cents: %c${cents}`,
+                                consoleColors.info,
+                                consoleColors.value);
+                            break;
 
-                    case 0x04:
-                        // coarse tuning
-                        // lsb is ignored
-                        const semitones = messageData[5] - 64;
-                        cents = semitones * 100;
-                        this.setMasterTuning(cents);
-                        SpessaSynthInfo(`%cMaster Coarse Tuning. Cents: %c${cents}`,
-                            consoleColors.info,
-                            consoleColors.value)
-                        break;
+                        case 0x04:
+                            // coarse tuning
+                            // lsb is ignored
+                            const semitones = messageData[5] - 64;
+                            cents = semitones * 100;
+                            this.setMasterTuning(cents);
+                            SpessaSynthInfo(`%cMaster Coarse Tuning. Cents: %c${cents}`,
+                                consoleColors.info,
+                                consoleColors.value)
+                            break;
 
-                    default:
-                        SpessaSynthWarn(
-                            `%cUnrecognized MIDI Device Control Real-time message: %c${arrayToHexString(messageData)}`,
-                            consoleColors.warn,
-                            consoleColors.unrecognized);
-                }
-            }
-            else
-            {
-                SpessaSynthWarn(
-                    `%cUnrecognized MIDI Real-time message: %c${arrayToHexString(messageData)}`,
-                    consoleColors.warn,
-                    consoleColors.unrecognized);
+                        default:
+                            SpessaSynthWarn(
+                                `%cUnrecognized MIDI Device Control Real-time message: %c${arrayToHexString(messageData)}`,
+                                consoleColors.warn,
+                                consoleColors.unrecognized);
+                    }
+                    break;
+
+                case 0x09:
+                    // gm system related
+                    if(messageData[3] === 0x01)
+                    {
+                        SpessaSynthInfo("%cGM system on", consoleColors.info);
+                        this.system = "gm";
+                    }
+                    else if(messageData[3] === 0x03)
+                    {
+                        SpessaSynthInfo("%cGM2 system on", consoleColors.info);
+                        this.system = "gm2";
+                    }
+                    else
+                    {
+                        SpessaSynthInfo("%cGM system off, defaulting to GS", consoleColors.info);
+                        this.system = "gs";
+                    }
+                    break;
+
+                // MIDI Tuning standard
+                // https://midi.org/midi-tuning-updated-specification
+                case 0x08:
+                    switch(messageData[3])
+                    {
+                        // single note change
+                        case 0x02:
+                            const tuningProgram = messageData[4];
+                            const numberOfChanges = messageData[5];
+                            const keys = [];
+                            let currentMessageIndex = 6
+                            for (let i = 0; i < numberOfChanges; i++)
+                            {
+                                keys.push(messageData[currentMessageIndex]);
+                                currentMessageIndex++;
+                            }
+                            const frequencies = [];
+                            for (let i = 0; i < numberOfChanges; i++)
+                            {
+                                frequencies.push(calculateFrequency(
+                                    messageData[currentMessageIndex++],
+                                    messageData[currentMessageIndex++],
+                                    messageData[currentMessageIndex++],
+                                ));
+                            }
+                            console.log(tuningProgram, numberOfChanges, keys, frequencies)
+                            break;
+
+                        // octave tuning (1 byte)
+                        // and octave tuning (2 bytes)
+                        case 0x09:
+                        case 0x08:
+                            // get tuning:
+                            const newOctaveTuning = new Int8Array(12);
+                            // start from bit 7
+                            if(messageData[3] === 0x08)
+                            {
+                                // 1 byte tuning: 0 is -64 cents, 64 is 0, 127 is +63
+                                for (let i = 0; i < 12; i++)
+                                {
+                                    newOctaveTuning[i] = messageData[7 + i] - 64;
+                                }
+                            }
+                            else
+                            {
+                                // 2 byte tuning. Like fine tune: 0 is -100 cents, 8192 is 0 cents, 16383 is +100 cents
+                                for (let i = 0; i < 24; i += 2)
+                                {
+                                    const tuning = ((messageData[7 + i] << 7) | messageData[8 + i]) - 8192;
+                                    newOctaveTuning[i / 2] = Math.floor(tuning / 81.92); // map to [-100;+99] cents
+                                }
+                            }
+                            // apply to channels (ordered from 0)
+                            // bit 1: 14 and 15
+                            if((messageData[4] & 1) === 1)
+                            {
+                                this.setOctaveTuning(14 + channelOffset, newOctaveTuning);
+                            }
+                            if(((messageData[4] >> 1) & 1) === 1)
+                            {
+                                this.setOctaveTuning(15 + channelOffset, newOctaveTuning);
+                            }
+
+                            // bit 2: channels 7 to 13
+                            for (let i = 0; i < 7; i++)
+                            {
+                                const bit = (messageData[5] >> i) & 1;
+                                if(bit === 1)
+                                {
+                                    this.setOctaveTuning(7 + i + channelOffset, newOctaveTuning);
+                                }
+                            }
+
+                            // bit 3: channels 0 to 16
+                            for (let i = 0; i < 7; i++)
+                            {
+                                const bit = (messageData[6] >> i) & 1;
+                                if(bit === 1)
+                                {
+                                    this.setOctaveTuning(i + channelOffset, newOctaveTuning);
+                                }
+                            }
+
+                            SpessaSynthInfo(`%cMIDI Octave Scale ${
+                                messageData[3] === 0x08 ? "(1 byte)" : "(2 bytes)"
+                                } tuning via Tuning: %c${newOctaveTuning.join(" ")}`,
+                                consoleColors.info,
+                                consoleColors.value);
+                            break;
+
+                        default:
+                            SpessaSynthWarn(
+                                `%cUnrecognized MIDI Tuning standard message: %c${arrayToHexString(messageData)}`,
+                                consoleColors.warn,
+                                consoleColors.unrecognized)
+                            break;
+                    }
+                    break;
+
+                default:
+                    SpessaSynthWarn(
+                        `%cUnrecognized MIDI Realtime/non realtime message: %c${arrayToHexString(messageData)}`,
+                        consoleColors.warn,
+                        consoleColors.unrecognized)
+
             }
             break;
 

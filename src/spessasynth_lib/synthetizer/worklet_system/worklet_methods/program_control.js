@@ -96,6 +96,7 @@ export function setPreset(channel, preset)
     {
         return;
     }
+    delete this.workletProcessorChannels[channel].preset;
     this.workletProcessorChannels[channel].preset = preset;
 
     // reset cached voices
@@ -235,6 +236,11 @@ export function reloadSoundFont(buffer, isOverride = false)
         });
         return;
     }
+    this.defaultPreset = this.getPreset(0, 0);
+    this.drumPreset = this.getPreset(128, 0);
+    this.workletProcessorChannels.forEach((c, cNum) => {
+        this.programChange(cNum, c.preset.program);
+    });
     this.post({messageType: returnMessageType.ready, messageData: undefined});
     this.sendPresetList();
     SpessaSynthInfo("%cSpessaSynth is ready!", consoleColors.recognized);

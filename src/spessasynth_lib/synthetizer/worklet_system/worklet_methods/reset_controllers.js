@@ -131,6 +131,8 @@ export function resetControllers(channel)
         }
     });
 
+    channelObject.channelOctaveTuning.fill(0);
+
     // reset the array
     channelObject.midiControllers.set(resetArray);
     channelObject.channelVibrato = {rate: 0, depth: 0, delay: 0};
