@@ -40,6 +40,11 @@ export function programChange(channel, programNumber, userChange=false)
             channelObject.presetUsesOverride = true;
         }
         else
+        if(this.soundfontBankOffset === 0)
+        {
+            preset = this.overrideSoundfont.getPreset(0, programNumber);
+        }
+        else
         {
             preset = this.soundfont.getPreset(bank, programNumber);
             sentBank = preset.bank;
@@ -78,6 +83,11 @@ export function getPreset(bank, program)
         if(preset)
         {
             return preset;
+        }
+        else
+        if(this.soundfontBankOffset === 0)
+        {
+            return this.overrideSoundfont.getPreset(0, program);
         }
     }
     return this.soundfont.getPreset(bank, program);

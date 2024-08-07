@@ -45,7 +45,7 @@ This repository contains both the library and a complete musical web application
   - Runs in a **separate thread** for maximum performance
   - Supported by all modern browsers
 - **Unlimited channel count:** Your CPU is the limit!
-- **Various MIDI Standards Support:**
+- **Excellent MIDI Standards Support:**
   - **MIDI Controller Support:** Default supported controllers [here](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-controllers)
   - **MIDI Tuning Standard Support:** [more info here](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#midi-tuning-standard)
   - [Full **RPN** and limited **NRPN** support](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-registered-parameters)
@@ -73,17 +73,21 @@ This repository contains both the library and a complete musical web application
   - **Loop detection:** Automatically detects loops in MIDIs (e.g., from _Touhou Project_)
   - **First note detection:** Skip unnecessary silence at the start by jumping to the first note!
   - **Easy saving:** Save with just [one function!](https://github.com/spessasus/SpessaSynth/wiki/Writing-MIDI-Files#writemidifile)
+  - 
 #### Read and write [RMID files with embedded SF2 soundfonts](https://github.com/spessasus/SpessaSynth/wiki/About-RMIDI)
+  - **[Level 4](https://github.com/spessasus/SpessaSynth/wiki/About-RMIDI#level-4) compliance:** Reads and writes *everything!*
   - **Compression and trimming support:** Reduce a MIDI file with a 1GB soundfont to **as small as 5MB**!
   - **Automatic bank shifting and validation:** Every soundfont *just works!*
   - **Metadata support:** Add title, artist, album name and cover and more! And of course read them too! *(In any encoding!)*
   - **Compatible with [Falcosoft Midi Player 6!](https://falcosoft.hu/softwares.html#midiplayer)**
   - **Easy saving:** [As simple as saving a MIDI file!](https://github.com/spessasus/SpessaSynth/wiki/Writing-MIDI-Files#writermidi)
+  - 
 #### Read and write SoundFont2 files
   - **Easy info access:** Just an [object of strings!](https://github.com/spessasus/SpessaSynth/wiki/SoundFont2-Class#soundfontinfo)
   - **Smart trimming:** Trim the SoundFont to only include samples used in the MIDI *(down to key and velocity!)*
   - **sf3 conversion:** Compress SoundFont2 files to SoundFont3 with variable quality!
   - **Easy saving:** Also just [one function!](https://github.com/spessasus/SpessaSynth/wiki/SoundFont2-Class#write)
+  - 
 #### Read and write SoundFont3 files
   - Same features as SoundFont2 but with now with **Ogg Vorbis compression!**
   - **Variable compression quality:** You choose between file size and quality!
