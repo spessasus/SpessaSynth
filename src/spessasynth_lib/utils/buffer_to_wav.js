@@ -1,18 +1,24 @@
 /**
  * @typedef {Object} WaveMetadata
- * @property {string} title - the song's title
- * @property {string} album - the song's album
- * @property {string} genre - the song's genre
+ * @property {string|undefined} title - the song's title
+ * @property {string|undefined} artist - the song's artist
+ * @property {string|undefined} album - the song's album
+ * @property {string|undefined} genre - the song's genre
  */
+
+import { combineArrays } from './indexed_array.js'
+import { getStringBytes } from './byte_functions/string.js'
+import { writeRIFFOddSize } from '../soundfont/read/riff_chunk.js'
 
 /**
  *
  * @param audioBuffer {AudioBuffer}
  * @param normalizeAudio {boolean} find the max sample point and set it to 1, and scale others with it
  * @param channelOffset {number} channel offset and channel offset + 1 get saved
+ * @param metadata {WaveMetadata}
  * @returns {Blob}
  */
-export function audioBufferToWav(audioBuffer, normalizeAudio = true, channelOffset = 0)
+export function audioBufferToWav(audioBuffer, normalizeAudio = true, channelOffset = 0, metadata = {})
 {
     // this code currently doesn't add any metadata
     const channel1Data = audioBuffer.getChannelData(channelOffset);
@@ -57,11 +63,52 @@ export function audioBufferToWav(audioBuffer, normalizeAudio = true, channelOffs
     // data chunk length
     header.set(new Uint8Array([dataSize & 0xff, (dataSize >> 8) & 0xff, (dataSize >> 16) & 0xff, (dataSize >> 24) & 0xff]), 40);
 
-    const wavData = new Uint8Array(headerSize + dataSize);
-    wavData.set(header, 0);
-    // Interleave audio data (combine channels)
+    let wavData;
     let offset = headerSize;
+    let infoChunk = undefined;
+    // INFO chunk
+    if(Object.keys(metadata).length > 0)
+    {
+        const encoder = new TextEncoder();
+        const infoChunks = [
+            getStringBytes("INFO"),
+            writeRIFFOddSize("ICMT", encoder.encode("Created with SpessaSynth"))
+        ];
+        if(metadata.artist)
+        {
+            infoChunks.push(
+                writeRIFFOddSize("IART", encoder.encode(metadata.artist))
+            );
+        }
+        if(metadata.album)
+        {
+            infoChunks.push(
+                writeRIFFOddSize("IPRD", encoder.encode(metadata.album))
+            );
+        }
+        if(metadata.genre)
+        {
+            infoChunks.push(
+                writeRIFFOddSize("IGNR", encoder.encode(metadata.genre))
+            );
+        }
+        if(metadata.title)
+        {
+            infoChunks.push(
+                writeRIFFOddSize("INAM", encoder.encode(metadata.title))
+            );
+        }
+        infoChunk = writeRIFFOddSize("LIST", combineArrays(infoChunks));
+        wavData = new Uint8Array(headerSize + dataSize + infoChunk.length);
+    }
+    else
+    {
+        wavData = new Uint8Array(headerSize + dataSize);
 
+    }
+    wavData.set(header, 0);
+
+    // Interleave audio data (combine channels)
     let multiplier;
     if(normalizeAudio)
     {
@@ -103,6 +150,10 @@ export function audioBufferToWav(audioBuffer, normalizeAudio = true, channelOffs
         wavData[offset++] = (sample2 >> 8) & 0xff;
     }
 
+    if(infoChunk)
+    {
+        wavData.set(infoChunk, offset);
+    }
 
     return new Blob([wavData.buffer], { type: 'audio/wav' });
 }

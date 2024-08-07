@@ -12,10 +12,11 @@ const RENDER_AUDIO_TIME_INTERVAL = 1000;
  * @param normalizeAudio {boolean}
  * @param additionalTime {number}
  * @param separateChannels {boolean}
+ * @param meta {WaveMetadata}
  * @returns {Promise<void>}
  * @private
  */
-export async function _doExportAudioData(normalizeAudio = true, additionalTime = 2, separateChannels = false)
+export async function _doExportAudioData(normalizeAudio = true, additionalTime = 2, separateChannels = false, meta = {})
 {
     this.isExporting = true;
     if(!this.seq)
@@ -115,7 +116,7 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
     await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
     if(!separateChannels)
     {
-        this.saveBlob(audioBufferToWav(buf, normalizeAudio), `${this.seqUI.currentSongTitle || 'unnamed_song'}.wav`);
+        this.saveBlob(audioBufferToWav(buf, normalizeAudio, 0, meta), `${this.seqUI.currentSongTitle || 'unnamed_song'}.wav`,);
     }
     else
     {
@@ -182,6 +183,16 @@ export async function _exportAudioData()
         return;
     }
     const wavPath = `locale.exportAudio.formats.formats.wav.options.`;
+    const metadataPath = "locale.exportAudio.formats.metadata.";
+    const verifyDecode = (type, def, decoder) => {
+        return this.seq.midiData.RMIDInfo?.[type] === undefined ? def : decoder.decode(this.seq.midiData.RMIDInfo?.[type])
+    }
+    const encoding = verifyDecode("IENC", "ascii", new TextDecoder());
+    const decoder = new TextDecoder(encoding);
+
+    const startAlbum = verifyDecode("IPRD", "", decoder);
+    const startArtist = verifyDecode("IART", "", decoder);
+    const startGenre = verifyDecode("IGNR", "", decoder);
     /**
      * @type {NotificationContent[]}
      */
@@ -210,6 +221,42 @@ export async function _exportAudioData()
             }
         },
         {
+            type: "input",
+            translatePathTitle: metadataPath + "songTitle",
+            attributes: {
+                "name": "song_title",
+                "type": "text",
+                "value": this.seqUI.currentSongTitle
+            }
+        },
+        {
+            type: "input",
+            translatePathTitle: metadataPath + "album",
+            attributes: {
+                "value": startAlbum,
+                "name": "album",
+                "type": "text"
+            }
+        },
+        {
+            type: "input",
+            translatePathTitle: metadataPath + "artist",
+            attributes: {
+                "value": startArtist,
+                "name": "artist",
+                "type": "text"
+            }
+        },
+        {
+            type: "input",
+            translatePathTitle: metadataPath + "genre",
+            attributes: {
+                "value": startGenre,
+                "name": "genre",
+                "type": "text"
+            }
+        },
+        {
             type: "button",
             textContent: this.localeManager.getLocaleString(wavPath + "confirm"),
             onClick: n => {
@@ -217,7 +264,21 @@ export async function _exportAudioData()
                 const normalizeVolume = n.div.querySelector("input[normalize-volume-toggle]").checked;
                 const additionalTime = n.div.querySelector("input[type='number']").value;
                 const separateChannels = n.div.querySelector("input[separate-channels-toggle]").checked;
-                this._doExportAudioData(normalizeVolume, parseInt(additionalTime), separateChannels);
+                const artist = n.div.querySelector("input[name='artist']").value;
+                const album = n.div.querySelector("input[name='album']").value;
+                const title = n.div.querySelector("input[name='song_title']").value;
+                const genre = n.div.querySelector("input[name='genre']").value;
+                /**
+                 * @type {WaveMetadata}
+                 */
+                const metadata = {
+                    artist: artist.length > 0 ? artist : undefined,
+                    album: album.length > 0 ? album : undefined,
+                    title: title.length > 0 ? title : undefined,
+                    genre: genre.length > 0 ? genre : undefined,
+                }
+
+                this._doExportAudioData(normalizeVolume, parseInt(additionalTime), separateChannels, metadata);
             }
         }
     ];
