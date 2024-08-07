@@ -104,7 +104,7 @@ class SpessaSynthSettings
 
         musicModeButton.onclick = this.toggleMusicPlayerMode.bind(this);
 
-        hideTopButton.onclick = this.hideTopPart;
+        hideTopButton.onclick = this.hideTopPart.bind(this);
 
         this.hideOnDocClick = true;
         // stop propagation to disable hide on click outside
@@ -169,6 +169,31 @@ class SpessaSynthSettings
         {
             this.createHandlers(renderer, midiKeyboard, midiDeviceHandler, sequi, sythui)
         }
+
+        let fullscreen = false
+
+        // detect fullscreen (even f11)
+        window.addEventListener("resize", () => {
+            let maxHeight = window.screen.height,
+                maxWidth = window.screen.width,
+                curHeight = window.outerHeight,
+                curWidth = window.outerWidth;
+
+            let screen = false;
+            screen = maxWidth === curWidth && maxHeight === curHeight;
+            if(screen !== fullscreen)
+            {
+                fullscreen = screen;
+                if(screen)
+                {
+                    this.hideTopPart();
+                }
+                else
+                {
+                    this.showTopPart();
+                }
+            }
+        });
     }
 
     /**
@@ -181,6 +206,18 @@ class SpessaSynthSettings
     {
         this.musicMode.setVisibility(!this.musicMode.visible, document.getElementById("keyboard_canvas_wrapper"));
         this.renderer.renderBool = !this.musicMode.visible;
+    }
+
+    showTopPart()
+    {
+        const topPart = document.getElementsByClassName("top_part")[0];
+        const showTopButton =  document.getElementsByClassName("show_top_button")[0];
+        topPart.style.display = "";
+        setTimeout(() => {
+            topPart.classList.remove("top_part_hidden");
+        }, ANIMATION_REFLOW_TIME);
+        showTopButton.classList.remove("shown");
+        showTopButton.style.display = "none";
     }
 
     hideTopPart()
@@ -199,14 +236,7 @@ class SpessaSynthSettings
             showTopButton.classList.add("shown");
         }, ANIMATION_REFLOW_TIME);
 
-        showTopButton.onclick = () => {
-            topPart.style.display = "";
-            setTimeout(() => {
-                topPart.classList.remove("top_part_hidden");
-            }, ANIMATION_REFLOW_TIME);
-            showTopButton.classList.remove("shown");
-            showTopButton.style.display = "none";
-        }
+        showTopButton.onclick = this.showTopPart.bind(this);
     }
 
     /**

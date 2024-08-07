@@ -90,6 +90,11 @@ export function _createKeyboardHandler( keyboard, synthui, renderer)
                 keyboard.keyRange = mid.keyRange;
                 renderer.keyRange = mid.keyRange;
             }
+            if(mid.RMIDInfo?.["IPIC"] !== undefined)
+            {
+                // switch to music mode if picture available
+                this.musicMode.setVisibility(true, document.getElementById("keyboard_canvas_wrapper"));
+            }
         }, "settings-keyboard-handler-song-change");
     }
 

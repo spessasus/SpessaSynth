@@ -34,31 +34,31 @@ export class MusicModeUI {
                     <i id='player_info_detail' translate-path='locale.musicPlayerMode.nothingPlayingCopyright'></i>
                 </div>
                 
-                <div class='player_info_detail_element'>
+                <div class='player_info_detail_element hidden'>
                     <b translate-path-title='locale.exportAudio.formats.metadata.artist'></b><i id='player_info_artist'></i>
                 </div>
                 
-                <div class='player_info_detail_element'>
+                <div class='player_info_detail_element hidden'>
                     <b translate-path-title='locale.exportAudio.formats.metadata.album'></b><i id='player_info_album'></i>
                 </div>
                 
-                <div class='player_info_detail_element'>
+                <div class='player_info_detail_element hidden'>
                     <b translate-path-title='locale.exportAudio.formats.metadata.genre'></b><i id='player_info_genre'></i>
                 </div>
                 
-                <div class='player_info_detail_element'>
+                <div class='player_info_detail_element hidden'>
                     <b translate-path-title='locale.exportAudio.formats.metadata.creationDate'></b><i id='player_info_creation'></i>
                 </div>
                 
-                <div class='player_info_detail_element'>
+                <div class='player_info_detail_element hidden'>
                     <b translate-path-title='locale.exportAudio.formats.metadata.comment'></b><i id='player_info_comment'></i>
                 </div>
                 
-                <div class='player_info_detail_element'>
+                <div class='player_info_detail_element hidden'>
                     <b translate-path-title='locale.exportAudio.formats.metadata.duration'></b><i id='player_info_time'></i>
                 </div>
                 
-                <div class='player_info_detail_element'>
+                <div class='player_info_detail_element hidden'>
                     <pre id='player_info_file_name'></pre>
                 </div>
             </div>
@@ -183,9 +183,6 @@ export class MusicModeUI {
             const url = URL.createObjectURL(pic);
             img.src = url;
             bg.style.setProperty("--bg-image", `url('${url}')`);
-
-            // switch to music mode if picture available
-            this.setVisibility(true, document.getElementById("keyboard_canvas_wrapper"));
         }, "player-js-song-change");
     }
 
@@ -228,7 +225,7 @@ export class MusicModeUI {
             }, ANIMATION_REFLOW_TIME);
 
             // FINISH
-            this.timeoutId = setTimeout(() => {
+            this.timeoutId = setTimeout(async () => {
                 keyboardCanvasWrapper.style.display = "none";
 
                 playerDiv.style.position = "";
@@ -236,6 +233,9 @@ export class MusicModeUI {
                 playerDiv.style.height = "";
 
                 document.body.style.overflow = "";
+
+                // fullscreen
+                await document.body.requestFullscreen();
             }, TRANSITION_TIME * 1000)
         }
         else
