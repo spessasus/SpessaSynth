@@ -233,9 +233,6 @@ export class MusicModeUI {
                 playerDiv.style.height = "";
 
                 document.body.style.overflow = "";
-
-                // fullscreen
-                await document.body.requestFullscreen();
             }, TRANSITION_TIME * 1000)
         }
         else

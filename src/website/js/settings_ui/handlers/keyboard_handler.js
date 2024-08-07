@@ -93,7 +93,10 @@ export function _createKeyboardHandler( keyboard, synthui, renderer)
             if(mid.RMIDInfo?.["IPIC"] !== undefined)
             {
                 // switch to music mode if picture available
-                this.musicMode.setVisibility(true, document.getElementById("keyboard_canvas_wrapper"));
+                if(this.musicMode.visible === false)
+                {
+                    this.toggleMusicPlayerMode().then();
+                }
             }
         }, "settings-keyboard-handler-song-change");
     }

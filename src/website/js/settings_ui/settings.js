@@ -214,8 +214,13 @@ class SpessaSynthSettings
      */
     addSequencer;
 
-    toggleMusicPlayerMode()
+    async toggleMusicPlayerMode()
     {
+        if(this.musicMode.visible === false)
+        {
+            await document.body.requestFullscreen();
+            await new Promise(r => setTimeout(r,500));
+        }
         this.musicMode.setVisibility(!this.musicMode.visible, document.getElementById("keyboard_canvas_wrapper"));
         this.renderer.renderBool = !this.musicMode.visible;
     }

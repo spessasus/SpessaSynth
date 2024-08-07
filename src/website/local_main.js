@@ -43,7 +43,7 @@ window.loadedSoundfonts = [];
  */
 async function fetchFont(fileName, callback)
 {
-    let response = await fetch(`http://${location.host}/${fileName}`);
+    let response = await fetch(`${fileName}`);
     if(!response.ok)
     {
         titleMessage.innerText = "Error downloading soundfont!";
