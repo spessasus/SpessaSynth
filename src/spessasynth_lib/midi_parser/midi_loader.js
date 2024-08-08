@@ -88,7 +88,7 @@ class MIDI{
                 if(currentChunk.header === "RIFF")
                 {
                     const type = readBytesAsString(currentChunk.chunkData, 4);
-                    if(type === "sfbk")
+                    if(type === "sfbk" || type === "sfpk")
                     {
                         SpessaSynthInfo("%cFound embedded soundfont!", consoleColors.recognized);
                         this.embeddedSoundFont = binaryData.slice(startIndex, startIndex + currentChunk.size).buffer;
