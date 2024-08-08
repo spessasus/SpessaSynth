@@ -41,7 +41,7 @@ export async function serveSfont(path, res)
 export function serveSfontList(res)
 {
     const fileNames = fs.readdirSync(soundfontsPath).filter(fName => {
-        return fName.slice(-3).toLowerCase() === 'sf2' || fName.slice(-3).toLowerCase() === 'sf3';
+        return fName.slice(-3).toLowerCase() === 'sf2' || fName.slice(-3).toLowerCase() === 'sf3' || fName.slice(-5).toLowerCase() === 'sfogg';
     });
 
     const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
@@ -84,7 +84,7 @@ export function serveSettings(res)
 export function serveStaticFile(res, filePath, mimeType=undefined)
 {
     filePath = decodeURIComponent(filePath);
-    if(filePath.toLowerCase().endsWith(".sf3") || filePath.toLowerCase().endsWith(".sf2"))
+    if(filePath.toLowerCase().endsWith(".sf3") || filePath.toLowerCase().endsWith(".sf2") || filePath.toLowerCase().endsWith(".sfogg"))
     {
         filePath = path.join(path.dirname(filePath), "../soundfonts", path.basename(filePath));
         serveSfont(filePath, res).then();

@@ -35,9 +35,10 @@ This repository contains both the library and a complete musical web application
 - Suitable for both **real-time** and **offline** synthesis
 - **Excellent SoundFont support:**
   - **Generator Support**
-  - **Modulator Support:** _First (to my knowledge) JavaScript SoundFont synth with that feature!_
+  - **Modulator Support:** *First (to my knowledge) JavaScript SoundFont synth with that feature!*
   - **SoundFont3 Support:** Play compressed SoundFonts!
-  - **Can load very large SoundFonts:** up to 4GB! _Note: Only Firefox handles this well; Chromium has a hard-coded memory limit_
+  - **Experimental SF2Pack Support:** Play soundfonts compressed with BASSMIDI! (*Note: only works with vorbis compression*)
+  - **Can load very large SoundFonts:** up to 4GB! *Note: Only Firefox handles this well; Chromium has a hard-coded memory limit*
 - **Reverb and chorus support:** [customizable!](https://github.com/spessasus/SpessaSynth/wiki/Synthetizer-Class#effects-configuration-object)
 - **Export audio files** using [OfflineAudioContext](https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext)
 - **[Custom modulators for additional controllers](https://github.com/spessasus/SpessaSynth/wiki/Modulator-Class#default-modulators):** Why not?

@@ -11,6 +11,7 @@ import { consoleColors } from '../utils/other.js'
 import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo, SpessaSynthWarn } from '../utils/loggin.js'
 import { readBytesAsString } from '../utils/byte_functions/string.js'
 import { write } from './write/write.js'
+import { stbvorbis } from "../externals/stbvorbis_sync/stbvorbis_sync.min.js";
 
 /**
  * soundfont.js
@@ -42,7 +43,13 @@ class SoundFont2
         let firstChunk = readRIFFChunk(this.dataArray, false);
         this.verifyHeader(firstChunk, "riff");
 
-        this.verifyText(readBytesAsString(this.dataArray,4), "sfbk");
+        const type = readBytesAsString(this.dataArray,4).toLowerCase();
+        if(type !== "sfbk" && type !== "sfpk")
+        {
+            SpessaSynthGroupEnd();
+            throw new SyntaxError(`Invalid soundFont! Expected "sfbk" or "sfpk" got "${type}"`);
+        }
+        const isSF2Pack = type === "sfpk";
 
         // INFO
         let infoChunk = readRIFFChunk(this.dataArray);
@@ -88,7 +95,39 @@ class SoundFont2
         SpessaSynthInfo("%cVerifying smpl chunk...", consoleColors.warn)
         let sampleDataChunk = readRIFFChunk(this.dataArray, false);
         this.verifyHeader(sampleDataChunk, "smpl");
-        this.sampleDataStartIndex = this.dataArray.currentIndex;
+        /**
+         * @type {IndexedByteArray|Float32Array}
+         */
+        let sampleData;
+        // SF2Pack: the entire data is compressed
+        if(isSF2Pack)
+        {
+            SpessaSynthInfo("%cSF2Pack detected, attempting to decode the smpl chunk...",
+                consoleColors.info);
+            try
+            {
+                /**
+                 * @type {Float32Array}
+                 */
+                sampleData = stbvorbis.decode(this.dataArray.buffer.slice(this.dataArray.currentIndex, this.dataArray.currentIndex + sdtaChunk.size - 12)).data[0];
+            }
+            catch (e)
+            {
+                SpessaSynthGroupEnd();
+                throw new Error(`SF2Pack Ogg Vorbis decode error: ${e}`);
+            }
+            SpessaSynthInfo(`%cDecoded the smpl chunk! Length: %c${sampleData.length}`,
+                consoleColors.info,
+                consoleColors.value);
+        }
+        else
+        {
+            /**
+             * @type {IndexedByteArray}
+             */
+            sampleData = this.dataArray;
+            this.sampleDataStartIndex = this.dataArray.currentIndex;
+        }
 
         SpessaSynthInfo(`%cSkipping sample chunk, length: %c${sdtaChunk.size - 12}`,
             consoleColors.info,
@@ -133,8 +172,8 @@ class SoundFont2
          * read all the samples
          * (the current index points to start of the smpl read)
          */
-        this.dataArray.currentIndex = this.sampleDataStartIndex
-        this.samples = readSamples(presetSamplesChunk, this.dataArray);
+        this.dataArray.currentIndex = this.sampleDataStartIndex;
+        this.samples = readSamples(presetSamplesChunk, sampleData, !isSF2Pack);
 
         /**
          * read all the instrument generators
@@ -195,6 +234,11 @@ class SoundFont2
             consoleColors.recognized,
             consoleColors.info);
         SpessaSynthGroupEnd();
+
+        if(isSF2Pack)
+        {
+            delete this.dataArray;
+        }
     }
 
     removeUnusedElements()
@@ -224,7 +268,7 @@ class SoundFont2
     }
 
     /**
-     * @param sample {Sample}
+     * @param sample {LoadedSample}
      */
     deleteSample(sample)
     {

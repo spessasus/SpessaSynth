@@ -2,7 +2,7 @@ import {readBytesAsUintLittleEndian} from "../../utils/byte_functions/little_end
 import {IndexedByteArray} from "../../utils/indexed_array.js";
 import {RiffChunk} from "./riff_chunk.js";
 import {Generator, generatorTypes} from "./generators.js";
-import {Sample} from "./samples.js";
+import {LoadedSample} from "./samples.js";
 import {Instrument} from "./instruments.js";
 import {Modulator} from "./modulators.js";
 
@@ -81,7 +81,7 @@ export class InstrumentZone {
 
     /**
      * Loads the zone's sample
-     * @param samples {Sample[]}
+     * @param samples {LoadedSample[]}
      */
     getSample(samples)
     {
@@ -126,7 +126,7 @@ export class InstrumentZone {
  * @param zonesChunk {RiffChunk}
  * @param instrumentGenerators {Generator[]}
  * @param instrumentModulators {Modulator[]}
- * @param instrumentSamples {Sample[]}
+ * @param instrumentSamples {LoadedSample[]}
  * @returns {InstrumentZone[]}
  */
 export function readInstrumentZones(zonesChunk, instrumentGenerators, instrumentModulators, instrumentSamples)

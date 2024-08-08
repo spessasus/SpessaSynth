@@ -1,7 +1,7 @@
 import {RiffChunk} from "./riff_chunk.js";
 import {PresetZone} from "./zones.js";
 import {readBytesAsUintLittleEndian} from "../../utils/byte_functions/little_endian.js";
-import {Sample} from "./samples.js";
+import {LoadedSample} from "./samples.js";
 import { Generator, generatorTypes } from './generators.js'
 import { defaultModulators } from './modulators.js'
 import { readBytesAsString } from '../../utils/byte_functions/string.js'
@@ -114,7 +114,7 @@ export class Preset {
      *  instrumentGenerators: Generator[],
      *  presetGenerators: Generator[],
      *  modulators: Modulator[],
-     *  sample: Sample,
+     *  sample: LoadedSample,
      *  sampleID: number,
      * }} SampleAndGenerators
      */

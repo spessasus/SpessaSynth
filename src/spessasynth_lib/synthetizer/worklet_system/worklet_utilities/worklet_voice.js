@@ -65,7 +65,7 @@ export function clearSamplesList()
 
 function /**
  * @param channel {number} channel hint for the processor to recalculate cursor positions
- * @param sample {Sample}
+ * @param sample {LoadedSample}
  * @param id {number}
  * @param sampleDumpCallback {function({channel: number, sampleID: number, sampleData: Float32Array})}
  */
@@ -195,10 +195,16 @@ export function getWorkletVoices(channel,
             }
 
             // determine looping mode now. if the loop is too small, disable
-            const loopStart = (sampleAndGenerators.sample.sampleLoopStartIndex / 2) + (generators[generatorTypes.startloopAddrsOffset] + (generators[generatorTypes.startloopAddrsCoarseOffset] * 32768));
-            const loopEnd = (sampleAndGenerators.sample.sampleLoopEndIndex / 2) + (generators[generatorTypes.endloopAddrsOffset] + (generators[generatorTypes.endloopAddrsCoarseOffset] * 32768));
+            let loopStart = (sampleAndGenerators.sample.sampleLoopStartIndex / 2) + (generators[generatorTypes.startloopAddrsOffset] + (generators[generatorTypes.startloopAddrsCoarseOffset] * 32768));
+            let loopEnd = (sampleAndGenerators.sample.sampleLoopEndIndex / 2) + (generators[generatorTypes.endloopAddrsOffset] + (generators[generatorTypes.endloopAddrsCoarseOffset] * 32768));
             let loopingMode = generators[generatorTypes.sampleModes];
-            if (loopEnd - loopStart < 1) {
+            const sampleLength = sampleAndGenerators.sample.getAudioData().length;
+            // clamp loop
+            loopStart = Math.min(Math.max(0, loopStart), sampleLength);
+            // clamp loop
+            loopEnd = Math.min(Math.max(0, loopEnd), sampleLength);
+            if (loopEnd - loopStart < 1)
+            {
                 loopingMode = 0;
             }
 

@@ -225,6 +225,10 @@ export function reloadSoundFont(buffer, isOverride = false)
     this.clearSoundFont(false, isOverride);
     if(!isOverride)
     {
+        delete this.soundfont.dataArray;
+        this.soundfont.samples.length = 0;
+        this.soundfont.instruments.length = 0;
+        this.soundfont.presets.length = 0;
         delete this.soundfont;
     }
     try

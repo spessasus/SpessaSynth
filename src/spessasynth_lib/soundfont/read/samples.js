@@ -111,7 +111,8 @@ export class BasicSample
             return;
         }
         // compress, always mono!
-        try {
+        try
+        {
             this.compressedData = encodeVorbis([this.getAudioData()], 1, this.sampleRate, quality);
             // flag as compressed
             this.sampleType |= 0x10;
@@ -138,7 +139,7 @@ export class BasicSample
     }
 }
 
-export class Sample extends BasicSample
+export class LoadedSample extends BasicSample
 {
     /**
      * Creates a sample
@@ -152,8 +153,10 @@ export class Sample extends BasicSample
      * @param samplePitchCorrection {number}
      * @param sampleLink {number}
      * @param sampleType {number}
-     * @param smplArr {IndexedByteArray}
+     * @param smplArr {IndexedByteArray|Float32Array}
      * @param sampleIndex {number} initial sample index when loading the sfont
+     * @param isDataRaw {boolean} if false, the data is decoded as float32.
+     * Used for SF2Pack support
      */
     constructor(sampleName,
                 sampleStartIndex,
@@ -166,7 +169,8 @@ export class Sample extends BasicSample
                 sampleLink,
                 sampleType,
                 smplArr,
-                sampleIndex
+                sampleIndex,
+                isDataRaw,
                 )
     {
         super(
@@ -197,7 +201,7 @@ export class Sample extends BasicSample
             this.sampleLoopEndIndex += this.sampleStartIndex;
             this.sampleLength = 99999999; // set to 999999 before we decode it
         }
-
+        this.isDataRaw = isDataRaw;
     }
 
     /**
@@ -218,6 +222,10 @@ export class Sample extends BasicSample
         }
         else
         {
+            if(!this.isDataRaw)
+            {
+                throw new Error("Writing SF2Pack samples is not supported.");
+            }
             const dataStartIndex = smplArr.currentIndex;
             return smplArr.slice(dataStartIndex + this.sampleStartIndex, dataStartIndex + this.sampleEndIndex)
         }
@@ -255,7 +263,24 @@ export class Sample extends BasicSample
         if (!this.isSampleLoaded)
         {
             // start loading data if not loaded
-            return this.loadBufferData();
+            if (this.sampleLength < 1)
+            {
+                // eos, do not do anything
+                return new Float32Array(1);
+            }
+
+            if(this.isCompressed)
+            {
+                // if compressed, decode
+                this.decodeVorbis();
+                this.isSampleLoaded = true;
+                return this.sampleData;
+            }
+            else if(!this.isDataRaw)
+            {
+                return this.getUncompressedReadyData();
+            }
+            return this.loadUncompressedData();
         }
         return this.sampleData;
     }
@@ -293,40 +318,36 @@ export class Sample extends BasicSample
     /**
      * @returns {Float32Array}
      */
-    loadBufferData()
+    getUncompressedReadyData()
     {
-        if (this.sampleLength < 1)
-        {
-            // eos, do not do anything
-            return new Float32Array(1);
-        }
-
-        if(this.isCompressed)
-        {
-            this.decodeVorbis();
-            this.isSampleLoaded = true;
-            return this.sampleData;
-        }
-        return this.loadUncompressedData();
+        /**
+         * read the sample data
+         * @type {Float32Array}
+         */
+        let audioData = this.sampleDataArray.slice(this.sampleStartIndex / 2, this.sampleEndIndex / 2);
+        this.sampleData = audioData;
+        this.isSampleLoaded = true;
+        return audioData;
     }
 }
 
 /**
  * Reads the generatorTranslator from the shdr read
  * @param sampleHeadersChunk {RiffChunk}
- * @param smplChunkData {IndexedByteArray}
- * @returns {Sample[]}
+ * @param smplChunkData {IndexedByteArray|Float32Array}
+ * @param isSmplDataRaw {boolean}
+ * @returns {LoadedSample[]}
  */
-export function readSamples(sampleHeadersChunk, smplChunkData)
+export function readSamples(sampleHeadersChunk, smplChunkData, isSmplDataRaw = true)
 {
     /**
-     * @type {Sample[]}
+     * @type {LoadedSample[]}
      */
     let samples = [];
     let index = 0;
     while(sampleHeadersChunk.chunkData.length > sampleHeadersChunk.chunkData.currentIndex)
     {
-        const sample = readSample(index, sampleHeadersChunk.chunkData, smplChunkData);
+        const sample = readSample(index, sampleHeadersChunk.chunkData, smplChunkData, isSmplDataRaw);
         samples.push(sample);
         index++;
     }
@@ -342,10 +363,11 @@ export function readSamples(sampleHeadersChunk, smplChunkData)
  * Reads it into a sample
  * @param index {number}
  * @param sampleHeaderData {IndexedByteArray}
- * @param smplArrayData {IndexedByteArray}
- * @returns {Sample}
+ * @param smplArrayData {IndexedByteArray|Float32Array}
+ * @param isDataRaw {boolean} true means binary 16 bit data, false means float32
+ * @returns {LoadedSample}
  */
-function readSample(index, sampleHeaderData, smplArrayData) {
+function readSample(index, sampleHeaderData, smplArrayData, isDataRaw) {
 
     // read the sample name
     let sampleName = readBytesAsString(sampleHeaderData, 20);
@@ -383,7 +405,7 @@ function readSample(index, sampleHeaderData, smplArrayData) {
 
 
 
-    return new Sample(sampleName,
+    return new LoadedSample(sampleName,
         sampleStartIndex,
         sampleEndIndex,
         sampleLoopStartIndex,
@@ -394,5 +416,6 @@ function readSample(index, sampleHeaderData, smplArrayData) {
         sampleLink,
         sampleType,
         smplArrayData,
-        index);
+        index,
+        isDataRaw);
 }
