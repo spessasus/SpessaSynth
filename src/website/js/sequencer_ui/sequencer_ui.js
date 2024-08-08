@@ -39,6 +39,8 @@ class SequencerUI
         this.controls = element;
         this.encoding = DEFAULT_ENCODING;
         this.decoder = new TextDecoder(this.encoding);
+        this.infoDecoder = new TextDecoder(this.encoding);
+        this.hasInfoDecoding = false;
         // the currently displayed (highlighted) lyrics text
         this.text = "";
         this.requiresTextUpdate = false;
@@ -132,15 +134,20 @@ class SequencerUI
 
     /**
      * @param text {ArrayBuffer}
+     * @param useInfoEncoding {boolean}
      * @returns {string}
      */
-    decodeTextFix(text)
+    decodeTextFix(text, useInfoEncoding = false)
     {
         let encodingIndex = 0;
         while(true)
         {
             try
             {
+                if(useInfoEncoding)
+                {
+
+                }
                 return this.decoder.decode(text);
             }
             catch (e)
@@ -207,15 +214,24 @@ class SequencerUI
             }
 
             // use encoding suggested by the rmidi if available
+            this.hasInfoDecoding = this.seq.midiData.RMIDInfo?.[RMIDINFOChunks.encoding] !== undefined;
             if(data.isEmbedded)
             {
-                if(data.RMIDInfo[RMIDINFOChunks.encoding] === undefined)
-                {
-                    return;
+                /**
+                 * @param type {string}
+                 * @param def {string}
+                 * @param decoder {TextDecoder}
+                 * @param prepend {string}
+                 * @return {string}
+                 */
+                const verifyDecode = (type, def, decoder, prepend = "") => {
+                    return this.seq.midiData.RMIDInfo?.[type] === undefined ? def : prepend + decoder.decode(this.seq.midiData.RMIDInfo?.[type]).replace(/\0$/, '')
                 }
                 const dec = new TextDecoder();
-                const encoding = dec.decode(data.RMIDInfo[RMIDINFOChunks.encoding].buffer).replace(/\0$/, '');
-                this.changeEncoding(encoding);
+                const midiEncoding = verifyDecode(RMIDINFOChunks.midiEncoding, this.encoding, dec);
+                const infoEncoding = verifyDecode(RMIDINFOChunks.encoding, "utf-8", dec);
+                this.infoDecoder = new TextDecoder(infoEncoding);
+                this.changeEncoding(midiEncoding);
             }
         }, "sequi-song-change");
 
@@ -235,10 +251,15 @@ class SequencerUI
     {
         this.encoding = encoding;
         this.decoder = new TextDecoder(encoding);
+        if(!this.hasInfoDecoding)
+        {
+            this.infoDecoder = new TextDecoder(encoding);
+        }
+        this.updateOtherTextEvents();
         this.text = this.decodeTextFix(new Uint8Array(this.rawLyrics).buffer);
         this.lyricsElement.selector.value = encoding;
+        this.updateTitleAndMediaStatus(false);
         this.setLyricsText(this.text);
-        this.updateTitleAndMediaStatus();
     }
 
     createControls()

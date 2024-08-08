@@ -23,6 +23,7 @@ export const RMIDINFOChunks = {
     engineer: "IENG",
     software: "ISFT",
     encoding: "IENC",
+    midiEncoding: "MENC",
     bankOffset: "DBNK"
 }
 
@@ -40,6 +41,7 @@ const DEFAULT_COPYRIGHT = "Created using SpessaSynth";
  * @property {string|undefined} comment - the coment of the file
  * @property {string|undefined} creationDate - the creation date of the file
  * @property {string|undefined} copyright - the copyright of the file
+ * @property {string|unescape} midiEncoding - the encoding of the inner MIDI file
  */
 
 /**
@@ -444,10 +446,19 @@ export function writeRMIDI(soundfontBinary, mid, soundfont, bankOffset = 0, enco
     const DBNK = new IndexedByteArray(2);
     writeLittleEndian(DBNK, bankOffset, 2);
     infoContent.push(writeRIFFOddSize(RMIDINFOChunks.bankOffset, DBNK));
+    // midi encoding
+    if(metadata.midiEncoding !== undefined)
+    {
+        infoContent.push(
+            writeRIFFOddSize(RMIDINFOChunks.midiEncoding, encoder.encode(metadata.midiEncoding))
+        );
+        encoding = FORCED_ENCODING;
+    }
     // encoding
     infoContent.push(writeRIFFOddSize(RMIDINFOChunks.encoding, getStringBytes(encoding)));
-    const infodata = combineArrays(infoContent);
 
+    // combine and write out
+    const infodata = combineArrays(infoContent);
     const rmiddata = combineArrays([
         getStringBytes("RMID"),
         writeRIFFOddSize(

@@ -46,8 +46,9 @@ export function createNavigatorHandler()
 
 /**
  * @this {SequencerUI}
+ * @param cleanOtherTextEvents {boolean}
  */
-export function updateTitleAndMediaStatus()
+export function updateTitleAndMediaStatus(cleanOtherTextEvents = true)
 {
     if(this.seq?.hasDummyData === true)
     {
@@ -55,7 +56,7 @@ export function updateTitleAndMediaStatus()
     }
     else
     {
-        const text = this.decodeTextFix(this.seq.midiData.rawMidiName.buffer);
+        const text = this.infoDecoder.decode(this.seq.midiData.rawMidiName.buffer);
         this.currentSongTitle = formatTitle(text);
     }
     if(this.seq.midiData)
@@ -71,7 +72,10 @@ export function updateTitleAndMediaStatus()
         }
         this.currentLyricsString = this.decodeTextFix(this.currentLyrics.buffer) || this.locale.getLocaleString("locale.sequencerController.lyrics.noLyrics");
         this.setLyricsText("");
-        this.rawOtherTextEvents = [];
+        if(cleanOtherTextEvents)
+        {
+            this.rawOtherTextEvents = [];
+        }
     }
     document.getElementById("title").innerText = this.currentSongTitle;
     document.title = this.currentSongTitle + " - SpessaSynth";

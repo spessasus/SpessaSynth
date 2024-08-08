@@ -188,11 +188,12 @@ export async function _exportRMIDI()
                     const rmidBinary = writeRMIDI(newFont, mid, font, bankOffset, this.seqUI.encoding, {
                         name: songTitle,
                         comment: comment,
-                        engineer: font.soundFontInfo["IENG"],
+                        engineer: font.soundFontInfo["IENG"], // use soundfont egineer
                         picture: fileBuffer,
                         album: album.length > 0 ? album : undefined,
                         artist: artist.length > 0 ? artist : undefined,
-                        genre: genre.length > 0 ? genre : undefined
+                        genre: genre.length > 0 ? genre : undefined,
+                        midiEncoding: this.seqUI.encoding // use the selected encoding
                     });
                     const blob = new Blob([rmidBinary.buffer], {type: "audio/rmid"})
                     this.saveBlob(blob, `${songTitle || "unnamed_song"}.rmi`);
