@@ -49,6 +49,11 @@ class SoundFont2
             SpessaSynthGroupEnd();
             throw new SyntaxError(`Invalid soundFont! Expected "sfbk" or "sfpk" got "${type}"`);
         }
+        /*
+        Some SF2Pack description:
+        this is essentially sf2, but the entire smpl chunk is compressed (we only support ogg vorbis here)
+        and the only other difference is that the main chunk isn't "sfbk" but rather "sfpk"
+         */
         const isSF2Pack = type === "sfpk";
 
         // INFO
