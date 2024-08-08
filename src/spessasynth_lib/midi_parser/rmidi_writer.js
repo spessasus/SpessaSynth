@@ -62,7 +62,7 @@ export function writeRMIDI(soundfontBinary, mid, soundfont, bankOffset = 0, enco
         consoleColors.value);
     SpessaSynthInfo("metadata", metadata);
     SpessaSynthInfo("Initial bank offset", mid.bankOffset);
-    // add offset to bank. See wiki About-RMIDI
+    // add offset to bank. See https://github.com/spessasus/sf2-rmidi-specification#readme
     // also fix presets that don't exists since midiplayer6 doesn't seem to default to 0 when nonextistent...
     let system = "gm";
     /**

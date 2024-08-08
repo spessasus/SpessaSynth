@@ -62,7 +62,7 @@ class MIDI{
         binaryData.currentIndex -= 4;
         if(initialString === "RIFF")
         {
-            // possibly an RMID file (https://github.com/spessasus/SpessaSynth/wiki/About-RMIDI)
+            // possibly an RMID file (https://github.com/spessasus/sf2-rmidi-specification#readme)
             // skip size
             binaryData.currentIndex += 8;
             const rmid = readBytesAsString(binaryData, 4, undefined, false);
