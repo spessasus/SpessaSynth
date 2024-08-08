@@ -43,7 +43,7 @@ export function readBytesAsString(dataArray, bytes, encoding = undefined, trimEn
     {
         let byteBuffer = dataArray.slice(dataArray.currentIndex, dataArray.currentIndex + bytes)
         dataArray.currentIndex += bytes
-        let decoder = new TextDecoder(encoding)
+        let decoder = new TextDecoder(encoding.replace(/[^\x20-\x7E]/g, ''))
         return decoder.decode(byteBuffer.buffer)
     }
 }

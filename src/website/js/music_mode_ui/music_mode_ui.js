@@ -150,10 +150,10 @@ export class MusicModeUI {
              * @return {string}
              */
             const verifyDecode = (type, def, decoder, prepend = "") => {
-                return this.seq.midiData.RMIDInfo?.[type] === undefined ? def : prepend + decoder.decode(this.seq.midiData.RMIDInfo?.[type])
+                return this.seq.midiData.RMIDInfo?.[type] === undefined ? def : prepend + decoder.decode(this.seq.midiData.RMIDInfo?.[type]).replace(/\0$/, '')
             }
             // initialize decoder
-            let encoding = this.seq.midiData.RMIDInfo?.["IENC"] === undefined ? "ascii" : (new TextDecoder()).decode(this.seq.midiData.RMIDInfo?.["IENC"]).replace(/\0$/, '');
+            let encoding = verifyDecode("IENC", "ascii", new TextDecoder());
             const decoder = new TextDecoder(encoding);
 
             // artist, album, creation date

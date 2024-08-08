@@ -21,7 +21,7 @@ export async function _exportRMIDI()
      * @return {string}
      */
     const verifyDecode = (type, def, decoder) => {
-        return this.seq.midiData.RMIDInfo?.[type] === undefined ? def : decoder.decode(this.seq.midiData.RMIDInfo?.[type])
+        return this.seq.midiData.RMIDInfo?.[type] === undefined ? def : decoder.decode(this.seq.midiData.RMIDInfo?.[type]).replace(/\0$/, '')
     }
     const encoding = verifyDecode("IENC", "ascii", new TextDecoder());
     const decoder = new TextDecoder(encoding);
