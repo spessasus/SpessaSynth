@@ -322,6 +322,26 @@ class SoundFont2
     }
 
     /**
+     * Get the appropriate preset, undefined if not foun d
+     * @param bankNr {number}
+     * @param presetNr {number}
+     * @return {Preset}
+     */
+    getPresetNoFallback(bankNr, presetNr)
+    {
+        return this.presets.find(p => p.bank === bankNr && p.program === presetNr);
+    }
+
+    /**
+     * To avoid overlapping on multiple desfonts
+     * @param offset {number}
+     */
+    setSampleIDOffset(offset)
+    {
+        this.presets.forEach(p => p.sampleIDOffset = offset);
+    }
+
+    /**
      * Get the appropriate preset
      * @param bankNr {number}
      * @param presetNr {number}

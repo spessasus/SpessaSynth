@@ -151,7 +151,8 @@ async function replaceFont(fontName)
             return;
         }
 
-        if(!window.manager) {
+        if(!window.manager)
+        {
             // prepare the manager
             window.manager = new Manager(audioContextMain, soundFontParser, localeManager);
             window.TITLE = window.manager.localeManager.getLocaleString("locale.titleMessage");
@@ -204,7 +205,8 @@ document.body.onclick = async () =>
         }
         const context = window.AudioContext || window.webkitAudioContext;
         window.audioContextMain = new context({sampleRate: SAMPLE_RATE});
-        if(window.soundFontParser) {
+        if(window.soundFontParser)
+        {
             // prepare midi interface
             window.manager = new Manager(audioContextMain, soundFontParser, localeManager);
             window.TITLE = window.manager.localeManager.getLocaleString("locale.titleMessage")

@@ -11,6 +11,7 @@ import {
 } from './worklet_system/message_protocol/worklet_message.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../utils/loggin.js'
 import { DEFAULT_EFFECTS_CONFIG } from './audio_effects/effects_config.js'
+import { SoundfontManager } from './synth_soundfont_manager.js'
 
 
 /**
@@ -82,10 +83,15 @@ export class Synthetizer {
         this.channelsAmount = this._outputsAmount;
 
         /**
+         * @type {function}
+         */
+        this.resolveWhenReady = undefined;
+
+        /**
          * Indicates if the synth is fully ready
          * @type {Promise<void>}
          */
-        this.isReady = new Promise(resolve => this._resolveReady = resolve);
+        this.isReady = new Promise(resolve => this.resolveWhenReady = resolve);
 
 
         /**
@@ -144,6 +150,12 @@ export class Synthetizer {
 
         // worklet sends us some data back
         this.worklet.port.onmessage = e => this.handleMessage(e.data);
+
+        /**
+         * The synth's soundfont manager
+         * @type {SoundfontManager}
+         */
+        this.soundfontManager = new SoundfontManager(this);
 
         /**
          * @type {function(SynthesizerSnapshot)}
@@ -282,7 +294,7 @@ export class Synthetizer {
                 break;
 
             case returnMessageType.ready:
-                this._resolveReady();
+                this.resolveWhenReady();
                 break;
 
             case returnMessageType.soundfontError:
@@ -634,21 +646,16 @@ export class Synthetizer {
 
     /**
      * Reloads the sounfont.
+     * THIS IS DEPRECATED!
+     * USE soundfontManager INSTEAD
      * @param soundFontBuffer {ArrayBuffer} the new soundfont file array buffer
      * @return {Promise<void>}
+     * @deprecated Use the soundfontManager property
      */
     async reloadSoundFont(soundFontBuffer)
     {
-        // copy and use transferable
-        const bufferCopy = soundFontBuffer.slice(0);
-        await new Promise(resolve => {
-            this._resolveReady = resolve;
-            this.worklet.port.postMessage({
-                channelNumber: 0,
-                messageType: workletMessageType.reloadSoundFont,
-                messageData: bufferCopy
-            }, [bufferCopy]);
-        });
+        SpessaSynthWarn("reloadSoundFont is deprecated. Please use the soundfontManager property instead.")
+        await this.soundfontManager.reloadManager(soundFontBuffer);
     }
 
     /**

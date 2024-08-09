@@ -43,21 +43,21 @@ export function programChange(channel, programNumber, userChange=false)
         if(this.soundfontBankOffset === 0)
         {
             preset = this.overrideSoundfont.getPreset(0, programNumber);
+            sentBank = preset.bank;
         }
         else
         {
-            preset = this.soundfont.getPreset(bank, programNumber);
+            preset = this.soundfontManager.getPreset(bank, programNumber);
             sentBank = preset.bank;
             channelObject.presetUsesOverride = false;
         }
     }
     else
     {
-        preset = this.soundfont.getPreset(bank, programNumber);
+        preset = this.soundfontManager.getPreset(bank, programNumber);
         sentBank = preset.bank;
         channelObject.presetUsesOverride = false;
     }
-
     this.setPreset(channel, preset);
     this.callEvent("programchange",{
         channel: channel,
@@ -90,7 +90,7 @@ export function getPreset(bank, program)
             return this.overrideSoundfont.getPreset(0, program);
         }
     }
-    return this.soundfont.getPreset(bank, program);
+    return this.soundfontManager.getPreset(bank, program);
 }
 
 
@@ -159,9 +159,10 @@ export function setDrums(channel, isDrum)
  */
 export function sendPresetList()
 {
-    const mainFont =  this.soundfont.presets.map(p => {
-        return {presetName: p.presetName, bank: p.bank, program: p.program};
-    });
+    /**
+     * @type {{bank: number, presetName: string, program: number}[]}
+     */
+    const mainFont = this.soundfontManager.getPresetList();
     if(this.overrideSoundfont !== undefined)
     {
         this.overrideSoundfont.presets.forEach(p => {
@@ -223,23 +224,17 @@ export function clearSoundFont(sendPresets = true, clearOverride = true)
 export function reloadSoundFont(buffer, isOverride = false)
 {
     this.clearSoundFont(false, isOverride);
-    if(!isOverride)
-    {
-        delete this.soundfont.dataArray;
-        this.soundfont.samples.length = 0;
-        this.soundfont.instruments.length = 0;
-        this.soundfont.presets.length = 0;
-        delete this.soundfont;
-    }
     try
     {
         if(isOverride)
         {
             this.overrideSoundfont = new SoundFont2(buffer);
+            // assign sample offset
+            this.overrideSoundfont.setSampleIDOffset(this.soundfontManager.totalSoundfontOffset)
         }
         else
         {
-            this.soundfont = new SoundFont2(buffer);
+            this.soundfontManager.reloadManager(buffer);
         }
     }
     catch (e)

@@ -40,6 +40,7 @@ document.getElementById("button").onclick = async () => {
     - **Modulator Support:** _First (to my knowledge) JavaScript SoundFont synth with that feature!_
     - **SoundFont3 Support:** Play compressed SoundFonts!
     - **Can load very large SoundFonts:** up to 4GB! _Note: Only Firefox handles this well; Chromium has a hard-coded memory limit_
+    - **Soundfont manager:** Stack multiple soundfonts!
 - **Reverb and chorus support:** [customizable!](https://github.com/spessasus/SpessaSynth/wiki/Synthetizer-Class#effects-configuration-object)
 - **Export audio files** using [OfflineAudioContext](https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext)
 - **[Custom modulators for additional controllers](https://github.com/spessasus/SpessaSynth/wiki/Modulator-Class#default-modulators):** Why not?

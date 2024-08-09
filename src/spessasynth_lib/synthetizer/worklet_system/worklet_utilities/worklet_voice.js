@@ -126,7 +126,6 @@ function deepClone(obj) {
  * @param sampleRate {number}
  * @param sampleDumpCallback {function({channel: number, sampleID: number, sampleData: Float32Array})}
  * @param cachedVoices {WorkletVoice[][][]} first is midi note, second is velocity. output is an array of WorkletVoices
- * @param sampleIDOffset {number}
  * @param debug {boolean}
  * @returns {WorkletVoice[]}
  */
@@ -138,7 +137,6 @@ export function getWorkletVoices(channel,
                                  sampleRate,
                                  sampleDumpCallback,
                                  cachedVoices,
-                                 sampleIDOffset,
                                  debug=false)
 {
     /**
@@ -161,7 +159,7 @@ export function getWorkletVoices(channel,
          */
         workletVoices = preset.getSamplesAndGenerators(midiNote, velocity).reduce((voices, sampleAndGenerators) => {
             // dump the sample if haven't already
-            const sampleID = sampleAndGenerators.sampleID + sampleIDOffset;
+            const sampleID = sampleAndGenerators.sampleID + preset.sampleIDOffset;
             if (globalDumpedSamplesList[sampleID] !== true)
             {
                 dumpSample(channel, sampleAndGenerators.sample, sampleID, sampleDumpCallback);

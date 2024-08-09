@@ -24,19 +24,6 @@ export function callEvent(eventName, eventData)
 }
 
 /**
- * @param data {WorkletReturnMessage}
- * @this {SpessaSynthProcessor}
- */
-export function post(data)
-{
-    if(!this.enableEventSystem)
-    {
-        return;
-    }
-    this.port.postMessage(data);
-}
-
-/**
  * @typedef {Object} ChannelProperty
  * @property {number} voicesAmount
  * @property {number} pitchBend - from -8192 do 8192

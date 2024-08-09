@@ -147,6 +147,7 @@ class Manager
                 this.sfError(e);
             }
         });
+        await this.synth.isReady;
 
         // set up midi access
         this.midHandler = new MIDIDeviceHandler();
@@ -290,7 +291,6 @@ class Manager
                     break;
             }
         });
-        await this.synth.isReady;
     }
 
     /**
@@ -299,7 +299,7 @@ class Manager
     async reloadSf(sf)
     {
         //this.soundFontMixer.soundFontChange(sf);
-        await this.synth.reloadSoundFont(sf);
+        await this.synth.soundfontManager.reloadManager(sf);
         this.soundFont = sf;
     }
 

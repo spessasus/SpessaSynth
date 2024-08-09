@@ -10,7 +10,7 @@
  * @property {number} killNote                   - 6  -> midiNote<number>
  * @property {number} ccReset                    - 7  -> (no data) note: if channel is -1 then reset all channels
  * @property {number} setChannelVibrato          - 8  -> {frequencyHz: number, depthCents: number, delaySeconds: number} note: if channel is -1 then stop all channels note 2: if rate is -1, it means locking
- * @property {number} reloadSoundFont            - 9  -> (no data)
+ * @property {number} soundFontManager           - 9  -> [messageType<WorkletSoundfontManagerMessageType> messageData<any>] note: refer to sfman_message.js
  * @property {number} stopAll                    - 10  -> force<number> (0 false, 1 true) note: if channel is -1 then stop all channels
  * @property {number} killNotes                  - 11  -> amount<number>
  * @property {number} muteChannel                - 12 -> isMuted<boolean>
@@ -38,7 +38,7 @@ export const workletMessageType = {
     killNote:                   6,
     ccReset:                    7,
     setChannelVibrato:          8,
-    reloadSoundFont:            9,
+    soundFontManager:           9,
     stopAll:                    10,
     killNotes:                  11,
     muteChannel:                12,
@@ -96,7 +96,8 @@ export const ALL_CHANNELS_OR_DIFFERENT_ACTION = -1;
  * |PresetListElement[]
  * |string
  * |{messageType: WorkletSequencerReturnMessageType, messageData: any}
- * |SynthesizerSnapshot} messageData - the message's data
+ * |SynthesizerSnapshot
+ * |[WorkletSoundfontManagerMessageType, any]} messageData - the message's data
  *
  * 0 - channel properties           -> [...<ChannelProperty>] see message_sending.js line 29
  * 1 - event call                   -> {eventName<string>, eventData:<the event's data>}

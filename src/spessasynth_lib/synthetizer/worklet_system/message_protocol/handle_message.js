@@ -3,7 +3,7 @@ import { SpessaSynthLogging, SpessaSynthWarn } from '../../../utils/loggin.js'
 
 /**
  * @this {SpessaSynthProcessor}
- * @param message
+ * @param message {WorkletMessage}
  */
 export function handleMessage(message)
 {
@@ -95,10 +95,6 @@ export function handleMessage(message)
             }
             break;
 
-        case workletMessageType.reloadSoundFont:
-            this.reloadSoundFont(data);
-            break;
-
         case workletMessageType.stopAll:
             if(channel === ALL_CHANNELS_OR_DIFFERENT_ACTION)
             {
@@ -180,6 +176,11 @@ export function handleMessage(message)
 
         case workletMessageType.sequencerSpecific:
             this.sequencer.processMessage(data.messageType, data.messageData);
+            break;
+
+        case workletMessageType.soundFontManager:
+            this.soundfontManager.handleMessage(data[0], data[1]);
+            this.clearSoundFont(true, false);
             break;
 
         case workletMessageType.requestSynthesizerSnapshot:

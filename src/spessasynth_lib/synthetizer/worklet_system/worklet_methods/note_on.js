@@ -57,7 +57,6 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
             data.sampleData
         ),
         channelObject.cachedVoices,
-        channelObject.presetUsesOverride ? this.soundfont.samples.length : 0, // this is done to prevent samples overlapping
         enableDebugging
     );
 

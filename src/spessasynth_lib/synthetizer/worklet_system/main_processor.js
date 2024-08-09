@@ -3,10 +3,42 @@ import { SoundFont2 } from '../../soundfont/soundfont.js'
 import { WorkletSequencer } from '../../sequencer/worklet_sequencer/worklet_sequencer.js'
 import { SpessaSynthInfo } from '../../utils/loggin.js'
 import { consoleColors } from '../../utils/other.js'
-import { PAN_SMOOTHING_FACTOR } from './worklet_methods/voice_control.js'
+import { PAN_SMOOTHING_FACTOR, releaseVoice, renderVoice, voiceKilling } from './worklet_methods/voice_control.js'
 import { ALL_CHANNELS_OR_DIFFERENT_ACTION, returnMessageType } from './message_protocol/worklet_message.js'
 import { stbvorbis } from '../../externals/stbvorbis_sync/stbvorbis_sync.min.js'
 import { VOLUME_ENVELOPE_SMOOTHING_FACTOR } from './worklet_utilities/volume_envelope.js'
+import { handleMessage } from './message_protocol/handle_message.js'
+import { callEvent, sendChannelProperties } from './message_protocol/message_sending.js'
+import { systemExclusive } from './worklet_methods/system_exclusive.js'
+import { noteOn } from './worklet_methods/note_on.js'
+import { killNote, noteOff, stopAll, stopAllChannels } from './worklet_methods/note_off.js'
+import {
+    channelPressure, pitchWheel,
+    polyPressure, setChannelTuning, setChannelTuningSemitones, setMasterTuning, setModulationDepth, setOctaveTuning,
+    transposeAllChannels,
+    transposeChannel,
+} from './worklet_methods/tuning_control.js'
+import {
+    controllerChange,
+    muteChannel,
+    setMasterGain,
+    setMasterPan,
+    setMIDIVolume,
+} from './worklet_methods/controller_control.js'
+import { disableAndLockVibrato, setVibrato } from './worklet_methods/vibrato_control.js'
+import { dataEntryCoarse, dataEntryFine } from './worklet_methods/data_entry.js'
+import { createWorkletChannel } from './worklet_utilities/worklet_processor_channel.js'
+import { resetAllControllers, resetControllers, resetParameters } from './worklet_methods/reset_controllers.js'
+import {
+    clearSoundFont,
+    getPreset,
+    programChange,
+    reloadSoundFont, sampleDump, sendPresetList,
+    setDrums,
+    setPreset,
+} from './worklet_methods/program_control.js'
+import { applySynthesizerSnapshot, sendSynthesizerSnapshot } from './worklet_methods/snapshot.js'
+import { WorkletSoundfontManager } from './worklet_methods/worklet_soundfont_manager/worklet_soundfont_manager.js'
 
 
 /**
@@ -18,7 +50,7 @@ export const MIN_NOTE_LENGTH = 0.07; // if the note is released faster than that
 
 export const SYNTHESIZER_GAIN = 1.0;
 
-export class SpessaSynthProcessor extends AudioWorkletProcessor
+class SpessaSynthProcessor extends AudioWorkletProcessor
 {
     /**
      * Creates a new worklet synthesis system. contains all channels
@@ -114,9 +146,9 @@ export class SpessaSynthProcessor extends AudioWorkletProcessor
         try
         {
             /**
-             * @type {SoundFont2}
+             * @type {WorkletSoundfontManager}
              */
-            this.soundfont = new SoundFont2(options.processorOptions.soundfont);
+            this.soundfontManager = new WorkletSoundfontManager(options.processorOptions.soundfont, this.postReady.bind(this));
         }
         catch (e)
         {
@@ -186,11 +218,32 @@ export class SpessaSynthProcessor extends AudioWorkletProcessor
         }
 
         stbvorbis.isInitialized.then(() => {
-            this.post({
-                messageType: returnMessageType.ready,
-                messageData: undefined
-            });
+            this.postReady();
             SpessaSynthInfo("%cSpessaSynth is ready!", consoleColors.recognized);
+        });
+    }
+
+    /**
+     * @param data {WorkletReturnMessage}
+     */
+    post(data)
+    {
+        if(!this.enableEventSystem)
+        {
+            return;
+        }
+        this.port.postMessage(data);
+    }
+
+    postReady()
+    {
+        if(!this.enableEventSystem)
+        {
+            return;
+        }
+        this.port.postMessage({
+            messageType: returnMessageType.ready,
+            messageData: undefined
         });
     }
 
@@ -290,3 +343,73 @@ export class SpessaSynthProcessor extends AudioWorkletProcessor
         return true;
     }
 }
+
+// include other methods
+// voice related
+SpessaSynthProcessor.prototype.renderVoice = renderVoice;
+SpessaSynthProcessor.prototype.releaseVoice = releaseVoice;
+SpessaSynthProcessor.prototype.voiceKilling = voiceKilling;
+
+// message port related
+SpessaSynthProcessor.prototype.handleMessage = handleMessage;
+SpessaSynthProcessor.prototype.sendChannelProperties = sendChannelProperties;
+SpessaSynthProcessor.prototype.callEvent = callEvent;
+
+// system exlcusive related
+SpessaSynthProcessor.prototype.systemExclusive = systemExclusive;
+
+// note messages related
+SpessaSynthProcessor.prototype.noteOn = noteOn;
+SpessaSynthProcessor.prototype.noteOff = noteOff;
+SpessaSynthProcessor.prototype.polyPressure = polyPressure;
+SpessaSynthProcessor.prototype.killNote = killNote;
+SpessaSynthProcessor.prototype.stopAll = stopAll;
+SpessaSynthProcessor.prototype.stopAllChannels = stopAllChannels;
+SpessaSynthProcessor.prototype.muteChannel = muteChannel;
+
+// custom vibrato related
+SpessaSynthProcessor.prototype.setVibrato = setVibrato;
+SpessaSynthProcessor.prototype.disableAndLockVibrato = disableAndLockVibrato;
+
+// data entry related
+SpessaSynthProcessor.prototype.dataEntryCoarse = dataEntryCoarse;
+SpessaSynthProcessor.prototype.dataEntryFine = dataEntryFine;
+
+// channel related
+SpessaSynthProcessor.prototype.createWorkletChannel = createWorkletChannel;
+SpessaSynthProcessor.prototype.controllerChange = controllerChange;
+SpessaSynthProcessor.prototype.channelPressure = channelPressure;
+SpessaSynthProcessor.prototype.resetAllControllers = resetAllControllers;
+SpessaSynthProcessor.prototype.resetControllers = resetControllers;
+SpessaSynthProcessor.prototype.resetParameters = resetParameters;
+
+// master parameter related
+SpessaSynthProcessor.prototype.setMasterGain = setMasterGain;
+SpessaSynthProcessor.prototype.setMasterPan = setMasterPan;
+SpessaSynthProcessor.prototype.setMIDIVolume = setMIDIVolume;
+
+// tuning related
+SpessaSynthProcessor.prototype.transposeAllChannels = transposeAllChannels;
+SpessaSynthProcessor.prototype.transposeChannel = transposeChannel;
+SpessaSynthProcessor.prototype.setChannelTuning = setChannelTuning;
+SpessaSynthProcessor.prototype.setChannelTuningSemitones = setChannelTuningSemitones;
+SpessaSynthProcessor.prototype.setMasterTuning = setMasterTuning;
+SpessaSynthProcessor.prototype.setModulationDepth = setModulationDepth;
+SpessaSynthProcessor.prototype.pitchWheel = pitchWheel;
+SpessaSynthProcessor.prototype.setOctaveTuning = setOctaveTuning;
+
+// program related
+SpessaSynthProcessor.prototype.programChange = programChange;
+SpessaSynthProcessor.prototype.getPreset = getPreset;
+SpessaSynthProcessor.prototype.setPreset = setPreset;
+SpessaSynthProcessor.prototype.setDrums = setDrums;
+SpessaSynthProcessor.prototype.reloadSoundFont = reloadSoundFont;
+SpessaSynthProcessor.prototype.clearSoundFont = clearSoundFont;
+SpessaSynthProcessor.prototype.sampleDump = sampleDump;
+SpessaSynthProcessor.prototype.sendPresetList = sendPresetList;
+
+// snapshot related
+SpessaSynthProcessor.prototype.sendSynthesizerSnapshot = sendSynthesizerSnapshot;
+SpessaSynthProcessor.prototype.applySynthesizerSnapshot = applySynthesizerSnapshot;
+
+export { SpessaSynthProcessor }

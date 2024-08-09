@@ -30,6 +30,8 @@ export class Preset {
          */
         this.presetZones = [];
 
+        this.sampleIDOffset = 0;
+
         /**
          * Stores already found getSamplesAndGenerators for reuse
          * @type {SampleAndGenerators[][][]}
