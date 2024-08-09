@@ -58,36 +58,37 @@ export function renderVoice(
     let targetKey = voice.targetKey;
 
     // calculate tuning
-    let cents = voice.modulatedGenerators[generatorTypes.fineTune]
-        + channel.customControllers[customControllers.channelTuning]
-        + channel.customControllers[customControllers.channelTransposeFine]
-        + channel.customControllers[customControllers.masterTuning]
-        + channel.channelOctaveTuning[voice.midiNote % 12];
-    let semitones = voice.modulatedGenerators[generatorTypes.coarseTune]
-        + channel.customControllers[customControllers.channelTuningSemitones];
+    let cents = voice.modulatedGenerators[generatorTypes.fineTune]             // soundfont fine tune
+        + channel.customControllers[customControllers.channelTuning]           // RPN channel fine tuning
+        + channel.customControllers[customControllers.channelTransposeFine]    // custom tuning (synth.transpose)
+        + channel.customControllers[customControllers.masterTuning]            // master tuning, set by sysEx
+        + channel.channelOctaveTuning[voice.midiNote % 12];                    // MTS octave tuning
+    let semitones = voice.modulatedGenerators[generatorTypes.coarseTune]       // soundfont coarse tuning
+        + channel.customControllers[customControllers.channelTuningSemitones]; // RPN channel coarse tuning
 
     // midi tuning standard
     const tuning = this.tunings[channel.preset.program]?.[targetKey];
     if(tuning?.midiNote >= 0)
     {
+        // override key
         targetKey = tuning.midiNote;
+        // add microtonal tuning
         cents += tuning.centTuning;
     }
 
-    // calculate tuning by key
+    // calculate tuning by key using soundfont's scale tuning
     cents += (targetKey - voice.sample.rootKey) * voice.modulatedGenerators[generatorTypes.scaleTuning];
 
     // vibrato LFO
     const vibratoDepth = voice.modulatedGenerators[generatorTypes.vibLfoToPitch];
     if(vibratoDepth !== 0)
     {
+        // calculate start time and lfo value
         const vibStart = voice.startTime + timecentsToSeconds(voice.modulatedGenerators[generatorTypes.delayVibLFO]);
         const vibFreqHz = absCentsToHz(voice.modulatedGenerators[generatorTypes.freqVibLFO]);
         const lfoVal = getLFOValue(vibStart, vibFreqHz, currentTime);
-        if(lfoVal)
-        {
-            cents += lfoVal * (vibratoDepth * channel.customControllers[customControllers.modulationMultiplier]);
-        }
+        // use modulation multiplier (RPN modulation depth)
+        cents += lfoVal * (vibratoDepth * channel.customControllers[customControllers.modulationMultiplier]);
     }
 
     // lowpass frequency
@@ -100,17 +101,22 @@ export function renderVoice(
     let modLfoCentibels = 0;
     if(modPitchDepth + modFilterDepth + modVolDepth !== 0)
     {
+        // calculate start time and lfo value
         const modStart = voice.startTime + timecentsToSeconds(voice.modulatedGenerators[generatorTypes.delayModLFO]);
         const modFreqHz = absCentsToHz(voice.modulatedGenerators[generatorTypes.freqModLFO]);
         const modLfoValue = getLFOValue(modStart, modFreqHz, currentTime);
+        // use modulation multiplier (RPN modulation depth)
         cents += modLfoValue * (modPitchDepth * channel.customControllers[customControllers.modulationMultiplier]);
+        // volenv volume offset
         modLfoCentibels = modLfoValue * modVolDepth;
+        // lowpass frequency
         lowpassCents += modLfoValue * modFilterDepth;
     }
 
     // channel vibrato (GS NRPN)
     if(channel.channelVibrato.depth > 0)
     {
+        // same as others
         const channelVibrato = getLFOValue(voice.startTime + channel.channelVibrato.delay, channel.channelVibrato.rate, currentTime);
         if(channelVibrato)
         {
@@ -122,6 +128,7 @@ export function renderVoice(
     const modEnvPitchDepth = voice.modulatedGenerators[generatorTypes.modEnvToPitch];
     const modEnvFilterDepth = voice.modulatedGenerators[generatorTypes.modEnvToFilterFc];
     const modEnv = getModEnvValue(voice, currentTime);
+    // apply values
     lowpassCents += modEnv * modEnvFilterDepth;
     cents += modEnv * modEnvPitchDepth;
 
@@ -152,6 +159,7 @@ export function renderVoice(
     voice.currentPan += (pan - voice.currentPan) * this.panSmoothingFactor; // smooth out pan to prevent clicking
     const panLeft = Math.cos(HALF_PI * voice.currentPan) * this.panLeft;
     const panRight = Math.sin(HALF_PI * voice.currentPan) *  this.panRight;
+    // disable reverb and chorus in one output mode
     const reverb = this.oneOutputMode ? 0 : voice.modulatedGenerators[generatorTypes.reverbEffectsSend];
     const chorus = this.oneOutputMode ? 0 : voice.modulatedGenerators[generatorTypes.chorusEffectsSend];
     panVoice(
