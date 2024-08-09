@@ -133,7 +133,17 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
         }
         for (let i = 0; i < 16; i++)
         {
-            if(!usedChannels.has(i))
+            // check if all channels are muted
+            let muted = true;
+            for (let j = i; j < snapshot.channelSnapshots.length; j += 16)
+            {
+                if(!snapshot.channelSnapshots[j].isMuted)
+                {
+                    muted = false;
+                    break;
+                }
+            }
+            if(!usedChannels.has(i) || muted)
             {
                 continue;
             }
