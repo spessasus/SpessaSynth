@@ -9,7 +9,7 @@ import {
     updateFftSize,
 } from './channel_analysers.js'
 import { connectSequencer, resetIndexes } from './connect_sequencer.js'
-import { renderWaveforms } from './render_waveforms.js'
+import { renderWaveforms, STABILIZE_WAVEFORMS_FFT_MULTIPLIER } from './render_waveforms.js'
 import { calculateNoteTimes } from './calculate_note_times.js'
 
 /**
@@ -82,8 +82,8 @@ class Renderer
         this.visualPitchBendOffset = 0;
 
         this.lineThickness = ANALYSER_STROKE;
-        this._normalAnalyserFft = CHANNEL_ANALYSER_FFT;
-        this._drumAnalyserFft = DRUMS_ANALYSER_FFT;
+        this._normalAnalyserFft = CHANNEL_ANALYSER_FFT * STABILIZE_WAVEFORMS_FFT_MULTIPLIER;
+        this._drumAnalyserFft = DRUMS_ANALYSER_FFT * STABILIZE_WAVEFORMS_FFT_MULTIPLIER;
         this.waveMultiplier = WAVE_MULTIPLIER;
 
         /**
@@ -100,7 +100,7 @@ class Renderer
         this.renderNotes = true;
         this.drawActiveNotes = true;
         this.showVisualPitch = true;
-        this.stabilizeWaveforms = true;
+        this._stabilizeWaveforms = true;
         /**
          * @type {boolean[]}
          */
@@ -132,6 +132,21 @@ class Renderer
         this.channelAnalysers = [];
         this.createChannelAnalysers(synth);
         this.connectChannelAnalysers(synth);
+    }
+
+    get stabilizeWaveforms()
+    {
+        return this._stabilizeWaveforms;
+    }
+
+    /**
+     *
+     * @param val {boolean}
+     */
+    set stabilizeWaveforms(val)
+    {
+        this._stabilizeWaveforms = val;
+        this.updateFftSize();
     }
 
     /**

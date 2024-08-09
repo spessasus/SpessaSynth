@@ -1,4 +1,4 @@
-const STABILIZE_WAVEFORMS_LENGTH_DIVIDER = 1.5;
+export const STABILIZE_WAVEFORMS_FFT_MULTIPLIER = 4;
 
 /**
  * @this {Renderer}
@@ -49,16 +49,16 @@ export function renderWaveforms()
         this.drawingContext.lineWidth = this.lineThickness;
         this.drawingContext.strokeStyle = this.channelColors[channelNumber];
         this.drawingContext.beginPath();
-        if(this.stabilizeWaveforms)
+        if(this._stabilizeWaveforms)
         {
-            let length = waveform.length / STABILIZE_WAVEFORMS_LENGTH_DIVIDER;
-            let triggerPoint = 0;
-            if(this.synth.channelProperties[channelNumber].isDrum)
-            {
-                length /= STABILIZE_WAVEFORMS_LENGTH_DIVIDER;
-            }
+            let length = waveform.length / STABILIZE_WAVEFORMS_FFT_MULTIPLIER;
+            const step = waveWidth / length;
+
             // Oscilloscope triggering
-            for (let i = 1; i < waveform.length; i++)
+            const halfLength = Math.floor(length / 2);
+            // start searchin from half the length
+            let triggerPoint = waveform.length - halfLength;
+            for (let i = triggerPoint; i >= 1; i--)
             {
                 if (waveform[i - 1] < 0 && waveform[i] >= 0)
                 {
@@ -66,10 +66,11 @@ export function renderWaveforms()
                     break;
                 }
             }
-            const step = waveWidth / length;
-
+            console.log(triggerPoint, waveform.length)
             let xPos = relativeX;
-            for (let i = triggerPoint; i < triggerPoint + length; i++)
+            const renderStart = triggerPoint - halfLength;
+            const renderEnd = triggerPoint + halfLength;
+            for (let i = renderStart; i < renderEnd; i++)
             {
                 this.drawingContext.lineTo(
                     xPos,

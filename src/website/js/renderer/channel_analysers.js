@@ -1,5 +1,6 @@
 import { SpessaSynthInfo } from '../../../spessasynth_lib/utils/loggin.js'
 import { consoleColors } from '../../../spessasynth_lib/utils/other.js'
+import { STABILIZE_WAVEFORMS_FFT_MULTIPLIER } from './render_waveforms.js'
 
 /**
  * @param synth {Synthetizer}
@@ -37,7 +38,10 @@ export function updateFftSize()
 {
     for (let i = 0; i < this.channelAnalysers.length; i++)
     {
-        this.channelAnalysers[i].fftSize = this.synth.channelProperties[i].isDrum ? this._drumAnalyserFft : this._normalAnalyserFft;
+        const drum = this.synth.channelProperties[i].isDrum;
+        const fft = drum ? this._drumAnalyserFft : this._normalAnalyserFft;
+        const mul = drum ? STABILIZE_WAVEFORMS_FFT_MULTIPLIER / 2 : STABILIZE_WAVEFORMS_FFT_MULTIPLIER
+        this.channelAnalysers[i].fftSize = Math.min(32768, this._stabilizeWaveforms ? fft * mul : fft);
     }
 }
 
@@ -50,22 +54,10 @@ export function connectChannelAnalysers(synth)
 {
     synth.connectIndividualOutputs(this.channelAnalysers);
 
+
     // connect for drum change
-    synth.eventHandler.addEvent("drumchange", "renderer-drum-change", e => {
-        if(e.channel > this.channelAnalysers.length)
-        {
-            return
-        }
-        // if this channel is now a drum channel, adjust the fft
-        const analyser = this.channelAnalysers[e.channel % this.channelAnalysers.length];
-        if (e.isDrumChannel)
-        {
-            analyser.fftSize = this._drumAnalyserFft;
-        }
-        else
-        {
-            analyser.fftSize = this._normalAnalyserFft;
-        }
+    synth.eventHandler.addEvent("drumchange", "renderer-drum-change", () => {
+        this.updateFftSize();
     });
 }
 
