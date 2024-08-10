@@ -66,7 +66,6 @@ export function renderWaveforms()
                     break;
                 }
             }
-            console.log(triggerPoint, waveform.length)
             let xPos = relativeX;
             const renderStart = triggerPoint - halfLength;
             const renderEnd = triggerPoint + halfLength;
