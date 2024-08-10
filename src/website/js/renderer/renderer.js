@@ -9,7 +9,7 @@ import {
     updateFftSize,
 } from './channel_analysers.js'
 import { connectSequencer, resetIndexes } from './connect_sequencer.js'
-import { renderWaveforms, STABILIZE_WAVEFORMS_FFT_MULTIPLIER } from './render_waveforms.js'
+import { renderWaveforms} from './render_waveforms.js'
 import { calculateNoteTimes } from './calculate_note_times.js'
 
 /**
@@ -82,8 +82,8 @@ class Renderer
         this.visualPitchBendOffset = 0;
 
         this.lineThickness = ANALYSER_STROKE;
-        this._normalAnalyserFft = CHANNEL_ANALYSER_FFT * STABILIZE_WAVEFORMS_FFT_MULTIPLIER;
-        this._drumAnalyserFft = DRUMS_ANALYSER_FFT * STABILIZE_WAVEFORMS_FFT_MULTIPLIER;
+        this._normalAnalyserFft = CHANNEL_ANALYSER_FFT;
+        this._drumAnalyserFft = DRUMS_ANALYSER_FFT;
         this.waveMultiplier = WAVE_MULTIPLIER;
 
         /**
