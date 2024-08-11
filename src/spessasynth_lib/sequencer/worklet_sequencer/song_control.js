@@ -68,7 +68,7 @@ export function loadNewSequence(parsedMidi)
         if(this.synth.overrideSoundfont)
         {
             // clean up the embedded soundfont
-            this.synth.clearSoundFont();
+            this.synth.clearSoundFont(true, true);
         }
         SpessaSynthGroupCollapsed("%cPreloading samples...", consoleColors.info);
         // smart preloading: load only samples used in the midi!

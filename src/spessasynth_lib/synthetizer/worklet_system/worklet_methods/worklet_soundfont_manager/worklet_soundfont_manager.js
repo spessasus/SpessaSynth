@@ -101,7 +101,7 @@ export class WorkletSoundfontManager
      */
     getPresetList()
     {
-        return this.presetList;
+        return this.presetList.slice();
     }
 
     /**
