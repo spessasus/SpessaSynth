@@ -4,7 +4,7 @@ import { Manager } from './manager/manager.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../spessasynth_lib/utils/loggin.js'
 import { isMobile } from './js/utils/is_mobile.js'
 import { getCheckSvg, getExclamationSvg, getHourglassSvg } from './js/utils/icons.js'
-import { showNotification } from './js/notification/notification.js'
+import { closeNotification, showNotification } from './js/notification/notification.js'
 import { ANIMATION_REFLOW_TIME } from './js/utils/animation_utils.js'
 import { LocaleManager } from './locale/locale_manager.js'
 
@@ -338,12 +338,12 @@ exportButton.style.display = "none";
 document.getElementById("sf_upload").style.display = "none";
 document.getElementById("file_upload").style.display = "none";
 
-async function playDemoSong()
+async function playDemoSong(fileName)
 {
     console.log(window.manager.localeManager.localeCode);
     titleMessage.textContent = window.manager.localeManager.getLocaleString("locale.synthInit.genericLoading");
-    const r = await fetch("demo_songs/Field of Hopes and Dreams.rmi");
-    r.name = "Field of Hopes and Dreams"
+    const r = await fetch("demo_songs/" + fileName);
+    r.name = fileName;
     await startMidi([r]);
 }
 
@@ -446,5 +446,49 @@ demoInit(initLocale).then(() => {
             }, 1000)
         }, ANIMATION_REFLOW_TIME);
     }
-    demoSongButton.onclick = playDemoSong;
+    demoSongButton.onclick = () => {
+        showNotification(
+            window.manager.localeManager.getLocaleString("locale.demoSongButton"),
+            [
+                {
+                    type: "button",
+                    textContent: window.manager.localeManager.getLocaleString("locale.credits"),
+                    onClick: () => {
+                        window.open("https://github.com/spessasus/SpessaSynth/blob/master/demo_songs/CREDITS.md");
+                    }
+                },
+                {
+                    type: "button",
+                    textContent: "Field Of Hopes and Dreams - Undertale",
+                    onClick:async n => {
+                        closeNotification(n.id);
+                        await playDemoSong("Field of Hopes and Dreams.rmi");
+                    }
+                },
+                {
+                    type: "button",
+                    textContent: "Hybrid Song/Funky Stars - Quazar of Sanxion",
+                    onClick: async n => {
+                        closeNotification(n.id);
+                        await playDemoSong("Hybrid song 2_20.rmi");
+                    }
+                },
+                {
+                    type: "button",
+                    textContent: "Unreeeal Superhero 3 - Kenet & Rez",
+                    onClick: async n => {
+                        closeNotification(n.id);
+                        await playDemoSong("Unreeeal superhero 3.rmi");
+                    }
+                }
+            ],
+            999999,
+            true,
+            undefined,
+            {
+                "display": "flex",
+                "flex-direction": "column"
+            }
+        )
+    };
 });

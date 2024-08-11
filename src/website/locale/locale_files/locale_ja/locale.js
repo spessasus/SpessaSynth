@@ -32,6 +32,7 @@ export const localeJapanese = {
     demoSoundfontUploadButton: "サウンドフォントをアップロード",
     demoGithubPage: "プロジェクトのページ",
     demoSongButton: "デモソング",
+    credits: "クリエイター",
 
     warnings: {
         noMidiSupport: "このブラウザはMIDI入力をサポートしていないため、この機能は利用できません。ChromeまたはFirefoxを使用することを検討してください。",

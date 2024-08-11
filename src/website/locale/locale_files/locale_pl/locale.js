@@ -36,6 +36,7 @@ export const localePolish = {
     demoSoundfontUploadButton: "Wgraj SoundFonta",
     demoGithubPage: "Strona projektu",
     demoSongButton: "Piosenka demo",
+    credits: "Twórcy",
 
     warnings: {
         outOfMemory: "Twojej przeglądarce skończyła się pamięć. Rozważ użycie Firefoxa albo plików SF3. (Zobacz błąd w konsoli)",
