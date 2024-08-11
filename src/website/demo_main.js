@@ -459,7 +459,7 @@ demoInit(initLocale).then(() => {
                 },
                 {
                     type: "button",
-                    textContent: "Field Of Hopes and Dreams - Undertale",
+                    textContent: "Field Of Hopes and Dreams - Deltarune",
                     onClick:async n => {
                         closeNotification(n.id);
                         await playDemoSong("Field of Hopes and Dreams.rmi");
