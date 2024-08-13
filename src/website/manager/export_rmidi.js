@@ -108,22 +108,11 @@ export async function _exportRMIDI()
                 }
             },
             {
-                type: "input",
-                translatePathTitle: path + "bankOffset",
-                attributes: {
-                    "type": "number",
-                    "min": "0",
-                    "max": "127",
-                    "value": "0",
-                }
-            },
-            {
                 type: "button",
                 textContent: this.localeManager.getLocaleString(path + "confirm"),
                 onClick: async n => {
                     const compressed = n.div.querySelector("input[compress-toggle='1']").checked;
                     const quality = parseInt(n.div.querySelector("input[type='range']").value) / 10;
-                    const bankOffset = parseInt(n.div.querySelector("input[type='number']").value);
                     const album = n.div.querySelector("input[name='album']").value;
                     const artist = n.div.querySelector("input[name='artist']").value;
                     const songTitle = n.div.querySelector("input[name='song_title']").value;
@@ -185,7 +174,7 @@ export async function _exportRMIDI()
                         fileBuffer = mid.RMIDInfo["IPIC"].buffer;
                     }
 
-                    const rmidBinary = writeRMIDI(newFont, mid, font, bankOffset, this.seqUI.encoding, {
+                    const rmidBinary = writeRMIDI(newFont, mid, font, 0, this.seqUI.encoding, {
                         name: songTitle,
                         comment: comment,
                         engineer: font.soundFontInfo["IENG"], // use soundfont egineer
