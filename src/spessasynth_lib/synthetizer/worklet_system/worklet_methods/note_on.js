@@ -1,5 +1,5 @@
 import { getWorkletVoices } from '../worklet_utilities/worklet_voice.js'
-import { generatorTypes } from '../../../soundfont/read/generators.js'
+import { generatorTypes } from '../../../soundfont/read_sf2/generators.js'
 import { computeModulators } from '../worklet_utilities/worklet_modulator.js'
 import { recalculateVolumeEnvelope } from '../worklet_utilities/volume_envelope.js'
 

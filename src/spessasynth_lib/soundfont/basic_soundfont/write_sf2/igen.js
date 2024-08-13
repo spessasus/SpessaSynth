@@ -1,10 +1,10 @@
-import { writeDword, writeWord } from '../../utils/byte_functions/little_endian.js'
-import { IndexedByteArray } from '../../utils/indexed_array.js'
-import { RiffChunk, writeRIFFChunk } from '../read/riff_chunk.js'
-import { generatorTypes } from '../read/generators.js'
+import { writeDword, writeWord } from '../../../utils/byte_functions/little_endian.js'
+import { IndexedByteArray } from '../../../utils/indexed_array.js'
+import { RiffChunk, writeRIFFChunk } from '../riff_chunk.js'
+import { generatorTypes } from '../../read_sf2/generators.js'
 
 /**
- * @this {SoundFont2}
+ * @this {BasicSoundFont}
  * @returns {IndexedByteArray}
  */
 export function getIGEN()

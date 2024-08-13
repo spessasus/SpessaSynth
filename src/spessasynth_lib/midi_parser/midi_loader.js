@@ -2,7 +2,7 @@ import { dataBytesAmount, getChannel, messageTypes, MidiMessage } from './midi_m
 import { IndexedByteArray } from '../utils/indexed_array.js'
 import { arrayToHexString, consoleColors, formatTitle } from '../utils/other.js'
 import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo } from '../utils/loggin.js'
-import { readRIFFChunk } from '../soundfont/read/riff_chunk.js'
+import { readRIFFChunk } from '../soundfont/basic_soundfont/riff_chunk.js'
 import { readVariableLengthQuantity } from '../utils/byte_functions/variable_length_quantity.js'
 import { readBytesAsUintBigEndian } from '../utils/byte_functions/big_endian.js'
 import { readBytesAsString } from '../utils/byte_functions/string.js'

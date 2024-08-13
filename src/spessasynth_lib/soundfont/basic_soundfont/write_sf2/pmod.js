@@ -1,9 +1,9 @@
-import { IndexedByteArray } from '../../utils/indexed_array.js'
-import { writeLittleEndian, writeWord } from '../../utils/byte_functions/little_endian.js'
-import { RiffChunk, writeRIFFChunk } from '../read/riff_chunk.js'
+import { IndexedByteArray } from '../../../utils/indexed_array.js'
+import { writeLittleEndian, writeWord } from '../../../utils/byte_functions/little_endian.js'
+import { RiffChunk, writeRIFFChunk } from '../riff_chunk.js'
 
 /**
- * @this {SoundFont2}
+ * @this {BasicSoundFont}
  * @returns {IndexedByteArray}
  */
 export function getPMOD()

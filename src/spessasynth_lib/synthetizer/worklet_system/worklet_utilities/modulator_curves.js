@@ -1,4 +1,4 @@
-import { modulatorCurveTypes } from '../../../soundfont/read/modulators.js'
+import { modulatorCurveTypes } from '../../../soundfont/read_sf2/modulators.js'
 
 /**
  * modulator_curves.js

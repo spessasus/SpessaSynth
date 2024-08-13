@@ -1,14 +1,15 @@
-import {RiffChunk} from "./riff_chunk.js";
+import {RiffChunk} from "../basic_soundfont/riff_chunk.js";
 import {InstrumentZone} from "./zones.js";
 import {readBytesAsUintLittleEndian} from "../../utils/byte_functions/little_endian.js";
 import { readBytesAsString } from '../../utils/byte_functions/string.js'
+import { BasicInstrument } from '../basic_soundfont/basic_instrument.js'
 
 /**
  * instrument.js
  * purpose: parses soundfont instrument and stores them as a class
  */
 
-export class Instrument
+export class Instrument extends BasicInstrument
 {
     /**
      * Creates an instrument
@@ -16,70 +17,10 @@ export class Instrument
      */
     constructor(instrumentChunk)
     {
+        super();
         this.instrumentName = readBytesAsString(instrumentChunk.chunkData, 20).trim();
         this.instrumentZoneIndex = readBytesAsUintLittleEndian(instrumentChunk.chunkData, 2);
         this.instrumentZonesAmount = 0;
-        /**
-         * @type {InstrumentZone[]}
-         */
-        this.instrumentZones = [];
-        this._useCount = 0;
-    }
-
-    addUseCount()
-    {
-        this._useCount++;
-        this.instrumentZones.forEach(z => z.useCount++);
-    }
-
-    removeUseCount()
-    {
-        this._useCount--;
-        for(let i = 0; i < this.instrumentZones.length; i++)
-        {
-            if(this.safeDeleteZone(i))
-            {
-                i--;
-            }
-        }
-    }
-
-    /**
-     * @returns {number}
-     */
-    get useCount()
-    {
-        return this._useCount;
-    }
-
-    deleteInstrument()
-    {
-        this.instrumentZones.forEach(z => z.deleteZone());
-        this.instrumentZones.length = 0;
-    }
-
-    /**
-     * @param index {number}
-     * @returns {boolean} is the zone has been deleted
-     */
-    safeDeleteZone(index)
-    {
-        this.instrumentZones[index].useCount--;
-        if(this.instrumentZones[index].useCount < 1)
-        {
-            this.deleteZone(index);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * @param index {number}
-     */
-    deleteZone(index)
-    {
-        this.instrumentZones[index].deleteZone();
-        this.instrumentZones.splice(index, 1);
     }
 
     /**

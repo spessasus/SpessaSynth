@@ -1,35 +1,45 @@
-import {RiffChunk} from "./riff_chunk.js";
-import {PresetZone} from "./zones.js";
-import {readBytesAsUintLittleEndian} from "../../utils/byte_functions/little_endian.js";
-import {LoadedSample} from "./samples.js";
-import { Generator, generatorTypes } from './generators.js'
-import { defaultModulators } from './modulators.js'
-import { readBytesAsString } from '../../utils/byte_functions/string.js'
-
 /**
- * parses soundfont presets, also includes function for getting the generators and samples from midi note and velocity
+ * @typedef {{
+ *  instrumentGenerators: Generator[],
+ *  presetGenerators: Generator[],
+ *  modulators: Modulator[],
+ *  sample: BasicSample,
+ *  sampleID: number,
+ * }} SampleAndGenerators
  */
+import { defaultModulators } from '../read_sf2/modulators.js'
+import { generatorTypes } from '../read_sf2/generators.js'
 
-export class Preset {
-    /**
-     * Creates a preset
-     * @param presetChunk {RiffChunk}
-     */
-    constructor(presetChunk)
+export class BasicPreset
+{
+    constructor()
     {
-        this.presetName = readBytesAsString(presetChunk.chunkData, 20)
-            .trim()
-            .replace(/\d{3}:\d{3}/, ""); // remove those pesky "000:001"
-
-        this.program = readBytesAsUintLittleEndian(presetChunk.chunkData, 2);
-        this.bank = readBytesAsUintLittleEndian(presetChunk.chunkData, 2);
-        this.presetZoneStartIndex = readBytesAsUintLittleEndian(presetChunk.chunkData, 2);
-        this.presetZonesAmount = 0;
         /**
-         * @type {PresetZone[]}
+         * The preset's name
+         * @type {string}
+         */
+        this.presetName = "";
+        /**
+         * The preset's MIDI program number
+         * @type {number}
+         */
+        this.program = 0;
+        /**
+         * The preset's MIDI bank number
+         * @type {number}
+         */
+        this.bank = 0;
+
+        /**
+         * The preset's zones
+         * @type {BasicPresetZone[]}
          */
         this.presetZones = [];
 
+        /**
+         * SampleID offset for this preset
+         * @type {number}
+         */
         this.sampleIDOffset = 0;
 
         /**
@@ -42,24 +52,21 @@ export class Preset {
             this.foundSamplesAndGenerators[i] = [];
         }
 
-        // read the dwords
-        this.library = readBytesAsUintLittleEndian(presetChunk.chunkData, 4);
-        this.genre = readBytesAsUintLittleEndian(presetChunk.chunkData, 4);
-        this.morphology = readBytesAsUintLittleEndian(presetChunk.chunkData, 4);
-    }
-
-    /**
-     * Loads all the preset zones, given the amount
-     * @param amount {number}
-     * @param zones {PresetZone[]}
-     */
-    getPresetZones(amount, zones)
-    {
-        this.presetZonesAmount = amount;
-        for (let i = this.presetZoneStartIndex; i < this.presetZonesAmount + this.presetZoneStartIndex; i++)
-        {
-            this.presetZones.push(zones[i]);
-        }
+        /**
+         * unused metadata
+         * @type {number}
+         */
+        this.library = 0;
+        /**
+         * unused metadata
+         * @type {number}
+         */
+        this.genre = 0;
+        /**
+         * unused metadata
+         * @type {number}
+         */
+        this.morphology = 0;
     }
 
     deletePreset()
@@ -110,16 +117,6 @@ export class Preset {
             }
         })
     }
-
-    /**
-     * @typedef {{
-     *  instrumentGenerators: Generator[],
-     *  presetGenerators: Generator[],
-     *  modulators: Modulator[],
-     *  sample: LoadedSample,
-     *  sampleID: number,
-     * }} SampleAndGenerators
-     */
 
     /**
      * Returns generatorTranslator and generators for given note
@@ -215,12 +212,12 @@ export class Preset {
                 .filter(currentZone =>
                     (
                         isInRange(currentZone.keyRange.min,
-                        currentZone.keyRange.max,
-                        midiNote)
-                    &&
-                    isInRange(currentZone.velRange.min,
-                        currentZone.velRange.max,
-                        velocity)
+                            currentZone.keyRange.max,
+                            midiNote)
+                        &&
+                        isInRange(currentZone.velRange.min,
+                            currentZone.velRange.max,
+                            velocity)
                     ) && !currentZone.isGlobal
                 );
 
@@ -278,34 +275,4 @@ export class Preset {
         this.foundSamplesAndGenerators[midiNote][velocity] = parsedGeneratorsAndSamples;
         return parsedGeneratorsAndSamples;
     }
-}
-
-/**
- * Reads the presets
- * @param presetChunk {RiffChunk}
- * @param presetZones {PresetZone[]}
- * @returns {Preset[]}
- */
-export function readPresets(presetChunk, presetZones)
-{
-    /**
-     * @type {Preset[]}
-     */
-    let presets = [];
-    while(presetChunk.chunkData.length > presetChunk.chunkData.currentIndex)
-    {
-        let preset = new Preset(presetChunk);
-        if(presets.length > 0)
-        {
-            let presetZonesAmount = preset.presetZoneStartIndex - presets[presets.length - 1].presetZoneStartIndex;
-            presets[presets.length - 1].getPresetZones(presetZonesAmount, presetZones);
-        }
-        presets.push(preset);
-    }
-    // remove EOP
-    if (presets.length > 1)
-    {
-        presets.pop();
-    }
-    return presets;
 }

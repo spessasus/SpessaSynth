@@ -1,4 +1,4 @@
-import { generatorTypes } from '../../../soundfont/read/generators.js'
+import { generatorTypes } from '../../../soundfont/read_sf2/generators.js'
 import { absCentsToHz, decibelAttenuationToGain, timecentsToSeconds } from '../worklet_utilities/unit_converter.js'
 import { getLFOValue } from '../worklet_utilities/lfo.js'
 import { customControllers } from '../worklet_utilities/worklet_processor_channel.js'

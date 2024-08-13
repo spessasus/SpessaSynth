@@ -63,7 +63,7 @@ export class Modulator{
 
         if(this.modulatorDestination > 58)
         {
-            this.modulatorDestination = -1; // flag as invalid (for linked ones)
+            this.modulatorDestination = generatorTypes.INVALID; // flag as invalid (for linked ones)
         }
 
         // decode the source

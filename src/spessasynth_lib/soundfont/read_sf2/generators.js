@@ -1,5 +1,5 @@
 import { IndexedByteArray } from '../../utils/indexed_array.js'
-import { RiffChunk } from './riff_chunk.js'
+import { RiffChunk } from '../basic_soundfont/riff_chunk.js'
 import { signedInt16 } from '../../utils/byte_functions/little_endian.js'
 
 /**
@@ -11,6 +11,7 @@ import { signedInt16 } from '../../utils/byte_functions/little_endian.js'
  * @enum {number}
  */
 export const generatorTypes = {
+    INVALID: -1,                        // invalid generator
     startAddrsOffset: 0,                // sample control - moves sample start point
     endAddrOffset: 1,                   // sample control - moves sample end point
     startloopAddrsOffset: 2,            // loop control - moves loop start point

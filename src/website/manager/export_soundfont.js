@@ -5,7 +5,7 @@ import {
     SpessaSynthGroupEnd,
 } from '../../spessasynth_lib/utils/loggin.js'
 import { consoleColors } from '../../spessasynth_lib/utils/other.js'
-import { trimSoundfont } from '../../spessasynth_lib/soundfont/write/soundfont_trimmer.js'
+import { trimSoundfont } from '../../spessasynth_lib/soundfont/basic_soundfont/write_sf2/soundfont_trimmer.js'
 import { closeNotification, showNotification } from '../js/notification/notification.js'
 
 /**

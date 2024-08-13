@@ -1,14 +1,14 @@
-import { consoleColors } from '../../utils/other.js'
+import { consoleColors } from '../../../utils/other.js'
 import {
     SpessaSynthGroup,
     SpessaSynthGroupCollapsed,
     SpessaSynthGroupEnd,
-    SpessaSynthInfo,
-} from '../../utils/loggin.js'
-import { getUsedProgramsAndKeys } from '../../midi_parser/used_keys_loaded.js'
+    SpessaSynthInfo
+} from '../../../utils/loggin.js'
+import { getUsedProgramsAndKeys } from '../../../midi_parser/used_keys_loaded.js'
 
 /**
- * @param soundfont {SoundFont2}
+ * @param soundfont {BasicSoundFont}
  * @param mid {MIDI}
  * @returns {Uint8Array}
  */

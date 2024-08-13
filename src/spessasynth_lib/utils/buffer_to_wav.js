@@ -8,7 +8,7 @@
 
 import { combineArrays, IndexedByteArray } from './indexed_array.js'
 import { getStringBytes } from './byte_functions/string.js'
-import { writeRIFFOddSize } from '../soundfont/read/riff_chunk.js'
+import { writeRIFFOddSize } from '../soundfont/basic_soundfont/riff_chunk.js'
 
 /**
  *

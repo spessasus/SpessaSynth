@@ -1,7 +1,7 @@
-import { combineArrays, IndexedByteArray } from '../../utils/indexed_array.js'
-import { RiffChunk, writeRIFFChunk } from '../read/riff_chunk.js'
-import { writeStringAsBytes } from '../../utils/byte_functions/string.js'
-import { consoleColors } from '../../utils/other.js'
+import { combineArrays, IndexedByteArray } from '../../../utils/indexed_array.js'
+import { RiffChunk, writeRIFFChunk } from '../riff_chunk.js'
+import { writeStringAsBytes } from '../../../utils/byte_functions/string.js'
+import { consoleColors } from '../../../utils/other.js'
 import { getIGEN } from './igen.js'
 import { getSDTA } from './sdta.js'
 import { getSHDR } from './shdr.js'
@@ -12,13 +12,12 @@ import { getPGEN } from './pgen.js'
 import { getPMOD } from './pmod.js'
 import { getPBAG } from './pbag.js'
 import { getPHDR } from './phdr.js'
-import { writeWord } from '../../utils/byte_functions/little_endian.js'
+import { writeWord } from '../../../utils/byte_functions/little_endian.js'
 import {
     SpessaSynthGroupCollapsed,
     SpessaSynthGroupEnd,
-    SpessaSynthInfo,
-} from '../../utils/loggin.js'
-
+    SpessaSynthInfo
+} from '../../../utils/loggin.js'
 /**
  * @typedef {Object} SoundFont2WriteOptions
  * @property {boolean} compress - if the soundfont should be compressed with the ogg vorbis codec
@@ -37,7 +36,7 @@ const DEFAULT_WRITE_OPTIONS = {
 
 /**
  * Write the soundfont as an .sf2 file. This method is DESTRUCTIVE
- * @this {SoundFont2}
+ * @this {BasicSoundFont}
  * @param {SoundFont2WriteOptions} options
  * @returns {Uint8Array}
  */

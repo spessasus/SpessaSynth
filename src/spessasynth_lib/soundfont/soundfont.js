@@ -1,36 +1,32 @@
 import { IndexedByteArray } from '../utils/indexed_array.js'
-import {readSamples} from "./read/samples.js";
+import {readSamples} from "./read_sf2/samples.js";
 import { readBytesAsUintLittleEndian } from '../utils/byte_functions/little_endian.js'
-import { readGenerators, Generator } from './read/generators.js'
-import {readInstrumentZones, InstrumentZone, readPresetZones} from "./read/zones.js";
-import {Preset, readPresets} from "./read/presets.js";
-import {readInstruments, Instrument} from "./read/instruments.js";
-import {readModulators, Modulator} from "./read/modulators.js";
-import { readRIFFChunk, RiffChunk } from './read/riff_chunk.js'
+import { readGenerators, Generator } from './read_sf2/generators.js'
+import {readInstrumentZones, InstrumentZone, readPresetZones} from "./read_sf2/zones.js";
+import { readPresets } from "./read_sf2/presets.js";
+import {readInstruments} from "./read_sf2/instruments.js";
+import {readModulators, Modulator} from "./read_sf2/modulators.js";
+import { readRIFFChunk, RiffChunk } from './basic_soundfont/riff_chunk.js'
 import { consoleColors } from '../utils/other.js'
-import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo, SpessaSynthWarn } from '../utils/loggin.js'
+import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo } from '../utils/loggin.js'
 import { readBytesAsString } from '../utils/byte_functions/string.js'
-import { write } from './write/write.js'
 import { stbvorbis } from "../externals/stbvorbis_sync/stbvorbis_sync.min.js";
+import { BasicSoundFont } from './basic_soundfont/basic_soundfont.js'
 
 /**
  * soundfont.js
  * purpose: parses a soundfont2 file
  */
 
-class SoundFont2
+export class SoundFont2 extends BasicSoundFont
 {
     /**
      * Initializes a new SoundFont2 Parser and parses the given data array
-     * @param arrayBuffer {ArrayBuffer|{presets: Preset[], info: Object<string, string>}}
+     * @param arrayBuffer {ArrayBuffer}
      */
-    constructor(arrayBuffer) {
-        if(arrayBuffer.presets)
-        {
-            this.presets = arrayBuffer.presets;
-            this.soundFontInfo = arrayBuffer.info;
-            return;
-        }
+    constructor(arrayBuffer)
+    {
+        super();
         this.dataArray = new IndexedByteArray(arrayBuffer);
         SpessaSynthGroup("%cParsing SoundFont...", consoleColors.info);
         if(!this.dataArray)
@@ -61,12 +57,8 @@ class SoundFont2
         this.verifyHeader(infoChunk, "list");
         readBytesAsString(infoChunk.chunkData, 4);
 
-        /**
-         * @type {Object<string, string>}
-         */
-        this.soundFontInfo = {};
-
-        while(infoChunk.chunkData.length > infoChunk.chunkData.currentIndex) {
+        while(infoChunk.chunkData.length > infoChunk.chunkData.currentIndex)
+        {
             let chunk = readRIFFChunk(infoChunk.chunkData);
             let text;
             // special case: ifil
@@ -178,7 +170,7 @@ class SoundFont2
          * (the current index points to start of the smpl read)
          */
         this.dataArray.currentIndex = this.sampleDataStartIndex;
-        this.samples = readSamples(presetSamplesChunk, sampleData, !isSF2Pack);
+        this.samples.push(...readSamples(presetSamplesChunk, sampleData, !isSF2Pack));
 
         /**
          * read all the instrument generators
@@ -201,11 +193,7 @@ class SoundFont2
             instrumentModulators,
             this.samples);
 
-        /**
-         * read all the instruments
-         * @type {Instrument[]}
-         */
-       this.instruments = readInstruments(presetInstrumentsChunk, instrumentZones);
+        this.instruments = readInstruments(presetInstrumentsChunk, instrumentZones);
 
         /**
          * read all the preset generators
@@ -220,11 +208,8 @@ class SoundFont2
         let presetModulators = readModulators(presetModulatorsChunk);
 
         let presetZones = readPresetZones(presetZonesChunk, presetGenerators, presetModulators, this.instruments);
-        /**
-         * Finally, read all the presets
-         * @type {Preset[]}
-         */
-        this.presets = readPresets(presetHeadersChunk, presetZones);
+
+        this.presets.push(...readPresets(presetHeadersChunk, presetZones));
         this.presets.sort((a, b) => (a.program - b.program) + (a.bank - b.bank));
         // preload the first preset
         SpessaSynthInfo(`%cParsing finished! %c"${this.soundFontInfo["INAM"]}"%c has %c${this.presets.length} %cpresets,
@@ -244,55 +229,6 @@ class SoundFont2
         {
             delete this.dataArray;
         }
-    }
-
-    removeUnusedElements()
-    {
-        this.instruments.forEach(i => {
-            if(i.useCount < 1)
-            {
-                i.instrumentZones.forEach(z => {if(!z.isGlobal) z.sample.useCount--});
-            }
-        })
-        this.instruments = this.instruments.filter(i => i.useCount > 0);
-        this.samples = this.samples.filter(s => s.useCount > 0);
-    }
-
-    /**
-     * @param instrument {Instrument}
-     */
-    deleteInstrument(instrument)
-    {
-        if(instrument.useCount > 0)
-        {
-            throw new Error(`Cannot delete an instrument that has ${instrument.useCount} usages.`);
-        }
-        this.instruments.splice(this.instruments.indexOf(instrument), 1);
-        instrument.deleteInstrument();
-        this.removeUnusedElements();
-    }
-
-    /**
-     * @param sample {LoadedSample}
-     */
-    deleteSample(sample)
-    {
-        if(sample.useCount > 0)
-        {
-            throw new Error(`Cannot delete sample that has ${sample.useCount} usages.`);
-        }
-        this.samples.splice(this.samples.indexOf(sample), 1);
-        this.removeUnusedElements();
-    }
-
-    /**
-     * @param preset {Preset}
-     */
-    deletePreset(preset)
-    {
-        preset.deletePreset();
-        this.presets.splice(this.presets.indexOf(preset), 1);
-        this.removeUnusedElements();
     }
 
     /**
@@ -320,107 +256,4 @@ class SoundFont2
             throw new SyntaxError(`Invalid soundFont! Expected "${expected.toLowerCase()}" got "${text.toLowerCase()}"`);
         }
     }
-
-    /**
-     * Get the appropriate preset, undefined if not foun d
-     * @param bankNr {number}
-     * @param presetNr {number}
-     * @return {Preset}
-     */
-    getPresetNoFallback(bankNr, presetNr)
-    {
-        return this.presets.find(p => p.bank === bankNr && p.program === presetNr);
-    }
-
-    /**
-     * To avoid overlapping on multiple desfonts
-     * @param offset {number}
-     */
-    setSampleIDOffset(offset)
-    {
-        this.presets.forEach(p => p.sampleIDOffset = offset);
-    }
-
-    /**
-     * Get the appropriate preset
-     * @param bankNr {number}
-     * @param presetNr {number}
-     * @returns {Preset}
-     */
-    getPreset(bankNr, presetNr)
-    {
-        let preset = this.presets.find(p => p.bank === bankNr && p.program === presetNr);
-        if (!preset)
-        {
-            preset = this.presets.find(p => p.program === presetNr && p.bank !== 128);
-            if(bankNr === 128)
-            {
-                preset = this.presets.find(p => p.bank === 128 && p.program === presetNr);
-                if(!preset)
-                {
-                    preset = this.presets.find(p => p.bank === 128);
-                }
-            }
-            if(preset)
-            {
-                SpessaSynthWarn(`%cPreset ${bankNr}.${presetNr} not found. Replaced with %c${preset.presetName} (${preset.bank}.${preset.program})`,
-                    consoleColors.warn,
-                    consoleColors.recognized);
-            }
-        }
-        if(!preset)
-        {
-            SpessaSynthWarn(`Preset ${presetNr} not found. Defaulting to`, this.presets[0].presetName);
-            preset = this.presets[0];
-        }
-        return preset;
-    }
-
-    /**
-     * gets preset by name
-     * @param presetName {string}
-     * @returns {Preset}
-     */
-    getPresetByName(presetName)
-    {
-        let preset = this.presets.find(p => p.presetName === presetName);
-        if(!preset)
-        {
-            SpessaSynthWarn("Preset not found. Defaulting to:", this.presets[0].presetName);
-            preset = this.presets[0];
-        }
-        return preset;
-    }
-
-
-    /**
-     * Merges soundfonts with the given order. Keep in mind that the info read is copied from the first one
-     * @param soundfonts {...SoundFont2} the soundfonts to merge, the first overwrites the last
-     * @returns {SoundFont2}
-     */
-    static mergeSoundfonts(...soundfonts)
-    {
-        const mainSf = soundfonts.shift();
-        /**
-         * @type {Preset[]}
-         */
-        const presets = mainSf.presets;
-        while(soundfonts.length)
-        {
-            const newPresets = soundfonts.shift().presets;
-            newPresets.forEach(newPreset => {
-                if(
-                    presets.find(existingPreset => existingPreset.bank === newPreset.bank && existingPreset.program === newPreset.program) === undefined
-                )
-                {
-                    presets.push(newPreset);
-                }
-            })
-        }
-
-        return new SoundFont2({presets: presets, info: mainSf.soundFontInfo});
-    }
 }
-SoundFont2.prototype.write = write;
-
-export { SoundFont2 }

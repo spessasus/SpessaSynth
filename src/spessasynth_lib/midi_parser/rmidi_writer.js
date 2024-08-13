@@ -1,6 +1,6 @@
 import { combineArrays, IndexedByteArray } from '../utils/indexed_array.js'
 import { writeMIDIFile } from './midi_writer.js'
-import { writeRIFFOddSize } from '../soundfont/read/riff_chunk.js'
+import { writeRIFFOddSize } from '../soundfont/basic_soundfont/riff_chunk.js'
 import { getStringBytes } from '../utils/byte_functions/string.js'
 import { messageTypes, midiControllers, MidiMessage } from './midi_message.js'
 import { DEFAULT_PERCUSSION } from '../synthetizer/synthetizer.js'

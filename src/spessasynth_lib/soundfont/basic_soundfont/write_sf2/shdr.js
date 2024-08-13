@@ -1,10 +1,10 @@
-import { IndexedByteArray } from '../../utils/indexed_array.js'
-import { writeStringAsBytes } from '../../utils/byte_functions/string.js'
-import { writeDword, writeWord } from '../../utils/byte_functions/little_endian.js'
-import { RiffChunk, writeRIFFChunk } from '../read/riff_chunk.js'
+import { IndexedByteArray } from '../../../utils/indexed_array.js'
+import { writeStringAsBytes } from '../../../utils/byte_functions/string.js'
+import { writeDword, writeWord } from '../../../utils/byte_functions/little_endian.js'
+import { RiffChunk, writeRIFFChunk } from '../riff_chunk.js'
 
 /**
- * @this {SoundFont2}
+ * @this {BasicSoundFont}
  * @param smplStartOffsets {number[]}
  * @param smplEndOffsets {number[]}
  * @returns {IndexedByteArray}

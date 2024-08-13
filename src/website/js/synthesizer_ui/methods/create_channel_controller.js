@@ -37,7 +37,7 @@ import {
 import {
     NON_CC_INDEX_OFFSET
 } from '../../../../spessasynth_lib/synthetizer/worklet_system/worklet_utilities/worklet_processor_channel.js'
-import { modulatorSources } from '../../../../spessasynth_lib/soundfont/read/modulators.js'
+import { modulatorSources } from '../../../../spessasynth_lib/soundfont/read_sf2/modulators.js'
 
 const ICON_SIZE = 32;
 

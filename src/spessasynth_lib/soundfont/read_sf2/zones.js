@@ -1,52 +1,30 @@
 import {readBytesAsUintLittleEndian} from "../../utils/byte_functions/little_endian.js";
 import {IndexedByteArray} from "../../utils/indexed_array.js";
-import {RiffChunk} from "./riff_chunk.js";
+import {RiffChunk} from "../basic_soundfont/riff_chunk.js";
 import {Generator, generatorTypes} from "./generators.js";
-import {LoadedSample} from "./samples.js";
 import {Instrument} from "./instruments.js";
 import {Modulator} from "./modulators.js";
+import { BasicInstrumentZone, BasicPresetZone } from '../basic_soundfont/basic_zones.js'
 
 /**
  * zones.js
  * purpose: reads instrumend and preset zones from soundfont and gets their respective samples and generators and modulators
  */
 
-export class InstrumentZone {
+export class InstrumentZone extends BasicInstrumentZone
+{
     /**
      * Creates a zone (instrument)
      * @param dataArray {IndexedByteArray}
-     * @param index {number}
      */
-    constructor(dataArray, index)
+    constructor(dataArray)
     {
+        super();
         this.generatorZoneStartIndex = readBytesAsUintLittleEndian(dataArray, 2);
         this.modulatorZoneStartIndex = readBytesAsUintLittleEndian(dataArray, 2);
         this.modulatorZoneSize = 0;
         this.generatorZoneSize = 0;
-        this.zoneID = index;
-        this.keyRange = {min: 0, max: 127};
-        this.velRange = {min: 0, max: 127}
         this.isGlobal = true;
-        this.useCount = 0;
-
-        /**
-         * @type {Generator[]}
-         */
-        this.generators = [];
-        /**
-         * @type {Modulator[]}
-         */
-        this.modulators = [];
-    }
-
-    deleteZone()
-    {
-        this.useCount--;
-        if(this.isGlobal)
-        {
-            return;
-        }
-        this.sample.useCount--;
     }
 
     setZoneSize(modulatorZoneSize, generatorZoneSize)
@@ -81,7 +59,7 @@ export class InstrumentZone {
 
     /**
      * Loads the zone's sample
-     * @param samples {LoadedSample[]}
+     * @param samples {BasicSample[]}
      */
     getSample(samples)
     {
@@ -126,7 +104,7 @@ export class InstrumentZone {
  * @param zonesChunk {RiffChunk}
  * @param instrumentGenerators {Generator[]}
  * @param instrumentModulators {Modulator[]}
- * @param instrumentSamples {LoadedSample[]}
+ * @param instrumentSamples {BasicSample[]}
  * @returns {InstrumentZone[]}
  */
 export function readInstrumentZones(zonesChunk, instrumentGenerators, instrumentModulators, instrumentSamples)
@@ -135,10 +113,9 @@ export function readInstrumentZones(zonesChunk, instrumentGenerators, instrument
      * @type {InstrumentZone[]}
      */
     let zones = [];
-    let index = 0;
     while(zonesChunk.chunkData.length > zonesChunk.chunkData.currentIndex)
     {
-        let zone = new InstrumentZone(zonesChunk.chunkData, index);
+        let zone = new InstrumentZone(zonesChunk.chunkData);
         if(zones.length > 0)
         {
             let modulatorZoneSize = zone.modulatorZoneStartIndex - zones[zones.length - 1].modulatorZoneStartIndex;
@@ -151,7 +128,6 @@ export function readInstrumentZones(zonesChunk, instrumentGenerators, instrument
             zones[zones.length - 1].getVelRange();
         }
         zones.push(zone);
-        index++;
     }
     if(zones.length > 1)
     {
@@ -161,46 +137,26 @@ export function readInstrumentZones(zonesChunk, instrumentGenerators, instrument
     return zones;
 }
 
-export class
-PresetZone
+export class PresetZone extends BasicPresetZone
 {
     /**
      * Creates a zone (preset)
      * @param dataArray {IndexedByteArray}
-     * @param index {number}
      */
-    constructor(dataArray, index) {
+    constructor(dataArray)
+    {
+        super();
         this.generatorZoneStartIndex = readBytesAsUintLittleEndian(dataArray, 2);
         this.modulatorZoneStartIndex = readBytesAsUintLittleEndian(dataArray, 2);
         this.modulatorZoneSize = 0;
         this.generatorZoneSize = 0;
-        this.zoneID = index;
-        this.keyRange = {min: 0, max: 127};
-        this.velRange = {min: 0, max: 127}
         this.isGlobal = true;
-        /**
-         * @type {Generator[]}
-         */
-        this.generators = [];
-        /**
-         * @type {Modulator[]}
-         */
-        this.modulators = [];
     }
 
     setZoneSize(modulatorZoneSize, generatorZoneSize)
     {
         this.modulatorZoneSize = modulatorZoneSize;
         this.generatorZoneSize = generatorZoneSize;
-    }
-
-    deleteZone()
-    {
-        if(this.isGlobal)
-        {
-            return;
-        }
-        this.instrument.removeUseCount();
     }
 
     /**
@@ -283,10 +239,9 @@ export function readPresetZones(zonesChunk, presetGenerators, presetModulators, 
      * @type {PresetZone[]}
      */
     let zones = [];
-    let index = 0;
     while(zonesChunk.chunkData.length > zonesChunk.chunkData.currentIndex)
     {
-        let zone = new PresetZone(zonesChunk.chunkData, index);
+        let zone = new PresetZone(zonesChunk.chunkData);
         if(zones.length > 0)
         {
             let modulatorZoneSize = zone.modulatorZoneStartIndex - zones[zones.length - 1].modulatorZoneStartIndex;
@@ -299,7 +254,6 @@ export function readPresetZones(zonesChunk, presetGenerators, presetModulators, 
             zones[zones.length - 1].getVelRange();
         }
         zones.push(zone);
-        index++;
     }
     if(zones.length > 1)
     {

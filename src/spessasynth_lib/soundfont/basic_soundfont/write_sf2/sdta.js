@@ -1,10 +1,10 @@
-import { RiffChunk, writeRIFFChunk } from '../read/riff_chunk.js'
-import { IndexedByteArray } from '../../utils/indexed_array.js'
-import { SpessaSynthInfo } from '../../utils/loggin.js'
-import { consoleColors } from '../../utils/other.js'
+import { RiffChunk, writeRIFFChunk } from '../riff_chunk.js'
+import { IndexedByteArray } from '../../../utils/indexed_array.js'
+import { SpessaSynthInfo } from '../../../utils/loggin.js'
+import { consoleColors } from '../../../utils/other.js'
 
 /**
- * @this {SoundFont2}
+ * @this {BasicSoundFont}
  * @param smplStartOffsets {number[]}
  * @param smplEndOffsets {number[]}
  * @param compress {boolean}

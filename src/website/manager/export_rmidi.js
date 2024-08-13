@@ -1,5 +1,5 @@
 import { SoundFont2 } from '../../spessasynth_lib/soundfont/soundfont.js'
-import { trimSoundfont } from '../../spessasynth_lib/soundfont/write/soundfont_trimmer.js'
+import { trimSoundfont } from '../../spessasynth_lib/soundfont/basic_soundfont/write_sf2/soundfont_trimmer.js'
 import { applySnapshotToMIDI } from '../../spessasynth_lib/midi_parser/midi_editor.js'
 import { closeNotification, showNotification } from '../js/notification/notification.js'
 import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd } from '../../spessasynth_lib/utils/loggin.js'

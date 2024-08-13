@@ -5,7 +5,7 @@ import {
     dataEntryStates,
     NON_CC_INDEX_OFFSET,
 } from '../worklet_utilities/worklet_processor_channel.js'
-import { modulatorSources } from '../../../soundfont/read/modulators.js'
+import { modulatorSources } from '../../../soundfont/read_sf2/modulators.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../../../utils/loggin.js'
 
 /**
