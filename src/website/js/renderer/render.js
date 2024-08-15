@@ -7,10 +7,12 @@ import { drawNotes } from './draw_notes.js'
  */
 export function render(auto = true)
 {
-    if (!this.renderBool)
-    {
-        if (auto)
-        {
+    if (!this.renderBool || !this.synth.voicesAmount && this.frameTimeStart && document.getElementById("midi_output_selector")?.value == -1) {
+        if (auto) {
+            if (this.renderAnalysers && !this.synth.highPerformanceMode) {
+                // draw the individual analysers
+                this.renderWaveforms();
+            }
             requestAnimationFrame(this.render.bind(this));
         }
         return;
