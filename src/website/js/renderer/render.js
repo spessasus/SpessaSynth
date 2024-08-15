@@ -8,7 +8,7 @@ import { drawNotes } from './draw_notes.js'
  */
 export function render(auto = true)
 {
-    if (!this.renderBool) {
+    if (!this.renderBool || !this.synth.voicesAmount) {
         if (auto) {
             requestAnimationFrame(this.render.bind(this));
         }
