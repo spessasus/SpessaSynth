@@ -1,6 +1,5 @@
 import { FONT_SIZE } from './renderer.js'
 import { drawNotes } from './draw_notes.js'
-
 /**
  * Renders a single frame
  * @this {Renderer}
@@ -8,23 +7,29 @@ import { drawNotes } from './draw_notes.js'
  */
 export function render(auto = true)
 {
-    if (!this.renderBool || !this.synth.voicesAmount) {
-        if (auto) {
+    if (!this.renderBool)
+    {
+        if (auto)
+        {
             requestAnimationFrame(this.render.bind(this));
         }
         return;
     }
 
-    if (auto) {
+    if (auto)
+    {
         this.drawingContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
-    if (this.renderAnalysers && !this.synth.highPerformanceMode) {
+    if (this.renderAnalysers && !this.synth.highPerformanceMode)
+    {
         // draw the individual analysers
         this.renderWaveforms();
     }
+    console.log("r")
 
-    if (this.renderNotes && this.noteTimes) {
+    if (this.renderNotes && this.noteTimes)
+    {
         /**
          * Compute positions
          * @type {NoteToRender[]}
@@ -55,7 +60,8 @@ export function render(auto = true)
     {
         this.onRender();
     }
-    if(auto) {
+    if(auto)
+    {
         requestAnimationFrame(this.render.bind(this));
     }
 }
