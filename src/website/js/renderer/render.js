@@ -7,11 +7,19 @@ import { drawNotes } from './draw_notes.js'
  */
 export function render(auto = true)
 {
-    if (!this.renderBool || !this.synth.voicesAmount && this.frameTimeStart && document.getElementById("midi_output_selector")?.value == -1) {
+    if (!this.renderBool || !this.synth.voicesAmount && !this.notesOnScreen && this.frameTimeStart &&
+        document.getElementById("midi_output_selector")?.value == -1) {
         if (auto) {
             if (this.renderAnalysers && !this.synth.highPerformanceMode) {
-                // draw the individual analysers
-                this.renderWaveforms();
+                // draw the individual analysers until they're clear, hopefully!
+                const endTime = Date.now() + 250; // 250 ms
+                const intervalId = setInterval(() => {
+                    if (Date.now() >= endTime) {
+                        clearInterval(intervalId);
+                    } else {
+                        this.renderWaveforms();
+                    }
+                });
             }
             requestAnimationFrame(this.render.bind(this));
         }
