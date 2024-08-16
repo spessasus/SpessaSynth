@@ -7,28 +7,33 @@ import { drawNotes } from './draw_notes.js'
  */
 export function render(auto = true)
 {
-    if (!this.renderBool || !this.synth.voicesAmount && !this.notesOnScreen && this.frameTimeStart &&
-        document.getElementById("midi_output_selector")?.value == -1) {
-        if (auto) {
-            if (this.renderAnalysers && !this.synth.highPerformanceMode) {
-                // draw the individual analysers until they're clear, hopefully!
-                const endTime = Date.now() + 250; // 250 ms
-                const intervalId = setInterval(() => {
-                    if (Date.now() >= endTime) {
-                        clearInterval(intervalId);
-                    } else {
-                        this.renderWaveforms();
-                    }
-                });
-            }
-            requestAnimationFrame(this.render.bind(this));
+    if (auto) {
+        // Initialize midiOutValue if it's undefined
+        if (this.midiOutValue === undefined) {
+            this.midiOutValue = document.getElementById("midi_output_selector")?.value;
         }
-        return;
-    }
-
-    if (auto)
-    {
-        this.drawingContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    
+        // Determine if we need to increment hasRendered
+        if (!this.notesOnScreen) {
+            if (this.midiOutValue === -1) {
+                this.hasRendered += 1;
+            } else if (!this.synth.voicesAmount) {
+                this.hasRendered += 1;
+            }
+        }
+        
+        // There's new data to render now, stop waiting
+        if (this.notesOnScreen || this.synth.voicesAmount) {
+            this.hasRendered = 0;
+        }
+    
+        // Now we either skip rendering the frame or not
+        if (!this.renderBool || this.hasRendered > 1) {
+            requestAnimationFrame(this.render.bind(this));
+            return;
+        } else {
+            this.drawingContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
     }
 
     if (this.renderAnalysers && !this.synth.highPerformanceMode)
