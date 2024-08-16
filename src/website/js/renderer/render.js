@@ -8,25 +8,27 @@ import { drawNotes } from './draw_notes.js'
 export function render(auto = true)
 {
     if (auto) {
-        // Initialize midiOutValue if it's undefined
-        if (this.midiOutValue === undefined) {
-            this.midiOutValue = document.getElementById("midi_output_selector")?.value;
-        }
-    
-        // Determine if we need to increment hasRendered
-        if (!this.notesOnScreen) {
-            if (this.midiOutValue === -1) {
-                this.hasRendered += 1;
-            } else if (!this.synth.voicesAmount) {
-                this.hasRendered += 1;
+        // Keep trying to initialize midiOutValue if it's null
+        if (this.midiOutElement == null || this.voiceMeterText == null) {
+            this.midiOutElement = document.getElementById('midi_output_selector');
+            this.voiceMeterText = document.querySelector('div.voice_meter.main_controller_element:not(.editable)');
+            if (this.midiOutElement != null && this.voiceMeterText != null) {
+                // Initialize variable needed for tracking state
+                this.hasRendered = 0;
             }
         }
-        
-        // There's new data to render now, stop waiting
-        if (this.notesOnScreen || this.synth.voicesAmount) {
-            this.hasRendered = 0;
+
+        // Determine if we need to increment hasRendered
+        if (this.midiOutElement?.value === "-1") {
+            // By far the most reliable way to get all actually sounding voices, unfortunately
+            const voices = parseInt(this.voiceMeterText.textContent.replace(/\D/g, ''), 10);
+            if (voices === 0 || (this.seq?.paused && voices === 0)) {
+                this.hasRendered++;
+            } else if (voices > 0) {
+                this.hasRendered = 0;
+            }
         }
-    
+
         // Now we either skip rendering the frame or not
         if (!this.renderBool || this.hasRendered > 1) {
             requestAnimationFrame(this.render.bind(this));
