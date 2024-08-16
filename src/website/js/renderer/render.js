@@ -8,7 +8,7 @@ import { drawNotes } from './draw_notes.js'
 export function render(auto = true)
 {
     if (auto) {
-        // Keep trying to initialize midiOutValue if it's null
+        // Keep trying to initialize copies of the needed document elements if null
         if (this.midiOutElement == null || this.voiceMeterText == null) {
             this.midiOutElement = document.getElementById('midi_output_selector');
             this.voiceMeterText = document.querySelector('div.voice_meter.main_controller_element:not(.editable)');
