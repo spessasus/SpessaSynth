@@ -22,10 +22,10 @@ export function render(auto = true)
         if (this.midiOutElement?.value === "-1") {
             // By far the most reliable way to get all actually sounding voices, unfortunately
             const voices = parseInt(this.voiceMeterText.textContent.replace(/\D/g, ''), 10);
-            if (voices === 0 || (this.seq?.paused && voices === 0)) {
-                this.hasRendered++;
-            } else if (voices > 0 || this.notesOnScreen > 0) {
+            if (voices > 0 || (!this.seq?.paused && this.notesOnScreen > 0)) {
                 this.hasRendered = 0;
+            } else if (voices === 0 || (this.seq?.paused && voices === 0)) {
+                this.hasRendered++;
             }
         }
 
