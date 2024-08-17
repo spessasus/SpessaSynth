@@ -1,5 +1,6 @@
 import { FONT_SIZE } from './renderer.js'
 import { drawNotes } from './draw_notes.js'
+
 /**
  * Renders a single frame
  * @this {Renderer}
@@ -7,6 +8,8 @@ import { drawNotes } from './draw_notes.js'
  */
 export function render(auto = true)
 {
+    let notesToDraw = this.renderNotes && this.noteTimes ? this.computeNotePositions(this.synth.highPerformanceMode) : [];
+
     if (auto) {
         // Keep trying to initialize copies of the needed document elements if null
         if (this.midiOutElement == null || this.voiceMeterText == null) {
@@ -22,7 +25,7 @@ export function render(auto = true)
         if (this.midiOutElement?.value === "-1") {
             // By far the most reliable way to get all actually sounding voices, unfortunately
             const voices = parseInt(this.voiceMeterText.textContent.replace(/\D/g, ''), 10);
-            if (voices > 0 || (!this.seq?.paused && this.notesOnScreen > 0)) {
+            if (voices > 0 || (!this.seq?.paused && notesToDraw.length !== 0)) {
                 this.hasRendered = 0;
             } else if (voices === 0 || (this.seq?.paused && voices === 0)) {
                 this.hasRendered++;
@@ -37,27 +40,16 @@ export function render(auto = true)
             this.drawingContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
         }
     }
-
-    if (this.renderAnalysers && !this.synth.highPerformanceMode)
-    {
+    
+    if (this.renderAnalysers && !this.synth.highPerformanceMode) {
         // draw the individual analysers
         this.renderWaveforms();
     }
-    console.log("r")
 
-    if (this.renderNotes && this.noteTimes)
+    // draw the notes from longest to shortest (non black midi mode)
+    if (notesToDraw.length !== 0 && !this.synth.highPerformanceMode)
     {
-        /**
-         * Compute positions
-         * @type {NoteToRender[]}
-         */
-        let notesToDraw = this.computeNotePositions(this.synth.highPerformanceMode);
-
-        // draw the notes from longest to shortest (non black midi mode)
-        if(!this.synth.highPerformanceMode)
-        {
-            drawNotes(notesToDraw, this.drawingContext, this.sideways);
-        }
+        drawNotes(notesToDraw, this.drawingContext, this.sideways);
     }
 
     // calculate fps
@@ -71,14 +63,13 @@ export function render(auto = true)
     this.drawingContext.font = `${FONT_SIZE}px Verdana`;
     this.drawingContext.fillStyle = "white";
     this.drawingContext.strokeStyle = "white";
-    this.drawingContext.fillText(`${this.notesOnScreen} notes`, this.canvas.width, FONT_SIZE + 5);
     this.drawingContext.fillText(Math.round(fps).toString() + " FPS", this.canvas.width, 5);
-    if(this.onRender)
+    this.drawingContext.fillText(`${this.notesOnScreen} notes`, this.canvas.width, FONT_SIZE + 5);
+    if (this.onRender)
     {
         this.onRender();
     }
-    if(auto)
-    {
+    if (auto) {
         requestAnimationFrame(this.render.bind(this));
     }
 }
