@@ -26,7 +26,6 @@ export function render(auto = true)
         // draw the individual analysers
         this.renderWaveforms();
     }
-    console.log("r")
 
     if (this.renderNotes && this.noteTimes)
     {
