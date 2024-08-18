@@ -1,19 +1,36 @@
 import { FONT_SIZE } from './renderer.js'
 import { drawNotes } from './draw_notes.js'
+
+let hasRenderedNoVoices = false;
 /**
  * Renders a single frame
  * @this {Renderer}
  * @param auto {boolean} if set to false, the renderer won't clear the screen or request an animation frame. Defaults to true.
+ * @param force {boolean} ignores nothing to do
  */
-export function render(auto = true)
+export function render(auto = true, force = false)
 {
-    if (!this.renderBool)
+    let nothingToDo = (this.seq === undefined || this?.seq?.paused === true) && this.synth.voicesAmount === 0 && !force;
+    if (!this.renderBool || nothingToDo)
     {
-        if (auto)
+        console.log(hasRenderedNoVoices)
+        if(hasRenderedNoVoices)
         {
-            requestAnimationFrame(this.render.bind(this));
+            // no frames shall be drawn. Redo!
+            if (auto)
+            {
+                requestAnimationFrame(this.render.bind(this));
+            }
+            return;
         }
-        return;
+        else
+        {
+            hasRenderedNoVoices = true;
+        }
+    }
+    else
+    {
+        hasRenderedNoVoices = false;
     }
 
     if (auto)

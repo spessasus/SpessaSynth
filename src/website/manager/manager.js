@@ -193,6 +193,7 @@ class Manager
                 }
 
             }
+            this.renderer.render(false, true);
         }
         checkResize();
         window.addEventListener("resize", checkResize.bind(this));
@@ -291,6 +292,7 @@ class Manager
                     break;
             }
         });
+        this.renderer.render(false, true);
     }
 
     /**
