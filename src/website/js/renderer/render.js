@@ -13,7 +13,6 @@ export function render(auto = true, force = false)
     let nothingToDo = (this.seq === undefined || this?.seq?.paused === true) && this.synth.voicesAmount === 0 && !force;
     if (!this.renderBool || nothingToDo)
     {
-        console.log(hasRenderedNoVoices)
         if(hasRenderedNoVoices)
         {
             // no frames shall be drawn. Redo!

@@ -115,11 +115,15 @@ export function computeNotePositions(renderImmediately=false)
                     }
                     else
                     {
+                        // sideways: swap x and y coords
                         finalY = noteY;
                         finalX = noteX;
                         finalWidth = noteWidth;
                         finalHeight = noteHeight;
                     }
+
+                    this.notesOnScreen++;
+                    // draw the notes
                     if(renderImmediately)
                     {
                         // draw the notes right away, we don't care about the order
@@ -211,7 +215,6 @@ export function computeNotePositions(renderImmediately=false)
                             })
                         }
                     }
-                    this.notesOnScreen++;
                 }
             }
 
