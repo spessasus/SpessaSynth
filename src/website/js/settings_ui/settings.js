@@ -218,7 +218,11 @@ class SpessaSynthSettings
     {
         if(this.musicMode.visible === false)
         {
-            await document.body.requestFullscreen();
+            try
+            {
+                await document.body.requestFullscreen();
+            }
+            catch (e) {}
             await new Promise(r => setTimeout(r,500));
         }
         this.musicMode.setVisibility(!this.musicMode.visible, document.getElementById("keyboard_canvas_wrapper"));
