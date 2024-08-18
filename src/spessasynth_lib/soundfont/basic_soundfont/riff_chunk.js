@@ -91,10 +91,17 @@ export function writeRIFFChunk(chunk, prepend = undefined)
 /**
  * @param header {string}
  * @param data {Uint8Array}
+ * @param addZeroByte {Boolean}
  * @returns {IndexedByteArray}
  */
-export function writeRIFFOddSize(header, data)
+export function writeRIFFOddSize(header, data, addZeroByte = false)
 {
+    if(addZeroByte)
+    {
+        const tempData = new Uint8Array(data.length + 1);
+        tempData.set(data, 0);
+        data = tempData;
+    }
     let finalSize = 8 + data.length;
     if(finalSize % 2 !== 0)
     {

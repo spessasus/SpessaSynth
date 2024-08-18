@@ -35,30 +35,30 @@ export function audioBufferToWav(audioBuffer, normalizeAudio = true, channelOffs
         const encoder = new TextEncoder();
         const infoChunks = [
             getStringBytes("INFO"),
-            writeRIFFOddSize("ICMT", encoder.encode("Created with SpessaSynth"))
+            writeRIFFOddSize("ICMT", encoder.encode("Created with SpessaSynth"), true)
         ];
         if(metadata.artist)
         {
             infoChunks.push(
-                writeRIFFOddSize("IART", encoder.encode(metadata.artist))
+                writeRIFFOddSize("IART", encoder.encode(metadata.artist), true)
             );
         }
         if(metadata.album)
         {
             infoChunks.push(
-                writeRIFFOddSize("IPRD", encoder.encode(metadata.album))
+                writeRIFFOddSize("IPRD", encoder.encode(metadata.album), true)
             );
         }
         if(metadata.genre)
         {
             infoChunks.push(
-                writeRIFFOddSize("IGNR", encoder.encode(metadata.genre))
+                writeRIFFOddSize("IGNR", encoder.encode(metadata.genre), true)
             );
         }
         if(metadata.title)
         {
             infoChunks.push(
-                writeRIFFOddSize("INAM", encoder.encode(metadata.title))
+                writeRIFFOddSize("INAM", encoder.encode(metadata.title), true)
             );
         }
         infoChunk = writeRIFFOddSize("LIST", combineArrays(infoChunks));

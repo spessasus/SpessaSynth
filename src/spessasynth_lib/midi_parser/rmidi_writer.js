@@ -340,21 +340,21 @@ export function writeRMIDI(soundfontBinary, mid, soundfont, bankOffset = 0, enco
     const encoder = new TextEncoder();
     // software
     infoContent.push(
-        writeRIFFOddSize(RMIDINFOChunks.software, encoder.encode("SpessaSynth"))
+        writeRIFFOddSize(RMIDINFOChunks.software, encoder.encode("SpessaSynth"), true)
     );
     // name
     if(metadata.name !== undefined)
     {
 
         infoContent.push(
-            writeRIFFOddSize(RMIDINFOChunks.name, encoder.encode(metadata.name))
+            writeRIFFOddSize(RMIDINFOChunks.name, encoder.encode(metadata.name), true)
         );
         encoding = FORCED_ENCODING;
     }
     else
     {
         infoContent.push(
-            writeRIFFOddSize(RMIDINFOChunks.name, mid.rawMidiName)
+            writeRIFFOddSize(RMIDINFOChunks.name, mid.rawMidiName, true)
         );
     }
     // creation date
@@ -362,7 +362,7 @@ export function writeRMIDI(soundfontBinary, mid, soundfont, bankOffset = 0, enco
     {
         encoding = FORCED_ENCODING;
         infoContent.push(
-            writeRIFFOddSize(RMIDINFOChunks.creationDate, encoder.encode(metadata.creationDate))
+            writeRIFFOddSize(RMIDINFOChunks.creationDate, encoder.encode(metadata.creationDate), true)
         );
     }
     else
@@ -376,7 +376,7 @@ export function writeRMIDI(soundfontBinary, mid, soundfont, bankOffset = 0, enco
         minute: "numeric"
     });
         infoContent.push(
-            writeRIFFOddSize(RMIDINFOChunks.creationDate, getStringBytes(today))
+            writeRIFFOddSize(RMIDINFOChunks.creationDate, getStringBytes(today), true)
         );
     }
     // comment
@@ -391,7 +391,7 @@ export function writeRMIDI(soundfontBinary, mid, soundfont, bankOffset = 0, enco
     if(metadata.engineer !== undefined)
     {
         infoContent.push(
-            writeRIFFOddSize(RMIDINFOChunks.engineer, encoder.encode(metadata.engineer))
+            writeRIFFOddSize(RMIDINFOChunks.engineer, encoder.encode(metadata.engineer), true)
         )
     }
     // album
@@ -399,7 +399,7 @@ export function writeRMIDI(soundfontBinary, mid, soundfont, bankOffset = 0, enco
     {
         encoding = FORCED_ENCODING;
         infoContent.push(
-            writeRIFFOddSize(RMIDINFOChunks.album, encoder.encode(metadata.album))
+            writeRIFFOddSize(RMIDINFOChunks.album, encoder.encode(metadata.album), true)
         );
     }
     // artist
@@ -407,7 +407,7 @@ export function writeRMIDI(soundfontBinary, mid, soundfont, bankOffset = 0, enco
     {
         encoding = FORCED_ENCODING;
         infoContent.push(
-            writeRIFFOddSize(RMIDINFOChunks.artist, encoder.encode(metadata.artist))
+            writeRIFFOddSize(RMIDINFOChunks.artist, encoder.encode(metadata.artist), true)
         );
     }
     // genre
@@ -415,7 +415,7 @@ export function writeRMIDI(soundfontBinary, mid, soundfont, bankOffset = 0, enco
     {
         encoding = FORCED_ENCODING;
         infoContent.push(
-            writeRIFFOddSize(RMIDINFOChunks.genre, encoder.encode(metadata.genre))
+            writeRIFFOddSize(RMIDINFOChunks.genre, encoder.encode(metadata.genre), true)
         );
     }
     // picture
@@ -430,7 +430,7 @@ export function writeRMIDI(soundfontBinary, mid, soundfont, bankOffset = 0, enco
     {
         encoding = FORCED_ENCODING;
         infoContent.push(
-            writeRIFFOddSize(RMIDINFOChunks.copyright, encoder.encode(metadata.copyright))
+            writeRIFFOddSize(RMIDINFOChunks.copyright, encoder.encode(metadata.copyright), true)
         );
     }
     else
