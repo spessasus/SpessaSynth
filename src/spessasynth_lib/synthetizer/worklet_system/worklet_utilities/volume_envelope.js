@@ -93,12 +93,12 @@ export function recalculateVolumeEnvelope(voice)
         // calculate the db attenuation at the time of release (not a constant because it can change (ex, volume set to 0, the sound should cut off)
         switch (env.state) {
             case 0:
-                env.releaseStartDb = 0;
+                env.releaseStartDb = DB_SILENCE;
                 break;
 
             case 1:
-                // FIXME: this does not work
-                // attack phase
+                // attack phase: get linear gain of the attack phase when release started
+                // and turn it into db as we're ramping the db up linearly (to make volume go down exponentially)
                 // attack is linear (in gain) so we need to do get db from that
                 let elapsed = 1 - ((env.attackEnd - voice.releaseStartTime) / env.attackDuration);
                 // calculate the gain that the attack would have

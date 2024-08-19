@@ -193,7 +193,6 @@ Local edition comes with easier soundfont management than the demo version.
 - Improve the performance of the worklet system
 - Potentially port the worklet system to Emscripten
 - Enhance the built-in chorus and reverb effects (suggestions welcome!)
-- Fix issues with release during attack
 
 ### Special Thanks
 - [FluidSynth](https://github.com/FluidSynth/fluidsynth) - for the source code that helped implement functionality and fixes
