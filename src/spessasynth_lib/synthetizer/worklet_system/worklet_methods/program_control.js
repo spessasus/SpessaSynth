@@ -196,7 +196,10 @@ export function clearSoundFont(sendPresets = true, clearOverride = true)
         {
             channelObject.cachedVoices.push([]);
         }
-        channelObject.lockPreset = false;
+        if(!clearOverride)
+        {
+            channelObject.lockPreset = false;
+        }
         this.programChange(i, channelObject.preset.program);
     }
     if(sendPresets)
