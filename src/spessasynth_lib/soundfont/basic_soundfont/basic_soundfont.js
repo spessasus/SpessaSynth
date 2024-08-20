@@ -93,12 +93,27 @@ class BasicSoundFont
     /**
      * Get the appropriate preset, undefined if not foun d
      * @param bankNr {number}
-     * @param presetNr {number}
+     * @param programNr {number}
+     * @param fallbackToProgram {boolean} if true, if no exact match is found, will use any bank with the given preset
      * @return {BasicPreset}
      */
-    getPresetNoFallback(bankNr, presetNr)
+    getPresetNoFallback(bankNr, programNr, fallbackToProgram = false)
     {
-        return this.presets.find(p => p.bank === bankNr && p.program === presetNr);
+        const p =  this.presets.find(p => p.bank === bankNr && p.program === programNr);
+        if(p)
+        {
+            return p;
+        }
+        if(fallbackToProgram === false)
+        {
+            return undefined;
+        }
+        if(bankNr === 128)
+        {
+            // any drum preset
+            return this.presets.find(p => p.bank === 128);
+        }
+        return this.presets.find(p => p.program === programNr);
     }
 
     /**
@@ -113,18 +128,18 @@ class BasicSoundFont
     /**
      * Get the appropriate preset
      * @param bankNr {number}
-     * @param presetNr {number}
+     * @param programNr {number}
      * @returns {BasicPreset}
      */
-    getPreset(bankNr, presetNr)
+    getPreset(bankNr, programNr)
     {
-        let preset = this.presets.find(p => p.bank === bankNr && p.program === presetNr);
+        let preset = this.presets.find(p => p.bank === bankNr && p.program === programNr);
         if (!preset)
         {
-            preset = this.presets.find(p => p.program === presetNr && p.bank !== 128);
+            preset = this.presets.find(p => p.program === programNr && p.bank !== 128);
             if(bankNr === 128)
             {
-                preset = this.presets.find(p => p.bank === 128 && p.program === presetNr);
+                preset = this.presets.find(p => p.bank === 128 && p.program === programNr);
                 if(!preset)
                 {
                     preset = this.presets.find(p => p.bank === 128);
@@ -132,14 +147,14 @@ class BasicSoundFont
             }
             if(preset)
             {
-                SpessaSynthWarn(`%cPreset ${bankNr}.${presetNr} not found. Replaced with %c${preset.presetName} (${preset.bank}.${preset.program})`,
+                SpessaSynthWarn(`%cPreset ${bankNr}.${programNr} not found. Replaced with %c${preset.presetName} (${preset.bank}.${preset.program})`,
                     consoleColors.warn,
                     consoleColors.recognized);
             }
         }
         if(!preset)
         {
-            SpessaSynthWarn(`Preset ${presetNr} not found. Defaulting to`, this.presets[0].presetName);
+            SpessaSynthWarn(`Preset ${programNr} not found. Defaulting to`, this.presets[0].presetName);
             preset = this.presets[0];
         }
         return preset;

@@ -31,19 +31,13 @@ export function programChange(channel, programNumber, userChange=false)
     // check if override
     if(this.overrideSoundfont)
     {
-        const bankWithOffset = bank === 128 ? 128 : Math.max(0, bank - this.soundfontBankOffset);
-        const p = this.overrideSoundfont.presets.find(p => p.program === programNumber && p.bank === bankWithOffset);
+        const bankWithOffset = bank === 128 ? 128 : bank - this.soundfontBankOffset;
+        const p = this.overrideSoundfont.getPresetNoFallback(bankWithOffset, programNumber);
         if(p)
         {
             sentBank = bank;
             preset = p;
             channelObject.presetUsesOverride = true;
-        }
-        else
-        if(this.soundfontBankOffset === 0)
-        {
-            preset = this.overrideSoundfont.getPreset(0, programNumber);
-            sentBank = preset.bank;
         }
         else
         {
@@ -71,23 +65,18 @@ export function programChange(channel, programNumber, userChange=false)
  * @this {SpessaSynthProcessor}
  * @param program {number}
  * @param bank {number}
- * @returns {Preset}
+ * @returns {BasicPreset}
  */
 export function getPreset(bank, program)
 {
     if(this.overrideSoundfont)
     {
         // if overriden soundfont
-        const bankWithOffset = bank === 128 ? 128 : Math.max(0, bank - this.soundfontBankOffset);
-        const preset = this.overrideSoundfont.presets.find(p => p.program === program && p.bank === bankWithOffset);
+        const bankWithOffset = bank === 128 ? 128 : bank - this.soundfontBankOffset;
+        const preset = this.overrideSoundfont.getPresetNoFallback(bankWithOffset, program);
         if(preset)
         {
             return preset;
-        }
-        else
-        if(this.soundfontBankOffset === 0)
-        {
-            return this.overrideSoundfont.getPreset(0, program);
         }
     }
     return this.soundfontManager.getPreset(bank, program);
@@ -97,7 +86,7 @@ export function getPreset(bank, program)
 
 /**
  * @param channel {number}
- * @param preset {Preset}
+ * @param preset {BasicPreset}
  * @this {SpessaSynthProcessor}
  */
 export function setPreset(channel, preset)

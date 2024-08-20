@@ -16,7 +16,7 @@ import { modulatorSources } from '../../../soundfont/read_sf2/modulators.js'
  * @property {number} NRPFine - the current fine value of the Non-Registered Parameter
  * @property {number} RPValue - the current value of the Registered Parameter
  *
- * @property {Preset} preset - the channel's preset
+ * @property {BasicPreset} preset - the channel's preset
  * @property {boolean} lockPreset - indicates whether the program on the channel is locked
  * @property {boolean} presetUsesOverride - indcates if the channel uses a preset from the override soundfont.
  *

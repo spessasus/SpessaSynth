@@ -174,7 +174,13 @@ export async function _exportRMIDI()
                         fileBuffer = mid.RMIDInfo["IPIC"].buffer;
                     }
 
-                    const rmidBinary = writeRMIDI(newFont, mid, font, 0, this.seqUI.encoding, {
+                    const rmidBinary = writeRMIDI(
+                        newFont,
+                        mid,
+                        font,
+                        0,
+                        this.seqUI.encoding,
+                        {
                         name: songTitle,
                         comment: comment,
                         engineer: font.soundFontInfo["IENG"], // use soundfont egineer

@@ -117,6 +117,15 @@ class MIDI{
                             this.midiName = readBytesAsString(this.rawMidiName, this.rawMidiName.length, undefined, false);
                             nameDetected = true;
                         }
+                        // these can be used interchangeably
+                        if(this.RMIDInfo['IALB'] && !this.RMIDInfo['IPRD'])
+                        {
+                            this.RMIDInfo['IPRD'] = this.RMIDInfo['IALB'];
+                        }
+                        if(this.RMIDInfo['PRD'] && !this.RMIDInfo['IALB'])
+                        {
+                            this.RMIDInfo['IALB'] = this.RMIDInfo['IPRD'];
+                        }
                         this.bankOffset = 1; // defaults to 1
                         if(this.RMIDInfo[RMIDINFOChunks.bankOffset])
                         {
