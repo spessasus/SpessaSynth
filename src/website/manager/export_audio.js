@@ -52,7 +52,7 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
      */
     const snapshot = await this.synth.getSynthesizerSnapshot();
 
-    const soundfont = parsedMid.embeddedSoundFont || this.soundFont;
+    const soundfont = this.soundFont;
     /**
      * Prepare synthesizer
      * @type {Synthetizer}
