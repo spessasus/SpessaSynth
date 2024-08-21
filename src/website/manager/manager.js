@@ -29,7 +29,7 @@ document.body.classList.add("load");
 * purpose: connects every element of spessasynth together
 */
 
-const ENABLE_DEBUG = true;
+const ENABLE_DEBUG = false;
 
 class Manager
 {
