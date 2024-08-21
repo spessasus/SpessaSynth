@@ -8,7 +8,7 @@ import { ANIMATION_REFLOW_TIME } from '../utils/animation_utils.js'
  * purpose: creates and manages the on-screen virtual keyboard
  */
 
-const GLOW_PX = 150;
+const GLOW_PX = 20;
 
 class MidiKeyboard
 {
