@@ -4,8 +4,8 @@ import { Renderer } from '../js/renderer/renderer.js'
 
 import { SequencerUI } from '../js/sequencer_ui/sequencer_ui.js'
 import { SynthetizerUI } from '../js/synthesizer_ui/synthetizer_ui.js'
-import { MIDIDeviceHandler } from '../../spessasynth_lib/midi_handler/midi_handler.js'
-import { WebMidiLinkHandler } from '../../spessasynth_lib/midi_handler/web_midi_link.js'
+import { MIDIDeviceHandler } from '../../spessasynth_lib/external_midi/midi_handler.js'
+import { WebMidiLinkHandler } from '../../spessasynth_lib/external_midi/web_midi_link.js'
 import { Sequencer } from '../../spessasynth_lib/sequencer/sequencer.js'
 import { SpessaSynthSettings } from '../js/settings_ui/settings.js'
 import { MusicModeUI } from '../js/music_mode_ui/music_mode_ui.js'
@@ -115,6 +115,10 @@ class Manager
 
         const DEBUG_PATH = "synthetizer/worklet_system/worklet_processor.js";
         const WORKLET_PATH = ENABLE_DEBUG ? DEBUG_PATH : WORKLET_URL_ABSOLUTE;
+        if(ENABLE_DEBUG)
+        {
+            console.warn("DEBUG ENABLED! DEBUGGING ENABLED!!");
+        }
 
         if(context.audioWorklet)
         {

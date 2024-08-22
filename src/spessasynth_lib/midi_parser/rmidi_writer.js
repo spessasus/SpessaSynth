@@ -47,8 +47,8 @@ const DEFAULT_COPYRIGHT = "Created using SpessaSynth";
 /**
  * Writes an RMIDI file
  * @param soundfontBinary {Uint8Array}
- * @param mid {MIDI}
- * @param soundfont {SoundFont2}
+ * @param mid {BasicMIDI}
+ * @param soundfont {BasicSoundFont}
  * @param bankOffset {number} the bank offset for RMIDI
  * @param encoding {string} the encoding of the RMIDI info chunk
  * @param metadata {RMIDMetadata} the metadata of the file. Optional. If provided, the encoding is forced to utf-8/

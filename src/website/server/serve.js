@@ -36,13 +36,24 @@ export async function serveSfont(path, res)
 }
 
 /**
+ * @param name {string}
+ * @returns {boolean}
+ */
+function isSoundFont(name)
+{
+    const fName = name.toLowerCase()
+    return fName.slice(-3) === 'sf2' ||
+        fName.slice(-3) === 'sf3' ||
+        fName.slice(-5) === 'sfogg' ||
+        fName.slice(-3) === 'dls'
+}
+
+/**
  * @param res {ServerResponse}
  */
 export function serveSfontList(res)
 {
-    const fileNames = fs.readdirSync(soundfontsPath).filter(fName => {
-        return fName.slice(-3).toLowerCase() === 'sf2' || fName.slice(-3).toLowerCase() === 'sf3' || fName.slice(-5).toLowerCase() === 'sfogg';
-    });
+    const fileNames = fs.readdirSync(soundfontsPath).filter(fName => isSoundFont(fName));
 
     const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
     if (config['lastUsedSf2'])
@@ -84,7 +95,12 @@ export function serveSettings(res)
 export function serveStaticFile(res, filePath, mimeType=undefined)
 {
     filePath = decodeURIComponent(filePath);
-    if(filePath.toLowerCase().endsWith(".sf3") || filePath.toLowerCase().endsWith(".sf2") || filePath.toLowerCase().endsWith(".sfogg"))
+    if(
+        filePath.toLowerCase().endsWith(".sf3") ||
+        filePath.toLowerCase().endsWith(".sf2") ||
+        filePath.toLowerCase().endsWith(".sfogg") ||
+        filePath.toLowerCase().endsWith(".dls")
+    )
     {
         filePath = path.join(path.dirname(filePath), "../soundfonts", path.basename(filePath));
         serveSfont(filePath, res).then();

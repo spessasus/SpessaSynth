@@ -4,7 +4,7 @@ import { writeBytesAsUintBigEndian } from '../utils/byte_functions/big_endian.js
 
 /**
  * Exports the midi as a .mid file
- * @param midi {MIDI}
+ * @param midi {BasicMIDI}
  * @returns {Uint8Array} the binary .mid file data
  */
 export function writeMIDIFile(midi)

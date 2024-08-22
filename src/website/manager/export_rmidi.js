@@ -1,4 +1,3 @@
-import { SoundFont2 } from '../../spessasynth_lib/soundfont/soundfont.js'
 import { trimSoundfont } from '../../spessasynth_lib/soundfont/basic_soundfont/write_sf2/soundfont_trimmer.js'
 import { applySnapshotToMIDI } from '../../spessasynth_lib/midi_parser/midi_editor.js'
 import { closeNotification, showNotification } from '../js/notification/notification.js'
@@ -6,6 +5,7 @@ import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd } from '../../spessasynt
 import { consoleColors } from '../../spessasynth_lib/utils/other.js'
 import { writeRMIDI } from '../../spessasynth_lib/midi_parser/rmidi_writer.js'
 import { ANIMATION_REFLOW_TIME } from '../js/utils/animation_utils.js'
+import { loadSoundFont } from '../../spessasynth_lib/soundfont/load_soundfont.js'
 
 /**
  * @this {Manager}
@@ -144,7 +144,7 @@ export async function _exportRMIDI()
                     await new Promise(r => setTimeout(r, 500));
                     const message = notification.div.getElementsByClassName("export_rmidi_message")[0];
                     const mid = await this.seq.getMIDI();
-                    const font = new SoundFont2(mid.embeddedSoundFont || this.soundFont);
+                    const font = loadSoundFont(mid.embeddedSoundFont || this.soundFont);
 
                     message.textContent = this.localeManager.getLocaleString(localePath + "modifyingMIDI");
                     await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));

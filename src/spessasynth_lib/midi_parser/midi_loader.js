@@ -6,56 +6,31 @@ import { readRIFFChunk } from '../soundfont/basic_soundfont/riff_chunk.js'
 import { readVariableLengthQuantity } from '../utils/byte_functions/variable_length_quantity.js'
 import { readBytesAsUintBigEndian } from '../utils/byte_functions/big_endian.js'
 import { readBytesAsString } from '../utils/byte_functions/string.js'
-import { readBytesAsUintLittleEndian } from '../utils/byte_functions/little_endian.js'
+import { readLittleEndian } from '../utils/byte_functions/little_endian.js'
 import { RMIDINFOChunks } from './rmidi_writer.js'
+import { BasicMIDI } from './basic_midi.js'
 
 /**
  * midi_loader.js
  * purpose: parses a midi file for the seqyencer, including things like marker or CC 2/4 loop detection, copyright detection etc.
  */
-class MIDI{
+class MIDI extends BasicMIDI
+{
     /**
      * Parses a given midi file
      * @param arrayBuffer {ArrayBuffer}
      * @param fileName {string} optional, replaces the decoded title if empty
      */
-    constructor(arrayBuffer, fileName="") {
+    constructor(arrayBuffer, fileName="")
+    {
+        super();
         SpessaSynthGroupCollapsed(`%cParsing MIDI File...`, consoleColors.info);
         const binaryData = new IndexedByteArray(arrayBuffer);
         let fileByteArray;
 
         // check for rmid
-        /**
-         * If the RMI file has an embedded sf2 in it, it will appeear here, otherwise undefined
-         * @type {ArrayBuffer}
-         */
-        this.embeddedSoundFont = undefined;
-
-        /**
-         * The RMID Info data if RMID, otherwise undefined
-         * @type {Object<string, IndexedByteArray>}
-         */
-        this.RMIDInfo = undefined;
-        /**
-         * The bank offset for RMIDI
-         * @type {number}
-         */
-        this.bankOffset = 0;
-
-        /**
-         * Contains the copyright strings
-         * @type {string}
-         */
-        this.copyright = "";
         let copyrightDetected = false;
 
-        /**
-         * The MIDI name
-         * @type {string}
-         */
-        this.midiName = "";
-
-        this.rawMidiName = new Uint8Array(0);
         let nameDetected = false;
 
         const initialString = readBytesAsString(binaryData, 4);
@@ -129,7 +104,7 @@ class MIDI{
                         this.bankOffset = 1; // defaults to 1
                         if(this.RMIDInfo[RMIDINFOChunks.bankOffset])
                         {
-                            this.bankOffset = readBytesAsUintLittleEndian(this.RMIDInfo[RMIDINFOChunks.bankOffset], 2);
+                            this.bankOffset = readLittleEndian(this.RMIDInfo[RMIDINFOChunks.bankOffset], 2);
                         }
                     }
                 }
@@ -563,26 +538,6 @@ class MIDI{
         chunk.data.set(dataSlice, 0);
         fileByteArray.currentIndex += chunk.size;
         return chunk;
-    }
-
-
-    /**
-     * Coverts ticks to time in seconds
-     * @param ticks {number}
-     * @returns {number}
-     * @private
-     */
-    _ticksToSeconds(ticks)
-    {
-        if (ticks <= 0) {
-            return 0;
-        }
-
-        // find the last tempo change that has occured
-        let tempo = this.tempoChanges.find(v => v.ticks < ticks);
-
-        let timeSinceLastTempo = ticks - tempo.ticks;
-        return this._ticksToSeconds(ticks - timeSinceLastTempo) + (timeSinceLastTempo * 60) / (tempo.tempo * this.timeDivision);
     }
 }
 export { MIDI }

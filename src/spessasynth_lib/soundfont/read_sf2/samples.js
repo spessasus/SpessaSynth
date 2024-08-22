@@ -1,6 +1,6 @@
 import { RiffChunk } from '../basic_soundfont/riff_chunk.js'
 import { IndexedByteArray } from '../../utils/indexed_array.js'
-import { readBytesAsUintLittleEndian, signedInt8 } from '../../utils/byte_functions/little_endian.js'
+import { readLittleEndian, signedInt8 } from '../../utils/byte_functions/little_endian.js'
 import { stbvorbis } from '../../externals/stbvorbis_sync/stbvorbis_sync.min.js'
 import { SpessaSynthWarn } from '../../utils/loggin.js'
 import { readBytesAsString } from '../../utils/byte_functions/string.js'
@@ -239,19 +239,19 @@ function readSample(index, sampleHeaderData, smplArrayData, isDataRaw) {
     let sampleName = readBytesAsString(sampleHeaderData, 20);
 
     // read the sample start index
-    let sampleStartIndex = readBytesAsUintLittleEndian(sampleHeaderData, 4) * 2;
+    let sampleStartIndex = readLittleEndian(sampleHeaderData, 4) * 2;
 
     // read the sample end index
-    let sampleEndIndex = readBytesAsUintLittleEndian(sampleHeaderData, 4) * 2;
+    let sampleEndIndex = readLittleEndian(sampleHeaderData, 4) * 2;
 
     // read the sample looping start index
-    let sampleLoopStartIndex = readBytesAsUintLittleEndian(sampleHeaderData, 4) * 2;
+    let sampleLoopStartIndex = readLittleEndian(sampleHeaderData, 4) * 2;
 
     // read the sample looping end index
-    let sampleLoopEndIndex = readBytesAsUintLittleEndian(sampleHeaderData, 4) * 2;
+    let sampleLoopEndIndex = readLittleEndian(sampleHeaderData, 4) * 2;
 
     // read the sample rate
-    let sampleRate = readBytesAsUintLittleEndian(sampleHeaderData, 4);
+    let sampleRate = readLittleEndian(sampleHeaderData, 4);
 
     // read the original sample pitch
     let samplePitch = sampleHeaderData[sampleHeaderData.currentIndex++];
@@ -266,8 +266,8 @@ function readSample(index, sampleHeaderData, smplArrayData, isDataRaw) {
 
 
     // read the link to the other channel
-    let sampleLink = readBytesAsUintLittleEndian(sampleHeaderData, 2);
-    let sampleType = readBytesAsUintLittleEndian(sampleHeaderData, 2);
+    let sampleLink = readLittleEndian(sampleHeaderData, 2);
+    let sampleType = readLittleEndian(sampleHeaderData, 2);
 
 
 

@@ -1,4 +1,4 @@
-import {signedInt16, readBytesAsUintLittleEndian} from "../../utils/byte_functions/little_endian.js";
+import {signedInt16, readLittleEndian} from "../../utils/byte_functions/little_endian.js";
 import { IndexedByteArray } from '../../utils/indexed_array.js';
 import { generatorTypes } from './generators.js'
 import { midiControllers } from '../../midi_parser/midi_message.js'
@@ -54,11 +54,11 @@ export class Modulator{
         }
         else
         {
-            this.modulatorSource = readBytesAsUintLittleEndian(dataArray, 2);
-            this.modulatorDestination = readBytesAsUintLittleEndian(dataArray, 2);
+            this.modulatorSource = readLittleEndian(dataArray, 2);
+            this.modulatorDestination = readLittleEndian(dataArray, 2);
             this.transformAmount = signedInt16(dataArray[dataArray.currentIndex++], dataArray[dataArray.currentIndex++]);
-            this.modulationSecondarySrc = readBytesAsUintLittleEndian(dataArray, 2);
-            this.transformType = readBytesAsUintLittleEndian(dataArray, 2);
+            this.modulationSecondarySrc = readLittleEndian(dataArray, 2);
+            this.transformType = readLittleEndian(dataArray, 2);
         }
 
         if(this.modulatorDestination > 58)

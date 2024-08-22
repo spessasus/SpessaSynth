@@ -4,7 +4,7 @@ import { DEFAULT_PERCUSSION } from '../synthetizer/synthetizer.js'
 import { messageTypes, midiControllers } from './midi_message.js'
 
 /**
- * @param mid {MIDI}
+ * @param mid {BasicMIDI}
  * @param soundfont {{getPreset: function(number, number): BasicPreset}}
  * @returns {Object<string, Set<string>>}
  */

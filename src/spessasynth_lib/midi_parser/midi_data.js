@@ -5,7 +5,7 @@
 export class MidiData
 {
     /**
-     * @param midi {MIDI}
+     * @param midi {BasicMIDI}
      */
     constructor(midi)
     {

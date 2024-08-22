@@ -4,7 +4,7 @@
  * @param bytesAmount {number}
  * @returns {number}
  */
-export function readBytesAsUintLittleEndian(dataArray, bytesAmount){
+export function readLittleEndian(dataArray, bytesAmount){
     let out = 0;
     for(let i = 0; i < bytesAmount; i++)
     {

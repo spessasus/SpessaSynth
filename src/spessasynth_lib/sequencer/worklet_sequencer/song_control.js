@@ -35,7 +35,7 @@ export function assignMIDIPort(trackNum, port)
 
 /**
  * Loads a new sequence
- * @param parsedMidi {MIDI}
+ * @param parsedMidi {BasicMIDI}
  * @this {WorkletSequencer}
  */
 export function loadNewSequence(parsedMidi)
@@ -49,7 +49,7 @@ export function loadNewSequence(parsedMidi)
     this.oneTickToSeconds = 60 / (120 * parsedMidi.timeDivision)
 
     /**
-     * @type {MIDI}
+     * @type {BasicMIDI}
      */
     this.midiData = parsedMidi;
 
@@ -135,7 +135,7 @@ export function loadNewSongList(midiBuffers)
 {
     /**
      * parse the MIDIs (only the array buffers, MIDI is unchanged)
-     * @type {MIDI[]}
+     * @type {BasicMIDI[]}
      */
     this.songs = midiBuffers.reduce((mids, b) => {
         if(b.duration)

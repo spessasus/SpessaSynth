@@ -1,5 +1,4 @@
 import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE, VOICE_CAP } from '../synthetizer.js'
-import { SoundFont2 } from '../../soundfont/soundfont.js'
 import { WorkletSequencer } from '../../sequencer/worklet_sequencer/worklet_sequencer.js'
 import { SpessaSynthInfo } from '../../utils/loggin.js'
 import { consoleColors } from '../../utils/other.js'
@@ -134,7 +133,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
 
         /**
          * Overrides the main soundfont (embedded for example
-         * @type {SoundFont2}
+         * @type {BasicSoundFont}
          */
         this.overrideSoundfont = undefined;
 

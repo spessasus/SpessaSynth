@@ -1,11 +1,11 @@
-import { SoundFont2 } from '../../../../soundfont/soundfont.js'
 import { SpessaSynthWarn } from '../../../../utils/loggin.js'
 import { WorkletSoundfontManagerMessageType } from './sfman_message.js'
+import { loadSoundFont } from '../../../../soundfont/load_soundfont.js'
 
 /**
  * @typedef {Object} SoundFontType
  * @property {string} id - unique id for the soundfont
- * @property {SoundFont2} soundfont - the soundfont itself
+ * @property {BasicSoundFont} soundfont - the soundfont itself
  * @property {number} bankOffset - the soundfont's bank offset
  */
 
@@ -110,7 +110,7 @@ export class WorkletSoundfontManager
      */
     reloadManager(soundFontArrayBuffer)
     {
-        const font =  new SoundFont2(soundFontArrayBuffer);
+        const font =  loadSoundFont(soundFontArrayBuffer);
         /**
          * All the soundfonts, ordered from the most important to the least.
          * @type {SoundFontType[]}
@@ -159,7 +159,7 @@ export class WorkletSoundfontManager
         }
         this.soundfontList.push({
             id: id,
-            soundfont: new SoundFont2(buffer),
+            soundfont: loadSoundFont(buffer),
             bankOffset: bankOffset
         });
         this.generatePresetList();
@@ -182,7 +182,7 @@ export class WorkletSoundfontManager
      * Gets a given preset from the soundfont stack
      * @param bankNumber {number}
      * @param programNumber {number}
-     * @returns {Preset} the preset
+     * @returns {BasicPreset} the preset
      */
     getPreset(bankNumber, programNumber)
     {

@@ -71,7 +71,7 @@ class WorkletSequencer
 
         /**
          * the current track data
-         * @type {MIDI}
+         * @type {BasicMIDI}
          */
         this.midiData = undefined;
 

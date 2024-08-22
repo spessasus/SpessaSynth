@@ -1,6 +1,6 @@
 import { IndexedByteArray } from '../utils/indexed_array.js'
 import {readSamples} from "./read_sf2/samples.js";
-import { readBytesAsUintLittleEndian } from '../utils/byte_functions/little_endian.js'
+import { readLittleEndian } from '../utils/byte_functions/little_endian.js'
 import { readGenerators, Generator } from './read_sf2/generators.js'
 import {readInstrumentZones, InstrumentZone, readPresetZones} from "./read_sf2/zones.js";
 import { readPresets } from "./read_sf2/presets.js";
@@ -23,10 +23,15 @@ export class SoundFont2 extends BasicSoundFont
     /**
      * Initializes a new SoundFont2 Parser and parses the given data array
      * @param arrayBuffer {ArrayBuffer}
+     * @param warnDeprecated {boolean}
      */
-    constructor(arrayBuffer)
+    constructor(arrayBuffer, warnDeprecated = true)
     {
         super();
+        if(warnDeprecated)
+        {
+            console.warn("Using the constructor directly is deprecated. Use loadSoundFont instead.");
+        }
         this.dataArray = new IndexedByteArray(arrayBuffer);
         SpessaSynthGroup("%cParsing SoundFont...", consoleColors.info);
         if(!this.dataArray)
@@ -66,7 +71,7 @@ export class SoundFont2 extends BasicSoundFont
             {
                 case  "ifil":
                 case "iver":
-                    text = `${readBytesAsUintLittleEndian(chunk.chunkData, 2)}.${readBytesAsUintLittleEndian(chunk.chunkData, 2)}`;
+                    text = `${readLittleEndian(chunk.chunkData, 2)}.${readLittleEndian(chunk.chunkData, 2)}`;
                     break;
 
                 case "icmt":

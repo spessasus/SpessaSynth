@@ -9,7 +9,7 @@ import { getUsedProgramsAndKeys } from '../../../midi_parser/used_keys_loaded.js
 
 /**
  * @param soundfont {BasicSoundFont}
- * @param mid {MIDI}
+ * @param mid {BasicMIDI}
  * @returns {Uint8Array}
  */
 export function trimSoundfont(soundfont, mid)

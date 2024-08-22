@@ -1,5 +1,4 @@
 import { applySnapshotToMIDI } from '../../spessasynth_lib/midi_parser/midi_editor.js'
-import { SoundFont2 } from '../../spessasynth_lib/soundfont/soundfont.js'
 import {
     SpessaSynthGroup,
     SpessaSynthGroupEnd,
@@ -7,6 +6,7 @@ import {
 import { consoleColors } from '../../spessasynth_lib/utils/other.js'
 import { trimSoundfont } from '../../spessasynth_lib/soundfont/basic_soundfont/write_sf2/soundfont_trimmer.js'
 import { closeNotification, showNotification } from '../js/notification/notification.js'
+import { loadSoundFont } from '../../spessasynth_lib/soundfont/load_soundfont.js'
 
 /**
  * @this {Manager}
@@ -45,7 +45,7 @@ export async function _exportSoundfont()
                     SpessaSynthGroup("%cExporting minified soundfont...",
                         consoleColors.info);
                     const mid = await this.seq.getMIDI();
-                    const soundfont = new SoundFont2(mid.embeddedSoundFont || this.soundFont);
+                    const soundfont = loadSoundFont(mid.embeddedSoundFont || this.soundFont);
                     applySnapshotToMIDI(mid, await this.synth.getSynthesizerSnapshot());
                     trimSoundfont(soundfont, mid);
                     const binary = soundfont.write({

@@ -1,6 +1,6 @@
 import {RiffChunk} from "../basic_soundfont/riff_chunk.js";
 import {PresetZone} from "./zones.js";
-import {readBytesAsUintLittleEndian} from "../../utils/byte_functions/little_endian.js";
+import {readLittleEndian} from "../../utils/byte_functions/little_endian.js";
 import { readBytesAsString } from '../../utils/byte_functions/string.js'
 import { BasicPreset } from '../basic_soundfont/basic_preset.js'
 
@@ -21,14 +21,14 @@ export class Preset extends BasicPreset
             .trim()
             .replace(/\d{3}:\d{3}/, ""); // remove those pesky "000:001"
 
-        this.program = readBytesAsUintLittleEndian(presetChunk.chunkData, 2);
-        this.bank = readBytesAsUintLittleEndian(presetChunk.chunkData, 2);
-        this.presetZoneStartIndex = readBytesAsUintLittleEndian(presetChunk.chunkData, 2);
+        this.program = readLittleEndian(presetChunk.chunkData, 2);
+        this.bank = readLittleEndian(presetChunk.chunkData, 2);
+        this.presetZoneStartIndex = readLittleEndian(presetChunk.chunkData, 2);
 
         // read the dwords
-        this.library = readBytesAsUintLittleEndian(presetChunk.chunkData, 4);
-        this.genre = readBytesAsUintLittleEndian(presetChunk.chunkData, 4);
-        this.morphology = readBytesAsUintLittleEndian(presetChunk.chunkData, 4);
+        this.library = readLittleEndian(presetChunk.chunkData, 4);
+        this.genre = readLittleEndian(presetChunk.chunkData, 4);
+        this.morphology = readLittleEndian(presetChunk.chunkData, 4);
         this.presetZonesAmount = 0;
     }
 

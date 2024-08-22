@@ -1,4 +1,4 @@
-import {readBytesAsUintLittleEndian} from "../../utils/byte_functions/little_endian.js";
+import {readLittleEndian} from "../../utils/byte_functions/little_endian.js";
 import {IndexedByteArray} from "../../utils/indexed_array.js";
 import {RiffChunk} from "../basic_soundfont/riff_chunk.js";
 import {Generator, generatorTypes} from "./generators.js";
@@ -20,8 +20,8 @@ export class InstrumentZone extends BasicInstrumentZone
     constructor(dataArray)
     {
         super();
-        this.generatorZoneStartIndex = readBytesAsUintLittleEndian(dataArray, 2);
-        this.modulatorZoneStartIndex = readBytesAsUintLittleEndian(dataArray, 2);
+        this.generatorZoneStartIndex = readLittleEndian(dataArray, 2);
+        this.modulatorZoneStartIndex = readLittleEndian(dataArray, 2);
         this.modulatorZoneSize = 0;
         this.generatorZoneSize = 0;
         this.isGlobal = true;
@@ -146,8 +146,8 @@ export class PresetZone extends BasicPresetZone
     constructor(dataArray)
     {
         super();
-        this.generatorZoneStartIndex = readBytesAsUintLittleEndian(dataArray, 2);
-        this.modulatorZoneStartIndex = readBytesAsUintLittleEndian(dataArray, 2);
+        this.generatorZoneStartIndex = readLittleEndian(dataArray, 2);
+        this.modulatorZoneStartIndex = readLittleEndian(dataArray, 2);
         this.modulatorZoneSize = 0;
         this.generatorZoneSize = 0;
         this.isGlobal = true;

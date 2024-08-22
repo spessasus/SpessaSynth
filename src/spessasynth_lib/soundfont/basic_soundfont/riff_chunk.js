@@ -1,5 +1,5 @@
 import { IndexedByteArray } from '../../utils/indexed_array.js'
-import { readBytesAsUintLittleEndian, writeDword } from '../../utils/byte_functions/little_endian.js'
+import { readLittleEndian, writeDword } from '../../utils/byte_functions/little_endian.js'
 import { readBytesAsString, writeStringAsBytes } from '../../utils/byte_functions/string.js'
 
 /**
@@ -33,7 +33,7 @@ export class RiffChunk
 export function readRIFFChunk(dataArray, readData = true, forceShift = false) {
     let header = readBytesAsString(dataArray, 4)
 
-    let size = readBytesAsUintLittleEndian(dataArray, 4)
+    let size = readLittleEndian(dataArray, 4)
     let chunkData = undefined
     if (readData)
     {

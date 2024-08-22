@@ -75,7 +75,7 @@ function getDrumChange(channel, ticks)
 
 /**
  * Allows easy editing of the file
- * @param midi {MIDI}
+ * @param midi {BasicMIDI}
  * @param desiredProgramChanges {{
  *     channel: number,
  *     program: number,
@@ -520,7 +520,7 @@ export function modifyMIDI(
 
 /**
  * Modifies the sequence according to the locked presets and controllers in the given snapshot
- * @param midi {MIDI}
+ * @param midi {BasicMIDI}
  * @param snapshot {SynthesizerSnapshot}
  */
 export function applySnapshotToMIDI(midi, snapshot)

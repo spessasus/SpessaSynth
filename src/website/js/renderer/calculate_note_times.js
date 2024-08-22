@@ -7,7 +7,7 @@ import { readBytesAsUintBigEndian } from '../../../spessasynth_lib/utils/byte_fu
 const MIN_NOTE_TIME = 0.02;
 
 /**
- * @param midi {MIDI}
+ * @param midi {BasicMIDI}
  * @this {Renderer}
  */
 export function calculateNoteTimes(midi)

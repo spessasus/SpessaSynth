@@ -21,7 +21,7 @@ import { DUMMY_MIDI_DATA, MidiData } from '../midi_parser/midi_data.js'
  */
 
 /**
- * @typedef {MIDI|MidFile} MIDIFile
+ * @typedef {BasicMIDI|MidFile} MIDIFile
  */
 
 /**
