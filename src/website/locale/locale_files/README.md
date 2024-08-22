@@ -22,7 +22,7 @@ I welcome contributions from translators! To add a new locale, please follow the
     - Open `locale_list.js`.
     - Add a new entry for your locale. For example, for German, add: `"de": localeGerman,`.
 
-6**Submit a Pull Request**
+6. **Submit a Pull Request**
     - After completing the translation and updates, create a pull request with your changes. Thank you for helping SpessaSynth!
 
 **If you have any questions about this guide or something is unclear, let me know by opening an issue!**
