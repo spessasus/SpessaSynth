@@ -2,12 +2,15 @@
 <img src="src/website/spessasynth_logo_rounded.png" width='300' alt='SpessaSynth logo'>
 </p>
 
-**SpessaSynth** is a SoundFont2-based real-time synthesizer and MIDI player written in vanilla JavaScript. It’s a powerful library that allows you to read, write, or play MIDI files and read/write SF2/SF3 files with ease.
+**SpessaSynth** is a SoundFont2-based real-time synthesizer and MIDI player written in vanilla JavaScript. 
+It’s a powerful and versatile library that allows you to read, write, or play MIDI files, 
+read DLS and read/write SF2/SF3 files with ease.
 
-### npm package now available!
 ```shell
 npm install --save spessasynth_lib
 ```
+
+### DLS Support now available!
 
 <h1 align="center"><a href="https://spessasus.github.io/SpessaSynth/">Live Demo (no download needed!)</a></h1>
 
@@ -80,6 +83,7 @@ This repository contains both the library and a complete musical web application
 #### Read and write [RMID files with embedded SF2 soundfonts](https://github.com/spessasus/sf2-rmidi-specification#readme)
   - **[Level 4](https://github.com/spessasus/sf2-rmidi-specification#level-4) compliance:** Reads and writes *everything!*
   - **Compression and trimming support:** Reduce a MIDI file with a 1GB soundfont to **as small as 5MB**!
+  - **DLS Version support:** The original legacy format with bank offset detection!
   - **Automatic bank shifting and validation:** Every soundfont *just works!*
   - **Metadata support:** Add title, artist, album name and cover and more! And of course read them too! *(In any encoding!)*
   - **Compatible with [Falcosoft Midi Player 6!](https://falcosoft.hu/softwares.html#midiplayer)**
@@ -95,6 +99,15 @@ This repository contains both the library and a complete musical web application
   - Same features as SoundFont2 but with now with **Ogg Vorbis compression!**
   - **Variable compression quality:** You choose between file size and quality!
   - **Compression preserving:** Avoid decompressing and recompressing uncompressed samples for minimal quality loss!
+
+#### Read and play DLS Level 1 or 2 files
+  - Read DLS (DownLoadable Sounds) files as SF2 files!
+  - **Works like a normal soundfont:** *Saving is still [just one function!](https://github.com/spessasus/SpessaSynth/wiki/SoundFont2-Class#write)*
+  - Converts articulators to both **modulators** and **generators**!
+  - Works with both unsigned 8-bit samples and signed 16-bit samples!
+  - **Covers special generator cases:** *such as modLfoToPitch*!
+  - **Correct volume:** *looking at you, Viena and gm.sf2!*
+  - Support built right into the synthesizer!
 
 ## Limitations
 - Synth's performance may be suboptimal, especially on mobile devices.

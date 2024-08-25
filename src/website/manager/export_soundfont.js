@@ -21,6 +21,14 @@ export async function _exportSoundfont()
         [
             {
                 type: "toggle",
+                textContent: "Trim",
+                attributes: {
+                    "trim-toggle": "1",
+                    "checked": "checked"
+                }
+            },
+            {
+                type: "toggle",
                 translatePathTitle: path + "compress",
                 attributes: {
                     "compress-toggle": "1",
@@ -39,6 +47,7 @@ export async function _exportSoundfont()
                 type: "button",
                 textContent: this.localeManager.getLocaleString(path + "confirm"),
                 onClick: async n => {
+                    const trimmed = n.div.querySelector("input[trim-toggle='1']").checked;
                     const compressed = n.div.querySelector("input[compress-toggle='1']").checked;
                     const quality = parseInt(n.div.querySelector("input[type='range']").value) / 10;
                     closeNotification(n.id);
@@ -47,7 +56,10 @@ export async function _exportSoundfont()
                     const mid = await this.seq.getMIDI();
                     const soundfont = loadSoundFont(mid.embeddedSoundFont || this.soundFont);
                     applySnapshotToMIDI(mid, await this.synth.getSynthesizerSnapshot());
-                    trimSoundfont(soundfont, mid);
+                    if(trimmed)
+                    {
+                        trimSoundfont(soundfont, mid);
+                    }
                     const binary = soundfont.write({
                         compress: compressed,
                         compressionQuality: quality,

@@ -6,34 +6,34 @@
 
 export class BasicZone
 {
-    constructor()
-    {
-        /**
-         * The zone's generators
-         * @type {Generator[]}
-         */
-        this.generators = [];
-        /**
-         * The zone's modulators
-         * @type {Modulator[]}
-         */
-        this.modulators = [];
-        /**
-         * Indicates if the zone is global
-         * @type {boolean}
-         */
-        this.isGlobal = false;
-        /**
-         * The zone's key range
-         * @type {SoundFontRange}
-         */
-        this.keyRange = { min: 0, max: 127 };
+    /**
+     * The zone's velocity range
+     * @type {SoundFontRange}
+     */
+    velRange = { min: 0, max: 127 };
 
-        /**
-         * The zone's velocity range
-         * @type {SoundFontRange}
-         */
-        this.velRange = { min: 0, max: 127 };
-    }
+    /**
+     * The zone's key range
+     * @type {SoundFontRange}
+     */
+    keyRange = { min: 0, max: 127 };
+
+    /**
+     * Indicates if the zone is global
+     * @type {boolean}
+     */
+    isGlobal = false;
+
+    /**
+     * The zone's generators
+     * @type {Generator[]}
+     */
+    generators = [];
+
+    /**
+     * The zone's modulators
+     * @type {Modulator[]}
+     */
+    modulators = [];
 }
 

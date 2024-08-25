@@ -37,8 +37,7 @@ export function readRIFFChunk(dataArray, readData = true, forceShift = false) {
     let chunkData = undefined
     if (readData)
     {
-        chunkData = new IndexedByteArray(size)
-        chunkData.set(dataArray.slice(dataArray.currentIndex, dataArray.currentIndex + size))
+        chunkData = new IndexedByteArray(dataArray.buffer.slice(dataArray.currentIndex, dataArray.currentIndex + size))
     }
     if(readData || forceShift)
     {
@@ -112,4 +111,21 @@ export function writeRIFFOddSize(header, data, addZeroByte = false)
     writeDword(outArray, data.length);
     outArray.set(data, 8);
     return outArray;
+}
+
+/**
+ * @param collection {RiffChunk[]}
+ * @param type {string}
+ * @returns {RiffChunk|undefined}
+ */
+export function findRIFFListType(collection, type)
+{
+    return collection.find(c => {
+        if(c.header !== "LIST")
+        {
+            return false;
+        }
+        c.chunkData.currentIndex = 0;
+        return readBytesAsString(c.chunkData, 4) === type;
+    });
 }

@@ -340,7 +340,6 @@ document.getElementById("file_upload").style.display = "none";
 
 async function playDemoSong(fileName)
 {
-    console.log(window.manager.localeManager.localeCode);
     titleMessage.textContent = window.manager.localeManager.getLocaleString("locale.synthInit.genericLoading");
     const r = await fetch("demo_songs/" + fileName);
     r.name = fileName;

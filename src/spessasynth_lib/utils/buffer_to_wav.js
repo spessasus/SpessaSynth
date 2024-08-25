@@ -113,39 +113,18 @@ export function audioBufferToWav(audioBuffer, normalizeAudio = true, channelOffs
     wavData.set(header, 0);
 
     // Interleave audio data (combine channels)
-    let multiplier;
+    let multiplier = 32767;
     if(normalizeAudio)
     {
         // find min and max values to prevent clipping when converting to 16 bits
-        const initialMultiplier = 32767;
-
-        const max = Math.max(
-            channel1Data.reduce((max, value) => (value > max ? value : max), -Infinity),
-            channel2Data.reduce((max, value) => (value > max ? value : max), -Infinity)
-        );
-
-        const min = Math.min(
-            channel1Data.reduce((min, value) => (value < min ? value : min), Infinity),
-            channel2Data.reduce((min, value) => (value < min ? value : min), Infinity)
-        );
-        const maxAbsValue = Math.max(max, Math.abs(min));
-        multiplier = initialMultiplier / maxAbsValue;
-    }
-    else
-    {
-        multiplier = 32767;
-        // clip audio
-        for(let i = 0; i < length; i++)
-        {
-            channel1Data[i] = Math.min(1, Math.max(-1, channel1Data[i]));
-            channel2Data[i] = Math.min(1, Math.max(-1, channel2Data[i]));
-        }
+        const maxAbsValue = channel1Data.map((v, i) => Math.max(Math.abs(v), Math.abs(channel2Data[i]))).reduce( (a,b) => Math.max(a,b))
+        multiplier = maxAbsValue > 0 ? (32767 / maxAbsValue) : 1;
     }
     for (let i = 0; i < length; i++)
     {
         // interleave both channels
-        const sample1 = channel1Data[i] * multiplier;
-        const sample2 = channel2Data[i] * multiplier;
+        const sample1 = Math.min(1, Math.max(-1, channel1Data[i])) * multiplier;
+        const sample2 = Math.min(1, Math.max(-1,channel2Data[i])) * multiplier;
 
         // convert to 16-bit
         wavData[offset++] = sample1 & 0xff;

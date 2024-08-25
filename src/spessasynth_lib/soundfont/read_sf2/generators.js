@@ -149,6 +149,39 @@ generatorLimits[generatorTypes.exclusiveClass] = {min: 0, max: 99999, def: 0};
 generatorLimits[generatorTypes.overridingRootKey] = {min: 0-1, max: 127, def: -1};
 
 
+export class Generator
+{
+    /**
+     * Constructs a new generator
+     * @param type {generatorTypes|number}
+     * @param value {number}
+     */
+    constructor(type = generatorTypes.INVALID, value = 0)
+    {
+        this.generatorType = type;
+        if(value === undefined)
+        {
+            throw new Error("No value provided.");
+        }
+        const lim = generatorLimits[type];
+        this.generatorValue = Math.round(value);
+        if(lim !== undefined)
+        {
+            this.generatorValue = Math.max(lim.min, Math.min(lim.max, this.generatorValue));
+        }
+    }
+    /**
+     * The generator's enum number
+     * @type {generatorTypes|number}
+     */
+    generatorType = generatorTypes.INVALID;
+    /**
+     * The generator's 16-bit value
+     * @type {number}
+     */
+    generatorValue = 0;
+}
+
 /**
  * @param generatorType {number}
  * @param presetGens {Generator[]}
@@ -173,19 +206,21 @@ export function addAndClampGenerator(generatorType, presetGens, instrumentGens)
     return Math.max(limits.min, Math.min(limits.max, instruValue + presetValue));
 }
 
-
-export class Generator{
+export class ReadGenerator extends Generator
+{
     /**
      * Creates a generator
      * @param dataArray {IndexedByteArray}
      */
-    constructor(dataArray) {
+    constructor(dataArray)
+    {
+        super();
         // 4 bytes:
         // type, type, type, value
         const i = dataArray.currentIndex;
         /**
-         * @type {generatorTypes}
-         **/
+         * @type {generatorTypes|number}
+         */
         this.generatorType = (dataArray[i + 1] << 8) | dataArray[i];
         this.generatorValue = signedInt16(dataArray[i + 2], dataArray[i + 3]);
         dataArray.currentIndex += 4;
@@ -202,7 +237,7 @@ export function readGenerators(generatorChunk)
     let gens = [];
     while(generatorChunk.chunkData.length > generatorChunk.chunkData.currentIndex)
     {
-        gens.push(new Generator(generatorChunk.chunkData));
+        gens.push(new ReadGenerator(generatorChunk.chunkData));
     }
     if(gens.length > 1)
     {

@@ -15,7 +15,8 @@ export const modulatorSources = {
     channelPressure: 13,
     pitchWheel: 14,
     pitchWheelRange: 16,
-    link: 127
+    link: 127,
+
 }
 
 export const modulatorCurveTypes = {
@@ -142,7 +143,7 @@ export class Modulator{
     }
 }
 
-function getModSourceEnum(curveType, polarity, direction, isCC, index)
+export function getModSourceEnum(curveType, polarity, direction, isCC, index)
 {
     return (curveType << 10) | (polarity << 9) | (direction << 8) | (isCC << 7) | index;
 }
@@ -189,7 +190,6 @@ export const defaultModulators = [
     }),
 
     // reverb effects to send
-    // 1000 to align with the reverbSend (overriding it works anyways)
     new Modulator({srcEnum: 0x00DB, dest: generatorTypes.reverbEffectsSend, amt: 200, secSrcEnum: 0x0, transform: 0}),
 
     // chorus effects to send

@@ -58,15 +58,15 @@ export class BasicSample {
          */
         this.sampleType = sampleType
         /**
-         * Relative to start of the sample, bytes
+         * Relative to start of the sample, bytes assuming 16 bit
          * @type {number}
          */
         this.sampleLoopStartIndex = loopStart
         /**
-         * Relative to start of the sample, in bytes
+         * Relative to start of the sample, in bytes assuming 16 bit
          * @type {number}
          */
-        this.sampleLoopEndIndex = loopEnd
+        this.sampleLoopEndIndex = loopEnd;
 
         /**
          * Indicates if the sample is compressed

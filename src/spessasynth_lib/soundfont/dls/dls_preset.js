@@ -1,25 +1,32 @@
 import { BasicPreset } from '../basic_soundfont/basic_preset.js'
+import { BasicPresetZone } from '../basic_soundfont/basic_zones.js'
+import { BasicInstrument } from '../basic_soundfont/basic_instrument.js'
 
 export class DLSPreset extends BasicPreset
 {
     /**
      * Creates a new DLS preset
-     * @param ulBank {number} the ULONG value
-     * @param ulInstrument {number} the ULONG value
-     * @param regionsAmount {number}
+     * @param ulBank {number}
+     * @param ulInstrument {number}
      */
-    constructor(ulBank, ulInstrument, regionsAmount)
+    constructor(ulBank, ulInstrument)
     {
         super();
-        this.regionsAmount = regionsAmount;
         this.program = ulInstrument & 127;
         this.bank = (ulBank >> 8) & 127;
-        const isDrums = ulInstrument & (1 << 31);
+        const isDrums = ulBank >> 31;
         if(isDrums)
         {
-            console.log("DEUMS")
+            // soundfont bank is 128 so we change it here
+            this.bank = 128;
         }
-        console.log(this.bank, this.program)
 
+        this.DLSInstrument = new BasicInstrument();
+        this.DLSInstrument.addUseCount();
+
+        const zone = new BasicPresetZone();
+        zone.instrument = this.DLSInstrument;
+
+        this.presetZones = [zone];
     }
 }

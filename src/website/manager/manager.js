@@ -20,6 +20,7 @@ import { exportSong } from './export_song.js'
 import { _exportRMIDI } from './export_rmidi.js'
 import { WORKLET_URL_ABSOLUTE } from '../../spessasynth_lib/synthetizer/worklet_url.js'
 import { encodeVorbis } from '../../spessasynth_lib/utils/encode_vorbis.js'
+import { loadSoundFont } from '../../spessasynth_lib/soundfont/load_soundfont.js'
 
 // this enables transitions on body because if we enable them on load, it flashbangs us with white
 document.body.classList.add("load");
@@ -341,6 +342,14 @@ class Manager
 
         // play the midi
         this.seq.play(true);
+    }
+
+    downloadDesfont()
+    {
+        const soundfont = loadSoundFont(this.soundFont);
+        const binary = soundfont.write();
+        const blob = new Blob([binary.buffer], {type: "audio/soundfont"});
+        this.saveBlob(blob, "desfont.sf2");
     }
 }
 Manager.prototype.exportSong = exportSong;

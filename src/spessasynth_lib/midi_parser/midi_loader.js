@@ -1,7 +1,7 @@
 import { dataBytesAmount, getChannel, messageTypes, MidiMessage } from './midi_message.js'
 import { IndexedByteArray } from '../utils/indexed_array.js'
 import { arrayToHexString, consoleColors, formatTitle } from '../utils/other.js'
-import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo } from '../utils/loggin.js'
+import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo, SpessaSynthWarn } from '../utils/loggin.js'
 import { readRIFFChunk } from '../soundfont/basic_soundfont/riff_chunk.js'
 import { readVariableLengthQuantity } from '../utils/byte_functions/variable_length_quantity.js'
 import { readBytesAsUintBigEndian } from '../utils/byte_functions/big_endian.js'
@@ -33,6 +33,8 @@ class MIDI extends BasicMIDI
 
         let nameDetected = false;
 
+        let DLSRMID = false;
+
         const initialString = readBytesAsString(binaryData, 4);
         binaryData.currentIndex -= 4;
         if(initialString === "RIFF")
@@ -62,11 +64,20 @@ class MIDI extends BasicMIDI
                 const currentChunk = readRIFFChunk(binaryData, true);
                 if(currentChunk.header === "RIFF")
                 {
-                    const type = readBytesAsString(currentChunk.chunkData, 4);
-                    if(type === "sfbk" || type === "sfpk")
+                    const type = readBytesAsString(currentChunk.chunkData, 4).toLowerCase();
+                    if(type === "sfbk" || type === "sfpk" || type === "dls ")
                     {
                         SpessaSynthInfo("%cFound embedded soundfont!", consoleColors.recognized);
                         this.embeddedSoundFont = binaryData.slice(startIndex, startIndex + currentChunk.size).buffer;
+                    }
+                    else
+                    {
+                        SpessaSynthWarn(`Unknown RIFF chunk: "${type}"`);
+                    }
+                    if(type === "dls ")
+                    {
+                        // assume bank offset of 0 by default. If we find any bank selects, then the offset is 1.
+                        DLSRMID = true;
                     }
                 }
                 else if(currentChunk.header === "LIST")
@@ -108,6 +119,13 @@ class MIDI extends BasicMIDI
                         }
                     }
                 }
+            }
+
+            if(DLSRMID)
+            {
+                console.log(DLSRMID)
+                // assume bank offset of 0 by default. If we find any bank selects, then the offset is 1.
+                this.bankOffset = 0;
             }
         }
         else
@@ -388,6 +406,15 @@ class MIDI extends BasicMIDI
                                         loopEnd = 0;
                                     }
                                     break;
+
+                                case 0:
+                                    // check RMID
+                                    if(DLSRMID && eventData[1] !== 0 && eventData[1] !== 127)
+                                    {
+                                        SpessaSynthInfo("%cDLS RMIDI with offset 1 detected!",
+                                            consoleColors.recognized);
+                                        this.bankOffset = 1;
+                                    }
                             }
                         }
                 }

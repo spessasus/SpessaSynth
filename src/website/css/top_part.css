@@ -42,6 +42,7 @@ input[type="file"] {
 
 #title
 {
+    user-select: text;
     position: relative;
     z-index: 1;
     margin: 0.2em auto;
