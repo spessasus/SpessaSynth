@@ -173,7 +173,7 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
             {
                 display: "flex",
                 flexWrap: "wrap",
-                justifyContent: "space-around"
+                flexDirection: "row"
             }
         );
         n.div.style.width = '30rem'
