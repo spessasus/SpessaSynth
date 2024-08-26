@@ -76,6 +76,7 @@ export const settingsHtml = `
             <option value='full' translate-path='locale.settings.keyboardSettings.keyboardSize.full'></option>
             <option value='piano' translate-path='locale.settings.keyboardSettings.keyboardSize.piano'></option>
             <option value='5 octaves' translate-path='locale.settings.keyboardSettings.keyboardSize.fiveOctaves'></option>
+            <option value='one octave' translate-path='locale.settings.keyboardSettings.keyboardSize.oneOctave'></option>
             <option value='${USE_MIDI_RANGE}' translate-path='locale.settings.keyboardSettings.keyboardSize.useSongKeyRange'></option>
         </select>
         

@@ -204,11 +204,11 @@ class Manager
         window.addEventListener("resize", checkResize.bind(this));
         window.addEventListener("orientationchange", checkResize.bind(this))
 
-        // if on mobile, switch to a 5 octave keyboard
+        // if on mobile, switch to a 2 octave keyboard
         if(isMobile)
         {
-            this.renderer.keyRange = {min: 36, max: 96};
-            this.keyboard.setKeyRange({min: 36, max: 96}, false);
+            this.renderer.keyRange = {min:  48, max: 72};
+            this.keyboard.setKeyRange({min: 48, max: 72}, false);
         }
 
         // set up synth UI

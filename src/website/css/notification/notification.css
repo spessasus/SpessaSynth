@@ -4,13 +4,22 @@
 @import "progresses.css";
 @import "toggles.css";
 
+.notification_field{
+    position: absolute;
+    padding: 0;
+    width: 100%;
+    display: flex;
+    margin: 1rem 0 0;
+    align-items: baseline;
+    justify-content: center;
+}
+
 .notification {
     --notification-border-radius: var(--primary-border-radius);
     --notification-font-size: 1.3rem;
-
+    position: absolute;
     background: var(--top-color);
     color: var(--font-color);
-    position: absolute;
     border: solid 1px #333;
     border-radius: var(--notification-border-radius);
     display: flex;
@@ -18,10 +27,9 @@
     flex-direction: column;
     align-items: center;
     font-size: large;
-    top: 0;
     z-index: var(--top-index);
     left: 50%;
-    transform: translate(-50%, 5rem);
+    transform: translate(-50%, -5rem);
     transition: transform 0.5s ease, opacity 0.5s ease;
     opacity: 0;
     animation-duration: 0.5s;
@@ -33,7 +41,7 @@
 
 .notification.drop{
     opacity: 1;
-    transform: translate(-50%, 10rem);
+    transform: translate(-50%, 0);
 }
 
 .notification .top {

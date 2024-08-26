@@ -61,7 +61,8 @@ class SpessaSynthSettings
         this.keyboardSizes = {
             "full": { min: 0, max: 127 },
             "piano": { min: 21, max: 108 },
-            "5 octaves": { min: 36, max: 96 }
+            "5 octaves": { min: 36, max: 96 },
+            "one octave": { min: 60, max: 72 } // one more key because it sounds nice
         };
 
         const settingsButton = document.createElement("div");

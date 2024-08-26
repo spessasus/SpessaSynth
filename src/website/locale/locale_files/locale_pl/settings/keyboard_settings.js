@@ -14,6 +14,7 @@ export const keyboardSettingsLocale = {
         full: "128 klawiszy (pełen zakres)",
         piano: "88 klawiszy (fortepian)",
         fiveOctaves: "5 oktaw",
+        oneOctave: "Oktawa",
         useSongKeyRange: "Użyj zakresu utworu",
     },
 

@@ -123,7 +123,6 @@ class MIDI extends BasicMIDI
 
             if(DLSRMID)
             {
-                console.log(DLSRMID)
                 // assume bank offset of 0 by default. If we find any bank selects, then the offset is 1.
                 this.bankOffset = 0;
             }

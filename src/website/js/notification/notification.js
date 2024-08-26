@@ -93,7 +93,7 @@ export function showNotification(
     const timeoutID = setTimeout(() => {
         closeNotification(notificationID);
     }, time * 1000 + ANIMATION_REFLOW_TIME);
-    document.getElementsByClassName("spessasynth_main")[0].appendChild(notification);
+    document.getElementsByClassName("notification_field")[0].appendChild(notification);
     notifications[notificationID] = {
         div: notification,
         timeout: timeoutID

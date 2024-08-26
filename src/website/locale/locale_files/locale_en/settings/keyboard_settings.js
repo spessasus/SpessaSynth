@@ -15,6 +15,7 @@ export const keyboardSettingsLocale = {
         piano: "88 keys (piano)",
         fiveOctaves: "5 octaves",
         useSongKeyRange: "Use song's key range",
+        oneOctave: "One octave",
     },
 
     toggleTheme: {
