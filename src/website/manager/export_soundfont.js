@@ -21,7 +21,7 @@ export async function _exportSoundfont()
         [
             {
                 type: "toggle",
-                textContent: "Trim",
+                translatePathTitle: path + "trim",
                 attributes: {
                     "trim-toggle": "1",
                     "checked": "checked"

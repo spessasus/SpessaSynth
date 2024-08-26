@@ -46,7 +46,8 @@ export class DLSZone extends BasicInstrumentZone
         {
             const fine = diffStart % 32768;
             this.generators.push(new Generator(generatorTypes.startloopAddrsOffset, fine));
-            const coarse = Math.round(diffStart / 32768);
+            // coarse generator uses 32768 samples per step
+            const coarse = (diffStart - fine) / 32768;
             if(coarse !== 0)
             {
                 this.generators.push(new Generator(generatorTypes.startloopAddrsCoarseOffset, fine));
@@ -56,7 +57,8 @@ export class DLSZone extends BasicInstrumentZone
         {
             const fine = diffEnd % 32768;
             this.generators.push(new Generator(generatorTypes.endloopAddrsOffset, fine));
-            const coarse = Math.round(diffEnd / 32768);
+            // coarse generator uses 32768 samples per step
+            const coarse = (diffEnd - fine) / 32768;
             if(coarse !== 0)
             {
                 this.generators.push(new Generator(generatorTypes.endloopAddrsCoarseOffset, fine));

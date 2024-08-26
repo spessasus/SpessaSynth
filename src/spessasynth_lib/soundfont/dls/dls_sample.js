@@ -46,6 +46,14 @@ export class DLSSample extends BasicSample
 
     getRawData()
     {
+        if(this.isCompressed)
+        {
+            if (!this.compressedData)
+            {
+                throw new Error("Compressed but no data??")
+            }
+            return this.compressedData;
+        }
         const uint8 = new Uint8Array(this.sampleData.length * 2);
         for (let i = 0; i < this.sampleData.length; i++)
         {

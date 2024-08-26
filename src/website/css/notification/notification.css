@@ -28,7 +28,6 @@
     animation-fill-mode: forwards;
     box-shadow: #333 0 0 10px;
     width: max-content;
-    max-width: 80%;
 }
 
 .notification.drop{
@@ -53,6 +52,9 @@
 .notification_content{
     margin: 1rem;
     min-width: 90%;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
 }
 
 .notification .close_btn{

@@ -483,11 +483,7 @@ demoInit(initLocale).then(() => {
             ],
             999999,
             true,
-            undefined,
-            {
-                "display": "flex",
-                "flex-direction": "column"
-            }
+            undefined
         )
     };
 });

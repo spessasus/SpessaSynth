@@ -108,6 +108,23 @@ export async function _exportRMIDI()
                 }
             },
             {
+                type: "input",
+                translatePathTitle: path + "bankOffset",
+                attributes: {
+                    "value": this.seq.midiData.bankOffset,
+                    "name": "bank_offset",
+                    "type": "number"
+                }
+            },
+            {
+                type: "toggle",
+                translatePathTitle: path + "adjust",
+                attributes: {
+                    "name": "adjust",
+                    "checked": "checked"
+                }
+            },
+            {
                 type: "button",
                 textContent: this.localeManager.getLocaleString(path + "confirm"),
                 onClick: async n => {
@@ -118,6 +135,8 @@ export async function _exportRMIDI()
                     const songTitle = n.div.querySelector("input[name='song_title']").value;
                     const comment = n.div.querySelector("input[name='comment']").value;
                     const genre = n.div.querySelector("input[name='genre']").value;
+                    const bankOffset = n.div.querySelector("input[name='bank_offset']").value;
+                    const adjust = n.div.querySelector("input[name='adjust']").checked;
 
                     /**
                      * @type {File}
@@ -178,18 +197,20 @@ export async function _exportRMIDI()
                         newFont,
                         mid,
                         font,
-                        0,
+                        bankOffset,
                         this.seqUI.encoding,
                         {
-                        name: songTitle,
-                        comment: comment,
-                        engineer: font.soundFontInfo["IENG"], // use soundfont egineer
-                        picture: fileBuffer,
-                        album: album.length > 0 ? album : undefined,
-                        artist: artist.length > 0 ? artist : undefined,
-                        genre: genre.length > 0 ? genre : undefined,
-                        midiEncoding: this.seqUI.encoding // use the selected encoding
-                    });
+                            name: songTitle,
+                            comment: comment,
+                            engineer: font.soundFontInfo["IENG"], // use soundfont egineer
+                            picture: fileBuffer,
+                            album: album.length > 0 ? album : undefined,
+                            artist: artist.length > 0 ? artist : undefined,
+                            genre: genre.length > 0 ? genre : undefined,
+                            midiEncoding: this.seqUI.encoding // use the selected encoding
+                        },
+                        adjust
+                    );
                     const blob = new Blob([rmidBinary.buffer], {type: "audio/rmid"})
                     this.saveBlob(blob, `${songTitle || "unnamed_song"}.rmi`);
                     message.textContent = this.localeManager.getLocaleString(localePath + "done");

@@ -1,7 +1,7 @@
 export const exportAudio = {
     button: {
-        title: "Zapisz utwór",
-        description: "Zapisz utwór jako plik WAV, MIDI, SF2 lub RMI"
+        title: "Zapisz",
+        description: "Zapisz w różnych formatach"
     },
 
     formats: {
@@ -9,7 +9,7 @@ export const exportAudio = {
         formats: {
             wav: {
                 button: {
-                    title: "Audio WAV",
+                    title: "Audio WAV (.wav)",
                     description: "Eksportuj utwór ze zmianami jako plik audio .wav"
                 },
                 options: {
@@ -41,20 +41,24 @@ export const exportAudio = {
 
             midi: {
                 button: {
-                    title: "Zmodyfikowane MIDI",
+                    title: "MIDI (.mid)",
                     description: "Eksportuj plik MIDI wraz ze zmianami instrumentów i kontrolerów"
                 }
             },
 
             soundfont: {
                 button: {
-                    title: "Zmniejszony soundfont",
-                    description: "Eksportuj soundfont zawierający tylko klawisze użyte w MIDI"
+                    title: "SoundFont (.sf2)",
+                    description: "Eksportuj SoundFont"
                 },
 
                 options: {
                     title: "Opcje eksportu soundfonta",
                     confirm: "Eksportuj",
+                    trim: {
+                        title: "Zmniejsz",
+                        description: "Zmniejsz SoundFont aby zawierał tylko klawisze użyte w MIDI"
+                    },
                     compress: {
                         title: "Kompresuj",
                         description: "Zkompresuj próbki które nie są zkompresowane przy użyciu stratnego kodeka Ogg Vorbis. Znacznie zmniejsza rozmiar pliku." +
@@ -97,7 +101,12 @@ export const exportAudio = {
                     bankOffset: {
                         title: "Przesunięcie banku",
                         description: "Przesunięcie banku w pliku. Zalecane 0. Zmień tylko jeśli wiesz co robisz.",
+                    },
+                    adjust: {
+                        title: "Adjust MIDI",
+                        description: "Adjusts the MIDI file to the SoundFont. Leave this on unless you know what you're doing."
                     }
+
                 }
             }
         },

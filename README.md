@@ -144,12 +144,12 @@ npm install --save spessasynth_lib
 - **`Web MIDI API` support:** Use your physical MIDI devices!
 - [WebMidiLink](https://www.g200kg.com/en/docs/webmidilink/) support
 - **Numerous exporting options:**
-- - Render the MIDI file (modified or unmodified) to .wav
-- - Render each channel as a separate .wav file
-- - Export the modified MIDI file to .mid
-- - Export the trimmed SoundFont to .sf2
-- - Or compress it as .sf3!
-- - Bundle both as .rmi with metadata such as album cover!
+  - Render the MIDI file (modified or unmodified) to .wav
+  - Render each channel as a separate .wav file
+  - Export the modified MIDI file to .mid
+  - Export the trimmed SoundFont to .sf2
+  - Or compress it as .sf3!
+  - Bundle both as .rmi with metadata such as album cover!
 - Comes bundled with a compressed [SGM](https://web.archive.org/web/20130616094125/http://www.geocities.jp/shansoundfont/) SoundFont to get you started
 - No additional dependencies!
 

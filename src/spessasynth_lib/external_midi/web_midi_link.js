@@ -13,7 +13,8 @@ export class WebMidiLinkHandler
     /**
      * @param synth {Synthetizer} the synth to play to
      */
-    constructor(synth) {
+    constructor(synth)
+    {
 
         window.addEventListener("message", msg => {
             if(typeof  msg.data !== "string")

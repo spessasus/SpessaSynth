@@ -1,7 +1,7 @@
 export const exportAudio = {
     button: {
-        title: "Save audio",
-        description: "Save audio as WAV, MIDI, SF2 or RMI file"
+        title: "Save",
+        description: "Save the composition to various formats"
     },
 
     formats: {
@@ -9,7 +9,7 @@ export const exportAudio = {
         formats: {
             wav: {
                 button: {
-                    title: "WAV audio",
+                    title: "WAV audio (.wav)",
                     description: "Export the song with modifications as a .wav audio file"
                 },
                 options: {
@@ -42,20 +42,24 @@ export const exportAudio = {
 
             midi: {
                 button: {
-                    title: "Modified MIDI",
+                    title: "MIDI (.mid)",
                     description: "Export the MIDI file with the controller and instrument changes applied"
                 }
             },
 
             soundfont: {
                 button: {
-                    title: "Trimmed soundfont",
-                    description: "Export the soundfont trimmed to only use instruments and samples that the MIDI file uses"
+                    title: "SoundFont (.sf2)",
+                    description: "Export a SoundFont2 file"
                 },
 
                 options: {
                     title: "SF export options",
                     confirm: "Export",
+                    trim: {
+                        title: "Trim",
+                        description: "Export the soundfont trimmed to only use instruments and samples that the MIDI file uses"
+                    },
                     compress: {
                         title: "Compress",
                         description: "Compress samples with lossy Ogg Vorbis compression if uncompressed. Significantly reduces the file size." +
@@ -98,6 +102,10 @@ export const exportAudio = {
                     bankOffset: {
                         title: "Bank offset",
                         description: "The bank offset of the file. Value of 0 is recommended. Only change if you know what you're doing.",
+                    },
+                    adjust: {
+                        title: "Adjust MIDI",
+                        description: "Adjusts the MIDI file to the SoundFont. Leave this on unless you know what you're doing."
                     }
                 }
             }
