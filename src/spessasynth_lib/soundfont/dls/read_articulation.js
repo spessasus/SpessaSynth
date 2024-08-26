@@ -76,8 +76,14 @@ export function readArticulation(chunk, disableVibrato)
         const control = readLittleEndian(artData, 2);
         const destination = readLittleEndian(artData, 2);
         const transform = readLittleEndian(artData, 2);
-        const value = readLittleEndian(artData, 4) >> 16; // convert it to 16 bit as soundfont uses that
+        const scale = readLittleEndian(artData, 4) | 0;
+        const value = scale >> 16; // convert it to 16 bit as soundfont uses that
 
+        // if(destination === DLSDestinations.volEnvDecay)
+        // {
+        //     console.log(scale, value)
+        // }
+        //modulatorConverterDebug(source, control, destination, value, transform);
         // interpret this somehow...
         // if source and control are both zero, it's a generator
         if(source === 0 && control === 0 && transform === 0)
@@ -224,26 +230,57 @@ export function readArticulation(chunk, disableVibrato)
                 // key to vol env hold
                 if(source === DLSSources.keyNum && destination === DLSDestinations.volEnvHold)
                 {
-                    // according to viena and another strange (with modulators) rendition of gm.dls in sf2, this is how it should be done???
-                    generators.push(new Generator(generatorTypes.keyNumToVolEnvHold, value / -127));
+                    // according to viena and another strange (with modulators) rendition of gm.dls in sf2,
+                    // it shall be divided by -128
+                    // and a strange correction needs to be applied to the real value:
+                    // real + (60 / 128) * scale
+                    generators.push(new Generator(generatorTypes.keyNumToVolEnvHold, value / -128));
+                    const correction = Math.round((60 / 128) * value);
+                    generators.forEach(g => {
+                        if(g.generatorType === generatorTypes.holdVolEnv) g.generatorValue += correction;
+                    });
                 }
                 else
                 // key to vol env decay
                 if(source === DLSSources.keyNum && destination === DLSDestinations.volEnvDecay)
                 {
-                    generators.push(new Generator(generatorTypes.keyNumToVolEnvDecay, value / -127));
+                    // according to viena and another strange (with modulators) rendition of gm.dls in sf2,
+                    // it shall be divided by -128
+                    // and a strange correction needs to be applied to the real value:
+                    // real + (60 / 128) * scale
+                    generators.push(new Generator(generatorTypes.keyNumToVolEnvDecay, value / -128));
+                    const correction = Math.round((60 / 128) * value);
+                    generators.forEach(g => {
+                        if(g.generatorType === generatorTypes.decayVolEnv) g.generatorValue += correction;
+                    });
                 }
                 else
                 // key to mod env hold
                 if(source === DLSSources.keyNum && destination === DLSDestinations.modEnvHold)
                 {
-                    generators.push(new Generator(generatorTypes.keyNumToModEnvHold, value / -127));
+                    // according to viena and another strange (with modulators) rendition of gm.dls in sf2,
+                    // it shall be divided by -128
+                    // and a strange correction needs to be applied to the real value:
+                    // real + (60 / 128) * scale
+                    generators.push(new Generator(generatorTypes.keyNumToModEnvHold, value / -128));
+                    const correction = Math.round((60 / 128) * value);
+                    generators.forEach(g => {
+                        if(g.generatorType === generatorTypes.holdModEnv) g.generatorValue += correction;
+                    });
                 }
                 else
                 // key to mod env decay
                 if(source === DLSSources.keyNum && destination === DLSDestinations.modEnvDecay)
                 {
-                    generators.push(new Generator(generatorTypes.keyNumToModEnvDecay, value / -127));
+                    // according to viena and another strange (with modulators) rendition of gm.dls in sf2,
+                    // it shall be divided by -128
+                    // and a strange correction needs to be applied to the real value:
+                    // real + (60 / 128) * scale
+                    generators.push(new Generator(generatorTypes.keyNumToModEnvDecay, value / -128));
+                    const correction = Math.round((60 / 128) * value);
+                    generators.forEach(g => {
+                        if(g.generatorType === generatorTypes.decayModEnv) g.generatorValue += correction;
+                    });
                 }
                 else
                 {
