@@ -12,7 +12,7 @@ import { LocaleManager } from './locale/locale_manager.js'
  * demo_main.js
  * purpose: main script for the demo, loads the soundfont and passes it to the manager.js
  */
-const SF_NAME = "SGM.sf3";
+const SF_NAME = "GeneralUserGS.sf3";
 /**
  * @type {HTMLHeadingElement}
  */

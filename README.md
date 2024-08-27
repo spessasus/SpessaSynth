@@ -4,7 +4,7 @@
 
 **SpessaSynth** is a SoundFont2-based real-time synthesizer and MIDI player written in vanilla JavaScript. 
 It’s a powerful and versatile library that allows you to read, write, or play MIDI files, 
-read DLS and read/write SF2/SF3 files with ease.
+read DLS files and read/write SF2/SF3 files with ease.
 
 ```shell
 npm install --save spessasynth_lib
@@ -42,7 +42,8 @@ This repository contains both the library and a complete musical web application
   - **SoundFont3 Support:** Play compressed SoundFonts!
   - **Experimental SF2Pack Support:** Play soundfonts compressed with BASSMIDI! (*Note: only works with vorbis compression*)
   - **Can load very large SoundFonts:** up to 4GB! *Note: Only Firefox handles this well; Chromium has a hard-coded memory limit*
-  - **Soundfont manager:** Stack multiple soundfonts!
+- **Soundfont manager:** Stack multiple soundfonts!
+- **DLS Level 1 and 2 Support:** *internally converted to sf2*
 - **Reverb and chorus support:** [customizable!](https://github.com/spessasus/SpessaSynth/wiki/Synthetizer-Class#effects-configuration-object)
 - **Export audio files** using [OfflineAudioContext](https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext)
 - **[Custom modulators for additional controllers](https://github.com/spessasus/SpessaSynth/wiki/Modulator-Class#default-modulators):** Why not?
@@ -102,7 +103,7 @@ This repository contains both the library and a complete musical web application
 
 #### Read and play DLS Level 1 or 2 files
   - Read DLS (DownLoadable Sounds) files as SF2 files!
-  - **Works like a normal soundfont:** *Saving is still [just one function!](https://github.com/spessasus/SpessaSynth/wiki/SoundFont2-Class#write)*
+  - **Works like a normal soundfont:** *Saving it as sf2 is still [just one function!](https://github.com/spessasus/SpessaSynth/wiki/SoundFont2-Class#write)*
   - Converts articulators to both **modulators** and **generators**!
   - Works with both unsigned 8-bit samples and signed 16-bit samples!
   - **Covers special generator cases:** *such as modLfoToPitch*!
@@ -148,9 +149,10 @@ npm install --save spessasynth_lib
   - Render each channel as a separate .wav file
   - Export the modified MIDI file to .mid
   - Export the trimmed SoundFont to .sf2
+  - Export a DLS file to .sf2
   - Or compress it as .sf3!
   - Bundle both as .rmi with metadata such as album cover!
-- Comes bundled with a compressed [SGM](https://web.archive.org/web/20130616094125/http://www.geocities.jp/shansoundfont/) SoundFont to get you started
+- Comes bundled with a compressed [GeneralUser GS](https://schristiancollins.com/generaluser.php) SoundFont to get you started
 - No additional dependencies!
 
 <h3 align='center'>Still not convinced? Check out these screenshots:</h3>
@@ -217,6 +219,7 @@ Local edition comes with easier soundfont management than the demo version.
 - [OggVorbisEncoder](https://github.com/higuma/ogg-vorbis-encoder-js) - for the MIT Vorbis encoder
 - [Insignify Music](https://www.youtube.com/@InsignifyMusic/) - for the great arrangement of Field of Hopes and Dreams
 - [Falcosoft](https://falcosoft.hu) - for help with the RMIDI format
+- [Christian Collins](https://schristiancollins.com) - for the bundled GeneralUserGS soundfont
 - **And You!** - for checking out this project. I hope you like it :)
 
 ### Major Releases
