@@ -341,7 +341,7 @@ document.getElementById("file_upload").style.display = "none";
 async function playDemoSong(fileName)
 {
     titleMessage.textContent = window.manager.localeManager.getLocaleString("locale.synthInit.genericLoading");
-    const r = await fetch("demo_songs/" + fileName);
+    const r = await fetch("https://spessasus.github.io/spessasynth-demo-songs/demo_songs/" + fileName);
     r.name = fileName;
     await startMidi([r]);
 }
@@ -445,42 +445,43 @@ demoInit(initLocale).then(() => {
             }, 1000)
         }, ANIMATION_REFLOW_TIME);
     }
-    demoSongButton.onclick = () => {
+    demoSongButton.onclick = async () => {
+        /**
+         * @type {NotificationContent[]}
+         */
+        const contents = [
+            {
+                type: "button",
+                textContent: window.manager.localeManager.getLocaleString("locale.credits"),
+                onClick: () => {
+                    window.open("https://github.com/spessasus/spessasynth-demo-songs#readme");
+                }
+            }
+        ];
+        titleMessage.textContent = window.manager.localeManager.getLocaleString("locale.synthInit.genericLoading");
+        const songs = await ((await fetch("https://spessasus.github.io/spessasynth-demo-songs/demo_song_list.json")).text());
+        /**
+         * @type {{
+         *     name: string,
+         *     fileName: string
+         * }[]}
+         */
+        const songsJSON = JSON.parse(songs);
+        for(const song of songsJSON)
+        {
+            contents.push({
+                type: "button",
+                textContent: song.name,
+                onClick:async n => {
+                    closeNotification(n.id);
+                    await playDemoSong(song.fileName);
+                }
+            },)
+        }
+
         showNotification(
             window.manager.localeManager.getLocaleString("locale.demoSongButton"),
-            [
-                {
-                    type: "button",
-                    textContent: window.manager.localeManager.getLocaleString("locale.credits"),
-                    onClick: () => {
-                        window.open("https://github.com/spessasus/SpessaSynth/blob/master/demo_songs/CREDITS.md");
-                    }
-                },
-                {
-                    type: "button",
-                    textContent: "Field Of Hopes and Dreams - Deltarune",
-                    onClick:async n => {
-                        closeNotification(n.id);
-                        await playDemoSong("Field of Hopes and Dreams.rmi");
-                    }
-                },
-                {
-                    type: "button",
-                    textContent: "Hybrid Song/Funky Stars - Quazar of Sanxion",
-                    onClick: async n => {
-                        closeNotification(n.id);
-                        await playDemoSong("Hybrid song 2_20.rmi");
-                    }
-                },
-                {
-                    type: "button",
-                    textContent: "Unreeeal Superhero 3 - Kenet & Rez",
-                    onClick: async n => {
-                        closeNotification(n.id);
-                        await playDemoSong("Unreeeal superhero 3.rmi");
-                    }
-                }
-            ],
+            contents,
             999999,
             true,
             undefined

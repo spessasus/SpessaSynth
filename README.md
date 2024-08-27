@@ -217,7 +217,7 @@ Local edition comes with easier soundfont management than the demo version.
 - [RecordingBlogs](https://www.recordingblogs.com/) - for detailed explanations on MIDI messages
 - [stbvorbis.js](https://github.com/hajimehoshi/stbvorbis.js) - for the Vorbis decoder
 - [OggVorbisEncoder](https://github.com/higuma/ogg-vorbis-encoder-js) - for the MIT Vorbis encoder
-- [Insignify Music](https://www.youtube.com/@InsignifyMusic/) - for the great arrangement of Field of Hopes and Dreams
+- [Composers](https://github.com/spessasus/spessasynth-demo-songs#readme) - for the demo songs
 - [Falcosoft](https://falcosoft.hu) - for help with the RMIDI format
 - [Christian Collins](https://schristiancollins.com) - for the bundled GeneralUserGS soundfont
 - **And You!** - for checking out this project. I hope you like it :)
