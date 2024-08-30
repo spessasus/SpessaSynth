@@ -60,8 +60,7 @@ class WorkletSequencer
          * @type {{
          *     midiNote: number,
          *     channel: number,
-         *     velocity: number,
-         *     startTime: number
+         *     velocity: number
          * }[]}
          */
         this.playingNotes = [];

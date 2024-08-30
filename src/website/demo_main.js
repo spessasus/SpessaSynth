@@ -12,6 +12,7 @@ import { LocaleManager } from './locale/locale_manager.js'
  * demo_main.js
  * purpose: main script for the demo, loads the soundfont and passes it to the manager.js
  */
+const SAMPLE_RATE = 44100;
 const SF_NAME = "GeneralUserGS.sf3";
 /**
  * @type {HTMLHeadingElement}
@@ -121,7 +122,7 @@ async function demoInit(initLocale)
     try
     {
         const context = window.AudioContext || window.webkitAudioContext;
-        window.audioContextMain = new context({ sampleRate: 44100 });
+        window.audioContextMain = new context({ sampleRate: SAMPLE_RATE });
     }
     catch (e)
     {

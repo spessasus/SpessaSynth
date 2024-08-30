@@ -264,10 +264,8 @@ export function play(resetTime = false)
     }
     if(!this.sendMIDIMessages)
     {
-        const time = this.currentTime;
         this.playingNotes.forEach(n => {
-            const timeOffset = n.startTime - time;
-            this.synth.noteOn(n.channel, n.midiNote, n.velocity, false, true, currentTime + timeOffset);
+            this.synth.noteOn(n.channel, n.midiNote, n.velocity, false, true);
         });
     }
     this.setProcessHandler();

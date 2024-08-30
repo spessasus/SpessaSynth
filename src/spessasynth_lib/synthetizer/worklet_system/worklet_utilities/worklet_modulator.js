@@ -1,8 +1,9 @@
 import { modulatorSources } from '../../../soundfont/read_sf2/modulators.js'
 import { getModulatorCurveValue, MOD_PRECOMPUTED_LENGTH } from './modulator_curves.js'
 import { NON_CC_INDEX_OFFSET } from './worklet_processor_channel.js'
-import { recalculateVolumeEnvelope } from './volume_envelope.js'
 import { generatorTypes } from '../../../soundfont/read_sf2/generators.js'
+import { WorkletVolumeEnvelope } from './volume_envelope.js'
+import { WorkletModulationEnvelope } from './modulation_envelope.js'
 
 /**
  * worklet_modulator.js
@@ -114,6 +115,9 @@ export function computeWorkletModulator(controllerTable, modulator, voice)
 export function computeModulators(voice, controllerTable, sourceUsesCC = -1, sourceIndex = 0) {
     const { modulators, generators, modulatedGenerators } = voice;
 
+    // Modulation envelope is cheap to recalculate
+    WorkletModulationEnvelope.recalculate(voice);
+
     if (sourceUsesCC === -1)
     {
         // All modulators mode: compute all modulators
@@ -121,7 +125,7 @@ export function computeModulators(voice, controllerTable, sourceUsesCC = -1, sou
         modulators.forEach(mod => {
             modulatedGenerators[mod.modulatorDestination] += computeWorkletModulator(controllerTable, mod, voice);
         });
-        recalculateVolumeEnvelope(voice);
+        WorkletVolumeEnvelope.recalculate(voice);
         return;
     }
 
@@ -165,7 +169,7 @@ export function computeModulators(voice, controllerTable, sourceUsesCC = -1, sou
     // Recalculate volume envelope if necessary
     if ([...computedDestinations].some(dest => volenvNeedsRecalculation.has(dest)))
     {
-        recalculateVolumeEnvelope(voice);
+        WorkletVolumeEnvelope.recalculate(voice);
     }
 }
 

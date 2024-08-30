@@ -2,12 +2,12 @@ import { generatorTypes } from '../../../soundfont/read_sf2/generators.js'
 import { absCentsToHz, decibelAttenuationToGain, timecentsToSeconds } from '../worklet_utilities/unit_converter.js'
 import { getLFOValue } from '../worklet_utilities/lfo.js'
 import { customControllers } from '../worklet_utilities/worklet_processor_channel.js'
-import { getModEnvValue } from '../worklet_utilities/modulation_envelope.js'
+import { WorkletModulationEnvelope } from '../worklet_utilities/modulation_envelope.js'
 import { getOscillatorData } from '../worklet_utilities/wavetable_oscillator.js'
 import { panVoice } from '../worklet_utilities/stereo_panner.js'
-import { applyVolumeEnvelope, recalculateVolumeEnvelope } from '../worklet_utilities/volume_envelope.js'
 import { applyLowpassFilter } from '../worklet_utilities/lowpass_filter.js'
 import { MIN_NOTE_LENGTH } from '../main_processor.js'
+import { WorkletVolumeEnvelope } from '../worklet_utilities/volume_envelope.js'
 
 
 const HALF_PI = Math.PI / 2;
@@ -36,10 +36,10 @@ export function renderVoice(
         // if not in release, check if the release time is
         if (currentTime >= voice.releaseStartTime)
         {
-            voice.releaseStartModEnv = voice.currentModEnvValue;
+
             voice.isInRelease = true;
-            recalculateVolumeEnvelope(voice);
-            voice.volumeEnvelope.currentReleaseGain = decibelAttenuationToGain(voice.volumeEnvelope.currentAttenuationDb);
+            WorkletVolumeEnvelope.startRelease(voice);
+            WorkletModulationEnvelope.startRelease(voice);
         }
     }
 
@@ -127,7 +127,7 @@ export function renderVoice(
     // mod env
     const modEnvPitchDepth = voice.modulatedGenerators[generatorTypes.modEnvToPitch];
     const modEnvFilterDepth = voice.modulatedGenerators[generatorTypes.modEnvToFilterFc];
-    const modEnv = getModEnvValue(voice, currentTime);
+    const modEnv = WorkletModulationEnvelope.getValue(voice, currentTime);
     // apply values
     lowpassCents += modEnv * modEnvFilterDepth;
     cents += modEnv * modEnvPitchDepth;
@@ -153,7 +153,7 @@ export function renderVoice(
     applyLowpassFilter(voice, bufferOut, lowpassCents);
 
     // volenv
-    applyVolumeEnvelope(voice, bufferOut, currentTime, modLfoCentibels, this.sampleTime, this.volumeEnvelopeSmoothingFactor);
+    WorkletVolumeEnvelope.apply(voice, bufferOut, modLfoCentibels, this.volumeEnvelopeSmoothingFactor);
 
     // pan the voice and write out
     voice.currentPan += (pan - voice.currentPan) * this.panSmoothingFactor; // smooth out pan to prevent clicking

@@ -1,7 +1,8 @@
 import { getWorkletVoices } from '../worklet_utilities/worklet_voice.js'
 import { generatorTypes } from '../../../soundfont/read_sf2/generators.js'
 import { computeModulators } from '../worklet_utilities/worklet_modulator.js'
-import { recalculateVolumeEnvelope } from '../worklet_utilities/volume_envelope.js'
+import { WorkletVolumeEnvelope } from '../worklet_utilities/volume_envelope.js'
+import { WorkletModulationEnvelope } from '../worklet_utilities/modulation_envelope.js'
 
 /**
  * Append the voices
@@ -72,7 +73,8 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
                     this.releaseVoice(v);
                     v.modulatedGenerators[generatorTypes.releaseVolEnv] = -7000; // make the release nearly instant
                     v.modulatedGenerators[generatorTypes.releaseModEnv] = -7000;
-                    recalculateVolumeEnvelope(v);
+                    WorkletVolumeEnvelope.recalculate(v);
+                    WorkletModulationEnvelope.recalculate(v);
                 }
             })
         }

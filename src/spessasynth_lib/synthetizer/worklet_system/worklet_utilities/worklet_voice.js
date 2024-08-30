@@ -33,13 +33,11 @@
  * @property {number} pressure - the pressure of the note
  * @property {number} targetKey - target key for the note
  *
+ * @property {WorkletModulationEnvelope} modulationEnvelope
  * @property {WorkletVolumeEnvelope} volumeEnvelope
  *
- * @property {number} currentModEnvValue - current value of the modulation envelope
- * @property {number} releaseStartModEnv - modenv value at the start of the release phase
- *
- * @property {number} startTime - start time of the voice
- * @property {number} releaseStartTime - start time of the release phase
+ * @property {number} startTime - start time of the voice absolute
+ * @property {number} releaseStartTime - start time of the release phase absolute
  *
  * @property {number} currentTuningCents - current tuning adjustment in cents
  * @property {number} currentTuningCalculated - calculated tuning adjustment
@@ -48,8 +46,9 @@
 
 import { addAndClampGenerator, generatorTypes } from '../../../soundfont/read_sf2/generators.js'
 import { SpessaSynthTable, SpessaSynthWarn } from '../../../utils/loggin.js'
-import { DEFAULT_WORKLET_VOLUME_ENVELOPE } from './volume_envelope.js'
 import { DEFAULT_WORKLET_LOWPASS_FILTER } from './lowpass_filter.js'
+import { WorkletVolumeEnvelope } from './volume_envelope.js'
+import { WorkletModulationEnvelope } from './modulation_envelope.js'
 
 
 /**
@@ -87,8 +86,9 @@ dumpSample(channel, sample, id, sampleDumpCallback)
  * Deep clone function for the WorkletVoice object and its nested structures.
  * This function handles Int16Array, objects, arrays, and primitives.
  * It does not handle circular references.
- * @param {WorkletVoice} obj - The object to clone.
- * @returns {WorkletVoice} - Cloned object.
+ * @template T
+ * @param {T} obj - The object to clone.
+ * @returns {T} - Cloned object.
  */
 function deepClone(obj) {
     if (obj === null || typeof obj !== 'object') {
@@ -116,12 +116,11 @@ function deepClone(obj) {
     return clonedObj;
 }
 
-
 /**
  * @param channel {number} a hint for the processor to recalculate sample cursors when sample dumping
  * @param midiNote {number}
  * @param velocity {number}
- * @param preset {Preset}
+ * @param preset {BasicPreset}
  * @param currentTime {number}
  * @param sampleRate {number}
  * @param sampleDumpCallback {function({channel: number, sampleID: number, sampleData: Float32Array})}
@@ -246,7 +245,7 @@ export function getWorkletVoices(channel,
                 // generators and modulators
                 generators: generators,
                 modulators: sampleAndGenerators.modulators,
-                modulatedGenerators: new Int16Array(60),
+                modulatedGenerators: new Int16Array(generators),
 
                 // sample and playback data
                 sample: workletSample,
@@ -263,11 +262,10 @@ export function getWorkletVoices(channel,
                 // envelope data
                 finished: false,
                 isInRelease: false,
-                currentModEnvValue: 0,
-                releaseStartModEnv: 1,
                 currentPan: 0.5,
 
-                volumeEnvelope: deepClone(DEFAULT_WORKLET_VOLUME_ENVELOPE)
+                volumeEnvelope: new WorkletVolumeEnvelope(sampleRate),
+                modulationEnvelope: new WorkletModulationEnvelope()
             });
             return voices;
         }, []);
