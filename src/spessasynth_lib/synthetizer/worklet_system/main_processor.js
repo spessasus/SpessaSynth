@@ -330,7 +330,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
                 }
             });
 
-            totalCurrentVoices += tempV.length;
+            totalCurrentVoices += channel.voices.length;
         });
 
         // if voice count changed, update voice amount

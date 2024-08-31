@@ -9,7 +9,7 @@ import { generatorTypes } from '../../../soundfont/read_sf2/generators.js'
 export const VOLUME_ENVELOPE_SMOOTHING_FACTOR = 0.001;
 
 const DB_SILENCE = 100;
-const PERCEIVED_DB_SILENCE = 80;
+const PERCEIVED_DB_SILENCE = 70;
 
 /**
  * VOL ENV STATES:
@@ -207,6 +207,11 @@ export class WorkletVolumeEnvelope
 
                 default:
                     env.releaseStartDb = env.currentAttenuationDb;
+            }
+            env.releaseStartDb = Math.min(env.releaseStartDb, DB_SILENCE);
+            if(env.releaseStartDb >= PERCEIVED_DB_SILENCE)
+            {
+                voice.finished = true;
             }
         }
     }

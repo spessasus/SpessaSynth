@@ -123,7 +123,6 @@ export class WorkletModulationEnvelope
     }
 
     /**
-     * FIXME: GeneralUserGS 808 toms sound incorrect
      * Calculates the current modulation envelope value for the given time and voice
      * @param voice {WorkletVoice} the voice we're working on
      * @param currentTime {number} in seconds
@@ -134,7 +133,7 @@ export class WorkletModulationEnvelope
         const env = voice.modulationEnvelope;
         if(voice.isInRelease)
         {
-            if(voice.modulatedGenerators[generatorTypes.releaseModEnv] < -7199)
+            if(env.releaseDuration < 0.001)
             {
                 // prevent lowpass bugs if release is instant
                 return env.releaseStartLevel;
