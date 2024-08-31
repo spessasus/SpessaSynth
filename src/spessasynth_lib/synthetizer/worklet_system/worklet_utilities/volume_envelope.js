@@ -249,6 +249,15 @@ export class WorkletVolumeEnvelope
             // as the instant notes don't end instantly when they should
             const releaseSmoothingFactor = smoothingFactor * 10;
             let elapsedRelease = env.currentSampleTime - env.releaseStartTimeSamples;
+            if(elapsedRelease >= env.releaseDuration)
+            {
+                for (let i = 0; i < audioBuffer.length; i++)
+                {
+                    audioBuffer[i] = 0;
+                }
+                voice.finished = true;
+                return;
+            }
             let dbDifference = DB_SILENCE - env.releaseStartDb;
             let db = 0;
             for (let i = 0; i < audioBuffer.length; i++)
