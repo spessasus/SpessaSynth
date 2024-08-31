@@ -463,6 +463,11 @@ export function systemExclusive(messageData, channelOffset = 0)
                         return;
                     }
                     const channel = messageData[4] + channelOffset;
+                    if(channel >= this.workletProcessorChannels.length)
+                    {
+                        // invalid channel
+                        return;
+                    }
                     const value = messageData[6];
                     switch (messageData[5])
                     {
@@ -479,6 +484,17 @@ export function systemExclusive(messageData, channelOffset = 0)
                         // program change
                         case 0x03:
                             this.programChange(channel, value);
+                            break;
+
+                        // note shift
+                        case 0x08:
+                            const chan = this.workletProcessorChannels[channel];
+                            if(chan.drumChannel)
+                            {
+                                return;
+                            }
+                            const semitones = value - 64;
+                            chan.channelTransposeKeyShift = semitones;
                             break;
 
                         // volume

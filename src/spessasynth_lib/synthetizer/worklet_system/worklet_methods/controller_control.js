@@ -2,7 +2,7 @@ import { consoleColors } from '../../../utils/other.js'
 import { midiControllers } from '../../../midi_parser/midi_message.js'
 import { dataEntryStates } from '../worklet_utilities/worklet_processor_channel.js'
 import { computeModulators } from '../worklet_utilities/worklet_modulator.js'
-import { SpessaSynthInfo } from '../../../utils/loggin.js'
+import { SpessaSynthInfo, SpessaSynthWarn } from '../../../utils/loggin.js'
 import { SYNTHESIZER_GAIN } from '../main_processor.js'
 
 /**
@@ -18,6 +18,11 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
      * @type {WorkletProcessorChannel}
      */
     const channelObject = this.workletProcessorChannels[channel];
+    if(channelObject === undefined)
+    {
+        SpessaSynthWarn(`Trying to access channel ${channel} which does not exist... ignoring!`);
+        return;
+    }
     // lsb controller values: append them as the lower nibble of the 14 bit value
     // excluding bank select and data entry as it's handled separately
     if(

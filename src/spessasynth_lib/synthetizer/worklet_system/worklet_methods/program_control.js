@@ -2,7 +2,7 @@ import { midiControllers } from '../../../midi_parser/midi_message.js'
 import { clearSamplesList } from '../worklet_utilities/worklet_voice.js'
 import { generatorTypes } from '../../../soundfont/read_sf2/generators.js'
 import { returnMessageType } from '../message_protocol/worklet_message.js'
-import { SpessaSynthInfo } from '../../../utils/loggin.js'
+import { SpessaSynthInfo, SpessaSynthWarn } from '../../../utils/loggin.js'
 import { consoleColors } from '../../../utils/other.js'
 import { loadSoundFont } from '../../../soundfont/load_soundfont.js'
 
@@ -19,6 +19,11 @@ export function programChange(channel, programNumber, userChange=false)
      * @type {WorkletProcessorChannel}
      */
     const channelObject = this.workletProcessorChannels[channel];
+    if(channelObject === undefined)
+    {
+        SpessaSynthWarn(`Trying to access channel ${channel} which does not exist... ignoring!`);
+        return;
+    }
     if(channelObject.lockPreset)
     {
         return;
