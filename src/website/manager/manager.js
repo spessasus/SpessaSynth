@@ -134,9 +134,14 @@ class Manager
         const data = await response.arrayBuffer();
         this.impulseResponse = await context.decodeAudioData(data);
 
+        this.audioDelay = new DelayNode(context, {
+            delayTime: 0
+        });
+        this.audioDelay.connect(context.destination);
+
         // set up synthetizer
         this.synth = new Synthetizer(
-            context.destination,
+            this.audioDelay,
             this.soundFont,
             undefined,
             undefined,
@@ -169,7 +174,7 @@ class Manager
         canvas.width = window.innerWidth * window.devicePixelRatio;
         canvas.height = window.innerHeight * window.devicePixelRatio;
 
-        this.renderer = new Renderer(this.channelColors, this.synth, canvas);
+        this.renderer = new Renderer(this.channelColors, this.synth, canvas, this.audioDelay);
         this.renderer.render(true);
 
         let titleSwappedWithSettings = false;

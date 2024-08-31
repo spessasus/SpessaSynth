@@ -9,7 +9,7 @@ import { generatorTypes } from '../../../soundfont/read_sf2/generators.js'
 export const VOLUME_ENVELOPE_SMOOTHING_FACTOR = 0.001;
 
 const DB_SILENCE = 100;
-const PERCEIVED_DB_SILENCE = 96;
+const PERCEIVED_DB_SILENCE = 80;
 
 /**
  * VOL ENV STATES:

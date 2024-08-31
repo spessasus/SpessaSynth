@@ -56,8 +56,9 @@ class Renderer
      * @param channelColors {Array<string>}
      * @param synth {Synthetizer}
      * @param canvas {HTMLCanvasElement}
+     * @param delayNode {DelayNode} used for correcting time for large fft sizes
      */
-    constructor(channelColors, synth, canvas)
+    constructor(channelColors, synth, canvas, delayNode)
     {
         // variables
         /**
@@ -85,6 +86,7 @@ class Renderer
         this._normalAnalyserFft = CHANNEL_ANALYSER_FFT;
         this._drumAnalyserFft = DRUMS_ANALYSER_FFT;
         this.waveMultiplier = WAVE_MULTIPLIER;
+        this.waveSign = 1;
 
         /**
          * @type {boolean}
@@ -124,6 +126,7 @@ class Renderer
 
         // synth and analysers
         this.synth = synth;
+        this.delayNode = delayNode;
         this.notesOnScreen = 0;
 
         /**
