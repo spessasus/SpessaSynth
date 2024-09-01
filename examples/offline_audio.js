@@ -5,7 +5,7 @@ import { audioBufferToWav } from '../src/spessasynth_lib/utils/buffer_to_wav.js'
 import { MIDI } from '../src/spessasynth_lib/midi_parser/midi_loader.js'
 
 // load the soundfont
-fetch("../soundfonts/SGM.sf3").then(async response => {
+fetch("../soundfonts/GeneralUserGS.sf3").then(async response => {
     // load the soundfont into an array buffer
     let soundFontArrayBuffer = await response.arrayBuffer();
     document.getElementById("message").innerText = "SoundFont has been loaded!";

@@ -27,7 +27,7 @@ const channelColors = [
 const VISUALIZER_GAIN = 2;
 
 // load the soundfont
-fetch("../soundfonts/SGM.sf3").then(async response => {
+fetch("../soundfonts/GeneralUserGS.sf3").then(async response => {
     // load the soundfont into an array buffer
     let soundFontArrayBuffer = await response.arrayBuffer();
     document.getElementById("message").innerText = "SoundFont has been loaded!";

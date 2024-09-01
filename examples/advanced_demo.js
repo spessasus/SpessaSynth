@@ -4,7 +4,7 @@ import { Sequencer } from '../src/spessasynth_lib/sequencer/sequencer.js'
 import { Synthetizer } from '../src/spessasynth_lib/synthetizer/synthetizer.js'
 
 // load the soundfont
-fetch("../soundfonts/SGM.sf3").then(async response => {
+fetch("../soundfonts/GeneralUserGS.sf3").then(async response => {
     // load the soundfont into an array buffer
     let soundFontBuffer = await response.arrayBuffer();
     document.getElementById("message").innerText = "SoundFont has been loaded!";
