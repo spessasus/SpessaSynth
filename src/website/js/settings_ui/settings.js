@@ -62,9 +62,12 @@ class SpessaSynthSettings
             "full": { min: 0, max: 127 },
             "piano": { min: 21, max: 108 },
             "5 octaves": { min: 36, max: 96 },
-            "one octave": { min: 60, max: 72 } // one more key because it sounds nice
+            "two octaves": { min: 53, max: 77 }
         };
 
+        /**
+         * @type {HTMLElement}
+         */
         const settingsButton = document.createElement("div");
         settingsButton.style.position = "relative";
         settingsButton.classList.add("seamless_button");
@@ -339,6 +342,7 @@ class SpessaSynthSettings
                 channelSelector: document.getElementById("channel_selector"),
                 modeSelector: document.getElementById("mode_selector"),
                 sizeSelector: document.getElementById("keyboard_size_selector"),
+                showSelector: document.getElementById("keyboard_show")
             },
 
             midi: {

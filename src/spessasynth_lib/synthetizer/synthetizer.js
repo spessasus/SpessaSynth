@@ -26,6 +26,8 @@ import { SoundfontManager } from './synth_soundfont_manager.js'
  * @property {boolean|undefined} oneOutput - if synth should use one output with 32 channels (2 audio channels for each midi channel). this disables chorus and reverb.
  */
 
+const CURRENT_SPESSASYNTH_VERSION = "3.20.8";
+
 export const WORKLET_PROCESSOR_NAME = "spessasynth-worklet-system";
 
 export const VOICE_CAP = 450;
@@ -218,10 +220,7 @@ export class Synthetizer {
      */
     set voiceCap(value)
     {
-        this.post({
-            messageType: workletMessageType.setMasterParameter,
-            messageData: [masterParameterType.voicesCap, value]
-        })
+        this._setMasterParam(masterParameterType.voicesCap, value);
         this._voiceCap = value;
     }
 
@@ -250,10 +249,35 @@ export class Synthetizer {
     setLogLevel(enableInfo, enableWarning, enableGroup, enableTable)
     {
         this.post({
-            channelNumber: -1,
+            channelNumber: ALL_CHANNELS_OR_DIFFERENT_ACTION,
             messageType: workletMessageType.setLogLevel,
             messageData: [enableInfo, enableWarning, enableGroup, enableTable]
         });
+    }
+
+    /**
+     * @param type {masterParameterType}
+     * @param data {any}
+     * @private
+     */
+    _setMasterParam(type, data)
+    {
+        this.post({
+            channelNumber: ALL_CHANNELS_OR_DIFFERENT_ACTION,
+            messageType: workletMessageType.setMasterParameter,
+            messageData: [type, data]
+        })
+    }
+
+    /**
+     * Sets the interpolation type for the synthesizer:
+     * 0 - linear
+     * 1 - nearest neighbor
+     * @param type {interpolationTypes}
+     */
+    setInterpolationType(type)
+    {
+        this._setMasterParam(masterParameterType.interpolationType, type);
     }
 
     /**
@@ -300,6 +324,17 @@ export class Synthetizer {
             case returnMessageType.soundfontError:
                 SpessaSynthWarn(new Error(messageData));
                 this.eventHandler.callEvent("soundfonterror", messageData);
+                break;
+
+            case returnMessageType.identify:
+                if(messageData !== CURRENT_SPESSASYNTH_VERSION)
+                {
+                    this.stopAll(true);
+                    this.worklet.disconnect();
+                    throw new Error(`Outdated processor (worklet_processor.min.js)
+                     version: ${messageData}. 
+                     Please update it to the latest version (${CURRENT_SPESSASYNTH_VERSION})`);
+                }
         }
     }
 
@@ -563,11 +598,7 @@ export class Synthetizer {
      */
     setMainVolume(volume)
     {
-        this.post({
-            channelNumber: ALL_CHANNELS_OR_DIFFERENT_ACTION,
-            messageType: workletMessageType.setMasterParameter,
-            messageData: [masterParameterType.mainVolume, volume]
-        });
+        this._setMasterParam(masterParameterType.mainVolume, volume);
     }
 
     /**
@@ -576,11 +607,7 @@ export class Synthetizer {
      */
     setMasterPan(pan)
     {
-        this.post({
-            channelNumber: ALL_CHANNELS_OR_DIFFERENT_ACTION,
-            messageType: workletMessageType.setMasterParameter,
-            messageData: [masterParameterType.masterPan, pan]
-        });
+        this._setMasterParam(masterParameterType.masterPan, pan);
     }
 
     /**

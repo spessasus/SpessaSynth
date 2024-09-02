@@ -26,7 +26,8 @@ export function _serializeSettings()
             selectedChannel: this.midiKeyboard.channel,
             keyRange: this.midiKeyboard.keyRange,
             mode: this.midiKeyboard.mode,
-            autoRange: this.htmlControls.keyboard.sizeSelector.value === USE_MIDI_RANGE
+            autoRange: this.htmlControls.keyboard.sizeSelector.value === USE_MIDI_RANGE,
+            show: this.htmlControls.keyboard.showSelector.checked === true
         },
 
         midi: {

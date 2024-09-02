@@ -3,14 +3,23 @@
  * purpose: plays back raw audio data at an arbitrary playback rate
  */
 
+/**
+ *
+ * @enum {number}
+ */
+export const interpolationTypes = {
+    linear: 0,
+    nearestNeighbor: 1
+}
+
 
 /**
- * Fills the output buffer with raw sample data
+ * Fills the output buffer with raw sample data using linear interpolation
  * @param voice {WorkletVoice} the voice we're working on
  * @param sampleData {Float32Array} the sample data to write with
  * @param outputBuffer {Float32Array} the output buffer to write to
  */
-export function getOscillatorData(voice, sampleData, outputBuffer)
+export function getSampleLinear(voice, sampleData, outputBuffer)
 {
     let cur = voice.sample.cursor;
     const loop = (voice.sample.loopingMode === 1) || (voice.sample.loopingMode === 3 && !voice.isInRelease);
@@ -89,6 +98,68 @@ export function getOscillatorData(voice, sampleData, outputBuffer)
             const lower = sampleData[floor];
             outputBuffer[i] = (lower + (upper - lower) * fraction);
 
+            cur += voice.sample.playbackStep * voice.currentTuningCalculated;
+        }
+    }
+    voice.sample.cursor = cur;
+}
+
+/**
+ * Fills the output buffer with raw sample data using no interpolation (nearest neighbor)
+ * @param voice {WorkletVoice} the voice we're working on
+ * @param sampleData {Float32Array} the sample data to write with
+ * @param outputBuffer {Float32Array} the output buffer to write to
+ */
+export function getSampleNearest(voice, sampleData, outputBuffer)
+{
+    let cur = voice.sample.cursor;
+    const loop = (voice.sample.loopingMode === 1) || (voice.sample.loopingMode === 3 && !voice.isInRelease);
+    const loopLength = voice.sample.loopEnd - voice.sample.loopStart;
+
+    if(loop)
+    {
+        for (let i = 0; i < outputBuffer.length; i++)
+        {
+            // check for loop
+            while(cur >= voice.sample.loopEnd)
+            {
+                cur -= loopLength;
+            }
+
+            // grab the nearest neighbor
+            let ceil = ~~cur + 1;
+
+            while(ceil >= voice.sample.loopEnd)
+            {
+                ceil -= loopLength;
+            }
+
+            outputBuffer[i] = sampleData[ceil];
+            cur += voice.sample.playbackStep * voice.currentTuningCalculated;
+        }
+    }
+    else
+    {
+        // check and correct end errors
+        if(voice.sample.end >= sampleData.length)
+        {
+            voice.sample.end = sampleData.length - 1;
+        }
+        for (let i = 0; i < outputBuffer.length; i++)
+        {
+
+            // nearest neighbor
+            const ceil = ~~cur + 1;
+
+            // flag the voice as finished if needed
+            if(ceil >= voice.sample.end)
+            {
+                voice.finished = true;
+                return;
+            }
+
+            //nearest neighbor (uncomment to use)
+            outputBuffer[i] = sampleData[ceil];
             cur += voice.sample.playbackStep * voice.currentTuningCalculated;
         }
     }

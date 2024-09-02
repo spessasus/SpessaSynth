@@ -56,5 +56,11 @@ export const synthesizerControllerLocale = {
         description: "Pokaż instrukcję obsługi"
     },
 
+    interpolation: {
+        description: "Wybierz metodę interpolacji",
+        linear: "Interpolacja liniowa",
+        nearestNeighbor: "Najbliższy sąsiad"
+    },
+
     channelController: channelControllerLocale
 }

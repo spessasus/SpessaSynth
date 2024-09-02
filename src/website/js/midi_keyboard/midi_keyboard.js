@@ -62,6 +62,11 @@ class MidiKeyboard
         this.channel = 0;
 
         this.channelColors = channelColors;
+        /**
+         * @type {boolean}
+         * @private
+         */
+        this._shown = true;
 
         this._createKeyboard();
 
@@ -87,6 +92,27 @@ class MidiKeyboard
                 }
             }
         });
+    }
+
+    /**
+     * @param val {boolean}
+     */
+    set shown(val)
+    {
+        if(val === true)
+        {
+            this.keyboard.style.display = "";
+        }
+        else
+        {
+            this.keyboard.style.display = "none";
+        }
+        this._shown = val;
+    }
+
+    get shown()
+    {
+        return this._shown;
     }
 
     /**

@@ -151,4 +151,10 @@ export function _createKeyboardHandler( keyboard, synthui, renderer)
         this._saveSettings();
     }
 
+    // keyboard show toggle
+    keyboardControls.showSelector.onclick = () => {
+        keyboard.shown = !keyboard.shown;
+        this._saveSettings();
+    }
+
 }

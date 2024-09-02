@@ -141,6 +141,10 @@ export function handleMessage(message)
                 case masterParameterType.voicesCap:
                     this.voiceCap = value;
                     break;
+
+                case masterParameterType.interpolationType:
+                    this.interpolationType = value;
+                    break;
             }
             break;
 

@@ -8,6 +8,7 @@
  *     mode: ("light" | "dark"),
  *     selectedChannel: number,
  *     autoRange: boolean,
+ *     show: boolean
  *   },
  *   renderer: {
  *     renderNotes: boolean,

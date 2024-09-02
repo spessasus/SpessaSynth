@@ -76,7 +76,7 @@ export const settingsHtml = `
             <option value='full' translate-path='locale.settings.keyboardSettings.keyboardSize.full'></option>
             <option value='piano' translate-path='locale.settings.keyboardSettings.keyboardSize.piano'></option>
             <option value='5 octaves' translate-path='locale.settings.keyboardSettings.keyboardSize.fiveOctaves'></option>
-            <option value='one octave' translate-path='locale.settings.keyboardSettings.keyboardSize.oneOctave'></option>
+            <option value='two octaves' translate-path='locale.settings.keyboardSettings.keyboardSize.twoOctaves'></option>
             <option value='${USE_MIDI_RANGE}' translate-path='locale.settings.keyboardSettings.keyboardSize.useSongKeyRange'></option>
         </select>
         
@@ -84,6 +84,13 @@ export const settingsHtml = `
             <label translate-path-title='locale.settings.keyboardSettings.toggleTheme'></label>
             <label class='switch'>
                 <input type='checkbox' id='mode_selector'>
+                <span class='switch_slider'></span>
+            </label>
+        </div>
+        <div class='switch_label'>
+            <label translate-path-title='locale.settings.keyboardSettings.show'></label>
+            <label class='switch'>
+                <input type="checkbox" checked id="keyboard_show">
                 <span class='switch_slider'></span>
             </label>
         </div>

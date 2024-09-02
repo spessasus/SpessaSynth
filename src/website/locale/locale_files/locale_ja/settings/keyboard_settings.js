@@ -15,11 +15,16 @@ export const keyboardSettingsLocale = {
         piano: "88キー（ピアノ）",
         fiveOctaves: "5オクターブ",
         useSongKeyRange: "曲のキー範囲を使用",
-        oneOctave: "オクターブ"
+        twoOctaves: "オクターブ"
     },
 
     toggleTheme: {
         title: "テーマを切り替え",
         description: "キーボードのテーマを切り替えます",
+    },
+
+    show: {
+        title: "表示",
+        description: "MIDIキーボードを表示/非表示"
     }
 }

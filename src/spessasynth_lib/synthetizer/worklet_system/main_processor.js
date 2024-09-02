@@ -38,12 +38,15 @@ import {
 } from './worklet_methods/program_control.js'
 import { applySynthesizerSnapshot, sendSynthesizerSnapshot } from './worklet_methods/snapshot.js'
 import { WorkletSoundfontManager } from './worklet_methods/worklet_soundfont_manager/worklet_soundfont_manager.js'
+import { interpolationTypes } from './worklet_utilities/wavetable_oscillator.js'
 
 
 /**
  * worklet_processor.js
  * purpose: manages the synthesizer (and worklet sequencer) from the AudioWorkletGlobalScope and renders the audio data
  */
+
+const WORKLET_PROCESSOR_VERSION = "3.20.8";
 
 export const MIN_NOTE_LENGTH = 0.07; // if the note is released faster than that, it forced to last that long
 
@@ -78,6 +81,12 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
          * @type {number}
          */
         this.deviceID = ALL_CHANNELS_OR_DIFFERENT_ACTION;
+
+        /**
+         * Interpolation type used
+         * @type {interpolationTypes}
+         */
+        this.interpolationType = interpolationTypes.linear;
 
         /**
          * @type {function}
@@ -218,6 +227,10 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
 
         stbvorbis.isInitialized.then(() => {
             this.postReady();
+            this.post({
+                messageType: returnMessageType.identify,
+                messageData: WORKLET_PROCESSOR_VERSION
+            });
             SpessaSynthInfo("%cSpessaSynth is ready!", consoleColors.recognized);
         });
     }

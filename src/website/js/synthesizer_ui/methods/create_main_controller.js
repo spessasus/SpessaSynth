@@ -135,6 +135,41 @@ export function createMainSynthController()
     this.locale.bindObjectProperty(helpButton, "textContent", LOCALE_PATH + "helpButton.title");
     this.locale.bindObjectProperty(helpButton, "title", LOCALE_PATH + "helpButton.description");
 
+    /**
+     * interpolation type
+     * @type {HTMLSelectElement}
+     */
+    const interpolation = document.createElement("select");
+    interpolation.classList.add("main_controller_element");
+    interpolation.classList.add("synthui_button");
+    this.locale.bindObjectProperty(interpolation, "title", LOCALE_PATH + "interpolation.description");
+
+    // interpolation types
+    {
+        /**
+         * linear (default)
+         * @type {HTMLOptionElement}
+         */
+        const linear = document.createElement("option");
+        linear.value = "0";
+        linear.selected = true;
+        this.locale.bindObjectProperty(linear, "textContent", LOCALE_PATH + "interpolation.linear");
+        interpolation.appendChild(linear);
+
+        /**
+         * nearest neighbor
+         * @type {HTMLOptionElement}
+         */
+        const nearest = document.createElement("option");
+        nearest.value = "1";
+        this.locale.bindObjectProperty(nearest, "textContent", LOCALE_PATH + "interpolation.nearestNeighbor");
+        interpolation.appendChild(nearest);
+
+        interpolation.onchange = () => {
+            this.synth.setInterpolationType(parseInt(interpolation.value));
+        }
+    }
+
     // main controller
     let controller = document.createElement("div");
     controller.classList.add("synthui_controller");
@@ -160,6 +195,7 @@ export function createMainSynthController()
     controlsWrapper.appendChild(highPerfToggle);
     controlsWrapper.appendChild(vibratoReset);
     controlsWrapper.appendChild(helpButton);
+    controlsWrapper.appendChild(interpolation);
 
     /**
      * @type {Meter[]}
@@ -179,7 +215,8 @@ export function createMainSynthController()
         highPerfToggle,
         vibratoReset,
         showControllerButton,
-        helpButton
+        helpButton,
+        interpolation
     ];
     // main synth div
     this.uiDiv.appendChild(this.voiceMeter.div);

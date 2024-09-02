@@ -64,6 +64,7 @@ export const masterParameterType = {
     mainVolume: 0,
     masterPan: 1,
     voicesCap: 2,
+    interpolationType: 3
 }
 
 
@@ -106,6 +107,7 @@ export const ALL_CHANNELS_OR_DIFFERENT_ACTION = -1;
  * 4 - synthesizer snapshot         -> snapshot<SynthesizerSnapshot> note: refer to snapshot.js
  * 5 - ready                        -> (no data)
  * 6 - soundfontError               -> errorMessage<string>
+ * 7 - idenfity                     -> version<string>
  */
 
 /**
@@ -119,4 +121,5 @@ export const returnMessageType = {
     synthesizerSnapshot: 4,
     ready: 5,
     soundfontError: 6,
+    identify: 7,
 }

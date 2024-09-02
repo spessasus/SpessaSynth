@@ -1,5 +1,5 @@
 export const keyboardSettingsLocale = {
-    title: "Keyboard settings",
+    title: "MIDI Keyboard settings",
 
     selectedChannel: {
         title: "Selected channel",
@@ -15,11 +15,16 @@ export const keyboardSettingsLocale = {
         piano: "88 keys (piano)",
         fiveOctaves: "5 octaves",
         useSongKeyRange: "Use song's key range",
-        oneOctave: "One octave",
+        twoOctaves: "Two octaves",
     },
 
     toggleTheme: {
         title: "Use dark theme",
-        description: "Use the dark keyboard theme",
+        description: "Use the dark MIDI keyboard theme",
+    },
+
+    show: {
+        title: "Show",
+        description: "Show/hide MIDI keyboard"
     }
 }

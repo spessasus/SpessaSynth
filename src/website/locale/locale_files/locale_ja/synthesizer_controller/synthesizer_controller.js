@@ -57,6 +57,11 @@ export const synthesizerControllerLocale = {
         description: "使用ガイドを表示します"
     },
 
+    interpolation: {
+        description: "シンセサイザーの補間方法を選択",
+        linear: "リニア",
+        nearestNeighbor: "なし"
+    },
 
     channelController: channelControllerLocale
 }

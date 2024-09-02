@@ -103,6 +103,12 @@ export async function _loadSettings()
         keyboard.toggleMode(false);
         this.htmlControls.keyboard.modeSelector.checked = true;
     }
+    // keyboard show
+    if(keyboardValues.show === false)
+    {
+        keyboard.shown = false;
+        this.htmlControls.keyboard.showSelector.checked = false;
+    }
 
 
     // interface

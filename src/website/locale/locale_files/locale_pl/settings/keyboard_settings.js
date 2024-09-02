@@ -14,12 +14,17 @@ export const keyboardSettingsLocale = {
         full: "128 klawiszy (pełen zakres)",
         piano: "88 klawiszy (fortepian)",
         fiveOctaves: "5 oktaw",
-        oneOctave: "Oktawa",
+        twoOctaves: "Dwie oktawy",
         useSongKeyRange: "Użyj zakresu utworu",
     },
 
     toggleTheme: {
         title: "Włącz ciemny motyw",
         description: "Włącz ciemny motyw wbudowanego pianina",
+    },
+
+    show: {
+        title: "Pokaż",
+        description: "Pokaż/ukryj pianino"
     }
 }
