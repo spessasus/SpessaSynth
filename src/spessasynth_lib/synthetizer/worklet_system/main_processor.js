@@ -46,8 +46,6 @@ import { interpolationTypes } from './worklet_utilities/wavetable_oscillator.js'
  * purpose: manages the synthesizer (and worklet sequencer) from the AudioWorkletGlobalScope and renders the audio data
  */
 
-const WORKLET_PROCESSOR_VERSION = "3.20.10";
-
 export const MIN_NOTE_LENGTH = 0.07; // if the note is released faster than that, it forced to last that long
 
 export const SYNTHESIZER_GAIN = 1.0;
@@ -227,10 +225,6 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
 
         stbvorbis.isInitialized.then(() => {
             this.postReady();
-            this.post({
-                messageType: returnMessageType.identify,
-                messageData: WORKLET_PROCESSOR_VERSION
-            });
             SpessaSynthInfo("%cSpessaSynth is ready!", consoleColors.recognized);
         });
     }

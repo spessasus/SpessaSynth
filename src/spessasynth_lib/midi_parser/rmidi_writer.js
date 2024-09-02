@@ -230,7 +230,8 @@ export function writeRMIDI(
                         consoleColors.info);
                 } else {
                     // there is a preset with this bank. add offset. For drums add the normal offset.
-                    const newBank = (bank === 128 ? 0 : realBank) + bankOffset;
+                    let drumBank = system === "xg" ? 127 : 0;
+                    const newBank = (bank === 128 ? drumBank : realBank) + bankOffset;
                     channel.lastBank.messageData[1] = newBank;
                     SpessaSynthInfo(`%cPreset %c${bank}:${e.messageData[0]}%c exists. Changing bank to ${newBank}.`,
                         consoleColors.info,

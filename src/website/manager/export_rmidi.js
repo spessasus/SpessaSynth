@@ -135,7 +135,7 @@ export async function _exportRMIDI()
                     const songTitle = n.div.querySelector("input[name='song_title']").value;
                     const comment = n.div.querySelector("input[name='comment']").value;
                     const genre = n.div.querySelector("input[name='genre']").value;
-                    const bankOffset = n.div.querySelector("input[name='bank_offset']").value;
+                    const bankOffset = parseInt(n.div.querySelector("input[name='bank_offset']").value);
                     const adjust = n.div.querySelector("input[name='adjust']").checked;
 
                     /**
