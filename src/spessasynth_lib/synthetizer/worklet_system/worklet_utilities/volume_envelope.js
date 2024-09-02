@@ -145,7 +145,7 @@ export class WorkletVolumeEnvelope
         }
         // calculate absolute times (they can change so we have to recalculate every time
         env.attenuation = voice.modulatedGenerators[generatorTypes.initialAttenuation] / 10; // divide by ten to get decibelts
-        env.sustainDb = voice.volumeEnvelope.attenuation + voice.modulatedGenerators[generatorTypes.sustainVolEnv] / 10;
+        env.sustainDb = Math.min(100, voice.volumeEnvelope.attenuation + voice.modulatedGenerators[generatorTypes.sustainVolEnv] / 10);
 
         // calculate durations
         env.attackDuration = timecentsToSamples(voice.modulatedGenerators[generatorTypes.attackVolEnv]);
@@ -154,8 +154,8 @@ export class WorkletVolumeEnvelope
         // therefore we need to calculate the real time
         // (changing from attenuation to sustain instead of -100dB)
         const fullChange = voice.modulatedGenerators[generatorTypes.decayVolEnv];
-        const keyNumAddition = ((60 - voice.targetKey) * voice.modulatedGenerators[generatorTypes.keyNumToVolEnvDecay]);
-        const fraction = (env.sustainDb - env.attenuation) / (100 - env.attenuation);
+        const keyNumAddition = (60 - voice.targetKey) * voice.modulatedGenerators[generatorTypes.keyNumToVolEnvDecay];
+        const fraction = (env.sustainDb - env.attenuation) / 100;
         env.decayDuration = timecentsToSamples(fullChange + keyNumAddition) * fraction;
 
         env.releaseDuration = timecentsToSamples(voice.modulatedGenerators[generatorTypes.releaseVolEnv]);
@@ -334,7 +334,7 @@ export class WorkletVolumeEnvelope
             case 3:
                 // decay phase: linear ramp from attenuation to sustain
                 const dbDifference = env.sustainDb - env.attenuation;
-                while(env.currentSampleTime++ < env.decayEnd)
+                while(env.currentSampleTime < env.decayEnd)
                 {
                     const newAttenuation = (1 - (env.decayEnd - env.currentSampleTime) / env.decayDuration) * dbDifference + env.attenuation;
                     audioBuffer[filledBuffer] *= WorkletVolumeEnvelope.getInterpolatedGain(env, newAttenuation + decibelOffset, smoothingFactor);
@@ -350,6 +350,15 @@ export class WorkletVolumeEnvelope
     
             case 4:
                 // sustain phase: stay at sustain
+                if(env.sustainDb > PERCEIVED_DB_SILENCE)
+                {
+                    voice.finished = true;
+                    while(filledBuffer < audioBuffer.length)
+                    {
+                        audioBuffer[filledBuffer++] = 0;
+                    }
+                    return;
+                }
                 while(true)
                 {
                     audioBuffer[filledBuffer] *= WorkletVolumeEnvelope.getInterpolatedGain(env, env.sustainDb + decibelOffset, smoothingFactor);

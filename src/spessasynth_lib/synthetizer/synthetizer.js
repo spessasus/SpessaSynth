@@ -26,7 +26,7 @@ import { SoundfontManager } from './synth_soundfont_manager.js'
  * @property {boolean|undefined} oneOutput - if synth should use one output with 32 channels (2 audio channels for each midi channel). this disables chorus and reverb.
  */
 
-const CURRENT_SPESSASYNTH_VERSION = "3.20.8";
+const CURRENT_SPESSASYNTH_VERSION = "3.20.9";
 
 export const WORKLET_PROCESSOR_NAME = "spessasynth-worklet-system";
 
@@ -331,9 +331,7 @@ export class Synthetizer {
                 {
                     this.stopAll(true);
                     this.worklet.disconnect();
-                    throw new Error(`Outdated processor (worklet_processor.min.js)
-                     version: ${messageData}. 
-                     Please update it to the latest version (${CURRENT_SPESSASYNTH_VERSION})`);
+                    throw new Error(`Outdated worklet_processor.min.js! version: ${messageData}. Please update it to ${CURRENT_SPESSASYNTH_VERSION}`);
                 }
         }
     }
