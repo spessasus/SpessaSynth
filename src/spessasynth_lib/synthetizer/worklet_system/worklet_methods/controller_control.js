@@ -4,6 +4,7 @@ import { dataEntryStates } from '../worklet_utilities/worklet_processor_channel.
 import { computeModulators } from '../worklet_utilities/worklet_modulator.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../../../utils/loggin.js'
 import { SYNTHESIZER_GAIN } from '../main_processor.js'
+import { DEFAULT_PERCUSSION } from '../../synthetizer.js'
 
 /**
  * @param channel {number}
@@ -68,7 +69,11 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
                         }
                         else
                         {
-                            this.setDrums(channel, false);
+                            // drums shall not be disabled on channel 9
+                            if(channel % 16 !== DEFAULT_PERCUSSION)
+                            {
+                                this.setDrums(channel, false);
+                            }
                         }
                         break;
 

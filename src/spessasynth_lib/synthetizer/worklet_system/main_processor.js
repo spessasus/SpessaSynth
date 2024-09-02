@@ -46,7 +46,7 @@ import { interpolationTypes } from './worklet_utilities/wavetable_oscillator.js'
  * purpose: manages the synthesizer (and worklet sequencer) from the AudioWorkletGlobalScope and renders the audio data
  */
 
-const WORKLET_PROCESSOR_VERSION = "3.20.9";
+const WORKLET_PROCESSOR_VERSION = "3.20.10";
 
 export const MIN_NOTE_LENGTH = 0.07; // if the note is released faster than that, it forced to last that long
 
