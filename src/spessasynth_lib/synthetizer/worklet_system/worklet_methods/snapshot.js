@@ -28,6 +28,7 @@
  * @property {ChannelSnapshot[]} channelSnapshots - the individual channel snapshots
  * @property {number} mainVolume - main synth volume (set by MIDI), from 0 to 1
  * @property {number} pan - master stereo panning, from -1 to 1
+ * @property {interpolationTypes} interpolation - the synth's interpolation type
  * @property {SynthSystem} system - the synths system. Values can be "gs", "gm", "gm2" or "xg"
  * @property {number} transposition - the current synth transpositon in semitones. can be a float
  */
@@ -75,7 +76,8 @@ export function sendSynthesizerSnapshot()
         mainVolume: this.midiVolume,
         pan: this.pan,
         transposition: this.transposition,
-        system: this.system
+        system: this.system,
+        interpolation: this.interpolationType
     };
 
     this.post({
@@ -98,6 +100,7 @@ export function applySynthesizerSnapshot(snapshot)
     this.setMasterGain(snapshot.mainVolume);
     this.setMasterPan(snapshot.pan);
     this.transposeAllChannels(snapshot.transposition);
+    this.interpolationType = snapshot.interpolation;
 
     // add channels if more needed
     while(this.workletProcessorChannels.length < snapshot.channelSnapshots.length)

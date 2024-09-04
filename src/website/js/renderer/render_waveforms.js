@@ -43,7 +43,7 @@ export function renderWaveforms()
 
         const relativeX = waveWidth * x;
         const relativeY = waveHeight * y + waveHeight / 2;
-        const multiplier = this.waveMultiplier * waveHeight * this.waveSign;
+        const multiplier = this.waveMultiplier * waveHeight;
 
         // draw
         this.drawingContext.lineWidth = this.lineThickness;

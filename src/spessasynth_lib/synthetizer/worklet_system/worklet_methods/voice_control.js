@@ -108,8 +108,8 @@ export function renderVoice(
         // use modulation multiplier (RPN modulation depth)
         cents += modLfoValue * (modPitchDepth * channel.customControllers[customControllers.modulationMultiplier]);
         // volenv volume offset
-        // the lfo returns from -1 to 1, we change it to 0-1 here because the volume excursion is only positive
-        modLfoCentibels = (modLfoValue / 2 + 0.5) * modVolDepth;
+        // negate the lfo value because audigy starts with increase rather than decrease
+        modLfoCentibels = -modLfoValue * modVolDepth;
         // lowpass frequency
         lowpassCents += modLfoValue * modFilterDepth;
     }

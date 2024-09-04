@@ -86,7 +86,6 @@ class Renderer
         this._normalAnalyserFft = CHANNEL_ANALYSER_FFT;
         this._drumAnalyserFft = DRUMS_ANALYSER_FFT;
         this.waveMultiplier = WAVE_MULTIPLIER;
-        this.waveSign = 1;
 
         /**
          * @type {boolean}

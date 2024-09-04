@@ -21,7 +21,7 @@ export const settingsHtml = `
         <spessarange min='5' max='15' value='10' class='settings_slider' input_id='analyser_fft_slider' units=''></spessarange>
         
         <label translate-path-title='locale.settings.rendererSettings.waveformAmplifier'></label>
-        <spessarange min='1' max='20' value='2' class='settings_slider' input_id='wave_multiplier_slider' units=''></spessarange>
+        <spessarange min='-10' max='10' value='2' class='settings_slider' input_id='wave_multiplier_slider' units=''></spessarange>
         
         <div class='switch_label'>
             <label for='analyser_toggler' translate-path-title='locale.settings.rendererSettings.toggleWaveformsRendering'></label>
