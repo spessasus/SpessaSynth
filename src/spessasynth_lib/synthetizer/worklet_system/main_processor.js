@@ -33,7 +33,7 @@ import {
     getPreset,
     programChange,
     reloadSoundFont, sampleDump, sendPresetList,
-    setDrums,
+    setDrums, setEmbeddedSoundFont,
     setPreset,
 } from './worklet_methods/program_control.js'
 import { applySynthesizerSnapshot, sendSynthesizerSnapshot } from './worklet_methods/snapshot.js'
@@ -204,14 +204,21 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
 
         this.totalVoicesAmount = 0;
 
+        /**
+         * The snapshot that synth was restored from
+         * @type {SynthesizerSnapshot|undefined}
+         * @private
+         */
+        this._snapshot = options.processorOptions?.startRenderingData?.snapshot;
+
         this.port.onmessage = e => this.handleMessage(e.data);
 
         // if sent, start rendering
         if(options.processorOptions.startRenderingData)
         {
-            if (options.processorOptions.startRenderingData.snapshot)
+            if (this._snapshot !== undefined)
             {
-                this.applySynthesizerSnapshot(options.processorOptions.startRenderingData.snapshot);
+                this.applySynthesizerSnapshot(this._snapshot);
                 this.resetAllControllers();
             }
 
@@ -411,6 +418,7 @@ SpessaSynthProcessor.prototype.setPreset = setPreset;
 SpessaSynthProcessor.prototype.setDrums = setDrums;
 SpessaSynthProcessor.prototype.reloadSoundFont = reloadSoundFont;
 SpessaSynthProcessor.prototype.clearSoundFont = clearSoundFont;
+SpessaSynthProcessor.prototype.setEmbeddedSoundFont = setEmbeddedSoundFont;
 SpessaSynthProcessor.prototype.sampleDump = sampleDump;
 SpessaSynthProcessor.prototype.sendPresetList = sendPresetList;
 

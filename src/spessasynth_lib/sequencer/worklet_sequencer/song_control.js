@@ -57,11 +57,7 @@ export function loadNewSequence(parsedMidi)
     if(this.midiData.embeddedSoundFont !== undefined)
     {
         SpessaSynthInfo("%cEmbedded soundfont detected! Using it.", consoleColors.recognized);
-        // set offet
-        this.synth.soundfontBankOffset = this.midiData.bankOffset;
-        this.synth.reloadSoundFont(this.midiData.embeddedSoundFont, true);
-        // preload all samples
-        this.synth.overrideSoundfont.samples.forEach(s => s.getAudioData());
+        this.synth.setEmbeddedSoundFont(this.midiData.embeddedSoundFont, this.midiData.bankOffset);
     }
     else
     {

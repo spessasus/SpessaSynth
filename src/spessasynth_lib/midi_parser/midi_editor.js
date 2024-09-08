@@ -296,7 +296,7 @@ export function modifyMIDI(
         /**
          * @type {{index: number, track: number}[]}
          */
-        const firstNoteOnForTrack = getFirstVoiceForChannel(midiChannel, port, offset > 0);
+        const firstNoteOnForTrack = getFirstVoiceForChannel(midiChannel, port, true);
         if(firstNoteOnForTrack.length === 0)
         {
             SpessaSynthWarn("Program change but no notes... ignoring!");
