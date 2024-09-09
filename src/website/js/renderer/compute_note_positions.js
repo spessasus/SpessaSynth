@@ -5,7 +5,7 @@ import { MAX_NOTES, MIN_NOTE_HEIGHT_PX, NOTE_MARGIN, PRESSED_EFFECT_TIME, STROKE
  * @returns {NoteToRender[]}
  * @this {Renderer}
  */
-export function computeNotePositions(renderImmediately=false)
+export function computeNotePositions(renderImmediately = false)
 {
     // math
     this.notesOnScreen = 0;
@@ -16,7 +16,7 @@ export function computeNotePositions(renderImmediately=false)
     const keyStep = canvasWidth / (keysAmount + 1); // add one because it works
     const noteWidth = keyStep - (NOTE_MARGIN * 2);
 
-    const fallingTime = this.noteFallingTimeMs / 1000
+    const fallingTime = this.noteFallingTimeMs / 1000;
     const afterTime = this.noteAfterTriggerTimeMs / 1000;
 
     const currentSeqTime = this.seq.currentHighResolutionTime;
