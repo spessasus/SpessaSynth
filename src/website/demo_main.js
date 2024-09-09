@@ -66,7 +66,9 @@ async function loadLastSoundFontFromDatabase()
 
             request.onerror = e => {
                 console.error("Database error");
-                throw e;
+                console.error(e);
+                resolve(undefined);
+                return;
             }
 
             request.onsuccess = async () => {
