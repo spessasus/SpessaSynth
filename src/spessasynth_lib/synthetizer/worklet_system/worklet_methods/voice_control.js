@@ -5,7 +5,7 @@ import { customControllers } from '../worklet_utilities/worklet_processor_channe
 import { WorkletModulationEnvelope } from '../worklet_utilities/modulation_envelope.js'
 import { getSampleLinear, getSampleNearest, interpolationTypes } from '../worklet_utilities/wavetable_oscillator.js'
 import { panVoice } from '../worklet_utilities/stereo_panner.js'
-import { applyLowpassFilter } from '../worklet_utilities/lowpass_filter.js'
+import { WorkletLowpassFilter } from '../worklet_utilities/lowpass_filter.js'
 import { MIN_NOTE_LENGTH } from '../main_processor.js'
 import { WorkletVolumeEnvelope } from '../worklet_utilities/volume_envelope.js'
 
@@ -150,15 +150,15 @@ export function renderVoice(
     // wavetable oscillator
     if(this.interpolationType === interpolationTypes.linear)
     {
-        getSampleLinear(voice, this.workletDumpedSamplesList[voice.sample.sampleID], bufferOut);
+        getSampleLinear(voice, bufferOut);
     }
     else
     {
-        getSampleNearest(voice, this.workletDumpedSamplesList[voice.sample.sampleID], bufferOut);
+        getSampleNearest(voice, bufferOut);
     }
 
     // lowpass filter
-    applyLowpassFilter(voice, bufferOut, lowpassCents);
+    WorkletLowpassFilter.apply(voice, bufferOut, lowpassCents);
 
     // volenv
     WorkletVolumeEnvelope.apply(voice, bufferOut, modLfoCentibels, this.volumeEnvelopeSmoothingFactor);
