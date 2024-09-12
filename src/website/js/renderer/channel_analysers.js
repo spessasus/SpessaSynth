@@ -47,7 +47,15 @@ export function updateFftSize()
         {
             // calculate delay:
             // 16384 fft size = 0.1 s
-            this.delayNode.delayTime.value = fftSize / this.synth.context.sampleRate / 2;
+            if(fftSize > 4096)
+            {
+                this.delayNode.delayTime.value = fftSize / this.synth.context.sampleRate / 2;
+            }
+            else
+            {
+                this.delayNode.delayTime.value = 0;
+                console.log('no')
+            }
         }
     }
 }
