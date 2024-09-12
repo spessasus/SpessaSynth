@@ -1,4 +1,3 @@
-import { getWorkletVoices } from '../worklet_utilities/worklet_voice.js'
 import { generatorTypes } from '../../../soundfont/read_sf2/generators.js'
 import { computeModulators } from '../worklet_utilities/worklet_modulator.js'
 import { WorkletVolumeEnvelope } from '../worklet_utilities/volume_envelope.js'
@@ -45,19 +44,12 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
     }
 
     // get voices
-    const voices = getWorkletVoices(
+    const voices = this.getWorkletVoices(
         channel,
         sentMidiNote,
         velocity,
-        channelObject.preset,
+        channelObject,
         startTime,
-        sampleRate,
-        data => this.sampleDump(
-            data.channel,
-            data.sampleID,
-            data.sampleData
-        ),
-        channelObject.cachedVoices,
         enableDebugging
     );
 

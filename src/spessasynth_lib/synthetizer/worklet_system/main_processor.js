@@ -1,3 +1,5 @@
+// noinspection JSUnresolvedReference
+
 import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE, VOICE_CAP } from '../synthetizer.js'
 import { WorkletSequencer } from '../../sequencer/worklet_sequencer/worklet_sequencer.js'
 import { SpessaSynthInfo } from '../../utils/loggin.js'
@@ -32,13 +34,14 @@ import {
     clearSoundFont,
     getPreset,
     programChange,
-    reloadSoundFont, sampleDump, sendPresetList,
+    reloadSoundFont, sendPresetList,
     setDrums, setEmbeddedSoundFont,
     setPreset,
 } from './worklet_methods/program_control.js'
 import { applySynthesizerSnapshot, sendSynthesizerSnapshot } from './worklet_methods/snapshot.js'
 import { WorkletSoundfontManager } from './worklet_methods/worklet_soundfont_manager/worklet_soundfont_manager.js'
 import { interpolationTypes } from './worklet_utilities/wavetable_oscillator.js'
+import { getWorkletVoices } from './worklet_utilities/worklet_voice.js'
 
 
 /**
@@ -49,6 +52,7 @@ import { interpolationTypes } from './worklet_utilities/wavetable_oscillator.js'
 export const MIN_NOTE_LENGTH = 0.07; // if the note is released faster than that, it forced to last that long
 
 export const SYNTHESIZER_GAIN = 1.0;
+
 
 class SpessaSynthProcessor extends AudioWorkletProcessor
 {
@@ -170,10 +174,6 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
         this.drumPreset = this.getPreset(128, 0);
 
         /**
-         * @type {Float32Array[]}
-         */
-        this.workletDumpedSamplesList = [];
-        /**
          * contains all the channels with their voices on the processor size
          * @type {WorkletProcessorChannel[]}
          */
@@ -185,9 +185,6 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
 
         this.workletProcessorChannels[DEFAULT_PERCUSSION].preset = this.drumPreset;
         this.workletProcessorChannels[DEFAULT_PERCUSSION].drumChannel = true;
-
-        // in seconds, time between two samples (very, very short)
-        this.sampleTime = 1 / sampleRate;
 
         // these smoothing factors were tested on 44100Hz, adjust them here
         this.volumeEnvelopeSmoothingFactor = VOLUME_ENVELOPE_SMOOTHING_FACTOR * (sampleRate / 44100);
@@ -278,6 +275,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
         });
     }
 
+    // noinspection JSUnusedGlobalSymbols
     /**
      * Syntesizes the voice to buffers
      * @param inputs {Float32Array[][]} required by WebAudioAPI
@@ -362,6 +360,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
 SpessaSynthProcessor.prototype.renderVoice = renderVoice;
 SpessaSynthProcessor.prototype.releaseVoice = releaseVoice;
 SpessaSynthProcessor.prototype.voiceKilling = voiceKilling;
+SpessaSynthProcessor.prototype.getWorkletVoices = getWorkletVoices;
 
 // message port related
 SpessaSynthProcessor.prototype.handleMessage = handleMessage;
@@ -419,7 +418,6 @@ SpessaSynthProcessor.prototype.setDrums = setDrums;
 SpessaSynthProcessor.prototype.reloadSoundFont = reloadSoundFont;
 SpessaSynthProcessor.prototype.clearSoundFont = clearSoundFont;
 SpessaSynthProcessor.prototype.setEmbeddedSoundFont = setEmbeddedSoundFont;
-SpessaSynthProcessor.prototype.sampleDump = sampleDump;
 SpessaSynthProcessor.prototype.sendPresetList = sendPresetList;
 
 // snapshot related

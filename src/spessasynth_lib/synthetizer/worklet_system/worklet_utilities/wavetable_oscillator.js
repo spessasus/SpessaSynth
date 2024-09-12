@@ -16,17 +16,17 @@ export const interpolationTypes = {
 /**
  * Fills the output buffer with raw sample data using linear interpolation
  * @param voice {WorkletVoice} the voice we're working on
- * @param sampleData {Float32Array} the sample data to write with
  * @param outputBuffer {Float32Array} the output buffer to write to
  */
-export function getSampleLinear(voice, sampleData, outputBuffer)
+export function getSampleLinear(voice, outputBuffer)
 {
     let cur = voice.sample.cursor;
     const loop = (voice.sample.loopingMode === 1) || (voice.sample.loopingMode === 3 && !voice.isInRelease);
-    const loopLength = voice.sample.loopEnd - voice.sample.loopStart;
+    const sampleData = voice.sample.sampleData;
 
     if(loop)
     {
+        const loopLength = voice.sample.loopEnd - voice.sample.loopStart;
         for (let i = 0; i < outputBuffer.length; i++)
         {
             // check for loop
@@ -43,11 +43,6 @@ export function getSampleLinear(voice, sampleData, outputBuffer)
             {
                 ceil -= loopLength;
             }
-
-            // nearest neighbor (uncomment to use)
-            // outputBuffer[i] = sampleData[ceil];
-            // cur += voice.sample.playbackStep * voice.currentTuningCalculated;
-            // continue;
 
             const fraction = cur - floor;
 
@@ -73,7 +68,8 @@ export function getSampleLinear(voice, sampleData, outputBuffer)
         {
             voice.sample.end = sampleData.length - 1;
         }
-        for (let i = 0; i < outputBuffer.length; i++) {
+        for (let i = 0; i < outputBuffer.length; i++)
+        {
 
             // linear interpolation
             const floor = ~~cur;
@@ -85,11 +81,6 @@ export function getSampleLinear(voice, sampleData, outputBuffer)
                 voice.finished = true;
                 return;
             }
-
-            // nearest neighbor (uncomment to use)
-            // outputBuffer[i] = sampleData[ceil];
-            // cur += voice.sample.playbackStep * voice.currentTuningCalculated;
-            // continue;
 
             const fraction = cur - floor;
 
@@ -107,15 +98,14 @@ export function getSampleLinear(voice, sampleData, outputBuffer)
 /**
  * Fills the output buffer with raw sample data using no interpolation (nearest neighbor)
  * @param voice {WorkletVoice} the voice we're working on
- * @param sampleData {Float32Array} the sample data to write with
  * @param outputBuffer {Float32Array} the output buffer to write to
  */
-export function getSampleNearest(voice, sampleData, outputBuffer)
+export function getSampleNearest(voice, outputBuffer)
 {
     let cur = voice.sample.cursor;
     const loop = (voice.sample.loopingMode === 1) || (voice.sample.loopingMode === 3 && !voice.isInRelease);
     const loopLength = voice.sample.loopEnd - voice.sample.loopStart;
-
+    const sampleData = voice.sample.sampleData;
     if(loop)
     {
         for (let i = 0; i < outputBuffer.length; i++)

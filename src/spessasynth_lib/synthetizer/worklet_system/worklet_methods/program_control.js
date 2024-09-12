@@ -1,6 +1,4 @@
 import { midiControllers } from '../../../midi_parser/midi_message.js'
-import { clearSamplesList } from '../worklet_utilities/worklet_voice.js'
-import { generatorTypes } from '../../../soundfont/read_sf2/generators.js'
 import { returnMessageType } from '../message_protocol/worklet_message.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../../../utils/loggin.js'
 import { consoleColors } from '../../../utils/other.js'
@@ -183,13 +181,10 @@ export function sendPresetList()
 export function clearSoundFont(sendPresets = true, clearOverride = true)
 {
     this.stopAllChannels(true);
-    clearSamplesList();
     if(clearOverride)
     {
         delete this.overrideSoundfont;
     }
-    delete this.workletDumpedSamplesList;
-    this.workletDumpedSamplesList = [];
     this.defaultPreset = this.getPreset(0, 0);
     this.drumPreset = this.getPreset(128, 0);
 
@@ -272,47 +267,4 @@ export function setEmbeddedSoundFont(font, offset)
         this.applySynthesizerSnapshot(this._snapshot);
         this.resetAllControllers();
     }
-}
-
-/**
- * saves a sample
- * @param channel {number}
- * @param sampleID {number}
- * @param sampleData {Float32Array}
- * @this {SpessaSynthProcessor}
- */
-export function sampleDump(channel, sampleID, sampleData)
-{
-    this.workletDumpedSamplesList[sampleID] = sampleData;
-    // the sample maybe was loaded after the voice was sent... adjust the end position!
-
-    // not for all channels because the system tells us for what channel this voice was dumped! yay!
-    this.workletProcessorChannels[channel].voices.forEach(v => {
-        if(v.sample.sampleID !== sampleID)
-        {
-            return;
-        }
-        v.sample.end = sampleData.length - 1 + v.generators[generatorTypes.endAddrOffset] + (v.generators[generatorTypes.endAddrsCoarseOffset] * 32768);
-        // calculate for how long the sample has been playing and move the cursor there
-        v.sample.cursor = (v.sample.playbackStep * sampleRate) * (currentTime - v.startTime);
-        if(v.sample.loopingMode === 0) // no loop
-        {
-            if (v.sample.cursor >= v.sample.end)
-            {
-                v.finished = true;
-                return;
-            }
-        }
-        else
-        {
-            // go through modulo (adjust cursor if the sample has looped
-            if(v.sample.cursor > v.sample.loopEnd)
-            {
-                v.sample.cursor = v.sample.cursor % (v.sample.loopEnd - v.sample.loopStart) + v.sample.loopStart - 1;
-            }
-        }
-        // set start time to current!
-        v.startTime = currentTime;
-    })
-
 }
