@@ -54,7 +54,6 @@ export function updateFftSize()
             else
             {
                 this.delayNode.delayTime.value = 0;
-                console.log('no')
             }
         }
     }
