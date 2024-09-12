@@ -427,6 +427,12 @@ class MIDI extends BasicMIDI
                 consoleColors.value);
         }
 
+        SpessaSynthInfo(`%cAll tracks parsed correctly!`,
+            consoleColors.recognized);
+
+        SpessaSynthGroupCollapsed(`%cCorrecting loops, ports and detecting notes...`,
+            consoleColors.info)
+
         const firstNoteOns = [];
         for(const t of this.tracks)
         {
@@ -438,10 +444,12 @@ class MIDI extends BasicMIDI
         }
         this.firstNoteOn = Math.min(...firstNoteOns);
 
-        SpessaSynthInfo(`%cMIDI file parsed. Total tick time: %c${this.lastVoiceEventTick}`,
+        SpessaSynthInfo(`%cFirst note-on detected at: %c${this.firstNoteOn}%c ticks!`,
             consoleColors.info,
-            consoleColors.recognized);
-        SpessaSynthGroupEnd();
+            consoleColors.recognized,
+            consoleColors.info);
+
+
         
         if(loopStart !== null && loopEnd === null)
         {
@@ -460,6 +468,18 @@ class MIDI extends BasicMIDI
                 loopEnd = this.lastVoiceEventTick;
             }
         }
+
+        /**
+         *
+         * @type {{start: number, end: number}}
+         */
+        this.loop = {start: loopStart, end: loopEnd};
+
+        SpessaSynthInfo(`%cLoop points: start: %c${this.loop.start}%c end: %c${this.loop.end}`,
+            consoleColors.info,
+            consoleColors.recognized,
+            consoleColors.info,
+            consoleColors.recognized);
 
         // fix midi ports:
         // midi tracks without ports will have a value of -1
@@ -481,12 +501,14 @@ class MIDI extends BasicMIDI
         {
             this.midiPortChannelOffsets = [0];
         }
-
-        /**
-         *
-         * @type {{start: number, end: number}}
-         */
-        this.loop = {start: loopStart, end: loopEnd};
+        if(this.midiPortChannelOffsets.length < 2)
+        {
+            SpessaSynthInfo(`%cNo additional MIDI Ports detected.`, consoleColors.info);
+        }
+        else
+        {
+            SpessaSynthInfo(`%cMIDI Ports detected!`, consoleColors.recognized);
+        }
 
         // midi name
         if(!nameDetected)
@@ -528,6 +550,8 @@ class MIDI extends BasicMIDI
         // if midiName is "", use the file name
         if(this.midiName.length === 0)
         {
+            SpessaSynthInfo(`%cNo name detected. Using the alt name!`,
+                consoleColors.info);
             this.midiName = formatTitle(fileName);
             // encode it too
             this.rawMidiName = new Uint8Array(this.midiName.length);
@@ -536,7 +560,12 @@ class MIDI extends BasicMIDI
                 this.rawMidiName[i] = this.midiName.charCodeAt(i);
             }
         }
-
+        else
+        {
+            SpessaSynthInfo(`%cMIDI Name detected! %c"${this.midiName}"`,
+                consoleColors.info,
+                consoleColors.recognized)
+        }
         // reverse the tempo changes
         this.tempoChanges.reverse();
 
@@ -545,6 +574,14 @@ class MIDI extends BasicMIDI
          * @type {number}
          */
         this.duration = this._ticksToSeconds(this.lastVoiceEventTick);
+
+        SpessaSynthGroupEnd();
+        SpessaSynthInfo(`%cMIDI file parsed. Total tick time: %c${this.lastVoiceEventTick}%c, total seconds time: %c${this.duration}`,
+            consoleColors.info,
+            consoleColors.recognized,
+            consoleColors.info,
+            consoleColors.recognized);
+        SpessaSynthGroupEnd();
     }
 
     /**

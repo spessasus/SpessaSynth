@@ -126,21 +126,29 @@ export class BasicMIDI
     }
 
     /**
-     * Coverts ticks to time in seconds
-     * @param ticks {number}
-     * @returns {number}
+     * Converts ticks to time in seconds
+     * @param ticks {number} time in MIDI ticks
+     * @returns {number} time in seconds
      * @protected
      */
-    _ticksToSeconds(ticks)
-    {
-        if (ticks <= 0) {
-            return 0;
+    _ticksToSeconds(ticks) {
+        let totalSeconds = 0;
+
+        while (ticks > 0)
+        {
+            // tempo changes are reversed so the first element is the last tempo change and the last element is the first tempo change
+            // (always at tick 0 and tempo 120)
+            // find the last tempo change that has occurred
+            let tempo = this.tempoChanges.find(v => v.ticks < ticks);
+
+            // calculate the difference and tempo time
+            let timeSinceLastTempo = ticks - tempo.ticks;
+            totalSeconds += (timeSinceLastTempo * 60) / (tempo.tempo * this.timeDivision);
+            ticks -= timeSinceLastTempo;
         }
 
-        // find the last tempo change that has occured
-        let tempo = this.tempoChanges.find(v => v.ticks < ticks);
-
-        let timeSinceLastTempo = ticks - tempo.ticks;
-        return this._ticksToSeconds(ticks - timeSinceLastTempo) + (timeSinceLastTempo * 60) / (tempo.tempo * this.timeDivision);
+        return totalSeconds;
     }
+
+
 }

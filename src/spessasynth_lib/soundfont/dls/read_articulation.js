@@ -79,11 +79,7 @@ export function readArticulation(chunk, disableVibrato)
         const scale = readLittleEndian(artData, 4) | 0;
         const value = scale >> 16; // convert it to 16 bit as soundfont uses that
 
-        // if(destination === DLSDestinations.volEnvDecay)
-        // {
-        //     console.log(scale, value)
-        // }
-        //modulatorConverterDebug(source, control, destination, value, transform);
+        // modulatorConverterDebug(source, control, destination, value, transform);
         // interpret this somehow...
         // if source and control are both zero, it's a generator
         if(source === 0 && control === 0 && transform === 0)
