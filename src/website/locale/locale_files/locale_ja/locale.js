@@ -26,7 +26,11 @@ export const localeJapanese = {
 
     // top bar buttons
     midiUploadButton: "MIDIファイルをアップロード",
+
     exportAudio: exportAudio,
+
+    yes: "はい",
+    no: "いいえ",
 
 
     demoSoundfontUploadButton: "サウンドフォントをアップロード",
@@ -45,6 +49,12 @@ export const localeJapanese = {
         title: "トップバーを隠す",
         description: "トップ（タイトル）バーを隠して、よりシームレスな体験を提供します",
     },
+
+    convertDls: {
+        title: "DLS変換",
+        message: "DLSファイルがアップロードされたようです。これをSF2に変換しますか？"
+    },
+
 
     // all translations split up
     musicPlayerMode: musicPlayerModeLocale,

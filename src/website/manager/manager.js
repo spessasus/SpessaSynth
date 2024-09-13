@@ -21,6 +21,9 @@ import { _exportRMIDI } from './export_rmidi.js'
 import { WORKLET_URL_ABSOLUTE } from '../../spessasynth_lib/synthetizer/worklet_url.js'
 import { encodeVorbis } from '../../spessasynth_lib/utils/encode_vorbis.js'
 import { loadSoundFont } from '../../spessasynth_lib/soundfont/load_soundfont.js'
+import { readBytesAsString } from '../../spessasynth_lib/utils/byte_functions/string.js'
+import { IndexedByteArray } from '../../spessasynth_lib/utils/indexed_array.js'
+import { closeNotification, showNotification } from '../js/notification/notification.js'
 
 // this enables transitions on body because if we enable them on load, it flashbangs us with white
 document.body.classList.add("load");
@@ -125,7 +128,10 @@ class Manager
         {
             await context.audioWorklet.addModule(new URL ("../../spessasynth_lib/" + WORKLET_PATH, import.meta.url));
         }
-        // set up soundfont
+        /**
+         * set up soundfont
+         * @type {ArrayBuffer}
+         */
         this.soundFont = soundFont;
 
         // set up buffer here (if we let spessasynth use the default buffer, there's no reverb for the first second.)
@@ -303,6 +309,44 @@ class Manager
             }
         });
         this.renderer.render(false, true);
+        setTimeout(() => {
+            this.doDLSCheck()
+        }, 1000);
+    }
+
+    doDLSCheck()
+    {
+        if(window.isLocalEdition !== true)
+        {
+            const text = this.soundFont.slice(8, 12);
+            const header = readBytesAsString(new IndexedByteArray(text), 4);
+            if(header.toLowerCase() === "dls ")
+            {
+                showNotification(
+                    this.localeManager.getLocaleString("locale.convertDls.title"),
+                    [
+                        {
+                            type: "text",
+                            textContent: this.localeManager.getLocaleString("locale.convertDls.message")
+                        },
+                        {
+                            type: "button",
+                            textContent: this.localeManager.getLocaleString("locale.yes"),
+                            onClick: n => {
+                                closeNotification(n.id);
+                                this.downloadDesfont();
+                            }
+                        },
+                        {
+                            type: "button",
+                            textContent: this.localeManager.getLocaleString("locale.no"),
+                            onClick: n => { closeNotification(n.id) }
+                        }
+                    ],
+                    99999999
+                )
+            }
+        }
     }
 
     /**
@@ -313,6 +357,9 @@ class Manager
         //this.soundFontMixer.soundFontChange(sf);
         await this.synth.soundfontManager.reloadManager(sf);
         this.soundFont = sf;
+        setTimeout(() => {
+            this.doDLSCheck()
+        }, 3000);
     }
 
     /**
@@ -354,7 +401,7 @@ class Manager
         const soundfont = loadSoundFont(this.soundFont);
         const binary = soundfont.write();
         const blob = new Blob([binary.buffer], {type: "audio/soundfont"});
-        this.saveBlob(blob, "desfont.sf2");
+        this.saveBlob(blob, `${soundfont.soundFontInfo["INAM"]}.sf2`);
     }
 }
 Manager.prototype.exportSong = exportSong;

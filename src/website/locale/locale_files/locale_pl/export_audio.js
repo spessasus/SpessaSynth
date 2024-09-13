@@ -103,8 +103,8 @@ export const exportAudio = {
                         description: "Przesunięcie banku w pliku. Zalecane 0. Zmień tylko jeśli wiesz co robisz.",
                     },
                     adjust: {
-                        title: "Adjust MIDI",
-                        description: "Adjusts the MIDI file to the SoundFont. Leave this on unless you know what you're doing."
+                        title: "Dostosuj MIDI",
+                        description: "Dostosuj MIDI do SoundFonta. Pozostaw włączone, chyba że wiesz co robisz."
                     }
 
                 }

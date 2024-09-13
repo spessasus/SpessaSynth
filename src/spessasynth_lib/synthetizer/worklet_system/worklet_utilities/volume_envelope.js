@@ -144,7 +144,7 @@ export class WorkletVolumeEnvelope
             return Math.floor(timecentsToSeconds(tc) * env.sampleRate);
         }
         // calculate absolute times (they can change so we have to recalculate every time
-        env.attenuation = voice.modulatedGenerators[generatorTypes.initialAttenuation] / 10; // divide by ten to get decibelts
+        env.attenuation = Math.max(0, Math.min(voice.modulatedGenerators[generatorTypes.initialAttenuation], 1440)) / 10; // divide by ten to get decibelts
         env.sustainDb = Math.min(100, voice.volumeEnvelope.attenuation + voice.modulatedGenerators[generatorTypes.sustainVolEnv] / 10);
 
         // calculate durations

@@ -29,6 +29,9 @@ export const localeEnglish = {
 
     exportAudio: exportAudio,
 
+    yes: "Yes",
+    no: "No",
+
 
     demoSoundfontUploadButton: "Upload the soundfont",
     demoGithubPage: "Project's page",
@@ -44,6 +47,11 @@ export const localeEnglish = {
     hideTopBar: {
         title: "Hide top bar",
         description: "Hide the top (title) bar to provide a more seamless experience",
+    },
+
+    convertDls: {
+        title: "DLS Conversion",
+        message: "Looks like you've uploaded a DLS file. Do you want to convert it to SF2?"
     },
 
     // all translations split up

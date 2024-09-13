@@ -184,6 +184,7 @@ export function clearSoundFont(sendPresets = true, clearOverride = true)
     if(clearOverride)
     {
         delete this.overrideSoundfont;
+        this.overrideSoundfont = undefined;
     }
     this.defaultPreset = this.getPreset(0, 0);
     this.drumPreset = this.getPreset(128, 0);

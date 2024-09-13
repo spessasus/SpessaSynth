@@ -33,6 +33,9 @@ export const localePolish = {
 
     exportAudio: exportAudio,
 
+    yes: "Tak",
+    no: "Nie",
+
     demoSoundfontUploadButton: "Wgraj SoundFonta",
     demoGithubPage: "Strona projektu",
     demoSongButton: "Piosenka demo",
@@ -48,6 +51,11 @@ export const localePolish = {
     hideTopBar: {
         title: "Ukryj górny pasek",
         description: "Ukryj pasek tytułowy w celu poprawy widoczności na pionowych ekranach",
+    },
+
+    convertDls: {
+        title: "Konwersja DLS",
+        message: "Wygląda na to, że wgrałeś plik DLS. Czy chcesz przekonwertować go do SF2?"
     },
 
     // all translations split up

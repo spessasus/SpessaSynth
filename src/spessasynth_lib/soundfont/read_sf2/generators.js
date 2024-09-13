@@ -138,7 +138,7 @@ generatorLimits[generatorTypes.startloopAddrsCoarseOffset] = {min: -32768, max: 
 generatorLimits[generatorTypes.keyNum] = {min: -1, max: 127, def: -1};
 generatorLimits[generatorTypes.velocity] = {min: -1, max: 127, def: -1};
 
-generatorLimits[generatorTypes.initialAttenuation] = {min: 0, max: 1440, def: 0}; // soundblaster allows 10dB of gain (divide by 0.4)
+generatorLimits[generatorTypes.initialAttenuation] = {min: -250, max: 1440, def: 0}; // soundblaster allows 10dB of gain (divide by 0.4)
 
 generatorLimits[generatorTypes.endloopAddrsCoarseOffset] = {min: -32768, max: 32768, def: 0};
 
@@ -203,7 +203,18 @@ export function addAndClampGenerator(generatorType, presetGens, instrumentGens)
     {
         instruValue = instruGen.generatorValue;
     }
-    return Math.max(limits.min, Math.min(limits.max, instruValue + presetValue));
+
+    let value = instruValue + presetValue;
+
+    // special case, intial attenuation.
+    // Shall get clamped in the volume envelope,
+    // so the modulators can be affected by negative generators (the "Brass" patch was problematic...)
+    if(generatorType === generatorTypes.initialAttenuation)
+    {
+        return value;
+    }
+
+    return Math.max(limits.min, Math.min(limits.max, value));
 }
 
 export class ReadGenerator extends Generator
