@@ -352,7 +352,6 @@ export class WorkletVolumeEnvelope
                 // sustain phase: stay at sustain
                 if(env.sustainDb > PERCEIVED_DB_SILENCE)
                 {
-                    voice.finished = true;
                     while(filledBuffer < audioBuffer.length)
                     {
                         audioBuffer[filledBuffer++] = 0;
