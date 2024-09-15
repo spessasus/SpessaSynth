@@ -171,6 +171,14 @@ export class WorkletVolumeEnvelope
                 + env.attackEnd;
 
         env.decayEnd = env.decayDuration + env.holdEnd;
+
+        // if this is the first recalculation and the voice has no attack or delay time, set current db to peak
+        if(env.state === 0 && env.attackEnd === 0)
+        {
+            env.currentAttenuationDb = env.attenuation;
+            env.state = 2;
+        }
+
         // check if voice is in release
         if(voice.isInRelease)
         {
