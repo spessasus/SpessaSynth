@@ -37,16 +37,18 @@ export function _processTick()
         this.playedTime += this.oneTickToSeconds * (eventNext.ticks - event.ticks);
 
         // loop
-        if((this.midiData.loop.end <= event.ticks) && this.loop)
+        if((this.midiData.loop.end <= event.ticks) && this.loop && this.currentLoopCount > 0)
         {
+            this.currentLoopCount--;
             this.setTimeTicks(this.midiData.loop.start);
             return;
         }
         // if song has ended
         else if(current >= this.duration)
         {
-            if(this.loop)
+            if(this.loop && this.currentLoopCount > 0)
             {
+                this.currentLoopCount--;
                 this.setTimeTicks(this.midiData.loop.start);
                 return;
             }

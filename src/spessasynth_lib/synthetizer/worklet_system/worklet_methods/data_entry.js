@@ -61,6 +61,7 @@ export function dataEntryCoarse(channel, dataValue)
                         consoleColors.value);
                     break;
 
+                // part parameters: vibrato, cutoff
                 case 0x01:
                     switch(channelObject.NRPFine)
                     {
@@ -92,7 +93,7 @@ export function dataEntryCoarse(channel, dataValue)
                             }
                             addDefaultVibrato();
                             channelObject.channelVibrato.rate = (dataValue / 64) * 8;
-                            SpessaSynthInfo(`%cVibrato rate for channel %c${channel}%c is now set to %c${channelObject.channelVibrato.rate}%cHz.`,
+                            SpessaSynthInfo(`%cVibrato rate for %c${channel}%c is now set to %c${dataValue} = ${channelObject.channelVibrato.rate}%cHz.`,
                                 consoleColors.info,
                                 consoleColors.recognized,
                                 consoleColors.info,
@@ -112,7 +113,7 @@ export function dataEntryCoarse(channel, dataValue)
                             }
                             addDefaultVibrato();
                             channelObject.channelVibrato.depth = dataValue / 2;
-                            SpessaSynthInfo(`%cVibrato depth for %c${channel}%c is now set to %c${channelObject.channelVibrato.depth}%c cents range of detune.`,
+                            SpessaSynthInfo(`%cVibrato depth for %c${channel}%c is now set to %c${dataValue} = ${channelObject.channelVibrato.depth}%c cents range of detune.`,
                                 consoleColors.info,
                                 consoleColors.recognized,
                                 consoleColors.info,
@@ -132,7 +133,7 @@ export function dataEntryCoarse(channel, dataValue)
                             }
                             addDefaultVibrato();
                             channelObject.channelVibrato.delay = (dataValue / 64) / 3;
-                            SpessaSynthInfo(`%cVibrato delay for %c${channel}%c is now set to %c${channelObject.channelVibrato.delay}%c seconds.`,
+                            SpessaSynthInfo(`%cVibrato delay for %c${channel}%c is now set to %c${dataValue} = ${channelObject.channelVibrato.delay}%c seconds.`,
                                 consoleColors.info,
                                 consoleColors.recognized,
                                 consoleColors.info,
@@ -151,6 +152,22 @@ export function dataEntryCoarse(channel, dataValue)
                                 consoleColors.info,
                                 consoleColors.value);
                     }
+                    break;
+
+                // drum key tuning
+                case 0x18:
+                    if(!channelObject.drumChannel)
+                    {
+                        return;
+                    }
+                    // fine is the key number and data value is the semitone change
+                    const semitones = dataValue - 64;
+                    channelObject.keyCentTuning[channelObject.NRPFine] = semitones * 100;
+                    SpessaSynthInfo(`%cGS drum key tuning. MIDI note: %c${channelObject.NRPFine}%c semitones: %c${semitones}`,
+                        consoleColors.info,
+                        consoleColors.recognized,
+                        consoleColors.info,
+                        consoleColors.value)
                     break;
 
                 // drum reverb

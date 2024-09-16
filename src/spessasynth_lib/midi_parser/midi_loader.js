@@ -8,7 +8,7 @@ import { readBytesAsUintBigEndian } from '../utils/byte_functions/big_endian.js'
 import { readBytesAsString } from '../utils/byte_functions/string.js'
 import { readLittleEndian } from '../utils/byte_functions/little_endian.js'
 import { RMIDINFOChunks } from './rmidi_writer.js'
-import { BasicMIDI } from './basic_midi.js'
+import { BasicMIDI, MIDIticksToSeconds } from './basic_midi.js'
 
 /**
  * midi_loader.js
@@ -573,7 +573,7 @@ class MIDI extends BasicMIDI
          * The total playback time, in seconds
          * @type {number}
          */
-        this.duration = this._ticksToSeconds(this.lastVoiceEventTick);
+        this.duration = MIDIticksToSeconds(this.lastVoiceEventTick, this);
 
         SpessaSynthGroupEnd();
         SpessaSynthInfo(`%cMIDI file parsed. Total tick time: %c${this.lastVoiceEventTick}%c, total seconds time: %c${this.duration}`,

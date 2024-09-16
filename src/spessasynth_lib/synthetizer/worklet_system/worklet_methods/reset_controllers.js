@@ -139,6 +139,7 @@ export function resetControllers(channel)
     });
 
     channelObject.channelOctaveTuning.fill(0);
+    channelObject.keyCentTuning.fill(0);
 
     // reset the array
     channelObject.midiControllers.set(resetArray);

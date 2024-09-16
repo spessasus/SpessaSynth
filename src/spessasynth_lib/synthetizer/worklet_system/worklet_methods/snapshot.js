@@ -20,6 +20,7 @@
  *
  * @property {number} channelTransposeKeyShift - key shift for the channel
  * @property {Int8Array} channelOctaveTuning - the channel's octave tuning in cents
+ * @property {Int16Array} keyCentTuning - tuning of individual keys in cents
  * @property {boolean} isMuted - indicates whether the channel is muted
  * @property {boolean} drumChannel - indicates whether the channel is a drum channel
  */
@@ -63,6 +64,7 @@ export function sendSynthesizerSnapshot()
 
             channelTransposeKeyShift: channel.channelTransposeKeyShift,
             channelOctaveTuning: channel.channelOctaveTuning,
+            keyCentTuning: channel.keyCentTuning,
             isMuted: channel.isMuted,
             drumChannel: channel.drumChannel
         }

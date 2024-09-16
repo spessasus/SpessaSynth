@@ -31,6 +31,10 @@ export const exportAudio = {
                             title: "Channel files",
                             save: "Save channel {0}"
                         }
+                    },
+                    loopCount: {
+                        title: "Loop count",
+                        description: "The amount of times to loop the song"
                     }
                 },
                 exportMessage: {

@@ -24,6 +24,7 @@ import { SoundfontManager } from './synth_soundfont_manager.js'
  * @property {BasicMIDI} parsedMIDI - the MIDI to render
  * @property {SynthesizerSnapshot} snapshot - the snapshot to apply
  * @property {boolean|undefined} oneOutput - if synth should use one output with 32 channels (2 audio channels for each midi channel). this disables chorus and reverb.
+ * @property {number|undefined} loopCount - the times to loop the song
  */
 
 export const WORKLET_PROCESSOR_NAME = "spessasynth-worklet-system";

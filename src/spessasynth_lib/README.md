@@ -41,7 +41,8 @@ document.getElementById("button").onclick = async () => {
   - **SoundFont3 Support:** Play compressed SoundFonts!
   - **Experimental SF2Pack Support:** Play soundfonts compressed with BASSMIDI! (*Note: only works with vorbis compression*)
   - **Can load very large SoundFonts:** up to 4GB! *Note: Only Firefox handles this well; Chromium has a hard-coded memory limit*
-  - **Soundfont manager:** Stack multiple soundfonts!
+- **Soundfont manager:** Stack multiple soundfonts!
+- **DLS Level 1 and 2 Support:** *internally converted to sf2*
 - **Reverb and chorus support:** [customizable!](https://github.com/spessasus/SpessaSynth/wiki/Synthetizer-Class#effects-configuration-object)
 - **Export audio files** using [OfflineAudioContext](https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext)
 - **[Custom modulators for additional controllers](https://github.com/spessasus/SpessaSynth/wiki/Modulator-Class#default-modulators):** Why not?
@@ -101,7 +102,7 @@ document.getElementById("button").onclick = async () => {
 
 #### Read and play DLS Level 1 or 2 files
 - Read DLS (DownLoadable Sounds) files as SF2 files!
-- **Works like a normal soundfont:** *Saving is still [just one function!](https://github.com/spessasus/SpessaSynth/wiki/SoundFont2-Class#write)*
+- **Works like a normal soundfont:** *Saving it as sf2 is still [just one function!](https://github.com/spessasus/SpessaSynth/wiki/SoundFont2-Class#write)*
 - Converts articulators to both **modulators** and **generators**!
 - Works with both unsigned 8-bit samples and signed 16-bit samples!
 - **Covers special generator cases:** *such as modLfoToPitch*!

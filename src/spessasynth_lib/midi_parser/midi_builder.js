@@ -1,4 +1,4 @@
-import { BasicMIDI } from './basic_midi.js'
+import { BasicMIDI, MIDIticksToSeconds } from './basic_midi.js'
 import { messageTypes,  MidiMessage } from './midi_message.js'
 import { IndexedByteArray } from '../utils/indexed_array.js'
 import { readBytesAsUintBigEndian } from '../utils/byte_functions/big_endian.js'
@@ -101,7 +101,7 @@ export class MIDIBuilder extends BasicMIDI
 
         // reverse tempo and compute duration
         this.tempoChanges.reverse();
-        this.duration = this._ticksToSeconds(this.lastVoiceEventTick);
+        this.duration = MIDIticksToSeconds(this.lastVoiceEventTick, this);
 
         // fix midi ports:
         // midi tracks without ports will have a value of -1

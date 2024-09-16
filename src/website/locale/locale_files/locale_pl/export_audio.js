@@ -30,6 +30,10 @@ export const exportAudio = {
                             title: "Pliki audio kanałów",
                             save: "Zapisz kanał {0}"
                         }
+                    },
+                    loopCount: {
+                        title: "Ilość pętli",
+                        description: "Ilość razy zapętlenia utworu"
                     }
                 },
                 exportMessage: {

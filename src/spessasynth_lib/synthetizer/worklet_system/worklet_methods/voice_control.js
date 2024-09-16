@@ -62,7 +62,8 @@ export function renderVoice(
         + channel.customControllers[customControllers.channelTuning]           // RPN channel fine tuning
         + channel.customControllers[customControllers.channelTransposeFine]    // custom tuning (synth.transpose)
         + channel.customControllers[customControllers.masterTuning]            // master tuning, set by sysEx
-        + channel.channelOctaveTuning[voice.midiNote % 12];                    // MTS octave tuning
+        + channel.channelOctaveTuning[voice.midiNote % 12]                     // MTS octave tuning
+        + channel.keyCentTuning[voice.midiNote];                           // SysEx key tuning
     let semitones = voice.modulatedGenerators[generatorTypes.coarseTune]       // soundfont coarse tuning
         + channel.customControllers[customControllers.channelTuningSemitones]; // RPN channel coarse tuning
 

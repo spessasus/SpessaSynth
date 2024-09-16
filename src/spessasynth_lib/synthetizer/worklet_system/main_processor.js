@@ -63,11 +63,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
      *      midiChannels: number,
      *      soundfont: ArrayBuffer,
      *      enableEventSystem: boolean,
-     *      startRenderingData: {
-     *          parsedMIDI: MIDI,
-     *          snapshot: SynthesizerSnapshot,
-     *          oneOutput: boolean
-     *      }
+     *      startRenderingData: StartRenderingDataConfig
      * }}}
      */
     constructor(options)
@@ -222,8 +218,16 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
             SpessaSynthInfo("%cRendering enabled! Starting render.", consoleColors.info)
             if (options.processorOptions.startRenderingData.parsedMIDI)
             {
+                if(options.processorOptions.startRenderingData?.loopCount !== undefined)
+                {
+                    this.sequencer.loopCount = options.processorOptions.startRenderingData?.loopCount;
+                    this.sequencer.loop = true;
+                }
+                else
+                {
+                    this.sequencer.loop = false;
+                }
                 this.sequencer.loadNewSongList([options.processorOptions.startRenderingData.parsedMIDI]);
-                this.sequencer.loop = false;
             }
         }
 

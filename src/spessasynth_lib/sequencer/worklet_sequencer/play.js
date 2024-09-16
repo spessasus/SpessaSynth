@@ -1,6 +1,7 @@
 import { getEvent, messageTypes, midiControllers } from '../../midi_parser/midi_message.js'
 import { WorkletSequencerReturnMessageType } from './sequencer_message.js'
 import { MIDI_CHANNEL_COUNT } from '../../synthetizer/synthetizer.js'
+import { MIDIticksToSeconds } from '../../midi_parser/basic_midi.js'
 
 
 // an array with preset default values
@@ -272,26 +273,6 @@ export function play(resetTime = false)
 }
 
 /**
- * Coverts ticks to time in seconds
- * @param changes {{tempo: number, ticks: number}[]}
- * @param ticks {number}
- * @param division {number}
- * @returns {number}
- */
-export function ticksToSeconds(changes, ticks, division)
-{
-    if (ticks <= 0) {
-        return 0;
-    }
-
-    // find the last tempo change that has occured
-    let tempo = changes.find(v => v.ticks < ticks);
-
-    let timeSinceLastTempo = ticks - tempo.ticks;
-    return ticksToSeconds(changes, ticks - timeSinceLastTempo, division) + (timeSinceLastTempo * 60) / (tempo.tempo * division);
-}
-
-/**
  * @this {WorkletSequencer}
  * @param ticks {number}
  */
@@ -302,7 +283,7 @@ export function setTimeTicks(ticks)
     this.pausedTime = undefined;
     this.post(
         WorkletSequencerReturnMessageType.timeChange,
-        currentTime - ticksToSeconds(this.midiData.tempoChanges, ticks, this.midiData.timeDivision)
+        currentTime - MIDIticksToSeconds(ticks, this.midiData)
     );
     const isNotFinished = this._playTo(0, ticks);
     this._recalculateStartTime(this.playedTime);

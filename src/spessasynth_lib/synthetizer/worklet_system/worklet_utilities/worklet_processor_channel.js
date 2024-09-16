@@ -8,6 +8,7 @@ import { modulatorSources } from '../../../soundfont/read_sf2/modulators.js'
  *
  * @property {number} channelTransposeKeyShift - key shift of the channel
  * @property {Int8Array} channelOctaveTuning - the tuning for octave on this channel
+ * @property {Int16Array} keyCentTuning - tuning of individual keys in cents
  * @property {boolean} holdPedal - indicates whether the hold pedal is active
  * @property {boolean} drumChannel - indicates whether the channel is a drum channel
  *
@@ -59,6 +60,7 @@ export function createWorkletChannel(sendEvent = false)
 
         channelTransposeKeyShift: 0,
         channelOctaveTuning: new Int8Array(12),
+        keyCentTuning: new Int16Array(128),
         channelVibrato: {delay: 0, depth: 0, rate: 0},
         lockVibrato: false,
         holdPedal: false,

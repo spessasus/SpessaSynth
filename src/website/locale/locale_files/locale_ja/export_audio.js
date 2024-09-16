@@ -31,6 +31,10 @@ export const exportAudio = {
                             title: "チャンネルファイル",
                             save: "チャンネル{0}を保存"
                         }
+                    },
+                    loopCount: {
+                        title: "ループ回数",
+                        description: "曲をループする回数"
                     }
                 },
                 exportMessage: {

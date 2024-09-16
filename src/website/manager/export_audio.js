@@ -4,6 +4,7 @@ import { formatTime } from '../../spessasynth_lib/utils/other.js'
 import { audioBufferToWav } from '../../spessasynth_lib/utils/buffer_to_wav.js'
 import { WORKLET_URL_ABSOLUTE } from '../../spessasynth_lib/synthetizer/worklet_url.js'
 import { ANIMATION_REFLOW_TIME } from '../js/utils/animation_utils.js'
+import { MIDIticksToSeconds } from '../../spessasynth_lib/midi_parser/basic_midi.js'
 
 const RENDER_AUDIO_TIME_INTERVAL = 1000;
 
@@ -13,10 +14,11 @@ const RENDER_AUDIO_TIME_INTERVAL = 1000;
  * @param additionalTime {number}
  * @param separateChannels {boolean}
  * @param meta {WaveMetadata}
+ * @param loopCount {number}
  * @returns {Promise<void>}
  * @private
  */
-export async function _doExportAudioData(normalizeAudio = true, additionalTime = 2, separateChannels = false, meta = {})
+export async function _doExportAudioData(normalizeAudio = true, additionalTime = 2, separateChannels = false, meta = {}, loopCount = 0)
 {
     this.isExporting = true;
     if(!this.seq)
@@ -37,12 +39,18 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
         false
     );
     const parsedMid = await this.seq.getMIDI();
-    const duration = parsedMid.duration + additionalTime;
+    let loopDuration = MIDIticksToSeconds(parsedMid.loop.end, parsedMid) - MIDIticksToSeconds(parsedMid.loop.start, parsedMid);
+    const duration = parsedMid.duration + additionalTime + loopDuration * loopCount;
+    const sampleRate = this.context.sampleRate;
+
+    let sampleDuration = sampleRate * duration;
+    console.log(loopDuration, loopCount, sampleDuration)
+
     // prepare audio context
     const offline = new OfflineAudioContext({
         numberOfChannels: separateChannels ? 32 : 2,
-        sampleRate: this.context.sampleRate,
-        length: this.context.sampleRate * duration
+        sampleRate: sampleRate,
+        length: sampleDuration
     });
     await offline.audioWorklet.addModule(new URL("../../spessasynth_lib/" + WORKLET_URL_ABSOLUTE, import.meta.url));
 
@@ -63,7 +71,8 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
         synth = new Synthetizer(offline.destination, soundfont, false, {
             parsedMIDI: parsedMid,
             snapshot: snapshot,
-            oneOutput: separateChannels
+            oneOutput: separateChannels,
+            loopCount: loopCount
         }, {
             reverbEnabled: true,
             chorusEnabled: true,
@@ -221,7 +230,17 @@ export async function _exportAudioData()
             translatePathTitle: wavPath + "additionalTime",
             attributes: {
                 "value": "2",
-                "type": "number"
+                "type": "number",
+                "additional-time": "1"
+            }
+        },
+        {
+            type: "input",
+            translatePathTitle: wavPath + "loopCount",
+            attributes: {
+                "value": "0",
+                "type": "number",
+                "loop-count": "1"
             }
         },
         {
@@ -273,7 +292,8 @@ export async function _exportAudioData()
             onClick: n => {
                 closeNotification(n.id);
                 const normalizeVolume = n.div.querySelector("input[normalize-volume-toggle]").checked;
-                const additionalTime = n.div.querySelector("input[type='number']").value;
+                const additionalTime = n.div.querySelector("input[additional-time]").value;
+                const loopCount = n.div.querySelector("input[loop-count]").value;
                 const separateChannels = n.div.querySelector("input[separate-channels-toggle]").checked;
                 const artist = n.div.querySelector("input[name='artist']").value;
                 const album = n.div.querySelector("input[name='album']").value;
@@ -289,7 +309,7 @@ export async function _exportAudioData()
                     genre: genre.length > 0 ? genre : undefined,
                 }
 
-                this._doExportAudioData(normalizeVolume, parseInt(additionalTime), separateChannels, metadata);
+                this._doExportAudioData(normalizeVolume, parseInt(additionalTime), separateChannels, metadata, parseInt(loopCount));
             }
         }
     ];

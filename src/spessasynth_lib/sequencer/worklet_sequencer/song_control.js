@@ -1,10 +1,10 @@
 import { WorkletSequencerReturnMessageType } from './sequencer_message.js'
 import { consoleColors, formatTime } from '../../utils/other.js'
 import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo, SpessaSynthWarn } from '../../utils/loggin.js'
-import { ticksToSeconds } from './play.js'
 import { MidiData } from '../../midi_parser/midi_data.js'
 import { MIDI } from '../../midi_parser/midi_loader.js'
 import { getUsedProgramsAndKeys } from '../../midi_parser/used_keys_loaded.js'
+import { MIDIticksToSeconds } from '../../midi_parser/basic_midi.js'
 
 /**
  * @param trackNum {number}
@@ -52,6 +52,8 @@ export function loadNewSequence(parsedMidi)
      * @type {BasicMIDI}
      */
     this.midiData = parsedMidi;
+
+    this.currentLoopCount = this.loopCount;
 
     // check for embedded soundfont
     if(this.midiData.embeddedSoundFont !== undefined)
@@ -108,7 +110,7 @@ export function loadNewSequence(parsedMidi)
      * @type {number}
      */
     this.duration = this.midiData.duration;
-    this.firstNoteTime = ticksToSeconds(this.midiData.tempoChanges, this.midiData.firstNoteOn, this.midiData.timeDivision);
+    this.firstNoteTime = MIDIticksToSeconds(this.midiData.firstNoteOn, this.midiData);
     SpessaSynthInfo(`%cTotal song time: ${formatTime(Math.ceil(this.duration)).time}`, consoleColors.recognized);
 
     this.post(WorkletSequencerReturnMessageType.songChange, [new MidiData(this.midiData), this.songIndex]);
