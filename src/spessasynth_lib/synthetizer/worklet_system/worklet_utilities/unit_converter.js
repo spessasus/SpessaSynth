@@ -20,7 +20,7 @@ for (let i = 0; i < timecentLookupTable.length; i++) {
  */
 export function timecentsToSeconds(timecents)
 {
-    if(timecents <= -12000) return 0;
+    if(timecents <= -32767) return 0;
     return timecentLookupTable[timecents - MIN_TIMECENT];
 }
 
