@@ -36,6 +36,9 @@ let synthReady = false;
  */
 window.loadedSoundfonts = [];
 
+const r = await (await fetch("/getversion")).text();
+window.SPESSASYNTH_VERSION = r;
+
 /**
  * @param fileName {string}
  * @param callback {function(number)}

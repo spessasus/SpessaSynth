@@ -66,11 +66,14 @@ export function render(auto = true, force = false)
     // draw note count and fps
     this.drawingContext.textBaseline = "hanging";
     this.drawingContext.textAlign = "end";
-    this.drawingContext.font = `${FONT_SIZE}px Verdana`;
+    this.drawingContext.font = `${FONT_SIZE}px system-ui`;
     this.drawingContext.fillStyle = "white";
     this.drawingContext.strokeStyle = "white";
-    this.drawingContext.fillText(`${this.notesOnScreen} notes`, this.canvas.width, FONT_SIZE + 5);
-    this.drawingContext.fillText(Math.round(fps).toString() + " FPS", this.canvas.width, 5);
+    this.drawingContext.fillText(`${this.notesOnScreen} notes`, this.canvas.width, FONT_SIZE * 2 + 5);
+    this.drawingContext.fillText(this.version, this.canvas.width, 5);
+    this.drawingContext.fillText(Math.round(fps).toString() + " FPS", this.canvas.width, FONT_SIZE + 5);
+
+
     if(this.onRender)
     {
         this.onRender();

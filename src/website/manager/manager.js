@@ -180,7 +180,7 @@ class Manager
         canvas.width = window.innerWidth * window.devicePixelRatio;
         canvas.height = window.innerHeight * window.devicePixelRatio;
 
-        this.renderer = new Renderer(this.channelColors, this.synth, canvas, this.audioDelay);
+        this.renderer = new Renderer(this.channelColors, this.synth, canvas, this.audioDelay, window.SPESSASYNTH_VERSION);
         this.renderer.render(true);
 
         let titleSwappedWithSettings = false;

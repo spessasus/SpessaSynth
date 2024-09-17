@@ -41,7 +41,7 @@ const DARKER_MULTIPLIER = 0.6;
 const GRADIENT_DARKEN = 0.5;
 export const STROKE_THICKNESS = 1;
 export const NOTE_MARGIN = 1;
-export const FONT_SIZE = 16;
+export const FONT_SIZE = 12;
 export const PRESSED_EFFECT_TIME = 0.6;
 
 // limits
@@ -57,8 +57,9 @@ class Renderer
      * @param synth {Synthetizer}
      * @param canvas {HTMLCanvasElement}
      * @param delayNode {DelayNode} used for correcting time for large fft sizes
+     * @param version {string}
      */
-    constructor(channelColors, synth, canvas, delayNode)
+    constructor(channelColors, synth, canvas, delayNode, version = "")
     {
         // variables
         /**
@@ -75,6 +76,8 @@ class Renderer
             min: 0,
             max: 127
         };
+
+        this.version = "v" + version;
 
         /**
          * adds this to the synth's visual pitch in position caluclation

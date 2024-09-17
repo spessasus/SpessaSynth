@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path'
-import { configPath, soundfontsPath } from './server.js'
+import { configPath, packageJSON, soundfontsPath } from './server.js'
 /**
  * @param res {ServerResponse}
  * @param path {string}
@@ -135,4 +135,16 @@ export function serveStaticFile(res, filePath, mimeType=undefined)
     }
     res.writeHead(200, type);
     res.end(file);
+}
+
+/**
+ * @param res {ServerResponse}
+ * @returns {string}
+ */
+export function getVersion(res)
+{
+    const text = fs.readFileSync(packageJSON, 'utf-8');
+    const jason = JSON.parse(text);
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end(jason.version);
 }

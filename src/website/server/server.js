@@ -2,7 +2,7 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { serveSettings, serveSfontList, serveStaticFile } from './serve.js'
+import { getVersion, serveSettings, serveSfontList, serveStaticFile } from './serve.js'
 import { openURL } from './open.js'
 
 let PORT = 8181;
@@ -13,6 +13,7 @@ const __dirname = path.join(path.dirname(__filename), "../../");
 
 export const configPath = path.join(__dirname, '/website/server/config.json');
 export const soundfontsPath = path.join(__dirname, '../soundfonts');
+export const packageJSON = path.join(__dirname, '../package.json');
 
 fs.writeFile(configPath, '{}', { flag: 'wx' }, () => {});
 
@@ -58,6 +59,10 @@ const server = http.createServer((req, res) => {
 
         case "/getsettings":
             serveSettings(res);
+            break;
+
+        case "/getversion":
+            getVersion(res);
             break;
 
         default:

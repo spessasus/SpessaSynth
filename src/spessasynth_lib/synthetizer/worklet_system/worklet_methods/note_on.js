@@ -72,6 +72,7 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
         }
         // compute all modulators
         computeModulators(voice, channelObject.midiControllers);
+        WorkletVolumeEnvelope.intialize(voice);
         // set initial pan to avoid split second changing from middle to the correct value
         voice.currentPan = ((Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan] )) + 500) / 1000) // 0 to 1
     });

@@ -31,6 +31,10 @@ const exportButton = document.getElementById("export_button");
 const loading = document.getElementsByClassName("loading")[0];
 const loadingMessage = document.getElementById("loading_message");
 
+// load version
+const r = await (await fetch("package.json")).json();
+window.SPESSASYNTH_VERSION = r["version"];
+
 // IndexedDB stuff
 const dbName = "spessasynth-db";
 const objectStoreName = "soundFontStore";
@@ -68,7 +72,6 @@ async function loadLastSoundFontFromDatabase()
                 console.error("Database error");
                 console.error(e);
                 resolve(undefined);
-                return;
             }
 
             request.onsuccess = async () => {
