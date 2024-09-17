@@ -85,6 +85,7 @@ export function handleMessage(message)
                     }
                 }
             }
+            else
             if(data.rate === -1)
             {
                 this.disableAndLockVibrato(channel);
