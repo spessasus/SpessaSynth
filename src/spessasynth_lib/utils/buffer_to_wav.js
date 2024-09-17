@@ -7,8 +7,9 @@
  */
 
 import { combineArrays, IndexedByteArray } from './indexed_array.js'
-import { getStringBytes } from './byte_functions/string.js'
+import { getStringBytes, writeStringAsBytes } from './byte_functions/string.js'
 import { writeRIFFOddSize } from '../soundfont/basic_soundfont/riff_chunk.js'
+import { writeLittleEndian } from './byte_functions/little_endian.js'
 
 /**
  *
@@ -16,9 +17,10 @@ import { writeRIFFOddSize } from '../soundfont/basic_soundfont/riff_chunk.js'
  * @param normalizeAudio {boolean} find the max sample point and set it to 1, and scale others with it
  * @param channelOffset {number} channel offset and channel offset + 1 get saved
  * @param metadata {WaveMetadata}
+ * @param loop {{start: number, end: number}} loop start and end points in seconds. Undefined if no loop
  * @returns {Blob}
  */
-export function audioBufferToWav(audioBuffer, normalizeAudio = true, channelOffset = 0, metadata = {})
+export function audioBufferToWav(audioBuffer, normalizeAudio = true, channelOffset = 0, metadata = {}, loop=undefined)
 {
     const channel1Data = audioBuffer.getChannelData(channelOffset);
     const channel2Data = audioBuffer.getChannelData(channelOffset + 1);
@@ -64,10 +66,42 @@ export function audioBufferToWav(audioBuffer, normalizeAudio = true, channelOffs
         infoChunk = writeRIFFOddSize("LIST", combineArrays(infoChunks));
     }
 
+    // prepare CUE chunk
+    let cueChunk = new IndexedByteArray(0);
+    const cueOn = loop?.end !== undefined && loop?.start !== undefined;
+    if(cueOn)
+    {
+        const loopStartSamples = Math.floor(loop.start * audioBuffer.sampleRate);
+        const loopEndSamples = Math.floor(loop.end * audioBuffer.sampleRate);
+
+        const cueStart = new IndexedByteArray(24);
+        writeLittleEndian(cueStart, 0, 4); // dwIdentifier
+        writeLittleEndian(cueStart, 0, 4); // dwPosition
+        writeStringAsBytes(cueStart, "data"); // cue point ID
+        writeLittleEndian(cueStart, 0, 4); // chunkStart, always 0
+        writeLittleEndian(cueStart, 0, 4); // BlockStart, always 0
+        writeLittleEndian(cueStart, loopStartSamples, 4); // sampleOffset
+
+        const cueEnd = new IndexedByteArray(24);
+        writeLittleEndian(cueEnd, 1, 4); // dwIdentifier
+        writeLittleEndian(cueEnd, 0, 4); // dwPosition
+        writeStringAsBytes(cueEnd, "data"); // cue point ID
+        writeLittleEndian(cueEnd, 0, 4); // chunkStart, always 0
+        writeLittleEndian(cueEnd, 0, 4); // BlockStart, always 0
+        writeLittleEndian(cueEnd, loopEndSamples, 4); // sampleOffset
+
+        const out = combineArrays([
+            new IndexedByteArray([2, 0, 0, 0]), // cue points count,
+            cueStart,
+            cueEnd
+        ]);
+        cueChunk = writeRIFFOddSize("cue ", out);
+    }
+
     // Prepare the header
     const headerSize = 44;
     const dataSize = length * 2 * bytesPerSample; // 2 channels, 16-bit per channel
-    const fileSize = headerSize + dataSize + infoChunk.length - 8; // total file size minus the first 8 bytes
+    const fileSize = headerSize + dataSize + infoChunk.length + cueChunk.length - 8; // total file size minus the first 8 bytes
     const header = new Uint8Array(headerSize);
 
     // 'RIFF'
@@ -100,16 +134,8 @@ export function audioBufferToWav(audioBuffer, normalizeAudio = true, channelOffs
     // data chunk length
     header.set(new Uint8Array([dataSize & 0xff, (dataSize >> 8) & 0xff, (dataSize >> 16) & 0xff, (dataSize >> 24) & 0xff]), 40);
 
-    let wavData;
+    let wavData =  new Uint8Array(fileSize + 8);
     let offset = headerSize;
-    if(infoOn)
-    {
-        wavData = new Uint8Array(headerSize + dataSize + infoChunk.length);
-    }
-    else
-    {
-        wavData = new Uint8Array(headerSize + dataSize);
-    }
     wavData.set(header, 0);
 
     // Interleave audio data (combine channels)
@@ -136,6 +162,11 @@ export function audioBufferToWav(audioBuffer, normalizeAudio = true, channelOffs
     if(infoOn)
     {
         wavData.set(infoChunk, offset);
+        offset += infoChunk.length;
+    }
+    if(cueOn)
+    {
+        wavData.set(cueChunk, offset);
     }
 
     return new Blob([wavData.buffer], { type: 'audio/wav' });

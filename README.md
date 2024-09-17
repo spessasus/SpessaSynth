@@ -110,6 +110,13 @@ This repository contains both the library and a complete musical web application
   - **Correct volume:** *looking at you, Viena and gm.sf2!*
   - Support built right into the synthesizer!
 
+### Export MIDI as WAV
+  - Save the MIDI file as WAV audio!
+  - **Metadata support:** *Embed metadata such as title, artist, album and more!*
+  - **Cue points:** *Write MIDI loop points as cue points!*
+  - **Loop multiple times:** *Render two (or more) loops into the file for seamless transitions!*
+  - *That's right, saving as WAV is also [just one function!](https://github.com/spessasus/SpessaSynth/wiki/Writing-Wave-Files#audiobuffertowav)*
+
 ## Limitations
 - Synth's performance may be suboptimal, especially on mobile devices.
 

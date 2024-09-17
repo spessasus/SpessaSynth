@@ -39,12 +39,13 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
         false
     );
     const parsedMid = await this.seq.getMIDI();
-    let loopDuration = MIDIticksToSeconds(parsedMid.loop.end, parsedMid) - MIDIticksToSeconds(parsedMid.loop.start, parsedMid);
+    const loopStartAbsolute = MIDIticksToSeconds(parsedMid.loop.start, parsedMid);
+    const loopEndAbsolute = MIDIticksToSeconds(parsedMid.loop.end, parsedMid);
+    let loopDuration = loopEndAbsolute - loopStartAbsolute;
     const duration = parsedMid.duration + additionalTime + loopDuration * loopCount;
     const sampleRate = this.context.sampleRate;
 
     let sampleDuration = sampleRate * duration;
-    console.log(loopDuration, loopCount, sampleDuration)
 
     // prepare audio context
     const offline = new OfflineAudioContext({
@@ -126,7 +127,16 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
     await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
     if(!separateChannels)
     {
-        this.saveBlob(audioBufferToWav(buf, normalizeAudio, 0, meta), `${this.seqUI.currentSongTitle || 'unnamed_song'}.wav`,);
+        const startOffset = MIDIticksToSeconds(parsedMid.firstNoteOn, parsedMid);
+        const loopStart = loopStartAbsolute - startOffset;
+        const loopEnd = loopEndAbsolute - startOffset;
+        let loop = undefined;
+        if(loopCount === 0)
+        {
+            loop = {start: loopStart, end: loopEnd};
+        }
+        const wav = audioBufferToWav(buf, normalizeAudio, 0, meta, loop);
+        this.saveBlob(wav, `${this.seqUI.currentSongTitle || 'unnamed_song'}.wav`);
     }
     else
     {
