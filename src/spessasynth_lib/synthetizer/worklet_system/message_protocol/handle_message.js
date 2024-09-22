@@ -77,7 +77,7 @@ export function handleMessage(message)
                 {
                     if(data.rate === -1)
                     {
-                        this.disableAndLockVibrato(i);
+                        this.disableAndLockGSNRPN(i);
                     }
                     else
                     {
@@ -88,7 +88,7 @@ export function handleMessage(message)
             else
             if(data.rate === -1)
             {
-                this.disableAndLockVibrato(channel);
+                this.disableAndLockGSNRPN(channel);
             }
             else
             {

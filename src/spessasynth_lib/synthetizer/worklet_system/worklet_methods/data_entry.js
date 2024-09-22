@@ -43,6 +43,10 @@ export function dataEntryCoarse(channel, dataValue)
             {
                 return;
             }
+            if(channelObject.lockGSNRPNParams)
+            {
+                return;
+            }
             switch(channelObject.NRPCoarse)
             {
                 default:
@@ -83,10 +87,6 @@ export function dataEntryCoarse(channel, dataValue)
 
                         // vibrato rate
                         case 0x08:
-                            if(channelObject.lockVibrato)
-                            {
-                                return;
-                            }
                             if(dataValue === 64)
                             {
                                 return;
@@ -103,10 +103,6 @@ export function dataEntryCoarse(channel, dataValue)
 
                         // vibrato depth
                         case 0x09:
-                            if(channelObject.lockVibrato)
-                            {
-                                return;
-                            }
                             if(dataValue === 64)
                             {
                                 return;
@@ -123,10 +119,6 @@ export function dataEntryCoarse(channel, dataValue)
 
                         // vibrato delay
                         case 0x0A:
-                            if(channelObject.lockVibrato)
-                            {
-                                return;
-                            }
                             if(dataValue === 64)
                             {
                                 return;
@@ -156,10 +148,6 @@ export function dataEntryCoarse(channel, dataValue)
 
                 // drum key tuning
                 case 0x18:
-                    if(!channelObject.drumChannel)
-                    {
-                        return;
-                    }
                     // fine is the key number and data value is the semitone change
                     const semitones = dataValue - 64;
                     channelObject.keyCentTuning[channelObject.NRPFine] = semitones * 100;
@@ -172,10 +160,6 @@ export function dataEntryCoarse(channel, dataValue)
 
                 // drum reverb
                 case 0x1D:
-                    if(!channelObject.drumChannel)
-                    {
-                        return;
-                    }
                     const reverb = dataValue;
                     this.controllerChange(channel, midiControllers.effects1Depth, reverb);
                     SpessaSynthInfo(

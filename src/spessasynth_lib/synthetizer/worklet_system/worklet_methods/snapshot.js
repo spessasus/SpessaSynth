@@ -60,7 +60,7 @@ export function sendSynthesizerSnapshot()
             customControllers: channel.customControllers,
 
             channelVibrato: channel.channelVibrato,
-            lockVibrato: channel.lockVibrato,
+            lockVibrato: channel.lockGSNRPNParams,
 
             channelTransposeKeyShift: channel.channelTransposeKeyShift,
             channelOctaveTuning: channel.channelOctaveTuning,
@@ -123,7 +123,7 @@ export function applySynthesizerSnapshot(snapshot)
 
         // restore vibrato and transpose
         channelObject.channelVibrato = channelSnapshot.channelVibrato;
-        channelObject.lockVibrato = channelSnapshot.lockVibrato;
+        channelObject.lockGSNRPNParams = channelSnapshot.lockVibrato;
         channelObject.channelTransposeKeyShift = channelSnapshot.channelTransposeKeyShift;
         channelObject.channelOctaveTuning = channelSnapshot.channelOctaveTuning;
 

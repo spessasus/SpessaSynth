@@ -21,7 +21,7 @@ import { modulatorSources } from '../../../soundfont/read_sf2/modulators.js'
  * @property {boolean} lockPreset - indicates whether the program on the channel is locked
  * @property {boolean} presetUsesOverride - indcates if the channel uses a preset from the override soundfont.
  *
- * @property {boolean} lockVibrato - indicates whether the custom vibrato is locked
+ * @property {boolean} lockGSNRPNParams - indicates whether the GS NRPN parameters are enabled
  * @property {Object} channelVibrato - vibrato settings for the channel
  * @property {number} channelVibrato.depth - depth of the vibrato effect (cents)
  * @property {number} channelVibrato.delay - delay before the vibrato effect starts (seconds)
@@ -62,7 +62,7 @@ export function createWorkletChannel(sendEvent = false)
         channelOctaveTuning: new Int8Array(12),
         keyCentTuning: new Int16Array(128),
         channelVibrato: {delay: 0, depth: 0, rate: 0},
-        lockVibrato: false,
+        lockGSNRPNParams: false,
         holdPedal: false,
         isMuted: false,
         drumChannel: false,

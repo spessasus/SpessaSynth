@@ -149,8 +149,8 @@ export function audioBufferToWav(audioBuffer, normalizeAudio = true, channelOffs
     for (let i = 0; i < length; i++)
     {
         // interleave both channels
-        const sample1 = Math.min(32767, Math.max(-37268, channel1Data[i] * multiplier));
-        const sample2 = Math.min(32767, Math.max(-37268, channel2Data[i] * multiplier));
+        const sample1 = Math.min(32767, Math.max(-32768, channel1Data[i] * multiplier));
+        const sample2 = Math.min(32767, Math.max(-32768, channel2Data[i] * multiplier));
 
         // convert to 16-bit
         wavData[offset++] = sample1 & 0xff;

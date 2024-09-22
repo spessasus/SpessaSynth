@@ -401,9 +401,9 @@ export class Synthetizer {
     }
 
     /*
-     * Prevents any further changes to the vibrato via NRPN messages and sets it to disabled
+     * Disables the GS NRPN parameters like vibrato or drum key tuning
      */
-    lockAndResetChannelVibrato()
+    disableGSNRPparams()
     {
         // rate -1 disables, see worklet_message.js line 9
         // channel -1 is all

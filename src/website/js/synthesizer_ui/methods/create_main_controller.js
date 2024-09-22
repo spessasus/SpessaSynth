@@ -122,7 +122,7 @@ export function createMainSynthController()
     vibratoReset.classList.add("synthui_button");
     vibratoReset.classList.add("main_controller_element");
     vibratoReset.onclick = () => {
-        this.synth.lockAndResetChannelVibrato();
+        this.synth.disableGSNRPparams();
         vibratoReset.parentNode.removeChild(vibratoReset);
     }
 

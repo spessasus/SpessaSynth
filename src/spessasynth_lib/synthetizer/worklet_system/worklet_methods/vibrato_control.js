@@ -2,9 +2,9 @@
  * @param channel {number}
  * @this {SpessaSynthProcessor}
  */
-export function disableAndLockVibrato(channel)
+export function disableAndLockGSNRPN(channel)
 {
-    this.workletProcessorChannels[channel].lockVibrato = true;
+    this.workletProcessorChannels[channel].lockGSNRPNParams = true;
     this.workletProcessorChannels[channel].channelVibrato.rate = 0;
     this.workletProcessorChannels[channel].channelVibrato.delay = 0;
     this.workletProcessorChannels[channel].channelVibrato.depth = 0;
@@ -19,7 +19,7 @@ export function disableAndLockVibrato(channel)
  */
 export function setVibrato(channel, depth, rate, delay)
 {
-    if(this.workletProcessorChannels[channel].lockVibrato)
+    if(this.workletProcessorChannels[channel].lockGSNRPNParams)
     {
         return;
     }

@@ -26,7 +26,7 @@ import {
     setMasterPan,
     setMIDIVolume,
 } from './worklet_methods/controller_control.js'
-import { disableAndLockVibrato, setVibrato } from './worklet_methods/vibrato_control.js'
+import { disableAndLockGSNRPN, setVibrato } from './worklet_methods/vibrato_control.js'
 import { dataEntryCoarse, dataEntryFine } from './worklet_methods/data_entry.js'
 import { createWorkletChannel } from './worklet_utilities/worklet_processor_channel.js'
 import { resetAllControllers, resetControllers, resetParameters } from './worklet_methods/reset_controllers.js'
@@ -385,7 +385,7 @@ SpessaSynthProcessor.prototype.muteChannel = muteChannel;
 
 // custom vibrato related
 SpessaSynthProcessor.prototype.setVibrato = setVibrato;
-SpessaSynthProcessor.prototype.disableAndLockVibrato = disableAndLockVibrato;
+SpessaSynthProcessor.prototype.disableAndLockGSNRPN = disableAndLockGSNRPN;
 
 // data entry related
 SpessaSynthProcessor.prototype.dataEntryCoarse = dataEntryCoarse;
