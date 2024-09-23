@@ -91,7 +91,6 @@ export class SoundFont2 extends BasicSoundFont
                     this.defaultModulators = newModulators;
                     this.defaultModulators.push(...oldDefaults.filter(m => !this.defaultModulators.find(mm => Modulator.isIdentical(m, mm))));
                     this.soundFontInfo[chunk.header] = chunk.chunkData;
-                    SpessaSynthInfo("Default modulators:", this.defaultModulators.map(m => m.debugString()));
                     break;
 
                 default:
