@@ -22,6 +22,7 @@ export class DLSZone extends BasicInstrumentZone
      * @param sampleKey {number}
      * @param sample {BasicSample}
      * @param sampleID {number}
+     * @param samplePitchCorrection {number} cents
      */
     setWavesample(
         attenuationCb,
@@ -30,6 +31,7 @@ export class DLSZone extends BasicInstrumentZone
         sampleKey,
         sample,
         sampleID,
+        samplePitchCorrection,
     )
     {
         if(loopingMode !== 0)
@@ -38,6 +40,18 @@ export class DLSZone extends BasicInstrumentZone
         }
         this.generators.push(new Generator(generatorTypes.initialAttenuation, attenuationCb));
         this.isGlobal = false;
+
+        // correct tuning if needed
+        const coarseTune = Math.trunc(samplePitchCorrection / 100);
+        if(coarseTune !== 0)
+        {
+            this.generators.push(new Generator(generatorTypes.coarseTune, coarseTune));
+        }
+        const fineTune = samplePitchCorrection - (coarseTune * 100);
+        if(fineTune !== 0)
+        {
+            this.generators.push(new Generator(generatorTypes.fineTune, fineTune));
+        }
 
         // correct loop if needed
         const diffStart = loop.start - (sample.sampleLoopStartIndex / 2);

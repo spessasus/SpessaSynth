@@ -1,4 +1,4 @@
-import { readLittleEndian } from '../../utils/byte_functions/little_endian.js'
+import { readLittleEndian, signedInt16 } from '../../utils/byte_functions/little_endian.js'
 import { findRIFFListType, readRIFFChunk } from '../basic_soundfont/riff_chunk.js'
 import { Generator, generatorTypes } from '../read_sf2/generators.js'
 import { DLSZone } from './dls_zone.js'
@@ -57,8 +57,12 @@ export function readRegion(chunk)
     // cbSize
     readLittleEndian(waveSampleChunk.chunkData, 4);
     const originalKey = readLittleEndian(waveSampleChunk.chunkData, 2);
-    // pitch correction is read from the wave wsmpl chunk
-    readLittleEndian(waveSampleChunk.chunkData, 2);
+
+    // sFineTune
+    const pitchCorrection = signedInt16(
+        waveSampleChunk.chunkData[waveSampleChunk.chunkData.currentIndex++],
+        waveSampleChunk.chunkData[waveSampleChunk.chunkData.currentIndex++]
+    );
 
     // gain correction:  Each unit of gain represents 1/655360 dB
     const gainCorrection = readLittleEndian(waveSampleChunk.chunkData, 4);
@@ -124,6 +128,7 @@ export function readRegion(chunk)
         loop,
         originalKey,
         sample,
-        sampleID);
+        sampleID,
+        pitchCorrection);
     return zone;
 }
