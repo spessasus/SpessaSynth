@@ -44,21 +44,21 @@ export class Modulator{
     constructor(dataArray) {
         if(dataArray.srcEnum)
         {
-            this.modulatorSource = dataArray.srcEnum;
+            this.sourceEnum = dataArray.srcEnum;
             /**
              * @type {generatorTypes}
              */
             this.modulatorDestination = dataArray.dest;
-            this.modulationSecondarySrc = dataArray.secSrcEnum;
+            this.secondarySourceEnum = dataArray.secSrcEnum;
             this.transformAmount = dataArray.amt;
             this.transformType = dataArray.transform;
         }
         else
         {
-            this.modulatorSource = readLittleEndian(dataArray, 2);
+            this.sourceEnum = readLittleEndian(dataArray, 2);
             this.modulatorDestination = readLittleEndian(dataArray, 2);
             this.transformAmount = signedInt16(dataArray[dataArray.currentIndex++], dataArray[dataArray.currentIndex++]);
-            this.modulationSecondarySrc = readLittleEndian(dataArray, 2);
+            this.secondarySourceEnum = readLittleEndian(dataArray, 2);
             this.transformType = readLittleEndian(dataArray, 2);
         }
 
@@ -68,20 +68,48 @@ export class Modulator{
         }
 
         // decode the source
-        this.sourcePolarity = this.modulatorSource >> 9 & 1;
-        this.sourceDirection = this.modulatorSource >> 8 & 1;
-        this.sourceUsesCC = this.modulatorSource >> 7 & 1;
-        this.sourceIndex = this.modulatorSource & 127;
-        this.sourceCurveType = this.modulatorSource >> 10 & 3;
+        this.sourcePolarity = this.sourceEnum >> 9 & 1;
+        this.sourceDirection = this.sourceEnum >> 8 & 1;
+        this.sourceUsesCC = this.sourceEnum >> 7 & 1;
+        this.sourceIndex = this.sourceEnum & 127;
+        this.sourceCurveType = this.sourceEnum >> 10 & 3;
 
         // decode the secondary source
-        this.secSrcPolarity = this.modulationSecondarySrc >> 9 & 1;
-        this.secSrcDirection = this.modulationSecondarySrc >> 8 & 1;
-        this.secSrcUsesCC = this.modulationSecondarySrc >> 7 & 1;
-        this.secSrcIndex = this.modulationSecondarySrc & 127;
-        this.secSrcCurveType = this.modulationSecondarySrc >> 10 & 3;
+        this.secSrcPolarity = this.secondarySourceEnum >> 9 & 1;
+        this.secSrcDirection = this.secondarySourceEnum >> 8 & 1;
+        this.secSrcUsesCC = this.secondarySourceEnum >> 7 & 1;
+        this.secSrcIndex = this.secondarySourceEnum & 127;
+        this.secSrcCurveType = this.secondarySourceEnum >> 10 & 3;
 
         //this.precomputeModulatorTransform();
+    }
+
+    /**
+     * @param modulator {Modulator}
+     * @returns {Modulator}
+     */
+    static copy(modulator)
+    {
+        return new Modulator({
+            srcEnum: modulator.sourceEnum,
+            secSrcEnum: modulator.secondarySourceEnum,
+            transform: modulator.transformType,
+            amt: modulator.transformAmount,
+            dest: modulator.modulatorDestination
+        });
+    }
+
+    /**
+     * @param mod1 {Modulator}
+     * @param mod2 {Modulator}
+     * @returns {boolean}
+     */
+    static isIdentical(mod1, mod2)
+    {
+        return (mod1.sourceEnum === mod2.sourceEnum)
+            && (mod1.modulatorDestination === mod2.modulatorDestination)
+            && (mod1.secondarySourceEnum === mod2.secondarySourceEnum)
+            && (mod1.transformType === mod2.transformType);
     }
 
     /**
@@ -92,8 +120,8 @@ export class Modulator{
     sumTransform(modulator)
     {
         return new Modulator({
-            srcEnum: this.modulatorSource,
-            secSrcEnum: this.modulationSecondarySrc,
+            srcEnum: this.sourceEnum,
+            secSrcEnum: this.secondarySourceEnum,
             dest: this.modulatorDestination,
             transform: this.transformType,
             amt: this.transformAmount + modulator.transformAmount

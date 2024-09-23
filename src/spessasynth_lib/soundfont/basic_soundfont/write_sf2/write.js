@@ -68,6 +68,7 @@ export function write(options = DEFAULT_WRITE_OPTIONS)
     {
         this.soundFontInfo["ifil"] = "3.0"; // set version to 3
     }
+
     for (const [type, data] of Object.entries(this.soundFontInfo))
     {
         if(type === "ifil" || type === "iver")
@@ -81,6 +82,15 @@ export function write(options = DEFAULT_WRITE_OPTIONS)
                 type,
                 4,
                 ckdata
+            )));
+        }
+        else
+        if(type === "DMOD")
+        {
+            infoArrays.push(writeRIFFChunk(new RiffChunk(
+                type,
+                data.length,
+                data
             )));
         }
         else

@@ -66,26 +66,42 @@ export class SoundFont2 extends BasicSoundFont
         {
             let chunk = readRIFFChunk(infoChunk.chunkData);
             let text;
-            // special case: ifil
+            // special cases
             switch (chunk.header.toLowerCase())
             {
                 case  "ifil":
                 case "iver":
                     text = `${readLittleEndian(chunk.chunkData, 2)}.${readLittleEndian(chunk.chunkData, 2)}`;
+                    this.soundFontInfo[chunk.header] = text;
                     break;
 
                 case "icmt":
                     text = readBytesAsString(chunk.chunkData, chunk.chunkData.length, undefined, false);
+                    this.soundFontInfo[chunk.header] = text;
+                    break;
+
+                // dmod: default modulators
+                case "dmod":
+                    const newModulators = readModulators(chunk);
+                    newModulators.pop(); // remove the terminal record
+                    text = `Modulators: ${newModulators.length}`;
+                    // override default modulators
+                    const oldDefaults = this.defaultModulators;
+
+                    this.defaultModulators = newModulators;
+                    this.defaultModulators.push(...oldDefaults.filter(m => !this.defaultModulators.find(mm => Modulator.isIdentical(m, mm))));
+                    this.soundFontInfo[chunk.header] = chunk.chunkData;
+                    SpessaSynthInfo("Default modulators:", this.defaultModulators.map(m => m.debugString()));
                     break;
 
                 default:
                     text = readBytesAsString(chunk.chunkData, chunk.chunkData.length);
+                    this.soundFontInfo[chunk.header] = text;
             }
 
             SpessaSynthInfo(`%c"${chunk.header}": %c"${text}"`,
                 consoleColors.info,
                 consoleColors.recognized);
-            this.soundFontInfo[chunk.header] = text;
         }
 
         // SDTA
@@ -214,7 +230,7 @@ export class SoundFont2 extends BasicSoundFont
 
         let presetZones = readPresetZones(presetZonesChunk, presetGenerators, presetModulators, this.instruments);
 
-        this.presets.push(...readPresets(presetHeadersChunk, presetZones));
+        this.presets.push(...readPresets(presetHeadersChunk, presetZones, this.defaultModulators));
         this.presets.sort((a, b) => (a.program - b.program) + (a.bank - b.bank));
         // preload the first preset
         SpessaSynthInfo(`%cParsing finished! %c"${this.soundFontInfo["INAM"]}"%c has %c${this.presets.length} %cpresets,

@@ -73,7 +73,7 @@ export function createChannelController(channelNumber)
         this.locale,
         [channelNumber + 1],
         -8192,
-        8192,
+        8191,
         true,
         val => {
             const meterLocked = pitchWheel.isLocked;

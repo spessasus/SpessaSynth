@@ -1,6 +1,7 @@
 import { SpessaSynthWarn } from '../../utils/loggin.js'
 import { consoleColors } from '../../utils/other.js'
 import { write } from './write_sf2/write.js'
+import { defaultModulators, Modulator } from '../read_sf2/modulators.js'
 
 class BasicSoundFont
 {
@@ -12,7 +13,7 @@ class BasicSoundFont
     {
         /**
          * Soundfont's info stored as name: value. ifil and iver are stored as string representation of float (e.g. 2.1)
-         * @type {Object<string, string>}
+         * @type {Object<string, string|IndexedByteArray>}
          */
         this.soundFontInfo = {};
 
@@ -33,6 +34,12 @@ class BasicSoundFont
          * @type {BasicInstrument[]}
          */
         this.instruments = [];
+
+        /**
+         * Soundfont's default modulatorss
+         * @type {Modulator[]}
+         */
+        this.defaultModulators = defaultModulators.map(m => Modulator.copy(m));
 
         if(data?.presets)
         {

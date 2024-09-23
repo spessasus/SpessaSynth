@@ -25,10 +25,10 @@ export function getPMOD()
             pbag.modulatorZoneStartIndex = pmodIndex;
             for (const mod of pbag.modulators)
             {
-                writeWord(pmoddata, mod.modulatorSource);
+                writeWord(pmoddata, mod.sourceEnum);
                 writeWord(pmoddata, mod.modulatorDestination);
                 writeWord(pmoddata, mod.transformAmount);
-                writeWord(pmoddata, mod.modulationSecondarySrc);
+                writeWord(pmoddata, mod.secondarySourceEnum);
                 writeWord(pmoddata, mod.transformType);
                 pmodIndex++;
             }

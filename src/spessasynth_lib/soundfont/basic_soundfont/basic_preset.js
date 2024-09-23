@@ -7,12 +7,15 @@
  *  sampleID: number,
  * }} SampleAndGenerators
  */
-import { defaultModulators } from '../read_sf2/modulators.js'
 import { generatorTypes } from '../read_sf2/generators.js'
+import { Modulator } from '../read_sf2/modulators.js'
 
 export class BasicPreset
 {
-    constructor()
+    /**
+     * @param modulators {Modulator[]}
+     */
+    constructor(modulators)
     {
         /**
          * The preset's name
@@ -67,6 +70,12 @@ export class BasicPreset
          * @type {number}
          */
         this.morphology = 0;
+
+        /**
+         * Default modulators
+         * @type {Modulator[]}
+         */
+        this.defaultModulators = modulators;
     }
 
     deletePreset()
@@ -137,21 +146,9 @@ export class BasicPreset
             return [];
         }
 
-        function isInRange(min, max, number) {
-            return number >= min && number <= max;
-        }
-
-        /**
-         * @param mod1 {Modulator}
-         * @param mod2 {Modulator}
-         * @returns {boolean}
-         */
-        function identicalMod(mod1, mod2)
+        function isInRange(min, max, number)
         {
-            return (mod1.modulatorSource === mod2.modulatorSource)
-                && (mod1.modulatorDestination === mod2.modulatorDestination)
-                && (mod1.modulationSecondarySrc === mod2.modulationSecondarySrc)
-                && (mod1.transformType === mod2.transformType);
+            return number >= min && number <= max;
         }
 
         /**
@@ -169,7 +166,7 @@ export class BasicPreset
          */
         function addUniqueMods(main, adder)
         {
-            main.push(...adder.filter(m => !main.find(mm => identicalMod(m, mm))));
+            main.push(...adder.filter(m => !main.find(mm => Modulator.isIdentical(m, mm))));
         }
 
         /**
@@ -237,7 +234,7 @@ export class BasicPreset
                 addUniqueMods(instrumentModulators, globalInstrumentModulators);
 
                 // default mods
-                addUniqueMods(instrumentModulators, defaultModulators);
+                addUniqueMods(instrumentModulators, this.defaultModulators);
 
                 /**
                  * sum preset modulators to instruments (amount) sf spec page 54
@@ -247,7 +244,7 @@ export class BasicPreset
                 for(let i = 0; i < presetModulators.length; i++)
                 {
                     let mod = presetModulators[i];
-                    const identicalInstrumentModulator = finalModulatorList.findIndex(m => identicalMod(mod, m));
+                    const identicalInstrumentModulator = finalModulatorList.findIndex(m => Modulator.isIdentical(mod, m));
                     if(identicalInstrumentModulator !== -1)
                     {
                         // sum the amounts (this makes a new modulator because otherwise it would overwrite the one in the soundfont!!!

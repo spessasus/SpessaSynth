@@ -13,10 +13,11 @@ export class Preset extends BasicPreset
     /**
      * Creates a preset
      * @param presetChunk {RiffChunk}
+     * @param defaultModulators {Modulator[]}
      */
-    constructor(presetChunk)
+    constructor(presetChunk, defaultModulators)
     {
-        super();
+        super(defaultModulators);
         this.presetName = readBytesAsString(presetChunk.chunkData, 20)
             .trim()
             .replace(/\d{3}:\d{3}/, ""); // remove those pesky "000:001"
@@ -51,9 +52,10 @@ export class Preset extends BasicPreset
  * Reads the presets
  * @param presetChunk {RiffChunk}
  * @param presetZones {PresetZone[]}
+ * @param defaultModulators {Modulator[]}
  * @returns {Preset[]}
  */
-export function readPresets(presetChunk, presetZones)
+export function readPresets(presetChunk, presetZones, defaultModulators)
 {
     /**
      * @type {Preset[]}
@@ -61,7 +63,7 @@ export function readPresets(presetChunk, presetZones)
     let presets = [];
     while(presetChunk.chunkData.length > presetChunk.chunkData.currentIndex)
     {
-        let preset = new Preset(presetChunk);
+        let preset = new Preset(presetChunk, defaultModulators);
         if(presets.length > 0)
         {
             let presetZonesAmount = preset.presetZoneStartIndex - presets[presets.length - 1].presetZoneStartIndex;
