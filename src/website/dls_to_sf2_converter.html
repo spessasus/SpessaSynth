@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- open graph -->
+    <meta property='og:title' content='DLS to SF2 Converter online' />
+    <meta property='og:site_name' content='SpessaSynth' />
+    <meta property='og:description' content='Convert DLS soundfont to SF2 soundfont online. No download needed!' />
+    <meta property='og:url' content='https://spessasus.github.io/SpessaSynth/src/website/dls_to_sf2_converter.html' />
+    <meta property="og:type" content="website" />
+
+    <!-- twitter card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="DLS to SF2 Converter online">
+    <meta name="twitter:description" content="Convert DLS soundfont to SF2 soundfont online. No download needed!">
+    <!-- for search engines -->
+    <meta name='description' content='Convert DLS soundfont to SF2 soundfont online for free. No download needed!' />
+    <meta name='author' content='spessasus' />
+    <meta name='keywords' content='soundfont, sf2, soundfont2, sf3, dls, ls to sf2, dls to sf2 converter, dls converter online' />
+
+    <title>DLS to SF2 Online Converter</title>
+
+    <link rel='stylesheet' href='css/dls_to_sf2.css'>
+    <link rel='icon' type='image/png' href='favicon.ico'>
+</head>
+<body>
+<div class='box flexy_box'>
+    <div class='box'>
+        <h1 id='title'>DLS to SF2 Soundfont Converter</h1>
+        <p>
+            Convert a DLS soundfont into an SF2 one, online for free! Created by me using <a href='https://spessasus.github.io/SpessaSynth'>SpessaSynth</a>
+        </p>
+    </div>
+
+    <div class='box button_box'>
+        <h3 id='message'></h3>
+        <label for='dls_upload' id='dls_upload_btn'>Upload a DLS file</label>
+        <input type='file' id='dls_upload' accept='audio/dls'>
+
+        <label id='convert' class='hidden'>Convert</label>
+
+        <label id='download' class='hidden'></label>
+    </div>
+
+    <div class='box wide_box flexy_box hidden' id='sf_info'>
+        <h2>Detected info</h2>
+        <h3>Name</h3>
+        <p id='dls_name'></p>
+        <h3>Description</h3>
+        <p id='dls_description'></p>
+        <h3></h3>
+        <p id='dls_presets'></p>
+        <h3>Sample count</h3>
+        <p id='dls_samples'></p>
+    </div>
+</div>
+<script type='module' src='js/dls_to_sf2.js'></script>
+</body>
+</html>

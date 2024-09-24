@@ -12,7 +12,7 @@ import {
     _createMidiSettingsHandler,
 } from './handlers/midi_handler.js'
 import { _createKeyboardHandler } from './handlers/keyboard_handler.js'
-import { localeList } from '../../locale/locale_files/locale_list.js'
+import { localeList } from '../locale/locale_files/locale_list.js'
 import { keybinds } from '../utils/keybinds.js'
 import { handleSliders } from './sliders.js'
 import { ANIMATION_REFLOW_TIME } from '../utils/animation_utils.js'
