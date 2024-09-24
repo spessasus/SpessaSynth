@@ -48,6 +48,8 @@ class DLSSoundFont extends BasicSoundFont
         this.soundFontInfo["isng"] = "EMU8000";
 
         // set some defaults
+        this.soundFontInfo["INAM"] = "Unnamed DLS";
+        this.soundFontInfo["IENG"] = "Unknown";
         this.soundFontInfo["IPRD"] = "SpessaSynth DLS";
         this.soundFontInfo["ICRD"] =  new Date().toDateString();
 
@@ -61,7 +63,7 @@ class DLSSoundFont extends BasicSoundFont
                 this.soundFontInfo[infoPart.header] = readBytesAsString(infoPart.chunkData, infoPart.size);
             }
         }
-        this.soundFontInfo["ICMT"] = (this.soundFontInfo["ICMT"] || "") + "\nConverted from DLS to SF2 with SpessaSynth";
+        this.soundFontInfo["ICMT"] = (this.soundFontInfo["ICMT"] || "(No description)") + "\nConverted from DLS to SF2 with SpessaSynth";
         if(this.soundFontInfo["ISBJ"])
         {
             // merge it
@@ -100,6 +102,9 @@ class DLSSoundFont extends BasicSoundFont
             throw new Error("No lins chunk!");
         }
         this.readDLSInstrumentList(instrumentListChunk);
+
+        // sort presets
+        this.presets.sort((a, b) => (a.program - b.program) + (a.bank - b.bank));
 
         SpessaSynthInfo(`%cParsing finished! %c"${this.soundFontInfo["INAM"] || "UNNAMED"}"%c has %c${this.presets.length} %cpresets,
         %c${this.instruments.length}%c instruments and %c${this.samples.length}%c samples.`,

@@ -48,9 +48,20 @@ export class WorkletSoundfontManager
         for (let i = this.soundfontList.length - 1; i >= 0; i--)
         {
             const font = this.soundfontList[i];
+            /**
+             * prevent preset names from the same soudfont from being overriden
+             * if the soundfont has two presets with matching bank and program
+             * @type {Set<string>}
+             */
+            const presets = new Set();
             for(const p of font.soundfont.presets)
             {
                 const presetString = `${p.bank + font.bankOffset}-${p.program}`;
+                if(presets.has(presetString))
+                {
+                    continue;
+                }
+                presets.add(presetString);
                 presetList[presetString] = p.presetName;
             }
         }

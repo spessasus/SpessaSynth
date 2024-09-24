@@ -259,6 +259,15 @@ export function systemExclusive(messageData, channelOffset = 0)
         // http://www.bandtrax.com.au/sysex.htm
         // https://cdn.roland.com/assets/media/pdf/AT-20R_30R_MI.pdf
         case 0x41:
+            function notRecognized()
+            {
+                // this is some other GS sysex...
+                SpessaSynthWarn(`%cUnrecognized Roland %cGS %cSysEx: %c${arrayToHexString(messageData)}`,
+                    consoleColors.warn,
+                    consoleColors.recognized,
+                    consoleColors.warn,
+                    consoleColors.unrecognized);
+            }
             if(messageData[2] === 0x42 && messageData[3] === 0x12)
             {
                 // this is a GS sysex
@@ -294,6 +303,8 @@ export function systemExclusive(messageData, channelOffset = 0)
                         switch (messageData[6])
                         {
                             default:
+                                // this is some other GS sysex...
+                                notRecognized();
                                 break;
 
                             case 0x15:
@@ -340,7 +351,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                             case 0x4B:
                                 // scale tuning
                                 const cents = messageValue - 64;
-                                SpessaSynthInfo(`%cChannel %c${channel}%c tuning. Cents %c${cents}%c, with %c${arrayToHexString(messageData)}`,
+                                SpessaSynthInfo(`%cChannel %c${channel}%c scale tuning. Cents %c${cents}%c, with %c${arrayToHexString(messageData)}`,
                                     consoleColors.info,
                                     consoleColors.recognized,
                                     consoleColors.info,
@@ -348,7 +359,9 @@ export function systemExclusive(messageData, channelOffset = 0)
                                     consoleColors.info,
                                     consoleColors.value);
                                 this.setChannelTuning(channel, cents);
+                            break;
                         }
+                        return;
                     }
                     else
                     // this is a global system parameter
@@ -390,11 +403,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                     }
                 }
                 // this is some other GS sysex...
-                SpessaSynthWarn(`%cUnrecognized Roland %cGS %cSysEx: %c${arrayToHexString(messageData)}`,
-                    consoleColors.warn,
-                    consoleColors.recognized,
-                    consoleColors.warn,
-                    consoleColors.unrecognized);
+                notRecognized();
                 return;
             }
             else

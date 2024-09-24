@@ -42,6 +42,7 @@ export class DLSZone extends BasicInstrumentZone
         this.isGlobal = false;
 
         // correct tuning if needed
+        samplePitchCorrection -= sample.samplePitchCorrection;
         const coarseTune = Math.trunc(samplePitchCorrection / 100);
         if(coarseTune !== 0)
         {

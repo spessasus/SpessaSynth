@@ -78,6 +78,9 @@ class Manager
     saveBlob(blob, name)
     {
         const url = URL.createObjectURL(blob);
+        /**
+         * @type {HTMLAnchorElement}
+         */
         const a = document.createElement("a");
         a.href = url;
         a.download = name;
@@ -174,7 +177,10 @@ class Manager
         // set up keyboard
         this.keyboard = new MidiKeyboard(this.channelColors, this.synth);
 
-        // set up renderer
+        /**
+         * set up renderer
+         * @type {HTMLCanvasElement}
+         */
         const canvas = document.getElementById("note_canvas");
 
         canvas.width = window.innerWidth * window.devicePixelRatio;
@@ -279,6 +285,9 @@ class Manager
                     if (videoSource === null) {
                         return;
                     }
+                    /**
+                     * @type {HTMLVideoElement}
+                     */
                     const video = document.createElement("video");
                     video.src = videoSource;
                     video.classList.add("secret_video");
@@ -309,9 +318,6 @@ class Manager
             }
         });
         this.renderer.render(false, true);
-        setTimeout(() => {
-            this.doDLSCheck()
-        }, 1000);
     }
 
     doDLSCheck()

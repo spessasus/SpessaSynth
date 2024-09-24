@@ -140,17 +140,24 @@ class BasicSoundFont
      */
     getPreset(bankNr, programNr)
     {
+        // check for exact match
         let preset = this.presets.find(p => p.bank === bankNr && p.program === programNr);
         if (!preset)
         {
-            preset = this.presets.find(p => p.program === programNr && p.bank !== 128);
+            // no match...
             if(bankNr === 128)
             {
+                // drum preset: find any preset with bank 128
                 preset = this.presets.find(p => p.bank === 128 && p.program === programNr);
                 if(!preset)
                 {
                     preset = this.presets.find(p => p.bank === 128);
                 }
+            }
+            else
+            {
+                // non drum preset: find any preset with the given program that is not a drum preset
+                preset = this.presets.find(p => p.program === programNr && p.bank !== 128);
             }
             if(preset)
             {
@@ -159,6 +166,7 @@ class BasicSoundFont
                     consoleColors.recognized);
             }
         }
+        // no preset, use the first one available
         if(!preset)
         {
             SpessaSynthWarn(`Preset ${programNr} not found. Defaulting to`, this.presets[0].presetName);
