@@ -97,16 +97,17 @@ export class WorkletLowpassFilter
      */
     static apply(voice, outputBuffer, cutoffCents)
     {
-        if(cutoffCents > 13499)
+        if(cutoffCents > 13499 && voice.filter.reasonanceCb === 0)
         {
             return; // filter is open
         }
 
+        const filter = voice.filter
         // check if the frequency has changed. if so, calculate new coefficients
-        if(voice.filter.cutoffCents !== cutoffCents || voice.filter.reasonanceCb !== voice.modulatedGenerators[generatorTypes.initialFilterQ])
+        if(filter.cutoffCents !== cutoffCents || filter.reasonanceCb !== voice.modulatedGenerators[generatorTypes.initialFilterQ])
         {
-            voice.filter.cutoffCents = cutoffCents;
-            voice.filter.reasonanceCb = voice.modulatedGenerators[generatorTypes.initialFilterQ];
+            filter.cutoffCents = cutoffCents;
+            filter.reasonanceCb = voice.modulatedGenerators[generatorTypes.initialFilterQ];
             WorkletLowpassFilter.calculateCoefficients(voice);
         }
 
@@ -114,17 +115,17 @@ export class WorkletLowpassFilter
         for (let i = 0; i < outputBuffer.length; i++)
         {
             let input = outputBuffer[i];
-            let filtered = voice.filter.a0 * input
-                + voice.filter.a1 * voice.filter.x1
-                + voice.filter.a2 * voice.filter.x2
-                - voice.filter.a3 * voice.filter.y1
-                - voice.filter.a4 * voice.filter.y2;
+            let filtered = filter.a0 * input
+                + filter.a1 * filter.x1
+                + filter.a2 * filter.x2
+                - filter.a3 * filter.y1
+                - filter.a4 * filter.y2;
 
             // set buffer
-            voice.filter.x2 = voice.filter.x1;
-            voice.filter.x1 = input;
-            voice.filter.y2 = voice.filter.y1;
-            voice.filter.y1 = filtered;
+            filter.x2 = filter.x1;
+            filter.x1 = input;
+            filter.y2 = filter.y1;
+            filter.y1 = filtered;
 
             outputBuffer[i] = filtered;
         }
@@ -135,27 +136,28 @@ export class WorkletLowpassFilter
      */
     static calculateCoefficients(voice)
     {
-        voice.filter.cutoffHz = absCentsToHz(voice.filter.cutoffCents);
+        const filter = voice.filter;
+        filter.cutoffHz = absCentsToHz(filter.cutoffCents);
 
         // fix cutoff on low frequencies (fluid_iir_filter.c line 392)
-        if(voice.filter.cutoffHz > 0.45 * sampleRate)
+        if(filter.cutoffHz > 0.45 * sampleRate)
         {
-            voice.filter.cutoffHz = 0.45 * sampleRate;
+            filter.cutoffHz = 0.45 * sampleRate;
         }
 
         // adjust the filterQ (fluid_iir_filter.c line 204)
-        const qDb = (voice.filter.reasonanceCb / 10) - 3.01;
-        voice.filter.reasonanceGain = decibelAttenuationToGain(-1 * qDb); // -1 because it's attenuation and we don't want attenuation
+        const qDb = (filter.reasonanceCb / 10) - 3.01;
+        filter.reasonanceGain = decibelAttenuationToGain(-1 * qDb); // -1 because it's attenuation and we don't want attenuation
 
         // reduce the gain by the Q factor (fluid_iir_filter.c line 250)
-        const qGain = 1 / Math.sqrt(voice.filter.reasonanceGain);
+        const qGain = 1 / Math.sqrt(filter.reasonanceGain);
 
 
         // code is ported from https://github.com/sinshu/meltysynth/ to work with js.
         // I'm too dumb to understand the math behind this...
-        let w = 2 * Math.PI * voice.filter.cutoffHz / sampleRate; // we're in the audioworkletglobalscope so we can use sampleRate
+        let w = 2 * Math.PI * filter.cutoffHz / sampleRate; // we're in the audioworkletglobalscope so we can use sampleRate
         let cosw = Math.cos(w);
-        let alpha = Math.sin(w) / (2 * voice.filter.reasonanceGain);
+        let alpha = Math.sin(w) / (2 * filter.reasonanceGain);
 
         let b1 = (1 - cosw) * qGain;
         let b0 = b1 / 2;
@@ -165,10 +167,10 @@ export class WorkletLowpassFilter
         let a2 = 1 - alpha;
 
         // set coefficients
-        voice.filter.a0 = b0 / a0;
-        voice.filter.a1 = b1 / a0;
-        voice.filter.a2 = b2 / a0;
-        voice.filter.a3 = a1 / a0;
-        voice.filter.a4 = a2 / a0;
+        filter.a0 = b0 / a0;
+        filter.a1 = b1 / a0;
+        filter.a2 = b2 / a0;
+        filter.a3 = a1 / a0;
+        filter.a4 = a2 / a0;
     }
 }

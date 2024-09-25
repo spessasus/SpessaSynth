@@ -111,7 +111,7 @@ export class WorkletModulationEnvelope
         const holdKeyExcursionCents = ((60 - voice.midiNote) * voice.modulatedGenerators[generatorTypes.keyNumToModEnvHold]);
         env.holdDuration = timecentsToSeconds(holdKeyExcursionCents + voice.modulatedGenerators[generatorTypes.holdModEnv]);
 
-        const releaseTime = timecentsToSeconds(voice.modulatedGenerators[generatorTypes.releaseVolEnv]);
+        const releaseTime = timecentsToSeconds(voice.modulatedGenerators[generatorTypes.releaseModEnv]);
         // release time is from the full level to 0%
         // to get the actual time, multiply by the release start level
         env.releaseDuration = releaseTime * env.releaseStartLevel;
