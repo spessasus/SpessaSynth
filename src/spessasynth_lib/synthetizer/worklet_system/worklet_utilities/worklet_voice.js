@@ -142,7 +142,7 @@ class WorkletVoice
         this.channelNumber = channel;
         this.startTime = currentTime;
         this.targetKey = targetKey;
-        this.volumeEnvelope = new WorkletVolumeEnvelope(sampleRate);
+        this.volumeEnvelope = new WorkletVolumeEnvelope(sampleRate, generators[generatorTypes.sustainVolEnv]);
     }
     /**
      * Sample ID for voice.

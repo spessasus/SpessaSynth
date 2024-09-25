@@ -2,15 +2,17 @@
 <img src="src/website/spessasynth_logo_rounded.png" width='300' alt='SpessaSynth logo'>
 </p>
 
-**SpessaSynth** is a SoundFont2-based real-time synthesizer and MIDI player written in vanilla JavaScript. 
-It’s a powerful and versatile library that allows you to read, write, or play MIDI files, 
-read DLS files and read/write SF2/SF3 files with ease.
+**SpessaSynth** is a SoundFont2-based real-time synthesizer and MIDI library written in vanilla JavaScript.
+It’s a powerful and versatile library that allows you to:
+- Play MIDI files using SF2/SF3/DLS files
+- Write MIDI files
+- Write SF2/SF3 files
+- Convert DLS to SF2
+- [and more!](#easy-integration)
 
 ```shell
 npm install --save spessasynth_lib
 ```
-
-### DLS Support now available!
 
 <h1 align="center"><a href="https://spessasus.github.io/SpessaSynth/">Live Demo (no download needed!)</a></h1>
 
@@ -37,7 +39,7 @@ This repository contains both the library and a complete musical web application
 ### Powerful SoundFont Synthesizer
 - Suitable for both **real-time** and **offline** synthesis
 - **Excellent SoundFont support:**
-  - **Generator Support**
+  - **Full Generator Support**
   - **Modulator Support:** *First (to my knowledge) JavaScript SoundFont synth with that feature!*
   - **SoundFont3 Support:** Play compressed SoundFonts!
   - **Experimental SF2Pack Support:** Play soundfonts compressed with BASSMIDI! (*Note: only works with vorbis compression*)
@@ -119,6 +121,9 @@ This repository contains both the library and a complete musical web application
 
 ## Limitations
 - Synth's performance may be suboptimal, especially on mobile devices.
+- Audio may sometimes sound distored in Chrome, Edge, Brave,
+  etc. due to a **[Chromium Bug](https://issues.chromium.org/issues/367304685).**
+  I can't do anything about it, only hope that it gets fixed.
 
 ### Installation
 #### Npm package

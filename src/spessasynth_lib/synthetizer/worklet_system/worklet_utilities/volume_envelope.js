@@ -9,7 +9,7 @@ import { generatorTypes } from '../../../soundfont/read_sf2/generators.js'
 export const VOLUME_ENVELOPE_SMOOTHING_FACTOR = 0.001;
 
 const DB_SILENCE = 100;
-const PERCEIVED_DB_SILENCE = 96;
+const PERCEIVED_DB_SILENCE = 90;
 
 /**
  * VOL ENV STATES:
@@ -25,10 +25,18 @@ export class WorkletVolumeEnvelope
 {
     /**
      * @param sampleRate {number} Hz
+     * @param initialDecay {number} cb
      */
-    constructor(sampleRate)
+    constructor(sampleRate, initialDecay)
     {
         this.sampleRate = sampleRate;
+        /**
+         * if sustain stge is silent,
+         * then we can turn off the voice when it is silent.
+         * We can't do that with modulated as it can silence the volume and then raise it again and the voice must keep playing
+         * @type {boolean}
+         */
+        this.canEndOnSilentSustain = initialDecay / 10 >= PERCEIVED_DB_SILENCE;
     }
 
     /**
@@ -383,6 +391,10 @@ export class WorkletVolumeEnvelope
             // fallthrough
     
             case 4:
+                if(env.canEndOnSilentSustain && env.sustainDbRelative >= PERCEIVED_DB_SILENCE)
+                {
+                    voice.finished = true;
+                }
                 // sustain phase: stay at sustain
                 while(true)
                 {
