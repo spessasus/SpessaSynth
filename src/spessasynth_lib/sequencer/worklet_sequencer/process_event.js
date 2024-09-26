@@ -101,6 +101,7 @@ export function _processEvent(event, trackIndex)
         case messageTypes.songPosition:
         case messageTypes.activeSensing:
         case messageTypes.keySignature:
+        case messageTypes.sequenceNumber:
             break;
 
         case messageTypes.text:
@@ -110,6 +111,7 @@ export function _processEvent(event, trackIndex)
         case messageTypes.marker:
         case messageTypes.cuePoint:
         case messageTypes.instrumentName:
+        case messageTypes.programName:
             this.post(WorkletSequencerReturnMessageType.textEvent, [event.messageData, statusByteData.status])
             break;
 
@@ -139,7 +141,8 @@ export function _processEvent(event, trackIndex)
  */
 export function _addNewMidiPort()
 {
-    for (let i = 0; i < 16; i++) {
+    for (let i = 0; i < 16; i++)
+    {
         this.synth.createWorkletChannel(true);
         if(i === DEFAULT_PERCUSSION)
         {

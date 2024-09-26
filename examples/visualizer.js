@@ -62,7 +62,8 @@ fetch("../soundfonts/GeneralUserGS.sf3").then(async response => {
          * create the AnalyserNodes for the channels
          */
         const analysers = [];
-        for (let i = 0; i < 16; i++) {
+        for (let i = 0; i < 16; i++)
+        {
             analysers.push(context.createAnalyser()); // create analyser
         }
 

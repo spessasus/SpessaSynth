@@ -1,6 +1,6 @@
 import { dataBytesAmount, getChannel, messageTypes, MidiMessage } from './midi_message.js'
 import { IndexedByteArray } from '../utils/indexed_array.js'
-import { arrayToHexString, consoleColors, formatTitle } from '../utils/other.js'
+import { consoleColors, formatTitle } from '../utils/other.js'
 import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo, SpessaSynthWarn } from '../utils/loggin.js'
 import { readRIFFChunk } from '../soundfont/basic_soundfont/riff_chunk.js'
 import { readVariableLengthQuantity } from '../utils/byte_functions/variable_length_quantity.js'
@@ -10,6 +10,8 @@ import { readLittleEndian } from '../utils/byte_functions/little_endian.js'
 import { RMIDINFOChunks } from './rmidi_writer.js'
 import { BasicMIDI, MIDIticksToSeconds } from './basic_midi.js'
 
+
+const GS_TEXT_HEADER = new Uint8Array([0x41, 0x10, 0x45, 0x12, 0x10,  0x00, 0x00]);
 /**
  * midi_loader.js
  * purpose: parses a midi file for the seqyencer, including things like marker or CC 2/4 loop detection, copyright detection etc.
@@ -366,7 +368,7 @@ class MIDI extends BasicMIDI
                         // since this is a sysex message
                         // check for embedded copyright (roland SC display sysex) http://www.bandtrax.com.au/sysex.htm
                         // header goes like this: 41 10 45 12 10 00 00
-                        if(arrayToHexString(eventData.slice(0, 7)).trim() === "41 10 45 12 10 00 00")
+                        if(eventData.slice(0, 7).every((n, i) => GS_TEXT_HEADER[i] === n))
                         {
                             /**
                              * @type {IndexedByteArray}

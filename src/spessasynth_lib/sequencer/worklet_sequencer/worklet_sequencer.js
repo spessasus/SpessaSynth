@@ -4,7 +4,15 @@ import { _findFirstEventIndex, _processTick } from './process_tick.js'
 import { assignMIDIPort, loadNewSequence, loadNewSongList, nextSong, previousSong } from './song_control.js'
 import { _playTo, _recalculateStartTime, play, setTimeTicks } from './play.js'
 import { messageTypes, midiControllers } from '../../midi_parser/midi_message.js'
-import { post, processMessage, sendMIDIMessage } from './events.js'
+import {
+    post,
+    processMessage,
+    sendMIDICC,
+    sendMIDIMessage,
+    sendMIDIPitchWheel,
+    sendMIDIProgramChange,
+    sendMIDIReset,
+} from './events.js'
 import { SpessaSynthWarn } from '../../utils/loggin.js'
 import { MIDI_CHANNEL_COUNT } from '../../synthetizer/synthetizer.js'
 
@@ -178,16 +186,21 @@ class WorkletSequencer
     {
         this.clearProcessHandler()
         // disable sustain
-        for (let i = 0; i < 16; i++) {
+        for (let i = 0; i < 16; i++)
+        {
             this.synth.controllerChange(i, midiControllers.sustainPedal, 0);
         }
         this.synth.stopAllChannels();
         if(this.sendMIDIMessages)
         {
+            for(let note of this.playingNotes)
+            {
+                this.sendMIDIMessage([messageTypes.noteOff | (note.channel % 16), note.midiNote]);
+            }
             for (let c = 0; c < MIDI_CHANNEL_COUNT; c++)
             {
-                this.sendMIDIMessage([messageTypes.controllerChange | c, 120, 0]); // all notes off
-                this.sendMIDIMessage([messageTypes.controllerChange | c, 123, 0]); // all sound off
+                this.sendMIDICC(c, midiControllers.allNotesOff, 0);
+                this.sendMIDICC(c, midiControllers.allSoundOff, 0);
             }
         }
     }
@@ -218,9 +231,15 @@ class WorkletSequencer
     }
 }
 
-WorkletSequencer.prototype.post = post;
+// Web MIDI sending
 WorkletSequencer.prototype.sendMIDIMessage = sendMIDIMessage;
+WorkletSequencer.prototype.sendMIDIReset = sendMIDIReset;
+WorkletSequencer.prototype.sendMIDICC = sendMIDICC;
+WorkletSequencer.prototype.sendMIDIProgramChange = sendMIDIProgramChange;
+WorkletSequencer.prototype.sendMIDIPitchWheel = sendMIDIPitchWheel;
 WorkletSequencer.prototype.assignMIDIPort = assignMIDIPort;
+
+WorkletSequencer.prototype.post = post;
 WorkletSequencer.prototype.processMessage = processMessage;
 
 WorkletSequencer.prototype._processEvent = _processEvent;

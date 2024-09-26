@@ -183,6 +183,7 @@ class SequencerUI
                 case messageTypes.cuePoint:
                 case messageTypes.trackName:
                 case messageTypes.instrumentName:
+                case messageTypes.programName:
                 case messageTypes.marker:
                     this.rawOtherTextEvents.push({type: type, data: data});
                     this.requiresTextUpdate = true;

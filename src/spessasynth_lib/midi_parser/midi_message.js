@@ -110,6 +110,7 @@ export const messageTypes = {
     lyric: 0x05,
     marker: 0x06,
     cuePoint: 0x07,
+    programName: 0x08,
     midiChannelPrefix: 0x20,
     midiPort: 0x21,
     endOfTrack: 0x2F,

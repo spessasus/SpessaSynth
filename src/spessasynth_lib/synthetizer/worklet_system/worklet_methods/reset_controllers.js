@@ -12,10 +12,11 @@ import { SpessaSynthInfo } from '../../../utils/loggin.js'
 
 /**
  * @this {SpessaSynthProcessor}
+ * @param log {boolean}
  */
-export function resetAllControllers()
+export function resetAllControllers(log= true)
 {
-    SpessaSynthInfo("%cResetting all controllers!", consoleColors.info);
+    if (log) SpessaSynthInfo("%cResetting all controllers!", consoleColors.info);
     this.callEvent("allcontrollerreset", undefined);
     for (let channelNumber = 0; channelNumber < this.workletProcessorChannels.length; channelNumber++)
     {

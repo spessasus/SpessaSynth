@@ -279,13 +279,15 @@ export function systemExclusive(messageData, channelOffset = 0)
                     if(messageValue === 0x00)
                     {
                         // this is a GS reset
-                        SpessaSynthInfo("%cGS system on", consoleColors.info);
+                        SpessaSynthInfo("%cGS Reset received!", consoleColors.info);
+                        this.resetAllControllers(false);
                         this.system = "gs";
                     }
                     else if(messageValue === 0x7F)
                     {
                         // GS mode off
                         SpessaSynthInfo("%cGS system off, switching to GM2", consoleColors.info);
+                        this.resetAllControllers(false);
                         this.system = "gm2";
                     }
                     return;
@@ -337,6 +339,27 @@ export function systemExclusive(messageData, channelOffset = 0)
                                     consoleColors.value);
                                 return;
 
+                            // pan position
+                            case 0x1C:
+                                // 0 is random
+                                let panpot = messageValue;
+                                if(panpot === 0)
+                                {
+                                    panpot = Math.floor(Math.random() * 128)
+                                }
+                                this.controllerChange(channel, midiControllers.pan, panpot);
+                                break;
+
+                            // chorus send
+                            case 0x21:
+                                this.controllerChange(channel, midiControllers.effects3Depth, messageValue);
+                                break;
+
+                            // reverb send
+                            case 0x22:
+                                this.controllerChange(channel, midiControllers.effects1Depth, messageValue);
+                                break;
+
                             case 0x40:
                             case 0x41:
                             case 0x42:
@@ -349,9 +372,17 @@ export function systemExclusive(messageData, channelOffset = 0)
                             case 0x49:
                             case 0x4A:
                             case 0x4B:
-                                // scale tuning
+                                // scale tuning: up to 12 bytes
+                                const tuningBytes = messageData.length - 9; // data starts at 7 , minus checksum and f7
+                                // read em bytes
+                                const newTuning = new Int8Array(12);
+                                for (let i = 0; i < tuningBytes; i++)
+                                {
+                                    newTuning[i] = messageData[i + 7] - 64;
+                                }
+                                this.setOctaveTuning(channel, newTuning);
                                 const cents = messageValue - 64;
-                                SpessaSynthInfo(`%cChannel %c${channel}%c scale tuning. Cents %c${cents}%c, with %c${arrayToHexString(messageData)}`,
+                                SpessaSynthInfo(`%cChannel %c${channel}%c octave scale tuning. Cents %c${newTuning.join(" ")}%c, with %c${arrayToHexString(messageData)}`,
                                     consoleColors.info,
                                     consoleColors.recognized,
                                     consoleColors.info,
@@ -459,6 +490,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                         // XG on
                         case 0x7E:
                             SpessaSynthInfo("%cXG system on", consoleColors.info);
+                            this.resetAllControllers(false);
                             this.system = "xg";
                             break;
                     }

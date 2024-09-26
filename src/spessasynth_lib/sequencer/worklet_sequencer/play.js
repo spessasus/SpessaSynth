@@ -1,6 +1,5 @@
 import { getEvent, messageTypes, midiControllers } from '../../midi_parser/midi_message.js'
 import { WorkletSequencerReturnMessageType } from './sequencer_message.js'
-import { MIDI_CHANNEL_COUNT } from '../../synthetizer/synthetizer.js'
 import { MIDIticksToSeconds } from '../../midi_parser/basic_midi.js'
 
 
@@ -27,15 +26,8 @@ export function _playTo(time, ticks = undefined)
     this.oneTickToSeconds = 60 / (120 * this.midiData.timeDivision);
     // reset
     this.synth.resetAllControllers();
-    if(this.sendMIDIMessages)
-    {
-        this.sendMIDIMessage([messageTypes.reset]);
-        for(let ch = 0; ch < MIDI_CHANNEL_COUNT; ch++)
-        {
-            this.sendMIDIMessage([messageTypes.controllerChange | ch, midiControllers.resetAllControllers, 0]);
-        }
-    }
-    this._resetTimers()
+    this.sendMIDIReset();
+    this._resetTimers();
 
     const channelsToSave = this.synth.workletProcessorChannels.length;
     /**
@@ -131,19 +123,19 @@ export function _playTo(time, ticks = undefined)
                 const controllerNumber = event.messageData[0];
                 if(isCCNonSkippable(controllerNumber))
                 {
+                    let ccV = event.messageData[1];
+                    if(controllerNumber === midiControllers.bankSelect)
+                    {
+                        // add the bank to saved
+                        programs[channel].bank = ccV;
+                        break;
+                    }
                     if(this.sendMIDIMessages)
                     {
-                        this.sendMIDIMessage([messageTypes.controllerChange | (channel % 16), controllerNumber, event.messageData[1]])
+                        this.sendMIDICC(channel, controllerNumber, ccV);
                     }
                     else
                     {
-                        let ccV = event.messageData[1];
-                        if(controllerNumber === midiControllers.bankSelect)
-                        {
-                            // add the bank to saved
-                            programs[channel].bank = ccV;
-                            break;
-                        }
                         this.synth.controllerChange(channel, controllerNumber, ccV);
                     }
                 }
@@ -177,25 +169,29 @@ export function _playTo(time, ticks = undefined)
     // restoring saved controllers
     if(this.sendMIDIMessages)
     {
-        // for all 16 channels
-        for (let channelNumber = 0; channelNumber < channelsToSave; channelNumber++) {
-            // send saved pitch bend
-            this.sendMIDIMessage([messageTypes.pitchBend | (channelNumber % 16), pitchBends[channelNumber] & 0x7F, pitchBends[channelNumber] >> 7]);
-
-            // every controller that has changed
-            savedControllers[channelNumber].forEach((value, index) => {
-                if(value !== defaultControllerArray[index] && !isCCNonSkippable(index))
-                {
-                    this.sendMIDIMessage([messageTypes.controllerChange | (channelNumber % 16), index, value])
-                }
-            });
-
+        for (let channelNumber = 0; channelNumber < channelsToSave; channelNumber++)
+        {
+            // restore pitch bends
+            if(pitchBends[channelNumber] !== undefined)
+            {
+                this.sendMIDIPitchWheel(channelNumber, pitchBends[channelNumber] >> 7, pitchBends[channelNumber] & 0x7F);
+            }
+            if(savedControllers[channelNumber] !== undefined)
+            {
+                // every controller that has changed
+                savedControllers[channelNumber].forEach((value, index) => {
+                    if(value !== defaultControllerArray[index] && !isCCNonSkippable(index))
+                    {
+                        this.sendMIDICC(channelNumber, index, value);
+                    }
+                })
+            }
             // restore programs
             if(programs[channelNumber].program >= 0 && programs[channelNumber].actualBank >= 0)
             {
                 const bank = programs[channelNumber].actualBank;
-                this.sendMIDIMessage([messageTypes.controllerChange | (channelNumber % 16), midiControllers.bankSelect, bank]);
-                this.sendMIDIMessage([messageTypes.programChange | (channelNumber % 16), programs[channelNumber].program]);
+                this.sendMIDICC(channelNumber, midiControllers.bankSelect, bank);
+                this.sendMIDIProgramChange(channelNumber, programs[channelNumber].program);
             }
         }
     }
