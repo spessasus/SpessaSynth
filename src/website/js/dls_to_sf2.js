@@ -7,7 +7,7 @@ document.getElementById("dls_upload").oninput = e => {
         return;
     }
     const file = e.target.files[0];
-    if(file.type !== "audio/dls")
+    if(file.type.endsWith(".dls"))
     {
         message.innerText = "Not a DLS file.";
         return;
