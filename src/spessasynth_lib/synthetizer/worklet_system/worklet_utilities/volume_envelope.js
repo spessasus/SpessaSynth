@@ -10,6 +10,7 @@ export const VOLUME_ENVELOPE_SMOOTHING_FACTOR = 0.001;
 
 const DB_SILENCE = 100;
 const PERCEIVED_DB_SILENCE = 90;
+const PERCEIVED_GAIN_SILENCE = 0.005;
 
 /**
  * VOL ENV STATES:
@@ -291,18 +292,17 @@ export class WorkletVolumeEnvelope
                 return;
             }
             let dbDifference = DB_SILENCE - env.releaseStartDb;
-            let db = 0;
             for (let i = 0; i < audioBuffer.length; i++)
             {
-                db = (elapsedRelease / env.releaseDuration) * dbDifference + env.releaseStartDb;
+                let db = (elapsedRelease / env.releaseDuration) * dbDifference + env.releaseStartDb;
                 let gain = decibelAttenuationToGain(db + decibelOffset);
                 env.currentReleaseGain += (gain - env.currentReleaseGain) * releaseSmoothingFactor;
                 audioBuffer[i] *= env.currentReleaseGain;
                 env.currentSampleTime++;
                 elapsedRelease++;
             }
-    
-            if(db >= PERCEIVED_DB_SILENCE)
+
+            if(env.currentReleaseGain <= PERCEIVED_GAIN_SILENCE)
             {
                 voice.finished = true;
             }

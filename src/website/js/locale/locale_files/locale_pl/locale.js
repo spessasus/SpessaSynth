@@ -40,6 +40,7 @@ export const localePolish = {
     demoGithubPage: "Strona projektu",
     demoSongButton: "Piosenka demo",
     credits: "Twórcy",
+    dropPrompt: "Upuść pliki tutaj...",
 
     warnings: {
         outOfMemory: "Twojej przeglądarce skończyła się pamięć. Rozważ użycie Firefoxa albo plików SF3. (Zobacz błąd w konsoli)",

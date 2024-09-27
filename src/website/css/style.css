@@ -121,6 +121,18 @@ button{
     z-index: 0;
 }
 
+.drop_prompt{
+    flex-direction: column;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: var(--top-index);
+    background: rgba(0, 0, 0, 0.6);
+}
+
 .loading {
     flex-direction: column;
     display: flex;

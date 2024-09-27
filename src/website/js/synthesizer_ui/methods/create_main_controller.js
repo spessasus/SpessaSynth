@@ -1,6 +1,11 @@
 import { Meter } from './synthui_meter.js'
 import { VOICE_CAP } from '../../../../spessasynth_lib/synthetizer/synthetizer.js'
 import { LOCALE_PATH } from '../synthetizer_ui.js'
+import {
+    ALL_CHANNELS_OR_DIFFERENT_ACTION
+} from '../../../../spessasynth_lib/synthetizer/worklet_system/message_protocol/worklet_message.js'
+import { getEmptyMicSvg, getVolumeSvg } from '../../utils/icons.js'
+import { ICON_SIZE } from './create_channel_controller.js'
 
 /**
  * @this {SynthetizerUI}
@@ -99,7 +104,37 @@ export function createMainSynthController()
 
     resetCCButton.classList.add("synthui_button");
     resetCCButton.classList.add("main_controller_element");
-    resetCCButton.onclick = () => this.synth.resetControllers();
+    resetCCButton.onclick = () => {
+        // unlock everything
+        this.controllers.forEach((channel, number) =>
+        {
+            // CCs
+            if(channel.pitchWheel.isLocked) channel.pitchWheel.lockMeter();
+            if(channel.pan.isLocked) channel.pan.lockMeter();
+            if(channel.expression.isLocked) channel.expression.lockMeter();
+            if(channel.volume.isLocked) channel.volume.lockMeter();
+            if(channel.mod.isLocked) channel.mod.lockMeter();
+            if(channel.chorus.isLocked) channel.chorus.lockMeter();
+            if(channel.reverb.isLocked) channel.reverb.lockMeter();
+            if(channel.brightness.isLocked) channel.brightness.lockMeter();
+            // program
+            if(channel.preset.mainDiv.classList.contains("locked_selector"))
+            {
+                this.synth.lockController(number, ALL_CHANNELS_OR_DIFFERENT_ACTION, false);
+                channel.preset.mainDiv.classList.remove("locked_selector");
+            }
+            // transpose
+            this.synth.transposeChannel(number, 0, true);
+            channel.transpose.update(0);
+
+            // mute/solo
+            channel.soloButton.innerHTML = getEmptyMicSvg(ICON_SIZE);
+            channel.muteButton.innerHTML = getVolumeSvg(ICON_SIZE);
+            this.synth.muteChannel(number, false);
+
+        });
+        this.synth.resetControllers();
+    };
 
 
 

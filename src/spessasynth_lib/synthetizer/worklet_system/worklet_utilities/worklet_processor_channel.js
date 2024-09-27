@@ -92,7 +92,6 @@ resetArray[midiControllers.expressionController] = 127 << 7;
 resetArray[midiControllers.pan] = 64 << 7;
 resetArray[midiControllers.releaseTime] = 64 << 7;
 resetArray[midiControllers.brightness] = 64 << 7;
-resetArray[midiControllers.effects1Depth] = 40 << 7;
 resetArray[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel] = 8192;
 resetArray[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] = 2 << 7;
 

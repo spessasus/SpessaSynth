@@ -24,6 +24,7 @@ import { loadSoundFont } from '../../../spessasynth_lib/soundfont/load_soundfont
 import { readBytesAsString } from '../../../spessasynth_lib/utils/byte_functions/string.js'
 import { IndexedByteArray } from '../../../spessasynth_lib/utils/indexed_array.js'
 import { closeNotification, showNotification } from '../notification/notification.js'
+import { DropFileHandler } from '../utils/drop_file_handler.js'
 
 // this enables transitions on body because if we enable them on load, it flashbangs us with white
 document.body.classList.add("load");
@@ -249,6 +250,18 @@ class Manager
             this.playerUI,
             this.localeManager);
 
+        // set up drop file handler
+        this.dropFileHandler = new DropFileHandler((data) => {
+            this.play([{binary: data.buf, altName: data.name}]);
+            if(data.name.length > 20)
+            {
+                data.name = data.name.substring(0, 21) + "...";
+            }
+            document.getElementById("file_upload").textContent = data.name;
+        }, buf => {
+            this.reloadSf(buf);
+        });
+
         // set up soundfont mixer (unfinished)
         //this.soundFontMixer = new SoundFontMixer(document.getElementsByClassName("midi_and_sf_controller")[0], this.synth, this.synthUI);
         //this.soundFontMixer.soundFontChange(soundFont);
@@ -376,6 +389,12 @@ class Manager
     {
         if (!this.synth)
         {
+            return;
+        }
+
+        if(this.seq)
+        {
+            this.seq.loadNewSongList(parsedMidi);
             return;
         }
 

@@ -102,6 +102,7 @@ export function _processEvent(event, trackIndex)
         case messageTypes.activeSensing:
         case messageTypes.keySignature:
         case messageTypes.sequenceNumber:
+        case messageTypes.sequenceSpecific:
             break;
 
         case messageTypes.text:

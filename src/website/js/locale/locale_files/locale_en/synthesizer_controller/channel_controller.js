@@ -39,6 +39,11 @@ export const channelControllerLocale = {
         description: "The current level of reverb effect applied to channel {0} (right-click to lock)"
     },
 
+    filterMeter: {
+        title: "Filter: ",
+        description: "The current level of low-pass filter cutoff applied to channel {0} (right-click to lock)"
+    },
+
     transposeMeter: {
         title: "Transpose: ",
         description: "The current transposition (key shift) of channel {0}"

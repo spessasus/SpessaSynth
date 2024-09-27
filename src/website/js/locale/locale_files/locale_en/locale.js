@@ -37,6 +37,7 @@ export const localeEnglish = {
     demoGithubPage: "Project's page",
     demoSongButton: "Demo Song",
     credits: "Credits",
+    dropPrompt: "Drop files here...",
 
     warnings: {
         outOfMemory: "Your browser ran out of memory. Consider using Firefox or SF3 soundfont instead. (see console for error).",

@@ -11,7 +11,7 @@ defaultControllerArray[midiControllers.expressionController] = 127;
 defaultControllerArray[midiControllers.pan] = 64;
 defaultControllerArray[midiControllers.releaseTime] = 64;
 defaultControllerArray[midiControllers.brightness] = 64;
-defaultControllerArray[midiControllers.effects1Depth] = 40;
+defaultControllerArray[midiControllers.effects1Depth] = 0;
 
 /**
  * plays from start to the target time, excluding note messages (to get the synth to the correct state)

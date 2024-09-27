@@ -39,7 +39,13 @@ export const channelControllerLocale = {
         description: "チャンネル {0} に適用されている現在のリバーブエフェクトのレベル（右クリックでロック）"
     },
 
-    transposeMeter: {
+    filterMeter: {
+        title: "フィルター: ",
+        description: "チャンネル {0} に適用されているローパスフィルターのカットオフの現在のレベル (右クリックでロック)"
+    },
+
+
+transposeMeter: {
         title: "トランスポーズ: ",
         description: "チャンネル {0} の現在の移調（キーシフト）"
     },

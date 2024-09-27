@@ -39,6 +39,11 @@ export const channelControllerLocale = {
         description: "Aktualny efekt pogłosu na kanale {0} (kliknij prawym aby zablokować)"
     },
 
+    filterMeter: {
+        title: "Filtr: ",
+        description: "Aktualny poziom filtra niskopasmowego na kanale {0} (kliknij prawym aby zablokować)"
+    },
+
     transposeMeter: {
         title: "Transpozycja: ",
         description: "Aktualna transpozycja (przesunięcie klawiszy) kanału {0}"

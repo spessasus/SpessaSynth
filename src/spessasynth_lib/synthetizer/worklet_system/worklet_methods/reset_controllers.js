@@ -87,6 +87,7 @@ export function resetAllControllers(log= true)
         restoreControllerValueEvent(midiControllers.modulationWheel);
         restoreControllerValueEvent(midiControllers.effects3Depth);
         restoreControllerValueEvent(midiControllers.effects1Depth);
+        restoreControllerValueEvent(midiControllers.brightness);
 
         // restore pitch wheel
         if(this.workletProcessorChannels[channelNumber].lockedControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel])

@@ -9,6 +9,7 @@
  *     mod: Meter,
  *     chorus: Meter,
  *     reverb: Meter,
+ *     brightness: Meter,
  *     transpose: Meter,
  *     preset: Selector,
  *     presetReset: HTMLDivElement,
@@ -39,7 +40,7 @@ import {
 } from '../../../../spessasynth_lib/synthetizer/worklet_system/worklet_utilities/worklet_processor_channel.js'
 import { modulatorSources } from '../../../../spessasynth_lib/soundfont/read_sf2/modulators.js'
 
-const ICON_SIZE = 32;
+export const ICON_SIZE = 32;
 
 /**
  * Creates a new channel controller js
@@ -158,8 +159,12 @@ export function createChannelController(channelNumber)
     controller.appendChild(chorus.div);
 
     // reverb
-    const reverb = createCCMeterHelper(midiControllers.effects1Depth, "channelController.reverbMeter", 40);
+    const reverb = createCCMeterHelper(midiControllers.effects1Depth, "channelController.reverbMeter", 0);
     controller.appendChild(reverb.div);
+
+    // brightness
+    const brightness = createCCMeterHelper(midiControllers.brightness, "channelController.filterMeter", 64);
+    controller.appendChild(brightness.div);
 
     // transpose is not a cc, add it manually
     const transpose = new Meter(this.channelColors[channelNumber % this.channelColors.length],
@@ -304,6 +309,7 @@ export function createChannelController(channelNumber)
         mod: modulation,
         chorus: chorus,
         reverb: reverb,
+        brightness: brightness,
         preset: presetSelector,
         presetReset: presetReset,
         drumsToggle: drumsToggle,

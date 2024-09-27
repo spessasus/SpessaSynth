@@ -37,6 +37,7 @@ export const localeJapanese = {
     demoGithubPage: "プロジェクトのページ",
     demoSongButton: "デモソング",
     credits: "クリエイター",
+    dropPrompt: "ここにファイルをドロップ...",
 
     warnings: {
         noMidiSupport: "このブラウザはMIDI入力をサポートしていないため、この機能は利用できません。ChromeまたはFirefoxを使用することを検討してください。",

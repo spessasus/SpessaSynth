@@ -96,6 +96,7 @@ class SynthetizerUI
                 controller.mod.update(controller.mod.currentValue, true);
                 controller.chorus.update(controller.chorus.currentValue, true);
                 controller.reverb.update(controller.reverb.currentValue, true);
+                controller.brightness.update(controller.brightness.currentValue, true);
                 controller.transpose.update(controller.transpose.currentValue, true);
             }
         })

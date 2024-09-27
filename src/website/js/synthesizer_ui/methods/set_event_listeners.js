@@ -21,7 +21,8 @@ export function setEventListeners()
             controller.pitchWheel.update(0);
             controller.expression.update(127);
             controller.volume.update(100);
-            controller.reverb.update(40);
+            controller.reverb.update(0);
+            controller.brightness.update(64);
         }
     });
 
@@ -62,6 +63,11 @@ export function setEventListeners()
             case midiControllers.effects1Depth:
                 // reverb
                 this.controllers[channel].reverb.update(value);
+                break;
+
+            case midiControllers.brightness:
+                // brightness
+                this.controllers[channel].brightness.update(value);
         }
     });
 
