@@ -124,7 +124,7 @@ export const midiPatchNames = [
     "Seashore",
     "Bird Tweet",
     "Telephone Ring",
-    "Helicopter",
+    "Attack Helicopter",
     "Applause",
     "Gunshot"
 ];

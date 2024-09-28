@@ -9,7 +9,8 @@
  */
 export const interpolationTypes = {
     linear: 0,
-    nearestNeighbor: 1
+    nearestNeighbor: 1,
+    fourthOrder: 2,
 }
 
 
@@ -50,13 +51,6 @@ export function getSampleLinear(voice, outputBuffer)
             const upper = sampleData[ceil];
             const lower = sampleData[floor];
             outputBuffer[i] = (lower + (upper - lower) * fraction);
-
-            // commented code because it's probably gonna come handy... (it did like 6 times already :/)
-            // if(isNaN(outputBuffer[i]))
-            // {
-            //     console.error(voice, upper, lower, floor, ceil, cur)
-            //     throw "NAN ALERT";
-            // }
 
             cur += voice.sample.playbackStep * voice.currentTuningCalculated;
         }

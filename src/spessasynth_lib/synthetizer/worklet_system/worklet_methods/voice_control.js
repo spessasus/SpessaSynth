@@ -3,7 +3,11 @@ import { absCentsToHz, timecentsToSeconds } from '../worklet_utilities/unit_conv
 import { getLFOValue } from '../worklet_utilities/lfo.js'
 import { customControllers } from '../worklet_utilities/worklet_processor_channel.js'
 import { WorkletModulationEnvelope } from '../worklet_utilities/modulation_envelope.js'
-import { getSampleLinear, getSampleNearest, interpolationTypes } from '../worklet_utilities/wavetable_oscillator.js'
+import {
+    getSampleLinear,
+    getSampleNearest,
+    interpolationTypes,
+} from '../worklet_utilities/wavetable_oscillator.js'
 import { panVoice } from '../worklet_utilities/stereo_panner.js'
 import { WorkletLowpassFilter } from '../worklet_utilities/lowpass_filter.js'
 import { MIN_NOTE_LENGTH } from '../main_processor.js'
@@ -149,13 +153,16 @@ export function renderVoice(
     const bufferOut = new Float32Array(outputLeft.length);
 
     // wavetable oscillator
-    if(this.interpolationType === interpolationTypes.linear)
+    switch(this.interpolationType)
     {
-        getSampleLinear(voice, bufferOut);
-    }
-    else
-    {
-        getSampleNearest(voice, bufferOut);
+        case interpolationTypes.linear:
+        default:
+            getSampleLinear(voice, bufferOut);
+            break;
+
+        case interpolationTypes.nearestNeighbor:
+            getSampleNearest(voice, bufferOut);
+            break;
     }
 
     // lowpass filter

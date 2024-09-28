@@ -97,12 +97,12 @@ class MIDI extends BasicMIDI
                         if(this.RMIDInfo['ICOP'])
                         {
                             copyrightDetected = true;
-                            this.copyright = readBytesAsString(this.RMIDInfo['ICOP'], this.RMIDInfo['ICOP'].length);
+                            this.copyright = readBytesAsString(this.RMIDInfo['ICOP'], this.RMIDInfo['ICOP'].length, undefined, false).replaceAll("\n", " ");
                         }
                         if(this.RMIDInfo['INAM'])
                         {
                             this.rawMidiName = this.RMIDInfo[RMIDINFOChunks.name];
-                            this.midiName = readBytesAsString(this.rawMidiName, this.rawMidiName.length, undefined, false);
+                            this.midiName = readBytesAsString(this.rawMidiName, this.rawMidiName.length, undefined, false).replaceAll("\n", " ");
                             nameDetected = true;
                         }
                         // these can be used interchangeably

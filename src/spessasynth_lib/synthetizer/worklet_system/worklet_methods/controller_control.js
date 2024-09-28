@@ -41,7 +41,8 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
         channelObject.midiControllers[actualCCNum] = (channelObject.midiControllers[actualCCNum] & 0x3F80) | (controllerValue & 0x7F);
         channelObject.voices.forEach(v => computeModulators(v, channelObject.midiControllers, 1, actualCCNum));
     }
-    switch (controllerNumber) {
+    switch (controllerNumber)
+    {
         case midiControllers.allNotesOff:
             this.stopAll(channel);
             break;

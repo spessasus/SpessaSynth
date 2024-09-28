@@ -1,13 +1,11 @@
 #!/bin/bash
-cd "$(dirname "$0")"
+cd "$(dirname "$0")" || exit
 
-cd ../spessasynth_lib/synthetizer/worklet_system
+cd ../spessasynth_lib/synthetizer/worklet_system || exit
 chmod +x minify_processor.sh
 ./minify_processor.sh
 
-cd ../../../website
-
-ls
+cd ../../../website || exit
 
 esbuild ./js/main/local_main.js --bundle --minify --format=esm --outfile=minified/local_main.min.js --platform=browser
 esbuild ./js/main/demo_main.js --bundle --minify --format=esm --outfile=minified/demo_main.min.js --platform=browser
