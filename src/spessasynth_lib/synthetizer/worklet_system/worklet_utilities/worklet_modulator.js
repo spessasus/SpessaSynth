@@ -1,7 +1,7 @@
 import { modulatorSources } from '../../../soundfont/read_sf2/modulators.js'
 import { getModulatorCurveValue, MOD_PRECOMPUTED_LENGTH } from './modulator_curves.js'
 import { NON_CC_INDEX_OFFSET } from './worklet_processor_channel.js'
-import { generatorTypes } from '../../../soundfont/read_sf2/generators.js'
+import { generatorLimits, generatorTypes } from '../../../soundfont/read_sf2/generators.js'
 import { WorkletVolumeEnvelope } from './volume_envelope.js'
 import { WorkletModulationEnvelope } from './modulation_envelope.js'
 
@@ -123,7 +123,10 @@ export function computeModulators(voice, controllerTable, sourceUsesCC = -1, sou
         // All modulators mode: compute all modulators
         modulatedGenerators.set(generators);
         modulators.forEach(mod => {
-            modulatedGenerators[mod.modulatorDestination] += computeWorkletModulator(controllerTable, mod, voice);
+            const limits = generatorLimits[mod.modulatorDestination];
+            if(modulatedGenerators[mod.modulatorDestination] === limits.min || modulatedGenerators[mod.modulatorDestination] === limits.max) return;
+            const newValue = modulatedGenerators[mod.modulatorDestination] + computeWorkletModulator(controllerTable, mod, voice);
+            modulatedGenerators[mod.modulatorDestination] = Math.max(limits.min, Math.min(newValue, limits.max));
         });
         WorkletVolumeEnvelope.recalculate(voice);
         return;
@@ -158,7 +161,11 @@ export function computeModulators(voice, controllerTable, sourceUsesCC = -1, sou
                 modulators.forEach(m => {
                     if (m.modulatorDestination === destination)
                     {
-                        modulatedGenerators[destination] += computeWorkletModulator(controllerTable, m, voice);
+                        const limits = generatorLimits[mod.modulatorDestination];
+                        const current = modulatedGenerators[mod.modulatorDestination];
+                        if(current === limits.min || current === limits.max) return;
+                        const newValue = current + computeWorkletModulator(controllerTable, m, voice);
+                        modulatedGenerators[mod.modulatorDestination] = Math.max(limits.min, Math.min(newValue, limits.max));
                     }
                 });
                 computedDestinations.add(destination);
@@ -183,16 +190,16 @@ const transforms = [];
 for(let curve = 0; curve < 4; curve++)
 {
     transforms[curve] =
-    [
         [
-            new Float32Array(MOD_PRECOMPUTED_LENGTH),
-            new Float32Array(MOD_PRECOMPUTED_LENGTH)
-        ],
-        [
-            new Float32Array(MOD_PRECOMPUTED_LENGTH),
-            new Float32Array(MOD_PRECOMPUTED_LENGTH)
-        ]
-    ];
+            [
+                new Float32Array(MOD_PRECOMPUTED_LENGTH),
+                new Float32Array(MOD_PRECOMPUTED_LENGTH)
+            ],
+            [
+                new Float32Array(MOD_PRECOMPUTED_LENGTH),
+                new Float32Array(MOD_PRECOMPUTED_LENGTH)
+            ]
+        ];
     for (let i = 0; i < MOD_PRECOMPUTED_LENGTH; i++) {
 
         // polarity 0 dir 0

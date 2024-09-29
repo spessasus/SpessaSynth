@@ -143,7 +143,7 @@ generatorLimits[generatorTypes.initialAttenuation] = {min: -250, max: 1440, def:
 generatorLimits[generatorTypes.endloopAddrsCoarseOffset] = {min: -32768, max: 32768, def: 0};
 
 generatorLimits[generatorTypes.coarseTune] = {min: -120, max: 120, def: 0};
-generatorLimits[generatorTypes.fineTune] = {min: -99, max: 99, def: 0};
+generatorLimits[generatorTypes.fineTune] = {min: -12700, max: 12700, def: 0}; // this generator is used as initial pitch, hence this range
 generatorLimits[generatorTypes.scaleTuning] = {min: 0, max: 1200, def: 100};
 generatorLimits[generatorTypes.exclusiveClass] = {min: 0, max: 99999, def: 0};
 generatorLimits[generatorTypes.overridingRootKey] = {min: 0-1, max: 127, def: -1};
