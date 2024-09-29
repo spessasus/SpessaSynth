@@ -35,7 +35,11 @@ class WorkletSample
         this.loopEnd = loopEnd;
         this.end = endIndex;
         this.loopingMode = loopingMode;
+        this.isLooping = this.loopingMode === 1 || this.loopingMode === 3
     }
+
+
+
     /**
      * the sample's audio data
      * @type {Float32Array}
@@ -86,6 +90,13 @@ class WorkletSample
      * @type {0|1|2}
      */
     loopingMode = 0;
+
+
+    /**
+     * Indicates if the sample is currently looping
+     * @type {boolean}
+     */
+    isLooping = false;
 }
 
 import { addAndClampGenerator, generatorTypes } from '../../../soundfont/read_sf2/generators.js'

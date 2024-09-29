@@ -264,4 +264,8 @@ export function releaseVoice(voice)
     {
         voice.releaseStartTime = voice.startTime + MIN_NOTE_LENGTH;
     }
+    if(voice.sample.loopingMode === 3)
+    {
+        voice.sample.isLooping = false;
+    }
 }

@@ -258,6 +258,7 @@ export class WorkletVolumeEnvelope
             {
                 voice.finished = true;
             }
+            env.currentReleaseGain = decibelAttenuationToGain(env.releaseStartDb);
         }
     }
 
@@ -329,6 +330,7 @@ export class WorkletVolumeEnvelope
             // fallthrough
     
             case 1:
+                let gain;
                 // attack phase: ramp from 0 to attenuation
                 while(env.currentSampleTime < env.attackEnd)
                 {
@@ -337,11 +339,11 @@ export class WorkletVolumeEnvelope
 
                     // Special case: linear gain ramp instead of linear db ramp
                     let linearAttenuation = 1 - (env.attackEnd - env.currentSampleTime) / env.attackDuration; // 0 to 1
-                    audioBuffer[filledBuffer] *= linearAttenuation * decibelAttenuationToGain(env.attenuation + decibelOffset)
-    
+                    gain = linearAttenuation * decibelAttenuationToGain(env.attenuation + decibelOffset)
+                    audioBuffer[filledBuffer] *= gain;
                     // set current attenuation to peak as its invalid during this phase
                     env.currentAttenuationDb = env.attenuation;
-    
+
                     env.currentSampleTime++;
                     if(++filledBuffer >= audioBuffer.length)
                     {
