@@ -124,7 +124,6 @@ export function computeModulators(voice, controllerTable, sourceUsesCC = -1, sou
         modulatedGenerators.set(generators);
         modulators.forEach(mod => {
             const limits = generatorLimits[mod.modulatorDestination];
-            if(modulatedGenerators[mod.modulatorDestination] === limits.min || modulatedGenerators[mod.modulatorDestination] === limits.max) return;
             const newValue = modulatedGenerators[mod.modulatorDestination] + computeWorkletModulator(controllerTable, mod, voice);
             modulatedGenerators[mod.modulatorDestination] = Math.max(limits.min, Math.min(newValue, limits.max));
         });
@@ -163,7 +162,6 @@ export function computeModulators(voice, controllerTable, sourceUsesCC = -1, sou
                     {
                         const limits = generatorLimits[mod.modulatorDestination];
                         const current = modulatedGenerators[mod.modulatorDestination];
-                        if(current === limits.min || current === limits.max) return;
                         const newValue = current + computeWorkletModulator(controllerTable, m, voice);
                         modulatedGenerators[mod.modulatorDestination] = Math.max(limits.min, Math.min(newValue, limits.max));
                     }

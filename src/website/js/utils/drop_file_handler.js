@@ -33,7 +33,6 @@ export class DropFileHandler
             {
                 // riff, check if RMID, otherwise soundfont
                 const rmid = buf.slice(8, 12);
-                console.log(decoder.decode(rmid))
                 if(decoder.decode(rmid) === "RMID")
                 {
                     // RMID
