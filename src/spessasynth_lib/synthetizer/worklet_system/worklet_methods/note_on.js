@@ -59,6 +59,7 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
         const exclusive = voice.generators[generatorTypes.exclusiveClass];
         if(exclusive !== 0)
         {
+            // kill all voices with the same exclusive class
             channelVoices.forEach(v => {
                 if(v.generators[generatorTypes.exclusiveClass] === exclusive)
                 {
@@ -72,7 +73,9 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
         }
         // compute all modulators
         computeModulators(voice, channelObject.midiControllers);
-        WorkletVolumeEnvelope.intialize(voice);
+        // set the current attenuation to target,
+        // as it's interpolated (we don't want 0 attenuation for even a split second)
+        voice.volumeEnvelope.attenuation = voice.volumeEnvelope.attenuationTarget;
         // set initial pan to avoid split second changing from middle to the correct value
         voice.currentPan = ((Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan] )) + 500) / 1000) // 0 to 1
     });

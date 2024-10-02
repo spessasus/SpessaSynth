@@ -106,6 +106,7 @@ export function readDLSSamples(waveListChunk)
         let samplePitch = 0;
         let sampleLoopStart = 0;
         let sampleLoopEnd = sampleData.length - 1;
+        let sampleDbAttenuation = 0;
 
         // read wsmp
         const wsmpChunk = waveChunks.find(c => c.header === "wsmp")
@@ -120,8 +121,10 @@ export function readDLSSamples(waveListChunk)
                 wsmpChunk.chunkData[wsmpChunk.chunkData.currentIndex++],
                 wsmpChunk.chunkData[wsmpChunk.chunkData.currentIndex++]
             );
-            // gain is handled in regions as initialAttenuation
-            readLittleEndian(wsmpChunk.chunkData, 4);
+            // gain is applied it manually here (literally multiplying the samples)
+            const gainCorrection = readLittleEndian(wsmpChunk.chunkData, 4);
+            // convert to signed and turn into decibels
+            sampleDbAttenuation = (gainCorrection | 0) / -655360;
             // no idea about ful options
             readLittleEndian(wsmpChunk.chunkData, 4);
             const loopsAmount = readLittleEndian(wsmpChunk.chunkData, 4);
@@ -162,7 +165,8 @@ export function readDLSSamples(waveListChunk)
             samplePitch,
             sampleLoopStart,
             sampleLength,
-            sampleData
+            sampleData,
+            sampleDbAttenuation
         ));
 
         sampleID++;

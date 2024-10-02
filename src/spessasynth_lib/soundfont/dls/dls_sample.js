@@ -10,6 +10,7 @@ export class DLSSample extends BasicSample
      * @param loopStart {number} sample data points
      * @param loopEnd {number} sample data points
      * @param data {Float32Array}
+     * @param sampleDbAttenuation {number} in db
      */
     constructor(
         name,
@@ -18,7 +19,8 @@ export class DLSSample extends BasicSample
         pitchCorrection,
         loopStart,
         loopEnd,
-        data
+        data,
+        sampleDbAttenuation
     )
     {
         super(
@@ -32,12 +34,19 @@ export class DLSSample extends BasicSample
             (loopEnd - 1) * 2 // -1 sample because soundfont end is last sample and dls end is next sample
         );
         this.sampleData = data;
+        this.sampleDbAttenuation = sampleDbAttenuation;
     }
 
     getAudioData()
     {
         return this.sampleData;
     }
+
+    /**
+     * in decibels of attenuation, WITHOUT EMU CORRECTION
+     * @type {number}
+     */
+    sampleDbAttenuation;
 
     /**
      * @type {Float32Array}

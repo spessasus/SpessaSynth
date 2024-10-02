@@ -82,6 +82,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
 
         /**
          * Interpolation type used
+         * TODO: cubic interpolation?
          * @type {interpolationTypes}
          */
         this.interpolationType = interpolationTypes.linear;

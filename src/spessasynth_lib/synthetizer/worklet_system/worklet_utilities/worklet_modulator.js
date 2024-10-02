@@ -116,6 +116,8 @@ export function computeModulators(voice, controllerTable, sourceUsesCC = -1, sou
     const { modulators, generators, modulatedGenerators } = voice;
 
     // Modulation envelope is cheap to recalculate
+    // why here and not at the bottom?
+    // I dunno, seems to work fine
     WorkletModulationEnvelope.recalculate(voice);
 
     if (sourceUsesCC === -1)

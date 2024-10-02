@@ -148,21 +148,10 @@ export class WorkletVolumeEnvelope
     }
 
     /**
-     * Initializes a volume envelope
-     * @param voice {WorkletVoice}
-     */
-    static intialize(voice)
-    {
-        WorkletVolumeEnvelope.recalculate(voice, true);
-        voice.volumeEnvelope.attenuation = voice.volumeEnvelope.attenuationTarget;
-    }
-
-    /**
      * Recalculates the envelope
      * @param voice {WorkletVoice} the voice this envelope belongs to
-     * @param setupInterpolated {boolean} if we should initialize the interpolated values (attenuation and sustain)
      */
-    static recalculate(voice, setupInterpolated = false)
+    static recalculate(voice)
     {
         const env = voice.volumeEnvelope;
         const timecentsToSamples = tc =>
@@ -172,10 +161,6 @@ export class WorkletVolumeEnvelope
         // calculate absolute times (they can change so we have to recalculate every time
         env.attenuationTarget = Math.max(0, Math.min(voice.modulatedGenerators[generatorTypes.initialAttenuation], 1440)) / 10; // divide by ten to get decibels
         env.sustainDbRelative = Math.min(DB_SILENCE, voice.modulatedGenerators[generatorTypes.sustainVolEnv] / 10);
-        if(setupInterpolated)
-        {
-            env.attenuation = env.attenuationTarget;
-        }
         const sustainDb = Math.min(DB_SILENCE, env.sustainDbRelative);
 
         // calculate durations

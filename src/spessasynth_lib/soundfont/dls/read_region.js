@@ -65,11 +65,10 @@ export function readRegion(chunk)
     );
 
     // gain correction:  Each unit of gain represents 1/655360 dB
+    // it is set after linking the sample
     const gainCorrection = readLittleEndian(waveSampleChunk.chunkData, 4);
     // convert to signed and turn into attenuation (invert)
     const dbCorrection = (gainCorrection | 0) / -655360;
-    // convert to centibels
-    const attenuation = (dbCorrection * 10) / 0.4; // make sure to apply EMU correction
 
     // skip options
     readLittleEndian(waveSampleChunk.chunkData, 4);
@@ -118,11 +117,20 @@ export function readRegion(chunk)
     readLittleEndian(waveLinkChunk.chunkData, 4);
     // sampleID
     const sampleID = readLittleEndian(waveLinkChunk.chunkData, 4);
+    /**
+     * @type {DLSSample}
+     */
     const sample = this.samples[sampleID];
     if(sample === undefined)
     {
         throw new Error("Invalid sample ID!");
     }
+
+    // this correction overrides the sample gain correction
+    const actualDbCorrection = dbCorrection || sample.sampleDbAttenuation;
+    // convert to centibels
+    const attenuation = (actualDbCorrection * 10) / 0.4; // make sure to apply EMU correction
+
     zone.setWavesample(
         attenuation, loopingMode,
         loop,

@@ -27,8 +27,8 @@ document.getElementById("dls_upload").oninput = e => {
             return;
         }
         document.getElementById("sf_info").classList.remove("hidden");
-        document.getElementById("dls_name").innerText = sfont.soundFontInfo["INAM"];
-        document.getElementById("dls_description").innerText = sfont.soundFontInfo["ICMT"].replace("\nConverted from DLS to SF2 with SpessaSynth", "");
+        document.getElementById("dls_name").innerText = sfont.soundFontInfo["INAM"] || "Unnamed"            ;
+        document.getElementById("dls_description").innerText = (sfont.soundFontInfo["ICMT"] || "No description").replace("\nConverted from DLS to SF2 with SpessaSynth", "");
         document.getElementById("dls_presets").innerText = sfont.presets.length;
         document.getElementById("dls_samples").innerText = sfont.samples.length;
         message.innerText = "Loaded!";
