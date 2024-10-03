@@ -140,10 +140,7 @@ export class WorkletLowpassFilter
         filter.cutoffHz = absCentsToHz(filter.cutoffCents);
 
         // fix cutoff on low frequencies (fluid_iir_filter.c line 392)
-        if(filter.cutoffHz > 0.45 * sampleRate)
-        {
-            filter.cutoffHz = 0.45 * sampleRate;
-        }
+        filter.cutoffHz = Math.min(filter.cutoffHz, 0.45 * sampleRate);
 
         // adjust the filterQ (fluid_iir_filter.c line 204)
         const qDb = (filter.reasonanceCb / 10) - 3.01;

@@ -1,6 +1,6 @@
 export const exportAudio = {
     button: {
-        title: "Save",
+        title: "Save Audio",
         description: "Save the composition to various formats"
     },
 

@@ -40,10 +40,14 @@ export function renderVoice(
         // if not in release, check if the release time is
         if (currentTime >= voice.releaseStartTime)
         {
-
+            // release the voice here
             voice.isInRelease = true;
             WorkletVolumeEnvelope.startRelease(voice);
             WorkletModulationEnvelope.startRelease(voice);
+            if(voice.sample.loopingMode === 3)
+            {
+                voice.sample.isLooping = false;
+            }
         }
     }
 
@@ -263,9 +267,5 @@ export function releaseVoice(voice)
     if(voice.releaseStartTime - voice.startTime < MIN_NOTE_LENGTH)
     {
         voice.releaseStartTime = voice.startTime + MIN_NOTE_LENGTH;
-    }
-    if(voice.sample.loopingMode === 3)
-    {
-        voice.sample.isLooping = false;
     }
 }
