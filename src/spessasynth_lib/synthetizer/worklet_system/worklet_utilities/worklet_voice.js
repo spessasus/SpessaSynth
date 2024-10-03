@@ -368,8 +368,8 @@ export function getWorkletVoices(channel,
             }
 
             // determine looping mode now. if the loop is too small, disable
-            let loopStart = (sampleAndGenerators.sample.sampleLoopStartIndex / 2) + (generators[generatorTypes.startloopAddrsOffset] + (generators[generatorTypes.startloopAddrsCoarseOffset] * 32768));
-            let loopEnd = (sampleAndGenerators.sample.sampleLoopEndIndex / 2) + (generators[generatorTypes.endloopAddrsOffset] + (generators[generatorTypes.endloopAddrsCoarseOffset] * 32768));
+            let loopStart = (sampleAndGenerators.sample.sampleLoopStartIndex / 2);
+            let loopEnd = (sampleAndGenerators.sample.sampleLoopEndIndex / 2);
             let loopingMode = generators[generatorTypes.sampleModes];
             const sampleLength = sampleAndGenerators.sample.getAudioData().length;
             // clamp loop
@@ -381,17 +381,18 @@ export function getWorkletVoices(channel,
                 loopingMode = 0;
             }
             /**
-             * create the worklet sample and calculate offsets
+             * create the worklet sample
+             * offsets are calculated at note on time (to allow for modulation of them)
              * @type {WorkletSample}
              */
             const workletSample = new WorkletSample(
                 sampleAndGenerators.sample.getAudioData(),
                 (sampleAndGenerators.sample.sampleRate / sampleRate) * Math.pow(2, sampleAndGenerators.sample.samplePitchCorrection / 1200), // cent tuning
-                generators[generatorTypes.startAddrsOffset] + (generators[generatorTypes.startAddrsCoarseOffset] * 32768),
+                0,
                 rootKey,
                 loopStart,
                 loopEnd,
-                Math.floor( sampleAndGenerators.sample.sampleData.length) - 1 + (generators[generatorTypes.endAddrOffset] + (generators[generatorTypes.endAddrsCoarseOffset] * 32768)),
+                Math.floor( sampleAndGenerators.sample.sampleData.length) - 1,
                 loopingMode
             )
             // velocity override

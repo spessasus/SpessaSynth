@@ -425,7 +425,7 @@ demoInit(initLocale).then(() => {
             window.manager.sfError = e => {
                 loadingMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
                 changeIcon(getExclamationSvg(256));
-                console.log(e);
+                console.error(e);
             }
             loadingMessage.textContent = window.manager.localeManager.getLocaleString("locale.synthInit.startingSynthesizer");
             await window.manager.reloadSf(soundFontBuffer);

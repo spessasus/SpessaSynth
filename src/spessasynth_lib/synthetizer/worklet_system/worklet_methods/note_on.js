@@ -73,6 +73,30 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
         }
         // compute all modulators
         computeModulators(voice, channelObject.midiControllers);
+        // modulate sample offsets (these are not real time)
+        const cursorStartOffset = voice.modulatedGenerators[generatorTypes.startAddrsOffset] + voice.modulatedGenerators[generatorTypes.startAddrsCoarseOffset] * 32768;
+        const endOffset = voice.modulatedGenerators[generatorTypes.endAddrOffset] + voice.modulatedGenerators[generatorTypes.endAddrsCoarseOffset] * 32768;
+        const loopStartOffset = voice.modulatedGenerators[generatorTypes.startloopAddrsOffset] + voice.modulatedGenerators[generatorTypes.startloopAddrsCoarseOffset] * 32768;
+        const loopEndOffset = voice.modulatedGenerators[generatorTypes.endloopAddrsOffset] + voice.modulatedGenerators[generatorTypes.endloopAddrsCoarseOffset] * 32768;
+        const sm = voice.sample;
+        // apply them
+        const clamp = num => Math.max(0, Math.min(sm.sampleData.length, num));
+        sm.cursor = clamp( sm.cursor + cursorStartOffset);
+        sm.end = clamp(sm.end + endOffset);
+        sm.loopStart = clamp(sm.loopStart + loopStartOffset);
+        sm.loopEnd = clamp(sm.loopEnd + loopEndOffset);
+        // swap loops if needed
+        if(sm.loopEnd < sm.loopStart)
+        {
+            const temp = sm.loopStart;
+            sm.loopStart = sm.loopEnd;
+            sm.loopEnd = temp;
+        }
+        if (sm.loopEnd - sm.loopStart < 1)
+        {
+            sm.loopingMode = 0;
+            sm.isLooping = false;
+        }
         // set the current attenuation to target,
         // as it's interpolated (we don't want 0 attenuation for even a split second)
         voice.volumeEnvelope.attenuation = voice.volumeEnvelope.attenuationTarget;

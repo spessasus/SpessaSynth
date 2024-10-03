@@ -16,7 +16,7 @@ export const generatorTypes = {
     endAddrOffset: 1,                   // sample control - moves sample end point
     startloopAddrsOffset: 2,            // loop control - moves loop start point
     endloopAddrsOffset: 3,              // loop control - moves loop end point
-    startAddrsCoarseOffset: 4,          // sample control - moves sample start point in 32767 increments
+    startAddrsCoarseOffset: 4,          // sample control - moves sample start point in 32768 increments
     modLfoToPitch: 5,                   // pitch modulation - modulation lfo pitch modulation in cents
     vibLfoToPitch: 6,                   // pitch modulation - vibrato lfo pitch modulation in cents
     modEnvToPitch: 7,                   // pitch modulation - modulation envelope pitch modulation in cents
@@ -24,7 +24,7 @@ export const generatorTypes = {
     initialFilterQ: 9,                  // filter - lowpass filter resonance
     modLfoToFilterFc: 10,               // filter modulation - modulation lfo lowpass filter cutoff in cents
     modEnvToFilterFc: 11,               // filter modulation - modulation envelope lowpass filter cutoff in cents
-    endAddrsCoarseOffset: 12,           // ample control - moves sample end point in 32767 increments
+    endAddrsCoarseOffset: 12,           // ample control - moves sample end point in 32768 increments
     modLfoToVolume: 13,                 // modulation lfo - volume (tremolo), where 100 = 10dB
     unused1: 14,
     chorusEffectsSend: 15,              // effect send - how much is sent to chorus 0 - 1000
@@ -57,12 +57,12 @@ export const generatorTypes = {
     reserved1: 42,
     keyRange: 43,                       // zone - key range for which preset / instrument zone is active
     velRange: 44,                       // zone - velocity range for which preset / instrument zone is active
-    startloopAddrsCoarseOffset: 45,     // ample control - moves sample loop start point in 32767 increments
+    startloopAddrsCoarseOffset: 45,     // sample control - moves sample loop start point in 32768 increments
     keyNum: 46,                         // zone - instrument only: always use this midi number (ignore what's pressed)
     velocity: 47,                       // zone - instrument only: always use this velocity (ignore what's pressed)
     initialAttenuation: 48,             // zone - allows turning down the volume, 10 = -1dB
     reserved2: 49,
-    endloopAddrsCoarseOffset: 50,       // ample control - moves sample loop end point in 32767 increments
+    endloopAddrsCoarseOffset: 50,       // sample control - moves sample loop end point in 32768 increments
     coarseTune: 51,                     // tune - pitch offset in semitones
     fineTune: 52,                       // tune - pitch offset in cents
     sampleID: 53,                       // sample - instrument zone only: which sample to use
