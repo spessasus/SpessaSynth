@@ -462,6 +462,13 @@ demoInit(initLocale).then(() => {
                 onClick: () => {
                     window.open("https://github.com/spessasus/spessasynth-demo-songs#readme");
                 }
+            },
+            {
+                type: "button",
+                textContent: "Bundled SoundFont Credits",
+                onClick: () => {
+                    window.open("https://schristiancollins.com/generaluser.php");
+                }
             }
         ];
         titleMessage.textContent = window.manager.localeManager.getLocaleString("locale.synthInit.genericLoading");
