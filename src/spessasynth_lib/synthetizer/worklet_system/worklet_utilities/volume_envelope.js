@@ -10,7 +10,8 @@ export const VOLUME_ENVELOPE_SMOOTHING_FACTOR = 0.001;
 
 const DB_SILENCE = 100;
 const PERCEIVED_DB_SILENCE = 90;
-const PERCEIVED_GAIN_SILENCE = 0.005;
+// around 96 dB of attenuation
+const PERCEIVED_GAIN_SILENCE = 0.000015; // can't go lower than that (see #50)
 
 /**
  * VOL ENV STATES:
