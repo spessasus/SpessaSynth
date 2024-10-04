@@ -4,6 +4,7 @@ import { getLFOValue } from '../worklet_utilities/lfo.js'
 import { customControllers } from '../worklet_utilities/worklet_processor_channel.js'
 import { WorkletModulationEnvelope } from '../worklet_utilities/modulation_envelope.js'
 import {
+    getSampleCubic,
     getSampleLinear,
     getSampleNearest,
     interpolationTypes,
@@ -167,6 +168,9 @@ export function renderVoice(
         case interpolationTypes.nearestNeighbor:
             getSampleNearest(voice, bufferOut);
             break;
+
+        case interpolationTypes.fourthOrder:
+            getSampleCubic(voice, bufferOut);
     }
 
     // lowpass filter

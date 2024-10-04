@@ -187,7 +187,6 @@ export function createMainSynthController()
          */
         const linear = document.createElement("option");
         linear.value = "0";
-        linear.selected = true;
         this.locale.bindObjectProperty(linear, "textContent", LOCALE_PATH + "interpolation.linear");
         interpolation.appendChild(linear);
 
@@ -199,6 +198,16 @@ export function createMainSynthController()
         nearest.value = "1";
         this.locale.bindObjectProperty(nearest, "textContent", LOCALE_PATH + "interpolation.nearestNeighbor");
         interpolation.appendChild(nearest);
+
+        /**
+         * cubic (default)
+         * @type {HTMLOptionElement}
+         */
+        const cubic = document.createElement("option");
+        cubic.value = "2";
+        cubic.selected = true;
+        this.locale.bindObjectProperty(cubic, "textContent", LOCALE_PATH + "interpolation.cubic");
+        interpolation.appendChild(cubic);
 
         interpolation.onchange = () => {
             this.synth.setInterpolationType(parseInt(interpolation.value));

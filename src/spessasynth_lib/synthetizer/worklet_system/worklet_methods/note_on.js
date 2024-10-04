@@ -80,7 +80,7 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
         const loopEndOffset = voice.modulatedGenerators[generatorTypes.endloopAddrsOffset] + voice.modulatedGenerators[generatorTypes.endloopAddrsCoarseOffset] * 32768;
         const sm = voice.sample;
         // apply them
-        const clamp = num => Math.max(0, Math.min(sm.sampleData.length, num));
+        const clamp = num => Math.max(0, Math.min(sm.sampleData.length - 1, num));
         sm.cursor = clamp( sm.cursor + cursorStartOffset);
         sm.end = clamp(sm.end + endOffset);
         sm.loopStart = clamp(sm.loopStart + loopStartOffset);

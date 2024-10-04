@@ -60,7 +60,8 @@ export const synthesizerControllerLocale = {
     interpolation: {
         description: "Select the synthesizer's interpolation method",
         linear: "Linear Interpolation",
-        nearestNeighbor: "Nearest neighbor"
+        nearestNeighbor: "Nearest neighbor",
+        cubic: "Cubic Interpolation"
     },
 
     channelController: channelControllerLocale

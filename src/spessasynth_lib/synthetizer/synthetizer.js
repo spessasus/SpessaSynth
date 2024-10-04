@@ -29,7 +29,7 @@ import { SoundfontManager } from './synth_soundfont_manager.js'
 
 export const WORKLET_PROCESSOR_NAME = "spessasynth-worklet-system";
 
-export const VOICE_CAP = 450;
+export const VOICE_CAP = 350;
 
 export const DEFAULT_PERCUSSION = 9;
 export const MIDI_CHANNEL_COUNT = 16;
