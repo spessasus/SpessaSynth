@@ -1,6 +1,6 @@
 import { consoleColors } from '../../../utils/other.js'
 import { midiControllers } from '../../../midi_parser/midi_message.js'
-import { dataEntryStates } from '../worklet_utilities/worklet_processor_channel.js'
+import { channelConfiguration, dataEntryStates } from '../worklet_utilities/worklet_processor_channel.js'
 import { computeModulators } from '../worklet_utilities/worklet_modulator.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../../../utils/loggin.js'
 import { SYNTHESIZER_GAIN } from '../main_processor.js'
@@ -8,7 +8,7 @@ import { DEFAULT_PERCUSSION } from '../../synthetizer.js'
 
 /**
  * @param channel {number}
- * @param controllerNumber {midiControllers}
+ * @param controllerNumber {number}
  * @param controllerValue {number}
  * @param force {boolean}
  * @this {SpessaSynthProcessor}
@@ -23,6 +23,19 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
     {
         SpessaSynthWarn(`Trying to access channel ${channel} which does not exist... ignoring!`);
         return;
+    }
+    if(controllerNumber > 127)
+    {
+        // channel configuration. force must be set to true
+        if(!force) return;
+        switch (controllerNumber)
+        {
+            default:
+                return;
+
+            case channelConfiguration.velocityOverride:
+                channelObject.velocityOverride = controllerValue;
+        }
     }
     // lsb controller values: append them as the lower nibble of the 14 bit value
     // excluding bank select and data entry as it's handled separately

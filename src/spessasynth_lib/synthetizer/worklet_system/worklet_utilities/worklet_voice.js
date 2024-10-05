@@ -3,6 +3,7 @@
  * purpose: prepares workletvoices from sample and generator data and manages sample dumping
  * note: sample dumping means sending it over to the AudioWorkletGlobalScope
  */
+import { Modulator } from '../../../soundfont/read_sf2/modulators.js'
 
 class WorkletSample
 {
@@ -298,7 +299,7 @@ class WorkletVoice
             currentTime,
             voice.targetKey,
             voice.generators,
-            voice.modulators.slice()
+            voice.modulators.map(m => Modulator.copy(m))
         );
     }
 }
@@ -329,7 +330,7 @@ export function getWorkletVoices(channel,
     const cached = channelObject.cachedVoices[midiNote][velocity];
     if(cached !== undefined)
     {
-        workletVoices = cached.map(v => WorkletVoice.copy(v, currentTime));
+        return cached.map(v => WorkletVoice.copy(v, currentTime));
     }
     else
     {
@@ -425,7 +426,7 @@ export function getWorkletVoices(channel,
                     currentTime,
                     targetKey,
                     generators,
-                    sampleAndGenerators.modulators
+                    sampleAndGenerators.modulators.map(m => Modulator.copy(m))
                 )
             );
             return voices;

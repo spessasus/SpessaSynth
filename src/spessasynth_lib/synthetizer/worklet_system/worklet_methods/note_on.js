@@ -43,6 +43,12 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
         sentMidiNote = this.tunings[program]?.[midiNote].midiNote;
     }
 
+    // velocity override
+    if(channelObject.velocityOverride > 0)
+    {
+        velocity = channelObject.velocityOverride;
+    }
+
     // get voices
     const voices = this.getWorkletVoices(
         channel,

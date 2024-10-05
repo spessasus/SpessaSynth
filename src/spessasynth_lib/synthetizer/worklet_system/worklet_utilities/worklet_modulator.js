@@ -1,4 +1,4 @@
-import { modulatorSources } from '../../../soundfont/read_sf2/modulators.js'
+import { Modulator, modulatorSources } from '../../../soundfont/read_sf2/modulators.js'
 import { getModulatorCurveValue, MOD_PRECOMPUTED_LENGTH } from './modulator_curves.js'
 import { NON_CC_INDEX_OFFSET } from './worklet_processor_channel.js'
 import { generatorLimits, generatorTypes } from '../../../soundfont/read_sf2/generators.js'
@@ -21,6 +21,7 @@ export function computeWorkletModulator(controllerTable, modulator, voice)
 {
     if(modulator.transformAmount === 0)
     {
+        modulator.currentValue = 0;
         return 0;
     }
     // mapped to 0-16384
@@ -95,13 +96,15 @@ export function computeWorkletModulator(controllerTable, modulator, voice)
 
 
     // compute the modulator
-    const computedValue = sourceValue * secondSrcValue * modulator.transformAmount;
+    let computedValue = sourceValue * secondSrcValue * modulator.transformAmount;
 
     if(modulator.transformType === 2)
     {
         // abs value
-        return Math.abs(computedValue);
+        computedValue = Math.abs(computedValue);
     }
+
+    modulator.currentValue = computedValue;
     return computedValue;
 }
 
@@ -113,7 +116,9 @@ export function computeWorkletModulator(controllerTable, modulator, voice)
  * @param sourceIndex {number} enum for the source
  */
 export function computeModulators(voice, controllerTable, sourceUsesCC = -1, sourceIndex = 0) {
-    const { modulators, generators, modulatedGenerators } = voice;
+    const modulators = voice.modulators;
+    const generators = voice.generators;
+    const modulatedGenerators = voice.modulatedGenerators;
 
     // Modulation envelope is cheap to recalculate
     // why here and not at the bottom?
@@ -158,13 +163,14 @@ export function computeModulators(voice, controllerTable, sourceUsesCC = -1, sou
             {
                 // Reset this destination
                 modulatedGenerators[destination] = generators[destination];
-                // Compute all modulators for this destination
+                // compute our modulator
+                computeWorkletModulator(controllerTable, mod, voice);
+                // sum the values of all modulators for this destination
                 modulators.forEach(m => {
                     if (m.modulatorDestination === destination)
                     {
                         const limits = generatorLimits[mod.modulatorDestination];
-                        const current = modulatedGenerators[mod.modulatorDestination];
-                        const newValue = current + computeWorkletModulator(controllerTable, m, voice);
+                        const newValue = modulatedGenerators[mod.modulatorDestination] + m.currentValue;
                         modulatedGenerators[mod.modulatorDestination] = Math.max(limits.min, Math.min(newValue, limits.max));
                     }
                 });
