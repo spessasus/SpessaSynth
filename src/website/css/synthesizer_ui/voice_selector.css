@@ -6,6 +6,8 @@
     font-weight: bold;
     min-width: 8em;
     text-align-last: center;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .voice_selector_light{
@@ -24,28 +26,6 @@
 .voice_selector_light:hover{
     background: #fff;
     color: #444;
-}
-
-.voice_selector .selector_option{
-    padding: 5px;
-    background-color: #111;
-    text-align: left;
-    text-shadow: none !important;
-}
-
-.voice_selector optgroup{
-    font-weight: bold;
-    font-style: normal;
-    background-color: #141414;
-    text-align: left;
-    text-shadow: none !important;
-}
-
-.voice_selector .selector_option:hover
-{
-    background-color: #222;
-    cursor: pointer;
-
 }
 
 .selector_options:hover{
