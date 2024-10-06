@@ -118,10 +118,10 @@ export function createMainSynthController()
             if(channel.reverb.isLocked) channel.reverb.lockMeter();
             if(channel.brightness.isLocked) channel.brightness.lockMeter();
             // program
-            if(channel.preset.mainDiv.classList.contains("locked_selector"))
+            if(channel.preset.mainButton.classList.contains("locked_selector"))
             {
                 this.synth.lockController(number, ALL_CHANNELS_OR_DIFFERENT_ACTION, false);
-                channel.preset.mainDiv.classList.remove("locked_selector");
+                channel.preset.mainButton.classList.remove("locked_selector");
             }
             // transpose
             this.synth.transposeChannel(number, 0, true);

@@ -235,6 +235,9 @@ fetch("soundfonts").then(async r => {
         titleMessage.innerText = "Error fetching soundfonts!";
         throw r.statusText;
     }
+    /**
+     * @type {HTMLSelectElement}
+     */
     const sfSelector = document.getElementById("sf_selector");
 
     soundFonts = JSON.parse(await r.text());
@@ -252,6 +255,7 @@ fetch("soundfonts").then(async r => {
     }
 
     sfSelector.onchange = () => {
+        sfSelector.blur();
         fetch(`/setlastsf2?sfname=${encodeURIComponent(sfSelector.value)}`);
         if(window.manager.seq)
         {

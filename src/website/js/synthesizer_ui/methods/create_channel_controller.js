@@ -12,7 +12,6 @@
  *     brightness: Meter,
  *     transpose: Meter,
  *     preset: Selector,
- *     presetReset: HTMLDivElement,
  *     drumsToggle: HTMLDivElement,
  *     soloButton: HTMLDivElement,
  *     muteButton: HTMLDivElement
@@ -27,7 +26,7 @@ import {
     getEmptyMicSvg,
     getMicSvg,
     getMuteSvg,
-    getNoteSvg, getUnlockSVG,
+    getNoteSvg,
     getVolumeSvg,
 } from '../../utils/icons.js'
 import { DEFAULT_PERCUSSION } from '../../../../spessasynth_lib/synthetizer/synthetizer.js'
@@ -182,36 +181,23 @@ export function createChannelController(channelNumber)
     transpose.update(0);
     controller.appendChild(transpose.div);
 
-    // create it here so we can use it in the callback function
-    const presetReset = document.createElement("div");
-
     // preset controller
     const presetSelector = new Selector(
         ([]), // empty for now
         this.locale,
-        LOCALE_PATH + "channelController.presetSelector.description",
+        LOCALE_PATH + "channelController.presetSelector",
         [channelNumber + 1],
         async presetName => {
             const data = presetName.split(":");
             this.synth.lockController(channelNumber, ALL_CHANNELS_OR_DIFFERENT_ACTION, false);
             this.synth.controllerChange(channelNumber, midiControllers.bankSelect, parseInt(data[0]), true);
             this.synth.programChange(channelNumber, parseInt(data[1]), true);
-            presetSelector.mainDiv.classList.add("locked_selector");
+            presetSelector.mainButton.classList.add("locked_selector");
             this.synth.lockController(channelNumber, ALL_CHANNELS_OR_DIFFERENT_ACTION, true);
-        }
+        },
+        locked => this.synth.lockController(channelNumber, ALL_CHANNELS_OR_DIFFERENT_ACTION, locked)
     );
-    controller.appendChild(presetSelector.mainDiv);
-
-    // preset reset
-    presetReset.innerHTML = getUnlockSVG(ICON_SIZE);
-    this.locale.bindObjectProperty(presetReset, "title", LOCALE_PATH + "channelController.presetReset.description", [channelNumber + 1]);
-    presetReset.classList.add("controller_element");
-    presetReset.classList.add("voice_reset");
-    presetReset.onclick = () => {
-        this.synth.lockController(channelNumber, ALL_CHANNELS_OR_DIFFERENT_ACTION, false);
-        presetSelector.mainDiv.classList.remove("locked_selector");
-    }
-    controller.appendChild(presetReset);
+    controller.appendChild(presetSelector.mainButton);
 
     // solo button
     const soloButton = document.createElement("div");
@@ -311,7 +297,6 @@ export function createChannelController(channelNumber)
         reverb: reverb,
         brightness: brightness,
         preset: presetSelector,
-        presetReset: presetReset,
         drumsToggle: drumsToggle,
         soloButton: soloButton,
         muteButton: muteButton,
