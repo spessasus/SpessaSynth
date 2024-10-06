@@ -156,7 +156,8 @@ export function loadNewSongList(midiBuffers)
         try
         {
             mids.push(new MIDI(b.binary, b.altName || ""));
-        } catch (e)
+        }
+        catch (e)
         {
             this.post(WorkletSequencerReturnMessageType.midiError, e.message);
             return mids;

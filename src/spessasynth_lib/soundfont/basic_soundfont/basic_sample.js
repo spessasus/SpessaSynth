@@ -117,7 +117,8 @@ export class BasicSample
             // flag as compressed
             this.sampleType |= 0x10;
             this.isCompressed = true;
-        } catch (e)
+        }
+        catch (e)
         {
             SpessaSynthWarn(`Failed to compress ${this.sampleName}. Leaving as uncompressed!`);
             this.isCompressed = false;

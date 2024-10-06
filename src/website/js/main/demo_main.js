@@ -123,7 +123,8 @@ async function saveSoundFontToIndexedDB(arr)
             {
                 console.error("Error saving soundfont", e);
             };
-        } catch (e)
+        }
+        catch (e)
         {
             SpessaSynthWarn("Failed saving soundfont:", e);
         }
@@ -139,7 +140,8 @@ async function demoInit(initLocale)
     {
         const context = window.AudioContext || window.webkitAudioContext;
         window.audioContextMain = new context({ sampleRate: SAMPLE_RATE });
-    } catch (e)
+    }
+    catch (e)
     {
         changeIcon(getExclamationSvg(256));
         loadingMessage.textContent = localeManager.getLocaleString("locale.synthInit.noWebAudio");
@@ -435,7 +437,8 @@ demoInit(initLocale).then(() =>
             {
                 soundFontBuffer = await file.arrayBuffer();
                 window.soundFontParser = soundFontBuffer;
-            } catch (e)
+            }
+            catch (e)
             {
                 loadingMessage.textContent = window.manager.localeManager.getLocaleString(
                     "locale.warnings.outOfMemory");

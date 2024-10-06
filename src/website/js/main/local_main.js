@@ -62,7 +62,8 @@ async function fetchFont(fileName, callback)
     try
     {
         dataArray = new Uint8Array(parseInt(size));
-    } catch (e)
+    }
+    catch (e)
     {
         let message = `Your browser ran out of memory. Consider using Firefox or SF3 soundfont instead<br><br> (see console for error)`;
         if (window.manager)

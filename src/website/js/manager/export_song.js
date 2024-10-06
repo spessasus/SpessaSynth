@@ -37,7 +37,8 @@ export async function exportSong()
                     try
                     {
                         this._exportSoundfont();
-                    } catch (e)
+                    }
+                    catch (e)
                     {
                         showNotification(
                             "Warning",
@@ -58,7 +59,8 @@ export async function exportSong()
                     try
                     {
                         this._exportRMIDI();
-                    } catch (e)
+                    }
+                    catch (e)
                     {
                         showNotification(
                             "Warning",

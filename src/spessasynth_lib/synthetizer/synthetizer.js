@@ -139,7 +139,8 @@ export class Synthetizer
                     startRenderingData: startRenderingData
                 }
             });
-        } catch (e)
+        }
+        catch (e)
         {
             throw new Error("Could not create the audioWorklet. Did you forget to addModule()?");
         }

@@ -101,7 +101,8 @@ export function updateTitleAndMediaStatus(cleanOtherTextEvents = true)
             playbackRate: this.seq.playbackRate,
             position: this.seq.currentTime
         });
-    } catch (e)
+    }
+    catch (e)
     {
     
     }

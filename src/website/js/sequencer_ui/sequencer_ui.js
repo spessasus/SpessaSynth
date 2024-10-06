@@ -149,7 +149,8 @@ class SequencerUI
                 
                 }
                 return this.decoder.decode(text);
-            } catch (e)
+            }
+            catch (e)
             {
                 encodingIndex++;
                 this.changeEncoding(supportedEncodings[encodingIndex]);

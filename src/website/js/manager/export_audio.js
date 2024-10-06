@@ -80,7 +80,8 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
             chorusConfig: undefined,
             reverbImpulseResponse: this.impulseResponse
         });
-    } catch (e)
+    }
+    catch (e)
     {
         showNotification(
             this.localeManager.getLocaleString("locale.warnings.warning"),

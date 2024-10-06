@@ -139,7 +139,8 @@ export class SoundFont2 extends BasicSoundFont
                     this.dataArray.currentIndex,
                     this.dataArray.currentIndex + sdtaChunk.size - 12
                 )).data[0];
-            } catch (e)
+            }
+            catch (e)
             {
                 SpessaSynthGroupEnd();
                 throw new Error(`SF2Pack Ogg Vorbis decode error: ${e}`);

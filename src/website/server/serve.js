@@ -116,7 +116,8 @@ export function serveStaticFile(res, filePath, mimeType = undefined)
     try
     {
         file = fs.readFileSync(filePath);
-    } catch (e)
+    }
+    catch (e)
     {
         res.writeHead(404);
         res.end(`

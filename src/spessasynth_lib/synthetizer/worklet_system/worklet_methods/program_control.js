@@ -239,7 +239,8 @@ export function reloadSoundFont(buffer, isOverride = false)
         {
             this.soundfontManager.reloadManager(buffer);
         }
-    } catch (e)
+    }
+    catch (e)
     {
         this.post({
             messageType: returnMessageType.soundfontError,

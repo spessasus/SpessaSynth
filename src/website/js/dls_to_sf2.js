@@ -21,7 +21,8 @@ document.getElementById("dls_upload").oninput = e =>
         try
         {
             sfont = loadSoundFont(await file.arrayBuffer());
-        } catch (e)
+        }
+        catch (e)
         {
             message.style.color = "red";
             message.innerText = `Error: ${e.message}`;

@@ -38,7 +38,8 @@ export class MIDIDeviceHandler
                 this.outputs = response.outputs;
                 SpessaSynthInfo("%cMIDI handler created!", consoleColors.recognized);
                 return true;
-            } catch (e)
+            }
+            catch (e)
             {
                 SpessaSynthWarn(`Could not get MIDI Devices:`, e);
                 this.inputs = [];

@@ -168,7 +168,8 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
                 options.processorOptions.soundfont,
                 this.postReady.bind(this)
             );
-        } catch (e)
+        }
+        catch (e)
         {
             this.post({
                 messageType: returnMessageType.soundfontError,
