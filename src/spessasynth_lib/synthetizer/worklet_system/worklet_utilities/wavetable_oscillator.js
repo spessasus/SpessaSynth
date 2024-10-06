@@ -57,6 +57,10 @@ export function getSampleLinear(voice, outputBuffer)
     }
     else
     {
+        if(sample.loopingMode === 2 && !voice.isInRelease)
+        {
+            return;
+        }
         for (let i = 0; i < outputBuffer.length; i++)
         {
 
@@ -119,6 +123,10 @@ export function getSampleNearest(voice, outputBuffer)
     }
     else
     {
+        if(sample.loopingMode === 2 && !voice.isInRelease)
+        {
+            return;
+        }
         for (let i = 0; i < outputBuffer.length; i++)
         {
 
@@ -198,6 +206,10 @@ export function getSampleCubic(voice, outputBuffer)
     }
     else
     {
+        if(sample.loopingMode === 2 && !voice.isInRelease)
+        {
+            return;
+        }
         for (let i = 0; i < outputBuffer.length; i++)
         {
 

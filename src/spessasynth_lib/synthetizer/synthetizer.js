@@ -12,6 +12,7 @@ import {
 import { SpessaSynthInfo, SpessaSynthWarn } from '../utils/loggin.js'
 import { DEFAULT_EFFECTS_CONFIG } from './audio_effects/effects_config.js'
 import { SoundfontManager } from './synth_soundfont_manager.js'
+import { channelConfiguration } from './worklet_system/worklet_utilities/worklet_processor_channel.js'
 
 
 /**
@@ -484,6 +485,7 @@ export class Synthetizer {
      */
     controllerChange(channel, controllerNumber, controllerValue, force=false)
     {
+        if(controllerNumber > 127 || controllerNumber < 0) throw new Error(`Invalid controller number: ${controllerNumber}`);
         controllerValue = Math.floor(controllerValue);
         controllerNumber = Math.floor(controllerNumber);
         this.post({
@@ -628,6 +630,21 @@ export class Synthetizer {
             channelNumber: channel,
             messageType: workletMessageType.programChange,
             messageData: [programNumber, userChange]
+        })
+    }
+
+    /**
+     * Overrides velocity on a given channel
+     * @param channel {number} usually 0-15: the channel to change
+     * @param velocity {number} 1-127, the velocity to use.
+     * 0 Disables this functionality
+     */
+    velocityOverride(channel, velocity)
+    {
+        this.post({
+            channelNumber: channel,
+            messageType: workletMessageType.ccChange,
+            messageData: [channelConfiguration.velocityOverride, velocity, true]
         })
     }
 

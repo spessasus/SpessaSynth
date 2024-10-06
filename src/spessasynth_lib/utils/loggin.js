@@ -1,6 +1,6 @@
-let ENABLE_INFO = true;
+let ENABLE_INFO = false;
 let ENABLE_WARN = true;
-let ENABLE_GROUP = true;
+let ENABLE_GROUP = false;
 let ENABLE_TABLE = true;
 
 /**

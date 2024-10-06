@@ -51,7 +51,9 @@ transposeMeter: {
     },
 
     presetSelector: {
-        description: "チャンネル {0} が使用するパッチ（楽器）を変更"
+        description: "チャンネル {0} が使用するパッチ（楽器）を変更",
+        selectionPrompt: "チャンネル {0} の楽器を変更する",
+        searchPrompt: "検索..."
     },
 
     presetReset: {

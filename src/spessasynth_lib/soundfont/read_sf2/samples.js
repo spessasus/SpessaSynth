@@ -47,8 +47,8 @@ export class LoadedSample extends BasicSample
             samplePitchCorrection,
             sampleLink,
             sampleType,
-            sampleLoopStartIndex - sampleStartIndex,
-            sampleLoopEndIndex - sampleStartIndex
+            sampleLoopStartIndex - (sampleStartIndex / 2),
+            sampleLoopEndIndex - (sampleStartIndex / 2)
             );
         this.sampleName = sampleName
         // in bytes
@@ -245,10 +245,10 @@ function readSample(index, sampleHeaderData, smplArrayData, isDataRaw) {
     let sampleEndIndex = readLittleEndian(sampleHeaderData, 4) * 2;
 
     // read the sample looping start index
-    let sampleLoopStartIndex = readLittleEndian(sampleHeaderData, 4) * 2;
+    let sampleLoopStartIndex = readLittleEndian(sampleHeaderData, 4);
 
     // read the sample looping end index
-    let sampleLoopEndIndex = readLittleEndian(sampleHeaderData, 4) * 2;
+    let sampleLoopEndIndex = readLittleEndian(sampleHeaderData, 4);
 
     // read the sample rate
     let sampleRate = readLittleEndian(sampleHeaderData, 4);

@@ -24,7 +24,6 @@ export function toggleDarkMode()
         controller.reverb.toggleMode();
         controller.brightness.toggleMode();
         controller.preset.toggleMode();
-        controller.presetReset.classList.toggle("voice_reset_light");
         controller.drumsToggle.classList.toggle("mute_button_light");
         controller.muteButton.classList.toggle("mute_button_light");
     })

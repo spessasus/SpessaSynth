@@ -11,6 +11,7 @@ import { modulatorSources } from '../../../soundfont/read_sf2/modulators.js'
  * @property {Int16Array} keyCentTuning - tuning of individual keys in cents
  * @property {boolean} holdPedal - indicates whether the hold pedal is active
  * @property {boolean} drumChannel - indicates whether the channel is a drum channel
+ * @property {number} velocityOverride - overrides velocity if > 0 otherwise disabled
  *
  * @property {dataEntryStates} dataEntryState - the current state of the data entry
  * @property {number} NRPCoarse - the current coarse value of the Non-Registered Parameter
@@ -62,6 +63,8 @@ export function createWorkletChannel(sendEvent = false)
         channelOctaveTuning: new Int8Array(12),
         keyCentTuning: new Int16Array(128),
         channelVibrato: {delay: 0, depth: 0, rate: 0},
+        velocityOverride: 0,
+
         lockGSNRPNParams: false,
         holdPedal: false,
         isMuted: false,
@@ -92,6 +95,7 @@ resetArray[midiControllers.expressionController] = 127 << 7;
 resetArray[midiControllers.pan] = 64 << 7;
 resetArray[midiControllers.releaseTime] = 64 << 7;
 resetArray[midiControllers.brightness] = 64 << 7;
+resetArray[midiControllers.timbreHarmonicContent] = 64 << 7;
 resetArray[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel] = 8192;
 resetArray[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] = 2 << 7;
 
@@ -119,3 +123,11 @@ export const customControllers = {
 export const CUSTOM_CONTROLLER_TABLE_SIZE = Object.keys(customControllers).length;
 export const customResetArray = new Float32Array(CUSTOM_CONTROLLER_TABLE_SIZE);
 customResetArray[customControllers.modulationMultiplier] = 1;
+
+/**
+ * This is a channel configuration enum, it is internally sent from Synthetizer via controller change
+ * @enum {number}
+ */
+export const channelConfiguration = {
+    velocityOverride: 128, // overrides velocity for the given channel
+}

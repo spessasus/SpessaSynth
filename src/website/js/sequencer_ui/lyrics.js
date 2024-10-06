@@ -10,7 +10,7 @@ export function createLyrics()
 {
     /**
      * @type {{
-     *     mainDiv: HTMLDivElement,
+     *     mainButton: HTMLDivElement,
      *     titleWrapper: HTMLDivElement,
      *     title: HTMLHeadingElement,
      *     text: {

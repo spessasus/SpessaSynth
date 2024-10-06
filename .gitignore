@@ -3,3 +3,4 @@
 /.idea
 /src/spessasynth_lib/synthetizer/freeverb_unused/
 /src/website/server/config.json
+/src/website/minified/

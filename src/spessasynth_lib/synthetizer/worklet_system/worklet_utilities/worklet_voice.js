@@ -3,6 +3,7 @@
  * purpose: prepares workletvoices from sample and generator data and manages sample dumping
  * note: sample dumping means sending it over to the AudioWorkletGlobalScope
  */
+import { Modulator } from '../../../soundfont/read_sf2/modulators.js'
 
 class WorkletSample
 {
@@ -86,8 +87,9 @@ class WorkletSample
      * Looping mode of the sample:
      * 0 - no loop
      * 1 - loop
-     * 2 - loop then play when released
-     * @type {0|1|2}
+     * 2 - UNOFFICIAL: polyphone 2.4 added start on release
+     * 3 - loop then play when released
+     * @type {0|1|2|3}
      */
     loopingMode = 0;
 
@@ -298,7 +300,7 @@ class WorkletVoice
             currentTime,
             voice.targetKey,
             voice.generators,
-            voice.modulators.slice()
+            voice.modulators.map(m => Modulator.copy(m))
         );
     }
 }
@@ -329,7 +331,7 @@ export function getWorkletVoices(channel,
     const cached = channelObject.cachedVoices[midiNote][velocity];
     if(cached !== undefined)
     {
-        workletVoices = cached.map(v => WorkletVoice.copy(v, currentTime));
+        return cached.map(v => WorkletVoice.copy(v, currentTime));
     }
     else
     {
@@ -368,18 +370,9 @@ export function getWorkletVoices(channel,
             }
 
             // determine looping mode now. if the loop is too small, disable
-            let loopStart = (sampleAndGenerators.sample.sampleLoopStartIndex / 2);
-            let loopEnd = (sampleAndGenerators.sample.sampleLoopEndIndex / 2);
+            let loopStart = sampleAndGenerators.sample.sampleLoopStartIndex;
+            let loopEnd = sampleAndGenerators.sample.sampleLoopEndIndex;
             let loopingMode = generators[generatorTypes.sampleModes];
-            const sampleLength = sampleAndGenerators.sample.getAudioData().length;
-            // clamp loop
-            loopStart = Math.min(Math.max(0, loopStart), sampleLength);
-            // clamp loop
-            loopEnd = Math.min(Math.max(0, loopEnd), sampleLength);
-            if (loopEnd - loopStart < 1)
-            {
-                loopingMode = 0;
-            }
             /**
              * create the worklet sample
              * offsets are calculated at note on time (to allow for modulation of them)
@@ -425,7 +418,7 @@ export function getWorkletVoices(channel,
                     currentTime,
                     targetKey,
                     generators,
-                    sampleAndGenerators.modulators
+                    sampleAndGenerators.modulators.map(m => Modulator.copy(m))
                 )
             );
             return voices;

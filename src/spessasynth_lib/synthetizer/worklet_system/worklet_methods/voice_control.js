@@ -16,7 +16,7 @@ import { WorkletVolumeEnvelope } from '../worklet_utilities/volume_envelope.js'
 
 
 const HALF_PI = Math.PI / 2;
-export const PAN_SMOOTHING_FACTOR = 0.01;
+export const PAN_SMOOTHING_FACTOR = 0.05;
 /**
  * Renders a voice to the stereo output buffer
  * @param channel {WorkletProcessorChannel} the voice's channel

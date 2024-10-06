@@ -49,7 +49,9 @@ import { getWorkletVoices } from './worklet_utilities/worklet_voice.js'
  * purpose: manages the synthesizer (and worklet sequencer) from the AudioWorkletGlobalScope and renders the audio data
  */
 
-export const MIN_NOTE_LENGTH = 0.07; // if the note is released faster than that, it forced to last that long
+// if the note is released faster than that, it forced to last that long
+// this is used mostly for drum channels, where a lot of midis like to send instant note off after a note on
+export const MIN_NOTE_LENGTH = 0.03;
 
 export const SYNTHESIZER_GAIN = 1.0;
 

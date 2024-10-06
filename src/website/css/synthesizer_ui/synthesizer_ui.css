@@ -114,24 +114,3 @@
 .mute_button:hover path{
     filter: drop-shadow(0 0 1px currentColor);
 }
-
-.voice_reset{
-    flex: 0;
-    min-width: 0;
-    display: flex;
-    visibility: hidden;
-    justify-content: center;
-    align-items: center;
-    border: #777 1px solid;
-    transition: min-width 50ms ease;
-}
-
-.voice_reset_light * {
-    color: black;
-}
-
-.voice_reset:hover{
-    visibility: visible;
-    min-width: var(--voice-meter-height);
-    cursor: pointer;
-}

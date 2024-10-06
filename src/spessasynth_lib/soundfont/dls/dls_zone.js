@@ -55,17 +55,17 @@ export class DLSZone extends BasicInstrumentZone
         }
 
         // correct loop if needed
-        const diffStart = loop.start - (sample.sampleLoopStartIndex / 2);
-        const diffEnd = loop.end - (sample.sampleLoopEndIndex / 2);
+        const diffStart = loop.start - sample.sampleLoopStartIndex;
+        const diffEnd = loop.end - sample.sampleLoopEndIndex;
         if(diffStart !== 0)
         {
             const fine = diffStart % 32768;
             this.generators.push(new Generator(generatorTypes.startloopAddrsOffset, fine));
             // coarse generator uses 32768 samples per step
-            const coarse = (diffStart - fine) / 32768;
+            const coarse = Math.trunc(diffStart / 32768);
             if(coarse !== 0)
             {
-                this.generators.push(new Generator(generatorTypes.startloopAddrsCoarseOffset, fine));
+                this.generators.push(new Generator(generatorTypes.startloopAddrsCoarseOffset, coarse));
             }
         }
         if(diffEnd !== 0)
@@ -73,10 +73,10 @@ export class DLSZone extends BasicInstrumentZone
             const fine = diffEnd % 32768;
             this.generators.push(new Generator(generatorTypes.endloopAddrsOffset, fine));
             // coarse generator uses 32768 samples per step
-            const coarse = (diffEnd - fine) / 32768;
+            const coarse = Math.trunc(diffEnd / 32768);
             if(coarse !== 0)
             {
-                this.generators.push(new Generator(generatorTypes.endloopAddrsCoarseOffset, fine));
+                this.generators.push(new Generator(generatorTypes.endloopAddrsCoarseOffset, coarse));
             }
         }
         // correct key if needed

@@ -85,6 +85,12 @@ export class Modulator{
     }
 
     /**
+     * The current computed value of this modulator
+     * @type {number}
+     */
+    currentValue = 0;
+
+    /**
      * @param modulator {Modulator}
      * @returns {Modulator}
      */
@@ -256,6 +262,15 @@ export const defaultModulators = [
         srcEnum: getModSourceEnum(modulatorCurveTypes.linear, 1, 0  , 1, midiControllers.brightness), // linear forwards bipolar cc 74
         dest: generatorTypes.initialFilterFc,
         amt: 4000,
+        secSrcEnum: 0x0, // no controller
+        transform: 0
+    }),
+
+    // cc 71 (filter q) to filterq
+    new Modulator({
+        srcEnum: getModSourceEnum(modulatorCurveTypes.linear, 1, 0  , 1, midiControllers.timbreHarmonicContent), // linear forwards bipolar cc 74
+        dest: generatorTypes.initialFilterQ,
+        amt: 250,
         secSrcEnum: 0x0, // no controller
         transform: 0
     })

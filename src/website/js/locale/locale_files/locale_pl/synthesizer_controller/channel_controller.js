@@ -50,7 +50,9 @@ export const channelControllerLocale = {
     },
 
     presetSelector: {
-        description: "Zmień patch (instrument), którego używa kanał {0}"
+        description: "Zmień patch (instrument), którego używa kanał {0}",
+        selectionPrompt: "Zmień instrument kanału {0}",
+        searchPrompt: "Wyszukaj..."
     },
 
     presetReset: {
