@@ -4,13 +4,14 @@
   "type": "module",
   "scripts": {
     "start": "node src/website/server/server.js",
-    "build": "npm run esbuild",
+    "build": "npm run build:lib && npm run esbuild",
     "build:dev": "npm run esbuild -- --sourcemap",
     "build:js": "npm run esbuild -- --js --sourcemap",
     "build:css": "npm run esbuild -- --css --sourcemap",
     "watch": "npm run esbuild -- --watch",
-    "copy:lib": "node src/website/server/copy.js",
-    "esbuild": "node src/website/server/build.js"
+    "copy:lib": "node build/copy.js",
+    "build:lib": "npm run esbuild -- --lib",
+    "esbuild": "node build/build.js"
   },
   "dependencies": {
     "spessasynth_lib": "^3.20.42"

@@ -1,6 +1,9 @@
 /node_modules/
 /disabled_sf2s/
-/.idea
+.idea
+.directory
 /src/spessasynth_lib/synthetizer/freeverb_unused/
 /src/website/server/config.json
 /src/website/minified/
+/src/spessasynth_lib/minified/
+/src/website/lib/

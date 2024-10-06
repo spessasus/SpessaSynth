@@ -16,7 +16,7 @@ import {Synthetizer} from "spessasynth_lib"
 const sfont = await (await fetch("soundfont.sf3")).arrayBuffer();
 const ctx = new AudioContext();
 // make sure you copied the worklet processor!
-await ctx.audioWorklet.addModule("./worklet_processor.min.js");
+await ctx.audioWorklet.addModule("./worklet_processor_main.min.js");
 const synth = new Synthetizer(ctx.destination, sfont);
 document.getElementById("button").onclick = async () => {
     await ctx.resume();
