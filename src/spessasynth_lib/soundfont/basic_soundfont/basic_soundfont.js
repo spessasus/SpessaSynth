@@ -1,7 +1,8 @@
 import { SpessaSynthWarn } from '../../utils/loggin.js'
 import { consoleColors } from '../../utils/other.js'
 import { write } from './write_sf2/write.js'
-import { defaultModulators, Modulator } from '../read_sf2/modulators.js'
+import { defaultModulators } from "./modulator.js";
+import { Modulator } from "./modulator.js";
 
 class BasicSoundFont
 {

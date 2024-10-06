@@ -1,7 +1,8 @@
 import { writeWord } from '../../../utils/byte_functions/little_endian.js'
 import { IndexedByteArray } from '../../../utils/indexed_array.js'
 import { RiffChunk, writeRIFFChunk } from '../riff_chunk.js'
-import { generatorTypes } from '../../read_sf2/generators.js'
+
+import { generatorTypes } from "../generator.js";
 
 /**
  * @this {BasicSoundFont}

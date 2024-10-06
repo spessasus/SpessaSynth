@@ -1,17 +1,19 @@
 import { IndexedByteArray } from '../../utils/indexed_array.js'
 import { readSamples } from "./samples.js";
 import { readLittleEndian } from '../../utils/byte_functions/little_endian.js'
-import { readGenerators, Generator } from './generators.js'
+import { readGenerators } from './generators.js'
 import { readInstrumentZones, InstrumentZone, readPresetZones } from "./zones.js";
 import { readPresets } from "./presets.js";
 import { readInstruments } from "./instruments.js";
-import { readModulators, Modulator } from "./modulators.js";
+import { readModulators } from "./modulators.js";
 import { readRIFFChunk, RiffChunk } from '../basic_soundfont/riff_chunk.js'
 import { consoleColors } from '../../utils/other.js'
 import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo } from '../../utils/loggin.js'
 import { readBytesAsString } from '../../utils/byte_functions/string.js'
 import { stbvorbis } from "../../externals/stbvorbis_sync/stbvorbis_sync.min.js";
 import { BasicSoundFont } from '../basic_soundfont/basic_soundfont.js'
+import { Generator } from "../basic_soundfont/generator.js";
+import { Modulator } from "../basic_soundfont/modulator.js";
 
 /**
  * soundfont.js

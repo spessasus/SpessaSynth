@@ -1,7 +1,7 @@
 import { BasicPreset } from '../basic_soundfont/basic_preset.js'
 import { BasicPresetZone } from '../basic_soundfont/basic_zones.js'
 import { BasicInstrument } from '../basic_soundfont/basic_instrument.js'
-import { defaultModulators } from '../read_sf2/modulators.js'
+import { defaultModulators } from "../basic_soundfont/modulator.js";
 
 export class DLSPreset extends BasicPreset
 {

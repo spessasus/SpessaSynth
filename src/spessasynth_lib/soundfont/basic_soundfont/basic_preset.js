@@ -7,8 +7,8 @@
  *  sampleID: number,
  * }} SampleAndGenerators
  */
-import { generatorTypes } from '../read_sf2/generators.js'
-import { Modulator } from '../read_sf2/modulators.js'
+import { generatorTypes } from "./generator.js";
+import { Modulator } from "./modulator.js";
 
 export class BasicPreset
 {

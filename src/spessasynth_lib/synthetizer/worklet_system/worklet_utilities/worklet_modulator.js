@@ -1,9 +1,10 @@
-import { Modulator, modulatorSources } from '../../../soundfont/read_sf2/modulators.js'
+
 import { getModulatorCurveValue, MOD_PRECOMPUTED_LENGTH } from './modulator_curves.js'
 import { NON_CC_INDEX_OFFSET } from './worklet_processor_channel.js'
-import { generatorLimits, generatorTypes } from '../../../soundfont/read_sf2/generators.js'
 import { WorkletVolumeEnvelope } from './volume_envelope.js'
 import { WorkletModulationEnvelope } from './modulation_envelope.js'
+import { generatorLimits, generatorTypes } from "../../../soundfont/basic_soundfont/generator.js";
+import { Modulator, modulatorSources } from "../../../soundfont/basic_soundfont/modulator.js";
 
 /**
  * worklet_modulator.js

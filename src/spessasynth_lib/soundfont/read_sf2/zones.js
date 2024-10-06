@@ -1,10 +1,10 @@
 import {readLittleEndian} from "../../utils/byte_functions/little_endian.js";
 import {IndexedByteArray} from "../../utils/indexed_array.js";
 import {RiffChunk} from "../basic_soundfont/riff_chunk.js";
-import {Generator, generatorTypes} from "./generators.js";
 import {Instrument} from "./instruments.js";
-import {Modulator} from "./modulators.js";
 import { BasicInstrumentZone, BasicPresetZone } from '../basic_soundfont/basic_zones.js'
+import { Generator, generatorTypes } from "../basic_soundfont/generator.js";
+import { Modulator } from "../basic_soundfont/modulator.js";
 
 /**
  * zones.js

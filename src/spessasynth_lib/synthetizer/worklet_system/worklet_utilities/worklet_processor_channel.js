@@ -1,5 +1,6 @@
 import { midiControllers } from '../../../midi_parser/midi_message.js'
-import { modulatorSources } from '../../../soundfont/read_sf2/modulators.js'
+
+import { modulatorSources } from "../../../soundfont/basic_soundfont/modulator.js";
 /**
  * @typedef {Object} WorkletProcessorChannel
  * @property {Int16Array} midiControllers - array of MIDI controller values + the values used by modulators as source (pitch bend, bend range etc.)

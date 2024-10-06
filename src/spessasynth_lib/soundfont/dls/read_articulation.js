@@ -1,11 +1,11 @@
 import { readLittleEndian } from '../../utils/byte_functions/little_endian.js'
 import { DLSDestinations } from './dls_destinations.js'
-import { Generator, generatorTypes } from '../read_sf2/generators.js'
 import { DLSSources } from './dls_sources.js'
-import { Modulator } from '../read_sf2/modulators.js'
 import { getSF2ModulatorFromArticulator } from './articulator_converter.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../../utils/loggin.js'
 import { consoleColors } from '../../utils/other.js'
+import { Generator, generatorTypes } from "../basic_soundfont/generator.js";
+import { Modulator } from "../basic_soundfont/modulator.js";
 
 /**
  * @param source {number}

@@ -3,7 +3,6 @@
  * purpose: prepares workletvoices from sample and generator data and manages sample dumping
  * note: sample dumping means sending it over to the AudioWorkletGlobalScope
  */
-import { Modulator } from '../../../soundfont/read_sf2/modulators.js'
 
 class WorkletSample
 {
@@ -101,11 +100,12 @@ class WorkletSample
     isLooping = false;
 }
 
-import { addAndClampGenerator, generatorTypes } from '../../../soundfont/read_sf2/generators.js'
 import { SpessaSynthTable, SpessaSynthWarn } from '../../../utils/loggin.js'
 import { WorkletLowpassFilter } from './lowpass_filter.js'
 import { WorkletVolumeEnvelope } from './volume_envelope.js'
 import { WorkletModulationEnvelope } from './modulation_envelope.js'
+import { addAndClampGenerator, generatorTypes } from "../../../soundfont/basic_soundfont/generator.js";
+import { Modulator } from "../../../soundfont/basic_soundfont/modulator.js";
 
 
 /**

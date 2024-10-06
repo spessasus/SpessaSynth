@@ -1,5 +1,6 @@
 import { decibelAttenuationToGain, timecentsToSeconds } from './unit_converter.js'
-import { generatorTypes } from '../../../soundfont/read_sf2/generators.js'
+
+import { generatorTypes } from "../../../soundfont/basic_soundfont/generator.js";
 
 /**
  * volume_envelope.js

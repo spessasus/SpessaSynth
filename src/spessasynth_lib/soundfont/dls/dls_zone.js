@@ -1,5 +1,5 @@
 import { BasicInstrumentZone } from '../basic_soundfont/basic_zones.js'
-import { Generator, generatorTypes } from '../read_sf2/generators.js'
+import { Generator, generatorTypes } from "../basic_soundfont/generator.js";
 
 export class DLSZone extends BasicInstrumentZone
 {

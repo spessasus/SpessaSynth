@@ -1,6 +1,7 @@
 import { returnMessageType } from './worklet_message.js'
 import { NON_CC_INDEX_OFFSET } from '../worklet_utilities/worklet_processor_channel.js'
-import { modulatorSources } from '../../../soundfont/read_sf2/modulators.js'
+
+import { modulatorSources } from "../../../soundfont/basic_soundfont/modulator.js";
 
 /**
  * Calls synth event from the worklet side

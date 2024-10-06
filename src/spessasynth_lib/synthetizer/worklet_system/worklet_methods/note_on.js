@@ -1,7 +1,7 @@
-import { generatorTypes } from '../../../soundfont/read_sf2/generators.js'
 import { computeModulators } from '../worklet_utilities/worklet_modulator.js'
 import { WorkletVolumeEnvelope } from '../worklet_utilities/volume_envelope.js'
 import { WorkletModulationEnvelope } from '../worklet_utilities/modulation_envelope.js'
+import { generatorTypes } from "../../../soundfont/basic_soundfont/generator.js";
 
 /**
  * Append the voices

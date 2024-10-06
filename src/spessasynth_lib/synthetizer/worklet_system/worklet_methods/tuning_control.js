@@ -1,8 +1,8 @@
 import { customControllers, NON_CC_INDEX_OFFSET } from '../worklet_utilities/worklet_processor_channel.js'
 import { consoleColors } from '../../../utils/other.js'
-import { modulatorSources } from '../../../soundfont/read_sf2/modulators.js'
 import { computeModulators } from '../worklet_utilities/worklet_modulator.js'
 import { SpessaSynthInfo } from '../../../utils/loggin.js'
+import { modulatorSources } from "../../../soundfont/basic_soundfont/modulator.js";
 
 /**
  * Transposes all channels by given amount of semitones

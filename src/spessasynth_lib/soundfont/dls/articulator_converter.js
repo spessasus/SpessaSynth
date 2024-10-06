@@ -1,8 +1,10 @@
 import { DLSSources } from './dls_sources.js'
-import { getModSourceEnum, Modulator, modulatorCurveTypes, modulatorSources } from '../read_sf2/modulators.js'
+import { getModSourceEnum } from "../basic_soundfont/modulator.js";
 import { midiControllers } from '../../midi_parser/midi_message.js'
 import { DLSDestinations } from './dls_destinations.js'
-import { generatorTypes } from '../read_sf2/generators.js'
+
+import { generatorTypes } from "../basic_soundfont/generator.js";
+import { Modulator, modulatorCurveTypes, modulatorSources } from "../basic_soundfont/modulator.js";
 
 /**
  * @param source {number}

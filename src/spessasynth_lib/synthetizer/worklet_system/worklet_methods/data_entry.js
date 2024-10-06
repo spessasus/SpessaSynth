@@ -5,8 +5,8 @@ import {
     dataEntryStates,
     NON_CC_INDEX_OFFSET,
 } from '../worklet_utilities/worklet_processor_channel.js'
-import { modulatorSources } from '../../../soundfont/read_sf2/modulators.js'
 import { SpessaSynthInfo, SpessaSynthWarn } from '../../../utils/loggin.js'
+import { modulatorSources } from "../../../soundfont/basic_soundfont/modulator.js";
 
 /**
  * Executes a data entry for an NRP for a sc88pro NRP (because touhou yes) and RPN tuning
