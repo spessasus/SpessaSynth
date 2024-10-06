@@ -370,8 +370,8 @@ export function getWorkletVoices(channel,
             }
 
             // determine looping mode now. if the loop is too small, disable
-            let loopStart = (sampleAndGenerators.sample.sampleLoopStartIndex / 2);
-            let loopEnd = (sampleAndGenerators.sample.sampleLoopEndIndex / 2);
+            let loopStart = sampleAndGenerators.sample.sampleLoopStartIndex;
+            let loopEnd = sampleAndGenerators.sample.sampleLoopEndIndex;
             let loopingMode = generators[generatorTypes.sampleModes];
             /**
              * create the worklet sample

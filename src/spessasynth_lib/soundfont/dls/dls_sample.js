@@ -30,8 +30,8 @@ export class DLSSample extends BasicSample
             pitchCorrection,
             0,
             1,
-            loopStart * 2,
-            (loopEnd - 1) * 2 // -1 sample because soundfont end is last sample and dls end is next sample
+            loopStart,
+            loopEnd - 1 // -1 sample because soundfont end is last sample and dls end is next sample
         );
         this.sampleData = data;
         this.sampleDbAttenuation = sampleDbAttenuation;

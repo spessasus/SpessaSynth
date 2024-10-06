@@ -22,6 +22,7 @@
  * @property {Int8Array} channelOctaveTuning - the channel's octave tuning in cents
  * @property {Int16Array} keyCentTuning - tuning of individual keys in cents
  * @property {boolean} isMuted - indicates whether the channel is muted
+ * @property {number} velocityOverride - overrides velocity if > 0 otherwise disabled
  * @property {boolean} drumChannel - indicates whether the channel is a drum channel
  */
 /**
@@ -65,6 +66,7 @@ export function sendSynthesizerSnapshot()
             channelTransposeKeyShift: channel.channelTransposeKeyShift,
             channelOctaveTuning: channel.channelOctaveTuning,
             keyCentTuning: channel.keyCentTuning,
+            velocityOverride: channel.velocityOverride,
             isMuted: channel.isMuted,
             drumChannel: channel.drumChannel
         }
@@ -126,6 +128,7 @@ export function applySynthesizerSnapshot(snapshot)
         channelObject.lockGSNRPNParams = channelSnapshot.lockVibrato;
         channelObject.channelTransposeKeyShift = channelSnapshot.channelTransposeKeyShift;
         channelObject.channelOctaveTuning = channelSnapshot.channelOctaveTuning;
+        channelObject.velocityOverride = channelSnapshot.velocityOverride;
 
         // restore preset and lock
         channelObject.lockPreset = false;

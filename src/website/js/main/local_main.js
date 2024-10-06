@@ -3,12 +3,15 @@
 import {Manager} from "../manager/manager.js";
 import { showNotification } from '../notification/notification.js'
 import { LocaleManager } from '../locale/locale_manager.js'
+import { SpessaSynthLogging } from '../../../spessasynth_lib/utils/loggin.js'
 
 /**
  * local_main.js
  * purpose: main script for the local edition, loads the soundfont and passes it to the manager.js, reloads soundfonts when needed and saves the settings
  */
 const SAMPLE_RATE = 44100;
+
+SpessaSynthLogging(true, true, true, true);
 
 /**
  * @type {HTMLHeadingElement}
@@ -161,6 +164,7 @@ async function replaceFont(fontName)
             window.TITLE = window.manager.localeManager.getLocaleString("locale.titleMessage");
             titleMessage.innerText = "Initializing...";
             await manager.ready;
+            manager.synth.setLogLevel(true, true, true, true);
         }
         else
         {
@@ -215,6 +219,7 @@ document.body.onclick = async () =>
             window.TITLE = window.manager.localeManager.getLocaleString("locale.titleMessage")
             titleMessage.innerText = "Initializing..."
             await manager.ready;
+            manager.synth.setLogLevel(true, true, true, true);
             synthReady = true;
         }
     }
