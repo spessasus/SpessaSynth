@@ -1,10 +1,10 @@
-import { consoleColors } from '../../../utils/other.js'
-import { midiControllers } from '../../../midi_parser/midi_message.js'
-import { channelConfiguration, dataEntryStates } from '../worklet_utilities/worklet_processor_channel.js'
-import { computeModulators } from '../worklet_utilities/worklet_modulator.js'
-import { SpessaSynthInfo, SpessaSynthWarn } from '../../../utils/loggin.js'
-import { SYNTHESIZER_GAIN } from '../main_processor.js'
-import { DEFAULT_PERCUSSION } from '../../synthetizer.js'
+import { consoleColors } from "../../../utils/other.js";
+import { midiControllers } from "../../../midi_parser/midi_message.js";
+import { channelConfiguration, dataEntryStates } from "../worklet_utilities/worklet_processor_channel.js";
+import { computeModulators } from "../worklet_utilities/worklet_modulator.js";
+import { SpessaSynthInfo, SpessaSynthWarn } from "../../../utils/loggin.js";
+import { SYNTHESIZER_GAIN } from "../main_processor.js";
+import { DEFAULT_PERCUSSION } from "../../synthetizer.js";
 
 /**
  * @param channel {number}
@@ -19,34 +19,37 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
      * @type {WorkletProcessorChannel}
      */
     const channelObject = this.workletProcessorChannels[channel];
-    if(channelObject === undefined)
+    if (channelObject === undefined)
     {
         SpessaSynthWarn(`Trying to access channel ${channel} which does not exist... ignoring!`);
         return;
     }
-    if(controllerNumber > 127)
+    if (controllerNumber > 127)
     {
         // channel configuration. force must be set to true
-        if(!force) return;
+        if (!force)
+        {
+            return;
+        }
         switch (controllerNumber)
         {
             default:
                 return;
-
+            
             case channelConfiguration.velocityOverride:
                 channelObject.velocityOverride = controllerValue;
         }
     }
     // lsb controller values: append them as the lower nibble of the 14 bit value
     // excluding bank select and data entry as it's handled separately
-    if(
+    if (
         controllerNumber >= midiControllers.lsbForControl1ModulationWheel
         && controllerNumber <= midiControllers.lsbForControl13EffectControl2
         && controllerNumber !== midiControllers.lsbForControl6DataEntry
     )
     {
         const actualCCNum = controllerNumber - 32;
-        if(channelObject.lockedControllers[actualCCNum])
+        if (channelObject.lockedControllers[actualCCNum])
         {
             return;
         }
@@ -59,22 +62,26 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
         case midiControllers.allNotesOff:
             this.stopAll(channel);
             break;
-
+        
         case midiControllers.allSoundOff:
             this.stopAll(channel, true);
             break;
-
+        
         // special case: bank select
         case midiControllers.bankSelect:
             let bankNr = controllerValue;
-            if(!force)
+            if (!force)
             {
-                switch (this.system) {
+                switch (this.system)
+                {
                     case "gm":
                         // gm ignores bank select
-                        SpessaSynthInfo(`%cIgnoring the Bank Select (${controllerValue}), as the synth is in GM mode.`, consoleColors.info);
+                        SpessaSynthInfo(
+                            `%cIgnoring the Bank Select (${controllerValue}), as the synth is in GM mode.`,
+                            consoleColors.info
+                        );
                         return;
-
+                    
                     case "xg":
                         // for xg, if msb is 120, 126 or 127, then it's drums
                         if (bankNr === 120 || bankNr === 126 || bankNr === 127)
@@ -84,13 +91,13 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
                         else
                         {
                             // drums shall not be disabled on channel 9
-                            if(channel % 16 !== DEFAULT_PERCUSSION)
+                            if (channel % 16 !== DEFAULT_PERCUSSION)
                             {
                                 this.setDrums(channel, false);
                             }
                         }
                         break;
-
+                    
                     case "gm2":
                         if (bankNr === 120)
                         {
@@ -101,7 +108,7 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
                             });
                         }
                 }
-
+                
                 if (channelObject.drumChannel)
                 {
                     // 128 for percussion channel
@@ -113,63 +120,62 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
                     bankNr = channelObject.midiControllers[midiControllers.bankSelect];
                 }
             }
-
+            
             channelObject.midiControllers[midiControllers.bankSelect] = bankNr;
             break;
-
+        
         case midiControllers.lsbForControl0BankSelect:
-            if(this.system === 'xg')
+            if (this.system === "xg")
             {
-                if(!channelObject.drumChannel)
+                if (!channelObject.drumChannel)
                 {
                     // some soundfonts use 127 as drums and
                     // if it's not marked as drums by bank MSB (line 47), then we DO NOT want the drums!
-                    if(controllerValue !== 127)
+                    if (controllerValue !== 127)
                     {
                         channelObject.midiControllers[midiControllers.bankSelect] = controllerValue;
                     }
                 }
             }
-            else
-            if(this.system === "gm2")
+            else if (this.system === "gm2")
             {
                 channelObject.midiControllers[midiControllers.bankSelect] = controllerValue;
             }
             break;
-
+        
         // check for RPN and NPRN and data entry
         case midiControllers.RPNLsb:
             channelObject.RPValue = channelObject.RPValue << 7 | controllerValue;
             channelObject.dataEntryState = dataEntryStates.RPFine;
             break;
-
+        
         case midiControllers.RPNMsb:
             channelObject.RPValue = controllerValue;
             channelObject.dataEntryState = dataEntryStates.RPCoarse;
             break;
-
+        
         case midiControllers.NRPNMsb:
             channelObject.NRPCoarse = controllerValue;
             channelObject.dataEntryState = dataEntryStates.NRPCoarse;
             break;
-
+        
         case midiControllers.NRPNLsb:
             channelObject.NRPFine = controllerValue;
             channelObject.dataEntryState = dataEntryStates.NRPFine;
             break;
-
+        
         case midiControllers.dataEntryMsb:
             this.dataEntryCoarse(channel, controllerValue);
             break;
-
+        
         case midiControllers.lsbForControl6DataEntry:
             this.dataEntryFine(channel, controllerValue);
             break;
-
+        
         case midiControllers.resetAllControllers:
             this.resetControllers(channel);
             break;
-
+        
         case midiControllers.sustainPedal:
             if (controllerValue >= 64)
             {
@@ -178,16 +184,17 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
             else
             {
                 channelObject.holdPedal = false;
-                channelObject.sustainedVoices.forEach(v => {
-                    this.releaseVoice(v)
+                channelObject.sustainedVoices.forEach(v =>
+                {
+                    this.releaseVoice(v);
                 });
                 channelObject.sustainedVoices = [];
             }
             break;
-
+        
         // default: apply the controller to the table
         default:
-            if(channelObject.lockedControllers[controllerNumber])
+            if (channelObject.lockedControllers[controllerNumber])
             {
                 return;
             }
@@ -242,7 +249,7 @@ export function setMasterPan(pan)
  */
 export function muteChannel(channel, isMuted)
 {
-    if(isMuted)
+    if (isMuted)
     {
         this.stopAll(channel, true);
     }

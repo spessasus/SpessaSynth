@@ -1,16 +1,16 @@
-import {Synthetizer} from "../../../spessasynth_lib/synthetizer/synthetizer.js";
-import { calculateRGB } from '../utils/calculate_rgb.js'
-import { render } from './render.js'
-import { computeNotePositions } from './compute_note_positions.js'
+import { Synthetizer } from "../../../spessasynth_lib/synthetizer/synthetizer.js";
+import { calculateRGB } from "../utils/calculate_rgb.js";
+import { render } from "./render.js";
+import { computeNotePositions } from "./compute_note_positions.js";
 import {
     connectChannelAnalysers,
     createChannelAnalysers,
     disconnectChannelAnalysers,
-    updateFftSize,
-} from './channel_analysers.js'
-import { connectSequencer, resetIndexes } from './connect_sequencer.js'
-import { renderWaveforms} from './render_waveforms.js'
-import { calculateNoteTimes } from './calculate_note_times.js'
+    updateFftSize
+} from "./channel_analysers.js";
+import { connectSequencer, resetIndexes } from "./connect_sequencer.js";
+import { renderWaveforms } from "./render_waveforms.js";
+import { calculateNoteTimes } from "./calculate_note_times.js";
 
 /**
  * renderer.js
@@ -52,6 +52,12 @@ export const MAX_NOTES = 81572;
 class Renderer
 {
     /**
+     * called after a frame is rendered
+     * @type {function}
+     */
+    onRender;
+    
+    /**
      * Creates a new midi renderer for rendering notes visually.
      * @param channelColors {Array<string>}
      * @param synth {Synthetizer}
@@ -76,28 +82,28 @@ class Renderer
             min: 0,
             max: 127
         };
-
+        
         this.version = "v" + version;
-
+        
         /**
          * adds this to the synth's visual pitch in position caluclation
          * @type {number}
          */
         this.visualPitchBendOffset = 0;
-
+        
         this.lineThickness = ANALYSER_STROKE;
         this._normalAnalyserFft = CHANNEL_ANALYSER_FFT;
         this._drumAnalyserFft = DRUMS_ANALYSER_FFT;
         this.waveMultiplier = WAVE_MULTIPLIER;
-
+        
         /**
          * @type {boolean}
          * @private
          */
         this._notesFall = true;
         this.sideways = false;
-
-
+        
+        
         // booleans
         this._renderBool = true;
         this.renderAnalysers = true;
@@ -109,28 +115,28 @@ class Renderer
          * @type {boolean[]}
          */
         this.renderChannels = Array(16).fill(true);
-
+        
         /**
          * canvas
          * @type {HTMLCanvasElement}
          */
         this.canvas = canvas;
-
+        
         /**
          * @type {CanvasRenderingContext2D}
          */
         this.drawingContext = this.canvas.getContext("2d");
-
+        
         // note colors
         this.plainColors = channelColors;
-
-        this.computeColors()
-
+        
+        this.computeColors();
+        
         // synth and analysers
         this.synth = synth;
         this.delayNode = delayNode;
         this.notesOnScreen = 0;
-
+        
         /**
          * @type {AnalyserNode[]}
          */
@@ -138,12 +144,12 @@ class Renderer
         this.createChannelAnalysers(synth);
         this.connectChannelAnalysers(synth);
     }
-
+    
     get stabilizeWaveforms()
     {
         return this._stabilizeWaveforms;
     }
-
+    
     /**
      *
      * @param val {boolean}
@@ -153,15 +159,7 @@ class Renderer
         this._stabilizeWaveforms = val;
         this.updateFftSize();
     }
-
-    /**
-     * @param val {"down"|"up"}
-     */
-    set direction(val)
-    {
-        this._notesFall = val === "down";
-    }
-
+    
     /**
      * @returns {"down"|"up"}
      */
@@ -169,84 +167,46 @@ class Renderer
     {
         return this._notesFall ? "down" : "up";
     }
-
-    computeColors()
-    {
-        this.channelColors = this.plainColors.map(c => {
-            const gradient = this.drawingContext.createLinearGradient(0, 0,
-                this.canvas.width / 128, 0);
-            gradient.addColorStop(0, calculateRGB(c, v => v * GRADIENT_DARKEN)); // darker color
-            gradient.addColorStop(1, c); // brighter color
-            return gradient;
-        });
-        this.darkerColors = this.plainColors.map(c => {
-            const gradient = this.drawingContext.createLinearGradient(0, 0,
-                this.canvas.width / 128, 0);
-
-            gradient.addColorStop(0, calculateRGB(c, v => v * GRADIENT_DARKEN * DARKER_MULTIPLIER)); // darker color
-            gradient.addColorStop(1, calculateRGB(c, v => v * DARKER_MULTIPLIER)); // brighter color
-            return gradient;
-        });
-
-        this.sidewaysChannelColors = this.plainColors.map(c => {
-            const gradient = this.drawingContext.createLinearGradient(0, 0,
-                0, this.canvas.width / 128);
-            gradient.addColorStop(0, calculateRGB(c, v => v * GRADIENT_DARKEN)); // darker color
-            gradient.addColorStop(1, c); // brighter color
-            return gradient;
-        });
-        this.sidewaysDarkerColors = this.plainColors.map(c => {
-            const gradient = this.drawingContext.createLinearGradient(0, 0,
-                0, this.canvas.width / 128);
-
-            gradient.addColorStop(0, calculateRGB(c, v => v * GRADIENT_DARKEN * DARKER_MULTIPLIER)); // darker color
-            gradient.addColorStop(1, calculateRGB(c, v => v * DARKER_MULTIPLIER)); // brighter color
-            return gradient;
-        });
-    }
-
-    toggleDarkMode()
-    {
-        this.canvas.classList.toggle("light_mode");
-    }
-
+    
     /**
-     * called after a frame is rendered
-     * @type {function}
+     * @param val {"down"|"up"}
      */
-    onRender;
-
+    set direction(val)
+    {
+        this._notesFall = val === "down";
+    }
+    
     get normalAnalyserFft()
     {
-        return this._normalAnalyserFft
+        return this._normalAnalyserFft;
     }
-
+    
     set normalAnalyserFft(value)
     {
         this._normalAnalyserFft = value;
         this.updateFftSize();
     }
-
+    
     get drumAnalyserFft()
     {
         return this._drumAnalyserFft;
     }
-
+    
     set drumAnalyserFft(value)
     {
         this._drumAnalyserFft = value;
         this.updateFftSize();
     }
-
+    
     get renderBool()
     {
         return this._renderBool;
     }
-
+    
     set renderBool(value)
     {
         this._renderBool = value;
-        if(value === true)
+        if (value === true)
         {
             this.connectChannelAnalysers(this.synth);
         }
@@ -255,7 +215,7 @@ class Renderer
             this.disconnectChannelAnalysers();
         }
     }
-
+    
     /**
      * The range of displayed MIDI keys
      * @returns {{min: number, max: number}}
@@ -264,18 +224,18 @@ class Renderer
     {
         return this._keyRange;
     }
-
+    
     /**
      * The range of displayed MIDI keys
      * @param value {{min: number, max: number}}
      */
     set keyRange(value)
     {
-        if(value.max === undefined || value.min === undefined)
+        if (value.max === undefined || value.min === undefined)
         {
             throw new TypeError("No min or max property!");
         }
-        if(value.min > value.max)
+        if (value.min > value.max)
         {
             let temp = value.min;
             value.min = value.max;
@@ -284,6 +244,96 @@ class Renderer
         value.min = Math.max(0, value.min);
         value.max = Math.min(127, value.max);
         this._keyRange = value;
+    }
+    
+    toggleDarkMode()
+    {
+        this.canvas.classList.toggle("light_mode");
+    }
+    
+    computeColors()
+    {
+        this.channelColors = this.plainColors.map(c =>
+        {
+            const gradient = this.drawingContext.createLinearGradient(
+                0,
+                0,
+                this.canvas.width / 128,
+                0
+            );
+            gradient.addColorStop(
+                0,
+                calculateRGB(c, v => v * GRADIENT_DARKEN)
+            ); // darker color
+            gradient.addColorStop(1, c); // brighter color
+            return gradient;
+        });
+        this.darkerColors = this.plainColors.map(c =>
+        {
+            const gradient = this.drawingContext.createLinearGradient(
+                0,
+                0,
+                this.canvas.width / 128,
+                0
+            );
+            
+            gradient.addColorStop(
+                0,
+                calculateRGB(
+                    c,
+                    v => v * GRADIENT_DARKEN * DARKER_MULTIPLIER
+                )
+            ); // darker color
+            gradient.addColorStop(
+                1,
+                calculateRGB(c, v => v * DARKER_MULTIPLIER)
+            ); // brighter color
+            return gradient;
+        });
+        
+        this.sidewaysChannelColors = this.plainColors.map(c =>
+        {
+            const gradient = this.drawingContext.createLinearGradient(
+                0,
+                0,
+                0,
+                this.canvas.width / 128
+            );
+            gradient.addColorStop(
+                0,
+                calculateRGB(
+                    c,
+                    v => v * GRADIENT_DARKEN
+                )
+            ); // darker color
+            gradient.addColorStop(1, c); // brighter color
+            return gradient;
+        });
+        this.sidewaysDarkerColors = this.plainColors.map(c =>
+        {
+            const gradient = this.drawingContext.createLinearGradient(
+                0,
+                0,
+                0,
+                this.canvas.width / 128
+            );
+            
+            gradient.addColorStop(
+                0,
+                calculateRGB(
+                    c,
+                    v => v * GRADIENT_DARKEN * DARKER_MULTIPLIER
+                )
+            ); // darker color
+            gradient.addColorStop(
+                1,
+                calculateRGB(
+                    c,
+                    v => v * DARKER_MULTIPLIER
+                )
+            ); // brighter color
+            return gradient;
+        });
     }
 }
 
@@ -301,4 +351,4 @@ Renderer.prototype.resetIndexes = resetIndexes;
 
 Renderer.prototype.renderWaveforms = renderWaveforms;
 
-export { Renderer }
+export { Renderer };

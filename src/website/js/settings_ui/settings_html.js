@@ -2,7 +2,7 @@
  * settings_html.js
  * purpose: the inner html for the settings element
  */
-import { USE_MIDI_RANGE } from './handlers/keyboard_handler.js'
+import { USE_MIDI_RANGE } from "./handlers/keyboard_handler.js";
 
 // translate-path: only innerText: translate-path-title: inner text by adding .title and title by adding .description
 export const settingsHtml = `

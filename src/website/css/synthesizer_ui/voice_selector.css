@@ -1,4 +1,4 @@
-.voice_selector{
+.voice_selector {
     border: #777 1px solid;
     line-height: var(--voice-meter-height);
     background-color: var(--synthui-background);
@@ -10,33 +10,33 @@
     overflow: hidden;
 }
 
-.voice_selector_light{
+.voice_selector_light {
     border: #111 1px solid;
     background: linear-gradient(170deg, #bbb, #fff);
     color: black;
 }
 
-.voice_selector:hover{
+.voice_selector:hover {
     cursor: pointer;
     background: #111;
     color: #fff;
     text-shadow: 0 0 5px white;
 }
 
-.voice_selector_light:hover{
+.voice_selector_light:hover {
     background: #fff;
     color: #444;
 }
 
-.selector_options:hover{
+.selector_options:hover {
     display: block;
 }
 
-.locked_selector{
+.locked_selector {
     color: red;
 }
 
-.voice_reset{
+.voice_reset {
     min-width: var(--voice-meter-height);
     display: flex;
     justify-content: center;
@@ -50,12 +50,12 @@
     cursor: pointer;
 }
 
-.voice_reset:active{
+.voice_reset:active {
     filter: brightness(0.8);
     transform: scale(var(--active-scale));
 }
 
-.voice_reset:hover svg{
+.voice_reset:hover svg {
     transform: scale(1.1) rotate(5deg);
 }
 
@@ -63,7 +63,7 @@
     color: black;
 }
 
-.voice_selector_wrapper{
+.voice_selector_wrapper {
     position: fixed;
     z-index: calc(var(--top-index) - 20);
     backdrop-filter: brightness(0.9) blur(2px);
@@ -89,12 +89,12 @@
     max-height: 90%;
 }
 
-.voice_selector_search_wrapper{
+.voice_selector_search_wrapper {
     display: flex;
     margin: 1rem;
 }
 
-.voice_selector_window input{
+.voice_selector_window input {
     border: solid 1px #333;
     font-size: 1rem;
     margin: .1rem;
@@ -105,14 +105,14 @@
     flex: 1;
 }
 
-.voice_selector_table_wrapper{
+.voice_selector_table_wrapper {
     max-height: 70vh;
     overflow-y: scroll;
     overflow-x: hidden;
     padding: 1rem;
 }
 
-.voice_selector_table{
+.voice_selector_table {
     width: 100%;
     font-size: 1.1rem;
     padding: .5rem;
@@ -120,18 +120,18 @@
 }
 
 
-.voice_selector_table th{
+.voice_selector_table th {
     filter: none !important;
     text-align: start;
     line-height: 2rem;
 }
 
-.voice_selector_preset_name{
+.voice_selector_preset_name {
     text-align: end;
     display: block;
 }
 
-.voice_selector_table tr{
+.voice_selector_table tr {
     transition: all 50ms ease;
     border-radius: var(--primary-border-radius);
 }
@@ -141,6 +141,6 @@
     cursor: pointer;
 }
 
-.voice_selector_selected{
+.voice_selector_selected {
     background: var(--border-color) !important;
 }

@@ -15,11 +15,11 @@
     --key-border-radius: 0.4vmin;
 }
 
-#keyboard.mode_transform{
+#keyboard.mode_transform {
     transform: translateY(250%);
 }
 
-#keyboard.sideways{
+#keyboard.sideways {
     min-height: unset;
     height: 100%;
     width: unset;

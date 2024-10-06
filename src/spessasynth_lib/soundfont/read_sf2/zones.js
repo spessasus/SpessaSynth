@@ -1,8 +1,8 @@
-import {readLittleEndian} from "../../utils/byte_functions/little_endian.js";
-import {IndexedByteArray} from "../../utils/indexed_array.js";
-import {RiffChunk} from "../basic_soundfont/riff_chunk.js";
-import {Instrument} from "./instruments.js";
-import { BasicInstrumentZone, BasicPresetZone } from '../basic_soundfont/basic_zones.js'
+import { readLittleEndian } from "../../utils/byte_functions/little_endian.js";
+import { IndexedByteArray } from "../../utils/indexed_array.js";
+import { RiffChunk } from "../basic_soundfont/riff_chunk.js";
+import { Instrument } from "./instruments.js";
+import { BasicInstrumentZone, BasicPresetZone } from "../basic_soundfont/basic_zones.js";
 import { Generator, generatorTypes } from "../basic_soundfont/generator.js";
 import { Modulator } from "../basic_soundfont/modulator.js";
 
@@ -26,37 +26,37 @@ export class InstrumentZone extends BasicInstrumentZone
         this.generatorZoneSize = 0;
         this.isGlobal = true;
     }
-
+    
     setZoneSize(modulatorZoneSize, generatorZoneSize)
     {
         this.modulatorZoneSize = modulatorZoneSize;
         this.generatorZoneSize = generatorZoneSize;
     }
-
+    
     /**
      * grab the generators
      * @param generators {Generator[]}
      */
     getGenerators(generators)
     {
-        for(let i = this.generatorZoneStartIndex; i < this.generatorZoneStartIndex + this.generatorZoneSize; i++)
+        for (let i = this.generatorZoneStartIndex; i < this.generatorZoneStartIndex + this.generatorZoneSize; i++)
         {
             this.generators.push(generators[i]);
         }
     }
-
+    
     /**
      * grab the modulators
      * @param modulators {Modulator[]}
      */
     getModulators(modulators)
     {
-        for(let i = this.modulatorZoneStartIndex; i < this.modulatorZoneStartIndex + this.modulatorZoneSize; i++)
+        for (let i = this.modulatorZoneStartIndex; i < this.modulatorZoneStartIndex + this.modulatorZoneSize; i++)
         {
             this.modulators.push(modulators[i]);
         }
     }
-
+    
     /**
      * Loads the zone's sample
      * @param samples {BasicSample[]}
@@ -71,27 +71,27 @@ export class InstrumentZone extends BasicInstrumentZone
             this.sample.useCount++;
         }
     }
-
+    
     /**
      * Reads the keyRange of the zone
      */
     getKeyRange()
     {
         let range = this.generators.find(g => g.generatorType === generatorTypes.keyRange);
-        if(range)
+        if (range)
         {
             this.keyRange.min = range.generatorValue & 0x7F;
             this.keyRange.max = (range.generatorValue >> 8) & 0x7F;
         }
     }
-
+    
     /**
      * reads the velolicty range of the zone
      */
     getVelRange()
     {
         let range = this.generators.find(g => g.generatorType === generatorTypes.velRange);
-        if(range)
+        if (range)
         {
             this.velRange.min = range.generatorValue & 0x7F;
             this.velRange.max = (range.generatorValue >> 8) & 0x7F;
@@ -113,10 +113,10 @@ export function readInstrumentZones(zonesChunk, instrumentGenerators, instrument
      * @type {InstrumentZone[]}
      */
     let zones = [];
-    while(zonesChunk.chunkData.length > zonesChunk.chunkData.currentIndex)
+    while (zonesChunk.chunkData.length > zonesChunk.chunkData.currentIndex)
     {
         let zone = new InstrumentZone(zonesChunk.chunkData);
-        if(zones.length > 0)
+        if (zones.length > 0)
         {
             let modulatorZoneSize = zone.modulatorZoneStartIndex - zones[zones.length - 1].modulatorZoneStartIndex;
             let generatorZoneSize = zone.generatorZoneStartIndex - zones[zones.length - 1].generatorZoneStartIndex;
@@ -129,7 +129,7 @@ export function readInstrumentZones(zonesChunk, instrumentGenerators, instrument
         }
         zones.push(zone);
     }
-    if(zones.length > 1)
+    if (zones.length > 1)
     {
         // remove terminal
         zones.pop();
@@ -152,37 +152,37 @@ export class PresetZone extends BasicPresetZone
         this.generatorZoneSize = 0;
         this.isGlobal = true;
     }
-
+    
     setZoneSize(modulatorZoneSize, generatorZoneSize)
     {
         this.modulatorZoneSize = modulatorZoneSize;
         this.generatorZoneSize = generatorZoneSize;
     }
-
+    
     /**
      * grab the generators
      * @param generators {Generator[]}
      */
     getGenerators(generators)
     {
-        for(let i = this.generatorZoneStartIndex; i < this.generatorZoneStartIndex + this.generatorZoneSize; i++)
+        for (let i = this.generatorZoneStartIndex; i < this.generatorZoneStartIndex + this.generatorZoneSize; i++)
         {
             this.generators.push(generators[i]);
         }
     }
-
+    
     /**
      * grab the modulators
      * @param modulators {Modulator[]}
      */
     getModulators(modulators)
     {
-        for(let i = this.modulatorZoneStartIndex; i < this.modulatorZoneStartIndex + this.modulatorZoneSize; i++)
+        for (let i = this.modulatorZoneStartIndex; i < this.modulatorZoneStartIndex + this.modulatorZoneSize; i++)
         {
             this.modulators.push(modulators[i]);
         }
     }
-
+    
     /**
      * grab the instrument
      * @param instruments {Instrument[]}
@@ -190,34 +190,34 @@ export class PresetZone extends BasicPresetZone
     getInstrument(instruments)
     {
         let instrumentID = this.generators.find(g => g.generatorType === generatorTypes.instrument);
-        if(instrumentID)
+        if (instrumentID)
         {
             this.instrument = instruments[instrumentID.generatorValue];
             this.instrument.addUseCount();
             this.isGlobal = false;
         }
     }
-
+    
     /**
      * Reads the keyRange of the zone
      */
     getKeyRange()
     {
         let range = this.generators.find(g => g.generatorType === generatorTypes.keyRange);
-        if(range)
+        if (range)
         {
             this.keyRange.min = range.generatorValue & 0x7F;
             this.keyRange.max = (range.generatorValue >> 8) & 0x7F;
         }
     }
-
+    
     /**
      * reads the velolicty range of the zone
      */
     getVelRange()
     {
         let range = this.generators.find(g => g.generatorType === generatorTypes.velRange);
-        if(range)
+        if (range)
         {
             this.velRange.min = range.generatorValue & 0x7F;
             this.velRange.max = (range.generatorValue >> 8) & 0x7F;
@@ -239,10 +239,10 @@ export function readPresetZones(zonesChunk, presetGenerators, presetModulators, 
      * @type {PresetZone[]}
      */
     let zones = [];
-    while(zonesChunk.chunkData.length > zonesChunk.chunkData.currentIndex)
+    while (zonesChunk.chunkData.length > zonesChunk.chunkData.currentIndex)
     {
         let zone = new PresetZone(zonesChunk.chunkData);
-        if(zones.length > 0)
+        if (zones.length > 0)
         {
             let modulatorZoneSize = zone.modulatorZoneStartIndex - zones[zones.length - 1].modulatorZoneStartIndex;
             let generatorZoneSize = zone.generatorZoneStartIndex - zones[zones.length - 1].generatorZoneStartIndex;
@@ -255,7 +255,7 @@ export function readPresetZones(zonesChunk, presetGenerators, presetModulators, 
         }
         zones.push(zone);
     }
-    if(zones.length > 1)
+    if (zones.length > 1)
     {
         // remove terminal
         zones.pop();

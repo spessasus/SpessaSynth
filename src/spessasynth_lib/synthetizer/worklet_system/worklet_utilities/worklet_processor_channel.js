@@ -1,6 +1,7 @@
-import { midiControllers } from '../../../midi_parser/midi_message.js'
+import { midiControllers } from "../../../midi_parser/midi_message.js";
 
 import { modulatorSources } from "../../../soundfont/basic_soundfont/modulator.js";
+
 /**
  * @typedef {Object} WorkletProcessorChannel
  * @property {Int16Array} midiControllers - array of MIDI controller values + the values used by modulators as source (pitch bend, bend range etc.)
@@ -28,7 +29,7 @@ import { modulatorSources } from "../../../soundfont/basic_soundfont/modulator.j
  * @property {number} channelVibrato.depth - depth of the vibrato effect (cents)
  * @property {number} channelVibrato.delay - delay before the vibrato effect starts (seconds)
  * @property {number} channelVibrato.rate - rate of the vibrato oscillation (Hz)
-
+ 
  * @property {boolean} isMuted - indicates whether the channel is muted
  * @property {WorkletVoice[]} voices - array of voices currently active on the channel
  * @property {WorkletVoice[]} sustainedVoices - array of voices that are sustained on the channel
@@ -48,31 +49,31 @@ export function createWorkletChannel(sendEvent = false)
         midiControllers: new Int16Array(CONTROLLER_TABLE_SIZE),
         lockedControllers: Array(CONTROLLER_TABLE_SIZE).fill(false),
         customControllers: new Float32Array(CUSTOM_CONTROLLER_TABLE_SIZE),
-
+        
         NRPCoarse: 0,
         NRPFine: 0,
         RPValue: 0,
         dataEntryState: dataEntryStates.Idle,
-
+        
         voices: [],
         sustainedVoices: [],
         cachedVoices: [],
         preset: this.defaultPreset,
         presetUsesOverride: false,
-
+        
         channelTransposeKeyShift: 0,
         channelOctaveTuning: new Int8Array(12),
         keyCentTuning: new Int16Array(128),
-        channelVibrato: {delay: 0, depth: 0, rate: 0},
+        channelVibrato: { delay: 0, depth: 0, rate: 0 },
         velocityOverride: 0,
-
+        
         lockGSNRPNParams: false,
         holdPedal: false,
         isMuted: false,
         drumChannel: false,
-        lockPreset: false,
-
-    }
+        lockPreset: false
+        
+    };
     for (let i = 0; i < 128; i++)
     {
         channel.cachedVoices.push([]);
@@ -80,7 +81,7 @@ export function createWorkletChannel(sendEvent = false)
     this.workletProcessorChannels.push(channel);
     this.resetControllers(this.workletProcessorChannels.length - 1);
     this.sendChannelProperties();
-    if(sendEvent)
+    if (sendEvent)
     {
         this.callEvent("newchannel", undefined);
     }
@@ -119,8 +120,8 @@ export const customControllers = {
     channelTransposeFine: 1,    // cents, only the decimal tuning, (e.g. transpose is 4.5, then shift by 4 keys + tune by 50 cents)
     modulationMultiplier: 2,    // cents, set by moduldation depth RPN
     masterTuning: 3,            // cents, set by system exclusive
-    channelTuningSemitones: 4,  // semitones, for RPN coarse tuning
-}
+    channelTuningSemitones: 4  // semitones, for RPN coarse tuning
+};
 export const CUSTOM_CONTROLLER_TABLE_SIZE = Object.keys(customControllers).length;
 export const customResetArray = new Float32Array(CUSTOM_CONTROLLER_TABLE_SIZE);
 customResetArray[customControllers.modulationMultiplier] = 1;
@@ -130,5 +131,5 @@ customResetArray[customControllers.modulationMultiplier] = 1;
  * @enum {number}
  */
 export const channelConfiguration = {
-    velocityOverride: 128, // overrides velocity for the given channel
-}
+    velocityOverride: 128 // overrides velocity for the given channel
+};

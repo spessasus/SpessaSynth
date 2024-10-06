@@ -3,7 +3,8 @@
  */
 export function hideControllers()
 {
-    this.controllers.forEach(c => {
+    this.controllers.forEach(c =>
+    {
         c.voiceMeter.hide();
         c.pitchWheel.hide();
         c.pan.hide();
@@ -14,7 +15,7 @@ export function hideControllers()
         c.reverb.hide();
         c.brightness.hide();
         c.preset.hide();
-    })
+    });
 }
 
 /**
@@ -22,7 +23,8 @@ export function hideControllers()
  */
 export function showControllers()
 {
-    this.controllers.forEach(c => {
+    this.controllers.forEach(c =>
+    {
         c.voiceMeter.show();
         c.pitchWheel.show();
         c.pan.show();
@@ -33,5 +35,5 @@ export function showControllers()
         c.reverb.show();
         c.brightness.show();
         c.preset.show();
-    })
+    });
 }

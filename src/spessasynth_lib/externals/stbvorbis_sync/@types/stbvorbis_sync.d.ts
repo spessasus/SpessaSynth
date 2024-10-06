@@ -1,10 +1,10 @@
 declare type DecodedData =
-{
-    data: Float32Array[],
-    error: string|null,
-    sampleRate: number,
-    eof: boolean
-}
+    {
+        data: Float32Array[],
+        error: string | null,
+        sampleRate: number,
+        eof: boolean
+    }
 
 declare const stbvorbis: {
     decode(buffer: ArrayBuffer): DecodedData

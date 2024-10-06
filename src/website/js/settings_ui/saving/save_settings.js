@@ -5,7 +5,7 @@
  */
 export function _saveSettings()
 {
-    if(window.saveSettings)
+    if (window.saveSettings)
     {
         window.saveSettings(this._serializeSettings());
     }

@@ -1,4 +1,4 @@
-import { createSlider } from '../settings_ui/sliders.js'
+import { createSlider } from "../settings_ui/sliders.js";
 
 /**
  * @param el {HTMLElement}
@@ -7,13 +7,13 @@ import { createSlider } from '../settings_ui/sliders.js'
  */
 function applyTextContent(el, content, locale)
 {
-    if(content.textContent)
+    if (content.textContent)
     {
         el.textContent = content.textContent;
     }
-    if(content.translatePathTitle)
+    if (content.translatePathTitle)
     {
-        if(!locale)
+        if (!locale)
         {
             throw new Error("Translate path title provided but no locale provided.");
         }
@@ -29,20 +29,20 @@ function applyTextContent(el, content, locale)
  */
 export function getContent(content, locale)
 {
-    switch(content.type)
+    switch (content.type)
     {
         case "button":
             const btn = document.createElement("button");
             applyTextContent(btn, content, locale);
-            applyAttributes(content, [btn])
+            applyAttributes(content, [btn]);
             return btn;
-
+        
         case "text":
             const p = document.createElement("p");
             applyTextContent(p, content, locale);
             applyAttributes(content, [p]);
             return p;
-
+        
         case "input":
             const inputWrapper = document.createElement("div");
             inputWrapper.classList.add("notification_input_wrapper");
@@ -51,12 +51,12 @@ export function getContent(content, locale)
             input.addEventListener("keydown", e => e.stopPropagation());
             const inputLabel = document.createElement("label");
             applyTextContent(inputLabel, content, locale);
-
+            
             applyAttributes(content, [input, inputLabel]);
             inputWrapper.append(inputLabel);
             inputWrapper.appendChild(input);
             return inputWrapper;
-
+        
         case "file":
             const fileWrapper = document.createElement("label");
             fileWrapper.classList.add("notification_input_wrapper");
@@ -65,16 +65,16 @@ export function getContent(content, locale)
             const fileButton = document.createElement("label");
             fileButton.classList.add("notification_file_button");
             applyTextContent(fileButton, content, locale);
-
+            
             const fileLabel = document.createElement("label");
             applyTextContent(fileLabel, content, locale);
-
+            
             applyAttributes(content, [fileButton, file, fileLabel]);
             fileButton.appendChild(file);
             fileWrapper.append(fileLabel);
             fileWrapper.appendChild(fileButton);
             return fileWrapper;
-
+        
         case "progress":
             const background = document.createElement("div");
             background.classList.add("notification_progress_background");
@@ -83,10 +83,10 @@ export function getContent(content, locale)
             applyAttributes(content, [progress, background]);
             background.appendChild(progress);
             return background;
-
+        
         case "toggle":
             return getSwitch(content, locale);
-
+        
         case "range":
             const range = document.createElement("input");
             range.type = "range";
@@ -99,7 +99,7 @@ export function getContent(content, locale)
             wrapper.appendChild(label);
             wrapper.appendChild(slider);
             return wrapper;
-
+        
     }
 }
 
@@ -109,11 +109,11 @@ export function getContent(content, locale)
  */
 function applyAttributes(content, elements)
 {
-    if(content.attributes)
+    if (content.attributes)
     {
-        for(const [key, value] of Object.entries(content.attributes))
+        for (const [key, value] of Object.entries(content.attributes))
         {
-            for(const element of elements)
+            for (const element of elements)
             {
                 element.setAttribute(key, value);
             }
@@ -130,21 +130,21 @@ function getSwitch(content, locale)
 {
     const switchWrapper = document.createElement("label");
     switchWrapper.classList.add("notification_switch_wrapper");
-    const toggleText= document.createElement("label");
+    const toggleText = document.createElement("label");
     applyTextContent(toggleText, content, locale);
-
+    
     const toggleInput = document.createElement("input");
     toggleInput.type = "checkbox";
     applyAttributes(content, [toggleText, toggleInput]);
-
+    
     const toggle = document.createElement("div");
     toggle.classList.add("notification_switch");
     toggle.appendChild(toggleInput);
-
+    
     const slider = document.createElement("div");
     slider.classList.add("notification_switch_slider");
     toggle.appendChild(slider);
-
+    
     switchWrapper.appendChild(toggleText);
     switchWrapper.appendChild(toggle);
     return switchWrapper;

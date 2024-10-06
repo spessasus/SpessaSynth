@@ -1,4 +1,4 @@
-import { BasicZone } from './basic_zone.js'
+import { BasicZone } from "./basic_zone.js";
 
 export class BasicInstrumentZone extends BasicZone
 {
@@ -12,15 +12,15 @@ export class BasicInstrumentZone extends BasicZone
      * @type {number}
      */
     useCount = 0;
-
+    
     deleteZone()
     {
-        this.useCount--
+        this.useCount--;
         if (this.isGlobal)
         {
-            return
+            return;
         }
-        this.sample.useCount--
+        this.sample.useCount--;
     }
 }
 
@@ -30,11 +30,11 @@ export class BasicPresetZone extends BasicZone
      * Zone's instrument. Undefined if global
      * @type {BasicInstrument|undefined}
      */
-    instrument = undefined
-
+    instrument = undefined;
+    
     deleteZone()
     {
-        if(this.isGlobal)
+        if (this.isGlobal)
         {
             return;
         }

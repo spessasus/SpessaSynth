@@ -1,5 +1,4 @@
-#sequencer_controls
-{
+#sequencer_controls {
     width: 80%;
     position: relative;
     margin: auto auto 2px;
@@ -8,8 +7,7 @@
     --sequi-border-radius: var(--primary-border-radius);
 }
 
-#sequencer_controls #note_progress
-{
+#sequencer_controls #note_progress {
     border-radius: var(--progress-bar-height);
     background: linear-gradient(185deg, #306, var(--primary-color));
     height: 100%;
@@ -19,12 +17,11 @@
 }
 
 
-#sequencer_controls .note_progress_light{
+#sequencer_controls .note_progress_light {
     filter: brightness(3);
 }
 
-#sequencer_controls #note_time
-{
+#sequencer_controls #note_time {
     position: relative;
     font-size: calc(var(--progress-bar-height) * 0.8);
     line-height: var(--progress-bar-height);
@@ -34,27 +31,25 @@
     width: 100%;
 }
 
-#sequencer_controls #note_time:hover{
+#sequencer_controls #note_time:hover {
     cursor: pointer;
 }
 
-#sequencer_controls .control_buttons
-{
+#sequencer_controls .control_buttons {
     position: relative;
     display: inline-block;
     transition: all 0.1s ease;
 }
 
-#sequencer_controls .control_buttons:active{
+#sequencer_controls .control_buttons:active {
     transform: scale(var(--active-scale));
 }
 
-#sequencer_controls .control_buttons:hover{
+#sequencer_controls .control_buttons:hover {
     cursor: pointer;
 }
 
-#sequencer_controls #note_progress_background
-{
+#sequencer_controls #note_progress_background {
     border-radius: var(--progress-bar-height);
     background: linear-gradient(90deg, #454545, #343434);
     height: var(--progress-bar-height);
@@ -63,14 +58,13 @@
     overflow: hidden;
 }
 
-#sequencer_controls .note_progress_background_light
-{
+#sequencer_controls .note_progress_background_light {
     background: linear-gradient(90deg, #ddd, #bbb) !important;
 }
 
-#sequencer_controls .lyrics{
+#sequencer_controls .lyrics {
     position: fixed;
-    top:0;
+    top: 0;
     right: 0;
     width: 30em;
     min-width: 30%;
@@ -86,13 +80,13 @@
     border-radius: var(--sequi-border-radius);
 }
 
-.lyrics_title_wrapper{
+.lyrics_title_wrapper {
     background: transparent;
     top: 0;
     border-radius: var(--sequi-border-radius);
 }
 
-.lyrics_selector{
+.lyrics_selector {
     width: 100%;
     border: none;
     font-size: 1.3rem;
@@ -100,16 +94,16 @@
     background: transparent;
 }
 
-.lyrics_selector option{
+.lyrics_selector option {
     background: black;
 }
 
-.lyrics_show{
+.lyrics_show {
     transform: scaleX(1) !important;
     visibility: visible !important;
 }
 
-.lyrics_text{
+.lyrics_text {
     scroll-behavior: smooth;
     overflow-y: auto;
     max-height: 80%;
@@ -132,22 +126,22 @@
     font-size: 1rem;
 }
 
-.lyrics details{
+.lyrics details {
     overflow: scroll;
 }
 
-.lyrics details summary{
+.lyrics details summary {
     position: fixed;
     width: 100%;
     text-align: center;
 }
 
-.lyrics details div{
+.lyrics details div {
     margin-top: 2rem;
     line-height: 2rem;
 }
 
 .lyrics details pre,
-.lyrics details i{
+.lyrics details i {
     display: inline;
 }

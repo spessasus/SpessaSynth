@@ -1,4 +1,4 @@
-.notification_switch_wrapper{
+.notification_switch_wrapper {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -50,7 +50,7 @@
     box-shadow: 0 0 0.125rem rgba(0, 0, 0, 0.2);
 }
 
-.notification_switch_slider:hover::before{
+.notification_switch_slider:hover::before {
     border: solid var(--border-color) 1px;
     filter: brightness(1.2);
 }

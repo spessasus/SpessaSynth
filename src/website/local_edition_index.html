@@ -1,78 +1,85 @@
 <!DOCTYPE html>
-<html lang="en">
+<!--suppress ALL -->
+<html lang='en'>
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex">
+    <meta charset='UTF-8'>
+    <meta content='IE=edge' http-equiv='X-UA-Compatible'>
+    <meta content='width=device-width, initial-scale=1.0' name='viewport'>
+    <meta content='noindex' name='robots'>
 
-  <!-- open graph -->
-  <meta property='og:title' content='SpessaSynth Synthesizer' />
-  <meta property='og:site_name' content='SpessaSynth' />
-  <meta property='og:description' content='SoundFont2 synthesizer and MIDI player that runs in your browser' />
-  <meta property='og:image' content='https://repository-images.githubusercontent.com/643635315/905d798e-16d7-4673-8fc4-e83caf7c41e6' />
-  <meta property='og:image:alt' content='Colorful notes falling on a piano'/>
-  <meta property='og:url' content='https://spessasus.github.io/SpessaSynth/' />
-  <meta property="og:type" content="website" />
+    <!-- open graph -->
+    <meta content='SpessaSynth Synthesizer' property='og:title' />
+    <meta content='SpessaSynth' property='og:site_name' />
+    <meta content='SoundFont2 synthesizer and MIDI player that runs in your browser' property='og:description' />
+    <meta content='https://repository-images.githubusercontent.com/643635315/905d798e-16d7-4673-8fc4-e83caf7c41e6'
+          property='og:image' />
+    <meta content='Colorful notes falling on a piano' property='og:image:alt' />
+    <meta content='https://spessasus.github.io/SpessaSynth/' property='og:url' />
+    <meta content='website' property='og:type' />
 
-  <!-- twitter card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="SpessaSynth Synthesizer">
-  <meta name="twitter:description" content="SoundFont2 synthesizer and MIDI player that runs in your browser">
-  <meta name="twitter:image" content="https://repository-images.githubusercontent.com/643635315/905d798e-16d7-4673-8fc4-e83caf7c41e6">
+    <!-- twitter card -->
+    <meta content='summary_large_image' name='twitter:card'>
+    <meta content='SpessaSynth Synthesizer' name='twitter:title'>
+    <meta content='SoundFont2 synthesizer and MIDI player that runs in your browser' name='twitter:description'>
+    <meta content='https://repository-images.githubusercontent.com/643635315/905d798e-16d7-4673-8fc4-e83caf7c41e6'
+          name='twitter:image'>
 
-  <!-- for search engines -->
-  <meta name='description' content='SpessaSynth SoundFont MIDI player online demo - play MIDI files with SF2 or SF2 files' />
-  <meta name='author' content='spessasus' />
-  <meta name='keywords' content='midi, soundfont, sf2, synth, synthesizer, soundfont2, midi player, midi player online, player, sf3, soundfont player, soundfont player online' />
+    <!-- for search engines -->
+    <meta content='SpessaSynth SoundFont MIDI player online demo - play MIDI files with SF2 or SF2 files'
+          name='description' />
+    <meta content='spessasus' name='author' />
+    <meta
+        content='midi, soundfont, sf2, synth, synthesizer, soundfont2, midi player, midi player online, player, sf3, soundfont player, soundfont player online'
+        name='keywords' />
 
 
-  <title>SpessaSynth Local Edition</title>
-  <link rel="preload" as='style' href='website/minified/style.min.css'>
-  <link rel='modulepreload' href='website/minified/local_main.min.js'>
-  <link rel="stylesheet" href='website/minified/style.min.css'>
-  <link rel='icon' href='website/favicon.ico'>
+    <title>SpessaSynth Local Edition</title>
+    <link as='style' href='website/minified/style.min.css' rel='preload'>
+    <link href='website/minified/local_main.min.js' rel='modulepreload'>
+    <link href='website/minified/style.min.css' rel='stylesheet'>
+    <link href='website/favicon.ico' rel='icon'>
 </head>
 <body>
-  <div class='drop_prompt hidden'>
+<div class='drop_prompt hidden'>
     <h1 translate-path='locale.dropPrompt'>Drop files here...</h1>
-  </div>
+</div>
 
-  <div class='spessasynth_main'>
-    <div class="top_part">
-      <div id="synthetizer_controls"></div>
+<div class='spessasynth_main'>
+    <div class='top_part'>
+        <div id='synthetizer_controls'></div>
 
-      <div id="title_wrapper">
-        <div id="progress_bar"></div>
-        <h1 id="title" translate-path='locale.titleMessage'>SpessaSynth: SoundFont2 Javascript Synthetizer</h1>
-        <noscript><h1>SpessaSynth requires JavaScript to work.</h1></noscript>
-        <div class="midi_and_sf_controller">
-          <label id="file_upload" for='midi_file_input' translate-path='locale.midiUploadButton'>Upload your MIDI files</label>
-            <input type="file" accept=".mid, .rmi, audio/midi" id="midi_file_input" multiple><br/>
+        <div id='title_wrapper'>
+            <div id='progress_bar'></div>
+            <h1 id='title' translate-path='locale.titleMessage'>SpessaSynth: SoundFont2 Javascript Synthetizer</h1>
+            <noscript><h1>SpessaSynth requires JavaScript to work.</h1></noscript>
+            <div class='midi_and_sf_controller'>
+                <label for='midi_file_input' id='file_upload' translate-path='locale.midiUploadButton'>Upload your MIDI
+                    files</label>
+                <input accept='.mid, .rmi, audio/midi' id='midi_file_input' multiple type='file'><br />
 
-          <label id='export_button' translate-path-title='locale.exportAudio.button'>Export audio</label>
+                <label id='export_button' translate-path-title='locale.exportAudio.button'>Export audio</label>
 
-          <select id="sf_selector"></select>
+                <select id='sf_selector'></select>
+            </div>
         </div>
-      </div>
 
-      <div id='settings_div'>
-      </div>
+        <div id='settings_div'>
+        </div>
     </div>
     <div class='show_top_button'></div>
 
     <div id='keyboard_canvas_wrapper'>
-      <canvas id="note_canvas"></canvas>
-      <div id='keyboard'></div>
+        <canvas id='note_canvas'></canvas>
+        <div id='keyboard'></div>
     </div>
     <div id='player_info'></div>
 
-    <div class="bottom_part">
-      <div id="sequencer_controls"></div>
+    <div class='bottom_part'>
+        <div id='sequencer_controls'></div>
     </div>
     <div class='notification_field'></div>
-  </div>
-  <script src='website/minified/local_main.min.js' type="module"></script> <!-- Here the magic happens ;) -->
+</div>
+<script src='website/minified/local_main.min.js' type='module'></script> <!-- Here the magic happens ;) -->
 <!--  <script src='website/local_main.js' type="module"></script>-->
 </body>
 </html>

@@ -1,8 +1,8 @@
-import { workletMessageType } from './worklet_system/message_protocol/worklet_message.js'
+import { workletMessageType } from "./worklet_system/message_protocol/worklet_message.js";
 import {
     WorkletSoundfontManagerMessageType
-} from './worklet_system/worklet_methods/worklet_soundfont_manager/sfman_message.js'
-import { SpessaSynthWarn } from '../utils/loggin.js'
+} from "./worklet_system/worklet_methods/worklet_soundfont_manager/sfman_message.js";
+import { SpessaSynthWarn } from "../utils/loggin.js";
 
 export class SoundfontManager
 {
@@ -23,7 +23,7 @@ export class SoundfontManager
             id: "main",
             bankOffset: 0
         }];
-
+        
         /**
          * @type {MessagePort}
          * @private
@@ -31,7 +31,7 @@ export class SoundfontManager
         this._port = synth.worklet.port;
         this.synth = synth;
     }
-
+    
     /**
      * @private
      * @param type {WorkletSoundfontManagerMessageType}
@@ -47,7 +47,7 @@ export class SoundfontManager
             ]
         });
     }
-
+    
     /**
      * Adds a new soundfont buffer with a given ID
      * @param soundfontBuffer {ArrayBuffer} - the soundfont's buffer
@@ -56,7 +56,7 @@ export class SoundfontManager
      */
     async addNewSoundFont(soundfontBuffer, id, bankOffset = 0)
     {
-        if(this.soundfontList.find(s => s.id === id) !== undefined)
+        if (this.soundfontList.find(s => s.id === id) !== undefined)
         {
             throw new Error("Cannot overwrite the existing soundfont. Use soundfontManager.delete(id) instead.");
         }
@@ -67,26 +67,26 @@ export class SoundfontManager
             bankOffset: bankOffset
         });
     }
-
+    
     /**
      * Deletes a soundfont with the given ID
      * @param id {string} - the soundfont to delete
      */
     deleteSoundFont(id)
     {
-        if(this.soundfontList.length === 0)
+        if (this.soundfontList.length === 0)
         {
             SpessaSynthWarn("1 soundfont left. Aborting!");
             return;
         }
-        if(this.soundfontList.findIndex(s => s.id === id) === -1)
+        if (this.soundfontList.findIndex(s => s.id === id) === -1)
         {
             SpessaSynthWarn(`No soundfont with id of "${id}" found. Aborting!`);
             return;
         }
         this._sendToWorklet(WorkletSoundfontManagerMessageType.deleteSoundFont, id);
     }
-
+    
     /**
      * Rearranges the soundfonts in a given order
      * @param newList {string[]} the order of soundfonts, a list of identifiers, first overwrites second
@@ -98,7 +98,7 @@ export class SoundfontManager
             newList.indexOf(a.id) - newList.indexOf(b.id)
         );
     }
-
+    
     /**
      * DELETES ALL SOUNDFONTS!! and creates a new one with id "main"
      * @param newBuffer {ArrayBuffer}

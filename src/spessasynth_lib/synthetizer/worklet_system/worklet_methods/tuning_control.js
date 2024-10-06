@@ -1,7 +1,7 @@
-import { customControllers, NON_CC_INDEX_OFFSET } from '../worklet_utilities/worklet_processor_channel.js'
-import { consoleColors } from '../../../utils/other.js'
-import { computeModulators } from '../worklet_utilities/worklet_modulator.js'
-import { SpessaSynthInfo } from '../../../utils/loggin.js'
+import { customControllers, NON_CC_INDEX_OFFSET } from "../worklet_utilities/worklet_processor_channel.js";
+import { consoleColors } from "../../../utils/other.js";
+import { computeModulators } from "../worklet_utilities/worklet_modulator.js";
+import { SpessaSynthInfo } from "../../../utils/loggin.js";
 import { modulatorSources } from "../../../soundfont/basic_soundfont/modulator.js";
 
 /**
@@ -27,23 +27,23 @@ export function transposeAllChannels(semitones, force = false)
  * @param semitones {number} Can be float
  * @param force {boolean} defaults to false, if true transposes the channel even if it's a drum channel
  */
-export function transposeChannel(channel, semitones, force=false)
+export function transposeChannel(channel, semitones, force = false)
 {
     const channelObject = this.workletProcessorChannels[channel];
-    if(!channelObject.drumChannel)
+    if (!channelObject.drumChannel)
     {
         semitones += this.transposition;
     }
     const keyShift = Math.trunc(semitones);
     const currentTranspose = channelObject.channelTransposeKeyShift + channelObject.customControllers[customControllers.channelTransposeFine] / 100;
-    if(
+    if (
         (channelObject.drumChannel && !force)
         || semitones === currentTranspose
     )
     {
         return;
     }
-    if(keyShift !== channelObject.channelTransposeKeyShift)
+    if (keyShift !== channelObject.channelTransposeKeyShift)
     {
         this.stopAll(channel, false);
     }
@@ -64,13 +64,15 @@ export function setChannelTuning(channel, cents, log = true)
     const channelObject = this.workletProcessorChannels[channel];
     cents = Math.round(cents);
     channelObject.customControllers[customControllers.channelTuning] = cents;
-    if(!log)
+    if (!log)
     {
         return;
     }
-    SpessaSynthInfo(`%cChannel ${channel} fine tuning. Cents: %c${cents}`,
+    SpessaSynthInfo(
+        `%cChannel ${channel} fine tuning. Cents: %c${cents}`,
         consoleColors.info,
-        consoleColors.value);
+        consoleColors.value
+    );
 }
 
 /**
@@ -84,9 +86,11 @@ export function setChannelTuningSemitones(channel, semitones)
     const channelObject = this.workletProcessorChannels[channel];
     semitones = Math.round(semitones);
     channelObject.customControllers[customControllers.channelTuningSemitones] = semitones;
-    SpessaSynthInfo(`%cChannel ${channel} coarse tuning. Semitones: %c${semitones}`,
+    SpessaSynthInfo(
+        `%cChannel ${channel} coarse tuning. Semitones: %c${semitones}`,
         consoleColors.info,
-        consoleColors.value);
+        consoleColors.value
+    );
 }
 
 /**
@@ -97,7 +101,8 @@ export function setChannelTuningSemitones(channel, semitones)
 export function setMasterTuning(cents)
 {
     cents = Math.round(cents);
-    for (let i = 0; i < this.workletProcessorChannels.length; i++) {
+    for (let i = 0; i < this.workletProcessorChannels.length; i++)
+    {
         this.workletProcessorChannels[i].customControllers[customControllers.masterTuning] = cents;
     }
 }
@@ -111,9 +116,11 @@ export function setModulationDepth(channel, cents)
 {
     let channelObject = this.workletProcessorChannels[channel];
     cents = Math.round(cents);
-    SpessaSynthInfo(`%cChannel ${channel} modulation depth. Cents: %c${cents}`,
+    SpessaSynthInfo(
+        `%cChannel ${channel} modulation depth. Cents: %c${cents}`,
         consoleColors.info,
-        consoleColors.value);
+        consoleColors.value
+    );
     /* ==============
         IMPORTANT
         here we convert cents into a multiplier.
@@ -135,7 +142,7 @@ export function setModulationDepth(channel, cents)
  */
 export function pitchWheel(channel, MSB, LSB)
 {
-    if(this.workletProcessorChannels[channel].lockedControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel])
+    if (this.workletProcessorChannels[channel].lockedControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel])
     {
         return;
     }
@@ -148,7 +155,12 @@ export function pitchWheel(channel, MSB, LSB)
     this.workletProcessorChannels[channel].midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel] = bend;
     this.workletProcessorChannels[channel].voices.forEach(v =>
         // compute pitch modulators
-        computeModulators(v, this.workletProcessorChannels[channel].midiControllers, 0, modulatorSources.pitchWheel));
+        computeModulators(
+            v,
+            this.workletProcessorChannels[channel].midiControllers,
+            0,
+            modulatorSources.pitchWheel
+        ));
     this.sendChannelProperties();
 }
 
@@ -163,8 +175,13 @@ export function channelPressure(channel, pressure)
     const channelObject = this.workletProcessorChannels[channel];
     channelObject.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.channelPressure] = pressure << 7;
     this.workletProcessorChannels[channel].voices.forEach(v =>
-        computeModulators(v, channelObject.midiControllers, 0, modulatorSources.channelPressure));
-    this.callEvent("channelpressure",{
+        computeModulators(
+            v,
+            channelObject.midiControllers,
+            0,
+            modulatorSources.channelPressure
+        ));
+    this.callEvent("channelpressure", {
         channel: channel,
         pressure: pressure
     });
@@ -179,13 +196,19 @@ export function channelPressure(channel, pressure)
  */
 export function polyPressure(channel, midiNote, pressure)
 {
-    this.workletProcessorChannels[channel].voices.forEach(v => {
-        if(v.midiNote !== midiNote)
+    this.workletProcessorChannels[channel].voices.forEach(v =>
+    {
+        if (v.midiNote !== midiNote)
         {
             return;
         }
         v.pressure = pressure;
-        computeModulators(v, this.workletProcessorChannels[channel].midiControllers, 0, modulatorSources.polyPressure);
+        computeModulators(
+            v,
+            this.workletProcessorChannels[channel].midiControllers,
+            0,
+            modulatorSources.polyPressure
+        );
     });
     this.callEvent("polypressure", {
         channel: channel,
@@ -202,7 +225,7 @@ export function polyPressure(channel, midiNote, pressure)
  */
 export function setOctaveTuning(channel, tuning)
 {
-    if(tuning.length !== 12)
+    if (tuning.length !== 12)
     {
         throw new Error("Tuning is not the length of 12.");
     }

@@ -1,13 +1,14 @@
-import { findRIFFListType, readRIFFChunk } from '../basic_soundfont/riff_chunk.js'
-import { readBytesAsString } from '../../utils/byte_functions/string.js'
+import { findRIFFListType, readRIFFChunk } from "../basic_soundfont/riff_chunk.js";
+import { readBytesAsString } from "../../utils/byte_functions/string.js";
 import {
     SpessaSynthGroupCollapsed,
     SpessaSynthGroupEnd,
-    SpessaSynthInfo, SpessaSynthWarn,
-} from '../../utils/loggin.js'
-import { consoleColors } from '../../utils/other.js'
-import { readLittleEndian, signedInt16 } from '../../utils/byte_functions/little_endian.js'
-import { DLSSample } from './dls_sample.js'
+    SpessaSynthInfo,
+    SpessaSynthWarn
+} from "../../utils/loggin.js";
+import { consoleColors } from "../../utils/other.js";
+import { readLittleEndian, signedInt16 } from "../../utils/byte_functions/little_endian.js";
+import { DLSSample } from "./dls_sample.js";
 
 /**
  * @this {DLSSoundFont}
@@ -15,36 +16,38 @@ import { DLSSample } from './dls_sample.js'
  */
 export function readDLSSamples(waveListChunk)
 {
-    SpessaSynthGroupCollapsed("%cLoading Wave samples...",
-        consoleColors.recognized);
+    SpessaSynthGroupCollapsed(
+        "%cLoading Wave samples...",
+        consoleColors.recognized
+    );
     let sampleID = 0;
-    while(waveListChunk.chunkData.currentIndex < waveListChunk.chunkData.length)
+    while (waveListChunk.chunkData.currentIndex < waveListChunk.chunkData.length)
     {
         const waveChunk = readRIFFChunk(waveListChunk.chunkData);
         this.verifyHeader(waveChunk, "LIST");
         this.verifyText(readBytesAsString(waveChunk.chunkData, 4), "wave");
-
+        
         /**
          * @type {RiffChunk[]}
          */
         const waveChunks = [];
-        while(waveChunk.chunkData.currentIndex < waveChunk.chunkData.length)
+        while (waveChunk.chunkData.currentIndex < waveChunk.chunkData.length)
         {
             waveChunks.push(readRIFFChunk(waveChunk.chunkData));
         }
-
+        
         const fmtChunk = waveChunks.find(c => c.header === "fmt ");
-        if(!fmtChunk)
+        if (!fmtChunk)
         {
             throw new Error("No fmt chunk in the wave file!");
         }
         const waveFormat = readLittleEndian(fmtChunk.chunkData, 2);
-        if(waveFormat !== 1)
+        if (waveFormat !== 1)
         {
             throw new Error("Only PCM format in WAVE is supported.");
         }
         const channelsAmount = readLittleEndian(fmtChunk.chunkData, 2);
-        if(channelsAmount !== 1)
+        if (channelsAmount !== 1)
         {
             throw new Error("Only mono samples are supported.");
         }
@@ -56,13 +59,13 @@ export function readDLSSamples(waveListChunk)
         // it's bits per sample because one channel
         const wBitsPerSample = readLittleEndian(fmtChunk.chunkData, 2);
         const bytesPerSample = wBitsPerSample / 8;
-
+        
         const maxSampleValue = Math.pow(2, bytesPerSample * 8 - 1); // Max value for the sample
         const maxUnsigned = Math.pow(2, bytesPerSample * 8);
-
+        
         let normalizationFactor;
         let isUnsigned = false;
-
+        
         if (wBitsPerSample === 8)
         {
             normalizationFactor = 255; // For 8-bit normalize from 0-255
@@ -74,7 +77,7 @@ export function readDLSSamples(waveListChunk)
         }
         // read the data
         const dataChunk = waveChunks.find(c => c.header === "data");
-        if(!dataChunk)
+        if (!dataChunk)
         {
             throw new Error("No data chunk in the wave chunk!");
         }
@@ -100,17 +103,17 @@ export function readDLSSamples(waveListChunk)
                 sampleData[i] = sample / normalizationFactor;
             }
         }
-
+        
         // sane defaults
         let sampleKey = 60;
         let samplePitch = 0;
         let sampleLoopStart = 0;
         let sampleLoopEnd = sampleData.length - 1;
         let sampleDbAttenuation = 0;
-
+        
         // read wsmp
-        const wsmpChunk = waveChunks.find(c => c.header === "wsmp")
-        if(wsmpChunk)
+        const wsmpChunk = waveChunks.find(c => c.header === "wsmp");
+        if (wsmpChunk)
         {
             // skip cbsize
             readLittleEndian(wsmpChunk.chunkData, 4);
@@ -128,7 +131,7 @@ export function readDLSSamples(waveListChunk)
             // no idea about ful options
             readLittleEndian(wsmpChunk.chunkData, 4);
             const loopsAmount = readLittleEndian(wsmpChunk.chunkData, 4);
-            if(loopsAmount === 1)
+            if (loopsAmount === 1)
             {
                 // skip size and type
                 readLittleEndian(wsmpChunk.chunkData, 8);
@@ -139,25 +142,25 @@ export function readDLSSamples(waveListChunk)
         }
         else
         {
-            SpessaSynthWarn("No wsmp chunk in wave... using sane defaults.")
+            SpessaSynthWarn("No wsmp chunk in wave... using sane defaults.");
         }
-
+        
         // read sample name
         const waveInfo = findRIFFListType(waveChunks, "INFO");
         let sampleName = `Unnamed ${sampleID}`;
-        if(waveInfo)
+        if (waveInfo)
         {
             let infoChunk = readRIFFChunk(waveInfo.chunkData);
-            while(infoChunk.header !== "INAM" && waveInfo.chunkData.currentIndex < waveInfo.chunkData.length)
+            while (infoChunk.header !== "INAM" && waveInfo.chunkData.currentIndex < waveInfo.chunkData.length)
             {
                 infoChunk = readRIFFChunk(waveInfo.chunkData);
             }
-            if(infoChunk.header === "INAM")
+            if (infoChunk.header === "INAM")
             {
                 sampleName = readBytesAsString(infoChunk.chunkData, infoChunk.size).trim();
             }
         }
-
+        
         this.samples.push(new DLSSample(
             sampleName,
             sampleRate,
@@ -168,11 +171,13 @@ export function readDLSSamples(waveListChunk)
             sampleData,
             sampleDbAttenuation
         ));
-
+        
         sampleID++;
-        SpessaSynthInfo(`%cLoaded sample %c${sampleName}`,
+        SpessaSynthInfo(
+            `%cLoaded sample %c${sampleName}`,
             consoleColors.info,
-            consoleColors.recognized);
+            consoleColors.recognized
+        );
     }
     SpessaSynthGroupEnd();
 }

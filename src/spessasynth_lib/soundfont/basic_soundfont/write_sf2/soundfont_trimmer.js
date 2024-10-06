@@ -1,11 +1,11 @@
-import { consoleColors } from '../../../utils/other.js'
+import { consoleColors } from "../../../utils/other.js";
 import {
     SpessaSynthGroup,
     SpessaSynthGroupCollapsed,
     SpessaSynthGroupEnd,
     SpessaSynthInfo
-} from '../../../utils/loggin.js'
-import { getUsedProgramsAndKeys } from '../../../midi_parser/used_keys_loaded.js'
+} from "../../../utils/loggin.js";
+import { getUsedProgramsAndKeys } from "../../../midi_parser/used_keys_loaded.js";
 
 /**
  * @param soundfont {BasicSoundFont}
@@ -25,16 +25,16 @@ export function trimSoundfont(soundfont, mid)
         for (let iZoneIndex = 0; iZoneIndex < instrument.instrumentZones.length; iZoneIndex++)
         {
             const iZone = instrument.instrumentZones[iZoneIndex];
-            if(iZone.isGlobal)
+            if (iZone.isGlobal)
             {
                 continue;
             }
             const iKeyRange = iZone.keyRange;
             const iVelRange = iZone.velRange;
             let isIZoneUsed = false;
-            for(const iCombo of combos)
+            for (const iCombo of combos)
             {
-                if(
+                if (
                     (iCombo.key >= iKeyRange.min && iCombo.key <= iKeyRange.max) &&
                     (iCombo.velocity >= iVelRange.min && iCombo.velocity <= iVelRange.max)
                 )
@@ -43,38 +43,46 @@ export function trimSoundfont(soundfont, mid)
                     break;
                 }
             }
-            if(!isIZoneUsed)
+            if (!isIZoneUsed)
             {
-                SpessaSynthInfo(`%c${iZone.sample.sampleName} %cremoved from %c${instrument.instrumentName}%c. Use count: %c${iZone.useCount - 1}`,
+                SpessaSynthInfo(
+                    `%c${iZone.sample.sampleName} %cremoved from %c${instrument.instrumentName}%c. Use count: %c${iZone.useCount - 1}`,
                     consoleColors.recognized,
                     consoleColors.info,
                     consoleColors.recognized,
                     consoleColors.info,
-                    consoleColors.recognized);
-                if(instrument.safeDeleteZone(iZoneIndex))
+                    consoleColors.recognized
+                );
+                if (instrument.safeDeleteZone(iZoneIndex))
                 {
                     trimmedIZones++;
                     iZoneIndex--;
-                    SpessaSynthInfo(`%c${iZone.sample.sampleName} %cdeleted`,
+                    SpessaSynthInfo(
+                        `%c${iZone.sample.sampleName} %cdeleted`,
                         consoleColors.recognized,
-                        consoleColors.info)
+                        consoleColors.info
+                    );
                 }
-                if(iZone.sample.useCount < 1)
+                if (iZone.sample.useCount < 1)
                 {
                     soundfont.deleteSample(iZone.sample);
                 }
             }
-
+            
         }
         return trimmedIZones;
     }
-
-    SpessaSynthGroup("%cTrimming soundfont...",
-        consoleColors.info);
+    
+    SpessaSynthGroup(
+        "%cTrimming soundfont...",
+        consoleColors.info
+    );
     const usedProgramsAndKeys = getUsedProgramsAndKeys(mid, soundfont);
-
-    SpessaSynthGroupCollapsed("%cModifying soundfont...",
-        consoleColors.info);
+    
+    SpessaSynthGroupCollapsed(
+        "%cModifying soundfont...",
+        consoleColors.info
+    );
     SpessaSynthInfo("Detected keys for midi:", usedProgramsAndKeys);
     // modify the soundfont to only include programs and samples that are used
     for (let presetIndex = 0; presetIndex < soundfont.presets.length; presetIndex++)
@@ -82,9 +90,10 @@ export function trimSoundfont(soundfont, mid)
         const p = soundfont.presets[presetIndex];
         const string = p.bank + ":" + p.program;
         const used = usedProgramsAndKeys[string];
-        if(used === undefined)
+        if (used === undefined)
         {
-            SpessaSynthInfo(`%cDeleting preset %c${p.presetName}%c and its zones`,
+            SpessaSynthInfo(
+                `%cDeleting preset %c${p.presetName}%c and its zones`,
                 consoleColors.info,
                 consoleColors.recognized,
                 consoleColors.info
@@ -94,23 +103,26 @@ export function trimSoundfont(soundfont, mid)
         }
         else
         {
-            const combos = [...used].map(s => {
+            const combos = [...used].map(s =>
+            {
                 const split = s.split("-");
                 return {
                     key: parseInt(split[0]),
                     velocity: parseInt(split[1])
-                }
+                };
             });
-            SpessaSynthGroupCollapsed(`%cTrimming %c${p.presetName}`,
+            SpessaSynthGroupCollapsed(
+                `%cTrimming %c${p.presetName}`,
                 consoleColors.info,
-                consoleColors.recognized);
-            SpessaSynthInfo(`Keys for ${p.presetName}:`, combos)
+                consoleColors.recognized
+            );
+            SpessaSynthInfo(`Keys for ${p.presetName}:`, combos);
             let trimmedZones = 0;
             // clean the preset to only use zones that are used
             for (let zoneIndex = 0; zoneIndex < p.presetZones.length; zoneIndex++)
             {
                 const zone = p.presetZones[zoneIndex];
-                if(zone.isGlobal)
+                if (zone.isGlobal)
                 {
                     continue;
                 }
@@ -118,9 +130,9 @@ export function trimSoundfont(soundfont, mid)
                 const velRange = zone.velRange;
                 // check if any of the combos matches the zone
                 let isZoneUsed = false;
-                for(const combo of combos)
+                for (const combo of combos)
                 {
-                    if(
+                    if (
                         (combo.key >= keyRange.min && combo.key <= keyRange.max) &&
                         (combo.velocity >= velRange.min && combo.velocity <= velRange.max)
                     )
@@ -128,7 +140,8 @@ export function trimSoundfont(soundfont, mid)
                         // zone is used, trim the instrument zones
                         isZoneUsed = true;
                         const trimmedIZones = trimInstrumentZones(zone.instrument, combos);
-                        SpessaSynthInfo(`%cTrimmed off %c${trimmedIZones}%c zones from %c${zone.instrument.instrumentName}`,
+                        SpessaSynthInfo(
+                            `%cTrimmed off %c${trimmedIZones}%c zones from %c${zone.instrument.instrumentName}`,
                             consoleColors.info,
                             consoleColors.recognized,
                             consoleColors.info,
@@ -137,18 +150,19 @@ export function trimSoundfont(soundfont, mid)
                         break;
                     }
                 }
-                if(!isZoneUsed)
+                if (!isZoneUsed)
                 {
                     trimmedZones++;
                     p.deleteZone(zoneIndex);
-                    if(zone.instrument.useCount < 1)
+                    if (zone.instrument.useCount < 1)
                     {
                         soundfont.deleteInstrument(zone.instrument);
                     }
                     zoneIndex--;
                 }
             }
-            SpessaSynthInfo(`%cTrimmed off %c${trimmedZones}%c zones from %c${p.presetName}`,
+            SpessaSynthInfo(
+                `%cTrimmed off %c${trimmedZones}%c zones from %c${p.presetName}`,
                 consoleColors.info,
                 consoleColors.recognized,
                 consoleColors.info,
@@ -158,12 +172,14 @@ export function trimSoundfont(soundfont, mid)
         }
     }
     soundfont.removeUnusedElements();
-
-    soundfont.soundFontInfo['ICMT'] = `NOTE: This soundfont was trimmed by SpessaSynth to only contain presets used in "${mid.midiName}"\n\n`
-        + soundfont.soundFontInfo['ICMT'];
-
-    SpessaSynthInfo("%cSoundfont modified!",
-        consoleColors.recognized)
+    
+    soundfont.soundFontInfo["ICMT"] = `NOTE: This soundfont was trimmed by SpessaSynth to only contain presets used in "${mid.midiName}"\n\n`
+        + soundfont.soundFontInfo["ICMT"];
+    
+    SpessaSynthInfo(
+        "%cSoundfont modified!",
+        consoleColors.recognized
+    );
     SpessaSynthGroupEnd();
     SpessaSynthGroupEnd();
 }

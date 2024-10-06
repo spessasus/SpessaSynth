@@ -1,4 +1,4 @@
-import { BasicInstrumentZone } from '../basic_soundfont/basic_zones.js'
+import { BasicInstrumentZone } from "../basic_soundfont/basic_zones.js";
 import { Generator, generatorTypes } from "../basic_soundfont/generator.js";
 
 export class DLSZone extends BasicInstrumentZone
@@ -14,7 +14,7 @@ export class DLSZone extends BasicInstrumentZone
         this.velRange = velRange;
         this.isGlobal = true;
     }
-
+    
     /**
      * @param attenuationCb {number} with EMU correction
      * @param loopingMode {number} the sfont one
@@ -31,56 +31,56 @@ export class DLSZone extends BasicInstrumentZone
         sampleKey,
         sample,
         sampleID,
-        samplePitchCorrection,
+        samplePitchCorrection
     )
     {
-        if(loopingMode !== 0)
+        if (loopingMode !== 0)
         {
             this.generators.push(new Generator(generatorTypes.sampleModes, loopingMode));
         }
         this.generators.push(new Generator(generatorTypes.initialAttenuation, attenuationCb));
         this.isGlobal = false;
-
+        
         // correct tuning if needed
         samplePitchCorrection -= sample.samplePitchCorrection;
         const coarseTune = Math.trunc(samplePitchCorrection / 100);
-        if(coarseTune !== 0)
+        if (coarseTune !== 0)
         {
             this.generators.push(new Generator(generatorTypes.coarseTune, coarseTune));
         }
         const fineTune = samplePitchCorrection - (coarseTune * 100);
-        if(fineTune !== 0)
+        if (fineTune !== 0)
         {
             this.generators.push(new Generator(generatorTypes.fineTune, fineTune));
         }
-
+        
         // correct loop if needed
         const diffStart = loop.start - sample.sampleLoopStartIndex;
         const diffEnd = loop.end - sample.sampleLoopEndIndex;
-        if(diffStart !== 0)
+        if (diffStart !== 0)
         {
             const fine = diffStart % 32768;
             this.generators.push(new Generator(generatorTypes.startloopAddrsOffset, fine));
             // coarse generator uses 32768 samples per step
             const coarse = Math.trunc(diffStart / 32768);
-            if(coarse !== 0)
+            if (coarse !== 0)
             {
                 this.generators.push(new Generator(generatorTypes.startloopAddrsCoarseOffset, coarse));
             }
         }
-        if(diffEnd !== 0)
+        if (diffEnd !== 0)
         {
             const fine = diffEnd % 32768;
             this.generators.push(new Generator(generatorTypes.endloopAddrsOffset, fine));
             // coarse generator uses 32768 samples per step
             const coarse = Math.trunc(diffEnd / 32768);
-            if(coarse !== 0)
+            if (coarse !== 0)
             {
                 this.generators.push(new Generator(generatorTypes.endloopAddrsCoarseOffset, coarse));
             }
         }
         // correct key if needed
-        if(sampleKey !== sample.samplePitch)
+        if (sampleKey !== sample.samplePitch)
         {
             this.generators.push(new Generator(generatorTypes.overridingRootKey, sampleKey));
         }

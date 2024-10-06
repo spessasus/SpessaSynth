@@ -11,4 +11,4 @@ export const sequencerControllerLocale = {
             title: "その他のテキスト"
         }
     }
-}
+};

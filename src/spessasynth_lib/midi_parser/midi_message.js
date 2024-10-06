@@ -1,4 +1,4 @@
-import {IndexedByteArray} from "../utils/indexed_array.js";
+import { IndexedByteArray } from "../utils/indexed_array.js";
 
 /**
  * midi_message.js
@@ -12,7 +12,8 @@ export class MidiMessage
      * @param byte {number} the message status byte
      * @param data {IndexedByteArray}
      */
-    constructor(ticks, byte, data) {
+    constructor(ticks, byte, data)
+    {
         // absolute ticks from the start
         this.ticks = ticks;
         // message status byte (for meta it's the second byte)
@@ -29,13 +30,15 @@ export class MidiMessage
  * @param statusByte
  * @returns {number} channel is -1 for system messages -2 for meta and -3 for sysex
  */
-export function getChannel(statusByte) {
+export function getChannel(statusByte)
+{
     const eventType = statusByte & 0xF0;
     const channel = statusByte & 0x0F;
-
+    
     let resultChannel = channel;
-
-    switch (eventType) {
+    
+    switch (eventType)
+    {
         // midi (and meta and sysex headers)
         case 0x80:
         case 0x90:
@@ -45,13 +48,14 @@ export function getChannel(statusByte) {
         case 0xD0:
         case 0xE0:
             break;
-
+        
         case 0xF0:
-            switch (channel) {
+            switch (channel)
+            {
                 case 0x0:
                     resultChannel = -3;
                     break;
-
+                
                 case 0x1:
                 case 0x2:
                 case 0x3:
@@ -68,17 +72,17 @@ export function getChannel(statusByte) {
                 case 0xE:
                     resultChannel = -1;
                     break;
-
+                
                 case 0xF:
                     resultChannel = -2;
                     break;
             }
             break;
-
+        
         default:
             resultChannel = -1;
     }
-
+    
     return resultChannel;
 }
 
@@ -127,18 +131,20 @@ export const messageTypes = {
  * @param statusByte {number} the status byte
  * @returns {{channel: number, status: number}} channel will be -1 for sysex and meta
  */
-export function getEvent(statusByte) {
+export function getEvent(statusByte)
+{
     const status = statusByte & 0xF0;
     const channel = statusByte & 0x0F;
-
+    
     let eventChannel = -1;
     let eventStatus = statusByte;
-
-    if (status >= 0x80 && status <= 0xE0) {
+    
+    if (status >= 0x80 && status <= 0xE0)
+    {
         eventChannel = channel;
         eventStatus = status;
     }
-
+    
     return {
         status: eventStatus,
         channel: eventChannel

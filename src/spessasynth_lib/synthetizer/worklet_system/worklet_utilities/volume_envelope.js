@@ -1,4 +1,4 @@
-import { decibelAttenuationToGain, timecentsToSeconds } from './unit_converter.js'
+import { decibelAttenuationToGain, timecentsToSeconds } from "./unit_converter.js";
 
 import { generatorTypes } from "../../../soundfont/basic_soundfont/generator.js";
 
@@ -27,27 +27,10 @@ const PERCEIVED_GAIN_SILENCE = 0.000015; // can't go lower than that (see #50)
 export class WorkletVolumeEnvelope
 {
     /**
-     * @param sampleRate {number} Hz
-     * @param initialDecay {number} cb
-     */
-    constructor(sampleRate, initialDecay)
-    {
-        this.sampleRate = sampleRate;
-        /**
-         * if sustain stge is silent,
-         * then we can turn off the voice when it is silent.
-         * We can't do that with modulated as it can silence the volume and then raise it again and the voice must keep playing
-         * @type {boolean}
-         */
-        this.canEndOnSilentSustain = initialDecay / 10 >= PERCEIVED_DB_SILENCE;
-    }
-
-    /**
      * The envelope's current time in samples
      * @type {number}
      */
     currentSampleTime = 0;
-
     /**
      * The sample rate in Hz
      * @type {number}
@@ -78,7 +61,6 @@ export class WorkletVolumeEnvelope
      * @type {number}
      */
     currentReleaseGain = 1;
-
     /**
      * The attack duration in samples
      * @type {number}
@@ -89,55 +71,63 @@ export class WorkletVolumeEnvelope
      * @type {number}
      */
     decayDuration = 0;
-
     /**
      * The release duration in samples
      * @type {number}
      */
     releaseDuration = 0;
-
     /**
      * The voice's absolute attenuation in dB
      * @type {number}
      */
     attenuation = 0;
-
     /**
      * The attenuation target, which the "attenuation" property is linearly interpolated towards
      * @type {number}
      */
     attenuationTarget = 0;
-
     /**
      * The voice's sustain amount in dB, relative to attenuation
      * @type {number}
      */
     sustainDbRelative = 0;
-
     /**
      * The time in samples to the end of delay stage, relative to start of the envelope
      * @type {number}
      */
     delayEnd = 0;
-
     /**
      * The time in samples to the end of attack stage, relative to start of the envelope
      * @type {number}
      */
     attackEnd = 0;
-
     /**
      * The time in samples to the end of hold stage, relative to start of the envelope
      * @type {number}
      */
     holdEnd = 0;
-
     /**
      * The time in samples to the end of decay stage, relative to start of the envelope
      * @type {number}
      */
     decayEnd = 0;
-
+    
+    /**
+     * @param sampleRate {number} Hz
+     * @param initialDecay {number} cb
+     */
+    constructor(sampleRate, initialDecay)
+    {
+        this.sampleRate = sampleRate;
+        /**
+         * if sustain stge is silent,
+         * then we can turn off the voice when it is silent.
+         * We can't do that with modulated as it can silence the volume and then raise it again and the voice must keep playing
+         * @type {boolean}
+         */
+        this.canEndOnSilentSustain = initialDecay / 10 >= PERCEIVED_DB_SILENCE;
+    }
+    
     /**
      * Starts the release phase in the envelope
      * @param voice {WorkletVoice} the voice this envelope belongs to
@@ -148,7 +138,7 @@ export class WorkletVolumeEnvelope
         voice.volumeEnvelope.currentReleaseGain = decibelAttenuationToGain(voice.volumeEnvelope.currentAttenuationDb);
         WorkletVolumeEnvelope.recalculate(voice);
     }
-
+    
     /**
      * Recalculates the envelope
      * @param voice {WorkletVoice} the voice this envelope belongs to
@@ -159,15 +149,18 @@ export class WorkletVolumeEnvelope
         const timecentsToSamples = tc =>
         {
             return Math.max(0, Math.floor(timecentsToSeconds(tc) * env.sampleRate));
-        }
+        };
         // calculate absolute times (they can change so we have to recalculate every time
-        env.attenuationTarget = Math.max(0, Math.min(voice.modulatedGenerators[generatorTypes.initialAttenuation], 1440)) / 10; // divide by ten to get decibels
+        env.attenuationTarget = Math.max(
+            0,
+            Math.min(voice.modulatedGenerators[generatorTypes.initialAttenuation], 1440)
+        ) / 10; // divide by ten to get decibels
         env.sustainDbRelative = Math.min(DB_SILENCE, voice.modulatedGenerators[generatorTypes.sustainVolEnv] / 10);
         const sustainDb = Math.min(DB_SILENCE, env.sustainDbRelative);
-
+        
         // calculate durations
         env.attackDuration = timecentsToSamples(voice.modulatedGenerators[generatorTypes.attackVolEnv]);
-
+        
         // decay: sfspec page 35: the time is for change from attenuation to -100dB
         // therefore we need to calculate the real time
         // (changing from attenuation to sustain instead of -100dB)
@@ -175,43 +168,43 @@ export class WorkletVolumeEnvelope
         const keyNumAddition = (60 - voice.targetKey) * voice.modulatedGenerators[generatorTypes.keyNumToVolEnvDecay];
         const fraction = sustainDb / DB_SILENCE;
         env.decayDuration = timecentsToSamples(fullChange + keyNumAddition) * fraction;
-
+        
         env.releaseDuration = timecentsToSamples(voice.modulatedGenerators[generatorTypes.releaseVolEnv]);
-
+        
         // calculate absolute end times for the values
         env.delayEnd = timecentsToSamples(voice.modulatedGenerators[generatorTypes.delayVolEnv]);
         env.attackEnd = env.attackDuration + env.delayEnd;
-
+        
         // make sure to take keyNumToVolEnvHold into account!!!
         const holdExcursion = (60 - voice.targetKey) * voice.modulatedGenerators[generatorTypes.keyNumToVolEnvHold];
         env.holdEnd = timecentsToSamples(voice.modulatedGenerators[generatorTypes.holdVolEnv]
                 + holdExcursion)
-                + env.attackEnd;
-
+            + env.attackEnd;
+        
         env.decayEnd = env.decayDuration + env.holdEnd;
-
+        
         // if this is the first recalculation and the voice has no attack or delay time, set current db to peak
-        if(env.state === 0 && env.attackEnd === 0)
+        if (env.state === 0 && env.attackEnd === 0)
         {
             // env.currentAttenuationDb = env.attenuationTarget;
             env.state = 2;
         }
-
+        
         // check if voice is in release
-        if(voice.isInRelease)
+        if (voice.isInRelease)
         {
             // no interpolation this time: force update to actual attenuation and calculate release start from there
             //env.attenuation = Math.min(DB_SILENCE, env.attenuationTarget);
             const sustainDb = Math.max(0, Math.min(DB_SILENCE, env.sustainDbRelative));
             const fraction = sustainDb / DB_SILENCE;
             env.decayDuration = timecentsToSamples(fullChange + keyNumAddition) * fraction;
-
+            
             switch (env.state)
             {
                 case 0:
                     env.releaseStartDb = DB_SILENCE;
                     break;
-
+                
                 case 1:
                     // attack phase: get linear gain of the attack phase when release started
                     // and turn it into db as we're ramping the db up linearly
@@ -222,28 +215,28 @@ export class WorkletVolumeEnvelope
                     // turn that into db
                     env.releaseStartDb = 20 * Math.log10(elapsed) * -1;
                     break;
-
+                
                 case 2:
                     env.releaseStartDb = 0;
                     break;
-
+                
                 case 3:
                     env.releaseStartDb = (1 - (env.decayEnd - env.releaseStartTimeSamples) / env.decayDuration) * sustainDb;
                     break;
-
+                
                 case 4:
                     env.releaseStartDb = sustainDb;
                     break;
             }
             env.releaseStartDb = Math.max(0, Math.min(env.releaseStartDb, DB_SILENCE));
-            if(env.releaseStartDb >= PERCEIVED_DB_SILENCE)
+            if (env.releaseStartDb >= PERCEIVED_DB_SILENCE)
             {
                 voice.finished = true;
             }
             env.currentReleaseGain = decibelAttenuationToGain(env.releaseStartDb);
         }
     }
-
+    
     /**
      * Applies volume envelope gain to the given output buffer
      * @param voice {WorkletVoice} the voice we're working on
@@ -252,18 +245,18 @@ export class WorkletVolumeEnvelope
      * @param smoothingFactor {number} the adjusted smoothing factor for the envelope
      * @description essentially we use approach of 100dB is silence, 0dB is peak, and always add attenuation to that (which is interpolated)
      */
-    static apply(voice, audioBuffer,  centibelOffset, smoothingFactor)
+    static apply(voice, audioBuffer, centibelOffset, smoothingFactor)
     {
         const env = voice.volumeEnvelope;
         let decibelOffset = centibelOffset / 10;
-
+        
         const attenuationSmoothing = smoothingFactor;
-    
+        
         // RELEASE PHASE
-        if(voice.isInRelease)
+        if (voice.isInRelease)
         {
             let elapsedRelease = env.currentSampleTime - env.releaseStartTimeSamples;
-            if(elapsedRelease >= env.releaseDuration)
+            if (elapsedRelease >= env.releaseDuration)
             {
                 for (let i = 0; i < audioBuffer.length; i++)
                 {
@@ -283,108 +276,108 @@ export class WorkletVolumeEnvelope
                 env.currentSampleTime++;
                 elapsedRelease++;
             }
-
-            if(env.currentReleaseGain <= PERCEIVED_GAIN_SILENCE)
+            
+            if (env.currentReleaseGain <= PERCEIVED_GAIN_SILENCE)
             {
                 voice.finished = true;
             }
             return;
         }
-
+        
         let filledBuffer = 0;
-        switch(env.state)
+        switch (env.state)
         {
             case 0:
                 // delay phase, no sound is produced
-                while(env.currentSampleTime < env.delayEnd)
+                while (env.currentSampleTime < env.delayEnd)
                 {
                     env.currentAttenuationDb = DB_SILENCE;
                     audioBuffer[filledBuffer] = 0;
-    
-                    env.currentSampleTime++
-                    if(++filledBuffer >= audioBuffer.length)
+                    
+                    env.currentSampleTime++;
+                    if (++filledBuffer >= audioBuffer.length)
                     {
                         return;
                     }
                 }
                 env.state++;
             // fallthrough
-    
+            
             case 1:
                 // attack phase: ramp from 0 to attenuation
-                while(env.currentSampleTime < env.attackEnd)
+                while (env.currentSampleTime < env.attackEnd)
                 {
                     // attenuation interpolation
                     env.attenuation += (env.attenuationTarget - env.attenuation) * attenuationSmoothing;
-
+                    
                     // Special case: linear gain ramp instead of linear db ramp
                     let linearAttenuation = 1 - (env.attackEnd - env.currentSampleTime) / env.attackDuration; // 0 to 1
                     audioBuffer[filledBuffer] *= linearAttenuation * decibelAttenuationToGain(env.attenuation + decibelOffset);
                     // set current attenuation to peak as its invalid during this phase
                     env.currentAttenuationDb = 0;
-
+                    
                     env.currentSampleTime++;
-                    if(++filledBuffer >= audioBuffer.length)
+                    if (++filledBuffer >= audioBuffer.length)
                     {
                         return;
                     }
                 }
                 env.state++;
             // fallthrough
-    
+            
             case 2:
                 // hold/peak phase: stay at attenuation
-                while(env.currentSampleTime < env.holdEnd)
+                while (env.currentSampleTime < env.holdEnd)
                 {
                     // attenuation interpolation
                     env.attenuation += (env.attenuationTarget - env.attenuation) * attenuationSmoothing;
-
+                    
                     audioBuffer[filledBuffer] *= decibelAttenuationToGain(env.attenuation + decibelOffset);
                     env.currentAttenuationDb = 0;
-    
+                    
                     env.currentSampleTime++;
-                    if(++filledBuffer >= audioBuffer.length)
+                    if (++filledBuffer >= audioBuffer.length)
                     {
                         return;
                     }
                 }
                 env.state++;
             // fallthrough
-    
+            
             case 3:
                 // decay phase: linear ramp from attenuation to sustain
-                while(env.currentSampleTime < env.decayEnd)
+                while (env.currentSampleTime < env.decayEnd)
                 {
                     // attenuation interpolation
                     env.attenuation += (env.attenuationTarget - env.attenuation) * attenuationSmoothing;
-
+                    
                     env.currentAttenuationDb = (1 - (env.decayEnd - env.currentSampleTime) / env.decayDuration) * env.sustainDbRelative;
                     audioBuffer[filledBuffer] *= decibelAttenuationToGain(env.currentAttenuationDb + decibelOffset + env.attenuation);
-    
+                    
                     env.currentSampleTime++;
-                    if(++filledBuffer >= audioBuffer.length)
+                    if (++filledBuffer >= audioBuffer.length)
                     {
                         return;
                     }
                 }
                 env.state++;
             // fallthrough
-    
+            
             case 4:
-                if(env.canEndOnSilentSustain && env.sustainDbRelative >= PERCEIVED_DB_SILENCE)
+                if (env.canEndOnSilentSustain && env.sustainDbRelative >= PERCEIVED_DB_SILENCE)
                 {
                     voice.finished = true;
                 }
                 // sustain phase: stay at sustain
-                while(true)
+                while (true)
                 {
                     // attenuation interpolation
                     env.attenuation += (env.attenuationTarget - env.attenuation) * attenuationSmoothing;
-
+                    
                     audioBuffer[filledBuffer] *= decibelAttenuationToGain(env.sustainDbRelative + decibelOffset + env.attenuation);
                     env.currentAttenuationDb = env.sustainDbRelative;
                     env.currentSampleTime++;
-                    if(++filledBuffer >= audioBuffer.length)
+                    if (++filledBuffer >= audioBuffer.length)
                     {
                         return;
                     }

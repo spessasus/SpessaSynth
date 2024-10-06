@@ -1,4 +1,3 @@
-
 /**
  * @typedef {Object} ChannelSnapshot - a snapshot of the channel.
  *
@@ -35,10 +34,10 @@
  * @property {number} transposition - the current synth transpositon in semitones. can be a float
  */
 
-import { returnMessageType } from '../message_protocol/worklet_message.js'
-import { SpessaSynthInfo } from '../../../utils/loggin.js'
-import { consoleColors } from '../../../utils/other.js'
-import { midiControllers } from '../../../midi_parser/midi_message.js'
+import { returnMessageType } from "../message_protocol/worklet_message.js";
+import { SpessaSynthInfo } from "../../../utils/loggin.js";
+import { consoleColors } from "../../../utils/other.js";
+import { midiControllers } from "../../../midi_parser/midi_message.js";
 
 /**
  * sends a snapshot of the current controller values of the synth (used to copy that data to OfflineAudioContext when rendering)
@@ -49,29 +48,30 @@ export function sendSynthesizerSnapshot()
     /**
      * @type {ChannelSnapshot[]}
      */
-    const channelSnapshots = this.workletProcessorChannels.map(channel => {
+    const channelSnapshots = this.workletProcessorChannels.map(channel =>
+    {
         return {
             program: channel.preset.program,
             bank: channel.preset.bank,
             lockPreset: channel.lockPreset,
             patchName: channel.preset.presetName,
-
+            
             midiControllers: channel.midiControllers,
             lockedControllers: channel.lockedControllers,
             customControllers: channel.customControllers,
-
+            
             channelVibrato: channel.channelVibrato,
             lockVibrato: channel.lockGSNRPNParams,
-
+            
             channelTransposeKeyShift: channel.channelTransposeKeyShift,
             channelOctaveTuning: channel.channelOctaveTuning,
             keyCentTuning: channel.keyCentTuning,
             velocityOverride: channel.velocityOverride,
             isMuted: channel.isMuted,
             drumChannel: channel.drumChannel
-        }
+        };
     });
-
+    
     /**
      * @type {SynthesizerSnapshot}
      */
@@ -83,7 +83,7 @@ export function sendSynthesizerSnapshot()
         system: this.system,
         interpolation: this.interpolationType
     };
-
+    
     this.post({
         messageType: returnMessageType.synthesizerSnapshot,
         messageData: synthesizerSnapshot
@@ -99,37 +99,38 @@ export function applySynthesizerSnapshot(snapshot)
 {
     // restore system
     this.system = snapshot.system;
-
+    
     // restore pan and volume
     this.setMasterGain(snapshot.mainVolume);
     this.setMasterPan(snapshot.pan);
     this.transposeAllChannels(snapshot.transposition);
     this.interpolationType = snapshot.interpolation;
-
+    
     // add channels if more needed
-    while(this.workletProcessorChannels.length < snapshot.channelSnapshots.length)
+    while (this.workletProcessorChannels.length < snapshot.channelSnapshots.length)
     {
         this.createWorkletChannel();
     }
-
+    
     // restore cahnnels
-    snapshot.channelSnapshots.forEach((channelSnapshot, index) => {
+    snapshot.channelSnapshots.forEach((channelSnapshot, index) =>
+    {
         const channelObject = this.workletProcessorChannels[index];
         this.muteChannel(index, channelSnapshot.isMuted);
         this.setDrums(index, channelSnapshot.drumChannel);
-
+        
         // restore controllers
         channelObject.midiControllers = channelSnapshot.midiControllers;
         channelObject.lockedControllers = channelSnapshot.lockedControllers;
         channelObject.customControllers = channelSnapshot.customControllers;
-
+        
         // restore vibrato and transpose
         channelObject.channelVibrato = channelSnapshot.channelVibrato;
         channelObject.lockGSNRPNParams = channelSnapshot.lockVibrato;
         channelObject.channelTransposeKeyShift = channelSnapshot.channelTransposeKeyShift;
         channelObject.channelOctaveTuning = channelSnapshot.channelOctaveTuning;
         channelObject.velocityOverride = channelSnapshot.velocityOverride;
-
+        
         // restore preset and lock
         channelObject.lockPreset = false;
         channelObject.midiControllers[midiControllers.bankSelect] = channelSnapshot.bank;

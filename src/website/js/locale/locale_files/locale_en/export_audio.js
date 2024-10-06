@@ -3,7 +3,7 @@ export const exportAudio = {
         title: "Save Audio",
         description: "Save the composition to various formats"
     },
-
+    
     formats: {
         title: "Choose format",
         formats: {
@@ -17,13 +17,13 @@ export const exportAudio = {
                     confirm: "Export",
                     normalizeVolume: {
                         title: "Normalize volume",
-                        description: "Keep the volume at the same level, no matter how loud or quiet the MIDI is. Recommended.",
+                        description: "Keep the volume at the same level, no matter how loud or quiet the MIDI is. Recommended."
                     },
                     additionalTime: {
                         title: "Additional time (s)",
-                        description: "Additional time at the end of the song to allow for the sound to fade. (seconds)",
+                        description: "Additional time at the end of the song to allow for the sound to fade. (seconds)"
                     },
-
+                    
                     separateChannels: {
                         title: "Separate channels",
                         description: "Save each channel as a separate file. Useful for things like oscilloscope viewers. Note that this disables reverb and chorus.",
@@ -40,23 +40,23 @@ export const exportAudio = {
                 exportMessage: {
                     message: "Exporting WAV audio...",
                     estimated: "Remaining:",
-                    convertWav: "Converting to wav...",
+                    convertWav: "Converting to wav..."
                 }
             },
-
+            
             midi: {
                 button: {
                     title: "MIDI (.mid)",
                     description: "Export the MIDI file with the controller and instrument changes applied"
                 }
             },
-
+            
             soundfont: {
                 button: {
                     title: "SoundFont (.sf2)",
                     description: "Export a SoundFont2 file"
                 },
-
+                
                 options: {
                     title: "SF export options",
                     confirm: "Export",
@@ -75,14 +75,14 @@ export const exportAudio = {
                     }
                 }
             },
-
+            
             rmidi: {
                 button: {
                     title: "Embedded MIDI (.rmi)",
                     description: "Export the modified MIDI with the embedded trimmed soundfont as a single file. " +
                         "Note that this format isn't widely supported"
                 },
-
+                
                 progress: {
                     title: "Exporting embeded MIDI...",
                     loading: "Loading Soundfont and MIDI...",
@@ -91,7 +91,7 @@ export const exportAudio = {
                     saving: "Saving RMIDI...",
                     done: "Done!"
                 },
-
+                
                 options: {
                     title: "RMIDI export options",
                     confirm: "Export",
@@ -105,7 +105,7 @@ export const exportAudio = {
                     },
                     bankOffset: {
                         title: "Bank offset",
-                        description: "The bank offset of the file. Value of 0 is recommended. Only change if you know what you're doing.",
+                        description: "The bank offset of the file. Value of 0 is recommended. Only change if you know what you're doing."
                     },
                     adjust: {
                         title: "Adjust MIDI",
@@ -117,7 +117,7 @@ export const exportAudio = {
         metadata: {
             songTitle: {
                 title: "Title:",
-                description: "The song's title",
+                description: "The song's title"
             },
             album: {
                 title: "Album:",
@@ -129,7 +129,7 @@ export const exportAudio = {
             },
             albumCover: {
                 title: "Album cover:",
-                description: "The song's album cover",
+                description: "The song's album cover"
             },
             creationDate: {
                 title: "Created:",
@@ -149,4 +149,4 @@ export const exportAudio = {
             }
         }
     }
-}
+};

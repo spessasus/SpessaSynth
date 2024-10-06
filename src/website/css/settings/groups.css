@@ -1,10 +1,10 @@
-.settings_groups_parent{
+.settings_groups_parent {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-evenly;
 }
 
-.settings_group{
+.settings_group {
     border-radius: var(--settings-border-radius);
     border: solid #333 1px;
     margin: 1em;
@@ -13,12 +13,12 @@
     transition: 0.2s;
 }
 
-.settings_group:hover{
+.settings_group:hover {
     filter: brightness(1.2);
     box-shadow: 0 0 5px var(--top-buttons-color-end);
 }
 
-.settings_group label, .settings_group p{
+.settings_group label, .settings_group p {
     margin-top: 1em;
     display: block;
 }

@@ -19,7 +19,7 @@ export function disableAndLockGSNRPN(channel)
  */
 export function setVibrato(channel, depth, rate, delay)
 {
-    if(this.workletProcessorChannels[channel].lockGSNRPNParams)
+    if (this.workletProcessorChannels[channel].lockGSNRPNParams)
     {
         return;
     }

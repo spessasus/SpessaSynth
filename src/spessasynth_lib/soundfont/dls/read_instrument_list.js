@@ -1,6 +1,6 @@
-import { readRIFFChunk } from '../basic_soundfont/riff_chunk.js'
-import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd } from '../../utils/loggin.js'
-import { consoleColors } from '../../utils/other.js'
+import { readRIFFChunk } from "../basic_soundfont/riff_chunk.js";
+import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd } from "../../utils/loggin.js";
+import { consoleColors } from "../../utils/other.js";
 
 /**
  * @this {DLSSoundFont}
@@ -9,7 +9,7 @@ import { consoleColors } from '../../utils/other.js'
 export function readDLSInstrumentList(instrumentListChunk)
 {
     SpessaSynthGroupCollapsed("%cLoading instruments...", consoleColors.info);
-    for(let i = 0; i < this.instrumentAmount; i++)
+    for (let i = 0; i < this.instrumentAmount; i++)
     {
         this.readDLSInstrument(readRIFFChunk(instrumentListChunk.chunkData));
     }

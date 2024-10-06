@@ -7,27 +7,27 @@
     color: #222;
 }
 
-a{
+a {
     color: #546fff !important;
 }
 
-.box{
+.box {
     padding: 2rem;
     margin: 0.5rem;
     border-radius: 1rem;
 }
 
-.button_box{
+.button_box {
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-.wide_box{
+.wide_box {
     min-width: 80% !important;
 }
 
-.flexy_box{
+.flexy_box {
     padding: 0.5rem !important;
     display: flex;
     flex-direction: column;
@@ -35,15 +35,15 @@ a{
     border: solid 0.1rem black;
 }
 
-.hidden{
+.hidden {
     display: none;
 }
 
-#dls_upload{
+#dls_upload {
     display: none;
 }
 
-label{
+label {
     border: solid black 0.1rem;
     cursor: pointer;
     padding: 1rem;
@@ -53,11 +53,11 @@ label{
     margin: 0.5rem;
 }
 
-label:active{
+label:active {
     transform: scale(0.9);
 }
 
-body{
+body {
     background: #eee;
     display: flex;
     justify-content: center;

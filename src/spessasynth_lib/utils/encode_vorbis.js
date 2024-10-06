@@ -1,4 +1,4 @@
-import { libvorbis } from '../externals/libvorbis/OggVorbisEncoder.min.js'
+import { libvorbis } from "../externals/libvorbis/OggVorbisEncoder.min.js";
 
 /**
  * @typedef {function} EncodeVorbisFunction
@@ -8,7 +8,7 @@ import { libvorbis } from '../externals/libvorbis/OggVorbisEncoder.min.js'
  * @param quality {number} -0.1 to 1
  * @returns {Uint8Array}
  */
-export function encodeVorbis(channelAudioData, channels,  sampleRate, quality)
+export function encodeVorbis(channelAudioData, channels, sampleRate, quality)
 {
     // https://github.com/higuma/ogg-vorbis-encoder-js
     //libvorbis.init();
@@ -21,7 +21,7 @@ export function encodeVorbis(channelAudioData, channels,  sampleRate, quality)
     const outLen = arrs.reduce((l, c) => l + c.length, 0);
     const out = new Uint8Array(outLen);
     let offset = 0;
-    for(const a of arrs)
+    for (const a of arrs)
     {
         out.set(a, offset);
         offset += a.length;

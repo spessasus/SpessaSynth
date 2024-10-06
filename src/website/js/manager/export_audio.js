@@ -1,10 +1,10 @@
-import { closeNotification, showNotification } from '../notification/notification.js'
-import { Synthetizer } from '../../../spessasynth_lib/synthetizer/synthetizer.js'
-import { formatTime } from '../../../spessasynth_lib/utils/other.js'
-import { audioBufferToWav } from '../../../spessasynth_lib/utils/buffer_to_wav.js'
-import { WORKLET_URL_ABSOLUTE } from '../../../spessasynth_lib/synthetizer/worklet_url.js'
-import { ANIMATION_REFLOW_TIME } from '../utils/animation_utils.js'
-import { MIDIticksToSeconds } from '../../../spessasynth_lib/midi_parser/basic_midi.js'
+import { closeNotification, showNotification } from "../notification/notification.js";
+import { Synthetizer } from "../../../spessasynth_lib/synthetizer/synthetizer.js";
+import { formatTime } from "../../../spessasynth_lib/utils/other.js";
+import { audioBufferToWav } from "../../../spessasynth_lib/utils/buffer_to_wav.js";
+import { WORKLET_URL_ABSOLUTE } from "../../../spessasynth_lib/synthetizer/worklet_url.js";
+import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
+import { MIDIticksToSeconds } from "../../../spessasynth_lib/midi_parser/basic_midi.js";
 
 const RENDER_AUDIO_TIME_INTERVAL = 1000;
 
@@ -21,19 +21,19 @@ const RENDER_AUDIO_TIME_INTERVAL = 1000;
 export async function _doExportAudioData(normalizeAudio = true, additionalTime = 2, separateChannels = false, meta = {}, loopCount = 0)
 {
     this.isExporting = true;
-    if(!this.seq)
+    if (!this.seq)
     {
         throw new Error("No sequencer active");
     }
     // get locales
     const exportingMessage = manager.localeManager.getLocaleString(`locale.exportAudio.formats.formats.wav.exportMessage.message`);
     const estimatedMessage = manager.localeManager.getLocaleString(`locale.exportAudio.formats.formats.wav.exportMessage.estimated`);
-    const loadingMessage =  manager.localeManager.getLocaleString(`locale.synthInit.genericLoading`);
+    const loadingMessage = manager.localeManager.getLocaleString(`locale.synthInit.genericLoading`);
     const notification = showNotification(
         exportingMessage,
         [
-            { type: 'text', textContent: loadingMessage },
-            { type: 'progress' }
+            { type: "text", textContent: loadingMessage },
+            { type: "progress" }
         ],
         9999999,
         false
@@ -44,9 +44,9 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
     let loopDuration = loopEndAbsolute - loopStartAbsolute;
     const duration = parsedMid.duration + additionalTime + loopDuration * loopCount;
     const sampleRate = this.context.sampleRate;
-
+    
     let sampleDuration = sampleRate * duration;
-
+    
     // prepare audio context
     const offline = new OfflineAudioContext({
         numberOfChannels: separateChannels ? 32 : 2,
@@ -54,13 +54,13 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
         length: sampleDuration
     });
     await offline.audioWorklet.addModule(new URL("../../spessasynth_lib/" + WORKLET_URL_ABSOLUTE, import.meta.url));
-
+    
     /**
      * take snapshot of the real synth
      * @type {SynthesizerSnapshot}
      */
     const snapshot = await this.synth.getSynthesizerSnapshot();
-
+    
     const soundfont = this.soundFont;
     /**
      * Prepare synthesizer
@@ -80,8 +80,7 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
             chorusConfig: undefined,
             reverbImpulseResponse: this.impulseResponse
         });
-    }
-    catch (e)
+    } catch (e)
     {
         showNotification(
             this.localeManager.getLocaleString("locale.warnings.warning"),
@@ -89,19 +88,20 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
                 type: "text",
                 textContent: this.localeManager.getLocaleString("locale.warnings.outOfMemory")
             }]
-        )
+        );
         throw e;
     }
-
+    
     const detailMessage = notification.div.getElementsByTagName("p")[0];
     const progressDiv = notification.div.getElementsByClassName("notification_progress")[0];
-
+    
     const RATI_SECONDS = RENDER_AUDIO_TIME_INTERVAL / 1000;
     let rendered = synth.currentTime;
     let estimatedTime = duration;
     const smoothingFactor = 0.1; // for smoothing estimated time
-
-    const interval = setInterval(() => {
+    
+    const interval = setInterval(() =>
+    {
         // calculate estimated time
         let hasRendered = synth.currentTime - rendered;
         rendered = synth.currentTime;
@@ -115,28 +115,29 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
         }
         // smooth out estimated using exponential moving average
         estimatedTime = smoothingFactor * estimated + (1 - smoothingFactor) * estimatedTime;
-        detailMessage.innerText = `${estimatedMessage} ${formatTime(estimatedTime).time}`
+        detailMessage.innerText = `${estimatedMessage} ${formatTime(estimatedTime).time}`;
     }, RENDER_AUDIO_TIME_INTERVAL);
-
+    
     const buf = await offline.startRendering();
     progressDiv.style.width = "100%";
     // clear intervals and save file
     clearInterval(interval);
-    detailMessage.innerText = this.localeManager.getLocaleString("locale.exportAudio.formats.formats.wav.exportMessage.convertWav");
+    detailMessage.innerText = this.localeManager.getLocaleString(
+        "locale.exportAudio.formats.formats.wav.exportMessage.convertWav");
     // let the browser show
     await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
-    if(!separateChannels)
+    if (!separateChannels)
     {
         const startOffset = MIDIticksToSeconds(parsedMid.firstNoteOn, parsedMid);
         const loopStart = loopStartAbsolute - startOffset;
         const loopEnd = loopEndAbsolute - startOffset;
         let loop = undefined;
-        if(loopCount === 0)
+        if (loopCount === 0)
         {
-            loop = {start: loopStart, end: loopEnd};
+            loop = { start: loopStart, end: loopEnd };
         }
         const wav = audioBufferToWav(buf, normalizeAudio, 0, meta, loop);
-        this.saveBlob(wav, `${this.seqUI.currentSongTitle || 'unnamed_song'}.wav`);
+        this.saveBlob(wav, `${this.seqUI.currentSongTitle || "unnamed_song"}.wav`);
     }
     else
     {
@@ -146,7 +147,7 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
          */
         const content = [];
         const usedChannels = new Set();
-        for(const p of parsedMid.usedChannelsOnTrack)
+        for (const p of parsedMid.usedChannelsOnTrack)
         {
             p.forEach(c => usedChannels.add(c));
         }
@@ -156,25 +157,27 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
             let muted = true;
             for (let j = i; j < snapshot.channelSnapshots.length; j += 16)
             {
-                if(!snapshot.channelSnapshots[j].isMuted)
+                if (!snapshot.channelSnapshots[j].isMuted)
                 {
                     muted = false;
                     break;
                 }
             }
-            if(!usedChannels.has(i) || muted)
+            if (!usedChannels.has(i) || muted)
             {
                 continue;
             }
             content.push({
                 type: "button",
                 textContent: this.localeManager.getLocaleString(separatePath + "save", [i + 1]),
-                onClick: async (n, target) => {
-
+                onClick: async (n, target) =>
+                {
+                    
                     const text = target.textContent;
-                    target.textContent = this.localeManager.getLocaleString("locale.exportAudio.formats.formats.wav.exportMessage.convertWav");
+                    target.textContent = this.localeManager.getLocaleString(
+                        "locale.exportAudio.formats.formats.wav.exportMessage.convertWav");
                     await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
-
+                    
                     const audioOut = audioBufferToWav(buf, false, i * 2);
                     const fileName = `${i + 1} - ${snapshot.channelSnapshots[i].patchName}.wav`;
                     this.saveBlob(audioOut, fileName);
@@ -195,7 +198,7 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
                 flexDirection: "row"
             }
         );
-        n.div.style.width = '30rem'
+        n.div.style.width = "30rem";
     }
     closeNotification(notification.id);
     this.isExporting = false;
@@ -208,18 +211,20 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
  */
 export async function _exportAudioData()
 {
-    if(this.isExporting)
+    if (this.isExporting)
     {
         return;
     }
     const wavPath = `locale.exportAudio.formats.formats.wav.options.`;
     const metadataPath = "locale.exportAudio.formats.metadata.";
-    const verifyDecode = (type, def, decoder) => {
-        return this.seq.midiData.RMIDInfo?.[type] === undefined ? def : decoder.decode(this.seq.midiData.RMIDInfo?.[type]).replace(/\0$/, '')
-    }
+    const verifyDecode = (type, def, decoder) =>
+    {
+        return this.seq.midiData.RMIDInfo?.[type] === undefined ? def : decoder.decode(this.seq.midiData.RMIDInfo?.[type])
+            .replace(/\0$/, "");
+    };
     const encoding = verifyDecode("IENC", "ascii", new TextDecoder());
     const decoder = new TextDecoder(encoding);
-
+    
     const startAlbum = verifyDecode("IPRD", "", decoder);
     const startArtist = verifyDecode("IART", "", decoder);
     const startGenre = verifyDecode("IGNR", "", decoder);
@@ -299,7 +304,8 @@ export async function _exportAudioData()
         {
             type: "button",
             textContent: this.localeManager.getLocaleString(wavPath + "confirm"),
-            onClick: n => {
+            onClick: n =>
+            {
                 closeNotification(n.id);
                 const normalizeVolume = n.div.querySelector("input[normalize-volume-toggle]").checked;
                 const additionalTime = n.div.querySelector("input[additional-time]").value;
@@ -316,14 +322,20 @@ export async function _exportAudioData()
                     artist: artist.length > 0 ? artist : undefined,
                     album: album.length > 0 ? album : undefined,
                     title: title.length > 0 ? title : undefined,
-                    genre: genre.length > 0 ? genre : undefined,
-                }
-
-                this._doExportAudioData(normalizeVolume, parseInt(additionalTime), separateChannels, metadata, parseInt(loopCount));
+                    genre: genre.length > 0 ? genre : undefined
+                };
+                
+                this._doExportAudioData(
+                    normalizeVolume,
+                    parseInt(additionalTime),
+                    separateChannels,
+                    metadata,
+                    parseInt(loopCount)
+                );
             }
         }
     ];
-
+    
     /**
      * @type {NotificationContent[]}
      */

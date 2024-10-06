@@ -1,8 +1,8 @@
-.notification p{
+.notification p {
     margin: 1rem;
     font-size: var(--notification-font-size);
 }
 
-.notification label{
+.notification label {
     font-size: var(--notification-font-size);
 }

@@ -1,7 +1,7 @@
-import { IndexedByteArray } from '../../../utils/indexed_array.js'
-import { writeStringAsBytes } from '../../../utils/byte_functions/string.js'
-import { writeWord } from '../../../utils/byte_functions/little_endian.js'
-import { RiffChunk, writeRIFFChunk } from '../riff_chunk.js'
+import { IndexedByteArray } from "../../../utils/indexed_array.js";
+import { writeStringAsBytes } from "../../../utils/byte_functions/string.js";
+import { writeWord } from "../../../utils/byte_functions/little_endian.js";
+import { RiffChunk, writeRIFFChunk } from "../riff_chunk.js";
 
 /**
  * @this {BasicSoundFont}
@@ -14,7 +14,7 @@ export function getINST()
     // the instrument start index is adjusted in ibag, simply write it here
     let instrumentStart = 0;
     let instrumentID = 0;
-    for(const inst of this.instruments)
+    for (const inst of this.instruments)
     {
         writeStringAsBytes(instdata, inst.instrumentName, 20);
         writeWord(instdata, instrumentStart);
@@ -25,7 +25,7 @@ export function getINST()
     // write EOI
     writeStringAsBytes(instdata, "EOI", 20);
     writeWord(instdata, instrumentStart);
-
+    
     return writeRIFFChunk(new RiffChunk(
         "inst",
         instdata.length,

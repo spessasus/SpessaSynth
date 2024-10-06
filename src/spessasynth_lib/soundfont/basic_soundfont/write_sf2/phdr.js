@@ -1,7 +1,7 @@
-import { IndexedByteArray } from '../../../utils/indexed_array.js'
-import { writeStringAsBytes } from '../../../utils/byte_functions/string.js'
-import { writeDword, writeWord } from '../../../utils/byte_functions/little_endian.js'
-import { RiffChunk, writeRIFFChunk } from '../riff_chunk.js'
+import { IndexedByteArray } from "../../../utils/indexed_array.js";
+import { writeStringAsBytes } from "../../../utils/byte_functions/string.js";
+import { writeDword, writeWord } from "../../../utils/byte_functions/little_endian.js";
+import { RiffChunk, writeRIFFChunk } from "../riff_chunk.js";
 
 /**
  * @this {BasicSoundFont}
@@ -33,7 +33,7 @@ export function getPHDR()
     writeDword(phdrdata, 0); // library
     writeDword(phdrdata, 0); // genre
     writeDword(phdrdata, 0); // morphology
-
+    
     return writeRIFFChunk(new RiffChunk(
         "phdr",
         phdrdata.length,

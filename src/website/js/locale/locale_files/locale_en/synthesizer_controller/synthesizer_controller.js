@@ -1,4 +1,4 @@
-import { channelControllerLocale } from './channel_controller.js'
+import { channelControllerLocale } from "./channel_controller.js";
 
 /**
  *
@@ -9,60 +9,60 @@ export const synthesizerControllerLocale = {
         title: "Synthesizer controller",
         description: "Show the synthesizer controller"
     },
-
+    
     // meters
     mainVoiceMeter: {
         title: "Voices: ",
-        description: "The total amount of voices currently playing",
+        description: "The total amount of voices currently playing"
     },
-
+    
     mainVolumeMeter: {
         title: "Volume: ",
         description: "The current master volume of the synthesizer"
     },
-
+    
     mainPanMeter: {
         title: "Pan: ",
         description: "The current master stereo panning of the synthesizer"
     },
-
+    
     mainTransposeMeter: {
         title: "Transpose: ",
         description: "Transposes the synthesizer (in semitones or keys)"
     },
-
+    
     // buttons
     midiPanic: {
         title: "MIDI Panic",
         description: "Stops all voices immediately"
     },
-
+    
     systemReset: {
         title: "System reset",
         description: "Resets all controllers to their default values"
     },
-
+    
     blackMidiMode: {
         title: "Black MIDI mode",
         description: "Toggles the High Performance Mode, simplifying the look and killing the notes faster"
     },
-
+    
     disableCustomVibrato: {
         title: "Disable custom vibrato",
         description: "Disables the custom (NRPN) Vibrato permamently. Reload the website to reenable it"
     },
-
+    
     helpButton: {
         title: "Help",
         description: "Opens an external website with the usage guide"
     },
-
+    
     interpolation: {
         description: "Select the synthesizer's interpolation method",
         linear: "Linear Interpolation",
         nearestNeighbor: "Nearest neighbor",
         cubic: "Cubic Interpolation"
     },
-
+    
     channelController: channelControllerLocale
-}
+};

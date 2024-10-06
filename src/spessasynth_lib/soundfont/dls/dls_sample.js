@@ -1,7 +1,17 @@
-import { BasicSample } from '../basic_soundfont/basic_sample.js'
+import { BasicSample } from "../basic_soundfont/basic_sample.js";
 
 export class DLSSample extends BasicSample
 {
+    /**
+     * in decibels of attenuation, WITHOUT EMU CORRECTION
+     * @type {number}
+     */
+    sampleDbAttenuation;
+    /**
+     * @type {Float32Array}
+     */
+    sampleData;
+    
     /**
      * @param name {string}
      * @param rate {number}
@@ -36,30 +46,19 @@ export class DLSSample extends BasicSample
         this.sampleData = data;
         this.sampleDbAttenuation = sampleDbAttenuation;
     }
-
+    
     getAudioData()
     {
         return this.sampleData;
     }
-
-    /**
-     * in decibels of attenuation, WITHOUT EMU CORRECTION
-     * @type {number}
-     */
-    sampleDbAttenuation;
-
-    /**
-     * @type {Float32Array}
-     */
-    sampleData;
-
+    
     getRawData()
     {
-        if(this.isCompressed)
+        if (this.isCompressed)
         {
             if (!this.compressedData)
             {
-                throw new Error("Compressed but no data??")
+                throw new Error("Compressed but no data??");
             }
             return this.compressedData;
         }

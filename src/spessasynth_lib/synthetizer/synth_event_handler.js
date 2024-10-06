@@ -97,7 +97,8 @@ export class EventHandler
     /**
      * A new synthesizer event handler
      */
-    constructor() {
+    constructor()
+    {
         /**
          * The main list of events
          * @type {Object<EventTypes, Object<string, function(EventCallbackData)>>}
@@ -119,7 +120,7 @@ export class EventHandler
             "soundfonterror": {}
         };
     }
-
+    
     /**
      * Adds a new event listener
      * @param name {EventTypes}
@@ -130,7 +131,7 @@ export class EventHandler
     {
         this.events[name][id] = callback;
     }
-
+    
     /**
      * Removes an event listener
      * @param name {EventTypes}
@@ -140,7 +141,7 @@ export class EventHandler
     {
         delete this.events[name][id];
     }
-
+    
     /**
      * Calls the given event
      * @param name {EventTypes}
@@ -148,7 +149,7 @@ export class EventHandler
      */
     callEvent(name, eventData)
     {
-        if(this.events[name])
+        if (this.events[name])
         {
             Object.values(this.events[name]).forEach(ev => ev(eventData));
         }

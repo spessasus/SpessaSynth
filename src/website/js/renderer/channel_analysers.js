@@ -1,6 +1,6 @@
-import { SpessaSynthInfo } from '../../../spessasynth_lib/utils/loggin.js'
-import { consoleColors } from '../../../spessasynth_lib/utils/other.js'
-import { STABILIZE_WAVEFORMS_FFT_MULTIPLIER } from './render_waveforms.js'
+import { SpessaSynthInfo } from "../../../spessasynth_lib/utils/loggin.js";
+import { consoleColors } from "../../../spessasynth_lib/utils/other.js";
+import { STABILIZE_WAVEFORMS_FFT_MULTIPLIER } from "./render_waveforms.js";
 
 /**
  * @param synth {Synthetizer}
@@ -9,13 +9,13 @@ import { STABILIZE_WAVEFORMS_FFT_MULTIPLIER } from './render_waveforms.js'
 export function createChannelAnalysers(synth)
 {
     // disconnect the analysers from earlier
-    for(const analyser of this.channelAnalysers)
+    for (const analyser of this.channelAnalysers)
     {
         analyser.disconnect();
         this.channelAnalysers.splice(0, 1);
     }
     this.channelAnalysers = [];
-    for(let i = 0; i < synth.channelsAmount; i++)
+    for (let i = 0; i < synth.channelsAmount; i++)
     {
         // create the analyser
         const analyser = new AnalyserNode(synth.context, {
@@ -24,8 +24,9 @@ export function createChannelAnalysers(synth)
         });
         this.channelAnalysers.push(analyser);
     }
-
-    synth.eventHandler.addEvent("mutechannel", "renderer-mute-channel", eventData => {
+    
+    synth.eventHandler.addEvent("mutechannel", "renderer-mute-channel", eventData =>
+    {
         this.renderChannels[eventData.channel] = !eventData.isMuted;
     });
     this.updateFftSize();
@@ -43,11 +44,11 @@ export function updateFftSize()
         const mul = drum ? STABILIZE_WAVEFORMS_FFT_MULTIPLIER / 2 : STABILIZE_WAVEFORMS_FFT_MULTIPLIER;
         const fftSize = Math.min(32768, this._stabilizeWaveforms ? fft * mul : fft);
         this.channelAnalysers[i].fftSize = fftSize;
-        if(!drum)
+        if (!drum)
         {
             // calculate delay:
             // 16384 fft size = 0.1 s
-            if(fftSize > 4096)
+            if (fftSize > 4096)
             {
                 this.delayNode.delayTime.value = fftSize / this.synth.context.sampleRate / 2;
             }
@@ -67,10 +68,11 @@ export function updateFftSize()
 export function connectChannelAnalysers(synth)
 {
     synth.connectIndividualOutputs(this.channelAnalysers);
-
-
+    
+    
     // connect for drum change
-    synth.eventHandler.addEvent("drumchange", "renderer-drum-change", () => {
+    synth.eventHandler.addEvent("drumchange", "renderer-drum-change", () =>
+    {
         this.updateFftSize();
     });
 }
@@ -80,7 +82,8 @@ export function connectChannelAnalysers(synth)
  */
 export function disconnectChannelAnalysers()
 {
-    for (const channelAnalyser of this.channelAnalysers) {
+    for (const channelAnalyser of this.channelAnalysers)
+    {
         channelAnalyser.disconnect();
     }
     SpessaSynthInfo("%cAnalysers disconnected!", consoleColors.recognized);

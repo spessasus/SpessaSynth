@@ -1,6 +1,6 @@
-import { Synthetizer } from '../synthetizer/synthetizer.js'
-import { consoleColors } from '../utils/other.js'
-import { SpessaSynthInfo } from '../utils/loggin.js'
+import { Synthetizer } from "../synthetizer/synthetizer.js";
+import { consoleColors } from "../utils/other.js";
+import { SpessaSynthInfo } from "../utils/loggin.js";
 
 /**
  * web_midi_link.js
@@ -15,28 +15,29 @@ export class WebMidiLinkHandler
      */
     constructor(synth)
     {
-
-        window.addEventListener("message", msg => {
-            if(typeof  msg.data !== "string")
+        
+        window.addEventListener("message", msg =>
+        {
+            if (typeof msg.data !== "string")
             {
-                return
+                return;
             }
             /**
              * @type {string[]}
              */
             const data = msg.data.split(",");
-            if(data[0] !== "midi")
+            if (data[0] !== "midi")
             {
                 return;
             }
-
+            
             data.shift(); // remove MIDI
-
+            
             const midiData = data.map(byte => parseInt(byte, 16));
-
+            
             synth.sendMessage(midiData);
         });
-
+        
         SpessaSynthInfo("%cWeb MIDI Link handler created!", consoleColors.recognized);
     }
 }

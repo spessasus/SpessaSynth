@@ -1,10 +1,15 @@
-import { WorkletSequencerReturnMessageType } from './sequencer_message.js'
-import { consoleColors, formatTime } from '../../utils/other.js'
-import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo, SpessaSynthWarn } from '../../utils/loggin.js'
-import { MidiData } from '../../midi_parser/midi_data.js'
-import { MIDI } from '../../midi_parser/midi_loader.js'
-import { getUsedProgramsAndKeys } from '../../midi_parser/used_keys_loaded.js'
-import { MIDIticksToSeconds } from '../../midi_parser/basic_midi.js'
+import { WorkletSequencerReturnMessageType } from "./sequencer_message.js";
+import { consoleColors, formatTime } from "../../utils/other.js";
+import {
+    SpessaSynthGroupCollapsed,
+    SpessaSynthGroupEnd,
+    SpessaSynthInfo,
+    SpessaSynthWarn
+} from "../../utils/loggin.js";
+import { MidiData } from "../../midi_parser/midi_data.js";
+import { MIDI } from "../../midi_parser/midi_loader.js";
+import { getUsedProgramsAndKeys } from "../../midi_parser/used_keys_loaded.js";
+import { MIDIticksToSeconds } from "../../midi_parser/basic_midi.js";
 
 /**
  * @param trackNum {number}
@@ -14,22 +19,22 @@ import { MIDIticksToSeconds } from '../../midi_parser/basic_midi.js'
 export function assignMIDIPort(trackNum, port)
 {
     // assign new 16 channels if the port is not occupied yet
-    if(this.midiPortChannelOffset === 0)
+    if (this.midiPortChannelOffset === 0)
     {
         this.midiPortChannelOffset += 16;
         this.midiPortChannelOffsets[port] = 0;
     }
-
-    if(this.midiPortChannelOffsets[port] === undefined)
+    
+    if (this.midiPortChannelOffsets[port] === undefined)
     {
-        if(this.synth.workletProcessorChannels.length < this.midiPortChannelOffset + 15)
+        if (this.synth.workletProcessorChannels.length < this.midiPortChannelOffset + 15)
         {
             this._addNewMidiPort();
         }
         this.midiPortChannelOffsets[port] = this.midiPortChannelOffset;
         this.midiPortChannelOffset += 16;
     }
-
+    
     this.midiPorts[trackNum] = port;
 }
 
@@ -45,25 +50,25 @@ export function loadNewSequence(parsedMidi)
     {
         throw "No tracks supplied!";
     }
-
-    this.oneTickToSeconds = 60 / (120 * parsedMidi.timeDivision)
-
+    
+    this.oneTickToSeconds = 60 / (120 * parsedMidi.timeDivision);
+    
     /**
      * @type {BasicMIDI}
      */
     this.midiData = parsedMidi;
-
+    
     this.currentLoopCount = this.loopCount;
-
+    
     // check for embedded soundfont
-    if(this.midiData.embeddedSoundFont !== undefined)
+    if (this.midiData.embeddedSoundFont !== undefined)
     {
         SpessaSynthInfo("%cEmbedded soundfont detected! Using it.", consoleColors.recognized);
         this.synth.setEmbeddedSoundFont(this.midiData.embeddedSoundFont, this.midiData.bankOffset);
     }
     else
     {
-        if(this.synth.overrideSoundfont)
+        if (this.synth.overrideSoundfont)
         {
             // clean up the embedded soundfont
             this.synth.clearSoundFont(true, true);
@@ -76,35 +81,39 @@ export function loadNewSequence(parsedMidi)
             const bank = parseInt(programBank.split(":")[0]);
             const program = parseInt(programBank.split(":")[1]);
             const preset = this.synth.getPreset(bank, program);
-            SpessaSynthInfo(`%cPreloading used samples on %c${preset.presetName}%c...`,
+            SpessaSynthInfo(
+                `%cPreloading used samples on %c${preset.presetName}%c...`,
                 consoleColors.info,
                 consoleColors.recognized,
-                consoleColors.info)
-            for (const combo of combos) {
+                consoleColors.info
+            );
+            for (const combo of combos)
+            {
                 const split = combo.split("-");
                 preset.preloadSpecific(parseInt(split[0]), parseInt(split[1]));
             }
         }
         SpessaSynthGroupEnd();
     }
-
+    
     /**
      * the midi track data
      * @type {MidiMessage[][]}
      */
     this.tracks = this.midiData.tracks;
-
+    
     // copy over the port data
     this.midiPorts = this.midiData.midiPorts;
-
+    
     // clear last port data
     this.midiPortChannelOffset = 0;
     this.midiPortChannelOffsets = {};
     // assign port offsets
-    this.midiData.midiPorts.forEach((port, trackIndex) => {
+    this.midiData.midiPorts.forEach((port, trackIndex) =>
+    {
         this.assignMIDIPort(trackIndex, port);
     });
-
+    
     /**
      * Same as Audio.duration (seconds)
      * @type {number}
@@ -112,14 +121,16 @@ export function loadNewSequence(parsedMidi)
     this.duration = this.midiData.duration;
     this.firstNoteTime = MIDIticksToSeconds(this.midiData.firstNoteOn, this.midiData);
     SpessaSynthInfo(`%cTotal song time: ${formatTime(Math.ceil(this.duration)).time}`, consoleColors.recognized);
-
+    
     this.post(WorkletSequencerReturnMessageType.songChange, [new MidiData(this.midiData), this.songIndex]);
-
+    
     this.synth.resetAllControllers();
-    if(this.duration <= 1)
+    if (this.duration <= 1)
     {
-        SpessaSynthWarn(`%cVery short song: (${formatTime(Math.round(this.duration)).time}). Disabling loop!`,
-            consoleColors.warn);
+        SpessaSynthWarn(
+            `%cVery short song: (${formatTime(Math.round(this.duration)).time}). Disabling loop!`,
+            consoleColors.warn
+        );
         this.loop = false;
     }
     this.play(true);
@@ -135,8 +146,9 @@ export function loadNewSongList(midiBuffers)
      * parse the MIDIs (only the array buffers, MIDI is unchanged)
      * @type {BasicMIDI[]}
      */
-    this.songs = midiBuffers.reduce((mids, b) => {
-        if(b.duration)
+    this.songs = midiBuffers.reduce((mids, b) =>
+    {
+        if (b.duration)
         {
             mids.push(b);
             return mids;
@@ -144,20 +156,19 @@ export function loadNewSongList(midiBuffers)
         try
         {
             mids.push(new MIDI(b.binary, b.altName || ""));
-        }
-        catch (e)
+        } catch (e)
         {
             this.post(WorkletSequencerReturnMessageType.midiError, e.message);
             return mids;
         }
         return mids;
     }, []);
-    if(this.songs.length < 1)
+    if (this.songs.length < 1)
     {
         return;
     }
     this.songIndex = 0;
-    if(this.songs.length > 1)
+    if (this.songs.length > 1)
     {
         this.loop = false;
     }
@@ -169,7 +180,7 @@ export function loadNewSongList(midiBuffers)
  */
 export function nextSong()
 {
-    if(this.songs.length === 1)
+    if (this.songs.length === 1)
     {
         this.currentTime = 0;
         return;
@@ -184,13 +195,13 @@ export function nextSong()
  */
 export function previousSong()
 {
-    if(this.songs.length === 1)
+    if (this.songs.length === 1)
     {
         this.currentTime = 0;
         return;
     }
     this.songIndex--;
-    if(this.songIndex < 0)
+    if (this.songIndex < 0)
     {
         this.songIndex = this.songs.length - 1;
     }

@@ -1,5 +1,4 @@
-#keyboard .key
-{
+#keyboard .key {
     -webkit-user-select: none;
     user-select: none;
     touch-action: none;
@@ -11,11 +10,11 @@
     transform-origin: center top;
     --pressed-transform-skew: 0.0007;
     --pressed-transform: matrix3d(
-            1,0,0,
-            0,0,1,
-            0,var(--pressed-transform-skew),0,
-            0,1,0,
-            0,0,0,
+            1, 0, 0,
+            0, 0, 1,
+            0, var(--pressed-transform-skew), 0,
+            0, 1, 0,
+            0, 0, 0,
             1);
     cursor: default;
 
@@ -34,16 +33,15 @@ SIDEWAYS KEYS
 instead of "pressing" from top center, press and scale from center right!
 */
 
-#keyboard.sideways .key{
+#keyboard.sideways .key {
     border-radius: var(--key-border-radius) 0 0 var(--key-border-radius) !important;
     transform-origin: right center !important;
     --pressed-transform: matrix3d(
-            1,0,0,
-            calc(var(--pressed-transform-skew) * -1),0,1,
-            0,0,0,
-            0,1,0,
-            0,0,0
-            ,1) !important;
+            1, 0, 0,
+            calc(var(--pressed-transform-skew) * -1), 0, 1,
+            0, 0, 0,
+            0, 1, 0,
+            0, 0, 0, 1) !important;
 
     --sharp-transform: scale(0.7, 1) !important;
 
@@ -53,45 +51,45 @@ instead of "pressing" from top center, press and scale from center right!
 }
 
 
-#keyboard .flat_key{
+#keyboard .flat_key {
     background: linear-gradient(90deg, #bbb, white);
     z-index: 1;
 }
 
-#keyboard .flat_dark_key{
+#keyboard .flat_dark_key {
     background: linear-gradient(100deg, #111, #000);
 }
 
-#keyboard .sharp_key{
+#keyboard .sharp_key {
     transform: var(--sharp-transform);
     z-index: 10;
     background: linear-gradient(140deg, #222, black);
 }
 
-#keyboard .flat_key.between_sharps{
+#keyboard .flat_key.between_sharps {
     transform: var(--flat-between-transform);
 }
 
-#keyboard .flat_key.left_sharp{
+#keyboard .flat_key.left_sharp {
     transform: var(--flat-left-transform);
 }
 
-#keyboard .flat_key.right_sharp{
+#keyboard .flat_key.right_sharp {
     transform: var(--flat-right-transform);
 }
 
-.sharp_key.pressed{
+.sharp_key.pressed {
     transform: var(--sharp-transform) var(--pressed-transform) !important;
 }
 
-.flat_key.between_sharps.pressed{
+.flat_key.between_sharps.pressed {
     transform: var(--flat-between-transform) var(--pressed-transform) !important;
 }
 
-.flat_key.left_sharp.pressed{
+.flat_key.left_sharp.pressed {
     transform: var(--flat-left-transform) var(--pressed-transform) !important;
 }
 
-.flat_key.right_sharp.pressed{
+.flat_key.right_sharp.pressed {
     transform: var(--flat-right-transform) var(--pressed-transform) !important;
 }

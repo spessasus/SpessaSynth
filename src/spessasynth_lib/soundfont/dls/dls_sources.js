@@ -12,15 +12,15 @@ export const DLSSources = {
     polyPressure: 0x7,
     channelPressure: 0x8,
     vibratoLfo: 0x9,
-
+    
     modulationWheel: 0x81,
     volume: 0x87,
     pan: 0x8a,
     expression: 0x8b,
     chorus: 0xdb,
     reverb: 0xdd,
-
+    
     pitchWheelRange: 0x100,
     fineTune: 0x101,
     coarseTune: 0x102
-}
+};

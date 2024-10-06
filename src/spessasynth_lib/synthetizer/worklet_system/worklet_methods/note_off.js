@@ -1,5 +1,5 @@
-import { consoleColors } from '../../../utils/other.js'
-import { SpessaSynthInfo, SpessaSynthWarn } from '../../../utils/loggin.js'
+import { consoleColors } from "../../../utils/other.js";
+import { SpessaSynthInfo, SpessaSynthWarn } from "../../../utils/loggin.js";
 import { generatorTypes } from "../../../soundfont/basic_soundfont/generator.js";
 
 /**
@@ -10,38 +10,40 @@ import { generatorTypes } from "../../../soundfont/basic_soundfont/generator.js"
  */
 export function noteOff(channel, midiNote)
 {
-    if(midiNote > 127 || midiNote < 0)
+    if (midiNote > 127 || midiNote < 0)
     {
         SpessaSynthWarn(`Received a noteOn for note`, midiNote, "Ignoring.");
         return;
     }
-
+    
     let actualNote = midiNote + this.workletProcessorChannels[channel].channelTransposeKeyShift;
     const program = this.workletProcessorChannels[channel].preset.program;
-    if(this.tunings[program]?.[midiNote]?.midiNote >= 0)
+    if (this.tunings[program]?.[midiNote]?.midiNote >= 0)
     {
         actualNote = this.tunings[program]?.[midiNote].midiNote;
     }
-
+    
     // if high performance mode, kill notes instead of stopping them
-    if(this.highPerformanceMode)
+    if (this.highPerformanceMode)
     {
         // if the channel is percussion channel, do not kill the notes
-        if(!this.workletProcessorChannels[channel].drumChannel)
+        if (!this.workletProcessorChannels[channel].drumChannel)
         {
             this.killNote(channel, actualNote);
             return;
         }
     }
-
+    
     const channelVoices = this.workletProcessorChannels[channel].voices;
-    channelVoices.forEach(v => {
-        if(v.midiNote !== actualNote || v.isInRelease === true)
+    channelVoices.forEach(v =>
+    {
+        if (v.midiNote !== actualNote || v.isInRelease === true)
         {
             return;
         }
         // if hold pedal, move to sustain
-        if(this.workletProcessorChannels[channel].holdPedal) {
+        if (this.workletProcessorChannels[channel].holdPedal)
+        {
             this.workletProcessorChannels[channel].sustainedVoices.push(v);
         }
         else
@@ -63,8 +65,9 @@ export function noteOff(channel, midiNote)
  */
 export function killNote(channel, midiNote)
 {
-    this.workletProcessorChannels[channel].voices.forEach(v => {
-        if(v.midiNote !== midiNote)
+    this.workletProcessorChannels[channel].voices.forEach(v =>
+    {
+        if (v.midiNote !== midiNote)
         {
             return;
         }
@@ -82,7 +85,7 @@ export function killNote(channel, midiNote)
 export function stopAll(channel, force = false)
 {
     const channelVoices = this.workletProcessorChannels[channel].voices;
-    if(force)
+    if (force)
     {
         // force stop all
         channelVoices.length = 0;
@@ -91,13 +94,18 @@ export function stopAll(channel, force = false)
     }
     else
     {
-        channelVoices.forEach(v => {
-            if(v.isInRelease) return;
+        channelVoices.forEach(v =>
+        {
+            if (v.isInRelease)
+            {
+                return;
+            }
             this.releaseVoice(v);
         });
-        this.workletProcessorChannels[channel].sustainedVoices.forEach(v => {
+        this.workletProcessorChannels[channel].sustainedVoices.forEach(v =>
+        {
             this.releaseVoice(v);
-        })
+        });
     }
 }
 
@@ -108,7 +116,8 @@ export function stopAll(channel, force = false)
 export function stopAllChannels(force = false)
 {
     SpessaSynthInfo("%cStop all received!", consoleColors.info);
-    for (let i = 0; i < this.workletProcessorChannels.length; i++) {
+    for (let i = 0; i < this.workletProcessorChannels.length; i++)
+    {
         this.stopAll(i, force);
     }
     this.callEvent("stopall", undefined);

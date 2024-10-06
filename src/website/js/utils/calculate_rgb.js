@@ -6,6 +6,7 @@
  */
 export function calculateRGB(rgbString, operation)
 {
-    let rgbValues = rgbString.replace(/[^\d,]/g, '').split(',');
-    return `rgb(${operation(parseInt(rgbValues[0]))}, ${operation(parseInt(rgbValues[1]))}, ${operation(parseInt(rgbValues[2]))})`;
+    let rgbValues = rgbString.replace(/[^\d,]/g, "").split(",");
+    return `rgb(${operation(parseInt(rgbValues[0]))}, ${operation(parseInt(rgbValues[1]))}, ${operation(parseInt(
+        rgbValues[2]))})`;
 }

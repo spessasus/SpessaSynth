@@ -6,6 +6,12 @@
 export class IndexedByteArray extends Uint8Array
 {
     /**
+     * The current index of the array
+     * @type {number}
+     */
+    currentIndex;
+    
+    /**
      * Creates a new instance of an Uint8Array with a currentIndex property
      * @param args {any} same as for Uint8Array
      */
@@ -14,12 +20,6 @@ export class IndexedByteArray extends Uint8Array
         super(args);
         this.currentIndex = 0;
     }
-
-    /**
-     * The current index of the array
-     * @type {number}
-     */
-    currentIndex;
 }
 
 
@@ -32,7 +32,7 @@ export function combineArrays(arrs)
     const length = arrs.reduce((sum, current) => sum + current.length, 0);
     const newArr = new IndexedByteArray(length);
     let offset = 0;
-    for(const arr of arrs)
+    for (const arr of arrs)
     {
         newArr.set(arr, offset);
         offset += arr.length;

@@ -1,6 +1,7 @@
-import fs from 'fs';
-import path from 'path'
-import { configPath, packageJSON, soundfontsPath } from './server.js'
+import fs from "fs";
+import path from "path";
+import { configPath, packageJSON, soundfontsPath } from "./server.js";
+
 /**
  * @param res {ServerResponse}
  * @param path {string}
@@ -8,31 +9,34 @@ import { configPath, packageJSON, soundfontsPath } from './server.js'
 export async function serveSfont(path, res)
 {
     const fileStream = fs.createReadStream(path);
-
+    
     const size = fs.statSync(path).size;
-
-    fileStream.on('error', (error) => {
-        if (error.code === 'ENOENT')
+    
+    fileStream.on("error", (error) =>
+    {
+        if (error.code === "ENOENT")
         {
             res.writeHead(404);
-            res.end('Soundfont not found');
+            res.end("Soundfont not found");
         }
         else
         {
             res.writeHead(500);
-            res.end('Internal server error');
+            res.end("Internal server error");
         }
     });
-
-    fileStream.once('open', () => {
-        res.setHeader('Content-Type', 'application/octet-stream');
-        res.setHeader('Content-Length', size);
+    
+    fileStream.once("open", () =>
+    {
+        res.setHeader("Content-Type", "application/octet-stream");
+        res.setHeader("Content-Length", size);
         fileStream.pipe(res);
     });
-    fileStream.on("end", () => {
+    fileStream.on("end", () =>
+    {
         fileStream.close();
         res.end();
-    })
+    });
 }
 
 /**
@@ -41,11 +45,11 @@ export async function serveSfont(path, res)
  */
 function isSoundFont(name)
 {
-    const fName = name.toLowerCase()
-    return fName.slice(-3) === 'sf2' ||
-        fName.slice(-3) === 'sf3' ||
-        fName.slice(-5) === 'sfogg' ||
-        fName.slice(-3) === 'dls'
+    const fName = name.toLowerCase();
+    return fName.slice(-3) === "sf2" ||
+        fName.slice(-3) === "sf3" ||
+        fName.slice(-5) === "sfogg" ||
+        fName.slice(-3) === "dls";
 }
 
 /**
@@ -54,26 +58,27 @@ function isSoundFont(name)
 export function serveSfontList(res)
 {
     const fileNames = fs.readdirSync(soundfontsPath).filter(fName => isSoundFont(fName));
-
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-    if (config['lastUsedSf2'])
+    
+    const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+    if (config["lastUsedSf2"])
     {
-        if (fileNames.includes(config['lastUsedSf2']))
+        if (fileNames.includes(config["lastUsedSf2"]))
         {
-            fileNames.splice(fileNames.indexOf(config['lastUsedSf2']), 1);
-            fileNames.unshift(config['lastUsedSf2']);
+            fileNames.splice(fileNames.indexOf(config["lastUsedSf2"]), 1);
+            fileNames.unshift(config["lastUsedSf2"]);
         }
     }
     else
     {
-        config['lastUsedSf2'] = fileNames[0];
+        config["lastUsedSf2"] = fileNames[0];
     }
-
-    const files = fileNames.map(file => {
+    
+    const files = fileNames.map(file =>
+    {
         return { name: file };
     });
-
-    res.writeHead(200, { 'Content-Type': 'application/json' });
+    
+    res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify(files));
 }
 
@@ -82,8 +87,8 @@ export function serveSfontList(res)
  */
 export function serveSettings(res)
 {
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-    res.writeHead(200, { 'Content-Type': 'application/json' });
+    const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+    res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify(config.settings || {}));
 }
 
@@ -92,10 +97,10 @@ export function serveSettings(res)
  * @param filePath {string}
  * @param mimeType {string}
  */
-export function serveStaticFile(res, filePath, mimeType=undefined)
+export function serveStaticFile(res, filePath, mimeType = undefined)
 {
     filePath = decodeURIComponent(filePath);
-    if(
+    if (
         filePath.toLowerCase().endsWith(".sf3") ||
         filePath.toLowerCase().endsWith(".sf2") ||
         filePath.toLowerCase().endsWith(".sfogg") ||
@@ -105,13 +110,14 @@ export function serveStaticFile(res, filePath, mimeType=undefined)
         filePath = path.join(path.dirname(filePath), "../soundfonts", path.basename(filePath));
         serveSfont(filePath, res).then();
         return;
-
+        
     }
     let file;
-    try {
+    try
+    {
         file = fs.readFileSync(filePath);
-    }
-    catch (e) {
+    } catch (e)
+    {
         res.writeHead(404);
         res.end(`
 <html lang='en'>
@@ -125,13 +131,13 @@ export function serveStaticFile(res, filePath, mimeType=undefined)
         return;
     }
     let type = {};
-    if(mimeType)
+    if (mimeType)
     {
-        type = { 'Content-Type': mimeType}
+        type = { "Content-Type": mimeType };
     }
-    if(filePath.endsWith(".js"))
+    if (filePath.endsWith(".js"))
     {
-        type = { 'Content-Type': 'text/javascript'}
+        type = { "Content-Type": "text/javascript" };
     }
     res.writeHead(200, type);
     res.end(file);
@@ -143,8 +149,8 @@ export function serveStaticFile(res, filePath, mimeType=undefined)
  */
 export function getVersion(res)
 {
-    const text = fs.readFileSync(packageJSON, 'utf-8');
+    const text = fs.readFileSync(packageJSON, "utf-8");
     const jason = JSON.parse(text);
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.writeHead(200, { "Content-Type": "text/plain" });
     res.end(jason.version);
 }

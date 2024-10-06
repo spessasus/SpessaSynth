@@ -1,4 +1,4 @@
-.seamless_button{
+.seamless_button {
     font-size: larger;
     background: transparent;
     margin: auto;
@@ -7,20 +7,18 @@
     user-select: none;
 }
 
-.settings_button
-{
+.settings_button {
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.settings_button span{
+.settings_button span {
     text-align: end;
     font-size: larger;
 }
 
-.seamless_button:hover
-{
+.seamless_button:hover {
     cursor: pointer;
     text-shadow: 0 0 5px white;
 }
@@ -36,6 +34,6 @@
     height: 0; /*this sets no borders which is nice*/
 }
 
-.settings_button:hover .gear{
+.settings_button:hover .gear {
     transform: rotate(45deg);
 }

@@ -1,9 +1,9 @@
-import { getEvent, messageTypes } from '../../midi_parser/midi_message.js'
-import { WorkletSequencerReturnMessageType } from './sequencer_message.js'
-import { consoleColors } from '../../utils/other.js'
-import { SpessaSynthWarn } from '../../utils/loggin.js'
-import { readBytesAsUintBigEndian } from '../../utils/byte_functions/big_endian.js'
-import { DEFAULT_PERCUSSION } from '../../synthetizer/synthetizer.js'
+import { getEvent, messageTypes } from "../../midi_parser/midi_message.js";
+import { WorkletSequencerReturnMessageType } from "./sequencer_message.js";
+import { consoleColors } from "../../utils/other.js";
+import { SpessaSynthWarn } from "../../utils/loggin.js";
+import { readBytesAsUintBigEndian } from "../../utils/byte_functions/big_endian.js";
+import { DEFAULT_PERCUSSION } from "../../synthetizer/synthetizer.js";
 
 /**
  * Processes a single event
@@ -14,23 +14,27 @@ import { DEFAULT_PERCUSSION } from '../../synthetizer/synthetizer.js'
  */
 export function _processEvent(event, trackIndex)
 {
-    if(this.ignoreEvents) return;
-    if(this.sendMIDIMessages)
+    if (this.ignoreEvents)
     {
-        if(event.messageStatusByte >= 0x80)
+        return;
+    }
+    if (this.sendMIDIMessages)
+    {
+        if (event.messageStatusByte >= 0x80)
         {
             this.sendMIDIMessage([event.messageStatusByte, ...event.messageData]);
             return;
         }
     }
     const statusByteData = getEvent(event.messageStatusByte);
-    const offset = this.midiPortChannelOffsets[this.midiPorts[trackIndex]] || 0
+    const offset = this.midiPortChannelOffsets[this.midiPorts[trackIndex]] || 0;
     statusByteData.channel += offset;
     // process the event
-    switch (statusByteData.status) {
+    switch (statusByteData.status)
+    {
         case messageTypes.noteOn:
             const velocity = event.messageData[1];
-            if(velocity > 0)
+            if (velocity > 0)
             {
                 this.synth.noteOn(statusByteData.channel, event.messageData[0], velocity);
                 this.playingNotes.push({
@@ -44,56 +48,56 @@ export function _processEvent(event, trackIndex)
                 this.synth.noteOff(statusByteData.channel, event.messageData[0]);
                 const toDelete = this.playingNotes.findIndex(n =>
                     n.midiNote === event.messageData[0] && n.channel === statusByteData.channel);
-                if(toDelete !== -1)
+                if (toDelete !== -1)
                 {
                     this.playingNotes.splice(toDelete, 1);
                 }
             }
             break;
-
+        
         case messageTypes.noteOff:
             this.synth.noteOff(statusByteData.channel, event.messageData[0]);
             const toDelete = this.playingNotes.findIndex(n =>
                 n.midiNote === event.messageData[0] && n.channel === statusByteData.channel);
-            if(toDelete !== -1)
+            if (toDelete !== -1)
             {
                 this.playingNotes.splice(toDelete, 1);
             }
             break;
-
+        
         case messageTypes.pitchBend:
             this.synth.pitchWheel(statusByteData.channel, event.messageData[1], event.messageData[0]);
             break;
-
+        
         case messageTypes.controllerChange:
             this.synth.controllerChange(statusByteData.channel, event.messageData[0], event.messageData[1]);
             break;
-
+        
         case messageTypes.programChange:
             this.synth.programChange(statusByteData.channel, event.messageData[0]);
             break;
-
+        
         case messageTypes.polyPressure:
             this.synth.polyPressure(statusByteData.channel, event.messageData[0], event.messageData[1]);
             break;
-
+        
         case messageTypes.channelPressure:
             this.synth.channelPressure(statusByteData.channel, event.messageData[0]);
             break;
-
+        
         case messageTypes.systemExclusive:
             this.synth.systemExclusive(event.messageData, offset);
             break;
-
+        
         case messageTypes.setTempo:
             this.oneTickToSeconds = 60 / (getTempo(event) * this.midiData.timeDivision);
-            if(this.oneTickToSeconds === 0)
+            if (this.oneTickToSeconds === 0)
             {
                 this.oneTickToSeconds = 60 / (120 * this.midiData.timeDivision);
                 SpessaSynthWarn("invalid tempo! falling back to 120 BPM");
             }
             break;
-
+        
         // recongized but ignored
         case messageTypes.timeSignature:
         case messageTypes.endOfTrack:
@@ -104,7 +108,7 @@ export function _processEvent(event, trackIndex)
         case messageTypes.sequenceNumber:
         case messageTypes.sequenceSpecific:
             break;
-
+        
         case messageTypes.text:
         case messageTypes.lyric:
         case messageTypes.copyright:
@@ -113,24 +117,27 @@ export function _processEvent(event, trackIndex)
         case messageTypes.cuePoint:
         case messageTypes.instrumentName:
         case messageTypes.programName:
-            this.post(WorkletSequencerReturnMessageType.textEvent, [event.messageData, statusByteData.status])
+            this.post(WorkletSequencerReturnMessageType.textEvent, [event.messageData, statusByteData.status]);
             break;
-
+        
         case messageTypes.midiPort:
             this.assignMIDIPort(trackIndex, event.messageData[0]);
             break;
-
+        
         case messageTypes.reset:
             this.synth.stopAllChannels();
             this.synth.resetAllControllers();
             break;
-
+        
         default:
-            SpessaSynthWarn(`%cUnrecognized Event: %c${event.messageStatusByte}%c status byte: %c${Object.keys(messageTypes).find(k => messageTypes[k] === statusByteData.status)}`,
+            SpessaSynthWarn(
+                `%cUnrecognized Event: %c${event.messageStatusByte}%c status byte: %c${Object.keys(
+                    messageTypes).find(k => messageTypes[k] === statusByteData.status)}`,
                 consoleColors.warn,
                 consoleColors.unrecognized,
                 consoleColors.warn,
-                consoleColors.value);
+                consoleColors.value
+            );
             break;
     }
 }
@@ -145,7 +152,7 @@ export function _addNewMidiPort()
     for (let i = 0; i < 16; i++)
     {
         this.synth.createWorkletChannel(true);
-        if(i === DEFAULT_PERCUSSION)
+        if (i === DEFAULT_PERCUSSION)
         {
             this.synth.setDrums(this.synth.workletProcessorChannels.length - 1, true);
         }

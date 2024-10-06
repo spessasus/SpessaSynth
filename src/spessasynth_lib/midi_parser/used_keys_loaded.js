@@ -1,7 +1,7 @@
-import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo } from '../utils/loggin.js'
-import { consoleColors } from '../utils/other.js'
-import { DEFAULT_PERCUSSION } from '../synthetizer/synthetizer.js'
-import { messageTypes, midiControllers } from './midi_message.js'
+import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo } from "../utils/loggin.js";
+import { consoleColors } from "../utils/other.js";
+import { DEFAULT_PERCUSSION } from "../synthetizer/synthetizer.js";
+import { messageTypes, midiControllers } from "./midi_message.js";
 
 /**
  * @param mid {BasicMIDI}
@@ -10,24 +10,27 @@ import { messageTypes, midiControllers } from './midi_message.js'
  */
 export function getUsedProgramsAndKeys(mid, soundfont)
 {
-    SpessaSynthGroupCollapsed("%cSearching for all used programs and keys...",
-        consoleColors.info);
+    SpessaSynthGroupCollapsed(
+        "%cSearching for all used programs and keys...",
+        consoleColors.info
+    );
     // find every bank:program combo and every key:velocity for each. Make sure to care about ports and drums
-    const channelsAmount = 16 + mid.midiPortChannelOffsets.reduce((max, cur) => cur > max ? cur: max);
+    const channelsAmount = 16 + mid.midiPortChannelOffsets.reduce((max, cur) => cur > max ? cur : max);
     /**
      * @type {{program: number, bank: number, drums: boolean, string: string}[]}
      */
     const channelPresets = [];
-    for (let i = 0; i < channelsAmount; i++) {
+    for (let i = 0; i < channelsAmount; i++)
+    {
         const bank = i % 16 === DEFAULT_PERCUSSION ? 128 : 0;
         channelPresets.push({
             program: 0,
             bank: bank,
             drums: i % 16 === DEFAULT_PERCUSSION, // drums appear on 9 every 16 channels,
-            string: `${bank}:0`,
+            string: `${bank}:0`
         });
     }
-
+    
     function updateString(ch)
     {
         // check if this exists in the soundfont
@@ -35,37 +38,42 @@ export function getUsedProgramsAndKeys(mid, soundfont)
         ch.bank = exists.bank;
         ch.program = exists.program;
         ch.string = ch.bank + ":" + ch.program;
-        if(!usedProgramsAndKeys[ch.string])
+        if (!usedProgramsAndKeys[ch.string])
         {
-            SpessaSynthInfo(`%cDetected a new preset: %c${ch.string}`,
+            SpessaSynthInfo(
+                `%cDetected a new preset: %c${ch.string}`,
                 consoleColors.info,
-                consoleColors.recognized);
+                consoleColors.recognized
+            );
             usedProgramsAndKeys[ch.string] = new Set();
         }
     }
+    
     /**
      * find all programs used and key-velocity combos in them
      * bank:program each has a set of midiNote-velocity
      * @type {Object<string, Set<string>>}
      */
     const usedProgramsAndKeys = {};
-
+    
     /**
      * indexes for tracks
      * @type {number[]}
      */
     const eventIndexes = Array(mid.tracks.length).fill(0);
     let remainingTracks = mid.tracks.length;
+    
     function findFirstEventIndex()
     {
         let index = 0;
         let ticks = Infinity;
-        mid.tracks.forEach((track, i) => {
-            if(eventIndexes[i] >= track.length)
+        mid.tracks.forEach((track, i) =>
+        {
+            if (eventIndexes[i] >= track.length)
             {
                 return;
             }
-            if(track[eventIndexes[i]].ticks < ticks)
+            if (track[eventIndexes[i]].ticks < ticks)
             {
                 index = i;
                 ticks = track[eventIndexes[i]].ticks;
@@ -73,28 +81,29 @@ export function getUsedProgramsAndKeys(mid, soundfont)
         });
         return index;
     }
+    
     const ports = mid.midiPorts.slice();
     // check for xg
     let system = "gs";
-    while(remainingTracks > 0)
+    while (remainingTracks > 0)
     {
         let trackNum = findFirstEventIndex();
         const track = mid.tracks[trackNum];
-        if(eventIndexes[trackNum] >= track.length)
+        if (eventIndexes[trackNum] >= track.length)
         {
             remainingTracks--;
             continue;
         }
         const event = track[eventIndexes[trackNum]];
         eventIndexes[trackNum]++;
-
-        if(event.messageStatusByte === messageTypes.midiPort)
+        
+        if (event.messageStatusByte === messageTypes.midiPort)
         {
             ports[trackNum] = event.messageData[0];
             continue;
         }
         const status = event.messageStatusByte & 0xF0;
-        if(
+        if (
             status !== messageTypes.noteOn &&
             status !== messageTypes.controllerChange &&
             status !== messageTypes.programChange &&
@@ -105,31 +114,31 @@ export function getUsedProgramsAndKeys(mid, soundfont)
         }
         const channel = (event.messageStatusByte & 0xF) + mid.midiPortChannelOffsets[ports[trackNum]] || 0;
         let ch = channelPresets[channel];
-        switch(status)
+        switch (status)
         {
             case messageTypes.programChange:
                 ch.program = event.messageData[0];
                 updateString(ch);
                 break;
-
+            
             case messageTypes.controllerChange:
-                if(event.messageData[0] !== midiControllers.bankSelect)
+                if (event.messageData[0] !== midiControllers.bankSelect)
                 {
                     // we only care about bank select
                     continue;
                 }
-                if(system === "gs" && ch.drums)
+                if (system === "gs" && ch.drums)
                 {
                     // gs drums get changed via sysex, ignore here
                     continue;
                 }
                 const bank = event.messageData[1];
                 const realBank = Math.max(0, bank - mid.bankOffset);
-                if(system === "xg")
+                if (system === "xg")
                 {
                     // check for xg drums
                     const drumsBool = bank === 120 || bank === 126 || bank === 127;
-                    if(drumsBool !== ch.drums)
+                    if (drumsBool !== ch.drums)
                     {
                         // drum change is a program change
                         ch.drums = drumsBool;
@@ -145,9 +154,9 @@ export function getUsedProgramsAndKeys(mid, soundfont)
                 channelPresets[channel].bank = realBank;
                 // do not update the data, bank change doesnt change the preset
                 break;
-
+            
             case messageTypes.noteOn:
-                if(event.messageData[1] === 0)
+                if (event.messageData[1] === 0)
                 {
                     // that's a note off
                     continue;
@@ -155,21 +164,21 @@ export function getUsedProgramsAndKeys(mid, soundfont)
                 updateString(ch);
                 usedProgramsAndKeys[ch.string].add(`${event.messageData[0]}-${event.messageData[1]}`);
                 break;
-
+            
             case messageTypes.systemExclusive:
                 // check for drum sysex
-                if(
+                if (
                     event.messageData[0] !== 0x41 || // roland
                     event.messageData[2] !== 0x42 || // GS
                     event.messageData[3] !== 0x12 || // GS
                     event.messageData[4] !== 0x40 || // system parameter
-                    (event.messageData[5] & 0x10 ) === 0 || // part parameter
+                    (event.messageData[5] & 0x10) === 0 || // part parameter
                     event.messageData[6] !== 0x15 // drum pars
-
+                
                 )
                 {
                     // check for XG
-                    if(
+                    if (
                         event.messageData[0] === 0x43 && // yamaha
                         event.messageData[2] === 0x4C && // sXG ON
                         event.messageData[5] === 0x7E &&
@@ -187,16 +196,18 @@ export function getUsedProgramsAndKeys(mid, soundfont)
                 ch.bank = isDrum ? 128 : 0;
                 updateString(ch);
                 break;
-
+            
         }
     }
-    for(const key of Object.keys(usedProgramsAndKeys))
+    for (const key of Object.keys(usedProgramsAndKeys))
     {
-        if(usedProgramsAndKeys[key].size === 0)
+        if (usedProgramsAndKeys[key].size === 0)
         {
-            SpessaSynthInfo(`%cDetected change but no keys for %c${key}`,
+            SpessaSynthInfo(
+                `%cDetected change but no keys for %c${key}`,
                 consoleColors.info,
-                consoleColors.value)
+                consoleColors.value
+            );
             delete usedProgramsAndKeys[key];
         }
     }

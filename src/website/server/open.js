@@ -1,19 +1,20 @@
-import child_process from 'node:child_process'
+import child_process from "node:child_process";
 
 export function openURL(url)
 {
-    switch (process.platform) {
-        case 'linux':
+    switch (process.platform)
+    {
+        case "linux":
             child_process.exec(`xdg-open ${url}`);
             break;
-        case 'win32':
+        case "win32":
             child_process.exec(`start "" ${url}`);
             break;
-        case 'darwin':
+        case "darwin":
             child_process.exec(`open "${url}"`);
             break;
         default:
-            console.log('Could not open the browser. Open the link below:');
+            console.log("Could not open the browser. Open the link below:");
             console.log(url);
     }
 }

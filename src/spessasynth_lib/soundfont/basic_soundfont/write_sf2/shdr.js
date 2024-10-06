@@ -1,7 +1,7 @@
-import { IndexedByteArray } from '../../../utils/indexed_array.js'
-import { writeStringAsBytes } from '../../../utils/byte_functions/string.js'
-import { writeDword, writeWord } from '../../../utils/byte_functions/little_endian.js'
-import { RiffChunk, writeRIFFChunk } from '../riff_chunk.js'
+import { IndexedByteArray } from "../../../utils/indexed_array.js";
+import { writeStringAsBytes } from "../../../utils/byte_functions/string.js";
+import { writeDword, writeWord } from "../../../utils/byte_functions/little_endian.js";
+import { RiffChunk, writeRIFFChunk } from "../riff_chunk.js";
 
 /**
  * @this {BasicSoundFont}
@@ -12,8 +12,9 @@ import { RiffChunk, writeRIFFChunk } from '../riff_chunk.js'
 export function getSHDR(smplStartOffsets, smplEndOffsets)
 {
     const sampleLength = 46;
-    const shdrData = new IndexedByteArray(sampleLength * (this.samples.length + 1 )); // +1 because EOP
-    this.samples.forEach((sample, index) => {
+    const shdrData = new IndexedByteArray(sampleLength * (this.samples.length + 1)); // +1 because EOP
+    this.samples.forEach((sample, index) =>
+    {
         // sample name
         writeStringAsBytes(shdrData, sample.sampleName, 20);
         // start offset
@@ -25,7 +26,7 @@ export function getSHDR(smplStartOffsets, smplEndOffsets)
         // loop is stored as relative in sample points, change it to absolute sample points here
         let loopStart = sample.sampleLoopStartIndex + dwStart;
         let loopEnd = sample.sampleLoopEndIndex + dwStart;
-        if(sample.isCompressed)
+        if (sample.isCompressed)
         {
             // https://github.com/FluidSynth/fluidsynth/wiki/SoundFont3Format
             loopStart -= dwStart;
@@ -43,7 +44,7 @@ export function getSHDR(smplStartOffsets, smplEndOffsets)
         // sample type: write raw because we simply copy compressed samples
         writeWord(shdrData, sample.sampleType);
     });
-
+    
     // write EOS and zero everything else
     writeStringAsBytes(shdrData, "EOS", sampleLength);
     return writeRIFFChunk(new RiffChunk(

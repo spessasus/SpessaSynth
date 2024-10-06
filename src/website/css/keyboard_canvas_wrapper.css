@@ -1,4 +1,4 @@
-#keyboard_canvas_wrapper{
+#keyboard_canvas_wrapper {
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -7,18 +7,18 @@
     transition: var(--music-mode-transition) transform;
 }
 
-#keyboard_canvas_wrapper.out_animation{
+#keyboard_canvas_wrapper.out_animation {
     transform: translateX(-100%);
 }
 
-#keyboard_canvas_wrapper.upwards{
+#keyboard_canvas_wrapper.upwards {
     flex-direction: column-reverse;
 }
 
-#keyboard_canvas_wrapper.right_to_left{
+#keyboard_canvas_wrapper.right_to_left {
     flex-direction: row;
 }
 
-#keyboard_canvas_wrapper.left_to_right{
+#keyboard_canvas_wrapper.left_to_right {
     flex-direction: row-reverse;
 }

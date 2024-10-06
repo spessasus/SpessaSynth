@@ -36,5 +36,5 @@ export const supportedEncodings = [
     "ISO-2022-JP",
     "EUC-KR",
     "Big5",
-    "GB18030",
+    "GB18030"
 ];

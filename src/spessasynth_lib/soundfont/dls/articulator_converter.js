@@ -1,10 +1,9 @@
-import { DLSSources } from './dls_sources.js'
-import { getModSourceEnum } from "../basic_soundfont/modulator.js";
-import { midiControllers } from '../../midi_parser/midi_message.js'
-import { DLSDestinations } from './dls_destinations.js'
+import { DLSSources } from "./dls_sources.js";
+import { getModSourceEnum, Modulator, modulatorCurveTypes, modulatorSources } from "../basic_soundfont/modulator.js";
+import { midiControllers } from "../../midi_parser/midi_message.js";
+import { DLSDestinations } from "./dls_destinations.js";
 
 import { generatorTypes } from "../basic_soundfont/generator.js";
-import { Modulator, modulatorCurveTypes, modulatorSources } from "../basic_soundfont/modulator.js";
 
 /**
  * @param source {number}
@@ -14,7 +13,7 @@ function getSF2SourceFromDLS(source)
 {
     let sourceEnum = undefined;
     let isCC = false;
-    switch(source)
+    switch (source)
     {
         default:
         case DLSSources.modLfo:
@@ -23,7 +22,7 @@ function getSF2SourceFromDLS(source)
         case DLSSources.fineTune:
         case DLSSources.modEnv:
             return undefined; // cannot be this in sf2
-
+        
         case DLSSources.keyNum:
             sourceEnum = modulatorSources.noteOnKeyNum;
             break;
@@ -70,11 +69,11 @@ function getSF2SourceFromDLS(source)
             sourceEnum = modulatorSources.pitchWheelRange;
             break;
     }
-    if(sourceEnum === undefined)
+    if (sourceEnum === undefined)
     {
-        throw `not known?? ${source}`
+        throw `not known?? ${source}`;
     }
-    return {enum: sourceEnum, isCC: isCC};
+    return { enum: sourceEnum, isCC: isCC };
 }
 
 /**
@@ -92,12 +91,12 @@ function getSF2GeneratorFromDLS(destination, amount)
         case DLSDestinations.pan:
             return generatorTypes.pan;
         case DLSDestinations.gain:
-            return {gen: generatorTypes.initialAttenuation, newAmount: amount * -1};
+            return { gen: generatorTypes.initialAttenuation, newAmount: amount * -1 };
         case DLSDestinations.pitch:
             return generatorTypes.fineTune;
         case DLSDestinations.keyNum:
             return generatorTypes.overridingRootKey;
-
+        
         // vol env
         case DLSDestinations.volEnvDelay:
             return generatorTypes.delayVolEnv;
@@ -108,10 +107,10 @@ function getSF2GeneratorFromDLS(destination, amount)
         case DLSDestinations.volEnvDecay:
             return generatorTypes.decayVolEnv;
         case DLSDestinations.volEnvSustain:
-            return {gen: generatorTypes.sustainVolEnv, newAmount: 1000 - amount};
+            return { gen: generatorTypes.sustainVolEnv, newAmount: 1000 - amount };
         case DLSDestinations.volEnvRelease:
             return generatorTypes.releaseVolEnv;
-
+        
         // mod env
         case DLSDestinations.modEnvDelay:
             return generatorTypes.delayModEnv;
@@ -122,10 +121,10 @@ function getSF2GeneratorFromDLS(destination, amount)
         case DLSDestinations.modEnvDecay:
             return generatorTypes.decayModEnv;
         case DLSDestinations.modEnvSustain:
-            return {gen: generatorTypes.sustainModEnv, newAmount: (1000 - amount) / 10};
+            return { gen: generatorTypes.sustainModEnv, newAmount: (1000 - amount) / 10 };
         case DLSDestinations.modEnvRelease:
             return generatorTypes.releaseModEnv;
-
+        
         case DLSDestinations.filterCutoff:
             return generatorTypes.initialFilterFc;
         case DLSDestinations.filterQ:
@@ -145,32 +144,27 @@ function getSF2GeneratorFromDLS(destination, amount)
  */
 function checkForSpecialDLSCombo(source, destination)
 {
-    if(source === DLSSources.vibratoLfo && destination === DLSDestinations.pitch)
+    if (source === DLSSources.vibratoLfo && destination === DLSDestinations.pitch)
     {
         return generatorTypes.vibLfoToPitch;
     }
-    else
-    if(source === DLSSources.modLfo && destination === DLSDestinations.pitch)
+    else if (source === DLSSources.modLfo && destination === DLSDestinations.pitch)
     {
         return generatorTypes.modLfoToPitch;
     }
-    else
-    if(source === DLSSources.modLfo && destination === DLSDestinations.filterCutoff)
+    else if (source === DLSSources.modLfo && destination === DLSDestinations.filterCutoff)
     {
         return generatorTypes.modLfoToFilterFc;
     }
-    else
-    if(source === DLSSources.modLfo && destination === DLSDestinations.gain)
+    else if (source === DLSSources.modLfo && destination === DLSDestinations.gain)
     {
         return generatorTypes.modLfoToVolume;
     }
-    else
-    if(source === DLSSources.modEnv && destination === DLSDestinations.filterCutoff)
+    else if (source === DLSSources.modEnv && destination === DLSDestinations.filterCutoff)
     {
         return generatorTypes.modEnvToFilterFc;
     }
-    else
-    if(source === DLSSources.modEnv && destination === DLSDestinations.pitch)
+    else if (source === DLSSources.modEnv && destination === DLSDestinations.pitch)
     {
         return generatorTypes.modEnvToPitch;
     }
@@ -205,14 +199,14 @@ export function getSF2ModulatorFromArticulator(
     /**
      * @type {{enum: number, isCC: boolean}}
      */
-    let sf2Source
+    let sf2Source;
     let swapSources = false;
     let isSourceNoController = false;
-    if(specialDestination === undefined)
+    if (specialDestination === undefined)
     {
         // determine destination
         const sf2GenDestination = getSF2GeneratorFromDLS(destination, value);
-        if(sf2GenDestination === undefined)
+        if (sf2GenDestination === undefined)
         {
             // cannot be a valid modulator
             return undefined;
@@ -221,13 +215,13 @@ export function getSF2ModulatorFromArticulator(
          * @type {generatorTypes}
          */
         destinationGenerator = sf2GenDestination;
-        if(sf2GenDestination.newAmount !== undefined)
+        if (sf2GenDestination.newAmount !== undefined)
         {
             value = sf2GenDestination.newAmount;
             destinationGenerator = sf2GenDestination.gen;
         }
         sf2Source = getSF2SourceFromDLS(source);
-        if(sf2Source === undefined)
+        if (sf2Source === undefined)
         {
             // cannot be a valid modulator
             return undefined;
@@ -237,19 +231,19 @@ export function getSF2ModulatorFromArticulator(
     {
         destinationGenerator = specialDestination;
         swapSources = true;
-        sf2Source = {enum: modulatorSources.noController, isCC: false};
+        sf2Source = { enum: modulatorSources.noController, isCC: false };
         isSourceNoController = true;
     }
     let sf2SecondSource = getSF2SourceFromDLS(control);
-    if(sf2SecondSource === undefined)
+    if (sf2SecondSource === undefined)
     {
         // cannot be a valid modulator
         return undefined;
     }
-
+    
     // get transforms and final enums
     let sourceEnumFinal;
-    if(isSourceNoController)
+    if (isSourceNoController)
     {
         // we force it into this state because before it was some strange value,
         // like vibrato lfo bipolar for example
@@ -263,14 +257,14 @@ export function getSF2ModulatorFromArticulator(
         const outputTransform = transform & 0b1111;
         // source curve type maps to desfont curve type in section 2.10, table 9
         let sourceTransform = (transform >> 10) & 0b1111;
-        if(sourceTransform === modulatorCurveTypes.linear && outputTransform !== modulatorCurveTypes.linear)
+        if (sourceTransform === modulatorCurveTypes.linear && outputTransform !== modulatorCurveTypes.linear)
         {
             sourceTransform = outputTransform;
         }
         const sourceIsBipolar = (transform >> 14) & 1;
         let sourceIsNegative = (transform >> 15) & 1;
         // special case: for attenuation, invert source
-        if(destinationGenerator === generatorTypes.initialAttenuation)
+        if (destinationGenerator === generatorTypes.initialAttenuation)
         {
             sourceIsNegative = !sourceIsNegative;
         }
@@ -282,7 +276,7 @@ export function getSF2ModulatorFromArticulator(
             sf2Source.enum
         );
     }
-
+    
     const secSourceTransform = (transform >> 4) & 0b1111;
     const secSourceIsBipolar = (transform >> 8) & 1;
     const secSourceIsNegative = transform >> 9 & 1;
@@ -293,14 +287,14 @@ export function getSF2ModulatorFromArticulator(
         sf2SecondSource.isCC,
         sf2SecondSource.enum
     );
-
-    if(swapSources)
+    
+    if (swapSources)
     {
         const temp = secSourceEnumFinal;
         secSourceEnumFinal = sourceEnumFinal;
         sourceEnumFinal = temp;
     }
-
+    
     // return the modulator!
     return new Modulator({
         srcEnum: sourceEnumFinal,
@@ -309,5 +303,5 @@ export function getSF2ModulatorFromArticulator(
         transform: 0x0,
         amt: value
     });
-
+    
 }

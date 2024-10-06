@@ -1,4 +1,4 @@
-import { closeNotification, showNotification } from '../notification/notification.js'
+import { closeNotification, showNotification } from "../notification/notification.js";
 
 /**
  * @this {Manager}
@@ -13,7 +13,8 @@ export async function exportSong()
             {
                 type: "button",
                 translatePathTitle: path + "formats.wav.button",
-                onClick: n => {
+                onClick: n =>
+                {
                     closeNotification(n.id);
                     this._exportAudioData();
                 }
@@ -21,7 +22,8 @@ export async function exportSong()
             {
                 type: "button",
                 translatePathTitle: path + "formats.midi.button",
-                onClick: n => {
+                onClick: n =>
+                {
                     closeNotification(n.id);
                     this.exportMidi();
                 }
@@ -29,13 +31,13 @@ export async function exportSong()
             {
                 type: "button",
                 translatePathTitle: path + "formats.soundfont.button",
-                onClick: n => {
+                onClick: n =>
+                {
                     closeNotification(n.id);
                     try
                     {
                         this._exportSoundfont();
-                    }
-                    catch (e)
+                    } catch (e)
                     {
                         showNotification(
                             "Warning",
@@ -50,13 +52,13 @@ export async function exportSong()
             {
                 type: "button",
                 translatePathTitle: path + "formats.rmidi.button",
-                onClick: n => {
+                onClick: n =>
+                {
                     closeNotification(n.id);
                     try
                     {
                         this._exportRMIDI();
-                    }
-                    catch (e)
+                    } catch (e)
                     {
                         showNotification(
                             "Warning",
@@ -77,5 +79,5 @@ export async function exportSong()
             flexWrap: "wrap",
             justifyContent: "center"
         }
-    )
+    );
 }

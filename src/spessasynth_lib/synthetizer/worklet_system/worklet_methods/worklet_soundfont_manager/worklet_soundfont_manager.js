@@ -1,6 +1,6 @@
-import { SpessaSynthWarn } from '../../../../utils/loggin.js'
-import { WorkletSoundfontManagerMessageType } from './sfman_message.js'
-import { loadSoundFont } from '../../../../soundfont/load_soundfont.js'
+import { SpessaSynthWarn } from "../../../../utils/loggin.js";
+import { WorkletSoundfontManagerMessageType } from "./sfman_message.js";
+import { loadSoundFont } from "../../../../soundfont/load_soundfont.js";
 
 /**
  * @typedef {Object} SoundFontType
@@ -25,17 +25,18 @@ export class WorkletSoundfontManager
         this.totalSoundfontOffset = 0;
         this.reloadManager(initialSoundFontBuffer);
     }
-
+    
     _assingSampleOffsets()
     {
         let offset = 0;
-        this.soundfontList.forEach(s => {
+        this.soundfontList.forEach(s =>
+        {
             s.soundfont.setSampleIDOffset(offset);
-            offset += s.soundfont.samples.length
+            offset += s.soundfont.samples.length;
         });
         this.totalSoundfontOffset = offset;
     }
-
+    
     generatePresetList()
     {
         this._assingSampleOffsets();
@@ -54,10 +55,10 @@ export class WorkletSoundfontManager
              * @type {Set<string>}
              */
             const presets = new Set();
-            for(const p of font.soundfont.presets)
+            for (const p of font.soundfont.presets)
             {
                 const presetString = `${p.bank + font.bankOffset}-${p.program}`;
-                if(presets.has(presetString))
+                if (presets.has(presetString))
                 {
                     continue;
                 }
@@ -65,22 +66,22 @@ export class WorkletSoundfontManager
                 presetList[presetString] = p.presetName;
             }
         }
-
+        
         /**
          * @type {{bank: number, presetName: string, program: number}[]}
          */
         this.presetList = [];
-        for(const [string, name] of Object.entries(presetList))
+        for (const [string, name] of Object.entries(presetList))
         {
             const pb = string.split("-");
             this.presetList.push({
                 presetName: name,
                 program: parseInt(pb[1]),
                 bank: parseInt(pb[0])
-            })
+            });
         }
     }
-
+    
     /**
      * @param type {WorkletSoundfontManagerMessageType}
      * @param data {any}
@@ -92,20 +93,20 @@ export class WorkletSoundfontManager
             case WorkletSoundfontManagerMessageType.addNewSoundFont:
                 this.addNewSoundFont(data[0], data[1], data[2]);
                 break;
-
+            
             case WorkletSoundfontManagerMessageType.reloadSoundFont:
                 this.reloadManager(data);
                 break;
-
+            
             case WorkletSoundfontManagerMessageType.deleteSoundFont:
                 this.deleteSoundFont(data);
                 break;
-
+            
             case WorkletSoundfontManagerMessageType.rearrangeSoundFonts:
                 this.rearrangeSoundFonts(data);
         }
     }
-
+    
     /**
      * Get the final preset list
      * @returns {{bank: number, presetName: string, program: number}[]}
@@ -114,14 +115,14 @@ export class WorkletSoundfontManager
     {
         return this.presetList.slice();
     }
-
+    
     /**
      * Clears all soundfonts and adds a new one
      * @param soundFontArrayBuffer {ArrayBuffer}
      */
     reloadManager(soundFontArrayBuffer)
     {
-        const font =  loadSoundFont(soundFontArrayBuffer);
+        const font = loadSoundFont(soundFontArrayBuffer);
         /**
          * All the soundfonts, ordered from the most important to the least.
          * @type {SoundFontType[]}
@@ -135,16 +136,16 @@ export class WorkletSoundfontManager
         this.generatePresetList();
         this.ready();
     }
-
+    
     deleteSoundFont(id)
     {
-        if(this.soundfontList.length === 0)
+        if (this.soundfontList.length === 0)
         {
             SpessaSynthWarn("1 soundfont left. Aborting!");
             return;
         }
         const index = this.soundfontList.findIndex(s => s.id === id);
-        if(index === -1)
+        if (index === -1)
         {
             SpessaSynthWarn(`No soundfont with id of "${id}" found. Aborting!`);
             return;
@@ -155,7 +156,7 @@ export class WorkletSoundfontManager
         this.soundfontList.splice(index, 1);
         this.generatePresetList();
     }
-
+    
     /**
      * Adds a new soundfont buffer with a given ID
      * @param buffer {ArrayBuffer}
@@ -164,7 +165,7 @@ export class WorkletSoundfontManager
      */
     addNewSoundFont(buffer, id, bankOffset)
     {
-        if(this.soundfontList.find(s => s.id === id) !== undefined)
+        if (this.soundfontList.find(s => s.id === id) !== undefined)
         {
             throw new Error("Cannot overwrite the existing soundfont. Use soundfontManager.delete(id) instead.");
         }
@@ -176,7 +177,7 @@ export class WorkletSoundfontManager
         this.generatePresetList();
         this.ready();
     }
-
+    
     /**
      * Rearranges the soundfonts
      * @param newList {string[]} the order of soundfonts, a list of strings, first overwrites second
@@ -188,7 +189,7 @@ export class WorkletSoundfontManager
         );
         this.generatePresetList();
     }
-
+    
     /**
      * Gets a given preset from the soundfont stack
      * @param bankNumber {number}
@@ -197,27 +198,27 @@ export class WorkletSoundfontManager
      */
     getPreset(bankNumber, programNumber)
     {
-        if(this.soundfontList.length < 1)
+        if (this.soundfontList.length < 1)
         {
             throw new Error("No soundfonts! This should never happen.");
         }
-        for(const sf of this.soundfontList)
+        for (const sf of this.soundfontList)
         {
             // check for the preset (with given offset)
             const preset = sf.soundfont.getPresetNoFallback(bankNumber - sf.bankOffset, programNumber);
-            if(preset !== undefined)
+            if (preset !== undefined)
             {
                 return preset;
             }
             // if not found, advance to the next soundfont
         }
         // if none found, return the first correct preset found
-        if(bankNumber !== 128)
+        if (bankNumber !== 128)
         {
-            for(const sf of this.soundfontList)
+            for (const sf of this.soundfontList)
             {
                 const preset = sf.soundfont.presets.find(p => p.program === programNumber);
-                if(preset)
+                if (preset)
                 {
                     return preset;
                 }
@@ -227,10 +228,10 @@ export class WorkletSoundfontManager
         }
         else
         {
-            for(const sf of this.soundfontList)
+            for (const sf of this.soundfontList)
             {
                 const preset = sf.soundfont.presets.find(p => p.bank === 128);
-                if(preset)
+                if (preset)
                 {
                     return preset;
                 }

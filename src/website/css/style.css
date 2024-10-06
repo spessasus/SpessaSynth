@@ -1,5 +1,6 @@
 @import "settings/settings.css";
-@import "keyboard/keyboard.css"; /*DO NOT CHANGE POSITION OF THIS IMPORT*/
+@import "keyboard/keyboard.css";
+/*DO NOT CHANGE POSITION OF THIS IMPORT*/
 @import "sequencer_ui.css";
 @import "music_mode_ui.css";
 @import "synthesizer_ui/synthesizer_ui.css";
@@ -28,7 +29,7 @@
     --active-scale: 0.9;
 
     /*thanks for this bezier mozilla devtools*/
-    --bouncy-transition: cubic-bezier(.68,-0.55,.27,1.55);
+    --bouncy-transition: cubic-bezier(.68, -0.55, .27, 1.55);
 
     --music-mode-transition: 0.5s ease;
 
@@ -40,7 +41,7 @@
     box-sizing: border-box;
 }
 
-pre{
+pre {
     font-family: monospace !important;
 }
 
@@ -52,18 +53,18 @@ html, body {
     scrollbar-width: thin;
 }
 
-body.load{
+body.load {
     transition: background 0.2s;
 }
 
 body.no_scroll,
-html.no_scroll{
+html.no_scroll {
     max-height: 100% !important;
     height: 100% !important;
     overflow: hidden !important;
 }
 
-.spessasynth_main{
+.spessasynth_main {
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -76,7 +77,7 @@ html.no_scroll{
     --shadow-color: #000;
 }
 
-.spessasynth_main.light_mode{
+.spessasynth_main.light_mode {
     --primary-color: #a93bff;
     --border-color: #510087;
     --track-color: #ccc;
@@ -84,44 +85,44 @@ html.no_scroll{
     --shadow-color: #fff;
 }
 
-a{
+a {
     text-decoration: none;
     color: #546fff;
 }
 
-::-webkit-scrollbar{
+::-webkit-scrollbar {
     background-color: #000;
     width: 0.3em;
 }
 
-::-webkit-scrollbar-thumb{
+::-webkit-scrollbar-thumb {
     background-color: #777;
     border-radius: 50px;
 }
 
 /*Bottom*/
 
-.bottom_part{
+.bottom_part {
     margin-top: 5px;
 }
 
-button{
+button {
     -webkit-user-select: none;
     user-select: none;
 }
 
-.hidden{
+.hidden {
     display: none !important;
 }
 
-.secret_video{
+.secret_video {
     position: absolute;
     width: 100%;
     left: 0;
     z-index: 0;
 }
 
-.drop_prompt{
+.drop_prompt {
     flex-direction: column;
     display: flex;
     justify-content: center;
@@ -155,11 +156,15 @@ button{
     animation: spin 1s ease-in-out infinite;
 }
 
-.loading.done{
+.loading.done {
     transform: translateY(-100%);
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% {transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }

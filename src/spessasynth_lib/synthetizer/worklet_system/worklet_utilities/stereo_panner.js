@@ -1,5 +1,6 @@
 export const WORKLET_SYSTEM_REVERB_DIVIDER = 1300;
 export const WORKLET_SYSTEM_CHORUS_DIVIDER = 1300;
+
 /**
  * stereo_panner.js
  * purpose: pans a given voice out to the stereo output and to the effects' outputs
@@ -26,12 +27,12 @@ export function panVoice(gainLeft,
                          chorus,
                          chorusLevel)
 {
-    if(isNaN(inputBuffer[0]))
+    if (isNaN(inputBuffer[0]))
     {
         return;
     }
-
-    if(reverbLevel > 0)
+    
+    if (reverbLevel > 0)
     {
         const reverbLeft = reverb[0];
         const reverbRight = reverb[1];
@@ -46,8 +47,8 @@ export function panVoice(gainLeft,
             reverbRight[i] += reverbRightGain * inputBuffer[i];
         }
     }
-
-    if(chorusLevel > 0)
+    
+    if (chorusLevel > 0)
     {
         const chorusLeft = chorus[0];
         const chorusRight = chorus[1];
@@ -62,16 +63,16 @@ export function panVoice(gainLeft,
             chorusRight[i] += chorusRightGain * inputBuffer[i];
         }
     }
-
+    
     // mix out the audio data
-    if(gainLeft > 0)
+    if (gainLeft > 0)
     {
         for (let i = 0; i < inputBuffer.length; i++)
         {
             outputLeft[i] += gainLeft * inputBuffer[i];
         }
     }
-    if(gainRight > 0)
+    if (gainRight > 0)
     {
         for (let i = 0; i < inputBuffer.length; i++)
         {

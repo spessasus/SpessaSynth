@@ -1,5 +1,5 @@
-import { returnMessageType } from './worklet_message.js'
-import { NON_CC_INDEX_OFFSET } from '../worklet_utilities/worklet_processor_channel.js'
+import { returnMessageType } from "./worklet_message.js";
+import { NON_CC_INDEX_OFFSET } from "../worklet_utilities/worklet_processor_channel.js";
 
 import { modulatorSources } from "../../../soundfont/basic_soundfont/modulator.js";
 
@@ -11,7 +11,7 @@ import { modulatorSources } from "../../../soundfont/basic_soundfont/modulator.j
  */
 export function callEvent(eventName, eventData)
 {
-    if(!this.enableEventSystem)
+    if (!this.enableEventSystem)
     {
         return;
     }
@@ -21,7 +21,7 @@ export function callEvent(eventName, eventData)
             eventName: eventName,
             eventData: eventData
         }
-    })
+    });
 }
 
 /**
@@ -38,14 +38,15 @@ export function callEvent(eventName, eventData)
  */
 export function sendChannelProperties()
 {
-    if(!this.enableEventSystem)
+    if (!this.enableEventSystem)
     {
         return;
     }
     /**
      * @type {ChannelProperty[]}
      */
-    const data = this.workletProcessorChannels.map(c => {
+    const data = this.workletProcessorChannels.map(c =>
+    {
         const range = (c.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] >> 7) + (c.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] & 0x7F) / 127;
         return {
             voicesAmount: c.voices.length,
@@ -53,7 +54,7 @@ export function sendChannelProperties()
             pitchBendRangeSemitones: range,
             isMuted: c.isMuted,
             isDrum: c.drumChannel
-        }
+        };
     });
     this.post({
         messageType: returnMessageType.channelProperties,

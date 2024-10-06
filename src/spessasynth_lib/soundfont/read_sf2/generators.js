@@ -33,11 +33,11 @@ export class ReadGenerator extends Generator
 export function readGenerators(generatorChunk)
 {
     let gens = [];
-    while(generatorChunk.chunkData.length > generatorChunk.chunkData.currentIndex)
+    while (generatorChunk.chunkData.length > generatorChunk.chunkData.currentIndex)
     {
         gens.push(new ReadGenerator(generatorChunk.chunkData));
     }
-    if(gens.length > 1)
+    if (gens.length > 1)
     {
         // remove terminal
         gens.pop();

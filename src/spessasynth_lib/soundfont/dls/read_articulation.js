@@ -1,9 +1,9 @@
-import { readLittleEndian } from '../../utils/byte_functions/little_endian.js'
-import { DLSDestinations } from './dls_destinations.js'
-import { DLSSources } from './dls_sources.js'
-import { getSF2ModulatorFromArticulator } from './articulator_converter.js'
-import { SpessaSynthInfo, SpessaSynthWarn } from '../../utils/loggin.js'
-import { consoleColors } from '../../utils/other.js'
+import { readLittleEndian } from "../../utils/byte_functions/little_endian.js";
+import { DLSDestinations } from "./dls_destinations.js";
+import { DLSSources } from "./dls_sources.js";
+import { getSF2ModulatorFromArticulator } from "./articulator_converter.js";
+import { SpessaSynthInfo, SpessaSynthWarn } from "../../utils/loggin.js";
+import { consoleColors } from "../../utils/other.js";
 import { Generator, generatorTypes } from "../basic_soundfont/generator.js";
 import { Modulator } from "../basic_soundfont/modulator.js";
 
@@ -45,7 +45,8 @@ function modulatorConverterDebug(
         consoleColors.recognized,
         consoleColors.info,
         consoleColors.recognized,
-        consoleColors.info);
+        consoleColors.info
+    );
 }
 
 /**
@@ -65,7 +66,7 @@ export function readArticulation(chunk, disableVibrato)
      * @type {Modulator[]}
      */
     const modulators = [];
-
+    
     // cbSize (ignore)
     readLittleEndian(artData, 4);
     const connectionsAmount = readLittleEndian(artData, 4);
@@ -78,17 +79,17 @@ export function readArticulation(chunk, disableVibrato)
         const transform = readLittleEndian(artData, 2);
         const scale = readLittleEndian(artData, 4) | 0;
         const value = scale >> 16; // convert it to 16 bit as soundfont uses that
-
+        
         // modulatorConverterDebug(source, control, destination, value, transform);
         // interpret this somehow...
         // if source and control are both zero, it's a generator
-        if(source === 0 && control === 0 && transform === 0)
+        if (source === 0 && control === 0 && transform === 0)
         {
             /**
              * @type {Generator}
              */
             let generator;
-            switch(destination)
+            switch (destination)
             {
                 case DLSDestinations.pan:
                     generator = new Generator(generatorTypes.pan, value); // turn percent into tenths of percent
@@ -102,7 +103,7 @@ export function readArticulation(chunk, disableVibrato)
                 case DLSDestinations.filterQ:
                     generator = new Generator(generatorTypes.initialFilterQ, value);
                     break;
-
+                
                 // mod lfo raw values it seems
                 case DLSDestinations.modLfoFreq:
                     generator = new Generator(generatorTypes.freqModLFO, value);
@@ -116,7 +117,7 @@ export function readArticulation(chunk, disableVibrato)
                 case DLSDestinations.vibLfoDelay:
                     generator = new Generator(generatorTypes.delayVibLFO, value);
                     break;
-
+                
                 // vol env: all times are timecents like sf2
                 case DLSDestinations.volEnvDelay:
                     generator = new Generator(generatorTypes.delayVolEnv, value);
@@ -138,7 +139,7 @@ export function readArticulation(chunk, disableVibrato)
                     const sustainDb = (1000 - value) / 10;
                     generator = new Generator(generatorTypes.sustainVolEnv, sustainDb * 10);
                     break;
-
+                
                 // mod env
                 case DLSDestinations.modEnvDelay:
                     generator = new Generator(generatorTypes.delayModEnv, value);
@@ -160,7 +161,7 @@ export function readArticulation(chunk, disableVibrato)
                     const percentageSustain = 1000 - value;
                     generator = new Generator(generatorTypes.sustainModEnv, percentageSustain);
                     break;
-
+                
                 case DLSDestinations.reverbSend:
                     generator = new Generator(generatorTypes.reverbEffectsSend, value);
                     break;
@@ -175,56 +176,56 @@ export function readArticulation(chunk, disableVibrato)
                     generators.push(new Generator(generatorTypes.coarseTune, semi));
                     break;
             }
-            if(generator)
+            if (generator)
             {
                 generators.push(generator);
             }
         }
         else
-        // if not, modulator??
+            // if not, modulator??
         {
             let isGenerator = true;
             // a few special cases which are generators:
-            if(control === DLSSources.none)
+            if (control === DLSSources.none)
             {
                 // mod lfo to pitch
-                if(source === DLSSources.modLfo && destination === DLSDestinations.pitch)
+                if (source === DLSSources.modLfo && destination === DLSDestinations.pitch)
                 {
                     generators.push(new Generator(generatorTypes.modLfoToPitch, value));
                 }
                 else
-                // mod lfo to volume
-                if(source === DLSSources.modLfo && destination === DLSDestinations.gain)
+                    // mod lfo to volume
+                if (source === DLSSources.modLfo && destination === DLSDestinations.gain)
                 {
                     generators.push(new Generator(generatorTypes.modLfoToVolume, value));
                 }
                 else
-                // mod lfo to filter
-                if(source === DLSSources.modLfo && destination === DLSDestinations.filterCutoff)
+                    // mod lfo to filter
+                if (source === DLSSources.modLfo && destination === DLSDestinations.filterCutoff)
                 {
                     generators.push(new Generator(generatorTypes.modLfoToFilterFc, value));
                 }
                 else
-                // vib lfo to pitch
-                if(source === DLSSources.vibratoLfo && destination === DLSDestinations.pitch)
+                    // vib lfo to pitch
+                if (source === DLSSources.vibratoLfo && destination === DLSDestinations.pitch)
                 {
                     generators.push(new Generator(generatorTypes.vibLfoToPitch, value));
                 }
                 else
-                // mod env to pitch
-                if(source === DLSSources.modEnv && destination === DLSDestinations.pitch)
+                    // mod env to pitch
+                if (source === DLSSources.modEnv && destination === DLSDestinations.pitch)
                 {
                     generators.push(new Generator(generatorTypes.modEnvToPitch, value));
                 }
                 else
-                // mod env to filter
-                if(source === DLSSources.modEnv && destination === DLSDestinations.filterCutoff)
+                    // mod env to filter
+                if (source === DLSSources.modEnv && destination === DLSDestinations.filterCutoff)
                 {
                     generators.push(new Generator(generatorTypes.modEnvToFilterFc, value));
                 }
                 else
-                // key to vol env hold
-                if(source === DLSSources.keyNum && destination === DLSDestinations.volEnvHold)
+                    // key to vol env hold
+                if (source === DLSSources.keyNum && destination === DLSDestinations.volEnvHold)
                 {
                     // according to viena and another strange (with modulators) rendition of gm.dls in sf2,
                     // it shall be divided by -128
@@ -232,13 +233,17 @@ export function readArticulation(chunk, disableVibrato)
                     // real + (60 / 128) * scale
                     generators.push(new Generator(generatorTypes.keyNumToVolEnvHold, value / -128));
                     const correction = Math.round((60 / 128) * value);
-                    generators.forEach(g => {
-                        if(g.generatorType === generatorTypes.holdVolEnv) g.generatorValue += correction;
+                    generators.forEach(g =>
+                    {
+                        if (g.generatorType === generatorTypes.holdVolEnv)
+                        {
+                            g.generatorValue += correction;
+                        }
                     });
                 }
                 else
-                // key to vol env decay
-                if(source === DLSSources.keyNum && destination === DLSDestinations.volEnvDecay)
+                    // key to vol env decay
+                if (source === DLSSources.keyNum && destination === DLSDestinations.volEnvDecay)
                 {
                     // according to viena and another strange (with modulators) rendition of gm.dls in sf2,
                     // it shall be divided by -128
@@ -246,13 +251,17 @@ export function readArticulation(chunk, disableVibrato)
                     // real + (60 / 128) * scale
                     generators.push(new Generator(generatorTypes.keyNumToVolEnvDecay, value / -128));
                     const correction = Math.round((60 / 128) * value);
-                    generators.forEach(g => {
-                        if(g.generatorType === generatorTypes.decayVolEnv) g.generatorValue += correction;
+                    generators.forEach(g =>
+                    {
+                        if (g.generatorType === generatorTypes.decayVolEnv)
+                        {
+                            g.generatorValue += correction;
+                        }
                     });
                 }
                 else
-                // key to mod env hold
-                if(source === DLSSources.keyNum && destination === DLSDestinations.modEnvHold)
+                    // key to mod env hold
+                if (source === DLSSources.keyNum && destination === DLSDestinations.modEnvHold)
                 {
                     // according to viena and another strange (with modulators) rendition of gm.dls in sf2,
                     // it shall be divided by -128
@@ -260,13 +269,17 @@ export function readArticulation(chunk, disableVibrato)
                     // real + (60 / 128) * scale
                     generators.push(new Generator(generatorTypes.keyNumToModEnvHold, value / -128));
                     const correction = Math.round((60 / 128) * value);
-                    generators.forEach(g => {
-                        if(g.generatorType === generatorTypes.holdModEnv) g.generatorValue += correction;
+                    generators.forEach(g =>
+                    {
+                        if (g.generatorType === generatorTypes.holdModEnv)
+                        {
+                            g.generatorValue += correction;
+                        }
                     });
                 }
                 else
-                // key to mod env decay
-                if(source === DLSSources.keyNum && destination === DLSDestinations.modEnvDecay)
+                    // key to mod env decay
+                if (source === DLSSources.keyNum && destination === DLSDestinations.modEnvDecay)
                 {
                     // according to viena and another strange (with modulators) rendition of gm.dls in sf2,
                     // it shall be divided by -128
@@ -274,21 +287,25 @@ export function readArticulation(chunk, disableVibrato)
                     // real + (60 / 128) * scale
                     generators.push(new Generator(generatorTypes.keyNumToModEnvDecay, value / -128));
                     const correction = Math.round((60 / 128) * value);
-                    generators.forEach(g => {
-                        if(g.generatorType === generatorTypes.decayModEnv) g.generatorValue += correction;
+                    generators.forEach(g =>
+                    {
+                        if (g.generatorType === generatorTypes.decayModEnv)
+                        {
+                            g.generatorValue += correction;
+                        }
                     });
                 }
                 else
                 {
                     isGenerator = false;
                 }
-
+                
             }
             else
             {
                 isGenerator = false;
             }
-            if(isGenerator === false)
+            if (isGenerator === false)
             {
                 // UNCOMMENT TO ENABLE DEBUG
                 // modulatorConverterDebug(source, control, destination, value, transform)
@@ -300,23 +317,23 @@ export function readArticulation(chunk, disableVibrato)
                     transform,
                     value
                 );
-                if(mod)
+                if (mod)
                 {
                     // some articulators cannot be turned into modulators, that's why this check is a thing
                     modulators.push(mod);
-                    SpessaSynthInfo("%cSucceeded converting to SF2 Modulator!", consoleColors.recognized)
+                    SpessaSynthInfo("%cSucceeded converting to SF2 Modulator!", consoleColors.recognized);
                 }
                 else
                 {
-                    SpessaSynthWarn("Failed converting to SF2 Modulator!")
+                    SpessaSynthWarn("Failed converting to SF2 Modulator!");
                 }
             }
         }
     }
-
+    
     // override reverb and chorus with 1000 instead of 200 (if not overriden)
     // reverb
-    if(modulators.find(m => m.modulatorDestination === generatorTypes.reverbEffectsSend) === undefined)
+    if (modulators.find(m => m.modulatorDestination === generatorTypes.reverbEffectsSend) === undefined)
     {
         modulators.push(new Modulator({
             srcEnum: 0x00DB,
@@ -327,7 +344,7 @@ export function readArticulation(chunk, disableVibrato)
         }));
     }
     // chorus
-    if(modulators.find(m => m.modulatorDestination === generatorTypes.chorusEffectsSend) === undefined)
+    if (modulators.find(m => m.modulatorDestination === generatorTypes.chorusEffectsSend) === undefined)
     {
         modulators.push(new Modulator({
             srcEnum: 0x00DD,
@@ -337,9 +354,9 @@ export function readArticulation(chunk, disableVibrato)
             transform: 0
         }));
     }
-
+    
     // it seems that dls 1 does not have vibrato lfo, so we shall disable it
-    if(disableVibrato)
+    if (disableVibrato)
     {
         modulators.push(
             // mod to vib
@@ -360,6 +377,6 @@ export function readArticulation(chunk, disableVibrato)
             })
         );
     }
-
-    return {modulators: modulators, generators: generators}
+    
+    return { modulators: modulators, generators: generators };
 }

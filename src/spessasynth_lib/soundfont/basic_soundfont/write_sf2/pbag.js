@@ -1,6 +1,6 @@
-import { IndexedByteArray } from '../../../utils/indexed_array.js'
-import { writeWord } from '../../../utils/byte_functions/little_endian.js'
-import { RiffChunk, writeRIFFChunk } from '../riff_chunk.js'
+import { IndexedByteArray } from "../../../utils/indexed_array.js";
+import { writeWord } from "../../../utils/byte_functions/little_endian.js";
+import { RiffChunk, writeRIFFChunk } from "../riff_chunk.js";
 
 /**
  * @this {BasicSoundFont}
@@ -14,10 +14,10 @@ export function getPBAG()
     let zoneID = 0;
     let generatorIndex = 0;
     let modulatorIndex = 0;
-    for(const preset of this.presets)
+    for (const preset of this.presets)
     {
         preset.presetZoneStartIndex = zoneID;
-        for(const pbag of preset.presetZones)
+        for (const pbag of preset.presetZones)
         {
             pbag.zoneID = zoneID;
             writeWord(pbagdata, generatorIndex);
@@ -30,7 +30,7 @@ export function getPBAG()
     // write the terminal PBAG
     writeWord(pbagdata, generatorIndex);
     writeWord(pbagdata, modulatorIndex);
-
+    
     return writeRIFFChunk(new RiffChunk(
         "pbag",
         pbagdata.length,

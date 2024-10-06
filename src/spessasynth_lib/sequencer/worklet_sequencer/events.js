@@ -1,7 +1,7 @@
-import { returnMessageType } from '../../synthetizer/worklet_system/message_protocol/worklet_message.js'
-import { WorkletSequencerMessageType, WorkletSequencerReturnMessageType } from './sequencer_message.js'
-import { messageTypes, midiControllers } from '../../midi_parser/midi_message.js'
-import { MIDI_CHANNEL_COUNT } from '../../synthetizer/synthetizer.js'
+import { returnMessageType } from "../../synthetizer/worklet_system/message_protocol/worklet_message.js";
+import { WorkletSequencerMessageType, WorkletSequencerReturnMessageType } from "./sequencer_message.js";
+import { messageTypes, midiControllers } from "../../midi_parser/midi_message.js";
+import { MIDI_CHANNEL_COUNT } from "../../synthetizer/synthetizer.js";
 
 /**
  * @param messageType {WorkletSequencerMessageType}
@@ -14,39 +14,39 @@ export function processMessage(messageType, messageData)
     {
         default:
             break;
-
+        
         case WorkletSequencerMessageType.loadNewSongList:
             this.loadNewSongList(messageData);
             break;
-
+        
         case WorkletSequencerMessageType.pause:
             this.pause();
             break;
-
+        
         case WorkletSequencerMessageType.play:
             this.play(messageData);
             break;
-
+        
         case WorkletSequencerMessageType.stop:
             this.stop();
             break;
-
+        
         case WorkletSequencerMessageType.setTime:
             this.currentTime = messageData;
             break;
-
+        
         case WorkletSequencerMessageType.changeMIDIMessageSending:
             this.sendMIDIMessages = messageData;
             break;
-
+        
         case WorkletSequencerMessageType.setPlaybackRate:
             this.playbackRate = messageData;
             break;
-
+        
         case WorkletSequencerMessageType.setLoop:
             this.loop = messageData;
             break;
-
+        
         case WorkletSequencerMessageType.changeSong:
             if (messageData)
             {
@@ -57,11 +57,11 @@ export function processMessage(messageType, messageData)
                 this.previousSong();
             }
             break;
-
+        
         case WorkletSequencerMessageType.getMIDI:
             this.post(WorkletSequencerReturnMessageType.getMIDI, this.midiData);
             break;
-
+        
         case WorkletSequencerMessageType.setSkipToFirstNote:
             this._skipToFirstNoteOn = messageData;
             break;
@@ -76,7 +76,7 @@ export function processMessage(messageType, messageData)
  */
 export function post(messageType, messageData = undefined)
 {
-    if(!this.synth.enableEventSystem)
+    if (!this.synth.enableEventSystem)
     {
         return;
     }
@@ -86,7 +86,7 @@ export function post(messageType, messageData = undefined)
             messageType: messageType,
             messageData: messageData
         }
-    })
+    });
 }
 
 /**
@@ -107,11 +107,11 @@ export function sendMIDIMessage(message)
 export function sendMIDICC(channel, type, value)
 {
     channel %= 16;
-    if(!this.sendMIDIMessages)
+    if (!this.sendMIDIMessages)
     {
         return;
     }
-    this.sendMIDIMessage([messageTypes.controllerChange | channel, type, value])
+    this.sendMIDIMessage([messageTypes.controllerChange | channel, type, value]);
 }
 
 /**
@@ -122,7 +122,7 @@ export function sendMIDICC(channel, type, value)
 export function sendMIDIProgramChange(channel, program)
 {
     channel %= 16;
-    if(!this.sendMIDIMessages)
+    if (!this.sendMIDIMessages)
     {
         return;
     }
@@ -139,7 +139,7 @@ export function sendMIDIProgramChange(channel, program)
 export function sendMIDIPitchWheel(channel, MSB, LSB)
 {
     channel %= 16;
-    if(!this.sendMIDIMessages)
+    if (!this.sendMIDIMessages)
     {
         return;
     }
@@ -151,12 +151,12 @@ export function sendMIDIPitchWheel(channel, MSB, LSB)
  */
 export function sendMIDIReset()
 {
-    if(!this.sendMIDIMessages)
+    if (!this.sendMIDIMessages)
     {
         return;
     }
     this.sendMIDIMessage([messageTypes.reset]);
-    for(let ch = 0; ch < MIDI_CHANNEL_COUNT; ch++)
+    for (let ch = 0; ch < MIDI_CHANNEL_COUNT; ch++)
     {
         this.sendMIDIMessage([messageTypes.controllerChange | ch, midiControllers.allSoundOff, 0]);
         this.sendMIDIMessage([messageTypes.controllerChange | ch, midiControllers.resetAllControllers, 0]);

@@ -1,4 +1,4 @@
-import { isMobile } from '../utils/is_mobile.js'
+import { isMobile } from "../utils/is_mobile.js";
 
 /**
  * @this {MidiKeyboard}
@@ -7,17 +7,19 @@ import { isMobile } from '../utils/is_mobile.js'
 export function _handlePointers()
 {
     // POINTER HANDLING
-    const userNoteOff = note => {
-        this.pressedKeys.delete(note)
+    const userNoteOff = note =>
+    {
+        this.pressedKeys.delete(note);
         this.releaseNote(note, this.channel);
         this.synth.noteOff(this.channel, note);
-    }
-
+    };
+    
     /**
      * @param note {number}
      * @param touch {Touch|MouseEvent}
      */
-    const userNoteOn = (note, touch) => {
+    const userNoteOn = (note, touch) =>
+    {
         // user note on
         let velocity;
         if (isMobile)
@@ -30,7 +32,7 @@ export function _handlePointers()
             // determine velocity. lower = more velocity
             const keyElement = this.keys[0]; // all keys have the same top
             const rect = keyElement.getBoundingClientRect();
-            if(this.keyboard.classList.contains("sideways"))
+            if (this.keyboard.classList.contains("sideways"))
             {
                 const relativeMouseX = touch.clientX - rect.left;
                 const keyWidth = rect.width;
@@ -45,12 +47,13 @@ export function _handlePointers()
             }
         }
         this.synth.noteOn(this.channel, note, velocity, this.enableDebugging);
-    }
-
+    };
+    
     /**
      * @param e {MouseEvent|TouchEvent}
      */
-    const moveHandler = e => {
+    const moveHandler = e =>
+    {
         // all currently pressed keys are stored in this.pressedKeys
         /**
          * @type {Touch[]|MouseEvent[]}
@@ -60,11 +63,12 @@ export function _handlePointers()
          * @type {Set<number>}
          */
         const currentlyTouchedKeys = new Set();
-        touches.forEach(touch => {
+        touches.forEach(touch =>
+        {
             const targetKey = document.elementFromPoint(touch.clientX, touch.clientY);
             const midiNote = parseInt(targetKey.id.replace("note", ""));
             currentlyTouchedKeys.add(midiNote);
-            if(isNaN(midiNote) || midiNote < 0 || this.pressedKeys.has(midiNote))
+            if (isNaN(midiNote) || midiNote < 0 || this.pressedKeys.has(midiNote))
             {
                 // pressed outside of bounds or already pressed
                 return;
@@ -72,37 +76,47 @@ export function _handlePointers()
             this.pressedKeys.add(midiNote);
             userNoteOn(midiNote, touch);
         });
-        this.pressedKeys.forEach(key => {
-            if(!currentlyTouchedKeys.has(key))
+        this.pressedKeys.forEach(key =>
+        {
+            if (!currentlyTouchedKeys.has(key))
             {
                 userNoteOff(key);
             }
         });
     };
-
+    
     // mouse
-    if(!isMobile)
+    if (!isMobile)
     {
-        document.addEventListener("mousedown", e => {
+        document.addEventListener("mousedown", e =>
+        {
             this.mouseHeld = true;
             moveHandler(e);
         });
-        document.addEventListener("mouseup", () => {
+        document.addEventListener("mouseup", () =>
+        {
             this.mouseHeld = false;
-            this.pressedKeys.forEach(key => {
+            this.pressedKeys.forEach(key =>
+            {
                 userNoteOff(key);
             });
         });
-        this.keyboard.onmousemove = e => {
-            if(this.mouseHeld) moveHandler(e);
+        this.keyboard.onmousemove = e =>
+        {
+            if (this.mouseHeld)
+            {
+                moveHandler(e);
+            }
         };
-        this.keyboard.onmouseleave = () => {
-            this.pressedKeys.forEach(key => {
+        this.keyboard.onmouseleave = () =>
+        {
+            this.pressedKeys.forEach(key =>
+            {
                 userNoteOff(key);
             });
-        }
+        };
     }
-
+    
     // touch
     this.keyboard.ontouchstart = moveHandler.bind(this);
     this.keyboard.ontouchend = moveHandler.bind(this);

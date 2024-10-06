@@ -1,5 +1,4 @@
-.notification_input_wrapper
-{
+.notification_input_wrapper {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -13,7 +12,7 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 .notification input[type='number'],
-.notification input[type='text']{
+.notification input[type='text'] {
     display: block;
     background: var(--top-buttons-color);
     border: solid 1px #333;
@@ -28,20 +27,20 @@ input[type='number']::-webkit-inner-spin-button {
     width: auto !important;
 }
 
-.notification_slider_wrapper{
+.notification_slider_wrapper {
     display: flex;
     justify-content: space-between;
     margin: 0.5rem;
 }
 
-.notification_slider_wrapper label{
+.notification_slider_wrapper label {
     margin-right: 2rem;
 }
 
-.notification_slider_wrapper .settings_visual_wrapper{
+.notification_slider_wrapper .settings_visual_wrapper {
     margin: 0 !important;
 }
 
-.notification_slider_wrapper .settings_slider_wrapper{
+.notification_slider_wrapper .settings_slider_wrapper {
     width: auto !important;
 }

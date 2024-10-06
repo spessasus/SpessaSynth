@@ -23,7 +23,7 @@ export function SpessaSynthLogging(enableInfo, enableWarn, enableGroup, enableTa
  */
 export function SpessaSynthInfo(...message)
 {
-    if(ENABLE_INFO)
+    if (ENABLE_INFO)
     {
         console.info(...message);
     }
@@ -34,7 +34,7 @@ export function SpessaSynthInfo(...message)
  */
 export function SpessaSynthWarn(...message)
 {
-    if(ENABLE_WARN)
+    if (ENABLE_WARN)
     {
         console.warn(...message);
     }
@@ -42,7 +42,7 @@ export function SpessaSynthWarn(...message)
 
 export function SpessaSynthTable(...args)
 {
-    if(ENABLE_TABLE)
+    if (ENABLE_TABLE)
     {
         console.table(...args);
     }
@@ -53,7 +53,7 @@ export function SpessaSynthTable(...args)
  */
 export function SpessaSynthGroup(...message)
 {
-    if(ENABLE_GROUP)
+    if (ENABLE_GROUP)
     {
         console.group(...message);
     }
@@ -64,7 +64,7 @@ export function SpessaSynthGroup(...message)
  */
 export function SpessaSynthGroupCollapsed(...message)
 {
-    if(ENABLE_GROUP)
+    if (ENABLE_GROUP)
     {
         console.groupCollapsed(...message);
     }
@@ -72,7 +72,7 @@ export function SpessaSynthGroupCollapsed(...message)
 
 export function SpessaSynthGroupEnd()
 {
-    if(ENABLE_GROUP)
+    if (ENABLE_GROUP)
     {
         console.groupEnd();
     }

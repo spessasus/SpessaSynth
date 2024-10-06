@@ -2,8 +2,7 @@
 @import "voice_selector.css";
 @import "synthui_button.css";
 
-#synthetizer_controls
-{
+#synthetizer_controls {
     --voice-meter-height: 2.5em;
     --synthui-background: black;
     --synthui-border-radius: var(--primary-border-radius);
@@ -15,7 +14,7 @@
     --synthui-margin: 0.2em;
 }
 
-.wrapper{
+.wrapper {
     height: 80%;
     padding: 2%;
     display: flex;
@@ -23,7 +22,7 @@
     justify-content: space-evenly;
 }
 
-.controls_wrapper{
+.controls_wrapper {
     display: flex;
     flex-wrap: wrap;
     align-items: stretch;
@@ -31,14 +30,12 @@
     margin: 1em;
 }
 
-.main_controller_element
-{
+.main_controller_element {
     margin-left: 0.5em;
     margin-right: 0.5em;
 }
 
-.controller_element
-{
+.controller_element {
     position: relative;
     height: var(--voice-meter-height);
     flex: 1;
@@ -46,7 +43,7 @@
     margin: var(--synthui-margin);
 }
 
-.synthui_controller{
+.synthui_controller {
     left: 0;
     display: none;
     position: absolute;
@@ -60,28 +57,26 @@
     padding: 0.5em;
 }
 
-.synthui_controller_light
-{
+.synthui_controller_light {
     background: linear-gradient(115deg, rgb(200, 200, 200), rgba(255, 255, 255), rgba(200, 200, 200)) !important;
 }
 
-.synthui_controller_show{
+.synthui_controller_show {
     transform: scaleX(1) !important;
 }
 
-.channel_controller{
+.channel_controller {
     display: flex;
     align-items: stretch;
     flex-wrap: wrap;
     transition: 0.2s ease;
 }
 
-.channel_controller.no_voices{
+.channel_controller.no_voices {
     filter: brightness(0.8);
 }
 
-.mute_button
-{
+.mute_button {
     flex: 0;
     display: flex;
     justify-content: center;
@@ -94,23 +89,23 @@
     color: black;
 }
 
-.mute_button svg{
+.mute_button svg {
     transition: transform 0.2s ease;
 }
 
-.mute_button:active{
+.mute_button:active {
     filter: brightness(0.8);
     transform: scale(var(--active-scale));
 }
 
-.mute_button:hover{
+.mute_button:hover {
     cursor: pointer;
 }
 
-.mute_button:hover svg{
+.mute_button:hover svg {
     transform: scale(1.1) rotate(5deg);
 }
 
-.mute_button:hover path{
+.mute_button:hover path {
     filter: drop-shadow(0 0 1px currentColor);
 }

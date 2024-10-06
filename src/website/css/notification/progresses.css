@@ -1,4 +1,4 @@
-.notification .notification_progress_background{
+.notification .notification_progress_background {
     height: 1rem;
     margin: 1rem;
     background: var(--track-color);
@@ -7,7 +7,7 @@
     box-sizing: content-box; /*HERESY*/
 }
 
-.notification .notification_progress{
+.notification .notification_progress {
     height: 100%;
     width: 0;
     background: var(--primary-color);

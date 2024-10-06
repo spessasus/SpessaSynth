@@ -1,6 +1,6 @@
-import { getDoubleNoteSvg } from '../utils/icons.js'
-import { formatTime } from '../../../spessasynth_lib/utils/other.js'
-import { ANIMATION_REFLOW_TIME } from '../utils/animation_utils.js'
+import { getDoubleNoteSvg } from "../utils/icons.js";
+import { formatTime } from "../../../spessasynth_lib/utils/other.js";
+import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 
 /**
  * music_mode_ui.js
@@ -10,13 +10,15 @@ import { ANIMATION_REFLOW_TIME } from '../utils/animation_utils.js'
 
 const TRANSITION_TIME = 0.5;
 
-export class MusicModeUI {
+export class MusicModeUI
+{
     /**
      * Creates a new class for displaying information about the current file.
      * @param element {HTMLElement}
      * @param localeManager {LocaleManager}
      */
-    constructor(element, localeManager) {
+    constructor(element, localeManager)
+    {
         this.mainDiv = element;
         // load html
         this.mainDiv.innerHTML = `
@@ -63,7 +65,7 @@ export class MusicModeUI {
                 </div>
             </div>
         </div>`;
-
+        
         // apply locale bindings
         for (const el of this.mainDiv.querySelectorAll("*[translate-path]"))
         {
@@ -78,12 +80,12 @@ export class MusicModeUI {
         this.visible = false;
         this.locale = localeManager;
     }
-
+    
     toggleDarkMode()
     {
         this.mainDiv.getElementsByClassName("player_info_wrapper")[0].classList.toggle("light_mode");
     }
-
+    
     /**
      * @param title {string}
      */
@@ -92,14 +94,15 @@ export class MusicModeUI {
         // get the title
         document.getElementById("player_info_title").textContent = title;
     }
-
+    
     /**
      * @param seq {Sequencer}
      */
     connectSequencer(seq)
     {
         this.seq = seq;
-        this.seq.addOnSongChangeEvent(mid => {
+        this.seq.addOnSongChangeEvent(mid =>
+        {
             // use file name if no copyright detected
             const midcopy = mid.copyright.replaceAll("\n", "");
             /**
@@ -107,17 +110,18 @@ export class MusicModeUI {
              * @param text {string}
              * @param enableMarquee {boolean}
              */
-            const setInfoText = (id, text, enableMarquee = true) => {
+            const setInfoText = (id, text, enableMarquee = true) =>
+            {
                 const el = document.getElementById(id);
-                if(text.length > 0)
+                if (text.length > 0)
                 {
                     el.parentElement.classList.remove("hidden");
                     el.innerHTML = "";
                     // add scroll if needed
-                    if(text.length > 30 && enableMarquee)
+                    if (text.length > 30 && enableMarquee)
                     {
                         el.classList.add("marquee");
-
+                        
                         const textWrap = document.createElement("span");
                         textWrap.textContent = text;
                         el.appendChild(textWrap);
@@ -131,15 +135,15 @@ export class MusicModeUI {
                 {
                     el.parentElement.classList.add("hidden");
                 }
-            }
+            };
             // copyright
             setInfoText("player_info_detail", midcopy);
             // time
             setInfoText("player_info_time", formatTime(this.seq.duration).time);
-
+            
             // file name
             setInfoText("player_info_file_name", mid.fileName, false);
-
+            
             // embedded things
             // add album and artist meta
             /**
@@ -149,25 +153,35 @@ export class MusicModeUI {
              * @param prepend {string}
              * @return {string}
              */
-            const verifyDecode = (type, def, decoder, prepend = "") => {
-                return this.seq.midiData.RMIDInfo?.[type] === undefined ? def : prepend + decoder.decode(this.seq.midiData.RMIDInfo?.[type]).replace(/\0$/, '')
-            }
+            const verifyDecode = (type, def, decoder, prepend = "") =>
+            {
+                return this.seq.midiData.RMIDInfo?.[type] === undefined ? def : prepend + decoder.decode(
+                    this.seq.midiData.RMIDInfo?.[type]).replace(/\0$/, "");
+            };
             // initialize decoder
             let encoding = verifyDecode("IENC", "ascii", new TextDecoder());
             const decoder = new TextDecoder(encoding);
-
+            
             // artist, album, creation date
-            setInfoText("player_info_album", verifyDecode('IPRD', "", decoder));
-            setInfoText("player_info_artist", verifyDecode('IART', "", decoder));
-            setInfoText("player_info_genre", verifyDecode('IGNR', "", decoder));
-            setInfoText("player_info_creation", verifyDecode('ICRD', "", decoder) + verifyDecode('ICRT', "", decoder, "\n"));
-            setInfoText("player_info_comment", verifyDecode('ICMT', "", decoder));
-
+            setInfoText("player_info_album", verifyDecode("IPRD", "", decoder));
+            setInfoText("player_info_artist", verifyDecode("IART", "", decoder));
+            setInfoText("player_info_genre", verifyDecode("IGNR", "", decoder));
+            setInfoText(
+                "player_info_creation",
+                verifyDecode("ICRD", "", decoder) + verifyDecode(
+                    "ICRT",
+                    "",
+                    decoder,
+                    "\n"
+                )
+            );
+            setInfoText("player_info_comment", verifyDecode("ICMT", "", decoder));
+            
             // image
             const svg = this.mainDiv.getElementsByTagName("svg")[0];
             const img = this.mainDiv.getElementsByTagName("img")[0];
             const bg = document.getElementById("player_info_background_image");
-            if(!mid.isEmbedded)
+            if (!mid.isEmbedded)
             {
                 svg.style.display = "";
                 img.style.display = "none";
@@ -175,7 +189,7 @@ export class MusicModeUI {
                 return;
             }
             // add album cover if available
-            if(mid.RMIDInfo["IPIC"] === undefined)
+            if (mid.RMIDInfo["IPIC"] === undefined)
             {
                 svg.style.display = "";
                 img.style.display = "none";
@@ -190,30 +204,30 @@ export class MusicModeUI {
             bg.style.setProperty("--bg-image", `url('${url}')`);
         }, "player-js-song-change");
     }
-
+    
     /**
      * @param visible {boolean}
      * @param keyboardCanvasWrapper {HTMLDivElement}
      */
     setVisibility(visible, keyboardCanvasWrapper)
     {
-        if(visible === this.visible)
+        if (visible === this.visible)
         {
             return;
         }
         this.visible = visible;
-        if(this.timeoutId)
+        if (this.timeoutId)
         {
             clearTimeout(this.timeoutId);
         }
         const playerDiv = this.mainDiv;
-        if(visible)
+        if (visible)
         {
             // PREPARATION
             // renderer and keyboard
             keyboardCanvasWrapper.classList.add("out_animation");
             this.savedCKWrapperHeight = keyboardCanvasWrapper.clientHeight;
-
+            
             // music mode
             // hacky: get position of the wrapper and temporarily set to absolute (set to normal after finish)
             const playerHeight = keyboardCanvasWrapper.clientHeight;
@@ -222,23 +236,25 @@ export class MusicModeUI {
             playerDiv.style.top = `${playerTop}px`;
             playerDiv.style.height = `${playerHeight}px`;
             playerDiv.style.display = "flex";
-
+            
             // START
-            setTimeout(() => {
+            setTimeout(() =>
+            {
                 playerDiv.classList.add("player_info_show");
                 document.body.style.overflow = "hidden";
             }, ANIMATION_REFLOW_TIME);
-
+            
             // FINISH
-            this.timeoutId = setTimeout(async () => {
+            this.timeoutId = setTimeout(async () =>
+            {
                 keyboardCanvasWrapper.style.display = "none";
-
+                
                 playerDiv.style.position = "";
                 playerDiv.style.top = "";
                 playerDiv.style.height = "";
-
+                
                 document.body.style.overflow = "";
-            }, TRANSITION_TIME * 1000)
+            }, TRANSITION_TIME * 1000);
         }
         else
         {
@@ -250,24 +266,26 @@ export class MusicModeUI {
             keyboardCanvasWrapper.style.position = "absolute";
             keyboardCanvasWrapper.style.top = `${rootTop}px`;
             keyboardCanvasWrapper.style.height = `${this.savedCKWrapperHeight}px`;
-
+            
             // music mode
             playerDiv.classList.remove("player_info_show");
-
+            
             // START
-            setTimeout(() => {
+            setTimeout(() =>
+            {
                 keyboardCanvasWrapper.classList.remove("out_animation");
                 document.body.style.overflow = "hidden";
             }, ANIMATION_REFLOW_TIME);
-
+            
             // FINISH
-            this.timeoutId = setTimeout(() => {
+            this.timeoutId = setTimeout(() =>
+            {
                 playerDiv.style.display = "none";
-
+                
                 keyboardCanvasWrapper.style.position = "";
                 keyboardCanvasWrapper.style.top = "";
                 keyboardCanvasWrapper.style.height = "";
-
+                
                 document.body.style.overflow = "";
             }, TRANSITION_TIME * 1000);
         }

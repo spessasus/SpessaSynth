@@ -1,10 +1,10 @@
-.switch_label{
+.switch_label {
     display: flex;
     justify-content: space-between;
     margin-top: 1em;
 }
 
-.switch_label label{
+.switch_label label {
     margin-right: 1em;
     font-size: large;
 }
@@ -54,7 +54,7 @@
     box-shadow: 0 0 0.125rem rgba(0, 0, 0, 0.2);
 }
 
-.switch_slider:hover::before{
+.switch_slider:hover::before {
     border: solid var(--border-color) 1px;
     filter: brightness(1.2);
 }
@@ -68,10 +68,10 @@ input:checked + .switch_slider::before {
     transform: translate(calc(var(--track-width) - var(--thumb-size) * 0.66), -50%);
 }
 
-.switch:active .switch_slider::before{
+.switch:active .switch_slider::before {
     transform: translate(calc(var(--track-width) - var(--thumb-size) * 1.2), -50%);
 }
 
-.switch:active input:checked + .switch_slider::before{
+.switch:active input:checked + .switch_slider::before {
     transform: translate(calc(var(--track-width) - var(--thumb-size) * 0.95), -50%);
 }

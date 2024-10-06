@@ -1,4 +1,4 @@
-import { DEFAULT_CHORUS_CONFIG } from './fancy_chorus.js'
+import { DEFAULT_CHORUS_CONFIG } from "./fancy_chorus.js";
 
 /**
  * @typedef {Object} EffectsConfig
@@ -15,7 +15,7 @@ import { DEFAULT_CHORUS_CONFIG } from './fancy_chorus.js'
 export const DEFAULT_EFFECTS_CONFIG = {
     chorusEnabled: true,
     chorusConfig: DEFAULT_CHORUS_CONFIG,
-
+    
     reverbEnabled: true,
     reverbImpulseResponse: undefined // will load the integrated one
-}
+};

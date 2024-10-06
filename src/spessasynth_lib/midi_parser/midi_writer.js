@@ -1,6 +1,6 @@
-import { messageTypes } from './midi_message.js'
-import { writeVariableLengthQuantity } from '../utils/byte_functions/variable_length_quantity.js'
-import { writeBytesAsUintBigEndian } from '../utils/byte_functions/big_endian.js'
+import { messageTypes } from "./midi_message.js";
+import { writeVariableLengthQuantity } from "../utils/byte_functions/variable_length_quantity.js";
+import { writeBytesAsUintBigEndian } from "../utils/byte_functions/big_endian.js";
 
 /**
  * Exports the midi as a .mid file
@@ -13,12 +13,12 @@ export function writeMIDIFile(midi)
      * @type {Uint8Array[]}
      */
     const binaryTrackData = [];
-    for(const track of midi.tracks)
+    for (const track of midi.tracks)
     {
         const binaryTrack = [];
         let currentTick = 0;
         let runningByte = undefined;
-        for(const event of track)
+        for (const event of track)
         {
             // ticks stored in MIDI are absolute, but .mid wants relative. Convert them here.
             const deltaTicks = event.ticks - currentTick;
@@ -27,13 +27,13 @@ export function writeMIDIFile(midi)
              */
             let messageData;
             // determine the message
-            if(event.messageStatusByte <= messageTypes.keySignature || event.messageStatusByte === messageTypes.sequenceSpecific)
+            if (event.messageStatusByte <= messageTypes.keySignature || event.messageStatusByte === messageTypes.sequenceSpecific)
             {
                 // this is a meta message
                 // syntax is FF<type><length><data>
                 messageData = [0xff, event.messageStatusByte, ...writeVariableLengthQuantity(event.messageData.length), ...event.messageData];
             }
-            else if(event.messageStatusByte === messageTypes.systemExclusive)
+            else if (event.messageStatusByte === messageTypes.systemExclusive)
             {
                 // this is a system exclusive message
                 // syntax is F0<length><data>
@@ -43,7 +43,7 @@ export function writeMIDIFile(midi)
             {
                 // this is a midi message
                 messageData = [];
-                if(runningByte !== event.messageStatusByte)
+                if (runningByte !== event.messageStatusByte)
                 {
                     // running byte was not the byte we want. Add the byte here.
                     runningByte = event.messageStatusByte;
@@ -61,19 +61,19 @@ export function writeMIDIFile(midi)
         }
         binaryTrackData.push(new Uint8Array(binaryTrack));
     }
-
+    
     /**
      * @param text {string}
      * @param arr {number[]}
      */
     function writeText(text, arr)
     {
-        for(let i = 0; i < text.length; i++)
+        for (let i = 0; i < text.length; i++)
         {
             arr.push(text.charCodeAt(i));
         }
     }
-
+    
     // write the file
     const binaryData = [];
     // write header
@@ -82,9 +82,9 @@ export function writeMIDIFile(midi)
     binaryData.push(0, midi.format); // format
     binaryData.push(...writeBytesAsUintBigEndian(midi.tracksAmount, 2)); // num tracks
     binaryData.push(...writeBytesAsUintBigEndian(midi.timeDivision, 2)); // time division
-
+    
     // write tracks
-    for(const track of binaryTrackData)
+    for (const track of binaryTrackData)
     {
         // write track header
         writeText("MTrk", binaryData); // MTrk

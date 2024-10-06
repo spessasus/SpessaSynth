@@ -1,6 +1,6 @@
-import { computeModulators } from '../worklet_utilities/worklet_modulator.js'
-import { WorkletVolumeEnvelope } from '../worklet_utilities/volume_envelope.js'
-import { WorkletModulationEnvelope } from '../worklet_utilities/modulation_envelope.js'
+import { computeModulators } from "../worklet_utilities/worklet_modulator.js";
+import { WorkletVolumeEnvelope } from "../worklet_utilities/volume_envelope.js";
+import { WorkletModulationEnvelope } from "../worklet_utilities/modulation_envelope.js";
 import { generatorTypes } from "../../../soundfont/basic_soundfont/generator.js";
 
 /**
@@ -20,8 +20,8 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
         this.noteOff(channel, midiNote);
         return;
     }
-
-    const channelObject = this.workletProcessorChannels[channel]
+    
+    const channelObject = this.workletProcessorChannels[channel];
     if (
         (this.highPerformanceMode && this.totalVoicesAmount > 200 && velocity < 40) ||
         (this.highPerformanceMode && velocity < 10) ||
@@ -30,25 +30,25 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
     {
         return;
     }
-
+    
     let sentMidiNote = midiNote + channelObject.channelTransposeKeyShift;
-
-    if(midiNote > 127 || midiNote < 0)
+    
+    if (midiNote > 127 || midiNote < 0)
     {
         return;
     }
     const program = channelObject.preset.program;
-    if(this.tunings[program]?.[midiNote]?.midiNote >= 0)
+    if (this.tunings[program]?.[midiNote]?.midiNote >= 0)
     {
         sentMidiNote = this.tunings[program]?.[midiNote].midiNote;
     }
-
+    
     // velocity override
-    if(channelObject.velocityOverride > 0)
+    if (channelObject.velocityOverride > 0)
     {
         velocity = channelObject.velocityOverride;
     }
-
+    
     // get voices
     const voices = this.getWorkletVoices(
         channel,
@@ -58,16 +58,18 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
         startTime,
         enableDebugging
     );
-
+    
     // add voices and exclusive class apply
     const channelVoices = channelObject.voices;
-    voices.forEach(voice => {
+    voices.forEach(voice =>
+    {
         const exclusive = voice.generators[generatorTypes.exclusiveClass];
-        if(exclusive !== 0)
+        if (exclusive !== 0)
         {
             // kill all voices with the same exclusive class
-            channelVoices.forEach(v => {
-                if(v.generators[generatorTypes.exclusiveClass] === exclusive)
+            channelVoices.forEach(v =>
+            {
+                if (v.generators[generatorTypes.exclusiveClass] === exclusive)
                 {
                     this.releaseVoice(v);
                     v.modulatedGenerators[generatorTypes.releaseVolEnv] = -7000; // make the release nearly instant
@@ -75,7 +77,7 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
                     WorkletVolumeEnvelope.recalculate(v);
                     WorkletModulationEnvelope.recalculate(v);
                 }
-            })
+            });
         }
         // compute all modulators
         computeModulators(voice, channelObject.midiControllers);
@@ -87,12 +89,12 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
         const sm = voice.sample;
         // apply them
         const clamp = num => Math.max(0, Math.min(sm.sampleData.length - 1, num));
-        sm.cursor = clamp( sm.cursor + cursorStartOffset);
+        sm.cursor = clamp(sm.cursor + cursorStartOffset);
         sm.end = clamp(sm.end + endOffset);
         sm.loopStart = clamp(sm.loopStart + loopStartOffset);
         sm.loopEnd = clamp(sm.loopEnd + loopEndOffset);
         // swap loops if needed
-        if(sm.loopEnd < sm.loopStart)
+        if (sm.loopEnd < sm.loopStart)
         {
             const temp = sm.loopStart;
             sm.loopStart = sm.loopEnd;
@@ -107,23 +109,26 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
         // as it's interpolated (we don't want 0 attenuation for even a split second)
         voice.volumeEnvelope.attenuation = voice.volumeEnvelope.attenuationTarget;
         // set initial pan to avoid split second changing from middle to the correct value
-        voice.currentPan = ((Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan] )) + 500) / 1000) // 0 to 1
+        voice.currentPan = ((Math.max(
+            -500,
+            Math.min(500, voice.modulatedGenerators[generatorTypes.pan])
+        ) + 500) / 1000); // 0 to 1
     });
-
+    
     this.totalVoicesAmount += voices.length;
     // cap the voices
-    if(this.totalVoicesAmount > this.voiceCap)
+    if (this.totalVoicesAmount > this.voiceCap)
     {
         this.voiceKilling(voices.length);
     }
     channelVoices.push(...voices);
-    if(sendEvent)
+    if (sendEvent)
     {
         this.sendChannelProperties();
         this.callEvent("noteon", {
             midiNote: midiNote,
             channel: channel,
-            velocity: velocity,
+            velocity: velocity
         });
     }
 }

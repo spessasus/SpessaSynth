@@ -1,22 +1,23 @@
-import { absCentsToHz, timecentsToSeconds } from '../worklet_utilities/unit_converter.js'
-import { getLFOValue } from '../worklet_utilities/lfo.js'
-import { customControllers } from '../worklet_utilities/worklet_processor_channel.js'
-import { WorkletModulationEnvelope } from '../worklet_utilities/modulation_envelope.js'
+import { absCentsToHz, timecentsToSeconds } from "../worklet_utilities/unit_converter.js";
+import { getLFOValue } from "../worklet_utilities/lfo.js";
+import { customControllers } from "../worklet_utilities/worklet_processor_channel.js";
+import { WorkletModulationEnvelope } from "../worklet_utilities/modulation_envelope.js";
 import {
     getSampleCubic,
     getSampleLinear,
     getSampleNearest,
-    interpolationTypes,
-} from '../worklet_utilities/wavetable_oscillator.js'
-import { panVoice } from '../worklet_utilities/stereo_panner.js'
-import { WorkletLowpassFilter } from '../worklet_utilities/lowpass_filter.js'
-import { MIN_NOTE_LENGTH } from '../main_processor.js'
-import { WorkletVolumeEnvelope } from '../worklet_utilities/volume_envelope.js'
+    interpolationTypes
+} from "../worklet_utilities/wavetable_oscillator.js";
+import { panVoice } from "../worklet_utilities/stereo_panner.js";
+import { WorkletLowpassFilter } from "../worklet_utilities/lowpass_filter.js";
+import { MIN_NOTE_LENGTH } from "../main_processor.js";
+import { WorkletVolumeEnvelope } from "../worklet_utilities/volume_envelope.js";
 import { generatorTypes } from "../../../soundfont/basic_soundfont/generator.js";
 
 
 const HALF_PI = Math.PI / 2;
 export const PAN_SMOOTHING_FACTOR = 0.05;
+
 /**
  * Renders a voice to the stereo output buffer
  * @param channel {WorkletProcessorChannel} the voice's channel
@@ -36,7 +37,7 @@ export function renderVoice(
 )
 {
     // check if release
-    if(!voice.isInRelease)
+    if (!voice.isInRelease)
     {
         // if not in release, check if the release time is
         if (currentTime >= voice.releaseStartTime)
@@ -45,27 +46,27 @@ export function renderVoice(
             voice.isInRelease = true;
             WorkletVolumeEnvelope.startRelease(voice);
             WorkletModulationEnvelope.startRelease(voice);
-            if(voice.sample.loopingMode === 3)
+            if (voice.sample.loopingMode === 3)
             {
                 voice.sample.isLooping = false;
             }
         }
     }
-
-
+    
+    
     // if the initial attenuation is more than 100dB, skip the voice (it's silent anyways)
-    if(voice.modulatedGenerators[generatorTypes.initialAttenuation] > 2500)
+    if (voice.modulatedGenerators[generatorTypes.initialAttenuation] > 2500)
     {
-        if(voice.isInRelease)
+        if (voice.isInRelease)
         {
             voice.finished = true;
         }
         return;
     }
-
+    
     // TUNING
     let targetKey = voice.targetKey;
-
+    
     // calculate tuning
     let cents = voice.modulatedGenerators[generatorTypes.fineTune]             // soundfont fine tune
         + channel.customControllers[customControllers.channelTuning]           // RPN channel fine tuning
@@ -75,23 +76,23 @@ export function renderVoice(
         + channel.keyCentTuning[voice.midiNote];                           // SysEx key tuning
     let semitones = voice.modulatedGenerators[generatorTypes.coarseTune]       // soundfont coarse tuning
         + channel.customControllers[customControllers.channelTuningSemitones]; // RPN channel coarse tuning
-
+    
     // midi tuning standard
     const tuning = this.tunings[channel.preset.program]?.[targetKey];
-    if(tuning?.midiNote >= 0)
+    if (tuning?.midiNote >= 0)
     {
         // override key
         targetKey = tuning.midiNote;
         // add microtonal tuning
         cents += tuning.centTuning;
     }
-
+    
     // calculate tuning by key using soundfont's scale tuning
     cents += (targetKey - voice.sample.rootKey) * voice.modulatedGenerators[generatorTypes.scaleTuning];
-
+    
     // vibrato LFO
     const vibratoDepth = voice.modulatedGenerators[generatorTypes.vibLfoToPitch];
-    if(vibratoDepth !== 0)
+    if (vibratoDepth !== 0)
     {
         // calculate start time and lfo value
         const vibStart = voice.startTime + timecentsToSeconds(voice.modulatedGenerators[generatorTypes.delayVibLFO]);
@@ -100,16 +101,16 @@ export function renderVoice(
         // use modulation multiplier (RPN modulation depth)
         cents += lfoVal * (vibratoDepth * channel.customControllers[customControllers.modulationMultiplier]);
     }
-
+    
     // lowpass frequency
     let lowpassCents = voice.modulatedGenerators[generatorTypes.initialFilterFc];
-
+    
     // mod LFO
     const modPitchDepth = voice.modulatedGenerators[generatorTypes.modLfoToPitch];
     const modVolDepth = voice.modulatedGenerators[generatorTypes.modLfoToVolume];
     const modFilterDepth = voice.modulatedGenerators[generatorTypes.modLfoToFilterFc];
     let modLfoCentibels = 0;
-    if(modPitchDepth + modFilterDepth + modVolDepth !== 0)
+    if (modPitchDepth + modFilterDepth + modVolDepth !== 0)
     {
         // calculate start time and lfo value
         const modStart = voice.startTime + timecentsToSeconds(voice.modulatedGenerators[generatorTypes.delayModLFO]);
@@ -123,18 +124,22 @@ export function renderVoice(
         // lowpass frequency
         lowpassCents += modLfoValue * modFilterDepth;
     }
-
+    
     // channel vibrato (GS NRPN)
-    if(channel.channelVibrato.depth > 0)
+    if (channel.channelVibrato.depth > 0)
     {
         // same as others
-        const channelVibrato = getLFOValue(voice.startTime + channel.channelVibrato.delay, channel.channelVibrato.rate, currentTime);
-        if(channelVibrato)
+        const channelVibrato = getLFOValue(
+            voice.startTime + channel.channelVibrato.delay,
+            channel.channelVibrato.rate,
+            currentTime
+        );
+        if (channelVibrato)
         {
             cents += channelVibrato * channel.channelVibrato.depth;
         }
     }
-
+    
     // mod env
     const modEnvPitchDepth = voice.modulatedGenerators[generatorTypes.modEnvToPitch];
     const modEnvFilterDepth = voice.modulatedGenerators[generatorTypes.modEnvToFilterFc];
@@ -142,47 +147,47 @@ export function renderVoice(
     // apply values
     lowpassCents += modEnv * modEnvFilterDepth;
     cents += modEnv * modEnvPitchDepth;
-
+    
     // finally calculate the playback rate
     const centsTotal = ~~(cents + semitones * 100);
-    if(centsTotal !== voice.currentTuningCents)
+    if (centsTotal !== voice.currentTuningCents)
     {
         voice.currentTuningCents = centsTotal;
         voice.currentTuningCalculated = Math.pow(2, centsTotal / 1200);
     }
-
+    
     // PANNING
-    const pan = ((Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan] )) + 500) / 1000) ; // 0 to 1
-
+    const pan = ((Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan])) + 500) / 1000); // 0 to 1
+    
     // SYNTHESIS
     const bufferOut = new Float32Array(outputLeft.length);
-
+    
     // wavetable oscillator
-    switch(this.interpolationType)
+    switch (this.interpolationType)
     {
         case interpolationTypes.linear:
         default:
             getSampleLinear(voice, bufferOut);
             break;
-
+        
         case interpolationTypes.nearestNeighbor:
             getSampleNearest(voice, bufferOut);
             break;
-
+        
         case interpolationTypes.fourthOrder:
             getSampleCubic(voice, bufferOut);
     }
-
+    
     // lowpass filter
     WorkletLowpassFilter.apply(voice, bufferOut, lowpassCents);
-
+    
     // volenv
     WorkletVolumeEnvelope.apply(voice, bufferOut, modLfoCentibels, this.volumeEnvelopeSmoothingFactor);
-
+    
     // pan the voice and write out
     voice.currentPan += (pan - voice.currentPan) * this.panSmoothingFactor; // smooth out pan to prevent clicking
     const panLeft = Math.cos(HALF_PI * voice.currentPan) * this.panLeft;
-    const panRight = Math.sin(HALF_PI * voice.currentPan) *  this.panRight;
+    const panRight = Math.sin(HALF_PI * voice.currentPan) * this.panRight;
     // disable reverb and chorus in one output mode
     const reverb = this.oneOutputMode ? 0 : voice.modulatedGenerators[generatorTypes.reverbEffectsSend];
     const chorus = this.oneOutputMode ? 0 : voice.modulatedGenerators[generatorTypes.chorusEffectsSend];
@@ -192,7 +197,8 @@ export function renderVoice(
         bufferOut,
         outputLeft, outputRight,
         reverbOutput, reverb,
-        chorusOutput, chorus);
+        chorusOutput, chorus
+    );
 }
 
 
@@ -204,12 +210,12 @@ export function renderVoice(
 function getPriority(channel, voice)
 {
     let priority = 0;
-    if(channel.drumChannel)
+    if (channel.drumChannel)
     {
         // important
         priority += 5;
     }
-    if(voice.isInRelease)
+    if (voice.isInRelease)
     {
         // not important
         priority -= 5;
@@ -218,7 +224,7 @@ function getPriority(channel, voice)
     priority += voice.velocity / 25; // map to 0-5
     // the newer, more important
     priority -= voice.volumeEnvelope.state;
-    if(voice.isInRelease)
+    if (voice.isInRelease)
     {
         priority -= 5;
     }
@@ -244,11 +250,11 @@ export function voiceKilling(amount)
             }
         }
     }
-
+    
     // Step 2: Sort voices by priority (ascending order)
     allVoices.sort((a, b) => a.priority - b.priority);
     const voicesToRemove = allVoices.slice(0, amount);
-
+    
     for (const { channel, voice } of voicesToRemove)
     {
         const index = channel.voices.indexOf(voice);
@@ -268,7 +274,7 @@ export function releaseVoice(voice)
 {
     voice.releaseStartTime = currentTime;
     // check if the note is shorter than the min note time, if so, extend it
-    if(voice.releaseStartTime - voice.startTime < MIN_NOTE_LENGTH)
+    if (voice.releaseStartTime - voice.startTime < MIN_NOTE_LENGTH)
     {
         voice.releaseStartTime = voice.startTime + MIN_NOTE_LENGTH;
     }

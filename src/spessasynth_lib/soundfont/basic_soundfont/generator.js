@@ -141,6 +141,17 @@ generatorLimits[generatorTypes.overridingRootKey] = { min: 0 - 1, max: 127, def:
 export class Generator
 {
     /**
+     * The generator's enum number
+     * @type {generatorTypes|number}
+     */
+    generatorType = generatorTypes.INVALID;
+    /**
+     * The generator's 16-bit value
+     * @type {number}
+     */
+    generatorValue = 0;
+    
+    /**
      * Constructs a new generator
      * @param type {generatorTypes|number}
      * @param value {number}
@@ -159,17 +170,6 @@ export class Generator
             this.generatorValue = Math.max(lim.min, Math.min(lim.max, this.generatorValue));
         }
     }
-
-    /**
-     * The generator's enum number
-     * @type {generatorTypes|number}
-     */
-    generatorType = generatorTypes.INVALID;
-    /**
-     * The generator's 16-bit value
-     * @type {number}
-     */
-    generatorValue = 0;
 }
 
 /**
@@ -190,16 +190,16 @@ export function addAndClampGenerator(generatorType, presetGens, instrumentGens)
     {
         presetValue = presetGen.generatorValue;
     }
-
+    
     let instruGen = instrumentGens.find(g => g.generatorType === generatorType);
     let instruValue = limits.def;
     if (instruGen)
     {
         instruValue = instruGen.generatorValue;
     }
-
+    
     let value = instruValue + presetValue;
-
+    
     // special case, intial attenuation.
     // Shall get clamped in the volume envelope,
     // so the modulators can be affected by negative generators (the "Brass" patch was problematic...)
@@ -207,6 +207,6 @@ export function addAndClampGenerator(generatorType, presetGens, instrumentGens)
     {
         return value;
     }
-
+    
     return Math.max(limits.min, Math.min(limits.max, value));
 }

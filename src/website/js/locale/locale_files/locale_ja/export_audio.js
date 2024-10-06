@@ -3,7 +3,7 @@ export const exportAudio = {
         title: "音声を保存",
         description: "音声をWAV、MIDI、SF2、またはRMIファイルとして保存"
     },
-
+    
     formats: {
         title: "フォーマットを選択",
         formats: {
@@ -17,13 +17,13 @@ export const exportAudio = {
                     confirm: "エクスポート",
                     normalizeVolume: {
                         title: "音量の正規化",
-                        description: "MIDIの音量にかかわらず、音量を一定に保ちます。推奨設定です。",
+                        description: "MIDIの音量にかかわらず、音量を一定に保ちます。推奨設定です。"
                     },
                     additionalTime: {
                         title: "追加時間（秒）",
-                        description: "音がフェードアウトするために曲の最後に追加する時間です。（秒）",
+                        description: "音がフェードアウトするために曲の最後に追加する時間です。（秒）"
                     },
-
+                    
                     separateChannels: {
                         title: "チャンネルを分割",
                         description: "各チャンネルを別々のファイルとして保存します。オシロスコープビューアなどに便利です。このオプションを使用するとリバーブやコーラスが無効になります。",
@@ -40,23 +40,23 @@ export const exportAudio = {
                 exportMessage: {
                     message: "WAV音声をエクスポートしています...",
                     estimated: "残り時間:",
-                    convertWav: "WAVに変換中...",
+                    convertWav: "WAVに変換中..."
                 }
             },
-
+            
             midi: {
                 button: {
                     title: "MIDI (.mid)",
                     description: "コントローラーと楽器の変更が適用されたMIDIファイルをエクスポートします"
                 }
             },
-
+            
             soundfont: {
                 button: {
                     title: "サウンドフォント (.sf2)",
                     description: "SoundFont2ファイルをエクスポートします"
                 },
-
+                
                 options: {
                     title: "SFエクスポートオプション",
                     confirm: "エクスポート",
@@ -75,14 +75,14 @@ export const exportAudio = {
                     }
                 }
             },
-
+            
             rmidi: {
                 button: {
                     title: "埋め込みMIDI (.rmi)",
                     description: "変更されたMIDIとトリミングされたサウンドフォントを1つのファイルに埋め込んでエクスポートします。" +
                         "この形式は広くサポートされていないことに注意してください"
                 },
-
+                
                 progress: {
                     title: "埋め込まれたMIDIをエクスポート中...",
                     loading: "サウンドフォントとMIDIを読み込み中...",
@@ -91,7 +91,7 @@ export const exportAudio = {
                     saving: "RMIDIを保存中...",
                     done: "完了しました！"
                 },
-
+                
                 options: {
                     title: "RMIDIエクスポートオプション",
                     confirm: "エクスポート",
@@ -105,7 +105,7 @@ export const exportAudio = {
                     },
                     bankOffset: {
                         title: "バンクオフセット",
-                        description: "ファイルのバンクオフセットです。0の値が推奨されます。変更は慎重に行ってください。",
+                        description: "ファイルのバンクオフセットです。0の値が推奨されます。変更は慎重に行ってください。"
                     },
                     adjust: {
                         title: "MIDIを調整",
@@ -148,6 +148,6 @@ export const exportAudio = {
                 description: "曲の長さ"
             }
         }
-
+        
     }
-}
+};

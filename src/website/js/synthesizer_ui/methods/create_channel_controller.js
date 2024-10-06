@@ -18,25 +18,18 @@
  * }} ChannelController
  */
 
-import { Meter } from './synthui_meter.js'
-import { LOCALE_PATH } from '../synthetizer_ui.js'
-import { midiControllers } from '../../../../spessasynth_lib/midi_parser/midi_message.js'
-import {
-    getDrumsSvg,
-    getEmptyMicSvg,
-    getMicSvg,
-    getMuteSvg,
-    getNoteSvg,
-    getVolumeSvg,
-} from '../../utils/icons.js'
-import { DEFAULT_PERCUSSION } from '../../../../spessasynth_lib/synthetizer/synthetizer.js'
-import { Selector } from './synthui_selector.js'
+import { Meter } from "./synthui_meter.js";
+import { LOCALE_PATH } from "../synthetizer_ui.js";
+import { midiControllers } from "../../../../spessasynth_lib/midi_parser/midi_message.js";
+import { getDrumsSvg, getEmptyMicSvg, getMicSvg, getMuteSvg, getNoteSvg, getVolumeSvg } from "../../utils/icons.js";
+import { DEFAULT_PERCUSSION } from "../../../../spessasynth_lib/synthetizer/synthetizer.js";
+import { Selector } from "./synthui_selector.js";
 import {
     ALL_CHANNELS_OR_DIFFERENT_ACTION
-} from '../../../../spessasynth_lib/synthetizer/worklet_system/message_protocol/worklet_message.js'
+} from "../../../../spessasynth_lib/synthetizer/worklet_system/message_protocol/worklet_message.js";
 import {
     NON_CC_INDEX_OFFSET
-} from '../../../../spessasynth_lib/synthetizer/worklet_system/worklet_utilities/worklet_processor_channel.js'
+} from "../../../../spessasynth_lib/synthetizer/worklet_system/worklet_utilities/worklet_processor_channel.js";
 
 import { modulatorSources } from "../../../../spessasynth_lib/soundfont/basic_soundfont/modulator.js";
 
@@ -57,53 +50,75 @@ export function createChannelController(channelNumber)
     // controller
     const controller = document.createElement("div");
     controller.classList.add("channel_controller");
-
+    
     // voice meter
-    const voiceMeter = new Meter(this.channelColors[channelNumber % this.channelColors.length],
+    const voiceMeter = new Meter(
+        this.channelColors[channelNumber % this.channelColors.length],
         LOCALE_PATH + "channelController.voiceMeter",
         this.locale,
         [channelNumber + 1],
         0,
-        100);
+        100
+    );
     voiceMeter.bar.classList.add("voice_meter_bar_smooth");
     controller.appendChild(voiceMeter.div);
-
+    
     // pitch wheel
-    const pitchWheel = new Meter(this.channelColors[channelNumber % this.channelColors.length],
+    const pitchWheel = new Meter(
+        this.channelColors[channelNumber % this.channelColors.length],
         LOCALE_PATH + "channelController.pitchBendMeter",
         this.locale,
         [channelNumber + 1],
         -8192,
         8191,
         true,
-        val => {
+        val =>
+        {
             const meterLocked = pitchWheel.isLocked;
-            if(meterLocked)
+            if (meterLocked)
             {
-                this.synth.lockController(channelNumber, NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel, false);
+                this.synth.lockController(
+                    channelNumber,
+                    NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel,
+                    false
+                );
             }
             val = Math.round(val) + 8192;
             // get bend values
             const msb = val >> 7;
             const lsb = val & 0x7F;
             this.synth.pitchWheel(channelNumber, msb, lsb);
-            if(meterLocked)
+            if (meterLocked)
             {
-                this.synth.lockController(channelNumber, NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel, true);
+                this.synth.lockController(
+                    channelNumber,
+                    NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel,
+                    true
+                );
             }
         },
-        () => this.synth.lockController(channelNumber, NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel, true),
-        () => this.synth.lockController(channelNumber, NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel, false));
+        () => this.synth.lockController(
+            channelNumber,
+            NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel,
+            true
+        ),
+        () => this.synth.lockController(
+            channelNumber,
+            NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel,
+            false
+        )
+    );
     pitchWheel.update(0);
     controller.appendChild(pitchWheel.div);
-
+    
     /**
      * @param cc {number}
      * @param val {number}
      * @param meter {Meter}
      */
-    let changeCCUserFunction = (cc, val, meter) => {
-        if(meter.isLocked)
+    let changeCCUserFunction = (cc, val, meter) =>
+    {
+        if (meter.isLocked)
         {
             this.synth.lockController(channelNumber, cc, false);
             this.synth.controllerChange(channelNumber, cc, val);
@@ -113,15 +128,16 @@ export function createChannelController(channelNumber)
         {
             this.synth.controllerChange(channelNumber, cc, val);
         }
-    }
-
+    };
+    
     /**
      * @param ccNum {number}
      * @param localePath {string}
      * @param defaultValue {number}
      * @returns {Meter}
      */
-    const createCCMeterHelper = (ccNum, localePath, defaultValue) => {
+    const createCCMeterHelper = (ccNum, localePath, defaultValue) =>
+    {
         const meter = new Meter(
             this.channelColors[channelNumber % this.channelColors.length],
             LOCALE_PATH + localePath,
@@ -136,59 +152,71 @@ export function createChannelController(channelNumber)
         );
         meter.update(defaultValue);
         return meter;
-    }
-
+    };
+    
     // pan controller
     const pan = createCCMeterHelper(midiControllers.pan, "channelController.panMeter", 64);
     controller.appendChild(pan.div);
-
+    
     // expression controller
-    const expression = createCCMeterHelper(midiControllers.expressionController, "channelController.expressionMeter", 127);
+    const expression = createCCMeterHelper(
+        midiControllers.expressionController,
+        "channelController.expressionMeter",
+        127
+    );
     controller.appendChild(expression.div);
-
+    
     // volume controller
     const volume = createCCMeterHelper(midiControllers.mainVolume, "channelController.volumeMeter", 100);
     controller.appendChild(volume.div);
-
+    
     // modulation wheel
-    const modulation = createCCMeterHelper(midiControllers.modulationWheel, "channelController.modulationWheelMeter", 0);
+    const modulation = createCCMeterHelper(
+        midiControllers.modulationWheel,
+        "channelController.modulationWheelMeter",
+        0
+    );
     controller.appendChild(modulation.div);
-
+    
     // chorus
     const chorus = createCCMeterHelper(midiControllers.effects3Depth, "channelController.chorusMeter", 0);
     controller.appendChild(chorus.div);
-
+    
     // reverb
     const reverb = createCCMeterHelper(midiControllers.effects1Depth, "channelController.reverbMeter", 0);
     controller.appendChild(reverb.div);
-
+    
     // brightness
     const brightness = createCCMeterHelper(midiControllers.brightness, "channelController.filterMeter", 64);
     controller.appendChild(brightness.div);
-
+    
     // transpose is not a cc, add it manually
-    const transpose = new Meter(this.channelColors[channelNumber % this.channelColors.length],
+    const transpose = new Meter(
+        this.channelColors[channelNumber % this.channelColors.length],
         LOCALE_PATH + "channelController.transposeMeter",
         this.locale,
         [channelNumber + 1],
         -36,
         36,
         true,
-        val => {
+        val =>
+        {
             val = Math.round(val);
             this.synth.transposeChannel(channelNumber, val, true);
             transpose.update(val);
-        });
+        }
+    );
     transpose.update(0);
     controller.appendChild(transpose.div);
-
+    
     // preset controller
     const presetSelector = new Selector(
         ([]), // empty for now
         this.locale,
         LOCALE_PATH + "channelController.presetSelector",
         [channelNumber + 1],
-        async presetName => {
+        async presetName =>
+        {
             const data = presetName.split(":");
             this.synth.lockController(channelNumber, ALL_CHANNELS_OR_DIFFERENT_ACTION, false);
             this.synth.controllerChange(channelNumber, midiControllers.bankSelect, parseInt(data[0]), true);
@@ -199,16 +227,22 @@ export function createChannelController(channelNumber)
         locked => this.synth.lockController(channelNumber, ALL_CHANNELS_OR_DIFFERENT_ACTION, locked)
     );
     controller.appendChild(presetSelector.mainButton);
-
+    
     // solo button
     const soloButton = document.createElement("div");
     soloButton.innerHTML = getEmptyMicSvg(ICON_SIZE);
-    this.locale.bindObjectProperty(soloButton, "title", LOCALE_PATH + "channelController.soloButton.description", [channelNumber + 1]);
+    this.locale.bindObjectProperty(
+        soloButton,
+        "title",
+        LOCALE_PATH + "channelController.soloButton.description",
+        [channelNumber + 1]
+    );
     soloButton.classList.add("controller_element");
     soloButton.classList.add("mute_button");
-    soloButton.onclick = () => {
+    soloButton.onclick = () =>
+    {
         // toggle solo
-        if(this.soloChannels.has(channelNumber))
+        if (this.soloChannels.has(channelNumber))
         {
             this.soloChannels.delete(channelNumber);
         }
@@ -216,7 +250,7 @@ export function createChannelController(channelNumber)
         {
             this.soloChannels.add(channelNumber);
         }
-        if(this.soloChannels.size === 0 || this.soloChannels.size >= this.synth.channelsAmount)
+        if (this.soloChannels.size === 0 || this.soloChannels.size >= this.synth.channelsAmount)
         {
             // no channels or all channels are soloed, unmute everything
             for (let i = 0; i < this.synth.channelsAmount; i++)
@@ -224,7 +258,7 @@ export function createChannelController(channelNumber)
                 this.controllers[i].soloButton.innerHTML = getEmptyMicSvg(ICON_SIZE);
                 this.synth.muteChannel(i, this.controllers[i].muteButton.hasAttribute("is_muted"));
             }
-            if(this.soloChannels.size >= this.synth.channelsAmount)
+            if (this.soloChannels.size >= this.synth.channelsAmount)
             {
                 // all channels are soloed, return to normal
                 this.soloChannels.clear();
@@ -234,7 +268,7 @@ export function createChannelController(channelNumber)
         // unmute every solo channel and mute others
         for (let i = 0; i < this.synth.channelsAmount; i++)
         {
-            if(this.soloChannels.has(i))
+            if (this.soloChannels.has(i))
             {
                 this.controllers[i].soloButton.innerHTML = getMicSvg(ICON_SIZE);
                 this.synth.muteChannel(i, this.controllers[i].muteButton.hasAttribute("is_muted"));
@@ -245,24 +279,30 @@ export function createChannelController(channelNumber)
                 this.synth.muteChannel(i, true);
             }
         }
-    }
+    };
     controller.appendChild(soloButton);
-
+    
     // mute button
     const muteButton = document.createElement("div");
     muteButton.innerHTML = getVolumeSvg(ICON_SIZE);
-    this.locale.bindObjectProperty(muteButton, "title", LOCALE_PATH + "channelController.muteButton.description", [channelNumber + 1]);
+    this.locale.bindObjectProperty(
+        muteButton,
+        "title",
+        LOCALE_PATH + "channelController.muteButton.description",
+        [channelNumber + 1]
+    );
     muteButton.classList.add("controller_element");
     muteButton.classList.add("mute_button");
-    muteButton.onclick = () => {
-        if(muteButton.hasAttribute("is_muted"))
+    muteButton.onclick = () =>
+    {
+        if (muteButton.hasAttribute("is_muted"))
         {
             // unmute
             muteButton.removeAttribute("is_muted");
             const canBeUnmuted = this.soloChannels.size === 0 || this.soloChannels.has(channelNumber);
             this.synth.muteChannel(channelNumber, !canBeUnmuted);
             muteButton.innerHTML = getVolumeSvg(ICON_SIZE);
-
+            
         }
         else
         {
@@ -271,21 +311,27 @@ export function createChannelController(channelNumber)
             muteButton.setAttribute("is_muted", "true");
             muteButton.innerHTML = getMuteSvg(ICON_SIZE);
         }
-    }
-
+    };
+    
     controller.appendChild(muteButton);
-
+    
     // drums toggle
     const drumsToggle = document.createElement("div");
     drumsToggle.innerHTML = channelNumber === DEFAULT_PERCUSSION ? getDrumsSvg(ICON_SIZE) : getNoteSvg(ICON_SIZE);
-    this.locale.bindObjectProperty(drumsToggle, "title", LOCALE_PATH + "channelController.drumToggleButton.description", [channelNumber + 1]);
+    this.locale.bindObjectProperty(
+        drumsToggle,
+        "title",
+        LOCALE_PATH + "channelController.drumToggleButton.description",
+        [channelNumber + 1]
+    );
     drumsToggle.classList.add("controller_element");
     drumsToggle.classList.add("mute_button");
-    drumsToggle.onclick = () => {
+    drumsToggle.onclick = () =>
+    {
         this.synth.setDrums(channelNumber, !this.synth.channelProperties[channelNumber].isDrum);
-    }
+    };
     controller.appendChild(drumsToggle);
-
+    
     return {
         controller: controller,
         voiceMeter: voiceMeter,
@@ -303,7 +349,7 @@ export function createChannelController(channelNumber)
         muteButton: muteButton,
         transpose: transpose
     };
-
+    
 }
 
 /**
@@ -312,7 +358,7 @@ export function createChannelController(channelNumber)
 export function createChannelControllers()
 {
     const dropdownDiv = this.uiDiv.getElementsByClassName("synthui_controller")[0];
-
+    
     /**
      * @type {ChannelController[]}
      */
@@ -323,9 +369,9 @@ export function createChannelControllers()
         this.controllers.push(controller);
         dropdownDiv.appendChild(controller.controller);
     }
-
+    
     this.setEventListeners();
-
+    
     setInterval(this.updateVoicesAmount.bind(this), 100);
     this.hideControllers();
 }

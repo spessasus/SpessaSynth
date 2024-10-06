@@ -1,5 +1,4 @@
-.synthui_button
-{
+.synthui_button {
     background: #000;
     border: 1px #333 solid;
     margin: var(--synthui-margin);
@@ -14,20 +13,20 @@
     justify-content: center;
     transition: all 0.1s ease;
 }
-.synthui_button:hover
-{
+
+.synthui_button:hover {
     cursor: pointer;
     background: #111;
     color: #fff;
     text-shadow: 0 0 5px white;
 }
 
-.synthui_button:active{
+.synthui_button:active {
     filter: brightness(0.9);
     transform: scale(var(--active-scale));
 }
 
-.synthui_button_light{
+.synthui_button_light {
     border-radius: var(--synthui-border-radius);
     background: #fff;
     border: 1px #ccc solid;
@@ -44,14 +43,13 @@
     transition: all 0.1s ease;
 }
 
-.synthui_button_light:hover
-{
+.synthui_button_light:hover {
     cursor: pointer;
     color: #666;
     text-shadow: 0 0 5px #666;
 }
 
-.synthui_button_light:active{
+.synthui_button_light:active {
     filter: brightness(0.9);
     transform: scale(var(--active-scale));
 }

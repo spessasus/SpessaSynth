@@ -1,6 +1,6 @@
-import { writeWord } from '../../../utils/byte_functions/little_endian.js'
-import { IndexedByteArray } from '../../../utils/indexed_array.js'
-import { RiffChunk, writeRIFFChunk } from '../riff_chunk.js'
+import { writeWord } from "../../../utils/byte_functions/little_endian.js";
+import { IndexedByteArray } from "../../../utils/indexed_array.js";
+import { RiffChunk, writeRIFFChunk } from "../riff_chunk.js";
 
 import { generatorTypes } from "../generator.js";
 
@@ -13,9 +13,10 @@ export function getPGEN()
     // almost identical to igen, except correct instrument instead of sample gen
     // go through all preset zones and write generators sequentially (add 4 for terminal)
     let pgensize = 4;
-    for(const preset of this.presets)
+    for (const preset of this.presets)
     {
-        pgensize += preset.presetZones.reduce((size, z) => {
+        pgensize += preset.presetZones.reduce((size, z) =>
+        {
             // clear instrument and range generators before derermining the size
             z.generators = z.generators.filter(g =>
                 g.generatorType !== generatorTypes.instrument &&
@@ -23,21 +24,21 @@ export function getPGEN()
                 g.generatorType !== generatorTypes.velRange
             );
             // unshift vel then key and instrument is last
-            if(z.velRange.max !== 127 || z.velRange.min !== 0)
+            if (z.velRange.max !== 127 || z.velRange.min !== 0)
             {
                 z.generators.unshift({
                     generatorType: generatorTypes.velRange,
                     generatorValue: z.velRange.max << 8 | z.velRange.min
                 });
             }
-            if(z.keyRange.max !== 127 || z.keyRange.min !== 0)
+            if (z.keyRange.max !== 127 || z.keyRange.min !== 0)
             {
                 z.generators.unshift({
                     generatorType: generatorTypes.keyRange,
                     generatorValue: z.keyRange.max << 8 | z.keyRange.min
                 });
             }
-            if(!z.isGlobal)
+            if (!z.isGlobal)
             {
                 // write instrument
                 z.generators.push({
@@ -69,7 +70,7 @@ export function getPGEN()
     // terminal generator, is zero
     writeWord(pgendata, 0);
     writeWord(pgendata, 0);
-
+    
     return writeRIFFChunk(new RiffChunk(
         "pgen",
         pgendata.length,

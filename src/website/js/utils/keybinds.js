@@ -4,10 +4,10 @@
 export const keybinds = {
     synthesizerUIShow: "s",
     settingsShow: "r",
-
+    
     blackMidiMode: "b",
     midiPanic: "backspace",
-
+    
     playPause: " ",
     toggleLoop: "l",
     toggleLyrics: "t",
@@ -15,7 +15,7 @@ export const keybinds = {
     seekForwards: "arrowright",
     previousSong: "[",
     nextSong: "]",
-
+    
     cinematicMode: "c",
     videoMode: "v"
-}
+};

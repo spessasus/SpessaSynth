@@ -48,17 +48,18 @@ export class FancyChorus
      * @param output {AudioNode}
      * @param config {ChorusConfig}
      */
-    constructor(output, config = DEFAULT_CHORUS_CONFIG) {
+    constructor(output, config = DEFAULT_CHORUS_CONFIG)
+    {
         const context = output.context;
-
+        
         this.input = new ChannelSplitterNode(context, {
             numberOfOutputs: 2
         });
-
+        
         const merger = new ChannelMergerNode(context, {
             numberOfInputs: 2
         });
-
+        
         /**
          * @type {ChorusNode[]}
          */
@@ -69,18 +70,37 @@ export class FancyChorus
         const chorusNodesRight = [];
         let freq = config.oscillatorFrequency;
         let delay = config.defaultDelay;
-        for (let i = 0; i < config.nodesAmount; i++) {
+        for (let i = 0; i < config.nodesAmount; i++)
+        {
             // left node
-            this.createChorusNode(freq, delay - config.stereoDifference, chorusNodesLeft, 0, merger, 0, context, config);
+            this.createChorusNode(
+                freq,
+                delay - config.stereoDifference,
+                chorusNodesLeft,
+                0,
+                merger,
+                0,
+                context,
+                config
+            );
             // right node
-            this.createChorusNode(freq, delay + config.stereoDifference, chorusNodesRight, 1, merger, 1, context, config);
+            this.createChorusNode(
+                freq,
+                delay + config.stereoDifference,
+                chorusNodesRight,
+                1,
+                merger,
+                1,
+                context,
+                config
+            );
             freq += config.oscillatorFrequencyVariation;
             delay += config.delayVariation;
         }
-
+        
         merger.connect(output);
     }
-
+    
     /**
      * @param freq {number}
      * @param delay {number}
@@ -94,7 +114,7 @@ export class FancyChorus
     createChorusNode(freq, delay, list, input, output, outputNum, context, config)
     {
         const oscillator = new OscillatorNode(context, {
-            type: 'sine',
+            type: "sine",
             frequency: freq
         });
         const gainNode = new GainNode(context, {
@@ -103,14 +123,14 @@ export class FancyChorus
         const delayNode = new DelayNode(context, {
             delayTime: delay
         });
-
+        
         oscillator.connect(gainNode);
         gainNode.connect(delayNode.delayTime);
         oscillator.start(context.currentTime + delay);
-
+        
         this.input.connect(delayNode, input);
         delayNode.connect(output, 0, outputNum);
-
+        
         list.push({
             oscillator: oscillator,
             oscillatorGain: gainNode,

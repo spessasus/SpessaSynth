@@ -13,11 +13,11 @@
 
 
 .notification button:active,
-.notification_file_button:active{
+.notification_file_button:active {
     transform: scale(var(--active-scale));
 }
 
-.notification .green_button{
+.notification .green_button {
     color: green;
     border-color: green;
 }

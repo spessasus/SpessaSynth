@@ -7,12 +7,12 @@
     z-index: 1;
 }
 
-#note_canvas.sideways{
+#note_canvas.sideways {
     height: 100% !important;
     width: unset !important;
     min-height: unset !important;
 }
 
-#note_canvas.light_mode{
+#note_canvas.light_mode {
     background: linear-gradient(45deg, var(--top-buttons-color-start), var(--top-buttons-color-end));
 }

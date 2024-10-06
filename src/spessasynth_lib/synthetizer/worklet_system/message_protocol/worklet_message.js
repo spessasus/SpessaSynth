@@ -29,32 +29,32 @@
  * @property {number} setLogLevel                - 25 -> [enableInfo<boolean>, enableWarning<boolean>, enableGroup<boolean>, enableTable<boolean>]
  */
 export const workletMessageType = {
-    noteOff:                    0,
-    noteOn:                     1,
-    ccChange:                   2,
-    programChange:              3,
-    channelPressure:            4,
-    polyPressure:               5,
-    killNote:                   6,
-    ccReset:                    7,
-    setChannelVibrato:          8,
-    soundFontManager:           9,
-    stopAll:                    10,
-    killNotes:                  11,
-    muteChannel:                12,
-    addNewChannel:              13,
-    customcCcChange:            14,
-    debugMessage:               15,
-    systemExclusive:            16,
-    setMasterParameter:         17,
-    setDrums:                   18,
-    pitchWheel:                 19,
-    transpose:                  20,
-    highPerformanceMode:        21,
-    lockController:             22,
-    sequencerSpecific:          23,
+    noteOff: 0,
+    noteOn: 1,
+    ccChange: 2,
+    programChange: 3,
+    channelPressure: 4,
+    polyPressure: 5,
+    killNote: 6,
+    ccReset: 7,
+    setChannelVibrato: 8,
+    soundFontManager: 9,
+    stopAll: 10,
+    killNotes: 11,
+    muteChannel: 12,
+    addNewChannel: 13,
+    customcCcChange: 14,
+    debugMessage: 15,
+    systemExclusive: 16,
+    setMasterParameter: 17,
+    setDrums: 18,
+    pitchWheel: 19,
+    transpose: 20,
+    highPerformanceMode: 21,
+    lockController: 22,
+    sequencerSpecific: 23,
     requestSynthesizerSnapshot: 24,
-    setLogLevel:                25
+    setLogLevel: 25
 };
 
 /**
@@ -65,7 +65,7 @@ export const masterParameterType = {
     masterPan: 1,
     voicesCap: 2,
     interpolationType: 3
-}
+};
 
 
 export const ALL_CHANNELS_OR_DIFFERENT_ACTION = -1;
@@ -121,5 +121,5 @@ export const returnMessageType = {
     synthesizerSnapshot: 4,
     ready: 5,
     soundfontError: 6,
-    identify: 7,
-}
+    identify: 7
+};

@@ -19,7 +19,7 @@ concave[MOD_PRECOMPUTED_LENGTH - 1] = 1;
 
 convex[0] = 0;
 convex[MOD_PRECOMPUTED_LENGTH - 1] = 1;
-for(let i = 1; i < MOD_PRECOMPUTED_LENGTH - 1; i++)
+for (let i = 1; i < MOD_PRECOMPUTED_LENGTH - 1; i++)
 {
     let x = (-200 * 2 / 960) * Math.log(i / (MOD_PRECOMPUTED_LENGTH - 1)) / Math.LN10;
     convex[i] = 1 - x;
@@ -34,48 +34,52 @@ for(let i = 1; i < MOD_PRECOMPUTED_LENGTH - 1; i++)
  * @param value {number} the linear value, 0 to 1
  * @returns {number} the transformed value, 0 to 1 or -1 to 1
  */
-export function getModulatorCurveValue(direction, curveType, value, polarity) {
+export function getModulatorCurveValue(direction, curveType, value, polarity)
+{
     // inverse the value if needed
-    if(direction)
+    if (direction)
     {
-        value = 1 - value
+        value = 1 - value;
     }
-    switch (curveType) {
+    switch (curveType)
+    {
         case modulatorCurveTypes.linear:
-            if (polarity) {
+            if (polarity)
+            {
                 // bipolar
                 return value * 2 - 1;
             }
             return value;
-
+        
         case modulatorCurveTypes.switch:
             // switch
             value = value > 0.5 ? 1 : 0;
-            if (polarity) {
+            if (polarity)
+            {
                 // multiply
                 return value * 2 - 1;
             }
             return value;
-
+        
         case modulatorCurveTypes.concave:
             // look up the value
-            if(polarity)
+            if (polarity)
             {
                 value = value * 2 - 1;
-                if(value < 0)
+                if (value < 0)
                 {
                     return 1 - concave[~~(value * -MOD_PRECOMPUTED_LENGTH)] - 1;
                 }
                 return concave[~~value * MOD_PRECOMPUTED_LENGTH];
             }
-            return concave[~~(value * MOD_PRECOMPUTED_LENGTH)]
-
+            return concave[~~(value * MOD_PRECOMPUTED_LENGTH)];
+        
         case modulatorCurveTypes.convex:
             // look up the value
-            if(polarity)
+            if (polarity)
             {
                 value = value * 2 - 1;
-                if(value < 0)
+                if (value < 0)
                 {
                     return 1 - convex[~~(value * -MOD_PRECOMPUTED_LENGTH)] - 1;
                 }

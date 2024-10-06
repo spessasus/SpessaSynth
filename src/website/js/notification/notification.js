@@ -1,5 +1,5 @@
-import { getContent } from './get_content.js'
-import { ANIMATION_REFLOW_TIME } from '../utils/animation_utils.js'
+import { getContent } from "./get_content.js";
+import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 
 const NOTIFICATION_TIME = 13;
 
@@ -49,7 +49,7 @@ export function showNotification(
 {
     const notification = document.createElement("div");
     const notificationID = notificationCounter++;
-
+    
     notification.classList.add("notification");
     notification.innerHTML = `
     <div class='top'>
@@ -58,27 +58,28 @@ export function showNotification(
     </div>`;
     const contentWrapper = document.createElement("div");
     contentWrapper.classList.add("notification_content");
-    if(contentStyling)
+    if (contentStyling)
     {
-        for(const [key, value] of Object.entries(contentStyling))
+        for (const [key, value] of Object.entries(contentStyling))
         {
             contentWrapper.style[key] = value;
         }
     }
     notification.appendChild(contentWrapper);
-    for(const content of contents)
+    for (const content of contents)
     {
         const element = getContent(content, locale);
-        if(content.onClick)
+        if (content.onClick)
         {
-            element.onclick = () => content.onClick({div: notification, id: notificationID}, element);
+            element.onclick = () => content.onClick({ div: notification, id: notificationID }, element);
         }
         contentWrapper.appendChild(element);
     }
-
-    if(allowClosing)
+    
+    if (allowClosing)
     {
-        notification.getElementsByClassName("close_btn")[0].onclick = () => {
+        notification.getElementsByClassName("close_btn")[0].onclick = () =>
+        {
             closeNotification(notificationID);
         };
     }
@@ -86,18 +87,20 @@ export function showNotification(
     {
         notification.getElementsByClassName("close_btn")[0].style.display = "none";
     }
-
-    setTimeout(() => {
+    
+    setTimeout(() =>
+    {
         notification.classList.add("drop");
-    }, ANIMATION_REFLOW_TIME)
-    const timeoutID = setTimeout(() => {
+    }, ANIMATION_REFLOW_TIME);
+    const timeoutID = setTimeout(() =>
+    {
         closeNotification(notificationID);
     }, time * 1000 + ANIMATION_REFLOW_TIME);
     document.getElementsByClassName("notification_field")[0].appendChild(notification);
     notifications[notificationID] = {
         div: notification,
         timeout: timeoutID
-    }
+    };
     return {
         div: notification,
         id: notificationID
@@ -111,8 +114,8 @@ export function closeNotification(id)
 {
     const notification = notifications[id].div;
     clearTimeout(notifications[id].timeout);
-    notification.classList.remove("drop")
+    notification.classList.remove("drop");
     setTimeout(() => notification.parentElement.removeChild(notification), 500);
     notifications[id] = undefined;
-
+    
 }

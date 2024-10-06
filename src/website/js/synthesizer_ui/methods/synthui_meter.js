@@ -28,7 +28,7 @@ export class Meter
                 localeArgs,
                 min = 0,
                 max = 100,
-                editable=false,
+                editable = false,
                 editCallback = undefined,
                 lockCallback = undefined,
                 unlockCallback = undefined)
@@ -43,19 +43,19 @@ export class Meter
         this.isLocked = false;
         this.lockCallback = lockCallback;
         this.unlockCallback = unlockCallback;
-
+        
         /**
          * @type {HTMLDivElement}
          */
         this.div = document.createElement("div");
         this.div.classList.add("voice_meter");
         this.div.classList.add("controller_element");
-        if(color !== "none" && color !== "")
+        if (color !== "none" && color !== "")
         {
             this.div.style.borderColor = color;
         }
-        locale.bindObjectProperty(this.div, "title", localePath + ".description",  localeArgs);
-
+        locale.bindObjectProperty(this.div, "title", localePath + ".description", localeArgs);
+        
         /**
          * @type {HTMLDivElement}
          */
@@ -63,24 +63,27 @@ export class Meter
         this.bar.classList.add("voice_meter_bar");
         this.bar.style.background = color;
         this.div.appendChild(this.bar);
-
+        
         /**
          * @type {HTMLParagraphElement}
          */
         this.text = document.createElement("p");
         this.text.classList.add("voice_meter_text");
         this.div.appendChild(this.text);
-
+        
         this.isActive = false;
-
-        if(editable)
+        
+        if (editable)
         {
-            if(editCallback === undefined) {
+            if (editCallback === undefined)
+            {
                 throw new Error("No editable function given!");
             }
-            this.div.onmousedown = e => {
+            this.div.onmousedown = e =>
+            {
                 e.preventDefault();
-                if(e.button === 0) {
+                if (e.button === 0)
+                {
                     // left mouse button: adjust value
                     this.isActive = true;
                 }
@@ -89,9 +92,10 @@ export class Meter
                     // other, lock it
                     this.lockMeter();
                 }
-            }
-            this.div.onmousemove = e => {
-                if(!this.isActive)
+            };
+            this.div.onmousemove = e =>
+            {
+                if (!this.isActive)
                 {
                     return;
                 }
@@ -99,76 +103,82 @@ export class Meter
                 const relativeLeft = bounds.left;
                 const width = bounds.width;
                 const relative = e.clientX - relativeLeft;
-                const percentage =  Math.max(0, Math.min(1, relative / width));
+                const percentage = Math.max(0, Math.min(1, relative / width));
                 editCallback(percentage * (max - min) + min);
             };
             this.div.onmouseup = () => this.isActive = false;
-            this.div.onmouseleave = e => {
+            this.div.onmouseleave = e =>
+            {
                 this.div.onmousemove(e);
                 this.isActive = false;
-            }
-
+            };
+            
             // QoL
-            this.text.oncontextmenu = e => {
+            this.text.oncontextmenu = e =>
+            {
                 e.preventDefault();
             };
-
+            
             // add mobile
-            this.div.onclick = e => {
+            this.div.onclick = e =>
+            {
                 e.preventDefault();
                 this.isActive = true;
                 this.div.onmousemove(e);
                 this.isActive = false;
-            }
+            };
             this.div.classList.add("editable");
         }
     }
-
+    
     lockMeter()
     {
-        if(this.lockCallback === undefined)
+        if (this.lockCallback === undefined)
         {
             // no callback, it can't be locked
             return;
         }
-        if(this.isLocked) {
+        if (this.isLocked)
+        {
             this.text.classList.remove("locked_meter");
             this.unlockCallback();
         }
-        else {
+        else
+        {
             this.text.classList.add("locked_meter");
             this.lockCallback();
         }
         this.isLocked = !this.isLocked;
     }
-
-    toggleMode(updateColor=false)
+    
+    toggleMode(updateColor = false)
     {
-        if(updateColor)
+        if (updateColor)
         {
             this.bar.classList.toggle("voice_meter_light_color");
             this.div.classList.toggle("voice_meter_light_color");
         }
         this.text.classList.toggle("voice_meter_text_light");
     }
-
+    
     show()
     {
         this.isShown = true;
-        if(!this.isVisualValueSet) {
+        if (!this.isVisualValueSet)
+        {
             const percentage = Math.max(0, Math.min((this.currentValue - this.min) / (this.max - this.min), 1));
             this.bar.style.width = `${percentage * 100}%`;
             this.text.textContent = this.meterText + (Math.round(this.currentValue * 100) / 100).toString();
             this.isVisualValueSet = true;
         }
     }
-
+    
     hide()
     {
         this.isShown = false;
     }
-
-
+    
+    
     /**
      * Updates a given meter to a given value
      * @param value {number}
@@ -176,12 +186,13 @@ export class Meter
      */
     update(value, force = false)
     {
-        if(value === this.currentValue && force === false)
+        if (value === this.currentValue && force === false)
         {
             return;
         }
         this.currentValue = value;
-        if(this.isShown) {
+        if (this.isShown)
+        {
             const percentage = Math.max(0, Math.min((value - this.min) / (this.max - this.min), 1));
             this.bar.style.width = `${percentage * 100}%`;
             this.text.textContent = this.meterText + (Math.round(value * 100) / 100).toString();

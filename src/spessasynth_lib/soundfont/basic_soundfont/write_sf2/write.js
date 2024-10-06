@@ -1,23 +1,19 @@
-import { combineArrays, IndexedByteArray } from '../../../utils/indexed_array.js'
-import { RiffChunk, writeRIFFChunk } from '../riff_chunk.js'
-import { writeStringAsBytes } from '../../../utils/byte_functions/string.js'
-import { consoleColors } from '../../../utils/other.js'
-import { getIGEN } from './igen.js'
-import { getSDTA } from './sdta.js'
-import { getSHDR } from './shdr.js'
-import { getIMOD } from './imod.js'
-import { getIBAG } from './ibag.js'
-import { getINST } from './inst.js'
-import { getPGEN } from './pgen.js'
-import { getPMOD } from './pmod.js'
-import { getPBAG } from './pbag.js'
-import { getPHDR } from './phdr.js'
-import { writeWord } from '../../../utils/byte_functions/little_endian.js'
-import {
-    SpessaSynthGroupCollapsed,
-    SpessaSynthGroupEnd,
-    SpessaSynthInfo
-} from '../../../utils/loggin.js'
+import { combineArrays, IndexedByteArray } from "../../../utils/indexed_array.js";
+import { RiffChunk, writeRIFFChunk } from "../riff_chunk.js";
+import { writeStringAsBytes } from "../../../utils/byte_functions/string.js";
+import { consoleColors } from "../../../utils/other.js";
+import { getIGEN } from "./igen.js";
+import { getSDTA } from "./sdta.js";
+import { getSHDR } from "./shdr.js";
+import { getIMOD } from "./imod.js";
+import { getIBAG } from "./ibag.js";
+import { getINST } from "./inst.js";
+import { getPGEN } from "./pgen.js";
+import { getPMOD } from "./pmod.js";
+import { getPBAG } from "./pbag.js";
+import { getPHDR } from "./phdr.js";
+import { writeWord } from "../../../utils/byte_functions/little_endian.js";
+import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo } from "../../../utils/loggin.js";
 /**
  * @typedef {Object} SoundFont2WriteOptions
  * @property {boolean} compress - if the soundfont should be compressed with the ogg vorbis codec
@@ -32,7 +28,7 @@ const DEFAULT_WRITE_OPTIONS = {
     compress: false,
     compressionQuality: 0.5,
     compressionFunction: undefined
-}
+};
 
 /**
  * Write the soundfont as an .sf2 file. This method is DESTRUCTIVE
@@ -42,39 +38,45 @@ const DEFAULT_WRITE_OPTIONS = {
  */
 export function write(options = DEFAULT_WRITE_OPTIONS)
 {
-    if(options.compress)
+    if (options.compress)
     {
-        if(typeof options.compressionFunction !== "function")
+        if (typeof options.compressionFunction !== "function")
         {
             throw new TypeError("No compression function supplied but compression enabled.");
         }
     }
-    SpessaSynthGroupCollapsed("%cSaving soundfont...",
-        consoleColors.info);
-    SpessaSynthInfo(`%cCompression: %c${options?.compress || "false"}%c quality: %c${options?.compressionQuality || "none"}`,
+    SpessaSynthGroupCollapsed(
+        "%cSaving soundfont...",
+        consoleColors.info
+    );
+    SpessaSynthInfo(
+        `%cCompression: %c${options?.compress || "false"}%c quality: %c${options?.compressionQuality || "none"}`,
         consoleColors.info,
         consoleColors.recognized,
         consoleColors.info,
-        consoleColors.recognized)
-    SpessaSynthInfo("%cWriting INFO...",
-        consoleColors.info);
+        consoleColors.recognized
+    );
+    SpessaSynthInfo(
+        "%cWriting INFO...",
+        consoleColors.info
+    );
     /**
      * Write INFO
      * @type {IndexedByteArray[]}
      */
     const infoArrays = [];
     this.soundFontInfo["ISFT"] = "SpessaSynth"; // ( ͡° ͜ʖ ͡°)
-    if(options?.compress)
+    if (options?.compress)
     {
         this.soundFontInfo["ifil"] = "3.0"; // set version to 3
     }
-
+    
     for (const [type, data] of Object.entries(this.soundFontInfo))
     {
-        if(type === "ifil" || type === "iver")
+        if (type === "ifil" || type === "iver")
         {
-            const major= parseInt(data.split(".")[0]);
-            const minor= parseInt(data.split(".")[1]);
+            const major = parseInt(data.split(".")[0]);
+            const minor = parseInt(data.split(".")[1]);
             const ckdata = new IndexedByteArray(4);
             writeWord(ckdata, major);
             writeWord(ckdata, minor);
@@ -84,8 +86,7 @@ export function write(options = DEFAULT_WRITE_OPTIONS)
                 ckdata
             )));
         }
-        else
-        if(type === "DMOD")
+        else if (type === "DMOD")
         {
             infoArrays.push(writeRIFFChunk(new RiffChunk(
                 type,
@@ -109,44 +110,71 @@ export function write(options = DEFAULT_WRITE_OPTIONS)
         ...infoArrays
     ]);
     const infoChunk = writeRIFFChunk(new RiffChunk("LIST", combined.length, combined));
-
-    SpessaSynthInfo("%cWriting SDTA...",
-        consoleColors.info);
+    
+    SpessaSynthInfo(
+        "%cWriting SDTA...",
+        consoleColors.info
+    );
     // write sdata
     const smplStartOffsets = [];
     const smplEndOffsets = [];
-    const sdtaChunk = getSDTA.call(this, smplStartOffsets, smplEndOffsets, options?.compress, options?.compressionQuality || 0.5, options.compressionFunction);
-
-    SpessaSynthInfo("%cWriting PDTA...",
-        consoleColors.info);
+    const sdtaChunk = getSDTA.call(
+        this,
+        smplStartOffsets,
+        smplEndOffsets,
+        options?.compress,
+        options?.compressionQuality || 0.5,
+        options.compressionFunction
+    );
+    
+    SpessaSynthInfo(
+        "%cWriting PDTA...",
+        consoleColors.info
+    );
     // write pdata
     // go in reverse so the indexes are correct
     // instruments
-    SpessaSynthInfo("%cWriting SHDR...",
-        consoleColors.info);
+    SpessaSynthInfo(
+        "%cWriting SHDR...",
+        consoleColors.info
+    );
     const shdrChunk = getSHDR.call(this, smplStartOffsets, smplEndOffsets);
-    SpessaSynthInfo("%cWriting IGEN...",
-        consoleColors.info);
+    SpessaSynthInfo(
+        "%cWriting IGEN...",
+        consoleColors.info
+    );
     const igenChunk = getIGEN.call(this);
-    SpessaSynthInfo("%cWriting IMOD...",
-        consoleColors.info);
+    SpessaSynthInfo(
+        "%cWriting IMOD...",
+        consoleColors.info
+    );
     const imodChunk = getIMOD.call(this);
-    SpessaSynthInfo("%cWriting IBAG...",
-        consoleColors.info);
+    SpessaSynthInfo(
+        "%cWriting IBAG...",
+        consoleColors.info
+    );
     const ibagChunk = getIBAG.call(this);
-    SpessaSynthInfo("%cWriting INST...",
-        consoleColors.info);
+    SpessaSynthInfo(
+        "%cWriting INST...",
+        consoleColors.info
+    );
     const instChunk = getINST.call(this);
     // presets
     const pgenChunk = getPGEN.call(this);
-    SpessaSynthInfo("%cWriting PMOD...",
-        consoleColors.info);
+    SpessaSynthInfo(
+        "%cWriting PMOD...",
+        consoleColors.info
+    );
     const pmodChunk = getPMOD.call(this);
-    SpessaSynthInfo("%cWriting PBAG...",
-        consoleColors.info);
+    SpessaSynthInfo(
+        "%cWriting PBAG...",
+        consoleColors.info
+    );
     const pbagChunk = getPBAG.call(this);
-    SpessaSynthInfo("%cWriting PHDR...",
-        consoleColors.info);
+    SpessaSynthInfo(
+        "%cWriting PHDR...",
+        consoleColors.info
+    );
     const phdrChunk = getPHDR.call(this);
     // combine in the sfspec order
     const pdtadata = combineArrays([
@@ -166,8 +194,10 @@ export function write(options = DEFAULT_WRITE_OPTIONS)
         pdtadata.length,
         pdtadata
     ));
-    SpessaSynthInfo("%cWriting the output file...",
-        consoleColors.info);
+    SpessaSynthInfo(
+        "%cWriting the output file...",
+        consoleColors.info
+    );
     // finally, combine everything
     const riffdata = combineArrays([
         new IndexedByteArray([115, 102, 98, 107]), // "sfbk"
@@ -175,15 +205,17 @@ export function write(options = DEFAULT_WRITE_OPTIONS)
         sdtaChunk,
         pdtaChunk
     ]);
-
+    
     const main = writeRIFFChunk(new RiffChunk(
         "RIFF",
         riffdata.length,
         riffdata
     ));
-    SpessaSynthInfo(`%cSaved succesfully! Final file size: %c${main.length}`,
+    SpessaSynthInfo(
+        `%cSaved succesfully! Final file size: %c${main.length}`,
         consoleColors.info,
-        consoleColors.recognized)
+        consoleColors.recognized
+    );
     SpessaSynthGroupEnd();
     return main;
 }

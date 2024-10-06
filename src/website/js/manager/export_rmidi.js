@@ -1,11 +1,11 @@
-import { trimSoundfont } from '../../../spessasynth_lib/soundfont/basic_soundfont/write_sf2/soundfont_trimmer.js'
-import { applySnapshotToMIDI } from '../../../spessasynth_lib/midi_parser/midi_editor.js'
-import { closeNotification, showNotification } from '../notification/notification.js'
-import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd } from '../../../spessasynth_lib/utils/loggin.js'
-import { consoleColors } from '../../../spessasynth_lib/utils/other.js'
-import { writeRMIDI } from '../../../spessasynth_lib/midi_parser/rmidi_writer.js'
-import { ANIMATION_REFLOW_TIME } from '../utils/animation_utils.js'
-import { loadSoundFont } from '../../../spessasynth_lib/soundfont/load_soundfont.js'
+import { trimSoundfont } from "../../../spessasynth_lib/soundfont/basic_soundfont/write_sf2/soundfont_trimmer.js";
+import { applySnapshotToMIDI } from "../../../spessasynth_lib/midi_parser/midi_editor.js";
+import { closeNotification, showNotification } from "../notification/notification.js";
+import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd } from "../../../spessasynth_lib/utils/loggin.js";
+import { consoleColors } from "../../../spessasynth_lib/utils/other.js";
+import { writeRMIDI } from "../../../spessasynth_lib/midi_parser/rmidi_writer.js";
+import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
+import { loadSoundFont } from "../../../spessasynth_lib/soundfont/load_soundfont.js";
 
 /**
  * @this {Manager}
@@ -20,17 +20,23 @@ export async function _exportRMIDI()
      * @param decoder {TextDecoder}
      * @return {string}
      */
-    const verifyDecode = (type, def, decoder) => {
-        return this.seq.midiData.RMIDInfo?.[type] === undefined ? def : decoder.decode(this.seq.midiData.RMIDInfo?.[type]).replace(/\0$/, '')
-    }
+    const verifyDecode = (type, def, decoder) =>
+    {
+        return this.seq.midiData.RMIDInfo?.[type] === undefined ? def : decoder.decode(this.seq.midiData.RMIDInfo?.[type])
+            .replace(/\0$/, "");
+    };
     const encoding = verifyDecode("IENC", "ascii", new TextDecoder());
     const decoder = new TextDecoder(encoding);
-
+    
     const startAlbum = verifyDecode("IPRD", "", decoder);
     const startArtist = verifyDecode("IART", "", decoder);
     const startGenre = verifyDecode("IGNR", "", decoder);
-    const startComment = verifyDecode("ICMT", "Created using SpessaSynth: https://spessasus.github.io/SpessaSynth", decoder);
-
+    const startComment = verifyDecode(
+        "ICMT",
+        "Created using SpessaSynth: https://spessasus.github.io/SpessaSynth",
+        decoder
+    );
+    
     const path = "locale.exportAudio.formats.formats.rmidi.options.";
     const metadataPath = "locale.exportAudio.formats.metadata.";
     const n = showNotification(
@@ -127,7 +133,8 @@ export async function _exportRMIDI()
             {
                 type: "button",
                 textContent: this.localeManager.getLocaleString(path + "confirm"),
-                onClick: async n => {
+                onClick: async n =>
+                {
                     const compressed = n.div.querySelector("input[compress-toggle='1']").checked;
                     const quality = parseInt(n.div.querySelector("input[type='range']").value) / 10;
                     const album = n.div.querySelector("input[name='album']").value;
@@ -137,15 +144,17 @@ export async function _exportRMIDI()
                     const genre = n.div.querySelector("input[name='genre']").value;
                     const bankOffset = parseInt(n.div.querySelector("input[name='bank_offset']").value);
                     const adjust = n.div.querySelector("input[name='adjust']").checked;
-
+                    
                     /**
                      * @type {File}
                      */
                     const picture = n.div.querySelector("input[type='file']")?.files[0];
                     closeNotification(n.id);
-
-                    SpessaSynthGroupCollapsed("%cExporting RMIDI...",
-                        consoleColors.info);
+                    
+                    SpessaSynthGroupCollapsed(
+                        "%cExporting RMIDI...",
+                        consoleColors.info
+                    );
                     const localePath = "locale.exportAudio.formats.formats.rmidi.progress.";
                     const notification = showNotification(
                         this.localeManager.getLocaleString(localePath + "title"),
@@ -164,35 +173,35 @@ export async function _exportRMIDI()
                     const message = notification.div.getElementsByClassName("export_rmidi_message")[0];
                     const mid = await this.seq.getMIDI();
                     const font = loadSoundFont(mid.embeddedSoundFont || this.soundFont);
-
+                    
                     message.textContent = this.localeManager.getLocaleString(localePath + "modifyingMIDI");
                     await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
-
+                    
                     applySnapshotToMIDI(mid, await this.synth.getSynthesizerSnapshot());
-
+                    
                     message.textContent = this.localeManager.getLocaleString(localePath + "modifyingSoundfont");
                     await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
-
+                    
                     trimSoundfont(font, mid);
                     const newFont = font.write({
                         compress: compressed,
                         compressionQuality: quality,
                         compressionFunction: this.compressionFunc
                     });
-
+                    
                     message.textContent = this.localeManager.getLocaleString(localePath + "saving");
                     await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
-
+                    
                     let fileBuffer = undefined;
-                    if(picture?.type.split("/")[0] === "image")
+                    if (picture?.type.split("/")[0] === "image")
                     {
                         fileBuffer = await picture.arrayBuffer();
                     }
-                    else if(mid.RMIDInfo?.["IPIC"] !== undefined)
+                    else if (mid.RMIDInfo?.["IPIC"] !== undefined)
                     {
                         fileBuffer = mid.RMIDInfo["IPIC"].buffer;
                     }
-
+                    
                     const rmidBinary = writeRMIDI(
                         newFont,
                         mid,
@@ -211,7 +220,7 @@ export async function _exportRMIDI()
                         },
                         adjust
                     );
-                    const blob = new Blob([rmidBinary.buffer], {type: "audio/rmid"})
+                    const blob = new Blob([rmidBinary.buffer], { type: "audio/rmid" });
                     this.saveBlob(blob, `${songTitle || "unnamed_song"}.rmi`);
                     message.textContent = this.localeManager.getLocaleString(localePath + "done");
                     closeNotification(notification.id);
@@ -224,10 +233,11 @@ export async function _exportRMIDI()
         this.localeManager
     );
     const input = n.div.querySelector("input[type='file']");
-    input.oninput = () => {
-        if(input.files[0])
+    input.oninput = () =>
+    {
+        if (input.files[0])
         {
             input.parentElement.firstChild.textContent = input.files[0].name;
         }
-    }
+    };
 }

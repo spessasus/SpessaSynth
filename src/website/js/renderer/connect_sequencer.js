@@ -6,11 +6,12 @@ export function connectSequencer(sequencer)
 {
     this.seq = sequencer;
     this.seq.addOnTimeChangeEvent(() => this.resetIndexes(), "renderer-time-change");
-
-    this.seq.addOnSongChangeEvent(async mid => {
+    
+    this.seq.addOnSongChangeEvent(async mid =>
+    {
         this.calculateNoteTimes(await this.seq.getMIDI());
         this.resetIndexes();
-        if(mid.RMIDInfo?.["IPIC"] !== undefined)
+        if (mid.RMIDInfo?.["IPIC"] !== undefined)
         {
             const blob = new Blob([mid.RMIDInfo?.["IPIC"].buffer]);
             const url = URL.createObjectURL(blob);
@@ -21,7 +22,7 @@ export function connectSequencer(sequencer)
         {
             this.canvas.style.background = "";
         }
-    }, "renderer-song-change")
+    }, "renderer-song-change");
 }
 
 /**
@@ -29,10 +30,10 @@ export function connectSequencer(sequencer)
  */
 export function resetIndexes()
 {
-    if(!this.noteTimes)
+    if (!this.noteTimes)
     {
         return;
     }
-
+    
     this.noteTimes.forEach(n => n.renderStartIndex = 0);
 }

@@ -1,4 +1,4 @@
-.soundfont_mixer{
+.soundfont_mixer {
     top: 100%;
     position: absolute;
     background: var(--top-color);
@@ -10,13 +10,13 @@
     min-width: fit-content;
 }
 
-.soundfont_mixer_list{
+.soundfont_mixer_list {
     margin: 1em;
     border-radius: 0.3em;
-    min-height: 4em ;
+    min-height: 4em;
 }
 
-.soundfont_mixer .soundfont_entry{
+.soundfont_mixer .soundfont_entry {
     background: var(--top-buttons-color);
     margin: 0.2em;
     border-radius: var(--primary-border-radius);
@@ -27,19 +27,19 @@
     justify-content: center;
 }
 
-.soundfont_mixer .soundfont_entry_wrapper{
+.soundfont_mixer .soundfont_entry_wrapper {
     display: flex;
     justify-content: space-between;
 }
 
-.soundfont_mixer .soundfont_entry_button{
+.soundfont_mixer .soundfont_entry_button {
 }
 
-.soundfont_mixer .soundfont_entry_button:hover{
+.soundfont_mixer .soundfont_entry_button:hover {
     cursor: pointer;
 }
 
-.soundfont_mixer .action_buttons_wrapper{
+.soundfont_mixer .action_buttons_wrapper {
     display: flex;
     justify-content: space-between;
 }

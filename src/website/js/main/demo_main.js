@@ -1,12 +1,12 @@
-"use strict"
+"use strict";
 
-import { Manager } from '../manager/manager.js'
-import { SpessaSynthInfo, SpessaSynthWarn } from '../../../spessasynth_lib/utils/loggin.js'
-import { isMobile } from '../utils/is_mobile.js'
-import { getCheckSvg, getExclamationSvg, getHourglassSvg } from '../utils/icons.js'
-import { closeNotification, showNotification } from '../notification/notification.js'
-import { ANIMATION_REFLOW_TIME } from '../utils/animation_utils.js'
-import { LocaleManager } from '../locale/locale_manager.js'
+import { Manager } from "../manager/manager.js";
+import { SpessaSynthInfo, SpessaSynthWarn } from "../../../spessasynth_lib/utils/loggin.js";
+import { isMobile } from "../utils/is_mobile.js";
+import { getCheckSvg, getExclamationSvg, getHourglassSvg } from "../utils/icons.js";
+import { closeNotification, showNotification } from "../notification/notification.js";
+import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
+import { LocaleManager } from "../locale/locale_manager.js";
 
 /**
  * demo_main.js
@@ -38,19 +38,23 @@ window.SPESSASYNTH_VERSION = r["version"];
 // IndexedDB stuff
 const dbName = "spessasynth-db";
 const objectStoreName = "soundFontStore";
+
 /**
  * @param callback {function(IDBDatabase)}
  */
-function initDatabase(callback) {
+function initDatabase(callback)
+{
     const request = indexedDB.open(dbName, 1);
-
-
-    request.onsuccess = () => {
+    
+    
+    request.onsuccess = () =>
+    {
         const db = request.result;
         callback(db);
     };
-
-    request.onupgradeneeded = (event) => {
+    
+    request.onupgradeneeded = (event) =>
+    {
         const db = event.target.result;
         db.createObjectStore(objectStoreName, { keyPath: "id" });
     };
@@ -61,30 +65,34 @@ function initDatabase(callback) {
  */
 async function loadLastSoundFontFromDatabase()
 {
-    return await new Promise(resolve => {
+    return await new Promise(resolve =>
+    {
         // fetch from db
-        initDatabase(db => {
+        initDatabase(db =>
+        {
             const transaction = db.transaction([objectStoreName], "readonly");
             const objectStore = transaction.objectStore(objectStoreName);
             const request = objectStore.get("buffer");
-
-            request.onerror = e => {
+            
+            request.onerror = e =>
+            {
                 console.error("Database error");
                 console.error(e);
                 resolve(undefined);
-            }
-
-            request.onsuccess = async () => {
+            };
+            
+            request.onsuccess = async () =>
+            {
                 const result = request.result;
-                if(!result)
+                if (!result)
                 {
                     resolve(undefined);
                     return;
                 }
                 resolve(result.data);
-            }
-        })
-    })
+            };
+        });
+    });
 }
 
 function changeIcon(html, disableAnimation = true)
@@ -99,20 +107,23 @@ function changeIcon(html, disableAnimation = true)
  */
 async function saveSoundFontToIndexedDB(arr)
 {
-    initDatabase(db => {
+    initDatabase(db =>
+    {
         const transaction = db.transaction([objectStoreName], "readwrite");
         const objectStore = transaction.objectStore(objectStoreName);
-        try {
+        try
+        {
             const request = objectStore.put({ id: "buffer", data: arr });
-            request.onsuccess = () => {
+            request.onsuccess = () =>
+            {
                 SpessaSynthInfo("SoundFont stored successfully");
             };
-
-            request.onerror = e => {
-                console.error("Error saving soundfont", e)
-            }
-        }
-        catch (e)
+            
+            request.onerror = e =>
+            {
+                console.error("Error saving soundfont", e);
+            };
+        } catch (e)
         {
             SpessaSynthWarn("Failed saving soundfont:", e);
         }
@@ -128,13 +139,12 @@ async function demoInit(initLocale)
     {
         const context = window.AudioContext || window.webkitAudioContext;
         window.audioContextMain = new context({ sampleRate: SAMPLE_RATE });
-    }
-    catch (e)
+    } catch (e)
     {
         changeIcon(getExclamationSvg(256));
         loadingMessage.textContent = localeManager.getLocaleString("locale.synthInit.noWebAudio");
         throw e;
-
+        
     }
     loadingMessage.textContent = localeManager.getLocaleString("locale.synthInit.loadingSoundfont");
     let soundFontBuffer = await loadLastSoundFontFromDatabase();
@@ -148,7 +158,7 @@ async function demoInit(initLocale)
         loadingMessage.textContent = sFontLoadMessage;
         soundFontBuffer = await fetchFont(`soundfonts/${SF_NAME}`, percent =>
         {
-            loadingMessage.textContent =`${sFontLoadMessage} ${percent}%`;
+            loadingMessage.textContent = `${sFontLoadMessage} ${percent}%`;
         });
         progressBar.style.width = "0";
     }
@@ -157,72 +167,78 @@ async function demoInit(initLocale)
         SpessaSynthInfo("Loaded the soundfont from the database succesfully");
     }
     window.soundFontParser = soundFontBuffer;
-    if(!loadedFromDb)
+    if (!loadedFromDb)
     {
         loadingMessage.textContent = localeManager.getLocaleString("locale.synthInit.savingSoundfont");
         await saveSoundFontToIndexedDB(soundFontBuffer);
     }
-
-    if(window.audioContextMain.state !== "running")
+    
+    if (window.audioContextMain.state !== "running")
     {
-        document.addEventListener("mousedown", () => {
-            if(window.audioContextMain.state !== "running") {
+        document.addEventListener("mousedown", () =>
+        {
+            if (window.audioContextMain.state !== "running")
+            {
                 window.audioContextMain.resume().then();
             }
-
-        })
+            
+        });
     }
-
+    
     // prepare midi interface
     loadingMessage.textContent = localeManager.getLocaleString("locale.synthInit.startingSynthesizer");
     window.manager = new Manager(audioContextMain, soundFontParser, localeManager);
-    window.manager.sfError = e => {
+    window.manager.sfError = e =>
+    {
         changeIcon(getExclamationSvg(256));
-        if(loadedFromDb)
+        if (loadedFromDb)
         {
-            SpessaSynthWarn("Invalid soundfont in the database. Resetting.")
+            SpessaSynthWarn("Invalid soundfont in the database. Resetting.");
             // restore to default
-            initDatabase(db => {
+            initDatabase(db =>
+            {
                 const transaction = db.transaction([objectStoreName], "readwrite");
                 const objectStore = transaction.objectStore(objectStoreName);
                 const request = objectStore.delete("buffer");
-                request.onsuccess = () => {
+                request.onsuccess = () =>
+                {
                     location.reload();
-                }
+                };
             });
-
+            
         }
         else
         {
             titleMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
         }
         loadingMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
-    }
+    };
     await manager.ready;
-
-    if(fileInput.files[0])
+    
+    if (fileInput.files[0])
     {
         await startMidi(fileInput.files);
     }
     else
     {
         fileInput.onclick = undefined;
-        fileInput.onchange = () => {
-            if(fileInput.files[0])
+        fileInput.onchange = () =>
+        {
+            if (fileInput.files[0])
             {
                 startMidi(fileInput.files).then();
             }
-        }
+        };
     }
-
-    changeIcon(getCheckSvg(256))
+    
+    changeIcon(getCheckSvg(256));
     loadingMessage.textContent = localeManager.getLocaleString("locale.synthInit.done");
 }
 
 async function fetchFont(url, callback)
 {
     let response = await fetch(url);
-    if(!response.ok)
+    if (!response.ok)
     {
         titleMessage.innerText = "Error downloading soundfont!";
         throw response;
@@ -232,16 +248,18 @@ async function fetchFont(url, callback)
     let done = false;
     let dataArray = new Uint8Array(parseInt(size));
     let offset = 0;
-    do{
+    do
+    {
         let readData = await reader.read();
-        if(readData.value) {
+        if (readData.value)
+        {
             dataArray.set(readData.value, offset);
             offset += readData.value.length;
         }
         done = readData.done;
         let percent = Math.round((offset / size) * 100);
         callback(percent);
-    }while(!done);
+    } while (!done);
     return dataArray.buffer;
 }
 
@@ -253,9 +271,9 @@ async function fetchFont(url, callback)
  */
 async function startMidi(midiFiles)
 {
-    demoSongButton.style.display  = "none"
+    demoSongButton.style.display = "none";
     let fName;
-    if(midiFiles[0].name.length > 20)
+    if (midiFiles[0].name.length > 20)
     {
         fName = midiFiles[0].name.substring(0, 21) + "...";
     }
@@ -263,7 +281,7 @@ async function startMidi(midiFiles)
     {
         fName = midiFiles[0].name;
     }
-    if(midiFiles.length > 1)
+    if (midiFiles.length > 1)
     {
         fName += ` and ${midiFiles.length - 1} others`;
     }
@@ -273,24 +291,24 @@ async function startMidi(midiFiles)
      * @type {MIDIFile[]}
      */
     const parsed = [];
-    for(const file of midiFiles)
+    for (const file of midiFiles)
     {
         parsed.push({
             binary: await file.arrayBuffer(),
             altName: file.name
-        })
+        });
     }
     manager.synth.setLogLevel(false, false, false, false);
-    if(manager.seq)
+    if (manager.seq)
     {
         manager.seq.loadNewSongList(parsed);
-
+        
     }
     else
     {
         manager.play(parsed);
     }
-
+    
     exportButton.style.display = "flex";
     exportButton.onclick = window.manager.exportSong.bind(window.manager);
 }
@@ -304,7 +322,7 @@ async function startMidi(midiFiles)
 function saveSettings(settingsData)
 {
     localStorage.setItem("spessasynth-settings", JSON.stringify(settingsData));
-    SpessaSynthInfo("saved as", settingsData)
+    SpessaSynthInfo("saved as", settingsData);
 }
 
 // INIT STARTS HERE
@@ -314,19 +332,20 @@ window.saveSettings = saveSettings;
 
 // load saved settings
 const saved = JSON.parse(localStorage.getItem("spessasynth-settings"));
-if(saved !== null)
+if (saved !== null)
 {
     /**
      * reads the settings
      * @type {Promise<SavedSettings>}
      */
-    window.savedSettings = new Promise(resolve => {
+    window.savedSettings = new Promise(resolve =>
+    {
         resolve(saved);
     });
 }
 let initLocale;
 // get locale from saved settings or browser: "en-US" will turn into just "en"
-if(saved && saved.interface && saved.interface.language)
+if (saved && saved.interface && saved.interface.language)
 {
     initLocale = ((await savedSettings).interface.language) || navigator.language.split("-")[0].toLowerCase();
 }
@@ -352,55 +371,63 @@ async function playDemoSong(fileName)
     await startMidi([r]);
 }
 
-demoInit(initLocale).then(() => {
+demoInit(initLocale).then(() =>
+{
     document.getElementById("sf_upload").style.display = "flex";
     document.getElementById("file_upload").style.display = "flex";
-    loading.classList.add("done")
+    loading.classList.add("done");
     document.documentElement.classList.add("no_scroll");
     document.body.classList.add("no_scroll");
-    setTimeout(() => {
+    setTimeout(() =>
+    {
         loading.style.display = "none";
         document.body.classList.remove("no_scroll");
         document.documentElement.classList.remove("no_scroll");
-
+        
         // check for chrome android
-        if(isMobile)
+        if (isMobile)
         {
-            if(window.chrome)
+            if (window.chrome)
             {
                 showNotification(
-                    window.manager.localeManager.getLocaleString("locale.warnings.warning"),
+                    window.manager.localeManager.getLocaleString(
+                        "locale.warnings.warning"),
                     [{
                         type: "text",
-                        textContent: window.manager.localeManager.getLocaleString("locale.warnings.chromeMobile"),
+                        textContent: window.manager.localeManager.getLocaleString(
+                            "locale.warnings.chromeMobile")
                     }],
                     7
                 );
             }
         }
-    }, 1000)
+    }, 1000);
     /**
      * @param e {{target: HTMLInputElement}}
      */
-    sfInput.onchange = e => {
-        if (!e.target.files[0]) {
+    sfInput.onchange = e =>
+    {
+        if (!e.target.files[0])
+        {
             return;
         }
         /**
          * @type {File}
          */
         const file = e.target.files[0];
-
-        if(window.manager.seq)
+        
+        if (window.manager.seq)
         {
-            window.manager.seq.pause()
+            window.manager.seq.pause();
         }
         document.getElementById("sf_upload").firstElementChild.innerText = file.name;
         loading.style.display = "";
-        setTimeout(async () => {
+        setTimeout(async () =>
+        {
             loading.classList.remove("done");
             changeIcon(getHourglassSvg(256), false);
-            loadingMessage.textContent = window.manager.localeManager.getLocaleString("locale.synthInit.loadingSoundfont");
+            loadingMessage.textContent = window.manager.localeManager.getLocaleString(
+                "locale.synthInit.loadingSoundfont");
             const parseStart = performance.now() / 1000;
             // parse the soundfont
             let soundFontBuffer;
@@ -408,50 +435,57 @@ demoInit(initLocale).then(() => {
             {
                 soundFontBuffer = await file.arrayBuffer();
                 window.soundFontParser = soundFontBuffer;
-            }
-            catch (e)
+            } catch (e)
             {
-                loadingMessage.textContent = window.manager.localeManager.getLocaleString("locale.warnings.outOfMemory");
+                loadingMessage.textContent = window.manager.localeManager.getLocaleString(
+                    "locale.warnings.outOfMemory");
                 changeIcon(getExclamationSvg(256));
                 showNotification(
                     manager.localeManager.getLocaleString("locale.warnings.warning"),
                     [{
                         type: "text",
-                        textContent: window.manager.localeManager.getLocaleString("locale.warnings.outOfMemory"),
+                        textContent: window.manager.localeManager.getLocaleString(
+                            "locale.warnings.outOfMemory")
                     }]
                 );
                 throw e;
             }
-            window.manager.sfError = e => {
+            window.manager.sfError = e =>
+            {
                 loadingMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
                 changeIcon(getExclamationSvg(256));
                 console.error(e);
-            }
-            loadingMessage.textContent = window.manager.localeManager.getLocaleString("locale.synthInit.startingSynthesizer");
+            };
+            loadingMessage.textContent = window.manager.localeManager.getLocaleString(
+                "locale.synthInit.startingSynthesizer");
             await window.manager.reloadSf(soundFontBuffer);
-            if(window.manager.seq)
+            if (window.manager.seq)
             {
                 window.manager.seq.currentTime -= 0.1;
             }
-            loadingMessage.textContent = window.manager.localeManager.getLocaleString("locale.synthInit.savingSoundfont");
+            loadingMessage.textContent = window.manager.localeManager.getLocaleString(
+                "locale.synthInit.savingSoundfont");
             await saveSoundFontToIndexedDB(soundFontBuffer);
             // wait to make sure that the animation has finished
             const elapsed = (performance.now() / 1000) - parseStart;
             await new Promise(r => setTimeout(r, 1000 - elapsed));
             // DONE
-            changeIcon(getCheckSvg(256))
-            loadingMessage.textContent = window.manager.localeManager.getLocaleString("locale.synthInit.done");
+            changeIcon(getCheckSvg(256));
+            loadingMessage.textContent = window.manager.localeManager.getLocaleString(
+                "locale.synthInit.done");
             loading.classList.add("done");
             document.documentElement.classList.add("no_scroll");
             document.body.classList.add("no_scroll");
-            setTimeout(() => {
+            setTimeout(() =>
+            {
                 loading.style.display = "none";
                 document.body.classList.remove("no_scroll");
                 document.documentElement.classList.remove("no_scroll");
-            }, 1000)
+            }, 1000);
         }, ANIMATION_REFLOW_TIME);
-    }
-    demoSongButton.onclick = async () => {
+    };
+    demoSongButton.onclick = async () =>
+    {
         /**
          * @type {NotificationContent[]}
          */
@@ -459,20 +493,24 @@ demoInit(initLocale).then(() => {
             {
                 type: "button",
                 textContent: window.manager.localeManager.getLocaleString("locale.credits"),
-                onClick: () => {
+                onClick: () =>
+                {
                     window.open("https://github.com/spessasus/spessasynth-demo-songs#readme");
                 }
             },
             {
                 type: "button",
                 textContent: "Bundled SoundFont Credits",
-                onClick: () => {
+                onClick: () =>
+                {
                     window.open("https://schristiancollins.com/generaluser.php");
                 }
             }
         ];
-        titleMessage.textContent = window.manager.localeManager.getLocaleString("locale.synthInit.genericLoading");
-        const songs = await ((await fetch("https://spessasus.github.io/spessasynth-demo-songs/demo_song_list.json")).text());
+        titleMessage.textContent = window.manager.localeManager.getLocaleString(
+            "locale.synthInit.genericLoading");
+        const songs = await ((await fetch(
+            "https://spessasus.github.io/spessasynth-demo-songs/demo_song_list.json")).text());
         /**
          * @type {{
          *     name: string,
@@ -480,24 +518,25 @@ demoInit(initLocale).then(() => {
          * }[]}
          */
         const songsJSON = JSON.parse(songs);
-        for(const song of songsJSON)
+        for (const song of songsJSON)
         {
             contents.push({
                 type: "button",
                 textContent: song.name,
-                onClick:async n => {
+                onClick: async n =>
+                {
                     closeNotification(n.id);
                     await playDemoSong(song.fileName);
                 }
-            },)
+            });
         }
-
+        
         showNotification(
             window.manager.localeManager.getLocaleString("locale.demoSongButton"),
             contents,
             999999,
             true,
             undefined
-        )
+        );
     };
 });

@@ -1,34 +1,38 @@
-import { consoleColors } from '../../../utils/other.js'
-import { midiControllers } from '../../../midi_parser/midi_message.js'
-import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE } from '../../synthetizer.js'
+import { consoleColors } from "../../../utils/other.js";
+import { midiControllers } from "../../../midi_parser/midi_message.js";
+import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE } from "../../synthetizer.js";
 import {
     customControllers,
-    customResetArray, dataEntryStates,
+    customResetArray,
+    dataEntryStates,
     NON_CC_INDEX_OFFSET,
-    resetArray,
-} from '../worklet_utilities/worklet_processor_channel.js'
-import { SpessaSynthInfo } from '../../../utils/loggin.js'
+    resetArray
+} from "../worklet_utilities/worklet_processor_channel.js";
+import { SpessaSynthInfo } from "../../../utils/loggin.js";
 import { modulatorSources } from "../../../soundfont/basic_soundfont/modulator.js";
 
 /**
  * @this {SpessaSynthProcessor}
  * @param log {boolean}
  */
-export function resetAllControllers(log= true)
+export function resetAllControllers(log = true)
 {
-    if (log) SpessaSynthInfo("%cResetting all controllers!", consoleColors.info);
+    if (log)
+    {
+        SpessaSynthInfo("%cResetting all controllers!", consoleColors.info);
+    }
     this.callEvent("allcontrollerreset", undefined);
     for (let channelNumber = 0; channelNumber < this.workletProcessorChannels.length; channelNumber++)
     {
         this.resetControllers(channelNumber);
-
+        
         /**
          * @type {WorkletProcessorChannel}
          **/
         const ch = this.workletProcessorChannels[channelNumber];
-
+        
         // if preset is unlocked, switch to non drums and call event
-        if(!ch.lockPreset)
+        if (!ch.lockPreset)
         {
             ch.presetUsesOverride = true;
             ch.midiControllers[midiControllers.bankSelect] = 0;
@@ -56,9 +60,9 @@ export function resetAllControllers(log= true)
             this.callEvent("drumchange", {
                 channel: channelNumber,
                 isDrumChannel: ch.drumChannel
-            })
+            });
         }
-
+        
         // call program change
         this.callEvent("programchange", {
             channel: channelNumber,
@@ -66,10 +70,10 @@ export function resetAllControllers(log= true)
             bank: ch.preset.bank,
             userCalled: false
         });
-
+        
         let restoreControllerValueEvent = ccNum =>
         {
-            if(this.workletProcessorChannels[channelNumber].lockedControllers[ccNum])
+            if (this.workletProcessorChannels[channelNumber].lockedControllers[ccNum])
             {
                 // was not reset so restore the value
                 this.callEvent("controllerchange", {
@@ -78,9 +82,9 @@ export function resetAllControllers(log= true)
                     controllerValue: this.workletProcessorChannels[channelNumber].midiControllers[ccNum] >> 7
                 });
             }
-
-        }
-
+            
+        };
+        
         restoreControllerValueEvent(midiControllers.mainVolume);
         restoreControllerValueEvent(midiControllers.pan);
         restoreControllerValueEvent(midiControllers.expressionController);
@@ -88,9 +92,9 @@ export function resetAllControllers(log= true)
         restoreControllerValueEvent(midiControllers.effects3Depth);
         restoreControllerValueEvent(midiControllers.effects1Depth);
         restoreControllerValueEvent(midiControllers.brightness);
-
+        
         // restore pitch wheel
-        if(this.workletProcessorChannels[channelNumber].lockedControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel])
+        if (this.workletProcessorChannels[channelNumber].lockedControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel])
         {
             const val = this.workletProcessorChannels[channelNumber].midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel];
             const msb = val >> 7;
@@ -99,16 +103,16 @@ export function resetAllControllers(log= true)
                 channel: channelNumber,
                 MSB: msb,
                 LSB: lsb
-            })
+            });
         }
     }
     this.tunings = [];
     this.tunings = [];
-    for (let i = 0; i < 127; i++)
+    for (let i = 0; 127 > i; i++)
     {
         this.tunings.push([]);
     }
-
+    
     this.setMIDIVolume(1);
     this.system = DEFAULT_SYNTH_MODE;
 }
@@ -125,41 +129,44 @@ export function resetControllers(channel)
      * get excluded (locked) cc numbers as locked ccs are unaffected by reset
      * @type {number[]}
      */
-    const excludedCCs = channelObject.lockedControllers.reduce((lockedCCs, cc, ccNum) => {
-        if(cc)
+    const excludedCCs = channelObject.lockedControllers.reduce((lockedCCs, cc, ccNum) =>
+    {
+        if (cc)
         {
             lockedCCs.push(ccNum);
         }
         return lockedCCs;
     }, []);
     // save excluded controllers as reset doesn't affect them
-    let excludedCCvalues = excludedCCs.map(ccNum => {
+    let excludedCCvalues = excludedCCs.map(ccNum =>
+    {
         return {
             ccNum: ccNum,
             ccVal: channelObject.midiControllers[ccNum]
-        }
+        };
     });
-
+    
     channelObject.channelOctaveTuning.fill(0);
     channelObject.keyCentTuning.fill(0);
-
+    
     // reset the array
     channelObject.midiControllers.set(resetArray);
-    channelObject.channelVibrato = {rate: 0, depth: 0, delay: 0};
+    channelObject.channelVibrato = { rate: 0, depth: 0, delay: 0 };
     channelObject.holdPedal = false;
-
-    excludedCCvalues.forEach((cc) => {
+    
+    excludedCCvalues.forEach((cc) =>
+    {
         channelObject.midiControllers[cc.ccNum] = cc.ccVal;
     });
-
+    
     // reset custom controllers
     // special case: transpose does not get affected
     const transpose = channelObject.customControllers[customControllers.channelTransposeFine];
     channelObject.customControllers.set(customResetArray);
     channelObject.customControllers[customControllers.channelTransposeFine] = transpose;
-
+    
     this.resetParameters(channel);
-
+    
 }
 
 /**
@@ -169,7 +176,7 @@ export function resetControllers(channel)
 export function resetParameters(channel)
 {
     const channelObject = this.workletProcessorChannels[channel];
-
+    
     // reset parameters
     /**
      * @type {number}

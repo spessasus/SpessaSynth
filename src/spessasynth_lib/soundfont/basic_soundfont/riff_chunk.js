@@ -1,6 +1,6 @@
-import { IndexedByteArray } from '../../utils/indexed_array.js'
-import { readLittleEndian, writeDword } from '../../utils/byte_functions/little_endian.js'
-import { readBytesAsString, writeStringAsBytes } from '../../utils/byte_functions/string.js'
+import { IndexedByteArray } from "../../utils/indexed_array.js";
+import { readLittleEndian, writeDword } from "../../utils/byte_functions/little_endian.js";
+import { readBytesAsString, writeStringAsBytes } from "../../utils/byte_functions/string.js";
 
 /**
  * riff_chunk.js
@@ -16,12 +16,13 @@ export class RiffChunk
      * @param size {number}
      * @param data {IndexedByteArray}
      */
-    constructor(header, size, data) {
+    constructor(header, size, data)
+    {
         this.header = header;
         this.size = size;
         this.chunkData = data;
     }
-
+    
 }
 
 /**
@@ -30,29 +31,30 @@ export class RiffChunk
  * @param forceShift {boolean}
  * @returns {RiffChunk}
  */
-export function readRIFFChunk(dataArray, readData = true, forceShift = false) {
-    let header = readBytesAsString(dataArray, 4)
-
-    let size = readLittleEndian(dataArray, 4)
-    let chunkData = undefined
+export function readRIFFChunk(dataArray, readData = true, forceShift = false)
+{
+    let header = readBytesAsString(dataArray, 4);
+    
+    let size = readLittleEndian(dataArray, 4);
+    let chunkData = undefined;
     if (readData)
     {
-        chunkData = new IndexedByteArray(dataArray.buffer.slice(dataArray.currentIndex, dataArray.currentIndex + size))
+        chunkData = new IndexedByteArray(dataArray.buffer.slice(dataArray.currentIndex, dataArray.currentIndex + size));
     }
-    if(readData || forceShift)
+    if (readData || forceShift)
     {
         dataArray.currentIndex += size;
     }
-
-    if(size % 2 !== 0)
+    
+    if (size % 2 !== 0)
     {
-        if(dataArray[dataArray.currentIndex] === 0)
+        if (dataArray[dataArray.currentIndex] === 0)
         {
             dataArray.currentIndex++;
         }
     }
-
-    return new RiffChunk(header, size, chunkData)
+    
+    return new RiffChunk(header, size, chunkData);
 }
 
 /**
@@ -63,17 +65,17 @@ export function readRIFFChunk(dataArray, readData = true, forceShift = false) {
 export function writeRIFFChunk(chunk, prepend = undefined)
 {
     let size = 8 + chunk.size;
-    if(chunk.size % 2 !== 0)
+    if (chunk.size % 2 !== 0)
     {
         size++;
     }
-    if(prepend)
+    if (prepend)
     {
         size += prepend.length;
     }
     const array = new IndexedByteArray(size);
     // prepend data (for example type before the read)
-    if(prepend)
+    if (prepend)
     {
         array.set(prepend, array.currentIndex);
         array.currentIndex += prepend.length;
@@ -95,14 +97,14 @@ export function writeRIFFChunk(chunk, prepend = undefined)
  */
 export function writeRIFFOddSize(header, data, addZeroByte = false)
 {
-    if(addZeroByte)
+    if (addZeroByte)
     {
         const tempData = new Uint8Array(data.length + 1);
         tempData.set(data, 0);
         data = tempData;
     }
     let finalSize = 8 + data.length;
-    if(finalSize % 2 !== 0)
+    if (finalSize % 2 !== 0)
     {
         finalSize++;
     }
@@ -120,8 +122,9 @@ export function writeRIFFOddSize(header, data, addZeroByte = false)
  */
 export function findRIFFListType(collection, type)
 {
-    return collection.find(c => {
-        if(c.header !== "LIST")
+    return collection.find(c =>
+    {
+        if (c.header !== "LIST")
         {
             return false;
         }

@@ -8,11 +8,16 @@
  * @param totalSeconds {number} time in seconds
  * @return {{seconds: number, minutes: number, time: string}}
  */
-export function formatTime(totalSeconds) {
+export function formatTime(totalSeconds)
+{
     totalSeconds = Math.floor(totalSeconds);
     let minutes = Math.floor(totalSeconds / 60);
     let seconds = Math.round(totalSeconds - (minutes * 60));
-    return {"minutes": minutes, "seconds": seconds, "time": `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`}
+    return {
+        "minutes": minutes,
+        "seconds": seconds,
+        "time": `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+    };
 }
 
 /**
@@ -33,15 +38,17 @@ export function formatTitle(fileName)
  * @param arr {number[]}
  * @returns {string}
  */
-export function arrayToHexString(arr) {
-    let hexString = '';
-
-    for (let i = 0; i < arr.length; i++) {
-        const hex = arr[i].toString(16).padStart(2, '0').toUpperCase();
+export function arrayToHexString(arr)
+{
+    let hexString = "";
+    
+    for (let i = 0; i < arr.length; i++)
+    {
+        const hex = arr[i].toString(16).padStart(2, "0").toUpperCase();
         hexString += hex;
-        hexString += ' ';
+        hexString += " ";
     }
-
+    
     return hexString;
 }
 
@@ -51,4 +58,4 @@ export const consoleColors = {
     info: "color: aqua;",
     recognized: "color: lime",
     value: "color: yellow; background-color: black;"
-}
+};

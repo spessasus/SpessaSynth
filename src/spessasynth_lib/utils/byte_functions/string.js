@@ -1,4 +1,4 @@
-import { IndexedByteArray } from '../indexed_array.js'
+import { IndexedByteArray } from "../indexed_array.js";
 
 /**
  * @param dataArray {IndexedByteArray}
@@ -7,24 +7,25 @@ import { IndexedByteArray } from '../indexed_array.js'
  * @param trimEnd {boolean} if we should trim once we reach an invalid byte
  * @returns {string}
  */
-export function readBytesAsString(dataArray, bytes, encoding = undefined, trimEnd = true) {
+export function readBytesAsString(dataArray, bytes, encoding = undefined, trimEnd = true)
+{
     if (!encoding)
     {
-        let finished = false
-        let string = ''
+        let finished = false;
+        let string = "";
         for (let i = 0; i < bytes; i++)
         {
-            let byte = dataArray[dataArray.currentIndex++]
+            let byte = dataArray[dataArray.currentIndex++];
             if (finished)
             {
-                continue
+                continue;
             }
             if (byte < 32 || byte > 127)
             {
                 if (trimEnd)
                 {
-                    finished = true
-                    continue
+                    finished = true;
+                    continue;
                 }
                 else
                 {
@@ -35,16 +36,16 @@ export function readBytesAsString(dataArray, bytes, encoding = undefined, trimEn
                     }
                 }
             }
-            string += String.fromCharCode(byte)
+            string += String.fromCharCode(byte);
         }
-        return string
+        return string;
     }
     else
     {
-        let byteBuffer = dataArray.slice(dataArray.currentIndex, dataArray.currentIndex + bytes)
-        dataArray.currentIndex += bytes
-        let decoder = new TextDecoder(encoding.replace(/[^\x20-\x7E]/g, ''))
-        return decoder.decode(byteBuffer.buffer)
+        let byteBuffer = dataArray.slice(dataArray.currentIndex, dataArray.currentIndex + bytes);
+        dataArray.currentIndex += bytes;
+        let decoder = new TextDecoder(encoding.replace(/[^\x20-\x7E]/g, ""));
+        return decoder.decode(byteBuffer.buffer);
     }
 }
 
@@ -56,7 +57,7 @@ export function readBytesAsString(dataArray, bytes, encoding = undefined, trimEn
 export function getStringBytes(string, padLength = 0)
 {
     let len = string.length;
-    if(padLength > 0)
+    if (padLength > 0)
     {
         len = padLength;
     }
@@ -73,9 +74,9 @@ export function getStringBytes(string, padLength = 0)
  */
 export function writeStringAsBytes(outArray, string, padLength = 0)
 {
-    if(padLength > 0)
+    if (padLength > 0)
     {
-        if(string.length > padLength)
+        if (string.length > padLength)
         {
             string = string.slice(0, padLength);
         }
@@ -84,14 +85,14 @@ export function writeStringAsBytes(outArray, string, padLength = 0)
     {
         outArray[outArray.currentIndex++] = string.charCodeAt(i);
     }
-
+    
     // pad with zeros if needed
-    if(padLength > string.length)
+    if (padLength > string.length)
     {
         for (let i = 0; i < padLength - string.length; i++)
         {
             outArray[outArray.currentIndex++] = 0;
         }
     }
-    return outArray
+    return outArray;
 }
