@@ -1,8 +1,21 @@
 {
   "name": "SpessaSynth",
-  "version": "3.20.37",
+  "version": "3.20.40",
   "type": "module",
   "scripts": {
-    "start": "node src/website/server/server.js"
+    "start": "node src/website/server/server.js",
+    "build": "npm run esbuild",
+    "build:dev": "npm run esbuild -- --sourcemap",
+    "build:js": "npm run esbuild -- --js --sourcemap",
+    "build:css": "npm run esbuild -- --css --sourcemap",
+    "watch": "npm run esbuild -- --watch",
+    "copy:lib": "node src/website/server/copy.js",
+    "esbuild": "node src/website/server/build.js"
+  },
+  "dependencies": {
+    "spessasynth_lib": "^3.20.40"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
   }
 }
