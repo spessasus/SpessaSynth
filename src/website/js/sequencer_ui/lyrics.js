@@ -1,5 +1,5 @@
 import { supportedEncodings } from '../utils/encodings.js'
-import { messageTypes } from '../../../spessasynth_lib/midi_parser/midi_message.js'
+import { messageTypes } from 'spessasynth_lib'
 
 const ACTUAL_FONT_SIZE = parseFloat(getComputedStyle(document.body).fontSize);
 

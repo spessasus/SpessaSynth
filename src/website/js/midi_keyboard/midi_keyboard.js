@@ -1,5 +1,4 @@
-import {Synthetizer} from "../../../spessasynth_lib/synthetizer/synthetizer.js";
-import { midiControllers } from '../../../spessasynth_lib/midi_parser/midi_message.js'
+import { Synthetizer, midiControllers } from "spessasynth_lib";
 import { _handlePointers } from './pointer_handling.js'
 import { ANIMATION_REFLOW_TIME } from '../utils/animation_utils.js'
 

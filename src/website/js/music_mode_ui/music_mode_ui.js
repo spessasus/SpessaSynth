@@ -1,5 +1,5 @@
 import { getDoubleNoteSvg } from '../utils/icons.js'
-import { formatTime } from '../../../spessasynth_lib/utils/other.js'
+import { formatTime } from 'spessasynth_lib'
 import { ANIMATION_REFLOW_TIME } from '../utils/animation_utils.js'
 
 /**

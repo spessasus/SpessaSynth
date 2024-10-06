@@ -1,4 +1,4 @@
-import { SpessaSynthInfo } from '../../../../spessasynth_lib/utils/loggin.js'
+import { SpessaSynthInfo } from 'spessasynth_lib'
 import { getSpan } from '../sliders.js'
 import { USE_MIDI_RANGE } from '../handlers/keyboard_handler.js'
 

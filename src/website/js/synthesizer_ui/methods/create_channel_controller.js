@@ -21,7 +21,14 @@
 
 import { Meter } from './synthui_meter.js'
 import { LOCALE_PATH } from '../synthetizer_ui.js'
-import { midiControllers } from '../../../../spessasynth_lib/midi_parser/midi_message.js'
+import {
+    midiControllers,
+    DEFAULT_PERCUSSION,
+    ALL_CHANNELS_OR_DIFFERENT_ACTION,
+    NON_CC_INDEX_OFFSET,
+    modulatorSources
+} from 'spessasynth_lib'
+
 import {
     getDrumsSvg,
     getEmptyMicSvg,
@@ -30,15 +37,7 @@ import {
     getNoteSvg, getUnlockSVG,
     getVolumeSvg,
 } from '../../utils/icons.js'
-import { DEFAULT_PERCUSSION } from '../../../../spessasynth_lib/synthetizer/synthetizer.js'
 import { Selector } from './synthui_selector.js'
-import {
-    ALL_CHANNELS_OR_DIFFERENT_ACTION
-} from '../../../../spessasynth_lib/synthetizer/worklet_system/message_protocol/worklet_message.js'
-import {
-    NON_CC_INDEX_OFFSET
-} from '../../../../spessasynth_lib/synthetizer/worklet_system/worklet_utilities/worklet_processor_channel.js'
-import { modulatorSources } from '../../../../spessasynth_lib/soundfont/read_sf2/modulators.js'
 
 export const ICON_SIZE = 32;
 

@@ -1,4 +1,4 @@
-import { loadSoundFont } from '../../spessasynth_lib/soundfont/load_soundfont.js'
+import { loadSoundFont } from 'spessasynth_lib'
 
 const message = document.getElementById("message");
 document.getElementById("dls_upload").oninput = e => {
