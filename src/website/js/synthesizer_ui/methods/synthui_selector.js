@@ -208,13 +208,16 @@ export class Selector
             if(program !== lastProgram)
             {
                 lastProgram = program;
-                // create the header
-                const headerRow = document.createElement("tr");
-                const header = document.createElement("th");
-                header.colSpan = "3";
-                header.textContent = midiPatchNames[lastProgram];
-                headerRow.appendChild(header);
-                table.appendChild(headerRow);
+                // create the header (not for drums
+                if(preset.bank !== 128)
+                {
+                    const headerRow = document.createElement("tr");
+                    const header = document.createElement("th");
+                    header.colSpan = "3";
+                    header.textContent = midiPatchNames[lastProgram];
+                    headerRow.appendChild(header);
+                    table.appendChild(headerRow);
+                }
             }
             const programText = `${preset.program.toString().padStart(3, "0")}`;
             const bankText = `${preset.bank.toString().padStart(3, "0")}`;
@@ -270,8 +273,9 @@ export class Selector
             this.isReloaded = false;
             return;
         }
-        this.mainButton.innerHTML = "";
         this.isReloaded = true;
+        if(this.elements.length > 0)
+        this.mainButton.textContent = this.getString(`${this.elements[0].bank}:${this.value.split(":")[1]}`);
     }
 
     /**

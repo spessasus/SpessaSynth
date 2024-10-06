@@ -87,8 +87,9 @@ class WorkletSample
      * Looping mode of the sample:
      * 0 - no loop
      * 1 - loop
-     * 2 - loop then play when released
-     * @type {0|1|2}
+     * 2 - UNOFFICIAL: polyphone 2.4 added start on release
+     * 3 - loop then play when released
+     * @type {0|1|2|3}
      */
     loopingMode = 0;
 
@@ -372,15 +373,6 @@ export function getWorkletVoices(channel,
             let loopStart = (sampleAndGenerators.sample.sampleLoopStartIndex / 2);
             let loopEnd = (sampleAndGenerators.sample.sampleLoopEndIndex / 2);
             let loopingMode = generators[generatorTypes.sampleModes];
-            const sampleLength = sampleAndGenerators.sample.getAudioData().length;
-            // clamp loop
-            loopStart = Math.min(Math.max(0, loopStart), sampleLength);
-            // clamp loop
-            loopEnd = Math.min(Math.max(0, loopEnd), sampleLength);
-            if (loopEnd - loopStart < 1)
-            {
-                loopingMode = 0;
-            }
             /**
              * create the worklet sample
              * offsets are calculated at note on time (to allow for modulation of them)
