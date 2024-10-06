@@ -1,13 +1,16 @@
-import { Sequencer } from '../../../spessasynth_lib/sequencer/sequencer.js'
-import { formatTime } from '../../../spessasynth_lib/utils/other.js'
+import {
+    Sequencer,
+    formatTime,
+    messageTypes
+} from 'spessasynth_lib'
+import { RMIDINFOChunks } from 'spessasynth_lib/midi_parser/rmidi_writer'
+
 import { supportedEncodings } from '../utils/encodings.js'
 import { getBackwardSvg, getForwardSvg, getLoopSvg, getPauseSvg, getPlaySvg, getTextSvg } from '../utils/icons.js'
-import { messageTypes } from '../../../spessasynth_lib/midi_parser/midi_message.js'
 import { getSeqUIButton } from './sequi_button.js'
 import { keybinds } from '../utils/keybinds.js'
 import { createNavigatorHandler, updateTitleAndMediaStatus } from './title_and_media_status.js'
 import { createLyrics, setLyricsText, updateOtherTextEvents } from './lyrics.js'
-import { RMIDINFOChunks } from '../../../spessasynth_lib/midi_parser/rmidi_writer.js'
 
 /**
  * sequencer_ui.js

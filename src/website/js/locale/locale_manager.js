@@ -7,7 +7,7 @@
  *  isEdited: boolean
  * }} PropertyType
  */
-import { SpessaSynthInfo, SpessaSynthWarn } from '../../../spessasynth_lib/utils/loggin.js'
+import { SpessaSynthInfo, SpessaSynthWarn } from 'spessasynth_lib'
 import { DEFAULT_LOCALE, localeList } from './locale_files/locale_list.js'
 
 export class LocaleManager

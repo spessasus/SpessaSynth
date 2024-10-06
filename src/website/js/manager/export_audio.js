@@ -1,10 +1,13 @@
+import {
+    Synthetizer,
+    formatTime,
+    audioBufferToWav,
+    MIDIticksToSeconds
+} from 'spessasynth_lib'
+
 import { closeNotification, showNotification } from '../notification/notification.js'
-import { Synthetizer } from '../../../spessasynth_lib/synthetizer/synthetizer.js'
-import { formatTime } from '../../../spessasynth_lib/utils/other.js'
-import { audioBufferToWav } from '../../../spessasynth_lib/utils/buffer_to_wav.js'
-import { WORKLET_URL_ABSOLUTE } from '../../../spessasynth_lib/synthetizer/worklet_url.js'
 import { ANIMATION_REFLOW_TIME } from '../utils/animation_utils.js'
-import { MIDIticksToSeconds } from '../../../spessasynth_lib/midi_parser/basic_midi.js'
+import { ENABLE_DEBUG, WORKLET_WEB_URL, WORKLET_WEB_URL_DEBUG } from '../utils/constants.js'
 
 const RENDER_AUDIO_TIME_INTERVAL = 1000;
 
@@ -53,7 +56,12 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
         sampleRate: sampleRate,
         length: sampleDuration
     });
-    await offline.audioWorklet.addModule(new URL("../../spessasynth_lib/" + WORKLET_URL_ABSOLUTE, import.meta.url));
+    const WORKLET_PATH = ENABLE_DEBUG ? WORKLET_WEB_URL_DEBUG : WORKLET_WEB_URL;
+    if(ENABLE_DEBUG)
+    {
+        console.warn("DEBUG ENABLED! DEBUGGING ENABLED!!");
+    }
+    await offline.audioWorklet.addModule(new URL(WORKLET_PATH, import.meta.url));
 
     /**
      * take snapshot of the real synth

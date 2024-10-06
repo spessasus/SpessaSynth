@@ -1,5 +1,4 @@
-import { SpessaSynthInfo } from '../../../spessasynth_lib/utils/loggin.js'
-import { consoleColors } from '../../../spessasynth_lib/utils/other.js'
+import { SpessaSynthInfo, consoleColors } from 'spessasynth_lib'
 import { STABILIZE_WAVEFORMS_FFT_MULTIPLIER } from './render_waveforms.js'
 
 /**

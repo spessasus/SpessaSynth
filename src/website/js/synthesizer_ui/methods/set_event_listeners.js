@@ -1,4 +1,4 @@
-import { midiControllers } from '../../../../spessasynth_lib/midi_parser/midi_message.js'
+import { midiControllers } from 'spessasynth_lib'
 import { getDrumsSvg, getNoteSvg } from '../../utils/icons.js'
 
 /**

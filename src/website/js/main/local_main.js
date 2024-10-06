@@ -3,7 +3,7 @@
 import {Manager} from "../manager/manager.js";
 import { showNotification } from '../notification/notification.js'
 import { LocaleManager } from '../locale/locale_manager.js'
-import { SpessaSynthLogging } from '../../../spessasynth_lib/utils/loggin.js'
+import { SpessaSynthLogging } from 'spessasynth_lib'
 
 /**
  * local_main.js

@@ -1,30 +1,32 @@
-import { MidiKeyboard } from '../midi_keyboard/midi_keyboard.js'
-import { Synthetizer } from '../../../spessasynth_lib/synthetizer/synthetizer.js'
-import { Renderer } from '../renderer/renderer.js'
+import {
+    encodeVorbis,
+    loadSoundFont,
+    MIDIDeviceHandler,
+    Sequencer,
+    SpessaSynthInfo,
+    Synthetizer,
+    WebMidiLinkHandler
+} from 'spessasynth_lib'
+import { readBytesAsString } from 'spessasynth_lib/utils/byte_functions/string'
+import { IndexedByteArray } from 'spessasynth_lib/utils/indexed_array'
 
+import { MidiKeyboard } from '../midi_keyboard/midi_keyboard.js'
+import { Renderer } from '../renderer/renderer.js'
 import { SequencerUI } from '../sequencer_ui/sequencer_ui.js'
 import { SynthetizerUI } from '../synthesizer_ui/synthetizer_ui.js'
-import { MIDIDeviceHandler } from '../../../spessasynth_lib/external_midi/midi_handler.js'
-import { WebMidiLinkHandler } from '../../../spessasynth_lib/external_midi/web_midi_link.js'
-import { Sequencer } from '../../../spessasynth_lib/sequencer/sequencer.js'
 import { SpessaSynthSettings } from '../settings_ui/settings.js'
 import { MusicModeUI } from '../music_mode_ui/music_mode_ui.js'
 import { LocaleManager } from '../locale/locale_manager.js'
 import { isMobile } from '../utils/is_mobile.js'
-import { SpessaSynthInfo } from '../../../spessasynth_lib/utils/loggin.js'
 import { keybinds } from '../utils/keybinds.js'
+import { closeNotification, showNotification } from '../notification/notification.js'
 import { _doExportAudioData, _exportAudioData } from './export_audio.js'
 import { exportMidi } from './export_midi.js'
 import { _exportSoundfont } from './export_soundfont.js'
 import { exportSong } from './export_song.js'
 import { _exportRMIDI } from './export_rmidi.js'
-import { WORKLET_URL_ABSOLUTE } from '../../../spessasynth_lib/synthetizer/worklet_url.js'
-import { encodeVorbis } from '../../../spessasynth_lib/utils/encode_vorbis.js'
-import { loadSoundFont } from '../../../spessasynth_lib/soundfont/load_soundfont.js'
-import { readBytesAsString } from '../../../spessasynth_lib/utils/byte_functions/string.js'
-import { IndexedByteArray } from '../../../spessasynth_lib/utils/indexed_array.js'
-import { closeNotification, showNotification } from '../notification/notification.js'
 import { DropFileHandler } from '../utils/drop_file_handler.js'
+import { ENABLE_DEBUG, IMPULS_FILE, WORKLET_WEB_URL, WORKLET_WEB_URL_DEBUG } from '../utils/constants.js'
 
 // this enables transitions on body because if we enable them on load, it flashbangs us with white
 document.body.classList.add("load");
@@ -33,8 +35,6 @@ document.body.classList.add("load");
 * manager.js
 * purpose: connects every element of spessasynth together
 */
-
-const ENABLE_DEBUG = false;
 
 class Manager
 {
@@ -121,8 +121,7 @@ class Manager
             this.localeManager.bindObjectProperty(element, "title", element.getAttribute("translate-path-title") + ".description");
         }
 
-        const DEBUG_PATH = "synthetizer/worklet_system/worklet_processor.js";
-        const WORKLET_PATH = ENABLE_DEBUG ? DEBUG_PATH : WORKLET_URL_ABSOLUTE;
+        const WORKLET_PATH = ENABLE_DEBUG ? WORKLET_WEB_URL_DEBUG : WORKLET_WEB_URL;
         if(ENABLE_DEBUG)
         {
             console.warn("DEBUG ENABLED! DEBUGGING ENABLED!!");
@@ -130,7 +129,12 @@ class Manager
 
         if(context.audioWorklet)
         {
-            await context.audioWorklet.addModule(new URL ("../../spessasynth_lib/" + WORKLET_PATH, import.meta.url));
+            const url = new URL(WORKLET_PATH, import.meta.url);
+            try {
+                await context.audioWorklet.addModule(url);
+            } catch (e) {
+                console.error("Error loading worklet", e, url);
+            }
         }
         /**
          * set up soundfont
@@ -139,7 +143,7 @@ class Manager
         this.soundFont = soundFont;
 
         // set up buffer here (if we let spessasynth use the default buffer, there's no reverb for the first second.)
-        const impulseURL = new URL("../../spessasynth_lib/synthetizer/audio_effects/impulse_response_2.flac", import.meta.url);
+        const impulseURL = new URL(IMPULS_FILE, import.meta.url);
         const response = await fetch(impulseURL)
         const data = await response.arrayBuffer();
         this.impulseResponse = await context.decodeAudioData(data);

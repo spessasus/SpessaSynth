@@ -1,7 +1,7 @@
 "use strict"
 
 import { Manager } from '../manager/manager.js'
-import { SpessaSynthInfo, SpessaSynthWarn } from '../../../spessasynth_lib/utils/loggin.js'
+import { SpessaSynthInfo, SpessaSynthWarn } from 'spessasynth_lib'
 import { isMobile } from '../utils/is_mobile.js'
 import { getCheckSvg, getExclamationSvg, getHourglassSvg } from '../utils/icons.js'
 import { closeNotification, showNotification } from '../notification/notification.js'

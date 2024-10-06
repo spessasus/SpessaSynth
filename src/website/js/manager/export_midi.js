@@ -1,5 +1,4 @@
-import { applySnapshotToMIDI } from '../../../spessasynth_lib/midi_parser/midi_editor.js'
-import { writeMIDIFile } from '../../../spessasynth_lib/midi_parser/midi_writer.js'
+import { applySnapshotToMIDI, writeMIDIFile } from 'spessasynth_lib'
 
 /**
  * Changes the MIDI according to locked controllers and programs and exports it as a file

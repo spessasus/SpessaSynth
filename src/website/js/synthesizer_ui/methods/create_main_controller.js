@@ -1,9 +1,6 @@
 import { Meter } from './synthui_meter.js'
-import { VOICE_CAP } from '../../../../spessasynth_lib/synthetizer/synthetizer.js'
+import { VOICE_CAP, ALL_CHANNELS_OR_DIFFERENT_ACTION } from 'spessasynth_lib'
 import { LOCALE_PATH } from '../synthetizer_ui.js'
-import {
-    ALL_CHANNELS_OR_DIFFERENT_ACTION
-} from '../../../../spessasynth_lib/synthetizer/worklet_system/message_protocol/worklet_message.js'
 import { getEmptyMicSvg, getVolumeSvg } from '../../utils/icons.js'
 import { ICON_SIZE } from './create_channel_controller.js'
 

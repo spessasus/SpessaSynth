@@ -1,8 +1,10 @@
-import { IndexedByteArray } from '../../../spessasynth_lib/utils/indexed_array.js'
-import { SpessaSynthInfo } from '../../../spessasynth_lib/utils/loggin.js'
-import { consoleColors } from '../../../spessasynth_lib/utils/other.js'
-import { DEFAULT_PERCUSSION } from '../../../spessasynth_lib/synthetizer/synthetizer.js'
-import { readBytesAsUintBigEndian } from '../../../spessasynth_lib/utils/byte_functions/big_endian.js'
+import { IndexedByteArray } from 'spessasynth_lib/utils/indexed_array'
+import {
+    SpessaSynthInfo,
+    consoleColors,
+    DEFAULT_PERCUSSION,
+    readBytesAsUintBigEndian
+} from 'spessasynth_lib'
 
 const MIN_NOTE_TIME = 0.02;
 
