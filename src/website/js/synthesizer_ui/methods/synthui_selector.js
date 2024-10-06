@@ -110,6 +110,10 @@ export class Selector
         presetLock.innerHTML = this.locked ? getLockSVG(ICON_SIZE) : getUnlockSVG(ICON_SIZE);
         this.locale.bindObjectProperty(presetLock, "title", LOCALE_PATH + "channelController.presetReset.description", this.localeArgs);
         presetLock.classList.add("voice_reset");
+        if(this.mainButton.classList.contains("voice_selector_light"))
+        {
+            presetLock.classList.add("voice_reset_light");
+        }
         presetLock.onclick = () => {
             this.locked = !this.locked;
             this.lockCallback(this.locked);
@@ -245,7 +249,7 @@ export class Selector
 
     toggleMode()
     {
-        this.mainButton.classList.toggle("voice_selector_light")
+        this.mainButton.classList.toggle("voice_selector_light");
     }
 
     /**
