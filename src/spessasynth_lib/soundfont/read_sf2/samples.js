@@ -63,8 +63,8 @@ export class LoadedSample extends BasicSample
         if(this.isCompressed)
         {
             // correct loop points
-            this.sampleLoopStartIndex += this.sampleStartIndex;
-            this.sampleLoopEndIndex += this.sampleStartIndex;
+            this.sampleLoopStartIndex += this.sampleStartIndex / 2;
+            this.sampleLoopEndIndex += this.sampleStartIndex / 2;
             this.sampleLength = 99999999; // set to 999999 before we decode it
         }
         this.isDataRaw = isDataRaw;

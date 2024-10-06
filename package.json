@@ -1,6 +1,6 @@
 {
   "name": "SpessaSynth",
-  "version": "3.20.42",
+  "version": "3.20.43",
   "type": "module",
   "scripts": {
     "start": "node src/website/server/server.js",
@@ -14,7 +14,7 @@
     "esbuild": "node build/build.js"
   },
   "dependencies": {
-    "spessasynth_lib": "^3.20.42"
+    "spessasynth_lib": "^3.20.43"
   },
   "devDependencies": {
     "esbuild": "^0.24.0"
