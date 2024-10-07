@@ -103,7 +103,8 @@ export function renderVoice(
     }
     
     // lowpass frequency
-    let lowpassCents = voice.modulatedGenerators[generatorTypes.initialFilterFc];
+    const initialFc = voice.modulatedGenerators[generatorTypes.initialFilterFc];
+    let lowpassCents = initialFc;
     
     // mod LFO
     const modPitchDepth = voice.modulatedGenerators[generatorTypes.modLfoToPitch];
@@ -178,8 +179,12 @@ export function renderVoice(
             getSampleCubic(voice, bufferOut);
     }
     
-    // lowpass filter
-    WorkletLowpassFilter.apply(voice, bufferOut, lowpassCents);
+    /* lowpass filter
+     * note: the check is because of the filter optimization (if cents are maximum then the filter is open)
+     * filter cannot use this optimization if it's dynamic (see #53)
+     * and the filter can only be dynamic if the inital filter is not open
+     */
+    WorkletLowpassFilter.apply(voice, bufferOut, lowpassCents, initialFc > 13499);
     
     // volenv
     WorkletVolumeEnvelope.apply(voice, bufferOut, modLfoCentibels, this.volumeEnvelopeSmoothingFactor);

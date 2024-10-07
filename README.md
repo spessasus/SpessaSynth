@@ -40,7 +40,7 @@ This repository contains both the library and a complete musical web application
 - Suitable for both **real-time** and **offline** synthesis
 - **Excellent SoundFont support:**
   - **Full Generator Support**
-  - **Modulator Support:** *First (to my knowledge) JavaScript SoundFont synth with that feature!*
+  - **Full Modulator Support:** *First (to my knowledge) JavaScript SoundFont synth with that feature!*
   - **SoundFont3 Support:** Play compressed SoundFonts!
   - **Experimental SF2Pack Support:** Play soundfonts compressed with BASSMIDI! (*Note: only works with vorbis compression*)
   - **Can load very large SoundFonts:** up to 4GB! *Note: Only Firefox handles this well; Chromium has a hard-coded memory limit*

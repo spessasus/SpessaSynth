@@ -94,10 +94,12 @@ export class WorkletLowpassFilter
      * @param voice {WorkletVoice} the voice we're working on
      * @param outputBuffer {Float32Array} the buffer to apply the filter to
      * @param cutoffCents {number} cutoff frequency in cents
+     * @param canBeOpen {boolean} indicates if the filter can be open.
+     * See the comment in voice_control for details
      */
-    static apply(voice, outputBuffer, cutoffCents)
+    static apply(voice, outputBuffer, cutoffCents, canBeOpen)
     {
-        if (cutoffCents > 13499 && voice.filter.reasonanceCb === 0)
+        if (canBeOpen && cutoffCents > 13499 && voice.filter.reasonanceCb === 0)
         {
             return; // filter is open
         }
@@ -108,7 +110,7 @@ export class WorkletLowpassFilter
         {
             filter.cutoffCents = cutoffCents;
             filter.reasonanceCb = voice.modulatedGenerators[generatorTypes.initialFilterQ];
-            WorkletLowpassFilter.calculateCoefficients(voice);
+            WorkletLowpassFilter.calculateCoefficients(filter);
         }
         
         // filter the input
@@ -132,11 +134,10 @@ export class WorkletLowpassFilter
     }
     
     /**
-     * @param voice {WorkletVoice}
+     * @param filter {WorkletLowpassFilter}
      */
-    static calculateCoefficients(voice)
+    static calculateCoefficients(filter)
     {
-        const filter = voice.filter;
         filter.cutoffHz = absCentsToHz(filter.cutoffCents);
         
         // fix cutoff on low frequencies (fluid_iir_filter.c line 392)
