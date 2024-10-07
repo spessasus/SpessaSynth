@@ -1,9 +1,9 @@
 import { getModulatorCurveValue, MOD_PRECOMPUTED_LENGTH } from "./modulator_curves.js";
-import { NON_CC_INDEX_OFFSET } from "./worklet_processor_channel.js";
 import { WorkletVolumeEnvelope } from "./volume_envelope.js";
 import { WorkletModulationEnvelope } from "./modulation_envelope.js";
 import { generatorLimits, generatorTypes } from "../../../soundfont/basic_soundfont/generator.js";
 import { Modulator, modulatorSources } from "../../../soundfont/basic_soundfont/modulator.js";
+import { NON_CC_INDEX_OFFSET } from "./controller_tables.js";
 
 /**
  * worklet_modulator.js

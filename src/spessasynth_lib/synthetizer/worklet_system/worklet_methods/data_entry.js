@@ -1,12 +1,8 @@
 import { consoleColors } from "../../../utils/other.js";
 import { midiControllers } from "../../../midi_parser/midi_message.js";
-import {
-    customControllers,
-    dataEntryStates,
-    NON_CC_INDEX_OFFSET
-} from "../worklet_utilities/worklet_processor_channel.js";
 import { SpessaSynthInfo, SpessaSynthWarn } from "../../../utils/loggin.js";
 import { modulatorSources } from "../../../soundfont/basic_soundfont/modulator.js";
+import { customControllers, dataEntryStates, NON_CC_INDEX_OFFSET } from "../worklet_utilities/controller_tables.js";
 
 /**
  * Executes a data entry for an NRP for a sc88pro NRP (because touhou yes) and RPN tuning
@@ -176,7 +172,7 @@ export function dataEntryCoarse(channel, dataValue)
                 // drum reverb
                 case 0x1D:
                     const reverb = dataValue;
-                    this.controllerChange(channel, midiControllers.effects1Depth, reverb);
+                    this.controllerChange(channel, midiControllers.reverbDepth, reverb);
                     SpessaSynthInfo(
                         `%cGS Drum reverb for %c${channel}%c: %c${reverb}`,
                         consoleColors.info,

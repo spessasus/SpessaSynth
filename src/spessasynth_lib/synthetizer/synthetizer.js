@@ -816,7 +816,7 @@ export class Synthetizer
     {
         for (let i = 0; i < this.channelsAmount; i++)
         {
-            this.controllerChange(i, midiControllers.effects1Depth, 127);
+            this.controllerChange(i, midiControllers.reverbDepth, 127);
         }
         return "That's the spirit!";
     }

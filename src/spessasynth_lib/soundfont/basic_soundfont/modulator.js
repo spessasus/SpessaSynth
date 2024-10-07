@@ -241,7 +241,7 @@ export const defaultModulators = [
     
     // cc 92 (tremolo) to modLFO volume
     new Modulator({
-        srcEnum: getModSourceEnum(modulatorCurveTypes.linear, 0, 0, 1, midiControllers.effects2Depth), /*linear forward unipolar cc 92 */
+        srcEnum: getModSourceEnum(modulatorCurveTypes.linear, 0, 0, 1, midiControllers.tremoloDepth), /*linear forward unipolar cc 92 */
         dest: generatorTypes.modLfoToVolume,
         amt: 24,
         secSrcEnum: 0x0, // no controller

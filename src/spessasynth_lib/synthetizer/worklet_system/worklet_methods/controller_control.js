@@ -1,10 +1,11 @@
 import { consoleColors } from "../../../utils/other.js";
 import { midiControllers } from "../../../midi_parser/midi_message.js";
-import { channelConfiguration, dataEntryStates } from "../worklet_utilities/worklet_processor_channel.js";
+import { channelConfiguration } from "../worklet_utilities/worklet_processor_channel.js";
 import { computeModulators } from "../worklet_utilities/worklet_modulator.js";
 import { SpessaSynthInfo, SpessaSynthWarn } from "../../../utils/loggin.js";
 import { SYNTHESIZER_GAIN } from "../main_processor.js";
 import { DEFAULT_PERCUSSION } from "../../synthetizer.js";
+import { dataEntryStates } from "../worklet_utilities/controller_tables.js";
 
 /**
  * @param channel {number}

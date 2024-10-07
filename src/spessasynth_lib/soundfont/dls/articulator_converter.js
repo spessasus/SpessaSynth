@@ -38,11 +38,11 @@ function getSF2SourceFromDLS(source)
             isCC = true;
             break;
         case DLSSources.reverb:
-            sourceEnum = midiControllers.effects1Depth;
+            sourceEnum = midiControllers.reverbDepth;
             isCC = true;
             break;
         case DLSSources.chorus:
-            sourceEnum = midiControllers.effects3Depth;
+            sourceEnum = midiControllers.chorusDepth;
             isCC = true;
             break;
         case DLSSources.expression:

@@ -1,6 +1,5 @@
 import { absCentsToHz, timecentsToSeconds } from "../worklet_utilities/unit_converter.js";
 import { getLFOValue } from "../worklet_utilities/lfo.js";
-import { customControllers } from "../worklet_utilities/worklet_processor_channel.js";
 import { WorkletModulationEnvelope } from "../worklet_utilities/modulation_envelope.js";
 import {
     getSampleCubic,
@@ -13,6 +12,7 @@ import { WorkletLowpassFilter } from "../worklet_utilities/lowpass_filter.js";
 import { MIN_NOTE_LENGTH } from "../main_processor.js";
 import { WorkletVolumeEnvelope } from "../worklet_utilities/volume_envelope.js";
 import { generatorTypes } from "../../../soundfont/basic_soundfont/generator.js";
+import { customControllers } from "../worklet_utilities/controller_tables.js";
 
 
 const HALF_PI = Math.PI / 2;

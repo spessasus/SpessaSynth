@@ -1,15 +1,15 @@
 import { consoleColors } from "../../../utils/other.js";
 import { midiControllers } from "../../../midi_parser/midi_message.js";
 import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE } from "../../synthetizer.js";
+import { SpessaSynthInfo } from "../../../utils/loggin.js";
+import { modulatorSources } from "../../../soundfont/basic_soundfont/modulator.js";
 import {
     customControllers,
     customResetArray,
     dataEntryStates,
     NON_CC_INDEX_OFFSET,
     resetArray
-} from "../worklet_utilities/worklet_processor_channel.js";
-import { SpessaSynthInfo } from "../../../utils/loggin.js";
-import { modulatorSources } from "../../../soundfont/basic_soundfont/modulator.js";
+} from "../worklet_utilities/controller_tables.js";
 
 /**
  * @this {SpessaSynthProcessor}
@@ -89,8 +89,8 @@ export function resetAllControllers(log = true)
         restoreControllerValueEvent(midiControllers.pan);
         restoreControllerValueEvent(midiControllers.expressionController);
         restoreControllerValueEvent(midiControllers.modulationWheel);
-        restoreControllerValueEvent(midiControllers.effects3Depth);
-        restoreControllerValueEvent(midiControllers.effects1Depth);
+        restoreControllerValueEvent(midiControllers.chorusDepth);
+        restoreControllerValueEvent(midiControllers.reverbDepth);
         restoreControllerValueEvent(midiControllers.brightness);
         
         // restore pitch wheel

@@ -27,11 +27,11 @@ import { Selector } from "./synthui_selector.js";
 import {
     ALL_CHANNELS_OR_DIFFERENT_ACTION
 } from "../../../../spessasynth_lib/synthetizer/worklet_system/message_protocol/worklet_message.js";
-import {
-    NON_CC_INDEX_OFFSET
-} from "../../../../spessasynth_lib/synthetizer/worklet_system/worklet_utilities/worklet_processor_channel.js";
 
 import { modulatorSources } from "../../../../spessasynth_lib/soundfont/basic_soundfont/modulator.js";
+import {
+    NON_CC_INDEX_OFFSET
+} from "../../../../spessasynth_lib/synthetizer/worklet_system/worklet_utilities/controller_tables.js";
 
 export const ICON_SIZE = 32;
 
@@ -179,11 +179,11 @@ export function createChannelController(channelNumber)
     controller.appendChild(modulation.div);
     
     // chorus
-    const chorus = createCCMeterHelper(midiControllers.effects3Depth, "channelController.chorusMeter", 0);
+    const chorus = createCCMeterHelper(midiControllers.chorusDepth, "channelController.chorusMeter", 0);
     controller.appendChild(chorus.div);
     
     // reverb
-    const reverb = createCCMeterHelper(midiControllers.effects1Depth, "channelController.reverbMeter", 0);
+    const reverb = createCCMeterHelper(midiControllers.reverbDepth, "channelController.reverbMeter", 0);
     controller.appendChild(reverb.div);
     
     // brightness

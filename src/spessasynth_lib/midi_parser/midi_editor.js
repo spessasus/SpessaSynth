@@ -3,7 +3,8 @@ import { IndexedByteArray } from "../utils/indexed_array.js";
 import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo, SpessaSynthWarn } from "../utils/loggin.js";
 import { consoleColors } from "../utils/other.js";
 import { DEFAULT_PERCUSSION } from "../synthetizer/synthetizer.js";
-import { customControllers } from "../synthetizer/worklet_system/worklet_utilities/worklet_processor_channel.js";
+
+import { customControllers } from "../synthetizer/worklet_system/worklet_utilities/controller_tables.js";
 
 /**
  * @param ticks {number}

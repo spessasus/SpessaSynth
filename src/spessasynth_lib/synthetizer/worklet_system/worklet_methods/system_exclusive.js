@@ -376,12 +376,12 @@ export function systemExclusive(messageData, channelOffset = 0)
                             
                             // chorus send
                             case 0x21:
-                                this.controllerChange(channel, midiControllers.effects3Depth, messageValue);
+                                this.controllerChange(channel, midiControllers.chorusDepth, messageValue);
                                 break;
                             
                             // reverb send
                             case 0x22:
-                                this.controllerChange(channel, midiControllers.effects1Depth, messageValue);
+                                this.controllerChange(channel, midiControllers.reverbDepth, messageValue);
                                 break;
                             
                             case 0x40:
@@ -598,12 +598,12 @@ export function systemExclusive(messageData, channelOffset = 0)
                         
                         // reverb
                         case 0x13:
-                            this.controllerChange(channel, midiControllers.effects1Depth, value);
+                            this.controllerChange(channel, midiControllers.reverbDepth, value);
                             break;
                         
                         // chorus
                         case 0x12:
-                            this.controllerChange(channel, midiControllers.effects3Depth, value);
+                            this.controllerChange(channel, midiControllers.chorusDepth, value);
                             break;
                         
                         default:

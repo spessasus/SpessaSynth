@@ -58,12 +58,12 @@ export function setEventListeners()
                 this.controllers[channel].mod.update(value);
                 break;
             
-            case midiControllers.effects3Depth:
+            case midiControllers.chorusDepth:
                 // chorus
                 this.controllers[channel].chorus.update(value);
                 break;
             
-            case midiControllers.effects1Depth:
+            case midiControllers.reverbDepth:
                 // reverb
                 this.controllers[channel].reverb.update(value);
                 break;

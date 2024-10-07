@@ -1,6 +1,4 @@
-import { midiControllers } from "../../../midi_parser/midi_message.js";
-
-import { modulatorSources } from "../../../soundfont/basic_soundfont/modulator.js";
+import { CONTROLLER_TABLE_SIZE, CUSTOM_CONTROLLER_TABLE_SIZE, dataEntryStates } from "./controller_tables.js";
 
 /**
  * @typedef {Object} WorkletProcessorChannel
@@ -86,45 +84,6 @@ export function createWorkletChannel(sendEvent = false)
         this.callEvent("newchannel", undefined);
     }
 }
-
-export const NON_CC_INDEX_OFFSET = 128;
-export const CONTROLLER_TABLE_SIZE = 147;
-// an array with preset default values so we can quickly use set() to reset the controllers
-export const resetArray = new Int16Array(CONTROLLER_TABLE_SIZE).fill(0);
-// default values (the array is 14 bit so shift the 7 bit values by 7 bits)
-resetArray[midiControllers.mainVolume] = 100 << 7;
-resetArray[midiControllers.expressionController] = 127 << 7;
-resetArray[midiControllers.pan] = 64 << 7;
-resetArray[midiControllers.releaseTime] = 64 << 7;
-resetArray[midiControllers.brightness] = 64 << 7;
-resetArray[midiControllers.timbreHarmonicContent] = 64 << 7;
-resetArray[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel] = 8192;
-resetArray[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] = 2 << 7;
-
-/**
- * @enum {number}
- */
-export const dataEntryStates = {
-    Idle: 0,
-    RPCoarse: 1,
-    RPFine: 2,
-    NRPCoarse: 3,
-    NRPFine: 4,
-    DataCoarse: 5,
-    DataFine: 6
-};
-
-
-export const customControllers = {
-    channelTuning: 0,           // cents, RPN for fine tuning
-    channelTransposeFine: 1,    // cents, only the decimal tuning, (e.g. transpose is 4.5, then shift by 4 keys + tune by 50 cents)
-    modulationMultiplier: 2,    // cents, set by moduldation depth RPN
-    masterTuning: 3,            // cents, set by system exclusive
-    channelTuningSemitones: 4  // semitones, for RPN coarse tuning
-};
-export const CUSTOM_CONTROLLER_TABLE_SIZE = Object.keys(customControllers).length;
-export const customResetArray = new Float32Array(CUSTOM_CONTROLLER_TABLE_SIZE);
-customResetArray[customControllers.modulationMultiplier] = 1;
 
 /**
  * This is a channel configuration enum, it is internally sent from Synthetizer via controller change
