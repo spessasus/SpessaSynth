@@ -12,22 +12,22 @@ export const synthesizerControllerLocale = {
     
     // meters
     mainVoiceMeter: {
-        title: "Voix&nbsp;: ",
+        title: "Voix : ",
         description: "Le nombre total de voix jouées actuellement"
     },
     
     mainVolumeMeter: {
-        title: "Volume&nbsp;: ",
+        title: "Volume : ",
         description: "Le volume global actuel du synthétiseur"
     },
     
     mainPanMeter: {
-        title: "Balance&nbsp;: ",
+        title: "Balance : ",
         description: "La panoramique globale actuelle du synthétiseur"
     },
     
     mainTransposeMeter: {
-        title: "Transposition&nbsp;: ",
+        title: "Transposition : ",
         description: "Pour transposer le synthétiseur (en demi-tons ou notes)"
     },
     
@@ -44,7 +44,7 @@ export const synthesizerControllerLocale = {
     
     blackMidiMode: {
         title: "Mode Black MIDI",
-        description: "Active le mode haute performance, en simplifiant l&prime;apparence générale et en arrêtant les notes plus rapidement"
+        description: "Active le mode haute performance, en simplifiant l'apparence générale et en arrêtant les notes plus rapidement"
     },
     
     disableCustomVibrato: {
@@ -58,7 +58,7 @@ export const synthesizerControllerLocale = {
     },
     
     interpolation: {
-        description: "Sélection de la méthode d&prime;interpolation du synthétiseur",
+        description: "Sélection de la méthode d'interpolation du synthétiseur",
         linear: "Interpolation linéaire",
         nearestNeighbor: "Aucune (valeur la plus proche)",
         cubic: "Interpolation cubique"

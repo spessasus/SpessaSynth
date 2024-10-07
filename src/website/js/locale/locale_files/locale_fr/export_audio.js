@@ -1,6 +1,6 @@
 export const exportAudio = {
     button: {
-        title: "Sauvegarder l&prime;audio",
+        title: "Sauvegarder l'audio",
         description: "Sauvegarder la composition dans différents formats"
     },
     
@@ -13,7 +13,7 @@ export const exportAudio = {
                     description: "Exporter le morceau avec les modifications dans un fichier audio .wav"
                 },
                 options: {
-                    title: "Options de l&prime;exportation WAV",
+                    title: "Options de l'exportation WAV",
                     confirm: "Exporter",
                     normalizeVolume: {
                         title: "Normaliser le volume",
@@ -26,7 +26,7 @@ export const exportAudio = {
                     
                     separateChannels: {
                         title: "Séparation des canaux",
-                        description: "Pour sauvegarder chaque canal dans un fichier séparé, utile par exemple pour des affichage de type oscilloscope (cette option désactive la réverbération et l&prime;effet de chorus)",
+                        description: "Pour sauvegarder chaque canal dans un fichier séparé, utile par exemple pour des affichage de type oscilloscope (cette option désactive la réverbération et l'effet de chorus)",
                         saving: {
                             title: "Fichiers des canaux",
                             save: "Sauvegarder le canal {0}"
@@ -38,9 +38,9 @@ export const exportAudio = {
                     }
                 },
                 exportMessage: {
-                    message: "Exportation de l&prime;audio en cours&hellip;",
-                    estimated: "Temps restant&nbsp;:",
-                    convertWav: "Conversion dans le format WAV&hellip;"
+                    message: "Exportation de l'audio en cours...",
+                    estimated: "Temps restant :",
+                    convertWav: "Conversion dans le format WAV..."
                 }
             },
             
@@ -58,7 +58,7 @@ export const exportAudio = {
                 },
                 
                 options: {
-                    title: "Options de l&prime;exportation SoundFont2",
+                    title: "Options de l'exportation SoundFont2",
                     confirm: "Exporter",
                     trim: {
                         title: "Alléger",
@@ -66,7 +66,7 @@ export const exportAudio = {
                     },
                     compress: {
                         title: "Compresser",
-                        description: "Compacter les échantillons grâce à l&prime;algorithme de compression avec pertes Ogg Vorbis&#013;Ceci réduit de manière significative le poids du fichier&#013;Note&nbsp;: si la banque de sons était déjà compressée, cette option ne décompressera pas même en étant désactivée"
+                        description: "Compacter les échantillons grâce à l'algorithme de compression avec pertes Ogg Vorbis&#013;Ceci réduit de manière significative le poids du fichier&#013;Note : si la banque de sons était déjà compressée, cette option ne décompressera pas même en étant désactivée"
                     },
                     quality: {
                         title: "Qualité de compression",
@@ -78,24 +78,24 @@ export const exportAudio = {
             rmidi: {
                 button: {
                     title: "MIDI embarqué (.rmi)",
-                    description: "Exporter le fichier MIDI modifié avec la banque de sons allégée dans un seul fichier&#013;Note&nbsp;: ce format n&prime;est pas supporté par tous les lecteurs MIDI"
+                    description: "Exporter le fichier MIDI modifié avec la banque de sons allégée dans un seul fichier&#013;Note : ce format n'est pas supporté par tous les lecteurs MIDI"
                 },
                 
                 progress: {
-                    title: "Exportation du fichier MIDI embarqué&hellip;",
-                    loading: "Chargement de la banque de sons et du fichier MIDI&hellip;",
-                    modifyingMIDI: "Modification MIDI&hellip;",
-                    modifyingSoundfont: "Allègement de la banque de sons&hellip;",
-                    saving: "Création du fichier RMIDI&hellip;",
-                    done: "Terminé&nbsp;!"
+                    title: "Exportation du fichier MIDI embarqué...",
+                    loading: "Chargement de la banque de sons et du fichier MIDI...",
+                    modifyingMIDI: "Modification MIDI...",
+                    modifyingSoundfont: "Allègement de la banque de sons...",
+                    saving: "Création du fichier RMIDI...",
+                    done: "Terminé !"
                 },
                 
                 options: {
-                    title: "Options de l&prime;exportation RMIDI",
+                    title: "Options de l'exportation RMIDI",
                     confirm: "Exporter",
                     compress: {
                         title: "Compression",
-                        description: "Compacter les échantillons grâce à l&prime;algorithme de compression avec pertes Ogg Vorbis&#013;Ceci réduit de manière significative le poids du fichier (option recommandée)"
+                        description: "Compacter les échantillons grâce à l'algorithme de compression avec pertes Ogg Vorbis&#013;Ceci réduit de manière significative le poids du fichier (option recommandée)"
                     },
                     quality: {
                         title: "Qualité de compression",
@@ -114,35 +114,35 @@ export const exportAudio = {
         },
         metadata: {
             songTitle: {
-                title: "Titre&nbsp;:",
+                title: "Titre :",
                 description: "Le titre du morceau"
             },
             album: {
-                title: "Album&nbsp;:",
-                description: "Le nom de l&prime;album dans lequel se trouve le morceau"
+                title: "Album :",
+                description: "Le nom de l'album dans lequel se trouve le morceau"
             },
             artist: {
-                title: "Artiste&nbsp;:",
+                title: "Artiste :",
                 description: "Le ou les artiste(s) du morceau"
             },
             albumCover: {
-                title: "Pochette d&prime;album&nbsp;:",
-                description: "La pochette de l&prime;album dans lequel se trouve le morceau"
+                title: "Pochette d'album :",
+                description: "La pochette de l'album dans lequel se trouve le morceau"
             },
             creationDate: {
-                title: "Date de création&nbsp;:",
+                title: "Date de création :",
                 description: "La date de création du morceau"
             },
             genre: {
-                title: "Genre&nbsp;:",
+                title: "Genre :",
                 description: "Le genre du morceau"
             },
             comment: {
-                title: "Commentaire&nbsp;:",
+                title: "Commentaire :",
                 description: "Le commentaire lié au morceau"
             },
             duration: {
-                title: "Durée&nbsp;:",
+                title: "Durée :",
                 description: "La durée du morceau"
             }
         }

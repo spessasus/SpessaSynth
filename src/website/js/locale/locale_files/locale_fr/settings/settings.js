@@ -14,16 +14,16 @@ export const settingsLocale = {
     midiSettings: midiSettingsLocale,
     
     interfaceSettings: {
-        title: "Configuration de l&prime;interface",
+        title: "Configuration de l'interface",
         
         toggleTheme: {
             title: "Thème sombre",
-            description: "Active ou non le thème sombre pour l&prime;interface"
+            description: "Active ou non le thème sombre pour l'interface"
         },
         
         selectLanguage: {
             title: "Langue",
-            description: "Change la langue de l&prime;interface"
+            description: "Change la langue de l'interface"
         },
         
         layoutDirection: {

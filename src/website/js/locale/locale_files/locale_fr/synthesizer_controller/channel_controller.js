@@ -1,58 +1,58 @@
 export const channelControllerLocale = {
     voiceMeter: {
-        title: "Voix&nbsp;: ",
+        title: "Voix : ",
         description: "Le nombre actuel de voix sur le canal {0}"
     },
     
     pitchBendMeter: {
-        title: "Pitch&nbsp;: ",
+        title: "Pitch : ",
         description: "La valeur actuelle du pitch bend sur le canal {0}"
     },
     
     panMeter: {
-        title: "Balance&nbsp;: ",
+        title: "Balance : ",
         description: "La valeur actuelle de la panoramique stéréo sur le canal {0} (clic droit pour verrouiller)"
     },
     
     expressionMeter: {
-        title: "Expression&nbsp;: ",
-        description: "La valeur actuelle de l&prime;expression (force) du canal {0} (clic droit pour verrouiller)"
+        title: "Expression : ",
+        description: "La valeur actuelle de l'expression (force) du canal {0} (clic droit pour verrouiller)"
     },
     
     volumeMeter: {
-        title: "Volume&nbsp;: ",
+        title: "Volume : ",
         description: "Le volume actuel du canal 0} (clic droit pour verrouiller)"
     },
     
     modulationWheelMeter: {
-        title: "Molette de modulation&nbsp;: ",
+        title: "Molette de modulation : ",
         description: "La valeur actuelle de la quantité de modulation (généralement utilisée pour le vibrato) du canal {0} (clic droit pour verrouiller)"
     },
     
     chorusMeter: {
-        title: "Chorus&nbsp;: ",
-        description: "Le niveau actuel de l&prime;effet de chorus appliqué au canal {0} (clic droit pour verrouiller)"
+        title: "Chorus : ",
+        description: "Le niveau actuel de l'effet de chorus appliqué au canal {0} (clic droit pour verrouiller)"
     },
     
     reverbMeter: {
-        title: "Réverbération&nbsp;: ",
+        title: "Réverbération : ",
         description: "Le niveau actuel de réverbération appliqué au canal {0} (clic droit pour verrouiller)"
     },
     
     filterMeter: {
-        title: "Filtre&nbsp;: ",
+        title: "Filtre : ",
         description: "La hauteur actuelle du filtre passe-bas appliqué au canal {0} (clic droit pour verrouiller)"
     },
     
     transposeMeter: {
-        title: "Transposition&nbsp;: ",
+        title: "Transposition : ",
         description: "La transposition actuelle (décalage de notes) du canal {0}"
     },
     
     presetSelector: {
-        description: "Changer l&prime;instrument que le canal {0} utilise",
-        selectionPrompt: "Changer l&prime;instrument du canal {0}",
-        searchPrompt: "Chercher&hellip;"
+        description: "Changer l'instrument que le canal {0} utilise",
+        selectionPrompt: "Changer l'instrument du canal {0}",
+        searchPrompt: "Chercher..."
     },
     
     presetReset: {

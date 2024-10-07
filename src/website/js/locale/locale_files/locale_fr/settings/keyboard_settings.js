@@ -9,12 +9,12 @@ export const keyboardSettingsLocale = {
     
     keyboardSize: {
         title: "Taille du clavier",
-        description: "Choix de l&prime;étendue de notes sur le clavier, ajustant la largeur des touches en conséquence",
+        description: "Choix de l'étendue de notes sur le clavier, ajustant la largeur des touches en conséquence",
         
         full: "128 notes (complet)",
         piano: "88 notes (piano)",
         fiveOctaves: "5 octaves",
-        useSongKeyRange: "Utiliser l&prime;étendue de notes du morceau",
+        useSongKeyRange: "Utiliser l'étendue de notes du morceau",
         twoOctaves: "2 octaves"
     },
     
