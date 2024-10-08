@@ -31,7 +31,8 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
         return;
     }
     
-    let sentMidiNote = midiNote + channelObject.channelTransposeKeyShift;
+    const realKey = midiNote + channelObject.channelTransposeKeyShift;
+    let sentMidiNote = realKey;
     
     if (midiNote > 127 || midiNote < 0)
     {
@@ -56,6 +57,7 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
         velocity,
         channelObject,
         startTime,
+        realKey,
         enableDebugging
     );
     

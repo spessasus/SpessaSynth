@@ -369,6 +369,7 @@ class Manager
             }
         });
         this.renderer.render(false, true);
+        // ANY TEST CODE FOR THE SYNTHESIZER GOES HERE
     }
     
     doDLSCheck()

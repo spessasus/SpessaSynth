@@ -78,7 +78,7 @@ export function renderVoice(
         + channel.customControllers[customControllers.channelTuningSemitones]; // RPN channel coarse tuning
     
     // midi tuning standard
-    const tuning = this.tunings[channel.preset.program]?.[targetKey];
+    const tuning = this.tunings[channel.preset.program]?.[voice.realKey];
     if (tuning?.midiNote >= 0)
     {
         // override key

@@ -16,12 +16,7 @@ export function noteOff(channel, midiNote)
         return;
     }
     
-    let actualNote = midiNote + this.workletProcessorChannels[channel].channelTransposeKeyShift;
-    const program = this.workletProcessorChannels[channel].preset.program;
-    if (this.tunings[program]?.[midiNote]?.midiNote >= 0)
-    {
-        actualNote = this.tunings[program]?.[midiNote].midiNote;
-    }
+    let realKey = midiNote + this.workletProcessorChannels[channel].channelTransposeKeyShift;
     
     // if high performance mode, kill notes instead of stopping them
     if (this.highPerformanceMode)
@@ -29,7 +24,7 @@ export function noteOff(channel, midiNote)
         // if the channel is percussion channel, do not kill the notes
         if (!this.workletProcessorChannels[channel].drumChannel)
         {
-            this.killNote(channel, actualNote);
+            this.killNote(channel, realKey);
             return;
         }
     }
@@ -37,7 +32,7 @@ export function noteOff(channel, midiNote)
     const channelVoices = this.workletProcessorChannels[channel].voices;
     channelVoices.forEach(v =>
     {
-        if (v.midiNote !== actualNote || v.isInRelease === true)
+        if (v.realKey !== realKey || v.isInRelease === true)
         {
             return;
         }
@@ -67,7 +62,7 @@ export function killNote(channel, midiNote)
 {
     this.workletProcessorChannels[channel].voices.forEach(v =>
     {
-        if (v.midiNote !== midiNote)
+        if (v.realKey !== midiNote)
         {
             return;
         }

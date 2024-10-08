@@ -111,123 +111,131 @@ import { Modulator } from "../../../soundfont/basic_soundfont/modulator.js";
 class WorkletVoice
 {
     /**
-     * Creates a new voice
+     * The sample of the voice.
      * @type {WorkletSample}
      */
     sample;
     
     /**
-     * Lowpass filter appl.
-     the voice.
+     * Lowpass filter applied to the voice.
      * @type {WorkletLowpassFilter}
      */
     filter = new WorkletLowpassFilter();
     
     /**
-     * The unmodulated (coied to) generators of the voice.
+     * The unmodulated (copied to) generators of the voice.
      * @type {Int16Array}
      */
     generators;
     
     /**
-     * The voice's modulatnstant    * Grouped by the destination.
+     * The voice's modulators.
      * @type {Modulator[]}
      */
     modulators = [];
     
     /**
-     * The generators moduors.
-     by the modulators.
+     * The generators in real-time, affected by modulators.
+     * This is used during rendering.
      * @type {Int16Array}
      */
     modulatedGenerators;
     
     /**
-     * Indicates if the volated s finished.
+     * Indicates if the voice is finished.
      * @type {boolean}
      */
     finished = false;
     
     /**
-     * Indicates if the voice ha in the release phase.
+     * Indicates if the voice is in the release phase.
      * @type {boolean}
      */
     isInRelease = false;
     
     /**
-     * MIDI channel numberice is * @type {number}
+     * MIDI channel number.
+     * @type {number}
      */
     channelNumber = 0;
     
     /**
-     * Velocity of the not.
+     * Velocity of the note.
      * @type {number}
      */
     velocity = 0;
     
     /**
      * MIDI note number.
-     e.
-     @type {number}
+     * @type {number}
      */
     midiNote = 0;
     
     /**
-     * The pressure of the    *
+     * The pressure of the voice
      * @type {number}
      */
     pressure = 0;
     
     /**
-     * Target key for the  note.     * @type {number}
+     * Target key for the note.
+     * @type {number}
      */
     targetKey = 0;
     
     /**
-     * Modulation envelopenote.
+     * Modulation envelope.
      * @type {WorkletModulationEnvelope}
      */
     modulationEnvelope = new WorkletModulationEnvelope();
     
     /**
      * Volume envelope.
-     .
-     type {WorkletVolumeEnvelope}
+     * @type {WorkletVolumeEnvelope}
      */
     volumeEnvelope;
     
     /**
-     * Start time of the v   * @bsolute.
+     * Start time of the voice, absolute.
      * @type {number}
      */
     startTime = 0;
     
     /**
-     * Start time of the roice a phase absolute.
+     * Start time of the release phase, absolute.
      * @type {number}
      */
     releaseStartTime = Infinity;
     
     /**
-     * Current tuning adjuelease in cents.
+     * Current tuning in cents.
      * @type {number}
      */
     currentTuningCents = 0;
     
     /**
-     * Calculated tuning astmentent.
+     * Current calculated tuning. (as in ratio)
      * @type {number}
      */
     currentTuningCalculated = 1;
     
     /**
      * From 0 to 1.
-     *djustm {number}
+     * @param {number}
      */
     currentPan = 0.5;
     
     /**
-     * Copies a workletVoi @type
+     * If MIDI Tuning Standard is already applied (at note-on time),
+     * this will be used to take the values at real-time tuning as "midiNote"
+     * property contains the tuned number.
+     * see #29 comment by @paulikaro
+     * @type {number}
+     */
+    realKey;
+    
+    /**
+     * Creates a workletVoice
      * @param sampleRate {number}
      * @param workletSample {WorkletSample}
      * @param midiNote {number}
@@ -235,6 +243,7 @@ class WorkletVoice
      * @param channel {number}
      * @param currentTime {number}
      * @param targetKey {number}
+     * @param realKey {number}
      * @param generators {Int16Array}
      * @param modulators {Modulator[]}
      */
@@ -246,6 +255,7 @@ class WorkletVoice
         channel,
         currentTime,
         targetKey,
+        realKey,
         generators,
         modulators
     )
@@ -260,12 +270,12 @@ class WorkletVoice
         this.channelNumber = channel;
         this.startTime = currentTime;
         this.targetKey = targetKey;
+        this.realKey = realKey;
         this.volumeEnvelope = new WorkletVolumeEnvelope(sampleRate, generators[generatorTypes.sustainVolEnv]);
     }
     
     /**
-     * Sample ID for voicece ins
-     tance
+     * copies the voice
      * @param voice {WorkletVoice}
      * @param currentTime {number}
      * @returns WorkletVoice
@@ -291,6 +301,7 @@ class WorkletVoice
             voice.channelNumber,
             currentTime,
             voice.targetKey,
+            voice.realKey,
             voice.generators,
             voice.modulators.map(m => Modulator.copy(m))
         );
@@ -299,20 +310,21 @@ class WorkletVoice
 
 /**
  * @param channel {number} a hint for the processor to recalculate sample cursors when sample dumping
- * @param midiNote {number}
- * @param velocity {number}
- * @param channelObject {WorkletProcessorChannel}
- * @param currentTime {number}
- * output is an array of WorkletVoices
- * @param debug {boolean}
+ * @param midiNote {number} the MIDI note to use
+ * @param velocity {number} the velocity to use
+ * @param channelObject {WorkletProcessorChannel} the channel this will belong to
+ * @param currentTime {number} the current time in seconds
+ * @param realKey {number} the real MIDI note if the "midiNote" was changed by MIDI Tuning Standard
+ * @param debug {boolean} enable debugging?
  * @this {SpessaSynthProcessor}
- * @returns {WorkletVoice[]}
+ * @returns {WorkletVoice[]} output is an array of WorkletVoices
  */
 export function getWorkletVoices(channel,
                                  midiNote,
                                  velocity,
                                  channelObject,
                                  currentTime,
+                                 realKey,
                                  debug = false)
 {
     /**
@@ -419,6 +431,7 @@ export function getWorkletVoices(channel,
                         channel,
                         currentTime,
                         targetKey,
+                        realKey,
                         generators,
                         sampleAndGenerators.modulators.map(m => Modulator.copy(m))
                     )
