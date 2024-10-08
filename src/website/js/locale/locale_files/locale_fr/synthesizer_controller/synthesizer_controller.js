@@ -49,7 +49,7 @@ export const synthesizerControllerLocale = {
     
     disableCustomVibrato: {
         title: "Désactiver le vibrato personnalisé",
-        description: "Désactive le vibrato personnalisé (NRPN) de manière permanente&#013;Un rechargement de la page web sera nécessaire pour le réactiver"
+        description: "Désactive le vibrato personnalisé (NRPN) de manière permanente\nUn rechargement de la page web sera nécessaire pour le réactiver"
     },
     
     helpButton: {

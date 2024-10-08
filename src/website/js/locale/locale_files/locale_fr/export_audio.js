@@ -66,7 +66,7 @@ export const exportAudio = {
                     },
                     compress: {
                         title: "Compresser",
-                        description: "Compacter les échantillons grâce à l'algorithme de compression avec pertes Ogg Vorbis&#013;Ceci réduit de manière significative le poids du fichier&#013;Note : si la banque de sons était déjà compressée, cette option ne décompressera pas même en étant désactivée"
+                        description: "Compacter les échantillons grâce à l'algorithme de compression avec pertes Ogg Vorbis\nCeci réduit de manière significative le poids du fichier\nNote : si la banque de sons était déjà compressée, cette option ne décompressera pas même en étant désactivée"
                     },
                     quality: {
                         title: "Qualité de compression",
@@ -78,7 +78,7 @@ export const exportAudio = {
             rmidi: {
                 button: {
                     title: "MIDI embarqué (.rmi)",
-                    description: "Exporter le fichier MIDI modifié avec la banque de sons allégée dans un seul fichier&#013;Note : ce format n'est pas supporté par tous les lecteurs MIDI"
+                    description: "Exporter le fichier MIDI modifié avec la banque de sons allégée dans un seul fichier\nNote : ce format n'est pas supporté par tous les lecteurs MIDI"
                 },
                 
                 progress: {
@@ -95,7 +95,7 @@ export const exportAudio = {
                     confirm: "Exporter",
                     compress: {
                         title: "Compression",
-                        description: "Compacter les échantillons grâce à l'algorithme de compression avec pertes Ogg Vorbis&#013;Ceci réduit de manière significative le poids du fichier (option recommandée)"
+                        description: "Compacter les échantillons grâce à l'algorithme de compression avec pertes Ogg Vorbis\nCeci réduit de manière significative le poids du fichier (option recommandée)"
                     },
                     quality: {
                         title: "Qualité de compression",
@@ -103,11 +103,11 @@ export const exportAudio = {
                     },
                     bankOffset: {
                         title: "Décalage de banque",
-                        description: "Décalage des numéros de banque dans le fichier&#013;(une valeur de 0 est recommandée sauf cas particulier)"
+                        description: "Décalage des numéros de banque dans le fichier\n(une valeur de 0 est recommandée sauf cas particulier)"
                     },
                     adjust: {
                         title: "Ajustement MIDI",
-                        description: "Ajuste le fichier MIDI à la banque de sons&#013;(il est conseillé de laisser cette option activée sauf cas particulier)"
+                        description: "Ajuste le fichier MIDI à la banque de sons\n(il est conseillé de laisser cette option activée sauf cas particulier)"
                     }
                 }
             }
