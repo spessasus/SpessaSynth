@@ -153,7 +153,11 @@ npm install --save spessasynth_lib
 - **Lyrics support:** Karaoke!
 - **Music player mode:** with support for album covers in .rmi files!
 - Mobile-friendly UI (_synthesizer performance not optimized for mobile... don't tell anyone!_)
-- **Multiple language support:** English, Polish, Japanese
+- **Multiple language support:** 
+  - English
+  - Polish
+  - Japanese
+  - French (translated by Davy Triponney)
 - **`Web MIDI API` support:** Use your physical MIDI devices!
 - [WebMidiLink](https://www.g200kg.com/en/docs/webmidilink/) support
 - **Numerous exporting options:**
