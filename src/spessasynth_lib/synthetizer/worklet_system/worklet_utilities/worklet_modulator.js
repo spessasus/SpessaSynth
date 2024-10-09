@@ -231,10 +231,6 @@ for (let curve = 0; curve < 4; curve++)
             i / MOD_PRECOMPUTED_LENGTH,
             0
         );
-        if (isNaN(transforms[curve][0][0][i]))
-        {
-            transforms[curve][0][0][i] = 1;
-        }
         
         // polarity 1 dir 0
         transforms[curve][1][0][i] = getModulatorCurveValue(
@@ -243,10 +239,6 @@ for (let curve = 0; curve < 4; curve++)
             i / MOD_PRECOMPUTED_LENGTH,
             1
         );
-        if (isNaN(transforms[curve][1][0][i]))
-        {
-            transforms[curve][1][0][i] = 1;
-        }
         
         // polarity 0 dir 1
         transforms[curve][0][1][i] = getModulatorCurveValue(
@@ -255,10 +247,6 @@ for (let curve = 0; curve < 4; curve++)
             i / MOD_PRECOMPUTED_LENGTH,
             0
         );
-        if (isNaN(transforms[curve][0][1][i]))
-        {
-            transforms[curve][0][1][i] = 1;
-        }
         
         // polarity 1 dir 1
         transforms[curve][1][1][i] = getModulatorCurveValue(
@@ -267,9 +255,5 @@ for (let curve = 0; curve < 4; curve++)
             i / MOD_PRECOMPUTED_LENGTH,
             1
         );
-        if (isNaN(transforms[curve][1][1][i]))
-        {
-            transforms[curve][1][1][i] = 1;
-        }
     }
 }

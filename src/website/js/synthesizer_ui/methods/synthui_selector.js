@@ -178,6 +178,7 @@ export class Selector
             this.hideSelectionMenu();
         };
         this.isWindowShown = true;
+        searchInput.focus();
     }
     
     /**

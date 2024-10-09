@@ -9,21 +9,21 @@ import { modulatorCurveTypes } from "../../../soundfont/basic_soundfont/modulato
 export const MOD_PRECOMPUTED_LENGTH = 16384;
 
 // Precalculate lookup tables for concave and convers
-const concave = new Float32Array(MOD_PRECOMPUTED_LENGTH);
-const convex = new Float32Array(MOD_PRECOMPUTED_LENGTH);
+const concave = new Float32Array(MOD_PRECOMPUTED_LENGTH + 1);
+const convex = new Float32Array(MOD_PRECOMPUTED_LENGTH + 1);
 // the equation is taken from FluidSynth as it's the standard for soundFonts
 // more precisely, this:
 // https://github.com/FluidSynth/fluidsynth/blob/cb8da1e1e2c0a5cff2bab6a419755b598b793384/src/gentables/gen_conv.c#L55
 concave[0] = 0;
-concave[MOD_PRECOMPUTED_LENGTH - 1] = 1;
+concave[concave.length - 1] = 1;
 
 convex[0] = 0;
-convex[MOD_PRECOMPUTED_LENGTH - 1] = 1;
+convex[convex.length - 1] = 1;
 for (let i = 1; i < MOD_PRECOMPUTED_LENGTH - 1; i++)
 {
-    let x = (-200 * 2 / 960) * Math.log(i / (MOD_PRECOMPUTED_LENGTH - 1)) / Math.LN10;
+    let x = (-200 * 2 / 960) * Math.log(i / (concave.length - 1)) / Math.LN10;
     convex[i] = 1 - x;
-    concave[MOD_PRECOMPUTED_LENGTH - 1 - i] = x;
+    concave[concave.length - 1 - i] = x;
 }
 
 /**
@@ -68,9 +68,9 @@ export function getModulatorCurveValue(direction, curveType, value, polarity)
                 value = value * 2 - 1;
                 if (value < 0)
                 {
-                    return 1 - concave[~~(value * -MOD_PRECOMPUTED_LENGTH)] - 1;
+                    return -concave[~~(value * -MOD_PRECOMPUTED_LENGTH)];
                 }
-                return concave[~~value * MOD_PRECOMPUTED_LENGTH];
+                return concave[~~(value * MOD_PRECOMPUTED_LENGTH)];
             }
             return concave[~~(value * MOD_PRECOMPUTED_LENGTH)];
         
@@ -81,7 +81,7 @@ export function getModulatorCurveValue(direction, curveType, value, polarity)
                 value = value * 2 - 1;
                 if (value < 0)
                 {
-                    return 1 - convex[~~(value * -MOD_PRECOMPUTED_LENGTH)] - 1;
+                    return -convex[~~(value * -MOD_PRECOMPUTED_LENGTH)];
                 }
                 return convex[~~(value * MOD_PRECOMPUTED_LENGTH)];
             }

@@ -34,3 +34,7 @@ I welcome contributions from translators! To add a new locale, please follow the
 <!--don't use github !NOTE here as people might open this README in a text editor-->
 > **Note:** Strings containing placeholders, like `Channel {0}`, should keep the placeholders intact. They are used for
 > formatting and should not be altered.
+
+> **Note 2:** The code sets `textContent` property, so doing HTMl characters like `&lt;`
+> is not needed.
+> For new line, use `\n`

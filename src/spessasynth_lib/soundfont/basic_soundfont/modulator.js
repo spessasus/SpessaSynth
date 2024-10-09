@@ -241,7 +241,13 @@ export const defaultModulators = [
     
     // cc 92 (tremolo) to modLFO volume
     new Modulator({
-        srcEnum: getModSourceEnum(modulatorCurveTypes.linear, 0, 0, 1, midiControllers.tremoloDepth), /*linear forward unipolar cc 92 */
+        srcEnum: getModSourceEnum(
+            modulatorCurveTypes.linear,
+            0,
+            0,
+            1,
+            midiControllers.tremoloDepth
+        ), /*linear forward unipolar cc 92 */
         dest: generatorTypes.modLfoToVolume,
         amt: 24,
         secSrcEnum: 0x0, // no controller
@@ -250,7 +256,13 @@ export const defaultModulators = [
     
     // cc 72 (release time) to volEnv release
     new Modulator({
-        srcEnum: getModSourceEnum(modulatorCurveTypes.linear, 1, 0, 1, midiControllers.releaseTime), // linear forward bipolar cc 72
+        srcEnum: getModSourceEnum(
+            modulatorCurveTypes.linear,
+            1,
+            0,
+            1,
+            midiControllers.releaseTime
+        ), // linear forward bipolar cc 72
         dest: generatorTypes.releaseVolEnv,
         amt: 1200,
         secSrcEnum: 0x0, // no controller
@@ -259,9 +271,15 @@ export const defaultModulators = [
     
     // cc 74 (brightness) to filterFc
     new Modulator({
-        srcEnum: getModSourceEnum(modulatorCurveTypes.linear, 1, 0, 1, midiControllers.brightness), // linear forwards bipolar cc 74
+        srcEnum: getModSourceEnum(
+            modulatorCurveTypes.convex,
+            1,
+            0,
+            1,
+            midiControllers.brightness
+        ), // linear forwards bipolar cc 74
         dest: generatorTypes.initialFilterFc,
-        amt: 4000,
+        amt: 6000,
         secSrcEnum: 0x0, // no controller
         transform: 0
     }),
