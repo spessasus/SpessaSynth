@@ -272,7 +272,7 @@ export const defaultModulators = [
     // cc 74 (brightness) to filterFc
     new Modulator({
         srcEnum: getModSourceEnum(
-            modulatorCurveTypes.convex,
+            modulatorCurveTypes.linear,
             1,
             0,
             1,
