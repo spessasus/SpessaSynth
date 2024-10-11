@@ -369,6 +369,10 @@ export class Selector
         const bank = parseInt(split[0]);
         const program = parseInt(split[1]);
         const name = this.elements.find(e => e.bank === bank && e.program === program);
+        if (!name)
+        {
+            return "";
+        }
         if (bank === 128 || this.elements.filter(e => e.program === program && e.bank !== 128).length < 2)
         {
             return `${program}. ${name.name}`;

@@ -136,9 +136,10 @@ class Manager
             console.warn("DEBUG ENABLED! DEBUGGING ENABLED!!");
         }
         
+        const prePath = isLocalEdition ? "../../../spessasynth_lib/" : "../../spessasynth_lib/";
         if (context.audioWorklet)
         {
-            await context.audioWorklet.addModule(new URL("../../spessasynth_lib/" + WORKLET_PATH, import.meta.url));
+            await context.audioWorklet.addModule(new URL(prePath + WORKLET_PATH, import.meta.url));
         }
         /**
          * set up soundfont
@@ -148,7 +149,7 @@ class Manager
         
         // set up buffer here (if we let spessasynth use the default buffer, there's no reverb for the first second.)
         const impulseURL = new URL(
-            "../../spessasynth_lib/synthetizer/audio_effects/impulse_response_2.flac",
+            prePath + "synthetizer/audio_effects/impulse_response_2.flac",
             import.meta.url
         );
         const response = await fetch(impulseURL);
