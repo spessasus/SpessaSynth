@@ -206,7 +206,8 @@ export const defaultModulators = [
     new Modulator({ srcEnum: 0x020E, dest: generatorTypes.fineTune, amt: 12700, secSrcEnum: 0x0010, transform: 0 }),
     
     // pan to uhh, pan
-    new Modulator({ srcEnum: 0x028A, dest: generatorTypes.pan, amt: 1000, secSrcEnum: 0x0, transform: 0 }),
+    // amount is 500 instead of 1000, see #59
+    new Modulator({ srcEnum: 0x028A, dest: generatorTypes.pan, amt: 500, secSrcEnum: 0x0, transform: 0 }),
     
     // expression to attenuation
     new Modulator({
