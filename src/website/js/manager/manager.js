@@ -136,7 +136,7 @@ class Manager
             console.warn("DEBUG ENABLED! DEBUGGING ENABLED!!");
         }
         
-        const prePath = isLocalEdition ? "../../../spessasynth_lib/" : "../../spessasynth_lib/";
+        const prePath = window.isLocalEdition ? "../../../spessasynth_lib/" : "../../spessasynth_lib/";
         if (context.audioWorklet)
         {
             await context.audioWorklet.addModule(new URL(prePath + WORKLET_PATH, import.meta.url));
