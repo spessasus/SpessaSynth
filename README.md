@@ -158,6 +158,8 @@ npm install --save spessasynth_lib
   - Polish
   - Japanese
   - French (translated by Davy Triponney)
+  - Custom locale management system, created specifically for this project
+- **Description of buttons:** Hover over the buttons to see what they do!
 - **`Web MIDI API` support:** Use your physical MIDI devices!
 - [WebMidiLink](https://www.g200kg.com/en/docs/webmidilink/) support
 - **Numerous exporting options:**
