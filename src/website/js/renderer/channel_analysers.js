@@ -73,7 +73,7 @@ export function connectChannelAnalysers(synth)
     // connect for drum change
     synth.eventHandler.addEvent("drumchange", "renderer-drum-change", () =>
     {
-        this.updateFftSize();
+        setTimeout(this.updateFftSize.bind(this), 100);
     });
 }
 

@@ -234,6 +234,13 @@ export class WorkletVolumeEnvelope
                 voice.finished = true;
             }
             env.currentReleaseGain = decibelAttenuationToGain(env.releaseStartDb);
+            
+            // release: sfspec page 35: the time is for change from attenuation to -100dB
+            // therefore we need to calculate the real time
+            // (changing from release start to -100dB instead of from peak to -100dB)
+            const releaseFraction = (DB_SILENCE - env.releaseStartDb) / DB_SILENCE;
+            env.releaseDuration *= releaseFraction;
+            
         }
     }
     
