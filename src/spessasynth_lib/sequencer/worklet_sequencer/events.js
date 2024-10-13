@@ -16,7 +16,7 @@ export function processMessage(messageType, messageData)
             break;
         
         case WorkletSequencerMessageType.loadNewSongList:
-            this.loadNewSongList(messageData);
+            this.loadNewSongList(messageData[0], messageData[1]);
             break;
         
         case WorkletSequencerMessageType.pause:

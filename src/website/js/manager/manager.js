@@ -440,6 +440,7 @@ class Manager
         if (this.seq)
         {
             this.seq.loadNewSongList(parsedMidi);
+            this.seq.play(true);
             return;
         }
         
@@ -464,7 +465,7 @@ class Manager
         this.settingsUI.addSequencer(this.seq);
         
         // play the midi
-        this.seq.play(true);
+        //this.seq.play(true);
     }
     
     downloadDesfont()

@@ -26,14 +26,16 @@ import { DUMMY_MIDI_DATA, MidiData } from "../midi_parser/midi_data.js";
 
 /**
  * @typedef {Object} SequencerOptions
- * @property {boolean} skipToFirstNoteOn - if true, the sequencer will skip to the first note
+ * @property {boolean|undefined} skipToFirstNoteOn - if true, the sequencer will skip to the first note
+ * @property {boolean|undefined} autoPlay - if true, the sequencer will automatically start playing the MIDI
  */
 
 /**
  * @type {SequencerOptions}
  */
 const DEFAULT_OPTIONS = {
-    skipToFirstNoteOn: true
+    skipToFirstNoteOn: true,
+    autoPlay: true
 };
 
 export class Sequencer
@@ -118,6 +120,13 @@ export class Sequencer
         this.isFinished = false;
         
         /**
+         * Indicates if the sequencer is paused.
+         * Paused if a number, undefined if playing
+         * @type {undefined|number}
+         */
+        this.pausedTime = undefined;
+        
+        /**
          * The current sequence's length, in seconds
          * @type {number}
          */
@@ -137,7 +146,7 @@ export class Sequencer
             this._sendMessage(WorkletSequencerMessageType.setSkipToFirstNote, false);
         }
         
-        this.loadNewSongList(midiBinaries);
+        this.loadNewSongList(midiBinaries, options?.autoPlay ?? false);
         
         window.addEventListener("beforeunload", this.resetMIDIOut.bind(this));
     }
@@ -167,7 +176,7 @@ export class Sequencer
     get currentTime()
     {
         // return the paused time if it's set to something other than undefined
-        if (this.pausedTime)
+        if (this.pausedTime !== undefined)
         {
             return this.pausedTime;
         }
@@ -198,7 +207,7 @@ export class Sequencer
      */
     get currentHighResolutionTime()
     {
-        if (this.pausedTime)
+        if (this.pausedTime !== undefined)
         {
             return this.pausedTime;
         }
@@ -364,7 +373,11 @@ export class Sequencer
                 this.absoluteStartTime = 0;
                 this.duration = this.midiData.duration;
                 Object.entries(this.onSongChange).forEach((callback) => callback[1](songChangeData));
-                this.unpause();
+                // if is auto played, unpause
+                if (messageData[2] === true)
+                {
+                    this.unpause();
+                }
                 break;
             
             case WorkletSequencerReturnMessageType.textEvent:
@@ -437,21 +450,27 @@ export class Sequencer
     }
     
     /**
-     * @param midiBuffers {MIDIFile[]}
+     * Loads a new song list
+     * @param midiBuffers {MIDIFile[]} - the MIDI files to play
+     * @param autoPlay {boolean} - if true, the first sequence will automatically start playing
      */
-    loadNewSongList(midiBuffers)
+    loadNewSongList(midiBuffers, autoPlay = true)
     {
         this.pause();
         // add some dummy data
         this.midiData = DUMMY_MIDI_DATA;
         this.hasDummyData = true;
         this.duration = 99999;
-        this._sendMessage(WorkletSequencerMessageType.loadNewSongList, midiBuffers);
+        this._sendMessage(WorkletSequencerMessageType.loadNewSongList, [midiBuffers, autoPlay]);
         this.songIndex = 0;
         this.songsAmount = midiBuffers.length;
         if (this.songsAmount > 1)
         {
             this.loop = false;
+        }
+        if (autoPlay === false)
+        {
+            this.pausedTime = this.currentTime;
         }
     }
     

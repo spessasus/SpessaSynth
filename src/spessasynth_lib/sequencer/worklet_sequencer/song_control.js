@@ -41,9 +41,10 @@ export function assignMIDIPort(trackNum, port)
 /**
  * Loads a new sequence
  * @param parsedMidi {BasicMIDI}
+ * @param autoPlay {boolean}
  * @this {WorkletSequencer}
  */
-export function loadNewSequence(parsedMidi)
+export function loadNewSequence(parsedMidi, autoPlay = true)
 {
     this.stop();
     if (!parsedMidi.tracks)
@@ -122,9 +123,8 @@ export function loadNewSequence(parsedMidi)
     this.firstNoteTime = MIDIticksToSeconds(this.midiData.firstNoteOn, this.midiData);
     SpessaSynthInfo(`%cTotal song time: ${formatTime(Math.ceil(this.duration)).time}`, consoleColors.recognized);
     
-    this.post(WorkletSequencerReturnMessageType.songChange, [new MidiData(this.midiData), this.songIndex]);
+    this.post(WorkletSequencerReturnMessageType.songChange, [new MidiData(this.midiData), this.songIndex, autoPlay]);
     
-    this.synth.resetAllControllers();
     if (this.duration <= 1)
     {
         SpessaSynthWarn(
@@ -133,14 +133,25 @@ export function loadNewSequence(parsedMidi)
         );
         this.loop = false;
     }
-    this.play(true);
+    if (autoPlay)
+    {
+        this.play(true);
+    }
+    else
+    {
+        // this shall not play: play to the first note and then wait
+        const targetTime = this._skipToFirstNoteOn ? this.midiData.firstNoteOn - 1 : 0;
+        this.setTimeTicks(targetTime);
+        this.pause();
+    }
 }
 
 /**
  * @param midiBuffers {MIDIFile[]}
+ * @param autoPlay {boolean}
  * @this {WorkletSequencer}
  */
-export function loadNewSongList(midiBuffers)
+export function loadNewSongList(midiBuffers, autoPlay = true)
 {
     /**
      * parse the MIDIs (only the array buffers, MIDI is unchanged)
@@ -173,7 +184,7 @@ export function loadNewSongList(midiBuffers)
     {
         this.loop = false;
     }
-    this.loadNewSequence(this.songs[this.songIndex]);
+    this.loadNewSequence(this.songs[this.songIndex], autoPlay);
 }
 
 /**

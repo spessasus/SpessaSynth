@@ -119,7 +119,7 @@ class WorkletSequencer
     get currentTime()
     {
         // return the paused time if it's set to something other than undefined
-        if (this.pausedTime)
+        if (this.pausedTime !== undefined)
         {
             return this.pausedTime;
         }
