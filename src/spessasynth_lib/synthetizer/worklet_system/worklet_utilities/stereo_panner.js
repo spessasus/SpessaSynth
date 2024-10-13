@@ -39,7 +39,6 @@ export function panVoice(gainLeft,
         // cap reverb
         reverbLevel = Math.min(reverbLevel, 1000);
         const reverbGain = reverbLevel / WORKLET_SYSTEM_REVERB_DIVIDER;
-        console.log(reverbGain);
         for (let i = 0; i < inputBuffer.length; i++)
         {
             reverbLeft[i] += reverbGain * inputBuffer[i];
