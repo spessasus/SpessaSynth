@@ -63,6 +63,7 @@ export class Synthetizer
     {
         SpessaSynthInfo("%cInitializing SpessaSynth synthesizer...", consoleColors.info);
         this.context = targetNode.context;
+        this.targetNode = targetNode;
         const oneOutputMode = startRenderingData?.oneOutput === true;
         
         /**
@@ -810,6 +811,29 @@ export class Synthetizer
             default:
                 break;
         }
+    }
+    
+    /**
+     * Updates the reverb processor with a new impulse response
+     * @param buffer {AudioBuffer} the new reverb impulse response
+     */
+    setReverbResponse(buffer)
+    {
+        this.reverbProcessor.buffer = buffer;
+    }
+    
+    /**
+     * Updates the chorus processor parameters
+     * @param config {ChorusConfig} the new chorus
+     */
+    setChorusConfig(config)
+    {
+        console.log(config);
+        this.worklet.disconnect(this.chorusProcessor.input);
+        this.chorusProcessor.delete();
+        delete this.chorusProcessor;
+        this.chorusProcessor = new FancyChorus(this.targetNode, config);
+        this.worklet.connect(this.chorusProcessor.input, 1);
     }
     
     reverbateEverythingBecauseWhyNot()

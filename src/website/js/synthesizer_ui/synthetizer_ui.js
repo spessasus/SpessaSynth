@@ -6,6 +6,7 @@ import { createMainSynthController } from "./methods/create_main_controller.js";
 import { setEventListeners } from "./methods/set_event_listeners.js";
 import { keybinds } from "../utils/keybinds.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
+import { closeNotification } from "../notification/notification.js";
 
 
 export const LOCALE_PATH = "locale.synthesizerController.";
@@ -35,6 +36,11 @@ class SynthetizerUI
         this.animationId = -1;
         this.locale = localeManager;
         this.hideOnDocClick = true;
+        /**
+         * For closing the effects window when closing the synthui
+         * @type {undefined|number}
+         */
+        this.effectsConfigWindow = undefined;
     }
     
     /**
@@ -128,6 +134,11 @@ class SynthetizerUI
         }
         else
         {
+            if (this.effectsConfigWindow !== undefined)
+            {
+                closeNotification(this.effectsConfigWindow);
+                this.effectsConfigWindow = undefined;
+            }
             document.getElementsByClassName("top_part")[0].classList.remove("synthui_shown");
             this.hideControllers();
             controller.classList.remove("synthui_controller_show");

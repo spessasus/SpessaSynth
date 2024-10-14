@@ -1,5 +1,5 @@
 export const WORKLET_SYSTEM_REVERB_DIVIDER = 4600;
-export const WORKLET_SYSTEM_CHORUS_DIVIDER = 1300;
+export const WORKLET_SYSTEM_CHORUS_DIVIDER = 1000;
 
 /**
  * stereo_panner.js

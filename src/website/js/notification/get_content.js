@@ -119,6 +119,16 @@ function applyAttributes(content, elements)
             }
         }
     }
+    if (content.listeners)
+    {
+        for (const [key, value] of Object.entries(content.listeners))
+        {
+            for (const element of elements)
+            {
+                element.addEventListener(key, value);
+            }
+        }
+    }
 }
 
 /**

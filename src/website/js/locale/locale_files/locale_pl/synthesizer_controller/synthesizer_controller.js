@@ -1,4 +1,5 @@
 import { channelControllerLocale } from "./channel_controller.js";
+import { effectsConfig } from "./effects_config.js";
 
 /**
  * @type {{systemReset: {description: string, title: string}, disableCustomVibrato: {description: string, title: string}, mainTransposeMeter: {description: string, title: string}, mainVoiceMeter: {description: string, title: string}, midiPanic: {description: string, title: string}, mainPanMeter: {description: string, title: string}, mainVolumeMeter: {description: string, title: string}, toggleButton: {description: string, title: string}, channelController: {transposeMeter: {description: string, title: string}, voiceMeter: {description: string, title: string}, modulationWheelMeter: {description: string, title: string}, expressionMeter: {description: string, title: string}, panMeter: {description: string, title: string}, presetSelector: {description: string}, presetReset: {description: string}, pitchBendMeter: {description: string, title: string}, reverbMeter: {description: string, title: string}, volumeMeter: {description: string, title: string}, drumToggleButton: {description: string}, muteButton: {description: string}, chorusMeter: {description: string, title: string}}, blackMidiMode: {description: string, title: string}}}
@@ -63,5 +64,6 @@ export const synthesizerControllerLocale = {
         cubic: "Interpolacja Sześcienna"
     },
     
-    channelController: channelControllerLocale
+    channelController: channelControllerLocale,
+    effectsConfig: effectsConfig
 };

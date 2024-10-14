@@ -6,6 +6,8 @@ import {
 } from "../../../../spessasynth_lib/synthetizer/worklet_system/message_protocol/worklet_message.js";
 import { getEmptyMicSvg, getVolumeSvg } from "../../utils/icons.js";
 import { ICON_SIZE } from "./create_channel_controller.js";
+import { showEffectsConfigWindow } from "./effects_config.js";
+import { closeNotification } from "../../notification/notification.js";
 
 /**
  * @this {SynthetizerUI}
@@ -185,17 +187,22 @@ export function createMainSynthController()
         this.synth.highPerformanceMode = !this.synth.highPerformanceMode;
     };
     
-    // vibrato reset
-    const vibratoReset = document.createElement("button");
-    this.locale.bindObjectProperty(vibratoReset, "textContent", LOCALE_PATH + "disableCustomVibrato.title");
-    this.locale.bindObjectProperty(vibratoReset, "title", LOCALE_PATH + "disableCustomVibrato.description");
+    // effectsConfig
+    const effectsConfig = document.createElement("button");
+    this.locale.bindObjectProperty(effectsConfig, "textContent", LOCALE_PATH + "effectsConfig.button.title");
+    this.locale.bindObjectProperty(effectsConfig, "title", LOCALE_PATH + "effectsConfig.button.description");
     
-    vibratoReset.classList.add("synthui_button");
-    vibratoReset.classList.add("main_controller_element");
-    vibratoReset.onclick = () =>
+    effectsConfig.classList.add("synthui_button");
+    effectsConfig.classList.add("main_controller_element");
+    effectsConfig.onclick = () =>
     {
-        this.synth.disableGSNRPparams();
-        vibratoReset.parentNode.removeChild(vibratoReset);
+        if (this.effectsConfigWindow !== undefined)
+        {
+            closeNotification(this.effectsConfigWindow);
+            this.effectsConfigWindow = undefined;
+            return;
+        }
+        this.effectsConfigWindow = showEffectsConfigWindow(this.locale, LOCALE_PATH, this.synth).id;
     };
     
     // help button
@@ -276,7 +283,7 @@ export function createMainSynthController()
     controlsWrapper.appendChild(midiPanicButton);
     controlsWrapper.appendChild(resetCCButton);
     controlsWrapper.appendChild(highPerfToggle);
-    controlsWrapper.appendChild(vibratoReset);
+    controlsWrapper.appendChild(effectsConfig);
     controlsWrapper.appendChild(helpButton);
     controlsWrapper.appendChild(interpolation);
     
@@ -296,7 +303,7 @@ export function createMainSynthController()
         midiPanicButton,
         resetCCButton,
         highPerfToggle,
-        vibratoReset,
+        effectsConfig,
         showControllerButton,
         helpButton,
         interpolation
@@ -315,6 +322,11 @@ export function createMainSynthController()
         {
             this.hideOnDocClick = true;
             return;
+        }
+        if (this.effectsConfigWindow !== undefined)
+        {
+            closeNotification(this.effectsConfigWindow);
+            this.effectsConfigWindow = undefined;
         }
         controller.classList.remove("synthui_controller_show");
         this.isShown = false;

@@ -17,7 +17,7 @@
  * @property {number} defaultDelay - the initial delay, in seconds
  * @property {number} delayVariation - the difference between delays in the delay nodes
  * @property {number} stereoDifference - the difference of delays between two channels (added to the left channel and subtracted from the right)
- * @property {number} oscillatorFrequency - the initial delay oscillator frequency, in Hz.
+ * @property {number} oscillatorFrequency - the initial delay time oscillator frequency, in Hz.
  * @property {number} oscillatorFrequencyVariation - the difference between frequencies of oscillators, in Hz
  * @property {number} oscillatorGain - how much will oscillator alter the delay in delay nodes, in seconds
  */
@@ -27,7 +27,7 @@ const DEFAULT_DELAY = 0.03;
 const DELAY_VARIATION = 0.01;
 const STEREO_DIFF = 0.02;
 
-const OSC_FREQ = 0.3;
+const OSC_FREQ = 0.2;
 const OSC_FREQ_VARIATION = 0.05;
 const OSC_GAIN = 0.003;
 
@@ -99,6 +99,35 @@ export class FancyChorus
         }
         
         merger.connect(output);
+        this.merger = merger;
+        this.chorusLeft = chorusNodesLeft;
+        this.chorusRight = chorusNodesRight;
+    }
+    
+    delete()
+    {
+        this.input.disconnect();
+        delete this.input;
+        this.merger.disconnect();
+        delete this.merger;
+        for (const chorusLeftElement of this.chorusLeft)
+        {
+            chorusLeftElement.delay.disconnect();
+            chorusLeftElement.oscillator.disconnect();
+            chorusLeftElement.oscillatorGain.disconnect();
+            delete chorusLeftElement.delay;
+            delete chorusLeftElement.oscillatorGain;
+            delete chorusLeftElement.oscillatorGain;
+        }
+        for (const chorusRightElement of this.chorusRight)
+        {
+            chorusRightElement.delay.disconnect();
+            chorusRightElement.oscillator.disconnect();
+            chorusRightElement.oscillatorGain.disconnect();
+            delete chorusRightElement.delay;
+            delete chorusRightElement.oscillatorGain;
+            delete chorusRightElement.oscillatorGain;
+        }
     }
     
     /**
@@ -126,7 +155,7 @@ export class FancyChorus
         
         oscillator.connect(gainNode);
         gainNode.connect(delayNode.delayTime);
-        oscillator.start(context.currentTime + delay);
+        oscillator.start(context.currentTime /*+ delay*/);
         
         this.input.connect(delayNode, input);
         delayNode.connect(output, 0, outputNum);

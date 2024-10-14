@@ -219,7 +219,7 @@ Local edition comes with easier soundfont management than the demo version.
 2. Put your SoundFonts into the `soundfonts` folder (you can select SoundFonts in the program).
 3. Enjoy!
 
-[If you would like to help translate SpessaSynth, please read this guide (and thank you!)](src/website/locale/locale_files/README.md)
+[If you would like to help translate SpessaSynth, please read this guide (and thank you!)](src/website/js/locale/locale_files/README.md)
 
 **If you like this project, consider giving it a star. It really helps out!**
 

@@ -21,6 +21,7 @@ const notifications = {};
  * @param {HTMLElement} target - the element that caused this callback
  */
 
+
 /**
  * @typedef {Object} NotificationContent
  * @property {"button"|"progress"|"text"|"input"|"toggle"|"range"|"file"} type
@@ -28,6 +29,7 @@ const notifications = {};
  * @property {string|undefined} translatePathTitle
  * @property {Object<string, string>|undefined} attributes
  * @property {NotificationContentCallback|undefined} onClick
+ * @property {Object<string, function>|undefined} listeners
  */
 
 /**
@@ -112,6 +114,10 @@ export function showNotification(
  */
 export function closeNotification(id)
 {
+    if (notifications[id] === undefined)
+    {
+        return;
+    }
     const notification = notifications[id].div;
     clearTimeout(notifications[id].timeout);
     notification.classList.remove("drop");
