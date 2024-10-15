@@ -19,7 +19,7 @@ import { _exportSoundfont } from "./export_soundfont.js";
 import { exportSong } from "./export_song.js";
 import { _exportRMIDI } from "./export_rmidi.js";
 import { WORKLET_URL_ABSOLUTE } from "../../../spessasynth_lib/synthetizer/worklet_url.js";
-import { encodeVorbis } from "../../../spessasynth_lib/utils/encode_vorbis.js";
+import { encodeVorbis } from "../../externals/libvorbis/encode_vorbis.js";
 import { loadSoundFont } from "../../../spessasynth_lib/soundfont/load_soundfont.js";
 import { readBytesAsString } from "../../../spessasynth_lib/utils/byte_functions/string.js";
 import { IndexedByteArray } from "../../../spessasynth_lib/utils/indexed_array.js";
