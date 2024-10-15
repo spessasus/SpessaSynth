@@ -186,7 +186,6 @@ export class Sequencer
     
     set currentTime(time)
     {
-        this.unpause();
         this._sendMessage(WorkletSequencerMessageType.setTime, time);
     }
     
@@ -395,8 +394,15 @@ export class Sequencer
                 // message data is absolute time
                 const time = this.synth.currentTime - messageData;
                 Object.entries(this.onTimeChange).forEach((callback) => callback[1](time));
-                this.unpause();
                 this._recalculateStartTime(time);
+                if (this.paused)
+                {
+                    this.pausedTime = time;
+                }
+                else
+                {
+                    this.unpause();
+                }
                 break;
             
             case WorkletSequencerReturnMessageType.pause:
