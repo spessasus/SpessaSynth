@@ -37,7 +37,7 @@
 import { returnMessageType } from "../message_protocol/worklet_message.js";
 import { SpessaSynthInfo } from "../../../utils/loggin.js";
 import { consoleColors } from "../../../utils/other.js";
-import { midiControllers } from "../../../midi_parser/midi_message.js";
+import { getBankSelect, setBankSelect } from "../worklet_utilities/worklet_processor_channel.js";
 
 /**
  * sends a snapshot of the current controller values of the synth (used to copy that data to OfflineAudioContext when rendering)
@@ -52,7 +52,7 @@ export function sendSynthesizerSnapshot()
     {
         return {
             program: channel.preset.program,
-            bank: channel.preset.bank,
+            bank: getBankSelect(channel),
             lockPreset: channel.lockPreset,
             patchName: channel.preset.presetName,
             
@@ -133,7 +133,7 @@ export function applySynthesizerSnapshot(snapshot)
         
         // restore preset and lock
         channelObject.lockPreset = false;
-        channelObject.midiControllers[midiControllers.bankSelect] = channelSnapshot.bank;
+        setBankSelect(channelObject, channelSnapshot.bank);
         this.programChange(index, channelSnapshot.program);
         channelObject.lockPreset = channelSnapshot.lockPreset;
     });

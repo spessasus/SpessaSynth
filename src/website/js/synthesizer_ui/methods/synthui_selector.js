@@ -26,8 +26,6 @@ export class Selector
                 editCallback = undefined,
                 lockCallback = undefined)
     {
-        this.isShown = true;
-        this.isReloaded = true;
         /**
          * @type {{name: string, program: number, bank: number, stringified: string}[]}
          */
@@ -296,11 +294,6 @@ export class Selector
                     )} ${e.name}`
             };
         });
-        if (!this.isShown)
-        {
-            this.isReloaded = false;
-            return;
-        }
         this.isReloaded = true;
         if (this.elements.length > 0)
         {
@@ -314,49 +307,44 @@ export class Selector
     set(value)
     {
         this.value = value;
-        if (this.isShown)
+        this.reload();
+        this.mainButton.textContent = this.getString(this.value);
+        
+        if (this.isWindowShown)
         {
-            if (!this.isReloaded)
+            // remove the old selected class
+            const oldSelected = this.selectionMenu.getElementsByClassName("voice_selector_selected")[0];
+            if (oldSelected !== undefined)
             {
-                this.reload();
+                oldSelected.classList.remove("voice_selector_selected");
             }
-            this.mainButton.textContent = this.getString(this.value);
-            
-            if (this.isWindowShown)
+            /**
+             * @type {HTMLTableElement}
+             */
+            const table = this.selectionMenu.getElementsByClassName("voice_selector_table")[0];
+            // find the new selected class
+            const selectedBank = parseInt(this.value.split(":")[0]);
+            const selectedProgram = parseInt(this.value.split(":")[1]);
+            for (const row of table.rows)
             {
-                // remove the old selected class
-                const oldSelected = this.selectionMenu.getElementsByClassName("voice_selector_selected")[0];
-                if (oldSelected !== undefined)
+                if (row.cells.length === 1)
                 {
-                    oldSelected.classList.remove("voice_selector_selected");
+                    continue;
                 }
-                /**
-                 * @type {HTMLTableElement}
-                 */
-                const table = this.selectionMenu.getElementsByClassName("voice_selector_table")[0];
-                // find the new selected class
-                const selectedBank = parseInt(this.value.split(":")[0]);
-                const selectedProgram = parseInt(this.value.split(":")[1]);
-                for (const row of table.rows)
+                const bank = parseInt(row.cells[0].textContent);
+                const program = parseInt(row.cells[1].textContent);
+                if (bank === selectedBank && program === selectedProgram)
                 {
-                    if (row.cells.length === 1)
-                    {
-                        continue;
-                    }
-                    const bank = parseInt(row.cells[0].textContent);
-                    const program = parseInt(row.cells[1].textContent);
-                    if (bank === selectedBank && program === selectedProgram)
-                    {
-                        row.classList.add("voice_selector_selected");
-                        row.scrollIntoView({
-                            behavior: "smooth",
-                            block: "center",
-                            inline: "center"
-                        });
-                    }
+                    row.classList.add("voice_selector_selected");
+                    row.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center",
+                        inline: "center"
+                    });
                 }
             }
         }
+        
     }
     
     /**
@@ -378,20 +366,5 @@ export class Selector
             return `${program}. ${name.name}`;
         }
         return `${bank}:${program} ${name.name}`;
-    }
-    
-    show()
-    {
-        this.isShown = true;
-        if (!this.isReloaded)
-        {
-            this.reload();
-        }
-        this.mainButton.textContent = this.getString(this.value);
-    }
-    
-    hide()
-    {
-        this.isShown = false;
     }
 }

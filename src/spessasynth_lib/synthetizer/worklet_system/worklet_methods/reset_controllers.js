@@ -10,6 +10,7 @@ import {
     NON_CC_INDEX_OFFSET,
     resetArray
 } from "../worklet_utilities/controller_tables.js";
+import { getBankSelect, setBankSelect } from "../worklet_utilities/worklet_processor_channel.js";
 
 /**
  * @this {SpessaSynthProcessor}
@@ -35,7 +36,7 @@ export function resetAllControllers(log = true)
         if (!ch.lockPreset)
         {
             ch.presetUsesOverride = true;
-            ch.midiControllers[midiControllers.bankSelect] = 0;
+            setBankSelect(ch, 0);
             if (channelNumber % 16 === DEFAULT_PERCUSSION)
             {
                 this.setPreset(channelNumber, this.drumPreset);
@@ -67,7 +68,7 @@ export function resetAllControllers(log = true)
         this.callEvent("programchange", {
             channel: channelNumber,
             program: ch.preset.program,
-            bank: ch.preset.bank,
+            bank: getBankSelect(ch),
             userCalled: false
         });
         

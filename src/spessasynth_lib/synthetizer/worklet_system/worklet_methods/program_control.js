@@ -1,8 +1,8 @@
-import { midiControllers } from "../../../midi_parser/midi_message.js";
 import { returnMessageType } from "../message_protocol/worklet_message.js";
 import { SpessaSynthInfo, SpessaSynthWarn } from "../../../utils/loggin.js";
 import { consoleColors } from "../../../utils/other.js";
 import { loadSoundFont } from "../../../soundfont/load_soundfont.js";
+import { getBankSelect } from "../worklet_utilities/worklet_processor_channel.js";
 
 /**
  * executes a program change
@@ -27,7 +27,7 @@ export function programChange(channel, programNumber, userChange = false)
         return;
     }
     // always 128 for percussion
-    const bank = channelObject.drumChannel ? 128 : channelObject.midiControllers[midiControllers.bankSelect];
+    const bank = getBankSelect(channelObject);
     let sentBank;
     let preset;
     
@@ -130,7 +130,7 @@ export function setDrums(channel, isDrum)
         // clear transpose
         channelObject.channelTransposeKeyShift = 0;
         channelObject.drumChannel = true;
-        this.setPreset(channel, this.getPreset(128, channelObject.preset.program));
+        this.setPreset(channel, this.getPreset(getBankSelect(channelObject), channelObject.preset.program));
     }
     else
     {
@@ -138,7 +138,7 @@ export function setDrums(channel, isDrum)
         this.setPreset(
             channel,
             this.getPreset(
-                channelObject.midiControllers[midiControllers.bankSelect],
+                getBankSelect(channelObject),
                 channelObject.preset.program
             )
         );
