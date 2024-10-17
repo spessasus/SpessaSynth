@@ -14,7 +14,6 @@ export function hideControllers()
         c.chorus.hide();
         c.reverb.hide();
         c.brightness.hide();
-        c.preset.hide();
     });
 }
 
@@ -34,6 +33,5 @@ export function showControllers()
         c.chorus.show();
         c.reverb.show();
         c.brightness.show();
-        c.preset.show();
     });
 }

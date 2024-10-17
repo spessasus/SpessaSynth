@@ -67,7 +67,27 @@ export class Modulator
         this.secSrcIndex = this.secondarySourceEnum & 127;
         this.secSrcCurveType = this.secondarySourceEnum >> 10 & 3;
         
-        //this.precomputeModulatorTransform();
+        /**
+         * Indicates if the given modulator is chorus or reverb effects modulator.
+         * This is done to simulate BASSMIDI effects behavior:
+         * - defaults to 1000 transform amount rather than 200
+         * - values can be changed, but anything above 200 is 1000
+         * (except for values above 1000, they are copied directly)
+         * - all values below are multiplied by 5 (200 * 5 = 1000)
+         * - still can be disabled if the soundfont has its own modulator curve
+         * - this fixes the very low amount of reverb by default and doesn't break soundfonts
+         * @type {boolean}
+         */
+        this.isEffectModulator =
+            (
+                this.sourceEnum === 0x00DB
+                || this.sourceEnum === 0x00DD
+            )
+            && this.secondarySourceEnum === 0x0
+            && (
+                this.modulatorDestination === generatorTypes.reverbEffectsSend
+                || this.modulatorDestination === generatorTypes.chorusEffectsSend
+            );
     }
     
     /**
@@ -225,10 +245,10 @@ export const defaultModulators = [
     }),
     
     // reverb effects to send
-    new Modulator({ srcEnum: 0x00DB, dest: generatorTypes.reverbEffectsSend, amt: 750, secSrcEnum: 0x0, transform: 0 }),
+    new Modulator({ srcEnum: 0x00DB, dest: generatorTypes.reverbEffectsSend, amt: 200, secSrcEnum: 0x0, transform: 0 }),
     
     // chorus effects to send
-    new Modulator({ srcEnum: 0x00DD, dest: generatorTypes.chorusEffectsSend, amt: 750, secSrcEnum: 0x0, transform: 0 }),
+    new Modulator({ srcEnum: 0x00DD, dest: generatorTypes.chorusEffectsSend, amt: 200, secSrcEnum: 0x0, transform: 0 }),
     
     // custom modulators heck yeah
     // poly pressure to vibrato

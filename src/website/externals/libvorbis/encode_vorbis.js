@@ -1,4 +1,4 @@
-import { libvorbis } from "../externals/libvorbis/OggVorbisEncoder.min.js";
+import { libvorbis } from "./OggVorbisEncoder.min.js";
 
 /**
  * @typedef {function} EncodeVorbisFunction
