@@ -28,6 +28,8 @@ import { DUMMY_MIDI_DATA, MidiData } from "../midi_parser/midi_data.js";
  * @typedef {Object} SequencerOptions
  * @property {boolean|undefined} skipToFirstNoteOn - if true, the sequencer will skip to the first note
  * @property {boolean|undefined} autoPlay - if true, the sequencer will automatically start playing the MIDI
+ * @property {boolean|unescape} preservePlaybackState - if true,
+ * the sequencer will stay paused when seeking or changing the playback rate
  */
 
 /**
@@ -35,7 +37,8 @@ import { DUMMY_MIDI_DATA, MidiData } from "../midi_parser/midi_data.js";
  */
 const DEFAULT_OPTIONS = {
     skipToFirstNoteOn: true,
-    autoPlay: true
+    autoPlay: true,
+    preservePlaybackState: false
 };
 
 export class Sequencer
@@ -138,7 +141,12 @@ export class Sequencer
          * @type {boolean}
          * @private
          */
-        this._skipToFirstNoteOn = options?.skipToFirstNoteOn ?? true;
+        this._skipToFirstNoteOn = options?.skipToFirstNoteOn || true;
+        /**
+         * @type {boolean}
+         * @private
+         */
+        this._preservePlaybackState = options?.preservePlaybackState || false;
         
         if (this._skipToFirstNoteOn === false)
         {
@@ -146,7 +154,12 @@ export class Sequencer
             this._sendMessage(WorkletSequencerMessageType.setSkipToFirstNote, false);
         }
         
-        this.loadNewSongList(midiBinaries, options?.autoPlay ?? false);
+        if (this._preservePlaybackState === true)
+        {
+            this._sendMessage(WorkletSequencerMessageType.setPreservePlaybackState, true);
+        }
+        
+        this.loadNewSongList(midiBinaries, options?.autoPlay || true);
         
         window.addEventListener("beforeunload", this.resetMIDIOut.bind(this));
     }
@@ -171,6 +184,27 @@ export class Sequencer
     }
     
     /**
+     * if true,
+     * the sequencer will stay paused when seeking or changing the playback rate
+     * @returns {boolean}
+     */
+    get preservePlaybackState()
+    {
+        return this._preservePlaybackState;
+    }
+    
+    /**
+     * if true,
+     * the sequencer will stay paused when seeking or changing the playback rate
+     * @param val {boolean}
+     */
+    set preservePlaybackState(val)
+    {
+        this._preservePlaybackState = val;
+        this._sendMessage(WorkletSequencerMessageType.setPreservePlaybackState, val);
+    }
+    
+    /**
      * @returns {number} Current playback time, in seconds
      */
     get currentTime()
@@ -186,7 +220,10 @@ export class Sequencer
     
     set currentTime(time)
     {
-        this.unpause();
+        if (!this._preservePlaybackState)
+        {
+            this.unpause();
+        }
         this._sendMessage(WorkletSequencerMessageType.setTime, time);
     }
     
@@ -395,8 +432,15 @@ export class Sequencer
                 // message data is absolute time
                 const time = this.synth.currentTime - messageData;
                 Object.entries(this.onTimeChange).forEach((callback) => callback[1](time));
-                this.unpause();
                 this._recalculateStartTime(time);
+                if (this.paused && this._preservePlaybackState)
+                {
+                    this.pausedTime = time;
+                }
+                else
+                {
+                    this.unpause();
+                }
                 break;
             
             case WorkletSequencerReturnMessageType.pause:
