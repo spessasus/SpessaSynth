@@ -65,6 +65,9 @@ export function processMessage(messageType, messageData)
         case WorkletSequencerMessageType.setSkipToFirstNote:
             this._skipToFirstNoteOn = messageData;
             break;
+        
+        case WorkletSequencerMessageType.setPreservePlaybackState:
+            this.preservePlaybackState = messageData;
     }
 }
 

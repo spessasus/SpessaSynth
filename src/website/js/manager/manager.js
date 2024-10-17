@@ -445,7 +445,9 @@ class Manager
         }
         
         // create a new sequencer
-        this.seq = new Sequencer(parsedMidi, this.synth);
+        this.seq = new Sequencer(parsedMidi, this.synth, {
+            preservePlaybackState: true
+        });
         
         this.seq.onError = e =>
         {

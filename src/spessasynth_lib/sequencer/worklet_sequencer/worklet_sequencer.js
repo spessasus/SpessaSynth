@@ -104,6 +104,12 @@ class WorkletSequencer
          * @private
          */
         this._skipToFirstNoteOn = true;
+        
+        /**
+         * If true, seq will stay paused when seeking or changing the playback rate
+         * @type {boolean}
+         */
+        this.preservePlaybackState = false;
     }
     
     /**
@@ -152,7 +158,7 @@ class WorkletSequencer
         }
         this.stop();
         this.playingNotes = [];
-        const wasPaused = this.paused;
+        const wasPaused = this.paused && this.preservePlaybackState;
         this.pausedTime = undefined;
         this.post(WorkletSequencerReturnMessageType.timeChange, currentTime - time);
         this._playTo(time);

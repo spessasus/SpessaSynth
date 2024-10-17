@@ -254,12 +254,14 @@ export function play(resetTime = false)
     // reset the time if necesarry
     if (resetTime)
     {
+        this.pausedTime = undefined;
         this.currentTime = 0;
         return;
     }
     
     if (this.currentTime >= this.duration)
     {
+        this.pausedTime = undefined;
         this.currentTime = 0;
         return;
     }
