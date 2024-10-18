@@ -15,4 +15,7 @@ assignees: ''
 *Specify whether your question is related to `spessasynth_lib` or the web application. Be as specific as possible.*
 
 ### The Question
-*Please provide a detailed description of your question here. Include any relevant context, code snippets, or examples that might help us understand and address your query effectively.*
+*Please provide a detailed description of your question here. Include any relevant context, code snippets, or examples that might help me understand and address your query effectively.*
+
+### Additional info
+*If applicable, provide additional info about your case such as the browser you're using or MIDI files and SoundFont files relevant to this question.*
