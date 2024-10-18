@@ -180,7 +180,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                                 );
                             }
                             SpessaSynthInfo(
-                                `%cSingle Note Tuning. Program: %c${tuningProgram}%c Keys affected: ${numberOfChanges}`,
+                                `%cSingle Note Tuning. Program: %c${tuningProgram}%c Keys affected: %c${numberOfChanges}`,
                                 consoleColors.info,
                                 consoleColors.recognized,
                                 consoleColors.info,

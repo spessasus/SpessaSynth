@@ -725,7 +725,8 @@ export class Synthetizer
     
     /**
      * Sends a MIDI Sysex message to the synthesizer
-     * @param messageData {IndexedByteArray} the message's data (excluding the F0 byte, but including the F7 at the end)
+     * @param messageData {number[]|ArrayLike|Uint8Array} the message's data
+     * (excluding the F0 byte, but including the F7 at the end)
      */
     systemExclusive(messageData)
     {
@@ -752,7 +753,7 @@ export class Synthetizer
     
     /**
      * sends a raw MIDI message to the synthesizer
-     * @param message {ArrayLike<number>} the midi message, each number is a byte
+     * @param message {number[]|Uint8Array} the midi message, each number is a byte
      */
     sendMessage(message)
     {
