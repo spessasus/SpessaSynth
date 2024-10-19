@@ -148,9 +148,13 @@ export class Selector
         selectionWindow.appendChild(tableWrapper);
         
         // add the table
-        this.generateTable(tableWrapper, this.elements);
+        const table = this.generateTable(tableWrapper, this.elements);
         
-        // add search function
+        /**
+         * add search function
+         * @type {HTMLElement}
+         */
+        let selectedProgram = table.querySelector(".voice_selector_selected");
         searchInput.oninput = e =>
         {
             e.stopPropagation();
@@ -161,8 +165,71 @@ export class Selector
                 return;
             }
             tableWrapper.replaceChildren();
-            this.generateTable(tableWrapper, filtered);
+            const filteredTable = this.generateTable(tableWrapper, filtered);
+            // if the already selected preset is not on the new list, select the first one
+            const alreadySelected = filteredTable.querySelector(".voice_selector_selected");
+            if (alreadySelected)
+            {
+                selectedProgram = alreadySelected;
+                return;
+            }
+            const firstFiltered = filteredTable.querySelector(".voice_selector_option");
+            firstFiltered.classList.add("voice_selector_selected");
+            selectedProgram = firstFiltered;
         };
+        
+        // add basic key navigation
+        searchInput.addEventListener("keydown", e =>
+        {
+            switch (e.key)
+            {
+                // on enter, select the selected preset
+                case "Enter":
+                    const bank = selectedProgram.getAttribute("bank");
+                    const program = selectedProgram.getAttribute("program");
+                    const newVal = `${bank}:${program}`;
+                    if (this.value === newVal)
+                    {
+                        this.hideSelectionMenu();
+                        return;
+                    }
+                    this.editCallback(newVal);
+                    this.locked = true;
+                    this.presetLock.innerHTML = getLockSVG(ICON_SIZE);
+                    this.hideSelectionMenu();
+                    break;
+                
+                case "ArrowDown":
+                    let nextEl = selectedProgram.nextElementSibling;
+                    while (nextEl)
+                    {
+                        if (nextEl.classList.contains("voice_selector_option"))
+                        {
+                            selectedProgram.classList.remove("voice_selector_selected");
+                            nextEl.classList.add("voice_selector_selected");
+                            selectedProgram = nextEl;
+                            return;
+                        }
+                        nextEl = nextEl.nextElementSibling;
+                    }
+                    break;
+                
+                case "ArrowUp":
+                    let previousEl = selectedProgram.previousElementSibling;
+                    while (previousEl)
+                    {
+                        if (previousEl.classList.contains("voice_selector_option"))
+                        {
+                            selectedProgram.classList.remove("voice_selector_selected");
+                            previousEl.classList.add("voice_selector_selected");
+                            selectedProgram = previousEl;
+                            return;
+                        }
+                        previousEl = previousEl.previousElementSibling;
+                    }
+                    break;
+            }
+        });
         
         
         selectionWindow.onclick = e =>
@@ -197,6 +264,9 @@ export class Selector
         {
             const row = document.createElement("tr");
             const program = preset.program;
+            row.classList.add("voice_selector_option");
+            row.setAttribute("program", program.toString());
+            row.setAttribute("bank", preset.bank.toString());
             
             if (program === selectedProgram && preset.bank === selectedBank)
             {
@@ -261,7 +331,7 @@ export class Selector
             table.appendChild(row);
         }
         wrapper.appendChild(table);
-        
+        return table;
     }
     
     hideSelectionMenu()
@@ -294,10 +364,17 @@ export class Selector
                     )} ${e.name}`
             };
         });
-        this.isReloaded = true;
         if (this.elements.length > 0)
         {
-            this.mainButton.textContent = this.getString(`${this.elements[0].bank}:${this.value.split(":")[1]}`);
+            const firstEl = this.elements[0];
+            const bank = firstEl.bank;
+            const currentProgram = parseInt(this.value.split(":")[1]);
+            let program = currentProgram;
+            if (this.elements.find(e => e.program === currentProgram) === undefined)
+            {
+                program = firstEl.program;
+            }
+            this.mainButton.textContent = this.getString(`${bank}:${program}`);
         }
     }
     

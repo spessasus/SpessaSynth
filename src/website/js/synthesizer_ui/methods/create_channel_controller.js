@@ -328,6 +328,11 @@ export function createChannelController(channelNumber)
     drumsToggle.classList.add("mute_button");
     drumsToggle.onclick = () =>
     {
+        if (presetSelector.mainButton.classList.contains("locked_selector"))
+        {
+            this.synth.lockController(channelNumber, ALL_CHANNELS_OR_DIFFERENT_ACTION, false);
+            presetSelector.mainButton.classList.remove("locked_selector");
+        }
         this.synth.setDrums(channelNumber, !this.synth.channelProperties[channelNumber].isDrum);
     };
     controller.appendChild(drumsToggle);
