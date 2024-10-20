@@ -5,7 +5,7 @@ const NOTIFICATION_TIME = 13;
 
 let notificationCounter = 0;
 /**
- * @type {Object<number, {div: HTMLDivElement, timeout: number}>}
+ * @type {Object<number, {div: HTMLDivElement, timeout: number, onclose: function}>}
  */
 const notifications = {};
 
@@ -16,7 +16,7 @@ const notifications = {};
  */
 
 /**
- * @typedef {function} NotificationContentCallback
+ * @typedef {Function} NotificationContentCallback
  * @param {NotificationType} notification - the notification
  * @param {HTMLElement} target - the element that caused this callback
  */
@@ -39,6 +39,7 @@ const notifications = {};
  * @param allowClosing {boolean}
  * @param locale {LocaleManager}
  * @param contentStyling {Object<string, string>}
+ * @param onclose {function()}
  * @returns {NotificationType}
  */
 export function showNotification(
@@ -47,7 +48,8 @@ export function showNotification(
     time = NOTIFICATION_TIME,
     allowClosing = true,
     locale = undefined,
-    contentStyling = undefined)
+    contentStyling = undefined,
+    onclose = undefined)
 {
     const notification = document.createElement("div");
     const notificationID = notificationCounter++;
@@ -101,7 +103,8 @@ export function showNotification(
     document.getElementsByClassName("notification_field")[0].appendChild(notification);
     notifications[notificationID] = {
         div: notification,
-        timeout: timeoutID
+        timeout: timeoutID,
+        onclose: onclose
     };
     return {
         div: notification,
@@ -118,10 +121,14 @@ export function closeNotification(id)
     {
         return;
     }
-    const notification = notifications[id].div;
+    const notificationEl = notifications[id];
+    const notification = notificationEl.div;
     clearTimeout(notifications[id].timeout);
     notification.classList.remove("drop");
     setTimeout(() => notification.parentElement.removeChild(notification), 500);
+    if (notificationEl.onclose)
+    {
+        notificationEl.onclose();
+    }
     notifications[id] = undefined;
-    
 }

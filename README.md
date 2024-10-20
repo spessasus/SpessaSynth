@@ -237,7 +237,7 @@ Local edition comes with easier soundfont management than the demo version.
 - [OggVorbisEncoder](https://github.com/higuma/ogg-vorbis-encoder-js) - for the MIT Vorbis encoder
 - [Composers](https://github.com/spessasus/spessasynth-demo-songs#readme) - for the demo songs
 - [Falcosoft](https://falcosoft.hu) - for help with the RMIDI format
-- [Christian Collins](https://schristiancollins.com) - for the bundled GeneralUserGS soundfont
+- [Christian Collins](https://schristiancollins.com) - for the bundled GeneralUserGS soundfont and various bug reports regarding the synthesizer
 - **And You!** - for checking out this project. I hope you like it :)
 
 ### Major Releases

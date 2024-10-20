@@ -495,14 +495,6 @@ demoInit(initLocale).then(() =>
         const contents = [
             {
                 type: "button",
-                textContent: window.manager.localeManager.getLocaleString("locale.credits"),
-                onClick: () =>
-                {
-                    window.open("https://github.com/spessasus/spessasynth-demo-songs#readme");
-                }
-            },
-            {
-                type: "button",
                 textContent: "Bundled SoundFont Credits",
                 onClick: () =>
                 {
@@ -517,7 +509,8 @@ demoInit(initLocale).then(() =>
         /**
          * @type {{
          *     name: string,
-         *     fileName: string
+         *     fileName: string,
+         *     credits: string
          * }[]}
          */
         const songsJSON = JSON.parse(songs);
@@ -526,10 +519,35 @@ demoInit(initLocale).then(() =>
             contents.push({
                 type: "button",
                 textContent: song.name,
-                onClick: async n =>
+                onClick: n =>
                 {
                     closeNotification(n.id);
-                    await playDemoSong(song.fileName);
+                    showNotification(
+                        window.manager.localeManager.getLocaleString("locale.credits"),
+                        [
+                            {
+                                type: "text",
+                                textContent: song.credits.replace("\n", "\r\n\r\n"),
+                                attributes: { "style": "white-space: pre-line;" }
+                            },
+                            {
+                                type: "button",
+                                textContent: "Ok",
+                                onClick: n =>
+                                {
+                                    closeNotification(n.id);
+                                }
+                            }
+                        ],
+                        999999,
+                        true,
+                        undefined,
+                        undefined,
+                        async () =>
+                        {
+                            await playDemoSong(song.fileName);
+                        }
+                    );
                 }
             });
         }
