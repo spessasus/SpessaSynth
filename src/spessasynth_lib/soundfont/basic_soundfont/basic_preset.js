@@ -148,9 +148,14 @@ export class BasicPreset
             return [];
         }
         
-        function isInRange(min, max, number)
+        /**
+         * @param range {SoundFontRange}
+         * @param number {number}
+         * @returns {boolean}
+         */
+        function isInRange(range, number)
         {
-            return number >= min && number <= max;
+            return number >= range.min && number <= range.max;
         }
         
         /**
@@ -182,51 +187,57 @@ export class BasicPreset
          */
         let globalPresetGenerators = this.presetZones[0].isGlobal ? [...this.presetZones[0].generators] : [];
         
+        /**
+         * @type {Modulator[]}
+         */
         let globalPresetModulators = this.presetZones[0].isGlobal ? [...this.presetZones[0].modulators] : [];
+        const globalKeyRange = this.presetZones[0].isGlobal ? this.presetZones[0].keyRange : { min: 0, max: 127 };
+        const globalVelRange = this.presetZones[0].isGlobal ? this.presetZones[0].velRange : { min: 0, max: 127 };
         
         // find the preset zones in range
         let presetZonesInRange = this.presetZones.filter(currentZone =>
             (
                 isInRange(
-                    currentZone.keyRange.min,
-                    currentZone.keyRange.max,
+                    currentZone.hasKeyRange ? currentZone.keyRange : globalKeyRange,
                     midiNote
                 )
                 &&
                 isInRange(
-                    currentZone.velRange.min,
-                    currentZone.velRange.max,
+                    currentZone.hasVelRange ? currentZone.velRange : globalVelRange,
                     velocity
                 )
             ) && !currentZone.isGlobal);
         
         presetZonesInRange.forEach(zone =>
         {
+            // global zone is already taken into account earlier
             if (zone.instrument.instrumentZones.length < 1)
             {
                 return;
             }
             let presetGenerators = zone.generators;
             let presetModulators = zone.modulators;
+            const firstZone = zone.instrument.instrumentZones[0];
             /**
              * global zone is always first, so it or nothing
              * @type {Generator[]}
              */
-            let globalInstrumentGenerators = zone.instrument.instrumentZones[0].isGlobal ? [...zone.instrument.instrumentZones[0].generators] : [];
-            let globalInstrumentModulators = zone.instrument.instrumentZones[0].isGlobal ? [...zone.instrument.instrumentZones[0].modulators] : [];
+            let globalInstrumentGenerators = firstZone.isGlobal ? [...firstZone.generators] : [];
+            let globalInstrumentModulators = firstZone.isGlobal ? [...firstZone.modulators] : [];
+            const globalKeyRange = firstZone.isGlobal ? firstZone.keyRange : { min: 0, max: 127 };
+            const globalVelRange = firstZone.isGlobal ? firstZone.velRange : { min: 0, max: 127 };
+            
             
             let instrumentZonesInRange = zone.instrument.instrumentZones
                 .filter(currentZone =>
                     (
                         isInRange(
-                            currentZone.keyRange.min,
-                            currentZone.keyRange.max,
+                            currentZone.hasKeyRange ? currentZone.keyRange : globalKeyRange,
                             midiNote
                         )
                         &&
                         isInRange(
-                            currentZone.velRange.min,
-                            currentZone.velRange.max,
+                            currentZone.hasVelRange ? currentZone.velRange : globalVelRange,
                             velocity
                         )
                     ) && !currentZone.isGlobal

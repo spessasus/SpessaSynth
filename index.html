@@ -1,124 +1,144 @@
 <!DOCTYPE html>
 <!-- DEMO html index -->
-<html lang="en">
+<html lang='en'>
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset='UTF-8'>
+    <meta content='IE=edge' http-equiv='X-UA-Compatible'>
+    <meta content='width=device-width, initial-scale=1.0' name='viewport'>
 
-  <!-- open graph -->
-  <meta property='og:title' content='SpessaSynth MIDI SF2 and DLS Synthesizer' />
-  <meta property='og:site_name' content='SpessaSynth' />
-  <meta property='og:description' content='SoundFont2 synthesizer and MIDI player/editor that runs in your browser' />
-  <meta property='og:image' content='https://repository-images.githubusercontent.com/643635315/905d798e-16d7-4673-8fc4-e83caf7c41e6' />
-  <meta property='og:image:alt' content='Colorful notes falling on a piano'/>
-  <meta property='og:image:width' content='1920' />
-  <meta property='og:image:height' content='1080' />
-  <meta property='og:url' content='https://spessasus.github.io/SpessaSynth/' />
-  <meta property="og:type" content="website" />
+    <!-- open graph -->
+    <meta content='SpessaSynth MIDI SF2 and DLS Synthesizer' property='og:title' />
+    <meta content='SpessaSynth' property='og:site_name' />
+    <meta content='SoundFont2 synthesizer and MIDI player/editor that runs in your browser' property='og:description' />
+    <meta content='https://repository-images.githubusercontent.com/643635315/905d798e-16d7-4673-8fc4-e83caf7c41e6'
+          property='og:image' />
+    <meta content='Colorful notes falling on a piano' property='og:image:alt' />
+    <meta content='1920' property='og:image:width' />
+    <meta content='1080' property='og:image:height' />
+    <meta content='https://spessasus.github.io/SpessaSynth/' property='og:url' />
+    <meta content='website' property='og:type' />
 
-  <!-- twitter card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="SpessaSynth MIDI Synthesizer">
-  <meta name="twitter:description" content="SoundFont2 synthesizer and MIDI player/editor that runs in your browser">
-  <meta name="twitter:image" content="https://repository-images.githubusercontent.com/643635315/905d798e-16d7-4673-8fc4-e83caf7c41e6">
-  <!-- for search engines -->
-  <meta name='description' content='SpessaSynth is a powerful MIDI Player and SoundFont2 / DLS Synthesizer with MIDI editing capabilites. It allows to play MIDI files with .sf2 files and .dls files and convert dls to sf2 online!' />
-  <meta name='author' content='spessasus' />
-  <meta name='keywords' content='midi, soundfont, sf2, synth, synthesizer, soundfont2, midi player, midi player online, player, sf3, dls, rmidi, mid, rmi, soundfont player, midi soundfont player online, dls to sf2, dls to sf2 converter' />
+    <!-- twitter card -->
+    <meta content='summary_large_image' name='twitter:card'>
+    <meta content='SpessaSynth MIDI Synthesizer' name='twitter:title'>
+    <meta content='SoundFont2 synthesizer and MIDI player/editor that runs in your browser' name='twitter:description'>
+    <meta content='https://repository-images.githubusercontent.com/643635315/905d798e-16d7-4673-8fc4-e83caf7c41e6'
+          name='twitter:image'>
+    <!-- for search engines -->
+    <meta
+        content='SpessaSynth is a powerful MIDI Player and SoundFont2 / DLS Synthesizer with MIDI editing capabilites. It allows to play MIDI files with .sf2 files and .dls files and convert dls to sf2 online!'
+        name='description' />
+    <meta content='spessasus' name='author' />
+    <meta
+        content='midi, soundfont, sf2, synth, synthesizer, soundfont2, midi player, midi player online, player, sf3, dls, rmidi, mid, rmi, soundfont player, midi soundfont player online, dls to sf2, dls to sf2 converter'
+        name='keywords' />
 
-  <title>SpessaSynth SoundFont/DLS MIDI Player Online</title>
-  <link rel="preload" as='style' href='src/website/minified/style.min.css'>
-  <link rel='modulepreload' href='src/website/minified/demo_main.min.js'>
+    <title>SpessaSynth SoundFont/DLS MIDI Player Online</title>
+    <link as='style' href='src/website/minified/style.min.css' rel='preload'>
+    <link href='src/website/minified/demo_main.min.js' rel='modulepreload'>
 
-  <link rel='stylesheet' href='src/website/minified/style.min.css'>
-  <link rel='icon' type='image/png' href='src/website/favicon.ico'>
-  <link rel='manifest' href='src/website/manifest.json'>
-  <style>
-    #github_page{
-      color: yellowgreen;
-    }
-  </style>
-  <noscript>
+    <link href='src/website/minified/style.min.css' rel='stylesheet'>
+    <link href='src/website/favicon.ico' rel='icon' type='image/png'>
+    <link href='src/website/manifest.json' rel='manifest'>
     <style>
-      .loading_icon .bi-hourglass{
-        display: none !important;
-      }
-      .loading_icon {
-        animation: none !important;
-      }
-      #loading_message{
-        display: none !important;
-      }
+        #github_page {
+            color: yellowgreen;
+        }
     </style>
-  </noscript>
+    <noscript>
+        <style>
+            .loading_icon .bi-hourglass {
+                display: none !important;
+            }
+
+            .loading_icon {
+                animation: none !important;
+            }
+
+            #loading_message {
+                display: none !important;
+            }
+        </style>
+    </noscript>
 </head>
 <body>
 <!-- loading -->
 <div class='loading'>
-  <div class='loading_icon'>
-    <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" fill="currentColor" class="bi bi-hourglass" viewBox="0 0 16 16">
-      <path d="M2 1.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-1v1a4.5 4.5 0 0 1-2.557 4.06c-.29.139-.443.377-.443.59v.7c0 .213.154.451.443.59A4.5 4.5 0 0 1 12.5 13v1h1a.5.5 0 0 1 0 1h-11a.5.5 0 1 1 0-1h1v-1a4.5 4.5 0 0 1 2.557-4.06c.29-.139.443-.377.443-.59v-.7c0-.213-.154-.451-.443-.59A4.5 4.5 0 0 1 3.5 3V2h-1a.5.5 0 0 1-.5-.5m2.5.5v1a3.5 3.5 0 0 0 1.989 3.158c.533.256 1.011.791 1.011 1.491v.702c0 .7-.478 1.235-1.011 1.491A3.5 3.5 0 0 0 4.5 13v1h7v-1a3.5 3.5 0 0 0-1.989-3.158C8.978 9.586 8.5 9.052 8.5 8.351v-.702c0-.7.478-1.235 1.011-1.491A3.5 3.5 0 0 0 11.5 3V2z"/>
-    </svg>
-    <noscript>
-      <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" fill="currentColor" class="bi bi-exclamation-triangle" viewBox="0 0 16 16">
-        <path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06.1.1 0 0 1-.066.017H1.146a.1.1 0 0 1-.066-.017.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057m1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z"/>
-        <path d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/>
-      </svg>
-    </noscript>
-  </div>
-  <noscript><h1>Spessasynth requires JavaScript to work. Please turn it on.</h1></noscript>
-  <h1 id='loading_message'>Loading...</h1>
+    <div class='loading_icon'>
+        <svg class='bi bi-hourglass' fill='currentColor' height='256' viewBox='0 0 16 16' width='256'
+             xmlns='http://www.w3.org/2000/svg'>
+            <path
+                d='M2 1.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-1v1a4.5 4.5 0 0 1-2.557 4.06c-.29.139-.443.377-.443.59v.7c0 .213.154.451.443.59A4.5 4.5 0 0 1 12.5 13v1h1a.5.5 0 0 1 0 1h-11a.5.5 0 1 1 0-1h1v-1a4.5 4.5 0 0 1 2.557-4.06c.29-.139.443-.377.443-.59v-.7c0-.213-.154-.451-.443-.59A4.5 4.5 0 0 1 3.5 3V2h-1a.5.5 0 0 1-.5-.5m2.5.5v1a3.5 3.5 0 0 0 1.989 3.158c.533.256 1.011.791 1.011 1.491v.702c0 .7-.478 1.235-1.011 1.491A3.5 3.5 0 0 0 4.5 13v1h7v-1a3.5 3.5 0 0 0-1.989-3.158C8.978 9.586 8.5 9.052 8.5 8.351v-.702c0-.7.478-1.235 1.011-1.491A3.5 3.5 0 0 0 11.5 3V2z' />
+        </svg>
+        <noscript>
+            <svg class='bi bi-exclamation-triangle' fill='currentColor' height='256' viewBox='0 0 16 16'
+                 width='256' xmlns='http://www.w3.org/2000/svg'>
+                <path
+                    d='M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06.1.1 0 0 1-.066.017H1.146a.1.1 0 0 1-.066-.017.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057m1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z' />
+                <path
+                    d='M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z' />
+            </svg>
+        </noscript>
+    </div>
+    <noscript><h1>Spessasynth requires JavaScript to work. Please turn it on.</h1></noscript>
+    <h1 id='loading_message'>Loading...</h1>
 </div>
 
 <div class='drop_prompt hidden'>
-  <h1 translate-path='locale.dropPrompt'>Drop files here...</h1>
+    <h1 translate-path='locale.dropPrompt'>Drop files here...</h1>
 </div>
 
 <div class='spessasynth_main'>
-  <div class="top_part">
-    <div id="synthetizer_controls"></div>
+    <div class='top_part'>
+        <div id='synthetizer_controls'></div>
 
-    <div id="title_wrapper">
-      <div id="progress_bar"></div>
-      <h1 id="title" translate-path='locale.demoTitleMessage'>SpessaSynth: Online Demo</h1>
-      <noscript><h1>SpessaSynth requires JavaScript to work.</h1></noscript>
+        <div id='title_wrapper'>
+            <div id='progress_bar'></div>
+            <h1 id='title' translate-path='locale.demoTitleMessage'>SpessaSynth: Online Demo</h1>
+            <noscript><h1>SpessaSynth requires JavaScript to work.</h1></noscript>
 
-      <div class="midi_and_sf_controller">
-        <label id="file_upload" for='midi_file_input'  translate-path='locale.midiUploadButton'>Upload your MIDI files</label>
-        <input type="file" accept=".mid, .rmi, audio/midi" id="midi_file_input" multiple><br/>
+            <div class='midi_and_sf_controller'>
+                <label for='midi_file_input' id='file_upload' translate-path='locale.midiUploadButton'>Upload your MIDI
+                    files</label>
+                <input accept='.mid, .rmi, audio/midi' id='midi_file_input' multiple type='file'><br />
 
-        <label id='demo_song' translate-path='locale.demoSongButton'>Demo song</label>
+                <label id='demo_song' translate-path='locale.demoSongButton'>Demo song</label>
 
-        <label id='export_button' translate-path-title='locale.exportAudio.button'>Export audio</label>
+                <label id='export_button' translate-path-title='locale.exportAudio.button'>Export audio</label>
 
-        <label id="sf_upload"> <span translate-path='locale.demoSoundfontUploadButton'>Upload the soundfont</span>
-          <input type="file" accept=".sf2,.sf3,.sfogg,.dls" id="sf_file_input"><br/>
-        </label>
+                <label id='sf_upload'> <span
+                    translate-path='locale.demoSoundfontUploadButton'>Upload the soundfont</span>
+                    <input accept='.sf2,.sf3,.sfogg,.dls' id='sf_file_input' type='file'><br />
+                </label>
 
-        <label>
-          <a href='https://github.com/spessasus/SpessaSynth#readme' target='_blank' id='github_page' translate-path='locale.demoGithubPage'>Project's page</a>
-        </label>
-      </div>
+                <label>
+                    <a href='https://github.com/spessasus/SpessaSynth#readme' id='github_page' target='_blank'
+                       translate-path='locale.demoGithubPage'>Project's page</a>
+                </label>
+            </div>
+        </div>
+        <div id='settings_div'>
+        </div>
     </div>
-    <div id="settings_div">
+    <div class='show_top_button'></div>
+
+    <div id='keyboard_canvas_wrapper'>
+        <canvas id='note_canvas'></canvas>
+        <div id='keyboard'></div>
     </div>
-  </div>
-  <div class='show_top_button'></div>
+    <div id='player_info'></div>
 
-  <div id='keyboard_canvas_wrapper'>
-    <canvas id="note_canvas"></canvas>
-    <div id='keyboard'></div>
-  </div>
-  <div id='player_info'></div>
-
-  <div class="bottom_part">
-    <div id="sequencer_controls"></div>
-  </div>
-  <div class='notification_field'></div>
+    <div class='bottom_part'>
+        <div id='sequencer_controls'></div>
+    </div>
+    <div class='notification_field'></div>
 </div>
 
 <!-- here the magic happens ;) -->
-<script type="module" src='src/website/minified/demo_main.min.js'></script>
+<!--<script src='src/website/minified/demo_main.min.js' type='module'></script>-->
+<script>
+    window.isLocalEdition = true;
+</script>
+<script src='src/website/js/main/demo_main.js' type='module'></script>
 </body>
 </html>

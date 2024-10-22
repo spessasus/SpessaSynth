@@ -129,6 +129,18 @@ class Manager
             );
         }
         
+        /**
+         * set up soundfont
+         * @type {ArrayBuffer}
+         */
+        this.soundFont = soundFont;
+        
+        
+        const soundfont = loadSoundFont(this.soundFont);
+        const binary = soundfont.writeDLS();
+        const blob = new Blob([binary.buffer], { type: "audio/dls" });
+        this.saveBlob(blob, `${soundfont.soundFontInfo["INAM"]}.dls`);
+        
         const DEBUG_PATH = "synthetizer/worklet_system/worklet_processor.js";
         const WORKLET_PATH = ENABLE_DEBUG ? DEBUG_PATH : WORKLET_URL_ABSOLUTE;
         if (ENABLE_DEBUG)
@@ -141,11 +153,6 @@ class Manager
         {
             await context.audioWorklet.addModule(new URL(prePath + WORKLET_PATH, import.meta.url));
         }
-        /**
-         * set up soundfont
-         * @type {ArrayBuffer}
-         */
-        this.soundFont = soundFont;
         
         // set up buffer here (if we let spessasynth use the default buffer, there's no reverb for the first second.)
         const impulseURL = new URL(
