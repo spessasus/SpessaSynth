@@ -167,7 +167,7 @@ export function readDLSSamples(waveListChunk)
             sampleKey,
             samplePitch,
             sampleLoopStart,
-            sampleLength,
+            sampleLoopEnd,
             sampleData,
             sampleDbAttenuation
         ));

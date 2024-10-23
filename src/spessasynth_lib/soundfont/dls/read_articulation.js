@@ -136,8 +136,8 @@ export function readArticulation(chunk, disableVibrato)
                     break;
                 case DLSDestinations.volEnvSustain:
                     // gain seems to be (1000 - value) / 10 = sustain dB
-                    const sustainDb = (1000 - value) / 10;
-                    generator = new Generator(generatorTypes.sustainVolEnv, sustainDb * 10);
+                    const sustainCb = 1000 - value;
+                    generator = new Generator(generatorTypes.sustainVolEnv, sustainCb);
                     break;
                 
                 // mod env

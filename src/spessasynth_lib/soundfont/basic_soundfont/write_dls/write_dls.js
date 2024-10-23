@@ -2,7 +2,8 @@ import { writeRIFFOddSize } from "../riff_chunk.js";
 import { writeDword } from "../../../utils/byte_functions/little_endian.js";
 import { combineArrays, IndexedByteArray } from "../../../utils/indexed_array.js";
 import { writeLins } from "./lins.js";
-import { writeStringAsBytes } from "../../../utils/byte_functions/string.js";
+import { getStringBytes, writeStringAsBytes } from "../../../utils/byte_functions/string.js";
+import { writeWavePool } from "./wvpl.js";
 
 /**
  * Write the soundfont as a .dls file. Experimental
@@ -11,6 +12,7 @@ import { writeStringAsBytes } from "../../../utils/byte_functions/string.js";
  */
 export function writeDLS()
 {
+    // TODO: Fix GeneralUserGS
     // write colh
     const colhNum = new IndexedByteArray(4);
     writeDword(colhNum, this.presets.length);
@@ -20,9 +22,69 @@ export function writeDLS()
     );
     const lins = writeLins.apply(this);
     
-    const out = new IndexedByteArray(colh.length + lins.length + 4);
+    const wavepool = writeWavePool.apply(this);
+    const wvpl = wavepool.data;
+    const ptblOffsets = wavepool.indexes;
+    
+    // write ptbl
+    const ptblData = new IndexedByteArray(8 + 8 * ptblOffsets.length);
+    writeDword(ptblData, 8);
+    writeDword(ptblData, ptblOffsets.length);
+    for (const offset of ptblOffsets)
+    {
+        writeDword(ptblData, offset);
+    }
+    const ptbl = writeRIFFOddSize(
+        "ptbl",
+        ptblData
+    );
+    
+    this.soundFontInfo["ICMT"] = (this.soundFontInfo["ICMT"] || "") + " Converted to DLS using SpessaSynth";
+    this.soundFontInfo["ISFT"] = "SpessaSynth";
+    // write INFO
+    const infos = [];
+    for (const [info, data] of Object.entries(this.soundFontInfo))
+    {
+        if (
+            info !== "ICMT" &&
+            info !== "INAM" &&
+            info !== "ICRD" &&
+            info !== "IENG" &&
+            info !== "ICOP" &&
+            info !== "ISFT"
+        )
+        {
+            continue;
+        }
+        infos.push(
+            writeRIFFOddSize(
+                info,
+                getStringBytes(data)
+            )
+        );
+    }
+    const info = writeRIFFOddSize(
+        "INFO",
+        combineArrays(infos),
+        false,
+        true
+    );
+    
+    const out = new IndexedByteArray(
+        colh.length
+        + lins.length
+        + ptbl.length
+        + wvpl.length
+        + info.length
+        + 4);
     writeStringAsBytes(out, "DLS ");
-    out.set(combineArrays([colh, lins]), 4);
+    out.set(combineArrays([
+        colh,
+        lins,
+        ptbl,
+        wvpl,
+        info
+    ]), 4);
     return writeRIFFOddSize(
         "RIFF",
         out

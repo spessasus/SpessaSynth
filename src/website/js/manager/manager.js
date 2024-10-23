@@ -138,8 +138,9 @@ class Manager
         
         const soundfont = loadSoundFont(this.soundFont);
         const binary = soundfont.writeDLS();
-        const blob = new Blob([binary.buffer], { type: "audio/dls" });
-        this.saveBlob(blob, `${soundfont.soundFontInfo["INAM"]}.dls`);
+        const binarysf2 = loadSoundFont(binary.buffer).write();
+        const blob = new Blob([binarysf2], { type: "audio/sf2" });
+        this.saveBlob(blob, `${soundfont.soundFontInfo["INAM"]}.sf2`);
         
         const DEBUG_PATH = "synthetizer/worklet_system/worklet_processor.js";
         const WORKLET_PATH = ENABLE_DEBUG ? DEBUG_PATH : WORKLET_URL_ABSOLUTE;

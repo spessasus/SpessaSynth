@@ -8,12 +8,14 @@ export class BasicZone
 {
     /**
      * The zone's velocity range
+     * min -1 means that it is a default value
      * @type {SoundFontRange}
      */
     velRange = { min: -1, max: 127 };
     
     /**
      * The zone's key range
+     * min -1 means that it is a default value
      * @type {SoundFontRange}
      */
     keyRange = { min: -1, max: 127 };
@@ -32,7 +34,7 @@ export class BasicZone
      * @type {Modulator[]}
      */
     modulators = [];
-
+    
     /**
      * @returns {boolean}
      */
@@ -40,13 +42,23 @@ export class BasicZone
     {
         return this.keyRange.min !== -1;
     }
-
+    
     /**
      * @returns {boolean}
      */
     get hasVelRange()
     {
         return this.velRange.min !== -1;
+    }
+    
+    /**
+     * @param generatorType {generatorTypes}
+     * @param notFoundValue {number}
+     * @returns {number}
+     */
+    getGeneratorValue(generatorType, notFoundValue)
+    {
+        return this.generators.find(g => g.generatorType === generatorType)?.generatorValue || notFoundValue;
     }
 }
 

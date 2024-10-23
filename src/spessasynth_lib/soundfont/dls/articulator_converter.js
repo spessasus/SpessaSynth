@@ -4,6 +4,7 @@ import { midiControllers } from "../../midi_parser/midi_message.js";
 import { DLSDestinations } from "./dls_destinations.js";
 
 import { generatorTypes } from "../basic_soundfont/generator.js";
+import { SpessaSynthWarn } from "../../utils/loggin.js";
 
 /**
  * @param source {number}
@@ -209,6 +210,7 @@ export function getSF2ModulatorFromArticulator(
         if (sf2GenDestination === undefined)
         {
             // cannot be a valid modulator
+            SpessaSynthWarn(`Invalid destination: ${destination}`);
             return undefined;
         }
         /**
@@ -224,6 +226,7 @@ export function getSF2ModulatorFromArticulator(
         if (sf2Source === undefined)
         {
             // cannot be a valid modulator
+            SpessaSynthWarn(`Invalid source: ${source}`);
             return undefined;
         }
     }
@@ -238,6 +241,7 @@ export function getSF2ModulatorFromArticulator(
     if (sf2SecondSource === undefined)
     {
         // cannot be a valid modulator
+        SpessaSynthWarn(`Invalid control: ${control}`);
         return undefined;
     }
     

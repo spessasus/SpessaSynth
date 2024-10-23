@@ -23,19 +23,19 @@ export function getIGEN()
                 g.generatorType !== generatorTypes.velRange
             );
             // add sample and ranges if needed
-            // unshift vel then key ( to make key first)     and instrument is last
+            // unshift vel then key ( to make key first) and instrument is last
             if (z.velRange.max !== 127 || z.velRange.min !== 0)
             {
                 z.generators.unshift({
                     generatorType: generatorTypes.velRange,
-                    generatorValue: z.velRange.max << 8 | z.velRange.min
+                    generatorValue: z.velRange.max << 8 | Math.max(z.velRange.min, 0)
                 });
             }
             if (z.keyRange.max !== 127 || z.keyRange.min !== 0)
             {
                 z.generators.unshift({
                     generatorType: generatorTypes.keyRange,
-                    generatorValue: z.keyRange.max << 8 | z.keyRange.min
+                    generatorValue: z.keyRange.max << 8 | Math.max(z.keyRange.min, 0)
                 });
             }
             if (!z.isGlobal)
