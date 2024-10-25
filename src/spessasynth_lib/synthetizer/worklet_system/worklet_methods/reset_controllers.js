@@ -1,5 +1,4 @@
 import { consoleColors } from "../../../utils/other.js";
-import { midiControllers } from "../../../midi_parser/midi_message.js";
 import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE } from "../../synthetizer.js";
 import { SpessaSynthInfo } from "../../../utils/loggin.js";
 import { modulatorSources } from "../../../soundfont/basic_soundfont/modulator.js";
@@ -72,7 +71,7 @@ export function resetAllControllers(log = true)
             userCalled: false
         });
         
-        let restoreControllerValueEvent = ccNum =>
+        for (let ccNum = 0; ccNum < 128; ccNum++)
         {
             if (this.workletProcessorChannels[channelNumber].lockedControllers[ccNum])
             {
@@ -84,18 +83,11 @@ export function resetAllControllers(log = true)
                 });
             }
             
-        };
+        }
         
-        restoreControllerValueEvent(midiControllers.mainVolume);
-        restoreControllerValueEvent(midiControllers.pan);
-        restoreControllerValueEvent(midiControllers.expressionController);
-        restoreControllerValueEvent(midiControllers.modulationWheel);
-        restoreControllerValueEvent(midiControllers.chorusDepth);
-        restoreControllerValueEvent(midiControllers.reverbDepth);
-        restoreControllerValueEvent(midiControllers.brightness);
         
         // restore pitch wheel
-        if (this.workletProcessorChannels[channelNumber].lockedControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel])
+        if (this.workletProcessorChannels[channelNumber].lockedControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel] === false)
         {
             const val = this.workletProcessorChannels[channelNumber].midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel];
             const msb = val >> 7;
