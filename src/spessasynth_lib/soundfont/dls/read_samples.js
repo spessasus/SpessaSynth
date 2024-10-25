@@ -41,15 +41,16 @@ export function readDLSSamples(waveListChunk)
         {
             throw new Error("No fmt chunk in the wave file!");
         }
+        // https://github.com/tpn/winsdk-10/blob/9b69fd26ac0c7d0b83d378dba01080e93349c2ed/Include/10.0.14393.0/shared/mmreg.h#L2108
         const waveFormat = readLittleEndian(fmtChunk.chunkData, 2);
         if (waveFormat !== 1)
         {
-            throw new Error("Only PCM format in WAVE is supported.");
+            throw new Error(`Only PCM format in WAVE is supported. Fmt reports ${waveFormat}`);
         }
         const channelsAmount = readLittleEndian(fmtChunk.chunkData, 2);
         if (channelsAmount !== 1)
         {
-            throw new Error("Only mono samples are supported.");
+            throw new Error(`Only mono samples are supported. Fmt reports ${channelsAmount} channels`);
         }
         const sampleRate = readLittleEndian(fmtChunk.chunkData, 4);
         // skip avg bytes
