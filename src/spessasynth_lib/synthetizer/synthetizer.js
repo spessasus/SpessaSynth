@@ -127,6 +127,24 @@ export class Synthetizer
             processorChannelCount = [32];
         }
         
+        // check for config data in snapshot
+        if (startRenderingData?.snapshot?.effectsConfig !== undefined)
+        {
+            /**
+             * @type {EffectsConfig}
+             */
+            this.effectsConfig = startRenderingData.snapshot.effectsConfig;
+            // remove from config as it can't be cloned
+            delete startRenderingData.snapshot.effectsConfig;
+        }
+        else
+        {
+            /**
+             * @type {EffectsConfig}
+             */
+            this.effectsConfig = effectsConfig;
+        }
+        
         // first two outputs: reverb, chorsu, the others are the channel outputs
         try
         {
@@ -143,6 +161,7 @@ export class Synthetizer
         }
         catch (e)
         {
+            console.error(e);
             throw new Error("Could not create the audioWorklet. Did you forget to addModule()?");
         }
         
@@ -175,18 +194,17 @@ export class Synthetizer
          * @type {function(WorkletSequencerReturnMessageType, any)}
          */
         this.sequencerCallbackFunction = undefined;
-        
         // add reverb
-        if (effectsConfig.reverbEnabled && !oneOutputMode)
+        if (this.effectsConfig.reverbEnabled && !oneOutputMode)
         {
-            this.reverbProcessor = getReverbProcessor(this.context, effectsConfig.reverbImpulseResponse);
+            this.reverbProcessor = getReverbProcessor(this.context, this.effectsConfig.reverbImpulseResponse);
             this.reverbProcessor.connect(targetNode);
             this.worklet.connect(this.reverbProcessor, 0);
         }
         
-        if (effectsConfig.chorusEnabled && !oneOutputMode)
+        if (this.effectsConfig.chorusEnabled && !oneOutputMode)
         {
-            this.chorusProcessor = new FancyChorus(targetNode, effectsConfig.chorusConfig);
+            this.chorusProcessor = new FancyChorus(targetNode, this.effectsConfig.chorusConfig);
             this.worklet.connect(this.chorusProcessor.input, 1);
         }
         
@@ -361,6 +379,7 @@ export class Synthetizer
             this._snapshotCallback = s =>
             {
                 this._snapshotCallback = undefined;
+                s.effectsConfig = this.effectsConfig;
                 resolve(s);
             };
             this.post({
@@ -821,6 +840,7 @@ export class Synthetizer
     setReverbResponse(buffer)
     {
         this.reverbProcessor.buffer = buffer;
+        this.effectsConfig.reverbImpulseResponse = buffer;
     }
     
     /**
@@ -829,12 +849,12 @@ export class Synthetizer
      */
     setChorusConfig(config)
     {
-        console.log(config);
         this.worklet.disconnect(this.chorusProcessor.input);
         this.chorusProcessor.delete();
         delete this.chorusProcessor;
         this.chorusProcessor = new FancyChorus(this.targetNode, config);
         this.worklet.connect(this.chorusProcessor.input, 1);
+        this.effectsConfig.chorusConfig = config;
     }
     
     reverbateEverythingBecauseWhyNot()

@@ -7,15 +7,12 @@ import {
     getSampleNearest,
     interpolationTypes
 } from "../worklet_utilities/wavetable_oscillator.js";
-import { panVoice } from "../worklet_utilities/stereo_panner.js";
 import { WorkletLowpassFilter } from "../worklet_utilities/lowpass_filter.js";
 import { MIN_NOTE_LENGTH } from "../main_processor.js";
 import { WorkletVolumeEnvelope } from "../worklet_utilities/volume_envelope.js";
 import { generatorTypes } from "../../../soundfont/basic_soundfont/generator.js";
 import { customControllers } from "../worklet_utilities/controller_tables.js";
 
-
-const HALF_PI = Math.PI / 2;
 export const PAN_SMOOTHING_FACTOR = 0.05;
 
 /**
@@ -157,8 +154,6 @@ export function renderVoice(
         voice.currentTuningCalculated = Math.pow(2, centsTotal / 1200);
     }
     
-    // PANNING
-    const pan = ((Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan])) + 500) / 1000); // 0 to 1
     
     // SYNTHESIS
     const bufferOut = new Float32Array(outputLeft.length);
@@ -189,20 +184,12 @@ export function renderVoice(
     // volenv
     WorkletVolumeEnvelope.apply(voice, bufferOut, modLfoCentibels, this.volumeEnvelopeSmoothingFactor);
     
-    // pan the voice and write out
-    voice.currentPan += (pan - voice.currentPan) * this.panSmoothingFactor; // smooth out pan to prevent clicking
-    const panLeft = Math.cos(HALF_PI * voice.currentPan) * this.panLeft;
-    const panRight = Math.sin(HALF_PI * voice.currentPan) * this.panRight;
-    // disable reverb and chorus in one output mode
-    const reverb = this.oneOutputMode ? 0 : voice.modulatedGenerators[generatorTypes.reverbEffectsSend];
-    const chorus = this.oneOutputMode ? 0 : voice.modulatedGenerators[generatorTypes.chorusEffectsSend];
-    panVoice(
-        panLeft,
-        panRight,
+    this.panVoice(
+        voice,
         bufferOut,
         outputLeft, outputRight,
-        reverbOutput, reverb,
-        chorusOutput, chorus
+        reverbOutput,
+        chorusOutput
     );
 }
 

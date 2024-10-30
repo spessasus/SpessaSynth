@@ -1,4 +1,4 @@
-import { closeNotification, showNotification } from "../../notification/notification.js";
+import { showNotification } from "../../notification/notification.js";
 import { SpessaSynthInfo } from "../../../../spessasynth_lib/utils/loggin.js";
 import { consoleColors } from "../../../../spessasynth_lib/utils/other.js";
 import { DEFAULT_CHORUS_CONFIG } from "../../../../spessasynth_lib/synthetizer/audio_effects/fancy_chorus.js";
@@ -158,7 +158,6 @@ export function showEffectsConfigWindow(locale, path, synth)
                         "input[setting='freq-var']").value);
                     USER_CONFIG.oscillatorGain = parseFloat(n.div.querySelector("input[setting='osc-gain']").value);
                     synth.setChorusConfig(USER_CONFIG);
-                    closeNotification(n.id);
                 }
             }
         ],

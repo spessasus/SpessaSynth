@@ -3,6 +3,8 @@
  * purpose: manages a single visualization meter, handles user changing the value if set to do so
  */
 
+import { isMobile } from "../../utils/is_mobile.js";
+
 /**
  * @typedef {Function} MeterCallbackFunction
  * @param clickedValue {number} the value, calculated with min and max values
@@ -126,6 +128,10 @@ export class Meter
                 this.isActive = true;
                 this.div.onmousemove(e);
                 this.isActive = false;
+                if (isMobile)
+                {
+                    this.lockMeter();
+                }
             };
             this.div.classList.add("editable");
         }
