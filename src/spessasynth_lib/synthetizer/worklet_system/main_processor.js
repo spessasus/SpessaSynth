@@ -50,6 +50,7 @@ import { applySynthesizerSnapshot, sendSynthesizerSnapshot } from "./worklet_met
 import { WorkletSoundfontManager } from "./worklet_methods/worklet_soundfont_manager/worklet_soundfont_manager.js";
 import { interpolationTypes } from "./worklet_utilities/wavetable_oscillator.js";
 import { getWorkletVoices } from "./worklet_utilities/worklet_voice.js";
+import { panVoice } from "./worklet_utilities/stereo_panner.js";
 
 
 /**
@@ -144,7 +145,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
          * the pan of the left channel
          * @type {number}
          */
-        this.panLeft = 0.5 * this.currentGain;
+        this.panLeft = 0.5;
         
         this.highPerformanceMode = false;
         
@@ -158,7 +159,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
          * the pan of the right channel
          * @type {number}
          */
-        this.panRight = 0.5 * this.currentGain;
+        this.panRight = 0.5;
         try
         {
             /**
@@ -444,5 +445,7 @@ SpessaSynthProcessor.prototype.sendPresetList = sendPresetList;
 // snapshot related
 SpessaSynthProcessor.prototype.sendSynthesizerSnapshot = sendSynthesizerSnapshot;
 SpessaSynthProcessor.prototype.applySynthesizerSnapshot = applySynthesizerSnapshot;
+
+SpessaSynthProcessor.prototype.panVoice = panVoice;
 
 export { SpessaSynthProcessor };

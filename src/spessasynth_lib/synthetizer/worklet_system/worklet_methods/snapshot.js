@@ -32,6 +32,7 @@
  * @property {interpolationTypes} interpolation - the synth's interpolation type
  * @property {SynthSystem} system - the synths system. Values can be "gs", "gm", "gm2" or "xg"
  * @property {number} transposition - the current synth transpositon in semitones. can be a float
+ * @property {EffectsConfig} effectsConfig - the effects configuration object
  */
 
 import { returnMessageType } from "../message_protocol/worklet_message.js";

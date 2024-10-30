@@ -21,6 +21,13 @@ export function _createInterfaceSettingsHandler()
     }
     select.onchange = () =>
     {
+        if (select.value === "help-translate")
+        {
+            window.open(
+                "https://github.com/spessasus/SpessaSynth/blob/master/src/website/js/locale/locale_files/README.md");
+            select.value = this.locale.localeCode;
+            return;
+        }
         this.locale.changeGlobalLocale(select.value);
         this._saveSettings();
     };

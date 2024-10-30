@@ -2,6 +2,7 @@ import { midiPatchNames } from "../../utils/patch_names.js";
 import { getLockSVG, getUnlockSVG } from "../../utils/icons.js";
 import { LOCALE_PATH } from "../synthetizer_ui.js";
 import { ICON_SIZE } from "./create_channel_controller.js";
+import { isMobile } from "../../utils/is_mobile.js";
 
 /**
  * syntui_selector.js
@@ -243,7 +244,10 @@ export class Selector
             this.hideSelectionMenu();
         };
         this.isWindowShown = true;
-        searchInput.focus();
+        if (!isMobile)
+        {
+            searchInput.focus();
+        }
     }
     
     /**

@@ -23,7 +23,8 @@ export const settingsLocale = {
         
         selectLanguage: {
             title: "Language",
-            description: "Change the program language"
+            description: "Change the program language",
+            helpTranslate: "Translate SpessaSynth"
         },
         
         layoutDirection: {

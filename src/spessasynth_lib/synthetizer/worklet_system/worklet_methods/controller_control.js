@@ -235,8 +235,8 @@ export function setMasterPan(pan)
     this.pan = pan;
     // clamp to 0-1 (0 is left)
     pan = (pan / 2) + 0.5;
-    this.panLeft = (1 - pan) * this.currentGain;
-    this.panRight = (pan) * this.currentGain;
+    this.panLeft = (1 - pan);
+    this.panRight = (pan);
 }
 
 /**

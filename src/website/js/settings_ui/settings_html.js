@@ -90,7 +90,7 @@ export const settingsHtml = `
         <div class='switch_label'>
             <label translate-path-title='locale.settings.keyboardSettings.show'></label>
             <label class='switch'>
-                <input type="checkbox" checked id="keyboard_show">
+                <input type='checkbox' checked id='keyboard_show'>
                 <span class='switch_slider'></span>
             </label>
         </div>
@@ -123,6 +123,7 @@ export const settingsHtml = `
         
         <label for='language_selector' translate-path-title='locale.settings.interfaceSettings.selectLanguage'></label>
         <select id='language_selector'>
+         <option value='help-translate' translate-path='locale.settings.interfaceSettings.selectLanguage.helpTranslate'></option>
         <!-- will be added via javascript -->
         </select>
         
