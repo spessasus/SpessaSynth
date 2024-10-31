@@ -7,18 +7,22 @@
     <meta content='ie=edge' http-equiv='X-UA-Compatible'>
     <link href='../src/website/favicon.ico' rel='icon'>
     <link href='examples.css' rel='stylesheet'>
-    <title>SpessaSynth simple example</title>
+    <title>SpessaSynth piano example</title>
 </head>
 <body>
-<h1>spessasynth_lib example: simple demo</h1>
+<h1>spessasynth_lib example: piano</h1>
 <a href='https://spessasus.github.io/SpessaSynth'>Main page</a>
 <a href='https://github.com/spessasus/SpessaSynth/wiki/'>Documentation</a>
 
 <div class='example_content'>
-    <p id='message'>Please wait for the soundFont to load.</p>
-    <input accept='.mid, .rmi' id='midi_input' type='file'>
+    <label for='soundfont_input'>Upload the soundfont.</label>
+    <input accept='.sf2, .sf3, .dls' id='soundfont_input' type='file'>
+    <table>
+        <tr id='piano'>
+        </tr>
+    </table>
     <!-- note the type="module" -->
-    <script src='simple_demo.js' type='module'></script>
+    <script src='piano.js' type='module'></script>
 </div>
 </body>
 </html>
