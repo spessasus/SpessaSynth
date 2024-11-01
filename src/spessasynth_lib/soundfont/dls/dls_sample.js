@@ -58,7 +58,7 @@ export class DLSSample extends BasicSample
         {
             if (!this.compressedData)
             {
-                throw new Error("Compressed but no data??");
+                throw new Error("Compressed but no data?? This shouldn't happen!!");
             }
             return this.compressedData;
         }

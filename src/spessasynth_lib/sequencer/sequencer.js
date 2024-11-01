@@ -459,7 +459,7 @@ export class Sequencer
                 }
                 else
                 {
-                    throw new Error(messageData);
+                    throw new Error("Sequencer error: " + messageData);
                 }
                 return;
             

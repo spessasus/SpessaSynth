@@ -113,11 +113,18 @@ export class LoadedSample extends BasicSample
         const buff = smplArr.slice(this.sampleStartIndex / 2 + smplStart, this.sampleEndIndex / 2 + smplStart);
         // reset array and being decoding
         this.sampleData = new Float32Array(0);
-        /**
-         * @type {{data: Float32Array[], error: (string|null), sampleRate: number, eof: boolean}}
-         */
-        const vorbis = stbvorbis.decode(buff.buffer);
-        this.sampleData = vorbis.data[0];
+        try
+        {
+            /**
+             * @type {{data: Float32Array[], error: (string|null), sampleRate: number, eof: boolean}}
+             */
+            const vorbis = stbvorbis.decode(buff.buffer);
+            this.sampleData = vorbis.data[0];
+        }
+        catch (e)
+        {
+            throw new Error(`Ogg Vorbis decode error: ${e}`);
+        }
     }
     
     /**

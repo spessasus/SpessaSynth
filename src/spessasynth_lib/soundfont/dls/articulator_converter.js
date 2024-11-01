@@ -71,7 +71,7 @@ function getSF2SourceFromDLS(source)
     }
     if (sourceEnum === undefined)
     {
-        throw `not known?? ${source}`;
+        throw new Error(`Unknown DLS Source: ${source}`);
     }
     return { enum: sourceEnum, isCC: isCC };
 }

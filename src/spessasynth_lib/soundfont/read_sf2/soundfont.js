@@ -39,7 +39,7 @@ export class SoundFont2 extends BasicSoundFont
         if (!this.dataArray)
         {
             SpessaSynthGroupEnd();
-            throw new TypeError("No data!");
+            this.parsingError("No data provided!");
         }
         
         // read the main read
@@ -280,7 +280,7 @@ export class SoundFont2 extends BasicSoundFont
         if (chunk.header.toLowerCase() !== expected.toLowerCase())
         {
             SpessaSynthGroupEnd();
-            throw new SyntaxError(`Invalid chunk header! Expected "${expected.toLowerCase()}" got "${chunk.header.toLowerCase()}"`);
+            this.parsingError(`Invalid chunk header! Expected "${expected.toLowerCase()}" got "${chunk.header.toLowerCase()}"`);
         }
     }
     
@@ -293,7 +293,7 @@ export class SoundFont2 extends BasicSoundFont
         if (text.toLowerCase() !== expected.toLowerCase())
         {
             SpessaSynthGroupEnd();
-            throw new SyntaxError(`Invalid soundFont! Expected "${expected.toLowerCase()}" got "${text.toLowerCase()}"`);
+            this.parsingError(`Invalid FourCC: Expected "${expected.toLowerCase()}" got "${text.toLowerCase()}"\``);
         }
     }
 }
