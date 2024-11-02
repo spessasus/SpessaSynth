@@ -18,20 +18,15 @@
     <meta content='https://spessasus.github.io/SpessaSynth/' property='og:url' />
     <meta content='website' property='og:type' />
 
-    <!-- twitter card -->
-    <meta content='summary_large_image' name='twitter:card'>
-    <meta content='SpessaSynth MIDI Synthesizer' name='twitter:title'>
-    <meta content='SoundFont2 synthesizer and MIDI player/editor that runs in your browser' name='twitter:description'>
-    <meta content='https://repository-images.githubusercontent.com/643635315/905d798e-16d7-4673-8fc4-e83caf7c41e6'
-          name='twitter:image'>
-    <!-- for search engines -->
-    <meta
-        content='SpessaSynth is a powerful MIDI Player and SoundFont2 / DLS Synthesizer with MIDI editing capabilites. It allows to play MIDI files with .sf2 files and .dls files and convert dls to sf2 online!'
-        name='description' />
-    <meta content='spessasus' name='author' />
-    <meta
-        content='midi, soundfont, sf2, synth, synthesizer, soundfont2, midi player, midi player online, player, sf3, dls, rmidi, mid, rmi, soundfont player, midi soundfont player online, dls to sf2, dls to sf2 converter'
-        name='keywords' />
+  <!-- twitter card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="SpessaSynth MIDI Synthesizer">
+  <meta name="twitter:description" content="SoundFont2 synthesizer and MIDI player/editor that runs in your browser">
+  <meta name="twitter:image" content="https://repository-images.githubusercontent.com/643635315/905d798e-16d7-4673-8fc4-e83caf7c41e6">
+  <!-- for search engines -->
+  <meta name='description' content='SpessaSynth is a powerful MIDI Player and SoundFont2 / DLS Synthesizer with MIDI editing capabilites. It allows to play MIDI files with .sf2 files and .dls files and convert dls to sf2 online!' />
+  <meta name='author' content='spessasus' />
+  <meta name='keywords' content='midi, soundfont, sf2, synth, synthesizer, soundfont2, midi player, midi player online, player, sf3, dls, rmidi, mid, rmi, soundfont player, midi soundfont player online, dls to sf2, dls to sf2 converter' />
 
     <title>SpessaSynth SoundFont/DLS MIDI Player Online</title>
     <link as='style' href='src/website/minified/style.min.css' rel='preload'>
@@ -135,10 +130,6 @@
 </div>
 
 <!-- here the magic happens ;) -->
-<!--<script src='src/website/minified/demo_main.min.js' type='module'></script>-->
-<script>
-    window.isLocalEdition = true;
-</script>
-<script src='src/website/js/main/demo_main.js' type='module'></script>
+<script type="module" src='src/website/minified/demo_main.min.js'></script>
 </body>
 </html>

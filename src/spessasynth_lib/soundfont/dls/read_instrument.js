@@ -85,7 +85,7 @@ export function readDLSInstrument(chunk)
         if (type !== "rgn " && type !== "rgn2")
         {
             SpessaSynthGroupEnd();
-            throw new SyntaxError(`Invalid DLS region! Expected "rgn " or "rgn2" got "${type}"`);
+            this.parsingError(`Invalid DLS region! Expected "rgn " or "rgn2" got "${type}"`);
         }
         
         

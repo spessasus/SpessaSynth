@@ -25,7 +25,7 @@ class DLSSoundFont extends BasicSoundFont
         if (!this.dataArray)
         {
             SpessaSynthGroupEnd();
-            throw new TypeError("No data!");
+            this.parsingError("No data provided!");
         }
         
         // read the main chunk
@@ -85,7 +85,7 @@ class DLSSoundFont extends BasicSoundFont
         if (!colhChunk)
         {
             SpessaSynthGroupEnd();
-            throw new Error("No colh chunk!");
+            this.parsingError("No colh chunk!");
         }
         this.instrumentAmount = readLittleEndian(colhChunk.chunkData, 4);
         SpessaSynthInfo(
@@ -96,6 +96,11 @@ class DLSSoundFont extends BasicSoundFont
         
         // read wave list
         let waveListChunk = findRIFFListType(chunks, "wvpl");
+        if (!waveListChunk)
+        {
+            SpessaSynthGroupEnd();
+            this.parsingError("No wvpl chunk!");
+        }
         this.readDLSSamples(waveListChunk);
         
         // read instrument list
@@ -103,7 +108,7 @@ class DLSSoundFont extends BasicSoundFont
         if (!instrumentListChunk)
         {
             SpessaSynthGroupEnd();
-            throw new Error("No lins chunk!");
+            this.parsingError("No lins chunk!");
         }
         this.readDLSInstrumentList(instrumentListChunk);
         
@@ -135,7 +140,7 @@ class DLSSoundFont extends BasicSoundFont
         if (chunk.header.toLowerCase() !== expected.toLowerCase())
         {
             SpessaSynthGroupEnd();
-            throw new SyntaxError(`Invalid DLS chunk header! Expected "${expected.toLowerCase()}" got "${chunk.header.toLowerCase()}"`);
+            this.parsingError(`Invalid DLS chunk header! Expected "${expected.toLowerCase()}" got "${chunk.header.toLowerCase()}"`);
         }
     }
     
@@ -148,8 +153,16 @@ class DLSSoundFont extends BasicSoundFont
         if (text.toLowerCase() !== expected.toLowerCase())
         {
             SpessaSynthGroupEnd();
-            throw new SyntaxError(`Invalid DLS soundfont! Expected "${expected.toLowerCase()}" got "${text.toLowerCase()}"`);
+            this.parsingError(`FourCC error: Expected "${expected.toLowerCase()}" got "${text.toLowerCase()}"`);
         }
+    }
+    
+    /**
+     * @param error {string}
+     */
+    parsingError(error)
+    {
+        throw new Error(`DLS parse error: ${error} The file may be corrupted.`);
     }
 }
 

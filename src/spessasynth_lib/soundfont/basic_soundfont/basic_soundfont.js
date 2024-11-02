@@ -226,6 +226,14 @@ class BasicSoundFont
         }
         return preset;
     }
+    
+    /**
+     * @param error {string}
+     */
+    parsingError(error)
+    {
+        throw new Error(`SF parsing error: ${error} The file may be corrupted.`);
+    }
 }
 
 BasicSoundFont.prototype.write = write;

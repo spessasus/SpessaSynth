@@ -105,7 +105,7 @@ class Manager
         if (!context.audioWorklet)
         {
             alert("Audio worklet is not supported on your browser. Sorry!");
-            throw "Not supported.";
+            throw new Error("Audio worklet is not supported");
         }
         
         // bind every element with translate-path to translation
@@ -186,7 +186,7 @@ class Manager
         {
             if (this.sfError)
             {
-                this.sfError(e);
+                this.sfError(e.message);
             }
         });
         await this.synth.isReady;

@@ -80,7 +80,7 @@ export function readDLSSamples(waveListChunk)
         const dataChunk = waveChunks.find(c => c.header === "data");
         if (!dataChunk)
         {
-            throw new Error("No data chunk in the wave chunk!");
+            this.parsingError("No data chunk in the WAVE chunk!");
         }
         const sampleLength = dataChunk.size / bytesPerSample;
         const sampleData = new Float32Array(sampleLength);

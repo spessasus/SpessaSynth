@@ -49,7 +49,7 @@ export function loadNewSequence(parsedMidi, autoPlay = true)
     this.stop();
     if (!parsedMidi.tracks)
     {
-        throw "No tracks supplied!";
+        throw new Error("This MIDI has no tracks!");
     }
     
     this.oneTickToSeconds = 60 / (120 * parsedMidi.timeDivision);

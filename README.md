@@ -158,6 +158,7 @@ npm install --save spessasynth_lib
   - Polish
   - Japanese
   - French (translated by Davy Triponney)
+  - Portugese (translated by Lucas Gabriel)
   - Custom locale management system, created specifically for this project
 - **Description of buttons:** Hover over the buttons to see what they do!
 - **`Web MIDI API` support:** Use your physical MIDI devices!
