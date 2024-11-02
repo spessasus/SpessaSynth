@@ -257,6 +257,7 @@ class Manager
             this.localeManager
         );
         this.synthUI.connectSynth(this.synth);
+        this.synthUI.connectKeyboard(this.keyboard);
         
         // create an UI for music player mode
         this.playerUI = new MusicModeUI(document.getElementById("player_info"), this.localeManager);

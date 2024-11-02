@@ -4,7 +4,7 @@
 
 #synthetizer_controls {
     --voice-meter-height: 2.5em;
-    --synthui-background: black;
+    --synthui-background: rgba(0, 0, 0, 0.8);
     --synthui-border-radius: var(--primary-border-radius);
 }
 
@@ -48,6 +48,7 @@
     display: none;
     position: absolute;
     background: var(--synthui-background);
+    backdrop-filter: blur(0.3rem);
     top: 100%;
     border-radius: 0 0 1em 1em;
     transform: scaleX(0);

@@ -134,6 +134,8 @@ export const settingsHtml = `
             <option value='left' translate-path='locale.settings.interfaceSettings.layoutDirection.values.leftToRight'></option>
             <option value='right' translate-path='locale.settings.interfaceSettings.layoutDirection.values.rightToLeft'></option>
         </select>
+        
+        <h3><a href='https://github.com/spessasus/SpessaSynth/wiki/How-To-Use-App' target='_blank' translate-path-title='locale.synthesizerController.helpButton'></a></h3>
     </div>
 </div>
 `;

@@ -333,112 +333,126 @@ export function getWorkletVoices(channel,
     let workletVoices;
     
     const cached = channelObject.cachedVoices[midiNote][velocity];
-    if (cached !== undefined)
+    
+    // override patch
+    const overridePatch = this.keyModifierManager.hasOverridePatch(channel, midiNote);
+    
+    // overriden patch is not cached
+    if (cached !== undefined && !overridePatch)
     {
         return cached.map(v => WorkletVoice.copy(v, currentTime));
     }
-    else
+    
+    // not cached...
+    let canCache = true;
+    let preset = channelObject.preset;
+    if (overridePatch)
     {
-        const preset = channelObject.preset;
-        /**
-         * @returns {WorkletVoice[]}
-         */
-        workletVoices = preset.getSamplesAndGenerators(midiNote, velocity)
-            .reduce((voices, sampleAndGenerators) =>
+        canCache = false;
+        const patchNum = this.keyModifierManager.getPatch(channel, midiNote);
+        preset = this.soundfontManager.getPreset(patchNum.bank, patchNum.program);
+    }
+    /**
+     * @returns {WorkletVoice[]}
+     */
+    workletVoices = preset.getSamplesAndGenerators(midiNote, velocity)
+        .reduce((voices, sampleAndGenerators) =>
+        {
+            if (sampleAndGenerators.sample.sampleData === undefined)
             {
-                if (sampleAndGenerators.sample.sampleData === undefined)
-                {
-                    SpessaSynthWarn(`Discarding invalid sample: ${sampleAndGenerators.sample.sampleName}`);
-                    return voices;
-                }
-                
-                // create the generator list
-                const generators = new Int16Array(60);
-                // apply and sum the gens
-                for (let i = 0; i < 60; i++)
-                {
-                    generators[i] = addAndClampGenerator(
-                        i,
-                        sampleAndGenerators.presetGenerators,
-                        sampleAndGenerators.instrumentGenerators
-                    );
-                }
-                
-                // !! EMU initial attenuation correction, multiply initial attenuation by 0.4
-                generators[generatorTypes.initialAttenuation] = Math.floor(generators[generatorTypes.initialAttenuation] * 0.4);
-                
-                // key override
-                let rootKey = sampleAndGenerators.sample.samplePitch;
-                if (generators[generatorTypes.overridingRootKey] > -1)
-                {
-                    rootKey = generators[generatorTypes.overridingRootKey];
-                }
-                
-                let targetKey = midiNote;
-                if (generators[generatorTypes.keyNum] > -1)
-                {
-                    targetKey = generators[generatorTypes.keyNum];
-                }
-                
-                // determine looping mode now. if the loop is too small, disable
-                let loopStart = sampleAndGenerators.sample.sampleLoopStartIndex;
-                let loopEnd = sampleAndGenerators.sample.sampleLoopEndIndex;
-                let loopingMode = generators[generatorTypes.sampleModes];
-                /**
-                 * create the worklet sample
-                 * offsets are calculated at note on time (to allow for modulation of them)
-                 * @type {WorkletSample}
-                 */
-                const workletSample = new WorkletSample(
-                    sampleAndGenerators.sample.getAudioData(),
-                    (sampleAndGenerators.sample.sampleRate / sampleRate) * Math.pow(
-                        2,
-                        sampleAndGenerators.sample.samplePitchCorrection / 1200
-                    ), // cent tuning
-                    0,
-                    rootKey,
-                    loopStart,
-                    loopEnd,
-                    Math.floor(sampleAndGenerators.sample.sampleData.length) - 1,
-                    loopingMode
-                );
-                // velocity override
-                if (generators[generatorTypes.velocity] > -1)
-                {
-                    velocity = generators[generatorTypes.velocity];
-                }
-                
-                if (debug)
-                {
-                    SpessaSynthTable([{
-                        Sample: sampleAndGenerators.sample.sampleName,
-                        Generators: generators,
-                        Modulators: sampleAndGenerators.modulators.map(m => m.debugString()),
-                        Velocity: velocity,
-                        TargetKey: targetKey,
-                        MidiNote: midiNote,
-                        WorkletSample: workletSample
-                    }]);
-                }
-                
-                
-                voices.push(
-                    new WorkletVoice(
-                        sampleRate,
-                        workletSample,
-                        midiNote,
-                        velocity,
-                        channel,
-                        currentTime,
-                        targetKey,
-                        realKey,
-                        generators,
-                        sampleAndGenerators.modulators.map(m => Modulator.copy(m))
-                    )
-                );
+                SpessaSynthWarn(`Discarding invalid sample: ${sampleAndGenerators.sample.sampleName}`);
                 return voices;
-            }, []);
-        // cache the voice
+            }
+            
+            // create the generator list
+            const generators = new Int16Array(60);
+            // apply and sum the gens
+            for (let i = 0; i < 60; i++)
+            {
+                generators[i] = addAndClampGenerator(
+                    i,
+                    sampleAndGenerators.presetGenerators,
+                    sampleAndGenerators.instrumentGenerators
+                );
+            }
+            
+            // !! EMU initial attenuation correction, multiply initial attenuation by 0.4
+            generators[generatorTypes.initialAttenuation] = Math.floor(generators[generatorTypes.initialAttenuation] * 0.4);
+            
+            // key override
+            let rootKey = sampleAndGenerators.sample.samplePitch;
+            if (generators[generatorTypes.overridingRootKey] > -1)
+            {
+                rootKey = generators[generatorTypes.overridingRootKey];
+            }
+            
+            let targetKey = midiNote;
+            if (generators[generatorTypes.keyNum] > -1)
+            {
+                targetKey = generators[generatorTypes.keyNum];
+            }
+            
+            // determine looping mode now. if the loop is too small, disable
+            let loopStart = sampleAndGenerators.sample.sampleLoopStartIndex;
+            let loopEnd = sampleAndGenerators.sample.sampleLoopEndIndex;
+            let loopingMode = generators[generatorTypes.sampleModes];
+            /**
+             * create the worklet sample
+             * offsets are calculated at note on time (to allow for modulation of them)
+             * @type {WorkletSample}
+             */
+            const workletSample = new WorkletSample(
+                sampleAndGenerators.sample.getAudioData(),
+                (sampleAndGenerators.sample.sampleRate / sampleRate) * Math.pow(
+                    2,
+                    sampleAndGenerators.sample.samplePitchCorrection / 1200
+                ), // cent tuning
+                0,
+                rootKey,
+                loopStart,
+                loopEnd,
+                Math.floor(sampleAndGenerators.sample.sampleData.length) - 1,
+                loopingMode
+            );
+            // velocity override
+            if (generators[generatorTypes.velocity] > -1)
+            {
+                velocity = generators[generatorTypes.velocity];
+            }
+            
+            if (debug)
+            {
+                SpessaSynthTable([{
+                    Sample: sampleAndGenerators.sample.sampleName,
+                    Generators: generators,
+                    Modulators: sampleAndGenerators.modulators.map(m => m.debugString()),
+                    Velocity: velocity,
+                    TargetKey: targetKey,
+                    MidiNote: midiNote,
+                    WorkletSample: workletSample
+                }]);
+            }
+            
+            
+            voices.push(
+                new WorkletVoice(
+                    sampleRate,
+                    workletSample,
+                    midiNote,
+                    velocity,
+                    channel,
+                    currentTime,
+                    targetKey,
+                    realKey,
+                    generators,
+                    sampleAndGenerators.modulators.map(m => Modulator.copy(m))
+                )
+            );
+            return voices;
+        }, []);
+    // cache the voice
+    if (canCache)
+    {
         channelObject.cachedVoices[midiNote][velocity] = workletVoices.map(v => WorkletVoice.copy(v, currentTime));
     }
     return workletVoices;

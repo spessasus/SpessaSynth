@@ -123,7 +123,7 @@ export function write(options = DEFAULT_WRITE_OPTIONS)
         smplStartOffsets,
         smplEndOffsets,
         options?.compress,
-        options?.compressionQuality || 0.5,
+        options?.compressionQuality ?? 0.5,
         options.compressionFunction
     );
     

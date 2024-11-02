@@ -8,6 +8,7 @@ import { getEmptyMicSvg, getVolumeSvg } from "../../utils/icons.js";
 import { ICON_SIZE } from "./create_channel_controller.js";
 import { showEffectsConfigWindow } from "./effects_config.js";
 import { closeNotification } from "../../notification/notification.js";
+import { startKeyModifiersMenu } from "./key_modifier_ui.js";
 
 /**
  * @this {SynthetizerUI}
@@ -187,6 +188,18 @@ export function createMainSynthController()
         this.synth.highPerformanceMode = !this.synth.highPerformanceMode;
     };
     
+    // keyModifiers
+    const keyModifiers = document.createElement("button");
+    this.locale.bindObjectProperty(keyModifiers, "textContent", LOCALE_PATH + "keyModifiers.button.title");
+    this.locale.bindObjectProperty(keyModifiers, "title", LOCALE_PATH + "keyModifiers.button.description");
+    
+    keyModifiers.classList.add("synthui_button");
+    keyModifiers.classList.add("main_controller_element");
+    keyModifiers.onclick = () =>
+    {
+        startKeyModifiersMenu(this.synth, this.locale, this.keyboard);
+    };
+    
     // effectsConfig
     const effectsConfig = document.createElement("button");
     this.locale.bindObjectProperty(effectsConfig, "textContent", LOCALE_PATH + "effectsConfig.button.title");
@@ -204,15 +217,6 @@ export function createMainSynthController()
         }
         this.effectsConfigWindow = showEffectsConfigWindow(this.locale, LOCALE_PATH, this.synth).id;
     };
-    
-    // help button
-    const helpButton = document.createElement("a");
-    helpButton.href = "https://github.com/spessasus/SpessaSynth/wiki/How-To-Use-App#synthesizer-controller";
-    helpButton.target = "#";
-    helpButton.classList.add("main_controller_element");
-    helpButton.classList.add("synthui_button");
-    this.locale.bindObjectProperty(helpButton, "textContent", LOCALE_PATH + "helpButton.title");
-    this.locale.bindObjectProperty(helpButton, "title", LOCALE_PATH + "helpButton.description");
     
     /**
      * interpolation type
@@ -283,8 +287,8 @@ export function createMainSynthController()
     controlsWrapper.appendChild(midiPanicButton);
     controlsWrapper.appendChild(resetCCButton);
     controlsWrapper.appendChild(highPerfToggle);
+    controlsWrapper.appendChild(keyModifiers);
     controlsWrapper.appendChild(effectsConfig);
-    controlsWrapper.appendChild(helpButton);
     controlsWrapper.appendChild(interpolation);
     
     /**
@@ -305,7 +309,6 @@ export function createMainSynthController()
         highPerfToggle,
         effectsConfig,
         showControllerButton,
-        helpButton,
         interpolation
     ];
     // main synth div

@@ -50,6 +50,13 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
         velocity = channelObject.velocityOverride;
     }
     
+    // key velocity override
+    const keyVel = this.keyModifierManager.getVelocity(channel, midiNote);
+    if (keyVel > -1)
+    {
+        velocity = keyVel;
+    }
+    
     // get voices
     const voices = this.getWorkletVoices(
         channel,
