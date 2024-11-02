@@ -152,7 +152,6 @@ export class WorkletLowpassFilter
         
         
         // code is ported from https://github.com/sinshu/meltysynth/ to work with js.
-        // I'm too dumb to understand the math behind this...
         let w = 2 * Math.PI * filter.cutoffHz / sampleRate; // we're in the audioworkletglobalscope so we can use sampleRate
         let cosw = Math.cos(w);
         let alpha = Math.sin(w) / (2 * filter.reasonanceGain);
