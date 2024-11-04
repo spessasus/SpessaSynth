@@ -1,4 +1,4 @@
-# Adding a New Locale
+# Translating SpessaSynth
 
 ### Contributing a New Translation
 
@@ -38,6 +38,32 @@ I welcome contributions from translators! To add a new locale, please follow the
 
 7. **Submit a Pull Request**
     - After completing the translation and updates, create a pull request with your changes. Thank you for helping
+      SpessaSynth!
+
+### Fixing an Existing Translation
+
+Some translations may be incomplete, and the system will fall back to English.
+Here's how you can fix existing translations:
+
+1. **Find missing translation files**
+    - Since the translations are split up into parts, some files may be missing in your target language.
+   Copy them from `locale_en` or any other language you want to translate from.
+
+2. **Translate!**
+    - Translate all the untranslated strings in the `locale.js` file and all `.js` files in the folders.
+    Make sure to leave the
+      object keys unchanged.
+    - You may add comments to indicate who translated the text, e.g., `// translated by: XYZ`.
+   
+3. **Verify your work**
+    - [Minify the website](../../../../README#app)
+    - Change the language to the translated language.
+    - Test your changes in the Local Edition!
+    - Remember to hover over various controls to see the translated descriptions.
+
+4. **Submit a Pull Request**
+    - After completing the translation and updates, create a pull request with your changes.
+    Thank you for helping
       SpessaSynth!
 
 *If you have any questions about this guide or something is unclear, let me know by opening an issue!*

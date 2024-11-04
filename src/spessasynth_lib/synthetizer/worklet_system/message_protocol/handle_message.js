@@ -203,6 +203,10 @@ export function handleMessage(message)
             this.clearSoundFont(true, false);
             break;
         
+        case workletMessageType.keyModifierManager:
+            this.keyModifierManager.handleMessage(data[0], data[1]);
+            break;
+        
         case workletMessageType.requestSynthesizerSnapshot:
             this.sendSynthesizerSnapshot();
             break;

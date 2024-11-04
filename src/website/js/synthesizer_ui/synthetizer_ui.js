@@ -44,6 +44,14 @@ class SynthetizerUI
     }
     
     /**
+     * @param keyboard {MidiKeyboard}
+     */
+    connectKeyboard(keyboard)
+    {
+        this.keyboard = keyboard;
+    }
+    
+    /**
      * Connects the synth to UI
      * @param synth {Synthetizer}
      */

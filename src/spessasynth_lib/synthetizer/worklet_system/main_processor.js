@@ -49,6 +49,7 @@ import {
 import { applySynthesizerSnapshot, sendSynthesizerSnapshot } from "./worklet_methods/snapshot.js";
 import { WorkletSoundfontManager } from "./worklet_methods/worklet_soundfont_manager/worklet_soundfont_manager.js";
 import { interpolationTypes } from "./worklet_utilities/wavetable_oscillator.js";
+import { WorkletKeyModifierManager } from "./worklet_methods/worklet_key_modifier.js";
 import { getWorkletVoices } from "./worklet_utilities/worklet_voice.js";
 import { panVoice } from "./worklet_utilities/stereo_panner.js";
 
@@ -150,7 +151,13 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
         this.highPerformanceMode = false;
         
         /**
-         * Overrides the main soundfont (embedded for example
+         * Handlese custom key overrides: velocity and preset
+         * @type {WorkletKeyModifierManager}
+         */
+        this.keyModifierManager = new WorkletKeyModifierManager();
+        
+        /**
+         * Overrides the main soundfont (embedded for example)
          * @type {BasicSoundFont}
          */
         this.overrideSoundfont = undefined;

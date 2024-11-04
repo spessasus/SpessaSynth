@@ -27,6 +27,7 @@ const notifications = {};
  * @property {"button"|"progress"|"text"|"input"|"toggle"|"range"|"file"} type
  * @property {string|undefined} textContent
  * @property {string|undefined} translatePathTitle
+ * @property {string[]|undefined} translatePathTitleProps
  * @property {Object<string, string>|undefined} attributes
  * @property {NotificationContentCallback|undefined} onClick
  * @property {Object<string, function>|undefined} listeners

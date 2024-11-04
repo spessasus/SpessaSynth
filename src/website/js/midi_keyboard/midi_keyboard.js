@@ -13,6 +13,13 @@ const GLOW_PX = 20;
 class MidiKeyboard
 {
     /**
+     * @type {function}
+     * @param midiNote {number} the MIDI note number that was pressed
+     * @param velocity {number} the velocity that was used
+     */
+    onNotePressed = undefined;
+    
+    /**
      * Creates a new midi keyboard(keyboard)
      * @param channelColors {Array<string>}
      * @param synth {Synthetizer}

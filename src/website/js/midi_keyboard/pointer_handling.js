@@ -46,6 +46,10 @@ export function _handlePointers()
                 velocity = Math.floor(relativeMouseY / keyHeight * 127);
             }
         }
+        if (this.onNotePressed)
+        {
+            this.onNotePressed(note, velocity);
+        }
         this.synth.noteOn(this.channel, note, velocity, this.enableDebugging);
     };
     

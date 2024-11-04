@@ -27,6 +27,7 @@
 /**
  * @typedef {Object} SynthesizerSnapshot
  * @property {ChannelSnapshot[]} channelSnapshots - the individual channel snapshots
+ * @property {KeyModifier[][]} keyMappings - key modifiers
  * @property {number} mainVolume - main synth volume (set by MIDI), from 0 to 1
  * @property {number} pan - master stereo panning, from -1 to 1
  * @property {interpolationTypes} interpolation - the synth's interpolation type
@@ -82,7 +83,8 @@ export function sendSynthesizerSnapshot()
         pan: this.pan,
         transposition: this.transposition,
         system: this.system,
-        interpolation: this.interpolationType
+        interpolation: this.interpolationType,
+        keyMappings: this.keyModifierManager.getMappings()
     };
     
     this.post({
@@ -106,6 +108,7 @@ export function applySynthesizerSnapshot(snapshot)
     this.setMasterPan(snapshot.pan);
     this.transposeAllChannels(snapshot.transposition);
     this.interpolationType = snapshot.interpolation;
+    this.keyModifierManager.setMappings(snapshot.keyMappings);
     
     // add channels if more needed
     while (this.workletProcessorChannels.length < snapshot.channelSnapshots.length)

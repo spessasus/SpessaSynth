@@ -17,8 +17,18 @@ function applyTextContent(el, content, locale)
         {
             throw new Error("Translate path title provided but no locale provided.");
         }
-        locale.bindObjectProperty(el, "textContent", content.translatePathTitle + ".title");
-        locale.bindObjectProperty(el, "title", content.translatePathTitle + ".description");
+        locale.bindObjectProperty(
+            el,
+            "textContent",
+            content.translatePathTitle + ".title",
+            content?.translatePathTitleProps
+        );
+        locale.bindObjectProperty(
+            el,
+            "title",
+            content.translatePathTitle + ".description",
+            content?.translatePathTitleProps
+        );
     }
 }
 

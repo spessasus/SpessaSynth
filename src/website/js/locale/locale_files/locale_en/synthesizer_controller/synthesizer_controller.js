@@ -1,5 +1,6 @@
 import { channelControllerLocale } from "./channel_controller.js";
 import { effectsConfig } from "./effects_config.js";
+import { keyModifiers } from "./key_modifiers.js";
 
 /**
  *
@@ -66,5 +67,6 @@ export const synthesizerControllerLocale = {
     },
     
     channelController: channelControllerLocale,
-    effectsConfig: effectsConfig
+    effectsConfig: effectsConfig,
+    keyModifiers: keyModifiers
 };
