@@ -98,6 +98,22 @@ export class WorkletKeyModifierManager
     }
     
     /**
+     * @param mappings {KeyModifier[][]}
+     */
+    setMappings(mappings)
+    {
+        this._keyMappings = mappings;
+    }
+    
+    /**
+     * @returns {KeyModifier[][]}
+     */
+    getMappings()
+    {
+        return this._keyMappings;
+    }
+    
+    /**
      * @param channel {number}
      * @param midiNote {number}
      * @returns {number} velocity, -1 if unchanged
