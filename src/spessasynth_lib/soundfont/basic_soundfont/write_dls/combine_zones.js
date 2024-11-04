@@ -76,7 +76,7 @@ export function combineZones(preset)
             presetZoneKeyRange = globalPresetKeyRange;
         }
         let presetZoneVelRange = presetZone.velRange;
-        if (!presetZone.hasKeyRange)
+        if (!presetZone.hasVelRange)
         {
             presetZoneVelRange = globalPresetVelRange;
         }
@@ -119,7 +119,7 @@ export function combineZones(preset)
                 instZoneKeyRange = globalInstKeyRange;
             }
             let instZoneVelRange = instZone.velRange;
-            if (!instZone.hasKeyRange)
+            if (!instZone.hasVelRange)
             {
                 instZoneVelRange = globalInstVelRange;
             }
@@ -160,7 +160,7 @@ export function combineZones(preset)
                 }
             }
             
-            const finalGenList = [...instGenerators];
+            let finalGenList = [...instGenerators];
             for (const gen of presetGenerators)
             {
                 if (gen.generatorType === generatorTypes.velRange ||
@@ -186,10 +186,28 @@ export function combineZones(preset)
                 }
             }
             
+            // remove unwanted
+            finalGenList = finalGenList.filter(g =>
+                g.generatorType !== generatorTypes.sampleID &&
+                g.generatorType !== generatorTypes.keyRange &&
+                g.generatorType !== generatorTypes.velRange &&
+                g.generatorType !== generatorTypes.endOper &&
+                g.generatorType !== generatorTypes.instrument &&
+                g.generatorValue !== generatorLimits[g.generatorType].def
+            );
+            
             // create the zone and copy over values
             const zone = new BasicInstrumentZone();
             zone.keyRange = instZoneKeyRange;
             zone.velRange = instZoneVelRange;
+            if (zone.keyRange.min === 0 && zone.keyRange.max === 127)
+            {
+                zone.keyRange.min = -1;
+            }
+            if (zone.velRange.min === 0 && zone.velRange.max === 127)
+            {
+                zone.velRange.min = -1;
+            }
             zone.isGlobal = false;
             zone.sample = instZone.sample;
             zone.generators = finalGenList;
@@ -197,5 +215,81 @@ export function combineZones(preset)
             finalZones.push(zone);
         }
     }
+    
+    // create a global zone and add repeating generators to it
+    const globalZone = new BasicInstrumentZone();
+    globalZone.isGlobal = true;
+    // iterate over every type of generator
+    for (let checkedType = 0; checkedType < 58; checkedType++)
+    {
+        // not these though
+        if (checkedType === generatorTypes.velRange ||
+            checkedType === generatorTypes.keyRange ||
+            checkedType === generatorTypes.instrument ||
+            checkedType === generatorTypes.endOper ||
+            checkedType === generatorTypes.sampleModes
+        )
+        {
+            continue;
+        }
+        /**
+         * @type {Object<string, number>}
+         */
+        let occurencesForValues = {};
+        for (const z of finalZones)
+        {
+            const gen = z.generators.find(g => g.generatorType === checkedType);
+            if (gen)
+            {
+                const value = gen.generatorValue;
+                if (occurencesForValues[value] === undefined)
+                {
+                    occurencesForValues[value] = 1;
+                }
+                else
+                {
+                    occurencesForValues[value]++;
+                }
+            }
+        }
+        // if at least one occurence, find the most used one and add it to global
+        if (Object.keys(occurencesForValues).length > 0)
+        {
+            // [value, occurences]
+            const valueToGlobalize = Object.entries(occurencesForValues).reduce((max, curr) =>
+            {
+                if (max[1] < curr[1])
+                {
+                    return curr;
+                }
+                return max;
+            }, [0, 0]);
+            const targetValue = parseInt(valueToGlobalize[0]);
+            
+            globalZone.generators.push(new Generator(checkedType, targetValue));
+            // remove from the zones
+            finalZones.forEach(z =>
+            {
+                const gen = z.generators.findIndex(g =>
+                    g.generatorType === checkedType);
+                if (gen !== -1)
+                {
+                    if (z.generators[gen].generatorValue === targetValue)
+                    {
+                        // that exact value exists. Since it's global now, remove it
+                        z.generators.splice(gen, 1);
+                    }
+                }
+                else
+                {
+                    // that type does not exist at all here.
+                    // Since we're globalizing, we need to add the default here.
+                    z.generators.push(new Generator(checkedType, generatorLimits[checkedType].def));
+                }
+            });
+        }
+    }
+    finalZones.splice(0, 0, globalZone);
+    
     return finalZones;
 }

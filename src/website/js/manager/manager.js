@@ -25,6 +25,11 @@ import { readBytesAsString } from "../../../spessasynth_lib/utils/byte_functions
 import { IndexedByteArray } from "../../../spessasynth_lib/utils/indexed_array.js";
 import { closeNotification, showNotification } from "../notification/notification.js";
 import { DropFileHandler } from "../utils/drop_file_handler.js";
+import { BasicSoundFont } from "../../../spessasynth_lib/soundfont/basic_soundfont/basic_soundfont.js";
+import { BasicPreset } from "../../../spessasynth_lib/soundfont/basic_soundfont/basic_preset.js";
+import { BasicPresetZone } from "../../../spessasynth_lib/soundfont/basic_soundfont/basic_zones.js";
+import { BasicInstrument } from "../../../spessasynth_lib/soundfont/basic_soundfont/basic_instrument.js";
+import { combineZones } from "../../../spessasynth_lib/soundfont/basic_soundfont/write_dls/combine_zones.js";
 
 // this enables transitions on body because if we enable them on load, it flashbangs us with white
 document.body.classList.add("load");
@@ -137,7 +142,27 @@ class Manager
         
         
         const soundfont = loadSoundFont(this.soundFont);
-        const binary = soundfont.writeDLS();
+        const sf2Combined = new BasicSoundFont();
+        sf2Combined.defaultModulators = soundfont.defaultModulators;
+        sf2Combined.soundFontInfo = soundfont.soundFontInfo;
+        sf2Combined.samples = soundfont.samples;
+        sf2Combined.presets = soundfont.presets.map(p =>
+        {
+            const newPreset = new BasicPreset(soundfont.defaultModulators);
+            const zone = new BasicPresetZone();
+            const instrument = new BasicInstrument();
+            zone.instrument = instrument;
+            sf2Combined.instruments.push(instrument);
+            zone.isGlobal = false;
+            instrument.instrumentName = p.presetName;
+            newPreset.presetName = p.presetName;
+            newPreset.bank = p.bank;
+            newPreset.program = p.program;
+            newPreset.presetZones.push(zone);
+            instrument.instrumentZones = combineZones(p);
+            return newPreset;
+        });
+        const binary = sf2Combined.write();
         const binarysf2 = loadSoundFont(binary.buffer).write();
         const blob = new Blob([binarysf2], { type: "audio/sf2" });
         this.saveBlob(blob, `${soundfont.soundFontInfo["INAM"]}.sf2`);
