@@ -120,7 +120,7 @@ export class LocaleManager
      * @param object {HTMLElement} the object that holds the bound property
      * @param propertyName {string} the object's property to bind
      * @param localePath {string} The locale path to the text, written as JS object path, starts with "locale."
-     * @param formattingArguments {string|number[]} optional arguments if the locale uses formatting ("{0} {1}") etc.
+     * @param formattingArguments {(string|number)[]} optional arguments if the locale uses formatting ("{0} {1}") etc.
      */
     bindObjectProperty(object, propertyName, localePath, formattingArguments = [])
     {

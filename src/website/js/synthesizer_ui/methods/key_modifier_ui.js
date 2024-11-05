@@ -38,8 +38,9 @@ async function getKey(locale, keyboard)
  * @param synth {Synthetizer}
  * @param locale {LocaleManager}
  * @param keyboard {MidiKeyboard}
+ * @param presetList {PresetListElement[]}
  */
-async function doModifyKey(synth, locale, keyboard)
+async function doModifyKey(synth, locale, keyboard, presetList)
 {
     const key = await getKey(locale, keyboard);
     const getInput = (name, min, max, val) =>
@@ -53,6 +54,12 @@ async function doModifyKey(synth, locale, keyboard)
         obj[name] = "true";
         return obj;
     };
+    const presetOptions = {};
+    presetOptions["unchanged"] = locale.getLocaleString(LOCALE_PATH + "modifyKey.preset.unchanged");
+    for (const p of presetList)
+    {
+        presetOptions[p.presetName] = p.presetName;
+    }
     showNotification(
         locale.getLocaleString(LOCALE_PATH + "modifyKey.title"),
         [
@@ -67,7 +74,7 @@ async function doModifyKey(synth, locale, keyboard)
                 onClick: async n =>
                 {
                     closeNotification(n.id);
-                    await doModifyKey(synth, locale, keyboard);
+                    await doModifyKey(synth, locale, keyboard, presetList);
                 }
             },
             {
@@ -81,14 +88,10 @@ async function doModifyKey(synth, locale, keyboard)
                 attributes: getInput("vel", 0, 127, -1)
             },
             {
-                type: "input",
-                translatePathTitle: LOCALE_PATH + "modifyKey.program",
-                attributes: getInput("prog", 0, 127, -1)
-            },
-            {
-                type: "input",
-                translatePathTitle: LOCALE_PATH + "modifyKey.bank",
-                attributes: getInput("bank", 0, 127, -1)
+                type: "select",
+                translatePathTitle: LOCALE_PATH + "modifyKey.preset",
+                attributes: { "preset-selector": "true" },
+                selectOptions: presetOptions
             },
             {
                 type: "button",
@@ -97,8 +100,15 @@ async function doModifyKey(synth, locale, keyboard)
                 {
                     const channel = parseInt(n.div.querySelector("input[chan]").value) ?? -1;
                     const velocity = parseInt(n.div.querySelector("input[vel]").value) ?? -1;
-                    const program = parseInt(n.div.querySelector("input[prog]").value) ?? -1;
-                    const bank = parseInt(n.div.querySelector("input[bank]").value) ?? -1;
+                    const presetName = n.div.querySelector("select[preset-selector]").value;
+                    let bank = -1;
+                    let program = -1;
+                    if (presetName !== "unchanged")
+                    {
+                        const preset = presetList.find(p => p.presetName === presetName);
+                        bank = preset.bank;
+                        program = preset.program;
+                    }
                     synth.keyModifierManager.addModifier(channel, key, {
                         velocity: velocity,
                         patch: {
@@ -173,8 +183,9 @@ async function doRemoveModification(synth, locale, keyboard)
  * @param synth {Synthetizer}
  * @param locale {LocaleManager}
  * @param keyboard {MidiKeyboard}
+ * @param presetList {PresetListElement[]}
  */
-export function startKeyModifiersMenu(synth, locale, keyboard)
+export function startKeyModifiersMenu(synth, locale, keyboard, presetList)
 {
     showNotification(
         locale.getLocaleString(LOCALE_PATH + "mainTitle"),
@@ -194,7 +205,7 @@ export function startKeyModifiersMenu(synth, locale, keyboard)
                 onClick: n =>
                 {
                     closeNotification(n.id);
-                    doModifyKey(synth, locale, keyboard).then();
+                    doModifyKey(synth, locale, keyboard, presetList).then();
                 }
             },
             {

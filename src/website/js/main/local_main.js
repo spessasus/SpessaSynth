@@ -166,7 +166,7 @@ async function replaceFont(fontName)
         if (!window.manager)
         {
             // prepare the manager
-            window.manager = new Manager(audioContextMain, soundFontParser, localeManager);
+            window.manager = new Manager(audioContextMain, soundFontParser, localeManager, true);
             window.TITLE = window.manager.localeManager.getLocaleString("locale.titleMessage");
             titleMessage.innerText = "Initializing...";
             await manager.ready;
@@ -225,7 +225,7 @@ document.body.onclick = async () =>
         if (window.soundFontParser)
         {
             // prepare midi interface
-            window.manager = new Manager(audioContextMain, soundFontParser, localeManager);
+            window.manager = new Manager(audioContextMain, soundFontParser, localeManager, true);
             window.TITLE = window.manager.localeManager.getLocaleString("locale.titleMessage");
             titleMessage.innerText = "Initializing...";
             await manager.ready;

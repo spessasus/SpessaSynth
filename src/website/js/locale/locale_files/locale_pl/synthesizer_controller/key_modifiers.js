@@ -35,13 +35,10 @@ export const keyModifiers = {
             title: "Siła nacisku",
             description: "Siła nacisku dla tego klawisza. Pozostaw -1 dla braku zmian."
         },
-        program: {
-            title: "Nadpisanie programu",
-            description: "Program, którego będzie używać ten klawisz. Pozostaw -1 dla braku zmian. Pamiętaj, że bank nie może być równy -1 aby zmiany zaszły w życie."
-        },
-        bank: {
-            title: "Nadpisanie banku",
-            description: "Bank, którego będzie używać ten klawisz. Pozostaw -1 dla braku zmian. Pamiętaj, że program nie może być równy -1 aby zmiany zaszły w życie."
+        preset: {
+            title: "Nadpisanie instrumentu",
+            description: "Instrument dla tego klawisza.",
+            unchanged: "Bez zmian"
         },
         apply: {
             title: "Zastosuj",
