@@ -87,7 +87,6 @@ export class WorkletModulationEnvelope
      */
     static startRelease(voice)
     {
-        voice.modulationEnvelope.releaseStartLevel = voice.modulationEnvelope.currentValue;
         WorkletModulationEnvelope.recalculate(voice);
     }
     
@@ -97,6 +96,12 @@ export class WorkletModulationEnvelope
     static recalculate(voice)
     {
         const env = voice.modulationEnvelope;
+        
+        // in release? Might need to recalculate the value as it can be modulated
+        if (voice.isInRelease)
+        {
+            env.releaseStartLevel = WorkletModulationEnvelope.getValue(voice, voice.releaseStartTime, true);
+        }
         
         env.sustainLevel = 1 - (voice.modulatedGenerators[generatorTypes.sustainModEnv] / 1000);
         
@@ -127,17 +132,19 @@ export class WorkletModulationEnvelope
      * Calculates the current modulation envelope value for the given time and voice
      * @param voice {WorkletVoice} the voice we're working on
      * @param currentTime {number} in seconds
+     * @param ignoreRelease {boolean} if true, it will compute the value as if the voice was not released
      * @returns {number} modenv value, from 0 to 1
      */
-    static getValue(voice, currentTime)
+    static getValue(voice, currentTime, ignoreRelease = false)
     {
         const env = voice.modulationEnvelope;
-        if (voice.isInRelease)
+        if (voice.isInRelease && !ignoreRelease)
         {
-            if (env.releaseDuration < 0.001)
+            // if the voice is still in the delay phase,
+            // start level will be 0 which will result in divide by zero
+            if (env.releaseStartLevel === 0)
             {
-                // prevent lowpass bugs if release is instant
-                return env.releaseStartLevel;
+                return 0;
             }
             return Math.max(
                 0,

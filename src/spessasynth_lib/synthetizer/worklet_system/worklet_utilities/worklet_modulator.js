@@ -130,11 +130,6 @@ export function computeModulators(voice, controllerTable, sourceUsesCC = -1, sou
     const generators = voice.generators;
     const modulatedGenerators = voice.modulatedGenerators;
     
-    // Modulation envelope is cheap to recalculate
-    // why here and not at the bottom?
-    // I dunno, seems to work fine
-    WorkletModulationEnvelope.recalculate(voice);
-    
     if (sourceUsesCC === -1)
     {
         // All modulators mode: compute all modulators
@@ -153,6 +148,7 @@ export function computeModulators(voice, controllerTable, sourceUsesCC = -1, sou
             );
         });
         WorkletVolumeEnvelope.recalculate(voice);
+        WorkletModulationEnvelope.recalculate(voice);
         return;
     }
     
@@ -208,6 +204,8 @@ export function computeModulators(voice, controllerTable, sourceUsesCC = -1, sou
     {
         WorkletVolumeEnvelope.recalculate(voice);
     }
+    
+    WorkletModulationEnvelope.recalculate(voice);
 }
 
 
