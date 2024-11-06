@@ -307,6 +307,7 @@ export function createMainSynthController()
         midiPanicButton,
         resetCCButton,
         highPerfToggle,
+        keyModifiers,
         effectsConfig,
         showControllerButton,
         interpolation
