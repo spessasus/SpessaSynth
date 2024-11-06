@@ -7,11 +7,11 @@ import {
     getSampleNearest,
     interpolationTypes
 } from "../worklet_utilities/wavetable_oscillator.js";
-import { WorkletLowpassFilter } from "../worklet_utilities/lowpass_filter.js";
 import { MIN_NOTE_LENGTH } from "../main_processor.js";
 import { WorkletVolumeEnvelope } from "../worklet_utilities/volume_envelope.js";
 import { generatorTypes } from "../../../soundfont/basic_soundfont/generator.js";
 import { customControllers } from "../worklet_utilities/controller_tables.js";
+import { WorkletLowpassFilter } from "../worklet_utilities/lowpass_filter.js";
 
 export const PAN_SMOOTHING_FACTOR = 0.05;
 

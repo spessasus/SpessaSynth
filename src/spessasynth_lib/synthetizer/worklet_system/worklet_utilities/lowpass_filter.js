@@ -79,15 +79,16 @@ export class WorkletLowpassFilter
     
     /**
      * Cutoff frequency in cents
+     * Note: defaults to 13501 to cause a recalculation even at initial fc being 13500
      * @type {number}
      */
-    cutoffCents = 13500;
+    cutoffCents = 13501;
     
     /**
      * Cutoff frequency in Hz
      * @type {number}
      */
-    cutoffHz = 20000;
+    cutoffHz = 20001;
     
     /**
      * Applies a low-pass filter to the given buffer

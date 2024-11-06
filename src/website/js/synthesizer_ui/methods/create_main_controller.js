@@ -197,7 +197,7 @@ export function createMainSynthController()
     keyModifiers.classList.add("main_controller_element");
     keyModifiers.onclick = () =>
     {
-        startKeyModifiersMenu(this.synth, this.locale, this.keyboard);
+        startKeyModifiersMenu(this.synth, this.locale, this.keyboard, this.presetList);
     };
     
     // effectsConfig
@@ -307,6 +307,7 @@ export function createMainSynthController()
         midiPanicButton,
         resetCCButton,
         highPerfToggle,
+        keyModifiers,
         effectsConfig,
         showControllerButton,
         interpolation

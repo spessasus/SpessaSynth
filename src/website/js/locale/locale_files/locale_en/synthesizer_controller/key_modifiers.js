@@ -35,13 +35,10 @@ export const keyModifiers = {
             title: "Velocity override",
             description: "The velocity to use on this key, ignoring the MIDI velocity. Leave at -1 for unchanged"
         },
-        program: {
-            title: "Program override",
-            description: "The program to use on this key. Leave at -1 for unchanged. Note that bank must not be -1 too for it to work."
-        },
-        bank: {
-            title: "Bank override",
-            description: "The bank to use on this key. Leave at -1 for unchanged. Note that program must not be -1 too for it to work."
+        preset: {
+            title: "Preset override",
+            description: "The preset to use on this key.",
+            unchanged: "Unchanged"
         },
         apply: {
             title: "Apply",

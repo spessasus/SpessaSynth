@@ -67,6 +67,29 @@ export function getContent(content, locale)
             inputWrapper.appendChild(input);
             return inputWrapper;
         
+        case "select":
+            const selectWrapper = document.createElement("div");
+            selectWrapper.classList.add("notification_input_wrapper");
+            const select = document.createElement("select");
+            if (content.selectOptions === undefined)
+            {
+                throw new Error("Select but no options given?");
+            }
+            for (const option of Object.entries(content.selectOptions))
+            {
+                const opt = document.createElement("option");
+                opt.value = option[0];
+                opt.textContent = option[1];
+                select.appendChild(opt);
+            }
+            const selectLabel = document.createElement("label");
+            
+            applyTextContent(selectLabel, content, locale);
+            applyAttributes(content, [select, selectLabel]);
+            selectWrapper.appendChild(selectLabel);
+            selectWrapper.appendChild(select);
+            return selectWrapper;
+        
         case "file":
             const fileWrapper = document.createElement("label");
             fileWrapper.classList.add("notification_input_wrapper");
@@ -125,7 +148,14 @@ function applyAttributes(content, elements)
         {
             for (const element of elements)
             {
-                element.setAttribute(key, value);
+                if (key.startsWith("onchange"))
+                {
+                    element[key] = value;
+                }
+                else
+                {
+                    element.setAttribute(key, value);
+                }
             }
         }
     }

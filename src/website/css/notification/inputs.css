@@ -12,7 +12,8 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 .notification input[type='number'],
-.notification input[type='text'] {
+.notification input[type='text'],
+.notification select {
     display: block;
     background: var(--top-buttons-color);
     border: solid 1px #333;
@@ -23,7 +24,8 @@ input[type='number']::-webkit-inner-spin-button {
     -moz-appearance: textfield;
 }
 
-.notification input[type='text'] {
+.notification input[type='text'],
+.notification select {
     width: auto !important;
 }
 

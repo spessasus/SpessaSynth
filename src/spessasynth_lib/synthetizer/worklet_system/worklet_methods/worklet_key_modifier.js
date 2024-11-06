@@ -136,7 +136,7 @@ export class WorkletKeyModifierManager
     hasOverridePatch(channel, midiNote)
     {
         const bank = this._keyMappings[channel]?.[midiNote]?.patch?.bank;
-        return bank !== undefined && bank > 0;
+        return bank !== undefined && bank >= 0;
     }
     
     /**

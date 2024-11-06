@@ -14,19 +14,78 @@ export function _createKeyboardHandler(keyboard, synthui, renderer)
     
     const keyboardControls = this.htmlControls.keyboard;
     
+    /**
+     * @type {HTMLParagraphElement[]}
+     */
+    const nameDisplays = [];
+    /**
+     * @type {{
+     *     program: number,
+     *     bank: number,
+     *     drum: boolean
+     * }[]}
+     */
+    const channelTrackers = [];
+    
+    /**
+     * @type {{
+     *     presetName: string,
+     *     program: number,
+     *     bank: number
+     * }[]}
+     */
+    let presetList = undefined;
+    
+    const updateChannel = channel =>
+    {
+        const chan = channelTrackers[channel];
+        let bank = chan.drum ? 128 : chan.bank;
+        let preset = presetList.find(p => p.bank === bank && p.program === chan.program);
+        if (!preset)
+        {
+            preset = presetList[0];
+        }
+        nameDisplays[channel].textContent = ": " + preset.presetName;
+    };
+    
+    const updateChannels = () =>
+    {
+        if (!presetList)
+        {
+            return;
+        }
+        for (let channel = 0; channel < nameDisplays.length; channel++)
+        {
+            updateChannel(channel);
+        }
+    };
+    
     const createChannel = () =>
     {
         const option = document.createElement("option");
         
         option.value = channelNumber.toString();
+        const channelDisplay = document.createElement("p");
         // Channel: {0} gets formatred to channel number
         this.locale.bindObjectProperty(
-            option,
+            channelDisplay,
             "textContent",
             "locale.settings.keyboardSettings.selectedChannel.channelOption",
             [channelNumber + 1]
         );
         
+        const nameDisplay = document.createElement("p");
+        nameDisplay.textContent = ": not ";
+        nameDisplays.push(nameDisplay);
+        channelTrackers.push({
+            program: 0,
+            bank: 0,
+            drum: channelNumber % 16 === 9
+        });
+        updateChannels();
+        
+        option.appendChild(channelDisplay);
+        option.appendChild(nameDisplay);
         option.style.background = synthui.channelColors[channelNumber % synthui.channelColors.length];
         option.style.color = "rgb(0, 0, 0)";
         
@@ -34,7 +93,30 @@ export function _createKeyboardHandler(keyboard, synthui, renderer)
         channelNumber++;
     };
     
-    // create the initial synth channels+
+    const syn = this.synthui.synth;
+    syn.eventHandler.addEvent("presetlistchange", "settings-preset-list-change", e =>
+    {
+        presetList = e;
+        updateChannels();
+    });
+    syn.eventHandler.addEvent("newchannel", "settings-new-channel", () =>
+    {
+        createChannel();
+    });
+    syn.eventHandler.addEvent("programchange", "settings-program-change", e =>
+    {
+        const c = channelTrackers[e.channel];
+        c.bank = e.bank;
+        c.program = e.program;
+        updateChannel(e.channel);
+    });
+    syn.eventHandler.addEvent("drumchange", "settings-drum-change", e =>
+    {
+        channelTrackers[e.channel].drum = e.isDrumChannel;
+        updateChannel(e.channel);
+    });
+    
+    // create the initial synth channels
     for (let i = 0; i < synthui.synth.channelsAmount; i++)
     {
         createChannel();

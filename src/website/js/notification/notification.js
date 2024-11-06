@@ -24,7 +24,8 @@ const notifications = {};
 
 /**
  * @typedef {Object} NotificationContent
- * @property {"button"|"progress"|"text"|"input"|"toggle"|"range"|"file"} type
+ * @property {"button"|"progress"|"text"|"input"|"toggle"|"range"|"file"|"select"} type
+ * @property {Object<string, string>|undefined} selectOptions - as value: content. This only applies to the "select" type
  * @property {string|undefined} textContent
  * @property {string|undefined} translatePathTitle
  * @property {string[]|undefined} translatePathTitleProps

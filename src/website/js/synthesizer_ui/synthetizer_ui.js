@@ -186,6 +186,10 @@ class SynthetizerUI
              */
             const presetList = e;
             /**
+             * @type {PresetListElement[]}
+             */
+            this.presetList = presetList;
+            /**
              * @type {{name: string, program: number, bank: number}[]}
              */
             this.instrumentList = presetList.filter(p => p.bank !== 128)

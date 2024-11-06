@@ -71,11 +71,13 @@ class Manager
      * @param context {AudioContext}
      * @param soundFontBuffer {ArrayBuffer}
      * @param locale {LocaleManager}
+     * @param enableDebug {boolean}
      */
-    constructor(context, soundFontBuffer, locale)
+    constructor(context, soundFontBuffer, locale, enableDebug = ENABLE_DEBUG)
     {
         this.localeManager = locale;
         this.context = context;
+        this.enableDebug = enableDebug;
         this.isExporting = false;
         this.compressionFunc = encodeVorbis;
         let solve;
@@ -168,8 +170,8 @@ class Manager
         this.saveBlob(blob, `${soundfont.soundFontInfo["INAM"]}.sf2`);
         
         const DEBUG_PATH = "synthetizer/worklet_system/worklet_processor.js";
-        const WORKLET_PATH = ENABLE_DEBUG ? DEBUG_PATH : WORKLET_URL_ABSOLUTE;
-        if (ENABLE_DEBUG)
+        const WORKLET_PATH = this.enableDebug ? DEBUG_PATH : WORKLET_URL_ABSOLUTE;
+        if (this.enableDebug)
         {
             console.warn("DEBUG ENABLED! DEBUGGING ENABLED!!");
         }
