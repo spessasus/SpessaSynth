@@ -10,6 +10,102 @@ import { consoleColors } from "../../utils/other.js";
 import { readLittleEndian, signedInt16 } from "../../utils/byte_functions/little_endian.js";
 import { DLSSample } from "./dls_sample.js";
 
+const W_FORMAT_TAG = {
+    PCM: 0x01,
+    ALAW: 0x6
+};
+
+/**
+ * @param dataChunk {RiffChunk}
+ * @param bytesPerSample {number}
+ * @returns {Float32Array}
+ */
+function readPCM(dataChunk, bytesPerSample)
+{
+    const maxSampleValue = Math.pow(2, bytesPerSample * 8 - 1); // Max value for the sample
+    const maxUnsigned = Math.pow(2, bytesPerSample * 8);
+    
+    let normalizationFactor;
+    let isUnsigned = false;
+    
+    if (bytesPerSample === 1)
+    {
+        normalizationFactor = 255; // For 8-bit normalize from 0-255
+        isUnsigned = true;
+    }
+    else
+    {
+        normalizationFactor = maxSampleValue; // For 16-bit normalize from -32768 to 32767
+    }
+    const sampleLength = dataChunk.size / bytesPerSample;
+    const sampleData = new Float32Array(sampleLength);
+    for (let i = 0; i < sampleData.length; i++)
+    {
+        // read
+        let sample = readLittleEndian(dataChunk.chunkData, bytesPerSample);
+        // turn into signed
+        if (isUnsigned)
+        {
+            // normalize unsigned 8-bit sample
+            sampleData[i] = (sample / normalizationFactor) - 0.5;
+        }
+        else
+        {
+            // normalize signed 16-bit sample
+            if (sample >= maxSampleValue)
+            {
+                sample -= maxUnsigned;
+            }
+            sampleData[i] = sample / normalizationFactor;
+        }
+    }
+    return sampleData;
+}
+
+/**
+ * @param dataChunk {RiffChunk}
+ * @param bytesPerSample {number}
+ * @returns {Float32Array}
+ */
+function readALAW(dataChunk, bytesPerSample)
+{
+    const sampleLength = dataChunk.size / bytesPerSample;
+    const sampleData = new Float32Array(sampleLength);
+    for (let i = 0; i < sampleData.length; i++)
+    {
+        // read
+        const input = readLittleEndian(dataChunk.chunkData, bytesPerSample);
+        
+        // https://en.wikipedia.org/wiki/G.711#A-law
+        // re-toggle toggled bits
+        let sample = input ^ 0x55;
+        
+        // remove sign bit
+        sample &= 0x7F;
+        
+        // extract exponent
+        let exponent = sample >> 4;
+        // extract mantissa
+        let mantissa = sample & 0xF;
+        if (exponent > 0)
+        {
+            mantissa += 16; // add leading '1', if exponent > 0
+        }
+        
+        mantissa = (mantissa << 4) + 0x8;
+        if (exponent > 1)
+        {
+            mantissa = mantissa << (exponent - 1);
+        }
+        
+        const s16sample = input > 127 ? mantissa : -mantissa;
+        
+        // convert to float
+        sampleData[i] = s16sample / 32678;
+    }
+    return sampleData;
+}
+
 /**
  * @this {DLSSoundFont}
  * @param waveListChunk {RiffChunk}
@@ -43,10 +139,6 @@ export function readDLSSamples(waveListChunk)
         }
         // https://github.com/tpn/winsdk-10/blob/9b69fd26ac0c7d0b83d378dba01080e93349c2ed/Include/10.0.14393.0/shared/mmreg.h#L2108
         const waveFormat = readLittleEndian(fmtChunk.chunkData, 2);
-        if (waveFormat !== 1)
-        {
-            throw new Error(`Only PCM format in WAVE is supported. Fmt reports ${waveFormat}`);
-        }
         const channelsAmount = readLittleEndian(fmtChunk.chunkData, 2);
         if (channelsAmount !== 1)
         {
@@ -61,48 +153,30 @@ export function readDLSSamples(waveListChunk)
         const wBitsPerSample = readLittleEndian(fmtChunk.chunkData, 2);
         const bytesPerSample = wBitsPerSample / 8;
         
-        const maxSampleValue = Math.pow(2, bytesPerSample * 8 - 1); // Max value for the sample
-        const maxUnsigned = Math.pow(2, bytesPerSample * 8);
-        
-        let normalizationFactor;
-        let isUnsigned = false;
-        
-        if (wBitsPerSample === 8)
-        {
-            normalizationFactor = 255; // For 8-bit normalize from 0-255
-            isUnsigned = true;
-        }
-        else
-        {
-            normalizationFactor = maxSampleValue; // For 16-bit normalize from -32768 to 32767
-        }
         // read the data
+        let failed = false;
         const dataChunk = waveChunks.find(c => c.header === "data");
         if (!dataChunk)
         {
             this.parsingError("No data chunk in the WAVE chunk!");
         }
-        const sampleLength = dataChunk.size / bytesPerSample;
-        const sampleData = new Float32Array(sampleLength);
-        for (let i = 0; i < sampleData.length; i++)
+        let sampleData;
+        switch (waveFormat)
         {
-            // read
-            let sample = readLittleEndian(dataChunk.chunkData, bytesPerSample);
-            // turn into signed
-            if (isUnsigned)
-            {
-                // normalize unsigned 8-bit sample
-                sampleData[i] = (sample / normalizationFactor) - 0.5;
-            }
-            else
-            {
-                // normalize signed 16-bit sample
-                if (sample >= maxSampleValue)
-                {
-                    sample -= maxUnsigned;
-                }
-                sampleData[i] = sample / normalizationFactor;
-            }
+            default:
+                failed = true;
+                sampleData = new Float32Array(dataChunk.size / bytesPerSample);
+                break;
+            //throw new Error(`Unsupported WAVE format. Fmt reports ${waveFormat}`);
+            
+            case W_FORMAT_TAG.PCM:
+                sampleData = readPCM(dataChunk, bytesPerSample);
+                break;
+            
+            case W_FORMAT_TAG.ALAW:
+                sampleData = readALAW(dataChunk, bytesPerSample);
+                break;
+            
         }
         
         // sane defaults
@@ -162,13 +236,18 @@ export function readDLSSamples(waveListChunk)
             }
         }
         
+        if (failed)
+        {
+            console.error(`Failed to load '${sampleName}': Unsupported format: (${waveFormat})`);
+        }
+        
         this.samples.push(new DLSSample(
             sampleName,
             sampleRate,
             sampleKey,
             samplePitch,
             sampleLoopStart,
-            sampleLength,
+            sampleData.length,
             sampleData,
             sampleDbAttenuation
         ));
