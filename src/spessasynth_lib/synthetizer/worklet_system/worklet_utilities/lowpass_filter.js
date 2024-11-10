@@ -102,8 +102,6 @@ export class WorkletLowpassFilter
     {
         if (canBeOpen && cutoffCents > 13499 && voice.filter.reasonanceCb === 0)
         {
-            WorkletLowpassFilter.calculateCoefficients(voice.filter);
-            console.log(voice.filter.reasonanceGain);
             return; // filter is open
         }
         
