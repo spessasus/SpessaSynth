@@ -143,7 +143,20 @@ export function resetControllers(channel)
     channelObject.keyCentTuning.fill(0);
     
     // reset the array
-    channelObject.midiControllers.set(resetArray);
+    for (let i = 0; i < resetArray.length; i++)
+    {
+        const resetValue = resetArray[i];
+        if (channelObject.midiControllers[i] !== resetValue && i < 127)
+        {
+            // call cc change if reset
+            this.callEvent("controllerchange", {
+                channel: channel,
+                controllerNumber: i,
+                controllerValue: resetValue >> 7
+            });
+        }
+        channelObject.midiControllers[i] = resetValue;
+    }
     channelObject.channelVibrato = { rate: 0, depth: 0, delay: 0 };
     channelObject.holdPedal = false;
     

@@ -1,17 +1,11 @@
 import { getEvent, messageTypes, midiControllers } from "../../midi_parser/midi_message.js";
 import { WorkletSequencerReturnMessageType } from "./sequencer_message.js";
 import { MIDIticksToSeconds } from "../../midi_parser/basic_midi.js";
+import { resetArray } from "../../synthetizer/worklet_system/worklet_utilities/controller_tables.js";
 
 
 // an array with preset default values
-const defaultControllerArray = new Int16Array(127);
-// default values
-defaultControllerArray[midiControllers.mainVolume] = 100;
-defaultControllerArray[midiControllers.expressionController] = 127;
-defaultControllerArray[midiControllers.pan] = 64;
-defaultControllerArray[midiControllers.releaseTime] = 64;
-defaultControllerArray[midiControllers.brightness] = 64;
-defaultControllerArray[midiControllers.reverbDepth] = 0;
+const defaultControllerArray = resetArray.slice(0, 128);
 
 /**
  * plays from start to the target time, excluding note messages (to get the synth to the correct state)
@@ -129,6 +123,10 @@ export function _playTo(time, ticks = undefined)
                         // add the bank to saved
                         programs[channel].bank = ccV;
                         break;
+                    }
+                    else if (controllerNumber === midiControllers.resetAllControllers)
+                    {
+                        savedControllers[channel] = Array.from(defaultControllerArray);
                     }
                     if (this.sendMIDIMessages)
                     {
