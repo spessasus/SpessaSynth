@@ -476,6 +476,19 @@ export function modifyMIDI(
         midi.tracks[firstVoice.track].splice(firstIndex, 0, bankChange);
         firstIndex++;
         
+        // on xg, add lsb
+        if (!change.isDrum && midiSystem === "xg")
+        {
+            const bankChangeLSB = getControllerChange(
+                midiChannel,
+                midiControllers.lsbForControl0BankSelect,
+                desiredBank,
+                ticks
+            );
+            midi.tracks[firstVoice.track].splice(firstIndex, 0, bankChangeLSB);
+            firstIndex++;
+        }
+        
         // add program change
         const programChange = new MidiMessage(
             ticks,
