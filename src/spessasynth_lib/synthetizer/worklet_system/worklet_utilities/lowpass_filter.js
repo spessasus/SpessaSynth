@@ -102,6 +102,8 @@ export class WorkletLowpassFilter
     {
         if (canBeOpen && cutoffCents > 13499 && voice.filter.reasonanceCb === 0)
         {
+            WorkletLowpassFilter.calculateCoefficients(voice.filter);
+            console.log(voice.filter.reasonanceGain);
             return; // filter is open
         }
         
@@ -144,12 +146,12 @@ export class WorkletLowpassFilter
         // fix cutoff on low frequencies (fluid_iir_filter.c line 392)
         filter.cutoffHz = Math.min(filter.cutoffHz, 0.45 * sampleRate);
         
-        // adjust the filterQ (fluid_iir_filter.c line 204)
-        const qDb = (filter.reasonanceCb / 10) - 3.01;
-        filter.reasonanceGain = decibelAttenuationToGain(-1 * qDb); // -1 because it's attenuation and we don't want attenuation
+        const qDb = filter.reasonanceCb / 10;
+        // correct the filter gain, like fluid does
+        filter.reasonanceGain = decibelAttenuationToGain(-1 * (qDb - 3.01)); // -1 because it's attenuation and we don't want attenuation
         
         // reduce the gain by the Q factor (fluid_iir_filter.c line 250)
-        const qGain = 1 / Math.sqrt(filter.reasonanceGain);
+        const qGain = 1 / Math.sqrt(decibelAttenuationToGain(-qDb));
         
         
         // code is ported from https://github.com/sinshu/meltysynth/ to work with js.
