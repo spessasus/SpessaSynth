@@ -56,13 +56,17 @@ export function readRegion(chunk)
     const waveSampleChunk = regionChunks.find(c => c.header === "wsmp");
     // cbSize
     readLittleEndian(waveSampleChunk.chunkData, 4);
-    const originalKey = readLittleEndian(waveSampleChunk.chunkData, 2);
+    let originalKey = readLittleEndian(waveSampleChunk.chunkData, 2);
     
     // sFineTune
-    const pitchCorrection = signedInt16(
+    let pitchCorrection = signedInt16(
         waveSampleChunk.chunkData[waveSampleChunk.chunkData.currentIndex++],
         waveSampleChunk.chunkData[waveSampleChunk.chunkData.currentIndex++]
     );
+    
+    const pitchCorrectionSemitones = Math.trunc(pitchCorrection / 100);
+    originalKey += pitchCorrectionSemitones;
+    pitchCorrection -= pitchCorrectionSemitones * 100;
     
     // gain correction:  Each unit of gain represents 1/655360 dB
     // it is set after linking the sample

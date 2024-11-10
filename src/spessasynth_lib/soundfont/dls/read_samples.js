@@ -199,6 +199,13 @@ export function readDLSSamples(waveListChunk)
                 wsmpChunk.chunkData[wsmpChunk.chunkData.currentIndex++],
                 wsmpChunk.chunkData[wsmpChunk.chunkData.currentIndex++]
             );
+            
+            // pitch correction: convert hundreds to root key
+            const samplePitchSemitones = Math.trunc(samplePitch / 100);
+            sampleKey += samplePitchSemitones;
+            samplePitch -= samplePitchSemitones * 100;
+            
+            
             // gain is applied it manually here (literally multiplying the samples)
             const gainCorrection = readLittleEndian(wsmpChunk.chunkData, 4);
             // convert to signed and turn into decibels
@@ -251,6 +258,7 @@ export function readDLSSamples(waveListChunk)
             sampleData,
             sampleDbAttenuation
         ));
+        
         
         sampleID++;
         SpessaSynthInfo(
