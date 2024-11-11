@@ -317,11 +317,12 @@ export function getSF2ModulatorFromArticulator(
             //     value,
             //     transform
             // );
-            // invert only if the actual transform value is not negative.
-            // if it is, it's already inverted
-            if (value > 0)
+            // if the value is negative, the source shall be negative!
+            // why?
+            // Idk, it makes it work with ROCK.RMI and NOKIA_S30.dls
+            if (value < 0)
             {
-                sourceIsNegative = !sourceIsNegative;
+                sourceIsNegative = 1;
             }
         }
         sourceEnumFinal = getModSourceEnum(

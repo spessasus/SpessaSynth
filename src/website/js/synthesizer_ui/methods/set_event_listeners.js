@@ -33,6 +33,11 @@ export function setEventListeners()
         const controller = e.controllerNumber;
         const channel = e.channel;
         const value = e.controllerValue;
+        const con = this.controllers[channel];
+        if (con === undefined)
+        {
+            return;
+        }
         switch (controller)
         {
             default:
@@ -40,37 +45,37 @@ export function setEventListeners()
             
             case midiControllers.expressionController:
                 // expression
-                this.controllers[channel].expression.update(value);
+                con.expression.update(value);
                 break;
             
             case midiControllers.mainVolume:
                 // volume
-                this.controllers[channel].volume.update(value);
+                con.volume.update(value);
                 break;
             
             case midiControllers.pan:
                 // pan
-                this.controllers[channel].pan.update(value);
+                con.pan.update(value);
                 break;
             
             case midiControllers.modulationWheel:
                 // mod wheel
-                this.controllers[channel].mod.update(value);
+                con.mod.update(value);
                 break;
             
             case midiControllers.chorusDepth:
                 // chorus
-                this.controllers[channel].chorus.update(value);
+                con.chorus.update(value);
                 break;
             
             case midiControllers.reverbDepth:
                 // reverb
-                this.controllers[channel].reverb.update(value);
+                con.reverb.update(value);
                 break;
             
             case midiControllers.brightness:
                 // brightness
-                this.controllers[channel].brightness.update(value);
+                con.brightness.update(value);
         }
     });
     
