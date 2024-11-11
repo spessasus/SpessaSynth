@@ -780,13 +780,14 @@ export class Synthetizer
     /**
      * sends a raw MIDI message to the synthesizer
      * @param message {number[]|Uint8Array} the midi message, each number is a byte
+     * @param channelOffset {number} the channel offset of the message
      */
-    sendMessage(message)
+    sendMessage(message, channelOffset = 0)
     {
         // discard as soon as possible if high perf
         const statusByteData = getEvent(message[0]);
         
-        
+        statusByteData.channel += channelOffset;
         // process the event
         switch (statusByteData.status)
         {
@@ -862,6 +863,19 @@ export class Synthetizer
         this.chorusProcessor = new FancyChorus(this.targetNode, config);
         this.worklet.connect(this.chorusProcessor.input, 1);
         this.effectsConfig.chorusConfig = config;
+    }
+    
+    /**
+     * Changes the effects gain
+     * @param reverbGain {number} the reverb gain, 0-1
+     * @param chorusGain {number} the chorus gain, 0-1
+     */
+    setEffectsGain(reverbGain, chorusGain)
+    {
+        this.post({
+            messageType: workletMessageType.setEffectsGain,
+            messageData: [reverbGain, chorusGain]
+        });
     }
     
     reverbateEverythingBecauseWhyNot()

@@ -131,6 +131,9 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
         
         this.midiVolume = 1;
         
+        this.reverbGain = 1;
+        this.chorusGain = 1;
+        
         /**
          * Maximum number of voices allowed at once
          * @type {number}

@@ -38,8 +38,8 @@ export function panVoice(voice,
     const gainRight = Math.sin(HALF_PI * voice.currentPan) * gain * this.panRight;
     // disable reverb and chorus in one output mode
     
-    const reverbLevel = voice.modulatedGenerators[generatorTypes.reverbEffectsSend] / WORKLET_SYSTEM_REVERB_DIVIDER * gain;
-    const chorusLevel = voice.modulatedGenerators[generatorTypes.chorusEffectsSend] / WORKLET_SYSTEM_CHORUS_DIVIDER;
+    const reverbLevel = this.reverbGain * voice.modulatedGenerators[generatorTypes.reverbEffectsSend] / WORKLET_SYSTEM_REVERB_DIVIDER * gain;
+    const chorusLevel = this.chorusGain * voice.modulatedGenerators[generatorTypes.chorusEffectsSend] / WORKLET_SYSTEM_CHORUS_DIVIDER;
     
     if (reverbLevel > 0 && !this.oneOutputMode)
     {
