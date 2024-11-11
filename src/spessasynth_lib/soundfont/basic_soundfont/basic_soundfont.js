@@ -233,6 +233,13 @@ class BasicSoundFont
     {
         throw new Error(`SF parsing error: ${error} The file may be corrupted.`);
     }
+    
+    destroySoundfont()
+    {
+        delete this.presets;
+        delete this.instruments;
+        delete this.samples;
+    }
 }
 
 BasicSoundFont.prototype.write = write;

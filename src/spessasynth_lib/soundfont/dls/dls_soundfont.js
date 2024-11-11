@@ -164,6 +164,12 @@ class DLSSoundFont extends BasicSoundFont
     {
         throw new Error(`DLS parse error: ${error} The file may be corrupted.`);
     }
+    
+    destroySoundfont()
+    {
+        super.destroySoundfont();
+        delete this.dataArray;
+    }
 }
 
 DLSSoundFont.prototype.readDLSInstrumentList = readDLSInstrumentList;

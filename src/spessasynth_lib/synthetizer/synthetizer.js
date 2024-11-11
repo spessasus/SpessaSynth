@@ -74,6 +74,7 @@ export class Synthetizer
         this.eventHandler = new EventHandler();
         
         this._voiceCap = VOICE_CAP;
+        this._destroyed = false;
         
         /**
          * the new channels will have their audio sent to the moduled output by this constant.
@@ -599,6 +600,10 @@ export class Synthetizer
      */
     post(data)
     {
+        if (this._destroyed)
+        {
+            throw new Error("This synthesizer instance has been destroyed!");
+        }
         this.worklet.port.postMessage(data);
     }
     
@@ -876,6 +881,24 @@ export class Synthetizer
             messageType: workletMessageType.setEffectsGain,
             messageData: [reverbGain, chorusGain]
         });
+    }
+    
+    /**
+     * Destroys the synthesizer instance
+     */
+    destroy()
+    {
+        this.reverbProcessor.disconnect();
+        this.chorusProcessor.delete();
+        this.post({
+            messageType: workletMessageType.destroyWorklet,
+            messageData: undefined
+        });
+        this.worklet.disconnect();
+        delete this.worklet;
+        delete this.reverbProcessor;
+        delete this.chorusProcessor;
+        this._destroyed = true;
     }
     
     reverbateEverythingBecauseWhyNot()

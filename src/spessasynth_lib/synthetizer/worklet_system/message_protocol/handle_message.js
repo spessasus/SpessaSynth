@@ -220,6 +220,10 @@ export function handleMessage(message)
             this.chorusGain = data[1];
             break;
         
+        case workletMessageType.destroyWorklet:
+            this.alive = false;
+            break;
+        
         default:
             SpessaSynthWarn("Unrecognized event:", data);
             break;

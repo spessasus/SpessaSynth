@@ -240,4 +240,13 @@ export class WorkletSoundfontManager
             return this.soundfontList[0].soundfont.presets[0];
         }
     }
+    
+    destroyManager()
+    {
+        this.soundfontList.forEach(s =>
+        {
+            s.soundfont.destroySoundfont();
+        });
+        delete this.soundfontList;
+    }
 }

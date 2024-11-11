@@ -87,6 +87,12 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
         this.enableEventSystem = options.processorOptions.enableEventSystem;
         
         /**
+         * If the worklet is alive
+         * @type {boolean}
+         */
+        this.alive = true;
+        
+        /**
          * Synth's device id: -1 means all
          * @type {number}
          */
@@ -313,6 +319,10 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
      */
     process(inputs, outputs)
     {
+        if (!this.alive)
+        {
+            return false;
+        }
         if (this.processTickCallback)
         {
             this.processTickCallback();
@@ -384,6 +394,26 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
             this.sendChannelProperties();
         }
         return true;
+    }
+    
+    destroyWorkletProcessor()
+    {
+        this.alive = false;
+        this.workletProcessorChannels.forEach(c =>
+        {
+            delete c.midiControllers;
+            delete c.voices;
+            delete c.sustainedVoices;
+            delete c.cachedVoices;
+            delete c.lockedControllers;
+            delete c.preset;
+            delete c.customControllers;
+        });
+        delete this.workletProcessorChannels;
+        delete this.sequencer.midiData;
+        delete this.sequencer;
+        this.soundfontManager.destroyManager();
+        delete this.soundfontManager;
     }
 }
 
