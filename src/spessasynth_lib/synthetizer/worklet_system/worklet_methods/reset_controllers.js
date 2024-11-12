@@ -131,13 +131,6 @@ export function resetControllers(channel)
         return lockedCCs;
     }, []);
     // save excluded controllers as reset doesn't affect them
-    let excludedCCvalues = excludedCCs.map(ccNum =>
-    {
-        return {
-            ccNum: ccNum,
-            ccVal: channelObject.midiControllers[ccNum]
-        };
-    });
     
     channelObject.channelOctaveTuning.fill(0);
     channelObject.keyCentTuning.fill(0);
@@ -145,6 +138,10 @@ export function resetControllers(channel)
     // reset the array
     for (let i = 0; i < resetArray.length; i++)
     {
+        if (channelObject.lockedControllers[i])
+        {
+            return;
+        }
         const resetValue = resetArray[i];
         if (channelObject.midiControllers[i] !== resetValue && i < 127)
         {
@@ -159,11 +156,6 @@ export function resetControllers(channel)
     }
     channelObject.channelVibrato = { rate: 0, depth: 0, delay: 0 };
     channelObject.holdPedal = false;
-    
-    excludedCCvalues.forEach((cc) =>
-    {
-        channelObject.midiControllers[cc.ccNum] = cc.ccVal;
-    });
     
     // reset custom controllers
     // special case: transpose does not get affected
