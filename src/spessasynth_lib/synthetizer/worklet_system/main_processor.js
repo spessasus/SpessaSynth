@@ -62,6 +62,8 @@ import { panVoice } from "./worklet_utilities/stereo_panner.js";
 // if the note is released faster than that, it forced to last that long
 // this is used mostly for drum channels, where a lot of midis like to send instant note off after a note on
 export const MIN_NOTE_LENGTH = 0.03;
+// this sounds way nicer for instant hi-hat cutoff
+export const MIN_EXCLUSIVE_LENGTH = 0.07;
 
 export const SYNTHESIZER_GAIN = 1.0;
 
