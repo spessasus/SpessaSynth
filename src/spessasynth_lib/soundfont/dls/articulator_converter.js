@@ -4,6 +4,7 @@ import { midiControllers } from "../../midi_parser/midi_message.js";
 import { DLSDestinations } from "./dls_destinations.js";
 
 import { generatorTypes } from "../basic_soundfont/generator.js";
+import { consoleColors } from "../../utils/other.js";
 import { SpessaSynthWarn } from "../../utils/loggin.js";
 
 /**
@@ -179,6 +180,48 @@ function checkForSpecialDLSCombo(source, destination)
  * @param source {number}
  * @param control {number}
  * @param destination {number}
+ * @param value {number}
+ * @param transform {number}
+ */
+function modulatorConverterDebug(
+    source,
+    control,
+    destination,
+    value,
+    transform
+)
+{
+    const type = Object.keys(DLSDestinations).find(k => DLSDestinations[k] === destination);
+    const srcType = Object.keys(DLSSources).find(k => DLSSources[k] === source);
+    const ctrlType = Object.keys(DLSSources).find(k => DLSSources[k] === control);
+    const typeString = type ? type : destination.toString(16);
+    const srcString = srcType ? srcType : source.toString(16);
+    const ctrlString = ctrlType ? ctrlType : control.toString(16);
+    console.debug(
+        `%cAttempting to convert the following DLS Articulator to SF2 Modulator:
+        Source: %c${srcString}%c
+        Control: %c${ctrlString}%c
+        Destination: %c${typeString}%c
+        Amount: %c${value}%c
+        Transform: %c${transform}%c...`,
+        consoleColors.info,
+        consoleColors.recognized,
+        consoleColors.info,
+        consoleColors.recognized,
+        consoleColors.info,
+        consoleColors.recognized,
+        consoleColors.info,
+        consoleColors.recognized,
+        consoleColors.info,
+        consoleColors.recognized,
+        consoleColors.info
+    );
+}
+
+/**
+ * @param source {number}
+ * @param control {number}
+ * @param destination {number}
  * @param transform {number}
  * @param value {number}
  * @returns {Modulator|undefined}
@@ -203,6 +246,7 @@ export function getSF2ModulatorFromArticulator(
     let sf2Source;
     let swapSources = false;
     let isSourceNoController = false;
+    let newValue = value;
     if (specialDestination === undefined)
     {
         // determine destination
@@ -219,7 +263,7 @@ export function getSF2ModulatorFromArticulator(
         destinationGenerator = sf2GenDestination;
         if (sf2GenDestination.newAmount !== undefined)
         {
-            value = sf2GenDestination.newAmount;
+            newValue = sf2GenDestination.newAmount;
             destinationGenerator = sf2GenDestination.gen;
         }
         sf2Source = getSF2SourceFromDLS(source);
@@ -267,10 +311,23 @@ export function getSF2ModulatorFromArticulator(
         }
         const sourceIsBipolar = (transform >> 14) & 1;
         let sourceIsNegative = (transform >> 15) & 1;
-        // special case: for attenuation, invert source
+        // special case: for attenuation, invert source (dls gain is the opposite of sf2 attenuation)
         if (destinationGenerator === generatorTypes.initialAttenuation)
         {
-            sourceIsNegative = !sourceIsNegative;
+            // modulatorConverterDebug(
+            //     source,
+            //     control,
+            //     destination,
+            //     value,
+            //     transform
+            // );
+            // if the value is negative, the source shall be negative!
+            // why?
+            // Idk, it makes it work with ROCK.RMI and NOKIA_S30.dls
+            if (value < 0)
+            {
+                sourceIsNegative = 1;
+            }
         }
         sourceEnumFinal = getModSourceEnum(
             sourceTransform,
@@ -305,7 +362,7 @@ export function getSF2ModulatorFromArticulator(
         secSrcEnum: secSourceEnumFinal,
         dest: destinationGenerator,
         transform: 0x0,
-        amt: value
+        amt: newValue
     });
     
 }

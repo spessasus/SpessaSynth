@@ -41,7 +41,7 @@ export class KeyModifierManager
      */
     addModifier(channel, midiNote, options)
     {
-        const velocity = options?.velocity || -1;
+        const velocity = options?.velocity ?? -1;
         const program = options?.patch?.program ?? -1;
         const bank = options?.patch?.bank ?? -1;
         this._sendToWorklet(

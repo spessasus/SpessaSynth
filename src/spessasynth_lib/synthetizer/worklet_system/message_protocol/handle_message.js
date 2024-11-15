@@ -215,6 +215,15 @@ export function handleMessage(message)
             SpessaSynthLogging(data[0], data[1], data[2], data[3]);
             break;
         
+        case workletMessageType.setEffectsGain:
+            this.reverbGain = data[0];
+            this.chorusGain = data[1];
+            break;
+        
+        case workletMessageType.destroyWorklet:
+            this.alive = false;
+            break;
+        
         default:
             SpessaSynthWarn("Unrecognized event:", data);
             break;

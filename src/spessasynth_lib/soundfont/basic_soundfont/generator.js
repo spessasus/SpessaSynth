@@ -106,7 +106,7 @@ generatorLimits[generatorTypes.freqVibLFO] = { min: -16000, max: 4500, def: 0 };
 generatorLimits[generatorTypes.delayModEnv] = { min: -32768, max: 5000, def: -32768 }; // -32768 indicates instant phase, this is done to prevent click at the start of filter modenv
 generatorLimits[generatorTypes.attackModEnv] = { min: -32768, max: 8000, def: -32768 };
 generatorLimits[generatorTypes.holdModEnv] = { min: -12000, max: 5000, def: -12000 };
-generatorLimits[generatorTypes.decayModEnv] = { min: -7200, max: 8000, def: -12000 };   // min is set to -7200 to prevent lowpass clicks
+generatorLimits[generatorTypes.decayModEnv] = { min: -12000, max: 8000, def: -12000 };
 generatorLimits[generatorTypes.sustainModEnv] = { min: 0, max: 1000, def: 0 };
 generatorLimits[generatorTypes.releaseModEnv] = { min: -7200, max: 8000, def: -12000 }; // min is set to -7200 to prevent lowpass clicks
 // keynum to mod env

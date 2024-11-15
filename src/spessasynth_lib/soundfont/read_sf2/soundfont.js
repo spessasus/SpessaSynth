@@ -296,4 +296,10 @@ export class SoundFont2 extends BasicSoundFont
             this.parsingError(`Invalid FourCC: Expected "${expected.toLowerCase()}" got "${text.toLowerCase()}"\``);
         }
     }
+    
+    destroySoundfont()
+    {
+        super.destroySoundfont();
+        delete this.dataArray;
+    }
 }

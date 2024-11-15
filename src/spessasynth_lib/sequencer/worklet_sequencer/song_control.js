@@ -18,6 +18,12 @@ import { MIDIticksToSeconds } from "../../midi_parser/basic_midi.js";
  */
 export function assignMIDIPort(trackNum, port)
 {
+    // do not assign ports to empty tracks
+    if (this.midiData.usedChannelsOnTrack[trackNum].size === 0)
+    {
+        return;
+    }
+    
     // assign new 16 channels if the port is not occupied yet
     if (this.midiPortChannelOffset === 0)
     {

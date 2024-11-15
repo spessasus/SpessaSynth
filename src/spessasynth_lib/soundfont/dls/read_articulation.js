@@ -7,47 +7,6 @@ import { consoleColors } from "../../utils/other.js";
 import { Generator, generatorTypes } from "../basic_soundfont/generator.js";
 import { Modulator } from "../basic_soundfont/modulator.js";
 
-/**
- * @param source {number}
- * @param control {number}
- * @param destination {number}
- * @param value {number}
- * @param transform {number}
- */
-function modulatorConverterDebug(
-    source,
-    control,
-    destination,
-    value,
-    transform
-)
-{
-    const type = Object.keys(DLSDestinations).find(k => DLSDestinations[k] === destination);
-    const srcType = Object.keys(DLSSources).find(k => DLSSources[k] === source);
-    const ctrlType = Object.keys(DLSSources).find(k => DLSSources[k] === control);
-    const typeString = type ? type : destination.toString(16);
-    const srcString = srcType ? srcType : source.toString(16);
-    const ctrlString = ctrlType ? ctrlType : control.toString(16);
-    SpessaSynthInfo(
-        `%cAttempting to convert the following DLS Articulator to SF2 Modulator:
-        Source: %c${srcString}%c
-        Control: %c${ctrlString}%c
-        Destination: %c${typeString}%c
-        Amount: %c${value}%c
-        Transform: %c${transform}%c...`,
-        consoleColors.info,
-        consoleColors.recognized,
-        consoleColors.info,
-        consoleColors.recognized,
-        consoleColors.info,
-        consoleColors.recognized,
-        consoleColors.info,
-        consoleColors.recognized,
-        consoleColors.info,
-        consoleColors.recognized,
-        consoleColors.info
-    );
-}
 
 /**
  * Reads the articulator chunk
@@ -80,7 +39,6 @@ export function readArticulation(chunk, disableVibrato)
         const scale = readLittleEndian(artData, 4) | 0;
         const value = scale >> 16; // convert it to 16 bit as soundfont uses that
         
-        // modulatorConverterDebug(source, control, destination, value, transform);
         // interpret this somehow...
         // if source and control are both zero, it's a generator
         if (source === 0 && control === 0 && transform === 0)

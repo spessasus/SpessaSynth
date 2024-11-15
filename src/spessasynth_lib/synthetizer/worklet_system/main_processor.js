@@ -62,6 +62,8 @@ import { panVoice } from "./worklet_utilities/stereo_panner.js";
 // if the note is released faster than that, it forced to last that long
 // this is used mostly for drum channels, where a lot of midis like to send instant note off after a note on
 export const MIN_NOTE_LENGTH = 0.03;
+// this sounds way nicer for instant hi-hat cutoff
+export const MIN_EXCLUSIVE_LENGTH = 0.07;
 
 export const SYNTHESIZER_GAIN = 1.0;
 
@@ -85,6 +87,12 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
         this._outputsAmount = this.oneOutputMode ? 1 : options.processorOptions.midiChannels;
         
         this.enableEventSystem = options.processorOptions.enableEventSystem;
+        
+        /**
+         * If the worklet is alive
+         * @type {boolean}
+         */
+        this.alive = true;
         
         /**
          * Synth's device id: -1 means all
@@ -130,6 +138,9 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
         this.masterGain = SYNTHESIZER_GAIN;
         
         this.midiVolume = 1;
+        
+        this.reverbGain = 1;
+        this.chorusGain = 1;
         
         /**
          * Maximum number of voices allowed at once
@@ -310,6 +321,10 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
      */
     process(inputs, outputs)
     {
+        if (!this.alive)
+        {
+            return false;
+        }
         if (this.processTickCallback)
         {
             this.processTickCallback();
@@ -381,6 +396,26 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
             this.sendChannelProperties();
         }
         return true;
+    }
+    
+    destroyWorkletProcessor()
+    {
+        this.alive = false;
+        this.workletProcessorChannels.forEach(c =>
+        {
+            delete c.midiControllers;
+            delete c.voices;
+            delete c.sustainedVoices;
+            delete c.cachedVoices;
+            delete c.lockedControllers;
+            delete c.preset;
+            delete c.customControllers;
+        });
+        delete this.workletProcessorChannels;
+        delete this.sequencer.midiData;
+        delete this.sequencer;
+        this.soundfontManager.destroyManager();
+        delete this.soundfontManager;
     }
 }
 
