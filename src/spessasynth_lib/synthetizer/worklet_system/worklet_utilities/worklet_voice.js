@@ -332,7 +332,7 @@ export function getWorkletVoices(channel,
      */
     let workletVoices;
     
-    const cached = channelObject.cachedVoices[midiNote][velocity];
+    const cached = channelObject.cachedVoices[midiNote]?.[velocity];
     
     // override patch
     const overridePatch = this.keyModifierManager.hasOverridePatch(channel, midiNote);

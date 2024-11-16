@@ -3,6 +3,8 @@ import { writeDword, writeWord } from "../../../utils/byte_functions/little_endi
 import { writeRIFFOddSize } from "../riff_chunk.js";
 import { writeWavesample } from "./wsmp.js";
 import { getStringBytes } from "../../../utils/byte_functions/string.js";
+import { SpessaSynthInfo } from "../../../utils/loggin.js";
+import { consoleColors } from "../../../utils/other.js";
 
 /**
  * @param sample {BasicSample}
@@ -51,6 +53,12 @@ export function writeDLSSample(sample)
         inam,
         false,
         true
+    );
+    SpessaSynthInfo(
+        `%cSaved %c${sample.sampleName}%c succesfully!`,
+        consoleColors.recognized,
+        consoleColors.value,
+        consoleColors.recognized
     );
     return writeRIFFOddSize(
         "wave",

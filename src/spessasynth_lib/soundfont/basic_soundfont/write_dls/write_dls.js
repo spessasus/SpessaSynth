@@ -4,6 +4,8 @@ import { combineArrays, IndexedByteArray } from "../../../utils/indexed_array.js
 import { writeLins } from "./lins.js";
 import { getStringBytes, writeStringAsBytes } from "../../../utils/byte_functions/string.js";
 import { writeWavePool } from "./wvpl.js";
+import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo } from "../../../utils/loggin.js";
+import { consoleColors } from "../../../utils/other.js";
 
 /**
  * Write the soundfont as a .dls file. Experimental
@@ -13,6 +15,10 @@ import { writeWavePool } from "./wvpl.js";
 export function writeDLS()
 {
     // TODO: Fix GeneralUserGS
+    SpessaSynthGroupCollapsed(
+        "%cSaving DLS...",
+        consoleColors.info
+    );
     // write colh
     const colhNum = new IndexedByteArray(4);
     writeDword(colhNum, this.presets.length);
@@ -20,11 +26,26 @@ export function writeDLS()
         "colh",
         colhNum
     );
+    SpessaSynthGroupCollapsed(
+        "%cWriting instruments...",
+        consoleColors.info
+    );
     const lins = writeLins.apply(this);
+    SpessaSynthInfo(
+        "%cSuccess!",
+        consoleColors.recognized
+    );
+    SpessaSynthGroupEnd();
     
+    SpessaSynthGroupCollapsed(
+        "%cWriting WAVE samples...",
+        consoleColors.info
+    );
     const wavepool = writeWavePool.apply(this);
     const wvpl = wavepool.data;
     const ptblOffsets = wavepool.indexes;
+    SpessaSynthInfo("%cSucceeded!", consoleColors.recognized);
+    SpessaSynthGroupEnd();
     
     // write ptbl
     const ptblData = new IndexedByteArray(8 + 8 * ptblOffsets.length);
@@ -39,7 +60,7 @@ export function writeDLS()
         ptblData
     );
     
-    this.soundFontInfo["ICMT"] = (this.soundFontInfo["ICMT"] || "") + " Converted to DLS using SpessaSynth";
+    this.soundFontInfo["ICMT"] = (this.soundFontInfo["ICMT"] || "") + "\nConverted from SF2 to DLS using SpessaSynth";
     this.soundFontInfo["ISFT"] = "SpessaSynth";
     // write INFO
     const infos = [];
@@ -51,7 +72,8 @@ export function writeDLS()
             info !== "ICRD" &&
             info !== "IENG" &&
             info !== "ICOP" &&
-            info !== "ISFT"
+            info !== "ISFT" &&
+            info !== "ISBJ"
         )
         {
             continue;
@@ -85,6 +107,11 @@ export function writeDLS()
         wvpl,
         info
     ]), 4);
+    SpessaSynthInfo(
+        "%cSaved succesfully!",
+        consoleColors.recognized
+    );
+    SpessaSynthGroupEnd();
     return writeRIFFOddSize(
         "RIFF",
         out

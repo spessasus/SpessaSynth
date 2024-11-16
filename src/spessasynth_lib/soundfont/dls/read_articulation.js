@@ -289,30 +289,6 @@ export function readArticulation(chunk, disableVibrato)
         }
     }
     
-    // override reverb and chorus with 1000 instead of 200 (if not overriden)
-    // reverb
-    if (modulators.find(m => m.modulatorDestination === generatorTypes.reverbEffectsSend) === undefined)
-    {
-        modulators.push(new Modulator({
-            srcEnum: 0x00DB,
-            dest: generatorTypes.reverbEffectsSend,
-            amt: 1000,
-            secSrcEnum: 0x0,
-            transform: 0
-        }));
-    }
-    // chorus
-    if (modulators.find(m => m.modulatorDestination === generatorTypes.chorusEffectsSend) === undefined)
-    {
-        modulators.push(new Modulator({
-            srcEnum: 0x00DD,
-            dest: generatorTypes.chorusEffectsSend,
-            amt: 1000,
-            secSrcEnum: 0x0,
-            transform: 0
-        }));
-    }
-    
     // it seems that dls 1 does not have vibrato lfo, so we shall disable it
     if (disableVibrato)
     {

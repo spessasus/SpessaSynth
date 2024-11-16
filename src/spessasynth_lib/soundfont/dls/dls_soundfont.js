@@ -63,13 +63,14 @@ class DLSSoundFont extends BasicSoundFont
                 this.soundFontInfo[infoPart.header] = readBytesAsString(infoPart.chunkData, infoPart.size);
             }
         }
-        this.soundFontInfo["ICMT"] = (this.soundFontInfo["ICMT"] || "(No description)") + "\nConverted from DLS to SF2 with SpessaSynth";
+        this.soundFontInfo["ICMT"] = this.soundFontInfo["ICMT"] || "(No description)";
         if (this.soundFontInfo["ISBJ"])
         {
             // merge it
             this.soundFontInfo["ICMT"] += "\n" + this.soundFontInfo["ISBJ"];
             delete this.soundFontInfo["ISBJ"];
         }
+        this.soundFontInfo["ICMT"] += "\nConverted from DLS to SF2 with SpessaSynth";
         
         for (const [info, value] of Object.entries(this.soundFontInfo))
         {

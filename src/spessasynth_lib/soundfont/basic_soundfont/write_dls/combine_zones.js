@@ -217,6 +217,7 @@ export function combineZones(preset)
     }
     
     // create a global zone and add repeating generators to it
+    // also modulators
     const globalZone = new BasicInstrumentZone();
     globalZone.isGlobal = true;
     // iterate over every type of generator
@@ -226,8 +227,19 @@ export function combineZones(preset)
         if (checkedType === generatorTypes.velRange ||
             checkedType === generatorTypes.keyRange ||
             checkedType === generatorTypes.instrument ||
+            checkedType === generatorTypes.exclusiveClass ||
             checkedType === generatorTypes.endOper ||
-            checkedType === generatorTypes.sampleModes
+            checkedType === generatorTypes.sampleModes ||
+            checkedType === generatorTypes.startloopAddrsOffset ||
+            checkedType === generatorTypes.startloopAddrsCoarseOffset ||
+            checkedType === generatorTypes.endloopAddrsOffset ||
+            checkedType === generatorTypes.endloopAddrsCoarseOffset ||
+            checkedType === generatorTypes.startAddrsOffset ||
+            checkedType === generatorTypes.startAddrsCoarseOffset ||
+            checkedType === generatorTypes.endAddrOffset ||
+            checkedType === generatorTypes.endAddrsCoarseOffset ||
+            checkedType === generatorTypes.initialAttenuation
+            // initial cannot be globalized since we're writing it into wsmp and not zone itself
         )
         {
             continue;
@@ -236,6 +248,8 @@ export function combineZones(preset)
          * @type {Object<string, number>}
          */
         let occurencesForValues = {};
+        const defaultForChecked = generatorLimits[checkedType]?.def || 0;
+        occurencesForValues[defaultForChecked] = 0;
         for (const z of finalZones)
         {
             const gen = z.generators.find(g => g.generatorType === checkedType);
@@ -250,6 +264,10 @@ export function combineZones(preset)
                 {
                     occurencesForValues[value]++;
                 }
+            }
+            else
+            {
+                occurencesForValues[defaultForChecked]++;
             }
         }
         // if at least one occurence, find the most used one and add it to global
@@ -266,7 +284,11 @@ export function combineZones(preset)
             }, [0, 0]);
             const targetValue = parseInt(valueToGlobalize[0]);
             
-            globalZone.generators.push(new Generator(checkedType, targetValue));
+            // if the global value is the default value just remove it, no need to add it
+            if (targetValue !== defaultForChecked)
+            {
+                globalZone.generators.push(new Generator(checkedType, targetValue));
+            }
             // remove from the zones
             finalZones.forEach(z =>
             {
@@ -284,9 +306,52 @@ export function combineZones(preset)
                 {
                     // that type does not exist at all here.
                     // Since we're globalizing, we need to add the default here.
-                    z.generators.push(new Generator(checkedType, generatorLimits[checkedType].def));
+                    if (targetValue !== defaultForChecked)
+                    {
+                        z.generators.push(new Generator(checkedType, defaultForChecked));
+                    }
                 }
             });
+        }
+    }
+    
+    // globalize only modulators that exist in all zones
+    const firstZone = finalZones.find(z => !z.isGlobal);
+    const modulators = firstZone.modulators.map(m => Modulator.copy(m));
+    for (const checkedModulator of modulators)
+    {
+        let existsForAllZones = true;
+        for (const zone of finalZones)
+        {
+            if (zone.isGlobal || !existsForAllZones)
+            {
+                continue;
+            }
+            // check if that zone has an existing modulator
+            const mod = zone.modulators.find(m => Modulator.isIdentical(m, checkedModulator));
+            if (!mod)
+            {
+                // does not exist for this zone, so it's not global.
+                existsForAllZones = false;
+            }
+            // exists.
+            
+        }
+        if (existsForAllZones === true)
+        {
+            globalZone.modulators.push(Modulator.copy(checkedModulator));
+            // delete from local zones.
+            for (const zone of finalZones)
+            {
+                const modulator = zone.modulators.find(m => Modulator.isIdentical(m, checkedModulator));
+                // Check if the amount is correct.
+                // If so, delete it since it's global.
+                // if not, then it will simply override global as it's identical.
+                if (modulator.transformAmount === checkedModulator.transformAmount)
+                {
+                    zone.modulators.splice(zone.modulators.indexOf(modulator), 1);
+                }
+            }
         }
     }
     finalZones.splice(0, 0, globalZone);

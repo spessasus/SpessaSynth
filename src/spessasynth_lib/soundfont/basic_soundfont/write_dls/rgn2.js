@@ -47,8 +47,8 @@ export function writeDLSRegion(zone)
         + zone.getGeneratorValue(generatorTypes.startloopAddrsOffset, 0)
         + zone.getGeneratorValue(generatorTypes.startloopAddrsCoarseOffset, 0) * 32768,
         zone.sample.sampleLoopEndIndex
-        + zone.getGeneratorValue(generatorTypes.startloopAddrsOffset, 0)
-        + zone.getGeneratorValue(generatorTypes.startloopAddrsCoarseOffset, 0) * 32768,
+        + zone.getGeneratorValue(generatorTypes.endloopAddrsOffset, 0)
+        + zone.getGeneratorValue(generatorTypes.endloopAddrsCoarseOffset, 0) * 32768,
         zone.getGeneratorValue(generatorTypes.sampleModes, 0)
     );
     

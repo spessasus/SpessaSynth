@@ -65,7 +65,7 @@ export function readRegion(chunk)
     );
     
     const pitchCorrectionSemitones = Math.trunc(pitchCorrection / 100);
-    originalKey += pitchCorrectionSemitones;
+    originalKey -= pitchCorrectionSemitones;
     pitchCorrection -= pitchCorrectionSemitones * 100;
     
     // gain correction:  Each unit of gain represents 1/655360 dB

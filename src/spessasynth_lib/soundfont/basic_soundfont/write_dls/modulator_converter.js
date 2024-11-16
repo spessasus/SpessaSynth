@@ -4,6 +4,7 @@ import { modulatorCurveTypes, modulatorSources } from "../modulator.js";
 import { generatorTypes } from "../generator.js";
 import { DLSDestinations } from "../../dls/dls_destinations.js";
 import { Articulator } from "./articulator.js";
+import { SpessaSynthWarn } from "../../../utils/loggin.js";
 
 
 /**
@@ -129,38 +130,10 @@ function getDLSDestinationFromSf2(dest, amount)
 /**
  * @param dest {number}
  * @param amt {number}
- * @param lart {Articulator[]}
  * @returns {{source: DLSSources, dest: DLSDestinations, amt: number, isBipolar: boolean}|undefined}
  */
-function checkSF2SpecialCombos(dest, amt, lart)
+function checkSF2SpecialCombos(dest, amt)
 {
-    /**
-     * @returns {number}
-     */
-    function applyKeyToHoldCorrection()
-    {
-        // read_articulation.js:
-        // according to viena and another strange (with modulators) rendition of gm.dls in sf2,
-        // it shall be divided by -128
-        // and a strange correction needs to be applied to the real value:
-        // real + (60 / 128) * scale
-        
-        // we invert this here
-        // that's why we need the zone to be provided (so we can modify the real value)
-        const originalArt = lart.find(a =>
-            a.destination === dest &&
-            a.source === 0 &&
-            a.control === 0
-        );
-        if (originalArt === undefined)
-        {
-            return amt;
-        }
-        const dlsAmt = amt * -128;
-        const subtraction = (60 / 128) * dlsAmt;
-        originalArt.scale -= subtraction;
-        return dlsAmt;
-    }
     
     switch (dest)
     {
@@ -189,28 +162,28 @@ function checkSF2SpecialCombos(dest, amt, lart)
             return {
                 source: DLSSources.keyNum,
                 dest: DLSDestinations.volEnvHold,
-                amt: applyKeyToHoldCorrection(),
+                amt: amt,
                 isBipolar: true
             };
         case generatorTypes.keyNumToVolEnvDecay:
             return {
                 source: DLSSources.keyNum,
                 dest: DLSDestinations.volEnvDecay,
-                amt: applyKeyToHoldCorrection(),
+                amt: amt,
                 isBipolar: true
             };
         case generatorTypes.keyNumToModEnvHold:
             return {
                 source: DLSSources.keyNum,
                 dest: DLSDestinations.modEnvHold,
-                amt: applyKeyToHoldCorrection(),
+                amt: amt,
                 isBipolar: true
             };
         case generatorTypes.keyNumToModEnvDecay:
             return {
                 source: DLSSources.keyNum,
                 dest: DLSDestinations.modEnvDecay,
-                amt: applyKeyToHoldCorrection(),
+                amt: amt,
                 isBipolar: true
             };
     }
@@ -218,10 +191,9 @@ function checkSF2SpecialCombos(dest, amt, lart)
 
 /**
  * @param gen {Generator}
- * @param lart {Articulator[]}
  * @returns {Articulator|undefined}
  */
-export function getDLSArticulatorFromSf2Generator(gen, lart)
+export function getDLSArticulatorFromSf2Generator(gen)
 {
     const dest = getDLSDestinationFromSf2(gen.generatorType, gen.generatorValue);
     let destination = dest;
@@ -233,7 +205,7 @@ export function getDLSArticulatorFromSf2Generator(gen, lart)
         destination = dest.dest;
     }
     // check for special combo
-    const combo = checkSF2SpecialCombos(gen.generatorType, gen.generatorValue, lart);
+    const combo = checkSF2SpecialCombos(gen.generatorType, gen.generatorValue);
     if (combo !== undefined)
     {
         amount = combo.amt;
@@ -242,6 +214,7 @@ export function getDLSArticulatorFromSf2Generator(gen, lart)
     }
     else if (destination === undefined)
     {
+        SpessaSynthWarn(`Invalid generator type: ${gen.generatorType}`);
         return undefined;
     }
     return new Articulator(
@@ -256,13 +229,13 @@ export function getDLSArticulatorFromSf2Generator(gen, lart)
 
 /**
  * @param mod {Modulator}
- * @param lart {Articulator[]}
  * @returns {Articulator|undefined}
  */
-export function getDLSArticulatorFromSf2Modulator(mod, lart)
+export function getDLSArticulatorFromSf2Modulator(mod)
 {
     if (mod.transformType !== 0)
     {
+        SpessaSynthWarn("Other transform types are not supported.");
         return undefined;
     }
     let source = getDLSSourceFromSf2Source(mod.sourceUsesCC, mod.sourceIndex);
@@ -271,6 +244,7 @@ export function getDLSArticulatorFromSf2Modulator(mod, lart)
     let sourceDirection = mod.sourceDirection;
     if (source === undefined)
     {
+        SpessaSynthWarn(`Invalid source: ${mod.sourceIndex}, CC: ${mod.sourceUsesCC}`);
         return undefined;
     }
     let control = getDLSSourceFromSf2Source(mod.secSrcUsesCC, mod.secSrcIndex);
@@ -279,6 +253,7 @@ export function getDLSArticulatorFromSf2Modulator(mod, lart)
     let controlDirection = mod.secSrcDirection;
     if (control === undefined)
     {
+        SpessaSynthWarn(`Invalid secondary source: ${mod.secSrcIndex}, CC: ${mod.secSrcUsesCC}`);
         return undefined;
     }
     let dlsDestinationFromSf2 = getDLSDestinationFromSf2(mod.modulatorDestination, mod.transformAmount);
@@ -288,7 +263,7 @@ export function getDLSArticulatorFromSf2Modulator(mod, lart)
         destination = dlsDestinationFromSf2.dest;
     }
     let amt = mod.transformAmount;
-    const specialCombo = checkSF2SpecialCombos(mod.modulatorDestination, mod.transformAmount, lart);
+    const specialCombo = checkSF2SpecialCombos(mod.modulatorDestination, mod.transformAmount);
     if (specialCombo !== undefined)
     {
         amt = specialCombo.amt;
