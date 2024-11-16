@@ -148,26 +148,32 @@ function checkForSpecialDLSCombo(source, destination)
 {
     if (source === DLSSources.vibratoLfo && destination === DLSDestinations.pitch)
     {
+        // vibrato lfo to pitch
         return generatorTypes.vibLfoToPitch;
     }
     else if (source === DLSSources.modLfo && destination === DLSDestinations.pitch)
     {
+        // mod lfo to pitch
         return generatorTypes.modLfoToPitch;
     }
     else if (source === DLSSources.modLfo && destination === DLSDestinations.filterCutoff)
     {
+        // mod lfo to filter
         return generatorTypes.modLfoToFilterFc;
     }
     else if (source === DLSSources.modLfo && destination === DLSDestinations.gain)
     {
+        // mod lfo to volume
         return generatorTypes.modLfoToVolume;
     }
     else if (source === DLSSources.modEnv && destination === DLSDestinations.filterCutoff)
     {
+        // mod envelope to filter
         return generatorTypes.modEnvToFilterFc;
     }
     else if (source === DLSSources.modEnv && destination === DLSDestinations.pitch)
     {
+        // mod envelope to pitch
         return generatorTypes.modEnvToPitch;
     }
     else

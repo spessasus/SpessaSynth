@@ -75,6 +75,8 @@ function getDLSDestinationFromSf2(dest, amount)
             return undefined;
         
         case generatorTypes.initialAttenuation:
+            // amount does not get EMU corrected here, as this only applies to modulator attenuation
+            // the generator (affected) attenuation is handled in wsmp.
             return { dest: DLSDestinations.gain, amount: -amount };
         case generatorTypes.fineTune:
             return DLSDestinations.pitch;
@@ -98,6 +100,8 @@ function getDLSDestinationFromSf2(dest, amount)
         case generatorTypes.freqVibLFO:
             return DLSDestinations.vibLfoFreq;
         
+        case generatorTypes.delayVolEnv:
+            return DLSDestinations.volEnvDelay;
         case generatorTypes.attackVolEnv:
             return DLSDestinations.volEnvAttack;
         case generatorTypes.holdVolEnv:
@@ -109,6 +113,8 @@ function getDLSDestinationFromSf2(dest, amount)
         case generatorTypes.releaseVolEnv:
             return DLSDestinations.volEnvRelease;
         
+        case generatorTypes.delayModEnv:
+            return DLSDestinations.modEnvDelay;
         case generatorTypes.attackModEnv:
             return DLSDestinations.modEnvAttack;
         case generatorTypes.holdModEnv:
@@ -186,6 +192,18 @@ function checkSF2SpecialCombos(dest, amt)
                 amt: amt,
                 isBipolar: true
             };
+        
+        // scale tuning is implemented in DLS via an articulator:
+        // keyNum to relative pitch at 12800 cents.
+        // Change that to scale tuning * 128.
+        // therefore regular scale is still 12800, half is 6400 etc.
+        case generatorTypes.scaleTuning:
+            return {
+                source: DLSSources.keyNum,
+                dest: DLSDestinations.pitch,
+                amt: amt * 128,
+                isBipolar: false // according to table 4, this should be false.
+            };
     }
 }
 
@@ -258,11 +276,12 @@ export function getDLSArticulatorFromSf2Modulator(mod)
     }
     let dlsDestinationFromSf2 = getDLSDestinationFromSf2(mod.modulatorDestination, mod.transformAmount);
     let destination = dlsDestinationFromSf2;
+    let amt = mod.transformAmount;
     if (dlsDestinationFromSf2?.dest !== undefined)
     {
         destination = dlsDestinationFromSf2.dest;
+        amt = dlsDestinationFromSf2.amount;
     }
-    let amt = mod.transformAmount;
     const specialCombo = checkSF2SpecialCombos(mod.modulatorDestination, mod.transformAmount);
     if (specialCombo !== undefined)
     {
@@ -282,6 +301,7 @@ export function getDLSArticulatorFromSf2Modulator(mod)
     }
     else if (destination === undefined)
     {
+        SpessaSynthWarn(`Invalid destination: ${mod.modulatorDestination}`);
         return undefined;
     }
     

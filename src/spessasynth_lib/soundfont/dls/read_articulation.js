@@ -182,6 +182,14 @@ export function readArticulation(chunk, disableVibrato)
                     generators.push(new Generator(generatorTypes.modEnvToFilterFc, value));
                 }
                 else
+                    // scale tuning (key number to pitch)
+                if (source === DLSSources.keyNum && destination === DLSDestinations.pitch)
+                {
+                    // this is just a soundfont generator, but the amount must be changed
+                    // 12800 means the regular scale (100)
+                    generators.push(new Generator(generatorTypes.scaleTuning, value / 128));
+                }
+                else
                     // key to vol env hold
                 if (source === DLSSources.keyNum && destination === DLSDestinations.volEnvHold)
                 {

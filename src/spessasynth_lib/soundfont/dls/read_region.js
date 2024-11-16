@@ -64,10 +64,6 @@ export function readRegion(chunk)
         waveSampleChunk.chunkData[waveSampleChunk.chunkData.currentIndex++]
     );
     
-    const pitchCorrectionSemitones = Math.trunc(pitchCorrection / 100);
-    originalKey -= pitchCorrectionSemitones;
-    pitchCorrection -= pitchCorrectionSemitones * 100;
-    
     // gain correction:  Each unit of gain represents 1/655360 dB
     // it is set after linking the sample
     const gainCorrection = readLittleEndian(waveSampleChunk.chunkData, 4);

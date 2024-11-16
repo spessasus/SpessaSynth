@@ -14,7 +14,6 @@ import { consoleColors } from "../../../utils/other.js";
  */
 export function writeDLS()
 {
-    // TODO: Fix GeneralUserGS
     SpessaSynthGroupCollapsed(
         "%cSaving DLS...",
         consoleColors.info
@@ -60,7 +59,7 @@ export function writeDLS()
         ptblData
     );
     
-    this.soundFontInfo["ICMT"] = (this.soundFontInfo["ICMT"] || "") + "\nConverted from SF2 to DLS using SpessaSynth";
+    this.soundFontInfo["ICMT"] = (this.soundFontInfo["ICMT"] || "Soundfont") + "\nConverted from SF2 to DLS using SpessaSynth";
     this.soundFontInfo["ISFT"] = "SpessaSynth";
     // write INFO
     const infos = [];

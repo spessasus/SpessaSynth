@@ -2,6 +2,30 @@ import { Modulator } from "../modulator.js";
 import { BasicInstrumentZone } from "../basic_zones.js";
 import { Generator, generatorLimits, generatorTypes } from "../generator.js";
 
+const notGlobalizedTypes = new Set([
+    generatorTypes.velRange,
+    generatorTypes.keyRange,
+    generatorTypes.instrument,
+    generatorTypes.exclusiveClass,
+    generatorTypes.endOper,
+    generatorTypes.sampleModes,
+    generatorTypes.startloopAddrsOffset,
+    generatorTypes.startloopAddrsCoarseOffset,
+    generatorTypes.endloopAddrsOffset,
+    generatorTypes.endloopAddrsCoarseOffset,
+    generatorTypes.startAddrsOffset,
+    generatorTypes.startAddrsCoarseOffset,
+    generatorTypes.endAddrOffset,
+    generatorTypes.endAddrsCoarseOffset,
+    generatorTypes.initialAttenuation, // written into wsmp, there's no global wsmp
+    generatorTypes.fineTune,           // written into wsmp, there's no global wsmp
+    generatorTypes.coarseTune,         // written into wsmp, there's no global wsmp
+    generatorTypes.keyNumToVolEnvHold, // KEY TO SOMETHING:
+    generatorTypes.keyNumToVolEnvDecay,// cannot be globalized as they modify their respective generators
+    generatorTypes.keyNumToModEnvHold, // (for example KNTVED modifies VolEnvDecay)
+    generatorTypes.keyNumToModEnvDecay
+]);
+
 /**
  * Combines preset zones
  * @param preset {BasicPreset}
@@ -160,7 +184,8 @@ export function combineZones(preset)
                 }
             }
             
-            let finalGenList = [...instGenerators];
+            // clone the generators as the values are modified during DLS conversion (keyNumToSomething)
+            let finalGenList = instGenerators.map(g => new Generator(g.generatorType, g.generatorValue));
             for (const gen of presetGenerators)
             {
                 if (gen.generatorType === generatorTypes.velRange ||
@@ -224,23 +249,7 @@ export function combineZones(preset)
     for (let checkedType = 0; checkedType < 58; checkedType++)
     {
         // not these though
-        if (checkedType === generatorTypes.velRange ||
-            checkedType === generatorTypes.keyRange ||
-            checkedType === generatorTypes.instrument ||
-            checkedType === generatorTypes.exclusiveClass ||
-            checkedType === generatorTypes.endOper ||
-            checkedType === generatorTypes.sampleModes ||
-            checkedType === generatorTypes.startloopAddrsOffset ||
-            checkedType === generatorTypes.startloopAddrsCoarseOffset ||
-            checkedType === generatorTypes.endloopAddrsOffset ||
-            checkedType === generatorTypes.endloopAddrsCoarseOffset ||
-            checkedType === generatorTypes.startAddrsOffset ||
-            checkedType === generatorTypes.startAddrsCoarseOffset ||
-            checkedType === generatorTypes.endAddrOffset ||
-            checkedType === generatorTypes.endAddrsCoarseOffset ||
-            checkedType === generatorTypes.initialAttenuation
-            // initial cannot be globalized since we're writing it into wsmp and not zone itself
-        )
+        if (notGlobalizedTypes.has(checkedType))
         {
             continue;
         }
