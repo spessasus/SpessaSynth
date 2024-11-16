@@ -7,7 +7,7 @@ It’s a powerful and versatile library that allows you to:
 - Play MIDI files using SF2/SF3/DLS files
 - Write MIDI files
 - Write SF2/SF3 files
-- Convert DLS to SF2
+- Convert DLS to SF2 (and back)
 - [and more!](#easy-integration)
 
 ```shell
@@ -103,7 +103,7 @@ This repository contains both the library and a complete musical web application
   - **Variable compression quality:** You choose between file size and quality!
   - **Compression preserving:** Avoid decompressing and recompressing uncompressed samples for minimal quality loss!
 
-#### Read and play DLS Level 1 or 2 files
+#### Read and write DLS Level 1 or 2 files
   - Read DLS (DownLoadable Sounds) files as SF2 files!
   - **Works like a normal soundfont:** *Saving it as sf2 is still [just one function!](https://github.com/spessasus/SpessaSynth/wiki/SoundFont2-Class#write)*
   - Converts articulators to both **modulators** and **generators**!
@@ -111,6 +111,7 @@ This repository contains both the library and a complete musical web application
   - **Covers special generator cases:** *such as modLfoToPitch*!
   - **Correct volume:** *looking at you, Viena and gm.sf2!*
   - Support built right into the synthesizer!
+  - **Convert SF2 to DLS:** [with limitations](https://github.com/spessasus/SpessaSynth/wiki/DLS-Conversion-Problem);
 
 ### Export MIDI as WAV
   - Save the MIDI file as WAV audio!
@@ -121,6 +122,7 @@ This repository contains both the library and a complete musical web application
 
 ## Limitations
 - Synth's performance may be suboptimal, especially on mobile devices.
+- [SF2 to DLS Conversion](https://github.com/spessasus/SpessaSynth/wiki/DLS-Conversion-Problem)
 - Audio may sometimes sound distored in Chrome, Edge, Brave,
   etc. due to a **[Chromium Bug](https://issues.chromium.org/issues/367304685).**
   I can't do anything about it, only hope that it gets fixed.
@@ -169,6 +171,7 @@ npm install --save spessasynth_lib
   - Export the modified MIDI file to .mid
   - Export the trimmed SoundFont to .sf2
   - Export a DLS file to .sf2
+  - Export an SF2 file to .dls
   - Or compress it as .sf3!
   - Bundle both as .rmi with metadata such as album cover!
 - Comes bundled with a compressed [GeneralUser GS](https://schristiancollins.com/generaluser.php) SoundFont to get you started

@@ -84,10 +84,12 @@ export function readArticulation(chunk, disableVibrato)
                     generator = new Generator(generatorTypes.attackVolEnv, value);
                     break;
                 case DLSDestinations.volEnvHold:
-                    generator = new Generator(generatorTypes.holdVolEnv, value);
+                    // do not validate because keyNumToSomething
+                    generator = new Generator(generatorTypes.holdVolEnv, value, false);
                     break;
                 case DLSDestinations.volEnvDecay:
-                    generator = new Generator(generatorTypes.decayVolEnv, value);
+                    // do not validate because keyNumToSomething
+                    generator = new Generator(generatorTypes.decayVolEnv, value, false);
                     break;
                 case DLSDestinations.volEnvRelease:
                     generator = new Generator(generatorTypes.releaseVolEnv, value);
@@ -106,10 +108,12 @@ export function readArticulation(chunk, disableVibrato)
                     generator = new Generator(generatorTypes.attackModEnv, value);
                     break;
                 case DLSDestinations.modEnvHold:
-                    generator = new Generator(generatorTypes.holdModEnv, value);
+                    // do not validate because keyNumToSomething
+                    generator = new Generator(generatorTypes.holdModEnv, value, false);
                     break;
                 case DLSDestinations.modEnvDecay:
-                    generator = new Generator(generatorTypes.decayModEnv, value);
+                    // do not validate because keyNumToSomething
+                    generator = new Generator(generatorTypes.decayModEnv, value, false);
                     break;
                 case DLSDestinations.modEnvRelease:
                     generator = new Generator(generatorTypes.releaseModEnv, value);

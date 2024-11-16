@@ -156,19 +156,24 @@ export class Generator
      * Constructs a new generator
      * @param type {generatorTypes|number}
      * @param value {number}
+     * @param validate {boolean}
      */
-    constructor(type = generatorTypes.INVALID, value = 0)
+    constructor(type = generatorTypes.INVALID, value = 0, validate = true)
     {
         this.generatorType = type;
         if (value === undefined)
         {
             throw new Error("No value provided.");
         }
-        const lim = generatorLimits[type];
         this.generatorValue = Math.round(value);
-        if (lim !== undefined)
+        if (validate)
         {
-            this.generatorValue = Math.max(lim.min, Math.min(lim.max, this.generatorValue));
+            const lim = generatorLimits[type];
+            
+            if (lim !== undefined)
+            {
+                this.generatorValue = Math.max(lim.min, Math.min(lim.max, this.generatorValue));
+            }
         }
     }
 }

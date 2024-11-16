@@ -25,6 +25,7 @@ import { readBytesAsString } from "../../../spessasynth_lib/utils/byte_functions
 import { IndexedByteArray } from "../../../spessasynth_lib/utils/indexed_array.js";
 import { closeNotification, showNotification } from "../notification/notification.js";
 import { DropFileHandler } from "../utils/drop_file_handler.js";
+import { _exportDLS } from "./export_dls.js";
 
 // this enables transitions on body because if we enable them on load, it flashbangs us with white
 document.body.classList.add("load");
@@ -136,13 +137,6 @@ class Manager
          * @type {ArrayBuffer}
          */
         this.soundFont = soundFont;
-        
-        
-        const soundfont = loadSoundFont(this.soundFont);
-        const binary = soundfont.writeDLS();
-        //const binarysf2 = loadSoundFont(binary.buffer).write();
-        const blob = new Blob([binary], { type: "audio/dls" });
-        this.saveBlob(blob, `${soundfont.soundFontInfo["INAM"]}.dls`);
         
         const DEBUG_PATH = "synthetizer/worklet_system/worklet_processor.js";
         const WORKLET_PATH = this.enableDebug ? DEBUG_PATH : WORKLET_URL_ABSOLUTE;
@@ -493,5 +487,6 @@ Manager.prototype._exportAudioData = _exportAudioData;
 Manager.prototype._doExportAudioData = _doExportAudioData;
 Manager.prototype.exportMidi = exportMidi;
 Manager.prototype._exportSoundfont = _exportSoundfont;
+Manager.prototype._exportDLS = _exportDLS;
 Manager.prototype._exportRMIDI = _exportRMIDI;
 export { Manager };

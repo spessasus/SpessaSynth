@@ -51,6 +51,20 @@ export function writeIns(preset)
         inshData
     );
     
+    // write global zone
+    let lar2 = new IndexedByteArray(0);
+    const globalZone = combined.find(z => z.isGlobal === true);
+    if (globalZone)
+    {
+        const art2 = writeArticulator(globalZone);
+        lar2 = writeRIFFOddSize(
+            "lar2",
+            art2,
+            false,
+            true
+        );
+    }
+    
     // write region list
     const lrgnData = combineArrays(combined.reduce((arrs, z) =>
     {
@@ -66,20 +80,6 @@ export function writeIns(preset)
         false,
         true
     );
-    
-    // write global zone
-    let lar2 = new IndexedByteArray(0);
-    const globalZone = combined.find(z => z.isGlobal === true);
-    if (globalZone)
-    {
-        const art2 = writeArticulator(globalZone);
-        lar2 = writeRIFFOddSize(
-            "lar2",
-            art2,
-            false,
-            true
-        );
-    }
     
     // writeINFO
     const inam = writeRIFFOddSize(

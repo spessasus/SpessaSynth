@@ -52,6 +52,28 @@ export async function exportSong()
             },
             {
                 type: "button",
+                translatePathTitle: path + "formats.dls.button",
+                onClick: n =>
+                {
+                    closeNotification(n.id);
+                    try
+                    {
+                        this._exportDLS();
+                    }
+                    catch (e)
+                    {
+                        showNotification(
+                            "Warning",
+                            [{
+                                type: "text",
+                                textContent: this.localeManager.getLocaleString("locale.warnings.outOfMemory")
+                            }]
+                        );
+                    }
+                }
+            },
+            {
+                type: "button",
                 translatePathTitle: path + "formats.rmidi.button",
                 onClick: n =>
                 {

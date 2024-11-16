@@ -75,6 +75,19 @@ export const exportAudio = {
                 }
             },
             
+            dls: {
+                button: {
+                    title: "DLS (.dls) [EKSPERYMENTALNY]",
+                    description: "Eksportuj SoundFonta jako DLS"
+                },
+                warning: {
+                    title: "Ostrzeżenie DLS",
+                    message: "Eksport do formatu DLS jest ograniczony i może utworzyć uszkodzone pliki.",
+                    details: "Więcej informacji",
+                    confirm: "Eksportuj i tak"
+                }
+            },
+            
             rmidi: {
                 button: {
                     title: "Osadzone MIDI (.rmi)",

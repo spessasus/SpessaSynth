@@ -1,7 +1,7 @@
 import { getDLSArticulatorFromSf2Generator, getDLSArticulatorFromSf2Modulator } from "./modulator_converter.js";
 import { writeRIFFOddSize } from "../riff_chunk.js";
 import { combineArrays, IndexedByteArray } from "../../../utils/indexed_array.js";
-import { generatorTypes } from "../generator.js";
+import { Generator, generatorTypes } from "../generator.js";
 import { writeDword } from "../../../utils/byte_functions/little_endian.js";
 import { consoleColors } from "../../../utils/other.js";
 import { SpessaSynthInfo, SpessaSynthWarn } from "../../../utils/loggin.js";
@@ -43,35 +43,43 @@ export function writeArticulator(zone)
     // real + (60 / 128) * scale
     
     // we invert this here
-    for (const gen of zone.generators)
+    for (let i = 0; i < zone.generators.length; i++)
     {
-        let relativeCounterpart = undefined;
-        switch (gen.generatorType)
+        const relativeGenerator = zone.generators[i];
+        let absoluteCounterpart = undefined;
+        switch (relativeGenerator.generatorType)
         {
             default:
                 continue;
             
-            case generatorTypes.decayVolEnv:
-                relativeCounterpart = generatorTypes.keyNumToVolEnvDecay;
+            case generatorTypes.keyNumToVolEnvDecay:
+                absoluteCounterpart = generatorTypes.decayVolEnv;
                 break;
-            case generatorTypes.holdVolEnv:
-                relativeCounterpart = generatorTypes.keyNumToVolEnvHold;
+            case generatorTypes.keyNumToVolEnvHold:
+                absoluteCounterpart = generatorTypes.holdVolEnv;
                 break;
-            case generatorTypes.decayModEnv:
-                relativeCounterpart = generatorTypes.keyNumToModEnvDecay;
+            case generatorTypes.keyNumToModEnvDecay:
+                absoluteCounterpart = generatorTypes.decayModEnv;
                 break;
-            case generatorTypes.holdModEnv:
-                relativeCounterpart = generatorTypes.keyNumToModEnvHold;
+            case generatorTypes.keyNumToModEnvHold:
+                absoluteCounterpart = generatorTypes.holdModEnv;
         }
-        const relativeValue = zone.generators.find(g => g.generatorType === relativeCounterpart);
-        if (relativeValue === undefined)
+        let absoluteGenerator = zone.generators.find(g => g.generatorType === absoluteCounterpart);
+        if (absoluteGenerator === undefined)
         {
+            // there's no absolute generator here.
             continue;
         }
-        const dlsAmt = relativeValue.generatorValue * -128;
-        const subtraction = (60 / 128) * dlsAmt;
-        gen.generatorValue -= subtraction;
-        relativeValue.generatorValue = dlsAmt;
+        const dlsRelative = relativeGenerator.generatorValue * -128;
+        const subtraction = (60 / 128) * dlsRelative;
+        const newAbsolute = absoluteGenerator.generatorValue - subtraction;
+        
+        const iR = zone.generators.indexOf(relativeGenerator);
+        const iA = zone.generators.indexOf(absoluteGenerator);
+        zone.generators[iA] =
+            new Generator(absoluteCounterpart, newAbsolute, false);
+        zone.generators[iR] =
+            new Generator(relativeGenerator.generatorType, dlsRelative, false);
     }
     /**
      * @type {Articulator[]}
