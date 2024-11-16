@@ -41,7 +41,7 @@ export class DLSSample extends BasicSample
             0,
             1,
             loopStart,
-            loopEnd - 1 // -1 sample because soundfont end is last sample and dls end is next sample
+            loopEnd
         );
         this.sampleData = data;
         this.sampleDbAttenuation = sampleDbAttenuation;
@@ -65,7 +65,7 @@ export class DLSSample extends BasicSample
         const uint8 = new Uint8Array(this.sampleData.length * 2);
         for (let i = 0; i < this.sampleData.length; i++)
         {
-            const sample = Math.floor(this.sampleData[i] * 32767);
+            const sample = Math.floor(this.sampleData[i] * 32768);
             uint8[i * 2] = sample & 0xFF; // lower byte
             uint8[i * 2 + 1] = (sample >> 8) & 0xFF; // upper byte
         }

@@ -25,6 +25,7 @@ import { readBytesAsString } from "../../../spessasynth_lib/utils/byte_functions
 import { IndexedByteArray } from "../../../spessasynth_lib/utils/indexed_array.js";
 import { closeNotification, showNotification } from "../notification/notification.js";
 import { DropFileHandler } from "../utils/drop_file_handler.js";
+import { _exportDLS } from "./export_dls.js";
 
 // this enables transitions on body because if we enable them on load, it flashbangs us with white
 document.body.classList.add("load");
@@ -131,6 +132,12 @@ class Manager
             );
         }
         
+        /**
+         * set up soundfont
+         * @type {ArrayBuffer}
+         */
+        this.soundFont = soundFont;
+        
         const DEBUG_PATH = "synthetizer/worklet_system/worklet_processor.js";
         const WORKLET_PATH = this.enableDebug ? DEBUG_PATH : WORKLET_URL_ABSOLUTE;
         if (this.enableDebug)
@@ -143,11 +150,6 @@ class Manager
         {
             await context.audioWorklet.addModule(new URL(prePath + WORKLET_PATH, import.meta.url));
         }
-        /**
-         * set up soundfont
-         * @type {ArrayBuffer}
-         */
-        this.soundFont = soundFont;
         
         // set up buffer here (if we let spessasynth use the default buffer, there's no reverb for the first second.)
         const impulseURL = new URL(
@@ -485,5 +487,6 @@ Manager.prototype._exportAudioData = _exportAudioData;
 Manager.prototype._doExportAudioData = _doExportAudioData;
 Manager.prototype.exportMidi = exportMidi;
 Manager.prototype._exportSoundfont = _exportSoundfont;
+Manager.prototype._exportDLS = _exportDLS;
 Manager.prototype._exportRMIDI = _exportRMIDI;
 export { Manager };

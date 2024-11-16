@@ -20,7 +20,7 @@ export function readBytesAsString(dataArray, bytes, encoding = undefined, trimEn
             {
                 continue;
             }
-            if (byte < 32 || byte > 127)
+            if ((byte < 32 || byte > 127) && byte !== 10) // 10 is "\n"
             {
                 if (trimEnd)
                 {

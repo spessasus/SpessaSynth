@@ -179,6 +179,22 @@ export function readDLSSamples(waveListChunk)
             
         }
         
+        // read sample name
+        const waveInfo = findRIFFListType(waveChunks, "INFO");
+        let sampleName = `Unnamed ${sampleID}`;
+        if (waveInfo)
+        {
+            let infoChunk = readRIFFChunk(waveInfo.chunkData);
+            while (infoChunk.header !== "INAM" && waveInfo.chunkData.currentIndex < waveInfo.chunkData.length)
+            {
+                infoChunk = readRIFFChunk(waveInfo.chunkData);
+            }
+            if (infoChunk.header === "INAM")
+            {
+                sampleName = readBytesAsString(infoChunk.chunkData, infoChunk.size).trim();
+            }
+        }
+        
         // sane defaults
         let sampleKey = 60;
         let samplePitch = 0;
@@ -227,22 +243,6 @@ export function readDLSSamples(waveListChunk)
             SpessaSynthWarn("No wsmp chunk in wave... using sane defaults.");
         }
         
-        // read sample name
-        const waveInfo = findRIFFListType(waveChunks, "INFO");
-        let sampleName = `Unnamed ${sampleID}`;
-        if (waveInfo)
-        {
-            let infoChunk = readRIFFChunk(waveInfo.chunkData);
-            while (infoChunk.header !== "INAM" && waveInfo.chunkData.currentIndex < waveInfo.chunkData.length)
-            {
-                infoChunk = readRIFFChunk(waveInfo.chunkData);
-            }
-            if (infoChunk.header === "INAM")
-            {
-                sampleName = readBytesAsString(infoChunk.chunkData, infoChunk.size).trim();
-            }
-        }
-        
         if (failed)
         {
             console.error(`Failed to load '${sampleName}': Unsupported format: (${waveFormat})`);
@@ -254,7 +254,7 @@ export function readDLSSamples(waveListChunk)
             sampleKey,
             samplePitch,
             sampleLoopStart,
-            sampleData.length,
+            sampleLoopEnd,
             sampleData,
             sampleDbAttenuation
         ));

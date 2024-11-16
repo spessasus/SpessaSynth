@@ -76,6 +76,19 @@ export const exportAudio = {
                 }
             },
             
+            dls: {
+                button: {
+                    title: "DLS (.dls) [EXPERIMENTAL]",
+                    description: "Export the SoundFont as DLS"
+                },
+                warning: {
+                    title: "DLS Export warning",
+                    message: "DLS export is limited and may produce broken files with large and complex SoundFonts.",
+                    details: "More info",
+                    confirm: "Export anyways"
+                }
+            },
+            
             rmidi: {
                 button: {
                     title: "Embedded MIDI (.rmi)",

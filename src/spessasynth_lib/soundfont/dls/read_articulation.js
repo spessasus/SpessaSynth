@@ -84,18 +84,20 @@ export function readArticulation(chunk, disableVibrato)
                     generator = new Generator(generatorTypes.attackVolEnv, value);
                     break;
                 case DLSDestinations.volEnvHold:
-                    generator = new Generator(generatorTypes.holdVolEnv, value);
+                    // do not validate because keyNumToSomething
+                    generator = new Generator(generatorTypes.holdVolEnv, value, false);
                     break;
                 case DLSDestinations.volEnvDecay:
-                    generator = new Generator(generatorTypes.decayVolEnv, value);
+                    // do not validate because keyNumToSomething
+                    generator = new Generator(generatorTypes.decayVolEnv, value, false);
                     break;
                 case DLSDestinations.volEnvRelease:
                     generator = new Generator(generatorTypes.releaseVolEnv, value);
                     break;
                 case DLSDestinations.volEnvSustain:
                     // gain seems to be (1000 - value) / 10 = sustain dB
-                    const sustainDb = (1000 - value) / 10;
-                    generator = new Generator(generatorTypes.sustainVolEnv, sustainDb * 10);
+                    const sustainCb = 1000 - value;
+                    generator = new Generator(generatorTypes.sustainVolEnv, sustainCb);
                     break;
                 
                 // mod env
@@ -106,10 +108,12 @@ export function readArticulation(chunk, disableVibrato)
                     generator = new Generator(generatorTypes.attackModEnv, value);
                     break;
                 case DLSDestinations.modEnvHold:
-                    generator = new Generator(generatorTypes.holdModEnv, value);
+                    // do not validate because keyNumToSomething
+                    generator = new Generator(generatorTypes.holdModEnv, value, false);
                     break;
                 case DLSDestinations.modEnvDecay:
-                    generator = new Generator(generatorTypes.decayModEnv, value);
+                    // do not validate because keyNumToSomething
+                    generator = new Generator(generatorTypes.decayModEnv, value, false);
                     break;
                 case DLSDestinations.modEnvRelease:
                     generator = new Generator(generatorTypes.releaseModEnv, value);
@@ -180,6 +184,14 @@ export function readArticulation(chunk, disableVibrato)
                 if (source === DLSSources.modEnv && destination === DLSDestinations.filterCutoff)
                 {
                     generators.push(new Generator(generatorTypes.modEnvToFilterFc, value));
+                }
+                else
+                    // scale tuning (key number to pitch)
+                if (source === DLSSources.keyNum && destination === DLSDestinations.pitch)
+                {
+                    // this is just a soundfont generator, but the amount must be changed
+                    // 12800 means the regular scale (100)
+                    generators.push(new Generator(generatorTypes.scaleTuning, value / 128));
                 }
                 else
                     // key to vol env hold
@@ -287,30 +299,6 @@ export function readArticulation(chunk, disableVibrato)
                 }
             }
         }
-    }
-    
-    // override reverb and chorus with 1000 instead of 200 (if not overriden)
-    // reverb
-    if (modulators.find(m => m.modulatorDestination === generatorTypes.reverbEffectsSend) === undefined)
-    {
-        modulators.push(new Modulator({
-            srcEnum: 0x00DB,
-            dest: generatorTypes.reverbEffectsSend,
-            amt: 1000,
-            secSrcEnum: 0x0,
-            transform: 0
-        }));
-    }
-    // chorus
-    if (modulators.find(m => m.modulatorDestination === generatorTypes.chorusEffectsSend) === undefined)
-    {
-        modulators.push(new Modulator({
-            srcEnum: 0x00DD,
-            dest: generatorTypes.chorusEffectsSend,
-            amt: 1000,
-            secSrcEnum: 0x0,
-            transform: 0
-        }));
     }
     
     // it seems that dls 1 does not have vibrato lfo, so we shall disable it

@@ -5,6 +5,7 @@ import { DLSDestinations } from "./dls_destinations.js";
 
 import { generatorTypes } from "../basic_soundfont/generator.js";
 import { consoleColors } from "../../utils/other.js";
+import { SpessaSynthWarn } from "../../utils/loggin.js";
 
 /**
  * @param source {number}
@@ -147,26 +148,32 @@ function checkForSpecialDLSCombo(source, destination)
 {
     if (source === DLSSources.vibratoLfo && destination === DLSDestinations.pitch)
     {
+        // vibrato lfo to pitch
         return generatorTypes.vibLfoToPitch;
     }
     else if (source === DLSSources.modLfo && destination === DLSDestinations.pitch)
     {
+        // mod lfo to pitch
         return generatorTypes.modLfoToPitch;
     }
     else if (source === DLSSources.modLfo && destination === DLSDestinations.filterCutoff)
     {
+        // mod lfo to filter
         return generatorTypes.modLfoToFilterFc;
     }
     else if (source === DLSSources.modLfo && destination === DLSDestinations.gain)
     {
+        // mod lfo to volume
         return generatorTypes.modLfoToVolume;
     }
     else if (source === DLSSources.modEnv && destination === DLSDestinations.filterCutoff)
     {
+        // mod envelope to filter
         return generatorTypes.modEnvToFilterFc;
     }
     else if (source === DLSSources.modEnv && destination === DLSDestinations.pitch)
     {
+        // mod envelope to pitch
         return generatorTypes.modEnvToPitch;
     }
     else
@@ -253,6 +260,7 @@ export function getSF2ModulatorFromArticulator(
         if (sf2GenDestination === undefined)
         {
             // cannot be a valid modulator
+            SpessaSynthWarn(`Invalid destination: ${destination}`);
             return undefined;
         }
         /**
@@ -268,6 +276,7 @@ export function getSF2ModulatorFromArticulator(
         if (sf2Source === undefined)
         {
             // cannot be a valid modulator
+            SpessaSynthWarn(`Invalid source: ${source}`);
             return undefined;
         }
     }
@@ -282,6 +291,7 @@ export function getSF2ModulatorFromArticulator(
     if (sf2SecondSource === undefined)
     {
         // cannot be a valid modulator
+        SpessaSynthWarn(`Invalid control: ${control}`);
         return undefined;
     }
     

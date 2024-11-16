@@ -55,28 +55,31 @@ export class DLSZone extends BasicInstrumentZone
         }
         
         // correct loop if needed
-        const diffStart = loop.start - sample.sampleLoopStartIndex;
-        const diffEnd = loop.end - sample.sampleLoopEndIndex;
-        if (diffStart !== 0)
+        if (loopingMode !== 0)
         {
-            const fine = diffStart % 32768;
-            this.generators.push(new Generator(generatorTypes.startloopAddrsOffset, fine));
-            // coarse generator uses 32768 samples per step
-            const coarse = Math.trunc(diffStart / 32768);
-            if (coarse !== 0)
+            const diffStart = loop.start - sample.sampleLoopStartIndex;
+            const diffEnd = loop.end - sample.sampleLoopEndIndex;
+            if (diffStart !== 0)
             {
-                this.generators.push(new Generator(generatorTypes.startloopAddrsCoarseOffset, coarse));
+                const fine = diffStart % 32768;
+                this.generators.push(new Generator(generatorTypes.startloopAddrsOffset, fine));
+                // coarse generator uses 32768 samples per step
+                const coarse = Math.trunc(diffStart / 32768);
+                if (coarse !== 0)
+                {
+                    this.generators.push(new Generator(generatorTypes.startloopAddrsCoarseOffset, coarse));
+                }
             }
-        }
-        if (diffEnd !== 0)
-        {
-            const fine = diffEnd % 32768;
-            this.generators.push(new Generator(generatorTypes.endloopAddrsOffset, fine));
-            // coarse generator uses 32768 samples per step
-            const coarse = Math.trunc(diffEnd / 32768);
-            if (coarse !== 0)
+            if (diffEnd !== 0)
             {
-                this.generators.push(new Generator(generatorTypes.endloopAddrsCoarseOffset, coarse));
+                const fine = diffEnd % 32768;
+                this.generators.push(new Generator(generatorTypes.endloopAddrsOffset, fine));
+                // coarse generator uses 32768 samples per step
+                const coarse = Math.trunc(diffEnd / 32768);
+                if (coarse !== 0)
+                {
+                    this.generators.push(new Generator(generatorTypes.endloopAddrsCoarseOffset, coarse));
+                }
             }
         }
         // correct key if needed

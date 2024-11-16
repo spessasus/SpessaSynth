@@ -2,6 +2,7 @@ import { SpessaSynthWarn } from "../../utils/loggin.js";
 import { consoleColors } from "../../utils/other.js";
 import { write } from "./write_sf2/write.js";
 import { defaultModulators, Modulator } from "./modulator.js";
+import { writeDLS } from "./write_dls/write_dls.js";
 
 class BasicSoundFont
 {
@@ -243,5 +244,6 @@ class BasicSoundFont
 }
 
 BasicSoundFont.prototype.write = write;
+BasicSoundFont.prototype.writeDLS = writeDLS;
 
 export { BasicSoundFont };
