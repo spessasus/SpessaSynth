@@ -70,7 +70,7 @@ export function writeIns(preset)
     {
         if (!z.isGlobal)
         {
-            arrs.push(writeDLSRegion.apply(this, [z]));
+            arrs.push(writeDLSRegion.apply(this, [z, globalZone]));
         }
         return arrs;
     }, []));

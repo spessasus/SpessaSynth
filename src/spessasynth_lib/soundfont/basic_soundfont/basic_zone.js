@@ -58,7 +58,7 @@ export class BasicZone
      */
     getGeneratorValue(generatorType, notFoundValue)
     {
-        return this.generators.find(g => g.generatorType === generatorType)?.generatorValue || notFoundValue;
+        return this.generators.find(g => g.generatorType === generatorType)?.generatorValue ?? notFoundValue;
     }
 }
 
