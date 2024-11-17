@@ -32,17 +32,31 @@ export function writeDLSSample(sample)
         sample.sampleLoopEndIndex,
         1
     );
-    
     const audio = sample.getAudioData();
-    const data16 = new Int16Array(audio.length);
-    for (let i = 0; i < audio.length; i++)
+    let data;
+    // if sample is compressed, getRawData cannot be used
+    if (sample.isCompressed)
     {
-        data16[i] = audio[i] * 32768;
+        const data16 = new Int16Array(audio.length);
+        
+        for (let i = 0; i < audio.length; i++)
+        {
+            data16[i] = audio[i] * 32768;
+        }
+        
+        
+        data = writeRIFFOddSize(
+            "data",
+            new IndexedByteArray(data16.buffer)
+        );
     }
-    const data = writeRIFFOddSize(
-        "data",
-        new IndexedByteArray(data16.buffer)
-    );
+    else
+    {
+        data = writeRIFFOddSize(
+            "data",
+            sample.getRawData()
+        );
+    }
     
     const inam = writeRIFFOddSize(
         "INAM",

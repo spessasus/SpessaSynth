@@ -2,6 +2,8 @@ import { writeDword, writeWord } from "../../../utils/byte_functions/little_endi
 import { IndexedByteArray } from "../../../utils/indexed_array.js";
 import { writeRIFFOddSize } from "../riff_chunk.js";
 
+const WSMP_SIZE = 20;
+
 /**
  * @param sample {BasicSample}
  * @param rootKey {number}
@@ -21,9 +23,9 @@ export function writeWavesample(
     loopEnd,
     loopingMode)
 {
-// fixed size because always one loop
-    const wsmpData = new IndexedByteArray(36);
-    writeDword(wsmpData, 20); // cbSize
+    let loopCount = loopingMode === 0 ? 0 : 1;
+    const wsmpData = new IndexedByteArray(WSMP_SIZE + loopCount * 16);
+    writeDword(wsmpData, WSMP_SIZE); // cbSize
     // usUnityNote (apply root pitch here)
     writeWord(wsmpData, rootKey);
     // sFineTune
@@ -39,7 +41,6 @@ export function writeWavesample(
     writeDword(wsmpData, 0);
     
     const loopSize = loopEnd - loopStart;
-    let loopCount = 1;
     let ulLoopType = 0;
     switch (loopingMode)
     {
@@ -63,10 +64,13 @@ export function writeWavesample(
     
     // cSampleLoops
     writeDword(wsmpData, loopCount);
-    writeDword(wsmpData, 16); // cbSize
-    writeDword(wsmpData, ulLoopType);
-    writeDword(wsmpData, loopStart);
-    writeDword(wsmpData, loopSize);
+    if (loopCount === 1)
+    {
+        writeDword(wsmpData, 16); // cbSize
+        writeDword(wsmpData, ulLoopType);
+        writeDword(wsmpData, loopStart);
+        writeDword(wsmpData, loopSize);
+    }
     return writeRIFFOddSize(
         "wsmp",
         wsmpData
