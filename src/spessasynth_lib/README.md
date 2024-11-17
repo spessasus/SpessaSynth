@@ -105,7 +105,7 @@ document.getElementById("button").onclick = async () =>
   - **Variable compression quality:** You choose between file size and quality!
   - **Compression preserving:** Avoid decompressing and recompressing uncompressed samples for minimal quality loss!
 
-#### Read and play DLS Level 1 or 2 files
+#### Read and write DLS Level 1 or 2 files
   - Read DLS (DownLoadable Sounds) files as SF2 files!
   - **Works like a normal soundfont:** *Saving it as sf2 is still [just one function!](https://github.com/spessasus/SpessaSynth/wiki/SoundFont2-Class#write)*
   - Converts articulators to both **modulators** and **generators**!
@@ -113,6 +113,7 @@ document.getElementById("button").onclick = async () =>
   - **Covers special generator cases:** *such as modLfoToPitch*!
   - **Correct volume:** *looking at you, Viena and gm.sf2!*
   - Support built right into the synthesizer!
+  - **Convert SF2 to DLS:** [with limitations](https://github.com/spessasus/SpessaSynth/wiki/DLS-Conversion-Problem);
 
 ### Export MIDI as WAV
   - Save the MIDI file as WAV audio!

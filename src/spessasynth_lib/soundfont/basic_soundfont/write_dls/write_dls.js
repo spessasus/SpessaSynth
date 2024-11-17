@@ -47,7 +47,7 @@ export function writeDLS()
     SpessaSynthGroupEnd();
     
     // write ptbl
-    const ptblData = new IndexedByteArray(8 + 8 * ptblOffsets.length);
+    const ptblData = new IndexedByteArray(8 + 4 * ptblOffsets.length);
     writeDword(ptblData, 8);
     writeDword(ptblData, ptblOffsets.length);
     for (const offset of ptblOffsets)
