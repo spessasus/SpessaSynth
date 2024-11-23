@@ -2,7 +2,6 @@ import { closeNotification, showNotification } from "../notification/notificatio
 import { Synthetizer } from "../../../spessasynth_lib/synthetizer/synthetizer.js";
 import { formatTime } from "../../../spessasynth_lib/utils/other.js";
 import { audioBufferToWav } from "../../../spessasynth_lib/utils/buffer_to_wav.js";
-import { WORKLET_URL_ABSOLUTE } from "../../../spessasynth_lib/synthetizer/worklet_url.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { MIDIticksToSeconds } from "../../../spessasynth_lib/midi_parser/basic_midi.js";
 
@@ -53,7 +52,7 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
         sampleRate: sampleRate,
         length: sampleDuration
     });
-    await offline.audioWorklet.addModule(new URL("../../spessasynth_lib/" + WORKLET_URL_ABSOLUTE, import.meta.url));
+    await offline.audioWorklet.addModule(new URL(this.workletPath, import.meta.url));
     
     /**
      * take snapshot of the real synth

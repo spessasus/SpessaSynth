@@ -144,11 +144,12 @@ class Manager
         {
             console.warn("DEBUG ENABLED! DEBUGGING ENABLED!!");
         }
-        
+
         const prePath = window.isLocalEdition ? "../../../spessasynth_lib/" : "../../spessasynth_lib/";
+        this.workletPath = prePath + WORKLET_PATH;
         if (context.audioWorklet)
         {
-            await context.audioWorklet.addModule(new URL(prePath + WORKLET_PATH, import.meta.url));
+            await context.audioWorklet.addModule(new URL(this.workletPath, import.meta.url));
         }
         
         // set up buffer here (if we let spessasynth use the default buffer, there's no reverb for the first second.)
