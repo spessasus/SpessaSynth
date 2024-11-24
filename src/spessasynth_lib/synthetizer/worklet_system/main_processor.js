@@ -215,8 +215,8 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
         this.workletProcessorChannels[DEFAULT_PERCUSSION].drumChannel = true;
         
         // these smoothing factors were tested on 44100Hz, adjust them here
-        this.volumeEnvelopeSmoothingFactor = VOLUME_ENVELOPE_SMOOTHING_FACTOR * (sampleRate / 44100);
-        this.panSmoothingFactor = PAN_SMOOTHING_FACTOR * (sampleRate / 44100);
+        this.volumeEnvelopeSmoothingFactor = VOLUME_ENVELOPE_SMOOTHING_FACTOR * (44100 / sampleRate);
+        this.panSmoothingFactor = PAN_SMOOTHING_FACTOR * (44100 / sampleRate);
         
         /**
          * Controls the system
