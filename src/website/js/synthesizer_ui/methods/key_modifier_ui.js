@@ -56,7 +56,18 @@ async function doModifyKey(synth, locale, keyboard, presetList)
     };
     const presetOptions = {};
     presetOptions["unchanged"] = locale.getLocaleString(LOCALE_PATH + "modifyKey.preset.unchanged");
-    for (const p of presetList)
+    for (const p of presetList.toSorted((p1, p2) =>
+    {
+        if (p1.presetName < p2.presetName)
+        {
+            return -1;
+        }
+        if (p1.presetName > p2.presetName)
+        {
+            return 1;
+        }
+        return 0;
+    }))
     {
         presetOptions[p.presetName] = p.presetName;
     }

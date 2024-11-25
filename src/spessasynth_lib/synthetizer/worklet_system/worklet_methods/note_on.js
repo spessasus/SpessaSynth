@@ -117,7 +117,7 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
         }
         // set the current attenuation to target,
         // as it's interpolated (we don't want 0 attenuation for even a split second)
-        voice.volumeEnvelope.attenuation = voice.volumeEnvelope.attenuationTarget;
+        voice.volumeEnvelope.attenuation = voice.volumeEnvelope.attenuationTargetGain;
         // set initial pan to avoid split second changing from middle to the correct value
         voice.currentPan = ((Math.max(
             -500,

@@ -7,7 +7,7 @@ import { generatorTypes } from "../../../soundfont/basic_soundfont/generator.js"
  * purpose: applies a volume envelope for a given voice
  */
 
-export const VOLUME_ENVELOPE_SMOOTHING_FACTOR = 0.001;
+export const VOLUME_ENVELOPE_SMOOTHING_FACTOR = 0.01;
 
 const DB_SILENCE = 100;
 const PERCEIVED_DB_SILENCE = 90;
@@ -77,12 +77,17 @@ export class WorkletVolumeEnvelope
      */
     releaseDuration = 0;
     /**
-     * The voice's absolute attenuation in dB
+     * The voice's absolute attenuation as linear gain
      * @type {number}
      */
     attenuation = 0;
     /**
-     * The attenuation target, which the "attenuation" property is linearly interpolated towards
+     * The attenuation target, which the "attenuation" property is linearly interpolated towards (gain)
+     * @type {number}
+     */
+    attenuationTargetGain = 0;
+    /**
+     * The attenuation target, which the "attenuation" property is linearly interpolated towards (dB)
      * @type {number}
      */
     attenuationTarget = 0;
@@ -155,6 +160,7 @@ export class WorkletVolumeEnvelope
             0,
             Math.min(voice.modulatedGenerators[generatorTypes.initialAttenuation], 1440)
         ) / 10; // divide by ten to get decibels
+        env.attenuationTargetGain = decibelAttenuationToGain(env.attenuationTarget);
         env.sustainDbRelative = Math.min(DB_SILENCE, voice.modulatedGenerators[generatorTypes.sustainVolEnv] / 10);
         const sustainDb = Math.min(DB_SILENCE, env.sustainDbRelative);
         
@@ -276,9 +282,9 @@ export class WorkletVolumeEnvelope
             for (let i = 0; i < audioBuffer.length; i++)
             {
                 // attenuation interpolation
-                env.attenuation += (env.attenuationTarget - env.attenuation) * attenuationSmoothing;
+                env.attenuation += (env.attenuationTargetGain - env.attenuation) * attenuationSmoothing;
                 let db = (elapsedRelease / env.releaseDuration) * dbDifference + env.releaseStartDb;
-                env.currentReleaseGain = decibelAttenuationToGain(db + decibelOffset + env.attenuation);
+                env.currentReleaseGain = env.attenuation * decibelAttenuationToGain(db + decibelOffset);
                 audioBuffer[i] *= env.currentReleaseGain;
                 env.currentSampleTime++;
                 elapsedRelease++;
@@ -315,11 +321,12 @@ export class WorkletVolumeEnvelope
                 while (env.currentSampleTime < env.attackEnd)
                 {
                     // attenuation interpolation
-                    env.attenuation += (env.attenuationTarget - env.attenuation) * attenuationSmoothing;
+                    env.attenuation += (env.attenuationTargetGain - env.attenuation) * attenuationSmoothing;
                     
                     // Special case: linear gain ramp instead of linear db ramp
                     let linearAttenuation = 1 - (env.attackEnd - env.currentSampleTime) / env.attackDuration; // 0 to 1
-                    audioBuffer[filledBuffer] *= linearAttenuation * decibelAttenuationToGain(env.attenuation + decibelOffset);
+                    audioBuffer[filledBuffer] *= linearAttenuation * env.attenuation * decibelAttenuationToGain(
+                        decibelOffset);
                     // set current attenuation to peak as its invalid during this phase
                     env.currentAttenuationDb = 0;
                     
@@ -337,9 +344,9 @@ export class WorkletVolumeEnvelope
                 while (env.currentSampleTime < env.holdEnd)
                 {
                     // attenuation interpolation
-                    env.attenuation += (env.attenuationTarget - env.attenuation) * attenuationSmoothing;
+                    env.attenuation += (env.attenuationTargetGain - env.attenuation) * attenuationSmoothing;
                     
-                    audioBuffer[filledBuffer] *= decibelAttenuationToGain(env.attenuation + decibelOffset);
+                    audioBuffer[filledBuffer] *= env.attenuation * decibelAttenuationToGain(decibelOffset);
                     env.currentAttenuationDb = 0;
                     
                     env.currentSampleTime++;
@@ -356,10 +363,10 @@ export class WorkletVolumeEnvelope
                 while (env.currentSampleTime < env.decayEnd)
                 {
                     // attenuation interpolation
-                    env.attenuation += (env.attenuationTarget - env.attenuation) * attenuationSmoothing;
+                    env.attenuation += (env.attenuationTargetGain - env.attenuation) * attenuationSmoothing;
                     
                     env.currentAttenuationDb = (1 - (env.decayEnd - env.currentSampleTime) / env.decayDuration) * env.sustainDbRelative;
-                    audioBuffer[filledBuffer] *= decibelAttenuationToGain(env.currentAttenuationDb + decibelOffset + env.attenuation);
+                    audioBuffer[filledBuffer] *= env.attenuation * decibelAttenuationToGain(env.currentAttenuationDb + decibelOffset);
                     
                     env.currentSampleTime++;
                     if (++filledBuffer >= audioBuffer.length)
@@ -379,9 +386,9 @@ export class WorkletVolumeEnvelope
                 while (true)
                 {
                     // attenuation interpolation
-                    env.attenuation += (env.attenuationTarget - env.attenuation) * attenuationSmoothing;
+                    env.attenuation += (env.attenuationTargetGain - env.attenuation) * attenuationSmoothing;
                     
-                    audioBuffer[filledBuffer] *= decibelAttenuationToGain(env.sustainDbRelative + decibelOffset + env.attenuation);
+                    audioBuffer[filledBuffer] *= env.attenuation * decibelAttenuationToGain(env.sustainDbRelative + decibelOffset);
                     env.currentAttenuationDb = env.sustainDbRelative;
                     env.currentSampleTime++;
                     if (++filledBuffer >= audioBuffer.length)
