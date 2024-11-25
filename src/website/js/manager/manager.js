@@ -144,7 +144,7 @@ class Manager
         {
             console.warn("DEBUG ENABLED! DEBUGGING ENABLED!!");
         }
-
+        
         const prePath = window.isLocalEdition ? "../../../spessasynth_lib/" : "../../spessasynth_lib/";
         this.workletPath = prePath + WORKLET_PATH;
         if (context.audioWorklet)
@@ -210,7 +210,6 @@ class Manager
             this.channelColors,
             this.synth,
             canvas,
-            this.audioDelay,
             window.SPESSASYNTH_VERSION
         );
         this.renderer.render(true);
@@ -279,7 +278,8 @@ class Manager
             this.keyboard,
             this.midHandler,
             this.playerUI,
-            this.localeManager
+            this.localeManager,
+            this.audioDelay
         );
         
         // set up drop file handler

@@ -44,6 +44,7 @@ export async function _loadSettings()
     renderer.normalAnalyserFft = value;
     renderer.drumAnalyserFft = Math.pow(2, Math.min(15, Math.log2(value) + 2));
     renderer.updateFftSize();
+    this.setTimeDelay(value);
     getSpan(rendererControls.analyserFftSlider).innerText = `${value}`;
     
     // wave multiplier

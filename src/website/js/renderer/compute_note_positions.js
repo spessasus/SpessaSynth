@@ -19,7 +19,7 @@ export function computeNotePositions(renderImmediately = false)
     const fallingTime = this.noteFallingTimeMs / 1000;
     const afterTime = this.noteAfterTriggerTimeMs / 1000;
     
-    const currentSeqTime = this.seq.currentHighResolutionTime;
+    const currentSeqTime = this.seq.currentHighResolutionTime - this.timeOffset;
     const currentStartTime = currentSeqTime - afterTime;
     const fallingTimeSeconds = fallingTime + afterTime;
     const currentEndTime = currentStartTime + fallingTimeSeconds;

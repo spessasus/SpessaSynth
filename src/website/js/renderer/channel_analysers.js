@@ -42,21 +42,7 @@ export function updateFftSize()
         const drum = this.synth.channelProperties[i].isDrum;
         const fft = drum ? this._drumAnalyserFft : this._normalAnalyserFft;
         const mul = drum ? STABILIZE_WAVEFORMS_FFT_MULTIPLIER / 2 : STABILIZE_WAVEFORMS_FFT_MULTIPLIER;
-        const fftSize = Math.min(32768, this._stabilizeWaveforms ? fft * mul : fft);
-        this.channelAnalysers[i].fftSize = fftSize;
-        if (!drum)
-        {
-            // calculate delay:
-            // 16384 fft size = 0.1 s
-            if (fftSize > 4096)
-            {
-                this.delayNode.delayTime.value = fftSize / this.synth.context.sampleRate / 2;
-            }
-            else
-            {
-                this.delayNode.delayTime.value = 0;
-            }
-        }
+        this.channelAnalysers[i].fftSize = Math.min(32768, this._stabilizeWaveforms ? fft * mul : fft);
     }
 }
 

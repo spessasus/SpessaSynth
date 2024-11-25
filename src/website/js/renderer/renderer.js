@@ -62,10 +62,9 @@ class Renderer
      * @param channelColors {Array<string>}
      * @param synth {Synthetizer}
      * @param canvas {HTMLCanvasElement}
-     * @param delayNode {DelayNode} used for correcting time for large fft sizes
      * @param version {string}
      */
-    constructor(channelColors, synth, canvas, delayNode, version = "")
+    constructor(channelColors, synth, canvas, version = "")
     {
         // variables
         /**
@@ -134,8 +133,8 @@ class Renderer
         
         // synth and analysers
         this.synth = synth;
-        this.delayNode = delayNode;
         this.notesOnScreen = 0;
+        this.timeOffset = 0;
         
         /**
          * @type {AnalyserNode[]}

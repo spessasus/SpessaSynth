@@ -39,6 +39,7 @@ export function _createRendererHandler(renderer)
         renderer.normalAnalyserFft = value;
         renderer.drumAnalyserFft = Math.pow(2, Math.min(15, parseInt(rendererControls.analyserFftSlider.value) + 2));
         renderer.updateFftSize();
+        this.setTimeDelay(value);
         getSpan(rendererControls.analyserFftSlider).innerText = `${value}`;
     });
     rendererControls.analyserFftSlider.onchange = () =>

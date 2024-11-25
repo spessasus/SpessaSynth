@@ -119,6 +119,12 @@ export class EventHandler
             "allcontrollerreset": {},
             "soundfonterror": {}
         };
+        
+        /**
+         * Set to 0 to disabled, otherwise in seconds
+         * @type {number}
+         */
+        this.timeDelay = 0;
     }
     
     /**
@@ -151,7 +157,18 @@ export class EventHandler
     {
         if (this.events[name])
         {
-            Object.values(this.events[name]).forEach(ev => ev(eventData));
+            if (this.timeDelay > 0)
+            {
+                setTimeout(() =>
+                {
+                    Object.values(this.events[name]).forEach(ev => ev(eventData));
+                }, this.timeDelay * 1000);
+            }
+            else
+            {
+                console.log("instant");
+                Object.values(this.events[name]).forEach(ev => ev(eventData));
+            }
         }
     }
 }

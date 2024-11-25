@@ -43,6 +43,7 @@ class SpessaSynthSettings
      * @param midiDeviceHandler {MIDIDeviceHandler}
      * @param playerInfo {MusicModeUI}
      * @param localeManager {LocaleManager}
+     * @param delayNode {DelayNode}
      */
     constructor(settingsWrapper,
                 sythui,
@@ -51,8 +52,10 @@ class SpessaSynthSettings
                 midiKeyboard,
                 midiDeviceHandler,
                 playerInfo,
-                localeManager)
+                localeManager,
+                delayNode)
     {
+        this.delay = delayNode;
         this.mode = "dark";
         this.autoKeyRange = false;
         
@@ -365,6 +368,24 @@ class SpessaSynthSettings
                 layoutSelector: document.getElementById("layout_selector")
             }
         };
+    }
+    
+    setTimeDelay(fft)
+    {
+        let delayTime;
+        // calculate delay:
+        // 16384 fft size = 0.37 s
+        if (fft > 2048)
+        {
+            delayTime = fft / this.synthui.synth.context.sampleRate;
+        }
+        else
+        {
+            delayTime = 0;
+        }
+        this.delay.delayTime.value = delayTime;
+        this.renderer.timeOffset = delayTime;
+        this.synthui.synth.eventHandler.timeDelay = delayTime;
     }
 }
 
