@@ -71,7 +71,9 @@ async function doModifyKey(synth, locale, keyboard, presetList)
     {
         presetOptions[p.presetName] = p.presetName;
     }
-    showNotification(
+    const mod = synth.keyModifierManager.getModifier(keyboard.channel, key);
+    const vel = mod?.velocity ?? -1;
+    const n = showNotification(
         locale.getLocaleString(LOCALE_PATH + "modifyKey.title"),
         [
             {
@@ -96,7 +98,7 @@ async function doModifyKey(synth, locale, keyboard, presetList)
             {
                 type: "input",
                 translatePathTitle: LOCALE_PATH + "modifyKey.velocity",
-                attributes: getInput("vel", 0, 127, -1)
+                attributes: getInput("vel", 0, 127, vel)
             },
             {
                 type: "select",
@@ -135,6 +137,12 @@ async function doModifyKey(synth, locale, keyboard, presetList)
         true,
         locale
     );
+    const prog = mod?.patch?.program ?? -1;
+    const bank = mod?.patch?.bank ?? -1;
+    if (bank !== -1 && prog !== -1)
+    {
+        n.div.querySelector("select[preset-selector]").value = presetList.find(p => p.bank === bank && p.program === prog).presetName;
+    }
 }
 
 /**
@@ -159,7 +167,7 @@ async function doRemoveModification(synth, locale, keyboard)
                 onClick: async n =>
                 {
                     closeNotification(n.id);
-                    await doModifyKey(synth, locale, keyboard);
+                    await doRemoveModification(synth, locale, keyboard);
                 }
             },
             {

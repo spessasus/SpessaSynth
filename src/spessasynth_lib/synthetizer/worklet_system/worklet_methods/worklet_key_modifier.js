@@ -31,9 +31,9 @@ export class KeyModifier
  * @enum {number}
  */
 export const workletKeyModifierMessageType = {
-    addMapping: 0,    // [channel<number, midiNote<number>, mapping<KeyModifier>]
-    deleteMapping: 1, // [channel<number, midiNote<number>]
-    clearMappings: 2  // <no data>
+    addMapping: 0,    // [channel<number>, midiNote<number>, mapping<KeyModifier>]
+    deleteMapping: 1, // [channel<number>, midiNote<number>]
+    clearMappings: 2 // <no data>
 };
 
 export class WorkletKeyModifierManager
