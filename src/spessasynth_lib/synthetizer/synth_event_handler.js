@@ -166,7 +166,6 @@ export class EventHandler
             }
             else
             {
-                console.log("instant");
                 Object.values(this.events[name]).forEach(ev => ev(eventData));
             }
         }

@@ -10,6 +10,7 @@ const RENDER_AUDIO_TIME_INTERVAL = 1000;
 /**
  * @this {Manager}
  * @param normalizeAudio {boolean}
+ * @param sampleRate {number}
  * @param additionalTime {number}
  * @param separateChannels {boolean}
  * @param meta {WaveMetadata}
@@ -17,7 +18,7 @@ const RENDER_AUDIO_TIME_INTERVAL = 1000;
  * @returns {Promise<void>}
  * @private
  */
-export async function _doExportAudioData(normalizeAudio = true, additionalTime = 2, separateChannels = false, meta = {}, loopCount = 0)
+export async function _doExportAudioData(normalizeAudio = true, sampleRate = 44100, additionalTime = 2, separateChannels = false, meta = {}, loopCount = 0)
 {
     this.isExporting = true;
     if (!this.seq)
@@ -42,17 +43,30 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
     const loopEndAbsolute = MIDIticksToSeconds(parsedMid.loop.end, parsedMid);
     let loopDuration = loopEndAbsolute - loopStartAbsolute;
     const duration = parsedMid.duration + additionalTime + loopDuration * loopCount;
-    const sampleRate = this.context.sampleRate;
     
     let sampleDuration = sampleRate * duration;
     
     // prepare audio context
-    const offline = new OfflineAudioContext({
-        numberOfChannels: separateChannels ? 32 : 2,
-        sampleRate: sampleRate,
-        length: sampleDuration
-    });
-    await offline.audioWorklet.addModule(new URL(this.workletPath, import.meta.url));
+    let offline;
+    try
+    {
+        offline = new OfflineAudioContext({
+            numberOfChannels: separateChannels ? 32 : 2,
+            sampleRate: sampleRate,
+            length: sampleDuration
+        });
+        await offline.audioWorklet.addModule(new URL(this.workletPath, import.meta.url));
+    }
+    catch (e)
+    {
+        showNotification(
+            "ERROR",
+            [
+                { type: "text", textContent: e }
+            ]
+        );
+        return;
+    }
     
     /**
      * take snapshot of the real synth
@@ -66,19 +80,26 @@ export async function _doExportAudioData(normalizeAudio = true, additionalTime =
      * @type {Synthetizer}
      */
     let synth;
+    
+    // sample rate may differ, so we need to fetch revbuff again
+    const revbuff = await offline.decodeAudioData(this.impulseResponseRaw.slice(0, this.impulseResponseRaw.byteLength));
+    const effects = {
+        reverbEnabled: true,
+        chorusEnabled: true,
+        chorusConfig: undefined,
+        reverbImpulseResponse: revbuff
+    };
+    snapshot.effectsConfig = effects;
     try
     {
         synth = new Synthetizer(offline.destination, soundfont, false, {
-            parsedMIDI: parsedMid,
-            snapshot: snapshot,
-            oneOutput: separateChannels,
-            loopCount: loopCount
-        }, {
-            reverbEnabled: true,
-            chorusEnabled: true,
-            chorusConfig: undefined,
-            reverbImpulseResponse: this.impulseResponse
-        });
+                parsedMIDI: parsedMid,
+                snapshot: snapshot,
+                oneOutput: separateChannels,
+                loopCount: loopCount
+            },
+            effects
+        );
     }
     catch (e)
     {
@@ -251,6 +272,15 @@ export async function _exportAudioData()
         },
         {
             type: "input",
+            translatePathTitle: wavPath + "sampleRate",
+            attributes: {
+                "value": "44100",
+                "type": "number",
+                "sample-rate": "1"
+            }
+        },
+        {
+            type: "input",
             translatePathTitle: wavPath + "loopCount",
             attributes: {
                 "value": "0",
@@ -309,6 +339,7 @@ export async function _exportAudioData()
                 closeNotification(n.id);
                 const normalizeVolume = n.div.querySelector("input[normalize-volume-toggle]").checked;
                 const additionalTime = n.div.querySelector("input[additional-time]").value;
+                const sampleRate = n.div.querySelector("input[sample-rate]").value;
                 const loopCount = n.div.querySelector("input[loop-count]").value;
                 const separateChannels = n.div.querySelector("input[separate-channels-toggle]").checked;
                 const artist = n.div.querySelector("input[name='artist']").value;
@@ -327,6 +358,7 @@ export async function _exportAudioData()
                 
                 this._doExportAudioData(
                     normalizeVolume,
+                    parseInt(sampleRate),
                     parseInt(additionalTime),
                     separateChannels,
                     metadata,

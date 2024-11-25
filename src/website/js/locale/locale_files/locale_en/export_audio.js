@@ -23,6 +23,10 @@ export const exportAudio = {
                         title: "Additional time (s)",
                         description: "Additional time at the end of the song to allow for the sound to fade. (seconds)"
                     },
+                    sampleRate: {
+                        title: "Sample rate",
+                        description: "Output file sample rate in Hz. Leave as is unless you know what you're doing."
+                    },
                     
                     separateChannels: {
                         title: "Separate channels",

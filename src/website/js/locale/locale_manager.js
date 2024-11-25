@@ -177,6 +177,7 @@ export class LocaleManager
                 }
                 else
                 {
+                    console.warn(`Locale path "${path}" not translated in ${this.locale.localeName} (${this.localeCode}). Using ${this.fallbackLocale.localeName} instead.`);
                     return this._resolveLocalePath(path, true);
                 }
             }

@@ -23,6 +23,10 @@ export const exportAudio = {
                         title: "Dodatkowy czas (s)",
                         description: "Dodatkowy czas na końcu utworu aby pozwolić na wyciszenie się dźwięku. (sekundy)"
                     },
+                    sampleRate: {
+                        title: "Częstotliwość",
+                        description: "Częstotliwość próbkowania dźwięku. Pozostaw bez zmian, chyba że wiesz, co robisz."
+                    },
                     separateChannels: {
                         title: "Rozdziel kanały",
                         description: "Zapisz każdy kanał w osobnym pliuku. Przydatne dla rzeczy jak widok oscyloskopowy. Należy pamiętać że to wyłącza ekfet pogłosu i chóru",

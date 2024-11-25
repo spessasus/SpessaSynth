@@ -159,7 +159,8 @@ class Manager
         );
         const response = await fetch(impulseURL);
         const data = await response.arrayBuffer();
-        this.impulseResponse = await context.decodeAudioData(data);
+        this.impulseResponseRaw = data;
+        this.impulseResponse = await context.decodeAudioData(data.slice(0, data.byteLength));
         
         this.audioDelay = new DelayNode(context, {
             delayTime: 0
