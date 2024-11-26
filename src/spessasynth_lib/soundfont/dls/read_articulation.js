@@ -1,6 +1,6 @@
 import { readLittleEndian } from "../../utils/byte_functions/little_endian.js";
 import { DLSDestinations } from "./dls_destinations.js";
-import { DLSSources } from "./dls_sources.js";
+import { DLS_1_NO_VIBRATO_MOD, DLS_1_NO_VIBRATO_PRESSURE, DLSSources } from "./dls_sources.js";
 import { getSF2ModulatorFromArticulator } from "./articulator_converter.js";
 import { SpessaSynthInfo, SpessaSynthWarn } from "../../utils/loggin.js";
 import { consoleColors } from "../../utils/other.js";
@@ -306,21 +306,9 @@ export function readArticulation(chunk, disableVibrato)
     {
         modulators.push(
             // mod to vib
-            new Modulator({
-                srcEnum: 0x0081,
-                dest: generatorTypes.vibLfoToPitch,
-                amt: 0,
-                secSrcEnum: 0x0,
-                transform: 0
-            }),
+            Modulator.copy(DLS_1_NO_VIBRATO_MOD),
             // press to vib
-            new Modulator({
-                srcEnum: 0x000D,
-                dest: generatorTypes.vibLfoToPitch,
-                amt: 0,
-                secSrcEnum: 0x0,
-                transform: 0
-            })
+            Modulator.copy(DLS_1_NO_VIBRATO_PRESSURE)
         );
     }
     

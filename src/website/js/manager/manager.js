@@ -26,6 +26,7 @@ import { IndexedByteArray } from "../../../spessasynth_lib/utils/indexed_array.j
 import { closeNotification, showNotification } from "../notification/notification.js";
 import { DropFileHandler } from "../utils/drop_file_handler.js";
 import { _exportDLS } from "./export_dls.js";
+import { writeRMIDI } from "../../../spessasynth_lib/midi_parser/rmidi_writer.js";
 
 // this enables transitions on body because if we enable them on load, it flashbangs us with white
 document.body.classList.add("load");
@@ -473,6 +474,19 @@ class Manager
         
         // play the midi
         //this.seq.play(true);
+    }
+    
+    async downloadDLSRMI()
+    {
+        const mid = await this.seq.getMIDI();
+        const sf = loadSoundFont(this.soundFont);
+        const out = writeRMIDI(
+            sf.writeDLS(),
+            mid,
+            sf
+        );
+        const blob = new Blob([out.buffer], { type: "audio/rmid" });
+        this.saveBlob(blob, `${mid.midiName}.rmi`);
     }
     
     downloadDesfont()

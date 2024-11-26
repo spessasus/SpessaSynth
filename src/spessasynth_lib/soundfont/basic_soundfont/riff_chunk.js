@@ -101,7 +101,7 @@ export function writeRIFFOddSize(header, data, addZeroByte = false, isList = fal
     if (addZeroByte)
     {
         const tempData = new Uint8Array(data.length + 1);
-        tempData.set(data, 0);
+        tempData.set(data);
         data = tempData;
     }
     let offset = 8;

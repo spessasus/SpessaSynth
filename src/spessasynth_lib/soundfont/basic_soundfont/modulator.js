@@ -108,14 +108,16 @@ export class Modulator
     /**
      * @param mod1 {Modulator}
      * @param mod2 {Modulator}
+     * @param checkAmount {boolean}
      * @returns {boolean}
      */
-    static isIdentical(mod1, mod2)
+    static isIdentical(mod1, mod2, checkAmount = false)
     {
         return (mod1.sourceEnum === mod2.sourceEnum)
             && (mod1.modulatorDestination === mod2.modulatorDestination)
             && (mod1.secondarySourceEnum === mod2.secondarySourceEnum)
-            && (mod1.transformType === mod2.transformType);
+            && (mod1.transformType === mod2.transformType)
+            && (!checkAmount || (mod1.transformAmount === mod2.transformAmount));
     }
     
     /**

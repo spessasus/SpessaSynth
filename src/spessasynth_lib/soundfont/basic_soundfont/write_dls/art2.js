@@ -5,6 +5,13 @@ import { Generator, generatorTypes } from "../generator.js";
 import { writeDword } from "../../../utils/byte_functions/little_endian.js";
 import { consoleColors } from "../../../utils/other.js";
 import { SpessaSynthInfo, SpessaSynthWarn } from "../../../utils/loggin.js";
+import { Modulator } from "../modulator.js";
+import {
+    DEFAULT_DLS_CHORUS,
+    DEFAULT_DLS_REVERB,
+    DLS_1_NO_VIBRATO_MOD,
+    DLS_1_NO_VIBRATO_PRESSURE
+} from "../../dls/dls_sources.js";
 
 const invalidGeneratorTypes = new Set([
     generatorTypes.sampleModes,
@@ -108,6 +115,16 @@ export function writeArticulator(zone)
      */
     const modulators = zone.modulators.reduce((arrs, m) =>
     {
+        // do not write the default DLS modulators
+        if (
+            Modulator.isIdentical(m, DEFAULT_DLS_CHORUS, true) ||
+            Modulator.isIdentical(m, DEFAULT_DLS_REVERB, true) ||
+            Modulator.isIdentical(m, DLS_1_NO_VIBRATO_MOD, true) ||
+            Modulator.isIdentical(m, DLS_1_NO_VIBRATO_PRESSURE, true)
+        )
+        {
+            return arrs;
+        }
         const art = getDLSArticulatorFromSf2Modulator(m);
         if (art !== undefined)
         {

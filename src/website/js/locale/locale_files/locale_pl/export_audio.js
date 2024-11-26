@@ -81,7 +81,7 @@ export const exportAudio = {
             
             dls: {
                 button: {
-                    title: "DLS (.dls) [EKSPERYMENTALNY]",
+                    title: "DLS (.dls)",
                     description: "Eksportuj SoundFonta jako DLS"
                 },
                 warning: {

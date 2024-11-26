@@ -7,6 +7,7 @@ import { BasicInstrumentZone } from "../basic_soundfont/basic_zones.js";
 import { consoleColors } from "../../utils/other.js";
 import { generatorLimits, generatorTypes } from "../basic_soundfont/generator.js";
 import { Modulator } from "../basic_soundfont/modulator.js";
+import { DEFAULT_DLS_CHORUS, DEFAULT_DLS_REVERB } from "./dls_sources.js";
 
 /**
  * @this {DLSSoundFont}
@@ -85,24 +86,12 @@ export function readDLSInstrument(chunk)
     // reverb
     if (globalZone.modulators.find(m => m.modulatorDestination === generatorTypes.reverbEffectsSend) === undefined)
     {
-        globalZone.modulators.push(new Modulator({
-            srcEnum: 0x00DB,
-            dest: generatorTypes.reverbEffectsSend,
-            amt: 1000,
-            secSrcEnum: 0x0,
-            transform: 0
-        }));
+        globalZone.modulators.push(Modulator.copy(DEFAULT_DLS_REVERB));
     }
     // chorus
     if (globalZone.modulators.find(m => m.modulatorDestination === generatorTypes.chorusEffectsSend) === undefined)
     {
-        globalZone.modulators.push(new Modulator({
-            srcEnum: 0x00DD,
-            dest: generatorTypes.chorusEffectsSend,
-            amt: 1000,
-            secSrcEnum: 0x0,
-            transform: 0
-        }));
+        globalZone.modulators.push(Modulator.copy(DEFAULT_DLS_CHORUS));
     }
     preset.DLSInstrument.instrumentZones.push(globalZone);
     

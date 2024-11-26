@@ -188,13 +188,15 @@ function checkForSpecialDLSCombo(source, destination)
  * @param destination {number}
  * @param value {number}
  * @param transform {number}
+ * @param msg {string}
  */
-function modulatorConverterDebug(
+export function modulatorConverterDebug(
     source,
     control,
     destination,
     value,
-    transform
+    transform,
+    msg = "Attempting to convert the following DLS Articulator to SF2 Modulator:"
 )
 {
     const type = Object.keys(DLSDestinations).find(k => DLSDestinations[k] === destination);
@@ -204,7 +206,7 @@ function modulatorConverterDebug(
     const srcString = srcType ? srcType : source.toString(16);
     const ctrlString = ctrlType ? ctrlType : control.toString(16);
     console.debug(
-        `%cAttempting to convert the following DLS Articulator to SF2 Modulator:
+        `%c${msg}
         Source: %c${srcString}%c
         Control: %c${ctrlString}%c
         Destination: %c${typeString}%c
@@ -240,6 +242,13 @@ export function getSF2ModulatorFromArticulator(
     value
 )
 {
+    // modulatorConverterDebug(
+    //     source,
+    //     control,
+    //     destination,
+    //     value,
+    //     transform
+    // );
     // check for special combinations
     const specialDestination = checkForSpecialDLSCombo(source, destination);
     /**
@@ -320,13 +329,6 @@ export function getSF2ModulatorFromArticulator(
         // special case: for attenuation, invert source (dls gain is the opposite of sf2 attenuation)
         if (destinationGenerator === generatorTypes.initialAttenuation)
         {
-            // modulatorConverterDebug(
-            //     source,
-            //     control,
-            //     destination,
-            //     value,
-            //     transform
-            // );
             // if the value is negative, the source shall be negative!
             // why?
             // Idk, it makes it work with ROCK.RMI and NOKIA_S30.dls

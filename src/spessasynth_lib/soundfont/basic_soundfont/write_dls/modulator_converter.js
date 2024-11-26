@@ -257,7 +257,7 @@ export function getDLSArticulatorFromSf2Modulator(mod)
         return undefined;
     }
     let source = getDLSSourceFromSf2Source(mod.sourceUsesCC, mod.sourceIndex);
-    let sourceCurve = mod.sourceCurveType;
+    let sourceTransformType = mod.sourceCurveType;
     let sourceBipolar = mod.sourcePolarity;
     let sourceDirection = mod.sourceDirection;
     if (source === undefined)
@@ -265,8 +265,13 @@ export function getDLSArticulatorFromSf2Modulator(mod)
         SpessaSynthWarn(`Invalid source: ${mod.sourceIndex}, CC: ${mod.sourceUsesCC}`);
         return undefined;
     }
+    // attenuation is the opposite of gain. Invert
+    if (mod.modulatorDestination === generatorTypes.initialAttenuation)
+    {
+        sourceDirection = sourceDirection === 1 ? 0 : 1;
+    }
     let control = getDLSSourceFromSf2Source(mod.secSrcUsesCC, mod.secSrcIndex);
-    let controlCurve = mod.secSrcCurveType;
+    let controlTransformType = mod.secSrcCurveType;
     let controlBipolar = mod.secSrcPolarity;
     let controlDirection = mod.secSrcDirection;
     if (control === undefined)
@@ -288,12 +293,12 @@ export function getDLSArticulatorFromSf2Modulator(mod)
         amt = specialCombo.amt;
         // move source to control
         control = source;
-        controlCurve = sourceCurve;
+        controlTransformType = sourceTransformType;
         controlBipolar = sourceBipolar;
         controlDirection = sourceDirection;
         
         // set source as static as it's either: env, lfo or keynum
-        sourceCurve = modulatorCurveTypes.linear;
+        sourceTransformType = modulatorCurveTypes.linear;
         sourceBipolar = specialCombo.isBipolar ? 1 : 0;
         sourceDirection = 0;
         source = specialCombo.source;
@@ -307,11 +312,12 @@ export function getDLSArticulatorFromSf2Modulator(mod)
     
     // source curve type maps to desfont curve type in section 2.10, table 9
     let transform = 0;
-    transform |= controlCurve << 4;
+    transform |= controlTransformType << 4;
     transform |= controlBipolar << 8;
     transform |= controlDirection << 9;
     
-    transform |= sourceCurve << 10;
+    // use use the source curve in output transform
+    transform |= sourceTransformType;
     transform |= sourceBipolar << 14;
     transform |= sourceDirection << 15;
     return new Articulator(

@@ -2,7 +2,7 @@ import { writeRIFFOddSize } from "../riff_chunk.js";
 import { writeDword } from "../../../utils/byte_functions/little_endian.js";
 import { combineArrays, IndexedByteArray } from "../../../utils/indexed_array.js";
 import { writeLins } from "./lins.js";
-import { getStringBytes, writeStringAsBytes } from "../../../utils/byte_functions/string.js";
+import { getStringBytesZero, writeStringAsBytes } from "../../../utils/byte_functions/string.js";
 import { writeWavePool } from "./wvpl.js";
 import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo } from "../../../utils/loggin.js";
 import { consoleColors } from "../../../utils/other.js";
@@ -80,7 +80,8 @@ export function writeDLS()
         infos.push(
             writeRIFFOddSize(
                 info,
-                getStringBytes(data)
+                getStringBytesZero(data),
+                true
             )
         );
     }

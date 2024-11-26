@@ -68,6 +68,15 @@ export function getStringBytes(string, padLength = 0)
 
 /**
  * @param string {string}
+ * @returns {IndexedByteArray}
+ */
+export function getStringBytesZero(string)
+{
+    return getStringBytes(string, string.length + 1);
+}
+
+/**
+ * @param string {string}
  * @param outArray {IndexedByteArray}
  * @param padLength {number}
  * @returns {IndexedByteArray} modified IN PLACE

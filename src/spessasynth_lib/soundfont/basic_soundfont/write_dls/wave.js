@@ -2,7 +2,7 @@ import { combineArrays, IndexedByteArray } from "../../../utils/indexed_array.js
 import { writeDword, writeWord } from "../../../utils/byte_functions/little_endian.js";
 import { writeRIFFOddSize } from "../riff_chunk.js";
 import { writeWavesample } from "./wsmp.js";
-import { getStringBytes } from "../../../utils/byte_functions/string.js";
+import { getStringBytesZero } from "../../../utils/byte_functions/string.js";
 import { SpessaSynthInfo } from "../../../utils/loggin.js";
 import { consoleColors } from "../../../utils/other.js";
 
@@ -23,6 +23,11 @@ export function writeDLSSample(sample)
         "fmt ",
         fmtData
     );
+    let loop = 1;
+    if (sample.sampleLoopStartIndex + Math.abs(sample.getAudioData().length - sample.sampleLoopEndIndex) < 2)
+    {
+        loop = 0;
+    }
     const wsmp = writeWavesample(
         sample,
         sample.samplePitch,
@@ -30,7 +35,7 @@ export function writeDLSSample(sample)
         0,
         sample.sampleLoopStartIndex,
         sample.sampleLoopEndIndex,
-        1
+        loop
     );
     const audio = sample.getAudioData();
     let data;
@@ -60,7 +65,7 @@ export function writeDLSSample(sample)
     
     const inam = writeRIFFOddSize(
         "INAM",
-        getStringBytes(sample.sampleName)
+        getStringBytesZero(sample.sampleName)
     );
     const info = writeRIFFOddSize(
         "INFO",

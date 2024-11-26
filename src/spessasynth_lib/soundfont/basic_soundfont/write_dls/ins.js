@@ -3,7 +3,7 @@ import { combineZones } from "./combine_zones.js";
 import { writeRIFFOddSize } from "../riff_chunk.js";
 import { writeDword } from "../../../utils/byte_functions/little_endian.js";
 import { writeDLSRegion } from "./rgn2.js";
-import { getStringBytes } from "../../../utils/byte_functions/string.js";
+import { getStringBytesZero } from "../../../utils/byte_functions/string.js";
 import { writeArticulator } from "./art2.js";
 import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd } from "../../../utils/loggin.js";
 import { consoleColors } from "../../../utils/other.js";
@@ -84,7 +84,7 @@ export function writeIns(preset)
     // writeINFO
     const inam = writeRIFFOddSize(
         "INAM",
-        getStringBytes(preset.presetName)
+        getStringBytesZero(preset.presetName)
     );
     const info = writeRIFFOddSize(
         "INFO",

@@ -20,7 +20,7 @@ export async function _exportDLS()
                 type: "text",
                 textContent: this.localeManager.getLocaleString(path + "message"),
                 attributes: {
-                    "style": "color: red"
+                    "style": "font-weight: bold"
                 }
             },
             {
