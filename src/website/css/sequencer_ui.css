@@ -145,3 +145,10 @@
 .lyrics details i {
     display: inline;
 }
+
+.lyrics .general_button {
+    margin-top: 1.5rem;
+    max-width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}

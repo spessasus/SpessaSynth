@@ -78,7 +78,7 @@ input[type="file"] {
     justify-content: space-around;
 }
 
-.midi_and_sf_controller label {
+.midi_and_sf_controller label, .general_button {
     padding: 6px;
     border-radius: var(--primary-border-radius);
     cursor: pointer;
@@ -89,9 +89,10 @@ input[type="file"] {
     align-items: center;
     justify-content: center;
     transition: all 0.1s ease;
+    border: none;
 }
 
-.midi_and_sf_controller label:active {
+.midi_and_sf_controller label:active, .general_button:active {
     filter: brightness(0.9);
     transform: scale(var(--active-scale));
 }

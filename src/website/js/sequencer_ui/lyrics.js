@@ -1,5 +1,6 @@
 import { supportedEncodings } from "../utils/encodings.js";
 import { messageTypes } from "../../../spessasynth_lib/midi_parser/midi_message.js";
+import { AssManager } from "../utils/ass_manager.js";
 
 const ACTUAL_FONT_SIZE = parseFloat(getComputedStyle(document.body).fontSize);
 
@@ -78,11 +79,38 @@ export function createLyrics()
     otherTextWrapper.appendChild(otherText);
     mainLyricsDiv.appendChild(otherTextWrapper);
     
+    // subtitle upload
+    this.subtitleManager = new AssManager(this.seq);
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".ass";
+    input.id = "subtitle_upload";
+    input.classList.add("hidden");
+    mainLyricsDiv.appendChild(input);
+    input.onchange = async () =>
+    {
+        if (input.files[0] === undefined)
+        {
+            return;
+        }
+        const file = input.files[0];
+        this.subtitleManager.loadASSSubtitles(await file.text());
+    };
+    
+    const subtitleUpload = document.createElement("label");
+    subtitleUpload.htmlFor = "subtitle_upload";
+    subtitleUpload.classList.add("general_button");
+    this.locale.bindObjectProperty(subtitleUpload, "textContent", "locale.sequencerController.lyrics.subtitles.title");
+    this.locale.bindObjectProperty(subtitleUpload, "title", "locale.sequencerController.lyrics.subtitles.description");
+    mainLyricsDiv.appendChild(subtitleUpload);
+    
+    
     this.lyricsElement.text = {
         highlight: currentLyrics,
         gray: allLyrics,
         main: text,
-        other: otherText
+        other: otherText,
+        subtitleButton: subtitleUpload
     };
     this.lyricsElement.mainDiv = mainLyricsDiv;
     this.lyricsElement.selector = encodingSelector;

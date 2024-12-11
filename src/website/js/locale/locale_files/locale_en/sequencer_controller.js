@@ -9,6 +9,11 @@ export const sequencerControllerLocale = {
         noLyrics: "No lyrics available...",
         otherText: {
             title: "Other text"
+        },
+        
+        subtitles: {
+            title: "Upload ASS subtitles",
+            description: "Upload your own subtitles in the (.ass) format"
         }
     }
 };
