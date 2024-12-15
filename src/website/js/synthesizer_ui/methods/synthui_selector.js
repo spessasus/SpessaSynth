@@ -161,7 +161,7 @@ export class Selector
             e.stopPropagation();
             const text = searchInput.value;
             const filtered = this.elements.filter(e => e.stringified.search(new RegExp(text, "i")) >= 0);
-            if (filtered.length === this.elements.length)
+            if (filtered.length === this.elements.length || filtered.length === 0)
             {
                 return;
             }

@@ -185,6 +185,7 @@ async function replaceFont(fontName)
                 window.manager.seq.currentTime -= 0.1;
             }
         }
+        titleMessage.innerText = window.manager.localeManager.getLocaleString("locale.titleMessage");
         synthReady = true;
     }
     
@@ -231,6 +232,7 @@ document.body.onclick = async () =>
             await manager.ready;
             manager.synth.setLogLevel(true, true, true, true);
             synthReady = true;
+            titleMessage.innerText = window.manager.localeManager.getLocaleString("locale.titleMessage");
         }
     }
     document.body.onclick = null;

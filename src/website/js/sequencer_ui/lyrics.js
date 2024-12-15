@@ -11,6 +11,7 @@ export function createLyrics()
     /**
      * @type {{
      *     mainButton: HTMLDivElement,
+     *     mainDiv: HTMLDivElement,
      *     titleWrapper: HTMLDivElement,
      *     title: HTMLHeadingElement,
      *     text: {

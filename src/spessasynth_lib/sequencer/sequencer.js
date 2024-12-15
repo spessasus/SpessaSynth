@@ -8,6 +8,7 @@ import {
 } from "./worklet_sequencer/sequencer_message.js";
 import { SpessaSynthWarn } from "../utils/loggin.js";
 import { DUMMY_MIDI_DATA, MidiData } from "../midi_parser/midi_data.js";
+import { BasicMIDI } from "../midi_parser/basic_midi.js";
 
 /**
  * sequencer.js
@@ -95,7 +96,7 @@ export class Sequencer
         this.absoluteStartTime = this.synth.currentTime;
         
         /**
-         * @type {function(MIDI)}
+         * @type {function(BasicMIDI)}
          * @private
          */
         this._getMIDIResolve = undefined;
@@ -466,7 +467,7 @@ export class Sequencer
             case WorkletSequencerReturnMessageType.getMIDI:
                 if (this._getMIDIResolve)
                 {
-                    this._getMIDIResolve(messageData);
+                    this._getMIDIResolve(BasicMIDI.copyFrom(messageData));
                 }
         }
     }
