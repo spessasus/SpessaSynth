@@ -20,6 +20,16 @@ import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 
 const TRANSITION_TIME = 0.2;
 
+// these delays sync with the AnalyserNode delay
+// tested on firefox
+const niceDelayLookupTable = {
+    2048: 0.05,
+    4096: 0.27,
+    8192: 0.34,
+    16384: 0.37151927437641724,
+    32768: 0.48,
+};
+
 /**
  * settings.js
  * purpose: manages the gui settings, controlling things like render settings, light mode etc.
@@ -375,9 +385,9 @@ class SpessaSynthSettings
         let delayTime;
         // calculate delay:
         // 16384 fft size = 0.37 s
-        if (fft > 2048)
+        if (fft >= 2048)
         {
-            delayTime = fft / this.synthui.synth.context.sampleRate;
+            delayTime = niceDelayLookupTable[fft]//fft / this.synthui.synth.context.sampleRate;
         }
         else
         {
