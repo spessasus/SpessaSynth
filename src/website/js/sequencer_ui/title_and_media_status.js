@@ -64,8 +64,15 @@ export function updateTitleAndMediaStatus(cleanOtherTextEvents = true)
     }
     else
     {
-        const text = this.infoDecoder.decode(this.seq.midiData.rawMidiName.buffer).replace(/\0$/, "");
-        this.currentSongTitle = formatTitle(text);
+        if (this.seq.midiData.midiNameUsesFileName)
+        {
+            this.currentSongTitle = formatTitle(this.seq.midiData.fileName);
+        }
+        else
+        {
+            const text = this.infoDecoder.decode(this.seq.midiData.rawMidiName.buffer).replace(/\0$/, "");
+            this.currentSongTitle = formatTitle(text);
+        }
     }
     if (this.seq.midiData)
     {
@@ -104,6 +111,5 @@ export function updateTitleAndMediaStatus(cleanOtherTextEvents = true)
     }
     catch (e)
     {
-    
     }
 }

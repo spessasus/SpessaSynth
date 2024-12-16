@@ -582,6 +582,7 @@ class MIDI extends BasicMIDI
         
         this.fileName = fileName;
         this.midiName = this.midiName.trim();
+        this.midiNameUsesFileName = false;
         // if midiName is "", use the file name
         if (this.midiName.length === 0)
         {
@@ -590,6 +591,7 @@ class MIDI extends BasicMIDI
                 consoleColors.info
             );
             this.midiName = formatTitle(fileName);
+            this.midiNameUsesFileName = true;
             // encode it too
             this.rawMidiName = new Uint8Array(this.midiName.length);
             for (let i = 0; i < this.midiName.length; i++)
