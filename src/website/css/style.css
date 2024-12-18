@@ -160,6 +160,17 @@ button {
     transform: translateY(-100%);
 }
 
+.ass_renderer_field {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    display: block;
+    margin: 0;
+    position: fixed;
+    overflow: hidden;
+    z-index: calc(var(--top-index) + 5);
+}
+
 @keyframes spin {
     0% {
         transform: rotate(0deg);

@@ -81,7 +81,7 @@ export function createLyrics()
     mainLyricsDiv.appendChild(otherTextWrapper);
     
     // subtitle upload
-    this.subtitleManager = new AssManager(this.seq);
+    this.subtitleManager = new AssManager(this.seq, document.getElementsByClassName("ass_renderer_field")[0]);
     const input = document.createElement("input");
     input.type = "file";
     input.accept = ".ass";

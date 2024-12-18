@@ -15,6 +15,20 @@
 const DEFAULT_RES_X = 384;
 const DEFAULT_RES_Y = 288;
 
+function ASStimeToFloat(timeString)
+{
+    const [hours, minutes, seconds] = timeString.split(":");
+    const [sec, hundredths] = seconds.split(".");
+    return (parseInt(hours) * 3600) + (parseInt(minutes) * 60) + parseInt(sec) + (parseInt(hundredths) / 100);
+}
+
+function splitByCurlyBraces(input)
+{
+    // Regular expression to match everything inside curly braces and also separate out text outside them
+    const regex = /(\{[^}]*}|[^{}]+)/g;
+    return input.match(regex);
+}
+
 export class SubContent
 {
     /**
@@ -64,28 +78,121 @@ export class SubSection
     }
 }
 
+class DialogueEvent
+{
+    /**
+     * @type {string[]}
+     */
+    text = [];
+    
+    /**
+     * @type {number}
+     */
+    layer = 0;
+    
+    /**
+     * @type {number}
+     */
+    startSeconds = 0;
+    
+    /**
+     * @type {number}
+     */
+    endSeconds = 0;
+    
+    /**
+     * @type {string}
+     */
+    styleName = "";
+    
+    /**
+     * @type {number}
+     */
+    marginLeft = 0;
+    
+    /**
+     * @type {number}
+     */
+    marginRight = 0;
+    
+    /**
+     * @type {number}
+     */
+    marginVertical = 0;
+    
+    
+    constructor(text, layer, startSeconds, endSeconds, styleName, marginLeft, marginRight, marginVertical)
+    {
+        this.text = splitByCurlyBraces(text);
+        this.layer = layer;
+        this.startSeconds = startSeconds;
+        this.endSeconds = endSeconds;
+        this.styleName = styleName;
+        this.marginLeft = marginLeft;
+        this.marginRight = marginRight;
+        this.marginVertical = marginVertical;
+    }
+}
+
 export class AssManager
 {
     /**
+     * @type boolean
+     */
+    visible;
+    /**
+     * @type {SubSection[]}
+     */
+    subData = [];
+    
+    /**
+     * @type {number}
+     */
+    resolutionX = DEFAULT_RES_X;
+    /**
+     * @type {number}
+     */
+    resolutionY = DEFAULT_RES_Y;
+    /**
+     * @type {boolean}
+     */
+    kerning = true;
+    /**
+     * @type {Object<string, string>[]}
+     */
+    styles = [];
+    /**
+     * @type {DialogueEvent[]}
+     */
+    events = [];
+    
+    /**
+     * Multiplier: 1 is normal speed
+     * @type {number}
+     */
+    timer = 1;
+    
+    /**
      * Creates a new subtitle manager
      * @param seq {Sequencer}
+     * @param screen {HTMLDivElement}
      */
-    constructor(seq)
+    constructor(seq, screen)
     {
         this.seq = seq;
-        /**
-         * @type {boolean}
-         */
+        this.screen = screen;
+        this.init();
+    }
+    
+    init()
+    {
         this.visible = false;
-        
-        /**
-         * @type {SubSection[]}
-         */
         this.subData = [];
-        
         this.resolutionX = DEFAULT_RES_X;
         this.resolutionY = DEFAULT_RES_Y;
         this.kerning = true;
+        this.styles = [];
+        this.events = [];
     }
     
     /**
@@ -119,6 +226,8 @@ export class AssManager
      */
     loadASSSubtitles(assString)
     {
+        // reset all data
+        this.init();
         // time to parse!!
         const lines = assString.replaceAll("\r\n", "\n").split("\n");
         let isSection = false;
@@ -157,6 +266,62 @@ export class AssManager
         this.resolutionX = parseInt(scriptInfo.getContent("PlayResX", DEFAULT_RES_X.toString()));
         this.resolutionY = parseInt(scriptInfo.getContent("PlayResY", DEFAULT_RES_Y.toString()));
         this.kerning = scriptInfo.getContent("Kerning", "yes") === "yes";
+        this.timer = parseFloat(scriptInfo.getContent("Timer", "100")) / 100;
+        
+        // load styles
+        const styles = this._getSection("[V4+ Styles]", true);
+        const styleFormats = styles.getContent("Format", "").split(", ");
+        for (const style of styles.contents)
+        {
+            if (style.type !== "Style")
+            {
+                continue;
+            }
+            const data = style.data.split(",");
+            if (data.length !== styleFormats.length)
+            {
+                throw new Error(`Format and style data counts do not match. Expected ${styleFormats.length} got ${data.length}`);
+            }
+            const newStyle = {};
+            for (let i = 0; i < data.length; i++)
+            {
+                newStyle[styleFormats[i]] = data[i];
+            }
+            this.styles.push(newStyle);
+        }
+        
+        // load events
+        const events = this._getSection("[Events]", true);
+        const eventFormats = events.getContent("Format", "").split(", ");
+        for (const event of events.contents)
+        {
+            if (event.type !== "Dialogue")
+            {
+                continue;
+            }
+            const data = event.data.split(",", eventFormats.length);
+            if (data.length !== eventFormats.length)
+            {
+                throw new Error(`Format and dialogue data counts do not match. Expected ${eventFormats.length} got ${data.length}`);
+            }
+            const eventData = {};
+            for (let i = 0; i < data.length; i++)
+            {
+                eventData[eventFormats[i]] = data[i];
+            }
+            const newEvent = new DialogueEvent();
+            newEvent.text = eventData["Text"] || "";
+            newEvent.startSeconds = eventData["Start"] ? ASStimeToFloat(eventData["Start"]) : 0;
+            newEvent.endSeconds = eventData["End"] ? ASStimeToFloat(eventData["End"]) : 0;
+            newEvent.styleName = eventData["Style"] || "";
+            newEvent.layer = parseInt(eventData["Layer"]) || 0;
+            newEvent.marginLeft = parseInt(eventData["MarginL"]) || 0;
+            newEvent.marginRight = parseInt(eventData["MarginR"]) || 0;
+            newEvent.marginVertical = parseInt(eventData["MarginV"]) || 0;
+            
+            this.events.push(newEvent);
+        }
+        console.log(this.styles, this.events);
     }
     
 }
