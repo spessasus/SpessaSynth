@@ -161,12 +161,33 @@ export class EventHandler
             {
                 setTimeout(() =>
                 {
-                    Object.values(this.events[name]).forEach(ev => ev(eventData));
+                    Object.values(this.events[name]).forEach(ev =>
+                    {
+                        try
+                        {
+                            ev(eventData);
+                        }
+                        catch (e)
+                        {
+                            console.error(`Error while executing an event callback for ${name}:`, e);
+                        }
+                    });
                 }, this.timeDelay * 1000);
             }
             else
             {
-                Object.values(this.events[name]).forEach(ev => ev(eventData));
+                Object.values(this.events[name]).forEach(ev =>
+                    {
+                        try
+                        {
+                            ev(eventData);
+                        }
+                        catch (e)
+                        {
+                            console.error(`Error while executing an event callback for ${name}:`, e);
+                        }
+                    }
+                );
             }
         }
     }

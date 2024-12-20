@@ -78,6 +78,7 @@
     transition: all 0.2s ease;
     visibility: hidden;
     border-radius: var(--sequi-border-radius);
+    --lyrics-text-size: larger;
 }
 
 .lyrics_title_wrapper {
@@ -114,16 +115,14 @@
 
 .lyrics_text_gray {
     opacity: 0.5;
-    font-style: italic;
-    font-size: 1rem;
+    font-size: var(--lyrics-text-size);
     font-weight: bold;
 }
 
 .lyrics_text_highlight {
     font-weight: bold;
-    font-style: italic;
     color: var(--font-color);
-    font-size: 1rem;
+    font-size: var(--lyrics-text-size);
 }
 
 .lyrics details {
@@ -144,4 +143,11 @@
 .lyrics details pre,
 .lyrics details i {
     display: inline;
+}
+
+.lyrics .general_button {
+    margin-top: 1.5rem;
+    max-width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
 }
