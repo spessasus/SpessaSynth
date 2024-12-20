@@ -86,6 +86,11 @@ class DialogueEvent
     text = [];
     
     /**
+     * @type {string}
+     */
+    textClean = "";
+    
+    /**
      * @type {number}
      */
     layer = 0;
@@ -106,6 +111,11 @@ class DialogueEvent
     styleName = "";
     
     /**
+     * @type {Object<string, string>}
+     */
+    styleData = {};
+    
+    /**
      * @type {number}
      */
     marginLeft = 0;
@@ -120,17 +130,150 @@ class DialogueEvent
      */
     marginVertical = 0;
     
+    /**
+     * @type {?HTMLDivElement}
+     */
+    element = undefined;
     
-    constructor(text, layer, startSeconds, endSeconds, styleName, marginLeft, marginRight, marginVertical)
+    
+    /**
+     * @param text {string}
+     * @param layer {number}
+     * @param startSeconds {number}
+     * @param endSeconds {number}
+     * @param styleName {string}
+     * @param marginLeft {number}
+     * @param marginRight {number}
+     * @param marginVertical {number}
+     * @param styles {Object<string, string>[]}
+     */
+    constructor(text, layer, startSeconds, endSeconds, styleName, marginLeft, marginRight, marginVertical, styles)
     {
         this.text = splitByCurlyBraces(text);
-        this.layer = layer;
+        const textCleanSplit = [];
+        this.text.forEach(t =>
+        {
+            if (!t.startsWith("{"))
+            {
+                textCleanSplit.push(t);
+            }
+        });
+        this.textClean = textCleanSplit.join("");
         this.startSeconds = startSeconds;
         this.endSeconds = endSeconds;
         this.styleName = styleName;
+        this.styleData = styles.find(s => s["Name"] === this.styleName);
         this.marginLeft = marginLeft;
         this.marginRight = marginRight;
         this.marginVertical = marginVertical;
+    }
+    
+    hide()
+    {
+        if (this.element !== undefined)
+        {
+            this.element.remove();
+        }
+        this.element = undefined;
+    }
+    
+    /**
+     * @param resX {number}
+     * @param resY {number}
+     * @param parent {HTMLDivElement}
+     */
+    show(resX, resY, parent)
+    {
+        if (this.element !== undefined)
+        {
+            return;
+        }
+        this.element = document.createElement("div");
+        this.element.classList.add("ass_renderer_element");
+        this.element.textContent = this.textClean;
+        
+        // alignment
+        let left, top, bottom, right;
+        switch (parseInt(this.styleData["Alignment"]))
+        {
+            default:
+            case 1:
+                left = "0%";
+                bottom = "0%";
+                break;
+            case 2:
+                bottom = "0%";
+                left = "0%";
+                right = "0%";
+                break;
+            case 3:
+                right = "0%";
+                bottom = "0%";
+                break;
+            case 4:
+                top = "0%";
+                bottom = "0%";
+                left = "0%";
+                break;
+            case 5:
+                top = "0%";
+                bottom = "0%";
+                break;
+            case 6:
+                top = "0%";
+                bottom = "0%";
+                right = "0%";
+                break;
+            case 7:
+                top = "0%";
+                left = "0%";
+                break;
+            case 8:
+                top = "0%";
+                right = "0%";
+                left = "0%";
+                break;
+            case 9:
+                top = "0%";
+                right = "0%";
+            
+        }
+        if (top !== undefined)
+        {
+            this.element.style.top = top;
+        }
+        if (bottom !== undefined)
+        {
+            this.element.style.bottom = bottom;
+        }
+        if (left !== undefined)
+        {
+            this.element.style.left = left;
+        }
+        if (right !== undefined)
+        {
+            this.element.style.right = right;
+        }
+        
+        
+        // margin
+        // const marginLeft = this.marginLeft || parseInt(this.styleData["MarginL"]);
+        // const marginRight = this.marginRight || parseInt(this.styleData["MarginR"]);
+        // const marginVertical = this.marginVertical || parseInt(this.styleData["MarginV"]);
+        // const percentageLeft = marginLeft / resX;
+        // const percentageRight = marginRight / resX;
+        // const percetnageBottom = marginVertical / resY;
+        // this.element.style.left = `${percentageLeft}%`;
+        // this.element.style.bottom = `${percetnageBottom}%`;
+        // this.element.style.right = `${percentageRight}%`;
+        
+        // font
+        const fontFamily = this.styleData["Fontname"];
+        const fontSize = this.styleData["Fontsize"];
+        this.element.style.fontFamily = fontFamily;
+        this.element.style.fontSize = `${fontSize}px`;
+        
+        parent.appendChild(this.element);
     }
 }
 
@@ -182,6 +325,30 @@ export class AssManager
         this.seq = seq;
         this.screen = screen;
         this.init();
+        setInterval(this.tick.bind(this));
+    }
+    
+    tick()
+    {
+        if (!this.visible)
+        {
+            return;
+        }
+        const time = this.seq.currentTime;
+        
+        // go through all texts and render
+        for (const event of this.events)
+        {
+            if (event.startSeconds > time || event.endSeconds < time)
+            {
+                event.hide();
+            }
+            else
+            {
+                event.show(this.resolutionX, this.resolutionY, this.screen);
+            }
+            
+        }
     }
     
     init()
@@ -309,15 +476,17 @@ export class AssManager
             {
                 eventData[eventFormats[i]] = data[i];
             }
-            const newEvent = new DialogueEvent();
-            newEvent.text = eventData["Text"] || "";
-            newEvent.startSeconds = eventData["Start"] ? ASStimeToFloat(eventData["Start"]) : 0;
-            newEvent.endSeconds = eventData["End"] ? ASStimeToFloat(eventData["End"]) : 0;
-            newEvent.styleName = eventData["Style"] || "";
-            newEvent.layer = parseInt(eventData["Layer"]) || 0;
-            newEvent.marginLeft = parseInt(eventData["MarginL"]) || 0;
-            newEvent.marginRight = parseInt(eventData["MarginR"]) || 0;
-            newEvent.marginVertical = parseInt(eventData["MarginV"]) || 0;
+            const newEvent = new DialogueEvent(
+                eventData["Text"] || "",
+                parseInt(eventData["Layer"]) || 0,
+                eventData["Start"] ? ASStimeToFloat(eventData["Start"]) : 0,
+                eventData["End"] ? ASStimeToFloat(eventData["End"]) : 0,
+                eventData["Style"] || "",
+                parseInt(eventData["MarginL"]) || 0,
+                parseInt(eventData["MarginR"]) || 0,
+                parseInt(eventData["MarginV"]) || 0,
+                this.styles
+            );
             
             this.events.push(newEvent);
         }

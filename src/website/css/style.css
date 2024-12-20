@@ -166,9 +166,18 @@ button {
     padding: 0;
     display: block;
     margin: 0;
-    position: fixed;
     overflow: hidden;
     z-index: calc(var(--top-index) + 5);
+    pointer-events: none;
+    position: fixed;
+}
+
+.ass_renderer_element {
+    margin: 0;
+    position: absolute;
+    pointer-events: none;
+    padding: 0;
+    z-index: 9999;
 }
 
 @keyframes spin {

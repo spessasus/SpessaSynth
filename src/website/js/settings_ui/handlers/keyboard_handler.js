@@ -221,6 +221,10 @@ export function _createKeyboardHandler(keyboard, synthui, renderer)
                 while (synthui.synth.channelProperties[channelNumber].isMuted)
                 {
                     channelNumber++;
+                    if (synthui.synth.channelProperties[channelNumber] === undefined)
+                    {
+                        return;
+                    }
                 }
                 if (channelNumber < synthui.synth.channelsAmount)
                 {

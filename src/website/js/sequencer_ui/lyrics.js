@@ -96,6 +96,7 @@ export function createLyrics()
         }
         const file = input.files[0];
         this.subtitleManager.loadASSSubtitles(await file.text());
+        this.subtitleManager.setVisibility(true);
     };
     
     const subtitleUpload = document.createElement("label");
