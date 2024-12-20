@@ -62,13 +62,14 @@ export class DLSSample extends BasicSample
             }
             return this.compressedData;
         }
-        const uint8 = new Uint8Array(this.sampleData.length * 2);
-        for (let i = 0; i < this.sampleData.length; i++)
-        {
-            const sample = Math.floor(this.sampleData[i] * 32768);
-            uint8[i * 2] = sample & 0xFF; // lower byte
-            uint8[i * 2 + 1] = (sample >> 8) & 0xFF; // upper byte
-        }
-        return uint8;
+        return super.getRawData();
+        // const uint8 = new Uint8Array(this.sampleData.length * 2);
+        // for (let i = 0; i < this.sampleData.length; i++)
+        // {
+        //     const sample = Math.floor(this.sampleData[i] * 32768);
+        //     uint8[i * 2] = sample & 0xFF; // lower byte
+        //     uint8[i * 2 + 1] = (sample >> 8) & 0xFF; // upper byte
+        // }
+        // return uint8;
     }
 }
