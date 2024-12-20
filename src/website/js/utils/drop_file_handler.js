@@ -13,7 +13,7 @@ export class DropFileHandler
             e.preventDefault();
             dragPrompt.classList.remove("hidden");
         });
-        document.body.addEventListener("dragleave", () =>
+        document.body.addEventListener("dragend", () =>
         {
             dragPrompt.classList.add("hidden");
         });
