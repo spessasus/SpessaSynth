@@ -87,6 +87,12 @@ export class BasicSample
          * @type {number}
          */
         this.useCount = 0;
+        
+        /**
+         * The sample's audio data
+         * @type {Float32Array}
+         */
+        this.sampleData = undefined;
     }
     
     /**
@@ -94,9 +100,14 @@ export class BasicSample
      */
     getRawData()
     {
-        const e = new Error("Not implemented");
-        e.name = "NotImplementedError";
-        throw e;
+        const uint8 = new Uint8Array(this.sampleData.length * 2);
+        for (let i = 0; i < this.sampleData.length; i++)
+        {
+            const sample = Math.floor(this.sampleData[i] * 32768);
+            uint8[i * 2] = sample & 0xFF; // lower byte
+            uint8[i * 2 + 1] = (sample >> 8) & 0xFF; // upper byte
+        }
+        return uint8;
     }
     
     /**
@@ -133,8 +144,6 @@ export class BasicSample
      */
     getAudioData()
     {
-        const e = new Error("Not implemented");
-        e.name = "NotImplementedError";
-        throw e;
+        return this.sampleData;
     }
 }

@@ -3,6 +3,11 @@ import { consoleColors } from "../../utils/other.js";
 import { write } from "./write_sf2/write.js";
 import { defaultModulators, Modulator } from "./modulator.js";
 import { writeDLS } from "./write_dls/write_dls.js";
+import { BasicSample } from "./basic_sample.js";
+import { BasicInstrumentZone, BasicPresetZone } from "./basic_zones.js";
+import { Generator, generatorTypes } from "./generator.js";
+import { BasicInstrument } from "./basic_instrument.js";
+import { BasicPreset } from "./basic_preset.js";
 
 class BasicSoundFont
 {
@@ -73,6 +78,65 @@ class BasicSoundFont
         }
         
         return new BasicSoundFont({ presets: presets, info: mainSf.soundFontInfo });
+    }
+    
+    /**
+     * Creates a simple soundfont with one saw wave preset.
+     * @returns {ArrayBufferLike}
+     */
+    static getDummySoundfontFile()
+    {
+        const font = new BasicSoundFont();
+        const sample = new BasicSample(
+            "Saw",
+            44100,
+            65,
+            20,
+            0,
+            0,
+            0,
+            127
+        );
+        sample.sampleData = new Float32Array(128);
+        for (let i = 0; i < 128; i++)
+        {
+            sample.sampleData[i] = (i / 128) * 2 - 1;
+        }
+        font.samples.push(sample);
+        
+        const gZone = new BasicInstrumentZone();
+        gZone.isGlobal = true;
+        gZone.generators.push(new Generator(generatorTypes.initialAttenuation, 375));
+        gZone.generators.push(new Generator(generatorTypes.releaseVolEnv, -1000));
+        gZone.generators.push(new Generator(generatorTypes.sampleModes, 1));
+        
+        const zone1 = new BasicInstrumentZone();
+        zone1.sample = sample;
+        
+        const zone2 = new BasicInstrumentZone();
+        zone2.sample = sample;
+        zone2.generators.push(new Generator(generatorTypes.fineTune, -9));
+        
+        
+        const inst = new BasicInstrument();
+        inst.instrumentName = "Saw Wave";
+        inst.instrumentZones.push(gZone);
+        inst.instrumentZones.push(zone1);
+        inst.instrumentZones.push(zone2);
+        font.instruments.push(inst);
+        
+        const pZone = new BasicPresetZone();
+        pZone.instrument = inst;
+        
+        const preset = new BasicPreset(font.defaultModulators);
+        preset.presetName = "Saw Wave";
+        preset.presetZones.push(pZone);
+        font.presets.push(preset);
+        
+        font.soundFontInfo["ifil"] = "2.1";
+        font.soundFontInfo["isng"] = "EMU8000";
+        font.soundFontInfo["INAM"] = "Dummy";
+        return font.write().buffer;
     }
     
     removeUnusedElements()
