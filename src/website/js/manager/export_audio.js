@@ -1,9 +1,10 @@
 import { closeNotification, showNotification } from "../notification/notification.js";
 import { Synthetizer } from "../../../spessasynth_lib/synthetizer/synthetizer.js";
-import { formatTime } from "../../../spessasynth_lib/utils/other.js";
+import { consoleColors, formatTime } from "../../../spessasynth_lib/utils/other.js";
 import { audioBufferToWav } from "../../../spessasynth_lib/utils/buffer_to_wav.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { MIDIticksToSeconds } from "../../../spessasynth_lib/midi_parser/basic_midi.js";
+import { SpessaSynthInfo } from "../../../spessasynth_lib/utils/loggin.js";
 
 const RENDER_AUDIO_TIME_INTERVAL = 1000;
 
@@ -92,7 +93,11 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
     snapshot.effectsConfig = effects;
     try
     {
-        synth = new Synthetizer(offline.destination, soundfont, false, {
+        synth = new Synthetizer(
+            offline.destination,
+            soundfont,
+            false,
+            {
                 parsedMIDI: parsedMid,
                 snapshot: snapshot,
                 oneOutput: separateChannels,
@@ -152,11 +157,14 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
         const startOffset = MIDIticksToSeconds(parsedMid.firstNoteOn, parsedMid);
         const loopStart = loopStartAbsolute - startOffset;
         const loopEnd = loopEndAbsolute - startOffset;
-        let loop = undefined;
-        if (loopCount === 0)
-        {
-            loop = { start: loopStart, end: loopEnd };
-        }
+        let loop = { start: loopStart, end: loopEnd };
+        SpessaSynthInfo(
+            `%cWriting loop points: start %c${loopStart}%c, end:%c${loopEnd}`,
+            consoleColors.info,
+            consoleColors.recognized,
+            consoleColors.info,
+            consoleColors.recognized
+        );
         const wav = audioBufferToWav(buf, normalizeAudio, 0, meta, loop);
         this.saveBlob(wav, `${this.seqUI.currentSongTitle || "unnamed_song"}.wav`);
     }
