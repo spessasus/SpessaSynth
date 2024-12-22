@@ -31,8 +31,9 @@ class SequencerUI
      * @param element {HTMLElement} the element to create sequi in
      * @param locale {LocaleManager}
      * @param musicMode {MusicModeUI}
+     * @param renderer {Renderer}
      */
-    constructor(element, locale, musicMode)
+    constructor(element, locale, musicMode, renderer)
     {
         this.iconColor = ICON_COLOR;
         this.iconDisabledColor = ICON_DISABLED_COLOR;
@@ -58,6 +59,7 @@ class SequencerUI
         this.currentLyrics = new Uint8Array(0);
         this.currentLyricsString = "";
         this.musicModeUI = musicMode;
+        this.renderer = renderer;
     }
     
     toggleDarkMode()

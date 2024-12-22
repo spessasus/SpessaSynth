@@ -1,6 +1,6 @@
 import { supportedEncodings } from "../utils/encodings.js";
 import { messageTypes } from "../../../spessasynth_lib/midi_parser/midi_message.js";
-import { AssManager } from "../utils/ass_manager.js";
+import { AssManager } from "../utils/ass_manager/ass_manager.js";
 
 const ACTUAL_FONT_SIZE = parseFloat(getComputedStyle(document.body).fontSize);
 
@@ -81,7 +81,11 @@ export function createLyrics()
     mainLyricsDiv.appendChild(otherTextWrapper);
     
     // subtitle upload
-    this.subtitleManager = new AssManager(this.seq, document.getElementsByClassName("ass_renderer_field")[0]);
+    this.subtitleManager = new AssManager(
+        this.seq,
+        document.getElementsByClassName("ass_renderer_field")[0],
+        this.renderer
+    );
     const input = document.createElement("input");
     input.type = "file";
     input.accept = ".ass";

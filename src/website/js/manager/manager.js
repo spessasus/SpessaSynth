@@ -269,7 +269,12 @@ class Manager
         this.playerUI = new MusicModeUI(document.getElementById("player_info"), this.localeManager);
         
         // create an UI for sequencer
-        this.seqUI = new SequencerUI(document.getElementById("sequencer_controls"), this.localeManager, this.playerUI);
+        this.seqUI = new SequencerUI(
+            document.getElementById("sequencer_controls"),
+            this.localeManager,
+            this.playerUI,
+            this.renderer
+        );
         
         // set up settings UI
         this.settingsUI = new SpessaSynthSettings(

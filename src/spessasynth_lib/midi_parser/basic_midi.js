@@ -289,7 +289,7 @@ export class BasicMIDI
 /**
  * Converts ticks to time in seconds
  * @param ticks {number} time in MIDI ticks
- * @param mid {BasicMIDI} the MIDI
+ * @param mid {BasicMIDI|MidiData} the MIDI
  * @returns {number} time in seconds
  */
 export function MIDIticksToSeconds(ticks, mid)

@@ -178,6 +178,15 @@ button {
     pointer-events: none;
     padding: 0;
     z-index: 9999;
+    white-space: break-spaces;
+    width: max-content;
+    max-width: 100%;
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.ass_renderer_element span {
+    font-family: inherit;
+    font-size: inherit;
 }
 
 @keyframes spin {

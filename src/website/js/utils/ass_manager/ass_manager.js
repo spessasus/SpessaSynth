@@ -10,7 +10,9 @@
  * Advanced SubStation manager.
  * That's that ASS stands for.
  * Nothing suspicious here.
+ * (.ass subtitle renderer)
  */
+import { DialogueEvent } from "./dialogue_event.js";
 
 const DEFAULT_RES_X = 384;
 const DEFAULT_RES_Y = 288;
@@ -20,13 +22,6 @@ function ASStimeToFloat(timeString)
     const [hours, minutes, seconds] = timeString.split(":");
     const [sec, hundredths] = seconds.split(".");
     return (parseInt(hours) * 3600) + (parseInt(minutes) * 60) + parseInt(sec) + (parseInt(hundredths) / 100);
-}
-
-function splitByCurlyBraces(input)
-{
-    // Regular expression to match everything inside curly braces and also separate out text outside them
-    const regex = /(\{[^}]*}|[^{}]+)/g;
-    return input.match(regex);
 }
 
 export class SubContent
@@ -78,205 +73,6 @@ export class SubSection
     }
 }
 
-class DialogueEvent
-{
-    /**
-     * @type {string[]}
-     */
-    text = [];
-    
-    /**
-     * @type {string}
-     */
-    textClean = "";
-    
-    /**
-     * @type {number}
-     */
-    layer = 0;
-    
-    /**
-     * @type {number}
-     */
-    startSeconds = 0;
-    
-    /**
-     * @type {number}
-     */
-    endSeconds = 0;
-    
-    /**
-     * @type {string}
-     */
-    styleName = "";
-    
-    /**
-     * @type {Object<string, string>}
-     */
-    styleData = {};
-    
-    /**
-     * @type {number}
-     */
-    marginLeft = 0;
-    
-    /**
-     * @type {number}
-     */
-    marginRight = 0;
-    
-    /**
-     * @type {number}
-     */
-    marginVertical = 0;
-    
-    /**
-     * @type {?HTMLDivElement}
-     */
-    element = undefined;
-    
-    
-    /**
-     * @param text {string}
-     * @param layer {number}
-     * @param startSeconds {number}
-     * @param endSeconds {number}
-     * @param styleName {string}
-     * @param marginLeft {number}
-     * @param marginRight {number}
-     * @param marginVertical {number}
-     * @param styles {Object<string, string>[]}
-     */
-    constructor(text, layer, startSeconds, endSeconds, styleName, marginLeft, marginRight, marginVertical, styles)
-    {
-        this.text = splitByCurlyBraces(text);
-        const textCleanSplit = [];
-        this.text.forEach(t =>
-        {
-            if (!t.startsWith("{"))
-            {
-                textCleanSplit.push(t);
-            }
-        });
-        this.textClean = textCleanSplit.join("");
-        this.startSeconds = startSeconds;
-        this.endSeconds = endSeconds;
-        this.styleName = styleName;
-        this.styleData = styles.find(s => s["Name"] === this.styleName);
-        this.marginLeft = marginLeft;
-        this.marginRight = marginRight;
-        this.marginVertical = marginVertical;
-    }
-    
-    hide()
-    {
-        if (this.element !== undefined)
-        {
-            this.element.remove();
-        }
-        this.element = undefined;
-    }
-    
-    /**
-     * @param resX {number}
-     * @param resY {number}
-     * @param parent {HTMLDivElement}
-     */
-    show(resX, resY, parent)
-    {
-        if (this.element !== undefined)
-        {
-            return;
-        }
-        this.element = document.createElement("div");
-        this.element.classList.add("ass_renderer_element");
-        this.element.textContent = this.textClean;
-        
-        // alignment
-        let left, top, bottom, right;
-        switch (parseInt(this.styleData["Alignment"]))
-        {
-            default:
-            case 1:
-                left = "0%";
-                bottom = "0%";
-                break;
-            case 2:
-                bottom = "0%";
-                left = "0%";
-                right = "0%";
-                break;
-            case 3:
-                right = "0%";
-                bottom = "0%";
-                break;
-            case 4:
-                top = "0%";
-                bottom = "0%";
-                left = "0%";
-                break;
-            case 5:
-                top = "0%";
-                bottom = "0%";
-                break;
-            case 6:
-                top = "0%";
-                bottom = "0%";
-                right = "0%";
-                break;
-            case 7:
-                top = "0%";
-                left = "0%";
-                break;
-            case 8:
-                top = "0%";
-                right = "0%";
-                left = "0%";
-                break;
-            case 9:
-                top = "0%";
-                right = "0%";
-            
-        }
-        if (top !== undefined)
-        {
-            this.element.style.top = top;
-        }
-        if (bottom !== undefined)
-        {
-            this.element.style.bottom = bottom;
-        }
-        if (left !== undefined)
-        {
-            this.element.style.left = left;
-        }
-        if (right !== undefined)
-        {
-            this.element.style.right = right;
-        }
-        
-        
-        // margin
-        // const marginLeft = this.marginLeft || parseInt(this.styleData["MarginL"]);
-        // const marginRight = this.marginRight || parseInt(this.styleData["MarginR"]);
-        // const marginVertical = this.marginVertical || parseInt(this.styleData["MarginV"]);
-        // const percentageLeft = marginLeft / resX;
-        // const percentageRight = marginRight / resX;
-        // const percetnageBottom = marginVertical / resY;
-        // this.element.style.left = `${percentageLeft}%`;
-        // this.element.style.bottom = `${percetnageBottom}%`;
-        // this.element.style.right = `${percentageRight}%`;
-        
-        // font
-        const fontFamily = this.styleData["Fontname"];
-        const fontSize = this.styleData["Fontsize"];
-        this.element.style.fontFamily = fontFamily;
-        this.element.style.fontSize = `${fontSize}px`;
-        
-        parent.appendChild(this.element);
-    }
-}
-
 export class AssManager
 {
     /**
@@ -319,19 +115,32 @@ export class AssManager
      * Creates a new subtitle manager
      * @param seq {Sequencer}
      * @param screen {HTMLDivElement}
+     * @param renderer {Renderer}
      */
-    constructor(seq, screen)
+    constructor(seq, screen, renderer)
     {
         this.seq = seq;
         this.screen = screen;
         this.init();
-        setInterval(this.tick.bind(this));
+        renderer.onRender = this.tick.bind(this);
+        
+        document.addEventListener("keydown", e =>
+        {
+            if (e.key === "Escape")
+            {
+                this.setVisibility(!this.visible);
+            }
+        });
     }
     
     tick()
     {
         if (!this.visible)
         {
+            for (const event of this.events)
+            {
+                event.hide();
+            }
             return;
         }
         const time = this.seq.currentTime;
@@ -345,7 +154,7 @@ export class AssManager
             }
             else
             {
-                event.show(this.resolutionX, this.resolutionY, this.screen);
+                event.show(this.resolutionX, this.resolutionY, this.screen, time);
             }
             
         }
@@ -360,6 +169,7 @@ export class AssManager
         this.kerning = true;
         this.styles = [];
         this.events = [];
+        this.screen.innerHTML = "";
     }
     
     /**
@@ -368,6 +178,7 @@ export class AssManager
     setVisibility(visible)
     {
         this.visible = visible;
+        this.tick();
     }
     
     /**
@@ -466,7 +277,19 @@ export class AssManager
             {
                 continue;
             }
-            const data = event.data.split(",", eventFormats.length);
+            /**
+             * @type {string[]}
+             */
+            const data = [];
+            // split event.data with comma eventFormats.length times and keep the rest as an entire string (note, comma without space)
+            let rest = event.data;
+            for (let i = 0; i < eventFormats.length - 1; i++)
+            {
+                const index = rest.indexOf(",");
+                data.push(rest.substring(0, index));
+                rest = rest.substring(index + 1);
+            }
+            data.push(rest);
             if (data.length !== eventFormats.length)
             {
                 throw new Error(`Format and dialogue data counts do not match. Expected ${eventFormats.length} got ${data.length}`);
