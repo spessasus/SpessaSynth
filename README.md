@@ -152,7 +152,8 @@ npm install --save spessasynth_lib
 - **Visualization of the played sequence:** with cool effects like visual pitch bend and note-on effects!
 - **Playable keyboard with various sizes:** mobile friendly!
 - **Integrated controller for the synthesizer with numerous options:** Edit instruments, controllers, and more!
-- **Lyrics support:** Karaoke!
+- **MIDI Lyrics support:** Karaoke!
+- **ASS Subtitle support:** Karaoke but fancy!
 - **Music player mode:** with support for album covers in .rmi files!
 - Mobile-friendly UI (_synthesizer performance not optimized for mobile... don't tell anyone!_)
 - **Multiple language support:** 
