@@ -218,23 +218,26 @@ export class DialogueEvent
                         span.style.backgroundImage = "";
                         span.style.backgroundClip = "";
                         span.style.color = this.secondaryColor;
-                        currentDelay += animationDuration;
-                        continue;
                     }
-                    const elapsed = timeSinceShown - currentDelay;
-                    // calculate how much percent needs to be filled
-                    const percent = Math.min(100, (elapsed / animationDuration) * 100);
-                    // fill text with color from left to right smoothly
-                    span.style.color = "transparent";
-                    span.style.backgroundImage = `linear-gradient(90deg, ${this.primaryColor} 50%, ${this.secondaryColor} 50%)`;
-                    span.style.backgroundPosition = `${100 - percent}%`;
-                    span.style.backgroundSize = "200% 100%";
-                    span.style.backgroundClip = "text";
+                    else
+                    {
+                        const elapsed = timeSinceShown - currentDelay;
+                        // calculate how much percent needs to be filled
+                        const percent = Math.min(100, (elapsed / animationDuration) * 100);
+                        // fill text with color from left to right smoothly
+                        span.style.color = "transparent";
+                        span.style.backgroundImage = `linear-gradient(90deg, ${this.primaryColor} 50%, ${this.secondaryColor} 50%)`;
+                        span.style.backgroundPosition = `${100 - percent}%`;
+                        span.style.backgroundSize = "200% 100%";
+                        span.style.backgroundClip = "text";
+                    }
                     currentDelay += animationDuration;
                 }
                 else
                 {
                     // minus because highlight starts instantly and the next line is delayed
+                    span.style.backgroundImage = "";
+                    span.style.backgroundClip = "";
                     if (currentDelay - lastKaraokeDuration > timeSinceShown)
                     {
                         span.style.color = this.secondaryColor;
