@@ -148,17 +148,23 @@ export class AssManager
         const time = this.seq.currentTime * this.timer;
         
         // go through all texts and render
+        // first hide
         for (const event of this.events)
         {
             if (event.startSeconds > time || event.endSeconds <= time)
             {
                 event.hide();
             }
-            else
+        }
+        // force reflow
+        void this.screen.offsetHeight;
+        // then show
+        for (const event of this.events)
+        {
+            if (event.startSeconds <= time && event.endSeconds > time)
             {
                 event.show(this.resolutionX, this.resolutionY, this.screen, time);
             }
-            
         }
     }
     

@@ -181,9 +181,7 @@ button {
     white-space: break-spaces;
     width: max-content;
     max-width: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    -webkit-text-stroke: 2px black;
-    paint-order: stroke fill;
+    background: rgba(0, 0, 0, 0.8);
 }
 
 .ass_renderer_element span {
