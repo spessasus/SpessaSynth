@@ -108,6 +108,15 @@ export class AssManager
     events = [];
     
     /**
+     * @type {{
+     *     name: string,
+     *     data: string,
+     *     dataDecoded: Uint8Array
+     * }[]}
+     */
+    fonts = [];
+    
+    /**
      * Multiplier: 1 is normal speed
      * @type {number}
      */
@@ -163,7 +172,7 @@ export class AssManager
         {
             if (event.startSeconds <= time && event.endSeconds > time)
             {
-                event.show(this.resolutionX, this.resolutionY, this.screen, time);
+                event.show(this.resolutionX, this.resolutionY, this.screen, time, this.firstEmbeddedFontName);
             }
         }
     }
@@ -218,6 +227,7 @@ export class AssManager
         const lines = assString.replaceAll("\r\n", "\n").split("\n");
         let isSection = false;
         let sectionName = "";
+        let currentFontName = "";
         /**
          * @type {SubContent[]}
          */
@@ -234,6 +244,21 @@ export class AssManager
                 isSection = false;
                 this.subData.push(new SubSection(sectionName, sectionContents));
                 sectionContents = [];
+            }
+            // for fonts, load up section as one big name
+            else if (sectionName === "[Fonts]")
+            {
+                
+                if (!line.startsWith("fontname: "))
+                {
+                    this.fonts.find(f => f.name === currentFontName).data += line;
+                }
+                else
+                {
+                    const name = line.split(/: (.*)/s)[1];
+                    this.fonts.push({ name: name, data: "", dataDecoded: undefined });
+                    currentFontName = name;
+                }
             }
             else if (!line.startsWith("!") && !line.startsWith(";"))
             {
@@ -321,9 +346,64 @@ export class AssManager
             
             this.events.push(newEvent);
         }
+        
+        /*
+        decode fonts:
+        ASS/SSA uses a custom encoding to turn arbitrary binary data into uppercase letters and non-alphabetic,
+        non-space symbols.
+        Binary input data is processed in chunks of 3 bytes.
+        Those bytes in are split into four 6-bit chunks such that most-significant bits are processed first.
+        To each chunk the value 33 is added and then they are written out as UTF-8/ASCII text.
+        After writing exactly 80 bytes a single linebreak must be inserted.
+        Only the last line may be shorter than 80 characters if the end of the source file is reached.
+        If at the end of the file only fewer than 3 bytes remain,
+        pad the data beyond the file end with zeros before splitting into 6-bit chunks,
+        but only write out chunks containing actual file data.
+         */
+        for (const font of this.fonts)
+        {
+            const dataString = font.data;
+            const decodedData = [];
+            for (let i = 0; i < dataString.length; i += 4)
+            {
+                // get chunk
+                const chunk = dataString.slice(i, i + 4);
+                // decode chunk
+                const bytes = chunk.split("").map(c => c.charCodeAt(0) - 33);
+                // decode bytes
+                const byte1 = (bytes[0] << 2) | (bytes[1] >> 4);
+                const byte2 = ((bytes[1] & 15) << 4) | (bytes[2] >> 2);
+                const byte3 = ((bytes[2] & 3) << 6) | bytes[3];
+                if (i + 1 < dataString.length)
+                {
+                    decodedData.push(byte1);
+                }
+                if (i + 2 < dataString.length)
+                {
+                    decodedData.push(byte2);
+                }
+                if (i + 3 < dataString.length)
+                {
+                    decodedData.push(byte3);
+                }
+            }
+            font.dataDecoded = new Uint8Array(decodedData);
+            // add the font with css
+            const fontBlob = new Blob([font.dataDecoded]);
+            const fontUrl = URL.createObjectURL(fontBlob);
+            const styleElement = document.createElement("style");
+            styleElement.innerHTML = `@font-face {
+                font-family: "${font.name}";
+                src: url("${fontUrl}");
+            }`;
+            document.head.appendChild(styleElement);
+        }
+        
+        this.firstEmbeddedFontName = this.fonts[0]?.name || "sans-serif";
+        
         SpessaSynthInfo(
             "Subtitles:",
-            this.styles, this.events
+            this.styles, this.events, this.fonts
         );
         // kerning
         this.screen.style.fontKerning = this.kerning ? "normal" : "none";

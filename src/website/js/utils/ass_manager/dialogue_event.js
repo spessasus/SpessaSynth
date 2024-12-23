@@ -257,8 +257,9 @@ export class DialogueEvent
      * @param resY {number}
      * @param parent {HTMLDivElement}
      * @param currentVideoTime {number}
+     * @param embeddedFontName {string}
      */
-    show(resX, resY, parent, currentVideoTime)
+    show(resX, resY, parent, currentVideoTime, embeddedFontName)
     {
         if (this.element !== undefined)
         {
@@ -405,7 +406,7 @@ export class DialogueEvent
         this.element.style.color = this.styleData["PrimaryColour"];
         this.element.style.zIndex = (this.layer + 99999).toString();
         // font family and size
-        const fontFamily = this.styleData["Fontname"];
+        const fontFamily = `${this.styleData["Fontname"]}, "${embeddedFontName}", sans-serif`;
         let fontSize = this.styleData["Fontsize"];
         // font size override tag ("\fs<font size>")
         if (this.text[0].startsWith("{\\fs"))
