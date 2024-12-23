@@ -27,7 +27,7 @@ const niceDelayLookupTable = {
     4096: 0.27,
     8192: 0.34,
     16384: 0.37151927437641724,
-    32768: 0.48,
+    32768: 0.48
 };
 
 /**
@@ -165,6 +165,20 @@ class SpessaSynthSettings
             // translate-path-title: apply to both innerText and title, by adding .title and .description respectively
             this.locale.bindObjectProperty(element, "textContent", path + ".title");
             this.locale.bindObjectProperty(element, "title", path + ".description");
+            
+            // for labels, also apply the "title" to elements that the label is for
+            if (element.tagName === "LABEL")
+            {
+                const forId = element.getAttribute("for");
+                if (forId)
+                {
+                    const forElement = document.getElementById(forId);
+                    if (forElement)
+                    {
+                        this.locale.bindObjectProperty(forElement, "title", path + ".description");
+                    }
+                }
+            }
         }
         
         this.getHtmlControls();
@@ -387,7 +401,7 @@ class SpessaSynthSettings
         // 16384 fft size = 0.37 s
         if (fft >= 2048)
         {
-            delayTime = niceDelayLookupTable[fft]//fft / this.synthui.synth.context.sampleRate;
+            delayTime = niceDelayLookupTable[fft];//fft / this.synthui.synth.context.sampleRate;
         }
         else
         {

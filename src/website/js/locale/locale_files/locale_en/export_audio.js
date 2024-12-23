@@ -104,7 +104,7 @@ export const exportAudio = {
                     title: "Exporting embeded MIDI...",
                     loading: "Loading Soundfont and MIDI...",
                     modifyingMIDI: "Modifying MIDI...",
-                    modifyingSoundfont: "Trimming Soundfont...",
+                    modifyingSoundfont: "Trimming Soundfont... (this may take a while!)",
                     saving: "Saving RMIDI...",
                     done: "Done!"
                 },

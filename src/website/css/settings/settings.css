@@ -51,3 +51,14 @@
     border: 1px solid var(--top-buttons-color-end);
     background: var(--top-buttons-color);
 }
+
+.settings_menu .hover_reminder {
+    width: 25ch;
+    white-space: wrap;
+    margin: 1rem auto 0 auto;
+}
+
+.settings_menu .hover_reminder:hover {
+    cursor: pointer;
+    text-shadow: 0 0 5px white;
+}
