@@ -395,6 +395,7 @@ class SequencerUI
                 (this.lyricsElement.mainDiv.classList.contains("lyrics_show") ? this.iconColor : this.iconDisabledColor)
             );
         };
+        this.toggleLyrics = toggleLyrics;
         textButton.onclick = toggleLyrics;
         
         // keyboard control

@@ -187,7 +187,7 @@ export function getModSourceEnum(curveType, polarity, direction, isCC, index)
     return (curveType << 10) | (polarity << 9) | (direction << 8) | (isCC << 7) | index;
 }
 
-export const defaultModulators = [
+const soundFontModulators = [
     // vel to attenuation
     new Modulator({
         srcEnum: getModSourceEnum(
@@ -250,8 +250,10 @@ export const defaultModulators = [
     new Modulator({ srcEnum: 0x00DB, dest: generatorTypes.reverbEffectsSend, amt: 200, secSrcEnum: 0x0, transform: 0 }),
     
     // chorus effects to send
-    new Modulator({ srcEnum: 0x00DD, dest: generatorTypes.chorusEffectsSend, amt: 200, secSrcEnum: 0x0, transform: 0 }),
-    
+    new Modulator({ srcEnum: 0x00DD, dest: generatorTypes.chorusEffectsSend, amt: 200, secSrcEnum: 0x0, transform: 0 })
+];
+
+const customModulators = [
     // custom modulators heck yeah
     // poly pressure to vibrato
     new Modulator({
@@ -322,3 +324,5 @@ export const defaultModulators = [
         transform: 0
     })
 ];
+
+export const defaultModulators = soundFontModulators.concat(customModulators);

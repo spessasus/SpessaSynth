@@ -13,6 +13,8 @@
  * (.ass subtitle renderer)
  */
 import { DialogueEvent } from "./dialogue_event.js";
+import { keybinds } from "../keybinds.js";
+import { SpessaSynthInfo } from "../../../../spessasynth_lib/utils/loggin.js";
 
 const DEFAULT_RES_X = 384;
 const DEFAULT_RES_Y = 288;
@@ -126,7 +128,7 @@ export class AssManager
         
         document.addEventListener("keydown", e =>
         {
-            if (e.key === "Escape")
+            if (e.key === keybinds.toggleSubtitles)
             {
                 this.setVisibility(!this.visible);
             }
@@ -313,7 +315,12 @@ export class AssManager
             
             this.events.push(newEvent);
         }
-        console.log(this.styles, this.events);
+        SpessaSynthInfo(
+            "Subtitles:",
+            this.styles, this.events
+        );
+        // kerning
+        this.screen.style.fontKerning = this.kerning ? "normal" : "none";
     }
     
 }

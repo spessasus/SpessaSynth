@@ -214,6 +214,7 @@ export class DialogueEvent
                     isNextSpanAnimated = false;
                     if (currentDelay > timeSinceShown)
                     {
+                        span.style.cssText = "";
                         span.style.backgroundImage = "";
                         span.style.backgroundClip = "";
                         span.style.color = this.secondaryColor;
@@ -332,6 +333,7 @@ export class DialogueEvent
         const marginRightPercent = (this.marginRight / resX) * 100;
         const marginVerticalPercent = (this.marginVertical / resY) * 100;
         
+        
         switch (alignment)
         {
             case 1:
@@ -445,5 +447,38 @@ export class DialogueEvent
         }
         
         parent.appendChild(this.element);
+        
+        // force reflow
+        void this.element.offsetHeight;
+        
+        // finally, check for colliding subtitles in parent and move down if needed
+        // if no space below, move up
+        const thisRect = this.element.getBoundingClientRect();
+        for (const subtitle of parent.children)
+        {
+            if (subtitle === this.element)
+            {
+                continue;
+            }
+            const subtitleRect = subtitle.getBoundingClientRect();
+            const parentRect = parent.getBoundingClientRect();
+            // check for collision
+            if (thisRect.top < subtitleRect.bottom && thisRect.bottom > subtitleRect.top)
+            {
+                // check if this.element can fit between parentRect.top and subtitleRect.top
+                if (subtitleRect.top - parentRect.top > thisRect.height)
+                {
+                    // move up
+                    this.element.style.top = "";
+                    this.element.style.bottom = `${parentRect.bottom - subtitleRect.top}px`;
+                }
+                else
+                {
+                    // move down
+                    this.element.style.top = `${subtitleRect.top + subtitleRect.height}px`;
+                    this.element.style.bottom = "";
+                }
+            }
+        }
     }
 }
