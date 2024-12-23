@@ -35,6 +35,11 @@ export const settingsLocale = {
                 leftToRight: "左から右",
                 rightToLeft: "右から左"
             }
+        },
+        
+        reminder: {
+            title: "設定にカーソルを合わせると、詳細情報を表示できることを知っていましたか？",
+            description: "このように！"
         }
     }
 };

@@ -35,6 +35,11 @@ export const settingsLocale = {
                 leftToRight: "De gauche à droite",
                 rightToLeft: "De droite à gauche"
             }
+        },
+        
+        reminder: {
+            title: "Saviez-vous que vous pouvez survoler les paramètres pour obtenir plus d'informations ?",
+            description: "Comme ceci !"
         }
     }
 };

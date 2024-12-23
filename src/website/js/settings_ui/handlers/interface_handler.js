@@ -19,6 +19,7 @@ export function _createInterfaceSettingsHandler()
         option.textContent = locale.localeName;
         select.appendChild(option);
     }
+    select.value = this.locale.localeCode;
     select.onchange = () =>
     {
         if (select.value === "help-translate")

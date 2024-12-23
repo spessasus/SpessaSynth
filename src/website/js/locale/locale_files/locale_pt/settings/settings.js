@@ -40,6 +40,11 @@ export const settingsLocale = {
                 leftToRight: "Da esquerda para a direita",
                 rightToLeft: "Da direita para a esquerda"
             }
+        },
+        
+        reminder: {
+            title: "Você sabia que pode passar o mouse sobre as configurações para obter mais informações?",
+            description: "Como esta!"
         }
     }
 };

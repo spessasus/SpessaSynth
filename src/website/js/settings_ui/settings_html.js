@@ -136,6 +136,8 @@ export const settingsHtml = `
         </select>
         
         <h3><a href='https://github.com/spessasus/SpessaSynth/wiki/How-To-Use-App' target='_blank' translate-path-title='locale.synthesizerController.helpButton'></a></h3>
+        
+        <h4 class='hover_reminder' translate-path-title='locale.settings.interfaceSettings.reminder'></h4>
     </div>
 </div>
 `;

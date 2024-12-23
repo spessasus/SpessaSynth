@@ -36,6 +36,11 @@ export const settingsLocale = {
                 leftToRight: "Left to right",
                 rightToLeft: "Right to left"
             }
+        },
+        
+        reminder: {
+            title: "Did you know that you can hover over the settings to get more information?",
+            description: "Like this one!"
         }
     }
 };
