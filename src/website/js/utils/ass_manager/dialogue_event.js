@@ -172,7 +172,14 @@ export class DialogueEvent
      */
     updateHighlights(currentVideoTime)
     {
+        // the text is split up into chunks, separated by "{\k<duration in 1/100th of a second>}"
+        // note that the time is not a delay, it's how long the karaoke gets highlighted for before moving onto the next one
+        // IE: ["start", "{\k50}", "test", "{\k100"}, "test2"]
+        // "start" is instant, test is also instant and "test2" gets highligthed after 0.5 seconds.
+        // Then if someting is after test2, it will get highlighted after 1 second.
+        
         let currentDelay = 0;
+        let lastKaraokeDuration = 0;
         let currentIndex = 0;
         const timeSinceShown = currentVideoTime - this.startSeconds;
         let isNextSpanAnimated = false;
@@ -182,7 +189,7 @@ export class DialogueEvent
             if (chunk.startsWith("{"))
             {
                 // check if karakoe tag
-                const karaokeAnimation = chunk.startsWith("{\\K");
+                const karaokeAnimation = chunk.startsWith("{\\K") || chunk.startsWith("{\\kf");
                 if (!karaokeAnimation && !chunk.startsWith("{\\k"))
                 {
                     continue;
@@ -197,6 +204,7 @@ export class DialogueEvent
                 {
                     currentDelay += duration;
                 }
+                lastKaraokeDuration = duration;
             }
             else
             {
@@ -225,7 +233,8 @@ export class DialogueEvent
                 }
                 else
                 {
-                    if (currentDelay > timeSinceShown)
+                    // minus because highlight starts instantly and the next line is delayed
+                    if (currentDelay - lastKaraokeDuration > timeSinceShown)
                     {
                         span.style.color = this.secondaryColor;
                     }
@@ -419,37 +428,17 @@ export class DialogueEvent
             this.element.style.textDecoration = "line-through";
         }
         
-        // the text is split up into chunks, separated by "{\k<duration in 1/100th of a second>}"
-        // IE: ["test", "{/k100"}, "test2"]
-        // "test" gets highlighted instantly while "test2" gets highlighted after 1 second after the element is shown.
-        // the highlighted text uses primary while the regular one uses secondary.
-        
-        // add the chunks
-        let currentDelay = 0;
         /**
          * @type {HTMLSpanElement[]}
          */
         this.textChunks = [];
-        const timeSinceShown = currentVideoTime - this.startSeconds;
         for (const chunk of this.text)
         {
-            if (chunk.startsWith("{"))
-            {
-                const duration = parseInt(chunk.slice(3, -1)) / 100;
-                currentDelay += duration;
-            }
-            else
+            if (!chunk.startsWith("{"))
             {
                 const span = document.createElement("span");
                 span.textContent = chunk.replace("\\N", "\n");
-                if (currentDelay > timeSinceShown)
-                {
-                    span.style.color = this.secondaryColor;
-                }
-                else
-                {
-                    span.style.color = this.primaryColor;
-                }
+                span.style.color = this.secondaryColor;
                 this.element.appendChild(span);
                 this.textChunks.push(span);
             }
