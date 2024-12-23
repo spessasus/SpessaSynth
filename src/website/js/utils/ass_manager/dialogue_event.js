@@ -442,7 +442,10 @@ export class DialogueEvent
             if (!chunk.startsWith("{"))
             {
                 const span = document.createElement("span");
-                span.textContent = chunk.replace("\\N", "\n");
+                span.textContent = chunk
+                    .replaceAll("\\N", "\n")
+                    .replaceAll("\\h", " ")
+                    .replaceAll("\\n", "\n");
                 span.style.color = this.secondaryColor;
                 this.element.appendChild(span);
                 this.textChunks.push(span);
