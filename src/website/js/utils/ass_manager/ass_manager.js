@@ -186,6 +186,7 @@ export class AssManager
         this.kerning = true;
         this.styles = [];
         this.events = [];
+        this.fonts = [];
         this.screen.innerHTML = "";
     }
     
