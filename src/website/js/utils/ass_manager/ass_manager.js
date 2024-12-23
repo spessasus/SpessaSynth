@@ -143,12 +143,12 @@ export class AssManager
             }
             return;
         }
-        const time = this.seq.currentTime;
+        const time = this.seq.currentTime * this.timer;
         
         // go through all texts and render
         for (const event of this.events)
         {
-            if (event.startSeconds > time || event.endSeconds < time)
+            if (event.startSeconds > time || event.endSeconds <= time)
             {
                 event.hide();
             }
