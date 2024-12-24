@@ -197,6 +197,8 @@ export class AssManager
     {
         this.visible = visible;
         this.tick();
+        // for good measure, re-render in 10ms
+        setTimeout(() => this.tick(), 10);
     }
     
     /**
