@@ -173,15 +173,15 @@ button {
 }
 
 .ass_renderer_element {
-    margin: 0;
     position: absolute;
     pointer-events: none;
-    padding: 0;
+    padding: 0 0.2rem;
     z-index: 9999;
     white-space: break-spaces;
     width: max-content;
     max-width: 100%;
     background: rgba(0, 0, 0, 0.8);
+    margin: 0;
 }
 
 .ass_renderer_element span {
