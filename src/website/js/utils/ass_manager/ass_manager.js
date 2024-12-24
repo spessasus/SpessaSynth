@@ -271,6 +271,10 @@ export class AssManager
                 sectionContents.push(content);
             }
         }
+        if (isSection)
+        {
+            this.subData.push(new SubSection(sectionName, sectionContents));
+        }
         
         // find the resolution
         const scriptInfo = this._getSection("[Script Info]", true);
