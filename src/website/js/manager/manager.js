@@ -290,14 +290,19 @@ class Manager
         );
         
         // set up drop file handler
-        this.dropFileHandler = new DropFileHandler((data) =>
+        this.dropFileHandler = new DropFileHandler(data =>
         {
-            this.play([{ binary: data.buf, altName: data.name }]);
-            if (data.name.length > 20)
+            if (data.length === 0)
             {
-                data.name = data.name.substring(0, 21) + "...";
+                return;
             }
-            document.getElementById("file_upload").textContent = data.name;
+            this.play(data);
+            let firstName = data[0].altName;
+            if (firstName > 20)
+            {
+                firstName = firstName.substring(0, 21) + "...";
+            }
+            document.getElementById("file_upload").textContent = firstName;
         }, buf =>
         {
             this.reloadSf(buf);
