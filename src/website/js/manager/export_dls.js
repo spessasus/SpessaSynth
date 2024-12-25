@@ -1,5 +1,5 @@
 import { applySnapshotToMIDI } from "../../../spessasynth_lib/midi_parser/midi_editor.js";
-import { SpessaSynthGroup, SpessaSynthGroupEnd } from "../../../spessasynth_lib/utils/loggin.js";
+import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthWarn } from "../../../spessasynth_lib/utils/loggin.js";
 import { consoleColors } from "../../../spessasynth_lib/utils/other.js";
 import { trimSoundfont } from "../../../spessasynth_lib/soundfont/basic_soundfont/write_sf2/soundfont_trimmer.js";
 import { closeNotification, showNotification } from "../notification/notification.js";
@@ -56,9 +56,31 @@ export async function _exportDLS()
                     {
                         trimSoundfont(soundfont, mid);
                     }
-                    const binary = soundfont.writeDLS();
-                    const blob = new Blob([binary.buffer], { type: "audio/dls" });
-                    this.saveBlob(blob, `${soundfont.soundFontInfo["INAM"] || "unnamed"}.dls`);
+                    try
+                    {
+                        const binary = soundfont.writeDLS();
+                        const blob = new Blob([binary.buffer], { type: "audio/dls" });
+                        this.saveBlob(blob, `${soundfont.soundFontInfo["INAM"] || "unnamed"}.dls`);
+                    }
+                    catch (e)
+                    {
+                        SpessaSynthWarn(
+                            "Failed to export DLS: ",
+                            e
+                        );
+                        showNotification(
+                            this.localeManager.getLocaleString("locale.error"),
+                            [
+                                {
+                                    type: "text",
+                                    textContent: e,
+                                    attributes: {
+                                        "style": "font-weight: bold; color: red"
+                                    }
+                                }
+                            ]
+                        );
+                    }
                     SpessaSynthGroupEnd();
                 }
             }

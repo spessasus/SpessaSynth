@@ -39,16 +39,36 @@ const invalidGeneratorTypes = new Set([
  */
 export function writeArticulator(zone)
 {
-    /**
-     * @returns {number}
-     */
+    
+    
+    // envelope generators are limited to 40 seconds
+    // in timecents, this is 1200 * log2(10) = 6386
+    
+    for (let i = 0; i < zone.generators.length; i++)
+    {
+        const g = zone.generators[i];
+        if (
+            g.generatorType === generatorTypes.delayVolEnv ||
+            g.generatorType === generatorTypes.attackVolEnv ||
+            g.generatorType === generatorTypes.holdVolEnv ||
+            g.generatorType === generatorTypes.decayVolEnv ||
+            g.generatorType === generatorTypes.releaseVolEnv ||
+            g.generatorType === generatorTypes.delayModEnv ||
+            g.generatorType === generatorTypes.attackModEnv ||
+            g.generatorType === generatorTypes.holdModEnv ||
+            g.generatorType === generatorTypes.decayModEnv
+        )
+        {
+            zone.generators[i] = new Generator(g.generatorType, Math.min(g.generatorValue, 6386), false);
+        }
+    }
+    
     
     // read_articulation.js:
     // according to viena and another strange (with modulators) rendition of gm.dls in sf2,
     // it shall be divided by -128
     // and a strange correction needs to be applied to the real value:
     // real + (60 / 128) * scale
-    
     // we invert this here
     for (let i = 0; i < zone.generators.length; i++)
     {

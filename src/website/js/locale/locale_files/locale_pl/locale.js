@@ -35,6 +35,7 @@ export const localePolish = {
     
     yes: "Tak",
     no: "Nie",
+    error: "Błąd",
     
     demoSoundfontUploadButton: "Wgraj SoundFonta",
     demoGithubPage: "Strona projektu",

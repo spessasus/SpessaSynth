@@ -29,6 +29,7 @@ export const localeEnglish = {
     
     exportAudio: exportAudio,
     
+    error: "Error",
     yes: "Yes",
     no: "No",
     

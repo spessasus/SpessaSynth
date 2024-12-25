@@ -31,6 +31,7 @@ export const localeJapanese = {
     
     yes: "はい",
     no: "いいえ",
+    error: "エラー",
     
     
     demoSoundfontUploadButton: "サウンドフォントをアップロード",

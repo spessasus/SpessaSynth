@@ -31,6 +31,7 @@ export const localeFrench = {
     
     yes: "Oui",
     no: "Non",
+    error: "Erreur",
     
     
     demoSoundfontUploadButton: "Charger une banque de sons",

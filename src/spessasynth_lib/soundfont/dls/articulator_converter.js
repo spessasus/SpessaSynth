@@ -135,6 +135,16 @@ function getSF2GeneratorFromDLS(destination, amount)
             return generatorTypes.chorusEffectsSend;
         case DLSDestinations.reverbSend:
             return generatorTypes.reverbEffectsSend;
+        
+        // lfos
+        case DLSDestinations.modLfoFreq:
+            return generatorTypes.freqModLFO;
+        case DLSDestinations.modLfoDelay:
+            return generatorTypes.delayModLFO;
+        case DLSDestinations.vibLfoFreq:
+            return generatorTypes.freqVibLFO;
+        case DLSDestinations.vibLfoDelay:
+            return generatorTypes.delayVibLFO;
     }
 }
 

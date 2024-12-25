@@ -17,13 +17,13 @@ export const generatorTypes = {
     modEnvToFilterFc: 11,               // filter modulation - modulation envelope lowpass filter cutoff in cents
     endAddrsCoarseOffset: 12,           // ample control - moves sample end point in 32768 increments
     modLfoToVolume: 13,                 // modulation lfo - volume (tremolo), where 100 = 10dB
-    unused1: 14,
+    unused1: 14,                        // unused
     chorusEffectsSend: 15,              // effect send - how much is sent to chorus 0 - 1000
     reverbEffectsSend: 16,              // effect send - how much is sent to reverb 0 - 1000
     pan: 17,                            // panning - where -500 = left, 0 = center, 500 = right
-    unused2: 18,
-    unused3: 19,
-    unused4: 20,
+    unused2: 18,                        // unused
+    unused3: 19,                        // unused
+    unused4: 20,                        // unused
     delayModLFO: 21,                    // mod lfo - delay for mod lfo to start from zero (weird scale)
     freqModLFO: 22,                     // mod lfo - frequency of mod lfo, 0 = 8.176Hz, unit: f => 1200log2(f/8.176)
     delayVibLFO: 23,                    // vib lfo - delay for vibrato lfo to start from zero (weird scale)
@@ -45,24 +45,24 @@ export const generatorTypes = {
     keyNumToVolEnvHold: 39,             // vol env - key number to volume envelope hold
     keyNumToVolEnvDecay: 40,            // vol env - key number to volume envelope decay
     instrument: 41,                     // zone - instrument index to use for preset zone
-    reserved1: 42,
+    reserved1: 42,                      // reserved
     keyRange: 43,                       // zone - key range for which preset / instrument zone is active
     velRange: 44,                       // zone - velocity range for which preset / instrument zone is active
     startloopAddrsCoarseOffset: 45,     // sample control - moves sample loop start point in 32768 increments
     keyNum: 46,                         // zone - instrument only: always use this midi number (ignore what's pressed)
     velocity: 47,                       // zone - instrument only: always use this velocity (ignore what's pressed)
     initialAttenuation: 48,             // zone - allows turning down the volume, 10 = -1dB
-    reserved2: 49,
+    reserved2: 49,                      // reserved
     endloopAddrsCoarseOffset: 50,       // sample control - moves sample loop end point in 32768 increments
     coarseTune: 51,                     // tune - pitch offset in semitones
     fineTune: 52,                       // tune - pitch offset in cents
     sampleID: 53,                       // sample - instrument zone only: which sample to use
     sampleModes: 54,                    // sample - 0 = no loop, 1 = loop, 2 = reserved, 3 = loop and play till end in release phase
-    reserved3: 55,
+    reserved3: 55,                      // reserved
     scaleTuning: 56,                    // sample - the degree to which MIDI key number influences pitch, 100 = default
     exclusiveClass: 57,                 // sample - = cut = choke group
     overridingRootKey: 58,              // sample - can override the sample's original pitch
-    unused5: 59,
+    unused5: 59,                        // unused
     endOper: 60                         // end marker
 };
 /**
