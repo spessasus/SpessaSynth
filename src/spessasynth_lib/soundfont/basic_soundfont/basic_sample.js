@@ -9,14 +9,14 @@ export class BasicSample
 {
     /**
      * The basic representation of a soundfont sample
-     * @param sampleName {string}
-     * @param sampleRate {number}
-     * @param samplePitch {number}
-     * @param samplePitchCorrection {number}
-     * @param sampleLink {number}
-     * @param sampleType {number}
-     * @param loopStart {number} relative to sample start
-     * @param loopEnd {number} relative to sample start
+     * @param sampleName {string} The sample's name
+     * @param sampleRate {number} The sample's rate in Hz
+     * @param samplePitch {number} The sample's pitch as a MIDI note number
+     * @param samplePitchCorrection {number} The sample's pitch correction in cents
+     * @param sampleLink {number} The sample's link, currently unused
+     * @param sampleType {number} The sample's type, an enum
+     * @param loopStart {number} The sample's loop start relative to the sample start in sample points
+     * @param loopEnd {number} The sample's loop end relative to the sample start in sample points
      */
     constructor(
         sampleName,
@@ -134,7 +134,8 @@ export class BasicSample
             SpessaSynthWarn(`Failed to compress ${this.sampleName}. Leaving as uncompressed!`);
             this.isCompressed = false;
             this.compressedData = undefined;
-            this.sampleType &= -17;
+            // flag as uncompressed
+            this.sampleType &= 0xEF;
         }
         
     }

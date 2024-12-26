@@ -72,7 +72,7 @@ export class LoadedSample extends BasicSample
     
     /**
      * Get raw data, whether it's compressed or not as we simply write it to the file
-     * @return {Uint8Array}
+     * @return {Uint8Array} either s16 or vorbis data
      */
     getRawData()
     {
@@ -90,7 +90,8 @@ export class LoadedSample extends BasicSample
         {
             if (!this.isDataRaw)
             {
-                throw new Error("Writing SF2Pack samples is not supported.");
+                // encode the f32 into s16 manually
+                super.getRawData();
             }
             const dataStartIndex = smplArr.currentIndex;
             return smplArr.slice(dataStartIndex + this.sampleStartIndex, dataStartIndex + this.sampleEndIndex);
@@ -123,7 +124,9 @@ export class LoadedSample extends BasicSample
         }
         catch (e)
         {
-            throw new Error(`Ogg Vorbis decode error: ${e}`);
+            // do not error out, fill with silence
+            SpessaSynthWarn(`Error decoding sample ${this.sampleName}: ${e}`);
+            this.sampleData = new Float32Array(this.sampleLoopEndIndex + 1);
         }
     }
     

@@ -24,11 +24,14 @@ export function getSDTA(smplStartOffsets, smplEndOffsets, compress, quality, vor
         }
         const r = s.getRawData();
         SpessaSynthInfo(
-            `%cEncoded sample %c${i}. ${s.sampleName}%c of %c${this.samples.length}`,
+            `%cEncoded sample %c${i}. ${s.sampleName}%c of %c${this.samples.length}%c. Compressed: %c${s.isCompressed}%c.`,
             consoleColors.info,
             consoleColors.recognized,
             consoleColors.info,
-            consoleColors.recognized
+            consoleColors.recognized,
+            consoleColors.info,
+            s.isCompressed ? consoleColors.recognized : consoleColors.unrecognized,
+            consoleColors.info
         );
         return r;
     });
