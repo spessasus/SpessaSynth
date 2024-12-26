@@ -75,24 +75,38 @@ function getDrumChange(channel, ticks)
 }
 
 /**
- * Allows easy editing of the file
- * @param midi {BasicMIDI}
- * @param desiredProgramChanges {{
- *     channel: number,
- *     program: number,
- *     bank: number,
- *     isDrum: boolean
- * }[]} the programs to set on given channels. Note that the channel may be more than 16, function will adjust midi ports automatically
- * @param desiredControllerChanges {{
- *     channel: number,
- *     controllerNumber: number,
- *     controllerValue: number,
- * }[]} the controllers to set on given channels. Note that the channel may be more than 16, function will adjust midi ports automatically
- * @param desiredChannelsToClear {number[]} the channels to remove from the sequence. Note that the channel may be more than 16, function will adjust midi ports automatically
- * @param desiredChannelsToTranspose {{
- *     channel: number,
- *     keyShift: number
- * }[]} the channels to transpose. if keyShift is float, rpn fine tuning will be applied as well. Note that the channel may be more than 16, function will adjust midi ports automatically
+ * @typedef {Object} DesiredProgramChange
+ * @property {number} channel - The channel number.
+ * @property {number} program - The program number.
+ * @property {number} bank - The bank number.
+ * @property {boolean} isDrum - Indicates if the channel is a drum channel.
+ * If it is, then the bank number is ignored.
+ */
+
+/**
+ * @typedef {Object} DesiredControllerChange
+ * @property {number} channel - The channel number.
+ * @property {number} controllerNumber - The MIDI controller number.
+ * @property {number} controllerValue - The new controller value.
+ */
+
+/**
+ * @typedef {Object} DesiredChanneltranspose
+ * @property {number} channel - The channel number.
+ * @property {number} keyShift - The number of semitones to transpose.
+ * Note that this can use floating point numbers,
+ * which will be used to fine-tune the pitch in cents using RPN.
+ */
+
+/**
+ * Allows easy editing of the file by removing channels, changing programs,
+ * changing controllers and transposing channels. Note that this modifies the MIDI in-place.
+ *
+ * @param {BasicMIDI} midi - The MIDI file to modify.
+ * @param {DesiredProgramChange[]} desiredProgramChanges - The programs to set on given channels.
+ * @param {DesiredControllerChange[]} desiredControllerChanges - The controllers to set on given channels.
+ * @param {number[]} desiredChannelsToClear - The channels to remove from the sequence.
+ * @param {DesiredChanneltranspose[]} desiredChannelsToTranspose - The channels to transpose.
  */
 export function modifyMIDI(
     midi,

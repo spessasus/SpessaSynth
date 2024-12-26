@@ -15,6 +15,7 @@ import { writeLittleEndian } from "../utils/byte_functions/little_endian.js";
 export const RMIDINFOChunks = {
     name: "INAM",
     album: "IPRD",
+    album2: "IALB",
     artist: "IART",
     genre: "IGNR",
     picture: "IPIC",
@@ -371,7 +372,7 @@ export function writeRMIDI(
      */
     const infoContent = [getStringBytes("INFO")];
     const encoder = new TextEncoder();
-    // software
+    // software (SpessaSynth)
     infoContent.push(
         writeRIFFOddSize(RMIDINFOChunks.software, encoder.encode("SpessaSynth"), true)
     );
@@ -430,9 +431,13 @@ export function writeRMIDI(
     // album
     if (metadata.album !== undefined)
     {
+        // note that there are two album chunks: IPRD and IALB
         encoding = FORCED_ENCODING;
         infoContent.push(
             writeRIFFOddSize(RMIDINFOChunks.album, encoder.encode(metadata.album), true)
+        );
+        infoContent.push(
+            writeRIFFOddSize(RMIDINFOChunks.album2, encoder.encode(metadata.album), true)
         );
     }
     // artist
