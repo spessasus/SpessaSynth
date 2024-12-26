@@ -403,7 +403,7 @@ export class DialogueEvent
         // StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle,
         // Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
         // font color
-        this.element.style.color = this.styleData["PrimaryColour"];
+        this.element.style.color = this.secondaryColor;
         this.element.style.zIndex = (this.layer + 99999).toString();
         // font family and size
         const fontFamily = `${this.styleData["Fontname"]}, "${embeddedFontName}", sans-serif`;
