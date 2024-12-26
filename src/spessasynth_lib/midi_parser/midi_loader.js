@@ -17,6 +17,11 @@ const GS_TEXT_HEADER = new Uint8Array([0x41, 0x10, 0x45, 0x12, 0x10, 0x00, 0x00]
  * midi_loader.js
  * purpose: parses a midi file for the seqyencer, including things like marker or CC 2/4 loop detection, copyright detection etc.
  */
+
+/**
+ * The MIDI class is a MIDI file parser that reads a MIDI file and extracts all the necessary information from it.
+ * Supported formats are .mid and .rmi files.
+ */
 class MIDI extends BasicMIDI
 {
     /**

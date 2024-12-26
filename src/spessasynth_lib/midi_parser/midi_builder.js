@@ -3,6 +3,9 @@ import { messageTypes, MidiMessage } from "./midi_message.js";
 import { IndexedByteArray } from "../utils/indexed_array.js";
 import { SpessaSynthWarn } from "../utils/loggin.js";
 
+/**
+ * A class that helps to build a MIDI file from scratch.
+ */
 export class MIDIBuilder extends BasicMIDI
 {
     /**
