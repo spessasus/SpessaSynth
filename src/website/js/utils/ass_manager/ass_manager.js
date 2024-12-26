@@ -237,7 +237,7 @@ export class AssManager
         let sectionContents = [];
         for (const line of lines)
         {
-            if (line.startsWith("["))
+            if (line.startsWith("[") && !isSection)
             {
                 sectionName = line;
                 isSection = true;
