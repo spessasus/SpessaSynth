@@ -488,7 +488,7 @@ class MidiKeyboard
             return;
         }
         pressedColors.splice(colorIndex, 1);
-        key.style.background = pressedColors[pressedColors.length - 1];
+        key.style.background = pressedColors[pressedColors.length - 1] || "";
         if (this.mode === "dark")
         {
             key.style.boxShadow = `0px 0px ${GLOW_PX}px ${pressedColors[pressedColors.length - 1]}`;
