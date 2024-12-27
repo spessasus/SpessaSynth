@@ -5,6 +5,9 @@
  */
 import { SpessaSynthWarn } from "../../utils/loggin.js";
 
+// should be reasonable for most cases
+const RESAMPLE_RATE = 48000;
+
 export class BasicSample
 {
     /**
@@ -110,6 +113,23 @@ export class BasicSample
         return uint8;
     }
     
+    resampleData(newSampleRate)
+    {
+        let audioData = this.getAudioData();
+        const ratio = newSampleRate / this.sampleRate;
+        const resampled = new Float32Array(Math.floor(audioData.length * ratio));
+        for (let i = 0; i < resampled.length; i++)
+        {
+            resampled[i] = audioData[Math.floor(i * (1 / ratio))];
+        }
+        audioData = resampled;
+        this.sampleRate = newSampleRate;
+        // adjust loop points
+        this.sampleLoopStartIndex = Math.floor(this.sampleLoopStartIndex * ratio);
+        this.sampleLoopEndIndex = Math.floor(this.sampleLoopEndIndex * ratio);
+        this.sampleData = audioData;
+    }
+    
     /**
      * @param quality {number}
      * @param encodeVorbis {EncodeVorbisFunction}
@@ -124,7 +144,14 @@ export class BasicSample
         // compress, always mono!
         try
         {
-            this.compressedData = encodeVorbis([this.getAudioData()], 1, this.sampleRate, quality);
+            // if the sample rate is too low or too high, resample
+            let audioData = this.getAudioData();
+            if (this.sampleRate < 8000 || this.sampleRate > 96000)
+            {
+                this.resampleData(RESAMPLE_RATE);
+                audioData = this.getAudioData();
+            }
+            this.compressedData = encodeVorbis([audioData], 1, this.sampleRate, quality);
             // flag as compressed
             this.sampleType |= 0x10;
             this.isCompressed = true;
