@@ -219,7 +219,6 @@ class WorkletSequencer
             for (let c = 0; c < MIDI_CHANNEL_COUNT; c++)
             {
                 this.sendMIDICC(c, midiControllers.allNotesOff, 0);
-                this.sendMIDICC(c, midiControllers.allSoundOff, 0);
             }
         }
     }

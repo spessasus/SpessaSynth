@@ -72,7 +72,7 @@ export function killNote(channel, midiNote)
 }
 
 /**
- * stops all notes
+ * stops all notes on a given channel
  * @param channel {number}
  * @param force {boolean}
  * @this {SpessaSynthProcessor}
