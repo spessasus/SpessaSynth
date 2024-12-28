@@ -155,20 +155,6 @@ export function dataEntryCoarse(channel, dataValue)
                     }
                     break;
                 
-                // drum key tuning
-                case 0x18:
-                    // fine is the key number and data value is the semitone change
-                    const semitones = dataValue - 64;
-                    channelObject.keyCentTuning[channelObject.NRPFine] = semitones * 100;
-                    SpessaSynthInfo(
-                        `%cGS drum key tuning. MIDI note: %c${channelObject.NRPFine}%c semitones: %c${semitones}`,
-                        consoleColors.info,
-                        consoleColors.recognized,
-                        consoleColors.info,
-                        consoleColors.value
-                    );
-                    break;
-                
                 // drum reverb
                 case 0x1D:
                     const reverb = dataValue;
