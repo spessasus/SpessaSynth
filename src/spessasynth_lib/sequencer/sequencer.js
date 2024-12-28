@@ -61,8 +61,10 @@ export class Sequencer
     onSongChange = {};
     /**
      * Fires on text event
+     * @type {function}
      * @param data {Uint8Array} the data text
      * @param type {number} the status byte of the message (the meta status byte)
+     * @param lyricsIndex {number} if the text is a lyric, the index of the lyric in midiData.lyrics, otherwise -1
      */
     onTextEvent;
     /**
@@ -419,13 +421,9 @@ export class Sequencer
                 break;
             
             case WorkletSequencerReturnMessageType.textEvent:
-                /**
-                 * @type {[Uint8Array, number]}
-                 */
-                let textEventData = messageData;
                 if (this.onTextEvent)
                 {
-                    this.onTextEvent(textEventData[0], textEventData[1]);
+                    this.onTextEvent(...(messageData));
                 }
                 break;
             

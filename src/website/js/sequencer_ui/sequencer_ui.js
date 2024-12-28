@@ -42,10 +42,12 @@ class SequencerUI
         this.decoder = new TextDecoder(this.encoding);
         this.infoDecoder = new TextDecoder(this.encoding);
         this.hasInfoDecoding = false;
-        // the currently displayed (highlighted) lyrics text
-        this.text = "";
+        /**
+         * the currently displayed (highlighted) lyrics event index
+         * @type {number}
+         */
+        this.lyricsIndex = 0;
         this.requiresTextUpdate = false;
-        this.rawLyrics = [];
         /**
          * @type {{type: messageTypes, data: Uint8Array}[]}
          */
@@ -54,10 +56,14 @@ class SequencerUI
         this.locale = locale;
         this.currentSongTitle = "";
         /**
-         * @type {Uint8Array}
+         * @type {Uint8Array[]}
          */
-        this.currentLyrics = new Uint8Array(0);
-        this.currentLyricsString = "";
+        this.currentLyrics = [];
+        /**
+         * Current lyrics decoded as strings
+         * @type {string[]}
+         */
+        this.currentLyricsString = [];
         this.musicModeUI = musicMode;
         this.renderer = renderer;
     }
@@ -136,20 +142,15 @@ class SequencerUI
     
     /**
      * @param text {ArrayBuffer}
-     * @param useInfoEncoding {boolean}
      * @returns {string}
      */
-    decodeTextFix(text, useInfoEncoding = false)
+    decodeTextFix(text)
     {
         let encodingIndex = 0;
         while (true)
         {
             try
             {
-                if (useInfoEncoding)
-                {
-                
-                }
                 return this.decoder.decode(text);
             }
             catch (e)
@@ -173,9 +174,8 @@ class SequencerUI
         this.createNavigatorHandler();
         this.updateTitleAndMediaStatus();
         
-        this.seq.onTextEvent = (data, type) =>
+        this.seq.onTextEvent = (data, type, lyricsIndex) =>
         {
-            const text = this.decodeTextFix(data.buffer);
             switch (type)
             {
                 default:
@@ -193,17 +193,13 @@ class SequencerUI
                     return;
                 
                 case messageTypes.lyric:
-                    this.text += text;
-                    this.rawLyrics.push(...data);
-                    this.setLyricsText(this.text);
+                    this.setLyricsText(lyricsIndex);
                     break;
             }
         };
         
         this.seq.addOnTimeChangeEvent(() =>
         {
-            this.text = "";
-            this.rawLyrics = [];
             this.seqPlay(false);
         }, "sequi-time-change");
         
@@ -271,10 +267,14 @@ class SequencerUI
             this.infoDecoder = new TextDecoder(encoding);
         }
         this.updateOtherTextEvents();
-        this.text = this.decodeTextFix(new Uint8Array(this.rawLyrics).buffer);
+        // update all spans with the new encoding
+        this.lyricsElement.text.separateLyrics.forEach((span, index) =>
+        {
+            span.innerText = this.decodeTextFix(this.currentLyrics[index].buffer);
+        });
         this.lyricsElement.selector.value = encoding;
         this.updateTitleAndMediaStatus(false);
-        this.setLyricsText(this.text);
+        this.setLyricsText(this.lyricsIndex);
     }
     
     createControls()
@@ -493,6 +493,61 @@ class SequencerUI
     setSliderInterval()
     {
         setInterval(this._updateInterval.bind(this), 100);
+    }
+    
+    loadLyricData()
+    {
+        // load lyrics
+        this.currentLyrics = this.seq.midiData.lyrics;
+        this.currentLyricsString = this.currentLyrics.map(l => this.decodeTextFix(l.buffer));
+        if (this.currentLyrics.length === 0)
+        {
+            this.currentLyricsString = [this.locale.getLocaleString("locale.sequencerController.lyrics.noLyrics")];
+        }
+        else
+        {
+            // perform a check for double lyrics:
+            // for example in some midi's, every lyric event is duplicated:
+            // "He's " turns into two "He's " and another "He's " event
+            // if that's the case for all events in the current lyrics, set duplicates to "" to avoid index errors
+            let isDoubleLyrics = true;
+            // note: the first lyrics is usually a control character
+            for (let i = 1; i < this.currentLyricsString.length - 1; i += 2)
+            {
+                const first = this.currentLyricsString[i];
+                const second = this.currentLyricsString[i + 1];
+                // note: newline should be skipped
+                if (first.trim() === "" || second.trim() === "")
+                {
+                    i -= 1;
+                    continue;
+                }
+                if (first.trim() !== second.trim())
+                {
+                    isDoubleLyrics = false;
+                    break;
+                }
+            }
+            if (isDoubleLyrics)
+            {
+                this.currentLyricsString = this.currentLyricsString.map((_, i) => (i % 2 === 0 ? "" : this.currentLyricsString[i]));
+            }
+            
+        }
+        // create lyrics as separate spans
+        // clear previous lyrics
+        this.lyricsElement.text.main.innerHTML = "";
+        this.lyricsElement.text.separateLyrics = [];
+        for (const lyric of this.currentLyricsString)
+        {
+            const span = document.createElement("span");
+            span.innerText = lyric;
+            // gray (not highlighted) text
+            span.classList.add("lyrics_text_gray");
+            this.lyricsElement.text.main.appendChild(span);
+            this.lyricsElement.text.separateLyrics.push(span);
+        }
+        
     }
 }
 

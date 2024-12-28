@@ -117,7 +117,18 @@ export function _processEvent(event, trackIndex)
         case messageTypes.cuePoint:
         case messageTypes.instrumentName:
         case messageTypes.programName:
-            this.post(WorkletSequencerReturnMessageType.textEvent, [event.messageData, statusByteData.status]);
+            let lyricsIndex = -1;
+            if (statusByteData.status === messageTypes.lyric)
+            {
+                lyricsIndex = Math.min(
+                    this.midiData.lyrics.indexOf(event.messageData) + 1,
+                    this.midiData.lyrics.length - 1
+                );
+            }
+            this.post(
+                WorkletSequencerReturnMessageType.textEvent,
+                [event.messageData, statusByteData.status, lyricsIndex]
+            );
             break;
         
         case messageTypes.midiPort:

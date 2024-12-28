@@ -2,8 +2,6 @@ import { supportedEncodings } from "../utils/encodings.js";
 import { messageTypes } from "../../../spessasynth_lib/midi_parser/midi_message.js";
 import { AssManager } from "../utils/ass_manager/ass_manager.js";
 
-const ACTUAL_FONT_SIZE = parseFloat(getComputedStyle(document.body).fontSize);
-
 /**
  * @this {SequencerUI}
  */
@@ -17,9 +15,8 @@ export function createLyrics()
      *     title: HTMLHeadingElement,
      *     text: {
      *         main: HTMLParagraphElement
-     *         highlight: HTMLSpanElement,
-     *         gray: HTMLSpanElement,
-     *         other: HTMLDivElement
+     *         other: HTMLDivElement,
+     *         separateLyrics: HTMLSpanElement[]
      *     },
      *     selector: HTMLSelectElement
      * }}
@@ -61,14 +58,6 @@ export function createLyrics()
     const text = document.createElement("p");
     text.classList.add("lyrics_text");
     mainLyricsDiv.appendChild(text);
-    
-    const currentLyrics = document.createElement("span");
-    currentLyrics.classList.add("lyrics_text_highlight");
-    text.appendChild(currentLyrics);
-    
-    const allLyrics = document.createElement("span");
-    allLyrics.classList.add("lyrics_text_gray");
-    text.appendChild(allLyrics);
     
     // display for other texts
     const otherTextWrapper = document.createElement("details");
@@ -113,11 +102,10 @@ export function createLyrics()
     
     
     this.lyricsElement.text = {
-        highlight: currentLyrics,
-        gray: allLyrics,
         main: text,
         other: otherText,
-        subtitleButton: subtitleUpload
+        subtitleButton: subtitleUpload,
+        separateLyrics: []
     };
     this.lyricsElement.mainDiv = mainLyricsDiv;
     this.lyricsElement.selector = encodingSelector;
@@ -127,15 +115,27 @@ export function createLyrics()
 
 /**
  * @this {SequencerUI}
+ * @param {number} index
  */
-export function setLyricsText(text)
+export function setLyricsText(index)
 {
-    
-    const highlight = this.lyricsElement.text.highlight;
-    const gray = this.lyricsElement.text.gray;
-    gray.innerText = this.currentLyricsString.replace(text, "");
-    highlight.innerText = text;
-    this.lyricsElement.text.main.scrollTo(0, highlight.offsetHeight - (ACTUAL_FONT_SIZE * 5));
+    this.lyricsIndex = index;
+    for (let i = 0; i < index; i++)
+    {
+        this.lyricsElement.text.separateLyrics[i].classList.remove("lyrics_text_gray");
+        this.lyricsElement.text.separateLyrics[i].classList.add("lyrics_text_highlight");
+    }
+    for (let i = index; i < this.lyricsElement.text.separateLyrics.length; i++)
+    {
+        this.lyricsElement.text.separateLyrics[i].classList.remove("lyrics_text_highlight");
+        this.lyricsElement.text.separateLyrics[i].classList.add("lyrics_text_gray");
+    }
+    // scroll to the last element
+    this.lyricsElement.text.separateLyrics[index].scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "center"
+    });
 }
 
 /**

@@ -76,18 +76,7 @@ export function updateTitleAndMediaStatus(cleanOtherTextEvents = true)
     }
     if (this.seq.midiData)
     {
-        // combine lyrics into one binary array
-        const lyricsArray = this.seq.midiData.lyrics;
-        this.currentLyrics = new Uint8Array(lyricsArray.reduce((sum, cur) => sum + cur.length, 0));
-        let offset = 0;
-        for (const lyr of lyricsArray)
-        {
-            this.currentLyrics.set(lyr, offset);
-            offset += lyr.length;
-        }
-        this.currentLyricsString = this.decodeTextFix(this.currentLyrics.buffer) || this.locale.getLocaleString(
-            "locale.sequencerController.lyrics.noLyrics");
-        this.setLyricsText("");
+        this.loadLyricData();
         if (cleanOtherTextEvents)
         {
             this.rawOtherTextEvents = [];
