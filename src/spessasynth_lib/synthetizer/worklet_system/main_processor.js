@@ -46,7 +46,7 @@ import {
     setEmbeddedSoundFont,
     setPreset
 } from "./worklet_methods/program_control.js";
-import { applySynthesizerSnapshot, sendSynthesizerSnapshot } from "./worklet_methods/snapshot.js";
+import { applySynthesizerSnapshot, sendSynthesizerSnapshot } from "./snapshot/snapshot.js";
 import { WorkletSoundfontManager } from "./worklet_methods/worklet_soundfont_manager/worklet_soundfont_manager.js";
 import { interpolationTypes } from "./worklet_utilities/wavetable_oscillator.js";
 import { WorkletKeyModifierManager } from "./worklet_methods/worklet_key_modifier.js";
