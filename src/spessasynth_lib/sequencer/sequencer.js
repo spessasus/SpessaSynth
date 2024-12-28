@@ -306,7 +306,6 @@ export class Sequencer
     addOnSongChangeEvent(callback, id)
     {
         this.onSongChange[id] = callback;
-        callback(this.midiData);
     }
     
     /**
