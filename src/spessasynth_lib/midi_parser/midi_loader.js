@@ -339,6 +339,7 @@ class MIDI extends BasicMIDI
                 {
                     case -2:
                         // since this is a meta message
+                        const eventText = readBytesAsString(eventData, eventData.length);
                         switch (statusByte)
                         {
                             case messageTypes.setTempo:
@@ -351,7 +352,7 @@ class MIDI extends BasicMIDI
                             
                             case messageTypes.marker:
                                 // check for loop markers
-                                const text = readBytesAsString(eventData, eventData.length).trim().toLowerCase();
+                                const text = eventText.trim().toLowerCase();
                                 switch (text)
                                 {
                                     default:
@@ -391,18 +392,38 @@ class MIDI extends BasicMIDI
                                 break;
                             
                             case messageTypes.lyric:
-                                // add lyrics
-                                this.lyrics.push(eventData);
-                                this.lyricsTicks.push(totalTicks);
-                                break;
+                                
+                                // note here: .kar files sometimes just use...
+                                // lyrics instead of text because why not (of course)
+                                // perform the same check for @KMIDI KARAOKE FILE
+                                if (eventText.trim() === "@KMIDI KARAOKE FILE")
+                                {
+                                    this.isKaraokeFile = true;
+                                    SpessaSynthInfo("%cKaraoke MIDI detected!", consoleColors.recognized);
+                                }
+                                
+                                if (this.isKaraokeFile)
+                                {
+                                    // replace the type of the message with text
+                                    message.messageStatusByte = messageTypes.text;
+                                    statusByte = messageTypes.text;
+                                }
+                                else
+                                {
+                                    // add lyrics like a regular midi file
+                                    this.lyrics.push(eventData);
+                                    this.lyricsTicks.push(totalTicks);
+                                    break;
+                                }
                             
+                            // kar: treat the same as text
+                            // fallthrough
                             case messageTypes.text:
                                 // possibly Soft Karaoke MIDI file
                                 // it has a text event at the start of the file
                                 // "@KMIDI KARAOKE FILE"
-                                const eventText = readBytesAsString(eventData, eventData.length, undefined, false)
-                                    .trim();
-                                if (eventText === "@KMIDI KARAOKE FILE")
+                                const checkedText = eventText.trim();
+                                if (checkedText === "@KMIDI KARAOKE FILE")
                                 {
                                     this.isKaraokeFile = true;
                                     
@@ -412,11 +433,11 @@ class MIDI extends BasicMIDI
                                 {
                                     // check for @T (title)
                                     // or @A because it is a title too sometimes??? idk it's weird
-                                    if (eventText.startsWith("@T") || eventText.startsWith("@A"))
+                                    if (checkedText.startsWith("@T") || checkedText.startsWith("@A"))
                                     {
                                         if (!karaokeHasTitle)
                                         {
-                                            this.midiName = eventText.substring(2).trim();
+                                            this.midiName = checkedText.substring(2).trim();
                                             karaokeHasTitle = true;
                                             nameDetected = true;
                                             // encode to rawMidiName
@@ -425,10 +446,10 @@ class MIDI extends BasicMIDI
                                         else
                                         {
                                             // append to copyright
-                                            this.copyright += eventText.substring(2).trim() + " \n";
+                                            this.copyright += checkedText.substring(2).trim() + " \n";
                                         }
                                     }
-                                    else if (eventText[0] !== "@")
+                                    else if (checkedText[0] !== "@")
                                     {
                                         // non @: the lyrics
                                         this.lyrics.push(sanitizeKarLyrics(eventData));
@@ -663,6 +684,38 @@ class MIDI extends BasicMIDI
                 consoleColors.recognized
             );
         }
+        
+        // lyrics fix:
+        // sometimes, all lyrics events lack spaces at the start or end of the lyric
+        // then, and only then, add space at the end of each lyric
+        // space ASCII is 32
+        let lacksSpaces = true;
+        for (const lyric of this.lyrics)
+        {
+            if (lyric[0] === 32 || lyric[lyric.length - 1] === 32)
+            {
+                lacksSpaces = false;
+                break;
+            }
+        }
+        
+        if (lacksSpaces)
+        {
+            this.lyrics = this.lyrics.map(lyric =>
+            {
+                // one exception: hyphens at the end. Don't add a space to them
+                if (lyric[lyric.length - 1] === 45)
+                {
+                    return lyric;
+                }
+                const withSpaces = new Uint8Array(lyric.length + 1);
+                withSpaces.set(lyric, 0);
+                withSpaces[lyric.length] = 32;
+                return withSpaces;
+            });
+        }
+        
+        
         // reverse the tempo changes
         this.tempoChanges.reverse();
         
