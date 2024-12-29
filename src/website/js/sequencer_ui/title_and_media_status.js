@@ -77,6 +77,7 @@ export function updateTitleAndMediaStatus(cleanOtherTextEvents = true)
     if (this.seq.midiData)
     {
         this.loadLyricData();
+        this.setLyricsText(this.lyricsIndex);
         if (cleanOtherTextEvents)
         {
             this.rawOtherTextEvents = [];
