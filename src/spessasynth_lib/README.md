@@ -82,6 +82,7 @@ document.getElementById("button").onclick = async () =>
   - **Easy MIDI editing:** Use [helper functions](https://github.com/spessasus/SpessaSynth/wiki/Writing-MIDI-Files#modifymidi) to modify the song to your needs!
   - **Loop detection:** Automatically detects loops in MIDIs (e.g., from _Touhou Project_)
   - **First note detection:** Skip unnecessary silence at the start by jumping to the first note!
+  - **Lyrics support:** Both regular MIDI and .kar files!
   - **[Write MIDI files from scratch](https://github.com/spessasus/SpessaSynth/wiki/Creating-MIDI-Files)**
   - **Easy saving:** Save with just [one function!](https://github.com/spessasus/SpessaSynth/wiki/Writing-MIDI-Files#writemidifile)
 
@@ -121,7 +122,6 @@ document.getElementById("button").onclick = async () =>
   - **Cue points:** *Write MIDI loop points as cue points!*
   - **Loop multiple times:** *Render two (or more) loops into the file for seamless transitions!*
   - *That's right, saving as WAV is also [just one function!](https://github.com/spessasus/SpessaSynth/wiki/Writing-Wave-Files#audiobuffertowav)*
-
 
 # License
 
