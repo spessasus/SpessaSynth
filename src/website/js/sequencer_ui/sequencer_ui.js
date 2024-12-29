@@ -271,6 +271,10 @@ class SequencerUI
         // update all spans with the new encoding
         this.lyricsElement.text.separateLyrics.forEach((span, index) =>
         {
+            if (this.currentLyrics[index] === undefined)
+            {
+                return;
+            }
             span.innerText = this.decodeTextFix(this.currentLyrics[index].buffer);
         });
         this.lyricsElement.selector.value = encoding;

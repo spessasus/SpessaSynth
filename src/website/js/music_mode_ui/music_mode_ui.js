@@ -24,7 +24,7 @@ export class MusicModeUI
         this.mainDiv.innerHTML = `
         <div id='player_info_background_image'></div>
         <div class='player_info_wrapper'>
-            <div class="player_info_note_icon">
+            <div class='player_info_note_icon'>
                 ${getDoubleNoteSvg("100%")}
                 <img src='' alt='' style='display: none'>
             </div>
@@ -104,7 +104,7 @@ export class MusicModeUI
         this.seq.addOnSongChangeEvent(mid =>
         {
             // use file name if no copyright detected
-            const midcopy = mid.copyright.replaceAll("\n", "");
+            const midcopy = mid.copyright;
             /**
              * @param id {string}
              * @param text {string}
@@ -113,6 +113,22 @@ export class MusicModeUI
             const setInfoText = (id, text, enableMarquee = true) =>
             {
                 const el = document.getElementById(id);
+                // if new lines, split up into multiple spans and only then apply marquee
+                const lines = text.trim().split("\n");
+                if (lines.length > 1)
+                {
+                    el.innerHTML = "";
+                    for (const line of lines)
+                    {
+                        const textWrap = document.createElement("span");
+                        textWrap.textContent = line;
+                        el.appendChild(textWrap);
+                        el.appendChild(document.createElement("br"));
+                    }
+                    el.removeChild(el.lastChild);
+                    return;
+                }
+                
                 if (text.length > 0)
                 {
                     el.parentElement.classList.remove("hidden");

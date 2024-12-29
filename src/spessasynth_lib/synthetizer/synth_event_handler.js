@@ -4,62 +4,70 @@
  */
 
 /**
- *
- * @typedef {{
- *     midiNote: number,
- *     channel: number,
- *     velocity: number
- * }} NoteOnCallback
- *
- * @typedef {{
- *     midiNote: number,
- *     channel: number
- * }} NoteOffCallback
- *
- * @typedef {{
- *     channel: number,
- *     isDrumChannel: boolean
- * }} DrumChangeCallback
- *
- * @typedef {{
- *     channel: number,
- *     program: number,
- *     bank: number,
- *     userCalled: boolean
- * }} ProgramChangeCallback
- *
- * @typedef {{
- *     channel: number,
- *     controllerNumber: number,
- *     controllerValue: number
- * }} ControllerChangeCallback
- *
- * @typedef {{
- *     channel:number,
- *     isMuted: boolean
- * }} MuteChannelCallback
- *
- * @typedef {{
- *     presetName: string,
- *     bank: number,
- *     program: number
- * }[]} PresetListChangeCallback
- *
- *
- * @typedef {{
- *     channel: number,
- *     MSB: number,
- *     LSB: number
- * }} PitchWheelCallback
- *
- * @typedef {{
- *     channel: number,
- *     pressure: number
- * }} ChannelPressureCallback
- *
- * @typedef {string} SoundfontErrorCallback
- *
- *
+ * @typedef {Object} NoteOnCallback
+ * @property {number} midiNote - The MIDI note number.
+ * @property {number} channel - The MIDI channel number.
+ * @property {number} velocity - The velocity of the note.
+ */
+
+/**
+ * @typedef {Object} NoteOffCallback
+ * @property {number} midiNote - The MIDI note number.
+ * @property {number} channel - The MIDI channel number.
+ */
+
+/**
+ * @typedef {Object} DrumChangeCallback
+ * @property {number} channel - The MIDI channel number.
+ * @property {boolean} isDrumChannel - Indicates if the channel is a drum channel.
+ */
+
+/**
+ * @typedef {Object} ProgramChangeCallback
+ * @property {number} channel - The MIDI channel number.
+ * @property {number} program - The program number.
+ * @property {number} bank - The bank number.
+ * @property {boolean} userCalled - Indicates if the change was user-initiated.
+ */
+
+/**
+ * @typedef {Object} ControllerChangeCallback
+ * @property {number} channel - The MIDI channel number.
+ * @property {number} controllerNumber - The controller number.
+ * @property {number} controllerValue - The value of the controller.
+ */
+
+/**
+ * @typedef {Object} MuteChannelCallback
+ * @property {number} channel - The MIDI channel number.
+ * @property {boolean} isMuted - Indicates if the channel is muted.
+ */
+
+/**
+ * @typedef {Object} PresetListChangeCallback
+ * @property {string} presetName - The name of the preset.
+ * @property {number} bank - The bank number.
+ * @property {number} program - The program number.
+ */
+
+/**
+ * @typedef {Object} PitchWheelCallback
+ * @property {number} channel - The MIDI channel number.
+ * @property {number} MSB - The most significant byte of the pitch wheel value.
+ * @property {number} LSB - The least significant byte of the pitch wheel value.
+ */
+
+/**
+ * @typedef {Object} ChannelPressureCallback
+ * @property {number} channel - The MIDI channel number.
+ * @property {number} pressure - The pressure value.
+ */
+
+/**
+ * @typedef {string} SoundfontErrorCallback - The error message for soundfont errors.
+ */
+
+/**
  * @typedef {
  *     NoteOnCallback |
  *     NoteOffCallback |

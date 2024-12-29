@@ -43,6 +43,12 @@ class MIDI extends BasicMIDI
         
         let DLSRMID = false;
         
+        /**
+         * Will be joined with "\n" to form the final string
+         * @type {string[]}
+         */
+        let copyrightComponents = [];
+        
         const initialString = readBytesAsString(binaryData, 4);
         binaryData.currentIndex -= 4;
         if (initialString === "RIFF")
@@ -102,6 +108,7 @@ class MIDI extends BasicMIDI
                         }
                         if (this.RMIDInfo["ICOP"])
                         {
+                            // special case, overwrites the copyright components array
                             copyrightDetected = true;
                             this.copyright = readBytesAsString(
                                 this.RMIDInfo["ICOP"],
@@ -241,6 +248,8 @@ class MIDI extends BasicMIDI
                 SpessaSynthGroupEnd();
                 throw new SyntaxError(`Invalid track header! Expected "MTrk" got "${trackChunk.type}"`);
             }
+            
+            let trackHasVoiceMessages = false;
             
             /**
              * MIDI running byte
@@ -382,12 +391,14 @@ class MIDI extends BasicMIDI
                             case messageTypes.copyright:
                                 if (!copyrightDetected)
                                 {
-                                    this.copyright += readBytesAsString(
+                                    
+                                    eventData.currentIndex = 0;
+                                    copyrightComponents.push(readBytesAsString(
                                         eventData,
                                         eventData.length,
                                         undefined,
                                         false
-                                    ) + "\n";
+                                    ));
                                 }
                                 break;
                             
@@ -446,7 +457,7 @@ class MIDI extends BasicMIDI
                                         else
                                         {
                                             // append to copyright
-                                            this.copyright += checkedText.substring(2).trim() + " \n";
+                                            copyrightComponents.push(checkedText.substring(2).trim());
                                         }
                                     }
                                     else if (checkedText[0] !== "@")
@@ -470,8 +481,9 @@ class MIDI extends BasicMIDI
                              * @type {IndexedByteArray}
                              */
                             const cutText = eventData.slice(7, messageData.length - 3);
+                            cutText.currentIndex = 0;
                             const decoded = readBytesAsString(cutText, cutText.length) + "\n";
-                            this.copyright += decoded;
+                            copyrightComponents.push(decoded);
                             SpessaSynthInfo(
                                 `%cDecoded Roland SC message! %c${decoded}`,
                                 consoleColors.recognized,
@@ -484,6 +496,7 @@ class MIDI extends BasicMIDI
                     default:
                         // since this is a voice message
                         // check for loop (CC 2/4)
+                        trackHasVoiceMessages = true;
                         if ((statusByte & 0xF0) === messageTypes.controllerChange)
                         {
                             switch (eventData[0])
@@ -522,6 +535,20 @@ class MIDI extends BasicMIDI
             }
             this.tracks.push(track);
             this.usedChannelsOnTrack.push(usedChannels);
+            
+            // if the track has no voice messages, its "track name" event (if it has any)
+            // is some metadata. Add it to copyright
+            if (!trackHasVoiceMessages)
+            {
+                const trackName = track.find(e => e.messageStatusByte === messageTypes.trackName);
+                if (trackName)
+                {
+                    trackName.messageData.currentIndex = 0;
+                    const name = readBytesAsString(trackName.messageData, trackName.messageData.length);
+                    copyrightComponents.push(name);
+                }
+            }
+            
             SpessaSynthInfo(
                 `%cParsed %c${this.tracks.length}%c / %c${this.tracksAmount}`,
                 consoleColors.info,
@@ -641,6 +668,7 @@ class MIDI extends BasicMIDI
                     if (name)
                     {
                         this.rawMidiName = name.messageData;
+                        name.messageData.currentIndex = 0;
                         this.midiName = readBytesAsString(name.messageData, name.messageData.length, undefined, false);
                     }
                 }
@@ -652,9 +680,15 @@ class MIDI extends BasicMIDI
                 if (name)
                 {
                     this.rawMidiName = name.messageData;
+                    name.messageData.currentIndex = 0;
                     this.midiName = readBytesAsString(name.messageData, name.messageData.length, undefined, false);
                 }
             }
+        }
+        
+        if (!copyrightDetected)
+        {
+            this.copyright = copyrightComponents.filter(c => c.length > 0).join("\n") || "";
         }
         
         this.fileName = fileName;
