@@ -48,6 +48,7 @@
 
 #player_info_detail {
     white-space: preserve;
+    text-align: start;
 }
 
 .player_info_detail_element {

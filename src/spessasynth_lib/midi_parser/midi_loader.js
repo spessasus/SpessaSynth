@@ -688,7 +688,13 @@ class MIDI extends BasicMIDI
         
         if (!copyrightDetected)
         {
-            this.copyright = copyrightComponents.filter(c => c.length > 0).join("\n") || "";
+            this.copyright = copyrightComponents
+                // trim and group newlines into one
+                .map(c => c.trim().replace(/(\r?\n)+/g, "\n"))
+                // remove empty strings
+                .filter(c => c.length > 0)
+                // join with newlines
+                .join("\n") || "";
         }
         
         this.fileName = fileName;

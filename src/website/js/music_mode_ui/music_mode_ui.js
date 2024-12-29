@@ -117,6 +117,7 @@ export class MusicModeUI
                 const lines = text.trim().split("\n");
                 if (lines.length > 1)
                 {
+                    el.parentElement.classList.remove("hidden");
                     el.innerHTML = "";
                     for (const line of lines)
                     {
