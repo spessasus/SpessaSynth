@@ -39,6 +39,17 @@ input[type="file"] {
     display: none;
 }
 
+#title.sysex_display {
+    font-family: monospace;
+    font-style: normal !important;
+}
+
+#title.xg_sysex_display {
+    max-width: 16ch !important;
+    word-break: break-all;
+    white-space: pre-wrap !important;
+}
+
 #title {
     user-select: text;
     position: relative;
@@ -48,6 +59,7 @@ input[type="file"] {
     line-height: 100%;
     font-weight: normal;
     text-shadow: 0 0 5px var(--font-color);
+    font-size: 2rem;
 }
 
 #progress_bar {

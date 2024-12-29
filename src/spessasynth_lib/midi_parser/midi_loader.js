@@ -10,9 +10,6 @@ import { readLittleEndian } from "../utils/byte_functions/little_endian.js";
 import { RMIDINFOChunks } from "./rmidi_writer.js";
 import { BasicMIDI, MIDIticksToSeconds } from "./basic_midi.js";
 
-
-const GS_TEXT_HEADER = new Uint8Array([0x41, 0x10, 0x45, 0x12, 0x10, 0x00, 0x00]);
-
 /**
  * midi_loader.js
  * purpose: parses a midi file for the seqyencer, including things like marker or CC 2/4 loop detection, copyright detection etc.
@@ -472,24 +469,7 @@ class MIDI extends BasicMIDI
                         break;
                     
                     case -3:
-                        // since this is a sysex message
-                        // check for embedded copyright (roland SC display sysex) http://www.bandtrax.com.au/sysex.htm
-                        // header goes like this: 41 10 45 12 10 00 00
-                        if (eventData.slice(0, 7).every((n, i) => GS_TEXT_HEADER[i] === n))
-                        {
-                            /**
-                             * @type {IndexedByteArray}
-                             */
-                            const cutText = eventData.slice(7, messageData.length - 3);
-                            cutText.currentIndex = 0;
-                            const decoded = readBytesAsString(cutText, cutText.length) + "\n";
-                            copyrightComponents.push(decoded);
-                            SpessaSynthInfo(
-                                `%cDecoded Roland SC message! %c${decoded}`,
-                                consoleColors.recognized,
-                                consoleColors.value
-                            );
-                        }
+                        // since this is a sysex message, do nothing
                         break;
                     
                     

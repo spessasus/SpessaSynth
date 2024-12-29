@@ -83,7 +83,14 @@ export function updateTitleAndMediaStatus(cleanOtherTextEvents = true)
             this.rawOtherTextEvents = [];
         }
     }
-    document.getElementById("title").innerText = this.currentSongTitle;
+    if (this.synthDisplayMode.enabled === false)
+    {
+        this.mainTitleMessageDisplay.innerText = this.currentSongTitle;
+    }
+    else
+    {
+        this.mainTitleMessageDisplay.innerText = this.decodeTextFix(this.synthDisplayMode.currentEncodedText.buffer);
+    }
     document.title = this.currentSongTitle + " - SpessaSynth";
     this.musicModeUI.setTitle(this.currentSongTitle);
     

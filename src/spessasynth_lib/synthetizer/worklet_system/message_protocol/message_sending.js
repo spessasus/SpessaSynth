@@ -6,7 +6,7 @@ import { NON_CC_INDEX_OFFSET } from "../worklet_utilities/controller_tables.js";
 /**
  * Calls synth event from the worklet side
  * @param eventName {EventTypes} the event name
- * @param eventData {any}
+ * @param eventData {EventCallbackData}
  * @this {SpessaSynthProcessor}
  */
 export function callEvent(eventName, eventData)

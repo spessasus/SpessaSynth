@@ -44,10 +44,20 @@
  */
 
 /**
- * @typedef {Object} PresetListChangeCallback
+ * @typedef {Object} PresetListChangeCallbackSingle
  * @property {string} presetName - The name of the preset.
  * @property {number} bank - The bank number.
  * @property {number} program - The program number.
+ */
+
+/**
+ * @typedef {PresetListChangeCallbackSingle[]} PresetListChangeCallback - A list of preset objects.
+ */
+
+/**
+ * @typedef {Object} SynthDisplayCallback
+ * @property {Uint8Array} displayData - The data to display.
+ * @property {SynthDisplayType} displayType - The type of display.
  */
 
 /**
@@ -64,7 +74,7 @@
  */
 
 /**
- * @typedef {string} SoundfontErrorCallback - The error message for soundfont errors.
+ * @typedef {Error} SoundfontErrorCallback - The error message for soundfont errors.
  */
 
 /**
@@ -79,6 +89,7 @@
  *     PitchWheelCallback |
  *     SoundfontErrorCallback |
  *     ChannelPressureCallback |
+ *     SynthDisplayCallback |
  *     undefined
  * } EventCallbackData
  */
@@ -98,7 +109,8 @@
  * "mutechannel"|
  * "presetlistchange"|
  * "allcontrollerreset"|
- * "soundfonterror"} EventTypes
+ * "soundfonterror"|
+ * "synthdisplay"} EventTypes
  */
 export class EventHandler
 {
@@ -112,20 +124,21 @@ export class EventHandler
          * @type {Object<EventTypes, Object<string, function(EventCallbackData)>>}
          */
         this.events = {
-            "noteoff": {},
-            "noteon": {},
-            "pitchwheel": {},
-            "controllerchange": {},
-            "programchange": {},
-            "channelpressure": {},
-            "polypressure": {},
-            "drumchange": {},
-            "stopall": {},
-            "newchannel": {},
-            "mutechannel": {},
-            "presetlistchange": {},
-            "allcontrollerreset": {},
-            "soundfonterror": {}
+            "noteoff": {},              // called on note off message
+            "noteon": {},               // called on note on message
+            "pitchwheel": {},           // called on pitch wheel change
+            "controllerchange": {},     // called on controller change
+            "programchange": {},        // called on program change
+            "channelpressure": {},      // called on channel pressure message
+            "polypressure": {},         // called on poly pressure message
+            "drumchange": {},           // called when channel type changes
+            "stopall": {},              // called when synth receives stop all command
+            "newchannel": {},           // called when a new channel is created
+            "mutechannel": {},          // called when a channel is muted/unmuted
+            "presetlistchange": {},     // called when the preset list changes (soundfont gets reloaded)
+            "allcontrollerreset": {},   // called when all controllers are reset
+            "soundfonterror": {},       // called when a soundfont parsing error occurs
+            "synthdisplay": {}          // called when there's a SysEx message to display some text
         };
         
         /**

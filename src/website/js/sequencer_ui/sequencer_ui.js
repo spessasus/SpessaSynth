@@ -66,6 +66,12 @@ class SequencerUI
         this.currentLyricsString = [];
         this.musicModeUI = musicMode;
         this.renderer = renderer;
+        
+        this.mainTitleMessageDisplay = document.getElementById("title");
+        this.synthDisplayMode = {
+            enabled: false,
+            currentEncodedText: new Uint8Array(0)
+        };
     }
     
     toggleDarkMode()
@@ -205,6 +211,7 @@ class SequencerUI
         
         this.seq.addOnSongChangeEvent(data =>
         {
+            this.synthDisplayMode.enabled = false;
             this.lyricsIndex = 0;
             this.createNavigatorHandler();
             this.updateTitleAndMediaStatus();
@@ -218,6 +225,7 @@ class SequencerUI
                     this.iconDisabledColor
                 );
             }
+            this.restoreDisplay();
             
             // use encoding suggested by the rmidi if available
             this.hasInfoDecoding = this.seq.midiData.RMIDInfo?.[RMIDINFOChunks.encoding] !== undefined;
@@ -257,6 +265,84 @@ class SequencerUI
             }
             // otherwise we're already dark
         }
+        
+        // set up synth display event
+        let displayTimeoutId = null;
+        this.seq.synth.eventHandler.addEvent("synthdisplay", "sequi-synth-display", data =>
+        {
+            if (data.displayType === 0 || data.displayType === 1)
+            {
+                // clear styles and apply monospace
+                this.mainTitleMessageDisplay.classList.add("sysex_display");
+                this.mainTitleMessageDisplay.classList.remove("xg_sysex_display");
+                let textData = data.displayData;
+                // remove "Display Letters" byte before decoding
+                if (data.displayType === 1)
+                {
+                    textData = textData.slice(1);
+                }
+                let text = this.decodeTextFix(textData.buffer);
+                // XG is type 1, apply some fixes to it.
+                // first of all, extract the "Display Letters" byte
+                if (data.displayType === 1)
+                {
+                    const displayLetters = data.displayData[0];
+                    
+                    // if type is 0x06, set css white-space to pre-wrap
+                    // max width to 10ch
+                    // 0x0c where c are the amount of spaces prepended
+                    const spaces = displayLetters & 0x0F;
+                    for (let i = 0; i < spaces; i++)
+                    {
+                        text = " " + text;
+                    }
+                    
+                    // if type is 0x1x, add a newline
+                    if ((displayLetters & 0x10) > 1)
+                    {
+                        console.log("newline");
+                        text = "\n" + text;
+                    }
+                    
+                    // since this is XG data, apply the XG display style
+                    this.mainTitleMessageDisplay.classList.add("xg_sysex_display");
+                }
+                
+                
+                if (text.trim().length === 0)
+                {
+                    this.mainTitleMessageDisplay.innerText = "‎ ";
+                }
+                else
+                {
+                    // set the display to an invisible character to keep the height
+                    this.mainTitleMessageDisplay.innerText = text;
+                }
+                
+                this.synthDisplayMode.enabled = true;
+                this.synthDisplayMode.currentEncodedText = textData;
+                if (displayTimeoutId !== null)
+                {
+                    clearTimeout(displayTimeoutId);
+                }
+                displayTimeoutId = setTimeout(() =>
+                {
+                    this.synthDisplayMode.enabled = false;
+                    this.restoreDisplay();
+                }, 5000);
+                
+            }
+        });
+    }
+    
+    /**
+     * Restores the display to the current song title and removes the SysEx display styles
+     */
+    restoreDisplay()
+    {
+        this.mainTitleMessageDisplay.innerText = this.currentSongTitle;
+        this.mainTitleMessageDisplay.classList.remove("sysex_display");
+        this.mainTitleMessageDisplay.classList.remove("xg_sysex_display");
     }
     
     changeEncoding(encoding)

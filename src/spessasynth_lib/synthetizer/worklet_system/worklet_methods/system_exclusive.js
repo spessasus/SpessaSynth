@@ -36,6 +36,16 @@ function getTuning(byte1, byte2, byte3)
     return { midiNote: midiNote, centTuning: fraction * 0.0061 };
 }
 
+/**
+ * The text types for the synth display
+ * @enum {number}
+ */
+export const SynthDisplayType = {
+    SoundCanvasText: 0,
+    XGText: 1,
+    SoundCanvasDotDisplay: 2
+};
+
 
 /**
  * Executes a system exclusive
@@ -471,6 +481,56 @@ export function systemExclusive(messageData, channelOffset = 0)
                 notRecognized();
                 return;
             }
+            else if (messageData[2] === 0x45 && messageData[3] === 0x12)
+            {
+                // 0x45: GS Display Data, 0x12: DT1 (Device Transmit)
+                // check for embedded copyright
+                // (roland SC display sysex) http://www.bandtrax.com.au/sysex.htm
+                
+                if (
+                    messageData[4] === 0x10 && // Sound Canvas Display
+                    messageData[6] === 0x00    // Data follows
+                )
+                {
+                    if (messageData[5] === 0x00) // Display letters
+                    {
+                        // get the text
+                        // and header ends with (checksum) F7
+                        const text = new Uint8Array(messageData.slice(7, messageData.length - 2));
+                        this.callEvent(
+                            "synthdisplay",
+                            {
+                                displayData: text,
+                                displayType: SynthDisplayType.SoundCanvasText
+                            }
+                        );
+                    }
+                    else if (messageData[5] === 0x01) // Matrix display
+                    {
+                        // get the data
+                        // and header ends with (checksum) F7
+                        const dotMatrixData = new Uint8Array(messageData.slice(7, messageData.length - 3));
+                        this.callEvent(
+                            "synthdisplay",
+                            {
+                                displayData: dotMatrixData,
+                                displayType: SynthDisplayType.SoundCanvasDotDisplay
+                            }
+                        );
+                        SpessaSynthInfo(
+                            `%cRoland SC Display Dot Matrix via: %c${arrayToHexString(
+                                messageData)}`,
+                            consoleColors.info,
+                            consoleColors.value
+                        );
+                    }
+                    else
+                    {
+                        // this is some other GS sysex...
+                        notRecognized();
+                    }
+                }
+            }
             else if (messageData[2] === 0x16 && messageData[3] === 0x12 && messageData[4] === 0x10)
             {
                 // this is a roland master volume message
@@ -495,6 +555,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                 );
                 return;
             }
+            break;
         
         // yamaha
         // http://www.studio4all.de/htmle/main91.html
@@ -614,6 +675,22 @@ export function systemExclusive(messageData, channelOffset = 0)
                                 consoleColors.unrecognized
                             );
                     }
+                }
+                else if (
+                    messageData[3] === 0x06 && // XG System parameter
+                    messageData[4] === 0x00    // System Byte
+                )
+                {
+                    // displayed letters (remove F7 at the end)
+                    // include byte 5 as it seems to be line information (useful)
+                    const textData = new Uint8Array(messageData.slice(5, messageData.length - 1));
+                    this.callEvent(
+                        "synthdisplay",
+                        {
+                            displayData: textData,
+                            displayType: SynthDisplayType.XGText
+                        }
+                    );
                 }
                 else if (this.system === "xg")
                 {
