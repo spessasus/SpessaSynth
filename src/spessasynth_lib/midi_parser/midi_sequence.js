@@ -45,6 +45,12 @@ export class MIDISequenceData
     lyrics = [];
     
     /**
+     * An array of tick positions where lyrics events occur in the sequence.
+     * @type {number[]}
+     */
+    lyricsTicks = [];
+    
+    /**
      * The tick position of the first note-on event in the MIDI sequence.
      * @type {number}
      */
@@ -130,4 +136,11 @@ export class MIDISequenceData
      * @type {number}
      */
     bankOffset = 0;
+    
+    /**
+     * If the MIDI file is a Soft Karaoke file (.kar), this flag is set to true.
+     * https://www.mixagesoftware.com/en/midikit/help/HTML/karaoke_formats.html
+     * @type {boolean}
+     */
+    isKaraokeFile = false;
 }

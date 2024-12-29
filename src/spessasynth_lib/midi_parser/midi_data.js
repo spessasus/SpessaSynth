@@ -28,6 +28,7 @@ export class MidiData extends MIDISequenceData
         this.copyright = midi.copyright;
         this.tracksAmount = midi.tracksAmount;
         this.lyrics = midi.lyrics;
+        this.lyricsTicks = midi.lyricsTicks;
         this.firstNoteOn = midi.firstNoteOn;
         this.keyRange = midi.keyRange;
         this.lastVoiceEventTick = midi.lastVoiceEventTick;
@@ -42,6 +43,7 @@ export class MidiData extends MIDISequenceData
         this.format = midi.format;
         this.RMIDInfo = midi.RMIDInfo;
         this.bankOffset = midi.bankOffset;
+        this.isKaraokeFile = midi.isKaraokeFile;
         
         // Set isEmbedded based on the presence of an embeddedSoundFont
         this.isEmbedded = midi.embeddedSoundFont !== undefined;

@@ -121,7 +121,7 @@ export function setLyricsText(index)
 {
     // if there are no lyrics, there's one element:
     // ["No lyrics available"]
-    if (this.currentLyricsString.length < 2)
+    if (this.currentLyricsString.length < 2 || index < 0 || index > this.currentLyricsString.length)
     {
         return;
     }
@@ -131,17 +131,20 @@ export function setLyricsText(index)
         this.lyricsElement.text.separateLyrics[i].classList.remove("lyrics_text_gray");
         this.lyricsElement.text.separateLyrics[i].classList.add("lyrics_text_highlight");
     }
-    for (let i = index; i < this.lyricsElement.text.separateLyrics.length; i++)
+    if (index < this.currentLyricsString.length)
     {
-        this.lyricsElement.text.separateLyrics[i].classList.remove("lyrics_text_highlight");
-        this.lyricsElement.text.separateLyrics[i].classList.add("lyrics_text_gray");
+        for (let i = index; i < this.lyricsElement.text.separateLyrics.length; i++)
+        {
+            this.lyricsElement.text.separateLyrics[i].classList.remove("lyrics_text_highlight");
+            this.lyricsElement.text.separateLyrics[i].classList.add("lyrics_text_gray");
+        }
+        // scroll to the last element
+        this.lyricsElement.text.separateLyrics[index].scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+            inline: "center"
+        });
     }
-    // scroll to the last element
-    this.lyricsElement.text.separateLyrics[index].scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-        inline: "center"
-    });
 }
 
 /**

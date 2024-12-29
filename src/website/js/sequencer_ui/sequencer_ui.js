@@ -205,6 +205,7 @@ class SequencerUI
         
         this.seq.addOnSongChangeEvent(data =>
         {
+            this.lyricsIndex = 0;
             this.createNavigatorHandler();
             this.updateTitleAndMediaStatus();
             this.seqPlay(false);
