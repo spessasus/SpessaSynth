@@ -1,11 +1,11 @@
 import { dataBytesAmount, getChannel, messageTypes, MidiMessage } from "./midi_message.js";
 import { IndexedByteArray } from "../utils/indexed_array.js";
-import { consoleColors, formatTitle } from "../utils/other.js";
+import { consoleColors, formatTitle, sanitizeKarLyrics } from "../utils/other.js";
 import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo, SpessaSynthWarn } from "../utils/loggin.js";
 import { readRIFFChunk } from "../soundfont/basic_soundfont/riff_chunk.js";
 import { readVariableLengthQuantity } from "../utils/byte_functions/variable_length_quantity.js";
 import { readBytesAsUintBigEndian } from "../utils/byte_functions/big_endian.js";
-import { readBytesAsString } from "../utils/byte_functions/string.js";
+import { getStringBytes, readBytesAsString } from "../utils/byte_functions/string.js";
 import { readLittleEndian } from "../utils/byte_functions/little_endian.js";
 import { RMIDINFOChunks } from "./rmidi_writer.js";
 import { BasicMIDI, MIDIticksToSeconds } from "./basic_midi.js";
@@ -192,6 +192,13 @@ class MIDI extends BasicMIDI
         
         let loopStart = null;
         let loopEnd = null;
+        
+        /**
+         * For karaoke files, text events starting with @T are considered titles
+         * usually the first one is the title, and the latter are things such as "sequenced by" etc.
+         * @type {boolean}
+         */
+        let karaokeHasTitle = false;
         
         this.lastVoiceEventTick = 0;
         
@@ -384,7 +391,51 @@ class MIDI extends BasicMIDI
                                 break;
                             
                             case messageTypes.lyric:
+                                // add lyrics
                                 this.lyrics.push(eventData);
+                                this.lyricsTicks.push(totalTicks);
+                                break;
+                            
+                            case messageTypes.text:
+                                // possibly Soft Karaoke MIDI file
+                                // it has a text event at the start of the file
+                                // "@KMIDI KARAOKE FILE"
+                                const eventText = readBytesAsString(eventData, eventData.length, undefined, false)
+                                    .trim();
+                                if (eventText === "@KMIDI KARAOKE FILE")
+                                {
+                                    this.isKaraokeFile = true;
+                                    
+                                    SpessaSynthInfo("%cKaraoke MIDI detected!", consoleColors.recognized);
+                                }
+                                else if (this.isKaraokeFile)
+                                {
+                                    // check for @T (title)
+                                    // or @A because it is a title too sometimes??? idk it's weird
+                                    if (eventText.startsWith("@T") || eventText.startsWith("@A"))
+                                    {
+                                        if (!karaokeHasTitle)
+                                        {
+                                            this.midiName = eventText.substring(2).trim();
+                                            karaokeHasTitle = true;
+                                            nameDetected = true;
+                                            // encode to rawMidiName
+                                            this.rawMidiName = getStringBytes(this.midiName);
+                                        }
+                                        else
+                                        {
+                                            // append to copyright
+                                            this.copyright += eventText.substring(2).trim() + " \n";
+                                        }
+                                    }
+                                    else if (eventText[0] !== "@")
+                                    {
+                                        // non @: the lyrics
+                                        this.lyrics.push(sanitizeKarLyrics(eventData));
+                                        this.lyricsTicks.push(totalTicks);
+                                    }
+                                }
+                                break;
                         }
                         break;
                     

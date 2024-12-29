@@ -45,10 +45,12 @@ export class BasicMIDI extends MIDISequenceData
         m.loop = { ...mid.loop }; // Deep copy of loop
         m.format = mid.format;
         m.bankOffset = mid.bankOffset;
+        m.isKaraokeFile = mid.isKaraokeFile;
         
         // Copying arrays
         m.tempoChanges = [...mid.tempoChanges]; // Shallow copy
         m.lyrics = mid.lyrics.map(arr => new Uint8Array(arr)); // Deep copy of each binary chunk
+        m.lyricsTicks = [...mid.lyricsTicks]; // Shallow copy
         m.midiPorts = [...mid.midiPorts]; // Shallow copy
         m.midiPortChannelOffsets = [...mid.midiPortChannelOffsets]; // Shallow copy
         m.usedChannelsOnTrack = mid.usedChannelsOnTrack.map(set => new Set(set)); // Deep copy
