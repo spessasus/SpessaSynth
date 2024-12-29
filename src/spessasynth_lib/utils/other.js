@@ -29,8 +29,10 @@ export function formatTitle(fileName)
     return fileName
         .trim()
         .replaceAll(".mid", "")
+        .replaceAll(".kar", "")
         .replaceAll(".rmi", "")
-        .replaceAll("_", " ");
+        .replaceAll("_", " ")
+        .trim();
 }
 
 /**

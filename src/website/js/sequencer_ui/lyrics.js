@@ -119,6 +119,12 @@ export function createLyrics()
  */
 export function setLyricsText(index)
 {
+    // if there are no lyrics, there's one element:
+    // ["No lyrics available"]
+    if (this.currentLyricsString.length < 2)
+    {
+        return;
+    }
     this.lyricsIndex = index;
     for (let i = 0; i < index; i++)
     {
