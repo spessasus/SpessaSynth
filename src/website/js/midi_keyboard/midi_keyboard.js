@@ -488,10 +488,11 @@ class MidiKeyboard
             return;
         }
         pressedColors.splice(colorIndex, 1);
-        key.style.background = pressedColors[pressedColors.length - 1] || "";
-        if (this.mode === "dark")
+        const color = pressedColors[pressedColors.length - 1] || "";
+        key.style.background = color;
+        if (this.mode === "dark" && color !== "")
         {
-            key.style.boxShadow = `0px 0px ${GLOW_PX}px ${pressedColors[pressedColors.length - 1]}`;
+            key.style.boxShadow = `0px 0px ${GLOW_PX}px ${color}`;
         }
         if (pressedColors.length < 1)
         {
