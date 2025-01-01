@@ -47,6 +47,7 @@ input[type="file"] {
 #title.xg_sysex_display {
     max-width: 16ch !important;
     word-break: break-all;
+    text-align: start !important;
     white-space: pre-wrap !important;
 }
 
