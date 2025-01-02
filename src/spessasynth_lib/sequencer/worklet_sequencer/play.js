@@ -249,6 +249,21 @@ export function play(resetTime = false)
         return;
     }
     
+    if (this.chromePreloadQueueConfig.currentlyEnabled)
+    {
+        this.chromePreloadQueueConfig.playAfterFinish = true;
+        if (resetTime)
+        {
+            this.chromePreloadQueueConfig.targetTimeAfterFinish = 0;
+        }
+        else
+        {
+            this.chromePreloadQueueConfig.targetTimeAfterFinish = undefined;
+        }
+        this.setProcessHandler();
+        return;
+    }
+    
     // reset the time if necesarry
     if (resetTime)
     {
@@ -287,6 +302,14 @@ export function play(resetTime = false)
  */
 export function setTimeTicks(ticks)
 {
+    if (this.chromePreloadQueueConfig.currentlyEnabled)
+    {
+        this.chromePreloadQueueConfig.playAfterFinish = true;
+        // negative indicates MIDI ticks rather than seconds
+        this.chromePreloadQueueConfig.targetTimeAfterFinish = -ticks;
+        this.setProcessHandler();
+        return;
+    }
     this.stop();
     this.playingNotes = [];
     this.pausedTime = undefined;

@@ -23,7 +23,7 @@ import { CONTROLLER_TABLE_SIZE, CUSTOM_CONTROLLER_TABLE_SIZE, dataEntryStates } 
  * @property {boolean} lockPreset - indicates whether the program on the channel is locked
  * @property {boolean} presetUsesOverride - indcates if the channel uses a preset from the override soundfont.
  *
- * @property {boolean} lockGSNRPNParams - indicates whether the GS NRPN parameters are enabled
+ * @property {boolean} lockGSNRPNParams - indicates whether the GS NRPN parameters are currentlyEnabled
  * @property {Object} channelVibrato - vibrato settings for the channel
  * @property {number} channelVibrato.depth - depth of the vibrato effect (cents)
  * @property {number} channelVibrato.delay - delay before the vibrato effect starts (seconds)

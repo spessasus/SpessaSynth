@@ -83,21 +83,54 @@ export function loadNewSequence(parsedMidi, autoPlay = true)
         SpessaSynthGroupCollapsed("%cPreloading samples...", consoleColors.info);
         // smart preloading: load only samples used in the midi!
         const used = getUsedProgramsAndKeys(this.midiData, this.synth.soundfontManager);
-        for (const [programBank, combos] of Object.entries(used))
+        if (this.chromePreloadQueueConfig.systemEnabled)
         {
-            const bank = parseInt(programBank.split(":")[0]);
-            const program = parseInt(programBank.split(":")[1]);
-            const preset = this.synth.getPreset(bank, program);
-            SpessaSynthInfo(
-                `%cPreloading used samples on %c${preset.presetName}%c...`,
-                consoleColors.info,
-                consoleColors.recognized,
-                consoleColors.info
-            );
-            for (const combo of combos)
+            // reset and initialize the queue and config
+            this.chromePreloadQueue = new Set();
+            this.chromePreloadQueueConfig.currentlyEnabled = true;
+            this.chromePreloadQueueConfig.targetTimeAfterFinish = false;
+            this.chromePreloadQueueConfig.playAfterFinish = false;
+            for (const [programBank, combos] of Object.entries(used))
             {
-                const split = combo.split("-");
-                preset.preloadSpecific(parseInt(split[0]), parseInt(split[1]));
+                const [bank, program] = programBank.split(":").map(Number);
+                const preset = this.synth.getPreset(bank, program);
+                for (const combo of combos)
+                {
+                    const [key, velocity] = combo.split("-").map(Number);
+                    const samplesAndGenerators = preset.getSamplesAndGenerators(key, velocity);
+                    for (const samandgen of samplesAndGenerators)
+                    {
+                        if (!samandgen.sample.isSampleLoaded)
+                        {
+                            this.chromePreloadQueue.add(samandgen.sample);
+                        }
+                    }
+                }
+            }
+            this.chromePreloadQueueConfig.initialLength = this.chromePreloadQueue.size;
+            SpessaSynthInfo(
+                `%cSlow sample preloading mode enabled. Samples to preload: %c${this.chromePreloadQueue.size}`,
+                consoleColors.info,
+                consoleColors.recognized
+            );
+        }
+        else
+        {
+            for (const [programBank, combos] of Object.entries(used))
+            {
+                const [bank, program] = programBank.split(":").map(Number);
+                const preset = this.synth.getPreset(bank, program);
+                SpessaSynthInfo(
+                    `%cPreloading used samples on %c${preset.presetName}%c...`,
+                    consoleColors.info,
+                    consoleColors.recognized,
+                    consoleColors.info
+                );
+                for (const combo of combos)
+                {
+                    const split = combo.split("-");
+                    preset.preloadSpecific(parseInt(split[0]), parseInt(split[1]));
+                }
             }
         }
         SpessaSynthGroupEnd();

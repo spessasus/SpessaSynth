@@ -48,6 +48,31 @@ class WorkletSequencer
          */
         this.playedTime = 0;
         
+        
+        this.chromePreloadQueueConfig = {
+            currentlyEnabled: false, // if it is currently enabled (loading)
+            systemEnabled: true,    // if the chrome preload system is enabled
+            initialLength: 0,       // initial amount of samples to prelaod (for progress)
+            playAfterFinish: false, // if the sequencer should play after the preloading is finished
+            // undefined means no change, otherwise set
+            // positive: seconds
+            // negative: MIDI ticks
+            targetTimeAfterFinish: undefined
+        };
+        
+        /**
+         * If chrome preloading is currentlyEnabled, this will be the queue of samples that have to be preloaded.
+         * Note about preloading
+         * Chromium has a bug where if audioWorklet does not deliver frames in time,
+         * the audio thread will try to "catch up" to the lost time, resulting in a lot of audio glitches.
+         * For example, if the audioWorklet lagged the thread for one second,
+         * chromium will try to render that said one second as fast as possible.
+         * in song_control.js, the preloading is done in the loadNewSequence function, which loads all the samples for the song.
+         * For chrome we unfortunately have to space this loading out, so it does not freeze the audio thread.
+         * @type {Set<BasicSample>}
+         */
+        this.chromePreloadQueue = new Set();
+        
         /**
          * The (relative) time when the sequencer was paused. If it's not paused then it's undefined.
          * @type {number}

@@ -42,7 +42,7 @@ export function write(options = DEFAULT_WRITE_OPTIONS)
     {
         if (typeof options.compressionFunction !== "function")
         {
-            throw new TypeError("No compression function supplied but compression enabled.");
+            throw new TypeError("No compression function supplied but compression currentlyEnabled.");
         }
     }
     SpessaSynthGroupCollapsed(

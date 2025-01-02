@@ -247,7 +247,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
                 this.resetAllControllers();
             }
             
-            SpessaSynthInfo("%cRendering enabled! Starting render.", consoleColors.info);
+            SpessaSynthInfo("%cRendering currentlyEnabled! Starting render.", consoleColors.info);
             if (options.processorOptions.startRenderingData.parsedMIDI)
             {
                 if (options.processorOptions.startRenderingData?.loopCount !== undefined)
@@ -325,9 +325,11 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
         {
             return false;
         }
+        const sampleLen = outputs[0][0].length;
+        const elapsedSeconds = sampleLen / sampleRate;
         if (this.processTickCallback)
         {
-            this.processTickCallback();
+            this.processTickCallback(elapsedSeconds);
         }
         
         // for every channel
