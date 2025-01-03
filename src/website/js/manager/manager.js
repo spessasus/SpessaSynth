@@ -290,19 +290,30 @@ class Manager
         );
         
         // set up drop file handler
-        this.dropFileHandler = new DropFileHandler(data =>
+        this.dropFileHandler = new DropFileHandler(async data =>
         {
             if (data.length === 0)
             {
                 return;
             }
+            await this.context.resume();
             this.play(data);
             let firstName = data[0].altName;
             if (firstName > 20)
             {
                 firstName = firstName.substring(0, 21) + "...";
             }
+            // set file name
             document.getElementById("file_upload").textContent = firstName;
+            // show export button
+            const exportButton = document.getElementById("export_button");
+            exportButton.style.display = "flex";
+            exportButton.onclick = this.exportSong.bind(this);
+            // if demo website, hide demo songs button
+            if (!window.isLocalEdition)
+            {
+                document.getElementById("demo_song").style.display = "none";
+            }
         }, buf =>
         {
             this.reloadSf(buf);
@@ -315,6 +326,12 @@ class Manager
         // add keypresses
         document.addEventListener("keydown", e =>
         {
+            // check for control
+            if (e.ctrlKey)
+            {
+                // do not interrupt control shortcuts
+                return;
+            }
             switch (e.key.toLowerCase())
             {
                 case keybinds.cinematicMode:
