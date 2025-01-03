@@ -17,6 +17,7 @@
  *       max: number
  *     },
  *     noteFallingTimeMs: number,
+ *     noteAfterTriggerTimeMs: number,
  *     renderWaveforms: boolean,
  *     drawActiveNotes: boolean,
  *     stabilizeWaveforms: boolean,

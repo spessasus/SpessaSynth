@@ -363,6 +363,7 @@ class SpessaSynthSettings
         this.htmlControls = {
             renderer: {
                 noteTimeSlider: document.getElementById("note_time_slider"),
+                noteAfterTriggerTimeSlider: document.getElementById("note_after_time_slider"),
                 analyserToggler: document.getElementById("analyser_toggler"),
                 noteToggler: document.getElementById("note_toggler"),
                 activeNoteToggler: document.getElementById("active_note_toggler"),

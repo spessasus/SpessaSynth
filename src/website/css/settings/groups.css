@@ -11,6 +11,8 @@
     padding: 1em;
     background: var(--top-buttons-color);
     transition: 0.2s;
+    max-height: 50rem;
+    overflow-y: auto;
 }
 
 .settings_group:hover {

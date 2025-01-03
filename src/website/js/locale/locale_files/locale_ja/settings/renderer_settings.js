@@ -12,7 +12,7 @@ export const rendererSettingsLocale = {
     
     waveformSampleSize: {
         title: "波形のサンプルサイズ",
-        description: "波形の詳細度（注：高い値はパフォーマンスに影響を与える可能性があります）"
+        description: "波形の詳細度（注：高い値はパフォーマンスに影響を与える可能性があります） 高い値は、波形をオーディオと同期させるためにオーディオに遅延を追加します。"
     },
     
     waveformAmplifier: {

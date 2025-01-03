@@ -13,6 +13,10 @@ export const settingsHtml = `
         <label translate-path-title='locale.settings.rendererSettings.noteFallingTime'></label>
         <spessarange min='1' max='9999' value='1000' class='settings_slider' input_id='note_time_slider' units='ms'></spessarange>
         
+        <label translate-path-title='locale.settings.rendererSettings.noteAfterTriggerTime'></label>
+        <spessarange min='0' max='9999' value='0' class='settings_slider' input_id='note_after_time_slider' units='ms'></spessarange>
+        
+        
         <label translate-path-title='locale.settings.rendererSettings.waveformThickness'></label>
         <spessarange min='0' max='10' value='2' class='settings_slider' input_id='analyser_thickness_slider' units='px'></spessarange>
         
@@ -108,6 +112,8 @@ export const settingsHtml = `
         <select id='midi_output_selector'>
             <option value='-1' translate-path='locale.settings.midiSettings.midiOutput.disabled'></option>
         </select>
+        
+        <h4 class='hover_reminder' translate-path-title='locale.settings.midiSettings.reminder'></h4>
     </div>
     
     

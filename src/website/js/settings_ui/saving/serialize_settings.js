@@ -11,6 +11,7 @@ export function _serializeSettings()
     return {
         renderer: {
             noteFallingTimeMs: this.renderer.noteFallingTimeMs,
+            noteAfterTriggerTimeMs: this.renderer.noteAfterTriggerTimeMs,
             waveformThickness: this.renderer.lineThickness,
             sampleSize: this.renderer.normalAnalyserFft,
             amplifier: this.renderer.waveMultiplier,

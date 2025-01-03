@@ -16,7 +16,7 @@ export const rendererSettingsLocale = {
     
     waveformSampleSize: {
         title: "Tamanho da amostra da forma de onda",
-        description: "O quão detalhadas são as formas de onda (Nota: valores altos podem impactar o desempenho)"
+        description: "O quão detalhadas são as formas de onda (Nota: valores altos podem impactar o desempenho) Também observe que valores altos adicionarão um atraso ao áudio para sincronizar as formas de onda com o áudio."
     },
     
     waveformAmplifier: {

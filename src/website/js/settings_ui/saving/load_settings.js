@@ -25,19 +25,25 @@ export async function _loadSettings()
     const renderer = this.renderer;
     const rendererValues = savedSettings.renderer;
     // note falling time
-    renderer.noteFallingTimeMs = rendererValues.noteFallingTimeMs;
+    renderer.noteFallingTimeMs = rendererValues.noteFallingTimeMs ?? 1000;
     rendererControls.noteTimeSlider.value = rendererValues.noteFallingTimeMs;
     rendererControls.noteTimeSlider.dispatchEvent(new Event("input"));
     getSpan(rendererControls.noteTimeSlider).innerText = `${rendererValues.noteFallingTimeMs}ms`;
     
+    // note after trigger time
+    renderer.noteAfterTriggerTimeMs = rendererValues.noteAfterTriggerTimeMs ?? 0;
+    rendererControls.noteAfterTriggerTimeSlider.value = rendererValues.noteAfterTriggerTimeMs;
+    rendererControls.noteAfterTriggerTimeSlider.dispatchEvent(new Event("input"));
+    getSpan(rendererControls.noteAfterTriggerTimeSlider).innerText = `${rendererValues.noteAfterTriggerTimeMs}ms`;
+    
     // waveform line thickness
-    rendererControls.analyserThicknessSlider.value = rendererValues.waveformThickness;
+    rendererControls.analyserThicknessSlider.value = rendererValues.waveformThickness ?? 2;
     rendererControls.analyserThicknessSlider.dispatchEvent(new Event("input"));
     renderer.lineThickness = rendererValues.waveformThickness;
     getSpan(rendererControls.analyserThicknessSlider).innerText = `${rendererValues.waveformThickness}px`;
     
     // fft size (sample size)
-    let value = rendererValues.sampleSize;
+    let value = rendererValues.sampleSize ?? 10;
     // Math.pow(2, parseInt(rendererControls.analyserFftSlider.value)); we need to invert this
     rendererControls.analyserFftSlider.value = Math.log2(value);
     rendererControls.analyserFftSlider.dispatchEvent(new Event("input"));
@@ -48,34 +54,34 @@ export async function _loadSettings()
     getSpan(rendererControls.analyserFftSlider).innerText = `${value}`;
     
     // wave multiplier
-    renderer.waveMultiplier = rendererValues.amplifier;
+    renderer.waveMultiplier = rendererValues.amplifier ?? 2;
     rendererControls.waveMultiplierSlizer.value = rendererValues.amplifier;
     rendererControls.waveMultiplierSlizer.dispatchEvent(new Event("input"));
     getSpan(rendererControls.waveMultiplierSlizer).innerText = rendererValues.amplifier.toString();
     
     // render waveforms
     let controls = this.htmlControls.renderer;
-    renderer.renderAnalysers = rendererValues.renderWaveforms;
-    controls.analyserToggler.checked = rendererValues.renderWaveforms;
+    renderer.renderAnalysers = rendererValues.renderWaveforms ?? true;
+    controls.analyserToggler.checked = rendererValues.renderWaveforms ?? true;
     
     // render notes
-    renderer.renderNotes = rendererValues.renderNotes;
-    controls.noteToggler.checked = rendererValues.renderNotes;
+    renderer.renderNotes = rendererValues.renderNotes ?? true;
+    controls.noteToggler.checked = rendererValues.renderNotes ?? true;
     
     // render active notes effect
-    renderer.drawActiveNotes = rendererValues.drawActiveNotes;
-    controls.activeNoteToggler.checked = rendererValues.drawActiveNotes;
+    renderer.drawActiveNotes = rendererValues.drawActiveNotes ?? true;
+    controls.activeNoteToggler.checked = rendererValues.drawActiveNotes ?? true;
     
     // show visual pitch
-    renderer.showVisualPitch = rendererValues.showVisualPitch;
-    controls.visualPitchToggler.checked = rendererValues.showVisualPitch;
+    renderer.showVisualPitch = rendererValues.showVisualPitch ?? true;
+    controls.visualPitchToggler.checked = rendererValues.showVisualPitch ?? true;
     
     // stabilize waveforms
-    renderer.stabilizeWaveforms = rendererValues.stabilizeWaveforms;
-    controls.stabilizeWaveformsToggler.checked = rendererValues.stabilizeWaveforms;
+    renderer.stabilizeWaveforms = rendererValues.stabilizeWaveforms ?? true;
+    controls.stabilizeWaveformsToggler.checked = rendererValues.stabilizeWaveforms ?? true;
     
     // keyboard size
-    renderer.keyRange = rendererValues.keyRange;
+    renderer.keyRange = rendererValues.keyRange ?? { min: 0, max: 128 };
     
     // keyboard
     const keyboardControls = this.htmlControls.keyboard;
@@ -85,7 +91,7 @@ export async function _loadSettings()
     // removed selected channel because it's not something you want to save
     
     // keyboard size
-    keyboard.setKeyRange(keyboardValues.keyRange, false);
+    keyboard.setKeyRange(keyboardValues.keyRange ?? { min: 0, max: 128 }, false);
     // find the correct option for the size
     if (keyboardValues.autoRange)
     {

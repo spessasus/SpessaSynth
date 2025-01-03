@@ -21,6 +21,17 @@ export function _createRendererHandler(renderer)
         this._saveSettings();
     };
     
+    // note after trigger time
+    rendererControls.noteAfterTriggerTimeSlider.addEventListener("input", () =>
+    {
+        renderer.noteAfterTriggerTimeMs = rendererControls.noteAfterTriggerTimeSlider.value;
+        getSpan(rendererControls.noteAfterTriggerTimeSlider).innerText = `${rendererControls.noteAfterTriggerTimeSlider.value}ms`;
+    });
+    rendererControls.noteAfterTriggerTimeSlider.onchange = () =>
+    {
+        this._saveSettings();
+    };
+    
     // waveform line thickness
     rendererControls.analyserThicknessSlider.addEventListener("input", () =>
     {

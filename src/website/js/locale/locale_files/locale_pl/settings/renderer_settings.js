@@ -5,6 +5,11 @@ export const rendererSettingsLocale = {
         description: "Jak szybko spadają z góry nuty (w milisekundach)"
     },
     
+    noteAfterTriggerTime: {
+        title: "Czas po aktywacji nuty (ms)",
+        description: "Jak długo nuty spadają po aktywacji. Zero oznacza, że aktywują się na dole."
+    },
+    
     waveformThickness: {
         title: "Grubość lini fal (px)",
         description: "Jak grube są linie fal dźwiękowych"
@@ -12,7 +17,7 @@ export const rendererSettingsLocale = {
     
     waveformSampleSize: {
         title: "Rozmiar próbki fali",
-        description: "Jak szczegółowe są linei fal dźwiękowcyh (Uwaga: wysokie wartości mogą pogorszyć wydajność)"
+        description: "Jak szczegółowe są linie fal dźwiękowcyh (Uwaga: wysokie wartości mogą pogorszyć wydajność) Pamiętaj, że wysokie wartości dodadzą opóźnienie do dźwięku, aby zsynchronizować fale z dźwiękiem."
     },
     
     waveformAmplifier: {

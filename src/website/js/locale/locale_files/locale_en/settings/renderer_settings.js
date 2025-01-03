@@ -5,6 +5,11 @@ export const rendererSettingsLocale = {
         description: "How fast the notes fall (visually)"
     },
     
+    noteAfterTriggerTime: {
+        title: "Note after trigger time (miliseconds)",
+        description: "How long the notes fall after they get triggered. Zero means that they trigger at the bottom."
+    },
+    
     waveformThickness: {
         title: "Waveform line thickness (px)",
         description: "How thick the waveform lines are"
@@ -12,7 +17,7 @@ export const rendererSettingsLocale = {
     
     waveformSampleSize: {
         title: "Waveform sample size",
-        description: "How detailed the waveforms are (Note: high values might impact performance)"
+        description: "How detailed the waveforms are (Note: high values might impact performance). Also note that high values will add a delay to the audio to sync the waveforms with the audio."
     },
     
     waveformAmplifier: {
