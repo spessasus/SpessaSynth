@@ -72,6 +72,86 @@ class SequencerUI
             enabled: false,
             currentEncodedText: new Uint8Array(0)
         };
+        
+        // set up synth display event
+        let displayTimeoutId = null;
+        renderer.synth.eventHandler.addEvent("synthdisplay", "sequi-synth-display", data =>
+        {
+            if (data.displayType === 0 || data.displayType === 1)
+            {
+                // clear styles and apply monospace
+                this.mainTitleMessageDisplay.classList.add("sysex_display");
+                this.mainTitleMessageDisplay.classList.remove("xg_sysex_display");
+                let textData = data.displayData;
+                // remove "Display Letters" byte before decoding for XG display
+                if (data.displayType === 1)
+                {
+                    textData = textData.slice(1);
+                }
+                // decode the text
+                let text = this.decodeTextFix(textData.buffer);
+                
+                // XG is type 1, apply some fixes to it.
+                // XG Displays have a special behavior, we try to mimic it here
+                // reference video:
+                // https://www.youtube.com/watch?v=_mR7DV1E4KE
+                // first of all, extract the "Display Letters" byte
+                if (data.displayType === 1)
+                {
+                    const displayLetters = data.displayData[0];
+                    // XG Display Letters:
+                    // the screen is monospace,
+                    // two rows, 16 characters each (max)
+                    // since this is XG data, apply the XG display style
+                    this.mainTitleMessageDisplay.classList.add("xg_sysex_display");
+                    
+                    // 0x0c where c are the amount of spaces prepended
+                    const spaces = displayLetters & 0x0F;
+                    for (let i = 0; i < spaces; i++)
+                    {
+                        text = " " + text;
+                    }
+                    
+                    // at 16 characters, add a newline
+                    if (text.length >= 16)
+                    {
+                        text = text.slice(0, 16) + "\n" + text.slice(16);
+                    }
+                    
+                    // if type is 0x1x, add a newline
+                    if ((displayLetters & 0x10) > 1)
+                    {
+                        text = "\n" + text;
+                    }
+                    
+                }
+                
+                
+                if (text.trim().length === 0)
+                {
+                    // set the text to invisible character to keep the height
+                    this.mainTitleMessageDisplay.innerText = "‎ ";
+                }
+                else
+                {
+                    // set the display to an invisible character to keep the height
+                    this.mainTitleMessageDisplay.innerText = text;
+                }
+                
+                this.synthDisplayMode.enabled = true;
+                this.synthDisplayMode.currentEncodedText = textData;
+                if (displayTimeoutId !== null)
+                {
+                    clearTimeout(displayTimeoutId);
+                }
+                displayTimeoutId = setTimeout(() =>
+                {
+                    this.synthDisplayMode.enabled = false;
+                    this.restoreDisplay();
+                }, 5000);
+                
+            }
+        });
     }
     
     toggleDarkMode()
@@ -265,86 +345,6 @@ class SequencerUI
             }
             // otherwise we're already dark
         }
-        
-        // set up synth display event
-        let displayTimeoutId = null;
-        this.seq.synth.eventHandler.addEvent("synthdisplay", "sequi-synth-display", data =>
-        {
-            if (data.displayType === 0 || data.displayType === 1)
-            {
-                // clear styles and apply monospace
-                this.mainTitleMessageDisplay.classList.add("sysex_display");
-                this.mainTitleMessageDisplay.classList.remove("xg_sysex_display");
-                let textData = data.displayData;
-                // remove "Display Letters" byte before decoding for XG display
-                if (data.displayType === 1)
-                {
-                    textData = textData.slice(1);
-                }
-                // decode the text
-                let text = this.decodeTextFix(textData.buffer);
-                
-                // XG is type 1, apply some fixes to it.
-                // XG Displays have a special behavior, we try to mimic it here
-                // reference video:
-                // https://www.youtube.com/watch?v=_mR7DV1E4KE
-                // first of all, extract the "Display Letters" byte
-                if (data.displayType === 1)
-                {
-                    const displayLetters = data.displayData[0];
-                    // XG Display Letters:
-                    // the screen is monospace,
-                    // two rows, 16 characters each (max)
-                    // since this is XG data, apply the XG display style
-                    this.mainTitleMessageDisplay.classList.add("xg_sysex_display");
-                    
-                    // 0x0c where c are the amount of spaces prepended
-                    const spaces = displayLetters & 0x0F;
-                    for (let i = 0; i < spaces; i++)
-                    {
-                        text = " " + text;
-                    }
-                    
-                    // at 16 characters, add a newline
-                    if (text.length >= 16)
-                    {
-                        text = text.slice(0, 16) + "\n" + text.slice(16);
-                    }
-                    
-                    // if type is 0x1x, add a newline
-                    if ((displayLetters & 0x10) > 1)
-                    {
-                        text = "\n" + text;
-                    }
-                    
-                }
-                
-                
-                if (text.trim().length === 0)
-                {
-                    // set the text to invisible character to keep the height
-                    this.mainTitleMessageDisplay.innerText = "‎ ";
-                }
-                else
-                {
-                    // set the display to an invisible character to keep the height
-                    this.mainTitleMessageDisplay.innerText = text;
-                }
-                
-                this.synthDisplayMode.enabled = true;
-                this.synthDisplayMode.currentEncodedText = textData;
-                if (displayTimeoutId !== null)
-                {
-                    clearTimeout(displayTimeoutId);
-                }
-                displayTimeoutId = setTimeout(() =>
-                {
-                    this.synthDisplayMode.enabled = false;
-                    this.restoreDisplay();
-                }, 5000);
-                
-            }
-        });
     }
     
     /**
@@ -352,7 +352,13 @@ class SequencerUI
      */
     restoreDisplay()
     {
-        this.mainTitleMessageDisplay.innerText = this.currentSongTitle;
+        let textToShow = this.currentSongTitle;
+        if (!this.seq)
+        {
+            // set to default title
+            textToShow = this.locale.getLocaleString("locale.titleMessage");
+        }
+        this.mainTitleMessageDisplay.innerText = textToShow;
         this.mainTitleMessageDisplay.classList.remove("sysex_display");
         this.mainTitleMessageDisplay.classList.remove("xg_sysex_display");
     }

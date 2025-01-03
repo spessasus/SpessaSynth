@@ -69,6 +69,13 @@ export function _createMidiInputHandler(handler, synth)
         }
         this._saveSettings();
     };
+    // try to connect the first input (if it exists)
+    if (handler.inputs.size > 0)
+    {
+        const firstInput = handler.inputs.entries().next().value;
+        handler.connectDeviceToSynth(firstInput[1], synth);
+        select.value = firstInput[0];
+    }
 }
 
 /**
@@ -105,6 +112,8 @@ export function _createMidiOutputHandler(handler, sequi)
     {
         if (!sequi.seq)
         {
+            // set timeou to wait for sequencer to exist
+            setTimeout(select.onchange, 1000);
             return;
         }
         if (select.value === "-1")
