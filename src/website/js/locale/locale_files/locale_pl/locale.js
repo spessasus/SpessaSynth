@@ -12,7 +12,7 @@ export const localePolish = {
     localeName: "Polski",
     // title messsage
     titleMessage: "SpessaSynth: JavaScriptowy Syntezator SoundFont2",
-    demoTitleMessage: "SpessaSynth: JavaScriptowy Syntezator SoundFont2 Wersja Demo",
+    demoTitleMessage: "SpessaSynth: JavaScriptowy Syntezator SF2/DLS Wersja Demo",
     
     synthInit: {
         genericLoading: "Wczytywanie...",

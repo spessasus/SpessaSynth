@@ -12,7 +12,7 @@ export const localeJapanese = {
     localeName: "日本語",
     // title messsage
     titleMessage: "SpessaSynth: SoundFont2 Javascript シンセサイザー",
-    demoTitleMessage: "SpessaSynth: SoundFont2 Javascript シンセサイザー オンラインデモ",
+    demoTitleMessage: "SpessaSynth: SF2/DLS Javascript シンセサイザー オンラインデモ",
     
     synthInit: {
         genericLoading: "読み込み中...",

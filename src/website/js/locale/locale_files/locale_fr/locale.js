@@ -11,8 +11,8 @@ import { exportAudio } from "./export_audio.js";
 export const localeFrench = {
     localeName: "Français",
     // title message
-    titleMessage: "SpessaSynth : synthétiseur compatible SoundFont2, écrit en javascript",
-    demoTitleMessage: "SpessaSynth : démo en ligne du synthétiseur compatible SoundFont2",
+    titleMessage: "SpessaSynth : synthétiseur compatible SF2, écrit en javascript",
+    demoTitleMessage: "SpessaSynth : démo en ligne du synthétiseur compatible SF2/DLS",
     
     synthInit: {
         genericLoading: "Chargement...",

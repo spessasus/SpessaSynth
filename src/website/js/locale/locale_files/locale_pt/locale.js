@@ -16,7 +16,7 @@ export const localePortuguese = {
     localeName: "Português (Brasil)",
     // title messsage
     titleMessage: "SpessaSynth: Sintetizador JavaScript SoundFont2",
-    demoTitleMessage: "SpessaSynth: Demo Online do Sintetizador JavaScript SoundFont2",
+    demoTitleMessage: "SpessaSynth: Demo Online do Sintetizador JavaScript SF2/DLS",
     
     synthInit: {
         genericLoading: "Carregando...",
