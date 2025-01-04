@@ -204,7 +204,8 @@ MARKDOWN VERSION
 Local edition comes with easier soundfont management than the demo version.
 
 > [!IMPORTANT]
-> Firefox is recommended for large SoundFonts due to memory constraints. A decent computer is also recommended for handling large SoundFonts.
+> Firefox is recommended due to Chromium's Web Audio bug and memory limit.
+> A decent computer is also recommended for handling large SoundFonts.
 
 [Recommended high-quality SoundFont (better than the built-in one)](https://musical-artifacts.com/artifacts/1176)
 
