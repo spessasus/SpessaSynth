@@ -90,12 +90,15 @@ export function _processEvent(event, trackIndex)
             break;
         
         case messageTypes.setTempo:
-            this.oneTickToSeconds = 60 / (getTempo(event) * this.midiData.timeDivision);
+            let tempoBPM = getTempo(event);
+            this.oneTickToSeconds = 60 / (tempoBPM * this.midiData.timeDivision);
             if (this.oneTickToSeconds === 0)
             {
                 this.oneTickToSeconds = 60 / (120 * this.midiData.timeDivision);
                 SpessaSynthWarn("invalid tempo! falling back to 120 BPM");
+                tempoBPM = 120;
             }
+            this.post(WorkletSequencerReturnMessageType.tempoChange, Math.floor(tempoBPM * 100) / 100);
             break;
         
         // recongized but ignored

@@ -12,7 +12,8 @@ import { BasicMIDI } from "../midi_parser/basic_midi.js";
 
 /**
  * sequencer.js
- * purpose: plays back the midi file decoded by midi_loader.js, including support for multi-channel midis (adding channels when more than 1 midi port is detected)
+ * purpose: plays back the midi file decoded by midi_loader.js, including support for multichannel midis
+ * (adding channels when more than one midi port is detected)
  */
 
 /**
@@ -63,7 +64,7 @@ export class Sequencer
      * Fires on text event
      * @type {function}
      * @param data {Uint8Array} the data text
-     * @param type {number} the status byte of the message (the meta status byte)
+     * @param type {number} the status byte of the message (the meta-status byte)
      * @param lyricsIndex {number} if the text is a lyric, the index of the lyric in midiData.lyrics, otherwise -1
      */
     onTextEvent;
@@ -78,6 +79,51 @@ export class Sequencer
      * @private
      */
     onSongEnded = {};
+    
+    /**
+     * Fires on tempo change
+     * @type {Object<string, function(number)>}
+     */
+    onTempoChange = {};
+    
+    /**
+     * Current song's tempo in BPM
+     * @type {number}
+     */
+    currentTempo = 120;
+    /**
+     * Current song index
+     * @type {number}
+     */
+    songIndex = 0;
+    /**
+     * @type {function(BasicMIDI)}
+     * @private
+     */
+    _getMIDIResolve = undefined;
+    /**
+     * Indicates if the current midiData property has fake data in it (not yet loaded)
+     * @type {boolean}
+     */
+    hasDummyData = true;
+    /**
+     * Indicates whether the sequencer has finished playing a sequence
+     * @type {boolean}
+     */
+    isFinished = false;
+    /**
+     * The current sequence's length, in seconds
+     * @type {number}
+     */
+    duration = 0;
+    
+    /**
+     * Indicates if the sequencer is paused.
+     * Paused if a number, undefined if playing
+     * @type {undefined|number}
+     * @private
+     */
+    pausedTime = undefined;
     
     /**
      * Creates a new Midi sequencer for playing back MIDI files
@@ -96,47 +142,6 @@ export class Sequencer
          * @type {number}
          */
         this.absoluteStartTime = this.synth.currentTime;
-        
-        /**
-         * @type {function(BasicMIDI)}
-         * @private
-         */
-        this._getMIDIResolve = undefined;
-        
-        /**
-         * Controls the playback's rate
-         * @type {number}
-         */
-        this._playbackRate = 1;
-        
-        this.songIndex = 0;
-        
-        /**
-         * Indicates if the current midiData property has dummy data in it (not yet loaded)
-         * @type {boolean}
-         */
-        this.hasDummyData = true;
-        
-        this._loop = true;
-        
-        /**
-         * Indicates whether the sequencer has finished playing a sequence
-         * @type {boolean}
-         */
-        this.isFinished = false;
-        
-        /**
-         * Indicates if the sequencer is paused.
-         * Paused if a number, undefined if playing
-         * @type {undefined|number}
-         */
-        this.pausedTime = undefined;
-        
-        /**
-         * The current sequence's length, in seconds
-         * @type {number}
-         */
-        this.duration = 0;
         
         this.synth.sequencerCallbackFunction = this._handleMessage.bind(this);
         
@@ -165,6 +170,49 @@ export class Sequencer
         this.loadNewSongList(midiBinaries, options?.autoPlay || true);
         
         window.addEventListener("beforeunload", this.resetMIDIOut.bind(this));
+    }
+    
+    /**
+     * Internal loop marker
+     * @type {boolean}
+     * @private
+     */
+    _loop = true;
+    
+    get loop()
+    {
+        return this._loop;
+    }
+    
+    set loop(value)
+    {
+        this._sendMessage(WorkletSequencerMessageType.setLoop, value);
+        this._loop = value;
+    }
+    
+    /**
+     * Controls the playback's rate
+     * @type {number}
+     * @private
+     */
+    _playbackRate = 1;
+    
+    /**
+     * @returns {number}
+     */
+    get playbackRate()
+    {
+        return this._playbackRate;
+    }
+    
+    /**
+     * @param value {number}
+     */
+    set playbackRate(value)
+    {
+        this._sendMessage(WorkletSequencerMessageType.setPlaybackRate, value);
+        this.highResTimeOffset *= (value / this._playbackRate);
+        this._playbackRate = value;
     }
     
     /**
@@ -230,17 +278,6 @@ export class Sequencer
         this._sendMessage(WorkletSequencerMessageType.setTime, time);
     }
     
-    get loop()
-    {
-        return this._loop;
-    }
-    
-    set loop(value)
-    {
-        this._sendMessage(WorkletSequencerMessageType.setLoop, value);
-        this._loop = value;
-    }
-    
     /**
      * Use for visualization as it's not affected by the audioContext stutter
      * @returns {number}
@@ -269,24 +306,6 @@ export class Sequencer
         // return a smoothed performance time
         currentPerformanceTime = this.highResTimeOffset + performanceElapsedTime;
         return currentPerformanceTime;
-    }
-    
-    /**
-     * @returns {number}
-     */
-    get playbackRate()
-    {
-        return this._playbackRate;
-    }
-    
-    /**
-     * @param value {number}
-     */
-    set playbackRate(value)
-    {
-        this._sendMessage(WorkletSequencerMessageType.setPlaybackRate, value);
-        this.highResTimeOffset *= (value / this._playbackRate);
-        this._playbackRate = value;
     }
     
     /**
@@ -326,6 +345,16 @@ export class Sequencer
     addOnTimeChangeEvent(callback, id)
     {
         this.onTimeChange[id] = callback;
+    }
+    
+    /**
+     * Adds a new event that gets called when the tempo changes
+     * @param callback {function(number)} the new tempo, in BPM
+     * @param id {string} must be unique
+     */
+    addOnTempoChangeEvent(callback, id)
+    {
+        this.onTempoChange[id] = callback;
     }
     
     resetMIDIOut()
@@ -370,6 +399,26 @@ export class Sequencer
     }
     
     /**
+     * @param type {Object<string, function>}
+     * @param params {any}
+     * @private
+     */
+    _callEvents(type, params)
+    {
+        Object.entries(type).forEach((callback) =>
+        {
+            try
+            {
+                callback[1](params);
+            }
+            catch (e)
+            {
+                SpessaSynthWarn(`Failed to execute callback for ${callback[0]}:`, e);
+            }
+        });
+    }
+    
+    /**
      * @param {WorkletSequencerReturnMessageType} messageType
      * @param {any} messageData
      * @private
@@ -411,7 +460,7 @@ export class Sequencer
                 this.hasDummyData = false;
                 this.absoluteStartTime = 0;
                 this.duration = this.midiData.duration;
-                Object.entries(this.onSongChange).forEach((callback) => callback[1](songChangeData));
+                this._callEvents(this.onSongChange, songChangeData);
                 // if is auto played, unpause
                 if (messageData[2] === true)
                 {
@@ -429,7 +478,7 @@ export class Sequencer
             case WorkletSequencerReturnMessageType.timeChange:
                 // message data is absolute time
                 const time = this.synth.currentTime - messageData;
-                Object.entries(this.onTimeChange).forEach((callback) => callback[1](time));
+                this._callEvents(this.onTimeChange, time);
                 this._recalculateStartTime(time);
                 if (this.paused && this._preservePlaybackState)
                 {
@@ -446,7 +495,7 @@ export class Sequencer
                 this.isFinished = messageData;
                 if (this.isFinished)
                 {
-                    Object.entries(this.onSongEnded).forEach((callback) => callback[1]());
+                    this._callEvents(this.onSongEnded, undefined);
                 }
                 break;
             
@@ -465,6 +514,14 @@ export class Sequencer
                 if (this._getMIDIResolve)
                 {
                     this._getMIDIResolve(BasicMIDI.copyFrom(messageData));
+                }
+                break;
+            
+            case WorkletSequencerReturnMessageType.tempoChange:
+                this.currentTempo = messageData;
+                if (this.onTempoChange)
+                {
+                    this._callEvents(this.onTempoChange, this.currentTempo);
                 }
         }
     }
@@ -499,7 +556,7 @@ export class Sequencer
     loadNewSongList(midiBuffers, autoPlay = true)
     {
         this.pause();
-        // add some dummy data
+        // add some fake data
         this.midiData = DUMMY_MIDI_DATA;
         this.hasDummyData = true;
         this.duration = 99999;
@@ -549,7 +606,7 @@ export class Sequencer
     
     /**
      * Starts the playback
-     * @param resetTime {boolean} If true, time is set to 0s
+     * @param resetTime {boolean} If true, time is set to 0 s
      */
     play(resetTime = false)
     {

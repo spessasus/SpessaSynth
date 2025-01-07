@@ -39,5 +39,6 @@ export const WorkletSequencerReturnMessageType = {
     timeChange: 3,              // newAbsoluteTime<number>
     pause: 4,                   // no data
     getMIDI: 5,                 // midiData<MIDI>
-    midiError: 6                // errorMSG<string>
+    midiError: 6,               // errorMSG<string>
+    tempoChange: 7              // newTempoBPM<number>
 };

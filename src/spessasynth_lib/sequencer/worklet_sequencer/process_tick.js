@@ -8,18 +8,18 @@ export function _processTick()
     let current = this.currentTime;
     while (this.playedTime < current)
     {
-        // find next event
+        // find the next event
         let trackIndex = this._findFirstEventIndex();
         let event = this.tracks[trackIndex][this.eventIndex[trackIndex]];
         this._processEvent(event, trackIndex);
         
         this.eventIndex[trackIndex]++;
         
-        // find next event
+        // find the next event
         trackIndex = this._findFirstEventIndex();
         if (this.tracks[trackIndex].length <= this.eventIndex[trackIndex])
         {
-            // song has ended
+            // the song has ended
             if (this.loop)
             {
                 this.setTimeTicks(this.midiData.loop.start);
@@ -43,7 +43,7 @@ export function _processTick()
             this.setTimeTicks(this.midiData.loop.start);
             return;
         }
-        // if song has ended
+        // if the song has ended
         else if (current >= this.duration)
         {
             if (this.loop && this.currentLoopCount > 0)
