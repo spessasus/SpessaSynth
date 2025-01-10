@@ -5,6 +5,11 @@ export const rendererSettingsLocale = {
         description: "Définition de la vitesse à laquelle les notes tombent sur le clavier (visuellement)"
     },
     
+    noteAfterTriggerTime: {
+        title: "Durée après le déclenchement d'une note (millisecondes)",
+        description: "Durée de la chute des notes après leur déclenchement. Zéro signifie qu'elles se déclenchent en bas"
+    },
+    
     waveformThickness: {
         title: "Épaisseur du trait des formes d'ondes (pixels)",
         description: "Définition de l'épaisseur du trait des formes d'ondes"

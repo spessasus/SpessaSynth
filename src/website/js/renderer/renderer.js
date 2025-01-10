@@ -68,7 +68,7 @@ class Renderer
     {
         // variables
         /**
-         * falling time in miliseconds
+         * falling time in milliseconds
          * @type {number}
          */
         this.noteFallingTimeMs = 1000;

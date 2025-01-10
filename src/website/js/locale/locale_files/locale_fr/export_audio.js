@@ -23,6 +23,10 @@ export const exportAudio = {
                         title: "Durée additionnelle (s)",
                         description: "Durée additionnelle à la fin du morceau pour donner le temps au son de disparaitre, en secondes"
                     },
+                    sampleRate: {
+                        title: "Fréquence d'échantillonnage",
+                        description: "Fréquence d'échantillonnage du fichier de sortie en Hz (ne changez ce paramètre que si vous savez ce que vous faites)"
+                    },
                     
                     separateChannels: {
                         title: "Séparation des canaux",
@@ -66,7 +70,8 @@ export const exportAudio = {
                     },
                     compress: {
                         title: "Compresser",
-                        description: "Compacter les échantillons grâce à l'algorithme de compression avec pertes Ogg Vorbis\nCeci réduit de manière significative le poids du fichier\nNote : si la banque de sons était déjà compressée, cette option ne décompressera pas même en étant désactivée"
+                        description: "Compacter les échantillons grâce à l'algorithme de compression avec pertes Ogg Vorbis\n" + 
+                            "Ceci réduit de manière significative le poids du fichier\nNote : si la banque de sons était déjà compressée, cette option ne décompressera pas même en étant désactivée"
                     },
                     quality: {
                         title: "Qualité de compression",
@@ -75,10 +80,24 @@ export const exportAudio = {
                 }
             },
             
+            dls: {
+                button: {
+                    title: "DLS (.dls)",
+                    description: "Exporte la soundfont au format DLS"
+                },
+                warning: {
+                    title: "Avertissement concernant l'exportation DLS",
+                    message: "L'exportation DLS est limitée et peut produire des fichiers corrompus avec des soundfonts lourdes et complexes.",
+                    details: "Plus d'info",
+                    confirm: "Continuer l'exportation"
+                }
+            },
+            
             rmidi: {
                 button: {
                     title: "MIDI embarqué (.rmi)",
-                    description: "Exporter le fichier MIDI modifié avec la banque de sons allégée dans un seul fichier\nNote : ce format n'est pas supporté par tous les lecteurs MIDI"
+                    description: "Exporter le fichier MIDI modifié avec la banque de sons allégée dans un seul fichier\n" +
+                        "Note : ce format n'est pas supporté par tous les lecteurs MIDI"
                 },
                 
                 progress: {
