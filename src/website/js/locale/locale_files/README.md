@@ -56,7 +56,7 @@ Here's how you can fix existing translations:
     - You may add comments to indicate who translated the text, e.g., `// translated by: XYZ`.
    
 3. **Verify your work**
-    - [Minify the website](../../../../README#app)
+    - compile: `npm run build`
     - Change the language to the translated language.
     - Test your changes in the Local Edition!
     - Remember to hover over various controls to see the translated descriptions.
