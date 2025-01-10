@@ -4,6 +4,8 @@ import { WorkletModulationEnvelope } from "../worklet_utilities/modulation_envel
 import { generatorTypes } from "../../../soundfont/basic_soundfont/generator.js";
 import { MIN_EXCLUSIVE_LENGTH } from "../main_processor.js";
 
+const EXCLUSIVE_CUTOFF_TIME = -2320;
+
 /**
  * Append the voices
  * @param channel {number}
@@ -82,8 +84,8 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
                 if (v.generators[generatorTypes.exclusiveClass] === exclusive)
                 {
                     this.releaseVoice(v, MIN_EXCLUSIVE_LENGTH);
-                    v.modulatedGenerators[generatorTypes.releaseVolEnv] = -7000; // make the release nearly instant
-                    v.modulatedGenerators[generatorTypes.releaseModEnv] = -7000;
+                    v.modulatedGenerators[generatorTypes.releaseVolEnv] = EXCLUSIVE_CUTOFF_TIME; // make the release nearly instant
+                    v.modulatedGenerators[generatorTypes.releaseModEnv] = EXCLUSIVE_CUTOFF_TIME;
                     WorkletVolumeEnvelope.recalculate(v);
                     WorkletModulationEnvelope.recalculate(v);
                 }
