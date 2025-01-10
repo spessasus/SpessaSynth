@@ -1,12 +1,12 @@
 export const rendererSettingsLocale = {
     title: "Renderer settings",
     noteFallingTime: {
-        title: "Note falling time (miliseconds)",
+        title: "Note falling time (milliseconds)",
         description: "How fast the notes fall (visually)"
     },
     
     noteAfterTriggerTime: {
-        title: "Note after trigger time (miliseconds)",
+        title: "Note after trigger time (milliseconds)",
         description: "How long the notes fall after they get triggered. Zero means that they trigger at the bottom."
     },
     

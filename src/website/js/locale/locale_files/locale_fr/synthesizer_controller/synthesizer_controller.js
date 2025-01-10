@@ -1,4 +1,6 @@
 import { channelControllerLocale } from "./channel_controller.js";
+import { effectsConfig } from "./effects_config.js";
+import { keyModifiers } from "./key_modifiers.js";
 
 /**
  *
@@ -64,5 +66,7 @@ export const synthesizerControllerLocale = {
         cubic: "Interpolation cubique"
     },
     
-    channelController: channelControllerLocale
+    channelController: channelControllerLocale,
+    effectsConfig: effectsConfig,
+    keyModifiers: keyModifiers
 };
