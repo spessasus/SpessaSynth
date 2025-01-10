@@ -46,8 +46,17 @@ This repository contains both the library and a complete musical web application
   - **SoundFont3 Support:** Play compressed SoundFonts!
   - **Experimental SF2Pack Support:** Play soundfonts compressed with BASSMIDI! (*Note: only works with vorbis compression*)
   - **Can load very large SoundFonts:** up to 4GB! *Note: Only Firefox handles this well; Chromium has a hard-coded memory limit*
+- **Great DLS Support:**
+  - **DLS Level 1 Support**
+  - **DLS Level 2 Support**
+  - **Mobile DLS Support**
+  - **Correct articulator support:** *Converts articulators to both modulators and generators!*
+  - **Tested and working with gm.dls!**
+  - **Correct volume:** *Properly translated to SoundFont volume!*
+  - **A-Law encoding support**
+  - **Both unsigned 8-bit and signed 16-bit sample support (24-bit theoretically supported as well!)**
+  - **Detects special articulator combinations:** *Such as vibratoLfoToPitch*
 - **Soundfont manager:** Stack multiple soundfonts!
-- **DLS Level 1 and 2 Support:** *works with gm.dls!*
 - **Reverb and chorus support:** [customizable!](https://github.com/spessasus/SpessaSynth/wiki/Synthetizer-Class#effects-configuration-object)
 - **Export audio files** using [OfflineAudioContext](https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext)
 - **[Custom modulators for additional controllers](https://github.com/spessasus/SpessaSynth/wiki/Modulator-Class#default-modulators):** *Why not?*
@@ -110,10 +119,11 @@ This repository contains both the library and a complete musical web application
   - **Works like a normal soundfont:** *Saving it as sf2 is still [just one function!](https://github.com/spessasus/SpessaSynth/wiki/SoundFont2-Class#write)*
   - Converts articulators to both **modulators** and **generators**!
   - Works with both unsigned 8-bit samples and signed 16-bit samples!
+  - A-Law encoding support
   - **Covers special generator cases:** *such as modLfoToPitch*!
   - **Correct volume:** *looking at you, Viena and gm.sf2!*
   - Support built right into the synthesizer!
-  - **Convert SF2 to DLS:** [with limitations](https://github.com/spessasus/SpessaSynth/wiki/DLS-Conversion-Problem);
+  - **Convert SF2 to DLS:** [with limitations](https://github.com/spessasus/SpessaSynth/wiki/DLS-Conversion-Problem)
 
 ### Export MIDI as WAV
   - Save the MIDI file as WAV audio!
