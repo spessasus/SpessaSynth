@@ -5,6 +5,7 @@ import { generatorTypes } from "../../../soundfont/basic_soundfont/generator.js"
 import { MIN_EXCLUSIVE_LENGTH } from "../main_processor.js";
 
 const EXCLUSIVE_CUTOFF_TIME = -2320;
+const EXCLUSIVE_MOD_CUTOFF_TIME = -1130; // less because filter shenanigans
 
 /**
  * Append the voices
@@ -85,7 +86,7 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
                 {
                     this.releaseVoice(v, MIN_EXCLUSIVE_LENGTH);
                     v.modulatedGenerators[generatorTypes.releaseVolEnv] = EXCLUSIVE_CUTOFF_TIME; // make the release nearly instant
-                    v.modulatedGenerators[generatorTypes.releaseModEnv] = EXCLUSIVE_CUTOFF_TIME;
+                    v.modulatedGenerators[generatorTypes.releaseModEnv] = EXCLUSIVE_MOD_CUTOFF_TIME;
                     WorkletVolumeEnvelope.recalculate(v);
                     WorkletModulationEnvelope.recalculate(v);
                 }
