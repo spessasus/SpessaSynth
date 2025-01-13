@@ -639,7 +639,17 @@ class SequencerUI
             }
             if (isDoubleLyrics)
             {
-                this.currentLyricsString = this.currentLyricsString.map((_, i) => (i % 2 === 0 ? "" : this.currentLyricsString[i]));
+                for (let i = 0; i < this.currentLyricsString.length; i += 2)
+                {
+                    // note: newline should be skipped
+                    if (this.currentLyricsString[i] === "\n")
+                    {
+                        i -= 1;
+                        continue;
+                    }
+                    this.currentLyricsString[i] = "";
+                }
+                
             }
             
         }
