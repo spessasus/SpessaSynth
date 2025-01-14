@@ -39,6 +39,13 @@ export const localePolish = {
     
     demoSoundfontUploadButton: "Wgraj SoundFonta",
     demoGithubPage: "Strona projektu",
+    demoDownload: {
+        main: "Pobierz",
+        downloadLocal: {
+            title: "Pobierz Edycję Lokalną",
+            description: "Pobierz SpessaSynth: Edycja Lokalna aby używać jej na swoim komputerze bez internetu"
+        }
+    },
     demoSongButton: "Piosenka demo",
     credits: "Twórcy",
     dropPrompt: "Upuść pliki tutaj...",
