@@ -195,7 +195,7 @@ async function replaceFont(fontName)
         await replaceSf();
         return;
     }
-    titleMessage.innerText = "Downloading soundfont...";
+    titleMessage.innerText = "Loading soundfont...";
     const data = await fetchFont(
         fontName,
         percent => progressBar.style.width = `${(percent / 100) * titleMessage.offsetWidth}px`

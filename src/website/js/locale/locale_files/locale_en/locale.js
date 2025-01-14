@@ -36,6 +36,13 @@ export const localeEnglish = {
     
     demoSoundfontUploadButton: "Upload the soundfont",
     demoGithubPage: "Project's page",
+    demoDownload: {
+        main: "Download",
+        downloadLocal: {
+            title: "Download Local Edition",
+            description: "Download SpessaSynth: Local Edition to use offline on your computer"
+        }
+    },
     demoSongButton: "Demo Song",
     credits: "Credits",
     dropPrompt: "Drop files here...",

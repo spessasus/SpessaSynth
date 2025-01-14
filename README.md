@@ -225,7 +225,7 @@ Local edition comes with easier soundfont management than the demo version.
 #### Windows
 1. Download the code as a ZIP file and extract, or use `git clone https://github.com/spessasus/SpessaSynth`.
 2. Put your SoundFonts into the `soundfonts` folder (you can select SoundFonts in the program).
-3. Double-click `start.bat`.
+3. Double-click `Open SpessaSynth.bat`.
 4. Enjoy!
 
 #### Linux

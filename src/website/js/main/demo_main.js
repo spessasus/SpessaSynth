@@ -30,6 +30,7 @@ let demoSongButton = document.getElementById("demo_song");
 const exportButton = document.getElementById("export_button");
 const loading = document.getElementsByClassName("loading")[0];
 const loadingMessage = document.getElementById("loading_message");
+const demoDownloadButton = document.getElementById("demo_download_button");
 
 // load version
 const r = await (await fetch("package.json")).json();
@@ -558,6 +559,35 @@ demoInit(initLocale).then(() =>
             999999,
             true,
             undefined
+        );
+    };
+    demoDownloadButton.onclick = () =>
+    {
+        showNotification(
+            window.manager.localeManager.getLocaleString("locale.demoDownload.main"),
+            [
+                {
+                    type: "button",
+                    translatePathTitle: "locale.demoDownload.downloadLocal",
+                    onClick: n =>
+                    {
+                        closeNotification(n.id);
+                        window.open("https://github.com/spessasus/SpessaSynth/archive/refs/heads/master.zip");
+                    }
+                },
+                {
+                    type: "button",
+                    textContent: window.manager.localeManager.getLocaleString("locale.demoGithubPage"),
+                    onClick: n =>
+                    {
+                        closeNotification(n.id);
+                        window.open("https://github.com/spessasus/SpessaSynth#readme");
+                    }
+                }
+            ],
+            9999999,
+            true,
+            window.manager.localeManager
         );
     };
 });
