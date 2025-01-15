@@ -219,7 +219,7 @@ class SynthesizerSnapshot
     
     /**
      * The effects configuration object.
-     * @type {EffectsConfig}
+     * @type {SynthConfig}
      */
     effectsConfig;
     

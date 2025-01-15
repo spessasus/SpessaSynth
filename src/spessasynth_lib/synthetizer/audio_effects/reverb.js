@@ -6,7 +6,7 @@
  */
 export function getReverbProcessor(context, reverbBuffer = undefined)
 {
-    const convolver = new ConvolverNode(context);
+    const convolver = context.createConvolver();
     if (reverbBuffer)
     {
         convolver.buffer = reverbBuffer;

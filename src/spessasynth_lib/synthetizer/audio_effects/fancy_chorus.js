@@ -52,13 +52,9 @@ export class FancyChorus
     {
         const context = output.context;
         
-        this.input = new ChannelSplitterNode(context, {
-            numberOfOutputs: 2
-        });
+        this.input = context.createChannelSplitter(2);
         
-        const merger = new ChannelMergerNode(context, {
-            numberOfInputs: 2
-        });
+        const merger = context.createChannelMerger(2);
         
         /**
          * @type {ChorusNode[]}
@@ -142,16 +138,13 @@ export class FancyChorus
      */
     createChorusNode(freq, delay, list, input, output, outputNum, context, config)
     {
-        const oscillator = new OscillatorNode(context, {
-            type: "sine",
-            frequency: freq
-        });
-        const gainNode = new GainNode(context, {
-            gain: config.oscillatorGain
-        });
-        const delayNode = new DelayNode(context, {
-            delayTime: delay
-        });
+        const oscillator = context.createOscillator();
+        oscillator.type = "sine";
+        oscillator.frequency.value = freq;
+        const gainNode = context.createGain();
+        gainNode.gain.value = config.oscillatorGain;
+        const delayNode = context.createDelay();
+        delayNode.delayTime.value = delay;
         
         oscillator.connect(gainNode);
         gainNode.connect(delayNode.delayTime);

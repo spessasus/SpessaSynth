@@ -11,7 +11,7 @@ import {
     workletMessageType
 } from "./worklet_system/message_protocol/worklet_message.js";
 import { SpessaSynthInfo, SpessaSynthWarn } from "../utils/loggin.js";
-import { DEFAULT_EFFECTS_CONFIG } from "./audio_effects/effects_config.js";
+import { DEFAULT_SYNTH_CONFIG } from "./audio_effects/effects_config.js";
 import { SoundfontManager } from "./synth_soundfont_manager.js";
 import { channelConfiguration } from "./worklet_system/worklet_utilities/worklet_processor_channel.js";
 import { KeyModifierManager } from "./key_modifier_manager.js";
@@ -26,7 +26,8 @@ import { KeyModifierManager } from "./key_modifier_manager.js";
  * @typedef {Object} StartRenderingDataConfig
  * @property {BasicMIDI} parsedMIDI - the MIDI to render
  * @property {SynthesizerSnapshot} snapshot - the snapshot to apply
- * @property {boolean|undefined} oneOutput - if synth should use one output with 32 channels (2 audio channels for each midi channel). this disables chorus and reverb.
+ * @property {boolean|undefined} oneOutput - if synth should use one output with 32 channels (2 audio channels for each midi channel).
+ * this disabled chorus and reverb.
  * @property {number|undefined} loopCount - the times to loop the song
  */
 
@@ -38,14 +39,7 @@ export const DEFAULT_PERCUSSION = 9;
 export const MIDI_CHANNEL_COUNT = 16;
 export const DEFAULT_SYNTH_MODE = "gs";
 
-/**
- * Creates a new instance of the SpessaSynth synthesizer
- * @param targetNode {AudioNode}
- * @param soundFontBuffer {ArrayBuffer} the soundfont file array buffer
- * @param enableEventSystem {boolean} enables the event system. Defaults to true
- * @param startRenderingData {StartRenderingDataConfig} if set, starts playing this immediately and restores the values
- * @param effectsConfig {EffectsConfig} optional configuration for the audio effects.
- */
+
 export class Synthetizer
 {
     /**
@@ -54,13 +48,13 @@ export class Synthetizer
      * @param soundFontBuffer {ArrayBuffer} the soundfont file array buffer
      * @param enableEventSystem {boolean} enables the event system. Defaults to true
      * @param startRenderingData {StartRenderingDataConfig} if set, starts playing this immediately and restores the values
-     * @param effectsConfig {EffectsConfig} optional configuration for the audio effects.
+     * @param synthConfig {SynthConfig} optional configuration for the synthesizer.
      */
     constructor(targetNode,
                 soundFontBuffer,
                 enableEventSystem = true,
                 startRenderingData = undefined,
-                effectsConfig = DEFAULT_EFFECTS_CONFIG)
+                synthConfig = DEFAULT_SYNTH_CONFIG)
     {
         SpessaSynthInfo("%cInitializing SpessaSynth synthesizer...", consoleColors.info);
         this.context = targetNode.context;
@@ -68,7 +62,7 @@ export class Synthetizer
         const oneOutputMode = startRenderingData?.oneOutput === true;
         
         /**
-         * Allows to set up custom event listeners for the synthesizer
+         * Allows setting up custom event listeners for the synthesizer
          * @type {EventHandler}
          */
         this.eventHandler = new EventHandler();
@@ -78,14 +72,14 @@ export class Synthetizer
         
         /**
          * the new channels will have their audio sent to the moduled output by this constant.
-         * what does that mean? e.g. if outputsAmount is 16, then channel's 16 audio will be sent to channel 0
+         * what does that mean? e.g., if outputsAmount is 16, then channel's 16 audio data will be sent to channel 0
          * @type {number}
          * @private
          */
         this._outputsAmount = MIDI_CHANNEL_COUNT;
         
         /**
-         * the amount of midi channels
+         * the number of midi channels
          * @type {number}
          */
         this.channelsAmount = this._outputsAmount;
@@ -133,7 +127,7 @@ export class Synthetizer
         if (startRenderingData?.snapshot?.effectsConfig !== undefined)
         {
             /**
-             * @type {EffectsConfig}
+             * @type {SynthConfig}
              */
             this.effectsConfig = startRenderingData.snapshot.effectsConfig;
             // remove from config as it can't be cloned
@@ -142,15 +136,24 @@ export class Synthetizer
         else
         {
             /**
-             * @type {EffectsConfig}
+             * @type {SynthConfig}
              */
-            this.effectsConfig = effectsConfig;
+            this.effectsConfig = synthConfig;
         }
         
         // first two outputs: reverb, chorsu, the others are the channel outputs
         try
         {
-            this.worklet = new AudioWorkletNode(this.context, WORKLET_PROCESSOR_NAME, {
+            let workletConstructor = synthConfig?.audioNodeCreators?.worklet;
+            if (!workletConstructor)
+            {
+                workletConstructor = (ctx, name, opts) =>
+                {
+                    // noinspection JSCheckFunctionSignatures
+                    return new AudioWorkletNode(ctx, name, opts);
+                };
+            }
+            this.worklet = workletConstructor(this.context, WORKLET_PROCESSOR_NAME, {
                 outputChannelCount: processorChannelCount,
                 numberOfOutputs: processorOutputsCount,
                 processorOptions: {
@@ -202,19 +205,6 @@ export class Synthetizer
          * @type {function(WorkletSequencerReturnMessageType, any)}
          */
         this.sequencerCallbackFunction = undefined;
-        // add reverb
-        if (this.effectsConfig.reverbEnabled && !oneOutputMode)
-        {
-            this.reverbProcessor = getReverbProcessor(this.context, this.effectsConfig.reverbImpulseResponse);
-            this.reverbProcessor.connect(targetNode);
-            this.worklet.connect(this.reverbProcessor, 0);
-        }
-        
-        if (this.effectsConfig.chorusEnabled && !oneOutputMode)
-        {
-            this.chorusProcessor = new FancyChorus(targetNode, this.effectsConfig.chorusConfig);
-            this.worklet.connect(this.chorusProcessor.input, 1);
-        }
         
         if (oneOutputMode)
         {
@@ -223,6 +213,22 @@ export class Synthetizer
         }
         else
         {
+            // add reverb and chorus processors
+            const reverbOn = this.effectsConfig?.reverbEnabled ?? true;
+            const chorusOn = this.effectsConfig?.chorusEnabled ?? true;
+            if (reverbOn)
+            {
+                this.reverbProcessor = getReverbProcessor(this.context, this.effectsConfig.reverbImpulseResponse);
+                this.reverbProcessor.connect(targetNode);
+                this.worklet.connect(this.reverbProcessor, 0);
+            }
+            
+            if (chorusOn)
+            {
+                this.chorusProcessor = new FancyChorus(targetNode, this.effectsConfig.chorusConfig);
+                this.worklet.connect(this.chorusProcessor.input, 1);
+            }
+            
             // connect all outputs to the output node
             for (let i = 2; i < this.channelsAmount + 2; i++)
             {
@@ -238,7 +244,7 @@ export class Synthetizer
     }
     
     /**
-     * The maximum amount of voices allowed at once
+     * The maximum number of voices allowed at once
      * @returns {number}
      */
     get voiceCap()
@@ -247,7 +253,7 @@ export class Synthetizer
     }
     
     /**
-     * The maximum amount of voices allowed at once
+     * The maximum number of voices allowed at once
      * @param value {number}
      */
     set voiceCap(value)
@@ -280,7 +286,7 @@ export class Synthetizer
     }
     
     /**
-     * @returns {number} the current amount of voices playing
+     * @returns {number} the current number of voices playing
      */
     get voicesAmount()
     {
@@ -436,7 +442,7 @@ export class Synthetizer
     }
     
     /**
-     * Connects the individual audio outputs to the given audio nodes. In the app it's used by the renderer.
+     * Connects the individual audio outputs to the given audio nodes. In the app, it's used by the renderer.
      * @param audioNodes {AudioNode[]}
      */
     connectIndividualOutputs(audioNodes)
@@ -623,7 +629,7 @@ export class Synthetizer
     }
     
     /**
-     * Transposes the synthetizer's pitch by given semitones amount (percussion channels do not get affected)
+     * Transposes the synthetizer's pitch by given semitones amount (percussion channels don’t get affected)
      * @param semitones {number} the semitones to transpose by. Can be a floating point number for more precision
      */
     transpose(semitones)
