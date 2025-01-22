@@ -17,9 +17,9 @@ npm install --save spessasynth_lib
 
 <h1 align="center"><a href="https://spessasus.github.io/SpessaSynth/">Live Demo (no download needed!)</a></h1>
 
-<h2 align="center">YouTube Video</h2>
+<h2 align="center">Made with SpessaSynth</h2>
 <p align="center">
-<a href="https://www.youtube.com/watch?v=Cu_A1IR65yQ"><img width='500' alt="Watch the YouTube video" src="https://github.com/spessasus/SpessaSynth/assets/95608008/0fade923-1ed6-4565-8300-1f57ef70bc89"></a>
+<a href="https://www.youtube.com/watch?v=Cu_A1IR65yQ"><img width='500' alt="Watch the YouTube video" src="https://github.com/user-attachments/assets/d73c0585-67eb-4490-ad39-839b22ab7577"></a>
 </p>
 
 This repository contains both the library and a complete musical web application. See below:
@@ -231,7 +231,7 @@ Local edition comes with easier soundfont management than the demo version.
 #### Linux
 1. Clone the repository:
    ```bash
-   git clone https://github.com/spessasus/SpessaSynth
+   git clone https://github.com/spessasus/SpessaSynth --depth 1
    cd SpessaSynth
    npm start
    ```
