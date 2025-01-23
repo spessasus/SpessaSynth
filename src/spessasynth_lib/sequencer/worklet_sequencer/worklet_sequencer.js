@@ -161,6 +161,12 @@ class WorkletSequencer
         const wasPaused = this.paused && this.preservePlaybackState;
         this.pausedTime = undefined;
         this.post(WorkletSequencerReturnMessageType.timeChange, currentTime - time);
+        if (this.midiData.duration === 0)
+        {
+            SpessaSynthWarn("No duration!");
+            this.post(WorkletSequencerReturnMessageType.pause, true);
+            return;
+        }
         this._playTo(time);
         this._recalculateStartTime(time);
         if (wasPaused)
