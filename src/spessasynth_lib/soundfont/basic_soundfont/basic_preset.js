@@ -1,14 +1,16 @@
-/**
- * @typedef {{
- *  instrumentGenerators: Generator[],
- *  presetGenerators: Generator[],
- *  modulators: Modulator[],
- *  sample: BasicSample,
- *  sampleID: number,
- * }} SampleAndGenerators
- */
+import { BasicPresetZone } from "./basic_zones.js";
 import { generatorTypes } from "./generator.js";
 import { Modulator } from "./modulator.js";
+import { BasicSample } from "./basic_sample.js";
+
+/**
+ * @typedef {Object} SampleAndGenerators
+ * @property {Generator[]} instrumentGenerators - Array of instrument generators.
+ * @property {Generator[]} presetGenerators - Array of preset generators.
+ * @property {Modulator[]} modulators - Array of modulators.
+ * @property {BasicSample} sample - The basic sample.
+ * @property {number} sampleID - The sample ID.
+ */
 
 export class BasicPreset
 {
@@ -210,7 +212,7 @@ export class BasicPreset
         
         presetZonesInRange.forEach(zone =>
         {
-            // global zone is already taken into account earlier
+            // the global zone is already taken into account earlier
             if (zone.instrument.instrumentZones.length < 1)
             {
                 return;
@@ -288,7 +290,9 @@ export class BasicPreset
                         m => Modulator.isIdentical(mod, m));
                     if (identicalInstrumentModulator !== -1)
                     {
-                        // sum the amounts (this makes a new modulator because otherwise it would overwrite the one in the soundfont!!!
+                        // sum the amounts
+                        // (this makes a new modulator
+                        // because otherwise it would overwrite the one in the soundfont!
                         finalModulatorList[identicalInstrumentModulator] = finalModulatorList[identicalInstrumentModulator].sumTransform(
                             mod);
                     }

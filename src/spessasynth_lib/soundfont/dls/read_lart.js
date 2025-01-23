@@ -1,5 +1,7 @@
-import { readRIFFChunk } from "../basic_soundfont/riff_chunk.js";
+import { readRIFFChunk, RiffChunk } from "../basic_soundfont/riff_chunk.js";
 import { readArticulation } from "./read_articulation.js";
+import { BasicInstrumentZone } from "../basic_soundfont/basic_zones.js";
+import { DLSSoundFont } from "./dls_soundfont.js";
 
 /**
  * @param lartChunk {RiffChunk|undefined}

@@ -3,6 +3,11 @@ import {
     WorkletSoundfontManagerMessageType
 } from "./worklet_system/worklet_methods/worklet_soundfont_manager/sfman_message.js";
 import { SpessaSynthWarn } from "../utils/loggin.js";
+import { Synthetizer } from "./synthetizer.js";
+
+/**
+ * @import {WorkletSoundfontManagerMessageType} from "./worklet_system/worklet_methods/worklet_soundfont_manager/sfman_message.js"
+ */
 
 export class SoundfontManager
 {
@@ -100,7 +105,7 @@ export class SoundfontManager
     }
     
     /**
-     * DELETES ALL SOUNDFONTS!! and creates a new one with id "main"
+     * DELETES ALL SOUNDFONTS! and creates a new one with id "main"
      * @param newBuffer {ArrayBuffer}
      */
     async reloadManager(newBuffer)

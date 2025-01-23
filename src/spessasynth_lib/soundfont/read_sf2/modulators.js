@@ -1,6 +1,7 @@
 import { readLittleEndian, signedInt16 } from "../../utils/byte_functions/little_endian.js";
 import { IndexedByteArray } from "../../utils/indexed_array.js";
 import { Modulator } from "../basic_soundfont/modulator.js";
+import { RiffChunk } from "../basic_soundfont/riff_chunk.js";
 
 
 export class ReadModulator extends Modulator

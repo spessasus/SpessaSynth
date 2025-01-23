@@ -1,6 +1,7 @@
 import { Synthetizer } from "../synthetizer/synthetizer.js";
 import { consoleColors } from "../utils/other.js";
 import { SpessaSynthInfo, SpessaSynthWarn } from "../utils/loggin.js";
+import { Sequencer } from "../sequencer/sequencer.js";
 
 /**
  * midi_handler.js

@@ -1,6 +1,7 @@
 import { Modulator } from "../modulator.js";
 import { BasicInstrumentZone } from "../basic_zones.js";
 import { Generator, generatorLimits, generatorTypes } from "../generator.js";
+import { BasicPreset } from "../basic_preset.js";
 
 const notGlobalizedTypes = new Set([
     generatorTypes.velRange,
@@ -78,7 +79,7 @@ export function combineZones(preset, globalize = true)
     let globalPresetKeyRange = { min: 0, max: 127 };
     let globalPresetVelRange = { min: 0, max: 127 };
     
-    // find the global zone and apply ranges, generators and modulators
+    // find the global zone and apply ranges, generators, and modulators
     const globalPresetZone = preset.presetZones.find(z => z.isGlobal);
     if (globalPresetZone)
     {
@@ -151,7 +152,7 @@ export function combineZones(preset, globalize = true)
             instZoneKeyRange = subtractRanges(instZoneKeyRange, presetZoneKeyRange);
             instZoneVelRange = subtractRanges(instZoneVelRange, presetZoneVelRange);
             
-            // if either of the zones is out of range (i.e. min larger than max)
+            // if either of the zones is out of range (i.e., min larger than max),
             // then we discard that zone
             if (instZoneKeyRange.max < instZoneKeyRange.min || instZoneVelRange.max < instZoneVelRange.min)
             {
@@ -175,7 +176,9 @@ export function combineZones(preset, globalize = true)
                     m => Modulator.isIdentical(mod, m));
                 if (identicalInstMod !== -1)
                 {
-                    // sum the amounts (this makes a new modulator because otherwise it would overwrite the one in the soundfont!!!
+                    // sum the amounts
+                    // (this makes a new modulator
+                    // because otherwise it would overwrite the one in the soundfont!
                     finalModList[identicalInstMod] = finalModList[identicalInstMod].sumTransform(
                         mod);
                 }
@@ -336,13 +339,13 @@ export function combineZones(preset, globalize = true)
                     {
                         if (z.generators[gen].generatorValue === targetValue)
                         {
-                            // that exact value exists. Since it's global now, remove it
+                            // That exact value exists. Since it's global now, remove it
                             z.generators.splice(gen, 1);
                         }
                     }
                     else
                     {
-                        // that type does not exist at all here.
+                        // That type does not exist at all here.
                         // Since we're globalizing, we need to add the default here.
                         if (targetValue !== defaultForChecked)
                         {
@@ -378,13 +381,13 @@ export function combineZones(preset, globalize = true)
             if (existsForAllZones === true)
             {
                 globalZone.modulators.push(Modulator.copy(checkedModulator));
-                // delete from local zones.
+                // delete it from local zones.
                 for (const zone of finalZones)
                 {
                     const modulator = zone.modulators.find(m => Modulator.isIdentical(m, checkedModulator));
                     // Check if the amount is correct.
                     // If so, delete it since it's global.
-                    // if not, then it will simply override global as it's identical.
+                    // If not, then it will simply override global as it's identical.
                     if (modulator.transformAmount === checkedModulator.transformAmount)
                     {
                         zone.modulators.splice(zone.modulators.indexOf(modulator), 1);

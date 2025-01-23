@@ -8,6 +8,7 @@ import { BasicInstrumentZone, BasicPresetZone } from "./basic_zones.js";
 import { Generator, generatorTypes } from "./generator.js";
 import { BasicInstrument } from "./basic_instrument.js";
 import { BasicPreset } from "./basic_preset.js";
+import { IndexedByteArray } from "../../utils/indexed_array.js";
 
 class BasicSoundFont
 {
@@ -18,7 +19,7 @@ class BasicSoundFont
     constructor(data = undefined)
     {
         /**
-         * Soundfont's info stored as name: value. ifil and iver are stored as string representation of float (e.g. 2.1)
+         * Soundfont's info stored as name: value. ifil and iver are stored as string representation of float (e.g., 2.1)
          * @type {Object<string, string|IndexedByteArray>}
          */
         this.soundFontInfo = {};
@@ -254,7 +255,7 @@ class BasicSoundFont
             }
             else
             {
-                // non drum preset: find any preset with the given program that is not a drum preset
+                // non-drum preset: find any preset with the given program that is not a drum preset
                 preset = this.presets.find(p => p.program === programNr && p.bank !== 128);
             }
             if (preset)

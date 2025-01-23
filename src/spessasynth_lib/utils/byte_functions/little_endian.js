@@ -1,3 +1,5 @@
+import { IndexedByteArray } from "../indexed_array.js";
+
 /**
  * Reads as little endian
  * @param dataArray {IndexedByteArray}

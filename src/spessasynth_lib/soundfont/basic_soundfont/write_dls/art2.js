@@ -12,6 +12,7 @@ import {
     DLS_1_NO_VIBRATO_MOD,
     DLS_1_NO_VIBRATO_PRESSURE
 } from "../../dls/dls_sources.js";
+import { BasicInstrumentZone } from "../basic_zones.js";
 
 const invalidGeneratorTypes = new Set([
     generatorTypes.sampleModes,

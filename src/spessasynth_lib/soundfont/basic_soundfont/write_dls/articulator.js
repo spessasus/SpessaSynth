@@ -1,5 +1,7 @@
 import { IndexedByteArray } from "../../../utils/indexed_array.js";
 import { writeDword, writeWord } from "../../../utils/byte_functions/little_endian.js";
+import { DLSSources } from "../../dls/dls_sources.js";
+import { DLSDestinations } from "../../dls/dls_destinations.js";
 
 export class Articulator
 {

@@ -1,3 +1,5 @@
+import { IndexedByteArray } from "../indexed_array.js";
+
 /**
  * Reads as Big endian
  * @param dataArray {IndexedByteArray}
@@ -15,6 +17,7 @@ export function readBytesAsUintBigEndian(dataArray, bytesAmount)
 }
 
 /**
+ * Writes as Big endian
  * @param number {number}
  * @param bytesAmount {number}
  * @returns {number[]}

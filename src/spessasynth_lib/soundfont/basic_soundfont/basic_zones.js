@@ -1,4 +1,6 @@
 import { BasicZone } from "./basic_zone.js";
+import { BasicSample } from "./basic_sample.js";
+import { BasicInstrument } from "./basic_instrument.js";
 
 export class BasicInstrumentZone extends BasicZone
 {

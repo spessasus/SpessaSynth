@@ -3,6 +3,8 @@
  * purpose: manages the synthesizer's event system, calling assinged functions when synthesizer requests dispatching the event
  */
 
+import { SynthDisplayType } from "./worklet_system/worklet_methods/system_exclusive.js";
+
 /**
  * @typedef {Object} NoteOnCallback
  * @property {number} midiNote - The MIDI note number.
@@ -63,8 +65,8 @@
 /**
  * @typedef {Object} PitchWheelCallback
  * @property {number} channel - The MIDI channel number.
- * @property {number} MSB - The most significant byte of the pitch wheel value.
- * @property {number} LSB - The least significant byte of the pitch wheel value.
+ * @property {number} MSB - The most significant byte of the pitch-wheel value.
+ * @property {number} LSB - The least significant byte of the pitch-wheel value.
  */
 
 /**
@@ -124,13 +126,13 @@ export class EventHandler
          * @type {Object<EventTypes, Object<string, function(EventCallbackData)>>}
          */
         this.events = {
-            "noteoff": {},              // called on note off message
-            "noteon": {},               // called on note on message
-            "pitchwheel": {},           // called on pitch wheel change
+            "noteoff": {},              // called on a note off message
+            "noteon": {},               // called on a note on message
+            "pitchwheel": {},           // called on a pitch-wheel change
             "controllerchange": {},     // called on controller change
             "programchange": {},        // called on program change
-            "channelpressure": {},      // called on channel pressure message
-            "polypressure": {},         // called on poly pressure message
+            "channelpressure": {},      // called on a channel pressure message
+            "polypressure": {},         // called on a poly pressure message
             "drumchange": {},           // called when channel type changes
             "stopall": {},              // called when synth receives stop all command
             "newchannel": {},           // called when a new channel is created

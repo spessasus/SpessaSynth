@@ -3,8 +3,9 @@ import { IndexedByteArray } from "../utils/indexed_array.js";
 import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo, SpessaSynthWarn } from "../utils/loggin.js";
 import { consoleColors } from "../utils/other.js";
 import { DEFAULT_PERCUSSION } from "../synthetizer/synthetizer.js";
-
 import { customControllers } from "../synthetizer/worklet_system/worklet_utilities/controller_tables.js";
+import { BasicMIDI } from "./basic_midi.js";
+import { SynthesizerSnapshot } from "../synthetizer/worklet_system/snapshot/snapshot.js";
 
 /**
  * @param ticks {number}
@@ -20,10 +21,10 @@ export function getGsOn(ticks)
             0x10, // Device ID (defaults to 16 on roland)
             0x42, // GS
             0x12, // Command ID (DT1) (whatever that means...)
-            0x40, // System parameter           }
-            0x00, // Global parameter           } Address
-            0x7F, // GS Change                  }
-            0x00, // turn on                    } Data
+            0x40, // System parameter
+            0x00, // Global parameter - Address
+            0x7F, // GS Change
+            0x00, // turn on - Data
             0x41, // checksum
             0xF7 // end of exclusive
         ])
@@ -231,7 +232,7 @@ export function modifyMIDI(
      * @param chan {number}
      * @param port {number}
      * @param searchForNoteOn {boolean} search for note on if true, any voice otherwise.
-     * first note on is needed because multi port midis like to reference other ports before playing to the port we want.
+     * first note on is needed because multi-port midis like to reference other ports before playing to the port we want.
      * First voice otherwise, because MP6 doesn't like program changes after cc changes in embedded midis
      * @return {{index: number, track: number}[]}
      */
@@ -309,7 +310,7 @@ export function modifyMIDI(
         const port = midi.midiPortChannelOffsets.findIndex(o => o === offset);
         const targetValue = desiredChange.controllerValue;
         const ccNumber = desiredChange.controllerNumber;
-        // the controller is locked. Clear all controllers
+        // The controller is locked. Clear all controllers
         clearControllers(midiChannel, port, ccNumber);
         // since we've removed all ccs, we need to add the first one.
         SpessaSynthInfo(
@@ -357,7 +358,7 @@ export function modifyMIDI(
         clearControllers(midiChannel, port, midiControllers.bankSelect);
         clearControllers(midiChannel, port, midiControllers.lsbForControl0BankSelect);
         
-        // if drums or the program uses bank select, flag as gs
+        // if drums or the program uses a bank select, flag as gs
         if ((change.isDrum || desiredBank > 0) && !addedGs)
         {
             // make sure that GS is on
@@ -375,7 +376,7 @@ export function modifyMIDI(
                             && event.messageData[6] === 0x7F // Mode set
                         )
                         {
-                            // thats a GS on, we're done here
+                            // that's a GS on, we're done here
                             addedGs = true;
                             SpessaSynthInfo(
                                 "%cGS on detected!",
@@ -388,7 +389,7 @@ export function modifyMIDI(
                             && event.messageData[2] === 0x09 // gm system
                         )
                         {
-                            // thats a GM/2 system change, remove it!
+                            // that's a GM/2 system change, remove it!
                             SpessaSynthInfo(
                                 "%cGM/2 on detected, removing!",
                                 consoleColors.info
@@ -443,7 +444,7 @@ export function modifyMIDI(
         // add drums if needed
         if (change.isDrum)
         {
-            // do not add gs drum change on drum channel
+            // do not add gs drum change on a drum channel
             if (midiSystem === "gs" && midiChannel !== DEFAULT_PERCUSSION)
             {
                 SpessaSynthInfo(
@@ -465,7 +466,7 @@ export function modifyMIDI(
                     consoleColors.recognized,
                     consoleColors.value
                 );
-                // system is xg. drums are on msb bank 127.
+                // the system is xg. drums are on msb bank 127.
                 desiredBank = 127;
             }
         }
@@ -480,7 +481,7 @@ export function modifyMIDI(
             consoleColors.recognized
         );
         
-        // add bank
+        // add the bank change
         const bankChange = getControllerChange(
             midiChannel,
             midiControllers.bankSelect,

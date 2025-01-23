@@ -15,11 +15,29 @@ import { DEFAULT_SYNTH_CONFIG } from "./audio_effects/effects_config.js";
 import { SoundfontManager } from "./synth_soundfont_manager.js";
 import { channelConfiguration } from "./worklet_system/worklet_utilities/worklet_processor_channel.js";
 import { KeyModifierManager } from "./key_modifier_manager.js";
+import { BasicMIDI } from "../midi_parser/basic_midi.js";
+import { SynthesizerSnapshot } from "./worklet_system/snapshot/snapshot.js";
+import { WorkletSequencerReturnMessageType } from "../sequencer/worklet_sequencer/sequencer_message.js";
+
+/**
+ * @import {SynthConfig} from "./audio_effects/effects_config.js"
+ * @import {ChorusConfig} from "./audio_effects/fancy_chorus.js"
+ * @import {WorkletMessage} from "./worklet_system/message_protocol/worklet_message.js"
+ */
 
 
 /**
  * synthesizer.js
  * purpose: responds to midi messages and called functions, managing the channels and passing the messages to them
+ */
+
+/**
+ * @typedef {Object} ChannelProperty
+ * @property {number} voicesAmount
+ * @property {number} pitchBend - from -8192 do 8192
+ * @property {number} pitchBendRangeSemitones - in semitones
+ * @property {boolean} isMuted
+ * @property {boolean} isDrum
  */
 
 /**
@@ -109,7 +127,7 @@ export class Synthetizer
         this._voicesAmount = 0;
         
         /**
-         * For Black MIDI's - forces release time to 50ms
+         * For Black MIDI's - forces release time to 50 ms
          * @type {boolean}
          */
         this._highPerformanceMode = false;
@@ -268,7 +286,7 @@ export class Synthetizer
     }
     
     /**
-     * For Black MIDI's - forces release time to 50ms
+     * For Black MIDI's - forces release time to 50 ms
      * @param {boolean} value
      */
     set highPerformanceMode(value)
@@ -325,9 +343,10 @@ export class Synthetizer
     
     /**
      * Sets the interpolation type for the synthesizer:
-     * 0 - linear
-     * 1 - nearest neighbor
-     * @param type {interpolationTypes}
+     * 0. linear
+     * 1. nearest neighbor
+     * 2. cubic
+     * @param type {0|1|2}
      */
     setInterpolationType(type)
     {
@@ -663,7 +682,7 @@ export class Synthetizer
     
     /**
      * Sets the master stereo panning
-     * @param pan {number} -1 to 1, the pan (-1 is left, 0 is midde, 1 is right)
+     * @param pan {number} -1 to one, the pan (-1 is left, 0 is midde, 1 is right)
      */
     setMasterPan(pan)
     {
@@ -691,7 +710,8 @@ export class Synthetizer
      * Changes the patch for a given channel
      * @param channel {number} usually 0-15: the channel to change
      * @param programNumber {number} 0-127 the MIDI patch number
-     * @param userChange {boolean} indicates if the program change has been called by user. defaults to false
+     * @param userChange {boolean} indicates if user has called the program change.
+     * defaults to false
      */
     programChange(channel, programNumber, userChange = false)
     {

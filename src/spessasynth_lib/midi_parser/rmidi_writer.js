@@ -8,6 +8,8 @@ import { getGsOn } from "./midi_editor.js";
 import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo } from "../utils/loggin.js";
 import { consoleColors } from "../utils/other.js";
 import { writeLittleEndian } from "../utils/byte_functions/little_endian.js";
+import { BasicMIDI } from "./basic_midi.js";
+import { BasicSoundFont } from "../soundfont/basic_soundfont/basic_soundfont.js";
 
 /**
  * @enum {string}
@@ -79,9 +81,9 @@ export function writeRMIDI(
     SpessaSynthInfo("Initial bank offset", mid.bankOffset);
     if (correctBankOffset)
     {
-        // add offset to bank.
+        // Add offset to bank.
         // See https://github.com/spessasus/sf2-rmidi-specification#readme
-        // also fix presets that don't exists
+        // also fix presets that don't exist
         // since midiplayer6 doesn't seem to default to 0 when nonextistent...
         let system = "gm";
         /**
@@ -115,7 +117,7 @@ export function writeRMIDI(
             return index;
         }
         
-        // it copies midiPorts everywhere else, but here 0 works so DO NOT CHANGE!!!!!!!
+        // it copies midiPorts everywhere else, but here 0 works so DO NOT CHANGE!
         const ports = Array(mid.tracks.length).fill(0);
         const channelsAmount = 16 + mid.midiPortChannelOffsets.reduce((max, cur) => cur > max ? cur : max);
         /**
@@ -222,7 +224,7 @@ export function writeRMIDI(
                 {
                     if (soundfont.presets.findIndex(p => p.program === e.messageData[0] && p.bank === 128) === -1)
                     {
-                        // doesn't exist. pick any preset that has the 128 bank.
+                        // doesn't exist. pick any preset that has bank 128.
                         e.messageData[0] = soundfont.presets.find(p => p.bank === 128)?.program || 0;
                     }
                 }
@@ -230,7 +232,7 @@ export function writeRMIDI(
                 {
                     if (soundfont.presets.findIndex(p => p.program === e.messageData[0] && p.bank !== 128) === -1)
                     {
-                        // doesn't exist. pick any preset that does not have the 128 bank.
+                        // doesn't exist. pick any preset that does not have bank 128.
                         e.messageData[0] = soundfont.presets.find(p => p.bank !== 128)?.program || 0;
                     }
                 }
@@ -244,7 +246,7 @@ export function writeRMIDI(
                 }
                 if (system === "xg" && channel.drums)
                 {
-                    // drums override: set bank to 127
+                    // drums override: set the bank to 127
                     channelsInfo[chNum].lastBank.messageData[1] = 127;
                 }
                 
@@ -262,7 +264,7 @@ export function writeRMIDI(
                 }
                 else
                 {
-                    // there is a preset with this bank. add offset. For drums add the normal offset.
+                    // There is a preset with this bank. Add offset. For drums add the normal offset.
                     let drumBank = system === "xg" ? 127 : 0;
                     const newBank = (bank === 128 ? drumBank : realBank) + bankOffset;
                     channel.lastBank.messageData[1] = newBank;
@@ -298,7 +300,7 @@ export function writeRMIDI(
             {
                 return;
             }
-            // find first program change (for the given channel)
+            // find the first program change (for the given channel)
             const midiChannel = ch % 16;
             const status = messageTypes.programChange | midiChannel;
             // find track with this channel being used

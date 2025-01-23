@@ -1,3 +1,5 @@
+import { BasicInstrumentZone } from "./basic_zones.js";
+
 export class BasicInstrument
 {
     constructor()

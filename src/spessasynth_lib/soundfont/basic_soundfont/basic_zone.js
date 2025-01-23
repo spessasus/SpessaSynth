@@ -1,3 +1,6 @@
+import { Generator, generatorTypes } from "./generator.js";
+import { Modulator } from "./modulator.js";
+
 /**
  * @typedef {Object} SoundFontRange
  * @property {number} min - the minimum midi note

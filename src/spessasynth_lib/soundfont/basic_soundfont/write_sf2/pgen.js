@@ -1,7 +1,7 @@
 import { writeWord } from "../../../utils/byte_functions/little_endian.js";
 import { IndexedByteArray } from "../../../utils/indexed_array.js";
 import { RiffChunk, writeRIFFChunk } from "../riff_chunk.js";
-
+import { BasicSoundFont } from "../basic_soundfont.js";
 import { generatorTypes } from "../generator.js";
 
 /**
@@ -10,8 +10,8 @@ import { generatorTypes } from "../generator.js";
  */
 export function getPGEN()
 {
-    // almost identical to igen, except correct instrument instead of sample gen
-    // go through all preset zones and write generators sequentially (add 4 for terminal)
+    // almost identical to igen, except the correct instrument instead of sample gen
+    // goes through all preset zones and writes generators sequentially (add 4 for terminal)
     let pgensize = 4;
     for (const preset of this.presets)
     {
@@ -40,7 +40,7 @@ export function getPGEN()
             }
             if (!z.isGlobal)
             {
-                // write instrument
+                // write the instrument
                 z.generators.push({
                     generatorType: generatorTypes.instrument,
                     generatorValue: this.instruments.indexOf(z.instrument)

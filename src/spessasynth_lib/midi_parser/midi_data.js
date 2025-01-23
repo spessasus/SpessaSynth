@@ -1,4 +1,5 @@
 import { MIDISequenceData } from "./midi_sequence.js";
+import { BasicMIDI } from "./basic_midi.js";
 
 /**
  * A simplified version of the MIDI, accessible at all times from the Sequencer.

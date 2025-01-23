@@ -1,13 +1,14 @@
 import { readBytesAsString } from "../../utils/byte_functions/string.js";
 import { readLittleEndian } from "../../utils/byte_functions/little_endian.js";
 import { DLSPreset } from "./dls_preset.js";
-import { findRIFFListType, readRIFFChunk } from "../basic_soundfont/riff_chunk.js";
+import { findRIFFListType, readRIFFChunk, RiffChunk } from "../basic_soundfont/riff_chunk.js";
 import { SpessaSynthGroup, SpessaSynthGroupEnd } from "../../utils/loggin.js";
 import { BasicInstrumentZone } from "../basic_soundfont/basic_zones.js";
 import { consoleColors } from "../../utils/other.js";
 import { generatorLimits, generatorTypes } from "../basic_soundfont/generator.js";
 import { Modulator } from "../basic_soundfont/modulator.js";
 import { DEFAULT_DLS_CHORUS, DEFAULT_DLS_REVERB } from "./dls_sources.js";
+import { DLSSoundFont } from "./dls_soundfont.js";
 
 /**
  * @this {DLSSoundFont}

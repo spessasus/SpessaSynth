@@ -1,6 +1,7 @@
 import { writeRIFFOddSize } from "../riff_chunk.js";
-import { combineArrays } from "../../../utils/indexed_array.js";
+import { combineArrays, IndexedByteArray } from "../../../utils/indexed_array.js";
 import { writeIns } from "./ins.js";
+import { BasicSoundFont } from "../basic_soundfont.js";
 
 /**
  * @this {BasicSoundFont}

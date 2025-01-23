@@ -1,6 +1,7 @@
-import { readRIFFChunk } from "../basic_soundfont/riff_chunk.js";
+import { readRIFFChunk, RiffChunk } from "../basic_soundfont/riff_chunk.js";
 import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd } from "../../utils/loggin.js";
 import { consoleColors } from "../../utils/other.js";
+import { DLSSoundFont } from "./dls_soundfont.js";
 
 /**
  * @this {DLSSoundFont}

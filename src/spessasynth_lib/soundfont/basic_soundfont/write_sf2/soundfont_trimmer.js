@@ -6,6 +6,8 @@ import {
     SpessaSynthInfo
 } from "../../../utils/loggin.js";
 import { getUsedProgramsAndKeys } from "../../../midi_parser/used_keys_loaded.js";
+import { BasicSoundFont } from "../basic_soundfont.js";
+import { BasicMIDI } from "../../../midi_parser/basic_midi.js";
 
 /**
  * @param soundfont {BasicSoundFont}

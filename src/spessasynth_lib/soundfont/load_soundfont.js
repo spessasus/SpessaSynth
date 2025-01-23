@@ -2,6 +2,7 @@ import { IndexedByteArray } from "../utils/indexed_array.js";
 import { readBytesAsString } from "../utils/byte_functions/string.js";
 import { DLSSoundFont } from "./dls/dls_soundfont.js";
 import { SoundFont2 } from "./read_sf2/soundfont.js";
+import { BasicSoundFont } from "./basic_soundfont/basic_soundfont.js";
 
 /**
  * Loads a soundfont file

@@ -1,6 +1,7 @@
-import { messageTypes } from "./midi_message.js";
+import { messageTypes, MidiMessage } from "./midi_message.js";
 import { readBytesAsUintBigEndian } from "../utils/byte_functions/big_endian.js";
 import { MIDISequenceData } from "./midi_sequence.js";
+import { MidiData } from "./midi_data.js";
 
 /**
  * BasicMIDI is the base of a complete MIDI file, used by the sequencer internally.

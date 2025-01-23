@@ -2,6 +2,7 @@ import { IndexedByteArray } from "../../../utils/indexed_array.js";
 import { writeStringAsBytes } from "../../../utils/byte_functions/string.js";
 import { writeWord } from "../../../utils/byte_functions/little_endian.js";
 import { RiffChunk, writeRIFFChunk } from "../riff_chunk.js";
+import { BasicSoundFont } from "../basic_soundfont.js";
 
 /**
  * @this {BasicSoundFont}

@@ -1,4 +1,4 @@
-import { findRIFFListType, readRIFFChunk } from "../basic_soundfont/riff_chunk.js";
+import { findRIFFListType, readRIFFChunk, RiffChunk } from "../basic_soundfont/riff_chunk.js";
 import { readBytesAsString } from "../../utils/byte_functions/string.js";
 import {
     SpessaSynthGroupCollapsed,
@@ -9,6 +9,7 @@ import {
 import { consoleColors } from "../../utils/other.js";
 import { readLittleEndian, signedInt16 } from "../../utils/byte_functions/little_endian.js";
 import { DLSSample } from "./dls_sample.js";
+import { DLSSoundFont } from "./dls_soundfont.js";
 
 const W_FORMAT_TAG = {
     PCM: 0x01,
@@ -35,7 +36,7 @@ function readPCM(dataChunk, bytesPerSample)
     }
     else
     {
-        normalizationFactor = maxSampleValue; // For 16-bit normalize from -32768 to 32767
+        normalizationFactor = maxSampleValue; // For 16-bit normalize from -32,768 to 32,767
     }
     const sampleLength = dataChunk.size / bytesPerSample;
     const sampleData = new Float32Array(sampleLength);
@@ -167,7 +168,7 @@ export function readDLSSamples(waveListChunk)
                 failed = true;
                 sampleData = new Float32Array(dataChunk.size / bytesPerSample);
                 break;
-            //throw new Error(`Unsupported WAVE format. Fmt reports ${waveFormat}`);
+            //throw new Error (`Unsupported WAVE format. Fmt reports ${waveFormat}`);
             
             case W_FORMAT_TAG.PCM:
                 sampleData = readPCM(dataChunk, bytesPerSample);
@@ -195,7 +196,7 @@ export function readDLSSamples(waveListChunk)
             }
         }
         
-        // sane defaults
+        // reasonable defaults
         let sampleKey = 60;
         let samplePitch = 0;
         let sampleLoopStart = 0;
@@ -210,13 +211,13 @@ export function readDLSSamples(waveListChunk)
             readLittleEndian(wsmpChunk.chunkData, 4);
             sampleKey = readLittleEndian(wsmpChunk.chunkData, 2);
             // section 1.14.2: Each relative pitch unit represents 1/65536 cents.
-            // but that doesn't seem to be true for this one: it's just cents.
+            // but that doesn't seem true for this one: it's just cents.
             samplePitch = signedInt16(
                 wsmpChunk.chunkData[wsmpChunk.chunkData.currentIndex++],
                 wsmpChunk.chunkData[wsmpChunk.chunkData.currentIndex++]
             );
             
-            // pitch correction: convert hundreds to root key
+            // pitch correction: convert hundreds to the root key
             const samplePitchSemitones = Math.trunc(samplePitch / 100);
             sampleKey += samplePitchSemitones;
             samplePitch -= samplePitchSemitones * 100;

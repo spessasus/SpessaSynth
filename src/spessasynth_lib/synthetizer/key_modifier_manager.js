@@ -1,5 +1,6 @@
 import { workletMessageType } from "./worklet_system/message_protocol/worklet_message.js";
 import { KeyModifier, workletKeyModifierMessageType } from "./worklet_system/worklet_methods/worklet_key_modifier.js";
+import { Synthetizer } from "./synthetizer.js";
 
 export class KeyModifierManager
 {

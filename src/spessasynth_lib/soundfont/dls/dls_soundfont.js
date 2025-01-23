@@ -2,7 +2,7 @@ import { BasicSoundFont } from "../basic_soundfont/basic_soundfont.js";
 import { IndexedByteArray } from "../../utils/indexed_array.js";
 import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo } from "../../utils/loggin.js";
 import { consoleColors } from "../../utils/other.js";
-import { findRIFFListType, readRIFFChunk } from "../basic_soundfont/riff_chunk.js";
+import { findRIFFListType, readRIFFChunk, RiffChunk } from "../basic_soundfont/riff_chunk.js";
 import { readBytesAsString } from "../../utils/byte_functions/string.js";
 import { readLittleEndian } from "../../utils/byte_functions/little_endian.js";
 import { readDLSInstrumentList } from "./read_instrument_list.js";
@@ -34,7 +34,7 @@ class DLSSoundFont extends BasicSoundFont
         this.verifyText(readBytesAsString(this.dataArray, 4).toLowerCase(), "dls ");
         
         /**
-         * Read list
+         * Read the list
          * @type {RiffChunk[]}
          */
         const chunks = [];
@@ -95,7 +95,7 @@ class DLSSoundFont extends BasicSoundFont
             consoleColors.recognized
         );
         
-        // read wave list
+        // read the wave list
         let waveListChunk = findRIFFListType(chunks, "wvpl");
         if (!waveListChunk)
         {
@@ -104,7 +104,7 @@ class DLSSoundFont extends BasicSoundFont
         }
         this.readDLSSamples(waveListChunk);
         
-        // read instrument list
+        // read the instrument list
         let instrumentListChunk = findRIFFListType(chunks, "lins");
         if (!instrumentListChunk)
         {

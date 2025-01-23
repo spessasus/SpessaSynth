@@ -7,6 +7,7 @@ import { getStringBytesZero } from "../../../utils/byte_functions/string.js";
 import { writeArticulator } from "./art2.js";
 import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd } from "../../../utils/loggin.js";
 import { consoleColors } from "../../../utils/other.js";
+import { BasicSoundFont } from "../basic_soundfont.js";
 
 /**
  * @this {BasicSoundFont}
@@ -65,7 +66,7 @@ export function writeIns(preset)
         );
     }
     
-    // write region list
+    // write the region list
     const lrgnData = combineArrays(combined.reduce((arrs, z) =>
     {
         if (!z.isGlobal)

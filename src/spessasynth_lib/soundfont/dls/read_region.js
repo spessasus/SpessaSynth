@@ -1,7 +1,8 @@
 import { readLittleEndian, signedInt16 } from "../../utils/byte_functions/little_endian.js";
-import { findRIFFListType, readRIFFChunk } from "../basic_soundfont/riff_chunk.js";
+import { findRIFFListType, readRIFFChunk, RiffChunk } from "../basic_soundfont/riff_chunk.js";
 import { DLSZone } from "./dls_zone.js";
 import { Generator, generatorTypes } from "../basic_soundfont/generator.js";
+import { DLSSoundFont } from "./dls_soundfont.js";
 
 /**
  * @this {DLSSoundFont}
@@ -64,7 +65,7 @@ export function readRegion(chunk)
         waveSampleChunk.chunkData[waveSampleChunk.chunkData.currentIndex++]
     );
     
-    // gain correction:  Each unit of gain represents 1/655360 dB
+    // gain correction: Each unit of gain represents 1/655360 dB
     // it is set after linking the sample
     const gainCorrection = readLittleEndian(waveSampleChunk.chunkData, 4);
     // convert to signed and turn into attenuation (invert)
@@ -87,7 +88,7 @@ export function readRegion(chunk)
         // ignore cbSize
         readLittleEndian(waveSampleChunk.chunkData, 4);
         // loop type: loop normally or loop until release (like soundfont)
-        const loopType = readLittleEndian(waveSampleChunk.chunkData, 4); // why is it long???
+        const loopType = readLittleEndian(waveSampleChunk.chunkData, 4); // why is it long?
         if (loopType === 0)
         {
             loopingMode = 1;
@@ -105,7 +106,7 @@ export function readRegion(chunk)
     const waveLinkChunk = regionChunks.find(c => c.header === "wlnk");
     if (waveLinkChunk === undefined)
     {
-        // no wave link = no sample. What? Why is it even here then????
+        // No wave link = No existing sample. What? Why is it even here then?
         return undefined;
     }
     

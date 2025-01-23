@@ -4,6 +4,16 @@
  * loads sample data, handles async loading of sf3 compressed samples
  */
 import { SpessaSynthWarn } from "../../utils/loggin.js";
+import { IndexedByteArray } from "../../utils/indexed_array.js";
+
+/**
+ * @typedef {function} EncodeVorbisFunction
+ * @param channelAudioData {Float32Array[]}
+ * @param sampleRate {number}
+ * @param channels {number}
+ * @param quality {number} -0.1 to 1
+ * @returns {Uint8Array}
+ */
 
 // should be reasonable for most cases
 const RESAMPLE_RATE = 48000;
@@ -63,12 +73,12 @@ export class BasicSample
          */
         this.sampleType = sampleType;
         /**
-         * Relative to start of the sample in sample points
+         * Relative to the start of the sample in sample points
          * @type {number}
          */
         this.sampleLoopStartIndex = loopStart;
         /**
-         * Relative to start of the sample in sample points
+         * Relative to the start of the sample in sample points
          * @type {number}
          */
         this.sampleLoopEndIndex = loopEnd;

@@ -2,6 +2,12 @@ import { RiffChunk, writeRIFFChunk } from "../riff_chunk.js";
 import { IndexedByteArray } from "../../../utils/indexed_array.js";
 import { SpessaSynthInfo } from "../../../utils/loggin.js";
 import { consoleColors } from "../../../utils/other.js";
+import { BasicSoundFont } from "../basic_soundfont.js";
+
+/**
+ * @import {EncodeVorbisFunction} from "../basic_sample.js"
+ */
+
 
 /**
  * @this {BasicSoundFont}

@@ -1,11 +1,12 @@
 import { messageTypes } from "./midi_message.js";
 import { writeVariableLengthQuantity } from "../utils/byte_functions/variable_length_quantity.js";
 import { writeBytesAsUintBigEndian } from "../utils/byte_functions/big_endian.js";
+import { BasicMIDI } from "./basic_midi.js";
 
 /**
- * Exports the midi as a .mid file
+ * Exports the midi as a midi file
  * @param midi {BasicMIDI} the midi to export
- * @returns {Uint8Array} the binary .mid file data
+ * @returns {Uint8Array} the binary standard midi file data
  */
 export function writeMIDIFile(midi)
 {
@@ -24,7 +25,7 @@ export function writeMIDIFile(midi)
         let runningByte = undefined;
         for (const event of track)
         {
-            // ticks stored in MIDI are absolute, but .mid wants relative. Convert them here.
+            // Ticks stored in MIDI are absolute, but midi wants relative. Convert them here.
             const deltaTicks = event.ticks - currentTick;
             /**
              * @type {number[]}
@@ -33,7 +34,7 @@ export function writeMIDIFile(midi)
             // determine the message
             if (event.messageStatusByte <= messageTypes.keySignature || event.messageStatusByte === messageTypes.sequenceSpecific)
             {
-                // this is a meta message
+                // this is a meta-message
                 // syntax is FF<type><length><data>
                 messageData = [0xff, event.messageStatusByte, ...writeVariableLengthQuantity(event.messageData.length), ...event.messageData];
             }
@@ -49,7 +50,7 @@ export function writeMIDIFile(midi)
                 messageData = [];
                 if (runningByte !== event.messageStatusByte)
                 {
-                    // running byte was not the byte we want. Add the byte here.
+                    // Running byte was not the byte we want. Add the byte here.
                     runningByte = event.messageStatusByte;
                     // add the status byte to the midi
                     messageData.push(event.messageStatusByte);
@@ -59,7 +60,7 @@ export function writeMIDIFile(midi)
             }
             // write VLQ
             binaryTrack.push(...writeVariableLengthQuantity(deltaTicks));
-            // write message
+            // write the message
             binaryTrack.push(...messageData);
             currentTick += deltaTicks;
         }

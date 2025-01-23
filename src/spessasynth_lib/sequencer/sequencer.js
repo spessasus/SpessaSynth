@@ -11,6 +11,11 @@ import { DUMMY_MIDI_DATA, MidiData } from "../midi_parser/midi_data.js";
 import { BasicMIDI } from "../midi_parser/basic_midi.js";
 
 /**
+ * @import {WorkletSequencerMessageType} from "./worklet_sequencer/sequencer_message.js"
+ * @import {WorkletSequencerReturnMessageType} from "./worklet_sequencer/sequencer_message.js"
+ */
+
+/**
  * sequencer.js
  * purpose: plays back the midi file decoded by midi_loader.js, including support for multichannel midis
  * (adding channels when more than one midi port is detected)

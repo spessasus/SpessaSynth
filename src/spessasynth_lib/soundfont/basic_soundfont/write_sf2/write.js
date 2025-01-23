@@ -14,11 +14,23 @@ import { getPBAG } from "./pbag.js";
 import { getPHDR } from "./phdr.js";
 import { writeWord } from "../../../utils/byte_functions/little_endian.js";
 import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo } from "../../../utils/loggin.js";
+import { BasicSoundFont } from "../basic_soundfont.js";
+
+/**
+ * @typedef {function} EncodeVorbisFunction
+ * @param channelAudioData {Float32Array[]}
+ * @param sampleRate {number}
+ * @param channels {number}
+ * @param quality {number} -0.1 to 1
+ * @returns {Uint8Array}
+ */
+
 /**
  * @typedef {Object} SoundFont2WriteOptions
- * @property {boolean} compress - if the soundfont should be compressed with the ogg vorbis codec
+ * @property {boolean} compress - if the soundfont should be compressed with the Ogg Vorbis codec
  * @property {number} compressionQuality - the vorbis compression quality, from -0.1 to 1
- * @property {EncodeVorbisFunction|undefined} compressionFunction - the encode vorbis function. Can be undefined if not compressing.
+ * @property {EncodeVorbisFunction|undefined} compressionFunction - the encode vorbis function.
+ * Can be undefined if the soundfont should not get compressed.
  */
 
 /**

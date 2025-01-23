@@ -6,6 +6,7 @@ import { getStringBytesZero, writeStringAsBytes } from "../../../utils/byte_func
 import { writeWavePool } from "./wvpl.js";
 import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo } from "../../../utils/loggin.js";
 import { consoleColors } from "../../../utils/other.js";
+import { BasicSoundFont } from "../basic_soundfont.js";
 
 /**
  * Write the soundfont as a .dls file. Experimental

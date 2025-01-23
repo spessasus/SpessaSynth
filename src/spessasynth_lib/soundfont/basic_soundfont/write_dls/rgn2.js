@@ -4,6 +4,8 @@ import { generatorTypes } from "../generator.js";
 import { writeRIFFOddSize } from "../riff_chunk.js";
 import { writeWavesample } from "./wsmp.js";
 import { writeArticulator } from "./art2.js";
+import { BasicInstrumentZone } from "../basic_zones.js";
+import { BasicSoundFont } from "../basic_soundfont.js";
 
 /**
  * @param zone {BasicInstrumentZone}

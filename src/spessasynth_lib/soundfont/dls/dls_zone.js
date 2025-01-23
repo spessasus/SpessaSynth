@@ -1,5 +1,10 @@
 import { BasicInstrumentZone } from "../basic_soundfont/basic_zones.js";
 import { Generator, generatorTypes } from "../basic_soundfont/generator.js";
+import { BasicSample } from "../basic_soundfont/basic_sample.js";
+
+/**
+ * @import {SoundFontRange} from "../basic_zone.js";
+ */
 
 export class DLSZone extends BasicInstrumentZone
 {
@@ -82,7 +87,7 @@ export class DLSZone extends BasicInstrumentZone
                 }
             }
         }
-        // correct key if needed
+        // correct the key if needed
         if (sampleKey !== sample.samplePitch)
         {
             this.generators.push(new Generator(generatorTypes.overridingRootKey, sampleKey));

@@ -1,8 +1,8 @@
 import { writeDword, writeWord } from "../../../utils/byte_functions/little_endian.js";
 import { IndexedByteArray } from "../../../utils/indexed_array.js";
 import { RiffChunk, writeRIFFChunk } from "../riff_chunk.js";
-
 import { generatorTypes } from "../generator.js";
+import { BasicSoundFont } from "../basic_soundfont.js";
 
 /**
  * @this {BasicSoundFont}
@@ -22,8 +22,8 @@ export function getIGEN()
                 g.generatorType !== generatorTypes.keyRange &&
                 g.generatorType !== generatorTypes.velRange
             );
-            // add sample and ranges if needed
-            // unshift vel then key ( to make key first) and instrument is last
+            // add sample and ranges if necessary
+            // unshift vel then key (to make key first) and the instrument is last
             if (z.velRange.max !== 127 || z.velRange.min !== 0)
             {
                 z.generators.unshift({

@@ -2,6 +2,16 @@ import { returnMessageType } from "../message_protocol/worklet_message.js";
 import { SpessaSynthInfo } from "../../../utils/loggin.js";
 import { consoleColors } from "../../../utils/other.js";
 import { getBankSelect, setBankSelect } from "../worklet_utilities/worklet_processor_channel.js";
+import { KeyModifier } from "../worklet_methods/worklet_key_modifier.js";
+
+/**
+ * @import {SynthConfig} from "../../audio_effects/effects_config.js"
+ */
+
+/**
+ * Controls the system
+ * @typedef {"gm"|"gm2"|"gs"|"xg"} SynthSystem
+ */
 
 /**
  * Represents a snapshot of a single channel's state in the synthesizer.
@@ -103,7 +113,7 @@ class ChannelSnapshot
     
     /**
      * Creates a snapshot of a single channel's state in the synthesizer.
-     * @param workletProcessor {SpessaSynthProcessor}
+     * @param workletProcessor {Object}
      * @param channelNumber {number}
      * @returns {ChannelSnapshot}
      */
@@ -140,7 +150,7 @@ class ChannelSnapshot
     
     /**
      * Applies the snapshot to the specified channel.
-     * @param workletProcessor {SpessaSynthProcessor}
+     * @param workletProcessor {Object}
      * @param channelNumber {number}
      * @param channelSnapshot {ChannelSnapshot}
      */
@@ -173,7 +183,7 @@ class ChannelSnapshot
 /**
  * Represents a snapshot of the synthesizer's state.
  */
-class SynthesizerSnapshot
+export class SynthesizerSnapshot
 {
     /**
      * The individual channel snapshots.
@@ -201,7 +211,7 @@ class SynthesizerSnapshot
     
     /**
      * The synth's interpolation type.
-     * @type {interpolationTypes}
+     * @type {0|1|2}
      */
     interpolation;
     
@@ -218,7 +228,7 @@ class SynthesizerSnapshot
     transposition;
     
     /**
-     * The effects configuration object.
+     * The effect configuration object.
      * @type {SynthConfig}
      */
     effectsConfig;
@@ -226,7 +236,7 @@ class SynthesizerSnapshot
     
     /**
      * Creates a snapshot of the synthesizer's state.
-     * @param workletProcessor {SpessaSynthProcessor}
+     * @param workletProcessor {Object}
      * @returns {SynthesizerSnapshot}
      */
     static createSynthesizerSnapshot(workletProcessor)
@@ -248,7 +258,7 @@ class SynthesizerSnapshot
         snapshot.interpolation = workletProcessor.interpolationType;
         snapshot.transposition = workletProcessor.transposition;
         
-        // effects config is stored on the main thread, leave it empty
+        // effect config is stored on the main thread, leave it empty
         snapshot.effectsConfig = {};
         return snapshot;
         
@@ -256,7 +266,7 @@ class SynthesizerSnapshot
     
     /**
      * Applies the snapshot to the synthesizer.
-     * @param workletProcessor {SpessaSynthProcessor}
+     * @param workletProcessor {Object}
      * @param snapshot {SynthesizerSnapshot}
      */
     static applySnapshot(workletProcessor, snapshot)
@@ -289,7 +299,7 @@ class SynthesizerSnapshot
 
 /**
  * sends a snapshot of the current controller values of the synth (used to copy that data to OfflineAudioContext when rendering)
- * @this {SpessaSynthProcessor}
+ * @this {Object}
  */
 export function sendSynthesizerSnapshot()
 {
@@ -302,7 +312,7 @@ export function sendSynthesizerSnapshot()
 /**
  * Applies the snapshot to the synth
  * @param snapshot {SynthesizerSnapshot}
- * @this {SpessaSynthProcessor}
+ * @this {Object}
  */
 export function applySynthesizerSnapshot(snapshot)
 {
