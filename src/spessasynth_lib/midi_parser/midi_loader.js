@@ -404,7 +404,7 @@ class MIDI extends BasicMIDI
                                 // note here: .kar files sometimes just use...
                                 // lyrics instead of text because why not (of course)
                                 // perform the same check for @KMIDI KARAOKE FILE
-                                if (eventText.trim() === "@KMIDI KARAOKE FILE")
+                                if (eventText.trim().startsWith("@KMIDI KARAOKE FILE"))
                                 {
                                     this.isKaraokeFile = true;
                                     SpessaSynthInfo("%cKaraoke MIDI detected!", consoleColors.recognized);
@@ -431,7 +431,7 @@ class MIDI extends BasicMIDI
                                 // it has a text event at the start of the file
                                 // "@KMIDI KARAOKE FILE"
                                 const checkedText = eventText.trim();
-                                if (checkedText === "@KMIDI KARAOKE FILE")
+                                if (checkedText.startsWith("@KMIDI KARAOKE FILE"))
                                 {
                                     this.isKaraokeFile = true;
                                     
