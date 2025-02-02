@@ -109,7 +109,7 @@ export class Synthetizer
         this._voicesAmount = 0;
         
         /**
-         * For Black MIDI's - forces release time to 50ms
+         * For Black MIDI's - forces release time to 50 ms
          * @type {boolean}
          */
         this._highPerformanceMode = false;
@@ -268,7 +268,7 @@ export class Synthetizer
     }
     
     /**
-     * For Black MIDI's - forces release time to 50ms
+     * For Black MIDI's - forces release time to 50 ms
      * @param {boolean} value
      */
     set highPerformanceMode(value)
@@ -325,8 +325,8 @@ export class Synthetizer
     
     /**
      * Sets the interpolation type for the synthesizer:
-     * 0 - linear
-     * 1 - nearest neighbor
+     * 0. - linear
+     * 1. - nearest neighbor
      * @param type {interpolationTypes}
      */
     setInterpolationType(type)
@@ -663,7 +663,7 @@ export class Synthetizer
     
     /**
      * Sets the master stereo panning
-     * @param pan {number} -1 to 1, the pan (-1 is left, 0 is midde, 1 is right)
+     * @param pan {number} (-1 to 1), the pan (-1 is left, 0 is midde, 1 is right)
      */
     setMasterPan(pan)
     {
@@ -691,7 +691,8 @@ export class Synthetizer
      * Changes the patch for a given channel
      * @param channel {number} usually 0-15: the channel to change
      * @param programNumber {number} 0-127 the MIDI patch number
-     * @param userChange {boolean} indicates if the program change has been called by user. defaults to false
+     * @param userChange {boolean} indicates if user has called the program change.
+     * defaults to false
      */
     programChange(channel, programNumber, userChange = false)
     {
@@ -912,6 +913,7 @@ export class Synthetizer
         for (let i = 0; i < this.channelsAmount; i++)
         {
             this.controllerChange(i, midiControllers.reverbDepth, 127);
+            this.lockController(i, midiControllers.reverbDepth, true);
         }
         return "That's the spirit!";
     }

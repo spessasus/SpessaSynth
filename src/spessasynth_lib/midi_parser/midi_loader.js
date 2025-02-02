@@ -12,7 +12,9 @@ import { BasicMIDI, MIDIticksToSeconds } from "./basic_midi.js";
 
 /**
  * midi_loader.js
- * purpose: parses a midi file for the seqyencer, including things like marker or CC 2/4 loop detection, copyright detection etc.
+ * purpose:
+ * parses a midi file for the seqyencer,
+ * including things like marker or CC 2/4 loop detection, copyright detection, etc.
  */
 
 /**
@@ -65,7 +67,7 @@ class MIDI extends BasicMIDI
                 SpessaSynthGroupEnd();
                 throw new SyntaxError(`Invalid RMIDI Chunk header! Expected "data", got "${rmid}"`);
             }
-            // this is an rmid, load the midi into array for parsing
+            // this is a rmid, load the midi into an array for parsing
             fileByteArray = riff.chunkData;
             
             // keep loading chunks until we get sfbk
@@ -87,7 +89,7 @@ class MIDI extends BasicMIDI
                     }
                     if (type === "dls ")
                     {
-                        // assume bank offset of 0 by default. If we find any bank selects, then the offset is 1.
+                        // Assume bank offset of 0 by default. If we find any bank selects, then the offset is 1.
                         DLSRMID = true;
                     }
                 }
@@ -145,7 +147,7 @@ class MIDI extends BasicMIDI
             
             if (DLSRMID)
             {
-                // assume bank offset of 0 by default. If we find any bank selects, then the offset is 1.
+                // Assume bank offset of 0 by default. If we find any bank selects, then the offset is 1.
                 this.bankOffset = 0;
             }
         }
@@ -198,8 +200,8 @@ class MIDI extends BasicMIDI
         let loopEnd = null;
         
         /**
-         * For karaoke files, text events starting with @T are considered titles
-         * usually the first one is the title, and the latter are things such as "sequenced by" etc.
+         * For karaoke files, text events starting with @T are considered titles,
+         * usually the first one is the title, and the latter is things such as "sequenced by" etc.
          * @type {boolean}
          */
         let karaokeHasTitle = false;
@@ -207,7 +209,7 @@ class MIDI extends BasicMIDI
         this.lastVoiceEventTick = 0;
         
         /**
-         * Midi port numbers for each tracks
+         * Midi port numbers for each one of the tracks
          * @type {number[]}
          */
         this.midiPorts = [];
@@ -282,7 +284,7 @@ class MIDI extends BasicMIDI
                 }
                 else
                 {
-                    // if the status byte is valid, just use that
+                    // if the status byte is valid, use that
                     statusByte = trackChunk.data[trackChunk.data.currentIndex++];
                 }
                 const statusByteChannel = getChannel(statusByte);
@@ -310,7 +312,7 @@ class MIDI extends BasicMIDI
                     
                     default:
                         // voice message
-                        // get the midi message length
+                        // gets the midi message length
                         if (totalTicks > this.lastVoiceEventTick)
                         {
                             this.lastVoiceEventTick = totalTicks;
@@ -344,7 +346,7 @@ class MIDI extends BasicMIDI
                 switch (statusByteChannel)
                 {
                     case -2:
-                        // since this is a meta message
+                        // since this is a meta-message
                         const eventText = readBytesAsString(eventData, eventData.length);
                         switch (statusByte)
                         {
@@ -440,7 +442,8 @@ class MIDI extends BasicMIDI
                                 else if (this.isKaraokeFile)
                                 {
                                     // check for @T (title)
-                                    // or @A because it is a title too sometimes??? idk it's weird
+                                    // or @A because it is a title too sometimes?
+                                    // IDK it's strange
                                     if (checkedText.startsWith("@T") || checkedText.startsWith("@A"))
                                     {
                                         if (!karaokeHasTitle)
@@ -494,7 +497,9 @@ class MIDI extends BasicMIDI
                                     }
                                     else
                                     {
-                                        // this controller has occured more than once, this means that it doesnt indicate the loop
+                                        // this controller has occured more than once;
+                                        // this means
+                                        // that it doesn't indicate the loop
                                         loopEnd = 0;
                                     }
                                     break;
@@ -516,7 +521,7 @@ class MIDI extends BasicMIDI
             this.tracks.push(track);
             this.usedChannelsOnTrack.push(usedChannels);
             
-            // if the track has no voice messages, its "track name" event (if it has any)
+            // If the track has no voice messages, its "track name" event (if it has any)
             // is some metadata. Add it to copyright
             if (!trackHasVoiceMessages)
             {
@@ -602,9 +607,13 @@ class MIDI extends BasicMIDI
         
         // fix midi ports:
         // midi tracks without ports will have a value of -1
-        // if all ports have a value of -1, set it to 0, otherwise take the first midi port and replace all -1 with it
-        // why do this? some midis (for some reason) specify all channels to port 1 or else, but leave the conductor track with no port pref.
-        // this spessasynth to reserve the first 16 channels for the conductor track (which doesn't play anything) and use additional 16 for the actual ports.
+        // if all ports have a value of -1, set it to 0,
+        // otherwise take the first midi port and replace all -1 with it,
+        // why would we do this?
+        // some midis (for some reason) specify all channels to port 1 or else,
+        // but leave the conductor track with no port pref.
+        // this spessasynth to reserve the first 16 channels for the conductor track
+        // (which doesn't play anything) and use the additional 16 for the actual ports.
         let defaultPort = 0;
         for (let port of this.midiPorts)
         {
@@ -615,7 +624,7 @@ class MIDI extends BasicMIDI
             }
         }
         this.midiPorts = this.midiPorts.map(port => port === -1 ? defaultPort : port);
-        // add dummy port if empty
+        // add fake port if empty
         if (this.midiPortChannelOffsets.length === 0)
         {
             this.midiPortChannelOffsets = [0];
@@ -723,7 +732,7 @@ class MIDI extends BasicMIDI
         {
             this.lyrics = this.lyrics.map(lyric =>
             {
-                // one exception: hyphens at the end. Don't add a space to them
+                // One exception: hyphens at the end. Don't add a space to them
                 if (lyric[lyric.length - 1] === 45)
                 {
                     return lyric;

@@ -12,11 +12,12 @@ let hasRenderedNoVoices = false;
 export function render(auto = true, force = false)
 {
     let nothingToDo = (this.seq === undefined || this?.seq?.paused === true) && this.synth.voicesAmount === 0 && !force;
+    let forceStraight = false;
     if (!this.renderBool || nothingToDo)
     {
         if (hasRenderedNoVoices)
         {
-            // no frames shall be drawn. Redo!
+            // No frames shall be drawn. Redo!
             if (auto)
             {
                 requestAnimationFrame(this.render.bind(this));
@@ -26,6 +27,7 @@ export function render(auto = true, force = false)
         else
         {
             hasRenderedNoVoices = true;
+            forceStraight = true;
         }
     }
     else
@@ -40,8 +42,8 @@ export function render(auto = true, force = false)
     
     if (this.renderAnalysers && !this.synth.highPerformanceMode)
     {
-        // draw the individual analysers
-        this.renderWaveforms();
+        // draw the individual analyzers
+        this.renderWaveforms(forceStraight);
     }
     
     if (this.renderNotes && this.noteTimes)
@@ -52,7 +54,7 @@ export function render(auto = true, force = false)
          */
         let notesToDraw = this.computeNotePositions(this.synth.highPerformanceMode);
         
-        // draw the notes from longest to shortest (non black midi mode)
+        // draw the notes from longest to shortest (non-black midi mode)
         if (!this.synth.highPerformanceMode)
         {
             drawNotes(notesToDraw, this.drawingContext, this.sideways);

@@ -62,7 +62,7 @@ import { panVoice } from "./worklet_utilities/stereo_panner.js";
 // if the note is released faster than that, it forced to last that long
 // this is used mostly for drum channels, where a lot of midis like to send instant note off after a note on
 export const MIN_NOTE_LENGTH = 0.03;
-// this sounds way nicer for instant hi-hat cutoff
+// this sounds way nicer for an instant hi-hat cutoff
 export const MIN_EXCLUSIVE_LENGTH = 0.07;
 
 export const SYNTHESIZER_GAIN = 1.0;
@@ -149,7 +149,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
         this.voiceCap = VOICE_CAP;
         
         /**
-         * -1 to 1
+         * (-1 to 1)
          * @type {number}
          */
         this.pan = 0.0;
@@ -168,7 +168,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
         this.keyModifierManager = new WorkletKeyModifierManager();
         
         /**
-         * Overrides the main soundfont (embedded for example)
+         * Overrides the main soundfont (embedded, for example)
          * @type {BasicSoundFont}
          */
         this.overrideSoundfont = undefined;
@@ -214,7 +214,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
         this.workletProcessorChannels[DEFAULT_PERCUSSION].preset = this.drumPreset;
         this.workletProcessorChannels[DEFAULT_PERCUSSION].drumChannel = true;
         
-        // these smoothing factors were tested on 44100Hz, adjust them here
+        // these smoothing factors were tested on 44,100 Hz, adjust them here
         this.volumeEnvelopeSmoothingFactor = VOLUME_ENVELOPE_SMOOTHING_FACTOR * (44100 / sampleRate);
         this.panSmoothingFactor = PAN_SMOOTHING_FACTOR * (44100 / sampleRate);
         
@@ -259,6 +259,8 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
                 {
                     this.sequencer.loop = false;
                 }
+                // set voice cap to unlimited
+                this.voiceCap = Infinity;
                 this.sequencer.loadNewSongList([options.processorOptions.startRenderingData.parsedMIDI]);
             }
         }
@@ -316,7 +318,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
     /**
      * Syntesizes the voice to buffers
      * @param inputs {Float32Array[][]} required by WebAudioAPI
-     * @param outputs {Float32Array[][]} the outputs to write to, only the first 2 channels are populated
+     * @param outputs {Float32Array[][]} the outputs to write to, only the first two channels are populated
      * @returns {boolean} true
      */
     process(inputs, outputs)
@@ -348,14 +350,14 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
             {
                 // first output only
                 const output = outputs[0];
-                // reverb and chorus are disabled. 32 output channels: two for each midi channels
+                // reverb and chorus are disabled. 32 output channels: two for each midi channel
                 outputIndex = (index % 16) * 2;
                 outputLeft = output[outputIndex];
                 outputRight = output[outputIndex + 1];
             }
             else
             {
-                // 2 first outputs are reverb and chorus, other are for channels
+                // 2 first outputs are reverb and chorus, others are for channels
                 outputIndex = (index % this._outputsAmount) + 2;
                 outputLeft = outputs[outputIndex][0];
                 outputRight = outputs[outputIndex][1];

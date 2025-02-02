@@ -3,7 +3,7 @@ export const STABILIZE_WAVEFORMS_FFT_MULTIPLIER = 4;
 /**
  * @this {Renderer}
  */
-export function renderWaveforms()
+export function renderWaveforms(forceStraightLine = false)
 {
     const waveWidth = this.canvas.width / 4;
     const waveHeight = this.canvas.height / 4;
@@ -12,20 +12,8 @@ export function renderWaveforms()
     {
         const x = channelNumber % 4;
         const y = Math.floor(channelNumber / 4);
-        // if no voices, skip
-        let voicesPlaying = false;
-        for (let i = channelNumber; i < this.synth.channelProperties.length; i += this.channelAnalysers.length)
+        const straightLine = () =>
         {
-            // check every channel that is connected, because can be more outputs than just 16!!! (for example channel 17 also outputs to analyser 1)
-            if (this.synth.channelProperties[i].voicesAmount > 0)
-            {
-                voicesPlaying = true;
-                break;
-            }
-        }
-        if (!voicesPlaying)
-        {
-            // draw a straight line
             const waveWidth = this.canvas.width / 4;
             const waveHeight = this.canvas.height / 4;
             const relativeX = waveWidth * x;
@@ -36,11 +24,32 @@ export function renderWaveforms()
             this.drawingContext.moveTo(relativeX, relativeY);
             this.drawingContext.lineTo(relativeX + waveWidth, relativeY);
             this.drawingContext.stroke();
+        };
+        if (forceStraightLine)
+        {
+            straightLine();
             return;
         }
-        
+        // if no voices, skip
+        //let voicesPlaying = false;
+        // for (let i = channelNumber; i < this.synth.channelProperties.length; i += this.channelAnalysers.length)
+        // {
+        //     // check every channel that is connected, because can be more outputs than just 16!!! (for example channel 17 also outputs to analyser 1)
+        //     if (this.synth.channelProperties[i].voicesAmount > 0)
+        //     {
+        //         voicesPlaying = true;
+        //         break;
+        //     }
+        // }
         const waveform = new Float32Array(analyser.frequencyBinCount);
         analyser.getFloatTimeDomainData(waveform);
+        let voicesPlaying = waveform.some(v => v !== 0);
+        if (!voicesPlaying)
+        {
+            // draw a straight line
+            straightLine();
+            return;
+        }
         
         const relativeX = waveWidth * x;
         const relativeY = waveHeight * y + waveHeight / 2;

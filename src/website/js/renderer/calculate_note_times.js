@@ -58,6 +58,14 @@ export function calculateNoteTimes(midi)
     let oneTickToSeconds = 60 / (120 * midi.timeDivision);
     let eventIndex = 0;
     let unfinished = 0;
+    /**
+     * @type {NoteTime[][]}
+     */
+    const unfinishedNotes = [];
+    for (let i = 0; i < 16; i++)
+    {
+        unfinishedNotes.push([]);
+    }
     while (eventIndex < events.length)
     {
         const event = events[eventIndex];
@@ -68,11 +76,15 @@ export function calculateNoteTimes(midi)
         // note off
         if (status === 0x8)
         {
-            const note = noteTimes[channel].notes.findLast(n => n.midiNote === event.messageData[0] && n.length === -1);
+            const noteIndex = unfinishedNotes[channel].findIndex(n => n.midiNote === event.messageData[0]);
+            const note = unfinishedNotes[channel][noteIndex];
+            //noteTimes[channel].notes.findLast(n => n.midiNote === event.messageData[0] && n.length === -1);
             if (note)
             {
                 const time = elapsedTime - note.start;
                 note.length = (time < MIN_NOTE_TIME && channel === DEFAULT_PERCUSSION ? MIN_NOTE_TIME : time);
+                // delete from unfinished
+                unfinishedNotes[channel].splice(noteIndex, 1);
             }
             unfinished--;
         }
@@ -82,23 +94,29 @@ export function calculateNoteTimes(midi)
             if (event.messageData[1] === 0)
             {
                 // nevermind, its note off
-                const note = noteTimes[channel].notes.findLast(n => n.midiNote === event.messageData[0] && n.length === -1);
+                const noteIndex = unfinishedNotes[channel].findIndex(n => n.midiNote === event.messageData[0]);
+                const note = unfinishedNotes[channel][noteIndex];
                 if (note)
                 {
                     const time = elapsedTime - note.start;
                     note.length = (time < MIN_NOTE_TIME && channel === DEFAULT_PERCUSSION ? MIN_NOTE_TIME : time);
+                    // delete from unfinished
+                    unfinishedNotes[channel].splice(noteIndex, 1);
                 }
                 unfinished--;
             }
             else
             {
-                noteTimes[event.messageStatusByte & 0x0F].notes.push({
+                const noteTime = {
                     midiNote: event.messageData[0],
                     start: elapsedTime,
                     length: -1,
                     velocity: event.messageData[1] / 127
-                });
+                };
+                noteTimes[channel].notes.push(noteTime);
+                unfinishedNotes[channel].push(noteTime);
                 unfinished++;
+                
             }
         }
         // set tempo
@@ -119,13 +137,14 @@ export function calculateNoteTimes(midi)
     if (unfinished > 0)
     {
         // for every channel, for every note that is unfinished (has -1 length)
-        noteTimes.forEach((channel, channelNumber) =>
-            channel.notes.filter(n => n.length === -1).forEach(note =>
+        unfinishedNotes.forEach((channelNotes, channel) =>
+        {
+            channelNotes.forEach(note =>
             {
                 const time = elapsedTime - note.start;
-                note.length = (time < MIN_NOTE_TIME && channelNumber === DEFAULT_PERCUSSION ? MIN_NOTE_TIME : time);
-            })
-        );
+                note.length = (time < MIN_NOTE_TIME && channel === DEFAULT_PERCUSSION ? MIN_NOTE_TIME : time);
+            });
+        });
     }
     this.noteTimes = noteTimes;
     SpessaSynthInfo(`%cFinished loading note times and ready to render the sequence!`, consoleColors.info);
