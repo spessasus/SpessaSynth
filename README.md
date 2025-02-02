@@ -42,7 +42,7 @@ This repository contains both the library and a complete musical web application
 - **Excellent SoundFont support:**
   - **Full Generator Support**
   - **Full Modulator Support:** *First (to my knowledge) JavaScript SoundFont synth with that feature!*
-  - **GeneralUserGS Certified:** *[See more here!](https://github.com/mrbumpy409/GeneralUser-GS/blob/main/documentation/README.md)*
+  - **GeneralUserGS Compatible:** *[See more here!](https://github.com/mrbumpy409/GeneralUser-GS/blob/main/documentation/README.md)*
   - **SoundFont3 Support:** Play compressed SoundFonts!
   - **Experimental SF2Pack Support:** Play soundfonts compressed with BASSMIDI! (*Note: only works with vorbis compression*)
   - **Can load very large SoundFonts:** up to 4GB! *Note: Only Firefox handles this well; Chromium has a hard-coded memory limit*
@@ -114,7 +114,7 @@ This repository contains both the library and a complete musical web application
   - **Variable compression quality:** You choose between file size and quality!
   - **Compression preserving:** Avoid decompressing and recompressing uncompressed samples for minimal quality loss!
 
-#### Read and write DLS Level 1 or 2 files
+#### Read and write DLS Level One or Two files
   - Read DLS (DownLoadable Sounds) files as SF2 files!
   - **Works like a normal soundfont:** *Saving it as sf2 is still [just one function!](https://github.com/spessasus/SpessaSynth/wiki/SoundFont2-Class#write)*
   - Converts articulators to both **modulators** and **generators**!
