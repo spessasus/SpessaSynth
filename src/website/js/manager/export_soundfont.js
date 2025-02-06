@@ -63,7 +63,7 @@ export async function _exportSoundfont()
                     const binary = soundfont.write({
                         compress: compressed,
                         compressionQuality: quality,
-                        compressionFunction: this.compressionFunc
+                        compressionFunction: await this.getVorbinsEncodeFunction()
                     });
                     const blob = new Blob([binary.buffer], { type: "audio/soundfont" });
                     let extension = soundfont.soundFontInfo["ifil"].split(".")[0] === "3" ? "sf3" : "sf2";

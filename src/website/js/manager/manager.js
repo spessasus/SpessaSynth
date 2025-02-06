@@ -19,7 +19,6 @@ import { _exportSoundfont } from "./export_soundfont.js";
 import { exportSong } from "./export_song.js";
 import { _exportRMIDI } from "./export_rmidi.js";
 import { WORKLET_URL_ABSOLUTE } from "../../../spessasynth_lib/synthetizer/worklet_url.js";
-import { encodeVorbis } from "../../externals/libvorbis/encode_vorbis.js";
 import { loadSoundFont } from "../../../spessasynth_lib/soundfont/load_soundfont.js";
 import { readBytesAsString } from "../../../spessasynth_lib/utils/byte_functions/string.js";
 import { IndexedByteArray } from "../../../spessasynth_lib/utils/indexed_array.js";
@@ -62,6 +61,11 @@ class Manager
      * @type {function(string)}
      */
     sfError;
+    compressio;
+    /**
+     * @type {EncodeVorbisFunction}
+     */
+    compressionFunction = undefined;
     
     /**
      * Creates a new midi user interface.
@@ -76,13 +80,26 @@ class Manager
         this.context = context;
         this.enableDebug = enableDebug;
         this.isExporting = false;
-        this.compressionFunc = encodeVorbis;
+        
         let solve;
         this.ready = new Promise(resolve => solve = resolve);
         this.initializeContext(context, soundFontBuffer).then(() =>
         {
             solve();
         });
+    }
+    
+    /**
+     * @returns {EncodeVorbisFunction}
+     */
+    async getVorbinsEncodeFunction()
+    {
+        if (this.compressionFunction !== undefined)
+        {
+            return this.compressionFunction;
+        }
+        this.compressionFunction = (await import("../../externals/libvorbis/encode_vorbis.js")).encodeVorbis;
+        return this.compressionFunction;
     }
     
     saveBlob(blob, name)

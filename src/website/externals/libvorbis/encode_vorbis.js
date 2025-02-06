@@ -8,6 +8,10 @@ import { libvorbis } from "./OggVorbisEncoder.min.js";
  * @param quality {number} -0.1 to 1
  * @returns {Uint8Array}
  */
+
+/**
+ * @type {EncodeVorbisFunction}
+ */
 export function encodeVorbis(channelAudioData, channels, sampleRate, quality)
 {
     // https://github.com/higuma/ogg-vorbis-encoder-js
