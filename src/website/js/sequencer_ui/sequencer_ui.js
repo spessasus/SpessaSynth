@@ -653,6 +653,8 @@ class SequencerUI
             }
             
         }
+        // sanitize lyrics, as in replacement "/" with newline
+        this.currentLyricsString = this.currentLyricsString.map(l => l.replace("/", "\n"));
         // create lyrics as separate spans
         // clear previous lyrics
         this.lyricsElement.text.main.innerHTML = "";
