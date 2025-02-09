@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 ### Version
-*The app or `spessasynth_lib`? Local Edition or `github.io` page? Downloaded from releases or via `git clone`? Please specify.*
+*Version of the app is specified in the top right corner while package's version is specified in the `package.json` file *
 
 ### Description
 *Provide a clear and concise description of what the bug is.*
