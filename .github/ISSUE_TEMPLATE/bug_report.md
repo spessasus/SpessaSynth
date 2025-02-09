@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 ### Version
-*Version of the app is specified in the top right corner while package's version is specified in the `package.json` file *
+*Version of the app is specified in the top right corner while package's version is specified in the `package.json` file.*
 
 ### Description
 *Provide a clear and concise description of what the bug is.*
