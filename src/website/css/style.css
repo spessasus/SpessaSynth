@@ -41,6 +41,11 @@
     box-sizing: border-box;
 }
 
+select option {
+    background: var(--top-color-start);
+    color: var(--font-color);
+}
+
 pre {
     font-family: monospace !important;
 }

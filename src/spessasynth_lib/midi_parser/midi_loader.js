@@ -480,6 +480,11 @@ class MIDI extends BasicMIDI
                         // since this is a voice message
                         // check for loop (CC 2/4)
                         trackHasVoiceMessages = true;
+                        // voice messages are 7-bit always
+                        for (let j = 0; j < eventData.length; j++)
+                        {
+                            eventData[j] = Math.min(127, eventData[j]);
+                        }
                         if ((statusByte & 0xF0) === messageTypes.controllerChange)
                         {
                             switch (eventData[0])

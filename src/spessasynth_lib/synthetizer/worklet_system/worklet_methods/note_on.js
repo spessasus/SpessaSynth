@@ -19,11 +19,12 @@ const EXCLUSIVE_MOD_CUTOFF_TIME = -1130; // less because filter shenanigans
  */
 export function noteOn(channel, midiNote, velocity, enableDebugging = false, sendEvent = true, startTime = currentTime)
 {
-    if (velocity === 0)
+    if (velocity < 1)
     {
         this.noteOff(channel, midiNote);
         return;
     }
+    velocity = Math.min(127, velocity);
     
     const channelObject = this.workletProcessorChannels[channel];
     if (
