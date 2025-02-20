@@ -149,12 +149,12 @@ export class Sequencer
          * @type {boolean}
          * @private
          */
-        this._skipToFirstNoteOn = options?.skipToFirstNoteOn || true;
+        this._skipToFirstNoteOn = options?.skipToFirstNoteOn ?? true;
         /**
          * @type {boolean}
          * @private
          */
-        this._preservePlaybackState = options?.preservePlaybackState || false;
+        this._preservePlaybackState = options?.preservePlaybackState ?? false;
         
         if (this._skipToFirstNoteOn === false)
         {
