@@ -150,6 +150,12 @@ class MIDI extends BasicMIDI
                 // Assume bank offset of 0 by default. If we find any bank selects, then the offset is 1.
                 this.bankOffset = 0;
             }
+            
+            // if no embedded bank, assume 0
+            if (this.embeddedSoundFont === undefined)
+            {
+                this.bankOffset = 0;
+            }
         }
         else
         {
@@ -276,16 +282,19 @@ class MIDI extends BasicMIDI
                 {
                     statusByte = runningByte;
                 }
-                else if (!runningByte && statusByteCheck < 0x80)
-                {
-                    // if we don't have a running byte and the status byte isn't valid, it's an error.
-                    SpessaSynthGroupEnd();
-                    throw new SyntaxError(`Unexpected byte with no running byte. (${statusByteCheck})`);
-                }
                 else
-                {
-                    // if the status byte is valid, use that
-                    statusByte = trackChunk.data[trackChunk.data.currentIndex++];
+                { // noinspection PointlessBooleanExpressionJS
+                    if (!runningByte && statusByteCheck < 0x80)
+                    {
+                        // if we don't have a running byte and the status byte isn't valid, it's an error.
+                        SpessaSynthGroupEnd();
+                        throw new SyntaxError(`Unexpected byte with no running byte. (${statusByteCheck})`);
+                    }
+                    else
+                    {
+                        // if the status byte is valid, use that
+                        statusByte = trackChunk.data[trackChunk.data.currentIndex++];
+                    }
                 }
                 const statusByteChannel = getChannel(statusByte);
                 
