@@ -48,6 +48,7 @@ class SequencerUI
          */
         this.lyricsIndex = 0;
         this.requiresTextUpdate = false;
+        this.lastTimeUpdate = 0;
         /**
          * @type {{type: messageTypes, data: Uint8Array}[]}
          */
@@ -588,8 +589,14 @@ class SequencerUI
     
     _updateInterval()
     {
-        this.progressBar.style.width = `${(this.seq.currentTime / this.seq.duration) * 100}%`;
-        const time = formatTime(this.seq.currentTime);
+        const seqTime = this.seq.currentTime;
+        if (this.lastTimeUpdate === seqTime)
+        {
+            return;
+        }
+        this.lastTimeUpdate = seqTime;
+        this.progressBar.style.width = `${(seqTime / this.seq.duration) * 100}%`;
+        const time = formatTime(seqTime);
         const total = formatTime(this.seq.duration);
         this.progressTime.innerText = `${time.time} / ${total.time}`;
         if (this.requiresTextUpdate)
