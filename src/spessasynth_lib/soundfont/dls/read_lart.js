@@ -14,7 +14,7 @@ export function readLart(lartChunk, lar2Chunk, zone)
         while (lartChunk.chunkData.currentIndex < lartChunk.chunkData.length)
         {
             const art1 = readRIFFChunk(lartChunk.chunkData);
-            this.verifyHeader(art1, "art1");
+            this.verifyHeader(art1, "art1", "art2");
             const modsAndGens = readArticulation(art1, true);
             zone.generators.push(...modsAndGens.generators);
             zone.modulators.push(...modsAndGens.modulators);
@@ -26,7 +26,7 @@ export function readLart(lartChunk, lar2Chunk, zone)
         while (lar2Chunk.chunkData.currentIndex < lar2Chunk.chunkData.length)
         {
             const art2 = readRIFFChunk(lar2Chunk.chunkData);
-            this.verifyHeader(art2, "art2");
+            this.verifyHeader(art2, "art2", "art1");
             const modsAndGens = readArticulation(art2, false);
             zone.generators.push(...modsAndGens.generators);
             zone.modulators.push(...modsAndGens.modulators);

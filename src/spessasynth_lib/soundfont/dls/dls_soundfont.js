@@ -136,13 +136,17 @@ class DLSSoundFont extends BasicSoundFont
      * @param chunk {RiffChunk}
      * @param expected {string}
      */
-    verifyHeader(chunk, expected)
+    verifyHeader(chunk, ...expected)
     {
-        if (chunk.header.toLowerCase() !== expected.toLowerCase())
+        for (const expect of expected)
         {
-            SpessaSynthGroupEnd();
-            this.parsingError(`Invalid DLS chunk header! Expected "${expected.toLowerCase()}" got "${chunk.header.toLowerCase()}"`);
+            if (chunk.header.toLowerCase() === expect.toLowerCase())
+            {
+                return;
+            }
         }
+        SpessaSynthGroupEnd();
+        this.parsingError(`Invalid DLS chunk header! Expected "${expected.toString()}" got "${chunk.header.toLowerCase()}"`);
     }
     
     /**
