@@ -105,6 +105,10 @@ input[type="file"] {
     border: none;
 }
 
+.link a {
+    color: yellowgreen;
+}
+
 .midi_and_sf_controller label:active, .general_button:active {
     filter: brightness(0.9);
     transform: scale(var(--active-scale));
