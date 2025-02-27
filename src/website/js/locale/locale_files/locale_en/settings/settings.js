@@ -41,6 +41,11 @@ export const settingsLocale = {
         reminder: {
             title: "Did you know that you can hover over the settings to get more information?",
             description: "Like this one!"
+        },
+        
+        useFirefox: {
+            firefox: "Firefox Web Browser",
+            recommended: "is highly recommended for the best performance."
         }
     }
 };

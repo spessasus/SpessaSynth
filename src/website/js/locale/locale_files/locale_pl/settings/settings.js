@@ -42,6 +42,11 @@ export const settingsLocale = {
         reminder: {
             title: "Czy wiedziałeś, że możesz najechać na ustawienia, aby uzyskać więcej informacji?",
             description: "Tak jak ta!"
+        },
+        
+        useFirefox: {
+            firefox: "Przeglądarka firefox",
+            recommended: "jest mocno zalecana dla najlepszej wydajności."
         }
     }
 };
