@@ -466,8 +466,9 @@ class MidiKeyboard
      */
     releaseNote(midiNote, channel)
     {
-        let key = this.keys[midiNote - this._keyRange.min];
-        if (key === undefined)
+        const relativeKey = midiNote - this._keyRange.min;
+        let keyElement = this.keys[relativeKey];
+        if (keyElement === undefined)
         {
             return;
         }
@@ -477,28 +478,32 @@ class MidiKeyboard
         /**
          * @type {string[]}
          */
-        let pressedColors = this.keyColors[midiNote - this._keyRange.min];
+        let pressedColors = this.keyColors[relativeKey];
         if (!pressedColors)
         {
             return;
         }
-        const colorIndex = pressedColors.findLastIndex(v => v === this.channelColors[channel]);
-        if (colorIndex === -1)
+        const channelColor = this.channelColors[channel];
+        for (let i = 0; i < pressedColors.length; i++)
         {
-            return;
+            const color = pressedColors[i];
+            if (color === channelColor)
+            {
+                pressedColors.splice(i, 1);
+                i--;
+            }
         }
-        pressedColors.splice(colorIndex, 1);
         const color = pressedColors[pressedColors.length - 1] || "";
-        key.style.background = color;
+        keyElement.style.background = color;
         if (this.mode === "dark" && color !== "")
         {
-            key.style.boxShadow = `0px 0px ${GLOW_PX}px ${color}`;
+            keyElement.style.boxShadow = `0px 0px ${GLOW_PX}px ${color}`;
         }
         if (pressedColors.length < 1)
         {
-            key.classList.remove("pressed");
-            key.style.background = "";
-            key.style.boxShadow = "";
+            keyElement.classList.remove("pressed");
+            keyElement.style.background = "";
+            keyElement.style.boxShadow = "";
         }
     }
     
