@@ -7,7 +7,7 @@
  * @property {number} setTime                  - 4 -> time<number>
  * @property {number} changeMIDIMessageSending - 5 -> sendMIDIMessages<boolean>
  * @property {number} setPlaybackRate          - 6 -> playbackRate<number>
- * @property {number} setLoop                  - 7 -> loop<boolean>
+ * @property {number} setLoop                  - 7 -> [loop<boolean>, count<number]
  * @property {number} changeSong               - 8 -> goForwards<boolean> if true, next song, if false, previous
  * @property {number} getMIDI                  - 9 -> (no data)
  * @property {number} setSkipToFirstNote       -10 -> skipToFirstNoteOn<boolean>
@@ -40,5 +40,6 @@ export const WorkletSequencerReturnMessageType = {
     pause: 4,                   // no data
     getMIDI: 5,                 // midiData<MIDI>
     midiError: 6,               // errorMSG<string>
-    tempoChange: 7              // newTempoBPM<number>
+    metaEvent: 7,               // [messageType<number>, messageData<Uint8Array>]
+    loopCountChange: 8          // newLoopCount<number>
 };

@@ -33,7 +33,6 @@ class WorkletSequencer
         this.sendMIDIMessages = false;
         
         this.loopCount = Infinity;
-        this.currentLoopCount = this.loopCount;
         
         // event's number in this.events
         /**

@@ -14,6 +14,7 @@ export const exportAudio = {
                 },
                 options: {
                     title: "Opcje eksportu audio",
+                    description: "Eksportuj MIDI jako WAV, uwzględniając wszystkie modyfikacje wykonane w kontrolerze.",
                     confirm: "Eksportuj",
                     normalizeVolume: {
                         title: "Normalizuj głośność",
@@ -110,6 +111,7 @@ export const exportAudio = {
                 
                 options: {
                     title: "Opcje eksportu RMIDI",
+                    description: "Osadź SoundFonta + MIDI jako RMIDI i dodaj wszystkie modyfikacje wykonane z kontrolera.",
                     confirm: "Eksportuj",
                     compress: {
                         title: "Kompresuj",

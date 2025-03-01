@@ -90,7 +90,8 @@ export function _processEvent(event, trackIndex)
             break;
         
         case messageTypes.setTempo:
-            let tempoBPM = getTempo(event);
+            event.messageData.currentIndex = 0;
+            let tempoBPM = 60000000 / readBytesAsUintBigEndian(event.messageData, 3);
             this.oneTickToSeconds = 60 / (tempoBPM * this.midiData.timeDivision);
             if (this.oneTickToSeconds === 0)
             {
@@ -98,7 +99,6 @@ export function _processEvent(event, trackIndex)
                 SpessaSynthWarn("invalid tempo! falling back to 120 BPM");
                 tempoBPM = 120;
             }
-            this.post(WorkletSequencerReturnMessageType.tempoChange, Math.floor(tempoBPM * 100) / 100);
             break;
         
         // recongized but ignored
@@ -131,12 +131,12 @@ export function _processEvent(event, trackIndex)
             let sentStatus = statusByteData.status;
             // if MIDI is a karaoke file, it uses the "text" event type or "lyrics" for lyrics (duh)
             // why?
-            // because the MIDI standard is a messy pile of garbage and it's not my fault that it's like this :(
-            // I'm just trying to make the best out of a bad situation
+            // because the MIDI standard is a messy pile of garbage, and it's not my fault that it's like this :(
+            // I'm just trying to make the best out of a bad situation.
             // I'm sorry
-            // okay i should get back to work
-            // anyways,
-            // check for karaoke file and change the status byte to "lyric" if it's a karaoke file
+            // okay I should get back to work
+            // anyway,
+            // check for a karaoke file and change the status byte to "lyric" if it's a karaoke file
             if (this.midiData.isKaraokeFile && (
                 statusByteData.status === messageTypes.text ||
                 statusByteData.status === messageTypes.lyric
@@ -174,6 +174,10 @@ export function _processEvent(event, trackIndex)
             );
             break;
     }
+    if (statusByteData.status >= 0 && statusByteData.status < 0x80)
+    {
+        this.post(WorkletSequencerReturnMessageType.metaEvent, [event.messageStatusByte, event.messageData]);
+    }
 }
 
 /**
@@ -191,15 +195,4 @@ export function _addNewMidiPort()
             this.synth.setDrums(this.synth.workletProcessorChannels.length - 1, true);
         }
     }
-}
-
-/**
- * gets tempo from the midi message
- * @param event {MidiMessage}
- * @return {number} the tempo in bpm
- */
-function getTempo(event)
-{
-    event.messageData.currentIndex = 0;
-    return 60000000 / readBytesAsUintBigEndian(event.messageData, 3);
 }

@@ -262,6 +262,13 @@ export async function _exportAudioData()
      */
     const WAV_OPTIONS = [
         {
+            type: "text",
+            textContent: this.localeManager.getLocaleString(wavPath + "description"),
+            attributes: {
+                "style": "max-width: 30ch; font-style: italic"
+            }
+        },
+        {
             type: "toggle",
             translatePathTitle: wavPath + "normalizeVolume",
             attributes: {

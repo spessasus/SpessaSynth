@@ -1,3 +1,5 @@
+import { WorkletSequencerReturnMessageType } from "./sequencer_message.js";
+
 /**
  * Processes a single tick
  * @private
@@ -36,22 +38,35 @@ export function _processTick()
         let eventNext = this.tracks[trackIndex][this.eventIndex[trackIndex]];
         this.playedTime += this.oneTickToSeconds * (eventNext.ticks - event.ticks);
         
-        // loop
-        if ((this.midiData.loop.end <= event.ticks) && this.loop && this.currentLoopCount > 0)
+        const canLoop = this.loop && this.loopCount > 0;
+        
+        // if we reached loop.end
+        if ((this.midiData.loop.end <= event.ticks) && canLoop)
         {
-            this.currentLoopCount--;
+            // loop
+            if (this.loopCount !== Infinity)
+            {
+                this.loopCount--;
+                this.post(WorkletSequencerReturnMessageType.loopCountChange, this.loopCount);
+            }
             this.setTimeTicks(this.midiData.loop.start);
             return;
         }
-        // if the song has ended
+        // if the song has endeed
         else if (current >= this.duration)
         {
-            if (this.loop && this.currentLoopCount > 0)
+            if (canLoop)
             {
-                this.currentLoopCount--;
+                // loop
+                if (this.loopCount !== Infinity)
+                {
+                    this.loopCount--;
+                    this.post(WorkletSequencerReturnMessageType.loopCountChange, this.loopCount);
+                }
                 this.setTimeTicks(this.midiData.loop.start);
                 return;
             }
+            // stop the playback
             this.eventIndex[trackIndex]--;
             this.pause(true);
             if (this.songs.length > 1)

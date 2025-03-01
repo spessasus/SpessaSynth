@@ -65,8 +65,6 @@ export function loadNewSequence(parsedMidi, autoPlay = true)
      */
     this.midiData = parsedMidi;
     
-    this.currentLoopCount = this.loopCount;
-    
     // check for embedded soundfont
     if (this.midiData.embeddedSoundFont !== undefined)
     {

@@ -1,5 +1,6 @@
 .notification p {
-    margin: 1rem;
+    margin: auto;
+    padding: 0.8rem;
     font-size: var(--notification-font-size);
 }
 

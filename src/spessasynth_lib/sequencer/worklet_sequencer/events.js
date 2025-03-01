@@ -1,4 +1,7 @@
-import { returnMessageType } from "../../synthetizer/worklet_system/message_protocol/worklet_message.js";
+import {
+    ALL_CHANNELS_OR_DIFFERENT_ACTION,
+    returnMessageType
+} from "../../synthetizer/worklet_system/message_protocol/worklet_message.js";
 import { WorkletSequencerMessageType, WorkletSequencerReturnMessageType } from "./sequencer_message.js";
 import { messageTypes, midiControllers } from "../../midi_parser/midi_message.js";
 import { MIDI_CHANNEL_COUNT } from "../../synthetizer/synthetizer.js";
@@ -44,7 +47,13 @@ export function processMessage(messageType, messageData)
             break;
         
         case WorkletSequencerMessageType.setLoop:
-            this.loop = messageData;
+            const [loop, count] = messageData;
+            this.loop = loop;
+            if (count === ALL_CHANNELS_OR_DIFFERENT_ACTION)
+            {
+                this.loopCount = Infinity;
+            }
+            this.loopCount = count;
             break;
         
         case WorkletSequencerMessageType.changeSong:

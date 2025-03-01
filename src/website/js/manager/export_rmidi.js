@@ -43,6 +43,13 @@ export async function _exportRMIDI()
         this.localeManager.getLocaleString(path + "title"),
         [
             {
+                type: "text",
+                textContent: this.localeManager.getLocaleString(path + "description"),
+                attributes: {
+                    "style": "max-width: 30ch; font-style: italic"
+                }
+            },
+            {
                 type: "toggle",
                 translatePathTitle: path + "compress",
                 attributes: {

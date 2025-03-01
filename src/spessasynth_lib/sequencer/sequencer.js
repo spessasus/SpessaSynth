@@ -9,11 +9,15 @@ import {
 import { SpessaSynthWarn } from "../utils/loggin.js";
 import { DUMMY_MIDI_DATA, MidiData } from "../midi_parser/midi_data.js";
 import { BasicMIDI } from "../midi_parser/basic_midi.js";
+import { readBytesAsUintBigEndian } from "../utils/byte_functions/big_endian.js";
+import { IndexedByteArray } from "../utils/indexed_array.js";
 
 /**
  * sequencer.js
  * purpose: plays back the midi file decoded by midi_loader.js, including support for multichannel midis
  * (adding channels when more than one midi port is detected)
+ * note: this is the sequencer class that runs on the main thread
+ * and only communicates with the worklet sequencer which does the actual playback
  */
 
 /**
@@ -43,6 +47,7 @@ const DEFAULT_OPTIONS = {
     preservePlaybackState: false
 };
 
+// noinspection JSUnusedGlobalSymbols
 export class Sequencer
 {
     /**
@@ -50,16 +55,7 @@ export class Sequencer
      * @type {function(string)}
      */
     onError;
-    /**
-     * The sequence's data, except for the track data.
-     *  @type {MidiData}
-     */
-    midiData;
-    /**
-     * @type {Object<string, function(MidiData)>}
-     * @private
-     */
-    onSongChange = {};
+    
     /**
      * Fires on text event
      * @type {function}
@@ -68,12 +64,26 @@ export class Sequencer
      * @param lyricsIndex {number} if the text is a lyric, the index of the lyric in midiData.lyrics, otherwise -1
      */
     onTextEvent;
+    
+    /**
+     * The sequence's data, except for the track data.
+     *  @type {MidiData}
+     */
+    midiData;
+    
+    /**
+     * @type {Object<string, function(MidiData)>}
+     * @private
+     */
+    onSongChange = {};
+    
     /**
      * Fires when CurrentTime changes
      * @type {Object<string, function(number)>} the time that was changed to
      * @private
      */
     onTimeChange = {};
+    
     /**
      * @type {Object<string, function>}
      * @private
@@ -85,6 +95,12 @@ export class Sequencer
      * @type {Object<string, function(number)>}
      */
     onTempoChange = {};
+    
+    /**
+     * Fires on meta-event
+     * @type {Object<string, function([number, Uint8Array])>}
+     */
+    onMetaEvent = {};
     
     /**
      * Current song's tempo in BPM
@@ -179,6 +195,10 @@ export class Sequencer
      */
     _loop = true;
     
+    /**
+     * Indicates if the sequencer is currently looping
+     * @returns {boolean}
+     */
     get loop()
     {
         return this._loop;
@@ -186,8 +206,34 @@ export class Sequencer
     
     set loop(value)
     {
-        this._sendMessage(WorkletSequencerMessageType.setLoop, value);
+        this._sendMessage(WorkletSequencerMessageType.setLoop, [value, this._loopsRemaining]);
         this._loop = value;
+    }
+    
+    /**
+     * Internal loop count marker (-1 is infinite)
+     * @type {number}
+     * @private
+     */
+    _loopsRemaining = -1;
+    
+    /**
+     * The current remaining number of loops. -1 means infinite looping
+     * @returns {number}
+     */
+    get loopsRemaining()
+    {
+        return this._loopsRemaining;
+    }
+    
+    /**
+     * The current remaining number of loops. -1 means infinite looping
+     * @param val {number}
+     */
+    set loopsRemaining(val)
+    {
+        this._loopsRemaining = val;
+        this._sendMessage(WorkletSequencerMessageType.setLoop, [this._loop, val]);
     }
     
     /**
@@ -357,6 +403,16 @@ export class Sequencer
         this.onTempoChange[id] = callback;
     }
     
+    /**
+     * Adds a new event that gets called when a meta-event occurs
+     * @param callback {function([number, Uint8Array])} the meta-event type and its data
+     * @param id {string} must be unique
+     */
+    addOnMetaEvent(callback, id)
+    {
+        this.onMetaEvent[id] = callback;
+    }
+    
     resetMIDIOut()
     {
         if (!this.MIDIout)
@@ -405,17 +461,18 @@ export class Sequencer
      */
     _callEvents(type, params)
     {
-        Object.entries(type).forEach((callback) =>
+        for (const key in type)
         {
+            const callback = type[key];
             try
             {
-                callback[1](params);
+                callback(params);
             }
             catch (e)
             {
                 SpessaSynthWarn(`Failed to execute callback for ${callback[0]}:`, e);
             }
-        });
+        }
     }
     
     /**
@@ -431,9 +488,6 @@ export class Sequencer
         }
         switch (messageType)
         {
-            default:
-                break;
-            
             case WorkletSequencerReturnMessageType.midiEvent:
                 /**
                  * @type {number[]}
@@ -517,12 +571,31 @@ export class Sequencer
                 }
                 break;
             
-            case WorkletSequencerReturnMessageType.tempoChange:
-                this.currentTempo = messageData;
-                if (this.onTempoChange)
+            case WorkletSequencerReturnMessageType.metaEvent:
+                const type = messageData[0];
+                if (type === messageTypes.setTempo)
                 {
-                    this._callEvents(this.onTempoChange, this.currentTempo);
+                    const arr = new IndexedByteArray(messageData[1]);
+                    const bpm = 60000000 / readBytesAsUintBigEndian(arr, 3);
+                    this.currentTempo = Math.round(bpm * 100) / 100;
+                    if (this.onTempoChange)
+                    {
+                        this._callEvents(this.onTempoChange, this.currentTempo);
+                    }
                 }
+                this._callEvents(this.onMetaEvent, messageData);
+                break;
+            
+            case WorkletSequencerReturnMessageType.loopCountChange:
+                this._loopsRemaining = messageData;
+                if (this._loopsRemaining === 0)
+                {
+                    this._loop = false;
+                }
+                break;
+            
+            default:
+                break;
         }
     }
     

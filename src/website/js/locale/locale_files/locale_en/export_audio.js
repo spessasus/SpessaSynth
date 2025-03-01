@@ -14,6 +14,7 @@ export const exportAudio = {
                 },
                 options: {
                     title: "WAV export options",
+                    description: "Export the current MIDI file as WAV applying all the modifications made via the synthesizer controller.",
                     confirm: "Export",
                     normalizeVolume: {
                         title: "Normalize volume",
@@ -111,6 +112,7 @@ export const exportAudio = {
                 
                 options: {
                     title: "RMIDI export options",
+                    description: "Embed the current SoundFont + MIDI as RMIDI and apply all the modifications made via the synthesizer controller.",
                     confirm: "Export",
                     compress: {
                         title: "Compress",
