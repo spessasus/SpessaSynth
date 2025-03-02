@@ -141,7 +141,7 @@ export class Synthetizer
             this.effectsConfig = synthConfig;
         }
         
-        // first two outputs: reverb, chorsu, the others are the channel outputs
+        // first two outputs: reverb, chorus, the others are the channel outputs
         try
         {
             let workletConstructor = synthConfig?.audioNodeCreators?.worklet;
@@ -236,7 +236,7 @@ export class Synthetizer
             }
         }
         
-        // attach newchannel to keep track of channels count
+        // attach a new channel to keep track of channels count
         this.eventHandler.addEvent("newchannel", "synth-new-channel", () =>
         {
             this.channelsAmount++;

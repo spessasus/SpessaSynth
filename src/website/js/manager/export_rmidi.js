@@ -193,7 +193,7 @@ export async function _exportRMIDI()
                     const newFont = font.write({
                         compress: compressed,
                         compressionQuality: quality,
-                        compressionFunction: await this.getVorbinsEncodeFunction()
+                        compressionFunction: await this.getVorbisEncodeFunction()
                     });
                     
                     message.textContent = this.localeManager.getLocaleString(localePath + "saving");

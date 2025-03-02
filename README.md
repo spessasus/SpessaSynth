@@ -17,7 +17,7 @@ Supported formats list:
 - `.sf2` - SoundFont2 File
 - `.sf3` - SoundFont2 Compressed File
 - `.sfogg` - SF2Pack With Vorbis Compression
-- `.dls` - Downloable Sounds Levels 1 & 2 (as well as Mobile DLS)
+- `.dls` - Downloadable Sounds Levels 1 & 2 (as well as Mobile DLS)
 - `.rmi` - RIFF MIDI File
 - `.rmi` - RIFF MIDI File With Embedded DLS
 - `.rmi` - [RIFF MIDI File With Embedded SF2](https://github.com/spessasus/sf2-rmidi-specification)
@@ -151,7 +151,7 @@ npm install --save spessasynth_lib
 ## Limitations
 - Synth's performance may be suboptimal, especially on mobile devices.
 - [SF2 to DLS Conversion](https://github.com/spessasus/SpessaSynth/wiki/DLS-Conversion-Problem)
-- Audio may sometimes sound distored in Chrome, Edge, Brave,
+- Audio may sometimes sound distorted in Chrome, Edge, Brave,
   etc. due to a **[Chromium Bug](https://issues.chromium.org/issues/367304685).**
   I can't do anything about it, only hope that it gets fixed.
 
@@ -190,7 +190,7 @@ npm install --save spessasynth_lib
   - Polish
   - Japanese
   - French (translated by Davy Triponney)
-  - Portugese (translated by Lucas Gabriel)
+  - Portuguese (translated by Lucas Gabriel)
   - Custom locale management system, created specifically for this project
 - **Description of buttons:** Hover over the buttons to see what they do!
 - **`Web MIDI API` support:** Use your physical MIDI devices!

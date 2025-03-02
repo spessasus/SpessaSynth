@@ -27,12 +27,12 @@ import { DropFileHandler } from "../utils/drop_file_handler.js";
 import { _exportDLS } from "./export_dls.js";
 import { writeRMIDI } from "../../../spessasynth_lib/midi_parser/rmidi_writer.js";
 
-// this enables transitions on body because if we enable them on load, it flashbangs us with white
+// this enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
 document.body.classList.add("load");
 
 /**
  * manager.js
- * purpose: connects every element of spessasynth together
+ * purpose: connects every element of spessasynth
  */
 
 const ENABLE_DEBUG = false;
@@ -49,7 +49,7 @@ class Manager
         "rgba(0, 191, 255, 1)",   // deepskyblue
         "rgba(65, 105, 225, 1)",  // royalblue
         "rgba(138, 43, 226, 1)",  // blueviolet
-        "rgba(50, 120, 125, 1)",  //'rgba(218, 112, 214, 1)', // percission color
+        "rgba(50, 120, 125, 1)",  //'rgba(218, 112, 214, 1)', // percussion color
         "rgba(255, 0, 255, 1)",   // magenta
         "rgba(255, 20, 147, 1)",  // deeppink
         "rgba(218, 112, 214, 1)", // orchid
@@ -61,7 +61,6 @@ class Manager
      * @type {function(string)}
      */
     sfError;
-    compressio;
     /**
      * @type {EncodeVorbisFunction}
      */
@@ -92,7 +91,7 @@ class Manager
     /**
      * @returns {EncodeVorbisFunction}
      */
-    async getVorbinsEncodeFunction()
+    async getVorbisEncodeFunction()
     {
         if (this.compressionFunction !== undefined)
         {
@@ -195,7 +194,8 @@ class Manager
                 chorusEnabled: true,
                 chorusConfig: undefined,
                 reverbImpulseResponse: this.impulseResponse,
-                reverbEnabled: true
+                reverbEnabled: true,
+                audioNodeCreators: undefined
             }
         );
         this.synth.eventHandler.addEvent("soundfonterror", "manager-sf-error", e =>
@@ -211,7 +211,7 @@ class Manager
         this.midHandler = new MIDIDeviceHandler();
         
         // set up web midi link
-        this.wml = new WebMidiLinkHandler(this.synth);
+        new WebMidiLinkHandler(this.synth);
         
         // set up keyboard
         this.keyboard = new MidiKeyboard(this.channelColors, this.synth);
@@ -282,10 +282,10 @@ class Manager
         this.synthUI.connectSynth(this.synth);
         this.synthUI.connectKeyboard(this.keyboard);
         
-        // create an UI for music player mode
+        // create a UI for music player mode
         this.playerUI = new MusicModeUI(document.getElementById("player_info"), this.localeManager);
         
-        // create an UI for sequencer
+        // create a UI for sequencer
         this.seqUI = new SequencerUI(
             document.getElementById("sequencer_controls"),
             this.localeManager,
@@ -307,7 +307,7 @@ class Manager
         );
         
         // set up drop file handler
-        this.dropFileHandler = new DropFileHandler(async data =>
+        new DropFileHandler(async data =>
         {
             if (data.length === 0)
             {
@@ -340,7 +340,7 @@ class Manager
         //this.soundFontMixer = new SoundFontMixer(document.getElementsByClassName("midi_and_sf_controller")[0], this.synth, this.synthUI);
         //this.soundFontMixer.soundFontChange(soundFont);
         
-        // add keypresses
+        // add key presses
         document.addEventListener("keydown", e =>
         {
             // check for control
@@ -520,6 +520,7 @@ class Manager
         this.seq.play(true);
     }
     
+    // noinspection JSUnusedGlobalSymbols
     async downloadDLSRMI()
     {
         const mid = await this.seq.getMIDI();

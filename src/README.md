@@ -1,14 +1,14 @@
 ## The structure
-The two folders represent the two main things that is spessasynth:
+The two folders represent the two main things that are spessasynth:
 - `spessasynth_lib` - the library. This is what the NPM package contains.
-- `website` - the application. This is the demo website and the Local Edition app with all of the frontend code.
+- `website` - the application. This is the demo website and the Local Edition app with all the frontend code.
 
 ## The two HTML files
 One HTML file is at the top of the repository, called `index.html`.
 This is the demo website and accessing it via any HTTP server should result in a working program.
 
 The second one is `local_edition_index.html`.
-This one is not intended to be accessed via a HTTP server,
+This one is not intended to be accessed via an HTTP server,
 instead it should be opened by running `npm start` at the root directory of the repo.
 
 ## Compiling
@@ -27,7 +27,8 @@ The app also has its own minifying script:
 `website/minify_website.sh`. It automatically calls `minify_processor.sh` too, so there's no need to call it every time.
 
 ## Bypassing the compilation
-Local Edition is used for debugging, hence it's possible to directly use the javascript code instead of the minified versions:
+Local Edition is used for debugging,
+ hence it's possible to directly use the JavaScript code instead of the minified versions:
 
 ### Bypass frontend minification
 It can be done by editing `local_edition_index.html`:
@@ -39,7 +40,7 @@ From
 ```
 to
 ```html
-<!-- <script src='website/minified/local_main.min.js' type='module'></script>  Here the magic happens ;) -->
+<!-- <script src='website/minified/local_main.min.js' type='module'></script> Here the magic happens ;) -->
 <script src='website/js/main/local_main.js' type="module"></script>
 ```
 Then perform a hard reload. (`ctrl + shift + R`)
