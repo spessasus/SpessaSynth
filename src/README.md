@@ -31,21 +31,7 @@ Local Edition is used for debugging,
  hence it's possible to directly use the JavaScript code instead of the minified versions:
 
 ### Bypass frontend minification
-It can be done by editing `local_edition_index.html`:
-
-From
-```html
-<script src='website/minified/local_main.min.js' type='module'></script> <!-- Here the magic happens ;) -->
-<!--  <script src='website/js/main/local_main.js' type="module"></script>-->
-```
-to
-```html
-<!-- <script src='website/minified/local_main.min.js' type='module'></script> Here the magic happens ;) -->
-<script src='website/js/main/local_main.js' type="module"></script>
-```
-Then perform a hard reload. (`ctrl + shift + R`)
-
-This will cause the page to load all the frontend code natively, bypassing the minified version.
+Use the local edition (`npm start`) instead of demo (`index.html`) as it uses the real code, not the minified version like the demo.
 
 ### Bypass library minification
 `js/manager/manager.js` must be edited.

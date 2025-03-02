@@ -35,7 +35,7 @@ export const localeEnglish = {
     
     
     demoSoundfontUploadButton: "Upload the soundfont",
-    demoGithubPage: "Project's page",
+    demoGithubPage: "Project page",
     demoDownload: {
         main: "Download",
         downloadLocal: {
