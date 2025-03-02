@@ -53,7 +53,10 @@ export function processMessage(messageType, messageData)
             {
                 this.loopCount = Infinity;
             }
-            this.loopCount = count;
+            else
+            {
+                this.loopCount = count;
+            }
             break;
         
         case WorkletSequencerMessageType.changeSong:

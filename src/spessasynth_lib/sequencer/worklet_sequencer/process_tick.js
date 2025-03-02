@@ -38,7 +38,7 @@ export function _processTick()
         let eventNext = this.tracks[trackIndex][this.eventIndex[trackIndex]];
         this.playedTime += this.oneTickToSeconds * (eventNext.ticks - event.ticks);
         
-        const canLoop = this.loop && this.loopCount > 0;
+        const canLoop = this.loop && (this.loopCount > 0 || this.loopCount === -1);
         
         // if we reached loop.end
         if ((this.midiData.loop.end <= event.ticks) && canLoop)
