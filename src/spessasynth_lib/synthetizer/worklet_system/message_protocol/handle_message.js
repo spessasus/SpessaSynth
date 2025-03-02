@@ -222,6 +222,7 @@ export function handleMessage(message)
         
         case workletMessageType.destroyWorklet:
             this.alive = false;
+            this.destroyWorkletProcessor();
             break;
         
         default:

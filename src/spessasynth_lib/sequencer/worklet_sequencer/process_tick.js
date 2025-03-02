@@ -2,11 +2,14 @@ import { WorkletSequencerReturnMessageType } from "./sequencer_message.js";
 
 /**
  * Processes a single tick
- * @private
  * @this {WorkletSequencer}
  */
-export function _processTick()
+export function processTick()
 {
+    if (!this.isActive)
+    {
+        return;
+    }
     let current = this.currentTime;
     while (this.playedTime < current)
     {

@@ -1,6 +1,6 @@
 import { WorkletSequencerReturnMessageType } from "./sequencer_message.js";
 import { _addNewMidiPort, _processEvent } from "./process_event.js";
-import { _findFirstEventIndex, _processTick } from "./process_tick.js";
+import { _findFirstEventIndex, processTick } from "./process_tick.js";
 import { assignMIDIPort, loadNewSequence, loadNewSongList, nextSong, previousSong } from "./song_control.js";
 import { _playTo, _recalculateStartTime, play, setTimeTicks } from "./play.js";
 import { messageTypes, midiControllers } from "../../midi_parser/midi_message.js";
@@ -25,6 +25,7 @@ class WorkletSequencer
     {
         this.synth = spessasynthProcessor;
         this.ignoreEvents = false;
+        this.isActive = false;
         
         /**
          * If the event should instead be sent back to the main thread instead of synth
@@ -236,12 +237,12 @@ class WorkletSequencer
     
     setProcessHandler()
     {
-        this.synth.processTickCallback = this._processTick.bind(this);
+        this.isActive = true;
     }
     
     clearProcessHandler()
     {
-        this.synth.processTickCallback = undefined;
+        this.isActive = false;
     }
 }
 
@@ -258,7 +259,7 @@ WorkletSequencer.prototype.processMessage = processMessage;
 
 WorkletSequencer.prototype._processEvent = _processEvent;
 WorkletSequencer.prototype._addNewMidiPort = _addNewMidiPort;
-WorkletSequencer.prototype._processTick = _processTick;
+WorkletSequencer.prototype.processTick = processTick;
 WorkletSequencer.prototype._findFirstEventIndex = _findFirstEventIndex;
 
 WorkletSequencer.prototype.loadNewSequence = loadNewSequence;

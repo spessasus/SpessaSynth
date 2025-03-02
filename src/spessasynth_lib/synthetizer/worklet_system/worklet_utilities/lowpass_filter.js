@@ -4,8 +4,8 @@ import { generatorTypes } from "../../../soundfont/basic_soundfont/generator.js"
 /**
  * lowpass_filter.js
  * purpose: applies a low pass filter to a voice
- * note to self: most of this is code is just javascript version of the C code from fluidsynth,
- * they are the real smart guys.
+ * note to self: a lot of tricks and fixes come from fluidsynth.
+ * They are the real smart guys.
  * Shoutout to them!
  */
 
@@ -79,7 +79,7 @@ export class WorkletLowpassFilter
     
     /**
      * Cutoff frequency in cents
-     * Note: defaults to 13501 to cause a recalculation even at initial fc being 13500
+     * Note: defaults to 13,501 to cause a recalculation even at initial fc being 13,500
      * @type {number}
      */
     cutoffCents = 13501;
@@ -146,14 +146,14 @@ export class WorkletLowpassFilter
         
         const qDb = filter.reasonanceCb / 10;
         // correct the filter gain, like fluid does
-        filter.reasonanceGain = decibelAttenuationToGain(-1 * (qDb - 3.01)); // -1 because it's attenuation and we don't want attenuation
+        filter.reasonanceGain = decibelAttenuationToGain(-1 * (qDb - 3.01)); // -1 because it's attenuation, and we don't want attenuation
         
         // reduce the gain by the Q factor (fluid_iir_filter.c line 250)
         const qGain = 1 / Math.sqrt(decibelAttenuationToGain(-qDb));
         
         
-        // code is ported from https://github.com/sinshu/meltysynth/ to work with js.
-        let w = 2 * Math.PI * filter.cutoffHz / sampleRate; // we're in the audioworkletglobalscope so we can use sampleRate
+        // initial filtering code was ported from meltysynth created by sinshu.
+        let w = 2 * Math.PI * filter.cutoffHz / sampleRate; // we're in the AudioWorkletGlobalScope so we can use sampleRate
         let cosw = Math.cos(w);
         let alpha = Math.sin(w) / (2 * filter.reasonanceGain);
         

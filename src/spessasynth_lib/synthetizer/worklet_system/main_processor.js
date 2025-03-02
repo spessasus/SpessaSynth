@@ -106,11 +106,6 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
          */
         this.interpolationType = interpolationTypes.fourthOrder;
         
-        /**
-         * @type {function}
-         */
-        this.processTickCallback = undefined;
-        
         this.sequencer = new WorkletSequencer(this);
         
         this.transposition = 0;
@@ -327,10 +322,8 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
         {
             return false;
         }
-        if (this.processTickCallback)
-        {
-            this.processTickCallback();
-        }
+        // process the sequencer playback
+        this.sequencer.processTick();
         
         // for every channel
         let totalCurrentVoices = 0;
@@ -365,13 +358,8 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
                 chorusChannels = outputs[1];
             }
             
-            const tempV = channel.voices;
-            
-            // reset voices
-            channel.voices = [];
-            
-            // for every voice
-            tempV.forEach(v =>
+            // for every voice, render it
+            channel.voices = channel.voices.filter(v =>
             {
                 // render voice
                 this.renderVoice(
@@ -381,11 +369,8 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
                     reverbChannels,
                     chorusChannels
                 );
-                if (!v.finished)
-                {
-                    // if not finished, add it back
-                    channel.voices.push(v);
-                }
+                
+                return !v.finished;
             });
             
             totalCurrentVoices += channel.voices.length;

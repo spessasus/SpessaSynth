@@ -1,6 +1,6 @@
 # spessasynth_lib
 
-**A powerful soundfont/MIDI JavaScript library for the browsers.**
+**A powerful SF2/DLS/MIDI JavaScript library for the browsers.**
 
 ```shell
 npm install --save spessasynth_lib
@@ -134,5 +134,5 @@ document.getElementById("button").onclick = async () =>
   - *That's right, saving as WAV is also [just one function!](https://github.com/spessasus/SpessaSynth/wiki/Writing-Wave-Files#audiobuffertowav)*
 
 # License
-
+Copyright © 2025 Spessasus
 MIT License, except for the stbvorbis_sync.js in the `externals` folder which is licensed under the Apache-2.0 license.
