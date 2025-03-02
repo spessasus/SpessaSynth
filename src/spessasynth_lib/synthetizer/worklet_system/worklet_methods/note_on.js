@@ -123,10 +123,7 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
         // as it's interpolated (we don't want 0 attenuation for even a split second)
         voice.volumeEnvelope.attenuation = voice.volumeEnvelope.attenuationTargetGain;
         // set initial pan to avoid split second changing from middle to the correct value
-        voice.currentPan = ((Math.max(
-            -500,
-            Math.min(500, voice.modulatedGenerators[generatorTypes.pan])
-        ) + 500) / 1000); // 0 to 1
+        voice.currentPan = Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan])); //  -500 to 500
     });
     
     this.totalVoicesAmount += voices.length;

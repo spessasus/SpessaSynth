@@ -1,10 +1,8 @@
-// noinspection JSUnresolvedReference
-
 import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE, VOICE_CAP } from "../synthetizer.js";
 import { WorkletSequencer } from "../../sequencer/worklet_sequencer/worklet_sequencer.js";
 import { SpessaSynthInfo } from "../../utils/loggin.js";
 import { consoleColors } from "../../utils/other.js";
-import { PAN_SMOOTHING_FACTOR, releaseVoice, renderVoice, voiceKilling } from "./worklet_methods/voice_control.js";
+import { releaseVoice, renderVoice, voiceKilling } from "./worklet_methods/voice_control.js";
 import { ALL_CHANNELS_OR_DIFFERENT_ACTION, returnMessageType } from "./message_protocol/worklet_message.js";
 import { stbvorbis } from "../../externals/stbvorbis_sync/stbvorbis_sync.min.js";
 import { VOLUME_ENVELOPE_SMOOTHING_FACTOR } from "./worklet_utilities/volume_envelope.js";
@@ -51,7 +49,7 @@ import { WorkletSoundfontManager } from "./worklet_methods/worklet_soundfont_man
 import { interpolationTypes } from "./worklet_utilities/wavetable_oscillator.js";
 import { WorkletKeyModifierManager } from "./worklet_methods/worklet_key_modifier.js";
 import { getWorkletVoices } from "./worklet_utilities/worklet_voice.js";
-import { panVoice } from "./worklet_utilities/stereo_panner.js";
+import { PAN_SMOOTHING_FACTOR, panVoice } from "./worklet_utilities/stereo_panner.js";
 
 
 /**
@@ -68,6 +66,7 @@ export const MIN_EXCLUSIVE_LENGTH = 0.07;
 export const SYNTHESIZER_GAIN = 1.0;
 
 
+// noinspection JSUnresolvedReference
 class SpessaSynthProcessor extends AudioWorkletProcessor
 {
     /**
@@ -209,7 +208,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
         this.workletProcessorChannels[DEFAULT_PERCUSSION].preset = this.drumPreset;
         this.workletProcessorChannels[DEFAULT_PERCUSSION].drumChannel = true;
         
-        // these smoothing factors were tested on 44,100 Hz, adjust them here
+        // these smoothing factors were tested on 44,100 Hz, adjust them to target sample rate here
         this.volumeEnvelopeSmoothingFactor = VOLUME_ENVELOPE_SMOOTHING_FACTOR * (44100 / sampleRate);
         this.panSmoothingFactor = PAN_SMOOTHING_FACTOR * (44100 / sampleRate);
         
@@ -418,7 +417,7 @@ SpessaSynthProcessor.prototype.handleMessage = handleMessage;
 SpessaSynthProcessor.prototype.sendChannelProperties = sendChannelProperties;
 SpessaSynthProcessor.prototype.callEvent = callEvent;
 
-// system exlcusive related
+// system-exclusive related
 SpessaSynthProcessor.prototype.systemExclusive = systemExclusive;
 
 // note messages related

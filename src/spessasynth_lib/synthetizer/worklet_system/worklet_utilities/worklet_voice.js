@@ -220,10 +220,10 @@ class WorkletVoice
     currentTuningCalculated = 1;
     
     /**
-     * From 0 to 1.
+     * From -500 to 500.
      * @param {number}
      */
-    currentPan = 0.5;
+    currentPan = 0;
     
     /**
      * If MIDI Tuning Standard is already applied (at note-on time),
