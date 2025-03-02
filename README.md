@@ -11,6 +11,21 @@ It’s a powerful and versatile library that allows you to:
 - Convert DLS to SF2 (and back)
 - [and more!](#easy-integration)
 
+Supported formats list:
+- `.mid` - Standard MIDI File
+- `.kar` - Soft Karaoke MIDI File
+- `.sf2` - SoundFont2 File
+- `.sf3` - SoundFont2 Compressed File
+- `.sfogg` - SF2Pack With Vorbis Compression
+- `.dls` - Downloable Sounds Levels 1 & 2 (as well as Mobile DLS)
+- `.rmi` - RIFF MIDI File
+- `.rmi` - RIFF MIDI File With Embedded DLS
+- `.rmi` - [RIFF MIDI File With Embedded SF2](https://github.com/spessasus/sf2-rmidi-specification)
+
+With [an easy way of converting between them!](https://github.com/spessasus/SpessaSynth/wiki/Converting-Between-Formats)
+
+### npm package
+
 ```shell
 npm install --save spessasynth_lib
 ```
@@ -22,22 +37,23 @@ npm install --save spessasynth_lib
 <a href="https://www.youtube.com/watch?v=Cu_A1IR65yQ"><img width='500' alt="Watch the YouTube video" src="https://github.com/user-attachments/assets/d73c0585-67eb-4490-ad39-839b22ab7577"></a>
 </p>
 
-This repository contains both the library and a complete musical web application. See below:
+**This repository contains both the library and a complete musical web application. See below:**
 
 <h1 align='center'>spessasynth_lib</h1>
-<p align='center'>A flexible, powerful, and feature-packed SoundFont synthesizer library for the WebAudio API. Comes with the ability to edit MIDIs and SoundFonts!</p>
+<p align='center'>A flexible, powerful, and feature-packed MIDI SF2/DLS library for the WebAudio API.</p>
 
 <h3 align='center'><a href="https://github.com/spessasus/SpessaSynth/wiki/Home">Documentation</a></h3>
 
-<h2 align='center'>Features</h2>
+<h2 align='center'>Full Feature List</h2>
 
 ### Easy Integration
-- **Modular design:** Easy integration into other projects (load what you need)
-- **[Detailed documentation:](https://github.com/spessasus/SpessaSynth/wiki/Home)** With [examples!](https://github.com/spessasus/SpessaSynth/wiki/Usage-As-Library#examples)
-- **Easy to Use:** basic setup is just [two lines of code!](https://github.com/spessasus/SpessaSynth/wiki/Usage-As-Library#minimal-setup)
-- **No dependencies:** _batteries included!_
+- **Modular design:** *Easy integration into other projects (load what you need)*
+- **[Detailed documentation:](https://github.com/spessasus/SpessaSynth/wiki/Home)** *With [examples!](https://github.com/spessasus/SpessaSynth/wiki/Usage-As-Library#examples)*
+- **Flexible:** *It's not just a MIDI player!*
+- **Easy to Use:** *Basic setup is just [two lines of code!](https://github.com/spessasus/SpessaSynth/wiki/Usage-As-Library#minimal-setup)*
+- **No dependencies:** *Batteries included!*
 
-### Powerful SoundFont Synthesizer
+### Powerful Synthesizer
 - Suitable for both **real-time** and **offline** synthesis
 - **Excellent SoundFont support:**
   - **Full Generator Support**
@@ -69,12 +85,12 @@ This repository contains both the library and a complete musical web application
   - **MIDI Tuning Standard Support:** [more info here](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#midi-tuning-standard)
   - [Full **RPN** and limited **NRPN** support](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-registered-parameters)
   - Supports some [**Roland GS** and **Yamaha XG** system exclusives](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-system-exclusives)
-- **High-performance mode:** Play Rush E! _note: may kill your browser ;)_
+- **High-performance mode:** Play Rush E! *note: may kill your browser ;)*
 
-### Built-in Powerful and Fast Sequencer
-- **Supports MIDI formats 0, 1, and 2:** _note: format 2 support is experimental as it's very, very rare_
+### Powerful and Fast MIDI Sequencer
+- **Supports MIDI formats 0, 1, and 2:** *note: format 2 support is experimental as it's very, very rare.*
 - **[Multi-Port MIDI](https://github.com/spessasus/SpessaSynth/wiki/About-Multi-Port) support:** More than 16 channels!
-- **Smart preloading:** Only preloads the samples used in the MIDI file for smooth playback (down to key and velocity!)
+- **Smart preloading:** Only preloads the samples used in the MIDI file for smooth playback *(down to key and velocity!)*
 - **Lyrics support:** Add karaoke to your program!
 - **Raw lyrics available:** Decode in any encoding! *(Kanji? No problem!)*
 - **Runs in Audio Thread as well:** Never blocks the main thread
@@ -88,7 +104,7 @@ This repository contains both the library and a complete musical web application
   - **Used channels on track:** Quickly determine which channels are used
   - **Key range detection:** Detect the key range of the MIDI
   - **Easy MIDI editing:** Use [helper functions](https://github.com/spessasus/SpessaSynth/wiki/Writing-MIDI-Files#modifymidi) to modify the song to your needs!
-  - **Loop detection:** Automatically detects loops in MIDIs (e.g., from _Touhou Project_)
+  - **Loop detection:** Automatically detects loops in MIDIs (e.g., from *Touhou Project*)
   - **First note detection:** Skip unnecessary silence at the start by jumping to the first note!
   - **Lyrics support:** Both regular MIDI and .kar files!
   - **[Write MIDI files from scratch](https://github.com/spessasus/SpessaSynth/wiki/Creating-MIDI-Files)**
@@ -168,7 +184,7 @@ npm install --save spessasynth_lib
 - **Kar Lyrics support:** Karaoke but fancy!
 - **ASS Subtitle support:** Karaoke but even fancier!
 - **Music player mode:** with support for album covers in .rmi files!
-- Mobile-friendly UI (_synthesizer performance not optimized for mobile... don't tell anyone!_)
+- Mobile-friendly UI (*synthesizer performance not optimized for mobile... don't tell anyone!*)
 - **Multiple language support:** 
   - English
   - Polish
@@ -271,3 +287,9 @@ Copyright © 2025 Spessasus. Licensed under the MIT License.
 > [!IMPORTANT]
 > Please note that the bundled [stbvorbis_sync.js](https://github.com/spessasus/stbvorbis_sync.js) is licensed under the Apache-2.0 license.
 > The license and the file can be found in the `externals` folder in the spessasynth_lib directory.
+
+#### Legal
+This project is in no way endorsed or otherwise affiliated with the MIDI Manufacturers Association,
+Creative Technology Ltd. or E-mu Systems, Inc., or any other organization mentioned.
+SoundFont® is a registered trademark of Creative Technology Ltd.
+All other trademarks are the property of their respective owners.
