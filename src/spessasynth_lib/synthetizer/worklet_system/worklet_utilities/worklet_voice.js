@@ -337,7 +337,7 @@ export function getWorkletVoices(channel,
     // override patch
     const overridePatch = this.keyModifierManager.hasOverridePatch(channel, midiNote);
     
-    // overriden patch is not cached
+    // override patch is not cached
     if (cached !== undefined && !overridePatch)
     {
         return cached.map(v => WorkletVoice.copy(v, currentTime));

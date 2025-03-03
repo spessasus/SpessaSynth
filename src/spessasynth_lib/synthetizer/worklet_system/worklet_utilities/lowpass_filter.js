@@ -9,8 +9,24 @@ import { generatorTypes } from "../../../soundfont/basic_soundfont/generator.js"
  * Shoutout to them!
  */
 
+/**
+ * @typedef {Object} CachedCoefficient
+ * @property {number} a0 - Filter coefficient 1
+ * @property {number} a1 - Filter coefficient 2
+ * @property {number} a2 - Filter coefficient 3
+ * @property {number} a3 - Filter coefficient 4
+ * @property {number} a4 - Filter coefficient 5
+ */
+
 export class WorkletLowpassFilter
 {
+    /**
+     * Cached coefficient calculations
+     * stored as cachedCoefficients[reasonanceCb][cutoffCents]
+     * @type {CachedCoefficient[][]}
+     * @private
+     */
+    static cachedCoefficients = [];
     /**
      * Filter coefficient 1
      * @type {number}
@@ -72,23 +88,11 @@ export class WorkletLowpassFilter
     reasonanceCb = 0;
     
     /**
-     * Resonance gain
-     * @type {number}
-     */
-    reasonanceGain = 1;
-    
-    /**
      * Cutoff frequency in cents
      * Note: defaults to 13,501 to cause a recalculation even at initial fc being 13,500
      * @type {number}
      */
     cutoffCents = 13501;
-    
-    /**
-     * Cutoff frequency in Hz
-     * @type {number}
-     */
-    cutoffHz = 20001;
     
     /**
      * Applies a low-pass filter to the given buffer
@@ -139,36 +143,58 @@ export class WorkletLowpassFilter
      */
     static calculateCoefficients(filter)
     {
-        filter.cutoffHz = absCentsToHz(filter.cutoffCents);
-        
-        // fix cutoff on low frequencies (fluid_iir_filter.c line 392)
-        filter.cutoffHz = Math.min(filter.cutoffHz, 0.45 * sampleRate);
-        
-        const qDb = filter.reasonanceCb / 10;
-        // correct the filter gain, like fluid does
-        filter.reasonanceGain = decibelAttenuationToGain(-1 * (qDb - 3.01)); // -1 because it's attenuation, and we don't want attenuation
-        
-        // reduce the gain by the Q factor (fluid_iir_filter.c line 250)
-        const qGain = 1 / Math.sqrt(decibelAttenuationToGain(-qDb));
-        
-        
-        // initial filtering code was ported from meltysynth created by sinshu.
-        let w = 2 * Math.PI * filter.cutoffHz / sampleRate; // we're in the AudioWorkletGlobalScope so we can use sampleRate
-        let cosw = Math.cos(w);
-        let alpha = Math.sin(w) / (2 * filter.reasonanceGain);
-        
-        let b1 = (1 - cosw) * qGain;
-        let b0 = b1 / 2;
-        let b2 = b0;
-        let a0 = 1 + alpha;
-        let a1 = -2 * cosw;
-        let a2 = 1 - alpha;
-        
-        // set coefficients
-        filter.a0 = b0 / a0;
-        filter.a1 = b1 / a0;
-        filter.a2 = b2 / a0;
-        filter.a3 = a1 / a0;
-        filter.a4 = a2 / a0;
+        const cutoffCents = ~~filter.cutoffCents; // Math.floor
+        const qCb = filter.reasonanceCb;
+        // check if these coefficients were already cached
+        if (WorkletLowpassFilter.cachedCoefficients?.[qCb]?.[cutoffCents] === undefined)
+        {
+            let cutoffHz = absCentsToHz(cutoffCents);
+            
+            // fix cutoff on low frequencies (fluid_iir_filter.c line 392)
+            cutoffHz = Math.min(cutoffHz, 0.45 * sampleRate);
+            
+            const qDb = qCb / 10;
+            // correct the filter gain, like fluid does
+            const reasonanceGain = decibelAttenuationToGain(-1 * (qDb - 3.01)); // -1 because it's attenuation, and we don't want attenuation
+            
+            // reduce the gain by the Q factor (fluid_iir_filter.c line 250)
+            const qGain = 1 / Math.sqrt(decibelAttenuationToGain(-qDb));
+            
+            
+            // initial filtering code was ported from meltysynth created by sinshu.
+            let w = 2 * Math.PI * cutoffHz / sampleRate; // we're in the AudioWorkletGlobalScope so we can use sampleRate
+            let cosw = Math.cos(w);
+            let alpha = Math.sin(w) / (2 * reasonanceGain);
+            
+            let b1 = (1 - cosw) * qGain;
+            let b0 = b1 / 2;
+            let b2 = b0;
+            let a0 = 1 + alpha;
+            let a1 = -2 * cosw;
+            let a2 = 1 - alpha;
+            
+            /**
+             * set coefficients
+             * @type {CachedCoefficient}
+             */
+            const toCache = {};
+            toCache.a0 = b0 / a0;
+            toCache.a1 = b1 / a0;
+            toCache.a2 = b2 / a0;
+            toCache.a3 = a1 / a0;
+            toCache.a4 = a2 / a0;
+            
+            if (WorkletLowpassFilter.cachedCoefficients[qCb] === undefined)
+            {
+                WorkletLowpassFilter.cachedCoefficients[qCb] = [];
+            }
+            WorkletLowpassFilter.cachedCoefficients[qCb][cutoffCents] = toCache;
+        }
+        const cached = WorkletLowpassFilter.cachedCoefficients[qCb][cutoffCents];
+        filter.a0 = cached.a0;
+        filter.a1 = cached.a1;
+        filter.a2 = cached.a2;
+        filter.a3 = cached.a3;
+        filter.a4 = cached.a4;
     }
 }
