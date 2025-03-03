@@ -154,6 +154,7 @@ npm install --save spessasynth_lib
 - Audio may sometimes sound distorted in Chrome, Edge, Brave,
   etc. due to a **[Chromium Bug](https://issues.chromium.org/issues/367304685).**
   I can't do anything about it, only hope that it gets fixed.
+  Please consider voting for it on the bug tracker to get it fixed!
 
 ### Installation
 #### Npm package
