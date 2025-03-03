@@ -251,7 +251,8 @@ export function dataEntryFine(channel, dataValue)
                     {
                         break;
                     }
-                    channelObject.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] |= dataValue; // 14 bit value so upper 7 are coarse and lower 7 are fine!
+                    // 14-bit value, so upper 7 are coarse and lower 7 are fine!
+                    channelObject.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] |= dataValue;
                     const actualTune = (channelObject.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] >> 7) + dataValue / 127;
                     SpessaSynthInfo(
                         `%cChannel ${channel} bend range. Semitones: %c${actualTune}`,

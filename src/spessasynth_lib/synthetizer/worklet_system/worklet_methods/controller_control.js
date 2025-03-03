@@ -41,7 +41,8 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
                 channelObject.velocityOverride = controllerValue;
         }
     }
-    // lsb controller values: append them as the lower nibble of the 14 bit value
+    
+    // lsb controller values: append them as the lower nibble of the 14-bit value
     // excluding bank select and data entry as it's handled separately
     if (
         controllerNumber >= midiControllers.lsbForControl1ModulationWheel
@@ -113,7 +114,7 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
                 }
                 if (bankNr === 128 && !channelObject.drumChannel)
                 {
-                    // if channel is not for percussion, default to bank current
+                    // if a channel is not for percussion, default to bank current
                     bankNr = getBankSelect(channelObject);
                 }
             }
@@ -227,7 +228,7 @@ export function setMasterGain(volume)
 }
 
 /**
- * @param pan {number} -1 to 1
+ * @param pan {number} -1 to one
  * @this {SpessaSynthProcessor}
  */
 export function setMasterPan(pan)

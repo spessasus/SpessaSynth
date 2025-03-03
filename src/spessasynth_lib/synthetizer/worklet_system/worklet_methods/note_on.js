@@ -3,6 +3,8 @@ import { WorkletVolumeEnvelope } from "../worklet_utilities/volume_envelope.js";
 import { WorkletModulationEnvelope } from "../worklet_utilities/modulation_envelope.js";
 import { generatorTypes } from "../../../soundfont/basic_soundfont/generator.js";
 import { MIN_EXCLUSIVE_LENGTH } from "../main_processor.js";
+import { midiControllers } from "../../../midi_parser/midi_message.js";
+import { portamentoTimeToSeconds } from "./portamento_time.js";
 
 const EXCLUSIVE_CUTOFF_TIME = -2320;
 const EXCLUSIVE_MOD_CUTOFF_TIME = -1130; // less because filter shenanigans
@@ -62,6 +64,20 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
         velocity = keyVel;
     }
     
+    // portamento
+    let portamentoFromKey = -1;
+    let portamentoDuration = 0;
+    if (channelObject.midiControllers[midiControllers.portamentoOnOff] >= 8064) // (64 << 7)
+    {
+        // note: the 14-bit value needs to go down to 7-bit
+        const portamentoTime = channelObject.midiControllers[midiControllers.portamentoTime] >> 7;
+        portamentoFromKey = channelObject.midiControllers[midiControllers.portamentoControl] >> 7;
+        const diff = Math.abs(sentMidiNote - portamentoFromKey);
+        portamentoDuration = portamentoTimeToSeconds(portamentoTime, diff);
+        // set portamento control to previous value
+        channelObject.midiControllers[midiControllers.portamentoControl] = sentMidiNote << 7;
+    }
+    
     // get voices
     const voices = this.getWorkletVoices(
         channel,
@@ -70,7 +86,9 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
         channelObject,
         startTime,
         realKey,
-        enableDebugging
+        enableDebugging,
+        portamentoFromKey,
+        portamentoDuration
     );
     
     // add voices and exclusive class apply

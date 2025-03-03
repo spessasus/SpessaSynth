@@ -49,7 +49,7 @@ export function renderVoice(
     }
     
     
-    // if the initial attenuation is more than 100dB, skip the voice (it's silent anyways)
+    // if the initial attenuation is more than 100dB, skip the voice (it's silent anyway)
     if (voice.modulatedGenerators[generatorTypes.initialAttenuation] > 2500)
     {
         if (voice.isInRelease)
@@ -78,8 +78,18 @@ export function renderVoice(
     {
         // override key
         targetKey = tuning.midiNote;
-        // add microtonal tuning
+        // add micro-tonal tuning
         cents += tuning.centTuning;
+    }
+    
+    // portamento
+    if (voice.portamentoFromKey > -1)
+    {
+        // 0 to 1
+        const elapsed = Math.min((currentTime - voice.startTime) / voice.portamentoDuration, 1);
+        const diff = targetKey - voice.portamentoFromKey;
+        // zero progress means the pitch being in fromKey, full progress means the normal pitch
+        semitones -= diff * (1 - elapsed);
     }
     
     // calculate tuning by key using soundfont's scale tuning
@@ -97,7 +107,7 @@ export function renderVoice(
         cents += lfoVal * (vibratoDepth * channel.customControllers[customControllers.modulationMultiplier]);
     }
     
-    // lowpass frequency
+    // low pass frequency
     const initialFc = voice.modulatedGenerators[generatorTypes.initialFilterFc];
     let lowpassCents = initialFc;
     
@@ -114,10 +124,10 @@ export function renderVoice(
         const modLfoValue = getLFOValue(modStart, modFreqHz, currentTime);
         // use modulation multiplier (RPN modulation depth)
         cents += modLfoValue * (modPitchDepth * channel.customControllers[customControllers.modulationMultiplier]);
-        // volenv volume offset
+        // vole nv volume offset
         // negate the lfo value because audigy starts with increase rather than decrease
         modLfoCentibels = -modLfoValue * modVolDepth;
-        // lowpass frequency
+        // low pass frequency
         lowpassCents += modLfoValue * modFilterDepth;
     }
     
@@ -144,7 +154,7 @@ export function renderVoice(
     lowpassCents += modEnv * modEnvFilterDepth;
     cents += modEnv * modEnvPitchDepth;
     
-    // finally calculate the playback rate
+    // finally, calculate the playback rate
     const centsTotal = ~~(cents + semitones * 100);
     if (centsTotal !== voice.currentTuningCents)
     {
@@ -156,7 +166,7 @@ export function renderVoice(
     // SYNTHESIS
     const bufferOut = new Float32Array(outputLeft.length);
     
-    // wavetable oscillator
+    // wave table oscillator
     switch (this.interpolationType)
     {
         case interpolationTypes.linear:
@@ -172,14 +182,14 @@ export function renderVoice(
             getSampleCubic(voice, bufferOut);
     }
     
-    /* lowpass filter
-     * note: the check is because of the filter optimization (if cents are maximum then the filter is open)
+    /* low pass filter
+     * note: the check is because of the filter optimization (if cents are the maximum then the filter is open)
      * filter cannot use this optimization if it's dynamic (see #53)
-     * and the filter can only be dynamic if the inital filter is not open
+     *, and the filter can only be dynamic if the initial filter is not open
      */
     WorkletLowpassFilter.apply(voice, bufferOut, lowpassCents, initialFc > 13499);
     
-    // volenv
+    // vol env
     WorkletVolumeEnvelope.apply(voice, bufferOut, modLfoCentibels, this.volumeEnvelopeSmoothingFactor);
     
     this.panVoice(

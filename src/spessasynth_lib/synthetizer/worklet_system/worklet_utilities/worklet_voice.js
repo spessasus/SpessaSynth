@@ -235,6 +235,17 @@ class WorkletVoice
     realKey;
     
     /**
+     * @type {number} Initial key to glide from, MIDI Note number. If -1, the portamento is OFF.
+     */
+    portamentoFromKey = -1;
+    
+    /**
+     * Duration of the linear glide, in seconds.
+     * @type {number}
+     */
+    portamentoDuration = 0;
+    
+    /**
      * Creates a workletVoice
      * @param sampleRate {number}
      * @param workletSample {WorkletSample}
@@ -246,6 +257,8 @@ class WorkletVoice
      * @param realKey {number}
      * @param generators {Int16Array}
      * @param modulators {Modulator[]}
+     * @param portamentoFromKey {number}
+     * @param portamentoDuration {number}
      */
     constructor(
         sampleRate,
@@ -257,7 +270,9 @@ class WorkletVoice
         targetKey,
         realKey,
         generators,
-        modulators
+        modulators,
+        portamentoFromKey = -1,
+        portamentoDuration = 0
     )
     {
         this.sample = workletSample;
@@ -272,6 +287,8 @@ class WorkletVoice
         this.targetKey = targetKey;
         this.realKey = realKey;
         this.volumeEnvelope = new WorkletVolumeEnvelope(sampleRate, generators[generatorTypes.sustainVolEnv]);
+        this.portamentoDuration = portamentoDuration;
+        this.portamentoFromKey = portamentoFromKey;
     }
     
     /**
@@ -316,6 +333,8 @@ class WorkletVoice
  * @param currentTime {number} the current time in seconds
  * @param realKey {number} the real MIDI note if the "midiNote" was changed by MIDI Tuning Standard
  * @param debug {boolean} enable debugging?
+ * @param portamentoFromKey {number} portamento target key, -1 means OFF
+ * @param portamentoDuration {number} portamento duration in seconds
  * @this {SpessaSynthProcessor}
  * @returns {WorkletVoice[]} output is an array of WorkletVoices
  */
@@ -325,7 +344,9 @@ export function getWorkletVoices(channel,
                                  channelObject,
                                  currentTime,
                                  realKey,
-                                 debug = false)
+                                 debug = false,
+                                 portamentoFromKey,
+                                 portamentoDuration)
 {
     /**
      * @type {WorkletVoice[]}
@@ -445,7 +466,9 @@ export function getWorkletVoices(channel,
                     targetKey,
                     realKey,
                     generators,
-                    sampleAndGenerators.modulators.map(m => Modulator.copy(m))
+                    sampleAndGenerators.modulators.map(m => Modulator.copy(m)),
+                    portamentoFromKey,
+                    portamentoDuration
                 )
             );
             return voices;

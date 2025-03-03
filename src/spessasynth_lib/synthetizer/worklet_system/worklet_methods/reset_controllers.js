@@ -31,7 +31,7 @@ export function resetAllControllers(log = true)
          **/
         const ch = this.workletProcessorChannels[channelNumber];
         
-        // if preset is unlocked, switch to non drums and call event
+        // if preset is unlocked, switch to non-drums and call event
         if (!ch.lockPreset)
         {
             ch.presetUsesOverride = true;
@@ -118,19 +118,6 @@ export function resetAllControllers(log = true)
 export function resetControllers(channel)
 {
     const channelObject = this.workletProcessorChannels[channel];
-    /**
-     * get excluded (locked) cc numbers as locked ccs are unaffected by reset
-     * @type {number[]}
-     */
-    const excludedCCs = channelObject.lockedControllers.reduce((lockedCCs, cc, ccNum) =>
-    {
-        if (cc)
-        {
-            lockedCCs.push(ccNum);
-        }
-        return lockedCCs;
-    }, []);
-    // save excluded controllers as reset doesn't affect them
     
     channelObject.channelOctaveTuning.fill(0);
     channelObject.keyCentTuning.fill(0);

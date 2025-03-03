@@ -2,9 +2,11 @@ import { CONTROLLER_TABLE_SIZE, CUSTOM_CONTROLLER_TABLE_SIZE, dataEntryStates } 
 
 /**
  * @typedef {Object} WorkletProcessorChannel
- * @property {Int16Array} midiControllers - array of MIDI controller values + the values used by modulators as source (pitch bend, bend range etc.)
+ * @property {Int16Array} midiControllers - array of MIDI controller values + the values used by modulators as the source (pitch bend, bend range etc.).
+ * 14-bit values.
  * @property {boolean[]} lockedControllers - array indicating if a controller is locked
- * @property {Float32Array} customControllers - array of custom (not sf2) control values such as RPN pitch tuning, transpose, modulation depth, etc.
+ * @property {Float32Array} customControllers -
+ * array of custom (not sf2) control values such as RPN pitch tuning, transpose, modulation depth, etc.
  *
  * @property {number} channelTransposeKeyShift - key shift of the channel
  * @property {Int8Array} channelOctaveTuning - the tuning for octave on this channel
@@ -32,7 +34,8 @@ import { CONTROLLER_TABLE_SIZE, CUSTOM_CONTROLLER_TABLE_SIZE, dataEntryStates } 
  * @property {boolean} isMuted - indicates whether the channel is muted
  * @property {WorkletVoice[]} voices - array of voices currently active on the channel
  * @property {WorkletVoice[]} sustainedVoices - array of voices that are sustained on the channel
- * @property {WorkletVoice[][][]} cachedVoices - first is midi note, second is velocity. output is an array of WorkletVoices
+ * @property {WorkletVoice[][][]} cachedVoices - first is midi note, second is velocity.
+ * output is an array of WorkletVoices
  */
 
 /**
