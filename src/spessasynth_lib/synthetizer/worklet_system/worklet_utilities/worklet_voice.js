@@ -271,8 +271,8 @@ class WorkletVoice
         realKey,
         generators,
         modulators,
-        portamentoFromKey = -1,
-        portamentoDuration = 0
+        portamentoFromKey,
+        portamentoDuration
     )
     {
         this.sample = workletSample;
@@ -295,9 +295,11 @@ class WorkletVoice
      * copies the voice
      * @param voice {WorkletVoice}
      * @param currentTime {number}
+     * @param portamentoFromKey {number}
+     * @param portamentoDuration {number}
      * @returns WorkletVoice
      */
-    static copy(voice, currentTime)
+    static copy(voice, currentTime, portamentoFromKey, portamentoDuration)
     {
         const sampleToCopy = voice.sample;
         const sample = new WorkletSample(
@@ -320,7 +322,9 @@ class WorkletVoice
             voice.targetKey,
             voice.realKey,
             voice.generators,
-            voice.modulators.map(m => Modulator.copy(m))
+            voice.modulators.map(m => Modulator.copy(m)),
+            portamentoFromKey,
+            portamentoDuration
         );
     }
 }
@@ -361,7 +365,7 @@ export function getWorkletVoices(channel,
     // override patch is not cached
     if (cached !== undefined && !overridePatch)
     {
-        return cached.map(v => WorkletVoice.copy(v, currentTime));
+        return cached.map(v => WorkletVoice.copy(v, currentTime, portamentoFromKey, portamentoDuration));
     }
     
     // not cached...
@@ -476,7 +480,8 @@ export function getWorkletVoices(channel,
     // cache the voice
     if (canCache)
     {
-        channelObject.cachedVoices[midiNote][velocity] = workletVoices.map(v => WorkletVoice.copy(v, currentTime));
+        channelObject.cachedVoices[midiNote][velocity] = workletVoices.map(v =>
+            WorkletVoice.copy(v, currentTime, -1, 0));
     }
     return workletVoices;
 }
