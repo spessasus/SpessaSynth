@@ -176,7 +176,7 @@ export class DialogueEvent
         // note that the time is not a delay, it's how long the karaoke gets highlighted for before moving onto the next one
         // IE: ["start", "{\k50}", "test", "{\k100"}, "test2"]
         // "start" is instant, test is also instant and "test2" gets highligthed after 0.5 seconds.
-        // Then if someting is after test2, it will get highlighted after 1 second.
+        // Then, if something is after test2, it will get highlighted after 1 second.
         
         let currentDelay = 0;
         let lastKaraokeDuration = 0;
@@ -268,12 +268,12 @@ export class DialogueEvent
         }
         this.element = document.createElement("div");
         this.element.classList.add("ass_renderer_element");
-        // spec: Alignment:
-        // This sets how text is "justified" within the Left/Right onscreen margins, and also the vertical placing.
+        // Spec: Alignment:
+        // This sets how the text is "justified" within the Left/Right onscreen margins, and also the vertical placing.
         // Values may be 1=Left, 2=Centered, 3=Right.
         // Add 4 to the value for a "Toptitle".
         // Add 8 to the value for a "Midtitle".
-        // eg. 5 = left-justified toptitle.
+        // E.g., 5 = left-justified toptitle.
         // Think of numpad and a 3x3 grid
         let alignment = parseInt(this.styleData["Alignment"]);
         
@@ -454,6 +454,9 @@ export class DialogueEvent
         }
         
         parent.appendChild(this.element);
+        
+        // update highlights
+        this.updateHighlights(currentVideoTime);
         
         // force reflow
         void this.element.offsetHeight;
