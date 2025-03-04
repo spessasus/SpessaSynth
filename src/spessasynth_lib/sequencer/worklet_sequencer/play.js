@@ -71,7 +71,7 @@ export function _playTo(time, ticks = undefined)
     
     while (true)
     {
-        // find next event
+        // find the next event
         let trackIndex = this._findFirstEventIndex();
         let event = this.tracks[trackIndex][this.eventIndex[trackIndex]];
         if (ticks !== undefined)
@@ -91,12 +91,20 @@ export function _playTo(time, ticks = undefined)
         
         // skip note ons
         const info = getEvent(event.messageStatusByte);
-        // Keep in mind midi ports to determine channel!!
+        // Keep in mind midi ports to determine the channel!
         const channel = info.channel + (this.midiPortChannelOffsets[this.midiPorts[trackIndex]] || 0);
         switch (info.status)
         {
             // skip note messages
             case messageTypes.noteOn:
+                // track portamento control as last note
+                if (savedControllers[channel] === undefined)
+                {
+                    savedControllers[channel] = Array.from(defaultControllerArray);
+                }
+                savedControllers[channel][midiControllers.portamentoControl] = event.messageData[0];
+                break;
+            
             case messageTypes.noteOff:
             case messageTypes.keySignature:
                 break;
@@ -120,7 +128,7 @@ export function _playTo(time, ticks = undefined)
                     let ccV = event.messageData[1];
                     if (controllerNumber === midiControllers.bankSelect)
                     {
-                        // add the bank to saved
+                        // add the bank to be saved
                         programs[channel].bank = ccV;
                         break;
                     }
@@ -153,7 +161,7 @@ export function _playTo(time, ticks = undefined)
         }
         
         this.eventIndex[trackIndex]++;
-        // find next event
+        // find the next event
         trackIndex = this._findFirstEventIndex();
         let nextEvent = this.tracks[trackIndex][this.eventIndex[trackIndex]];
         if (nextEvent === undefined)
@@ -239,7 +247,7 @@ export function _playTo(time, ticks = undefined)
 
 /**
  * Starts the playback
- * @param resetTime {boolean} If true, time is set to 0s
+ * @param resetTime {boolean} If true, time is set to 0 s
  * @this {WorkletSequencer}
  */
 export function play(resetTime = false)
@@ -249,7 +257,7 @@ export function play(resetTime = false)
         return;
     }
     
-    // reset the time if necesarry
+    // reset the time if necessary
     if (resetTime)
     {
         this.pausedTime = undefined;

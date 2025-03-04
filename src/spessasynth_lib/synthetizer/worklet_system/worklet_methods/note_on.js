@@ -67,15 +67,16 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
     // portamento
     let portamentoFromKey = -1;
     let portamentoDuration = 0;
-    if (!channelObject.drumChannel && channelObject.midiControllers[midiControllers.portamentoOnOff] >= 8064) // (64 << 7)
+    const currentFromKey = channelObject.midiControllers[midiControllers.portamentoControl] >> 7;
+    if (!channelObject.drumChannel && currentFromKey !== sentMidiNote && channelObject.midiControllers[midiControllers.portamentoOnOff] >= 8192) // (64 << 7)
     {
         // note: the 14-bit value needs to go down to 7-bit
         const portamentoTime = channelObject.midiControllers[midiControllers.portamentoTime] >> 7;
-        portamentoFromKey = channelObject.midiControllers[midiControllers.portamentoControl] >> 7;
-        const diff = Math.abs(sentMidiNote - portamentoFromKey);
+        const diff = Math.abs(sentMidiNote - currentFromKey);
         portamentoDuration = portamentoTimeToSeconds(portamentoTime, diff);
+        portamentoFromKey = currentFromKey;
         // set portamento control to previous value
-        channelObject.midiControllers[midiControllers.portamentoControl] = sentMidiNote << 7;
+        this.controllerChange(channel, midiControllers.portamentoControl, sentMidiNote);
     }
     
     // get voices
