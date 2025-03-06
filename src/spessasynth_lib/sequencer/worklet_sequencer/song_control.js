@@ -108,7 +108,7 @@ export function loadNewSequence(parsedMidi, autoPlay = true)
     this.tracks = this.midiData.tracks;
     
     // copy over the port data
-    this.midiPorts = this.midiData.midiPorts;
+    this.midiPorts = this.midiData.midiPorts.slice();
     
     // clear last port data
     this.midiPortChannelOffset = 0;

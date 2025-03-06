@@ -1,6 +1,6 @@
 import { messageTypes, midiControllers, MidiMessage } from "./midi_message.js";
 import { IndexedByteArray } from "../utils/indexed_array.js";
-import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo, SpessaSynthWarn } from "../utils/loggin.js";
+import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo } from "../utils/loggin.js";
 import { consoleColors } from "../utils/other.js";
 import { DEFAULT_PERCUSSION } from "../synthetizer/synthetizer.js";
 
@@ -20,16 +20,23 @@ export function getGsOn(ticks)
             0x10, // Device ID (defaults to 16 on roland)
             0x42, // GS
             0x12, // Command ID (DT1) (whatever that means...)
-            0x40, // System parameter           }
-            0x00, // Global parameter           } Address
-            0x7F, // GS Change                  }
-            0x00, // turn on                    } Data
+            0x40, // System parameter - Address
+            0x00, // Global parameter -  Address
+            0x7F, // GS Change - Address
+            0x00, // turn on - Data
             0x41, // checksum
             0xF7 // end of exclusive
         ])
     );
 }
 
+/**
+ * @param channel {number}
+ * @param cc {number}
+ * @param value {number}
+ * @param ticks {number}
+ * @returns {MidiMessage}
+ */
 function getControllerChange(channel, cc, value, ticks)
 {
     return new MidiMessage(
@@ -56,7 +63,7 @@ function getDrumChange(channel, ticks)
         0x40, // System parameter           }
         chanAddress, // Channel parameter   } Address
         0x15, // Drum change                }
-        0x01 // Is Drums                   } Data
+        0x01 // Is Drums                    } Data
     ];
     // calculate checksum
     // https://cdn.roland.com/assets/media/pdf/F-20_MIDI_Imple_e01_W.pdf section 4
@@ -98,6 +105,7 @@ function getDrumChange(channel, ticks)
  * which will be used to fine-tune the pitch in cents using RPN.
  */
 
+
 /**
  * Allows easy editing of the file by removing channels, changing programs,
  * changing controllers and transposing channels. Note that this modifies the MIDI in-place.
@@ -117,494 +125,397 @@ export function modifyMIDI(
 )
 {
     SpessaSynthGroupCollapsed("%cApplying changes to the MIDI file...", consoleColors.info);
+    
     /**
-     * @param channel {number}
-     * @param port {number}
+     * @type {Set<number>}
      */
-    const clearChannelMessages = (channel, port) =>
+    const channelsToChangeProgram = new Set();
+    desiredProgramChanges.forEach(c =>
     {
-        midi.tracks.forEach((track, trackNum) =>
+        channelsToChangeProgram.add(c.channel);
+    });
+    
+    
+    // go through all events one by one
+    let system = "gs";
+    let addedGs = false;
+    /**
+     * indexes for tracks
+     * @type {number[]}
+     */
+    const eventIndexes = Array(midi.tracks.length).fill(0);
+    let remainingTracks = midi.tracks.length;
+    
+    function findFirstEventIndex()
+    {
+        let index = 0;
+        let ticks = Infinity;
+        midi.tracks.forEach((track, i) =>
         {
-            if (midi.midiPorts[trackNum] !== port)
+            if (eventIndexes[i] >= track.length)
             {
                 return;
             }
-            for (let i = track.length - 1; i >= 0; i--) // iterate in reverse to not mess up indexes
+            if (track[eventIndexes[i]].ticks < ticks)
             {
-                if (track[i].messageStatusByte >= 0x80 && track[i].messageStatusByte < 0xF0) // do not clear sysexes
-                {
-                    if ((track[i].messageStatusByte & 0xF) === channel)
-                    {
-                        track.splice(i, 1);
-                    }
-                }
+                index = i;
+                ticks = track[eventIndexes[i]].ticks;
             }
         });
-    };
-    desiredChannelsToClear.forEach(c =>
-    {
-        const channel = c % 16;
-        const offset = c - channel;
-        const port = midi.midiPortChannelOffsets.findIndex(o => o === offset);
-        clearChannelMessages(channel, port);
-        SpessaSynthInfo(
-            `%cRemoving channel %c${c}%c!`,
-            consoleColors.info,
-            consoleColors.recognized,
-            consoleColors.info
-        );
-    });
-    let addedGs = false;
-    let midiSystem = "gs";
+        return index;
+    }
+    
+    // it copies midiPorts everywhere else, but here 0 works so DO NOT CHANGE!
     /**
-     * find all controller changes in the file
-     * @type {{
-     *  track: number,
-     *  message: MidiMessage,
-     *  channel: number
-     * }[]}
+     * midi port number for the corresponding track
+     * @type {number[]}
      */
-    const ccChanges = [];
+    const midiPorts = midi.midiPorts.slice();
     /**
-     * @type {{
-     *     track: number,
-     *     message: MidiMessage,
-     *     channel: number
-     * }[]}
+     * midi port: channel offset
+     * @type {Object<number, number>}
      */
-    const programChanges = [];
-    midi.tracks.forEach((track, trackNum) =>
+    const midiPortChannelOffsets = {};
+    let midiPortChannelOffset = 0;
+    
+    function assignMIDIPort(trackNum, port)
     {
-        track.forEach(message =>
+        // do not assign ports to empty tracks
+        if (midi.usedChannelsOnTrack[trackNum].size === 0)
         {
-            const status = message.messageStatusByte & 0xF0;
-            if (status === messageTypes.controllerChange)
-            {
-                ccChanges.push({
-                    track: trackNum,
-                    message: message,
-                    channel: message.messageStatusByte & 0xF
-                });
-            }
-            else if (status === messageTypes.programChange)
-            {
-                programChanges.push({
-                    track: trackNum,
-                    message: message,
-                    channel: message.messageStatusByte & 0xF
-                });
-            }
-            else if (message.messageStatusByte === messageTypes.systemExclusive)
-            {
-                // check for xg
+            return;
+        }
+        
+        // assign new 16 channels if the port is not occupied yet
+        if (midiPortChannelOffset === 0)
+        {
+            midiPortChannelOffset += 16;
+            midiPortChannelOffsets[port] = 0;
+        }
+        
+        if (midiPortChannelOffsets[port] === undefined)
+        {
+            midiPortChannelOffsets[port] = midiPortChannelOffset;
+            midiPortChannelOffset += 16;
+        }
+        
+        midiPorts[trackNum] = port;
+    }
+    
+    // assign port offsets
+    midi.midiPorts.forEach((port, trackIndex) =>
+    {
+        assignMIDIPort(trackIndex, port);
+    });
+    
+    const channelsAmount = midiPortChannelOffset;
+    /**
+     * Tracks if the channel already had its first note on
+     * @type {boolean[]}
+     */
+    const isFirstNoteOn = Array(channelsAmount).fill(true);
+    
+    /**
+     * MIDI key transpose
+     * @type {number[]}
+     */
+    const coarseTranspose = Array(channelsAmount).fill(0);
+    /**
+     * RPN fine transpose
+     * @type {number[]}
+     */
+    const fineTranspose = Array(channelsAmount).fill(0);
+    desiredChannelsToTranspose.forEach(transpose =>
+    {
+        const coarse = Math.trunc(transpose.keyShift);
+        const fine = transpose.keyShift - coarse;
+        coarseTranspose[transpose.channel] = coarse;
+        fineTranspose[transpose.channel] = fine;
+    });
+    
+    while (remainingTracks > 0)
+    {
+        let trackNum = findFirstEventIndex();
+        const track = midi.tracks[trackNum];
+        if (eventIndexes[trackNum] >= track.length)
+        {
+            remainingTracks--;
+            continue;
+        }
+        const index = eventIndexes[trackNum]++;
+        const e = track[index];
+        
+        const deleteThisEvent = () =>
+        {
+            track.splice(index, 1);
+            eventIndexes[trackNum]--;
+        };
+        
+        /**
+         * @param e {MidiMessage}
+         * @param offset{number}
+         */
+        const addEventBefore = (e, offset = 0) =>
+        {
+            track.splice(index + offset, 0, e);
+            eventIndexes[trackNum]++;
+        };
+        
+        
+        let portOffset = midiPortChannelOffsets[midiPorts[trackNum]] || 0;
+        if (e.messageStatusByte === messageTypes.midiPort)
+        {
+            assignMIDIPort(trackNum, e.messageData[0]);
+            continue;
+        }
+        const status = e.messageStatusByte & 0xF0;
+        const midiChannel = e.messageStatusByte & 0xF;
+        const channel = midiChannel + portOffset;
+        // clear channel?
+        if (desiredChannelsToClear.indexOf(channel) !== -1)
+        {
+            deleteThisEvent();
+            continue;
+        }
+        switch (status)
+        {
+            case messageTypes.noteOn:
+                // is it first?
+                if (isFirstNoteOn[channel])
+                {
+                    isFirstNoteOn[channel] = false;
+                    // all right, so this is the first note on
+                    // first: controllers
+                    // because FSMP does not like program changes after cc changes in embedded midis
+                    // and since we use splice,
+                    // controllers get added first, then programs before them
+                    // now add controllers
+                    desiredControllerChanges.filter(c => c.channel === channel).forEach(change =>
+                    {
+                        const ccChange = getControllerChange(
+                            midiChannel,
+                            change.controllerNumber,
+                            change.controllerValue,
+                            e.ticks
+                        );
+                        addEventBefore(ccChange);
+                    });
+                    const fineTune = fineTranspose[channel];
+                    
+                    if (fineTune !== 0)
+                    {
+                        // add rpn
+                        // 64 is the center, 96 = 50 cents up
+                        const centsCoarse = (fineTune * 64) + 64;
+                        const rpnCoarse = getControllerChange(midiChannel, midiControllers.RPNMsb, 0, e.ticks);
+                        const rpnFine = getControllerChange(midiChannel, midiControllers.RPNLsb, 1, e.ticks);
+                        const dataEntryCoarse = getControllerChange(
+                            channel,
+                            midiControllers.dataEntryMsb,
+                            centsCoarse,
+                            e.ticks
+                        );
+                        const dataEntryFine = getControllerChange(
+                            midiChannel,
+                            midiControllers.lsbForControl6DataEntry,
+                            0,
+                            e.ticks
+                        );
+                        addEventBefore(dataEntryFine);
+                        addEventBefore(dataEntryCoarse);
+                        addEventBefore(rpnFine);
+                        addEventBefore(rpnCoarse);
+                        
+                    }
+                    
+                    if (channelsToChangeProgram.has(channel))
+                    {
+                        const change = desiredProgramChanges.find(c => c.channel === channel);
+                        let desiredBank = change.bank;
+                        const desiredProgram = change.program;
+                        SpessaSynthInfo(
+                            `%cSetting %c${change.channel}%c to %c${desiredBank}:${desiredProgram}%c. Track num: %c${trackNum}`,
+                            consoleColors.info,
+                            consoleColors.recognized,
+                            consoleColors.info,
+                            consoleColors.recognized,
+                            consoleColors.info,
+                            consoleColors.recognized
+                        );
+                        
+                        // note: this is in reverse.
+                        // the output event order is: drums -> lsb -> msb -> program change
+                        
+                        // add program change
+                        const programChange = new MidiMessage(
+                            e.ticks,
+                            messageTypes.programChange | midiChannel,
+                            new IndexedByteArray([
+                                desiredProgram
+                            ])
+                        );
+                        addEventBefore(programChange);
+                        
+                        // on xg, add lsb
+                        if (!change.isDrum && system === "xg")
+                        {
+                            const bankChangeLSB = getControllerChange(
+                                midiChannel,
+                                midiControllers.lsbForControl0BankSelect,
+                                desiredBank,
+                                e.ticks
+                            );
+                            addEventBefore(bankChangeLSB);
+                        }
+                        
+                        // add the bank MSB
+                        const bankChange = getControllerChange(
+                            midiChannel,
+                            midiControllers.bankSelect,
+                            desiredBank,
+                            e.ticks
+                        );
+                        addEventBefore(bankChange);
+                        
+                        // is drums?
+                        // if so, adjust
+                        // do not add gs drum change on the drum channel
+                        if (change.isDrum)
+                        {
+                            if (system === "gs" && midiChannel !== DEFAULT_PERCUSSION)
+                            {
+                                SpessaSynthInfo(
+                                    `%cAdding GS Drum change on track %c${trackNum}`,
+                                    consoleColors.recognized,
+                                    consoleColors.value
+                                );
+                                addEventBefore(getDrumChange(midiChannel, e.ticks));
+                            }
+                            else if (system === "xg")
+                            {
+                                SpessaSynthInfo(
+                                    `%cAdding XG Drum change on track %c${trackNum}`,
+                                    consoleColors.recognized,
+                                    consoleColors.value
+                                );
+                                // the system is xg. drums are on msb bank 127.
+                                desiredBank = 127;
+                            }
+                        }
+                    }
+                }
+                // transpose key (for zero it won't change anyway)
+                e.messageData[0] += coarseTranspose[channel];
+                break;
+            
+            case messageTypes.noteOff:
+                e.messageData[0] += coarseTranspose[channel];
+                break;
+            
+            case messageTypes.programChange:
+                // do we delete it?
+                if (channelsToChangeProgram.has(channel))
+                {
+                    // this channel has program change. BEGONE!
+                    deleteThisEvent();
+                    continue;
+                }
+                break;
+            
+            case messageTypes.controllerChange:
+                const ccNum = e.messageData[0];
+                const changes = desiredControllerChanges.find(c => c.channel === channel && ccNum === c.controllerNumber);
+                if (changes !== undefined)
+                {
+                    // this controller is locked, BEGONE CHANGE!
+                    deleteThisEvent();
+                    continue;
+                }
+                // bank maybe?
+                if (ccNum === midiControllers.bankSelect || ccNum === midiControllers.lsbForControl0BankSelect)
+                {
+                    if (channelsToChangeProgram.has(channel))
+                    {
+                        // BEGONE!
+                        deleteThisEvent();
+                        continue;
+                    }
+                }
+                break;
+            
+            case messageTypes.systemExclusive:
+                // check for xg on
                 if (
-                    message.messageData[0] === 0x43 && // Yamaha
-                    message.messageData[2] === 0x4C && // XG ON
-                    message.messageData[5] === 0x7E &&
-                    message.messageData[6] === 0x00
+                    e.messageData[0] === 0x43 && // Yamaha
+                    e.messageData[2] === 0x4C && // XG ON
+                    e.messageData[5] === 0x7E &&
+                    e.messageData[6] === 0x00
                 )
                 {
                     SpessaSynthInfo("%cXG system on detected", consoleColors.info);
-                    midiSystem = "xg";
+                    system = "xg";
                     addedGs = true; // flag as true so gs won't get added
                 }
                 else
                     // check for xg program change
                 if (
-                    message.messageData[0] === 0x43 // yamaha
-                    && message.messageData[2] === 0x4C // XG
-                    && message.messageData[3] === 0x08 // part parameter
-                    && message.messageData[5] === 0x03 // program change
+                    e.messageData[0] === 0x43 // yamaha
+                    && e.messageData[2] === 0x4C // XG
+                    && e.messageData[3] === 0x08 // part parameter
+                    && e.messageData[5] === 0x03 // program change
                 )
                 {
-                    programChanges.push({
-                        track: trackNum,
-                        message: message,
-                        channel: message.messageData[4]
-                    });
-                }
-            }
-        });
-    });
-    
-    /**
-     * @param chan {number}
-     * @param port {number}
-     * @param searchForNoteOn {boolean} search for note on if true, any voice otherwise.
-     * first note on is needed because multi port midis like to reference other ports before playing to the port we want.
-     * First voice otherwise, because MP6 doesn't like program changes after cc changes in embedded midis
-     * @return {{index: number, track: number}[]}
-     */
-    const getFirstVoiceForChannel = (chan, port, searchForNoteOn) =>
-    {
-        return midi.tracks
-            .reduce((noteOns, track, trackNum) =>
-            {
-                if (midi.usedChannelsOnTrack[trackNum].has(chan) && midi.midiPorts[trackNum] === port)
-                {
-                    let eventIndex;
-                    if (searchForNoteOn)
+                    // do we delete it?
+                    if (channelsToChangeProgram.has(e.messageData[4] + portOffset))
                     {
-                        eventIndex = track.findIndex(event =>
-                            // event is a noteon
-                            (event.messageStatusByte & 0xF0) === messageTypes.noteOn);
-                    }
-                    else
-                    {
-                        eventIndex = track.findIndex(event =>
-                            // event is a voice event
-                            (event.messageStatusByte > 0x80 && event.messageStatusByte < 0xF0) &&
-                            // event has the channel we want
-                            (event.messageStatusByte & 0xF) === chan &&
-                            // event is not one of the controller changes that reset things
-                            !(
-                                (event.messageStatusByte & 0xF0 === messageTypes.controllerChange) &&
-                                (
-                                    event.messageData[0] === midiControllers.resetAllControllers ||
-                                    event.messageData[0] === midiControllers.allNotesOff ||
-                                    event.messageData[0] === midiControllers.allSoundOff
-                                )
-                            )
-                        );
-                    }
-                    if (eventIndex !== -1)
-                    {
-                        noteOns.push({
-                            index: eventIndex,
-                            track: trackNum
-                        });
+                        // this channel has program change. BEGONE!
+                        deleteThisEvent();
                     }
                 }
-                return noteOns;
-            }, []);
-    };
-    
-    
-    /**
-     * @param channel {number}
-     * @param port {number}
-     * @param cc {number}
-     */
-    const clearControllers = (channel, port, cc) =>
-    {
-        const thisCcChanges = ccChanges.filter(m =>
-            m.channel === channel
-            && m.message.messageData[0] === cc
-            && midi.midiPorts[m.track] === port);
-        // delete
-        for (let i = 0; i < thisCcChanges.length; i++)
-        {
-            // remove
-            const e = thisCcChanges[i];
-            midi.tracks[e.track].splice(midi.tracks[e.track].indexOf(e.message), 1);
-            ccChanges.splice(ccChanges.indexOf(e), 1);
-        }
-        
-    };
-    desiredControllerChanges.forEach(desiredChange =>
-    {
-        const channel = desiredChange.channel;
-        const midiChannel = channel % 16;
-        const offset = channel - midiChannel;
-        const port = midi.midiPortChannelOffsets.findIndex(o => o === offset);
-        const targetValue = desiredChange.controllerValue;
-        const ccNumber = desiredChange.controllerNumber;
-        // the controller is locked. Clear all controllers
-        clearControllers(midiChannel, port, ccNumber);
-        // since we've removed all ccs, we need to add the first one.
-        SpessaSynthInfo(
-            `%cNo controller %c${ccNumber}%c on channel %c${channel}%c found. Adding it!`,
-            consoleColors.info,
-            consoleColors.unrecognized,
-            consoleColors.info,
-            consoleColors.value,
-            consoleColors.info
-        );
-        /**
-         * @type {{index: number, track: number}[]}
-         */
-        const firstNoteOnForTrack = getFirstVoiceForChannel(midiChannel, port, true);
-        if (firstNoteOnForTrack.length === 0)
-        {
-            SpessaSynthWarn("Program change but no notes... ignoring!");
-            return;
-        }
-        const firstNoteOn = firstNoteOnForTrack.reduce((first, current) =>
-            midi.tracks[current.track][current.index].ticks < midi.tracks[first.track][first.index].ticks ? current : first);
-        // prepend with controller change
-        const ccChange = getControllerChange(
-            midiChannel,
-            ccNumber,
-            targetValue,
-            midi.tracks[firstNoteOn.track][firstNoteOn.index].ticks
-        );
-        midi.tracks[firstNoteOn.track].splice(firstNoteOn.index, 0, ccChange);
-    });
-    
-    desiredProgramChanges.forEach(change =>
-    {
-        const midiChannel = change.channel % 16;
-        const offset = change.channel - midiChannel;
-        const port = midi.midiPortChannelOffsets.findIndex(o => o === offset);
-        let desiredBank = change.isDrum ? 0 : change.bank;
-        const desiredProgram = change.program;
-        
-        // get the program changes that are relevant for this channel (and port)
-        const thisProgramChanges = programChanges.filter(c => midi.midiPorts[c.track] === port && c.channel === midiChannel);
-        
-        
-        // clear bank selects
-        clearControllers(midiChannel, port, midiControllers.bankSelect);
-        clearControllers(midiChannel, port, midiControllers.lsbForControl0BankSelect);
-        
-        // if drums or the program uses bank select, flag as gs
-        if ((change.isDrum || desiredBank > 0) && !addedGs)
-        {
-            // make sure that GS is on
-            // GS on: F0 41 10 42 12 40 00 7F 00 41 F7
-            midi.tracks.forEach(track =>
-            {
-                for (let eventIndex = 0; eventIndex < track.length; eventIndex++)
-                {
-                    const event = track[eventIndex];
-                    if (event.messageStatusByte === messageTypes.systemExclusive)
-                    {
-                        if (
-                            event.messageData[0] === 0x41    // roland
-                            && event.messageData[2] === 0x42 // GS
-                            && event.messageData[6] === 0x7F // Mode set
-                        )
-                        {
-                            // thats a GS on, we're done here
-                            addedGs = true;
-                            SpessaSynthInfo(
-                                "%cGS on detected!",
-                                consoleColors.recognized
-                            );
-                            break;
-                        }
-                        else if (
-                            event.messageData[0] === 0x7E // non realtime
-                            && event.messageData[2] === 0x09 // gm system
-                        )
-                        {
-                            // thats a GM/2 system change, remove it!
-                            SpessaSynthInfo(
-                                "%cGM/2 on detected, removing!",
-                                consoleColors.info
-                            );
-                            track.splice(eventIndex, 1);
-                            // adjust program and bank changes
-                            eventIndex--;
-                        }
-                    }
-                }
-                
-            });
-            if (!addedGs)
-            {
-                // gs is not on, add it on the first track at index 0 (or 1 if track name is first)
-                let index = 0;
-                if (midi.tracks[0][0].messageStatusByte === messageTypes.trackName)
-                {
-                    index++;
-                }
-                midi.tracks[0].splice(index, 0, getGsOn(0));
-                SpessaSynthInfo("%cGS on not detected. Adding it.", consoleColors.info);
-                addedGs = true;
-            }
-        }
-        
-        // remove all program changes
-        for (const change of thisProgramChanges)
-        {
-            midi.tracks[change.track].splice(
-                midi.tracks[change.track].indexOf(change.message),
-                1
-            );
-        }
-        /**
-         * Find the first voice message
-         * @type {{index: number, track: number}[]}
-         */
-        const firstVoiceForTrack = getFirstVoiceForChannel(midiChannel, port, offset > 0);
-        if (firstVoiceForTrack.length === 0)
-        {
-            SpessaSynthWarn("Program change but no notes... ignoring!");
-            return;
-        }
-        // get the first voice overall
-        const firstVoice = firstVoiceForTrack.reduce((first, current) =>
-            midi.tracks[current.track][current.index].ticks < midi.tracks[first.track][first.index].ticks ? current : first);
-        // get the index and ticks
-        let firstIndex = firstVoice.index;
-        const ticks = midi.tracks[firstVoice.track][firstVoice.index].ticks;
-        
-        // add drums if needed
-        if (change.isDrum)
-        {
-            // do not add gs drum change on drum channel
-            if (midiSystem === "gs" && midiChannel !== DEFAULT_PERCUSSION)
-            {
-                SpessaSynthInfo(
-                    `%cAdding GS Drum change on track %c${firstVoice.track}`,
-                    consoleColors.recognized,
-                    consoleColors.value
-                );
-                midi.tracks[firstVoice.track].splice(
-                    firstIndex,
-                    0,
-                    getDrumChange(change.channel, ticks)
-                );
-                firstIndex++;
-            }
-            else if (midiSystem === "xg")
-            {
-                SpessaSynthInfo(
-                    `%cAdding XG Drum change on track %c${firstVoice.track}`,
-                    consoleColors.recognized,
-                    consoleColors.value
-                );
-                // system is xg. drums are on msb bank 127.
-                desiredBank = 127;
-            }
-        }
-        
-        SpessaSynthInfo(
-            `%cSetting %c${change.channel}%c to %c${desiredBank}:${desiredProgram}%c. Track num: %c${firstVoice.track}`,
-            consoleColors.info,
-            consoleColors.recognized,
-            consoleColors.info,
-            consoleColors.recognized,
-            consoleColors.info,
-            consoleColors.recognized
-        );
-        
-        // add bank
-        const bankChange = getControllerChange(
-            midiChannel,
-            midiControllers.bankSelect,
-            desiredBank,
-            ticks
-        );
-        midi.tracks[firstVoice.track].splice(firstIndex, 0, bankChange);
-        firstIndex++;
-        
-        // on xg, add lsb
-        if (!change.isDrum && midiSystem === "xg")
-        {
-            const bankChangeLSB = getControllerChange(
-                midiChannel,
-                midiControllers.lsbForControl0BankSelect,
-                desiredBank,
-                ticks
-            );
-            midi.tracks[firstVoice.track].splice(firstIndex, 0, bankChangeLSB);
-            firstIndex++;
-        }
-        
-        // add program change
-        const programChange = new MidiMessage(
-            ticks,
-            messageTypes.programChange | midiChannel,
-            new IndexedByteArray([
-                desiredProgram
-            ])
-        );
-        midi.tracks[firstVoice.track].splice(firstIndex, 0, programChange);
-    });
-    
-    // transpose channels
-    for (const transpose of desiredChannelsToTranspose)
-    {
-        const midiChannel = transpose.channel % 16;
-        const port = Math.floor(transpose.channel / 16);
-        const keyShift = Math.trunc(transpose.keyShift);
-        const fineTune = transpose.keyShift - keyShift;
-        SpessaSynthInfo(
-            `%cTransposing channel %c${transpose.channel}%c by %c${transpose.keyShift}%c semitones`,
-            consoleColors.info,
-            consoleColors.recognized,
-            consoleColors.info,
-            consoleColors.value,
-            consoleColors.info
-        );
-        if (keyShift !== 0)
-        {
-            midi.tracks.forEach((track, trackNum) =>
-            {
+                else
+                    // check for GS on
                 if (
-                    midi.midiPorts[trackNum] !== port ||
-                    !midi.usedChannelsOnTrack[trackNum].has(midiChannel)
+                    e.messageData[0] === 0x41    // roland
+                    && e.messageData[2] === 0x42 // GS
+                    && e.messageData[6] === 0x7F // Mode set
                 )
                 {
-                    return;
-                }
-                const onStatus = messageTypes.noteOn | midiChannel;
-                const offStatus = messageTypes.noteOff | midiChannel;
-                const polyStatus = messageTypes.polyPressure | midiChannel;
-                track.forEach(event =>
-                {
-                    if (
-                        event.messageStatusByte !== onStatus &&
-                        event.messageStatusByte !== offStatus &&
-                        event.messageStatusByte !== polyStatus
-                    )
-                    {
-                        return;
-                    }
-                    event.messageData[0] = Math.max(
-                        0,
-                        Math.min(
-                            127,
-                            event.messageData[0] + keyShift
-                        )
+                    // that's a GS on, we're done here
+                    addedGs = true;
+                    SpessaSynthInfo(
+                        "%cGS on detected!",
+                        consoleColors.recognized
                     );
-                });
-            });
+                    break;
+                }
+                else
+                    // check for GM/2 on
+                if (
+                    e.messageData[0] === 0x7E // non realtime
+                    && e.messageData[2] === 0x09 // gm system
+                )
+                {
+                    // that's a GM/2 system change, remove it!
+                    SpessaSynthInfo(
+                        "%cGM/2 on detected, removing!",
+                        consoleColors.info
+                    );
+                    deleteThisEvent();
+                    addedGs = false;
+                }
         }
-        
-        if (fineTune !== 0)
+    }
+    // check for gs
+    if (!addedGs)
+    {
+        // gs is not on, add it on the first track at index 0 (or 1 if track name is first)
+        let index = 0;
+        if (midi.tracks[0][0].messageStatusByte === messageTypes.trackName)
         {
-            // find the first track that uses this channel
-            const track = midi.tracks.find((t, tNum) => midi.usedChannelsOnTrack[tNum].has(transpose.channel));
-            if (track === undefined)
-            {
-                SpessaSynthWarn(`Channel ${transpose.channel} unused but transpose requested???`);
-                continue;
-            }
-            // find first noteon for this channel
-            const noteOn = messageTypes.noteOn | (transpose.channel % 16);
-            const noteIndex = track.findIndex(n => n.messageStatusByte === noteOn);
-            if (noteIndex === -1)
-            {
-                SpessaSynthWarn(`No notes on channel ${transpose.channel} but transpose requested???`);
-                continue;
-            }
-            const ticks = track[noteIndex].ticks;
-            // add rpn
-            // 64 is the center, 96 = 50 cents up
-            const centsCoarse = (fineTune * 64) + 64;
-            const ccChange = messageTypes.controllerChange | (transpose.channel % 16);
-            const rpnCoarse = new MidiMessage(ticks, ccChange, new IndexedByteArray([midiControllers.RPNMsb, 0]));
-            const rpnFine = new MidiMessage(ticks, ccChange, new IndexedByteArray([midiControllers.RPNLsb, 1]));
-            const deCoarse = new MidiMessage(
-                ticks,
-                ccChange,
-                new IndexedByteArray([midiControllers.dataEntryMsb, centsCoarse])
-            );
-            const deFine = new MidiMessage(
-                ticks,
-                ccChange,
-                new IndexedByteArray([midiControllers.lsbForControl6DataEntry, 0])
-            );
-            // add in reverse
-            track.splice(noteIndex, 0, deFine);
-            track.splice(noteIndex, 0, deCoarse);
-            track.splice(noteIndex, 0, rpnFine);
-            track.splice(noteIndex, 0, rpnCoarse);
-            
+            index++;
         }
+        midi.tracks[0].splice(index, 0, getGsOn(0));
+        SpessaSynthInfo("%cGS on not detected. Adding it.", consoleColors.info);
     }
     SpessaSynthGroupEnd();
 }
