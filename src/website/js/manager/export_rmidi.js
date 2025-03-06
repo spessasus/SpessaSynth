@@ -1,7 +1,11 @@
 import { trimSoundfont } from "../../../spessasynth_lib/soundfont/basic_soundfont/write_sf2/soundfont_trimmer.js";
 import { applySnapshotToMIDI } from "../../../spessasynth_lib/midi_parser/midi_editor.js";
 import { closeNotification, showNotification } from "../notification/notification.js";
-import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd } from "../../../spessasynth_lib/utils/loggin.js";
+import {
+    SpessaSynthGroupCollapsed,
+    SpessaSynthGroupEnd,
+    SpessaSynthWarn
+} from "../../../spessasynth_lib/utils/loggin.js";
 import { consoleColors } from "../../../spessasynth_lib/utils/other.js";
 import { writeRMIDI } from "../../../spessasynth_lib/midi_parser/rmidi_writer.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
@@ -184,7 +188,14 @@ export async function _exportRMIDI()
                     message.textContent = this.localeManager.getLocaleString(localePath + "modifyingMIDI");
                     await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
                     
-                    applySnapshotToMIDI(mid, await this.synth.getSynthesizerSnapshot());
+                    try
+                    {
+                        applySnapshotToMIDI(mid, await this.synth.getSynthesizerSnapshot());
+                    }
+                    catch (e)
+                    {
+                        SpessaSynthWarn("Failed to modify MIDI:", e);
+                    }
                     
                     message.textContent = this.localeManager.getLocaleString(localePath + "modifyingSoundfont");
                     await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
