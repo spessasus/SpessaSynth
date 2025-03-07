@@ -88,5 +88,5 @@ function getLookup(value)
 export function portamentoTimeToSeconds(time, distance)
 {
     // this seems to work fine for the MIDIs I have
-    return getLookup(time) * (distance / 24);
+    return getLookup(time) * (distance / 30);
 }

@@ -379,9 +379,20 @@ export function systemExclusive(messageData, channelOffset = 0)
                                 let panpot = messageValue;
                                 if (panpot === 0)
                                 {
-                                    panpot = Math.floor(Math.random() * 128);
+                                    this.workletProcessorChannels[channel].randomPan = true;
+                                    SpessaSynthInfo(
+                                        `%cRandom pan is set to %cON%c for %c${channel}`,
+                                        consoleColors.info,
+                                        consoleColors.recognized,
+                                        consoleColors.info,
+                                        consoleColors.value
+                                    );
                                 }
-                                this.controllerChange(channel, midiControllers.pan, panpot);
+                                else
+                                {
+                                    this.workletProcessorChannels[channel].randomPan = false;
+                                    this.controllerChange(channel, midiControllers.pan, panpot);
+                                }
                                 break;
                             
                             // chorus send
@@ -646,15 +657,25 @@ export function systemExclusive(messageData, channelOffset = 0)
                             this.controllerChange(channel, midiControllers.mainVolume, value);
                             break;
                         
-                        // panpot
+                        // pan position
                         case 0x0E:
                             let pan = value;
                             if (pan === 0)
                             {
                                 // 0 means random
-                                pan = Math.floor(Math.random() * 127);
+                                this.workletProcessorChannels[channel].randomPan = true;
+                                SpessaSynthInfo(
+                                    `%cRandom pan is set to %cON%c for %c${channel}`,
+                                    consoleColors.info,
+                                    consoleColors.recognized,
+                                    consoleColors.info,
+                                    consoleColors.value
+                                );
                             }
-                            this.controllerChange(channel, midiControllers.pan, pan);
+                            else
+                            {
+                                this.controllerChange(channel, midiControllers.pan, pan);
+                            }
                             break;
                         
                         // reverb

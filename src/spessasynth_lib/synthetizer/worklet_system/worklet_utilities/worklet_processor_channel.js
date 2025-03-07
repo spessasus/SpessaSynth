@@ -14,6 +14,7 @@ import { CONTROLLER_TABLE_SIZE, CUSTOM_CONTROLLER_TABLE_SIZE, dataEntryStates } 
  * @property {boolean} holdPedal - indicates whether the hold pedal is active
  * @property {boolean} drumChannel - indicates whether the channel is a drum channel
  * @property {number} velocityOverride - overrides velocity if > 0 otherwise disabled
+ * @property {boolean} randomPan - enables random panning for every note
  *
  * @property {dataEntryStates} dataEntryState - the current state of the data entry
  * @property {number} NRPCoarse - the current coarse value of the Non-Registered Parameter
@@ -67,6 +68,7 @@ export function createWorkletChannel(sendEvent = false)
         channelOctaveTuning: new Int8Array(12),
         keyCentTuning: new Int16Array(128),
         channelVibrato: { delay: 0, depth: 0, rate: 0 },
+        randomPan: false,
         velocityOverride: 0,
         
         lockGSNRPNParams: false,

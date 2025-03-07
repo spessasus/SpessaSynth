@@ -47,10 +47,21 @@ export function panVoice(voice,
     {
         return;
     }
-    // clamp -500 to 500
-    const pan = Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan]));
-    // smooth out pan to prevent clicking
-    voice.currentPan += (pan - voice.currentPan) * this.panSmoothingFactor;
+    /**
+     * clamp -500 to 500
+     * @type {number}
+     */
+    let pan;
+    if (voice.overridePan)
+    {
+        pan = voice.overridePan;
+    }
+    else
+    {
+        pan = Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan]));
+        // smooth out pan to prevent clicking
+        voice.currentPan += (pan - voice.currentPan) * this.panSmoothingFactor;
+    }
     
     const gain = this.currentGain;
     const index = ~~(pan + 500);

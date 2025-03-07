@@ -73,7 +73,7 @@ export function handleMessage(message)
             break;
         
         case workletMessageType.systemExclusive:
-            this.systemExclusive(data);
+            this.systemExclusive(data[0], data[1]);
             break;
         
         case workletMessageType.setChannelVibrato:

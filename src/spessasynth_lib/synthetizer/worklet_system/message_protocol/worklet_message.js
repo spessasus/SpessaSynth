@@ -17,7 +17,7 @@
  * @property {number} addNewChannel              - 13 -> (no data)
  * @property {number} customCcChange             - 14 -> [ccNumber<number>, ccValue<number>]
  * @property {number} debugMessage               - 15 -> (no data)
- * @property {number} systemExclusive            - 16 -> message data <number[]> (without the F0 byte)
+ * @property {number} systemExclusive            - 16 -> [messageData<number[]> (without the F0 byte), channelOffset<number>]
  * @property {number} setMasterParameter         - 17 -> [parameter<masterParameterType>, value<number>]
  * @property {number} setDrums                   - 18 -> isDrums<boolean>
  * @property {number} pitchWheel                 - 19 -> [MSB<number>, LSB<number>]

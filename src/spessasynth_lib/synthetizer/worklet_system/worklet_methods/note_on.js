@@ -87,15 +87,29 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
         channelObject,
         startTime,
         realKey,
-        enableDebugging,
-        portamentoFromKey,
-        portamentoDuration
+        enableDebugging
     );
     
-    // add voices and exclusive class apply
+    // zero means disabled
+    let panOverride = 0;
+    if (channelObject.randomPan)
+    {
+        // the range is -500 to 500
+        panOverride = Math.round(Math.random() * 1000 - 500);
+    }
+    
+    // add voices
     const channelVoices = channelObject.voices;
     voices.forEach(voice =>
     {
+        // apply portamento
+        voice.portamentoFromKey = portamentoFromKey;
+        voice.portamentoDuration = portamentoDuration;
+        
+        // apply pan override
+        voice.overridePan = panOverride;
+        
+        // apply exclusive class
         const exclusive = voice.generators[generatorTypes.exclusiveClass];
         if (exclusive !== 0)
         {

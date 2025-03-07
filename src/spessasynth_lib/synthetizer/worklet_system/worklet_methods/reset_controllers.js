@@ -143,6 +143,7 @@ export function resetControllers(channel)
     }
     channelObject.channelVibrato = { rate: 0, depth: 0, delay: 0 };
     channelObject.holdPedal = false;
+    channelObject.randomPan = false;
     
     // reset custom controllers
     // special case: transpose does not get affected

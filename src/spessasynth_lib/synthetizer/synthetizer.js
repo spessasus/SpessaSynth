@@ -765,13 +765,14 @@ export class Synthetizer
      * Sends a MIDI Sysex message to the synthesizer
      * @param messageData {number[]|ArrayLike|Uint8Array} the message's data
      * (excluding the F0 byte, but including the F7 at the end)
+     * @param channelOffset {number} channel offset for the system exclusive message, defaults to zero
      */
-    systemExclusive(messageData)
+    systemExclusive(messageData, channelOffset = 0)
     {
         this.post({
             channelNumber: ALL_CHANNELS_OR_DIFFERENT_ACTION,
             messageType: workletMessageType.systemExclusive,
-            messageData: Array.from(messageData)
+            messageData: [Array.from(messageData), channelOffset]
         });
     }
     
