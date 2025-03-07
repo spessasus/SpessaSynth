@@ -43,11 +43,12 @@ export const DEFAULT_SYNTH_MODE = "gs";
 export class Synthetizer
 {
     /**
-     * Creates a new instance of the SpessaSynth synthesizer
+     * Creates a new instance of the SpessaSynth synthesizer.
      * @param targetNode {AudioNode}
-     * @param soundFontBuffer {ArrayBuffer} the soundfont file array buffer
-     * @param enableEventSystem {boolean} enables the event system. Defaults to true
-     * @param startRenderingData {StartRenderingDataConfig} if set, starts playing this immediately and restores the values
+     * @param soundFontBuffer {ArrayBuffer} the soundfont file array buffer.
+     * @param enableEventSystem {boolean} enables the event system.
+     * Defaults to true.
+     * @param startRenderingData {StartRenderingDataConfig} if set, starts playing this immediately and restores the values.
      * @param synthConfig {SynthConfig} optional configuration for the synthesizer.
      */
     constructor(targetNode,
@@ -244,7 +245,7 @@ export class Synthetizer
     }
     
     /**
-     * The maximum number of voices allowed at once
+     * The maximum number of voices allowed at once.
      * @returns {number}
      */
     get voiceCap()
@@ -253,7 +254,7 @@ export class Synthetizer
     }
     
     /**
-     * The maximum number of voices allowed at once
+     * The maximum number of voices allowed at once.
      * @param value {number}
      */
     set voiceCap(value)
@@ -268,7 +269,7 @@ export class Synthetizer
     }
     
     /**
-     * For Black MIDI's - forces release time to 50 ms
+     * For Black MIDI's - forces release time to 50 ms.
      * @param {boolean} value
      */
     set highPerformanceMode(value)
@@ -278,7 +279,7 @@ export class Synthetizer
     }
     
     /**
-     * @returns {number} the audioContext's current time
+     * @returns {number} the audioContext's current time.
      */
     get currentTime()
     {
@@ -286,7 +287,7 @@ export class Synthetizer
     }
     
     /**
-     * @returns {number} the current number of voices playing
+     * @returns {number} the current number of voices playing.
      */
     get voicesAmount()
     {
@@ -294,10 +295,10 @@ export class Synthetizer
     }
     
     /**
-     * Sets the SpessaSynth's log level
+     * Sets the SpessaSynth's log level.
      * @param enableInfo {boolean} - enable info (verbose)
      * @param enableWarning {boolean} - enable warnings (unrecognized messages)
-     * @param enableGroup {boolean} - enable groups (recomended)
+     * @param enableGroup {boolean} - enable groups (to group a lot of logs)
      * @param enableTable {boolean} - enable table (debug message)
      */
     setLogLevel(enableInfo, enableWarning, enableGroup, enableTable)
@@ -327,6 +328,7 @@ export class Synthetizer
      * Sets the interpolation type for the synthesizer:
      * 0. - linear
      * 1. - nearest neighbor
+     * 2. - cubic
      * @param type {interpolationTypes}
      */
     setInterpolationType(type)
@@ -335,7 +337,7 @@ export class Synthetizer
     }
     
     /**
-     * Handles the messages received from the worklet
+     * Handles the messages received from the worklet.
      * @param message {WorkletReturnMessage}
      * @private
      */
@@ -383,7 +385,7 @@ export class Synthetizer
     }
     
     /**
-     * Gets a complete snapshot of the synthesizer, including controllers
+     * Gets a complete snapshot of the synthesizer, including controllers.
      * @returns {Promise<SynthesizerSnapshot>}
      */
     async getSynthesizerSnapshot()
@@ -405,8 +407,8 @@ export class Synthetizer
     }
     
     /**
-     * Adds a new channel to the synthesizer
-     * @param postMessage {boolean} leave at true, set to false only at initialization
+     * Adds a new channel to the synthesizer..
+     * @param postMessage {boolean} leave at true, set to false only at initialization.
      */
     addNewChannel(postMessage = true)
     {
@@ -460,7 +462,7 @@ export class Synthetizer
     }
     
     /*
-     * Disables the GS NRPN parameters like vibrato or drum key tuning
+     * Disables the GS NRPN parameters like vibrato or drum key tuning.
      */
     disableGSNRPparams()
     {
@@ -470,7 +472,7 @@ export class Synthetizer
     }
     
     /**
-     * A message for debugging
+     * A message for debugging.
      */
     debugMessage()
     {
@@ -484,10 +486,10 @@ export class Synthetizer
     
     /**
      * Starts playing a note
-     * @param channel {number} usually 0-15: the channel to play the note
-     * @param midiNote {number} 0-127 the key number of the note
-     * @param velocity {number} 0-127 the velocity of the note (generally controls loudness)
-     * @param enableDebugging {boolean} set to true to log technical details to console
+     * @param channel {number} usually 0-15: the channel to play the note.
+     * @param midiNote {number} 0-127 the key number of the note.
+     * @param velocity {number} 0-127 the velocity of the note (generally controls loudness).
+     * @param enableDebugging {boolean} set to true to log technical details to console.
      */
     noteOn(channel, midiNote, velocity, enableDebugging = false)
     {
@@ -499,10 +501,10 @@ export class Synthetizer
     }
     
     /**
-     * Stops playing a note
-     * @param channel {number} usually 0-15: the channel of the note
-     * @param midiNote {number} 0-127 the key number of the note
-     * @param force {boolean} instantly kills the note if true
+     * Stops playing a note.
+     * @param channel {number} usually 0-15: the channel of the note.
+     * @param midiNote {number} 0-127 the key number of the note.
+     * @param force {boolean} instantly kills the note if true.
      */
     noteOff(channel, midiNote, force = false)
     {
@@ -525,8 +527,8 @@ export class Synthetizer
     }
     
     /**
-     * Stops all notes
-     * @param force {boolean} if we should instantly kill the note, defaults to false
+     * Stops all notes.
+     * @param force {boolean} if we should instantly kill the note, defaults to false.
      */
     stopAll(force = false)
     {
@@ -540,10 +542,10 @@ export class Synthetizer
     
     /**
      * Changes the given controller
-     * @param channel {number} usually 0-15: the channel to change the controller
-     * @param controllerNumber {number} 0-127 the MIDI CC number
-     * @param controllerValue {number} 0-127 the controller value
-     * @param force {boolean} forces the controller change, even if it's locked or gm system is set and the cc is bank select
+     * @param channel {number} usually 0-15: the channel to change the controller.
+     * @param controllerNumber {number} 0-127 the MIDI CC number.
+     * @param controllerValue {number} 0-127 the controller value.
+     * @param force {boolean} forces the controller change message, even if it's locked or gm system is set and the cc is bank select.
      */
     controllerChange(channel, controllerNumber, controllerValue, force = false)
     {
@@ -573,9 +575,9 @@ export class Synthetizer
     }
     
     /**
-     * Applies pressure to a given channel
-     * @param channel {number} usually 0-15: the channel to change the controller
-     * @param pressure {number} 0-127: the pressure to apply
+     * Applies pressure to a given channel.
+     * @param channel {number} usually 0-15: the channel to change the controller.
+     * @param pressure {number} 0-127: the pressure to apply.
      */
     channelPressure(channel, pressure)
     {
@@ -587,10 +589,10 @@ export class Synthetizer
     }
     
     /**
-     * Applies pressure to a given note
-     * @param channel {number} usually 0-15: the channel to change the controller
-     * @param midiNote {number} 0-127: the MIDI note
-     * @param pressure {number} 0-127: the pressure to apply
+     * Applies pressure to a given note.
+     * @param channel {number} usually 0-15: the channel to change the controller.
+     * @param midiNote {number} 0-127: the MIDI note.
+     * @param pressure {number} 0-127: the pressure to apply.
      */
     polyPressure(channel, midiNote, pressure)
     {
@@ -614,10 +616,10 @@ export class Synthetizer
     }
     
     /**
-     * Sets the pitch of the given channel
-     * @param channel {number} usually 0-15: the channel to change pitch
-     * @param MSB {number} SECOND byte of the MIDI pitchWheel message
-     * @param LSB {number} FIRST byte of the MIDI pitchWheel message
+     * Sets the pitch of the given channel.
+     * @param channel {number} usually 0-15: the channel to change pitch.
+     * @param MSB {number} SECOND byte of the MIDI pitchWheel message.
+     * @param LSB {number} FIRST byte of the MIDI pitchWheel message.
      */
     pitchWheel(channel, MSB, LSB)
     {
@@ -629,8 +631,8 @@ export class Synthetizer
     }
     
     /**
-     * Transposes the synthetizer's pitch by given semitones amount (percussion channels don’t get affected)
-     * @param semitones {number} the semitones to transpose by. Can be a floating point number for more precision
+     * Transposes the synthetizer's pitch by given semitones amount (percussion channels don’t get affected).
+     * @param semitones {number} the semitones to transpose by. Can be a floating point number for more precision.
      */
     transpose(semitones)
     {
@@ -638,10 +640,10 @@ export class Synthetizer
     }
     
     /**
-     * Transposes the channel by given amount of semitones
-     * @param channel {number} the channel number
-     * @param semitones {number} the transposition of the channel, can be a float
-     * @param force {boolean} defaults to false, if true transposes the channel even if it's a drum channel
+     * Transposes the channel by given amount of semitones.
+     * @param channel {number} the channel number.
+     * @param semitones {number} the transposition of the channel, can be a float.
+     * @param force {boolean} defaults to false, if true transposes the channel even if it's a drum channel.
      */
     transposeChannel(channel, semitones, force = false)
     {
@@ -653,8 +655,8 @@ export class Synthetizer
     }
     
     /**
-     * Sets the main volume
-     * @param volume {number} 0-1 the volume
+     * Sets the main volume.
+     * @param volume {number} 0-1 the volume.
      */
     setMainVolume(volume)
     {
@@ -662,7 +664,7 @@ export class Synthetizer
     }
     
     /**
-     * Sets the master stereo panning
+     * Sets the master stereo panning.
      * @param pan {number} (-1 to 1), the pan (-1 is left, 0 is midde, 1 is right)
      */
     setMasterPan(pan)
@@ -704,8 +706,8 @@ export class Synthetizer
     }
     
     /**
-     * Overrides velocity on a given channel
-     * @param channel {number} usually 0-15: the channel to change
+     * Overrides velocity on a given channel.
+     * @param channel {number} usually 0-15: the channel to change.
      * @param velocity {number} 1-127, the velocity to use.
      * 0 Disables this functionality
      */
@@ -719,9 +721,9 @@ export class Synthetizer
     }
     
     /**
-     * Causes the given midi channel to ignore controller messages for the given controller number
-     * @param channel {number} usually 0-15: the channel to lock
-     * @param controllerNumber {number} 0-127 MIDI CC number NOTE: -1 locks the preset
+     * Causes the given midi channel to ignore controller messages for the given controller number.
+     * @param channel {number} usually 0-15: the channel to lock.
+     * @param controllerNumber {number} 0-127 MIDI CC number NOTE: -1 locks the preset.
      * @param isLocked {boolean} true if locked, false if unlocked
      */
     lockController(channel, controllerNumber, isLocked)
@@ -734,9 +736,9 @@ export class Synthetizer
     }
     
     /**
-     * Mutes or unmutes the given channel
-     * @param channel {number} usually 0-15: the channel to lock
-     * @param isMuted {boolean} indicates if the channel is muted
+     * Mutes or unmutes the given channel.
+     * @param channel {number} usually 0-15: the channel to lock.
+     * @param isMuted {boolean} indicates if the channel is muted.
      */
     muteChannel(channel, isMuted)
     {
@@ -750,10 +752,10 @@ export class Synthetizer
     /**
      * Reloads the sounfont.
      * THIS IS DEPRECATED!
-     * USE soundfontManager INSTEAD
-     * @param soundFontBuffer {ArrayBuffer} the new soundfont file array buffer
+     * USE soundfontManager instead.
+     * @param soundFontBuffer {ArrayBuffer} the new soundfont file array buffer.
      * @return {Promise<void>}
-     * @deprecated Use the soundfontManager property
+     * @deprecated Use the soundfontManager property.
      */
     async reloadSoundFont(soundFontBuffer)
     {
@@ -762,10 +764,10 @@ export class Synthetizer
     }
     
     /**
-     * Sends a MIDI Sysex message to the synthesizer
+     * Sends a MIDI Sysex message to the synthesizer.
      * @param messageData {number[]|ArrayLike|Uint8Array} the message's data
-     * (excluding the F0 byte, but including the F7 at the end)
-     * @param channelOffset {number} channel offset for the system exclusive message, defaults to zero
+     * (excluding the F0 byte, but including the F7 at the end).
+     * @param channelOffset {number} channel offset for the system exclusive message, defaults to zero.
      */
     systemExclusive(messageData, channelOffset = 0)
     {
@@ -776,8 +778,52 @@ export class Synthetizer
         });
     }
     
+    // noinspection JSUnusedGlobalSymbols
     /**
-     * Toggles drums on a given channel
+     * Tune MIDI keys of a given program using the MIDI Tuning Standard.
+     * @param program {number} 0 - 127 the MIDI program number to use.
+     * @param tunings {{sourceKey: number, targetPitch: number}[]} - the keys and their tunings.
+     * TargetPitch of -1 sets the tuning for this key to be tuned regularly.
+     */
+    tuneKeys(program, tunings)
+    {
+        if (tunings.length > 127)
+        {
+            throw new Error("Too many tunings. Maximum allowed is 127.");
+        }
+        const systemExclusive = [
+            0x7F,           // real-time
+            0x10,           // device id
+            0x08,           // MIDI Tuning
+            0x02,           // note change
+            program,        // tuning program number
+            tunings.length // number of changes
+        ];
+        for (const tuning of tunings)
+        {
+            systemExclusive.push(tuning.sourceKey); // [kk] MIDI Key number
+            if (tuning.targetPitch === -1)
+            {
+                // no change
+                systemExclusive.push(0x7F, 0x7F, 0x7F);
+            }
+            else
+            {
+                const midiNote = Math.floor(tuning.targetPitch);
+                const fraction = Math.floor((tuning.targetPitch - midiNote) / 0.000061);
+                systemExclusive.push(
+                    midiNote,// frequency data byte 1
+                    (fraction >> 7) & 0x7F, // frequency data byte 2
+                    fraction & 0x7F         // frequency data byte 3
+                );
+            }
+        }
+        systemExclusive.push(0xF7);
+        this.systemExclusive(systemExclusive);
+    }
+    
+    /**
+     * Toggles drums on a given channel.
      * @param channel {number}
      * @param isDrum {boolean}
      */
@@ -791,9 +837,9 @@ export class Synthetizer
     }
     
     /**
-     * sends a raw MIDI message to the synthesizer
-     * @param message {number[]|Uint8Array} the midi message, each number is a byte
-     * @param channelOffset {number} the channel offset of the message
+     * sends a raw MIDI message to the synthesizer.
+     * @param message {number[]|Uint8Array} the midi message, each number is a byte.
+     * @param channelOffset {number} the channel offset of the message.
      */
     sendMessage(message, channelOffset = 0)
     {
@@ -855,8 +901,8 @@ export class Synthetizer
     }
     
     /**
-     * Updates the reverb processor with a new impulse response
-     * @param buffer {AudioBuffer} the new reverb impulse response
+     * Updates the reverb processor with a new impulse response.
+     * @param buffer {AudioBuffer} the new reverb impulse response.
      */
     setReverbResponse(buffer)
     {
@@ -865,8 +911,8 @@ export class Synthetizer
     }
     
     /**
-     * Updates the chorus processor parameters
-     * @param config {ChorusConfig} the new chorus
+     * Updates the chorus processor parameters.
+     * @param config {ChorusConfig} the new chorus.
      */
     setChorusConfig(config)
     {
@@ -879,9 +925,9 @@ export class Synthetizer
     }
     
     /**
-     * Changes the effects gain
-     * @param reverbGain {number} the reverb gain, 0-1
-     * @param chorusGain {number} the chorus gain, 0-1
+     * Changes the effects gain.
+     * @param reverbGain {number} the reverb gain, 0-1.
+     * @param chorusGain {number} the chorus gain, 0-1.
      */
     setEffectsGain(reverbGain, chorusGain)
     {
@@ -892,7 +938,7 @@ export class Synthetizer
     }
     
     /**
-     * Destroys the synthesizer instance
+     * Destroys the synthesizer instance.
      */
     destroy()
     {
@@ -909,6 +955,7 @@ export class Synthetizer
         this._destroyed = true;
     }
     
+    // noinspection JSUnusedGlobalSymbols
     reverbateEverythingBecauseWhyNot()
     {
         for (let i = 0; i < this.channelsAmount; i++)

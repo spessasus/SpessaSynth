@@ -110,7 +110,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                         
                         
                         case 0x03:
-                            // fine tuning
+                            // fine-tuning
                             const tuningValue = ((messageData[5] << 7) | messageData[6]) - 8192;
                             cents = Math.floor(tuningValue / 81.92); // [-100;+99] cents range
                             this.setMasterTuning(cents);
@@ -174,10 +174,10 @@ export function systemExclusive(messageData, channelOffset = 0)
                             let currentMessageIndex = 4;
                             if (messageData[3] === 0x07)
                             {
-                                // skip bank
+                                // skip the bank
                                 currentMessageIndex++;
                             }
-                            // get program and number of cahnges
+                            // get program and number of changes
                             const tuningProgram = messageData[currentMessageIndex++];
                             const numberOfChanges = messageData[currentMessageIndex++];
                             for (let i = 0; i < numberOfChanges; i++)

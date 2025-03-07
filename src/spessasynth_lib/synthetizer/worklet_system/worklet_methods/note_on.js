@@ -41,14 +41,14 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
     const realKey = midiNote + channelObject.channelTransposeKeyShift;
     let sentMidiNote = realKey;
     
-    if (midiNote > 127 || midiNote < 0)
+    if (realKey > 127 || realKey < 0)
     {
         return;
     }
     const program = channelObject.preset.program;
-    if (this.tunings[program]?.[midiNote]?.midiNote >= 0)
+    if (this.tunings[program]?.[realKey]?.midiNote >= 0)
     {
-        sentMidiNote = this.tunings[program]?.[midiNote].midiNote;
+        sentMidiNote = this.tunings[program]?.[realKey].midiNote;
     }
     
     // velocity override
@@ -58,7 +58,7 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
     }
     
     // key velocity override
-    const keyVel = this.keyModifierManager.getVelocity(channel, midiNote);
+    const keyVel = this.keyModifierManager.getVelocity(channel, realKey);
     if (keyVel > -1)
     {
         velocity = keyVel;
