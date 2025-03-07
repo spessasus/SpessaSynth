@@ -268,6 +268,11 @@ export function modifyMIDI(
             assignMIDIPort(trackNum, e.messageData[0]);
             continue;
         }
+        // don't clear meta
+        if (e.messageStatusByte <= messageTypes.sequenceSpecific && e.messageStatusByte >= messageTypes.sequenceNumber)
+        {
+            continue;
+        }
         const status = e.messageStatusByte & 0xF0;
         const midiChannel = e.messageStatusByte & 0xF;
         const channel = midiChannel + portOffset;
