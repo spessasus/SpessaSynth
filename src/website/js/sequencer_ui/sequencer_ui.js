@@ -508,31 +508,6 @@ class SequencerUI
         this.toggleLyrics = toggleLyrics;
         textButton.onclick = toggleLyrics;
         
-        // keyboard control
-        document.addEventListener("keydown", event =>
-        {
-            switch (event.key.toLowerCase())
-            {
-                case keybinds.playPause:
-                    event.preventDefault();
-                    togglePlayback();
-                    break;
-                
-                case keybinds.toggleLoop:
-                    event.preventDefault();
-                    toggleLoop();
-                    break;
-                
-                case keybinds.toggleLyrics:
-                    event.preventDefault();
-                    toggleLyrics();
-                    break;
-                
-                default:
-                    break;
-            }
-        });
-        
         // add everything
         controlsDiv.appendChild(previousSongButton); // |<
         controlsDiv.appendChild(loopButton);         // ()
@@ -545,12 +520,27 @@ class SequencerUI
         this.controls.appendChild(this.progressTime);
         this.controls.appendChild(controlsDiv);
         
-        // add number and arrow controls
+        
+        // keyboard control
         document.addEventListener("keydown", e =>
         {
-            
             switch (e.key.toLowerCase())
             {
+                case keybinds.playPause:
+                    e.preventDefault();
+                    togglePlayback();
+                    break;
+                
+                case keybinds.toggleLoop:
+                    e.preventDefault();
+                    toggleLoop();
+                    break;
+                
+                case keybinds.toggleLyrics:
+                    e.preventDefault();
+                    toggleLyrics();
+                    break;
+                
                 case keybinds.seekBackwards:
                     e.preventDefault();
                     this.seq.currentTime -= 5;

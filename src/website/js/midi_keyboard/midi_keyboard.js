@@ -48,26 +48,6 @@ class MidiKeyboard
             max: 127
         };
         
-        // hold pedal on
-        document.addEventListener("keydown", e =>
-        {
-            if (e.key === "Shift")
-            {
-                this.synth.controllerChange(this.channel, midiControllers.sustainPedal, 127);
-                this.keyboard.style.filter = "brightness(0.5)";
-            }
-        });
-        
-        // hold pedal off
-        document.addEventListener("keyup", e =>
-        {
-            if (e.key === "Shift")
-            {
-                this.synth.controllerChange(this.channel, midiControllers.sustainPedal, 0);
-                this.keyboard.style.filter = "";
-            }
-        });
-        
         this.synth = synth;
         this.channel = 0;
         
@@ -158,6 +138,23 @@ class MidiKeyboard
         value.max = Math.min(127, value.max);
         this.setKeyRange(value, true);
         
+    }
+    
+    /**
+     * @param down {boolean}
+     */
+    setHoldPedal(down)
+    {
+        if (down)
+        {
+            this.synth.controllerChange(this.channel, midiControllers.sustainPedal, 127);
+            this.keyboard.style.filter = "brightness(0.5)";
+        }
+        else
+        {
+            this.synth.controllerChange(this.channel, midiControllers.sustainPedal, 0);
+            this.keyboard.style.filter = "";
+        }
     }
     
     /**

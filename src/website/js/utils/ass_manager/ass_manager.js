@@ -137,7 +137,7 @@ export class AssManager
         
         document.addEventListener("keydown", e =>
         {
-            if (e.key === keybinds.toggleSubtitles)
+            if (e.key.toLowerCase() === keybinds.toggleSubtitles)
             {
                 this.setVisibility(!this.visible);
             }

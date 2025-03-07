@@ -229,6 +229,7 @@ class Manager
             this.channelColors,
             this.synth,
             canvas,
+            this.localeManager,
             window.SPESSASYNTH_VERSION
         );
         this.renderer.render(true);
@@ -419,8 +420,35 @@ class Manager
                     });
                     
                     break;
+                
+                case keybinds.sustainPedal:
+                    this.renderer.showHoldPedal = true;
+                    this.renderer.render(false);
+                    this.keyboard.setHoldPedal(true);
             }
         });
+        
+        document.addEventListener("keyup", e =>
+        {
+            // check for control
+            if (e.ctrlKey)
+            {
+                // do not interrupt control shortcuts
+                return;
+            }
+            switch (e.key.toLowerCase())
+            {
+                case keybinds.sustainPedal:
+                    this.renderer.showHoldPedal = false;
+                    this.renderer.render(false);
+                    this.keyboard.setHoldPedal(false);
+                    break;
+                
+                default:
+                    break;
+            }
+        });
+        
         this.renderer.render(false, true);
         // ANY TEST CODE FOR THE SYNTHESIZER GOES HERE
     }

@@ -69,12 +69,28 @@ export function render(auto = true, force = false)
     // draw note count and fps
     this.drawingContext.textBaseline = "hanging";
     this.drawingContext.textAlign = "end";
-    this.drawingContext.font = `${FONT_SIZE}px system-ui`;
+    this.drawingContext.font = `${FONT_SIZE}px monospace`;
     this.drawingContext.fillStyle = "white";
     this.drawingContext.strokeStyle = "white";
-    this.drawingContext.fillText(`${this.notesOnScreen} notes`, this.canvas.width, FONT_SIZE * 2 + 5);
+    this.drawingContext.fillText(Math.round(fps).toString() + " FPS", this.canvas.width, FONT_SIZE * 2 + 5);
     this.drawingContext.fillText(this.version, this.canvas.width, 5);
-    this.drawingContext.fillText(Math.round(fps).toString() + " FPS", this.canvas.width, FONT_SIZE + 5);
+    this.drawingContext.fillText(`${this.notesOnScreen} notes`, this.canvas.width, FONT_SIZE + 5);
+    
+    // draw time signature and tempo (if note times are available)
+    if (this.noteTimes)
+    {
+        this.drawingContext.textAlign = "start";
+        this.drawingContext.fillText(this.seq.currentTempo + "BPM", 0, 5);
+        this.drawingContext.fillText(this.currentTimeSignature, 0, FONT_SIZE + 5);
+    }
+    
+    // show the hold pedal message
+    if (this.showHoldPedal)
+    {
+        this.drawingContext.font = `${FONT_SIZE * 3}px monospace`;
+        this.drawingContext.textAlign = "center";
+        this.drawingContext.fillText(this.holdPedalIsDownText, this.canvas.width / 2, this.canvas.height / 4);
+    }
     
     
     if (this.onRender)

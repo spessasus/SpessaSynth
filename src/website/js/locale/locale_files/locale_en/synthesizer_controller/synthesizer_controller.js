@@ -66,6 +66,8 @@ export const synthesizerControllerLocale = {
         cubic: "Cubic Interpolation"
     },
     
+    holdPedalDown: "Hold pedal is down (Shift)",
+    
     channelController: channelControllerLocale,
     effectsConfig: effectsConfig,
     keyModifiers: keyModifiers

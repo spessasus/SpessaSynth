@@ -1,3 +1,5 @@
+import { messageTypes } from "../../../spessasynth_lib/midi_parser/midi_message.js";
+
 /**
  * @param sequencer {Sequencer}
  * @this {Renderer}
@@ -23,6 +25,15 @@ export function connectSequencer(sequencer)
             this.canvas.style.background = "";
         }
     }, "renderer-song-change");
+    
+    this.seq.addOnMetaEvent(ev =>
+    {
+        const [type, data] = ev;
+        if (type === messageTypes.timeSignature)
+        {
+            this.currentTimeSignature = `${data[0]}/${Math.pow(2, data[1])}`;
+        }
+    }, "renderer-meta-event");
 }
 
 /**

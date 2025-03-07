@@ -15,7 +15,8 @@ export const keybinds = {
     seekForwards: "arrowright",
     previousSong: "[",
     nextSong: "]",
-    toggleSubtitles: "Escape",
+    toggleSubtitles: "escape",
+    sustainPedal: "shift",
     
     cinematicMode: "c",
     videoMode: "v"

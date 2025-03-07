@@ -41,7 +41,7 @@ const DARKER_MULTIPLIER = 0.6;
 const GRADIENT_DARKEN = 0.5;
 export const STROKE_THICKNESS = 1;
 export const NOTE_MARGIN = 1;
-export const FONT_SIZE = 12;
+export const FONT_SIZE = 15;
 export const PRESSED_EFFECT_TIME = 0.6;
 
 // limits
@@ -62,9 +62,10 @@ class Renderer
      * @param channelColors {Array<string>}
      * @param synth {Synthetizer}
      * @param canvas {HTMLCanvasElement}
+     * @param locale {LocaleManager}
      * @param version {string}
      */
-    constructor(channelColors, synth, canvas, version = "")
+    constructor(channelColors, synth, canvas, locale, version = "")
     {
         // variables
         /**
@@ -95,12 +96,19 @@ class Renderer
         this._drumAnalyserFft = DRUMS_ANALYSER_FFT;
         this.waveMultiplier = WAVE_MULTIPLIER;
         
+        // will be updated by locale manager
+        this.holdPedalIsDownText = "";
+        locale.bindObjectProperty(this, "holdPedalIsDownText", "locale.synthesizerController.holdPedalDown");
+        this.showHoldPedal = false;
+        
         /**
          * @type {boolean}
          * @private
          */
         this._notesFall = true;
         this.sideways = false;
+        
+        this.currentTimeSignature = "4/4";
         
         
         // booleans
