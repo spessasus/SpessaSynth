@@ -41,7 +41,7 @@ const DARKER_MULTIPLIER = 0.6;
 const GRADIENT_DARKEN = 0.5;
 export const STROKE_THICKNESS = 1;
 export const NOTE_MARGIN = 1;
-export const FONT_SIZE = 15;
+export const FONT_SIZE = 12;
 export const PRESSED_EFFECT_TIME = 0.6;
 
 // limits
@@ -139,7 +139,7 @@ class Renderer
         
         this.computeColors();
         
-        // synth and analysers
+        // synth and analyzers
         this.synth = synth;
         this.notesOnScreen = 0;
         this.timeOffset = 0;
