@@ -1,15 +1,15 @@
-import { consoleColors } from "../../../utils/other.js";
-import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE } from "../../synthetizer.js";
-import { SpessaSynthInfo } from "../../../utils/loggin.js";
-import { modulatorSources } from "../../../soundfont/basic_soundfont/modulator.js";
+import { consoleColors } from "../../../../utils/other.js";
+import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE } from "../../../synthetizer.js";
+import { SpessaSynthInfo } from "../../../../utils/loggin.js";
+import { modulatorSources } from "../../../../soundfont/basic_soundfont/modulator.js";
 import {
     customControllers,
     customResetArray,
     dataEntryStates,
     NON_CC_INDEX_OFFSET,
     resetArray
-} from "../worklet_utilities/controller_tables.js";
-import { getBankSelect, setBankSelect } from "../worklet_utilities/worklet_processor_channel.js";
+} from "../../worklet_utilities/controller_tables.js";
+import { getBankSelect, setBankSelect } from "../../worklet_utilities/worklet_processor_channel.js";
 
 /**
  * @this {SpessaSynthProcessor}

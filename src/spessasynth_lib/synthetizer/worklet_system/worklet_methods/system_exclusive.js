@@ -215,7 +215,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                             }
                             else
                             {
-                                // 2 byte tuning. Like fine tune: 0 is -100 cents, 8192 is 0 cents, 16383 is +100 cents
+                                // 2 byte tuning. Like fine tune: 0 is -100 cents, 8192 is 0 cents, 16,383 is +100 cents
                                 for (let i = 0; i < 24; i += 2)
                                 {
                                     const tuning = ((messageData[7 + i] << 7) | messageData[8 + i]) - 8192;
@@ -331,7 +331,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                         // this is an individual part (channel) parameter
                         // determine the channel 0 means channel 10 (default), 1 means 1 etc.
                         let channel = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15][messageData[5] & 0x0F] + channelOffset;
-                        // for example 1A means A = 11, which corresponds to channel 12 (counting from 1)
+                        // for example, 0x1A means A = 11, which corresponds to channel 12 (counting from 1)
                         switch (messageData[6])
                         {
                             default:
@@ -418,7 +418,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                             case 0x4A:
                             case 0x4B:
                                 // scale tuning: up to 12 bytes
-                                const tuningBytes = messageData.length - 9; // data starts at 7 , minus checksum and f7
+                                const tuningBytes = messageData.length - 9; // data starts at 7, minus checksum and f7
                                 // read em bytes
                                 const newTuning = new Int8Array(12);
                                 for (let i = 0; i < tuningBytes; i++)
@@ -626,12 +626,12 @@ export function systemExclusive(messageData, channelOffset = 0)
                     const value = messageData[6];
                     switch (messageData[5])
                     {
-                        // bank select
+                        // bank-select MSB
                         case 0x01:
                             this.controllerChange(channel, midiControllers.bankSelect, value);
                             break;
                         
-                        // bank select lsb
+                        // bank-select LSB
                         case 0x02:
                             this.controllerChange(channel, midiControllers.lsbForControl0BankSelect, value);
                             break;

@@ -13,7 +13,7 @@ const MODENV_PEAK = 1;
 const CONVEX_ATTACK = new Float32Array(1000);
 for (let i = 0; i < CONVEX_ATTACK.length; i++)
 {
-    // this makes the db linear ( i think
+    // this makes the db linear (I think)
     CONVEX_ATTACK[i] = getModulatorCurveValue(0, modulatorCurveTypes.convex, i / 1000, 0);
 }
 
@@ -110,7 +110,7 @@ export class WorkletModulationEnvelope
         const decayKeyExcursionCents = ((60 - voice.midiNote) * voice.modulatedGenerators[generatorTypes.keyNumToModEnvDecay]);
         const decayTime = timecentsToSeconds(voice.modulatedGenerators[generatorTypes.decayModEnv] + decayKeyExcursionCents);
         // according to the specification, the decay time is the time it takes to reach 0% from 100%.
-        // calculate the time to reach actual sustain level
+        // calculate the time to reach actual sustain level,
         // for example, sustain 0.6 will be 0.4 of the decay time
         env.decayDuration = decayTime * (1 - env.sustainLevel);
         
@@ -130,7 +130,7 @@ export class WorkletModulationEnvelope
     
     /**
      * Calculates the current modulation envelope value for the given time and voice
-     * @param voice {WorkletVoice} the voice we're working on
+     * @param voice {WorkletVoice} the voice we are working on
      * @param currentTime {number} in seconds
      * @param ignoreRelease {boolean} if true, it will compute the value as if the voice was not released
      * @returns {number} modenv value, from 0 to 1
@@ -141,7 +141,7 @@ export class WorkletModulationEnvelope
         if (voice.isInRelease && !ignoreRelease)
         {
             // if the voice is still in the delay phase,
-            // start level will be 0 which will result in divide by zero
+            // start level will be 0 that will result in divide by zero
             if (env.releaseStartLevel === 0)
             {
                 return 0;

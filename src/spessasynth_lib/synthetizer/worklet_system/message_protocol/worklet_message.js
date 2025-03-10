@@ -111,7 +111,7 @@ export const ALL_CHANNELS_OR_DIFFERENT_ACTION = -1;
  * 1 - event call                   -> {eventName<string>, eventData:<the event's data>}
  * 2 - reported current time        -> currentTime<number>
  * 3 - sequencer specific           -> [messageType<WorkletSequencerReturnMessageType> messageData<any>] note: refer to sequencer_message.js
- * 4 - synthesizer snapshot         -> snapshot<SynthesizerSnapshot> note: refer to snapshot.js
+ * 4 - synthesizer snapshot         -> snapshot<SynthesizerSnapshot> note: refer to synthesizer_snapshot.js
  * 5 - ready                        -> (no data)
  * 6 - soundfontError               -> errorMessage<string>
  * 7 - idenfity                     -> version<string>

@@ -8,12 +8,11 @@ import { modulatorCurveTypes } from "../../../soundfont/basic_soundfont/modulato
 // the length of the precomputed curve tables
 export const MOD_PRECOMPUTED_LENGTH = 16384;
 
-// Precalculate lookup tables for concave and convers
+// Precalculate lookup tables for concave and convex curves
 const concave = new Float32Array(MOD_PRECOMPUTED_LENGTH + 1);
 const convex = new Float32Array(MOD_PRECOMPUTED_LENGTH + 1);
 // the equation is taken from FluidSynth as it's the standard for soundFonts
-// more precisely, this:
-// https://github.com/FluidSynth/fluidsynth/blob/cb8da1e1e2c0a5cff2bab6a419755b598b793384/src/gentables/gen_conv.c#L55
+// more precisely, the gen_conv.c file
 concave[0] = 0;
 concave[concave.length - 1] = 1;
 
@@ -32,7 +31,7 @@ for (let i = 1; i < MOD_PRECOMPUTED_LENGTH - 1; i++)
  * @param direction {number} 0 or 1
  * @param curveType {number} see modulatorCurveTypes in modulators.js
  * @param value {number} the linear value, 0 to 1
- * @returns {number} the transformed value, 0 to 1 or -1 to 1
+ * @returns {number} the transformed value, 0 to 1, or -1 to 1
  */
 export function getModulatorCurveValue(direction, curveType, value, polarity)
 {
@@ -46,7 +45,7 @@ export function getModulatorCurveValue(direction, curveType, value, polarity)
         case modulatorCurveTypes.linear:
             if (polarity)
             {
-                // bipolar
+                // bipolar curve
                 return value * 2 - 1;
             }
             return value;

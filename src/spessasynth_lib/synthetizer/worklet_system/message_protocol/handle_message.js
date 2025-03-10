@@ -108,7 +108,7 @@ export function handleMessage(message)
             }
             else
             {
-                this.stopAll(channel, data === 1);
+                this.stopAllOnChannel(channel, data === 1);
             }
             break;
         

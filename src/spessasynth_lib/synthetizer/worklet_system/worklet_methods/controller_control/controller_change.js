@@ -1,11 +1,14 @@
-import { consoleColors } from "../../../utils/other.js";
-import { midiControllers } from "../../../midi_parser/midi_message.js";
-import { channelConfiguration, getBankSelect, setBankSelect } from "../worklet_utilities/worklet_processor_channel.js";
-import { computeModulators } from "../worklet_utilities/worklet_modulator.js";
-import { SpessaSynthInfo, SpessaSynthWarn } from "../../../utils/loggin.js";
-import { SYNTHESIZER_GAIN } from "../main_processor.js";
-import { DEFAULT_PERCUSSION } from "../../synthetizer.js";
-import { dataEntryStates } from "../worklet_utilities/controller_tables.js";
+import { SpessaSynthInfo, SpessaSynthWarn } from "../../../../utils/loggin.js";
+import {
+    channelConfiguration,
+    getBankSelect,
+    setBankSelect
+} from "../../worklet_utilities/worklet_processor_channel.js";
+import { midiControllers } from "../../../../midi_parser/midi_message.js";
+import { computeModulators } from "../../worklet_utilities/worklet_modulator.js";
+import { consoleColors } from "../../../../utils/other.js";
+import { DEFAULT_PERCUSSION } from "../../../synthetizer.js";
+import { dataEntryStates } from "../../worklet_utilities/controller_tables.js";
 
 /**
  * @param channel {number}
@@ -62,11 +65,11 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
     switch (controllerNumber)
     {
         case midiControllers.allNotesOff:
-            this.stopAll(channel);
+            this.stopAllOnChannel(channel);
             break;
         
         case midiControllers.allSoundOff:
-            this.stopAll(channel, true);
+            this.stopAllOnChannel(channel, true);
             break;
         
         // special case: bank select
@@ -204,57 +207,5 @@ export function controllerChange(channel, controllerNumber, controllerValue, for
         channel: channel,
         controllerNumber: controllerNumber,
         controllerValue: controllerValue
-    });
-}
-
-/**
- * @param volume {number} 0 to 1
- * @this {SpessaSynthProcessor}
- */
-export function setMIDIVolume(volume)
-{
-    this.midiVolume = volume;
-    this.setMasterPan(this.pan);
-}
-
-/**
- * @param volume {number} 0-1
- * @this {SpessaSynthProcessor}
- */
-export function setMasterGain(volume)
-{
-    this.masterGain = volume * SYNTHESIZER_GAIN;
-    this.setMasterPan(this.pan);
-}
-
-/**
- * @param pan {number} -1 to one
- * @this {SpessaSynthProcessor}
- */
-export function setMasterPan(pan)
-{
-    this.pan = pan;
-    // clamp to 0-1 (0 is left)
-    pan = (pan / 2) + 0.5;
-    this.panLeft = (1 - pan);
-    this.panRight = (pan);
-}
-
-/**
- * @param channel {number}
- * @param isMuted {boolean}
- * @this {SpessaSynthProcessor}
- */
-export function muteChannel(channel, isMuted)
-{
-    if (isMuted)
-    {
-        this.stopAll(channel, true);
-    }
-    this.workletProcessorChannels[channel].isMuted = isMuted;
-    this.sendChannelProperties();
-    this.callEvent("mutechannel", {
-        channel: channel,
-        isMuted: isMuted
     });
 }
