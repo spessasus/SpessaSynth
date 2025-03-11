@@ -1,4 +1,7 @@
 import { CONTROLLER_TABLE_SIZE, CUSTOM_CONTROLLER_TABLE_SIZE, dataEntryStates } from "./controller_tables.js";
+import { resetControllers, resetParameters } from "../worklet_methods/controller_control/reset_controllers.js";
+import { renderVoice } from "../worklet_methods/render_voice.js";
+import { panVoice } from "./stereo_panner.js";
 
 /**
  * This class represents a single MIDI Channel within the synthesizer.
@@ -160,18 +163,62 @@ export class WorkletProcessorChannel
     cachedVoices = [];
     
     /**
-     * Constructs a new MIDI channel
-     * @param preset {BasicPreset}
+     * The channel's number (0-based index)
+     * @type {number}
      */
-    constructor(preset)
+    channelNumber;
+    
+    /**
+     * Parent processor instance.
+     * @type {SpessaSynthProcessor}
+     */
+    synth;
+    
+    /**
+     * Constructs a new MIDI channel
+     * @param synth {SpessaSynthProcessor}
+     * @param preset {BasicPreset}
+     * @param channelNumber {number}
+     */
+    constructor(synth, preset, channelNumber)
     {
+        this.synth = synth;
         this.preset = preset;
+        this.channelNumber = channelNumber;
         for (let i = 0; i < 128; i++)
         {
             this.cachedVoices.push([]);
         }
     }
+    
+    /**
+     * @param outputLeft {Float32Array} the left output buffer
+     * @param outputRight {Float32Array} the right output buffer
+     * @param reverbOutputLeft {Float32Array} left output for reverb
+     * @param reverbOutputRight {Float32Array} right output for reverb
+     * @param chorusOutputLeft {Float32Array} left output for chorus
+     * @param chorusOutputRight {Float32Array} right output for chorus
+     */
+    renderAudio(
+        outputLeft, outputRight,
+        reverbOutputLeft, reverbOutputRight,
+        chorusOutputLeft, chorusOutputRight
+    )
+    {
+        this.voices = this.voices.filter(v => !this.renderVoice(
+            v,
+            outputLeft, outputRight,
+            reverbOutputLeft, reverbOutputRight,
+            chorusOutputLeft, chorusOutputRight
+        ));
+    }
 }
+
+WorkletProcessorChannel.prototype.renderVoice = renderVoice;
+WorkletProcessorChannel.prototype.panVoice = panVoice;
+
+WorkletProcessorChannel.prototype.resetControllers = resetControllers;
+WorkletProcessorChannel.prototype.resetParameters = resetParameters;
 
 
 /**
@@ -183,7 +230,7 @@ export function createWorkletChannel(sendEvent = false)
     /**
      * @type {WorkletProcessorChannel}
      */
-    const channel = new WorkletProcessorChannel(this.defaultPreset);
+    const channel = new WorkletProcessorChannel(this, this.defaultPreset, this.workletProcessorChannels.length);
     this.workletProcessorChannels.push(channel);
     this.resetControllers(this.workletProcessorChannels.length - 1);
     this.sendChannelProperties();

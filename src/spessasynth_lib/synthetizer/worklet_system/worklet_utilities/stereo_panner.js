@@ -33,15 +33,17 @@ for (let pan = MIN_PAN; pan <= MAX_PAN; pan++)
  * @param inputBuffer {Float32Array} the input buffer in mono
  * @param outputLeft {Float32Array} left output buffer
  * @param outputRight {Float32Array} right output buffer
- * @param reverb {Float32Array[]} stereo reverb input
- * @param chorus {Float32Array[]} stereo chorus buffer
- * @this {SpessaSynthProcessor}
+ * @param reverbLeft {Float32Array} left reverb input
+ * @param reverbRight {Float32Array} right reverb input
+ * @param chorusLeft {Float32Array} left chorus buffer
+ * @param chorusRight {Float32Array} right chorus buffer
+ * @this {WorkletProcessorChannel}
  */
 export function panVoice(voice,
                          inputBuffer,
                          outputLeft, outputRight,
-                         reverb,
-                         chorus)
+                         reverbLeft, reverbRight,
+                         chorusLeft, chorusRight)
 {
     if (isNaN(inputBuffer[0]))
     {
@@ -58,40 +60,38 @@ export function panVoice(voice,
     }
     else
     {
-        pan = Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan]));
+        const target = Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan]));
         // smooth out pan to prevent clicking
-        voice.currentPan += (pan - voice.currentPan) * this.panSmoothingFactor;
+        voice.currentPan += (target - voice.currentPan) * this.synth.panSmoothingFactor;
+        pan = voice.currentPan;
     }
     
-    const gain = this.currentGain;
+    const gain = this.synth.currentGain;
     const index = ~~(pan + 500);
     // get voice's gain levels for each channel
-    const gainLeft = panTableLeft[index] * gain * this.panLeft;
-    const gainRight = panTableRight[index] * gain * this.panRight;
+    const gainLeft = panTableLeft[index] * gain * this.synth.panLeft;
+    const gainRight = panTableRight[index] * gain * this.synth.panRight;
     
     // disable reverb and chorus in one output mode
-    if (!this.oneOutputMode)
+    if (!this.synth.oneOutputMode)
     {
         // reverb is mono so we need to multiply by gain
-        const reverbLevel = this.reverbGain * voice.modulatedGenerators[generatorTypes.reverbEffectsSend] / WORKLET_SYSTEM_REVERB_DIVIDER * gain;
+        const reverbLevel = this.synth.reverbGain * voice.modulatedGenerators[generatorTypes.reverbEffectsSend] / WORKLET_SYSTEM_REVERB_DIVIDER * gain;
         // chorus is stereo so we do not need to
-        const chorusLevel = this.chorusGain * voice.modulatedGenerators[generatorTypes.chorusEffectsSend] / WORKLET_SYSTEM_CHORUS_DIVIDER;
+        const chorusLevel = this.synth.chorusGain * voice.modulatedGenerators[generatorTypes.chorusEffectsSend] / WORKLET_SYSTEM_CHORUS_DIVIDER;
         
         if (reverbLevel > 0)
         {
-            const reverbLeft = reverb[0];
-            const reverbRight = reverb[1];
             for (let i = 0; i < inputBuffer.length; i++)
             {
                 reverbLeft[i] += reverbLevel * inputBuffer[i];
-                reverbRight[i] += reverbLevel * inputBuffer[i];
             }
+            // copy as its mono
+            reverbRight.set(reverbLeft);
         }
         
         if (chorusLevel > 0)
         {
-            const chorusLeft = chorus[0];
-            const chorusRight = chorus[1];
             const chorusLeftGain = gainLeft * chorusLevel;
             const chorusRightGain = gainRight * chorusLevel;
             for (let i = 0; i < inputBuffer.length; i++)

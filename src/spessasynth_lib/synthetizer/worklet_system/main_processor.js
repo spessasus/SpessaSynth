@@ -16,19 +16,14 @@ import { setMasterGain, setMasterPan, setMIDIVolume } from "./worklet_methods/co
 import { setVibrato } from "./worklet_methods/data_entry/set_nrpn_vibrato.js";
 import { dataEntryFine } from "./worklet_methods/data_entry/data_entry_fine.js";
 import { createWorkletChannel } from "./worklet_utilities/worklet_processor_channel.js";
-import {
-    resetAllControllers,
-    resetControllers,
-    resetParameters
-} from "./worklet_methods/controller_control/reset_controllers.js";
+import { resetAllControllers } from "./worklet_methods/controller_control/reset_controllers.js";
 import { setPreset } from "./worklet_methods/soundfont_management/set_preset.js";
 import { WorkletSoundfontManager } from "./worklet_methods/worklet_soundfont_manager/worklet_soundfont_manager.js";
 import { interpolationTypes } from "./worklet_utilities/wavetable_oscillator.js";
 import { WorkletKeyModifierManager } from "./worklet_methods/worklet_key_modifier.js";
 import { getWorkletVoices } from "./worklet_utilities/worklet_voice.js";
-import { PAN_SMOOTHING_FACTOR, panVoice } from "./worklet_utilities/stereo_panner.js";
+import { PAN_SMOOTHING_FACTOR } from "./worklet_utilities/stereo_panner.js";
 import { releaseVoice } from "./worklet_methods/stopping_notes/release_voice.js";
-import { renderVoice } from "./worklet_methods/render_voice.js";
 import { controllerChange } from "./worklet_methods/controller_control/controller_change.js";
 import { muteChannel } from "./worklet_methods/mute_channel.js";
 import { stopAllOnChannel } from "./worklet_methods/stopping_notes/stop_all_on_channel.js";
@@ -338,43 +333,39 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
                 return;
             }
             let outputIndex;
-            let outputLeft;
-            let outputRight;
-            let reverbChannels;
-            let chorusChannels;
+            let outputL;
+            let outputR;
+            let reverbL;
+            let reverbR;
+            let chorusL;
+            let chorusR;
             if (this.oneOutputMode)
             {
                 // first output only
                 const output = outputs[0];
                 // reverb and chorus are disabled. 32 output channels: two for each midi channel
                 outputIndex = (index % 16) * 2;
-                outputLeft = output[outputIndex];
-                outputRight = output[outputIndex + 1];
+                outputL = output[outputIndex];
+                outputR = output[outputIndex + 1];
             }
             else
             {
                 // 2 first outputs are reverb and chorus, others are for channels
                 outputIndex = (index % this._outputsAmount) + 2;
-                outputLeft = outputs[outputIndex][0];
-                outputRight = outputs[outputIndex][1];
-                reverbChannels = outputs[0];
-                chorusChannels = outputs[1];
+                outputL = outputs[outputIndex][0];
+                outputR = outputs[outputIndex][1];
+                reverbL = outputs[0][0];
+                reverbR = outputs[0][1];
+                chorusL = outputs[1][0];
+                chorusR = outputs[1][1];
             }
             
             // for every voice, render it
-            channel.voices = channel.voices.filter(v =>
-            {
-                // render voice
-                this.renderVoice(
-                    channel,
-                    v,
-                    outputLeft, outputRight,
-                    reverbChannels,
-                    chorusChannels
-                );
-                
-                return !v.finished;
-            });
+            channel.renderAudio(
+                outputL, outputR,
+                reverbL, reverbR,
+                chorusL, chorusR
+            );
             
             totalCurrentVoices += channel.voices.length;
         });
@@ -407,11 +398,26 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
         this.soundfontManager.destroyManager();
         delete this.soundfontManager;
     }
+    
+    /**
+     * @param chan {number}
+     */
+    resetControllers(chan)
+    {
+        this.workletProcessorChannels[chan].resetControllers();
+    }
+    
+    /**
+     * @param chan
+     */
+    resetParameters(chan)
+    {
+        this.workletProcessorChannels[chan].resetParameters();
+    }
 }
 
 // include other methods
 // voice related
-SpessaSynthProcessor.prototype.renderVoice = renderVoice;
 SpessaSynthProcessor.prototype.releaseVoice = releaseVoice;
 SpessaSynthProcessor.prototype.voiceKilling = voiceKilling;
 SpessaSynthProcessor.prototype.getWorkletVoices = getWorkletVoices;
@@ -446,8 +452,6 @@ SpessaSynthProcessor.prototype.createWorkletChannel = createWorkletChannel;
 SpessaSynthProcessor.prototype.controllerChange = controllerChange;
 SpessaSynthProcessor.prototype.channelPressure = channelPressure;
 SpessaSynthProcessor.prototype.resetAllControllers = resetAllControllers;
-SpessaSynthProcessor.prototype.resetControllers = resetControllers;
-SpessaSynthProcessor.prototype.resetParameters = resetParameters;
 
 // master parameter related
 SpessaSynthProcessor.prototype.setMasterGain = setMasterGain;
@@ -477,7 +481,5 @@ SpessaSynthProcessor.prototype.sendPresetList = sendPresetList;
 // snapshot related
 SpessaSynthProcessor.prototype.sendSynthesizerSnapshot = sendSynthesizerSnapshot;
 SpessaSynthProcessor.prototype.applySynthesizerSnapshot = applySynthesizerSnapshot;
-
-SpessaSynthProcessor.prototype.panVoice = panVoice;
 
 export { SpessaSynthProcessor };

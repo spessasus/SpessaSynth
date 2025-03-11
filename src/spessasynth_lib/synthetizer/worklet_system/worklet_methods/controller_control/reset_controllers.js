@@ -112,72 +112,66 @@ export function resetAllControllers(log = true)
 
 /**
  * Resets all controllers for channel
- * @param channel {number}
- * @this {SpessaSynthProcessor}
+ * @this {WorkletProcessorChannel}
  */
-export function resetControllers(channel)
+export function resetControllers()
 {
-    const channelObject = this.workletProcessorChannels[channel];
-    
-    channelObject.channelOctaveTuning.fill(0);
-    channelObject.keyCentTuning.fill(0);
+    this.channelOctaveTuning.fill(0);
+    this.keyCentTuning.fill(0);
     
     // reset the array
     for (let i = 0; i < resetArray.length; i++)
     {
-        if (channelObject.lockedControllers[i])
+        if (this.lockedControllers[i])
         {
             return;
         }
         const resetValue = resetArray[i];
-        if (channelObject.midiControllers[i] !== resetValue && i < 127)
+        if (this.midiControllers[i] !== resetValue && i < 127)
         {
             // call cc change if reset
-            this.callEvent("controllerchange", {
-                channel: channel,
+            this.synth.callEvent("controllerchange", {
+                channel: this.channelNumber,
                 controllerNumber: i,
                 controllerValue: resetValue >> 7
             });
         }
-        channelObject.midiControllers[i] = resetValue;
+        this.midiControllers[i] = resetValue;
     }
-    channelObject.channelVibrato = { rate: 0, depth: 0, delay: 0 };
-    channelObject.holdPedal = false;
-    channelObject.randomPan = false;
+    this.channelVibrato = { rate: 0, depth: 0, delay: 0 };
+    this.holdPedal = false;
+    this.randomPan = false;
     
     // reset custom controllers
     // special case: transpose does not get affected
-    const transpose = channelObject.customControllers[customControllers.channelTransposeFine];
-    channelObject.customControllers.set(customResetArray);
-    channelObject.customControllers[customControllers.channelTransposeFine] = transpose;
+    const transpose = this.customControllers[customControllers.channelTransposeFine];
+    this.customControllers.set(customResetArray);
+    this.customControllers[customControllers.channelTransposeFine] = transpose;
     
-    this.resetParameters(channel);
+    this.resetParameters();
     
 }
 
 /**
- * @param channel {number}
- * @this {SpessaSynthProcessor}
+ * @this {WorkletProcessorChannel}
  */
-export function resetParameters(channel)
+export function resetParameters()
 {
-    const channelObject = this.workletProcessorChannels[channel];
-    
     // reset parameters
     /**
      * @type {number}
      */
-    channelObject.NRPCoarse = 0;
+    this.NRPCoarse = 0;
     /**
      * @type {number}
      */
-    channelObject.NRPFine = 0;
+    this.NRPFine = 0;
     /**
      * @type {number}
      */
-    channelObject.RPValue = 0;
+    this.RPValue = 0;
     /**
      * @type {string}
      */
-    channelObject.dataEntryState = dataEntryStates.Idle;
+    this.dataEntryState = dataEntryStates.Idle;
 }
