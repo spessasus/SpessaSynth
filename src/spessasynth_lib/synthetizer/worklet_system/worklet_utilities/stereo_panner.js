@@ -58,9 +58,10 @@ export function panVoice(voice,
     }
     else
     {
-        pan = Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan]));
+        const target = Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan]));
         // smooth out pan to prevent clicking
-        voice.currentPan += (pan - voice.currentPan) * this.panSmoothingFactor;
+        voice.currentPan += (target - voice.currentPan) * this.panSmoothingFactor;
+        pan = voice.currentPan;
     }
     
     const gain = this.currentGain;
