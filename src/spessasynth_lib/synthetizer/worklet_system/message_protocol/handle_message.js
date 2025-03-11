@@ -17,10 +17,15 @@ export function handleMessage(message)
     /**
      * @type {WorkletProcessorChannel}
      */
-    let channelObject = {};
+    let channelObject;
     if (channel >= 0)
     {
         channelObject = this.workletProcessorChannels[channel];
+        if (channelObject === undefined)
+        {
+            SpessaSynthWarn(`Trying to access channel ${channel} which does not exist... ignoring!`);
+            return;
+        }
     }
     switch (message.messageType)
     {
@@ -46,7 +51,7 @@ export function handleMessage(message)
             break;
         
         case workletMessageType.killNote:
-            this.killNote(channel, data);
+            this.workletProcessorChannels[channel].killNote(data);
             break;
         
         case workletMessageType.programChange:
@@ -68,7 +73,7 @@ export function handleMessage(message)
             }
             else
             {
-                this.resetControllers(channel);
+                this.workletProcessorChannels[channel].resetControllers();
             }
             break;
         
@@ -108,7 +113,7 @@ export function handleMessage(message)
             }
             else
             {
-                this.stopAllOnChannel(channel, data === 1);
+                channelObject.stopAllNotes(data === 1);
             }
             break;
         
@@ -117,7 +122,7 @@ export function handleMessage(message)
             break;
         
         case workletMessageType.muteChannel:
-            this.muteChannel(channel, data);
+            channelObject.muteChannel(data);
             break;
         
         case workletMessageType.addNewChannel:
@@ -155,7 +160,7 @@ export function handleMessage(message)
             break;
         
         case workletMessageType.setDrums:
-            this.setDrums(channel, data);
+            channelObject.setDrums(data);
             break;
         
         case workletMessageType.transpose:
@@ -165,7 +170,7 @@ export function handleMessage(message)
             }
             else
             {
-                this.transposeChannel(channel, data[0], data[1]);
+                channelObject.transposeChannel(data[0], data[1]);
             }
             break;
         

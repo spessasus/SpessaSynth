@@ -22,7 +22,7 @@ export function noteOff(channel, midiNote)
         // if the channel is percussion channel, do not kill the notes
         if (!this.workletProcessorChannels[channel].drumChannel)
         {
-            this.killNote(channel, realKey);
+            this.workletProcessorChannels[channel].killNote(realKey);
             return;
         }
     }
@@ -41,7 +41,7 @@ export function noteOff(channel, midiNote)
         }
         else
         {
-            this.releaseVoice(v);
+            v.release();
         }
     });
     this.callEvent("noteoff", {

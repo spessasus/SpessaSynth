@@ -3,7 +3,6 @@ import { WorkletSequencerReturnMessageType } from "./sequencer_message.js";
 import { consoleColors } from "../../utils/other.js";
 import { SpessaSynthWarn } from "../../utils/loggin.js";
 import { readBytesAsUintBigEndian } from "../../utils/byte_functions/big_endian.js";
-import { DEFAULT_PERCUSSION } from "../../synthetizer/synthetizer.js";
 
 /**
  * Processes a single event
@@ -190,9 +189,5 @@ export function _addNewMidiPort()
     for (let i = 0; i < 16; i++)
     {
         this.synth.createWorkletChannel(true);
-        if (i === DEFAULT_PERCUSSION)
-        {
-            this.synth.setDrums(this.synth.workletProcessorChannels.length - 1, true);
-        }
     }
 }

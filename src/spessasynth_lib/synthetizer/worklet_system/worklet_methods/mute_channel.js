@@ -1,18 +1,17 @@
 /**
- * @param channel {number}
  * @param isMuted {boolean}
- * @this {SpessaSynthProcessor}
+ * @this {WorkletProcessorChannel}
  */
-export function muteChannel(channel, isMuted)
+export function muteChannel(isMuted)
 {
     if (isMuted)
     {
-        this.stopAllOnChannel(channel, true);
+        this.stopAllNotes(true);
     }
-    this.workletProcessorChannels[channel].isMuted = isMuted;
-    this.sendChannelProperties();
-    this.callEvent("mutechannel", {
-        channel: channel,
+    this.isMuted = true;
+    this.synth.sendChannelProperties();
+    this.synth.callEvent("mutechannel", {
+        channel: this.channelNumber,
         isMuted: isMuted
     });
 }

@@ -2,6 +2,16 @@ import { CONTROLLER_TABLE_SIZE, CUSTOM_CONTROLLER_TABLE_SIZE, dataEntryStates } 
 import { resetControllers, resetParameters } from "../worklet_methods/controller_control/reset_controllers.js";
 import { renderVoice } from "../worklet_methods/render_voice.js";
 import { panVoice } from "./stereo_panner.js";
+import { killNote } from "../worklet_methods/stopping_notes/kill_note.js";
+import { setTuning } from "../worklet_methods/tuning_control/set_tuning.js";
+import { setModulationDepth } from "../worklet_methods/tuning_control/set_modulation_depth.js";
+import { dataEntryFine } from "../worklet_methods/data_entry/data_entry_fine.js";
+import { setTuningSemitones } from "../worklet_methods/tuning_control/set_tuning_semitones.js";
+import { controllerChange } from "../worklet_methods/controller_control/controller_change.js";
+import { stopAllNotes } from "../worklet_methods/stopping_notes/stop_all_notes.js";
+import { muteChannel } from "../worklet_methods/mute_channel.js";
+import { transposeChannel } from "../worklet_methods/tuning_control/transpose_channel.js";
+import { dataEntryCoarse } from "../worklet_methods/data_entry/data_entry_coarse.js";
 
 /**
  * This class represents a single MIDI Channel within the synthesizer.
@@ -212,63 +222,106 @@ export class WorkletProcessorChannel
             chorusOutputLeft, chorusOutputRight
         ));
     }
+    
+    /**
+     * @param bank {number}
+     */
+    setBankSelect(bank)
+    {
+        if (!this.lockPreset)
+        {
+            this.bank = bank;
+        }
+    }
+    
+    /**
+     * @returns {number}
+     */
+    getBankSelect()
+    {
+        if (this.drumChannel)
+        {
+            return 128;
+        }
+        return this.bank;
+    }
+    
+    /**
+     * Changes a preset of this channel
+     * @param preset {BasicPreset}
+     */
+    setPreset(preset)
+    {
+        if (this.lockPreset)
+        {
+            return;
+        }
+        delete this.preset;
+        this.preset = preset;
+        
+        // reset cached voices
+        this.cachedVoices = [];
+        for (let i = 0; i < 128; i++)
+        {
+            this.cachedVoices.push([]);
+        }
+    }
+    
+    /**
+     * Sets drums on channel.
+     * @param isDrum {boolean}
+     */
+    setDrums(isDrum)
+    {
+        if (this.lockPreset)
+        {
+            return;
+        }
+        if (this.drumChannel === isDrum)
+        {
+            return;
+        }
+        if (isDrum)
+        {
+            // clear transpose
+            this.channelTransposeKeyShift = 0;
+            this.drumChannel = true;
+            this.setPreset(this.synth.getPreset(this.getBankSelect(), this.preset.program));
+        }
+        else
+        {
+            this.drumChannel = false;
+            this.setPreset(
+                this.synth.getPreset(
+                    this.getBankSelect(),
+                    this.preset.program
+                )
+            );
+        }
+        this.presetUsesOverride = false;
+        this.synth.callEvent("drumchange", {
+            channel: this.channelNumber,
+            isDrumChannel: this.drumChannel
+        });
+        this.synth.sendChannelProperties();
+    }
 }
 
 WorkletProcessorChannel.prototype.renderVoice = renderVoice;
 WorkletProcessorChannel.prototype.panVoice = panVoice;
+WorkletProcessorChannel.prototype.killNote = killNote;
+WorkletProcessorChannel.prototype.stopAllNotes = stopAllNotes;
+WorkletProcessorChannel.prototype.muteChannel = muteChannel;
 
+WorkletProcessorChannel.prototype.setTuning = setTuning;
+WorkletProcessorChannel.prototype.setTuningSemitones = setTuningSemitones;
+WorkletProcessorChannel.prototype.setModulationDepth = setModulationDepth;
+WorkletProcessorChannel.prototype.transposeChannel = transposeChannel;
+
+WorkletProcessorChannel.prototype.controllerChange = controllerChange;
 WorkletProcessorChannel.prototype.resetControllers = resetControllers;
 WorkletProcessorChannel.prototype.resetParameters = resetParameters;
+WorkletProcessorChannel.prototype.dataEntryFine = dataEntryFine;
+WorkletProcessorChannel.prototype.dataEntryCoarse = dataEntryCoarse;
 
 
-/**
- * @param sendEvent {boolean}
- * @this {SpessaSynthProcessor}
- */
-export function createWorkletChannel(sendEvent = false)
-{
-    /**
-     * @type {WorkletProcessorChannel}
-     */
-    const channel = new WorkletProcessorChannel(this, this.defaultPreset, this.workletProcessorChannels.length);
-    this.workletProcessorChannels.push(channel);
-    this.resetControllers(this.workletProcessorChannels.length - 1);
-    this.sendChannelProperties();
-    if (sendEvent)
-    {
-        this.callEvent("newchannel", undefined);
-    }
-}
-
-/**
- * @param channel {WorkletProcessorChannel}
- * @param bank {number}
- */
-export function setBankSelect(channel, bank)
-{
-    if (!channel.lockPreset)
-    {
-        channel.bank = bank;
-    }
-}
-
-/**
- * @param channel {WorkletProcessorChannel}
- * @returns {number}
- */
-export function getBankSelect(channel)
-{
-    if (channel.drumChannel)
-    {
-        return 128;
-    }
-    return channel.bank;
-}
-
-/**
- * This is a channel configuration enum, it is internally sent from Synthetizer via controller change
- * @enum {number}
- */
-export const channelConfiguration = {
-    velocityOverride: 128 // overrides velocity for the given channel
-};

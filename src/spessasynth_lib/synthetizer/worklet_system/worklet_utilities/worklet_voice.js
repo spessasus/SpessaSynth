@@ -3,6 +3,13 @@
  * purpose: prepares workletvoices from sample and generator data and manages sample dumping
  * note: sample dumping means sending it over to the AudioWorkletGlobalScope
  */
+import { MIN_NOTE_LENGTH } from "../main_processor.js";
+import { SpessaSynthTable, SpessaSynthWarn } from "../../../utils/loggin.js";
+import { WorkletLowpassFilter } from "./lowpass_filter.js";
+import { WorkletVolumeEnvelope } from "./volume_envelope.js";
+import { WorkletModulationEnvelope } from "./modulation_envelope.js";
+import { addAndClampGenerator, generatorTypes } from "../../../soundfont/basic_soundfont/generator.js";
+import { Modulator } from "../../../soundfont/basic_soundfont/modulator.js";
 
 class WorkletSample
 {
@@ -88,13 +95,6 @@ class WorkletSample
         this.isLooping = this.loopingMode === 1 || this.loopingMode === 3;
     }
 }
-
-import { SpessaSynthTable, SpessaSynthWarn } from "../../../utils/loggin.js";
-import { WorkletLowpassFilter } from "./lowpass_filter.js";
-import { WorkletVolumeEnvelope } from "./volume_envelope.js";
-import { WorkletModulationEnvelope } from "./modulation_envelope.js";
-import { addAndClampGenerator, generatorTypes } from "../../../soundfont/basic_soundfont/generator.js";
-import { Modulator } from "../../../soundfont/basic_soundfont/modulator.js";
 
 
 /**
@@ -322,6 +322,20 @@ class WorkletVoice
             voice.generators,
             voice.modulators.map(m => Modulator.copy(m))
         );
+    }
+    
+    /**
+     * Stops the voice
+     * @param minNoteLength {number} minimum note length in seconds
+     */
+    release(minNoteLength = MIN_NOTE_LENGTH)
+    {
+        this.releaseStartTime = currentTime;
+        // check if the note is shorter than the min note time, if so, extend it
+        if (this.releaseStartTime - this.startTime < minNoteLength)
+        {
+            this.releaseStartTime = this.startTime + minNoteLength;
+        }
     }
 }
 

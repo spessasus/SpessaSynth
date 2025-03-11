@@ -9,9 +9,9 @@ import {
     NON_CC_INDEX_OFFSET,
     resetArray
 } from "../../worklet_utilities/controller_tables.js";
-import { getBankSelect, setBankSelect } from "../../worklet_utilities/worklet_processor_channel.js";
 
 /**
+ * Full system reset
  * @this {SpessaSynthProcessor}
  * @param log {boolean}
  */
@@ -24,7 +24,7 @@ export function resetAllControllers(log = true)
     this.callEvent("allcontrollerreset", undefined);
     for (let channelNumber = 0; channelNumber < this.workletProcessorChannels.length; channelNumber++)
     {
-        this.resetControllers(channelNumber);
+        this.workletProcessorChannels[channelNumber].resetControllers();
         
         /**
          * @type {WorkletProcessorChannel}
@@ -35,10 +35,10 @@ export function resetAllControllers(log = true)
         if (!ch.lockPreset)
         {
             ch.presetUsesOverride = true;
-            setBankSelect(ch, 0);
+            ch.setBankSelect(0);
             if (channelNumber % 16 === DEFAULT_PERCUSSION)
             {
-                this.setPreset(channelNumber, this.drumPreset);
+                this.workletProcessorChannels[channelNumber].setPreset(this.drumPreset);
                 ch.drumChannel = true;
                 this.callEvent("drumchange", {
                     channel: channelNumber,
@@ -48,7 +48,7 @@ export function resetAllControllers(log = true)
             else
             {
                 ch.drumChannel = false;
-                this.setPreset(channelNumber, this.defaultPreset);
+                ch.setPreset(this.defaultPreset);
                 this.callEvent("drumchange", {
                     channel: channelNumber,
                     isDrumChannel: false
@@ -67,7 +67,7 @@ export function resetAllControllers(log = true)
         this.callEvent("programchange", {
             channel: channelNumber,
             program: ch.preset.program,
-            bank: getBankSelect(ch),
+            bank: ch.getBankSelect(),
             userCalled: false
         });
         

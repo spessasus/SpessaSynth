@@ -118,7 +118,7 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
             {
                 if (v.generators[generatorTypes.exclusiveClass] === exclusive)
                 {
-                    this.releaseVoice(v, MIN_EXCLUSIVE_LENGTH);
+                    v.release(MIN_EXCLUSIVE_LENGTH);
                     v.modulatedGenerators[generatorTypes.releaseVolEnv] = EXCLUSIVE_CUTOFF_TIME; // make the release nearly instant
                     v.modulatedGenerators[generatorTypes.releaseModEnv] = EXCLUSIVE_MOD_CUTOFF_TIME;
                     WorkletVolumeEnvelope.recalculate(v);

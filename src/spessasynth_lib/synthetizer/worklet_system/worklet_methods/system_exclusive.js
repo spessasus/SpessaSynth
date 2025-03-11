@@ -342,7 +342,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                             case 0x15:
                                 // this is the Use for Drum Part sysex (multiple drums)
                                 const isDrums = messageValue > 0 && messageData[5] >> 4; // if set to other than 0, is a drum channel
-                                this.setDrums(channel, isDrums);
+                                this.workletProcessorChannels[channel].setDrums(isDrums);
                                 SpessaSynthInfo(
                                     `%cChannel %c${channel}%c ${isDrums ?
                                         "is now a drum channel"
@@ -360,7 +360,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                             case 0x16:
                                 // this is the pitch key shift sysex
                                 const keyShift = messageValue - 64;
-                                this.transposeChannel(channel, keyShift);
+                                this.workletProcessorChannels[channel].transposeChannel(keyShift);
                                 SpessaSynthInfo(
                                     `%cChannel %c${channel}%c pitch shift. Semitones %c${keyShift}%c, with %c${arrayToHexString(
                                         messageData)}`,
@@ -437,7 +437,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                                     consoleColors.info,
                                     consoleColors.value
                                 );
-                                this.setChannelTuning(channel, cents);
+                                this.workletProcessorChannels[channel].setTuning(cents);
                                 break;
                         }
                         return;

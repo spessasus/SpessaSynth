@@ -62,3 +62,10 @@ export const dataEntryStates = {
     DataCoarse: 5,
     DataFine: 6
 };
+/**
+ * This is a channel configuration enum, it is internally sent from Synthetizer via controller change
+ * @enum {number}
+ */
+export const channelConfiguration = {
+    velocityOverride: 128 // overrides velocity for the given channel
+};

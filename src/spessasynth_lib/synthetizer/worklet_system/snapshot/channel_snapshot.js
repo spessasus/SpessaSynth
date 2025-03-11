@@ -1,5 +1,3 @@
-import { getBankSelect, setBankSelect } from "../worklet_utilities/worklet_processor_channel.js";
-
 /**
  * Represents a snapshot of a single channel's state in the synthesizer.
  */
@@ -106,32 +104,32 @@ export class ChannelSnapshot
      */
     static getChannelSnapshot(workletProcessor, channelNumber)
     {
-        const channel = workletProcessor.workletProcessorChannels[channelNumber];
+        const channelObject = workletProcessor.workletProcessorChannels[channelNumber];
         const channelSnapshot = new ChannelSnapshot();
         // program data
-        channelSnapshot.program = channel.preset.program;
-        channelSnapshot.bank = getBankSelect(channel);
-        channelSnapshot.lockPreset = channel.lockPreset;
-        channelSnapshot.patchName = channel.preset.presetName;
+        channelSnapshot.program = channelObject.preset.program;
+        channelSnapshot.bank = channelObject.getBankSelect();
+        channelSnapshot.lockPreset = channelObject.lockPreset;
+        channelSnapshot.patchName = channelObject.preset.presetName;
         
         // controller data
-        channelSnapshot.midiControllers = channel.midiControllers;
-        channelSnapshot.lockedControllers = channel.lockedControllers;
-        channelSnapshot.customControllers = channel.customControllers;
+        channelSnapshot.midiControllers = channelObject.midiControllers;
+        channelSnapshot.lockedControllers = channelObject.lockedControllers;
+        channelSnapshot.customControllers = channelObject.customControllers;
         
         // vibrato data
-        channelSnapshot.channelVibrato = channel.channelVibrato;
-        channelSnapshot.lockVibrato = channel.lockGSNRPNParams;
+        channelSnapshot.channelVibrato = channelObject.channelVibrato;
+        channelSnapshot.lockVibrato = channelObject.lockGSNRPNParams;
         
         // tuning and transpose data
-        channelSnapshot.channelTransposeKeyShift = channel.channelTransposeKeyShift;
-        channelSnapshot.channelOctaveTuning = channel.channelOctaveTuning;
-        channelSnapshot.keyCentTuning = channel.keyCentTuning;
+        channelSnapshot.channelTransposeKeyShift = channelObject.channelTransposeKeyShift;
+        channelSnapshot.channelOctaveTuning = channelObject.channelOctaveTuning;
+        channelSnapshot.keyCentTuning = channelObject.keyCentTuning;
         
         // other data
-        channelSnapshot.isMuted = channel.isMuted;
-        channelSnapshot.velocityOverride = channel.velocityOverride;
-        channelSnapshot.drumChannel = channel.drumChannel;
+        channelSnapshot.isMuted = channelObject.isMuted;
+        channelSnapshot.velocityOverride = channelObject.velocityOverride;
+        channelSnapshot.drumChannel = channelObject.drumChannel;
         return channelSnapshot;
     }
     
@@ -144,8 +142,8 @@ export class ChannelSnapshot
     static applyChannelSnapshot(workletProcessor, channelNumber, channelSnapshot)
     {
         const channelObject = workletProcessor.workletProcessorChannels[channelNumber];
-        workletProcessor.muteChannel(channelNumber, channelSnapshot.isMuted);
-        workletProcessor.setDrums(channelNumber, channelSnapshot.drumChannel);
+        channelObject.muteChannel(channelSnapshot.isMuted);
+        channelObject.setDrums(channelSnapshot.drumChannel);
         
         // restore controllers
         channelObject.midiControllers = channelSnapshot.midiControllers;
@@ -161,7 +159,7 @@ export class ChannelSnapshot
         
         // restore preset and lock
         channelObject.lockPreset = false;
-        setBankSelect(channelObject, channelSnapshot.bank);
+        channelObject.setBankSelect(channelSnapshot.bank);
         workletProcessor.programChange(channelNumber, channelSnapshot.program);
         channelObject.lockPreset = channelSnapshot.lockPreset;
     }

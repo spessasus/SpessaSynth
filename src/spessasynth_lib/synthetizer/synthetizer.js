@@ -13,8 +13,8 @@ import {
 import { SpessaSynthInfo, SpessaSynthWarn } from "../utils/loggin.js";
 import { DEFAULT_SYNTH_CONFIG } from "./audio_effects/effects_config.js";
 import { SoundfontManager } from "./synth_soundfont_manager.js";
-import { channelConfiguration } from "./worklet_system/worklet_utilities/worklet_processor_channel.js";
 import { KeyModifierManager } from "./key_modifier_manager.js";
+import { channelConfiguration } from "./worklet_system/worklet_utilities/controller_tables.js";
 
 
 /**

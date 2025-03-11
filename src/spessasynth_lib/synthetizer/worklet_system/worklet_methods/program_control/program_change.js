@@ -1,5 +1,4 @@
-import { SpessaSynthWarn } from "../../../utils/loggin.js";
-import { getBankSelect } from "../worklet_utilities/worklet_processor_channel.js";
+import { SpessaSynthWarn } from "../../../../utils/loggin.js";
 
 /**
  * executes a program change
@@ -24,7 +23,7 @@ export function programChange(channel, programNumber, userChange = false)
         return;
     }
     // always 128 for percussion
-    const bank = getBankSelect(channelObject);
+    const bank = channelObject.getBankSelect();
     let sentBank;
     let preset;
     
@@ -52,7 +51,7 @@ export function programChange(channel, programNumber, userChange = false)
         sentBank = preset.bank;
         channelObject.presetUsesOverride = false;
     }
-    this.setPreset(channel, preset);
+    channelObject.setPreset(preset);
     this.callEvent("programchange", {
         channel: channel,
         program: preset.program,
