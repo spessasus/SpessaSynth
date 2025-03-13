@@ -22,6 +22,8 @@ setResetValue(midiControllers.balance, 64);
 setResetValue(midiControllers.expressionController, 127);
 setResetValue(midiControllers.pan, 64);
 
+setResetValue(midiControllers.portamentoOnOff, 127);
+
 setResetValue(midiControllers.timbreHarmonicContent, 64);
 setResetValue(midiControllers.releaseTime, 64);
 setResetValue(midiControllers.attackTime, 64);
@@ -61,4 +63,11 @@ export const dataEntryStates = {
     NRPFine: 4,
     DataCoarse: 5,
     DataFine: 6
+};
+/**
+ * This is a channel configuration enum, it is internally sent from Synthetizer via controller change
+ * @enum {number}
+ */
+export const channelConfiguration = {
+    velocityOverride: 128 // overrides velocity for the given channel
 };

@@ -4,17 +4,15 @@ import { consoleColors } from "../../../../utils/other.js";
 
 /**
  * Sets the channel's tuning in semitones
- * @param channel {number}
  * @param semitones {number}
- * @this {SpessaSynthProcessor}
+ * @this {WorkletProcessorChannel}
  */
-export function setChannelTuningSemitones(channel, semitones)
+export function setTuningSemitones(semitones)
 {
-    const channelObject = this.workletProcessorChannels[channel];
     semitones = Math.round(semitones);
-    channelObject.customControllers[customControllers.channelTuningSemitones] = semitones;
+    this.customControllers[customControllers.channelTuningSemitones] = semitones;
     SpessaSynthInfo(
-        `%cChannel ${channel} coarse tuning. Semitones: %c${semitones}`,
+        `%cChannel ${this.channelNumber} coarse tuning. Semitones: %c${semitones}`,
         consoleColors.info,
         consoleColors.value
     );

@@ -9,7 +9,7 @@ export function transposeAllChannels(semitones, force = false)
     this.transposition = 0;
     for (let i = 0; i < this.workletProcessorChannels.length; i++)
     {
-        this.transposeChannel(i, semitones, force);
+        this.workletProcessorChannels[i].transposeChannel(semitones, force);
     }
     this.transposition = semitones;
 }

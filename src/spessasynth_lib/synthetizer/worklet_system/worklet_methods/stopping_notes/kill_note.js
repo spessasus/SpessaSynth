@@ -2,19 +2,18 @@ import { generatorTypes } from "../../../../soundfont/basic_soundfont/generator.
 
 /**
  * Stops a note nearly instantly
- * @param channel {number}
  * @param midiNote {number}
- * @this {SpessaSynthProcessor}
+ * @this {WorkletProcessorChannel}
  */
-export function killNote(channel, midiNote)
+export function killNote(midiNote)
 {
-    this.workletProcessorChannels[channel].voices.forEach(v =>
+    this.voices.forEach(v =>
     {
         if (v.realKey !== midiNote)
         {
             return;
         }
         v.modulatedGenerators[generatorTypes.releaseVolEnv] = -12000; // set release to be very short
-        this.releaseVoice(v);
+        v.release();
     });
 }

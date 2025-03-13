@@ -10,7 +10,7 @@ export function stopAllChannels(force = false)
     SpessaSynthInfo("%cStop all received!", consoleColors.info);
     for (let i = 0; i < this.workletProcessorChannels.length; i++)
     {
-        this.stopAllOnChannel(i, force);
+        this.workletProcessorChannels[i].stopAllNotes(force);
     }
     this.callEvent("stopall", undefined);
 }

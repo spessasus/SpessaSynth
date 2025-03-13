@@ -3,14 +3,13 @@ import { modulatorSources } from "../../../../soundfont/basic_soundfont/modulato
 
 /**
  * Sets the pressure of the given note on a specific channel
- * @this {SpessaSynthProcessor}
- * @param channel {number} usually 0-15: the channel to change pitch
+ * @this {WorkletProcessorChannel}
  * @param midiNote {number} 0-127
  * @param pressure {number} the pressure of the note
  */
-export function polyPressure(channel, midiNote, pressure)
+export function polyPressure(midiNote, pressure)
 {
-    this.workletProcessorChannels[channel].voices.forEach(v =>
+    this.voices.forEach(v =>
     {
         if (v.midiNote !== midiNote)
         {
@@ -19,13 +18,13 @@ export function polyPressure(channel, midiNote, pressure)
         v.pressure = pressure;
         computeModulators(
             v,
-            this.workletProcessorChannels[channel].midiControllers,
+            this.midiControllers,
             0,
             modulatorSources.polyPressure
         );
     });
-    this.callEvent("polypressure", {
-        channel: channel,
+    this.synth.callEvent("polypressure", {
+        channel: this.channelNumber,
         midiNote: midiNote,
         pressure: pressure
     });

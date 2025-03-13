@@ -10,55 +10,53 @@ const EXCLUSIVE_CUTOFF_TIME = -2320;
 const EXCLUSIVE_MOD_CUTOFF_TIME = -1130; // less because filter shenanigans
 
 /**
- * Append the voices
- * @param channel {number}
+ * sends a "MIDI Note on message"
  * @param midiNote {number}
  * @param velocity {number}
  * @param enableDebugging {boolean}
  * @param sendEvent {boolean}
  * @param startTime {number}
- * @this {SpessaSynthProcessor}
+ * @this {WorkletProcessorChannel}
  */
-export function noteOn(channel, midiNote, velocity, enableDebugging = false, sendEvent = true, startTime = currentTime)
+export function noteOn(midiNote, velocity, enableDebugging = false, sendEvent = true, startTime = currentTime)
 {
     if (velocity < 1)
     {
-        this.noteOff(channel, midiNote);
+        this.noteOff(midiNote);
         return;
     }
     velocity = Math.min(127, velocity);
     
-    const channelObject = this.workletProcessorChannels[channel];
     if (
-        (this.highPerformanceMode && this.totalVoicesAmount > 200 && velocity < 40) ||
-        (this.highPerformanceMode && velocity < 10) ||
-        (channelObject.isMuted)
+        (this.synth.highPerformanceMode && this.totalVoicesAmount > 200 && velocity < 40) ||
+        (this.synth.highPerformanceMode && velocity < 10) ||
+        (this.isMuted)
     )
     {
         return;
     }
     
-    const realKey = midiNote + channelObject.channelTransposeKeyShift;
+    const realKey = midiNote + this.channelTransposeKeyShift;
     let sentMidiNote = realKey;
     
     if (realKey > 127 || realKey < 0)
     {
         return;
     }
-    const program = channelObject.preset.program;
-    if (this.tunings[program]?.[realKey]?.midiNote >= 0)
+    const program = this.preset.program;
+    if (this.synth.tunings[program]?.[realKey]?.midiNote >= 0)
     {
-        sentMidiNote = this.tunings[program]?.[realKey].midiNote;
+        sentMidiNote = this.synth.tunings[program]?.[realKey].midiNote;
     }
     
     // velocity override
-    if (channelObject.velocityOverride > 0)
+    if (this.velocityOverride > 0)
     {
-        velocity = channelObject.velocityOverride;
+        velocity = this.velocityOverride;
     }
     
     // key velocity override
-    const keyVel = this.keyModifierManager.getVelocity(channel, realKey);
+    const keyVel = this.synth.keyModifierManager.getVelocity(this.channelNumber, realKey);
     if (keyVel > -1)
     {
         velocity = keyVel;
@@ -67,24 +65,28 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
     // portamento
     let portamentoFromKey = -1;
     let portamentoDuration = 0;
-    const currentFromKey = channelObject.midiControllers[midiControllers.portamentoControl] >> 7;
-    if (!channelObject.drumChannel && currentFromKey !== sentMidiNote && channelObject.midiControllers[midiControllers.portamentoOnOff] >= 8192) // (64 << 7)
+    // note: the 14-bit value needs to go down to 7-bit
+    const portamentoTime = this.midiControllers[midiControllers.portamentoTime] >> 7;
+    const currentFromKey = this.midiControllers[midiControllers.portamentoControl] >> 7;
+    if (
+        !this.drumChannel && // no portamento on drum channel
+        currentFromKey !== sentMidiNote && // if the same note, there's no portamento
+        this.midiControllers[midiControllers.portamentoOnOff] >= 8192 && // (64 << 7)
+        portamentoTime > 0 // 0 duration is no portamento
+    )
     {
-        // note: the 14-bit value needs to go down to 7-bit
-        const portamentoTime = channelObject.midiControllers[midiControllers.portamentoTime] >> 7;
         const diff = Math.abs(sentMidiNote - currentFromKey);
         portamentoDuration = portamentoTimeToSeconds(portamentoTime, diff);
         portamentoFromKey = currentFromKey;
         // set portamento control to previous value
-        this.controllerChange(channel, midiControllers.portamentoControl, sentMidiNote);
+        this.controllerChange(midiControllers.portamentoControl, sentMidiNote);
     }
     
     // get voices
-    const voices = this.getWorkletVoices(
-        channel,
+    const voices = this.synth.getWorkletVoices(
+        this.channelNumber,
         sentMidiNote,
         velocity,
-        channelObject,
         startTime,
         realKey,
         enableDebugging
@@ -92,14 +94,14 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
     
     // zero means disabled
     let panOverride = 0;
-    if (channelObject.randomPan)
+    if (this.randomPan)
     {
         // the range is -500 to 500
         panOverride = Math.round(Math.random() * 1000 - 500);
     }
     
     // add voices
-    const channelVoices = channelObject.voices;
+    const channelVoices = this.voices;
     voices.forEach(voice =>
     {
         // apply portamento
@@ -118,7 +120,7 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
             {
                 if (v.generators[generatorTypes.exclusiveClass] === exclusive)
                 {
-                    this.releaseVoice(v, MIN_EXCLUSIVE_LENGTH);
+                    v.release(MIN_EXCLUSIVE_LENGTH);
                     v.modulatedGenerators[generatorTypes.releaseVolEnv] = EXCLUSIVE_CUTOFF_TIME; // make the release nearly instant
                     v.modulatedGenerators[generatorTypes.releaseModEnv] = EXCLUSIVE_MOD_CUTOFF_TIME;
                     WorkletVolumeEnvelope.recalculate(v);
@@ -127,7 +129,7 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
             });
         }
         // compute all modulators
-        computeModulators(voice, channelObject.midiControllers);
+        computeModulators(voice, this.midiControllers);
         // modulate sample offsets (these are not real time)
         const cursorStartOffset = voice.modulatedGenerators[generatorTypes.startAddrsOffset] + voice.modulatedGenerators[generatorTypes.startAddrsCoarseOffset] * 32768;
         const endOffset = voice.modulatedGenerators[generatorTypes.endAddrOffset] + voice.modulatedGenerators[generatorTypes.endAddrsCoarseOffset] * 32768;
@@ -159,19 +161,19 @@ export function noteOn(channel, midiNote, velocity, enableDebugging = false, sen
         voice.currentPan = Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan])); //  -500 to 500
     });
     
-    this.totalVoicesAmount += voices.length;
+    this.synth.totalVoicesAmount += voices.length;
     // cap the voices
-    if (this.totalVoicesAmount > this.voiceCap)
+    if (this.synth.totalVoicesAmount > this.synth.voiceCap)
     {
-        this.voiceKilling(voices.length);
+        this.synth.voiceKilling(voices.length);
     }
     channelVoices.push(...voices);
     if (sendEvent)
     {
-        this.sendChannelProperties();
-        this.callEvent("noteon", {
+        this.synth.sendChannelProperties();
+        this.synth.callEvent("noteon", {
             midiNote: midiNote,
-            channel: channel,
+            channel: this.channelNumber,
             velocity: velocity
         });
     }

@@ -6,27 +6,22 @@ import { modulatorSources } from "../../../../soundfont/basic_soundfont/modulato
 
 /**
  * Executes a data entry for an NRP for a sc88pro NRP (because touhou yes) and RPN tuning
- * @param channel {number}
  * @param dataValue {number} dataEntryCoarse MSB
- * @this {SpessaSynthProcessor}
+ * @this {WorkletProcessorChannel}
  * @private
  */
-export function dataEntryCoarse(channel, dataValue)
+export function dataEntryCoarse(dataValue)
 {
-    /**
-     * @type {WorkletProcessorChannel}
-     */
-    const channelObject = this.workletProcessorChannels[channel];
     let addDefaultVibrato = () =>
     {
-        if (channelObject.channelVibrato.delay === 0 && channelObject.channelVibrato.rate === 0 && channelObject.channelVibrato.depth === 0)
+        if (this.channelVibrato.delay === 0 && this.channelVibrato.rate === 0 && this.channelVibrato.depth === 0)
         {
-            channelObject.channelVibrato.depth = 50;
-            channelObject.channelVibrato.rate = 8;
-            channelObject.channelVibrato.delay = 0.6;
+            this.channelVibrato.depth = 50;
+            this.channelVibrato.rate = 8;
+            this.channelVibrato.delay = 0.6;
         }
     };
-    switch (channelObject.dataEntryState)
+    switch (this.dataEntryState)
     {
         default:
         case dataEntryStates.Idle:
@@ -35,15 +30,15 @@ export function dataEntryCoarse(channel, dataValue)
         // https://cdn.roland.com/assets/media/pdf/SC-88PRO_OM.pdf
         // http://hummer.stanford.edu/sig/doc/classes/MidiOutput/rpn.html
         case dataEntryStates.NRPFine:
-            if (this.system !== "gs")
+            if (this.synth.system !== "gs")
             {
                 return;
             }
-            if (channelObject.lockGSNRPNParams)
+            if (this.lockGSNRPNParams)
             {
                 return;
             }
-            switch (channelObject.NRPCoarse)
+            switch (this.NRPCoarse)
             {
                 default:
                     if (dataValue === 64)
@@ -52,8 +47,8 @@ export function dataEntryCoarse(channel, dataValue)
                         return;
                     }
                     SpessaSynthWarn(
-                        `%cUnrecognized NRPN for %c${channel}%c: %c(0x${channelObject.NRPCoarse.toString(16)
-                            .toUpperCase()} 0x${channelObject.NRPFine.toString(
+                        `%cUnrecognized NRPN for %c${this.channelNumber}%c: %c(0x${this.NRPCoarse.toString(16)
+                            .toUpperCase()} 0x${this.NRPFine.toString(
                             16).toUpperCase()})%c data value: %c${dataValue}`,
                         consoleColors.warn,
                         consoleColors.recognized,
@@ -66,7 +61,7 @@ export function dataEntryCoarse(channel, dataValue)
                 
                 // part parameters: vibrato, cutoff
                 case 0x01:
-                    switch (channelObject.NRPFine)
+                    switch (this.NRPFine)
                     {
                         default:
                             if (dataValue === 64)
@@ -75,7 +70,7 @@ export function dataEntryCoarse(channel, dataValue)
                                 return;
                             }
                             SpessaSynthWarn(
-                                `%cUnrecognized NRPN for %c${channel}%c: %c(0x${channelObject.NRPCoarse.toString(16)} 0x${channelObject.NRPFine.toString(
+                                `%cUnrecognized NRPN for %c${this.channelNumber}%c: %c(0x${this.NRPCoarse.toString(16)} 0x${this.NRPFine.toString(
                                     16)})%c data value: %c${dataValue}`,
                                 consoleColors.warn,
                                 consoleColors.recognized,
@@ -93,9 +88,9 @@ export function dataEntryCoarse(channel, dataValue)
                                 return;
                             }
                             addDefaultVibrato();
-                            channelObject.channelVibrato.rate = (dataValue / 64) * 8;
+                            this.channelVibrato.rate = (dataValue / 64) * 8;
                             SpessaSynthInfo(
-                                `%cVibrato rate for %c${channel}%c is now set to %c${dataValue} = ${channelObject.channelVibrato.rate}%cHz.`,
+                                `%cVibrato rate for %c${this.channelNumber}%c is now set to %c${dataValue} = ${this.channelVibrato.rate}%cHz.`,
                                 consoleColors.info,
                                 consoleColors.recognized,
                                 consoleColors.info,
@@ -111,9 +106,9 @@ export function dataEntryCoarse(channel, dataValue)
                                 return;
                             }
                             addDefaultVibrato();
-                            channelObject.channelVibrato.depth = dataValue / 2;
+                            this.channelVibrato.depth = dataValue / 2;
                             SpessaSynthInfo(
-                                `%cVibrato depth for %c${channel}%c is now set to %c${dataValue} = ${channelObject.channelVibrato.depth}%c cents range of detune.`,
+                                `%cVibrato depth for %c${this.channelNumber}%c is now set to %c${dataValue} = ${this.channelVibrato.depth}%c cents range of detune.`,
                                 consoleColors.info,
                                 consoleColors.recognized,
                                 consoleColors.info,
@@ -129,9 +124,9 @@ export function dataEntryCoarse(channel, dataValue)
                                 return;
                             }
                             addDefaultVibrato();
-                            channelObject.channelVibrato.delay = (dataValue / 64) / 3;
+                            this.channelVibrato.delay = (dataValue / 64) / 3;
                             SpessaSynthInfo(
-                                `%cVibrato delay for %c${channel}%c is now set to %c${dataValue} = ${channelObject.channelVibrato.delay}%c seconds.`,
+                                `%cVibrato delay for %c${this.channelNumber}%c is now set to %c${dataValue} = ${this.channelVibrato.delay}%c seconds.`,
                                 consoleColors.info,
                                 consoleColors.recognized,
                                 consoleColors.info,
@@ -144,9 +139,9 @@ export function dataEntryCoarse(channel, dataValue)
                         case 0x20:
                             // affect the "brightness" controller as we have a default modulator that controls it
                             const ccValue = dataValue;
-                            this.controllerChange(channel, midiControllers.brightness, dataValue);
+                            this.controllerChange(midiControllers.brightness, dataValue);
                             SpessaSynthInfo(
-                                `%cFilter cutoff for %c${channel}%c is now set to %c${ccValue}`,
+                                `%cFilter cutoff for %c${this.channelNumber}%c is now set to %c${ccValue}`,
                                 consoleColors.info,
                                 consoleColors.recognized,
                                 consoleColors.info,
@@ -158,9 +153,9 @@ export function dataEntryCoarse(channel, dataValue)
                 // drum reverb
                 case 0x1D:
                     const reverb = dataValue;
-                    this.controllerChange(channel, midiControllers.reverbDepth, reverb);
+                    this.controllerChange(midiControllers.reverbDepth, reverb);
                     SpessaSynthInfo(
-                        `%cGS Drum reverb for %c${channel}%c: %c${reverb}`,
+                        `%cGS Drum reverb for %c${this.channelNumber}%c: %c${reverb}`,
                         consoleColors.info,
                         consoleColors.recognized,
                         consoleColors.info,
@@ -172,11 +167,11 @@ export function dataEntryCoarse(channel, dataValue)
         
         case dataEntryStates.RPCoarse:
         case dataEntryStates.RPFine:
-            switch (channelObject.RPValue)
+            switch (this.RPValue)
             {
                 default:
                     SpessaSynthWarn(
-                        `%cUnrecognized RPN for %c${channel}%c: %c(0x${channelObject.RPValue.toString(16)})%c data value: %c${dataValue}`,
+                        `%cUnrecognized RPN for %c${this.channelNumber}%c: %c(0x${this.RPValue.toString(16)})%c data value: %c${dataValue}`,
                         consoleColors.warn,
                         consoleColors.recognized,
                         consoleColors.warn,
@@ -188,9 +183,9 @@ export function dataEntryCoarse(channel, dataValue)
                 
                 // pitch bend range
                 case 0x0000:
-                    channelObject.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] = dataValue << 7;
+                    this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] = dataValue << 7;
                     SpessaSynthInfo(
-                        `%cChannel ${channel} bend range. Semitones: %c${dataValue}`,
+                        `%cChannel ${this.channelNumber} bend range. Semitones: %c${dataValue}`,
                         consoleColors.info,
                         consoleColors.value
                     );
@@ -199,23 +194,23 @@ export function dataEntryCoarse(channel, dataValue)
                 // coarse tuning
                 case 0x0002:
                     // semitones
-                    this.setChannelTuningSemitones(channel, dataValue - 64);
+                    this.setTuningSemitones(dataValue - 64);
                     break;
                 
                 // fine-tuning
                 case 0x0001:
                     // note: this will not work properly unless the lsb is sent!
                     // here we store the raw value to then adjust in fine
-                    this.setChannelTuning(channel, (dataValue - 64), false);
+                    this.setTuning(dataValue - 64, false);
                     break;
                 
                 // modulation depth
                 case 0x0005:
-                    this.setModulationDepth(channel, dataValue * 100);
+                    this.setModulationDepth(dataValue * 100);
                     break;
                 
                 case 0x3FFF:
-                    this.resetParameters(channel);
+                    this.resetParameters();
                     break;
                 
             }

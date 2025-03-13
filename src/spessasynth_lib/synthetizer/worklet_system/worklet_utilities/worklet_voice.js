@@ -3,6 +3,13 @@
  * purpose: prepares workletvoices from sample and generator data and manages sample dumping
  * note: sample dumping means sending it over to the AudioWorkletGlobalScope
  */
+import { MIN_NOTE_LENGTH } from "../main_processor.js";
+import { SpessaSynthTable, SpessaSynthWarn } from "../../../utils/loggin.js";
+import { WorkletLowpassFilter } from "./lowpass_filter.js";
+import { WorkletVolumeEnvelope } from "./volume_envelope.js";
+import { WorkletModulationEnvelope } from "./modulation_envelope.js";
+import { addAndClampGenerator, generatorTypes } from "../../../soundfont/basic_soundfont/generator.js";
+import { Modulator } from "../../../soundfont/basic_soundfont/modulator.js";
 
 class WorkletSample
 {
@@ -88,13 +95,6 @@ class WorkletSample
         this.isLooping = this.loopingMode === 1 || this.loopingMode === 3;
     }
 }
-
-import { SpessaSynthTable, SpessaSynthWarn } from "../../../utils/loggin.js";
-import { WorkletLowpassFilter } from "./lowpass_filter.js";
-import { WorkletVolumeEnvelope } from "./volume_envelope.js";
-import { WorkletModulationEnvelope } from "./modulation_envelope.js";
-import { addAndClampGenerator, generatorTypes } from "../../../soundfont/basic_soundfont/generator.js";
-import { Modulator } from "../../../soundfont/basic_soundfont/modulator.js";
 
 
 /**
@@ -323,13 +323,26 @@ class WorkletVoice
             voice.modulators.map(m => Modulator.copy(m))
         );
     }
+    
+    /**
+     * Stops the voice
+     * @param minNoteLength {number} minimum note length in seconds
+     */
+    release(minNoteLength = MIN_NOTE_LENGTH)
+    {
+        this.releaseStartTime = currentTime;
+        // check if the note is shorter than the min note time, if so, extend it
+        if (this.releaseStartTime - this.startTime < minNoteLength)
+        {
+            this.releaseStartTime = this.startTime + minNoteLength;
+        }
+    }
 }
 
 /**
  * @param channel {number} a hint for the processor to recalculate sample cursors when sample dumping
  * @param midiNote {number} the MIDI note to use
  * @param velocity {number} the velocity to use
- * @param channelObject {WorkletProcessorChannel} the channel this will belong to
  * @param currentTime {number} the current time in seconds
  * @param realKey {number} the real MIDI note if the "midiNote" was changed by MIDI Tuning Standard
  * @param debug {boolean} enable debugging?
@@ -339,7 +352,6 @@ class WorkletVoice
 export function getWorkletVoices(channel,
                                  midiNote,
                                  velocity,
-                                 channelObject,
                                  currentTime,
                                  realKey,
                                  debug = false)
@@ -348,6 +360,7 @@ export function getWorkletVoices(channel,
      * @type {WorkletVoice[]}
      */
     let workletVoices;
+    const channelObject = this.workletProcessorChannels[channel];
     
     const cached = channelObject.cachedVoices[midiNote]?.[velocity];
     

@@ -226,11 +226,11 @@ export function systemExclusive(messageData, channelOffset = 0)
                             // bit 1: 14 and 15
                             if ((messageData[4] & 1) === 1)
                             {
-                                this.setOctaveTuning(14 + channelOffset, newOctaveTuning);
+                                this.workletProcessorChannels[14 + channelOffset].setOctaveTuning(newOctaveTuning);
                             }
                             if (((messageData[4] >> 1) & 1) === 1)
                             {
-                                this.setOctaveTuning(15 + channelOffset, newOctaveTuning);
+                                this.workletProcessorChannels[15 + channelOffset].setOctaveTuning(newOctaveTuning);
                             }
                             
                             // bit 2: channels 7 to 13
@@ -239,7 +239,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                                 const bit = (messageData[5] >> i) & 1;
                                 if (bit === 1)
                                 {
-                                    this.setOctaveTuning(7 + i + channelOffset, newOctaveTuning);
+                                    this.workletProcessorChannels[7 + i + channelOffset].setOctaveTuning(newOctaveTuning);
                                 }
                             }
                             
@@ -249,7 +249,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                                 const bit = (messageData[6] >> i) & 1;
                                 if (bit === 1)
                                 {
-                                    this.setOctaveTuning(i + channelOffset, newOctaveTuning);
+                                    this.workletProcessorChannels[i + channelOffset].setOctaveTuning(newOctaveTuning);
                                 }
                             }
                             
@@ -330,8 +330,9 @@ export function systemExclusive(messageData, channelOffset = 0)
                     {
                         // this is an individual part (channel) parameter
                         // determine the channel 0 means channel 10 (default), 1 means 1 etc.
-                        let channel = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15][messageData[5] & 0x0F] + channelOffset;
+                        const channel = [9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15][messageData[5] & 0x0F] + channelOffset;
                         // for example, 0x1A means A = 11, which corresponds to channel 12 (counting from 1)
+                        const channelObject = this.workletProcessorChannels[channel];
                         switch (messageData[6])
                         {
                             default:
@@ -342,7 +343,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                             case 0x15:
                                 // this is the Use for Drum Part sysex (multiple drums)
                                 const isDrums = messageValue > 0 && messageData[5] >> 4; // if set to other than 0, is a drum channel
-                                this.setDrums(channel, isDrums);
+                                channelObject.setDrums(isDrums);
                                 SpessaSynthInfo(
                                     `%cChannel %c${channel}%c ${isDrums ?
                                         "is now a drum channel"
@@ -360,7 +361,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                             case 0x16:
                                 // this is the pitch key shift sysex
                                 const keyShift = messageValue - 64;
-                                this.transposeChannel(channel, keyShift);
+                                channelObject.transposeChannel(keyShift);
                                 SpessaSynthInfo(
                                     `%cChannel %c${channel}%c pitch shift. Semitones %c${keyShift}%c, with %c${arrayToHexString(
                                         messageData)}`,
@@ -379,7 +380,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                                 let panpot = messageValue;
                                 if (panpot === 0)
                                 {
-                                    this.workletProcessorChannels[channel].randomPan = true;
+                                    channelObject.randomPan = true;
                                     SpessaSynthInfo(
                                         `%cRandom pan is set to %cON%c for %c${channel}`,
                                         consoleColors.info,
@@ -390,19 +391,19 @@ export function systemExclusive(messageData, channelOffset = 0)
                                 }
                                 else
                                 {
-                                    this.workletProcessorChannels[channel].randomPan = false;
-                                    this.controllerChange(channel, midiControllers.pan, panpot);
+                                    channelObject.randomPan = false;
+                                    channelObject.controllerChange(midiControllers.pan, panpot);
                                 }
                                 break;
                             
                             // chorus send
                             case 0x21:
-                                this.controllerChange(channel, midiControllers.chorusDepth, messageValue);
+                                channelObject.controllerChange(midiControllers.chorusDepth, messageValue);
                                 break;
                             
                             // reverb send
                             case 0x22:
-                                this.controllerChange(channel, midiControllers.reverbDepth, messageValue);
+                                channelObject.controllerChange(midiControllers.reverbDepth, messageValue);
                                 break;
                             
                             case 0x40:
@@ -425,7 +426,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                                 {
                                     newTuning[i] = messageData[i + 7] - 64;
                                 }
-                                this.setOctaveTuning(channel, newTuning);
+                                channelObject.setOctaveTuning(newTuning);
                                 const cents = messageValue - 64;
                                 SpessaSynthInfo(
                                     `%cChannel %c${channel}%c octave scale tuning. Cents %c${newTuning.join(
@@ -437,7 +438,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                                     consoleColors.info,
                                     consoleColors.value
                                 );
-                                this.setChannelTuning(channel, cents);
+                                channelObject.setTuning(cents);
                                 break;
                         }
                         return;
@@ -623,38 +624,38 @@ export function systemExclusive(messageData, channelOffset = 0)
                         // invalid channel
                         return;
                     }
+                    const channelObject = this.workletProcessorChannels[channel];
                     const value = messageData[6];
                     switch (messageData[5])
                     {
                         // bank-select MSB
                         case 0x01:
-                            this.controllerChange(channel, midiControllers.bankSelect, value);
+                            channelObject.controllerChange(midiControllers.bankSelect, value);
                             break;
                         
                         // bank-select LSB
                         case 0x02:
-                            this.controllerChange(channel, midiControllers.lsbForControl0BankSelect, value);
+                            channelObject.controllerChange(midiControllers.lsbForControl0BankSelect, value);
                             break;
                         
                         // program change
                         case 0x03:
-                            this.programChange(channel, value);
+                            channelObject.programChange(value);
                             break;
                         
                         // note shift
                         case 0x08:
-                            const chan = this.workletProcessorChannels[channel];
-                            if (chan.drumChannel)
+                            if (channelObject.drumChannel)
                             {
                                 return;
                             }
                             const semitones = value - 64;
-                            chan.channelTransposeKeyShift = semitones;
+                            channelObject.channelTransposeKeyShift = semitones;
                             break;
                         
                         // volume
                         case 0x0B:
-                            this.controllerChange(channel, midiControllers.mainVolume, value);
+                            channelObject.controllerChange(midiControllers.mainVolume, value);
                             break;
                         
                         // pan position
@@ -663,7 +664,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                             if (pan === 0)
                             {
                                 // 0 means random
-                                this.workletProcessorChannels[channel].randomPan = true;
+                                channelObject.randomPan = true;
                                 SpessaSynthInfo(
                                     `%cRandom pan is set to %cON%c for %c${channel}`,
                                     consoleColors.info,
@@ -674,18 +675,18 @@ export function systemExclusive(messageData, channelOffset = 0)
                             }
                             else
                             {
-                                this.controllerChange(channel, midiControllers.pan, pan);
+                                channelObject.controllerChange(midiControllers.pan, pan);
                             }
                             break;
                         
                         // reverb
                         case 0x13:
-                            this.controllerChange(channel, midiControllers.reverbDepth, value);
+                            channelObject.controllerChange(midiControllers.reverbDepth, value);
                             break;
                         
                         // chorus
                         case 0x12:
-                            this.controllerChange(channel, midiControllers.chorusDepth, value);
+                            channelObject.controllerChange(midiControllers.chorusDepth, value);
                             break;
                         
                         default:

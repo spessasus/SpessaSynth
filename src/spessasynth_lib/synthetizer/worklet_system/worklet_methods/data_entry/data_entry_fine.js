@@ -5,22 +5,20 @@ import { customControllers, dataEntryStates, NON_CC_INDEX_OFFSET } from "../../w
 
 /**
  * Executes a data entry for an RPN tuning
- * @param channel {number}
  * @param dataValue {number} dataEntry LSB
- * @this {SpessaSynthProcessor}
+ * @this {WorkletProcessorChannel}
  * @private
  */
-export function dataEntryFine(channel, dataValue)
+export function dataEntryFine(dataValue)
 {
-    const channelObject = this.workletProcessorChannels[channel];
-    switch (channelObject.dataEntryState)
+    switch (this.dataEntryState)
     {
         default:
             break;
         
         case dataEntryStates.RPCoarse:
         case dataEntryStates.RPFine:
-            switch (channelObject.RPValue)
+            switch (this.RPValue)
             {
                 default:
                     break;
@@ -32,10 +30,10 @@ export function dataEntryFine(channel, dataValue)
                         break;
                     }
                     // 14-bit value, so upper 7 are coarse and lower 7 are fine!
-                    channelObject.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] |= dataValue;
-                    const actualTune = (channelObject.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] >> 7) + dataValue / 127;
+                    this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] |= dataValue;
+                    const actualTune = (this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] >> 7) + dataValue / 127;
                     SpessaSynthInfo(
-                        `%cChannel ${channel} bend range. Semitones: %c${actualTune}`,
+                        `%cChannel ${this.channelNumber} bend range. Semitones: %c${actualTune}`,
                         consoleColors.info,
                         consoleColors.value
                     );
@@ -44,20 +42,20 @@ export function dataEntryFine(channel, dataValue)
                 // fine-tuning
                 case 0x0001:
                     // grab the data and shift
-                    const coarse = channelObject.customControllers[customControllers.channelTuning];
+                    const coarse = this.customControllers[customControllers.channelTuning];
                     const finalTuning = (coarse << 7) | dataValue;
-                    this.setChannelTuning(channel, finalTuning * 0.01220703125); // multiply by 8192 / 100 (cent increments)
+                    this.setTuning(finalTuning * 0.01220703125); // multiply by 8192 / 100 (cent increments)
                     break;
                 
                 // modulation depth
                 case 0x0005:
-                    const currentModulationDepthCents = channelObject.customControllers[customControllers.modulationMultiplier] * 50;
+                    const currentModulationDepthCents = this.customControllers[customControllers.modulationMultiplier] * 50;
                     let cents = currentModulationDepthCents + (dataValue / 128) * 100;
-                    this.setModulationDepth(channel, cents);
+                    this.setModulationDepth(cents);
                     break;
                 
                 case 0x3FFF:
-                    this.resetParameters(channel);
+                    this.resetParameters();
                     break;
                 
             }
