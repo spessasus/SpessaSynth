@@ -165,6 +165,10 @@ export const exportAudio = {
             duration: {
                 title: "Czas trwania:",
                 description: "Czas trwania utworu"
+            },
+            subject: {
+                title: "Temat:",
+                description: "Temat utworu"
             }
         }
     }
