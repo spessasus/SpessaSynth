@@ -234,7 +234,6 @@ export class BasicMIDI extends MIDISequenceData
                         if (this.midiPortChannelOffsets[port] === undefined)
                         {
                             this.midiPortChannelOffsets[port] = portOffset;
-                            console.log("assigned", portOffset, "to", port);
                             portOffset += 16;
                         }
                         break;
