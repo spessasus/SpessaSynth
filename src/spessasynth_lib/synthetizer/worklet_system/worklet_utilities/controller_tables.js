@@ -22,6 +22,8 @@ setResetValue(midiControllers.balance, 64);
 setResetValue(midiControllers.expressionController, 127);
 setResetValue(midiControllers.pan, 64);
 
+setResetValue(midiControllers.portamentoOnOff, 127);
+
 setResetValue(midiControllers.timbreHarmonicContent, 64);
 setResetValue(midiControllers.releaseTime, 64);
 setResetValue(midiControllers.attackTime, 64);

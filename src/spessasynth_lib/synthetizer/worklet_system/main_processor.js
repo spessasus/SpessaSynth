@@ -17,7 +17,6 @@ import { WorkletKeyModifierManager } from "./worklet_methods/worklet_key_modifie
 import { getWorkletVoices } from "./worklet_utilities/worklet_voice.js";
 import { PAN_SMOOTHING_FACTOR } from "./worklet_utilities/stereo_panner.js";
 import { stopAllChannels } from "./worklet_methods/stopping_notes/stop_all_channels.js";
-import { programChange } from "./worklet_methods/program_control/program_change.js";
 import { setEmbeddedSoundFont } from "./worklet_methods/soundfont_management/set_embedded_sound_font.js";
 import { reloadSoundFont } from "./worklet_methods/soundfont_management/reload_sound_font.js";
 import { clearSoundFont } from "./worklet_methods/soundfont_management/clear_sound_font.js";
@@ -438,6 +437,16 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
     {
         this.workletProcessorChannels[channel].pitchWheel(MSB, LSB);
     }
+    
+    /**
+     * @param channel {number}
+     * @param programNumber {number}
+     * @param userChange {boolean}
+     */
+    programChange(channel, programNumber, userChange = false)
+    {
+        this.workletProcessorChannels[channel].programChange(programNumber, userChange);
+    }
 }
 
 // include other methods
@@ -468,7 +477,6 @@ SpessaSynthProcessor.prototype.transposeAllChannels = transposeAllChannels;
 SpessaSynthProcessor.prototype.setMasterTuning = setMasterTuning;
 
 // program related
-SpessaSynthProcessor.prototype.programChange = programChange;
 SpessaSynthProcessor.prototype.getPreset = getPreset;
 SpessaSynthProcessor.prototype.reloadSoundFont = reloadSoundFont;
 SpessaSynthProcessor.prototype.clearSoundFont = clearSoundFont;

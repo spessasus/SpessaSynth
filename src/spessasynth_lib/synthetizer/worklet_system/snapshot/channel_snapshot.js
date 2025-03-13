@@ -160,7 +160,7 @@ export class ChannelSnapshot
         // restore preset and lock
         channelObject.lockPreset = false;
         channelObject.setBankSelect(channelSnapshot.bank);
-        workletProcessor.programChange(channelNumber, channelSnapshot.program);
+        channelObject.programChange(channelSnapshot.program);
         channelObject.lockPreset = channelSnapshot.lockPreset;
     }
 }

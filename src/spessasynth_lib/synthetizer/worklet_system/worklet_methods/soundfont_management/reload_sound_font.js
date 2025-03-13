@@ -34,10 +34,9 @@ export function reloadSoundFont(buffer, isOverride = false)
     }
     this.defaultPreset = this.getPreset(0, 0);
     this.drumPreset = this.getPreset(128, 0);
-    this.workletProcessorChannels.forEach((c, cNum) =>
-    {
-        this.programChange(cNum, c.preset.program);
-    });
+    this.workletProcessorChannels.forEach(c =>
+        c.programChange(c.preset.program)
+    );
     this.post({ messageType: returnMessageType.ready, messageData: undefined });
     this.sendPresetList();
     SpessaSynthInfo("%cSpessaSynth is ready!", consoleColors.recognized);

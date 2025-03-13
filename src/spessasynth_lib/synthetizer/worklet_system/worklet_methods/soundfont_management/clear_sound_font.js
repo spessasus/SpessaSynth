@@ -26,7 +26,7 @@ export function clearSoundFont(sendPresets = true, clearOverride = true)
         {
             channelObject.lockPreset = false;
         }
-        this.programChange(i, channelObject.preset.program);
+        channelObject.programChange(channelObject.preset.program);
     }
     if (sendPresets)
     {

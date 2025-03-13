@@ -18,11 +18,12 @@ import { polyPressure } from "../worklet_methods/tuning_control/poly_pressure.js
 import { channelPressure } from "../worklet_methods/tuning_control/channel_pressure.js";
 import { pitchWheel } from "../worklet_methods/tuning_control/pitch_wheel.js";
 import { setOctaveTuning } from "../worklet_methods/tuning_control/set_octave_tuning.js";
+import { programChange } from "../worklet_methods/program_control/program_change.js";
 
 /**
  * This class represents a single MIDI Channel within the synthesizer.
  */
-export class WorkletProcessorChannel
+class WorkletProcessorChannel
 {
     /**
      * An array of MIDI controller values and values used by modulators as the source (e.g., pitch bend, bend range, etc.).
@@ -351,6 +352,7 @@ WorkletProcessorChannel.prototype.noteOff = noteOff;
 WorkletProcessorChannel.prototype.polyPressure = polyPressure;
 WorkletProcessorChannel.prototype.channelPressure = channelPressure;
 WorkletProcessorChannel.prototype.pitchWheel = pitchWheel;
+WorkletProcessorChannel.prototype.programChange = programChange;
 
 // Tuning
 WorkletProcessorChannel.prototype.setTuning = setTuning;
@@ -366,4 +368,4 @@ WorkletProcessorChannel.prototype.resetParameters = resetParameters;
 WorkletProcessorChannel.prototype.dataEntryFine = dataEntryFine;
 WorkletProcessorChannel.prototype.dataEntryCoarse = dataEntryCoarse;
 
-
+export { WorkletProcessorChannel };
