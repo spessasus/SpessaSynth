@@ -18,7 +18,7 @@ import { polyPressure } from "../worklet_methods/tuning_control/poly_pressure.js
 import { channelPressure } from "../worklet_methods/tuning_control/channel_pressure.js";
 import { pitchWheel } from "../worklet_methods/tuning_control/pitch_wheel.js";
 import { setOctaveTuning } from "../worklet_methods/tuning_control/set_octave_tuning.js";
-import { programChange } from "../worklet_methods/program_control/program_change.js";
+import { programChange } from "../worklet_methods/program_change.js";
 
 /**
  * This class represents a single MIDI Channel within the synthesizer.
