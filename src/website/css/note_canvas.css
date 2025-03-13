@@ -9,7 +9,6 @@
 
 #note_canvas.sideways {
     height: 100% !important;
-    width: unset !important;
     min-height: unset !important;
 }
 
