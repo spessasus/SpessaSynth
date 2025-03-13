@@ -8,19 +8,32 @@ import { IndexedByteArray } from "../utils/indexed_array.js";
 export class MidiMessage
 {
     /**
+     * Absolute number of MIDI ticks from the start of the track.
+     * @type {number}
+     */
+    ticks;
+    
+    /**
+     * The MIDI message status byte. Note that for meta events, it is the second byte. (not 0xFF)
+     * @type {number}
+     */
+    messageStatusByte;
+    
+    /**
+     * Message's binary data
+     * @type {IndexedByteArray}
+     */
+    messageData;
+    
+    /**
      * @param ticks {number}
      * @param byte {number} the message status byte
      * @param data {IndexedByteArray}
      */
     constructor(ticks, byte, data)
     {
-        // absolute ticks from the start
         this.ticks = ticks;
-        // message status byte (for meta it's the second byte)
         this.messageStatusByte = byte;
-        /**
-         * @type {IndexedByteArray}
-         */
         this.messageData = data;
     }
 }
