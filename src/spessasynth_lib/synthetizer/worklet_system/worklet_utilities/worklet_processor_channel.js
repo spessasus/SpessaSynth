@@ -12,6 +12,12 @@ import { stopAllNotes } from "../worklet_methods/stopping_notes/stop_all_notes.j
 import { muteChannel } from "../worklet_methods/mute_channel.js";
 import { transposeChannel } from "../worklet_methods/tuning_control/transpose_channel.js";
 import { dataEntryCoarse } from "../worklet_methods/data_entry/data_entry_coarse.js";
+import { noteOn } from "../worklet_methods/note_on.js";
+import { noteOff } from "../worklet_methods/stopping_notes/note_off.js";
+import { polyPressure } from "../worklet_methods/tuning_control/poly_pressure.js";
+import { channelPressure } from "../worklet_methods/tuning_control/channel_pressure.js";
+import { pitchWheel } from "../worklet_methods/tuning_control/pitch_wheel.js";
+import { setOctaveTuning } from "../worklet_methods/tuning_control/set_octave_tuning.js";
 
 /**
  * This class represents a single MIDI Channel within the synthesizer.
@@ -305,19 +311,55 @@ export class WorkletProcessorChannel
         });
         this.synth.sendChannelProperties();
     }
+    
+    /**
+     * Sets a custom vibrato
+     * @param depth {number} cents
+     * @param rate {number} Hz
+     * @param delay {number} seconds
+     */
+    setVibrato(depth, rate, delay)
+    {
+        if (this.lockGSNRPNParams)
+        {
+            return;
+        }
+        this.channelVibrato.rate = rate;
+        this.channelVibrato.delay = delay;
+        this.channelVibrato.depth = depth;
+    }
+    
+    disableAndLockGSNRPN()
+    {
+        this.lockGSNRPNParams = true;
+        this.channelVibrato.rate = 0;
+        this.channelVibrato.delay = 0;
+        this.channelVibrato.depth = 0;
+    }
 }
 
+// voice
 WorkletProcessorChannel.prototype.renderVoice = renderVoice;
 WorkletProcessorChannel.prototype.panVoice = panVoice;
 WorkletProcessorChannel.prototype.killNote = killNote;
 WorkletProcessorChannel.prototype.stopAllNotes = stopAllNotes;
 WorkletProcessorChannel.prototype.muteChannel = muteChannel;
 
+// MIDI messages
+WorkletProcessorChannel.prototype.noteOn = noteOn;
+WorkletProcessorChannel.prototype.noteOff = noteOff;
+WorkletProcessorChannel.prototype.polyPressure = polyPressure;
+WorkletProcessorChannel.prototype.channelPressure = channelPressure;
+WorkletProcessorChannel.prototype.pitchWheel = pitchWheel;
+
+// Tuning
 WorkletProcessorChannel.prototype.setTuning = setTuning;
 WorkletProcessorChannel.prototype.setTuningSemitones = setTuningSemitones;
+WorkletProcessorChannel.prototype.setOctaveTuning = setOctaveTuning;
 WorkletProcessorChannel.prototype.setModulationDepth = setModulationDepth;
 WorkletProcessorChannel.prototype.transposeChannel = transposeChannel;
 
+// CC
 WorkletProcessorChannel.prototype.controllerChange = controllerChange;
 WorkletProcessorChannel.prototype.resetControllers = resetControllers;
 WorkletProcessorChannel.prototype.resetParameters = resetParameters;

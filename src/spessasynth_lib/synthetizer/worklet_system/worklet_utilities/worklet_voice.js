@@ -343,7 +343,6 @@ class WorkletVoice
  * @param channel {number} a hint for the processor to recalculate sample cursors when sample dumping
  * @param midiNote {number} the MIDI note to use
  * @param velocity {number} the velocity to use
- * @param channelObject {WorkletProcessorChannel} the channel this will belong to
  * @param currentTime {number} the current time in seconds
  * @param realKey {number} the real MIDI note if the "midiNote" was changed by MIDI Tuning Standard
  * @param debug {boolean} enable debugging?
@@ -353,7 +352,6 @@ class WorkletVoice
 export function getWorkletVoices(channel,
                                  midiNote,
                                  velocity,
-                                 channelObject,
                                  currentTime,
                                  realKey,
                                  debug = false)
@@ -362,6 +360,7 @@ export function getWorkletVoices(channel,
      * @type {WorkletVoice[]}
      */
     let workletVoices;
+    const channelObject = this.workletProcessorChannels[channel];
     
     const cached = channelObject.cachedVoices[midiNote]?.[velocity];
     

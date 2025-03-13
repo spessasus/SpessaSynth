@@ -30,19 +30,19 @@ export function handleMessage(message)
     switch (message.messageType)
     {
         case workletMessageType.noteOn:
-            this.noteOn(channel, data[0], data[1], data[2]);
+            channelObject.noteOn(...data);
             break;
         
         case workletMessageType.noteOff:
-            this.noteOff(channel, data);
+            channelObject.noteOff(data);
             break;
         
         case workletMessageType.pitchWheel:
-            this.pitchWheel(channel, data[0], data[1]);
+            channelObject.pitchWheel(...data);
             break;
         
         case workletMessageType.ccChange:
-            this.controllerChange(channel, data[0], data[1], data[2]);
+            channelObject.controllerChange(...data);
             break;
         
         case workletMessageType.customcCcChange:
@@ -51,7 +51,7 @@ export function handleMessage(message)
             break;
         
         case workletMessageType.killNote:
-            this.workletProcessorChannels[channel].killNote(data);
+            channelObject.killNote(data);
             break;
         
         case workletMessageType.programChange:
@@ -59,11 +59,11 @@ export function handleMessage(message)
             break;
         
         case workletMessageType.channelPressure:
-            this.channelPressure(channel, data);
+            channelObject.channelPressure(data);
             break;
         
         case workletMessageType.polyPressure:
-            this.polyPressure(channel, data[0], data[1]);
+            channelObject.polyPressure(...data);
             break;
         
         case workletMessageType.ccReset:
@@ -73,7 +73,7 @@ export function handleMessage(message)
             }
             else
             {
-                this.workletProcessorChannels[channel].resetControllers();
+                channelObject.resetControllers();
             }
             break;
         
@@ -88,21 +88,21 @@ export function handleMessage(message)
                 {
                     if (data.rate === -1)
                     {
-                        this.disableAndLockGSNRPN(i);
+                        channelObject.disableAndLockGSNRPN();
                     }
                     else
                     {
-                        this.setVibrato(i, data.depth, data.rate, data.delay);
+                        channelObject.setVibrato(data.depth, data.rate, data.delay);
                     }
                 }
             }
             else if (data.rate === -1)
             {
-                this.disableAndLockGSNRPN(channel);
+                channelObject.disableAndLockGSNRPN();
             }
             else
             {
-                this.setVibrato(channel, data.depth, data.rate, data.delay);
+                channelObject.setVibrato(data.depth, data.rate, data.delay);
             }
             break;
         

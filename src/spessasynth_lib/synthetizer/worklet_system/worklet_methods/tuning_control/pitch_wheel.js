@@ -4,31 +4,30 @@ import { computeModulators } from "../../worklet_utilities/worklet_modulator.js"
 
 /**
  * Sets the pitch of the given channel
- * @this {SpessaSynthProcessor}
- * @param channel {number} usually 0-15: the channel to change pitch
+ * @this {WorkletProcessorChannel}
  * @param MSB {number} SECOND byte of the MIDI pitchWheel message
  * @param LSB {number} FIRST byte of the MIDI pitchWheel message
  */
-export function pitchWheel(channel, MSB, LSB)
+export function pitchWheel(MSB, LSB)
 {
-    if (this.workletProcessorChannels[channel].lockedControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel])
+    if (this.lockedControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel])
     {
         return;
     }
     const bend = (LSB | (MSB << 7));
-    this.callEvent("pitchwheel", {
-        channel: channel,
+    this.synth.callEvent("pitchwheel", {
+        channel: this.channelNumber,
         MSB: MSB,
         LSB: LSB
     });
-    this.workletProcessorChannels[channel].midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel] = bend;
-    this.workletProcessorChannels[channel].voices.forEach(v =>
+    this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel] = bend;
+    this.voices.forEach(v =>
         // compute pitch modulators
         computeModulators(
             v,
-            this.workletProcessorChannels[channel].midiControllers,
+            this.midiControllers,
             0,
             modulatorSources.pitchWheel
         ));
-    this.sendChannelProperties();
+    this.synth.sendChannelProperties();
 }

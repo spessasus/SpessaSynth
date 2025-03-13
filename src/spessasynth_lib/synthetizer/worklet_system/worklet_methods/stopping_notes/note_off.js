@@ -2,11 +2,10 @@ import { SpessaSynthWarn } from "../../../../utils/loggin.js";
 
 /**
  * Release a note
- * @param channel {number}
  * @param midiNote {number}
- * @this {SpessaSynthProcessor}
+ * @this {WorkletProcessorChannel}
  */
-export function noteOff(channel, midiNote)
+export function noteOff(midiNote)
 {
     if (midiNote > 127 || midiNote < 0)
     {
@@ -14,20 +13,20 @@ export function noteOff(channel, midiNote)
         return;
     }
     
-    let realKey = midiNote + this.workletProcessorChannels[channel].channelTransposeKeyShift;
+    let realKey = midiNote + this.channelTransposeKeyShift;
     
     // if high performance mode, kill notes instead of stopping them
-    if (this.highPerformanceMode)
+    if (this.synth.highPerformanceMode)
     {
         // if the channel is percussion channel, do not kill the notes
-        if (!this.workletProcessorChannels[channel].drumChannel)
+        if (!this.drumChannel)
         {
-            this.workletProcessorChannels[channel].killNote(realKey);
+            this.killNote(realKey);
             return;
         }
     }
     
-    const channelVoices = this.workletProcessorChannels[channel].voices;
+    const channelVoices = this.voices;
     channelVoices.forEach(v =>
     {
         if (v.realKey !== realKey || v.isInRelease === true)
@@ -35,18 +34,18 @@ export function noteOff(channel, midiNote)
             return;
         }
         // if hold pedal, move to sustain
-        if (this.workletProcessorChannels[channel].holdPedal)
+        if (this.holdPedal)
         {
-            this.workletProcessorChannels[channel].sustainedVoices.push(v);
+            this.sustainedVoices.push(v);
         }
         else
         {
             v.release();
         }
     });
-    this.callEvent("noteoff", {
+    this.synth.callEvent("noteoff", {
         midiNote: midiNote,
-        channel: channel
+        channel: this.channelNumber
     });
 }
 

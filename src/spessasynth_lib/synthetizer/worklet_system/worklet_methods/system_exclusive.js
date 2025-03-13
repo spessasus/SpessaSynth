@@ -226,11 +226,11 @@ export function systemExclusive(messageData, channelOffset = 0)
                             // bit 1: 14 and 15
                             if ((messageData[4] & 1) === 1)
                             {
-                                this.setOctaveTuning(14 + channelOffset, newOctaveTuning);
+                                this.workletProcessorChannels[14 + channelOffset].setOctaveTuning(newOctaveTuning);
                             }
                             if (((messageData[4] >> 1) & 1) === 1)
                             {
-                                this.setOctaveTuning(15 + channelOffset, newOctaveTuning);
+                                this.workletProcessorChannels[15 + channelOffset].setOctaveTuning(newOctaveTuning);
                             }
                             
                             // bit 2: channels 7 to 13
@@ -239,7 +239,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                                 const bit = (messageData[5] >> i) & 1;
                                 if (bit === 1)
                                 {
-                                    this.setOctaveTuning(7 + i + channelOffset, newOctaveTuning);
+                                    this.workletProcessorChannels[7 + i + channelOffset].setOctaveTuning(newOctaveTuning);
                                 }
                             }
                             
@@ -249,7 +249,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                                 const bit = (messageData[6] >> i) & 1;
                                 if (bit === 1)
                                 {
-                                    this.setOctaveTuning(i + channelOffset, newOctaveTuning);
+                                    this.workletProcessorChannels[i + channelOffset].setOctaveTuning(newOctaveTuning);
                                 }
                             }
                             
@@ -425,7 +425,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                                 {
                                     newTuning[i] = messageData[i + 7] - 64;
                                 }
-                                this.setOctaveTuning(channel, newTuning);
+                                this.workletProcessorChannels[channel].setOctaveTuning(newTuning);
                                 const cents = messageValue - 64;
                                 SpessaSynthInfo(
                                     `%cChannel %c${channel}%c octave scale tuning. Cents %c${newTuning.join(

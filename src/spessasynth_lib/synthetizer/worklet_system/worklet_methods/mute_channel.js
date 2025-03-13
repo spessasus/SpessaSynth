@@ -8,7 +8,7 @@ export function muteChannel(isMuted)
     {
         this.stopAllNotes(true);
     }
-    this.isMuted = true;
+    this.isMuted = isMuted;
     this.synth.sendChannelProperties();
     this.synth.callEvent("mutechannel", {
         channel: this.channelNumber,

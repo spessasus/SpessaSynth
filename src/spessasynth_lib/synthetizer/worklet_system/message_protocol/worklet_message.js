@@ -81,6 +81,7 @@ export const ALL_CHANNELS_OR_DIFFERENT_ACTION = -1;
  *     messageType: workletMessageType,
  *     messageData: (
  *     number[]
+ *     |undefined
  *     |boolean[]
  *     |WorkletVoice[]
  *     |number

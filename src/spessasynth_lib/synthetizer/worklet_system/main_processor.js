@@ -9,11 +9,7 @@ import { VOLUME_ENVELOPE_SMOOTHING_FACTOR } from "./worklet_utilities/volume_env
 import { handleMessage } from "./message_protocol/handle_message.js";
 import { callEvent, sendChannelProperties } from "./message_protocol/message_sending.js";
 import { systemExclusive } from "./worklet_methods/system_exclusive.js";
-import { noteOn } from "./worklet_methods/note_on.js";
-import { noteOff } from "./worklet_methods/stopping_notes/note_off.js";
-import { setOctaveTuning } from "./worklet_methods/tuning_control/set_octave_tuning.js";
 import { setMasterGain, setMasterPan, setMIDIVolume } from "./worklet_methods/controller_control/master_parameters.js";
-import { setVibrato } from "./worklet_methods/data_entry/set_nrpn_vibrato.js";
 import { resetAllControllers } from "./worklet_methods/controller_control/reset_controllers.js";
 import { WorkletSoundfontManager } from "./worklet_methods/worklet_soundfont_manager/worklet_soundfont_manager.js";
 import { interpolationTypes } from "./worklet_utilities/wavetable_oscillator.js";
@@ -29,10 +25,6 @@ import { sendPresetList } from "./worklet_methods/soundfont_management/send_pres
 import { getPreset } from "./worklet_methods/soundfont_management/get_preset.js";
 import { transposeAllChannels } from "./worklet_methods/tuning_control/transpose_all_channels.js";
 import { setMasterTuning } from "./worklet_methods/tuning_control/set_master_tuning.js";
-import { pitchWheel } from "./worklet_methods/tuning_control/pitch_wheel.js";
-import { channelPressure } from "./worklet_methods/tuning_control/channel_pressure.js";
-import { polyPressure } from "./worklet_methods/tuning_control/poly_pressure.js";
-import { disableAndLockGSNRPN } from "./worklet_methods/data_entry/disable_and_lock_nrpn.js";
 import { sendSynthesizerSnapshot } from "./snapshot/send_synthesizer_snapshot.js";
 import { applySynthesizerSnapshot } from "./snapshot/apply_synthesizer_snapshot.js";
 import { createWorkletChannel } from "./worklet_methods/create_worklet_channel.js";
@@ -386,9 +378,65 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
         delete this.soundfontManager;
     }
     
+    /**
+     * @param channel {number}
+     * @param controllerNumber {number}
+     * @param controllerValue {number}
+     * @param force {boolean}
+     */
     controllerChange(channel, controllerNumber, controllerValue, force = false)
     {
         this.workletProcessorChannels[channel].controllerChange(controllerNumber, controllerValue, force);
+    }
+    
+    /**
+     * @param channel {number}
+     * @param midiNote {number}
+     * @param velocity {number}
+     * @param enableDebug {boolean}
+     * @param sendEvent {boolean}
+     */
+    noteOn(channel, midiNote, velocity, enableDebug = false, sendEvent = true)
+    {
+        this.workletProcessorChannels[channel].noteOn(midiNote, velocity, enableDebug, sendEvent);
+    }
+    
+    /**
+     * @param channel {number}
+     * @param midiNote {number}
+     */
+    noteOff(channel, midiNote)
+    {
+        this.workletProcessorChannels[channel].noteOff(midiNote);
+    }
+    
+    /**
+     * @param channel {number}
+     * @param midiNote {number}
+     * @param pressure {number}
+     */
+    polyPressure(channel, midiNote, pressure)
+    {
+        this.workletProcessorChannels[channel].polyPressure(midiNote, pressure);
+    }
+    
+    /**
+     * @param channel {number}
+     * @param pressure {number}
+     */
+    channelPressure(channel, pressure)
+    {
+        this.workletProcessorChannels[channel].channelPressure(pressure);
+    }
+    
+    /**
+     * @param channel {number}
+     * @param MSB {number}
+     * @param LSB {number}
+     */
+    pitchWheel(channel, MSB, LSB)
+    {
+        this.workletProcessorChannels[channel].pitchWheel(MSB, LSB);
     }
 }
 
@@ -405,19 +453,9 @@ SpessaSynthProcessor.prototype.callEvent = callEvent;
 // system-exclusive related
 SpessaSynthProcessor.prototype.systemExclusive = systemExclusive;
 
-// note messages related
-SpessaSynthProcessor.prototype.noteOn = noteOn;
-SpessaSynthProcessor.prototype.noteOff = noteOff;
-SpessaSynthProcessor.prototype.polyPressure = polyPressure;
-SpessaSynthProcessor.prototype.stopAllChannels = stopAllChannels;
-
-// custom vibrato related
-SpessaSynthProcessor.prototype.setVibrato = setVibrato;
-SpessaSynthProcessor.prototype.disableAndLockGSNRPN = disableAndLockGSNRPN;
-
 // channel related
+SpessaSynthProcessor.prototype.stopAllChannels = stopAllChannels;
 SpessaSynthProcessor.prototype.createWorkletChannel = createWorkletChannel;
-SpessaSynthProcessor.prototype.channelPressure = channelPressure;
 SpessaSynthProcessor.prototype.resetAllControllers = resetAllControllers;
 
 // master parameter related
@@ -428,8 +466,6 @@ SpessaSynthProcessor.prototype.setMIDIVolume = setMIDIVolume;
 // tuning related
 SpessaSynthProcessor.prototype.transposeAllChannels = transposeAllChannels;
 SpessaSynthProcessor.prototype.setMasterTuning = setMasterTuning;
-SpessaSynthProcessor.prototype.pitchWheel = pitchWheel;
-SpessaSynthProcessor.prototype.setOctaveTuning = setOctaveTuning;
 
 // program related
 SpessaSynthProcessor.prototype.programChange = programChange;

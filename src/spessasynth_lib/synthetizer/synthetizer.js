@@ -407,7 +407,7 @@ export class Synthetizer
     }
     
     /**
-     * Adds a new channel to the synthesizer..
+     * Adds a new channel to the synthesizer.
      * @param postMessage {boolean} leave at true, set to false only at initialization.
      */
     addNewChannel(postMessage = true)
@@ -545,7 +545,7 @@ export class Synthetizer
      * @param channel {number} usually 0-15: the channel to change the controller.
      * @param controllerNumber {number} 0-127 the MIDI CC number.
      * @param controllerValue {number} 0-127 the controller value.
-     * @param force {boolean} forces the controller change message, even if it's locked or gm system is set and the cc is bank select.
+     * @param force {boolean} forces the controller-change message, even if it's locked or gm system is set and the cc is bank select.
      */
     controllerChange(channel, controllerNumber, controllerValue, force = false)
     {
@@ -632,7 +632,8 @@ export class Synthetizer
     
     /**
      * Transposes the synthetizer's pitch by given semitones amount (percussion channels don’t get affected).
-     * @param semitones {number} the semitones to transpose by. Can be a floating point number for more precision.
+     * @param semitones {number} the semitones to transpose by.
+     * It can be a floating point number for more precision.
      */
     transpose(semitones)
     {
@@ -640,9 +641,9 @@ export class Synthetizer
     }
     
     /**
-     * Transposes the channel by given amount of semitones.
+     * Transposes the channel by given number of semitones.
      * @param channel {number} the channel number.
-     * @param semitones {number} the transposition of the channel, can be a float.
+     * @param semitones {number} the transposition of the channel, it can be a float.
      * @param force {boolean} defaults to false, if true transposes the channel even if it's a drum channel.
      */
     transposeChannel(channel, semitones, force = false)
@@ -931,6 +932,7 @@ export class Synthetizer
      */
     setEffectsGain(reverbGain, chorusGain)
     {
+        // noinspection JSCheckFunctionSignatures
         this.post({
             messageType: workletMessageType.setEffectsGain,
             messageData: [reverbGain, chorusGain]
@@ -944,6 +946,7 @@ export class Synthetizer
     {
         this.reverbProcessor.disconnect();
         this.chorusProcessor.delete();
+        // noinspection JSCheckFunctionSignatures
         this.post({
             messageType: workletMessageType.destroyWorklet,
             messageData: undefined
