@@ -142,7 +142,7 @@ export function _processEvent(event, trackIndex)
             ))
             {
                 lyricsIndex = Math.min(
-                    this.midiData.lyricsTicks.indexOf(event.ticks) + 1,
+                    this.midiData.lyricsTicks.indexOf(event.ticks),
                     this.midiData.lyricsTicks.length
                 );
                 sentStatus = messageTypes.lyric;

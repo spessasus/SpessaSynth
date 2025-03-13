@@ -126,14 +126,14 @@ export function setLyricsText(index)
         return;
     }
     this.lyricsIndex = index;
-    for (let i = 0; i < index; i++)
+    for (let i = 0; i <= index; i++)
     {
         this.lyricsElement.text.separateLyrics[i].classList.remove("lyrics_text_gray");
         this.lyricsElement.text.separateLyrics[i].classList.add("lyrics_text_highlight");
     }
     if (index < this.currentLyricsString.length)
     {
-        for (let i = index; i < this.lyricsElement.text.separateLyrics.length; i++)
+        for (let i = index + 1; i < this.lyricsElement.text.separateLyrics.length; i++)
         {
             this.lyricsElement.text.separateLyrics[i].classList.remove("lyrics_text_highlight");
             this.lyricsElement.text.separateLyrics[i].classList.add("lyrics_text_gray");

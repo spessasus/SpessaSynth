@@ -43,10 +43,11 @@ class SequencerUI
         this.infoDecoder = new TextDecoder(this.encoding);
         this.hasInfoDecoding = false;
         /**
-         * the currently displayed (highlighted) lyrics event index
+         * the currently displayed (highlighted) lyrics event index.
+         * -1 means no lyrics displayed (an event before the first lyric is "highlighted")
          * @type {number}
          */
-        this.lyricsIndex = 0;
+        this.lyricsIndex = -1;
         this.requiresTextUpdate = false;
         this.lastTimeUpdate = 0;
         /**
@@ -96,7 +97,7 @@ class SequencerUI
                 // XG Displays have a special behavior, we try to mimic it here
                 // reference video:
                 // https://www.youtube.com/watch?v=_mR7DV1E4KE
-                // first of all, extract the "Display Letters" byte
+                // first, extract the "Display Letters" byte
                 if (data.displayType === 1)
                 {
                     const displayLetters = data.displayData[0];
@@ -187,6 +188,7 @@ class SequencerUI
         {
             this.seq.play();
         }
+        this.lyricsIndex = -1;
         this.playPause.innerHTML = getPauseSvg(ICON_SIZE);
         this.createNavigatorHandler();
         this.updateTitleAndMediaStatus();
@@ -293,7 +295,7 @@ class SequencerUI
         this.seq.addOnSongChangeEvent(data =>
         {
             this.synthDisplayMode.enabled = false;
-            this.lyricsIndex = 0;
+            this.lyricsIndex = -1;
             this.createNavigatorHandler();
             this.updateTitleAndMediaStatus();
             this.seqPlay(false);
