@@ -119,6 +119,7 @@ class MIDI extends BasicMIDI
                         if (this.RMIDInfo["INAM"])
                         {
                             this.rawMidiName = this.RMIDInfo[RMIDINFOChunks.name];
+                            // noinspection JSCheckFunctionSignatures
                             this.midiName = readBytesAsString(
                                 this.rawMidiName,
                                 this.rawMidiName.length,
@@ -132,7 +133,7 @@ class MIDI extends BasicMIDI
                         {
                             this.RMIDInfo["IPRD"] = this.RMIDInfo["IALB"];
                         }
-                        if (this.RMIDInfo["PRD"] && !this.RMIDInfo["IALB"])
+                        if (this.RMIDInfo["IPRD"] && !this.RMIDInfo["IALB"])
                         {
                             this.RMIDInfo["IALB"] = this.RMIDInfo["IPRD"];
                         }
@@ -322,19 +323,7 @@ class MIDI extends BasicMIDI
                     default:
                         // voice message
                         // gets the midi message length
-                        if (totalTicks > this.lastVoiceEventTick)
-                        {
-                            this.lastVoiceEventTick = totalTicks;
-                        }
                         eventDataLength = dataBytesAmount[statusByte >> 4];
-                        if ((statusByte & 0xF0) === messageTypes.noteOn)
-                        {
-                            usedChannels.add(statusByteChannel);
-                            const note = trackChunk.data[trackChunk.data.currentIndex];
-                            this.keyRange.min = Math.min(this.keyRange.min, note);
-                            this.keyRange.max = Math.max(this.keyRange.max, note);
-                        }
-                        
                         // save the status byte
                         runningByte = statusByte;
                         break;
@@ -342,15 +331,14 @@ class MIDI extends BasicMIDI
                 
                 // put the event data into the array
                 const eventData = new IndexedByteArray(eventDataLength);
-                const messageData = trackChunk.data.slice(
+                eventData.set(trackChunk.data.slice(
                     trackChunk.data.currentIndex,
                     trackChunk.data.currentIndex + eventDataLength
-                );
+                ), 0);
+                const event = new MidiMessage(totalTicks, statusByte, eventData);
+                track.push(event);
+                // advance the track chunk
                 trackChunk.data.currentIndex += eventDataLength;
-                eventData.set(messageData, 0);
-                
-                const message = new MidiMessage(totalTicks, statusByte, eventData);
-                track.push(message);
                 
                 switch (statusByteChannel)
                 {
@@ -361,10 +349,12 @@ class MIDI extends BasicMIDI
                         {
                             case messageTypes.setTempo:
                                 // add the tempo change
+                                event.messageData.currentIndex = 0;
                                 this.tempoChanges.push({
                                     ticks: totalTicks,
-                                    tempo: 60000000 / readBytesAsUintBigEndian(messageData, 3)
+                                    tempo: 60000000 / readBytesAsUintBigEndian(event.messageData, 3)
                                 });
+                                event.messageData.currentIndex = 0;
                                 break;
                             
                             case messageTypes.marker:
@@ -424,7 +414,7 @@ class MIDI extends BasicMIDI
                                 if (this.isKaraokeFile)
                                 {
                                     // replace the type of the message with text
-                                    message.messageStatusByte = messageTypes.text;
+                                    event.messageStatusByte = messageTypes.text;
                                     statusByte = messageTypes.text;
                                 }
                                 else
@@ -511,7 +501,7 @@ class MIDI extends BasicMIDI
                                     }
                                     else
                                     {
-                                        // this controller has occured more than once;
+                                        // this controller has occurred more than once;
                                         // this means
                                         // that it doesn't indicate the loop
                                         loopEnd = 0;
@@ -529,6 +519,18 @@ class MIDI extends BasicMIDI
                                         this.bankOffset = 1;
                                     }
                             }
+                        }
+                        else if ((statusByte & 0xF0) === messageTypes.noteOn)
+                        {
+                            usedChannels.add(statusByteChannel);
+                            const note = trackChunk.data[trackChunk.data.currentIndex];
+                            this.keyRange.min = Math.min(this.keyRange.min, note);
+                            this.keyRange.max = Math.max(this.keyRange.max, note);
+                        }
+                        // last voice event tick
+                        if (totalTicks > this.lastVoiceEventTick)
+                        {
+                            this.lastVoiceEventTick = totalTicks;
                         }
                 }
             }
@@ -761,7 +763,6 @@ class MIDI extends BasicMIDI
         
         // reverse the tempo changes
         this.tempoChanges.reverse();
-        
         /**
          * The total playback time, in seconds
          * @type {number}
