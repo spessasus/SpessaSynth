@@ -22,6 +22,10 @@ export function noteOff(midiNote)
         if (!this.drumChannel)
         {
             this.killNote(realKey);
+            this.synth.callEvent("noteoff", {
+                midiNote: midiNote,
+                channel: this.channelNumber
+            });
             return;
         }
     }

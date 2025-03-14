@@ -15,7 +15,7 @@ import { startKeyModifiersMenu } from "./key_modifier_ui.js";
  */
 export function createMainSynthController()
 {
-    // controls wrapper
+    // control wrapper
     let controlsWrapper = document.createElement("div");
     controlsWrapper.classList.add("controls_wrapper");
     

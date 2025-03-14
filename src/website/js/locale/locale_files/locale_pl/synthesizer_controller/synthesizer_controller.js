@@ -65,6 +65,11 @@ export const synthesizerControllerLocale = {
         cubic: "Interpolacja Sześcienna"
     },
     
+    advancedConfiguration: {
+        title: "Zaawansowane Ustawienia",
+        description: "Skonfiguruj zaawansowane ustawienia syntezatora"
+    },
+    
     holdPedalDown: "Pedał podtrzymania naciśnięty (Shift)",
     
     channelController: channelControllerLocale,

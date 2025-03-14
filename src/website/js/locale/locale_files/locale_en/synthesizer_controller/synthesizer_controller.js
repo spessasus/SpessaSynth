@@ -66,8 +66,12 @@ export const synthesizerControllerLocale = {
         cubic: "Cubic Interpolation"
     },
     
-    holdPedalDown: "Hold pedal is down (Shift)",
+    advancedConfiguration: {
+        title: "Advanced Configuration",
+        description: "Configure the advanced settings for the synthesizer"
+    },
     
+    holdPedalDown: "Hold pedal is down (Shift)",
     channelController: channelControllerLocale,
     effectsConfig: effectsConfig,
     keyModifiers: keyModifiers

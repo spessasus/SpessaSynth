@@ -275,7 +275,10 @@ export class Synthetizer
     set highPerformanceMode(value)
     {
         this._highPerformanceMode = value;
-        
+        this.post({
+            messageType: workletMessageType.highPerformanceMode,
+            messageData: value
+        });
     }
     
     /**
