@@ -1,7 +1,7 @@
 ---
 name: Bug report
 about: Create a report to help SpessaSynth improve!
-title: "[BUG]"
+title: ""
 labels: bug
 assignees: ''
 
