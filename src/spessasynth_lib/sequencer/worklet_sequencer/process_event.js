@@ -123,7 +123,7 @@ export function _processEvent(event, trackIndex)
             if (statusByteData.status === messageTypes.lyric)
             {
                 lyricsIndex = Math.min(
-                    this.midiData.lyricsTicks.indexOf(event.ticks) + 1,
+                    this.midiData.lyricsTicks.indexOf(event.ticks),
                     this.midiData.lyrics.length - 1
                 );
             }
