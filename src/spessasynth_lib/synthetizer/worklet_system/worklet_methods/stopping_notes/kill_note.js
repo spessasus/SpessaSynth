@@ -3,9 +3,10 @@ import { generatorTypes } from "../../../../soundfont/basic_soundfont/generator.
 /**
  * Stops a note nearly instantly
  * @param midiNote {number}
+ * @param releaseTime {number} ticks
  * @this {WorkletProcessorChannel}
  */
-export function killNote(midiNote)
+export function killNote(midiNote, releaseTime = -12000)
 {
     this.voices.forEach(v =>
     {
@@ -13,7 +14,7 @@ export function killNote(midiNote)
         {
             return;
         }
-        v.modulatedGenerators[generatorTypes.releaseVolEnv] = -12000; // set release to be very short
+        v.modulatedGenerators[generatorTypes.releaseVolEnv] = releaseTime; // set release to be very short
         v.release();
     });
 }

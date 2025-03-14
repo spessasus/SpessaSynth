@@ -21,7 +21,7 @@ export function noteOff(midiNote)
         // if the channel is percussion channel, do not kill the notes
         if (!this.drumChannel)
         {
-            this.killNote(realKey);
+            this.killNote(realKey, -6950);
             this.synth.callEvent("noteoff", {
                 midiNote: midiNote,
                 channel: this.channelNumber
