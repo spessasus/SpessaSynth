@@ -3,6 +3,7 @@ import { Synthetizer } from "../synthetizer/synthetizer.js";
 import { messageTypes } from "../midi_parser/midi_message.js";
 import { workletMessageType } from "../synthetizer/worklet_system/message_protocol/worklet_message.js";
 import {
+    SongChangeType,
     WorkletSequencerMessageType,
     WorkletSequencerReturnMessageType
 } from "./worklet_sequencer/sequencer_message.js";
@@ -262,6 +263,38 @@ export class Sequencer
     }
     
     /**
+     * @type {boolean}
+     * @private
+     */
+    _shuffleSongs = false;
+    
+    /**
+     * Indicates if the song order is random
+     * @returns {boolean}
+     */
+    get shuffleSongs()
+    {
+        return this._shuffleSongs;
+    }
+    
+    /**
+     * Indicates if the song order is random
+     * @param value {boolean}
+     */
+    set shuffleSongs(value)
+    {
+        this._shuffleSongs = value;
+        if (value)
+        {
+            this._sendMessage(WorkletSequencerMessageType.changeSong, SongChangeType.shuffleOn);
+        }
+        else
+        {
+            this._sendMessage(WorkletSequencerMessageType.changeSong, SongChangeType.shuffleOff);
+        }
+    }
+    
+    /**
      * Indicates if the sequencer should skip to first note on
      * @return {boolean}
      */
@@ -446,12 +479,12 @@ export class Sequencer
     
     nextSong()
     {
-        this._sendMessage(WorkletSequencerMessageType.changeSong, true);
+        this._sendMessage(WorkletSequencerMessageType.changeSong, SongChangeType.forwards);
     }
     
     previousSong()
     {
-        this._sendMessage(WorkletSequencerMessageType.changeSong, false);
+        this._sendMessage(WorkletSequencerMessageType.changeSong, SongChangeType.backwards);
     }
     
     /**

@@ -19,98 +19,137 @@ import { MIDI_CHANNEL_COUNT } from "../../synthetizer/synthetizer.js";
 class WorkletSequencer
 {
     /**
+     * All the sequencer's songs
+     * @type {BasicMIDI[]}
+     */
+    songs = [];
+    
+    /**
+     * Current song index
+     * @type {number}
+     */
+    songIndex = 0;
+    
+    /**
+     * shuffled song indexes
+     * @type {number[]}
+     */
+    shuffledSongIndexes = [];
+    
+    /**
+     * the synth to use
+     * @type {SpessaSynthProcessor}
+     */
+    synth;
+    
+    /**
+     * if the sequencer is active
+     * @type {boolean}
+     */
+    isActive = false;
+    
+    /**
+     * If the event should instead be sent back to the main thread instead of synth
+     * @type {boolean}
+     */
+    sendMIDIMessages = false;
+    
+    /**
+     * sequencer's loop count
+     * @type {number}
+     */
+    loopCount = Infinity;
+    
+    /**
+     * event's number in this.events
+     * @type {number[]}
+     */
+    eventIndex = [];
+    
+    /**
+     * tracks the time that has already been played
+     * @type {number}
+     */
+    playedTime = 0;
+    
+    /**
+     * The (relative) time when the sequencer was paused. If it's not paused, then it's undefined.
+     * @type {number}
+     */
+    pausedTime = undefined;
+    
+    /**
+     * Absolute playback startTime, bases on the synth's time
+     * @type {number}
+     */
+    absoluteStartTime = currentTime;
+    /**
+     * Currently playing notes (for pausing and resuming)
+     * @type {{
+     *     midiNote: number,
+     *     channel: number,
+     *     velocity: number
+     * }[]}
+     */
+    playingNotes = [];
+    
+    /**
+     * controls if the sequencer loops (defaults to true)
+     * @type {boolean}
+     */
+    loop = true;
+    
+    /**
+     * controls if the songs are ordered randomly
+     * @type {boolean}
+     */
+    shuffleMode = false;
+    
+    /**
+     * the current track data
+     * @type {BasicMIDI}
+     */
+    midiData = undefined;
+    
+    /**
+     * midi port number for the corresponding track
+     * @type {number[]}
+     */
+    midiPorts = [];
+    midiPortChannelOffset = 0;
+    /**
+     * stored as:
+     * Object<midi port, channel offset>
+     * @type {Object<number, number>}
+     */
+    midiPortChannelOffsets = {};
+    
+    /**
+     * @type {boolean}
+     * @private
+     */
+    _skipToFirstNoteOn = true;
+    
+    /**
+     * If true, seq will stay paused when seeking or changing the playback rate
+     * @type {boolean}
+     */
+    preservePlaybackState = false;
+    
+    /**
      * @param spessasynthProcessor {SpessaSynthProcessor}
      */
     constructor(spessasynthProcessor)
     {
         this.synth = spessasynthProcessor;
-        this.ignoreEvents = false;
-        this.isActive = false;
-        
-        /**
-         * If the event should instead be sent back to the main thread instead of synth
-         * @type {boolean}
-         */
-        this.sendMIDIMessages = false;
-        
-        this.loopCount = Infinity;
-        
-        // event's number in this.events
-        /**
-         * @type {number[]}
-         */
-        this.eventIndex = [];
-        this.songIndex = 0;
-        
-        // tracks the time that we have already played
-        /**
-         * @type {number}
-         */
-        this.playedTime = 0;
-        
-        /**
-         * The (relative) time when the sequencer was paused. If it's not paused then it's undefined.
-         * @type {number}
-         */
-        this.pausedTime = undefined;
-        
-        /**
-         * Absolute playback startTime, bases on the synth's time
-         * @type {number}
-         */
-        this.absoluteStartTime = currentTime;
-        
-        /**
-         * Controls the playback's rate
-         * @type {number}
-         */
-        this._playbackRate = 1;
-        
-        /**
-         * Currently playing notes (for pausing and resuming)
-         * @type {{
-         *     midiNote: number,
-         *     channel: number,
-         *     velocity: number
-         * }[]}
-         */
-        this.playingNotes = [];
-        
-        // controls if the sequencer loops (defaults to true)
-        this.loop = true;
-        
-        /**
-         * the current track data
-         * @type {BasicMIDI}
-         */
-        this.midiData = undefined;
-        
-        /**
-         * midi port number for the corresponding track
-         * @type {number[]}
-         */
-        this.midiPorts = [];
-        
-        this.midiPortChannelOffset = 0;
-        
-        /**
-         * midi port: channel offset
-         * @type {Object<number, number>}
-         */
-        this.midiPortChannelOffsets = {};
-        
-        /**
-         * @type {boolean}
-         * @private
-         */
-        this._skipToFirstNoteOn = true;
-        
-        /**
-         * If true, seq will stay paused when seeking or changing the playback rate
-         * @type {boolean}
-         */
-        this.preservePlaybackState = false;
     }
+    
+    /**
+     * Controls the playback's rate
+     * @type {number}
+     * @private
+     */
+    _playbackRate = 1;
     
     /**
      * @param value {number}
@@ -229,6 +268,16 @@ class WorkletSequencer
         }
     }
     
+    loadCurrentSong(autoPlay = true)
+    {
+        let index = this.songIndex;
+        if (this.shuffleMode)
+        {
+            index = this.shuffledSongIndexes[this.songIndex];
+        }
+        this.loadNewSequence(this.songs[index], autoPlay);
+    }
+    
     _resetTimers()
     {
         this.playedTime = 0;
@@ -243,6 +292,18 @@ class WorkletSequencer
     clearProcessHandler()
     {
         this.isActive = false;
+    }
+    
+    shuffleSongIndexes()
+    {
+        const indexes = this.songs.map((_, i) => i);
+        this.shuffledSongIndexes = [];
+        while (indexes.length > 0)
+        {
+            const index = indexes[Math.floor(Math.random() * indexes.length)];
+            this.shuffledSongIndexes.push(index);
+            indexes.splice(indexes.indexOf(index), 1);
+        }
     }
 }
 

@@ -13,10 +13,6 @@ import { readBytesAsUintBigEndian } from "../../utils/byte_functions/big_endian.
  */
 export function _processEvent(event, trackIndex)
 {
-    if (this.ignoreEvents)
-    {
-        return;
-    }
     if (this.sendMIDIMessages)
     {
         if (event.messageStatusByte >= 0x80)
@@ -100,7 +96,7 @@ export function _processEvent(event, trackIndex)
             }
             break;
         
-        // recongized but ignored
+        // recognized but ignored
         case messageTypes.timeSignature:
         case messageTypes.endOfTrack:
         case messageTypes.midiChannelPrefix:

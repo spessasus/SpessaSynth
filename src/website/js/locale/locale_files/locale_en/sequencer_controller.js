@@ -3,6 +3,7 @@ export const sequencerControllerLocale = {
     nextSong: "Next song",
     loopThis: "Loop this song",
     playPause: "Play/pause",
+    shuffle: "Shuffle songs",
     lyrics: {
         show: "Show lyrics",
         title: "Decoded text",

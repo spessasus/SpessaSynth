@@ -1,3 +1,10 @@
+export const SongChangeType = {
+    backwards: 0,
+    forwards: 1,
+    shuffleOn: 2,
+    shuffleOff: 3
+};
+
 /**
  * @enum {number}
  * @property {number} loadNewSongList          - 0 -> [...song<MIDI>]
@@ -8,7 +15,7 @@
  * @property {number} changeMIDIMessageSending - 5 -> sendMIDIMessages<boolean>
  * @property {number} setPlaybackRate          - 6 -> playbackRate<number>
  * @property {number} setLoop                  - 7 -> [loop<boolean>, count<number]
- * @property {number} changeSong               - 8 -> goForwards<boolean> if true, next song, if false, previous
+ * @property {number} changeSong               - 8 -> changeType<number> 0 - back, 1 - forward, 2 - shuffle ON, 3 - shuffle OFF
  * @property {number} getMIDI                  - 9 -> (no data)
  * @property {number} setSkipToFirstNote       -10 -> skipToFirstNoteOn<boolean>
  * @property {number} setPreservePlaybackState -11 -> preservePlaybackState<boolean>

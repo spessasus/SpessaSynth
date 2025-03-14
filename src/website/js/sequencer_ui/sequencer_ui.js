@@ -1,7 +1,15 @@
 import { Sequencer } from "../../../spessasynth_lib/sequencer/sequencer.js";
 import { formatTime } from "../../../spessasynth_lib/utils/other.js";
 import { supportedEncodings } from "../utils/encodings.js";
-import { getBackwardSvg, getForwardSvg, getLoopSvg, getPauseSvg, getPlaySvg, getTextSvg } from "../utils/icons.js";
+import {
+    getBackwardSvg,
+    getForwardSvg,
+    getLoopSvg,
+    getPauseSvg,
+    getPlaySvg,
+    getShuffleSvg,
+    getTextSvg
+} from "../utils/icons.js";
 import { messageTypes } from "../../../spessasynth_lib/midi_parser/midi_message.js";
 import { getSeqUIButton } from "./sequi_button.js";
 import { keybinds } from "../utils/keybinds.js";
@@ -107,7 +115,7 @@ class SequencerUI
                     // since this is XG data, apply the XG display style
                     this.mainTitleMessageDisplay.classList.add("xg_sysex_display");
                     
-                    // 0x0c where c are the amount of spaces prepended
+                    // 0x0c where c are the number of spaces prepended
                     const spaces = displayLetters & 0x0F;
                     for (let i = 0; i < spaces; i++)
                     {
@@ -346,7 +354,7 @@ class SequencerUI
                 this.mode = "dark";
                 this.toggleDarkMode();
             }
-            // otherwise we're already dark
+            // otherwise, we're already dark
         }
     }
     
@@ -491,6 +499,27 @@ class SequencerUI
         loopButton.onclick = toggleLoop;
         this.loopButton = loopButton;
         
+        // shuffle button
+        const shuffleButton = getSeqUIButton(
+            "Shuffle songs",
+            getShuffleSvg(ICON_SIZE)
+        );
+        this.locale.bindObjectProperty(shuffleButton, "title", "locale.sequencerController.shuffle");
+        shuffleButton.onclick = () =>
+        {
+            this.seq.shuffleSongs = !this.seq.shuffleSongs;
+            shuffleButton.firstElementChild.setAttribute(
+                "fill",
+                (this.seq.shuffleSongs ? this.iconColor : this.iconDisabledColor)
+            );
+            shuffleButton.firstElementChild.setAttribute(
+                "stroke",
+                (this.seq.shuffleSongs ? this.iconColor : this.iconDisabledColor)
+            );
+        };
+        shuffleButton.firstElementChild.setAttribute("fill", this.iconDisabledColor);
+        shuffleButton.firstElementChild.setAttribute("stroke", this.iconDisabledColor);
+        
         
         // show text button
         const textButton = getSeqUIButton(
@@ -513,6 +542,7 @@ class SequencerUI
         // add everything
         controlsDiv.appendChild(previousSongButton); // |<
         controlsDiv.appendChild(loopButton);         // ()
+        controlsDiv.appendChild(shuffleButton);      // ><
         controlsDiv.appendChild(playPauseButton);    // ||
         controlsDiv.appendChild(textButton);         // ==
         controlsDiv.appendChild(nextSongButton);     // >|

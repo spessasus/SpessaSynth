@@ -2,7 +2,7 @@ import {
     ALL_CHANNELS_OR_DIFFERENT_ACTION,
     returnMessageType
 } from "../../synthetizer/worklet_system/message_protocol/worklet_message.js";
-import { WorkletSequencerMessageType, WorkletSequencerReturnMessageType } from "./sequencer_message.js";
+import { SongChangeType, WorkletSequencerMessageType, WorkletSequencerReturnMessageType } from "./sequencer_message.js";
 import { messageTypes, midiControllers } from "../../midi_parser/midi_message.js";
 import { MIDI_CHANNEL_COUNT } from "../../synthetizer/synthetizer.js";
 
@@ -60,13 +60,26 @@ export function processMessage(messageType, messageData)
             break;
         
         case WorkletSequencerMessageType.changeSong:
-            if (messageData)
+            switch (messageData)
             {
-                this.nextSong();
-            }
-            else
-            {
-                this.previousSong();
+                case SongChangeType.forwards:
+                    this.nextSong();
+                    break;
+                
+                case SongChangeType.backwards:
+                    this.previousSong();
+                    break;
+                
+                case SongChangeType.shuffleOff:
+                    this.shuffleMode = false;
+                    this.songIndex = this.shuffledSongIndexes[this.songIndex];
+                    break;
+                
+                case SongChangeType.shuffleOn:
+                    this.shuffleMode = true;
+                    this.shuffleSongIndexes();
+                    this.songIndex = 0;
+                    this.loadCurrentSong();
             }
             break;
         

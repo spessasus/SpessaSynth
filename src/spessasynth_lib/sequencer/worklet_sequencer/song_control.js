@@ -120,7 +120,7 @@ export function loadNewSequence(parsedMidi, autoPlay = true)
     });
     
     /**
-     * Same as Audio.duration (seconds)
+     * Same as "audio.duration" property (seconds)
      * @type {number}
      */
     this.duration = this.midiData.duration;
@@ -188,7 +188,8 @@ export function loadNewSongList(midiBuffers, autoPlay = true)
     {
         this.loop = false;
     }
-    this.loadNewSequence(this.songs[this.songIndex], autoPlay);
+    this.shuffleSongIndexes();
+    this.loadCurrentSong(autoPlay);
 }
 
 /**
@@ -203,7 +204,7 @@ export function nextSong()
     }
     this.songIndex++;
     this.songIndex %= this.songs.length;
-    this.loadNewSequence(this.songs[this.songIndex]);
+    this.loadCurrentSong();
 }
 
 /**
@@ -221,5 +222,5 @@ export function previousSong()
     {
         this.songIndex = this.songs.length - 1;
     }
-    this.loadNewSequence(this.songs[this.songIndex]);
+    this.loadCurrentSong();
 }

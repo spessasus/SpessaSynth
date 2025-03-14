@@ -107,8 +107,8 @@ export function getMuteSvg(size)
 
 export function getDrumsSvg(size)
 {
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="${size}" height="${size}" class="bi bi-drum-fill" fill="currentColor">
-    <path d="M494,12L258.3,123.8c-6.8-4.6-15.1-7.3-24-7.3c-23.6,0-42.6,19.1-42.6,42.6s19.1,42.6,42.6,42.6
+    return `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' width='${size}' height='${size}' class='bi bi-drum-fill' fill='currentColor'>
+    <path d='M494,12L258.3,123.8c-6.8-4.6-15.1-7.3-24-7.3c-23.6,0-42.6,19.1-42.6,42.6s19.1,42.6,42.6,42.6
     \t\tc22.4,0,40.9-17.3,42.6-39.3l129.2-61.3c38.7,16.3,62.6,37.6,62.6,57.9c0,40.2-91.1,85.2-213.1,85.2s-213.1-45-213.1-85.2
     \t\ts91.1-85.2,213.1-85.2c3.7,0,7-0.1,10.7,0l75.2-35.3c-26.7-4.5-55.3-7.3-85.9-7.3C109.9,31.3,0,86.2,0,159.1v213.1
     \t\tc0,21.1,9.5,40.4,24,55.9c14.5,15.6,34.2,28.1,57.3,38.6c46.1,21,107.1,33.3,174.4,33.3s128.3-12.3,174.4-33.3
@@ -116,16 +116,16 @@ export function getDrumsSvg(size)
     \t\tc21.6,16.3,50.7,29.7,85.2,39.3v168.4c-10.7-3.3-20.4-7.2-29.3-11.3c-19.3-8.8-34-19.4-43.3-29.3c-9.2-9.9-12.7-18.2-12.7-26.6
     \t\tV231.7z M468.7,231.7v140.5c0,8.4-3.4,16.7-12.7,26.6c-9.2,9.9-24,20.5-43.3,29.3c-8.9,4.1-18.6,8-29.3,11.3V271
     \t\tC418,261.4,447.1,248,468.7,231.7z M170.4,280.3c26.5,4.4,55,6.7,85.2,6.7s58.8-2.2,85.2-6.7v169.1c-26.2,4.9-54.9,8-85.2,8
-    \t\ts-59-3.1-85.2-8V280.3z"/>
+    \t\ts-59-3.1-85.2-8V280.3z'/>
    </svg>`;
 }
 
 export function getNoteSvg(size)
 {
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" fill="currentColor" class="bi bi-music-note" viewBox="0 0 16 16">
-  <path d="M9 13c0 1.105-1.12 2-2.5 2S4 14.105 4 13s1.12-2 2.5-2 2.5.895 2.5 2z"/>
-  <path fill-rule="evenodd" d="M9 3v10H8V3h1z"/>
-  <path d="M8 2.82a1 1 0 0 1 .804-.98l3-.6A1 1 0 0 1 13 2.22V4L8 5V2.82z"/>
+    return `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}' fill='currentColor' class='bi bi-music-note' viewBox='0 0 16 16'>
+  <path d='M9 13c0 1.105-1.12 2-2.5 2S4 14.105 4 13s1.12-2 2.5-2 2.5.895 2.5 2z'/>
+  <path fill-rule='evenodd' d='M9 3v10H8V3h1z'/>
+  <path d='M8 2.82a1 1 0 0 1 .804-.98l3-.6A1 1 0 0 1 13 2.22V4L8 5V2.82z'/>
 </svg>`;
 }
 
@@ -198,15 +198,23 @@ export function getHourglassSvg(size)
 
 export function getExclamationSvg(size)
 {
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" fill="currentColor" class="bi bi-exclamation-triangle" viewBox="0 0 16 16">
-  <path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06.1.1 0 0 1-.066.017H1.146a.1.1 0 0 1-.066-.017.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057m1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z"/>
-  <path d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/>
+    return `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}' fill='currentColor' class='bi bi-exclamation-triangle' viewBox='0 0 16 16'>
+  <path d='M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06.1.1 0 0 1-.066.017H1.146a.1.1 0 0 1-.066-.017.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057m1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z'/>
+  <path d='M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z'/>
 </svg>`;
 }
 
 export function getCheckSvg(size)
 {
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
-  <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/>
+    return `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}' fill='currentColor' class='bi bi-check2' viewBox='0 0 16 16'>
+  <path d='M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0'/>
 </svg>`;
+}
+
+export function getShuffleSvg(size)
+{
+    return `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}' fill='none' class='bi bi-shuffle' viewBox='-3 -3 22 22'>
+    <path d='M0 3.5A.5.5 0 0 1 .5 3H1c2.202 0 3.827 1.24 4.874 2.418.49.552.865 1.102 1.126 1.532.26-.43.636-.98 1.126-1.532C9.173 4.24 10.798 3 13 3v1c-1.798 0-3.173 1.01-4.126 2.082A9.6 9.6 0 0 0 7.556 8a9.6 9.6 0 0 0 1.317 1.918C9.828 10.99 11.204 12 13 12v1c-2.202 0-3.827-1.24-4.874-2.418A10.6 10.6 0 0 1 7 9.05c-.26.43-.636.98-1.126 1.532C4.827 11.76 3.202 13 1 13H.5a.5.5 0 0 1 0-1H1c1.798 0 3.173-1.01 4.126-2.082A9.6 9.6 0 0 0 6.444 8a9.6 9.6 0 0 0-1.317-1.918C4.172 5.01 2.796 4 1 4H.5a.5.5 0 0 1-.5-.5' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/>
+    <path d='M13 5.466V1.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192m0 9v-3.932a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384l-2.36 1.966a.25.25 0 0 1-.41-.192' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/></svg>
+`;
 }
