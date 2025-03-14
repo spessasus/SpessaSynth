@@ -93,6 +93,7 @@ export class BasicPreset
         this.presetZones.splice(index, 1);
     }
     
+    // noinspection JSUnusedGlobalSymbols
     /**
      * Preloads all samples (async)
      */
@@ -131,188 +132,139 @@ export class BasicPreset
     
     /**
      * Returns generatorTranslator and generators for given note
-     * @param midiNote {number}
-     * @param velocity {number}
+     * @param {number} midiNote
+     * @param {number} velocity
      * @returns {SampleAndGenerators[]}
      */
     getSamplesAndGenerators(midiNote, velocity)
     {
-        const memorized = this.foundSamplesAndGenerators[midiNote][velocity];
-        if (memorized)
+        // check if we already have a computed result
+        const memo = this.foundSamplesAndGenerators[midiNote][velocity];
+        if (memo)
         {
-            return memorized;
+            return memo;
         }
-        
-        if (this.presetZones.length < 1)
+        if (this.presetZones.length === 0)
         {
             return [];
         }
         
-        /**
-         * @param range {SoundFontRange}
-         * @param number {number}
-         * @returns {boolean}
-         */
-        function isInRange(range, number)
-        {
-            return number >= range.min && number <= range.max;
-        }
+        const DEFAULT_RANGE = { min: 0, max: 127 };
         
+        const isInRange = (range, number) => number >= range.min && number <= range.max;
         /**
          * @param main {Generator[]}
          * @param adder {Generator[]}
          */
-        function addUnique(main, adder)
+        const addUnique = (main, adder) =>
         {
-            main.push(...adder.filter(g => !main.find(mg => mg.generatorType === g.generatorType)));
-        }
+            const keys = new Set(main.map(g => g.generatorType));
+            for (const item of adder)
+            {
+                if (!keys.has(item.generatorType))
+                {
+                    keys.add(item.generatorType);
+                    main.push(item);
+                }
+            }
+        };
         
         /**
          * @param main {Modulator[]}
          * @param adder {Modulator[]}
          */
-        function addUniqueMods(main, adder)
+        const addUniqueMods = (main, adder) =>
         {
-            main.push(...adder.filter(m => !main.find(mm => Modulator.isIdentical(m, mm))));
-        }
-        
-        /**
-         * @type {SampleAndGenerators[]}
-         */
-        let parsedGeneratorsAndSamples = [];
-        
-        /**
-         * global zone is always first, so it or nothing
-         * @type {Generator[]}
-         */
-        let globalPresetGenerators = this.presetZones[0].isGlobal ? [...this.presetZones[0].generators] : [];
-        
-        /**
-         * @type {Modulator[]}
-         */
-        let globalPresetModulators = this.presetZones[0].isGlobal ? [...this.presetZones[0].modulators] : [];
-        const globalKeyRange = this.presetZones[0].isGlobal ? this.presetZones[0].keyRange : { min: 0, max: 127 };
-        const globalVelRange = this.presetZones[0].isGlobal ? this.presetZones[0].velRange : { min: 0, max: 127 };
-        
-        // find the preset zones in range
-        let presetZonesInRange = this.presetZones.filter(currentZone =>
-            (
-                isInRange(
-                    currentZone.hasKeyRange ? currentZone.keyRange : globalKeyRange,
-                    midiNote
-                )
-                &&
-                isInRange(
-                    currentZone.hasVelRange ? currentZone.velRange : globalVelRange,
-                    velocity
-                )
-            ) && !currentZone.isGlobal);
-        
-        presetZonesInRange.forEach(zone =>
-        {
-            // global zone is already taken into account earlier
-            if (zone.instrument.instrumentZones.length < 1)
+            for (const mod of adder)
             {
-                return;
-            }
-            let presetGenerators = zone.generators;
-            let presetModulators = zone.modulators;
-            const firstZone = zone.instrument.instrumentZones[0];
-            /**
-             * global zone is always first, so it or nothing
-             * @type {Generator[]}
-             */
-            let globalInstrumentGenerators = firstZone.isGlobal ? [...firstZone.generators] : [];
-            let globalInstrumentModulators = firstZone.isGlobal ? [...firstZone.modulators] : [];
-            const globalKeyRange = firstZone.isGlobal ? firstZone.keyRange : { min: 0, max: 127 };
-            const globalVelRange = firstZone.isGlobal ? firstZone.velRange : { min: 0, max: 127 };
-            
-            
-            let instrumentZonesInRange = zone.instrument.instrumentZones
-                .filter(currentZone =>
-                    (
-                        isInRange(
-                            currentZone.hasKeyRange ? currentZone.keyRange : globalKeyRange,
-                            midiNote
-                        )
-                        &&
-                        isInRange(
-                            currentZone.hasVelRange ? currentZone.velRange : globalVelRange,
-                            velocity
-                        )
-                    ) && !currentZone.isGlobal
-                );
-            
-            instrumentZonesInRange.forEach(instrumentZone =>
-            {
-                let instrumentGenerators = [...instrumentZone.generators];
-                let instrumentModulators = [...instrumentZone.modulators];
-                
-                addUnique(
-                    presetGenerators,
-                    globalPresetGenerators
-                );
-                // add the unique global preset generators (local replace global(
-                
-                
-                // add the unique global instrument generators (local replace global)
-                addUnique(
-                    instrumentGenerators,
-                    globalInstrumentGenerators
-                );
-                
-                addUniqueMods(
-                    presetModulators,
-                    globalPresetModulators
-                );
-                addUniqueMods(
-                    instrumentModulators,
-                    globalInstrumentModulators
-                );
-                
-                // default mods
-                addUniqueMods(
-                    instrumentModulators,
-                    this.defaultModulators
-                );
-                
-                /**
-                 * sum preset modulators to instruments (amount) sf spec page 54
-                 * @type {Modulator[]}
-                 */
-                const finalModulatorList = [...instrumentModulators];
-                for (let i = 0; i < presetModulators.length; i++)
+                if (!main.some(m => Modulator.isIdentical(mod, m)))
                 {
-                    let mod = presetModulators[i];
-                    const identicalInstrumentModulator = finalModulatorList.findIndex(
-                        m => Modulator.isIdentical(mod, m));
-                    if (identicalInstrumentModulator !== -1)
+                    main.push(mod);
+                }
+            }
+        };
+        
+        const results = [];
+        
+        // global preset zone (first zone) information
+        const globalZone = this.presetZones[0];
+        const globalPresetGenerators = globalZone.isGlobal ? [...globalZone.generators] : [];
+        const globalPresetModulators = globalZone.isGlobal ? [...globalZone.modulators] : [];
+        const globalKeyRange = globalZone.isGlobal ? globalZone.keyRange : DEFAULT_RANGE;
+        const globalVelRange = globalZone.isGlobal ? globalZone.velRange : DEFAULT_RANGE;
+        
+        // filter preset zones that are in range and not global
+        const presetZonesInRange = this.presetZones.filter(zone =>
+            !zone.isGlobal &&
+            isInRange(zone.hasKeyRange ? zone.keyRange : globalKeyRange, midiNote) &&
+            isInRange(zone.hasVelRange ? zone.velRange : globalVelRange, velocity)
+        );
+        
+        for (const zone of presetZonesInRange)
+        {
+            if (zone.instrument.instrumentZones.length === 0)
+            {
+                continue;
+            }
+            
+            const presetGenerators = [...zone.generators];
+            const presetModulators = [...zone.modulators];
+            addUnique(presetGenerators, globalPresetGenerators);
+            addUniqueMods(presetModulators, globalPresetModulators);
+            
+            // for instrument zones, use the first zone as the global defaults
+            const firstInstZone = zone.instrument.instrumentZones[0];
+            const globalInstrumentGenerators = firstInstZone.isGlobal ? [...firstInstZone.generators] : [];
+            const globalInstrumentModulators = firstInstZone.isGlobal ? [...firstInstZone.modulators] : [];
+            const instrumentGlobalKeyRange = firstInstZone.isGlobal ? firstInstZone.keyRange : DEFAULT_RANGE;
+            const instrumentGlobalVelRange = firstInstZone.isGlobal ? firstInstZone.velRange : DEFAULT_RANGE;
+            
+            // filter instrument zones that are in range and not global
+            const instrumentZonesInRange = zone.instrument.instrumentZones.filter(instZone =>
+                !instZone.isGlobal &&
+                isInRange(instZone.hasKeyRange ? instZone.keyRange : instrumentGlobalKeyRange, midiNote) &&
+                isInRange(instZone.hasVelRange ? instZone.velRange : instrumentGlobalVelRange, velocity)
+            );
+            
+            for (const instZone of instrumentZonesInRange)
+            {
+                // clone the generators and modulators to the wonders of JavaScript
+                const instrumentGenerators = [...instZone.generators];
+                const instrumentModulators = [...instZone.modulators];
+                
+                // merge in global instrument generators and modulators
+                addUnique(instrumentGenerators, globalInstrumentGenerators);
+                addUniqueMods(instrumentModulators, globalInstrumentModulators);
+                addUniqueMods(instrumentModulators, this.defaultModulators);
+                
+                // combine instrument modulators with preset modulators by summing matching ones
+                const finalModulators = [...instrumentModulators];
+                for (const mod of presetModulators)
+                {
+                    const idx = finalModulators.findIndex(m => Modulator.isIdentical(mod, m));
+                    if (idx !== -1)
                     {
-                        // sum the amounts (this makes a new modulator because otherwise it would overwrite the one in the soundfont!!!
-                        finalModulatorList[identicalInstrumentModulator] = finalModulatorList[identicalInstrumentModulator].sumTransform(
-                            mod);
+                        finalModulators[idx] = finalModulators[idx].sumTransform(mod);
                     }
                     else
                     {
-                        finalModulatorList.push(mod);
+                        finalModulators.push(mod);
                     }
                 }
                 
-                
-                // combine both generators and add to the final result
-                parsedGeneratorsAndSamples.push({
-                    instrumentGenerators: instrumentGenerators,
-                    presetGenerators: presetGenerators,
-                    modulators: finalModulatorList,
-                    sample: instrumentZone.sample,
-                    sampleID: instrumentZone.generators.find(
-                        g => g.generatorType === generatorTypes.sampleID).generatorValue
+                results.push({
+                    instrumentGenerators,
+                    presetGenerators,
+                    modulators: finalModulators,
+                    sample: instZone.sample,
+                    sampleID: instZone.generators.find(g => g.generatorType === generatorTypes.sampleID).generatorValue
                 });
-            });
-        });
+            }
+        }
         
-        // save and return
-        this.foundSamplesAndGenerators[midiNote][velocity] = parsedGeneratorsAndSamples;
-        return parsedGeneratorsAndSamples;
+        // memorize and return the computed result
+        this.foundSamplesAndGenerators[midiNote][velocity] = results;
+        return results;
     }
+    
 }
