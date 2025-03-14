@@ -6,9 +6,8 @@ import {
 } from "../../../../spessasynth_lib/synthetizer/worklet_system/message_protocol/worklet_message.js";
 import { getEmptyMicSvg, getVolumeSvg } from "../../utils/icons.js";
 import { ICON_SIZE } from "./create_channel_controller.js";
-import { showEffectsConfigWindow } from "./effects_config.js";
 import { closeNotification } from "../../notification/notification.js";
-import { startKeyModifiersMenu } from "./key_modifier_ui.js";
+import { showAdvancedConfiguration } from "./advanced_configuration.js";
 
 /**
  * @this {SynthetizerUI}
@@ -175,48 +174,21 @@ export function createMainSynthController()
         this.synth.resetControllers();
     };
     
-    
-    // black midi mode toggle
-    const highPerfToggle = document.createElement("button");
-    this.locale.bindObjectProperty(highPerfToggle, "textContent", LOCALE_PATH + "blackMidiMode.title");
-    this.locale.bindObjectProperty(highPerfToggle, "title", LOCALE_PATH + "blackMidiMode.description");
-    
-    highPerfToggle.classList.add("synthui_button");
-    highPerfToggle.classList.add("main_controller_element");
-    highPerfToggle.onclick = () =>
-    {
-        this.synth.highPerformanceMode = !this.synth.highPerformanceMode;
-    };
-    
-    // keyModifiers
-    const keyModifiers = document.createElement("button");
-    this.locale.bindObjectProperty(keyModifiers, "textContent", LOCALE_PATH + "keyModifiers.button.title");
-    this.locale.bindObjectProperty(keyModifiers, "title", LOCALE_PATH + "keyModifiers.button.description");
-    
-    keyModifiers.classList.add("synthui_button");
-    keyModifiers.classList.add("main_controller_element");
-    keyModifiers.onclick = () =>
-    {
-        startKeyModifiersMenu(this.synth, this.locale, this.keyboard, this.presetList);
-    };
-    
-    // effectsConfig
-    const effectsConfig = document.createElement("button");
-    this.locale.bindObjectProperty(effectsConfig, "textContent", LOCALE_PATH + "effectsConfig.button.title");
-    this.locale.bindObjectProperty(effectsConfig, "title", LOCALE_PATH + "effectsConfig.button.description");
-    
-    effectsConfig.classList.add("synthui_button");
-    effectsConfig.classList.add("main_controller_element");
-    effectsConfig.onclick = () =>
-    {
-        if (this.effectsConfigWindow !== undefined)
-        {
-            closeNotification(this.effectsConfigWindow);
-            this.effectsConfigWindow = undefined;
-            return;
-        }
-        this.effectsConfigWindow = showEffectsConfigWindow(this.locale, LOCALE_PATH, this.synth).id;
-    };
+    // advanced config
+    const advancedConfigurationButton = document.createElement("button");
+    this.locale.bindObjectProperty(
+        advancedConfigurationButton,
+        "textContent",
+        LOCALE_PATH + "advancedConfiguration.title"
+    );
+    this.locale.bindObjectProperty(
+        advancedConfigurationButton,
+        "title",
+        LOCALE_PATH + "advancedConfiguration.description"
+    );
+    advancedConfigurationButton.classList.add("synthui_button");
+    advancedConfigurationButton.classList.add("main_controller_element");
+    advancedConfigurationButton.onclick = showAdvancedConfiguration.bind(this);
     
     /**
      * interpolation type
@@ -286,9 +258,7 @@ export function createMainSynthController()
     // buttons
     controlsWrapper.appendChild(midiPanicButton);
     controlsWrapper.appendChild(resetCCButton);
-    controlsWrapper.appendChild(highPerfToggle);
-    controlsWrapper.appendChild(keyModifiers);
-    controlsWrapper.appendChild(effectsConfig);
+    controlsWrapper.appendChild(advancedConfigurationButton);
     controlsWrapper.appendChild(interpolation);
     
     /**
@@ -306,9 +276,7 @@ export function createMainSynthController()
     this.mainButtons = [
         midiPanicButton,
         resetCCButton,
-        highPerfToggle,
-        keyModifiers,
-        effectsConfig,
+        advancedConfigurationButton,
         showControllerButton,
         interpolation
     ];

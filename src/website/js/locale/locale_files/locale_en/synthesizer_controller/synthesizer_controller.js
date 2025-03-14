@@ -71,6 +71,11 @@ export const synthesizerControllerLocale = {
         description: "Configure the advanced settings for the synthesizer"
     },
     
+    voiceCap: {
+        title: "Voice cap",
+        description: "The maximum amount of voices allowed to play at once"
+    },
+    
     holdPedalDown: "Hold pedal is down (Shift)",
     channelController: channelControllerLocale,
     effectsConfig: effectsConfig,

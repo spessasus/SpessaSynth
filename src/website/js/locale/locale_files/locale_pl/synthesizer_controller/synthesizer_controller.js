@@ -70,8 +70,12 @@ export const synthesizerControllerLocale = {
         description: "Skonfiguruj zaawansowane ustawienia syntezatora"
     },
     
-    holdPedalDown: "Pedał podtrzymania naciśnięty (Shift)",
+    voiceCap: {
+        title: "Limit głosów",
+        description: "Maksymalna ilość głosów mogąca grać jednocześnie"
+    },
     
+    holdPedalDown: "Pedał podtrzymania naciśnięty (Shift)",
     channelController: channelControllerLocale,
     effectsConfig: effectsConfig,
     keyModifiers: keyModifiers
