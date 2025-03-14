@@ -47,6 +47,10 @@ export function controllerChange(controllerNumber, controllerValue, force = fals
         this.midiControllers[actualCCNum] = (this.midiControllers[actualCCNum] & 0x3F80) | (controllerValue & 0x7F);
         this.voices.forEach(v => computeModulators(v, this.midiControllers, 1, actualCCNum));
     }
+    if (this.lockedControllers[controllerNumber])
+    {
+        return;
+    }
     switch (controllerNumber)
     {
         case midiControllers.allNotesOff:
@@ -180,10 +184,6 @@ export function controllerChange(controllerNumber, controllerValue, force = fals
         
         // default: apply the controller to the table
         default:
-            if (this.lockedControllers[controllerNumber])
-            {
-                return;
-            }
             this.midiControllers[controllerNumber] = controllerValue << 7;
             this.voices.forEach(v => computeModulators(v, this.midiControllers, 1, controllerNumber));
             break;

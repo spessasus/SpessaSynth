@@ -124,7 +124,7 @@ export function resetControllers()
     {
         if (this.lockedControllers[i])
         {
-            return;
+            continue;
         }
         const resetValue = resetArray[i];
         if (this.midiControllers[i] !== resetValue && i < 127)
