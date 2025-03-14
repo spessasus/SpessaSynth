@@ -35,7 +35,13 @@ setResetValue(midiControllers.soundController8, 64);
 setResetValue(midiControllers.soundController9, 64);
 setResetValue(midiControllers.generalPurposeController6, 64);
 setResetValue(midiControllers.generalPurposeController8, 64);
-setResetValue(midiControllers.portamentoControl, 60);
+
+
+// special case: portamento control
+// since it is only 7-bit, only the values at multiple of 128 are allowed.
+// a value of just 1 indicates no key set, hence no portamento.
+// this is the "initial unset portamento key" flag.
+resetArray[midiControllers.portamentoControl] = 1;
 
 // pitch wheel
 setResetValue(NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel, 64);

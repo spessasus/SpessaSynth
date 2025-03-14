@@ -67,7 +67,8 @@ export function noteOn(midiNote, velocity, enableDebugging = false, sendEvent = 
     let portamentoDuration = 0;
     // note: the 14-bit value needs to go down to 7-bit
     const portamentoTime = this.midiControllers[midiControllers.portamentoTime] >> 7;
-    const currentFromKey = this.midiControllers[midiControllers.portamentoControl] >> 7;
+    const control = this.midiControllers[midiControllers.portamentoControl];
+    const currentFromKey = control >> 7;
     if (
         !this.drumChannel && // no portamento on drum channel
         currentFromKey !== sentMidiNote && // if the same note, there's no portamento
@@ -75,9 +76,13 @@ export function noteOn(midiNote, velocity, enableDebugging = false, sendEvent = 
         portamentoTime > 0 // 0 duration is no portamento
     )
     {
-        const diff = Math.abs(sentMidiNote - currentFromKey);
-        portamentoDuration = portamentoTimeToSeconds(portamentoTime, diff);
-        portamentoFromKey = currentFromKey;
+        // a value of one means the initial portamento
+        if (control !== 1)
+        {
+            const diff = Math.abs(sentMidiNote - currentFromKey);
+            portamentoDuration = portamentoTimeToSeconds(portamentoTime, diff);
+            portamentoFromKey = currentFromKey;
+        }
         // set portamento control to previous value
         this.controllerChange(midiControllers.portamentoControl, sentMidiNote);
     }
