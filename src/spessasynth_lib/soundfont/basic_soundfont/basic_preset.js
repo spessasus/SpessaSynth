@@ -93,6 +93,7 @@ export class BasicPreset
         this.presetZones.splice(index, 1);
     }
     
+    // noinspection JSUnusedGlobalSymbols
     /**
      * Preloads all samples (async)
      */
@@ -210,7 +211,7 @@ export class BasicPreset
         
         presetZonesInRange.forEach(zone =>
         {
-            // global zone is already taken into account earlier
+            // the global zone is already taken into account earlier
             if (zone.instrument.instrumentZones.length < 1)
             {
                 return;
@@ -288,7 +289,8 @@ export class BasicPreset
                         m => Modulator.isIdentical(mod, m));
                     if (identicalInstrumentModulator !== -1)
                     {
-                        // sum the amounts (this makes a new modulator because otherwise it would overwrite the one in the soundfont!!!
+                        // sum the amounts
+                        // (this makes a new modulator because otherwise it would overwrite the one in the soundfont!
                         finalModulatorList[identicalInstrumentModulator] = finalModulatorList[identicalInstrumentModulator].sumTransform(
                             mod);
                     }
