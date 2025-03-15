@@ -65,7 +65,7 @@ export class LoadedSample extends BasicSample
             // correct loop points
             this.sampleLoopStartIndex += this.sampleStartIndex / 2;
             this.sampleLoopEndIndex += this.sampleStartIndex / 2;
-            this.sampleLength = 99999999; // set to 999999 before we decode it
+            this.sampleLength = 99999999; // set to 999,999 before we decode it
         }
         this.isDataRaw = isDataRaw;
     }
@@ -121,6 +121,10 @@ export class LoadedSample extends BasicSample
              */
             const vorbis = stbvorbis.decode(buff.buffer);
             this.sampleData = vorbis.data[0];
+            if (this.sampleData === undefined)
+            {
+                SpessaSynthWarn(`Error decoding sample ${this.sampleName}: Vorbis decode returned undefined.`);
+            }
         }
         catch (e)
         {
@@ -138,10 +142,10 @@ export class LoadedSample extends BasicSample
     {
         if (!this.isSampleLoaded)
         {
-            // start loading data if not loaded
+            // start loading data if it is not loaded
             if (this.sampleLength < 1)
             {
-                // eos, do not do anything
+                SpessaSynthWarn(`Invalid sample ${this.sampleName}! Invalid length: ${this.sampleLength}`);
                 return new Float32Array(1);
             }
             
@@ -240,7 +244,7 @@ export function readSamples(sampleHeadersChunk, smplChunkData, isSmplDataRaw = t
  * @param index {number}
  * @param sampleHeaderData {IndexedByteArray}
  * @param smplArrayData {IndexedByteArray|Float32Array}
- * @param isDataRaw {boolean} true means binary 16 bit data, false means float32
+ * @param isDataRaw {boolean} true means binary 16-bit data, false means float32
  * @returns {LoadedSample}
  */
 function readSample(index, sampleHeaderData, smplArrayData, isDataRaw)
@@ -272,7 +276,7 @@ function readSample(index, sampleHeaderData, smplArrayData, isDataRaw)
         samplePitch = 60;
     }
     
-    // readt the sample pitch correction
+    // read the sample pitch correction
     let samplePitchCorrection = signedInt8(sampleHeaderData[sampleHeaderData.currentIndex++]);
     
     

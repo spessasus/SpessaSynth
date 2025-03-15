@@ -388,7 +388,7 @@ export function getWorkletVoices(channel,
     workletVoices = preset.getSamplesAndGenerators(midiNote, velocity)
         .reduce((voices, sampleAndGenerators) =>
         {
-            if (sampleAndGenerators.sample.sampleData === undefined)
+            if (sampleAndGenerators.sample.getAudioData() === undefined)
             {
                 SpessaSynthWarn(`Discarding invalid sample: ${sampleAndGenerators.sample.sampleName}`);
                 return voices;
@@ -432,7 +432,7 @@ export function getWorkletVoices(channel,
              * @type {WorkletSample}
              */
             const workletSample = new WorkletSample(
-                sampleAndGenerators.sample.getAudioData(),
+                sampleAndGenerators.sample.sampleData,
                 (sampleAndGenerators.sample.sampleRate / sampleRate) * Math.pow(
                     2,
                     sampleAndGenerators.sample.samplePitchCorrection / 1200

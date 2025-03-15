@@ -63,12 +63,12 @@ export class BasicSample
          */
         this.sampleType = sampleType;
         /**
-         * Relative to start of the sample in sample points
+         * Relative to the start of the sample in sample points
          * @type {number}
          */
         this.sampleLoopStartIndex = loopStart;
         /**
-         * Relative to start of the sample in sample points
+         * Relative to the start of the sample in sample points
          * @type {number}
          */
         this.sampleLoopEndIndex = loopEnd;
