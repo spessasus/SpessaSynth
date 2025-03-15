@@ -14,7 +14,7 @@ const EFFECT_MODULATOR_TRANSFORM_MULTIPLIER = 1000 / 200;
 
 /**
  * Computes a given modulator
- * @param controllerTable {Int16Array} all midi controllers as 14bit values + the non controller indexes, starting at 128
+ * @param controllerTable {Int16Array} all midi controllers as 14bit values + the non-controller indexes, starting at 128
  * @param modulator {Modulator} the modulator to compute
  * @param voice {WorkletVoice} the voice belonging to the modulator
  * @returns {number} the computed value
@@ -120,7 +120,7 @@ export function computeWorkletModulator(controllerTable, modulator, voice)
 /**
  * Computes modulators of a given voice. Source and index indicate what modulators shall be computed
  * @param voice {WorkletVoice} the voice to compute modulators for
- * @param controllerTable {Int16Array} all midi controllers as 14bit values + the non controller indexes, starting at 128
+ * @param controllerTable {Int16Array} all midi controllers as 14bit values + the non-controller indexes, starting at 128
  * @param sourceUsesCC {number} what modulators should be computed, -1 means all, 0 means modulator source enum 1 means midi controller
  * @param sourceIndex {number} enum for the source
  */
