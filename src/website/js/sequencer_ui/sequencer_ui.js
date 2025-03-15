@@ -528,6 +528,7 @@ class SequencerUI
             "Playback speed",
             getSpeedSvg(ICON_SIZE)
         );
+        this.locale.bindObjectProperty(playbackRateButton, "title", "locale.sequencerController.playbackRate");
         
         const input = document.createElement("input");
         input.type = "number";

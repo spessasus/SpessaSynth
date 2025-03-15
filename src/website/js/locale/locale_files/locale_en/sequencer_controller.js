@@ -4,6 +4,7 @@ export const sequencerControllerLocale = {
     loopThis: "Loop this song",
     playPause: "Play/pause",
     shuffle: "Shuffle songs",
+    playbackRate: "Playback speed",
     lyrics: {
         show: "Show lyrics",
         title: "Decoded text",

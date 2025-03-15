@@ -4,6 +4,7 @@ export const sequencerControllerLocale = {
     loopThis: "Odtwarzaj w pętli",
     playPause: "Odtwórz/wstrzymaj",
     shuffleSongs: "Losowa kolejność",
+    playbackRate: "Prędkość odtwarzania",
     lyrics: {
         show: "Pokaż tekst",
         title: "Odczytany tekst",
