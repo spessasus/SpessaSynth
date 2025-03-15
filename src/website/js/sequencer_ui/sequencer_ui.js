@@ -533,8 +533,10 @@ class SequencerUI
         const input = document.createElement("input");
         input.type = "number";
         input.id = "playback_rate_slider";
-        input.min = "1";
-        input.max = "60";
+        const minSlider = 1;
+        const maxSlider = 60;
+        input.min = minSlider.toString();
+        input.max = maxSlider.toString();
         input.value = "20"; // note about these: 100% and below are incremented by five,
         // while above 100 is incremented by 10
         const playbackRateSlider = createSlider(input, true);
@@ -569,8 +571,19 @@ class SequencerUI
             const num = parseInt(displaySpan.textContent);
             
             const percent = Math.max(1, isNaN(num) ? 1 : num);
-            console.log(percent);
             this.seq.playbackRate = percent / 100;
+            
+            // get the value that the input would have
+            const inputValue = Math.max(minSlider, Math.min(
+                maxSlider,
+                percent > 100 ? (percent - 100) / 10 + 20 : percent / 5
+            ));
+            actualInput.value = inputValue.toString();
+            
+            playbackRateSlider.querySelector(".settings_visual_wrapper").style.setProperty(
+                "--visual-width",
+                `${(inputValue - minSlider) / (maxSlider - minSlider) * 100}%`
+            );
         };
         displaySpan.onblur = () =>
         {
