@@ -26,6 +26,11 @@ export function handleSliders(div)
     }
 }
 
+/**
+ * @param input {HTMLInputElement}
+ * @param showSpan {boolean}
+ * @returns {HTMLDivElement}
+ */
 export function createSlider(input, showSpan = true)
 {
     // main wrapper wraps the visual wrapper and span
@@ -34,7 +39,7 @@ export function createSlider(input, showSpan = true)
     // copy over values to the actual input
     const min = input.getAttribute("min");
     const max = input.getAttribute("max");
-    const current = input.getAttribute("value");
+    const current = input.value;
     const units = input.getAttribute("units");
     const id = input.getAttribute("input_id");
     const htmlInput = document.createElement("input");

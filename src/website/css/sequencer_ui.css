@@ -35,9 +35,15 @@
     cursor: pointer;
 }
 
+#sequencer_controls .control_buttons_wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 #sequencer_controls .control_buttons {
     position: relative;
-    display: inline-block;
+    display: flex;
     transition: all 0.1s ease;
 }
 
@@ -47,6 +53,11 @@
 
 #sequencer_controls .control_buttons:hover {
     cursor: pointer;
+}
+
+#sequencer_controls .playback_rate_slider_wrapper {
+    max-width: 30ch;
+    margin: auto;
 }
 
 #sequencer_controls #note_progress_background {

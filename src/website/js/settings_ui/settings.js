@@ -32,7 +32,7 @@ const niceDelayLookupTable = {
 
 /**
  * settings.js
- * purpose: manages the gui settings, controlling things like render settings, light mode etc.
+ * purpose: manages the gui settings, controlling things like render settings, light mode, etc.
  */
 
 class SpessaSynthSettings
@@ -148,12 +148,12 @@ class SpessaSynthSettings
             this.setVisibility(false);
         });
         
-        // load the html
+        // load the HTML
         this.mainDiv.innerHTML = settingsHtml;
         // load input type range
         handleSliders(this.mainDiv);
         
-        // bind all translations to the html
+        // bind all translations to the HTML
         for (const element of this.mainDiv.querySelectorAll("*[translate-path]"))
         {
             // translate-path apply innerText directly
@@ -359,7 +359,7 @@ class SpessaSynthSettings
     
     getHtmlControls()
     {
-        // get the html controllers
+        // get the HTML controllers
         this.htmlControls = {
             renderer: {
                 noteTimeSlider: document.getElementById("note_time_slider"),

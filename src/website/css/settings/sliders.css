@@ -15,7 +15,7 @@
     --visual-width: 0%;
     display: flex;
     position: relative;
-    margin: 0 1rem 1rem 0;
+    margin: 0 1rem 0 0;
     flex-grow: 1;
     height: var(--track-height);
     transition: all 0.1s;

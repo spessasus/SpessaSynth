@@ -8,6 +8,7 @@ import {
     getPauseSvg,
     getPlaySvg,
     getShuffleSvg,
+    getSpeedSvg,
     getTextSvg
 } from "../utils/icons.js";
 import { messageTypes } from "../../../spessasynth_lib/midi_parser/midi_message.js";
@@ -16,6 +17,7 @@ import { keybinds } from "../utils/keybinds.js";
 import { createNavigatorHandler, updateTitleAndMediaStatus } from "./title_and_media_status.js";
 import { createLyrics, setLyricsText, updateOtherTextEvents } from "./lyrics.js";
 import { RMIDINFOChunks } from "../../../spessasynth_lib/midi_parser/rmidi_writer.js";
+import { createSlider } from "../settings_ui/sliders.js";
 
 /**
  * sequencer_ui.js
@@ -432,6 +434,7 @@ class SequencerUI
         
         // control buttons
         const controlsDiv = document.createElement("div");
+        controlsDiv.classList.add("control_buttons_wrapper");
         
         
         // play pause
@@ -520,6 +523,55 @@ class SequencerUI
         shuffleButton.firstElementChild.setAttribute("fill", this.iconDisabledColor);
         shuffleButton.firstElementChild.setAttribute("stroke", this.iconDisabledColor);
         
+        // playback rate button
+        const playbackRateButton = getSeqUIButton(
+            "Playback speed",
+            getSpeedSvg(ICON_SIZE)
+        );
+        
+        const input = document.createElement("input");
+        input.type = "number";
+        input.id = "playback_rate_slider";
+        input.min = "1";
+        input.max = "60";
+        input.value = "20"; // note about these: 100% and below are incremented by five,
+        // while above 100 is incremented by 10
+        const playbackRateSlider = createSlider(input, true);
+        const playbackRateSliderWrapper = document.createElement("div");
+        playbackRateSliderWrapper.classList.add("playback_rate_slider_wrapper");
+        playbackRateSliderWrapper.appendChild(playbackRateSlider);
+        /**
+         * @type {HTMLInputElement}
+         */
+        const actualInput = playbackRateSlider.firstElementChild.lastElementChild;
+        /**
+         * @type {HTMLSpanElement}
+         */
+        const displaySpan = playbackRateSlider.lastElementChild;
+        displaySpan.textContent = `${this.seq.playbackRate * 100}%`;
+        actualInput.oninput = () =>
+        {
+            const value = parseInt(actualInput.value);
+            const playbackPercent = value > 20 ? (value - 20) * 10 + 100 : value * 5;
+            this.seq.playbackRate = playbackPercent / 100;
+            displaySpan.textContent = `${playbackPercent}%`;
+        };
+        playbackRateSliderWrapper.classList.add("hidden");
+        let sliderShown = false;
+        playbackRateButton.onclick = () =>
+        {
+            sliderShown = !sliderShown;
+            playbackRateSliderWrapper.classList.toggle("hidden");
+            playbackRateButton.firstElementChild.setAttribute(
+                "fill",
+                (sliderShown ? this.iconColor : this.iconDisabledColor)
+            );
+        };
+        playbackRateButton.firstElementChild.setAttribute(
+            "fill",
+            this.iconDisabledColor
+        );
+        
         
         // show text button
         const textButton = getSeqUIButton(
@@ -545,11 +597,13 @@ class SequencerUI
         controlsDiv.appendChild(shuffleButton);      // ><
         controlsDiv.appendChild(playPauseButton);    // ||
         controlsDiv.appendChild(textButton);         // ==
+        controlsDiv.appendChild(playbackRateButton); // >>
         controlsDiv.appendChild(nextSongButton);     // >|
         
         this.controls.appendChild(progressBarBg);
         progressBarBg.appendChild(this.progressBar);
         this.controls.appendChild(this.progressTime);
+        this.controls.appendChild(playbackRateSliderWrapper);
         this.controls.appendChild(controlsDiv);
         
         
