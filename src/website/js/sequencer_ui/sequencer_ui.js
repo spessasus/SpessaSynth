@@ -558,7 +558,7 @@ class SequencerUI
             const value = parseInt(actualInput.value);
             const playbackPercent = value > 20 ? (value - 20) * 10 + 100 : value * 5;
             this.seq.playbackRate = playbackPercent / 100;
-            displaySpan.textContent = `${playbackPercent}%`;
+            displaySpan.textContent = `${Math.round(playbackPercent)}%`;
         };
         displaySpan.onkeydown = e =>
         {
@@ -570,7 +570,11 @@ class SequencerUI
             e.stopImmediatePropagation();
             const num = parseInt(displaySpan.textContent);
             
-            const percent = Math.max(1, isNaN(num) ? 1 : num);
+            let percent = isNaN(num) ? 100 : num;
+            if (percent < 1)
+            {
+                percent = 100;
+            }
             this.seq.playbackRate = percent / 100;
             
             // get the value that the input would have
@@ -587,7 +591,7 @@ class SequencerUI
         };
         displaySpan.onblur = () =>
         {
-            displaySpan.textContent = `${this.seq.playbackRate * 100}%`;
+            displaySpan.textContent = `${Math.round(this.seq.playbackRate * 100)}%`;
         };
         playbackRateSliderWrapper.classList.add("hidden");
         let sliderShown = false;
