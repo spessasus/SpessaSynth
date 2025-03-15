@@ -96,6 +96,8 @@ export class BasicMIDI extends MIDISequenceData
         this.midiPorts = [];
         this.midiPortChannelOffsets = [];
         
+        this.keyRange = { max: 0, min: 127 };
+        
         /**
          * Will be joined with "\n" to form the final string
          * @type {string[]}
