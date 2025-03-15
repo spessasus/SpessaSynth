@@ -60,6 +60,13 @@
     margin: auto;
 }
 
+#sequencer_controls .playback_rate_slider_wrapper span {
+    border: solid white 2px;
+    border-radius: .2rem;
+    padding: .2rem;
+    width: 4rem;
+}
+
 #sequencer_controls #note_progress_background {
     border-radius: var(--progress-bar-height);
     background: linear-gradient(90deg, #454545, #343434);

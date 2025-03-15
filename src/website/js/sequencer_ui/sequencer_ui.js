@@ -549,6 +549,7 @@ class SequencerUI
          * @type {HTMLSpanElement}
          */
         const displaySpan = playbackRateSlider.lastElementChild;
+        displaySpan.contentEditable = "true";
         displaySpan.textContent = `${this.seq.playbackRate * 100}%`;
         actualInput.oninput = () =>
         {
@@ -556,6 +557,24 @@ class SequencerUI
             const playbackPercent = value > 20 ? (value - 20) * 10 + 100 : value * 5;
             this.seq.playbackRate = playbackPercent / 100;
             displaySpan.textContent = `${playbackPercent}%`;
+        };
+        displaySpan.onkeydown = e =>
+        {
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+        };
+        displaySpan.oninput = e =>
+        {
+            e.stopImmediatePropagation();
+            const num = parseInt(displaySpan.textContent);
+            
+            const percent = Math.max(1, isNaN(num) ? 1 : num);
+            console.log(percent);
+            this.seq.playbackRate = percent / 100;
+        };
+        displaySpan.onblur = () =>
+        {
+            displaySpan.textContent = `${this.seq.playbackRate * 100}%`;
         };
         playbackRateSliderWrapper.classList.add("hidden");
         let sliderShown = false;

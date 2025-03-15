@@ -80,7 +80,7 @@ export function render(auto = true, force = false)
     if (this.noteTimes)
     {
         this.drawingContext.textAlign = "start";
-        this.drawingContext.fillText(this.seq.currentTempo + "BPM", 0, 5);
+        this.drawingContext.fillText(this.seq.currentTempo * this.seq.playbackRate + "BPM", 0, 5);
         this.drawingContext.fillText(this.currentTimeSignature, 0, FONT_SIZE + 5);
     }
     
