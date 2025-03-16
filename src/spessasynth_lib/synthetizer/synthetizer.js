@@ -42,6 +42,65 @@ export const DEFAULT_SYNTH_MODE = "gs";
 
 export class Synthetizer
 {
+    
+    /**
+     * Allows setting up custom event listeners for the synthesizer
+     * @type {EventHandler}
+     */
+    eventHandler = new EventHandler();
+    
+    /**
+     * Synthesizer's parent AudioContext instance
+     * @type {BaseAudioContext}
+     */
+    context;
+    
+    /**
+     * Synthesizer's output node
+     * @type {AudioNode}
+     */
+    targetNode;
+    /**
+     * @type {boolean}
+     * @private
+     */
+    _destroyed = false;
+    
+    /**
+     * the new channels will have their audio sent to the moduled output by this constant.
+     * what does that mean?
+     * e.g., if outputsAmount is 16, then channel's 16 audio data will be sent to channel 0
+     * @type {number}
+     * @private
+     */
+    _outputsAmount = MIDI_CHANNEL_COUNT;
+    
+    /**
+     * The current number of MIDI channels the synthesizer has
+     * @type {number}
+     */
+    channelsAmount = this._outputsAmount;
+    
+    /**
+     * Synth's current channel properties
+     * @type {ChannelProperty[]}
+     */
+    channelProperties = [];
+    
+    
+    /**
+     * current synth transposition
+     * @type {number}
+     * @private
+     */
+    _transposition = 0;
+    
+    /**
+     * Channel's transpositions, in semitones
+     * @type {number[]}
+     */
+    channelTranspositions = Array(MIDI_CHANNEL_COUNT).fill(0);
+    
     /**
      * Creates a new instance of the SpessaSynth synthesizer.
      * @param targetNode {AudioNode}
@@ -63,57 +122,23 @@ export class Synthetizer
         const oneOutputMode = startRenderingData?.oneOutput === true;
         
         /**
-         * Allows setting up custom event listeners for the synthesizer
-         * @type {EventHandler}
-         */
-        this.eventHandler = new EventHandler();
-        
-        this._voiceCap = VOICE_CAP;
-        this._destroyed = false;
-        
-        /**
-         * the new channels will have their audio sent to the moduled output by this constant.
-         * what does that mean? e.g., if outputsAmount is 16, then channel's 16 audio data will be sent to channel 0
-         * @type {number}
          * @private
-         */
-        this._outputsAmount = MIDI_CHANNEL_COUNT;
-        
-        /**
-         * the number of midi channels
-         * @type {number}
-         */
-        this.channelsAmount = this._outputsAmount;
-        
-        /**
          * @type {function}
          */
-        this.resolveWhenReady = undefined;
+        this._resolveWhenReady = undefined;
         
         /**
          * Indicates if the synth is fully ready
          * @type {Promise<void>}
          */
-        this.isReady = new Promise(resolve => this.resolveWhenReady = resolve);
+        this.isReady = new Promise(resolve => this._resolveWhenReady = resolve);
         
         
-        /**
-         * individual channel voices amount
-         * @type {ChannelProperty[]}
-         */
-        this.channelProperties = [];
         for (let i = 0; i < this.channelsAmount; i++)
         {
             this.addNewChannel(false);
         }
         this.channelProperties[DEFAULT_PERCUSSION].isDrum = true;
-        this._voicesAmount = 0;
-        
-        /**
-         * For Black MIDI's - forces release time to 50 ms
-         * @type {boolean}
-         */
-        this._highPerformanceMode = false;
         
         // create a worklet processor
         let processorChannelCount = Array(this._outputsAmount + 2).fill(2);
@@ -245,23 +270,25 @@ export class Synthetizer
     }
     
     /**
-     * The maximum number of voices allowed at once.
-     * @returns {number}
+     * current voice amount
+     * @type {number}
+     * @private
      */
-    get voiceCap()
+    _voicesAmount = 0;
+    
+    /**
+     * @returns {number} the current number of voices playing.
+     */
+    get voicesAmount()
     {
-        return this._voiceCap;
+        return this._voicesAmount;
     }
     
     /**
-     * The maximum number of voices allowed at once.
-     * @param value {number}
+     * For Black MIDI's - forces release time to 50 ms
+     * @type {boolean}
      */
-    set voiceCap(value)
-    {
-        this._setMasterParam(masterParameterType.voicesCap, value);
-        this._voiceCap = value;
-    }
+    _highPerformanceMode = false;
     
     get highPerformanceMode()
     {
@@ -282,19 +309,36 @@ export class Synthetizer
     }
     
     /**
+     * @type {number}
+     * @private
+     */
+    _voiceCap = VOICE_CAP;
+    
+    /**
+     * The maximum number of voices allowed at once.
+     * @returns {number}
+     */
+    get voiceCap()
+    {
+        return this._voiceCap;
+    }
+    
+    /**
+     * The maximum number of voices allowed at once.
+     * @param value {number}
+     */
+    set voiceCap(value)
+    {
+        this._setMasterParam(masterParameterType.voicesCap, value);
+        this._voiceCap = value;
+    }
+    
+    /**
      * @returns {number} the audioContext's current time.
      */
     get currentTime()
     {
         return this.context.currentTime;
-    }
-    
-    /**
-     * @returns {number} the current number of voices playing.
-     */
-    get voicesAmount()
-    {
-        return this._voicesAmount;
     }
     
     /**
@@ -377,7 +421,7 @@ export class Synthetizer
                 break;
             
             case returnMessageType.ready:
-                this.resolveWhenReady();
+                this._resolveWhenReady();
                 break;
             
             case returnMessageType.soundfontError:
@@ -422,6 +466,7 @@ export class Synthetizer
             isMuted: false,
             isDrum: false
         });
+        this.channelTranspositions.push(0);
         if (!postMessage)
         {
             return;
@@ -641,6 +686,8 @@ export class Synthetizer
     transpose(semitones)
     {
         this.transposeChannel(ALL_CHANNELS_OR_DIFFERENT_ACTION, semitones, false);
+        this._transposition = semitones;
+        this.channelTranspositions = Array(this.channelsAmount).fill(semitones);
     }
     
     /**
@@ -656,6 +703,11 @@ export class Synthetizer
             messageType: workletMessageType.transpose,
             messageData: [semitones, force]
         });
+        if (!this.channelProperties[channel].isDrum)
+        {
+            semitones += this._transposition;
+        }
+        this.channelTranspositions[channel] = semitones;
     }
     
     /**

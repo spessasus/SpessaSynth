@@ -43,7 +43,13 @@ const server = http.createServer((req, res) =>
             ).searchParams;
             const sfname = urlParams.get("sfname");
             
-            const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+            let configJson = fs.readFileSync(configPath, "utf-8").trim();
+            if (configJson.length < 1)
+            {
+                configJson = "{}";
+            }
+            
+            const config = JSON.parse(configJson);
             config["lastUsedSf2"] = sfname;
             
             fs.writeFile(configPath, JSON.stringify(config), { flag: "w" }, () =>
