@@ -87,20 +87,6 @@ export class Synthetizer
      */
     channelProperties = [];
     
-    
-    /**
-     * current synth transposition
-     * @type {number}
-     * @private
-     */
-    _transposition = 0;
-    
-    /**
-     * Channel's transpositions, in semitones
-     * @type {number[]}
-     */
-    channelTranspositions = Array(MIDI_CHANNEL_COUNT).fill(0);
-    
     /**
      * Creates a new instance of the SpessaSynth synthesizer.
      * @param targetNode {AudioNode}
@@ -464,9 +450,9 @@ export class Synthetizer
             pitchBend: 0,
             pitchBendRangeSemitones: 0,
             isMuted: false,
-            isDrum: false
+            isDrum: false,
+            transposition: 0
         });
-        this.channelTranspositions.push(0);
         if (!postMessage)
         {
             return;
@@ -686,8 +672,6 @@ export class Synthetizer
     transpose(semitones)
     {
         this.transposeChannel(ALL_CHANNELS_OR_DIFFERENT_ACTION, semitones, false);
-        this._transposition = semitones;
-        this.channelTranspositions = Array(this.channelsAmount).fill(semitones);
     }
     
     /**
@@ -703,11 +687,6 @@ export class Synthetizer
             messageType: workletMessageType.transpose,
             messageData: [semitones, force]
         });
-        if (!this.channelProperties[channel].isDrum)
-        {
-            semitones += this._transposition;
-        }
-        this.channelTranspositions[channel] = semitones;
     }
     
     /**
