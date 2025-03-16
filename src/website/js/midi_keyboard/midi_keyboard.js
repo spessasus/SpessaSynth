@@ -63,16 +63,19 @@ class MidiKeyboard
         // connect the synth to keyboard
         this.synth.eventHandler.addEvent("noteon", "keyboard-note-on", e =>
         {
-            this.pressNote(e.midiNote, e.channel, e.velocity);
+            const noteShift = Math.trunc(this.synth.channelProperties[e.channel].transposition);
+            this.pressNote(e.midiNote + noteShift, e.channel, e.velocity);
         });
         
         this.synth.eventHandler.addEvent("noteoff", "keyboard-note-off", e =>
         {
-            this.releaseNote(e.midiNote, e.channel);
+            const noteShift = Math.trunc(this.synth.channelProperties[e.channel].transposition);
+            this.releaseNote(e.midiNote + noteShift, e.channel);
         });
         
         this.synth.eventHandler.addEvent("stopall", "keyboard-stop-all", () =>
         {
+            console.log("stopaall");
             this.clearNotes();
         });
         
@@ -85,6 +88,15 @@ class MidiKeyboard
                     this.releaseNote(i, e.channel);
                 }
             }
+        });
+        
+        this.synth.eventHandler.addEvent("controllerchange", "keyboard-cc-change", e =>
+        {
+            if (e.controllerNumber !== midiControllers.allNotesOff)
+            {
+                return;
+            }
+            this.clearNotes();
         });
     }
     
@@ -337,8 +349,8 @@ class MidiKeyboard
             {
                 clearTimeout(this.sizeChangeAnimationId);
             }
-            // do a cool animation
-            // get height ratio for anumation
+            // do a cool animation here.
+            // get the height ratio for animation
             const computedStyle = getComputedStyle(this.keyboard);
             const currentHeight = parseFloat(computedStyle.getPropertyValue("--current-min-height")
                 .replace(/[^\d.]+/g, ""));
@@ -346,7 +358,7 @@ class MidiKeyboard
             const heightRatio = newHeight / currentHeight;
             const heightDifferencePx = currentHeightPx * heightRatio - currentHeightPx;
             
-            // get key shift ratio for anumation
+            // get the key shift ratio for animation
             const currentCenterKey = (this._keyRange.min + this._keyRange.max) / 2;
             const newCenterKey = (range.min + range.max) / 2;
             

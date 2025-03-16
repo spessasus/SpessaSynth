@@ -24,7 +24,7 @@ export function _handlePointers()
         let velocity;
         if (isMobile)
         {
-            // ignore precise key velocity on mobile (keys are too small anyways)
+            // ignore precise key velocity on mobile (keys are too small anyway)
             velocity = 127;
         }
         else
@@ -124,6 +124,6 @@ export function _handlePointers()
     // touch
     this.keyboard.ontouchstart = moveHandler.bind(this);
     this.keyboard.ontouchend = moveHandler.bind(this);
-    // some fingers may still be pressed so move handler here
+    // some fingers may still be pressed so we move handler here
     this.keyboard.ontouchmove = moveHandler.bind(this);
 }
