@@ -337,8 +337,8 @@ class MidiKeyboard
             {
                 clearTimeout(this.sizeChangeAnimationId);
             }
-            // do a cool animation
-            // get height ratio for anumation
+            // do a cool animation here.
+            // get the height ratio for animation
             const computedStyle = getComputedStyle(this.keyboard);
             const currentHeight = parseFloat(computedStyle.getPropertyValue("--current-min-height")
                 .replace(/[^\d.]+/g, ""));
@@ -346,7 +346,7 @@ class MidiKeyboard
             const heightRatio = newHeight / currentHeight;
             const heightDifferencePx = currentHeightPx * heightRatio - currentHeightPx;
             
-            // get key shift ratio for anumation
+            // get the key shift ratio for animation
             const currentCenterKey = (this._keyRange.min + this._keyRange.max) / 2;
             const newCenterKey = (range.min + range.max) / 2;
             
