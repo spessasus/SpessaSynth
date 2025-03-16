@@ -37,7 +37,7 @@ class SynthetizerUI
         this.locale = localeManager;
         this.hideOnDocClick = true;
         /**
-         * For closing the effects window when closing the synthui
+         * For closing the effect window when closing the synthui
          * @type {undefined|number}
          */
         this.effectsConfigWindow = undefined;
@@ -109,13 +109,10 @@ class SynthetizerUI
             {
                 controller.voiceMeter.update(controller.voiceMeter.currentValue, true);
                 controller.pitchWheel.update(controller.pitchWheel.currentValue, true);
-                controller.pan.update(controller.pan.currentValue, true);
-                controller.volume.update(controller.volume.currentValue, true);
-                controller.expression.update(controller.expression.currentValue, true);
-                controller.mod.update(controller.mod.currentValue, true);
-                controller.chorus.update(controller.chorus.currentValue, true);
-                controller.reverb.update(controller.reverb.currentValue, true);
-                controller.brightness.update(controller.brightness.currentValue, true);
+                for (const meter of Object.values(controller.controllerMeters))
+                {
+                    meter.update(meter.currentValue, true);
+                }
                 controller.transpose.update(controller.transpose.currentValue, true);
             }
         });

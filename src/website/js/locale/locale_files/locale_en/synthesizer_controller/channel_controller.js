@@ -44,9 +44,42 @@ export const channelControllerLocale = {
         description: "The current level of low-pass filter cutoff applied to channel {0} (right-click to lock)"
     },
     
+    resonanceMeter: {
+        title: "Resonance: ",
+        description: "The current resonance (Q) level of the low-pass filter applied to channel {0} (right-click to lock)"
+    },
+    
     transposeMeter: {
         title: "Transpose: ",
         description: "The current transposition (key shift) of channel {0}"
+    },
+    
+    attackMeter: {
+        title: "Attack time: ",
+        description: "The current attack time (speed) of channel {0} (right-click to lock)"
+    },
+    
+    releaseMeter: {
+        title: "Release time: ",
+        description: "The current release time (speed) of channel {0} (right-click to lock)"
+    },
+    
+    portamentoTimeMeter: {
+        title: "Portamento time: ",
+        description: "The current portamento time of channel {0} (right-click to lock). Set to 0 to disable portamento."
+    },
+    
+    portamentoControlMeter: {
+        title: "Portamento control: ",
+        description: "Starting key number to glide from on  channel {0} (you probably don't want to lock this)"
+    },
+    
+    groupSelector: {
+        description: "Select the group of MIDI Controllers to manipulate",
+        effects: "Effects",
+        volumeEnvelope: "Volume Envelope",
+        filter: "Filter",
+        portamento: "Portamento"
     },
     
     presetSelector: {

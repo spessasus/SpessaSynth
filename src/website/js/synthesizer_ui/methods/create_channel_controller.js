@@ -1,20 +1,15 @@
 /**
  * @typedef {{
  *     controller: HTMLDivElement,
+ *     controllerMeters: Object<number, Meter>
  *     voiceMeter: Meter,
  *     pitchWheel: Meter,
- *     pan: Meter,
- *     expression: Meter,
- *     volume: Meter,
- *     mod: Meter,
- *     chorus: Meter,
- *     reverb: Meter,
- *     brightness: Meter,
  *     transpose: Meter,
  *     preset: Selector,
  *     drumsToggle: HTMLDivElement,
  *     soloButton: HTMLDivElement,
- *     muteButton: HTMLDivElement
+ *     muteButton: HTMLDivElement,
+ *     groupSelector: HTMLSelectElement
  * }} ChannelController
  */
 
@@ -51,6 +46,13 @@ export function createChannelController(channelNumber)
     const controller = document.createElement("div");
     controller.classList.add("channel_controller");
     
+    /**
+     * @type {ChannelController}
+     */
+    const channelController = {};
+    channelController.controllerMeters = {};
+    channelController.controller = controller;
+    
     // voice meter
     const voiceMeter = new Meter(
         this.channelColors[channelNumber % this.channelColors.length],
@@ -58,10 +60,12 @@ export function createChannelController(channelNumber)
         this.locale,
         [channelNumber + 1],
         0,
-        100
+        100,
+        0
     );
     voiceMeter.bar.classList.add("voice_meter_bar_smooth");
     controller.appendChild(voiceMeter.div);
+    channelController.voiceMeter = voiceMeter;
     
     // pitch wheel
     const pitchWheel = new Meter(
@@ -71,6 +75,7 @@ export function createChannelController(channelNumber)
         [channelNumber + 1],
         -8192,
         8191,
+        0,
         true,
         val =>
         {
@@ -108,8 +113,8 @@ export function createChannelController(channelNumber)
             false
         )
     );
-    pitchWheel.update(0);
     controller.appendChild(pitchWheel.div);
+    channelController.pitchWheel = pitchWheel;
     
     /**
      * @param cc {number}
@@ -145,12 +150,13 @@ export function createChannelController(channelNumber)
             [channelNumber + 1],
             0,
             127,
+            defaultValue,
             true,
             val => changeCCUserFunction(ccNum, Math.round(val), meter),
             () => this.synth.lockController(channelNumber, ccNum, true),
             () => this.synth.lockController(channelNumber, ccNum, false)
         );
-        meter.update(defaultValue);
+        channelController.controllerMeters[ccNum] = meter;
         return meter;
     };
     
@@ -186,9 +192,41 @@ export function createChannelController(channelNumber)
     const reverb = createCCMeterHelper(midiControllers.reverbDepth, "channelController.reverbMeter", 0);
     controller.appendChild(reverb.div);
     
-    // brightness
-    const brightness = createCCMeterHelper(midiControllers.brightness, "channelController.filterMeter", 64);
-    controller.appendChild(brightness.div);
+    // filter cutoff
+    const filterCutoff = createCCMeterHelper(midiControllers.brightness, "channelController.filterMeter", 64);
+    controller.appendChild(filterCutoff.div);
+    
+    // attack time
+    const attackTime = createCCMeterHelper(midiControllers.attackTime, "channelController.attackMeter", 64);
+    controller.appendChild(attackTime.div);
+    
+    // release time
+    const releaseTime = createCCMeterHelper(midiControllers.releaseTime, "channelController.releaseMeter", 64);
+    controller.appendChild(releaseTime.div);
+    
+    // portamento time
+    const portamentoTime = createCCMeterHelper(
+        midiControllers.portamentoTime,
+        "channelController.portamentoTimeMeter",
+        0
+    );
+    controller.appendChild(portamentoTime.div);
+    
+    // portamento control
+    const portamentoControl = createCCMeterHelper(
+        midiControllers.portamentoControl,
+        "channelController.portamentoControlMeter",
+        60
+    );
+    controller.appendChild(portamentoControl.div);
+    
+    // resonance
+    const filterResonance = createCCMeterHelper(
+        midiControllers.filterResonance,
+        "channelController.resonanceMeter",
+        64
+    );
+    controller.appendChild(filterResonance.div);
     
     // transpose is not a cc, add it manually
     const transpose = new Meter(
@@ -198,6 +236,7 @@ export function createChannelController(channelNumber)
         [channelNumber + 1],
         -36,
         36,
+        0,
         true,
         val =>
         {
@@ -206,8 +245,81 @@ export function createChannelController(channelNumber)
             transpose.update(val);
         }
     );
-    transpose.update(0);
     controller.appendChild(transpose.div);
+    channelController.transpose = transpose;
+    
+    // shown CC group selector
+    const groupSelector = document.createElement("select");
+    groupSelector.classList.add("voice_selector");
+    groupSelector.classList.add("controller_element");
+    this.locale.bindObjectProperty(groupSelector, "title", LOCALE_PATH + "channelController.groupSelector.description");
+    // create all the options
+    for (const option of [
+        "effects",
+        "volumeEnvelope",
+        "filter",
+        "portamento"
+    ])
+    {
+        const optionElement = document.createElement("option");
+        optionElement.value = option;
+        this.locale.bindObjectProperty(
+            optionElement,
+            "textContent",
+            LOCALE_PATH + "channelController.groupSelector." + option
+        );
+        groupSelector.appendChild(optionElement);
+    }
+    const effectControllers = [
+        chorus,
+        reverb
+    ];
+    const envelopeControllers = [
+        attackTime,
+        releaseTime
+    ];
+    const filterControllers = [
+        filterCutoff,
+        filterResonance
+    ];
+    const portamentoControllers = [
+        portamentoTime,
+        portamentoControl
+    ];
+    
+    const hideCCs = ccs => ccs.forEach(cc => cc.div.classList.add("hidden"));
+    const showCCs = ccs => ccs.forEach(cc => cc.div.classList.remove("hidden"));
+    
+    showCCs(effectControllers);
+    hideCCs(portamentoControllers);
+    hideCCs(filterControllers);
+    hideCCs(envelopeControllers);
+    controller.appendChild(groupSelector);
+    groupSelector.onchange = () =>
+    {
+        hideCCs(effectControllers);
+        hideCCs(portamentoControllers);
+        hideCCs(filterControllers);
+        hideCCs(envelopeControllers);
+        switch (groupSelector.value)
+        {
+            case "effects":
+                showCCs(effectControllers);
+                break;
+            
+            case "volumeEnvelope":
+                showCCs(envelopeControllers);
+                break;
+            
+            case "filter":
+                showCCs(filterControllers);
+                break;
+            
+            case "portamento":
+                showCCs(portamentoControllers);
+        }
+    };
+    channelController.groupSelector = groupSelector;
     
     // preset controller
     const presetSelector = new Selector(
@@ -227,6 +339,7 @@ export function createChannelController(channelNumber)
         locked => this.synth.lockController(channelNumber, ALL_CHANNELS_OR_DIFFERENT_ACTION, locked)
     );
     controller.appendChild(presetSelector.mainButton);
+    channelController.preset = presetSelector;
     
     // solo button
     const soloButton = document.createElement("div");
@@ -281,6 +394,7 @@ export function createChannelController(channelNumber)
         }
     };
     controller.appendChild(soloButton);
+    channelController.soloButton = soloButton;
     
     // mute button
     const muteButton = document.createElement("div");
@@ -312,8 +426,8 @@ export function createChannelController(channelNumber)
             muteButton.innerHTML = getMuteSvg(ICON_SIZE);
         }
     };
-    
     controller.appendChild(muteButton);
+    channelController.muteButton = muteButton;
     
     // drums toggle
     const drumsToggle = document.createElement("div");
@@ -336,24 +450,9 @@ export function createChannelController(channelNumber)
         this.synth.setDrums(channelNumber, !this.synth.channelProperties[channelNumber].isDrum);
     };
     controller.appendChild(drumsToggle);
+    channelController.drumsToggle = drumsToggle;
     
-    return {
-        controller: controller,
-        voiceMeter: voiceMeter,
-        pitchWheel: pitchWheel,
-        pan: pan,
-        expression: expression,
-        volume: volume,
-        mod: modulation,
-        chorus: chorus,
-        reverb: reverb,
-        brightness: brightness,
-        preset: presetSelector,
-        drumsToggle: drumsToggle,
-        soloButton: soloButton,
-        muteButton: muteButton,
-        transpose: transpose
-    };
+    return channelController;
     
 }
 

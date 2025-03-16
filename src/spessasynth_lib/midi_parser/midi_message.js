@@ -204,7 +204,7 @@ export const midiControllers = {
     legatoFootswitch: 68,
     hold2Pedal: 69,
     soundVariation: 70,
-    timbreHarmonicContent: 71,
+    filterResonance: 71,
     releaseTime: 72,
     attackTime: 73,
     brightness: 74,

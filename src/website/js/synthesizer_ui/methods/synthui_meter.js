@@ -19,6 +19,7 @@ export class Meter
      * @param localeArgs {string|number[]} args for description
      * @param max {number}
      * @param min {number}
+     * @param initialAndDefault {number}
      * @param editable {boolean} if the meter should be editable with mouse
      * @param editCallback {MeterCallbackFunction}
      * @param lockCallback {function}
@@ -30,6 +31,7 @@ export class Meter
                 localeArgs,
                 min = 0,
                 max = 100,
+                initialAndDefault,
                 editable = false,
                 editCallback = undefined,
                 lockCallback = undefined,
@@ -45,6 +47,7 @@ export class Meter
         this.isLocked = false;
         this.lockCallback = lockCallback;
         this.unlockCallback = unlockCallback;
+        this.defaultValue = initialAndDefault;
         
         /**
          * @type {HTMLDivElement}
@@ -135,6 +138,7 @@ export class Meter
             };
             this.div.classList.add("editable");
         }
+        this.update(initialAndDefault);
     }
     
     lockMeter()
