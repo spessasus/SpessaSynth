@@ -121,7 +121,7 @@ export class Modulator
     }
     
     /**
-     * Sums transform and creates a NEW modulator
+     * Sum transform and create a NEW modulator
      * @param modulator {Modulator}
      * @returns {Modulator}
      */
@@ -289,7 +289,7 @@ const customModulators = [
             midiControllers.releaseTime
         ), // linear forward bipolar cc 72
         dest: generatorTypes.releaseVolEnv,
-        amt: 1200,
+        amt: 3600,
         secSrcEnum: 0x0, // no controller
         transform: 0
     }),
@@ -309,14 +309,14 @@ const customModulators = [
         transform: 0
     }),
     
-    // cc 71 (filter q) to filterq
+    // cc 71 (filter Q) to filter Q
     new Modulator({
         srcEnum: getModSourceEnum(
             modulatorCurveTypes.linear,
             1,
             0,
             1,
-            midiControllers.timbreHarmonicContent
+            midiControllers.filterResonance
         ), // linear forwards bipolar cc 74
         dest: generatorTypes.initialFilterQ,
         amt: 250,
