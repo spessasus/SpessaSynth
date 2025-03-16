@@ -7,6 +7,7 @@ import { setEventListeners } from "./methods/set_event_listeners.js";
 import { keybinds } from "../utils/keybinds.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { closeNotification } from "../notification/notification.js";
+import { midiControllers } from "../../../spessasynth_lib/midi_parser/midi_message.js";
 
 
 export const LOCALE_PATH = "locale.synthesizerController.";
@@ -63,6 +64,7 @@ class SynthetizerUI
         
         this.createMainSynthController();
         this.createChannelControllers();
+        this.showControllerGroup("effects");
         
         document.addEventListener("keydown", e =>
         {
@@ -237,6 +239,66 @@ class SynthetizerUI
                 controller.preset.set(`${list[0].bank}:${list[0].program}`);
             });
         });
+    }
+    
+    /**
+     * @param groupType {"effects"|"portamento"|"volumeEnvelope"|"filter"}
+     */
+    showControllerGroup(groupType)
+    {
+        const effectControllers = [
+            midiControllers.chorusDepth,
+            midiControllers.reverbDepth
+        ];
+        const envelopeControllers = [
+            midiControllers.attackTime,
+            midiControllers.releaseTime
+        ];
+        const filterControllers = [
+            midiControllers.brightness,
+            midiControllers.filterResonance
+        ];
+        const portamentoControllers = [
+            midiControllers.portamentoTime,
+            midiControllers.portamentoControl
+        ];
+        
+        const hideCCs = ccs => ccs.forEach(cc =>
+        {
+            this.controllers.forEach(controller =>
+            {
+                controller.controllerMeters[cc].div.classList.add("hidden");
+            });
+        });
+        const showCCs = ccs => ccs.forEach(cc =>
+        {
+            this.controllers.forEach(controller =>
+            {
+                controller.controllerMeters[cc].div.classList.remove("hidden");
+            });
+        });
+        
+        hideCCs(effectControllers);
+        hideCCs(portamentoControllers);
+        hideCCs(filterControllers);
+        hideCCs(envelopeControllers);
+        switch (groupType)
+        {
+            case "effects":
+                showCCs(effectControllers);
+                break;
+            
+            case "volumeEnvelope":
+                showCCs(envelopeControllers);
+                break;
+            
+            case "filter":
+                showCCs(filterControllers);
+                break;
+            
+            case "portamento":
+                showCCs(portamentoControllers);
+        }
     }
 }
 

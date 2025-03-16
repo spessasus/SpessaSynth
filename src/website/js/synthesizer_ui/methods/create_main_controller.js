@@ -170,6 +170,36 @@ export function createMainSynthController()
     advancedConfigurationButton.classList.add("main_controller_element");
     advancedConfigurationButton.onclick = showAdvancedConfiguration.bind(this);
     
+    
+    // shown CC group selector
+    const groupSelector = document.createElement("select");
+    groupSelector.classList.add("synthui_button");
+    groupSelector.classList.add("main_controller_element");
+    this.locale.bindObjectProperty(groupSelector, "title", LOCALE_PATH + "channelController.groupSelector.description");
+    // create all the options
+    for (const option of [
+        "effects",
+        "volumeEnvelope",
+        "filter",
+        "portamento"
+    ])
+    {
+        const optionElement = document.createElement("option");
+        optionElement.value = option;
+        this.locale.bindObjectProperty(
+            optionElement,
+            "textContent",
+            LOCALE_PATH + "channelController.groupSelector." + option
+        );
+        groupSelector.appendChild(optionElement);
+    }
+    
+    
+    groupSelector.onchange = () =>
+    {
+        this.showControllerGroup(groupSelector.value);
+    };
+    
     /**
      * interpolation type
      * @type {HTMLSelectElement}
@@ -239,6 +269,7 @@ export function createMainSynthController()
     controlsWrapper.appendChild(midiPanicButton);
     controlsWrapper.appendChild(resetCCButton);
     controlsWrapper.appendChild(advancedConfigurationButton);
+    controlsWrapper.appendChild(groupSelector);
     controlsWrapper.appendChild(interpolation);
     
     /**

@@ -8,8 +8,7 @@
  *     preset: Selector,
  *     drumsToggle: HTMLDivElement,
  *     soloButton: HTMLDivElement,
- *     muteButton: HTMLDivElement,
- *     groupSelector: HTMLSelectElement
+ *     muteButton: HTMLDivElement
  * }} ChannelController
  */
 
@@ -247,79 +246,6 @@ export function createChannelController(channelNumber)
     );
     controller.appendChild(transpose.div);
     channelController.transpose = transpose;
-    
-    // shown CC group selector
-    const groupSelector = document.createElement("select");
-    groupSelector.classList.add("voice_selector");
-    groupSelector.classList.add("controller_element");
-    this.locale.bindObjectProperty(groupSelector, "title", LOCALE_PATH + "channelController.groupSelector.description");
-    // create all the options
-    for (const option of [
-        "effects",
-        "volumeEnvelope",
-        "filter",
-        "portamento"
-    ])
-    {
-        const optionElement = document.createElement("option");
-        optionElement.value = option;
-        this.locale.bindObjectProperty(
-            optionElement,
-            "textContent",
-            LOCALE_PATH + "channelController.groupSelector." + option
-        );
-        groupSelector.appendChild(optionElement);
-    }
-    const effectControllers = [
-        chorus,
-        reverb
-    ];
-    const envelopeControllers = [
-        attackTime,
-        releaseTime
-    ];
-    const filterControllers = [
-        filterCutoff,
-        filterResonance
-    ];
-    const portamentoControllers = [
-        portamentoTime,
-        portamentoControl
-    ];
-    
-    const hideCCs = ccs => ccs.forEach(cc => cc.div.classList.add("hidden"));
-    const showCCs = ccs => ccs.forEach(cc => cc.div.classList.remove("hidden"));
-    
-    showCCs(effectControllers);
-    hideCCs(portamentoControllers);
-    hideCCs(filterControllers);
-    hideCCs(envelopeControllers);
-    controller.appendChild(groupSelector);
-    groupSelector.onchange = () =>
-    {
-        hideCCs(effectControllers);
-        hideCCs(portamentoControllers);
-        hideCCs(filterControllers);
-        hideCCs(envelopeControllers);
-        switch (groupSelector.value)
-        {
-            case "effects":
-                showCCs(effectControllers);
-                break;
-            
-            case "volumeEnvelope":
-                showCCs(envelopeControllers);
-                break;
-            
-            case "filter":
-                showCCs(filterControllers);
-                break;
-            
-            case "portamento":
-                showCCs(portamentoControllers);
-        }
-    };
-    channelController.groupSelector = groupSelector;
     
     // preset controller
     const presetSelector = new Selector(
