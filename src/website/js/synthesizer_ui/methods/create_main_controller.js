@@ -125,14 +125,14 @@ export function createMainSynthController()
         {
             if (channel.pitchWheel.isLocked)
             {
-                channel.pitchWheel.lockMeter();
+                channel.pitchWheel.toggleLock();
             }
             // CCs
             for (const meter of Object.values(channel.controllerMeters))
             {
                 if (meter.isLocked)
                 {
-                    meter.lockMeter();
+                    meter.toggleLock();
                 }
             }
             // program
