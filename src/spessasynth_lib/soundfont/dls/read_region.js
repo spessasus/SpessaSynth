@@ -25,11 +25,23 @@ export function readRegion(chunk)
     // region header
     const regionHeader = regionChunks.find(c => c.header === "rgnh");
     // key range
-    const keyMin = readLittleEndian(regionHeader.chunkData, 2);
-    const keyMax = readLittleEndian(regionHeader.chunkData, 2);
+    let keyMin = readLittleEndian(regionHeader.chunkData, 2);
+    let keyMax = readLittleEndian(regionHeader.chunkData, 2);
     // vel range
-    const velMin = readLittleEndian(regionHeader.chunkData, 2);
-    const velMax = readLittleEndian(regionHeader.chunkData, 2);
+    let velMin = readLittleEndian(regionHeader.chunkData, 2);
+    let velMax = readLittleEndian(regionHeader.chunkData, 2);
+    
+    // a fix for not cool files
+    if (velMin === 0 && velMax === 0)
+    {
+        velMax = 127;
+        velMin = 0;
+    }
+    if (keyMin === 0 && keyMax === 0)
+    {
+        keyMax = 127;
+        keyMin = 0;
+    }
     
     const zone = new DLSZone(
         { min: keyMin, max: keyMax },
@@ -51,7 +63,7 @@ export function readRegion(chunk)
     const lar2 = findRIFFListType(regionChunks, "lar2");
     this.readLart(lart, lar2, zone);
     
-    // wsmpl: wave sample chunk
+    // wsmp: wave sample chunk
     zone.isGlobal = false;
     const waveSampleChunk = regionChunks.find(c => c.header === "wsmp");
     // cbSize
@@ -64,7 +76,7 @@ export function readRegion(chunk)
         waveSampleChunk.chunkData[waveSampleChunk.chunkData.currentIndex++]
     );
     
-    // gain correction:  Each unit of gain represents 1/655360 dB
+    // gain correction: Each unit of gain represents 1/655360 dB
     // it is set after linking the sample
     const gainCorrection = readLittleEndian(waveSampleChunk.chunkData, 4);
     // convert to signed and turn into attenuation (invert)
@@ -87,7 +99,7 @@ export function readRegion(chunk)
         // ignore cbSize
         readLittleEndian(waveSampleChunk.chunkData, 4);
         // loop type: loop normally or loop until release (like soundfont)
-        const loopType = readLittleEndian(waveSampleChunk.chunkData, 4); // why is it long???
+        const loopType = readLittleEndian(waveSampleChunk.chunkData, 4); // why is it long?
         if (loopType === 0)
         {
             loopingMode = 1;
@@ -105,13 +117,13 @@ export function readRegion(chunk)
     const waveLinkChunk = regionChunks.find(c => c.header === "wlnk");
     if (waveLinkChunk === undefined)
     {
-        // no wave link = no sample. What? Why is it even here then????
+        // No wave link means no sample. What? Why is it even here then?
         return undefined;
     }
     
     // flags
     readLittleEndian(waveLinkChunk.chunkData, 2);
-    // phasse group
+    // phase group
     readLittleEndian(waveLinkChunk.chunkData, 2);
     // channel
     readLittleEndian(waveLinkChunk.chunkData, 4);

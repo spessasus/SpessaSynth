@@ -7,13 +7,11 @@ export function hideControllers()
     {
         c.voiceMeter.hide();
         c.pitchWheel.hide();
-        c.pan.hide();
-        c.expression.hide();
-        c.volume.hide();
-        c.mod.hide();
-        c.chorus.hide();
-        c.reverb.hide();
-        c.brightness.hide();
+        for (const meter of Object.values(c.controllerMeters))
+        {
+            meter.hide();
+        }
+        c.transpose.hide();
     });
 }
 
@@ -26,12 +24,10 @@ export function showControllers()
     {
         c.voiceMeter.show();
         c.pitchWheel.show();
-        c.pan.show();
-        c.expression.show();
-        c.volume.show();
-        c.mod.show();
-        c.chorus.show();
-        c.reverb.show();
-        c.brightness.show();
+        for (const meter of Object.values(c.controllerMeters))
+        {
+            meter.show();
+        }
+        c.transpose.show();
     });
 }

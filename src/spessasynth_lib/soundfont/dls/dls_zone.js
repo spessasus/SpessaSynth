@@ -82,7 +82,7 @@ export class DLSZone extends BasicInstrumentZone
                 }
             }
         }
-        // correct key if needed
+        // correct the key if needed
         if (sampleKey !== sample.samplePitch)
         {
             this.generators.push(new Generator(generatorTypes.overridingRootKey, sampleKey));

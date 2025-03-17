@@ -53,7 +53,7 @@ export class Selector
         }
         
         /**
-         * @type {HTMLSelectElement}
+         * @type {HTMLButtonElement}
          */
         this.mainButton = document.createElement("button");
         this.mainButton.classList.add("voice_selector");
@@ -184,7 +184,7 @@ export class Selector
         {
             switch (e.key)
             {
-                // on enter, select the selected preset
+                // when enter pressed, select the selected preset
                 case "Enter":
                     const bank = selectedProgram.getAttribute("bank");
                     const program = selectedProgram.getAttribute("program");
@@ -308,7 +308,7 @@ export class Selector
                 {
                     const headerRow = document.createElement("tr");
                     const header = document.createElement("th");
-                    header.colSpan = "3";
+                    header.colSpan = 3;
                     header.textContent = midiPatchNames[lastProgram];
                     headerRow.appendChild(header);
                     table.appendChild(headerRow);
@@ -403,7 +403,7 @@ export class Selector
              * @type {HTMLTableElement}
              */
             const table = this.selectionMenu.getElementsByClassName("voice_selector_table")[0];
-            // find the new selected class
+            // find the newly selected class
             const selectedBank = parseInt(this.value.split(":")[0]);
             const selectedProgram = parseInt(this.value.split(":")[1]);
             for (const row of table.rows)

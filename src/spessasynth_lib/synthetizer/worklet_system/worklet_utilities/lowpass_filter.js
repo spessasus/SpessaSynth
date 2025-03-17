@@ -22,7 +22,7 @@ export class WorkletLowpassFilter
 {
     /**
      * Cached coefficient calculations
-     * stored as cachedCoefficients[reasonanceCb][cutoffCents]
+     * stored as cachedCoefficients[resonanceCb][cutoffCents]
      * @type {CachedCoefficient[][]}
      * @private
      */
@@ -85,7 +85,7 @@ export class WorkletLowpassFilter
      * Resonance in centibels
      * @type {number}
      */
-    reasonanceCb = 0;
+    resonanceCb = 0;
     
     /**
      * Cutoff frequency in cents
@@ -104,17 +104,17 @@ export class WorkletLowpassFilter
      */
     static apply(voice, outputBuffer, cutoffCents, canBeOpen)
     {
-        if (canBeOpen && cutoffCents > 13499 && voice.filter.reasonanceCb === 0)
+        if (canBeOpen && cutoffCents > 13499 && voice.filter.resonanceCb === 0)
         {
             return; // filter is open
         }
         
         const filter = voice.filter;
         // check if the frequency has changed. if so, calculate new coefficients
-        if (filter.cutoffCents !== cutoffCents || filter.reasonanceCb !== voice.modulatedGenerators[generatorTypes.initialFilterQ])
+        if (filter.cutoffCents !== cutoffCents || filter.resonanceCb !== voice.modulatedGenerators[generatorTypes.initialFilterQ])
         {
             filter.cutoffCents = cutoffCents;
-            filter.reasonanceCb = voice.modulatedGenerators[generatorTypes.initialFilterQ];
+            filter.resonanceCb = voice.modulatedGenerators[generatorTypes.initialFilterQ];
             WorkletLowpassFilter.calculateCoefficients(filter);
         }
         
@@ -144,7 +144,7 @@ export class WorkletLowpassFilter
     static calculateCoefficients(filter)
     {
         const cutoffCents = ~~filter.cutoffCents; // Math.floor
-        const qCb = filter.reasonanceCb;
+        const qCb = filter.resonanceCb;
         // check if these coefficients were already cached
         const cached = WorkletLowpassFilter.cachedCoefficients?.[qCb]?.[cutoffCents];
         if (cached !== undefined)
@@ -163,7 +163,7 @@ export class WorkletLowpassFilter
         
         const qDb = qCb / 10;
         // correct the filter gain, like fluid does
-        const reasonanceGain = decibelAttenuationToGain(-1 * (qDb - 3.01)); // -1 because it's attenuation, and we don't want attenuation
+        const resonanceGain = decibelAttenuationToGain(-1 * (qDb - 3.01)); // -1 because it's attenuation, and we don't want attenuation
         
         // reduce the gain by the Q factor (fluid_iir_filter.c line 250)
         const qGain = 1 / Math.sqrt(decibelAttenuationToGain(-qDb));
@@ -172,7 +172,7 @@ export class WorkletLowpassFilter
         // initial filtering code was ported from meltysynth created by sinshu.
         let w = 2 * Math.PI * cutoffHz / sampleRate; // we're in the AudioWorkletGlobalScope so we can use sampleRate
         let cosw = Math.cos(w);
-        let alpha = Math.sin(w) / (2 * reasonanceGain);
+        let alpha = Math.sin(w) / (2 * resonanceGain);
         
         let b1 = (1 - cosw) * qGain;
         let b0 = b1 / 2;

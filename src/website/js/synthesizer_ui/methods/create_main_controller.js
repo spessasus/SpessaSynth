@@ -28,7 +28,8 @@ export function createMainSynthController()
         this.locale,
         [],
         0,
-        VOICE_CAP
+        VOICE_CAP,
+        0
     );
     this.voiceMeter.bar.classList.add("voice_meter_bar_smooth");
     this.voiceMeter.div.classList.add("main_controller_element");
@@ -44,6 +45,7 @@ export function createMainSynthController()
         [],
         0,
         200,
+        100,
         true,
         v =>
         {
@@ -53,7 +55,6 @@ export function createMainSynthController()
     );
     this.volumeController.bar.classList.add("voice_meter_bar_smooth");
     this.volumeController.div.classList.add("main_controller_element");
-    this.volumeController.update(100);
     
     /**
      * Pan controller
@@ -66,6 +67,7 @@ export function createMainSynthController()
         [],
         -1,
         1,
+        0,
         true,
         v =>
         {
@@ -76,7 +78,6 @@ export function createMainSynthController()
     );
     this.panController.bar.classList.add("voice_meter_bar_smooth");
     this.panController.div.classList.add("main_controller_element");
-    this.panController.update(0);
     
     /**
      * Transpose controller
@@ -89,6 +90,7 @@ export function createMainSynthController()
         [],
         -12,
         12,
+        0,
         true,
         v =>
         {
@@ -99,7 +101,6 @@ export function createMainSynthController()
     );
     this.transposeController.bar.classList.add("voice_meter_bar_smooth");
     this.transposeController.div.classList.add("main_controller_element");
-    this.transposeController.update(0);
     
     // note killer
     let midiPanicButton = document.createElement("button");
@@ -122,38 +123,17 @@ export function createMainSynthController()
         // unlock everything
         this.controllers.forEach((channel, number) =>
         {
-            // CCs
             if (channel.pitchWheel.isLocked)
             {
-                channel.pitchWheel.lockMeter();
+                channel.pitchWheel.toggleLock();
             }
-            if (channel.pan.isLocked)
+            // CCs
+            for (const meter of Object.values(channel.controllerMeters))
             {
-                channel.pan.lockMeter();
-            }
-            if (channel.expression.isLocked)
-            {
-                channel.expression.lockMeter();
-            }
-            if (channel.volume.isLocked)
-            {
-                channel.volume.lockMeter();
-            }
-            if (channel.mod.isLocked)
-            {
-                channel.mod.lockMeter();
-            }
-            if (channel.chorus.isLocked)
-            {
-                channel.chorus.lockMeter();
-            }
-            if (channel.reverb.isLocked)
-            {
-                channel.reverb.lockMeter();
-            }
-            if (channel.brightness.isLocked)
-            {
-                channel.brightness.lockMeter();
+                if (meter.isLocked)
+                {
+                    meter.toggleLock();
+                }
             }
             // program
             if (channel.preset.mainButton.classList.contains("locked_selector"))
@@ -189,6 +169,36 @@ export function createMainSynthController()
     advancedConfigurationButton.classList.add("synthui_button");
     advancedConfigurationButton.classList.add("main_controller_element");
     advancedConfigurationButton.onclick = showAdvancedConfiguration.bind(this);
+    
+    
+    // shown CC group selector
+    const groupSelector = document.createElement("select");
+    groupSelector.classList.add("synthui_button");
+    groupSelector.classList.add("main_controller_element");
+    this.locale.bindObjectProperty(groupSelector, "title", LOCALE_PATH + "channelController.groupSelector.description");
+    // create all the options
+    for (const option of [
+        "effects",
+        "volumeEnvelope",
+        "filter",
+        "portamento"
+    ])
+    {
+        const optionElement = document.createElement("option");
+        optionElement.value = option;
+        this.locale.bindObjectProperty(
+            optionElement,
+            "textContent",
+            LOCALE_PATH + "channelController.groupSelector." + option
+        );
+        groupSelector.appendChild(optionElement);
+    }
+    
+    
+    groupSelector.onchange = () =>
+    {
+        this.showControllerGroup(groupSelector.value);
+    };
     
     /**
      * interpolation type
@@ -259,6 +269,7 @@ export function createMainSynthController()
     controlsWrapper.appendChild(midiPanicButton);
     controlsWrapper.appendChild(resetCCButton);
     controlsWrapper.appendChild(advancedConfigurationButton);
+    controlsWrapper.appendChild(groupSelector);
     controlsWrapper.appendChild(interpolation);
     
     /**

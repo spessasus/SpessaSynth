@@ -1,52 +1,85 @@
 export const channelControllerLocale = {
     voiceMeter: {
         title: "Dźwięki: ",
-        description: "Aktualna ilość dźwięków na kanale {0}"
+        description: "Ilość Dźwięków: Aktualna ilość dźwięków na kanale {0}"
     },
     
     pitchBendMeter: {
         title: "Wysokość: ",
-        description: "Aktualna wysokość tonu na kanale {0}"
+        description: "Koło Wysokości: Aktualna wysokość tonu na kanale {0}"
     },
     
     panMeter: {
         title: "Stereo: ",
-        description: "Aktualny efekt stereo na kanale {0} (kliknij prawym aby zablokować)"
+        description: "Poziom Stereo: Aktualny efekt stereo na kanale {0} (kliknij prawym aby zablokować)"
     },
     
     expressionMeter: {
         title: "Ekspresja: ",
-        description: "Aktualna ekspresja (głośnośc) kanału {0} (kliknij prawym aby zablokować)"
+        description: "Poziom Ekspresji: Aktualna ekspresja (głośność) kanału {0} (kliknij prawym aby zablokować)"
     },
     
     volumeMeter: {
         title: "Głośność: ",
-        description: "Aktualna głośność kanału {0} (kliknij prawym aby zablokować)"
+        description: "Poziom Głośności: Aktualna głośność kanału {0} (kliknij prawym aby zablokować)"
     },
     
     modulationWheelMeter: {
         title: "Modulacja: ",
-        description: "Aktualna głębokość modulacji (zazwyczaj vibrato) kanału {0} (kliknij prawym aby zablokować)"
+        description: "Koło Modulacji: Aktualna głębokość modulacji (zazwyczaj vibrato) kanału {0} (kliknij prawym aby zablokować)"
     },
     
     chorusMeter: {
         title: "Chór: ",
-        description: "Aktualny efekt chóru na kanale {0} (kliknij prawym aby zablokować)"
+        description: "Poziom Chóru: Aktualny efekt chóru na kanale {0} (kliknij prawym aby zablokować)"
     },
     
     reverbMeter: {
         title: "Pogłos: ",
-        description: "Aktualny efekt pogłosu na kanale {0} (kliknij prawym aby zablokować)"
+        description: "Poziom Pogłosu: Aktualny efekt pogłosu na kanale {0} (kliknij prawym aby zablokować)"
     },
     
     filterMeter: {
         title: "Filtr: ",
-        description: "Aktualny poziom filtra niskopasmowego na kanale {0} (kliknij prawym aby zablokować)"
+        description: "Poziom Filtra: Aktualny poziom filtra niskopasmowego na kanale {0} (kliknij prawym aby zablokować)"
+    },
+    
+    resonanceMeter: {
+        title: "Rezonans: ",
+        description: "Rezonans Filtra: Aktualny poziom rezonansu (Q) filtra dolnoprzepustowego zastosowanego do kanału {0} (kliknij prawym, aby zablokować)"
+    },
+    
+    attackMeter: {
+        title: "Atak: ",
+        description: "Czas Ataku: Aktualny czas ataku (szybkość) kanału {0} (kliknij prawym, aby zablokować)"
+    },
+    
+    releaseMeter: {
+        title: "Zwolnienie: ",
+        description: "Czas Zwolnienia: Aktualny czas zwolnienia (szybkość) kanału {0} (kliknij prawym, aby zablokować)"
+    },
+    
+    portamentoTimeMeter: {
+        title: "Czas Porta.: ",
+        description: "Czas Portamento: Aktualny czas portamento kanału {0} (kliknij prawym, aby zablokować). Ustaw na 0, aby wyłączyć portamento."
+    },
+    
+    portamentoControlMeter: {
+        title: "Kont. Porta.: ",
+        description: "Kontrola Portamento: Numer klawisza początkowego do glissanda na kanale {0} (prawdopodobnie nie chcesz tego zablokować)"
+    },
+    
+    groupSelector: {
+        description: "Wybierz grupę kontrolerów MIDI do manipulacji",
+        effects: "Efekty",
+        volumeEnvelope: "Obwiednia Głośności",
+        filter: "Filtr",
+        portamento: "Portamento"
     },
     
     transposeMeter: {
         title: "Transpozycja: ",
-        description: "Aktualna transpozycja (przesunięcie klawiszy) kanału {0}"
+        description: "Transpozycja kanału: Aktualna transpozycja (przesunięcie klawiszy) kanału {0}"
     },
     
     presetSelector: {
