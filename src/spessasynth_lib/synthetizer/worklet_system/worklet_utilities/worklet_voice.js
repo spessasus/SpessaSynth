@@ -120,7 +120,7 @@ class WorkletVoice
      * Lowpass filter applied to the voice.
      * @type {WorkletLowpassFilter}
      */
-    filter;
+    filter = new WorkletLowpassFilter();
     
     /**
      * The unmodulated (copied to) generators of the voice.
@@ -263,7 +263,6 @@ class WorkletVoice
      * @param realKey {number}
      * @param generators {Int16Array}
      * @param modulators {Modulator[]}
-     * @param filterSmoothing {number}
      */
     constructor(
         sampleRate,
@@ -275,15 +274,13 @@ class WorkletVoice
         targetKey,
         realKey,
         generators,
-        modulators,
-        filterSmoothing
+        modulators
     )
     {
         this.sample = workletSample;
         this.generators = generators;
         this.modulatedGenerators = new Int16Array(generators);
         this.modulators = modulators;
-        this.filter = new WorkletLowpassFilter(filterSmoothing);
         
         this.velocity = velocity;
         this.midiNote = midiNote;
@@ -323,8 +320,7 @@ class WorkletVoice
             voice.targetKey,
             voice.realKey,
             voice.generators,
-            voice.modulators.map(m => Modulator.copy(m)),
-            voice.filter.smoothingFactor
+            voice.modulators.map(m => Modulator.copy(m))
         );
     }
     

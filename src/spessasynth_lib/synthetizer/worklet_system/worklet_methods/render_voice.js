@@ -183,7 +183,7 @@ export function renderVoice(
      * filter cannot use this optimization if it's dynamic (see #53)
      *, and the filter can only be dynamic if the initial filter is not open
      */
-    WorkletLowpassFilter.apply(voice, bufferOut, lowpassCents, initialFc > 13499);
+    WorkletLowpassFilter.apply(voice, bufferOut, lowpassCents, initialFc > 13499, this.synth.filterSmoothingFactor);
     
     // vol env
     WorkletVolumeEnvelope.apply(voice, bufferOut, modLfoCentibels, this.synth.volumeEnvelopeSmoothingFactor);

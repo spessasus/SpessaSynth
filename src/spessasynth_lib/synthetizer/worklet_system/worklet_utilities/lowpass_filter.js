@@ -102,19 +102,6 @@ export class WorkletLowpassFilter
      */
     targetCutoff = 13501;
     
-    /**
-     * Filter's cutoff frequency smoothing factor
-     * @type {number}
-     */
-    smoothingFactor;
-    
-    /**
-     * @param smoothing {number}
-     */
-    constructor(smoothing)
-    {
-        this.smoothingFactor = smoothing;
-    }
     
     /**
      * Applies a low-pass filter to the given buffer
@@ -123,8 +110,9 @@ export class WorkletLowpassFilter
      * @param cutoffCents {number} cutoff frequency in cents
      * @param canBeOpen {boolean} indicates if the filter can be open.
      * See the comment in voice_control for details
+     * @param smoothingFactor {number} filter's cutoff frequency smoothing factor
      */
-    static apply(voice, outputBuffer, cutoffCents, canBeOpen)
+    static apply(voice, outputBuffer, cutoffCents, canBeOpen, smoothingFactor)
     {
         if (canBeOpen && cutoffCents > 13499 && voice.filter.resonanceCb === 0)
         {
@@ -136,7 +124,7 @@ export class WorkletLowpassFilter
         const filter = voice.filter;
         filter.targetCutoff = cutoffCents;
         // smooth out filter
-        filter.currentCutoffCents += (filter.targetCutoff - filter.currentCutoffCents) * filter.smoothingFactor;
+        filter.currentCutoffCents += (filter.targetCutoff - filter.currentCutoffCents) * smoothingFactor;
         const modulatedResonance = voice.modulatedGenerators[generatorTypes.initialFilterQ];
         // check if the frequency has changed. if so, calculate new coefficients
         if (Math.abs(filter.currentCutoffCents - filter.targetCutoff) > 1 || filter.resonanceCb !== modulatedResonance)
