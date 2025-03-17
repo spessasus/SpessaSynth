@@ -97,6 +97,19 @@ export function createMainSynthController()
             // limit to half semitone precision
             this.synth.transpose(Math.round(v * 2) / 2);
             this.transposeController.update(Math.round(v * 2) / 2);
+        },
+        undefined,
+        undefined,
+        active =>
+        {
+            if (active)
+            {
+                this.controllers.forEach(c => c.controller.classList.add("hidden"));
+            }
+            else
+            {
+                this.controllers.forEach(c => c.controller.classList.remove("hidden"));
+            }
         }
     );
     this.transposeController.bar.classList.add("voice_meter_bar_smooth");

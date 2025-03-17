@@ -63,16 +63,19 @@ class MidiKeyboard
         // connect the synth to keyboard
         this.synth.eventHandler.addEvent("noteon", "keyboard-note-on", e =>
         {
-            this.pressNote(e.midiNote, e.channel, e.velocity);
+            const noteShift = Math.trunc(this.synth.channelProperties[e.channel].transposition);
+            this.pressNote(e.midiNote + noteShift, e.channel, e.velocity);
         });
         
         this.synth.eventHandler.addEvent("noteoff", "keyboard-note-off", e =>
         {
-            this.releaseNote(e.midiNote, e.channel);
+            const noteShift = Math.trunc(this.synth.channelProperties[e.channel].transposition);
+            this.releaseNote(e.midiNote + noteShift, e.channel);
         });
         
         this.synth.eventHandler.addEvent("stopall", "keyboard-stop-all", () =>
         {
+            console.log("stopaall");
             this.clearNotes();
         });
         
@@ -85,6 +88,15 @@ class MidiKeyboard
                     this.releaseNote(i, e.channel);
                 }
             }
+        });
+        
+        this.synth.eventHandler.addEvent("controllerchange", "keyboard-cc-change", e =>
+        {
+            if (e.controllerNumber !== midiControllers.allNotesOff)
+            {
+                return;
+            }
+            this.clearNotes();
         });
     }
     

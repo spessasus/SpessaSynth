@@ -35,13 +35,18 @@ export function computeNotePositions(renderImmediately = false)
         if (this.showVisualPitch)
         {
             const bend = channel.pitchBend - 8192 + this.visualPitchBendOffset; // -8192 to 8192
-            pitchBendXShift.push((channel.pitchBendRangeSemitones * ((bend / 8192) * keyStep)));
+            const pixelShift = (channel.pitchBendRangeSemitones * ((bend / 8192))) * keyStep;
+            pitchBendXShift.push(pixelShift);
         }
         else
         {
             pitchBendXShift.push(0);
         }
     });
+    /**
+     * @type {number[]}
+     */
+    const transposeNoteShifts = this.synth.channelProperties.map(c => this.showVisualPitch ? c.transposition : 0);
     /**
      * @type {NoteToRender[]}
      */
@@ -76,7 +81,7 @@ export function computeNotePositions(renderImmediately = false)
             {
                 let noteHeight = ((note.length / fallingTimeSeconds) * canvasHeight) - (NOTE_MARGIN * 2);
                 
-                // height less than that can be ommitted (come on)
+                // height less than that can be omitted (come on)
                 if (this.notesOnScreen < 1000 || noteHeight > minNoteHeight)
                 {
                     if (firstNoteIndex === -1)
@@ -104,13 +109,14 @@ export function computeNotePositions(renderImmediately = false)
                         note = notes[noteIndex];
                         continue;
                     }
-                    const correctedNote = note.midiNote - this.keyRange.min;
+                    const correctedNote = note.midiNote - this.keyRange.min + transposeNoteShifts[channelNumder];
                     let noteX = keyStep * correctedNote + NOTE_MARGIN;
+                    
                     
                     let finalX, finalY, finalWidth, finalHeight;
                     if (this.sideways)
                     {
-                        // add noinspection since we want to inverse positons
+                        // add noinspection since we want to inverse positions
                         // noinspection JSSuspiciousNameCombination
                         finalX = noteY;
                         // noinspection JSSuspiciousNameCombination
@@ -146,11 +152,11 @@ export function computeNotePositions(renderImmediately = false)
                     {
                         let color;
                         // save the notes to draw
-                        // determine if notes are active or not (i.e. currently playing)
+                        // determine if notes are active or not (i.e., currently playing)
                         // not active notes
                         if ((note.start > currentSeqTime || noteSum < currentSeqTime))
                         {
-                            // this note is not presed
+                            // this note is not pressed
                             if (this.sideways)
                             {
                                 if (this.drawActiveNotes)
@@ -177,7 +183,7 @@ export function computeNotePositions(renderImmediately = false)
                                 width: finalWidth,
                                 stroke: STROKE_THICKNESS,
                                 pressedProgress: 0, // not pressed
-                                velocity: note.velocity, // VELOCITY IS MAPPED FROM 0 TO 1!!!!
+                                velocity: note.velocity, // VELOCITY IS MAPPED FROM 0 TO 1!
                                 // if we ignore drawing active notes, draw those with regular colors
                                 color: color
                             });

@@ -1,4 +1,5 @@
 import { customControllers } from "../../worklet_utilities/controller_tables.js";
+import { midiControllers } from "../../../../midi_parser/midi_message.js";
 
 /**
  * Transposes the channel by given amount of semitones
@@ -23,9 +24,11 @@ export function transposeChannel(semitones, force = false)
     }
     if (keyShift !== this.channelTransposeKeyShift)
     {
-        this.stopAllNotes(false);
+        // stop all (and emit cc change)
+        this.controllerChange(midiControllers.allNotesOff, 127);
     }
     // apply transpose
     this.channelTransposeKeyShift = keyShift;
     this.customControllers[customControllers.channelTransposeFine] = (semitones - keyShift) * 100;
+    this.synth.sendChannelProperties();
 }

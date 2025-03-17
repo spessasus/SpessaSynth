@@ -59,7 +59,12 @@ export function serveSfontList(res)
 {
     const fileNames = fs.readdirSync(soundfontsPath).filter(fName => isSoundFont(fName));
     
-    const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+    let configJson = fs.readFileSync(configPath, "utf-8").trim();
+    if (configJson.length < 1)
+    {
+        configJson = "{}";
+    }
+    const config = JSON.parse(configJson);
     if (config["lastUsedSf2"])
     {
         if (fileNames.includes(config["lastUsedSf2"]))
@@ -87,7 +92,12 @@ export function serveSfontList(res)
  */
 export function serveSettings(res)
 {
-    const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+    let configJson = fs.readFileSync(configPath, "utf-8").trim();
+    if (configJson.length < 1)
+    {
+        configJson = "{}";
+    }
+    const config = JSON.parse(configJson);
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify(config.settings || {}));
 }
