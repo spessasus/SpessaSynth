@@ -7,6 +7,7 @@ import { setEventListeners } from "./methods/set_event_listeners.js";
 import { keybinds } from "../utils/keybinds.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { closeNotification } from "../notification/notification.js";
+import { midiControllers } from "../../../spessasynth_lib/midi_parser/midi_message.js";
 
 
 export const LOCALE_PATH = "locale.synthesizerController.";
@@ -37,7 +38,7 @@ class SynthetizerUI
         this.locale = localeManager;
         this.hideOnDocClick = true;
         /**
-         * For closing the effects window when closing the synthui
+         * For closing the effect window when closing the synthui
          * @type {undefined|number}
          */
         this.effectsConfigWindow = undefined;
@@ -63,6 +64,7 @@ class SynthetizerUI
         
         this.createMainSynthController();
         this.createChannelControllers();
+        this.showControllerGroup("effects");
         
         document.addEventListener("keydown", e =>
         {
@@ -109,13 +111,10 @@ class SynthetizerUI
             {
                 controller.voiceMeter.update(controller.voiceMeter.currentValue, true);
                 controller.pitchWheel.update(controller.pitchWheel.currentValue, true);
-                controller.pan.update(controller.pan.currentValue, true);
-                controller.volume.update(controller.volume.currentValue, true);
-                controller.expression.update(controller.expression.currentValue, true);
-                controller.mod.update(controller.mod.currentValue, true);
-                controller.chorus.update(controller.chorus.currentValue, true);
-                controller.reverb.update(controller.reverb.currentValue, true);
-                controller.brightness.update(controller.brightness.currentValue, true);
+                for (const meter of Object.values(controller.controllerMeters))
+                {
+                    meter.update(meter.currentValue, true);
+                }
                 controller.transpose.update(controller.transpose.currentValue, true);
             }
         });
@@ -240,6 +239,66 @@ class SynthetizerUI
                 controller.preset.set(`${list[0].bank}:${list[0].program}`);
             });
         });
+    }
+    
+    /**
+     * @param groupType {"effects"|"portamento"|"volumeEnvelope"|"filter"}
+     */
+    showControllerGroup(groupType)
+    {
+        const effectControllers = [
+            midiControllers.chorusDepth,
+            midiControllers.reverbDepth
+        ];
+        const envelopeControllers = [
+            midiControllers.attackTime,
+            midiControllers.releaseTime
+        ];
+        const filterControllers = [
+            midiControllers.brightness,
+            midiControllers.filterResonance
+        ];
+        const portamentoControllers = [
+            midiControllers.portamentoTime,
+            midiControllers.portamentoControl
+        ];
+        
+        const hideCCs = ccs => ccs.forEach(cc =>
+        {
+            this.controllers.forEach(controller =>
+            {
+                controller.controllerMeters[cc].div.classList.add("hidden");
+            });
+        });
+        const showCCs = ccs => ccs.forEach(cc =>
+        {
+            this.controllers.forEach(controller =>
+            {
+                controller.controllerMeters[cc].div.classList.remove("hidden");
+            });
+        });
+        
+        hideCCs(effectControllers);
+        hideCCs(portamentoControllers);
+        hideCCs(filterControllers);
+        hideCCs(envelopeControllers);
+        switch (groupType)
+        {
+            case "effects":
+                showCCs(effectControllers);
+                break;
+            
+            case "volumeEnvelope":
+                showCCs(envelopeControllers);
+                break;
+            
+            case "filter":
+                showCCs(filterControllers);
+                break;
+            
+            case "portamento":
+                showCCs(portamentoControllers);
+        }
     }
 }
 

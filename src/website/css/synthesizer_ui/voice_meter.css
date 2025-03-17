@@ -17,7 +17,6 @@
     height: 100%;
     margin-top: auto;
     background-color: var(--primary-color);
-    border-radius: var(--notification-border-radius);
 }
 
 .voice_meter_light_color {
@@ -49,5 +48,11 @@
 }
 
 .locked_meter {
+    border-radius: 0 !important;
+}
+
+.locked_meter p {
+    font-weight: bold;
+    font-style: italic;
     color: red;
 }

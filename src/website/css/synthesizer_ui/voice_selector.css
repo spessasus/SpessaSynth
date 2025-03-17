@@ -10,6 +10,10 @@
     overflow: hidden;
 }
 
+select.voice_selector {
+    text-overflow: ellipsis;
+}
+
 .voice_selector_light {
     border: #111 1px solid;
     background: linear-gradient(170deg, #bbb, #fff);

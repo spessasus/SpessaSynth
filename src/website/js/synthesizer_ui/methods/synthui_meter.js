@@ -19,6 +19,7 @@ export class Meter
      * @param localeArgs {string|number[]} args for description
      * @param max {number}
      * @param min {number}
+     * @param initialAndDefault {number}
      * @param editable {boolean} if the meter should be editable with mouse
      * @param editCallback {MeterCallbackFunction}
      * @param lockCallback {function}
@@ -30,6 +31,7 @@ export class Meter
                 localeArgs,
                 min = 0,
                 max = 100,
+                initialAndDefault,
                 editable = false,
                 editCallback = undefined,
                 lockCallback = undefined,
@@ -45,6 +47,7 @@ export class Meter
         this.isLocked = false;
         this.lockCallback = lockCallback;
         this.unlockCallback = unlockCallback;
+        this.defaultValue = initialAndDefault;
         
         /**
          * @type {HTMLDivElement}
@@ -92,7 +95,7 @@ export class Meter
                 else
                 {
                     // other, lock it
-                    this.lockMeter();
+                    this.toggleLock();
                 }
             };
             this.div.onmousemove = e =>
@@ -106,6 +109,10 @@ export class Meter
                 const width = bounds.width;
                 const relative = e.clientX - relativeLeft;
                 const percentage = Math.max(0, Math.min(1, relative / width));
+                if (!this.isLocked || isMobile)
+                {
+                    this.toggleLock();
+                }
                 editCallback(percentage * (max - min) + min);
             };
             this.div.onmouseup = () => this.isActive = false;
@@ -128,16 +135,13 @@ export class Meter
                 this.isActive = true;
                 this.div.onmousemove(e);
                 this.isActive = false;
-                if (isMobile)
-                {
-                    this.lockMeter();
-                }
             };
             this.div.classList.add("editable");
         }
+        this.update(initialAndDefault);
     }
     
-    lockMeter()
+    toggleLock()
     {
         if (this.lockCallback === undefined)
         {
@@ -146,12 +150,12 @@ export class Meter
         }
         if (this.isLocked)
         {
-            this.text.classList.remove("locked_meter");
+            this.div.classList.remove("locked_meter");
             this.unlockCallback();
         }
         else
         {
-            this.text.classList.add("locked_meter");
+            this.div.classList.add("locked_meter");
             this.lockCallback();
         }
         this.isLocked = !this.isLocked;

@@ -30,23 +30,23 @@ export const synthesizerControllerLocale = {
     
     mainTransposeMeter: {
         title: "Transpose: ",
-        description: "Transposes the synthesizer (in semitones or keys)"
+        description: "Transpose: Transposes the synthesizer (in semitones or keys)"
     },
     
     // buttons
     midiPanic: {
         title: "MIDI Panic",
-        description: "Stops all voices immediately"
+        description: "MIDI Panic: Stops all voices immediately"
     },
     
     systemReset: {
-        title: "System reset",
-        description: "Resets all controllers to their default values"
+        title: "Reset Controllers",
+        description: "Reset Controllers: Resets all MIDI controllers to their default values"
     },
     
     blackMidiMode: {
         title: "Black MIDI mode",
-        description: "Toggles the High Performance Mode, simplifying the look and killing the notes faster"
+        description: "Transpose: Toggles the High Performance Mode, simplifying the look and killing the notes faster"
     },
     
     disableCustomVibrato: {
@@ -56,7 +56,7 @@ export const synthesizerControllerLocale = {
     
     helpButton: {
         title: "Help",
-        description: "Opens an external website with the usage guide"
+        description: "Help: Opens an external website with the usage guide"
     },
     
     interpolation: {

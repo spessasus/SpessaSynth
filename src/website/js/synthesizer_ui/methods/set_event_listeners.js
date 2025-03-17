@@ -1,4 +1,3 @@
-import { midiControllers } from "../../../../spessasynth_lib/midi_parser/midi_message.js";
 import { getDrumsSvg, getNoteSvg } from "../../utils/icons.js";
 
 /**
@@ -17,14 +16,10 @@ export function setEventListeners()
     {
         for (const controller of this.controllers)
         {
-            controller.pan.update(64);
-            controller.mod.update(0);
-            controller.chorus.update(0);
-            controller.pitchWheel.update(0);
-            controller.expression.update(127);
-            controller.volume.update(100);
-            controller.reverb.update(0);
-            controller.brightness.update(64);
+            for (const meter of Object.values(controller.controllerMeters))
+            {
+                meter.update(meter.defaultValue);
+            }
         }
     });
     
@@ -38,44 +33,10 @@ export function setEventListeners()
         {
             return;
         }
-        switch (controller)
+        const meter = con.controllerMeters[controller];
+        if (meter !== undefined)
         {
-            default:
-                break;
-            
-            case midiControllers.expressionController:
-                // expression
-                con.expression.update(value);
-                break;
-            
-            case midiControllers.mainVolume:
-                // volume
-                con.volume.update(value);
-                break;
-            
-            case midiControllers.pan:
-                // pan
-                con.pan.update(value);
-                break;
-            
-            case midiControllers.modulationWheel:
-                // mod wheel
-                con.mod.update(value);
-                break;
-            
-            case midiControllers.chorusDepth:
-                // chorus
-                con.chorus.update(value);
-                break;
-            
-            case midiControllers.reverbDepth:
-                // reverb
-                con.reverb.update(value);
-                break;
-            
-            case midiControllers.brightness:
-                // brightness
-                con.brightness.update(value);
+            meter.update(value);
         }
     });
     
