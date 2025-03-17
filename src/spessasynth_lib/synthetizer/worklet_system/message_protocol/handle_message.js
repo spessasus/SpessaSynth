@@ -47,7 +47,8 @@ export function handleMessage(message)
         
         case workletMessageType.customcCcChange:
             // custom controller change
-            channelObject.customControllers[data[0]] = data[1];
+            channelObject.setCustomController(data[0], data[1]);
+            channelObject.updateChannelTuning();
             break;
         
         case workletMessageType.killNote:

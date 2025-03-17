@@ -146,7 +146,7 @@ export function resetControllers()
     // special case: transpose does not get affected
     const transpose = this.customControllers[customControllers.channelTransposeFine];
     this.customControllers.set(customResetArray);
-    this.customControllers[customControllers.channelTransposeFine] = transpose;
+    this.setCustomController(customControllers.channelTransposeFine, transpose);
     
     this.resetParameters();
     

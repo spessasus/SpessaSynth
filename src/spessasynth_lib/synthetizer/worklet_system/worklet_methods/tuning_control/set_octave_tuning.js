@@ -11,5 +11,9 @@ export function setOctaveTuning(tuning)
     {
         throw new Error("Tuning is not the length of 12.");
     }
-    this.channelOctaveTuning = tuning;
+    this.channelOctaveTuning = new Int8Array(128);
+    for (let i = 0; i < 128; i++)
+    {
+        this.channelOctaveTuning[i] = tuning[i % 12];
+    }
 }

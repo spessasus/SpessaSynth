@@ -26,11 +26,13 @@ export function renderVoice(
     chorusOutputLeft, chorusOutputRight
 )
 {
+    // avoid jetbrains errors
+    const timeNow = currentTime;
     // check if release
     if (!voice.isInRelease)
     {
         // if not in release, check if the release time is
-        if (currentTime >= voice.releaseStartTime)
+        if (timeNow >= voice.releaseStartTime)
         {
             // release the voice here
             voice.isInRelease = true;
@@ -58,18 +60,15 @@ export function renderVoice(
     let targetKey = voice.targetKey;
     
     // calculate tuning
-    let cents = voice.modulatedGenerators[generatorTypes.fineTune]             // soundfont fine tune
-        + this.customControllers[customControllers.channelTuning]           // RPN channel fine tuning
-        + this.customControllers[customControllers.channelTransposeFine]    // custom tuning (synth.transpose)
-        + this.customControllers[customControllers.masterTuning]            // master tuning, set by sysEx
-        + this.channelOctaveTuning[voice.midiNote % 12]                     // MTS octave tuning
-        + this.keyCentTuning[voice.midiNote];                           // SysEx key tuning
-    let semitones = voice.modulatedGenerators[generatorTypes.coarseTune]       // soundfont coarse tuning
-        + this.customControllers[customControllers.channelTuningSemitones]; // RPN channel coarse tuning
+    let cents = voice.modulatedGenerators[generatorTypes.fineTune]         // soundfont fine tune
+        + this.channelOctaveTuning[voice.midiNote]                         // MTS octave tuning
+        + this.keyCentTuning[voice.midiNote]                               // SysEx key tuning
+        + this.channelTuningCents;                                         // channel tuning
+    let semitones = voice.modulatedGenerators[generatorTypes.coarseTune];  // soundfont coarse tuning
     
     // midi tuning standard
     const tuning = this.synth.tunings[this.preset.program]?.[voice.realKey];
-    if (tuning?.midiNote >= 0)
+    if (tuning !== undefined && tuning?.midiNote >= 0)
     {
         // override key
         targetKey = tuning.midiNote;
@@ -81,7 +80,7 @@ export function renderVoice(
     if (voice.portamentoFromKey > -1)
     {
         // 0 to 1
-        const elapsed = Math.min((currentTime - voice.startTime) / voice.portamentoDuration, 1);
+        const elapsed = Math.min((timeNow - voice.startTime) / voice.portamentoDuration, 1);
         const diff = targetKey - voice.portamentoFromKey;
         // zero progress means the pitch being in fromKey, full progress means the normal pitch
         semitones -= diff * (1 - elapsed);
@@ -97,7 +96,7 @@ export function renderVoice(
         // calculate start time and lfo value
         const vibStart = voice.startTime + timecentsToSeconds(voice.modulatedGenerators[generatorTypes.delayVibLFO]);
         const vibFreqHz = absCentsToHz(voice.modulatedGenerators[generatorTypes.freqVibLFO]);
-        const lfoVal = getLFOValue(vibStart, vibFreqHz, currentTime);
+        const lfoVal = getLFOValue(vibStart, vibFreqHz, timeNow);
         // use modulation multiplier (RPN modulation depth)
         cents += lfoVal * (vibratoDepth * this.customControllers[customControllers.modulationMultiplier]);
     }
@@ -111,12 +110,13 @@ export function renderVoice(
     const modVolDepth = voice.modulatedGenerators[generatorTypes.modLfoToVolume];
     const modFilterDepth = voice.modulatedGenerators[generatorTypes.modLfoToFilterFc];
     let modLfoCentibels = 0;
-    if (modPitchDepth + modFilterDepth + modVolDepth !== 0)
+    // don't compute mod lfo unless necessary
+    if (modPitchDepth !== 0 || modFilterDepth !== 0 || modVolDepth !== 0)
     {
         // calculate start time and lfo value
         const modStart = voice.startTime + timecentsToSeconds(voice.modulatedGenerators[generatorTypes.delayModLFO]);
         const modFreqHz = absCentsToHz(voice.modulatedGenerators[generatorTypes.freqModLFO]);
-        const modLfoValue = getLFOValue(modStart, modFreqHz, currentTime);
+        const modLfoValue = getLFOValue(modStart, modFreqHz, timeNow);
         // use modulation multiplier (RPN modulation depth)
         cents += modLfoValue * (modPitchDepth * this.customControllers[customControllers.modulationMultiplier]);
         // vole nv volume offset
@@ -133,7 +133,7 @@ export function renderVoice(
         const channelVibrato = getLFOValue(
             voice.startTime + this.channelVibrato.delay,
             this.channelVibrato.rate,
-            currentTime
+            timeNow
         );
         if (channelVibrato)
         {
@@ -144,10 +144,14 @@ export function renderVoice(
     // mod env
     const modEnvPitchDepth = voice.modulatedGenerators[generatorTypes.modEnvToPitch];
     const modEnvFilterDepth = voice.modulatedGenerators[generatorTypes.modEnvToFilterFc];
-    const modEnv = WorkletModulationEnvelope.getValue(voice, currentTime);
-    // apply values
-    lowpassCents += modEnv * modEnvFilterDepth;
-    cents += modEnv * modEnvPitchDepth;
+    // don't compute mod env unless necessary
+    if (modEnvFilterDepth !== 0 || modEnvFilterDepth !== 0)
+    {
+        const modEnv = WorkletModulationEnvelope.getValue(voice, timeNow);
+        // apply values
+        lowpassCents += modEnv * modEnvFilterDepth;
+        cents += modEnv * modEnvPitchDepth;
+    }
     
     // finally, calculate the playback rate
     const centsTotal = ~~(cents + semitones * 100);
@@ -180,8 +184,8 @@ export function renderVoice(
     
     /* low pass filter
      * note: the check is because of the filter optimization (if cents are the maximum then the filter is open)
-     * filter cannot use this optimization if it's dynamic (see #53)
-     *, and the filter can only be dynamic if the initial filter is not open
+     * filter cannot use this optimization if it's dynamic (see #53),
+     * and the filter can only be dynamic if the initial filter is not open
      */
     WorkletLowpassFilter.apply(voice, bufferOut, lowpassCents, initialFc > 13499);
     

@@ -10,7 +10,7 @@ import { consoleColors } from "../../../../utils/other.js";
 export function setTuningSemitones(semitones)
 {
     semitones = Math.round(semitones);
-    this.customControllers[customControllers.channelTuningSemitones] = semitones;
+    this.setCustomController(customControllers.channelTuningSemitones, semitones);
     SpessaSynthInfo(
         `%cChannel ${this.channelNumber} coarse tuning. Semitones: %c${semitones}`,
         consoleColors.info,

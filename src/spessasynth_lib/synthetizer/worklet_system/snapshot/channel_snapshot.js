@@ -149,6 +149,7 @@ export class ChannelSnapshot
         channelObject.midiControllers = channelSnapshot.midiControllers;
         channelObject.lockedControllers = channelSnapshot.lockedControllers;
         channelObject.customControllers = channelSnapshot.customControllers;
+        channelObject.updateChannelTuning();
         
         // restore vibrato and transpose
         channelObject.channelVibrato = channelSnapshot.channelVibrato;
