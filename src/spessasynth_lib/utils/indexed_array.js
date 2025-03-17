@@ -20,6 +20,18 @@ export class IndexedByteArray extends Uint8Array
         super(args);
         this.currentIndex = 0;
     }
+    
+    /**
+     * @param start {number?}
+     * @param end {number?}
+     * @returns {IndexedByteArray}
+     */
+    slice(start, end)
+    {
+        const a = super.slice(start, end);
+        a.currentIndex = 0;
+        return a;
+    }
 }
 
 
