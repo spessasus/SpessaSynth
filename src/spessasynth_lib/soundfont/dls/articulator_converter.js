@@ -136,7 +136,7 @@ function getSF2GeneratorFromDLS(destination, amount)
         case DLSDestinations.reverbSend:
             return generatorTypes.reverbEffectsSend;
         
-        // lfos
+        // lfo
         case DLSDestinations.modLfoFreq:
             return generatorTypes.freqModLFO;
         case DLSDestinations.modLfoDelay:
@@ -319,8 +319,9 @@ export function getSF2ModulatorFromArticulator(
     if (isSourceNoController)
     {
         // we force it into this state because before it was some strange value,
-        // like vibrato lfo bipolar for example
-        // since we turn it into NoController -> vibLfoToPitch the result is the same and bipolar concontroller is technically 0
+        // like vibrato lfo bipolar, for example,
+        // since we turn it into NoController -> vibLfoToPitch,
+        // the result is the same and bipolar controller is technically 0
         sourceEnumFinal = 0x0;
     }
     else
@@ -328,7 +329,7 @@ export function getSF2ModulatorFromArticulator(
         // output transform is ignored as it's not a thing in sfont format
         // unless the curve type of source is linear, then output is copied
         const outputTransform = transform & 0b1111;
-        // source curve type maps to desfont curve type in section 2.10, table 9
+        // source curve type maps to a desfont curve type in section 2.10, table 9
         let sourceTransform = (transform >> 10) & 0b1111;
         if (sourceTransform === modulatorCurveTypes.linear && outputTransform !== modulatorCurveTypes.linear)
         {
@@ -341,7 +342,7 @@ export function getSF2ModulatorFromArticulator(
         {
             // if the value is negative, the source shall be negative!
             // why?
-            // Idk, it makes it work with ROCK.RMI and NOKIA_S30.dls
+            // IDK, it makes it work with ROCK.RMI and NOKIA_S30.dls
             if (value < 0)
             {
                 sourceIsNegative = 1;
@@ -354,6 +355,14 @@ export function getSF2ModulatorFromArticulator(
             sf2Source.isCC,
             sf2Source.enum
         );
+    }
+    
+    // a corrupted rendition of gm.dls was found under
+    // https://sembiance.com/fileFormatSamples/audio/downloadableSoundBank/
+    // which specifies a whopping -32,768 decibels of attenuation
+    if (destinationGenerator === generatorTypes.initialAttenuation)
+    {
+        newValue = Math.max(960, Math.min(0, newValue));
     }
     
     const secSourceTransform = (transform >> 4) & 0b1111;

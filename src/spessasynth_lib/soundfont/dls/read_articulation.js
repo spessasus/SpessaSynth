@@ -76,7 +76,7 @@ export function readArticulation(chunk, disableVibrato)
                     generator = new Generator(generatorTypes.delayVibLFO, value);
                     break;
                 
-                // vol env: all times are timecents like sf2
+                // vol. env: all times are timecents like sf2
                 case DLSDestinations.volEnvDelay:
                     generator = new Generator(generatorTypes.delayVolEnv, value);
                     break;
@@ -144,7 +144,7 @@ export function readArticulation(chunk, disableVibrato)
             }
         }
         else
-            // if not, modulator??
+            // if not, modulator?
         {
             let isGenerator = true;
             // a few special cases which are generators:
@@ -190,7 +190,7 @@ export function readArticulation(chunk, disableVibrato)
                 if (source === DLSSources.keyNum && destination === DLSDestinations.pitch)
                 {
                     // this is just a soundfont generator, but the amount must be changed
-                    // 12800 means the regular scale (100)
+                    // 12,800 means the regular scale (100)
                     generators.push(new Generator(generatorTypes.scaleTuning, value / 128));
                 }
                 else
