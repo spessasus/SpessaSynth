@@ -242,6 +242,22 @@ export function createChannelController(channelNumber)
             val = Math.round(val);
             this.synth.transposeChannel(channelNumber, val, true);
             transpose.update(val);
+        },
+        undefined,
+        undefined,
+        active =>
+        {
+            if (active)
+            {
+                for (let i = channelNumber + 1; i < this.controllers.length; i++)
+                {
+                    this.controllers[i].controller.classList.add("hidden");
+                }
+            }
+            else
+            {
+                this.controllers.forEach(c => c.controller.classList.remove("hidden"));
+            }
         }
     );
     controller.appendChild(transpose.div);

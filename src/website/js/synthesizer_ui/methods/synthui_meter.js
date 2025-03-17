@@ -24,6 +24,7 @@ export class Meter
      * @param editCallback {MeterCallbackFunction}
      * @param lockCallback {function}
      * @param unlockCallback {function}
+     * @param activeChangeCallback {function(boolean)} - when the isActive state changes
      */
     constructor(color = "none",
                 localePath,
@@ -35,7 +36,8 @@ export class Meter
                 editable = false,
                 editCallback = undefined,
                 lockCallback = undefined,
-                unlockCallback = undefined)
+                unlockCallback = undefined,
+                activeChangeCallback = undefined)
     {
         this.meterText = "";
         locale.bindObjectProperty(this, "meterText", localePath + ".title");
@@ -91,6 +93,10 @@ export class Meter
                 {
                     // left mouse button: adjust value
                     this.isActive = true;
+                    if (activeChangeCallback)
+                    {
+                        activeChangeCallback(true);
+                    }
                 }
                 else
                 {
@@ -115,11 +121,22 @@ export class Meter
                 }
                 editCallback(percentage * (max - min) + min);
             };
-            this.div.onmouseup = () => this.isActive = false;
+            this.div.onmouseup = () =>
+            {
+                this.isActive = false;
+                if (activeChangeCallback)
+                {
+                    activeChangeCallback(false);
+                }
+            };
             this.div.onmouseleave = e =>
             {
                 this.div.onmousemove(e);
                 this.isActive = false;
+                if (activeChangeCallback)
+                {
+                    activeChangeCallback(false);
+                }
             };
             
             // QoL
