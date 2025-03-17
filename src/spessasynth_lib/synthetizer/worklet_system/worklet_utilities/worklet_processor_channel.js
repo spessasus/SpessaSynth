@@ -202,10 +202,6 @@ class WorkletProcessorChannel
         this.synth = synth;
         this.preset = preset;
         this.channelNumber = channelNumber;
-        for (let i = 0; i < 128; i++)
-        {
-            this.cachedVoices.push([]);
-        }
     }
     
     /**
@@ -265,13 +261,6 @@ class WorkletProcessorChannel
         }
         delete this.preset;
         this.preset = preset;
-        
-        // reset cached voices
-        this.cachedVoices = [];
-        for (let i = 0; i < 128; i++)
-        {
-            this.cachedVoices.push([]);
-        }
     }
     
     /**

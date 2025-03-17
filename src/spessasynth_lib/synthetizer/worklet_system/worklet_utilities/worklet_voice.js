@@ -362,25 +362,31 @@ export function getWorkletVoices(channel,
     let workletVoices;
     const channelObject = this.workletProcessorChannels[channel];
     
-    const cached = channelObject.cachedVoices[midiNote]?.[velocity];
-    
     // override patch
     const overridePatch = this.keyModifierManager.hasOverridePatch(channel, midiNote);
     
-    // override patch is not cached
-    if (cached !== undefined && !overridePatch)
+    let bank = channelObject.getBankSelect();
+    let program = channelObject.preset.program;
+    if (overridePatch)
+    {
+        const override = this.keyModifierManager.getPatch(channel, midiNote);
+        bank = override.bank;
+        program = override.program;
+    }
+    
+    const cached = this.getCachedVoice(bank, program, midiNote, velocity);
+    
+    // if cached, return it!
+    if (cached !== undefined)
     {
         return cached.map(v => WorkletVoice.copy(v, currentTime));
     }
     
     // not cached...
-    let canCache = true;
     let preset = channelObject.preset;
     if (overridePatch)
     {
-        canCache = false;
-        const patchNum = this.keyModifierManager.getPatch(channel, midiNote);
-        preset = this.soundfontManager.getPreset(patchNum.bank, patchNum.program);
+        preset = this.soundfontManager.getPreset(bank, program);
     }
     /**
      * @returns {WorkletVoice[]}
@@ -482,10 +488,7 @@ export function getWorkletVoices(channel,
             return voices;
         }, []);
     // cache the voice
-    if (canCache)
-    {
-        channelObject.cachedVoices[midiNote][velocity] = workletVoices.map(v =>
-            WorkletVoice.copy(v, currentTime));
-    }
+    this.setCachedVoice(bank, program, midiNote, velocity, workletVoices.map(v =>
+        WorkletVoice.copy(v, currentTime)));
     return workletVoices;
 }

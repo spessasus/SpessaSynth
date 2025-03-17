@@ -31,6 +31,10 @@ import { FILTER_SMOOTHING_FACTOR } from "./worklet_utilities/lowpass_filter.js";
 
 
 /**
+ * @typedef {"gm"|"gm2"|"gs"|"xg"} SynthSystem
+ */
+
+/**
  * worklet_processor.js
  * purpose: manages the synthesizer (and worklet sequencer) from the AudioWorkletGlobalScope and renders the audio data
  */
@@ -47,6 +51,143 @@ export const SYNTHESIZER_GAIN = 1.0;
 // noinspection JSUnresolvedReference
 class SpessaSynthProcessor extends AudioWorkletProcessor
 {
+    
+    /**
+     * Cached voices for all presets for this synthesizer.
+     * Nesting goes like this:
+     * this.cachedVoices[bankNumber][programNumber][midiNote][velocity] = a list of workletvoices for that.
+     * @type {WorkletVoice[][][][][]}
+     */
+    cachedVoices = [];
+    
+    
+    /**
+     * If the worklet is alive
+     * @type {boolean}
+     */
+    alive = true;
+    
+    /**
+     * Synth's device id: -1 means all
+     * @type {number}
+     */
+    deviceID = ALL_CHANNELS_OR_DIFFERENT_ACTION;
+    
+    
+    /**
+     * Interpolation type used
+     * @type {interpolationTypes}
+     */
+    interpolationType = interpolationTypes.fourthOrder;
+    
+    /**
+     * The sequencer attached to this processor
+     * @type {WorkletSequencer}
+     */
+    sequencer = new WorkletSequencer(this);
+    
+    /**
+     * Global transposition in semitones
+     * @type {number}
+     */
+    transposition = 0;
+    
+    /**
+     * this.tunings[program][key] = tuning
+     * @type {MTSProgramTuning[]}
+     */
+    tunings = [];
+    
+    
+    /**
+     * Bank offset for things like embedded RMIDIS. Added for every program change
+     * @type {number}
+     */
+    soundfontBankOffset = 0;
+    
+    
+    /**
+     * The volume gain, set by user
+     * @type {number}
+     */
+    masterGain = SYNTHESIZER_GAIN;
+    
+    /**
+     * The volume gain, set by MIDI sysEx
+     * @type {number}
+     */
+    midiVolume = 1;
+    
+    /**
+     * Reverb linear gain
+     * @type {number}
+     */
+    reverbGain = 1;
+    /**
+     * Chorus linear gain
+     * @type {number}
+     */
+    chorusGain = 1;
+    
+    /**
+     * Maximum number of voices allowed at once
+     * @type {number}
+     */
+    voiceCap = VOICE_CAP;
+    
+    /**
+     * (-1 to 1)
+     * @type {number}
+     */
+    pan = 0.0;
+    /**
+     * the pan of the left channel
+     * @type {number}
+     */
+    panLeft = 0.5;
+    
+    /**
+     * the pan of the right channel
+     * @type {number}
+     */
+    panRight = 0.5;
+    
+    /**
+     * forces note killing instead of releasing
+     * @type {boolean}
+     */
+    highPerformanceMode = false;
+    
+    /**
+     * Handlese custom key overrides: velocity and preset
+     * @type {WorkletKeyModifierManager}
+     */
+    keyModifierManager = new WorkletKeyModifierManager();
+    
+    /**
+     * Overrides the main soundfont (embedded, for example)
+     * @type {BasicSoundFont}
+     */
+    overrideSoundfont = undefined;
+    
+    /**
+     * contains all the channels with their voices on the processor size
+     * @type {WorkletProcessorChannel[]}
+     */
+    workletProcessorChannels = [];
+    
+    /**
+     * Controls the bank selection & SysEx
+     * @type {SynthSystem}
+     */
+    system = DEFAULT_SYNTH_MODE;
+    
+    /**
+     * Current total voices amount
+     * @type {number}
+     */
+    totalVoicesAmount = 0;
+    
     /**
      * Creates a new worklet synthesis system. contains all channels
      * @param options {{
@@ -65,91 +206,12 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
         
         this.enableEventSystem = options.processorOptions.enableEventSystem;
         
-        /**
-         * If the worklet is alive
-         * @type {boolean}
-         */
-        this.alive = true;
         
-        /**
-         * Synth's device id: -1 means all
-         * @type {number}
-         */
-        this.deviceID = ALL_CHANNELS_OR_DIFFERENT_ACTION;
-        
-        /**
-         * Interpolation type used
-         * @type {interpolationTypes}
-         */
-        this.interpolationType = interpolationTypes.fourthOrder;
-        
-        this.sequencer = new WorkletSequencer(this);
-        
-        this.transposition = 0;
-        
-        /**
-         * this.tunings[program][key] = tuning
-         * @type {MTSProgramTuning[]}
-         */
-        this.tunings = [];
         for (let i = 0; i < 127; i++)
         {
             this.tunings.push([]);
         }
         
-        /**
-         * Bank offset for things like embedded RMIDIS. Added for every program change
-         * @type {number}
-         */
-        this.soundfontBankOffset = 0;
-        
-        /**
-         * The volume gain, set by user
-         * @type {number}
-         */
-        this.masterGain = SYNTHESIZER_GAIN;
-        
-        this.midiVolume = 1;
-        
-        this.reverbGain = 1;
-        this.chorusGain = 1;
-        
-        /**
-         * Maximum number of voices allowed at once
-         * @type {number}
-         */
-        this.voiceCap = VOICE_CAP;
-        
-        /**
-         * (-1 to 1)
-         * @type {number}
-         */
-        this.pan = 0.0;
-        /**
-         * the pan of the left channel
-         * @type {number}
-         */
-        this.panLeft = 0.5;
-        
-        this.highPerformanceMode = false;
-        
-        /**
-         * Handlese custom key overrides: velocity and preset
-         * @type {WorkletKeyModifierManager}
-         */
-        this.keyModifierManager = new WorkletKeyModifierManager();
-        
-        /**
-         * Overrides the main soundfont (embedded, for example)
-         * @type {BasicSoundFont}
-         */
-        this.overrideSoundfont = undefined;
-        
-        /**
-         * the pan of the right channel
-         * @type {number}
-         */
-        this.panRight = 0.5;
         try
         {
             /**
@@ -173,11 +235,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
         this.defaultPreset = this.getPreset(0, 0);
         this.drumPreset = this.getPreset(128, 0);
         
-        /**
-         * contains all the channels with their voices on the processor size
-         * @type {WorkletProcessorChannel[]}
-         */
-        this.workletProcessorChannels = [];
+        
         for (let i = 0; i < options.processorOptions.midiChannels; i++)
         {
             this.createWorkletChannel(false);
@@ -190,17 +248,6 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
         this.volumeEnvelopeSmoothingFactor = VOLUME_ENVELOPE_SMOOTHING_FACTOR * (44100 / sampleRate);
         this.panSmoothingFactor = PAN_SMOOTHING_FACTOR * (44100 / sampleRate);
         this.filterSmoothingFactor = FILTER_SMOOTHING_FACTOR * (44100 / sampleRate);
-        
-        /**
-         * Controls the system
-         * @typedef {"gm"|"gm2"|"gs"|"xg"} SynthSystem
-         */
-        /*
-         * @type {SynthSystem}
-         */
-        this.system = DEFAULT_SYNTH_MODE;
-        
-        this.totalVoicesAmount = 0;
         
         /**
          * The snapshot that synth was restored from
@@ -252,6 +299,50 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
     {
         return this.masterGain * this.midiVolume;
     }
+    
+    /**
+     * @param bank {number}
+     * @param program {number}
+     * @param midiNote {number}
+     * @param velocity {number}
+     * @returns {WorkletVoice[]|undefined}
+     */
+    getCachedVoice(bank, program, midiNote, velocity)
+    {
+        return this.cachedVoices?.[bank]?.[program]?.[midiNote]?.[velocity];
+    }
+    
+    /**
+     * @param bank {number}
+     * @param program {number}
+     * @param midiNote {number}
+     * @param velocity {number}
+     * @param voices {WorkletVoice[]}
+     */
+    setCachedVoice(bank, program, midiNote, velocity, voices)
+    {
+        // make sure that it exists
+        if (!this.cachedVoices)
+        {
+            this.cachedVoices = [];
+        }
+        if (!this.cachedVoices[bank])
+        {
+            this.cachedVoices[bank] = [];
+        }
+        if (!this.cachedVoices[bank][program])
+        {
+            this.cachedVoices[bank][program] = [];
+        }
+        if (!this.cachedVoices[bank][program][midiNote])
+        {
+            this.cachedVoices[bank][program][midiNote] = [];
+        }
+        
+        // cache
+        this.cachedVoices[bank][program][midiNote][velocity] = voices;
+    }
+    
     
     /**
      * @param data {WorkletReturnMessage}
@@ -367,11 +458,11 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
             delete c.midiControllers;
             delete c.voices;
             delete c.sustainedVoices;
-            delete c.cachedVoices;
             delete c.lockedControllers;
             delete c.preset;
             delete c.customControllers;
         });
+        delete this.cachedVoices;
         delete this.workletProcessorChannels;
         delete this.sequencer.midiData;
         delete this.sequencer;
