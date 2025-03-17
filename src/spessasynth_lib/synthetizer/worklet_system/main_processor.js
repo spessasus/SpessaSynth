@@ -27,6 +27,7 @@ import { setMasterTuning } from "./worklet_methods/tuning_control/set_master_tun
 import { sendSynthesizerSnapshot } from "./snapshot/send_synthesizer_snapshot.js";
 import { applySynthesizerSnapshot } from "./snapshot/apply_synthesizer_snapshot.js";
 import { createWorkletChannel } from "./worklet_methods/create_worklet_channel.js";
+import { FILTER_SMOOTHING_FACTOR } from "./worklet_utilities/lowpass_filter.js";
 
 
 /**
@@ -188,6 +189,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
         // these smoothing factors were tested on 44,100 Hz, adjust them to target sample rate here
         this.volumeEnvelopeSmoothingFactor = VOLUME_ENVELOPE_SMOOTHING_FACTOR * (44100 / sampleRate);
         this.panSmoothingFactor = PAN_SMOOTHING_FACTOR * (44100 / sampleRate);
+        this.filterSmoothingFactor = FILTER_SMOOTHING_FACTOR * (44100 / sampleRate);
         
         /**
          * Controls the system
