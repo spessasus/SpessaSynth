@@ -5,7 +5,7 @@ import { generatorTypes } from "../../../soundfont/basic_soundfont/generator.js"
  * purpose: pans a given voice out to the stereo output and to the effects' outputs
  */
 
-export const PAN_SMOOTHING_FACTOR = 0.1;
+export const PAN_SMOOTHING_FACTOR = 0.05;
 
 export const WORKLET_SYSTEM_REVERB_DIVIDER = 4600;
 export const WORKLET_SYSTEM_CHORUS_DIVIDER = 2000;
@@ -60,9 +60,8 @@ export function panVoice(voice,
     }
     else
     {
-        const target = Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan]));
         // smooth out pan to prevent clicking
-        voice.currentPan += (target - voice.currentPan) * this.synth.panSmoothingFactor;
+        voice.currentPan += (voice.modulatedGenerators[generatorTypes.pan] - voice.currentPan) * this.synth.panSmoothingFactor;
         pan = voice.currentPan;
     }
     
@@ -75,25 +74,26 @@ export function panVoice(voice,
     // disable reverb and chorus in one output mode
     if (!this.synth.oneOutputMode)
     {
-        // reverb is mono so we need to multiply by gain
-        const reverbLevel = this.synth.reverbGain * voice.modulatedGenerators[generatorTypes.reverbEffectsSend] / WORKLET_SYSTEM_REVERB_DIVIDER * gain;
-        // chorus is stereo so we do not need to
-        const chorusLevel = this.synth.chorusGain * voice.modulatedGenerators[generatorTypes.chorusEffectsSend] / WORKLET_SYSTEM_CHORUS_DIVIDER;
-        
-        if (reverbLevel > 0)
+        const reverbSend = voice.modulatedGenerators[generatorTypes.reverbEffectsSend];
+        if (reverbSend > 0)
         {
+            // reverb is mono so we need to multiply by gain
+            const reverbGain = this.synth.reverbGain * reverbSend / WORKLET_SYSTEM_REVERB_DIVIDER * gain;
             for (let i = 0; i < inputBuffer.length; i++)
             {
-                reverbLeft[i] += reverbLevel * inputBuffer[i];
+                reverbLeft[i] += reverbGain * inputBuffer[i];
             }
             // copy as its mono
             reverbRight.set(reverbLeft);
         }
         
-        if (chorusLevel > 0)
+        const chorusSend = voice.modulatedGenerators[generatorTypes.chorusEffectsSend];
+        if (chorusSend > 0)
         {
-            const chorusLeftGain = gainLeft * chorusLevel;
-            const chorusRightGain = gainRight * chorusLevel;
+            // chorus is stereo so we do not need to
+            const chorusGain = this.synth.chorusGain * chorusSend / WORKLET_SYSTEM_CHORUS_DIVIDER;
+            const chorusLeftGain = gainLeft * chorusGain;
+            const chorusRightGain = gainRight * chorusGain;
             for (let i = 0; i < inputBuffer.length; i++)
             {
                 chorusLeft[i] += chorusLeftGain * inputBuffer[i];
