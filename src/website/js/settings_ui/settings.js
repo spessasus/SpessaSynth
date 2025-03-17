@@ -278,6 +278,7 @@ class SpessaSynthSettings
         }, ANIMATION_REFLOW_TIME);
         showTopButton.classList.remove("shown");
         showTopButton.style.display = "none";
+        window.dispatchEvent(new CustomEvent("resize"));
     }
     
     hideTopPart()
@@ -304,6 +305,7 @@ class SpessaSynthSettings
         }, ANIMATION_REFLOW_TIME);
         
         showTopButton.onclick = this.showTopPart.bind(this);
+        window.dispatchEvent(new CustomEvent("resize"));
     }
     
     /**
