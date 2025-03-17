@@ -24,7 +24,7 @@ setResetValue(midiControllers.pan, 64);
 
 setResetValue(midiControllers.portamentoOnOff, 127);
 
-setResetValue(midiControllers.timbreHarmonicContent, 64);
+setResetValue(midiControllers.filterResonance, 64);
 setResetValue(midiControllers.releaseTime, 64);
 setResetValue(midiControllers.attackTime, 64);
 setResetValue(midiControllers.brightness, 64);
@@ -47,6 +47,9 @@ resetArray[midiControllers.portamentoControl] = 1;
 setResetValue(NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel, 64);
 setResetValue(NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange, 2);
 
+/**
+ * @enum {number}
+ */
 export const customControllers = {
     channelTuning: 0,           // cents, RPN for fine tuning
     channelTransposeFine: 1,    // cents, only the decimal tuning, (e.g., transpose is 4.5,

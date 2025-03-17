@@ -61,7 +61,7 @@ export class SoundfontManager
             throw new Error("Cannot overwrite the existing soundfont. Use soundfontManager.delete(id) instead.");
         }
         this._sendToWorklet(WorkletSoundfontManagerMessageType.addNewSoundFont, [soundfontBuffer, id, bankOffset]);
-        await new Promise(r => this.synth.resolveWhenReady = r);
+        await new Promise(r => this.synth._resolveWhenReady = r);
         this.soundfontList.push({
             id: id,
             bankOffset: bankOffset
@@ -106,6 +106,6 @@ export class SoundfontManager
     async reloadManager(newBuffer)
     {
         this._sendToWorklet(WorkletSoundfontManagerMessageType.reloadSoundFont, newBuffer);
-        await new Promise(r => this.synth.resolveWhenReady = r);
+        await new Promise(r => this.synth._resolveWhenReady = r);
     }
 }

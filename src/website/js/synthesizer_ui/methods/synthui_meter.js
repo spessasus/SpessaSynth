@@ -19,10 +19,12 @@ export class Meter
      * @param localeArgs {string|number[]} args for description
      * @param max {number}
      * @param min {number}
+     * @param initialAndDefault {number}
      * @param editable {boolean} if the meter should be editable with mouse
      * @param editCallback {MeterCallbackFunction}
      * @param lockCallback {function}
      * @param unlockCallback {function}
+     * @param activeChangeCallback {function(boolean)} - when the isActive state changes
      */
     constructor(color = "none",
                 localePath,
@@ -30,10 +32,12 @@ export class Meter
                 localeArgs,
                 min = 0,
                 max = 100,
+                initialAndDefault,
                 editable = false,
                 editCallback = undefined,
                 lockCallback = undefined,
-                unlockCallback = undefined)
+                unlockCallback = undefined,
+                activeChangeCallback = undefined)
     {
         this.meterText = "";
         locale.bindObjectProperty(this, "meterText", localePath + ".title");
@@ -45,6 +49,7 @@ export class Meter
         this.isLocked = false;
         this.lockCallback = lockCallback;
         this.unlockCallback = unlockCallback;
+        this.defaultValue = initialAndDefault;
         
         /**
          * @type {HTMLDivElement}
@@ -88,11 +93,15 @@ export class Meter
                 {
                     // left mouse button: adjust value
                     this.isActive = true;
+                    if (activeChangeCallback)
+                    {
+                        activeChangeCallback(true);
+                    }
                 }
                 else
                 {
                     // other, lock it
-                    this.lockMeter();
+                    this.toggleLock();
                 }
             };
             this.div.onmousemove = e =>
@@ -106,13 +115,28 @@ export class Meter
                 const width = bounds.width;
                 const relative = e.clientX - relativeLeft;
                 const percentage = Math.max(0, Math.min(1, relative / width));
+                if (!this.isLocked || isMobile)
+                {
+                    this.toggleLock();
+                }
                 editCallback(percentage * (max - min) + min);
             };
-            this.div.onmouseup = () => this.isActive = false;
+            this.div.onmouseup = () =>
+            {
+                this.isActive = false;
+                if (activeChangeCallback)
+                {
+                    activeChangeCallback(false);
+                }
+            };
             this.div.onmouseleave = e =>
             {
                 this.div.onmousemove(e);
                 this.isActive = false;
+                if (activeChangeCallback)
+                {
+                    activeChangeCallback(false);
+                }
             };
             
             // QoL
@@ -128,16 +152,13 @@ export class Meter
                 this.isActive = true;
                 this.div.onmousemove(e);
                 this.isActive = false;
-                if (isMobile)
-                {
-                    this.lockMeter();
-                }
             };
             this.div.classList.add("editable");
         }
+        this.update(initialAndDefault);
     }
     
-    lockMeter()
+    toggleLock()
     {
         if (this.lockCallback === undefined)
         {
@@ -146,12 +167,12 @@ export class Meter
         }
         if (this.isLocked)
         {
-            this.text.classList.remove("locked_meter");
+            this.div.classList.remove("locked_meter");
             this.unlockCallback();
         }
         else
         {
-            this.text.classList.add("locked_meter");
+            this.div.classList.add("locked_meter");
             this.lockCallback();
         }
         this.isLocked = !this.isLocked;

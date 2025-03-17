@@ -10,6 +10,6 @@ export function setMasterTuning(cents)
     cents = Math.round(cents);
     for (let i = 0; i < this.workletProcessorChannels.length; i++)
     {
-        this.workletProcessorChannels[i].customControllers[customControllers.masterTuning] = cents;
+        this.workletProcessorChannels[i].setCustomController(customControllers.masterTuning, cents);
     }
 }

@@ -11,7 +11,7 @@ import { consoleColors } from "../../../../utils/other.js";
 export function setTuning(cents, log = true)
 {
     cents = Math.round(cents);
-    this.customControllers[customControllers.channelTuning] = cents;
+    this.setCustomController(customControllers.channelTuning, cents);
     if (!log)
     {
         return;
