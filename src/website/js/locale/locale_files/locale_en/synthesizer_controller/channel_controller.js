@@ -77,7 +77,7 @@ export const channelControllerLocale = {
     groupSelector: {
         description: "Select the group of MIDI Controllers to manipulate",
         effects: "Effects",
-        volumeEnvelope: "Volume Env.",
+        volumeEnvelope: "Vol. Envelope",
         filter: "Filter",
         portamento: "Portamento"
     },
