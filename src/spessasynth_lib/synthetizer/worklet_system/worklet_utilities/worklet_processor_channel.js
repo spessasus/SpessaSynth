@@ -1,4 +1,9 @@
-import { CONTROLLER_TABLE_SIZE, CUSTOM_CONTROLLER_TABLE_SIZE, dataEntryStates } from "./controller_tables.js";
+import {
+    CONTROLLER_TABLE_SIZE,
+    CUSTOM_CONTROLLER_TABLE_SIZE,
+    customControllers,
+    dataEntryStates
+} from "./controller_tables.js";
 import { resetControllers, resetParameters } from "../worklet_methods/controller_control/reset_controllers.js";
 import { renderVoice } from "../worklet_methods/render_voice.js";
 import { panVoice } from "./stereo_panner.js";
@@ -35,7 +40,7 @@ class WorkletProcessorChannel
     
     /**
      * An array indicating if a controller, at the equivalent index in the midiControllers array, is locked
-     * (i.e., not allowed to change).
+     * (i.e., not allowed changing).
      * A locked controller cannot be modified.
      * @type {boolean[]}
      */
@@ -57,9 +62,17 @@ class WorkletProcessorChannel
     /**
      * An array of octave tuning values for each note on the channel.
      * Each index corresponds to a note (0 = C, 1 = C#, ..., 11 = B).
+     * Note: Repeaded every 12 notes
      * @type {Int8Array}
      */
-    channelOctaveTuning = new Int8Array(12);
+    channelOctaveTuning = new Int8Array(128);
+    
+    /**
+     * Will be updated every time something tuning-related gets changed.
+     * This is used to avoid a big addition for every voice rendering call.
+     * @type {number}
+     */
+    channelTuningCents = 0;
     
     /**
      * An array representing the tuning of individual keys in cents.
@@ -174,12 +187,6 @@ class WorkletProcessorChannel
     sustainedVoices = [];
     
     /**
-     * A 3D array (MIDI note -> velocity -> WorkletVoices) for cached voices for each note and velocity.
-     * @type {WorkletVoice[][][]}
-     */
-    cachedVoices = [];
-    
-    /**
      * The channel's number (0-based index)
      * @type {number}
      */
@@ -202,6 +209,25 @@ class WorkletProcessorChannel
         this.synth = synth;
         this.preset = preset;
         this.channelNumber = channelNumber;
+    }
+    
+    /**
+     * @param type {customControllers|number}
+     * @param value {number}
+     */
+    setCustomController(type, value)
+    {
+        this.customControllers[type] = value;
+        this.updateChannelTuning();
+    }
+    
+    updateChannelTuning()
+    {
+        this.channelTuningCents = this.customControllers[customControllers.channelTuning]
+            + this.customControllers[customControllers.channelTuning]                 // RPN channel fine tuning
+            + this.customControllers[customControllers.channelTransposeFine]          // custom tuning (synth.transpose)
+            + this.customControllers[customControllers.masterTuning]                  // master tuning, set by sysEx
+            + this.customControllers[customControllers.channelTuningSemitones] * 100; // RPN channel coarse tuning
     }
     
     /**

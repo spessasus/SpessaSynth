@@ -23,5 +23,5 @@ export function setModulationDepth(cents)
         for example, if we want 100 cents, then multiplier will be 2,
         which for a preset with depth of 50 will create 100.
      ================ */
-    this.customControllers[customControllers.modulationMultiplier] = cents / 50;
+    this.setCustomController(customControllers.modulationMultiplier, cents / 50);
 }
