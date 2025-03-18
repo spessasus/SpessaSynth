@@ -9,6 +9,8 @@ import { generatorTypes } from "../../../soundfont/basic_soundfont/generator.js"
  * Shoutout to them!
  */
 
+export const FILTER_SMOOTHING_FACTOR = 0.1;
+
 /**
  * @typedef {Object} CachedCoefficient
  * @property {number} a0 - Filter coefficient 1
@@ -22,7 +24,7 @@ export class WorkletLowpassFilter
 {
     /**
      * Cached coefficient calculations
-     * stored as cachedCoefficients[resonanceCb][cutoffCents]
+     * stored as cachedCoefficients[resonanceCb][currentCutoffCents]
      * @type {CachedCoefficient[][]}
      * @private
      */
@@ -92,7 +94,14 @@ export class WorkletLowpassFilter
      * Note: defaults to 13,501 to cause a recalculation even at initial fc being 13,500
      * @type {number}
      */
-    cutoffCents = 13501;
+    currentCutoffCents = 13501;
+    
+    /**
+     * Target cutoff frequency in cents
+     * @type {number}
+     */
+    targetCutoff = 13501;
+    
     
     /**
      * Applies a low-pass filter to the given buffer
@@ -101,20 +110,26 @@ export class WorkletLowpassFilter
      * @param cutoffCents {number} cutoff frequency in cents
      * @param canBeOpen {boolean} indicates if the filter can be open.
      * See the comment in voice_control for details
+     * @param smoothingFactor {number} filter's cutoff frequency smoothing factor
      */
-    static apply(voice, outputBuffer, cutoffCents, canBeOpen)
+    static apply(voice, outputBuffer, cutoffCents, canBeOpen, smoothingFactor)
     {
         if (canBeOpen && cutoffCents > 13499 && voice.filter.resonanceCb === 0)
         {
+            voice.filter.currentCutoffCents = 13500;
+            voice.filter.targetCutoff = 13500;
             return; // filter is open
         }
         
         const filter = voice.filter;
+        filter.targetCutoff = cutoffCents;
+        // smooth out filter
+        filter.currentCutoffCents += (filter.targetCutoff - filter.currentCutoffCents) * smoothingFactor;
+        const modulatedResonance = voice.modulatedGenerators[generatorTypes.initialFilterQ];
         // check if the frequency has changed. if so, calculate new coefficients
-        if (filter.cutoffCents !== cutoffCents || filter.resonanceCb !== voice.modulatedGenerators[generatorTypes.initialFilterQ])
+        if (Math.abs(filter.currentCutoffCents - filter.targetCutoff) > 1 || filter.resonanceCb !== modulatedResonance)
         {
-            filter.cutoffCents = cutoffCents;
-            filter.resonanceCb = voice.modulatedGenerators[generatorTypes.initialFilterQ];
+            filter.resonanceCb = modulatedResonance;
             WorkletLowpassFilter.calculateCoefficients(filter);
         }
         
@@ -143,7 +158,7 @@ export class WorkletLowpassFilter
      */
     static calculateCoefficients(filter)
     {
-        const cutoffCents = ~~filter.cutoffCents; // Math.floor
+        const cutoffCents = ~~filter.currentCutoffCents; // Math.floor
         const qCb = filter.resonanceCb;
         // check if these coefficients were already cached
         const cached = WorkletLowpassFilter.cachedCoefficients?.[qCb]?.[cutoffCents];
@@ -202,7 +217,15 @@ export class WorkletLowpassFilter
             WorkletLowpassFilter.cachedCoefficients[qCb] = [];
         }
         WorkletLowpassFilter.cachedCoefficients[qCb][cutoffCents] = toCache;
-        
-        
     }
+}
+
+// precompute all the cutoffs for 0q
+const dummy = new WorkletLowpassFilter(0.1);
+dummy.resonanceCb = 0;
+// sfspec section 8.1.3: initialFilterFc ranges from 1500 to 13,500 cents
+for (let i = 1500; i < 13500; i++)
+{
+    dummy.currentCutoffCents = i;
+    WorkletLowpassFilter.calculateCoefficients(dummy);
 }

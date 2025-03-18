@@ -75,7 +75,6 @@ class MidiKeyboard
         
         this.synth.eventHandler.addEvent("stopall", "keyboard-stop-all", () =>
         {
-            console.log("stopaall");
             this.clearNotes();
         });
         
