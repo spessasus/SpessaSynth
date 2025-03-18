@@ -200,17 +200,10 @@ class SpessaSynthSettings
         });
         
         // if window.savedSettings exists, load it
-        if (window.savedSettings)
-        {
-            this._loadSettings().then(() =>
-            {
-                this.createHandlers(renderer, midiKeyboard, midiDeviceHandler, sequi, sythui);
-            });
-        }
-        else
+        this._loadSettings().then(() =>
         {
             this.createHandlers(renderer, midiKeyboard, midiDeviceHandler, sequi, sythui);
-        }
+        });
         
         this.topPartVisible = true;
         let fullscreen = false;
