@@ -78,7 +78,7 @@ export function panVoice(voice,
         if (reverbSend > 0)
         {
             // reverb is mono so we need to multiply by gain
-            const reverbGain = this.synth.reverbGain * reverbSend / WORKLET_SYSTEM_REVERB_DIVIDER * gain;
+            const reverbGain = this.synth.reverbGain * gain * (reverbSend / WORKLET_SYSTEM_REVERB_DIVIDER);
             for (let i = 0; i < inputBuffer.length; i++)
             {
                 reverbLeft[i] += reverbGain * inputBuffer[i];

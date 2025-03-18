@@ -102,6 +102,20 @@ export class WorkletLowpassFilter
      */
     targetCutoff = 13501;
     
+    /**
+     * Initializes the filter
+     * @param voice {WorkletVoice}
+     */
+    static initialize(voice)
+    {
+        const cents = voice.modulatedGenerators[generatorTypes.initialFilterFc];
+        const q = voice.modulatedGenerators[generatorTypes.initialFilterQ];
+        voice.filter.targetCutoff = cents;
+        voice.filter.currentCutoffCents = cents;
+        voice.filter.resonanceCb = q;
+        WorkletLowpassFilter.calculateCoefficients(voice.filter);
+    }
+    
     
     /**
      * Applies a low-pass filter to the given buffer
