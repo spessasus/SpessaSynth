@@ -5,6 +5,17 @@ import { midiControllers } from "../../../../midi_parser/midi_message.js";
 import { modulatorSources } from "../../../../soundfont/basic_soundfont/modulator.js";
 
 /**
+ * @enum {number}
+ */
+const registeredParameterTypes = {
+    pitchBendRange: 0x0000,
+    fineTuning: 0x0001,
+    coarseTuning: 0x0002,
+    modulationDepth: 0x0005,
+    resetParameters: 0x3FFF
+};
+
+/**
  * Executes a data entry for an NRP for a sc88pro NRP (because touhou yes) and RPN tuning
  * @param dataValue {number} dataEntryCoarse MSB
  * @this {WorkletProcessorChannel}
@@ -167,11 +178,15 @@ export function dataEntryCoarse(dataValue)
         
         case dataEntryStates.RPCoarse:
         case dataEntryStates.RPFine:
-            switch (this.RPValue)
+            /**
+             * @type {number}
+             */
+            const rpnValue = this.midiControllers[midiControllers.RPNMsb] | (this.midiControllers[midiControllers.RPNLsb] >> 7);
+            switch (rpnValue)
             {
                 default:
                     SpessaSynthWarn(
-                        `%cUnrecognized RPN for %c${this.channelNumber}%c: %c(0x${this.RPValue.toString(16)})%c data value: %c${dataValue}`,
+                        `%cUnrecognized RPN for %c${this.channelNumber}%c: %c(0x${rpnValue.toString(16)})%c data value: %c${dataValue}`,
                         consoleColors.warn,
                         consoleColors.recognized,
                         consoleColors.warn,
@@ -182,7 +197,7 @@ export function dataEntryCoarse(dataValue)
                     break;
                 
                 // pitch bend range
-                case 0x0000:
+                case registeredParameterTypes.pitchBendRange:
                     this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] = dataValue << 7;
                     SpessaSynthInfo(
                         `%cChannel ${this.channelNumber} bend range. Semitones: %c${dataValue}`,
@@ -192,24 +207,24 @@ export function dataEntryCoarse(dataValue)
                     break;
                 
                 // coarse tuning
-                case 0x0002:
+                case registeredParameterTypes.coarseTuning:
                     // semitones
                     this.setTuningSemitones(dataValue - 64);
                     break;
                 
                 // fine-tuning
-                case 0x0001:
+                case registeredParameterTypes.fineTuning:
                     // note: this will not work properly unless the lsb is sent!
                     // here we store the raw value to then adjust in fine
                     this.setTuning(dataValue - 64, false);
                     break;
                 
                 // modulation depth
-                case 0x0005:
+                case registeredParameterTypes.modulationDepth:
                     this.setModulationDepth(dataValue * 100);
                     break;
                 
-                case 0x3FFF:
+                case registeredParameterTypes.resetParameters:
                     this.resetParameters();
                     break;
                 

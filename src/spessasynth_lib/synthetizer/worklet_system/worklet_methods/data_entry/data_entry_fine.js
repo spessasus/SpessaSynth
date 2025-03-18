@@ -2,6 +2,7 @@ import { consoleColors } from "../../../../utils/other.js";
 import { SpessaSynthInfo } from "../../../../utils/loggin.js";
 import { modulatorSources } from "../../../../soundfont/basic_soundfont/modulator.js";
 import { customControllers, dataEntryStates, NON_CC_INDEX_OFFSET } from "../../worklet_utilities/controller_tables.js";
+import { midiControllers } from "../../../../midi_parser/midi_message.js";
 
 /**
  * Executes a data entry for an RPN tuning
@@ -18,7 +19,8 @@ export function dataEntryFine(dataValue)
         
         case dataEntryStates.RPCoarse:
         case dataEntryStates.RPFine:
-            switch (this.RPValue)
+            const rpnValue = this.midiControllers[midiControllers.RPNMsb] | (this.midiControllers[midiControllers.RPNLsb] >> 7);
+            switch (rpnValue)
             {
                 default:
                     break;
@@ -31,7 +33,7 @@ export function dataEntryFine(dataValue)
                     }
                     // 14-bit value, so upper 7 are coarse and lower 7 are fine!
                     this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] |= dataValue;
-                    const actualTune = (this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] >> 7) + dataValue / 127;
+                    const actualTune = (this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] >> 7) + dataValue / 128;
                     SpessaSynthInfo(
                         `%cChannel ${this.channelNumber} bend range. Semitones: %c${actualTune}`,
                         consoleColors.info,

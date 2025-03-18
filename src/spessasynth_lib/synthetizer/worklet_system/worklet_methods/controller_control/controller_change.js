@@ -147,12 +147,10 @@ export function controllerChange(controllerNumber, controllerValue, force = fals
         
         // check for RPN and NPRN and data entry
         case midiControllers.RPNLsb:
-            this.RPValue = this.RPValue << 7 | controllerValue;
             this.dataEntryState = dataEntryStates.RPFine;
             break;
         
         case midiControllers.RPNMsb:
-            this.RPValue = controllerValue;
             this.dataEntryState = dataEntryStates.RPCoarse;
             break;
         

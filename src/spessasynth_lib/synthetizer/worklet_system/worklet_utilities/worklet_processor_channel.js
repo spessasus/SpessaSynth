@@ -121,12 +121,6 @@ class WorkletProcessorChannel
     NRPFine = 0;
     
     /**
-     * The current value of the Registered Parameter (RP).
-     * @type {number}
-     */
-    RPValue = 0;
-    
-    /**
      * The bank number of the channel (used for patch changes).
      * @type {number}
      */
@@ -220,11 +214,11 @@ class WorkletProcessorChannel
     
     updateChannelTuning()
     {
-        this.channelTuningCents = this.customControllers[customControllers.channelTuning]
-            + this.customControllers[customControllers.channelTuning]                 // RPN channel fine tuning
-            + this.customControllers[customControllers.channelTransposeFine]          // custom tuning (synth.transpose)
-            + this.customControllers[customControllers.masterTuning]                  // master tuning, set by sysEx
-            + this.customControllers[customControllers.channelTuningSemitones] * 100; // RPN channel coarse tuning
+        this.channelTuningCents =
+            this.customControllers[customControllers.channelTuning]                     // RPN channel fine tuning
+            + this.customControllers[customControllers.channelTransposeFine]            // user tuning (transpose)
+            + this.customControllers[customControllers.masterTuning]                    // master tuning, set by sysEx
+            + (this.customControllers[customControllers.channelTuningSemitones] * 100); // RPN channel coarse tuning
     }
     
     /**

@@ -221,10 +221,6 @@ export function resetParameters()
      */
     this.NRPFine = 0;
     /**
-     * @type {number}
-     */
-    this.RPValue = 0;
-    /**
      * @type {string}
      */
     this.dataEntryState = dataEntryStates.Idle;
