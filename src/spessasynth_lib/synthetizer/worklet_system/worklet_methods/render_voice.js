@@ -144,7 +144,7 @@ export function renderVoice(
     const modEnvPitchDepth = voice.modulatedGenerators[generatorTypes.modEnvToPitch];
     const modEnvFilterDepth = voice.modulatedGenerators[generatorTypes.modEnvToFilterFc];
     // don't compute mod env unless necessary
-    if (modEnvFilterDepth !== 0 || modEnvFilterDepth !== 0)
+    if (modEnvFilterDepth !== 0 || modEnvPitchDepth !== 0)
     {
         const modEnv = WorkletModulationEnvelope.getValue(voice, timeNow);
         // apply values
