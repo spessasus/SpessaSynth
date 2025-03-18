@@ -51,6 +51,11 @@ export function controllerChange(controllerNumber, controllerValue, force = fals
     {
         return;
     }
+    
+    // apply the cc to the table
+    this.midiControllers[controllerNumber] = controllerValue << 7;
+    
+    // interpret special CCs
     switch (controllerNumber)
     {
         case midiControllers.allNotesOff:
@@ -97,6 +102,13 @@ export function controllerChange(controllerNumber, controllerValue, force = fals
                         {
                             this.setDrums(true);
                         }
+                        else
+                        {
+                            if (this.channelNumber % 16 !== DEFAULT_PERCUSSION)
+                            {
+                                this.setDrums(false);
+                            }
+                        }
                 }
                 
                 if (this.drumChannel)
@@ -135,22 +147,18 @@ export function controllerChange(controllerNumber, controllerValue, force = fals
         
         // check for RPN and NPRN and data entry
         case midiControllers.RPNLsb:
-            this.RPValue = this.RPValue << 7 | controllerValue;
             this.dataEntryState = dataEntryStates.RPFine;
             break;
         
         case midiControllers.RPNMsb:
-            this.RPValue = controllerValue;
             this.dataEntryState = dataEntryStates.RPCoarse;
             break;
         
         case midiControllers.NRPNMsb:
-            this.NRPCoarse = controllerValue;
             this.dataEntryState = dataEntryStates.NRPCoarse;
             break;
         
         case midiControllers.NRPNLsb:
-            this.NRPFine = controllerValue;
             this.dataEntryState = dataEntryStates.NRPFine;
             break;
         
@@ -163,7 +171,7 @@ export function controllerChange(controllerNumber, controllerValue, force = fals
             break;
         
         case midiControllers.resetAllControllers:
-            this.resetControllers();
+            this.resetControllersRP15Compliant();
             break;
         
         case midiControllers.sustainPedal:
@@ -182,9 +190,8 @@ export function controllerChange(controllerNumber, controllerValue, force = fals
             }
             break;
         
-        // default: apply the controller to the table
+        // default: just compute modulators
         default:
-            this.midiControllers[controllerNumber] = controllerValue << 7;
             this.voices.forEach(v => computeModulators(v, this.midiControllers, 1, controllerNumber));
             break;
     }

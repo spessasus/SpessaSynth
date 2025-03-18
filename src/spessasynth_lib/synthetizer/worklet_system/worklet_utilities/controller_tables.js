@@ -29,12 +29,17 @@ setResetValue(midiControllers.releaseTime, 64);
 setResetValue(midiControllers.attackTime, 64);
 setResetValue(midiControllers.brightness, 64);
 
-setResetValue(midiControllers.soundController6, 64);
-setResetValue(midiControllers.soundController7, 64);
-setResetValue(midiControllers.soundController8, 64);
-setResetValue(midiControllers.soundController9, 64);
+setResetValue(midiControllers.decayTime, 64);
+setResetValue(midiControllers.vibratoRate, 64);
+setResetValue(midiControllers.vibratoDepth, 64);
+setResetValue(midiControllers.vibratoDelay, 64);
 setResetValue(midiControllers.generalPurposeController6, 64);
 setResetValue(midiControllers.generalPurposeController8, 64);
+
+setResetValue(midiControllers.RPNLsb, 127);
+setResetValue(midiControllers.RPNMsb, 127);
+setResetValue(midiControllers.NRPNLsb, 127);
+setResetValue(midiControllers.NRPNMsb, 127);
 
 
 // special case: portamento control

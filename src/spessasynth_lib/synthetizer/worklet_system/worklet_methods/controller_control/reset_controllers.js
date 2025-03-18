@@ -9,6 +9,8 @@ import {
     NON_CC_INDEX_OFFSET,
     resetArray
 } from "../../worklet_utilities/controller_tables.js";
+import { midiControllers } from "../../../../midi_parser/midi_message.js";
+
 
 /**
  * Full system reset
@@ -117,7 +119,6 @@ export function resetAllControllers(log = true)
 export function resetControllers()
 {
     this.channelOctaveTuning.fill(0);
-    this.keyCentTuning.fill(0);
     
     // reset the array
     for (let i = 0; i < resetArray.length; i++)
@@ -129,14 +130,14 @@ export function resetControllers()
         const resetValue = resetArray[i];
         if (this.midiControllers[i] !== resetValue && i < 127)
         {
-            // call cc change if reset
-            this.synth.callEvent("controllerchange", {
-                channel: this.channelNumber,
-                controllerNumber: i,
-                controllerValue: resetValue >> 7
-            });
+            // reset if reset
+            this.controllerChange(i, resetValue >> 7);
         }
-        this.midiControllers[i] = resetValue;
+        else
+        {
+            // out of range, do a regular reset
+            this.midiControllers[i] = resetValue;
+        }
     }
     this.channelVibrato = { rate: 0, depth: 0, delay: 0 };
     this.holdPedal = false;
@@ -152,26 +153,71 @@ export function resetControllers()
     
 }
 
+
+/**
+ * @type {Set<midiControllers|number>}
+ */
+export const nonResetableCCs = new Set([
+    midiControllers.bankSelect,
+    midiControllers.lsbForControl0BankSelect,
+    midiControllers.mainVolume,
+    midiControllers.lsbForControl7MainVolume,
+    midiControllers.pan,
+    midiControllers.lsbForControl10Pan,
+    midiControllers.reverbDepth,
+    midiControllers.tremoloDepth,
+    midiControllers.chorusDepth,
+    midiControllers.detuneDepth,
+    midiControllers.phaserDepth,
+    midiControllers.soundVariation,
+    midiControllers.filterResonance,
+    midiControllers.releaseTime,
+    midiControllers.attackTime,
+    midiControllers.brightness,
+    midiControllers.decayTime,
+    midiControllers.vibratoRate,
+    midiControllers.vibratoDepth,
+    midiControllers.vibratoDelay,
+    midiControllers.soundController10
+]);
+
+/**
+ * Reset all controllers for channel, but RP-15 compliant
+ *  https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp15.pdf
+ *  @this {WorkletProcessorChannel}
+ */
+export function resetControllersRP15Compliant()
+{
+    // reset tunings
+    this.channelOctaveTuning.fill(0);
+    
+    // reset pitch bend
+    this.pitchWheel(64, 0);
+    
+    this.channelVibrato = { rate: 0, depth: 0, delay: 0 };
+    
+    for (let i = 0; i < 128; i++)
+    {
+        const resetValue = resetArray[i];
+        if (!nonResetableCCs.has(i) && resetValue !== this.midiControllers[i])
+        {
+            this.controllerChange(i, resetValue);
+        }
+    }
+}
+
 /**
  * @this {WorkletProcessorChannel}
  */
 export function resetParameters()
 {
-    // reset parameters
     /**
-     * @type {number}
-     */
-    this.NRPCoarse = 0;
-    /**
-     * @type {number}
-     */
-    this.NRPFine = 0;
-    /**
-     * @type {number}
-     */
-    this.RPValue = 0;
-    /**
+     * reset the state machine to idle
      * @type {string}
      */
     this.dataEntryState = dataEntryStates.Idle;
+    SpessaSynthInfo(
+        "%cResetting Registered and Non-Registered Parameters!",
+        consoleColors.info
+    );
 }

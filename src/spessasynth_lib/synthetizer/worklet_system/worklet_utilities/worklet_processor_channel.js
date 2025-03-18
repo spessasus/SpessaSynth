@@ -4,14 +4,17 @@ import {
     customControllers,
     dataEntryStates
 } from "./controller_tables.js";
-import { resetControllers, resetParameters } from "../worklet_methods/controller_control/reset_controllers.js";
+import {
+    resetControllers,
+    resetControllersRP15Compliant,
+    resetParameters
+} from "../worklet_methods/controller_control/reset_controllers.js";
 import { renderVoice } from "../worklet_methods/render_voice.js";
 import { panVoice } from "./stereo_panner.js";
 import { killNote } from "../worklet_methods/stopping_notes/kill_note.js";
 import { setTuning } from "../worklet_methods/tuning_control/set_tuning.js";
 import { setModulationDepth } from "../worklet_methods/tuning_control/set_modulation_depth.js";
 import { dataEntryFine } from "../worklet_methods/data_entry/data_entry_fine.js";
-import { setTuningSemitones } from "../worklet_methods/tuning_control/set_tuning_semitones.js";
 import { controllerChange } from "../worklet_methods/controller_control/controller_change.js";
 import { stopAllNotes } from "../worklet_methods/stopping_notes/stop_all_notes.js";
 import { muteChannel } from "../worklet_methods/mute_channel.js";
@@ -75,13 +78,6 @@ class WorkletProcessorChannel
     channelTuningCents = 0;
     
     /**
-     * An array representing the tuning of individual keys in cents.
-     * Each index corresponds to a MIDI note number (0-127).
-     * @type {Int16Array}
-     */
-    keyCentTuning = new Int16Array(128);
-    
-    /**
      * Indicates whether the sustain (hold) pedal is active.
      * @type {boolean}
      */
@@ -110,24 +106,6 @@ class WorkletProcessorChannel
      * @type {dataEntryStates}
      */
     dataEntryState = dataEntryStates.Idle;
-    
-    /**
-     * The current coarse value of the Non-Registered Parameter (NRPN).
-     * @type {number}
-     */
-    NRPCoarse = 0;
-    
-    /**
-     * The current fine value of the Non-Registered Parameter (NRPN).
-     * @type {number}
-     */
-    NRPFine = 0;
-    
-    /**
-     * The current value of the Registered Parameter (RP).
-     * @type {number}
-     */
-    RPValue = 0;
     
     /**
      * The bank number of the channel (used for patch changes).
@@ -223,11 +201,11 @@ class WorkletProcessorChannel
     
     updateChannelTuning()
     {
-        this.channelTuningCents = this.customControllers[customControllers.channelTuning]
-            + this.customControllers[customControllers.channelTuning]                 // RPN channel fine tuning
-            + this.customControllers[customControllers.channelTransposeFine]          // custom tuning (synth.transpose)
-            + this.customControllers[customControllers.masterTuning]                  // master tuning, set by sysEx
-            + this.customControllers[customControllers.channelTuningSemitones] * 100; // RPN channel coarse tuning
+        this.channelTuningCents =
+            this.customControllers[customControllers.channelTuning]                     // RPN channel fine tuning
+            + this.customControllers[customControllers.channelTransposeFine]            // user tuning (transpose)
+            + this.customControllers[customControllers.masterTuning]                    // master tuning, set by sysEx
+            + (this.customControllers[customControllers.channelTuningSemitones] * 100); // RPN channel coarse tuning
     }
     
     /**
@@ -371,7 +349,6 @@ WorkletProcessorChannel.prototype.programChange = programChange;
 
 // Tuning
 WorkletProcessorChannel.prototype.setTuning = setTuning;
-WorkletProcessorChannel.prototype.setTuningSemitones = setTuningSemitones;
 WorkletProcessorChannel.prototype.setOctaveTuning = setOctaveTuning;
 WorkletProcessorChannel.prototype.setModulationDepth = setModulationDepth;
 WorkletProcessorChannel.prototype.transposeChannel = transposeChannel;
@@ -379,6 +356,7 @@ WorkletProcessorChannel.prototype.transposeChannel = transposeChannel;
 // CC
 WorkletProcessorChannel.prototype.controllerChange = controllerChange;
 WorkletProcessorChannel.prototype.resetControllers = resetControllers;
+WorkletProcessorChannel.prototype.resetControllersRP15Compliant = resetControllersRP15Compliant;
 WorkletProcessorChannel.prototype.resetParameters = resetParameters;
 WorkletProcessorChannel.prototype.dataEntryFine = dataEntryFine;
 WorkletProcessorChannel.prototype.dataEntryCoarse = dataEntryCoarse;

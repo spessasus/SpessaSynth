@@ -17,8 +17,11 @@ export function setTuning(cents, log = true)
         return;
     }
     SpessaSynthInfo(
-        `%cChannel ${this.channelNumber} fine tuning. Cents: %c${cents}`,
+        `%cFine tuning for %c${this.channelNumber}%c is now set to %c${cents}%c cents.`,
         consoleColors.info,
-        consoleColors.value
+        consoleColors.recognized,
+        consoleColors.info,
+        consoleColors.value,
+        consoleColors.info
     );
 }

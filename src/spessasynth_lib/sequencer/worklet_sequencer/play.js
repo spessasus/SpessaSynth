@@ -2,6 +2,9 @@ import { getEvent, messageTypes, midiControllers } from "../../midi_parser/midi_
 import { WorkletSequencerReturnMessageType } from "./sequencer_message.js";
 import { MIDIticksToSeconds } from "../../midi_parser/basic_midi.js";
 import { resetArray } from "../../synthetizer/worklet_system/worklet_utilities/controller_tables.js";
+import {
+    nonResetableCCs
+} from "../../synthetizer/worklet_system/worklet_methods/controller_control/reset_controllers.js";
 
 
 // an array with preset default values
@@ -69,6 +72,28 @@ export function _playTo(time, ticks = undefined)
         savedControllers.push(Array.from(defaultControllerArray));
     }
     
+    /**
+     * RP-15 compliant reset
+     * https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp15.pdf
+     * @param chan {number}
+     */
+    function resetAllControlllers(chan)
+    {
+        // reset pitch bend
+        pitchBends[chan] = 8192;
+        if (savedControllers?.[chan] === undefined)
+        {
+            return;
+        }
+        for (let i = 0; i < defaultControllerArray.length; i++)
+        {
+            if (!nonResetableCCs.has(i))
+            {
+                savedControllers[chan][i] = defaultControllerArray[i];
+            }
+        }
+    }
+    
     while (true)
     {
         // find the next event
@@ -133,7 +158,7 @@ export function _playTo(time, ticks = undefined)
                     }
                     else if (controllerNumber === midiControllers.resetAllControllers)
                     {
-                        savedControllers[channel] = Array.from(defaultControllerArray);
+                        resetAllControlllers(savedControllers[channel]);
                     }
                     if (this.sendMIDIMessages)
                     {

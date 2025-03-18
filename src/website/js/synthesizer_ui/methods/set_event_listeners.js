@@ -58,6 +58,7 @@ export function setEventListeners()
         const controller = this.createChannelController(this.controllers.length);
         this.controllers.push(controller);
         dropdownDiv.appendChild(controller.controller);
+        this.showControllerGroup(this.groupSelector.value);
         this.hideControllers();
     });
 }

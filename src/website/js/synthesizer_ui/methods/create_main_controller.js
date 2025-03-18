@@ -212,6 +212,7 @@ export function createMainSynthController()
     {
         this.showControllerGroup(groupSelector.value);
     };
+    this.groupSelector = groupSelector;
     
     /**
      * interpolation type

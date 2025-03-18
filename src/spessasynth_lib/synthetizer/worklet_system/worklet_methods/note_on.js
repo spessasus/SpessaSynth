@@ -2,7 +2,6 @@ import { computeModulators } from "../worklet_utilities/worklet_modulator.js";
 import { generatorTypes } from "../../../soundfont/basic_soundfont/generator.js";
 import { midiControllers } from "../../../midi_parser/midi_message.js";
 import { portamentoTimeToSeconds } from "./portamento_time.js";
-import { WorkletLowpassFilter } from "../worklet_utilities/lowpass_filter.js";
 
 /**
  * sends a "MIDI Note on message"
@@ -23,7 +22,7 @@ export function noteOn(midiNote, velocity, enableDebugging = false, sendEvent = 
     velocity = Math.min(127, velocity);
     
     if (
-        (this.synth.highPerformanceMode && this.totalVoicesAmount > 200 && velocity < 40) ||
+        (this.synth.highPerformanceMode && this.synth.totalVoicesAmount > 200 && velocity < 40) ||
         (this.synth.highPerformanceMode && velocity < 10) ||
         (this.isMuted)
     )
@@ -155,8 +154,6 @@ export function noteOn(midiNote, velocity, enableDebugging = false, sendEvent = 
         voice.volumeEnvelope.attenuation = voice.volumeEnvelope.attenuationTargetGain;
         // set initial pan to avoid split second changing from middle to the correct value
         voice.currentPan = Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan])); //  -500 to 500
-        // set the current cutoff to target, as it's interpolated
-        WorkletLowpassFilter.initialize(voice);
     });
     
     this.synth.totalVoicesAmount += voices.length;
