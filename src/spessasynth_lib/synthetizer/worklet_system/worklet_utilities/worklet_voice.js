@@ -481,7 +481,8 @@ export function getWorkletVoices(channel,
                     targetKey,
                     realKey,
                     generators,
-                    sampleAndGenerators.modulators.map(m => Modulator.copy(m))
+                    sampleAndGenerators.modulators.map(m => Modulator.copy(m)),
+                    this.filterSmoothingFactor
                 )
             );
             return voices;
