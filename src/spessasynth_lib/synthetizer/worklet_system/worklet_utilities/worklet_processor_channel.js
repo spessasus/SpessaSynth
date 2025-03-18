@@ -15,7 +15,6 @@ import { killNote } from "../worklet_methods/stopping_notes/kill_note.js";
 import { setTuning } from "../worklet_methods/tuning_control/set_tuning.js";
 import { setModulationDepth } from "../worklet_methods/tuning_control/set_modulation_depth.js";
 import { dataEntryFine } from "../worklet_methods/data_entry/data_entry_fine.js";
-import { setTuningSemitones } from "../worklet_methods/tuning_control/set_tuning_semitones.js";
 import { controllerChange } from "../worklet_methods/controller_control/controller_change.js";
 import { stopAllNotes } from "../worklet_methods/stopping_notes/stop_all_notes.js";
 import { muteChannel } from "../worklet_methods/mute_channel.js";
@@ -107,18 +106,6 @@ class WorkletProcessorChannel
      * @type {dataEntryStates}
      */
     dataEntryState = dataEntryStates.Idle;
-    
-    /**
-     * The current coarse value of the Non-Registered Parameter (NRPN).
-     * @type {number}
-     */
-    NRPCoarse = 0;
-    
-    /**
-     * The current fine value of the Non-Registered Parameter (NRPN).
-     * @type {number}
-     */
-    NRPFine = 0;
     
     /**
      * The bank number of the channel (used for patch changes).
@@ -362,7 +349,6 @@ WorkletProcessorChannel.prototype.programChange = programChange;
 
 // Tuning
 WorkletProcessorChannel.prototype.setTuning = setTuning;
-WorkletProcessorChannel.prototype.setTuningSemitones = setTuningSemitones;
 WorkletProcessorChannel.prototype.setOctaveTuning = setOctaveTuning;
 WorkletProcessorChannel.prototype.setModulationDepth = setModulationDepth;
 WorkletProcessorChannel.prototype.transposeChannel = transposeChannel;

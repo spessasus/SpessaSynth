@@ -155,12 +155,10 @@ export function controllerChange(controllerNumber, controllerValue, force = fals
             break;
         
         case midiControllers.NRPNMsb:
-            this.NRPCoarse = controllerValue;
             this.dataEntryState = dataEntryStates.NRPCoarse;
             break;
         
         case midiControllers.NRPNLsb:
-            this.NRPFine = controllerValue;
             this.dataEntryState = dataEntryStates.NRPFine;
             break;
         

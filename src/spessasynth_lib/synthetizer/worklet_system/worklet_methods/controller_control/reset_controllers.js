@@ -211,17 +211,13 @@ export function resetControllersRP15Compliant()
  */
 export function resetParameters()
 {
-    // reset parameters
     /**
-     * @type {number}
-     */
-    this.NRPCoarse = 0;
-    /**
-     * @type {number}
-     */
-    this.NRPFine = 0;
-    /**
+     * reset the state machine to idle
      * @type {string}
      */
     this.dataEntryState = dataEntryStates.Idle;
+    SpessaSynthInfo(
+        "%cResetting Registered and Non-Registered Parameters!",
+        consoleColors.info
+    );
 }

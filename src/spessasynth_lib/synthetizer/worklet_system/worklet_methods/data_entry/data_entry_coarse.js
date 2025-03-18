@@ -1,8 +1,9 @@
-import { dataEntryStates, NON_CC_INDEX_OFFSET } from "../../worklet_utilities/controller_tables.js";
+import { customControllers, dataEntryStates, NON_CC_INDEX_OFFSET } from "../../worklet_utilities/controller_tables.js";
 import { SpessaSynthInfo, SpessaSynthWarn } from "../../../../utils/loggin.js";
 import { consoleColors } from "../../../../utils/other.js";
 import { midiControllers } from "../../../../midi_parser/midi_message.js";
 import { modulatorSources } from "../../../../soundfont/basic_soundfont/modulator.js";
+
 
 /**
  * @enum {number}
@@ -16,6 +17,26 @@ const registeredParameterTypes = {
 };
 
 /**
+ * https://cdn.roland.com/assets/media/pdf/SC-88PRO_OM.pdf
+ * http://hummer.stanford.edu/sig/doc/classes/MidiOutput/rpn.html
+ * @enum {number}
+ */
+const nonRegisteredParameterNumbers = {
+    partParameter: 0x01,
+    
+    vibratoRate: 0x08,
+    vibratoDepth: 0x09,
+    vibratoDelay: 0x0A,
+    
+    EGAttackTime: 0x64,
+    EGReleaseTime: 0x66,
+    
+    TVFFilterCutoff: 0x20,
+    drumReverb: 0x1D
+};
+
+
+/**
  * Executes a data entry for an NRP for a sc88pro NRP (because touhou yes) and RPN tuning
  * @param dataValue {number} dataEntryCoarse MSB
  * @this {WorkletProcessorChannel}
@@ -23,7 +44,7 @@ const registeredParameterTypes = {
  */
 export function dataEntryCoarse(dataValue)
 {
-    let addDefaultVibrato = () =>
+    const addDefaultVibrato = () =>
     {
         if (this.channelVibrato.delay === 0 && this.channelVibrato.rate === 0 && this.channelVibrato.depth === 0)
         {
@@ -32,24 +53,43 @@ export function dataEntryCoarse(dataValue)
             this.channelVibrato.delay = 0.6;
         }
     };
+    
+    const coolInfo = (what, value, type) =>
+    {
+        if (type.length > 0)
+        {
+            type = " " + type;
+        }
+        SpessaSynthInfo(
+            `%c${what} for %c${this.channelNumber}%c is now set to %c${value}%c${type}.`,
+            consoleColors.info,
+            consoleColors.recognized,
+            consoleColors.info,
+            consoleColors.value,
+            consoleColors.info
+        );
+    };
     switch (this.dataEntryState)
     {
         default:
         case dataEntryStates.Idle:
             break;
         
-        // https://cdn.roland.com/assets/media/pdf/SC-88PRO_OM.pdf
-        // http://hummer.stanford.edu/sig/doc/classes/MidiOutput/rpn.html
+        // process GS NRPNs
         case dataEntryStates.NRPFine:
-            if (this.synth.system !== "gs")
-            {
-                return;
-            }
             if (this.lockGSNRPNParams)
             {
                 return;
             }
-            switch (this.NRPCoarse)
+            /**
+             * @type {number}
+             */
+            const NRPNCoarse = this.midiControllers[midiControllers.NRPNMsb] >> 7;
+            /**
+             * @type {number}
+             */
+            const NRPNFine = this.midiControllers[midiControllers.NRPNLsb] >> 7;
+            switch (NRPNCoarse)
             {
                 default:
                     if (dataValue === 64)
@@ -58,8 +98,8 @@ export function dataEntryCoarse(dataValue)
                         return;
                     }
                     SpessaSynthWarn(
-                        `%cUnrecognized NRPN for %c${this.channelNumber}%c: %c(0x${this.NRPCoarse.toString(16)
-                            .toUpperCase()} 0x${this.NRPFine.toString(
+                        `%cUnrecognized NRPN for %c${this.channelNumber}%c: %c(0x${NRPNFine.toString(16)
+                            .toUpperCase()} 0x${NRPNFine.toString(
                             16).toUpperCase()})%c data value: %c${dataValue}`,
                         consoleColors.warn,
                         consoleColors.recognized,
@@ -71,8 +111,8 @@ export function dataEntryCoarse(dataValue)
                     break;
                 
                 // part parameters: vibrato, cutoff
-                case 0x01:
-                    switch (this.NRPFine)
+                case nonRegisteredParameterNumbers.partParameter:
+                    switch (NRPNFine)
                     {
                         default:
                             if (dataValue === 64)
@@ -81,7 +121,7 @@ export function dataEntryCoarse(dataValue)
                                 return;
                             }
                             SpessaSynthWarn(
-                                `%cUnrecognized NRPN for %c${this.channelNumber}%c: %c(0x${this.NRPCoarse.toString(16)} 0x${this.NRPFine.toString(
+                                `%cUnrecognized NRPN for %c${this.channelNumber}%c: %c(0x${NRPNCoarse.toString(16)} 0x${NRPNFine.toString(
                                     16)})%c data value: %c${dataValue}`,
                                 consoleColors.warn,
                                 consoleColors.recognized,
@@ -93,85 +133,66 @@ export function dataEntryCoarse(dataValue)
                             break;
                         
                         // vibrato rate
-                        case 0x08:
+                        case nonRegisteredParameterNumbers.vibratoRate:
                             if (dataValue === 64)
                             {
                                 return;
                             }
                             addDefaultVibrato();
                             this.channelVibrato.rate = (dataValue / 64) * 8;
-                            SpessaSynthInfo(
-                                `%cVibrato rate for %c${this.channelNumber}%c is now set to %c${dataValue} = ${this.channelVibrato.rate}%cHz.`,
-                                consoleColors.info,
-                                consoleColors.recognized,
-                                consoleColors.info,
-                                consoleColors.value,
-                                consoleColors.info
-                            );
+                            coolInfo("Vibrato rate", `${dataValue} = ${this.channelVibrato.rate}`, "Hz");
                             break;
                         
                         // vibrato depth
-                        case 0x09:
+                        case nonRegisteredParameterNumbers.vibratoDepth:
                             if (dataValue === 64)
                             {
                                 return;
                             }
                             addDefaultVibrato();
                             this.channelVibrato.depth = dataValue / 2;
-                            SpessaSynthInfo(
-                                `%cVibrato depth for %c${this.channelNumber}%c is now set to %c${dataValue} = ${this.channelVibrato.depth}%c cents range of detune.`,
-                                consoleColors.info,
-                                consoleColors.recognized,
-                                consoleColors.info,
-                                consoleColors.value,
-                                consoleColors.info
-                            );
+                            coolInfo("Vibrato depth", `${dataValue} = ${this.channelVibrato.depth}`, "cents of detune");
                             break;
                         
                         // vibrato delay
-                        case 0x0A:
+                        case nonRegisteredParameterNumbers.vibratoDelay:
                             if (dataValue === 64)
                             {
                                 return;
                             }
                             addDefaultVibrato();
                             this.channelVibrato.delay = (dataValue / 64) / 3;
-                            SpessaSynthInfo(
-                                `%cVibrato delay for %c${this.channelNumber}%c is now set to %c${dataValue} = ${this.channelVibrato.delay}%c seconds.`,
-                                consoleColors.info,
-                                consoleColors.recognized,
-                                consoleColors.info,
-                                consoleColors.value,
-                                consoleColors.info
-                            );
+                            coolInfo("Vibrato delay", `${dataValue} = ${this.channelVibrato.delay}`, "seconds");
                             break;
                         
                         // filter cutoff
-                        case 0x20:
+                        case nonRegisteredParameterNumbers.TVFFilterCutoff:
                             // affect the "brightness" controller as we have a default modulator that controls it
-                            const ccValue = dataValue;
                             this.controllerChange(midiControllers.brightness, dataValue);
-                            SpessaSynthInfo(
-                                `%cFilter cutoff for %c${this.channelNumber}%c is now set to %c${ccValue}`,
-                                consoleColors.info,
-                                consoleColors.recognized,
-                                consoleColors.info,
-                                consoleColors.value
-                            );
+                            coolInfo("Filter cutoff", dataValue.toString(), "");
+                            break;
+                        
+                        // attack time
+                        case nonRegisteredParameterNumbers.EGAttackTime:
+                            // affect the "attack time" controller as we have a default modulator that controls it
+                            this.controllerChange(midiControllers.attackTime, dataValue);
+                            coolInfo("EG attack time", dataValue.toString(), "");
+                            break;
+                        
+                        // release time
+                        case nonRegisteredParameterNumbers.EGReleaseTime:
+                            // affect the "release time" controller as we have a default modulator that controls it
+                            this.controllerChange(midiControllers.releaseTime, dataValue);
+                            coolInfo("EG release time", dataValue.toString(), "");
+                            break;
                     }
                     break;
                 
                 // drum reverb
-                case 0x1D:
+                case nonRegisteredParameterNumbers.drumReverb:
                     const reverb = dataValue;
                     this.controllerChange(midiControllers.reverbDepth, reverb);
-                    SpessaSynthInfo(
-                        `%cGS Drum reverb for %c${this.channelNumber}%c: %c${reverb}`,
-                        consoleColors.info,
-                        consoleColors.recognized,
-                        consoleColors.info,
-                        consoleColors.value
-                    );
+                    coolInfo("GS Drum reverb", reverb.toString(), "percent");
                     break;
             }
             break;
@@ -199,17 +220,15 @@ export function dataEntryCoarse(dataValue)
                 // pitch bend range
                 case registeredParameterTypes.pitchBendRange:
                     this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] = dataValue << 7;
-                    SpessaSynthInfo(
-                        `%cChannel ${this.channelNumber} bend range. Semitones: %c${dataValue}`,
-                        consoleColors.info,
-                        consoleColors.value
-                    );
+                    coolInfo("Pitch bend range", dataValue.toString(), "semitones");
                     break;
                 
                 // coarse tuning
                 case registeredParameterTypes.coarseTuning:
                     // semitones
-                    this.setTuningSemitones(dataValue - 64);
+                    const semitones = dataValue - 64;
+                    this.setCustomController(customControllers.channelTuningSemitones, semitones);
+                    coolInfo("Coarse tuning", semitones.toString(), "semitones");
                     break;
                 
                 // fine-tuning
