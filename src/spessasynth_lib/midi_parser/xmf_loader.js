@@ -72,75 +72,75 @@ class XMFNode
         const headerData = binaryData.slice(binaryData.currentIndex, binaryData.currentIndex + headerLength);
         binaryData.currentIndex += headerLength;
         this.metadataLength = readVariableLengthQuantity(headerData);
+        
+        const metadataChunk = headerData.slice(
+            headerData.currentIndex,
+            headerData.currentIndex + this.metadataLength
+        );
+        headerData.currentIndex += this.metadataLength;
+        
+        /**
+         * @type {metadataTypes|string|number}
+         */
+        let fieldSpecifier;
+        while (metadataChunk.currentIndex < metadataChunk.length)
         {
-            const metadataChunk = headerData.slice(
-                headerData.currentIndex,
-                headerData.currentIndex + this.metadataLength
-            );
-            headerData.currentIndex += this.metadataLength;
-            
-            /**
-             * @type {metadataTypes|string|number}
-             */
-            let fieldSpecifier;
-            while (metadataChunk.currentIndex < metadataChunk.length)
+            const firstSpecifierByte = metadataChunk[metadataChunk.currentIndex++];
+            if (firstSpecifierByte === 0)
             {
-                const firstSpecifierByte = metadataChunk[metadataChunk.currentIndex++];
-                if (firstSpecifierByte === 0)
+                fieldSpecifier = readVariableLengthQuantity(metadataChunk);
+                console.log(`numeric field! ${fieldSpecifier}`);
+                if (Object.values(fieldSpecifier).findIndex(v => v === fieldSpecifier) === -1)
                 {
-                    fieldSpecifier = readVariableLengthQuantity(metadataChunk);
-                    console.log(`numberic field! ${fieldSpecifier}`);
-                    if (Object.values(fieldSpecifier).findIndex(v => v === fieldSpecifier) === -1)
-                    {
-                        throw new Error(`Unknown field specifier: ${fieldSpecifier}`);
-                    }
-                }
-                else
-                {
-                    // this is the length of string
-                    metadataChunk.currentIndex--;
-                    const stringLength = readVariableLengthQuantity(metadataChunk);
-                    console.log("string!", stringLength);
-                    fieldSpecifier = readBytesAsString(metadataChunk, stringLength);
-                }
-                console.log("field specifier:", fieldSpecifier);
-                
-                const numberOfVersions = readVariableLengthQuantity(metadataChunk);
-                if (numberOfVersions === 0)
-                {
-                    const dataLength = readVariableLengthQuantity(metadataChunk);
-                    const formatID = readVariableLengthQuantity(metadataChunk);
-                    const data = metadataChunk.slice(
-                        metadataChunk.currentIndex,
-                        metadataChunk.currentIndex + dataLength
-                    );
-                    metadataChunk.currentIndex += dataLength;
-                    // text only
-                    if (formatID < 4)
-                    {
-                        const obj = {};
-                        obj[fieldSpecifier] = readBytesAsString(data, dataLength);
-                        this.metadata.push(obj);
-                    }
-                    else
-                    {
-                        const obj = {};
-                        obj[fieldSpecifier] = data;
-                        this.metadata.push(obj);
-                    }
-                }
-                else
-                {
-                    // throw new Error("International content is not supported.");
-                    // Skip the number of versions
-                    console.warn(`International content: ${numberOfVersions}`);
-                    readVariableLengthQuantity(metadataChunk);
-                    // Length in bytes.
-                    // Skip the whole thing!
-                    metadataChunk.currentIndex += readVariableLengthQuantity(metadataChunk);
+                    throw new Error(`Unknown field specifier: ${fieldSpecifier}`);
                 }
             }
+            else
+            {
+                // this is the length of string
+                metadataChunk.currentIndex--;
+                const stringLength = readVariableLengthQuantity(metadataChunk);
+                console.log("string!", stringLength);
+                fieldSpecifier = readBytesAsString(metadataChunk, stringLength);
+            }
+            console.log("field specifier:", fieldSpecifier);
+            
+            const numberOfVersions = readVariableLengthQuantity(metadataChunk);
+            if (numberOfVersions === 0)
+            {
+                const dataLength = readVariableLengthQuantity(metadataChunk);
+                const formatID = readVariableLengthQuantity(metadataChunk);
+                const data = metadataChunk.slice(
+                    metadataChunk.currentIndex,
+                    metadataChunk.currentIndex + dataLength
+                );
+                metadataChunk.currentIndex += dataLength;
+                // text only
+                if (formatID < 4)
+                {
+                    const obj = {};
+                    obj[fieldSpecifier] = readBytesAsString(data, dataLength);
+                    this.metadata.push(obj);
+                }
+                else
+                {
+                    const obj = {};
+                    obj[fieldSpecifier] = data;
+                    this.metadata.push(obj);
+                }
+            }
+            else
+            {
+                // throw new Error("International content is not supported.");
+                // Skip the number of versions
+                console.warn(`International content: ${numberOfVersions}`);
+                readVariableLengthQuantity(metadataChunk);
+                // Length in bytes.
+                // Skip the whole thing!
+                metadataChunk.currentIndex += readVariableLengthQuantity(metadataChunk);
+            }
         }
+        
         
         const unpackersLength = readVariableLengthQuantity(headerData);
         headerData.currentIndex += unpackersLength;
