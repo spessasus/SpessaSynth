@@ -101,9 +101,8 @@ export function renderVoice(
         cents += lfoVal * (vibratoDepth * this.customControllers[customControllers.modulationMultiplier]);
     }
     
-    // low pass frequency
-    const initialFc = voice.modulatedGenerators[generatorTypes.initialFilterFc];
-    let lowpassCents = initialFc;
+    // low pass excursion with LFO and mod envelope
+    let lowpassExcursion = 0;
     
     // mod LFO
     const modPitchDepth = voice.modulatedGenerators[generatorTypes.modLfoToPitch];
@@ -123,7 +122,7 @@ export function renderVoice(
         // negate the lfo value because audigy starts with increase rather than decrease
         modLfoCentibels = -modLfoValue * modVolDepth;
         // low pass frequency
-        lowpassCents += modLfoValue * modFilterDepth;
+        lowpassExcursion += modLfoValue * modFilterDepth;
     }
     
     // channel vibrato (GS NRPN)
@@ -149,7 +148,7 @@ export function renderVoice(
     {
         const modEnv = WorkletModulationEnvelope.getValue(voice, timeNow);
         // apply values
-        lowpassCents += modEnv * modEnvFilterDepth;
+        lowpassExcursion += modEnv * modEnvFilterDepth;
         cents += modEnv * modEnvPitchDepth;
     }
     
@@ -182,12 +181,8 @@ export function renderVoice(
             break;
     }
     
-    /* low pass filter
-     * note: the check is because of the filter optimization (if cents are the maximum then the filter is open)
-     * filter cannot use this optimization if it's dynamic (see #53),
-     * and the filter can only be dynamic if the initial filter is not open
-     */
-    WorkletLowpassFilter.apply(voice, bufferOut, lowpassCents, initialFc > 13499, this.synth.filterSmoothingFactor);
+    // low pass filter
+    WorkletLowpassFilter.apply(voice, bufferOut, lowpassExcursion, this.synth.filterSmoothingFactor);
     
     // vol env
     WorkletVolumeEnvelope.apply(voice, bufferOut, modLfoCentibels, this.synth.volumeEnvelopeSmoothingFactor);
