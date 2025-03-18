@@ -87,13 +87,14 @@ export function handleMessage(message)
             {
                 for (let i = 0; i < this.workletProcessorChannels.length; i++)
                 {
+                    const chan = this.workletProcessorChannels[i];
                     if (data.rate === -1)
                     {
-                        channelObject.disableAndLockGSNRPN();
+                        chan.disableAndLockGSNRPN();
                     }
                     else
                     {
-                        channelObject.setVibrato(data.depth, data.rate, data.delay);
+                        chan.setVibrato(data.depth, data.rate, data.delay);
                     }
                 }
             }
