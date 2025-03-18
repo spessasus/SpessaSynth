@@ -85,20 +85,27 @@ class XMFNode
             let fieldSpecifier;
             while (metadataChunk.currentIndex < metadataChunk.length)
             {
-                const firstSpecifierByte = metadataChunk.currentIndex;
+                const firstSpecifierByte = metadataChunk[metadataChunk.currentIndex++];
                 if (firstSpecifierByte === 0)
                 {
-                    metadataChunk.currentIndex++;
                     fieldSpecifier = readVariableLengthQuantity(metadataChunk);
+                    console.log(`numberic field! ${fieldSpecifier}`);
+                    if (Object.values(fieldSpecifier).findIndex(v => v === fieldSpecifier) === -1)
+                    {
+                        throw new Error(`Unknown field specifier: ${fieldSpecifier}`);
+                    }
                 }
                 else
                 {
                     // this is the length of string
-                    fieldSpecifier = readBytesAsString(metadataChunk, firstSpecifierByte);
+                    metadataChunk.currentIndex--;
+                    const stringLength = readVariableLengthQuantity(metadataChunk);
+                    console.log("string!", stringLength);
+                    fieldSpecifier = readBytesAsString(metadataChunk, stringLength);
                 }
+                console.log("field specifier:", fieldSpecifier);
                 
                 const numberOfVersions = readVariableLengthQuantity(metadataChunk);
-                console.log(numberOfVersions);
                 if (numberOfVersions === 0)
                 {
                     const dataLength = readVariableLengthQuantity(metadataChunk);
@@ -126,6 +133,7 @@ class XMFNode
                 {
                     // throw new Error("International content is not supported.");
                     // Skip the number of versions
+                    console.warn(`International content: ${numberOfVersions}`);
                     readVariableLengthQuantity(metadataChunk);
                     // Length in bytes.
                     // Skip the whole thing!
