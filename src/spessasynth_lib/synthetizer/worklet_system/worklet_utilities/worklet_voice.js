@@ -3,13 +3,16 @@
  * purpose: prepares workletvoices from sample and generator data and manages sample dumping
  * note: sample dumping means sending it over to the AudioWorkletGlobalScope
  */
-import { MIN_NOTE_LENGTH } from "../main_processor.js";
+import { MIN_EXCLUSIVE_LENGTH, MIN_NOTE_LENGTH } from "../main_processor.js";
 import { SpessaSynthTable, SpessaSynthWarn } from "../../../utils/loggin.js";
 import { WorkletLowpassFilter } from "./lowpass_filter.js";
 import { WorkletVolumeEnvelope } from "./volume_envelope.js";
 import { WorkletModulationEnvelope } from "./modulation_envelope.js";
 import { addAndClampGenerator, generatorTypes } from "../../../soundfont/basic_soundfont/generator.js";
 import { Modulator } from "../../../soundfont/basic_soundfont/modulator.js";
+
+const EXCLUSIVE_CUTOFF_TIME = -2320;
+const EXCLUSIVE_MOD_CUTOFF_TIME = -1130; // less because filter shenanigans
 
 class WorkletSample
 {
@@ -252,6 +255,12 @@ class WorkletVoice
     overridePan = 0;
     
     /**
+     * Exclusive class number for hi-hats etc.
+     * @type {number}
+     */
+    exclusiveClass = 0;
+    
+    /**
      * Creates a workletVoice
      * @param sampleRate {number}
      * @param workletSample {WorkletSample}
@@ -279,6 +288,7 @@ class WorkletVoice
     {
         this.sample = workletSample;
         this.generators = generators;
+        this.exclusiveClass = this.generators[generatorTypes.exclusiveClass];
         this.modulatedGenerators = new Int16Array(generators);
         this.modulators = modulators;
         
@@ -322,6 +332,18 @@ class WorkletVoice
             voice.generators,
             voice.modulators.map(m => Modulator.copy(m))
         );
+    }
+    
+    /**
+     * Releases the voice as exclusiveClass
+     */
+    exclusiveRelease()
+    {
+        this.release(MIN_EXCLUSIVE_LENGTH);
+        this.modulatedGenerators[generatorTypes.releaseVolEnv] = EXCLUSIVE_CUTOFF_TIME; // make the release nearly instant
+        this.modulatedGenerators[generatorTypes.releaseModEnv] = EXCLUSIVE_MOD_CUTOFF_TIME;
+        WorkletVolumeEnvelope.recalculate(this);
+        WorkletModulationEnvelope.recalculate(this);
     }
     
     /**
