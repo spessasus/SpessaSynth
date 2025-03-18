@@ -1,13 +1,8 @@
 import { computeModulators } from "../worklet_utilities/worklet_modulator.js";
-import { WorkletVolumeEnvelope } from "../worklet_utilities/volume_envelope.js";
-import { WorkletModulationEnvelope } from "../worklet_utilities/modulation_envelope.js";
 import { generatorTypes } from "../../../soundfont/basic_soundfont/generator.js";
-import { MIN_EXCLUSIVE_LENGTH } from "../main_processor.js";
 import { midiControllers } from "../../../midi_parser/midi_message.js";
 import { portamentoTimeToSeconds } from "./portamento_time.js";
-
-const EXCLUSIVE_CUTOFF_TIME = -2320;
-const EXCLUSIVE_MOD_CUTOFF_TIME = -1130; // less because filter shenanigans
+import { WorkletLowpassFilter } from "../worklet_utilities/lowpass_filter.js";
 
 /**
  * sends a "MIDI Note on message"
@@ -117,19 +112,15 @@ export function noteOn(midiNote, velocity, enableDebugging = false, sendEvent = 
         voice.overridePan = panOverride;
         
         // apply exclusive class
-        const exclusive = voice.generators[generatorTypes.exclusiveClass];
+        const exclusive = voice.exclusiveClass;
         if (exclusive !== 0)
         {
             // kill all voices with the same exclusive class
             channelVoices.forEach(v =>
             {
-                if (v.generators[generatorTypes.exclusiveClass] === exclusive)
+                if (v.exclusiveClass === exclusive)
                 {
-                    v.release(MIN_EXCLUSIVE_LENGTH);
-                    v.modulatedGenerators[generatorTypes.releaseVolEnv] = EXCLUSIVE_CUTOFF_TIME; // make the release nearly instant
-                    v.modulatedGenerators[generatorTypes.releaseModEnv] = EXCLUSIVE_MOD_CUTOFF_TIME;
-                    WorkletVolumeEnvelope.recalculate(v);
-                    WorkletModulationEnvelope.recalculate(v);
+                    v.exclusiveRelease();
                 }
             });
         }
@@ -164,6 +155,8 @@ export function noteOn(midiNote, velocity, enableDebugging = false, sendEvent = 
         voice.volumeEnvelope.attenuation = voice.volumeEnvelope.attenuationTargetGain;
         // set initial pan to avoid split second changing from middle to the correct value
         voice.currentPan = Math.max(-500, Math.min(500, voice.modulatedGenerators[generatorTypes.pan])); //  -500 to 500
+        // set the current cutoff to target, as it's interpolated
+        WorkletLowpassFilter.initialize(voice);
     });
     
     this.synth.totalVoicesAmount += voices.length;
