@@ -21,6 +21,18 @@ const metadataTypes = {
     comment: 10
 };
 
+/**
+ * @enum {number}
+ */
+const referenceTypeIds = {
+    inLineResource: 1,
+    inFileResource: 2,
+    inFileNode: 3,
+    externalFile: 4,
+    externalXMF: 5,
+    XMFFileURIandNodeID: 6
+};
+
 class XMFNode
 {
     length = 0;
@@ -42,64 +54,83 @@ class XMFNode
     nodeData;
     
     /**
+     * @type {XMFNode[]}
+     */
+    innerNodes = [];
+    
+    /**
      * @param binaryData {IndexedByteArray}
      */
     constructor(binaryData)
     {
+        let nodeStartIndex = binaryData.currentIndex;
         this.length = readVariableLengthQuantity(binaryData);
         this.itemCount = readVariableLengthQuantity(binaryData);
         // header length
         const headerLength = readVariableLengthQuantity(binaryData);
+        binaryData.currentIndex = nodeStartIndex;
         const headerData = binaryData.slice(binaryData.currentIndex, binaryData.currentIndex + headerLength);
         binaryData.currentIndex += headerLength;
         this.metadataLength = readVariableLengthQuantity(headerData);
-        const metadataChunk = headerData.slice(headerData.currentIndex, headerData.currentIndex + this.metadataLength);
-        headerData.currentIndex += this.metadataLength;
-        /**
-         * @type {metadataTypes|string|number}
-         */
-        let fieldSpecifier;
-        while (metadataChunk.currentIndex < metadataChunk.length)
         {
-            const firstSpecifierByte = metadataChunk.currentIndex;
-            if (firstSpecifierByte === 0)
-            {
-                metadataChunk.currentIndex++;
-                fieldSpecifier = readVariableLengthQuantity(metadataChunk);
-            }
-            else
-            {
-                // this is the length of string
-                fieldSpecifier = readBytesAsString(metadataChunk, firstSpecifierByte);
-            }
+            const metadataChunk = headerData.slice(
+                headerData.currentIndex,
+                headerData.currentIndex + this.metadataLength
+            );
+            headerData.currentIndex += this.metadataLength;
             
-            const numberOfVersions = readVariableLengthQuantity(metadataChunk);
-            if (numberOfVersions === 0)
+            /**
+             * @type {metadataTypes|string|number}
+             */
+            let fieldSpecifier;
+            while (metadataChunk.currentIndex < metadataChunk.length)
             {
-                const dataLength = readVariableLengthQuantity(metadataChunk);
-                const formatID = readVariableLengthQuantity(metadataChunk);
-                const data = metadataChunk.slice(metadataChunk.currentIndex, metadataChunk.currentIndex + dataLength);
-                metadataChunk.currentIndex += dataLength;
-                // text only
-                if (formatID < 4)
+                const firstSpecifierByte = metadataChunk.currentIndex;
+                if (firstSpecifierByte === 0)
                 {
-                    const obj = {};
-                    obj[fieldSpecifier] = readBytesAsString(data, dataLength);
-                    this.metadata.push(obj);
+                    metadataChunk.currentIndex++;
+                    fieldSpecifier = readVariableLengthQuantity(metadataChunk);
                 }
                 else
                 {
-                    const obj = {};
-                    obj[fieldSpecifier] = data;
-                    this.metadata.push(obj);
+                    // this is the length of string
+                    fieldSpecifier = readBytesAsString(metadataChunk, firstSpecifierByte);
                 }
-            }
-            else
-            {
-                // skip number of versions
-                readVariableLengthQuantity(metadataChunk);
-                // Length in bytes. Skip the whole thing!
-                metadataChunk.currentIndex += readVariableLengthQuantity(metadataChunk);
+                
+                const numberOfVersions = readVariableLengthQuantity(metadataChunk);
+                console.log(numberOfVersions);
+                if (numberOfVersions === 0)
+                {
+                    const dataLength = readVariableLengthQuantity(metadataChunk);
+                    const formatID = readVariableLengthQuantity(metadataChunk);
+                    const data = metadataChunk.slice(
+                        metadataChunk.currentIndex,
+                        metadataChunk.currentIndex + dataLength
+                    );
+                    metadataChunk.currentIndex += dataLength;
+                    // text only
+                    if (formatID < 4)
+                    {
+                        const obj = {};
+                        obj[fieldSpecifier] = readBytesAsString(data, dataLength);
+                        this.metadata.push(obj);
+                    }
+                    else
+                    {
+                        const obj = {};
+                        obj[fieldSpecifier] = data;
+                        this.metadata.push(obj);
+                    }
+                }
+                else
+                {
+                    // throw new Error("International content is not supported.");
+                    // Skip the number of versions
+                    readVariableLengthQuantity(metadataChunk);
+                    // Length in bytes.
+                    // Skip the whole thing!
+                    metadataChunk.currentIndex += readVariableLengthQuantity(metadataChunk);
+                }
             }
         }
         
@@ -107,15 +138,46 @@ class XMFNode
         headerData.currentIndex += unpackersLength;
         if (unpackersLength > 0)
         {
-            throw new Error("XMF contains packed content.");
+            console.warn(`packed content: ${unpackersLength}`);
+            //throw new Error("XMF contains packed content.");
         }
         
+        /**
+         * @type {referenceTypeIds|number}
+         */
         this.referenceTypeID = readVariableLengthQuantity(binaryData);
-        const dataLength = this.length - binaryData.currentIndex;
-        console.log(dataLength, binaryData.currentIndex);
+        
+        let dataStartIndex = binaryData.currentIndex;
+        const dataLength = this.length - headerLength;
         this.nodeData = binaryData.slice(binaryData.currentIndex, binaryData.currentIndex + dataLength);
         binaryData.currentIndex += dataLength;
+        switch (this.referenceTypeID)
+        {
+            case referenceTypeIds.inLineResource:
+                break;
+            
+            case referenceTypeIds.externalXMF:
+            case referenceTypeIds.inFileNode:
+            case referenceTypeIds.XMFFileURIandNodeID:
+            case referenceTypeIds.externalFile:
+            case referenceTypeIds.inFileResource:
+                throw new Error(`Unsupported reference type: ${this.referenceTypeID}`);
+            
+            default:
+                throw new Error(`Unknown reference type: ${this.referenceTypeID}`);
+        }
+        
+        // read the data
         console.log(this);
+        if (this.itemCount > 0)
+        {
+            // folder node
+            console.log("folder node", this.length);
+            while (this.nodeData.currentIndex < this.nodeData.length)
+            {
+                this.innerNodes.push(new XMFNode(this.nodeData));
+            }
+        }
         
     }
     
