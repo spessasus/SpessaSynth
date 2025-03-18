@@ -51,6 +51,11 @@ export function controllerChange(controllerNumber, controllerValue, force = fals
     {
         return;
     }
+    
+    // apply the cc to the table
+    this.midiControllers[controllerNumber] = controllerValue << 7;
+    
+    // interpret special CCs
     switch (controllerNumber)
     {
         case midiControllers.allNotesOff:
@@ -96,6 +101,13 @@ export function controllerChange(controllerNumber, controllerValue, force = fals
                         if (bankNr === 120)
                         {
                             this.setDrums(true);
+                        }
+                        else
+                        {
+                            if (this.channelNumber % 16 !== DEFAULT_PERCUSSION)
+                            {
+                                this.setDrums(false);
+                            }
                         }
                 }
                 
@@ -163,7 +175,7 @@ export function controllerChange(controllerNumber, controllerValue, force = fals
             break;
         
         case midiControllers.resetAllControllers:
-            this.resetControllers();
+            this.resetControllersRP15Compliant();
             break;
         
         case midiControllers.sustainPedal:
@@ -182,9 +194,8 @@ export function controllerChange(controllerNumber, controllerValue, force = fals
             }
             break;
         
-        // default: apply the controller to the table
+        // default: just compute modulators
         default:
-            this.midiControllers[controllerNumber] = controllerValue << 7;
             this.voices.forEach(v => computeModulators(v, this.midiControllers, 1, controllerNumber));
             break;
     }

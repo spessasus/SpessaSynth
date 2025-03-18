@@ -73,12 +73,6 @@ export class ChannelSnapshot
     channelOctaveTuning;
     
     /**
-     * Tuning of individual keys in cents.
-     * @type {Int16Array}
-     */
-    keyCentTuning;
-    
-    /**
      * Indicates whether the channel is muted.
      * @type {boolean}
      */
@@ -124,7 +118,6 @@ export class ChannelSnapshot
         // tuning and transpose data
         channelSnapshot.channelTransposeKeyShift = channelObject.channelTransposeKeyShift;
         channelSnapshot.channelOctaveTuning = channelObject.channelOctaveTuning;
-        channelSnapshot.keyCentTuning = channelObject.keyCentTuning;
         
         // other data
         channelSnapshot.isMuted = channelObject.isMuted;

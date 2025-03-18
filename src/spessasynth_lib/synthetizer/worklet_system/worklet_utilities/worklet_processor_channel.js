@@ -4,7 +4,11 @@ import {
     customControllers,
     dataEntryStates
 } from "./controller_tables.js";
-import { resetControllers, resetParameters } from "../worklet_methods/controller_control/reset_controllers.js";
+import {
+    resetControllers,
+    resetControllersRP15Compliant,
+    resetParameters
+} from "../worklet_methods/controller_control/reset_controllers.js";
 import { renderVoice } from "../worklet_methods/render_voice.js";
 import { panVoice } from "./stereo_panner.js";
 import { killNote } from "../worklet_methods/stopping_notes/kill_note.js";
@@ -73,13 +77,6 @@ class WorkletProcessorChannel
      * @type {number}
      */
     channelTuningCents = 0;
-    
-    /**
-     * An array representing the tuning of individual keys in cents.
-     * Each index corresponds to a MIDI note number (0-127).
-     * @type {Int16Array}
-     */
-    keyCentTuning = new Int16Array(128);
     
     /**
      * Indicates whether the sustain (hold) pedal is active.
@@ -379,6 +376,7 @@ WorkletProcessorChannel.prototype.transposeChannel = transposeChannel;
 // CC
 WorkletProcessorChannel.prototype.controllerChange = controllerChange;
 WorkletProcessorChannel.prototype.resetControllers = resetControllers;
+WorkletProcessorChannel.prototype.resetControllersRP15Compliant = resetControllersRP15Compliant;
 WorkletProcessorChannel.prototype.resetParameters = resetParameters;
 WorkletProcessorChannel.prototype.dataEntryFine = dataEntryFine;
 WorkletProcessorChannel.prototype.dataEntryCoarse = dataEntryCoarse;
