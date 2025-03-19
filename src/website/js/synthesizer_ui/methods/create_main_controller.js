@@ -104,11 +104,17 @@ export function createMainSynthController()
         {
             if (active)
             {
-                this.controllers.forEach(c => c.controller.classList.add("hidden"));
+                for (let i = 0; i < this.controllers.length; i++)
+                {
+                    this.hideChannelController(i);
+                }
             }
             else
             {
-                this.controllers.forEach(c => c.controller.classList.remove("hidden"));
+                for (let i = 0; i < this.controllers.length; i++)
+                {
+                    this.showChannelController(i);
+                }
             }
         }
     );
@@ -165,6 +171,27 @@ export function createMainSynthController()
             
         });
         this.synth.resetControllers();
+    };
+    
+    // show only used
+    const showOnlyUsedButton = document.createElement("button");
+    this.locale.bindObjectProperty(
+        showOnlyUsedButton,
+        "textContent",
+        LOCALE_PATH + "showOnlyUsed.title"
+    );
+    this.locale.bindObjectProperty(
+        showOnlyUsedButton,
+        "title",
+        LOCALE_PATH + "showOnlyUsed.description"
+    );
+    showOnlyUsedButton.classList.add("synthui_button");
+    showOnlyUsedButton.classList.add("main_controller_element");
+    showOnlyUsedButton.onclick = () =>
+    {
+        this.showOnlyUsedEnabled = !this.showOnlyUsedEnabled;
+        showOnlyUsedButton.classList.toggle("enabled");
+        this.setOnlyUsedControllersVisible(this.showOnlyUsedEnabled);
     };
     
     // advanced config
@@ -259,10 +286,14 @@ export function createMainSynthController()
         };
     }
     
-    // main controller
+    /**
+     * main controller
+     * @type {HTMLDivElement}
+     */
     let controller = document.createElement("div");
     controller.classList.add("synthui_controller");
     this.uiDiv.appendChild(controller);
+    this.mainDivWrapper = controller;
     
     // channel controller shower
     let showControllerButton = document.createElement("button");
@@ -282,6 +313,7 @@ export function createMainSynthController()
     // buttons
     controlsWrapper.appendChild(midiPanicButton);
     controlsWrapper.appendChild(resetCCButton);
+    controlsWrapper.appendChild(showOnlyUsedButton);
     controlsWrapper.appendChild(advancedConfigurationButton);
     controlsWrapper.appendChild(groupSelector);
     controlsWrapper.appendChild(interpolation);

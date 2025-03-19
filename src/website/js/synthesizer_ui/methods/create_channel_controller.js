@@ -8,7 +8,8 @@
  *     preset: Selector,
  *     drumsToggle: HTMLDivElement,
  *     soloButton: HTMLDivElement,
- *     muteButton: HTMLDivElement
+ *     muteButton: HTMLDivElement,
+ *     isHidingLocked: boolean
  * }} ChannelController
  */
 
@@ -30,7 +31,7 @@ import {
 export const ICON_SIZE = 32;
 
 /**
- * Creates a new channel controller js
+ * Creates a new channel controller
  * @param channelNumber {number}
  * @returns {ChannelController}
  * @this {SynthetizerUI}
@@ -51,6 +52,7 @@ export function createChannelController(channelNumber)
     const channelController = {};
     channelController.controllerMeters = {};
     channelController.controller = controller;
+    channelController.isHidingLocked = false;
     
     // voice meter
     const voiceMeter = new Meter(
@@ -247,16 +249,25 @@ export function createChannelController(channelNumber)
         undefined,
         active =>
         {
+            // do hide on multi-port files
+            if (channelNumber >= 16)
+            {
+                return;
+            }
             if (active)
             {
                 for (let i = channelNumber + 1; i < this.controllers.length; i++)
                 {
+                    this.hideChannelController(i);
                     this.controllers[i].controller.classList.add("hidden");
                 }
             }
             else
             {
-                this.controllers.forEach(c => c.controller.classList.remove("hidden"));
+                for (let i = 0; i < this.controllers.length; i++)
+                {
+                    this.showChannelController(i);
+                }
             }
         }
     );
@@ -399,21 +410,24 @@ export function createChannelController(channelNumber)
 }
 
 /**
+ * @param channelNumber {number}
+ * @this {SynthetizerUI}
+ */
+export function appendNewController(channelNumber)
+{
+    const controller = this.createChannelController(channelNumber);
+    this.controllers.push(controller);
+    this.mainDivWrapper.appendChild(controller.controller);
+}
+
+/**
  * @this {SynthetizerUI}
  */
 export function createChannelControllers()
 {
-    const dropdownDiv = this.uiDiv.getElementsByClassName("synthui_controller")[0];
-    
-    /**
-     * @type {ChannelController[]}
-     */
-    this.controllers = [];
     for (let i = 0; i < this.synth.channelsAmount; i++)
     {
-        const controller = this.createChannelController(i);
-        this.controllers.push(controller);
-        dropdownDiv.appendChild(controller.controller);
+        this.appendNewController(i);
     }
     
     this.setEventListeners();
