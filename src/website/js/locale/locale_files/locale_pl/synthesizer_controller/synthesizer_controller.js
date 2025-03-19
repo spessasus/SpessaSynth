@@ -65,8 +65,13 @@ export const synthesizerControllerLocale = {
         cubic: "Interpolacja Sześcienna"
     },
     
+    showOnlyUsed: {
+        title: "Pokaż tylko użyte",
+        description: "Pokazuj tylko użyte kontrolery MIDI w tym menu"
+    },
+    
     advancedConfiguration: {
-        title: "Zaawansowane Ustawienia",
+        title: "Ustawienia",
         description: "Skonfiguruj zaawansowane ustawienia syntezatora"
     },
     

@@ -49,6 +49,11 @@ export const synthesizerControllerLocale = {
         description: "Transpose: Toggles the High Performance Mode, simplifying the look and killing the notes faster"
     },
     
+    showOnlyUsed: {
+        title: "Show Only Used",
+        description: "Show only the used MIDI channels in the synthesizer controller"
+    },
+    
     disableCustomVibrato: {
         title: "Disable custom vibrato",
         description: "Disables the custom (NRPN) Vibrato permamently. Reload the website to reenable it"
@@ -67,7 +72,7 @@ export const synthesizerControllerLocale = {
     },
     
     advancedConfiguration: {
-        title: "Advanced Configuration",
+        title: "Config",
         description: "Configure the advanced settings for the synthesizer"
     },
     
