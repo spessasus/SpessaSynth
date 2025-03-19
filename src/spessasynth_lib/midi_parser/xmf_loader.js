@@ -1,6 +1,6 @@
 import { readBytesAsString } from "../utils/byte_functions/string.js";
-import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo } from "../utils/loggin.js";
-import { arrayToHexString, consoleColors } from "../utils/other.js";
+import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo, SpessaSynthWarn } from "../utils/loggin.js";
+import { consoleColors } from "../utils/other.js";
 import { readBytesAsUintBigEndian } from "../utils/byte_functions/big_endian.js";
 import { readVariableLengthQuantity } from "../utils/byte_functions/variable_length_quantity.js";
 
@@ -18,7 +18,11 @@ const metadataTypes = {
     mimeType: 7,
     title: 8,
     copyrightNotice: 9,
-    comment: 10
+    comment: 10,
+    autoStart: 11,                 // Node Name of the FileNode containing the SMF image to autostart when the XMF file loads
+    preload: 12,                   // Used to preload specific SMF and DLS file images.
+    contentDescription: 13,        // RP-42a (https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp42.pdf)
+    ID3Metadata: 14                // RP-47 (https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/rp47.pdf)
 };
 
 /**
@@ -33,20 +37,34 @@ const referenceTypeIds = {
     XMFFileURIandNodeID: 6
 };
 
+const resourceFomatIds = {
+    StandardMIDIFile: 0,
+    StandardMIDIFileType1: 1,
+    DLS1: 2,
+    DLS2: 3,
+    DLS22: 4
+};
+
 class XMFNode
 {
-    length = 0;
+    /**
+     * @type {number}
+     */
+    length;
     /**
      * 0 means it's a file node
      * @type {number}
      */
-    itemCount = 0;
-    metadataLength = 0;
+    itemCount;
+    /**
+     * @type {number}
+     */
+    metadataLength;
     
     /**
-     * @type {Object<string, any>[]}
+     * @type {Object<string, any>}
      */
-    metadata = [];
+    metadata = {};
     
     /**
      * @type {IndexedByteArray}
@@ -57,6 +75,8 @@ class XMFNode
      * @type {XMFNode[]}
      */
     innerNodes = [];
+    
+    packedContent = false;
     
     /**
      * @param binaryData {IndexedByteArray}
@@ -95,10 +115,6 @@ class XMFNode
         let key;
         while (metadataChunk.currentIndex < metadataChunk.length)
         {
-            console.log(
-                "meta",
-                arrayToHexString(metadataChunk.slice(metadataChunk.currentIndex))
-            );
             const firstSpecifierByte = metadataChunk[metadataChunk.currentIndex];
             if (firstSpecifierByte === 0)
             {
@@ -106,16 +122,19 @@ class XMFNode
                 fieldSpecifier = readVariableLengthQuantity(metadataChunk);
                 if (Object.values(metadataTypes).indexOf(fieldSpecifier) === -1)
                 {
-                    throw new Error(`Unknown field specifier: ${fieldSpecifier}`);
+                    SpessaSynthWarn(`Unknown field specifier: ${fieldSpecifier}`);
+                    key = `unknown_${fieldSpecifier}`;
                 }
-                key = Object.keys(metadataTypes).find(k => metadataTypes[k] === fieldSpecifier);
+                else
+                {
+                    key = Object.keys(metadataTypes).find(k => metadataTypes[k] === fieldSpecifier);
+                }
             }
             else
             {
                 // this is the length of string
                 const stringLength = readVariableLengthQuantity(metadataChunk);
                 fieldSpecifier = readBytesAsString(metadataChunk, stringLength);
-                console.log(`string specifier: "${fieldSpecifier}"`);
                 key = fieldSpecifier;
             }
             
@@ -132,17 +151,12 @@ class XMFNode
                 // text only
                 if (formatID < 4)
                 {
-                    const obj = {};
-                    obj[key] = readBytesAsString(contentsChunk, dataLength);
-                    this.metadata.push(obj);
+                    this.metadata[key] = readBytesAsString(contentsChunk, dataLength - 1);
                 }
                 else
                 {
-                    const obj = {};
-                    obj[key] = contentsChunk;
-                    this.metadata.push(obj);
+                    this.metadata[key] = contentsChunk;
                 }
-                console.log(this.metadata);
             }
             else
             {
@@ -154,14 +168,14 @@ class XMFNode
                 metadataChunk.currentIndex += readVariableLengthQuantity(metadataChunk);
             }
         }
-        
+        console.log(this.metadata);
         
         const unpackersLength = readVariableLengthQuantity(headerData);
         headerData.currentIndex += unpackersLength;
         if (unpackersLength > 0)
         {
             console.warn(`packed content: ${unpackersLength}`);
-            throw new Error("XMF contains packed content.");
+            this.packedContent = true;
         }
         
         /**
@@ -187,8 +201,20 @@ class XMFNode
         }
         
         // read the data
-        console.log(arrayToHexString(this.nodeData));
-        if (this.itemCount > 0)
+        if (this.packedContent)
+        {
+            return this;
+        }
+        if (this.isFile)
+        {
+            // interpret the content
+            const resourceFormat = this.metadata[metadataTypes.resourceFormat];
+            if (resourceFormat === undefined)
+            {
+                SpessaSynthWarn("No resource format for this file node!");
+            }
+        }
+        else
         {
             // folder node
             console.log("folder node", this.length, this.itemCount);
@@ -213,6 +239,7 @@ class XMFNode
  */
 export function loadXMF(midi, binaryData)
 {
+    midi.bankOffset = 0;
     // https://amei.or.jp/midistandardcommittee/Recommended_Practice/e/xmf-v1a.pdf
     // https://wiki.multimedia.cx/index.php?title=Extensible_Music_Format_(XMF)
     const sanityCheck = readBytesAsString(binaryData, 4);
