@@ -1,6 +1,6 @@
 import { readBytesAsString } from "../utils/byte_functions/string.js";
 import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo } from "../utils/loggin.js";
-import { consoleColors } from "../utils/other.js";
+import { arrayToHexString, consoleColors } from "../utils/other.js";
 import { readBytesAsUintBigEndian } from "../utils/byte_functions/big_endian.js";
 import { readVariableLengthQuantity } from "../utils/byte_functions/variable_length_quantity.js";
 
@@ -66,11 +66,19 @@ class XMFNode
         let nodeStartIndex = binaryData.currentIndex;
         this.length = readVariableLengthQuantity(binaryData);
         this.itemCount = readVariableLengthQuantity(binaryData);
+        console.log("node length", this.length, "child count", this.itemCount);
         // header length
         const headerLength = readVariableLengthQuantity(binaryData);
-        binaryData.currentIndex = nodeStartIndex;
-        const headerData = binaryData.slice(binaryData.currentIndex, binaryData.currentIndex + headerLength);
-        binaryData.currentIndex += headerLength;
+        const readBytes = binaryData.currentIndex - nodeStartIndex;
+        
+        const remainingHeader = headerLength - readBytes;
+        const headerData = binaryData.slice(
+            binaryData.currentIndex,
+            binaryData.currentIndex + remainingHeader
+        );
+        binaryData.currentIndex += remainingHeader;
+        const dataLength = this.length - headerLength;
+        
         this.metadataLength = readVariableLengthQuantity(headerData);
         
         const metadataChunk = headerData.slice(
@@ -78,63 +86,69 @@ class XMFNode
             headerData.currentIndex + this.metadataLength
         );
         headerData.currentIndex += this.metadataLength;
+        console.log("meta length", this.metadataLength);
         
         /**
          * @type {metadataTypes|string|number}
          */
         let fieldSpecifier;
+        let key;
         while (metadataChunk.currentIndex < metadataChunk.length)
         {
-            const firstSpecifierByte = metadataChunk[metadataChunk.currentIndex++];
+            console.log(
+                "meta",
+                arrayToHexString(metadataChunk.slice(metadataChunk.currentIndex))
+            );
+            const firstSpecifierByte = metadataChunk[metadataChunk.currentIndex];
             if (firstSpecifierByte === 0)
             {
+                metadataChunk.currentIndex++;
                 fieldSpecifier = readVariableLengthQuantity(metadataChunk);
-                console.log(`numeric field! ${fieldSpecifier}`);
-                if (Object.values(fieldSpecifier).findIndex(v => v === fieldSpecifier) === -1)
+                if (Object.values(metadataTypes).indexOf(fieldSpecifier) === -1)
                 {
                     throw new Error(`Unknown field specifier: ${fieldSpecifier}`);
                 }
+                key = Object.keys(metadataTypes).find(k => metadataTypes[k] === fieldSpecifier);
             }
             else
             {
                 // this is the length of string
-                metadataChunk.currentIndex--;
                 const stringLength = readVariableLengthQuantity(metadataChunk);
-                console.log("string!", stringLength);
                 fieldSpecifier = readBytesAsString(metadataChunk, stringLength);
+                console.log(`string specifier: "${fieldSpecifier}"`);
+                key = fieldSpecifier;
             }
-            console.log("field specifier:", fieldSpecifier);
             
             const numberOfVersions = readVariableLengthQuantity(metadataChunk);
             if (numberOfVersions === 0)
             {
                 const dataLength = readVariableLengthQuantity(metadataChunk);
-                const formatID = readVariableLengthQuantity(metadataChunk);
-                const data = metadataChunk.slice(
+                const contentsChunk = metadataChunk.slice(
                     metadataChunk.currentIndex,
                     metadataChunk.currentIndex + dataLength
                 );
                 metadataChunk.currentIndex += dataLength;
+                const formatID = readVariableLengthQuantity(contentsChunk);
                 // text only
                 if (formatID < 4)
                 {
                     const obj = {};
-                    obj[fieldSpecifier] = readBytesAsString(data, dataLength);
+                    obj[key] = readBytesAsString(contentsChunk, dataLength);
                     this.metadata.push(obj);
                 }
                 else
                 {
                     const obj = {};
-                    obj[fieldSpecifier] = data;
+                    obj[key] = contentsChunk;
                     this.metadata.push(obj);
                 }
+                console.log(this.metadata);
             }
             else
             {
-                // throw new Error("International content is not supported.");
+                // throw new Error ("International content is not supported.");
                 // Skip the number of versions
                 console.warn(`International content: ${numberOfVersions}`);
-                readVariableLengthQuantity(metadataChunk);
                 // Length in bytes.
                 // Skip the whole thing!
                 metadataChunk.currentIndex += readVariableLengthQuantity(metadataChunk);
@@ -147,16 +161,13 @@ class XMFNode
         if (unpackersLength > 0)
         {
             console.warn(`packed content: ${unpackersLength}`);
-            //throw new Error("XMF contains packed content.");
+            throw new Error("XMF contains packed content.");
         }
         
         /**
          * @type {referenceTypeIds|number}
          */
         this.referenceTypeID = readVariableLengthQuantity(binaryData);
-        
-        let dataStartIndex = binaryData.currentIndex;
-        const dataLength = this.length - headerLength;
         this.nodeData = binaryData.slice(binaryData.currentIndex, binaryData.currentIndex + dataLength);
         binaryData.currentIndex += dataLength;
         switch (this.referenceTypeID)
@@ -176,11 +187,11 @@ class XMFNode
         }
         
         // read the data
-        console.log(this);
+        console.log(arrayToHexString(this.nodeData));
         if (this.itemCount > 0)
         {
             // folder node
-            console.log("folder node", this.length);
+            console.log("folder node", this.length, this.itemCount);
             while (this.nodeData.currentIndex < this.nodeData.length)
             {
                 this.innerNodes.push(new XMFNode(this.nodeData));
