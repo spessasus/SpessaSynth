@@ -14,7 +14,7 @@
     transition: all 0.1s ease;
 }
 
-.synthui_button:hover {
+.synthui_button:hover, .synthui_button.enabled {
     cursor: pointer;
     background: #111;
     color: #fff;

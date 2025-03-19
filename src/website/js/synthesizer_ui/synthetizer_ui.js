@@ -1,7 +1,11 @@
 import { Synthetizer } from "../../../spessasynth_lib/synthetizer/synthetizer.js";
 import { hideControllers, showControllers } from "./methods/hide_show_controllers.js";
 import { toggleDarkMode } from "./methods/toggle_dark_mode.js";
-import { createChannelController, createChannelControllers } from "./methods/create_channel_controller.js";
+import {
+    appendNewController,
+    createChannelController,
+    createChannelControllers
+} from "./methods/create_channel_controller.js";
 import { createMainSynthController } from "./methods/create_main_controller.js";
 import { setEventListeners } from "./methods/set_event_listeners.js";
 import { keybinds } from "../utils/keybinds.js";
@@ -19,6 +23,24 @@ export const LOCALE_PATH = "locale.synthesizerController.";
 
 class SynthetizerUI
 {
+    
+    /**
+     * @type {ChannelController[]}
+     */
+    controllers = [];
+    
+    /**
+     * @type {HTMLDivElement}
+     */
+    mainDivWrapper;
+    
+    /**
+     * @type {Sequencer}
+     */
+    sequencer = undefined;
+    
+    showOnlyUsedEnabled = false;
+    
     /**
      * Creates a new instance of synthetizer UI
      * @param colors {string[]}
@@ -118,6 +140,18 @@ class SynthetizerUI
                 controller.transpose.update(controller.transpose.currentValue, true);
             }
         });
+    }
+    
+    /**
+     * @param seq {Sequencer}
+     */
+    connectSequencer(seq)
+    {
+        this.sequencer = seq;
+        seq.addOnSongChangeEvent(() =>
+        {
+            this.setOnlyUsedControllersVisible(this.showOnlyUsedEnabled);
+        }, "synthui-song-change");
     }
     
     toggleVisibility()
@@ -242,6 +276,70 @@ class SynthetizerUI
     }
     
     /**
+     * @param enabled {boolean}
+     */
+    setOnlyUsedControllersVisible(enabled)
+    {
+        this.showOnlyUsedEnabled = enabled;
+        if (!this.sequencer)
+        {
+            return;
+        }
+        if (!enabled)
+        {
+            for (let i = 0; i < this.controllers.length; i++)
+            {
+                this.showChannelController(i, true);
+                this.controllers[i].isHidingLocked = false;
+            }
+            return;
+            
+        }
+        /**
+         * @type {Set<number>}
+         */
+        const usedChannels = new Set();
+        this.sequencer.midiData.usedChannelsOnTrack.forEach((used, trackNum) =>
+        {
+            const port = this.sequencer.midiData.midiPorts[trackNum];
+            const offset = this.sequencer.midiData.midiPortChannelOffsets[port];
+            used.values().forEach(v => usedChannels.add(v + offset));
+        });
+        for (let i = 0; i < this.controllers.length; i++)
+        {
+            if (usedChannels.has(i))
+            {
+                this.showChannelController(i, true);
+                this.controllers[i].isHidingLocked = false;
+            }
+            else
+            {
+                this.hideChannelController(i, true);
+            }
+        }
+    }
+    
+    hideChannelController(channelNumber, force = false)
+    {
+        const c = this.controllers[channelNumber];
+        if (!c.isHidingLocked || force)
+        {
+            c.controller.classList.add("hidden");
+            c.isHidingLocked = force;
+        }
+    }
+    
+    showChannelController(channelNumber, force = false)
+    {
+        const c = this.controllers[channelNumber];
+        if (!c.isHidingLocked || force)
+        {
+            c.controller.classList.remove("hidden");
+            c.isHidingLocked = force;
+        }
+    }
+    
+    /**
      * @param groupType {"effects"|"portamento"|"volumeEnvelope"|"filter"}
      */
     showControllerGroup(groupType)
@@ -307,6 +405,7 @@ SynthetizerUI.prototype.showControllers = showControllers;
 SynthetizerUI.prototype.toggleDarkMode = toggleDarkMode;
 
 SynthetizerUI.prototype.createChannelController = createChannelController;
+SynthetizerUI.prototype.appendNewController = appendNewController;
 SynthetizerUI.prototype.createChannelControllers = createChannelControllers;
 SynthetizerUI.prototype.createMainSynthController = createMainSynthController;
 

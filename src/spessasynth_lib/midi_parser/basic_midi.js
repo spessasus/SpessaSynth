@@ -92,9 +92,6 @@ export class BasicMIDI extends MIDISequenceData
          * @type {boolean}
          */
         let karaokeHasTitle = false;
-        let portOffset = 0;
-        this.midiPorts = [];
-        this.midiPortChannelOffsets = [];
         
         this.keyRange = { max: 0, min: 127 };
         
@@ -126,7 +123,6 @@ export class BasicMIDI extends MIDISequenceData
         {
             const track = this.tracks[i];
             const usedChannels = new Set();
-            this.midiPorts.push(-1);
             let trackHasVoiceMessages = false;
             
             for (const e of track)
@@ -228,16 +224,6 @@ export class BasicMIDI extends MIDISequenceData
                                 loopEnd = e.ticks;
                         }
                         e.messageData.currentIndex = 0;
-                        break;
-                    
-                    case messageTypes.midiPort:
-                        const port = e.messageData[0];
-                        this.midiPorts[i] = port;
-                        if (this.midiPortChannelOffsets[port] === undefined)
-                        {
-                            this.midiPortChannelOffsets[port] = portOffset;
-                            portOffset += 16;
-                        }
                         break;
                     
                     case messageTypes.copyright:
@@ -399,6 +385,33 @@ export class BasicMIDI extends MIDISequenceData
             consoleColors.recognized
         );
         
+        // determine ports
+        let portOffset = 0;
+        this.midiPorts = [];
+        this.midiPortChannelOffsets = [];
+        for (let trackNum = 0; trackNum < this.tracks.length; trackNum++)
+        {
+            this.midiPorts.push(-1);
+            if (this.usedChannelsOnTrack[trackNum].size === 0)
+            {
+                continue;
+            }
+            for (const e of this.tracks[trackNum])
+            {
+                if (e.messageStatusByte !== messageTypes.midiPort)
+                {
+                    continue;
+                }
+                const port = e.messageData[0];
+                this.midiPorts[trackNum] = port;
+                if (this.midiPortChannelOffsets[port] === undefined)
+                {
+                    this.midiPortChannelOffsets[port] = portOffset;
+                    portOffset += 16;
+                }
+            }
+        }
+        
         // fix midi ports:
         // midi tracks without ports will have a value of -1
         // if all ports have a value of -1, set it to 0,
@@ -408,13 +421,15 @@ export class BasicMIDI extends MIDISequenceData
         // but leave the conductor track with no port pref.
         // this spessasynth to reserve the first 16 channels for the conductor track
         // (which doesn't play anything) and use the additional 16 for the actual ports.
-        let defaultPort = 0;
+        let defaultPort = Infinity;
         for (let port of this.midiPorts)
         {
             if (port !== -1)
             {
-                defaultPort = port;
-                break;
+                if (defaultPort > port)
+                {
+                    defaultPort = port;
+                }
             }
         }
         this.midiPorts = this.midiPorts.map(port => port === -1 ? defaultPort : port);

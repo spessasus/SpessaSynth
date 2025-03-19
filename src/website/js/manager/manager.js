@@ -284,13 +284,13 @@ class Manager
         this.synthUI.connectKeyboard(this.keyboard);
         
         // create a UI for music player mode
-        this.playerUI = new MusicModeUI(document.getElementById("player_info"), this.localeManager);
+        this.musicModeUI = new MusicModeUI(document.getElementById("player_info"), this.localeManager);
         
         // create a UI for sequencer
         this.seqUI = new SequencerUI(
             document.getElementById("sequencer_controls"),
             this.localeManager,
-            this.playerUI,
+            this.musicModeUI,
             this.renderer
         );
         
@@ -302,7 +302,7 @@ class Manager
             this.renderer,
             this.keyboard,
             this.midHandler,
-            this.playerUI,
+            this.musicModeUI,
             this.localeManager,
             this.audioDelay
         );
@@ -536,14 +536,18 @@ class Manager
         // connect to the UI
         this.seqUI.connectSequencer(this.seq);
         
-        // connect to the Player UI
-        this.playerUI.connectSequencer(this.seq);
+        // connect to the music mode ui
+        this.musicModeUI.connectSequencer(this.seq);
         
-        // connect to the renderer;
+        // connect to the renderer
         this.renderer.connectSequencer(this.seq);
         
         // connect to settings
         this.settingsUI.addSequencer(this.seq);
+        
+        // connect to synthui
+        
+        this.synthUI.connectSequencer(this.seq);
         
         // play the midi
         this.seq.play(true);

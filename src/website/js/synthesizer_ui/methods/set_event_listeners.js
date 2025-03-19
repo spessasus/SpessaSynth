@@ -5,7 +5,6 @@ import { getDrumsSvg, getNoteSvg } from "../../utils/icons.js";
  */
 export function setEventListeners()
 {
-    const dropdownDiv = this.uiDiv.getElementsByClassName("synthui_controller")[0];
     // add event listeners
     this.synth.eventHandler.addEvent("programchange", "synthui-program-change", e =>
     {
@@ -55,9 +54,7 @@ export function setEventListeners()
     
     this.synth.eventHandler.addEvent("newchannel", "synthui-new-channel", () =>
     {
-        const controller = this.createChannelController(this.controllers.length);
-        this.controllers.push(controller);
-        dropdownDiv.appendChild(controller.controller);
+        this.appendNewController(this.controllers.length);
         this.showControllerGroup(this.groupSelector.value);
         this.hideControllers();
     });
