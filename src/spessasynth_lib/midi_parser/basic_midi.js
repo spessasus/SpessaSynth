@@ -432,6 +432,10 @@ export class BasicMIDI extends MIDISequenceData
                 }
             }
         }
+        if (defaultPort === Infinity)
+        {
+            defaultPort = 0;
+        }
         this.midiPorts = this.midiPorts.map(port => port === -1 ? defaultPort : port);
         // add fake port if empty
         if (this.midiPortChannelOffsets.length === 0)
