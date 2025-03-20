@@ -11,19 +11,6 @@ It’s a powerful and versatile library that allows you to:
 - Convert DLS to SF2 (and back)
 - [and more!](#easy-integration)
 
-Supported formats list:
-- `.mid` - Standard MIDI File
-- `.kar` - Soft Karaoke MIDI File
-- `.sf2` - SoundFont2 File
-- `.sf3` - SoundFont2 Compressed File
-- `.sfogg` - SF2Pack With Vorbis Compression
-- `.dls` - Downloadable Sounds Levels 1 & 2 (as well as Mobile DLS)
-- `.rmi` - RIFF MIDI File
-- `.rmi` - RIFF MIDI File With Embedded DLS
-- `.rmi` - [RIFF MIDI File With Embedded SF2](https://github.com/spessasus/sf2-rmidi-specification)
-
-With [an easy way of converting between them!](https://github.com/spessasus/SpessaSynth/wiki/Converting-Between-Formats)
-
 ### npm package
 
 ```shell
@@ -45,6 +32,20 @@ npm install --save spessasynth_lib
 <h3 align='center'><a href="https://github.com/spessasus/SpessaSynth/wiki/Home">Documentation</a></h3>
 
 <h2 align='center'>Full Feature List</h2>
+
+### Numerous Format Support
+Supported formats list:
+- `.mid` - Standard MIDI File
+- `.kar` - Soft Karaoke MIDI File
+- `.sf2` - SoundFont2 File
+- `.sf3` - SoundFont2 Compressed File
+- `.sfogg` - SF2Pack With Vorbis Compression
+- `.dls` - Downloadable Sounds Levels 1 & 2 (as well as Mobile DLS)
+- `.rmi` - RIFF MIDI File
+- `.rmi` - RIFF MIDI File With Embedded DLS
+- `.rmi` - [RIFF MIDI File With Embedded SF2](https://github.com/spessasus/sf2-rmidi-specification)
+
+*With [an easy way of converting between them!](https://github.com/spessasus/SpessaSynth/wiki/Converting-Between-Formats)*
 
 ### Easy Integration
 - **Modular design:** *Easy integration into other projects (load what you need)*
@@ -78,10 +79,13 @@ npm install --save spessasynth_lib
 - **[Custom modulators for additional controllers](https://github.com/spessasus/SpessaSynth/wiki/Modulator-Class#default-modulators):** *Why not?*
 - **Written using AudioWorklets:** 
   - Runs in a **separate thread** for maximum performance
+  - Doesn't stop playing even when the main thread is frozen
   - Supported by all modern browsers
 - **Unlimited channel count:** Your CPU is the limit!
 - **Excellent MIDI Standards Support:**
   - **MIDI Controller Support:** Default supported controllers [here](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-controllers)
+  - **Portamento Support:** Glide the notes!
+  - **Sound Controllers:** Real-time filter and envelope control!
   - **MIDI Tuning Standard Support:** [more info here](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#midi-tuning-standard)
   - [Full **RPN** and limited **NRPN** support](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-registered-parameters)
   - Supports some [**Roland GS** and **Yamaha XG** system exclusives](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-system-exclusives)
