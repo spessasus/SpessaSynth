@@ -149,6 +149,7 @@ export function _createKeyboardHandler(keyboard, synthui, renderer)
                     renderer.keyRange = this.keyboardSizes[keyboardControls.sizeSelector.value];
                 }
                 this._saveSettings();
+                this.renderer.updateSize();
             }, 600);
             return;
         }
@@ -245,6 +246,7 @@ export function _createKeyboardHandler(keyboard, synthui, renderer)
             {
                 keyboard.toggleMode();
                 this._saveSettings();
+                this.renderer.updateSize();
             }, 600);
             return;
         }

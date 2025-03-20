@@ -237,9 +237,7 @@ class Manager
         let titleSwappedWithSettings = false;
         const checkResize = () =>
         {
-            canvas.width = canvas.clientWidth * window.devicePixelRatio;
-            canvas.height = canvas.clientHeight * window.devicePixelRatio;
-            this.renderer.computeColors();
+            this.renderer.updateSize();
             if (isMobile)
             {
                 if (window.innerWidth / window.innerHeight > 1)
