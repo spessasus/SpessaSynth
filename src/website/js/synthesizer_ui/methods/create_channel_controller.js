@@ -140,9 +140,10 @@ export function createChannelController(channelNumber)
      * @param ccNum {number}
      * @param localePath {string}
      * @param defaultValue {number}
+     * @param allowLocking {boolean}
      * @returns {Meter}
      */
-    const createCCMeterHelper = (ccNum, localePath, defaultValue) =>
+    const createCCMeterHelper = (ccNum, localePath, defaultValue, allowLocking = true) =>
     {
         const meter = new Meter(
             this.channelColors[channelNumber % this.channelColors.length],
@@ -154,8 +155,8 @@ export function createChannelController(channelNumber)
             defaultValue,
             true,
             val => changeCCUserFunction(ccNum, Math.round(val), meter),
-            () => this.synth.lockController(channelNumber, ccNum, true),
-            () => this.synth.lockController(channelNumber, ccNum, false)
+            allowLocking ? () => this.synth.lockController(channelNumber, ccNum, true) : undefined,
+            allowLocking ? () => this.synth.lockController(channelNumber, ccNum, false) : undefined
         );
         channelController.controllerMeters[ccNum] = meter;
         return meter;
@@ -217,7 +218,8 @@ export function createChannelController(channelNumber)
     const portamentoControl = createCCMeterHelper(
         midiControllers.portamentoControl,
         "channelController.portamentoControlMeter",
-        60
+        60,
+        false // don't allow locking portamento control
     );
     controller.appendChild(portamentoControl.div);
     
