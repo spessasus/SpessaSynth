@@ -13,8 +13,8 @@ export class ReadModulator extends Modulator
     {
         const srcEnum = readLittleEndian(dataArray, 2);
         const destination = readLittleEndian(dataArray, 2);
-        const amount = readLittleEndian(dataArray, 2);
-        const secSrcEnum = signedInt16(dataArray[dataArray.currentIndex++], dataArray[dataArray.currentIndex++]);
+        const amount = signedInt16(dataArray[dataArray.currentIndex++], dataArray[dataArray.currentIndex++]);
+        const secSrcEnum = readLittleEndian(dataArray, 2);
         const transformType = readLittleEndian(dataArray, 2);
         super(srcEnum, secSrcEnum, destination, amount, transformType);
     }
