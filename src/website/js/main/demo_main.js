@@ -7,6 +7,7 @@ import { getCheckSvg, getExclamationSvg, getHourglassSvg } from "../utils/icons.
 import { closeNotification, showNotification } from "../notification/notification.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { LocaleManager } from "../locale/locale_manager.js";
+import { VOICE_CAP } from "../../../spessasynth_lib/synthetizer/synthetizer.js";
 
 /**
  * demo_main.js
@@ -138,6 +139,7 @@ async function demoInit(initLocale)
     const localeManager = new LocaleManager(initLocale);
     try
     {
+        // noinspection JSUnresolvedReference
         const context = window.AudioContext || window.webkitAudioContext;
         window.audioContextMain = new context({ sampleRate: SAMPLE_RATE });
     }
@@ -211,11 +213,13 @@ async function demoInit(initLocale)
         }
         else
         {
-            titleMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
+            titleMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold;'>${e}</pre>`;
         }
-        loadingMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
+        loadingMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold;'>${e}</pre>`;
     };
     await manager.ready;
+    
+    manager.synth.voiceCap = voiceCap;
     
     if (fileInput.files[0])
     {
@@ -266,10 +270,7 @@ async function fetchFont(url, callback)
 }
 
 /**
- * @param midiFiles {{
- *     name: string,
- *     arrayBuffer: function
- * }[]}
+ * @param midiFiles {FileList|File[]}
  */
 async function startMidi(midiFiles)
 {
@@ -318,7 +319,7 @@ async function startMidi(midiFiles)
 
 /**
  * saves the settings (settings.js) selected data to config.json
- * (only on local edition that's why it's here and not in the demo_main.js)
+ * (only on the local edition that's why it's here and not in the demo_main.js)
  * @param settingsData {Object}
  */
 function saveSettings(settingsData)
@@ -326,6 +327,19 @@ function saveSettings(settingsData)
     localStorage.setItem("spessasynth-settings", JSON.stringify(settingsData));
     SpessaSynthInfo("saved as", settingsData);
 }
+
+let voiceCap = VOICE_CAP;
+
+const savedVoiceCap = localStorage.getItem("spessasynth-voice-cap");
+if (savedVoiceCap)
+{
+    voiceCap = parseInt(savedVoiceCap);
+}
+window.rememberVoiceCap = cap =>
+{
+    localStorage.setItem("spessasynth-voice-cap", cap.toString());
+    window.location.reload();
+};
 
 // INIT STARTS HERE
 
@@ -370,6 +384,7 @@ async function playDemoSong(fileName)
     titleMessage.textContent = window.manager.localeManager.getLocaleString("locale.synthInit.genericLoading");
     const r = await fetch("https://spessasus.github.io/spessasynth-demo-songs/demo_songs/" + fileName);
     r.name = fileName;
+    // noinspection JSCheckFunctionSignatures
     await startMidi([r]);
 }
 
@@ -389,6 +404,7 @@ demoInit(initLocale).then(() =>
         // check for chrome android
         if (isMobile)
         {
+            // noinspection JSUnresolvedReference
             if (window.chrome)
             {
                 showNotification(
@@ -455,7 +471,7 @@ demoInit(initLocale).then(() =>
             }
             window.manager.sfError = e =>
             {
-                loadingMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold'>${e}</pre>`;
+                loadingMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold;'>${e}</pre>`;
                 changeIcon(getExclamationSvg(256));
                 console.error(e);
             };
