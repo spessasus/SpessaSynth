@@ -33,19 +33,50 @@ export class Modulator
     currentValue = 0;
     
     /**
-     * Creates a modulator
-     * @param params {{srcEnum: number, secSrcEnum: number, dest: generatorTypes, amt: number, transform: number}}
+     * The source enumeration for this modulator
+     * @type {number}
      */
-    constructor(params)
+    sourceEnum;
+    
+    /**
+     * The secondary source enumeration for this modulator
+     * @type {number}
+     */
+    secondarySourceEnum;
+    
+    /**
+     * The generator destination of this modulator
+     * @type {generatorTypes}
+     */
+    modulatorDestination;
+    
+    /**
+     * The transform amount for this modulator
+     * @type {number}
+     */
+    transformAmount;
+    
+    /**
+     * The transform type for this modulator
+     * @type {0|2}
+     */
+    transformType;
+    
+    /**
+     * creates a modulator
+     * @param srcEnum {number}
+     * @param secSrcEnum {number}
+     * @param destination {generatorTypes|number}
+     * @param amount {number}
+     * @param transformType {number}
+     */
+    constructor(srcEnum, secSrcEnum, destination, amount, transformType)
     {
-        this.sourceEnum = params.srcEnum;
-        /**
-         * @type {generatorTypes}
-         */
-        this.modulatorDestination = params.dest;
-        this.secondarySourceEnum = params.secSrcEnum;
-        this.transformAmount = params.amt;
-        this.transformType = params.transform;
+        this.sourceEnum = srcEnum;
+        this.modulatorDestination = destination;
+        this.secondarySourceEnum = secSrcEnum;
+        this.transformAmount = amount;
+        this.transformType = transformType;
         
         
         if (this.modulatorDestination > 58)
@@ -96,13 +127,13 @@ export class Modulator
      */
     static copy(modulator)
     {
-        return new Modulator({
-            srcEnum: modulator.sourceEnum,
-            secSrcEnum: modulator.secondarySourceEnum,
-            transform: modulator.transformType,
-            amt: modulator.transformAmount,
-            dest: modulator.modulatorDestination
-        });
+        return new Modulator(
+            modulator.sourceEnum,
+            modulator.secondarySourceEnum,
+            modulator.modulatorDestination,
+            modulator.transformAmount,
+            modulator.transformType
+        );
     }
     
     /**
@@ -121,61 +152,62 @@ export class Modulator
     }
     
     /**
-     * Sum transform and create a NEW modulator
-     * @param modulator {Modulator}
-     * @returns {Modulator}
-     */
-    sumTransform(modulator)
-    {
-        return new Modulator({
-            srcEnum: this.sourceEnum,
-            secSrcEnum: this.secondarySourceEnum,
-            dest: this.modulatorDestination,
-            transform: this.transformType,
-            amt: this.transformAmount + modulator.transformAmount
-        });
-    }
-    
-    /**
+     * @param mod {Modulator}
      * @returns {string}
      */
-    debugString()
+    static debugString(mod)
     {
         function getKeyByValue(object, value)
         {
             return Object.keys(object).find(key => object[key] === value);
         }
         
-        let sourceString = getKeyByValue(modulatorCurveTypes, this.sourceCurveType);
-        sourceString += this.sourcePolarity === 0 ? " unipolar " : " bipolar ";
-        sourceString += this.sourceDirection === 0 ? "forwards " : "backwards ";
-        if (this.sourceUsesCC)
+        let sourceString = getKeyByValue(modulatorCurveTypes, mod.sourceCurveType);
+        sourceString += mod.sourcePolarity === 0 ? " unipolar " : " bipolar ";
+        sourceString += mod.sourceDirection === 0 ? "forwards " : "backwards ";
+        if (mod.sourceUsesCC)
         {
-            sourceString += getKeyByValue(midiControllers, this.sourceIndex);
+            sourceString += getKeyByValue(midiControllers, mod.sourceIndex);
         }
         else
         {
-            sourceString += getKeyByValue(modulatorSources, this.sourceIndex);
+            sourceString += getKeyByValue(modulatorSources, mod.sourceIndex);
         }
         
-        let secSrcString = getKeyByValue(modulatorCurveTypes, this.secSrcCurveType);
-        secSrcString += this.secSrcPolarity === 0 ? " unipolar " : " bipolar ";
-        secSrcString += this.secSrcCurveType === 0 ? "forwards " : "backwards ";
-        if (this.secSrcUsesCC)
+        let secSrcString = getKeyByValue(modulatorCurveTypes, mod.secSrcCurveType);
+        secSrcString += mod.secSrcPolarity === 0 ? " unipolar " : " bipolar ";
+        secSrcString += mod.secSrcCurveType === 0 ? "forwards " : "backwards ";
+        if (mod.secSrcUsesCC)
         {
-            secSrcString += getKeyByValue(midiControllers, this.secSrcIndex);
+            secSrcString += getKeyByValue(midiControllers, mod.secSrcIndex);
         }
         else
         {
-            secSrcString += getKeyByValue(modulatorSources, this.secSrcIndex);
+            secSrcString += getKeyByValue(modulatorSources, mod.secSrcIndex);
         }
         return `Modulator:
         Source: ${sourceString}
         Secondary source: ${secSrcString}
-        Destination: ${getKeyByValue(generatorTypes, this.modulatorDestination)}
-        Trasform amount: ${this.transformAmount}
-        Transform type: ${this.transformType}
+        Destination: ${getKeyByValue(generatorTypes, mod.modulatorDestination)}
+        Trasform amount: ${mod.transformAmount}
+        Transform type: ${mod.transformType}
         \n\n`;
+    }
+    
+    /**
+     * Sum transform and create a NEW modulator
+     * @param modulator {Modulator}
+     * @returns {Modulator}
+     */
+    sumTransform(modulator)
+    {
+        return new Modulator(
+            this.sourceEnum,
+            this.secondarySourceEnum,
+            this.modulatorDestination,
+            this.transformAmount + modulator.transformAmount,
+            this.transformType
+        );
     }
 }
 
@@ -189,155 +221,155 @@ export function getModSourceEnum(curveType, polarity, direction, isCC, index)
 
 const soundFontModulators = [
     // vel to attenuation
-    new Modulator({
-        srcEnum: getModSourceEnum(
+    new Modulator(
+        getModSourceEnum(
             DEFAULT_ATTENUATION_MOD_CURVE_TYPE,
             0,
             1,
             0,
             modulatorSources.noteOnVelocity
         ),
-        dest: generatorTypes.initialAttenuation,
-        amt: DEFAULT_ATTENUATION_MOD_AMOUNT,
-        secSrcEnum: 0x0,
-        transform: 0
-    }),
+        0x0,
+        generatorTypes.initialAttenuation,
+        DEFAULT_ATTENUATION_MOD_AMOUNT,
+        0
+    ),
     
     // mod wheel to vibrato
-    new Modulator({ srcEnum: 0x0081, dest: generatorTypes.vibLfoToPitch, amt: 50, secSrcEnum: 0x0, transform: 0 }),
+    new Modulator(0x0081, 0x0, generatorTypes.vibLfoToPitch, 50, 0),
     
     // vol to attenuation
-    new Modulator({
-        srcEnum: getModSourceEnum(
+    new Modulator(
+        getModSourceEnum(
             DEFAULT_ATTENUATION_MOD_CURVE_TYPE,
             0,
             1,
             1,
             midiControllers.mainVolume
         ),
-        dest: generatorTypes.initialAttenuation,
-        amt: DEFAULT_ATTENUATION_MOD_AMOUNT,
-        secSrcEnum: 0x0,
-        transform: 0
-    }),
+        0x0,
+        generatorTypes.initialAttenuation,
+        DEFAULT_ATTENUATION_MOD_AMOUNT,
+        0
+    ),
     
     // channel pressure to vibrato
-    new Modulator({ srcEnum: 0x000D, dest: generatorTypes.vibLfoToPitch, amt: 50, secSrcEnum: 0x0, transform: 0 }),
+    new Modulator(0x000D, 0x0, generatorTypes.vibLfoToPitch, 50, 0),
     
     // pitch wheel to tuning
-    new Modulator({ srcEnum: 0x020E, dest: generatorTypes.fineTune, amt: 12700, secSrcEnum: 0x0010, transform: 0 }),
+    new Modulator(0x020E, 0x0010, generatorTypes.fineTune, 12700, 0),
     
     // pan to uhh, pan
     // amount is 500 instead of 1000, see #59
-    new Modulator({ srcEnum: 0x028A, dest: generatorTypes.pan, amt: 500, secSrcEnum: 0x0, transform: 0 }),
+    new Modulator(0x028A, 0x0, generatorTypes.pan, 500, 0),
     
     // expression to attenuation
-    new Modulator({
-        srcEnum: getModSourceEnum(
+    new Modulator(
+        getModSourceEnum(
             DEFAULT_ATTENUATION_MOD_CURVE_TYPE,
             0,
             1,
             1,
             midiControllers.expressionController
         ),
-        dest: generatorTypes.initialAttenuation,
-        amt: DEFAULT_ATTENUATION_MOD_AMOUNT,
-        secSrcEnum: 0x0,
-        transform: 0
-    }),
+        0x0,
+        generatorTypes.initialAttenuation,
+        DEFAULT_ATTENUATION_MOD_AMOUNT,
+        0
+    ),
     
     // reverb effects to send
-    new Modulator({ srcEnum: 0x00DB, dest: generatorTypes.reverbEffectsSend, amt: 200, secSrcEnum: 0x0, transform: 0 }),
+    new Modulator(0x00DB, 0x0, generatorTypes.reverbEffectsSend, 200, 0),
     
     // chorus effects to send
-    new Modulator({ srcEnum: 0x00DD, dest: generatorTypes.chorusEffectsSend, amt: 200, secSrcEnum: 0x0, transform: 0 })
+    new Modulator(0x00DD, 0x0, generatorTypes.chorusEffectsSend, 200, 0)
 ];
 
 const customModulators = [
     // custom modulators heck yeah
     // poly pressure to vibrato
-    new Modulator({
-        srcEnum: getModSourceEnum(modulatorCurveTypes.linear, 0, 0, 0, modulatorSources.polyPressure),
-        dest: generatorTypes.vibLfoToPitch,
-        amt: 50,
-        secSrcEnum: 0x0,
-        transform: 0
-    }),
+    new Modulator(
+        getModSourceEnum(modulatorCurveTypes.linear, 0, 0, 0, modulatorSources.polyPressure),
+        0x0,
+        generatorTypes.vibLfoToPitch,
+        50,
+        0
+    ),
     
     // cc 92 (tremolo) to modLFO volume
-    new Modulator({
-        srcEnum: getModSourceEnum(
+    new Modulator(
+        getModSourceEnum(
             modulatorCurveTypes.linear,
             0,
             0,
             1,
             midiControllers.tremoloDepth
         ), /*linear forward unipolar cc 92 */
-        dest: generatorTypes.modLfoToVolume,
-        amt: 24,
-        secSrcEnum: 0x0, // no controller
-        transform: 0
-    }),
+        0x0, // no controller
+        generatorTypes.modLfoToVolume,
+        24,
+        0
+    ),
     
     // cc 73 (attack time) to volEnv attack
-    new Modulator({
-        srcEnum: getModSourceEnum(
+    new Modulator(
+        getModSourceEnum(
             modulatorCurveTypes.convex,
             1,
             0,
             1,
             midiControllers.attackTime
         ), // linear forward bipolar cc 72
-        dest: generatorTypes.attackVolEnv,
-        amt: 6000,
-        secSrcEnum: 0x0, // no controller
-        transform: 0
-    }),
+        0x0, // no controller
+        generatorTypes.attackVolEnv,
+        6000,
+        0
+    ),
     
     // cc 72 (release time) to volEnv release
-    new Modulator({
-        srcEnum: getModSourceEnum(
+    new Modulator(
+        getModSourceEnum(
             modulatorCurveTypes.linear,
             1,
             0,
             1,
             midiControllers.releaseTime
         ), // linear forward bipolar cc 72
-        dest: generatorTypes.releaseVolEnv,
-        amt: 3600,
-        secSrcEnum: 0x0, // no controller
-        transform: 0
-    }),
+        0x0, // no controller
+        generatorTypes.releaseVolEnv,
+        3600,
+        0
+    ),
     
     // cc 74 (brightness) to filterFc
-    new Modulator({
-        srcEnum: getModSourceEnum(
+    new Modulator(
+        getModSourceEnum(
             modulatorCurveTypes.linear,
             1,
             0,
             1,
             midiControllers.brightness
         ), // linear forwards bipolar cc 74
-        dest: generatorTypes.initialFilterFc,
-        amt: 6000,
-        secSrcEnum: 0x0, // no controller
-        transform: 0
-    }),
+        0x0, // no controller
+        generatorTypes.initialFilterFc,
+        6000,
+        0
+    ),
     
     // cc 71 (filter Q) to filter Q
-    new Modulator({
-        srcEnum: getModSourceEnum(
+    new Modulator(
+        getModSourceEnum(
             modulatorCurveTypes.linear,
             1,
             0,
             1,
             midiControllers.filterResonance
         ), // linear forwards bipolar cc 74
-        dest: generatorTypes.initialFilterQ,
-        amt: 250,
-        secSrcEnum: 0x0, // no controller
-        transform: 0
-    })
+        0x0, // no controller
+        generatorTypes.initialFilterQ,
+        250,
+        0
+    )
 ];
 
 export const defaultModulators = soundFontModulators.concat(customModulators);

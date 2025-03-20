@@ -483,7 +483,7 @@ export function getWorkletVoices(channel,
                 SpessaSynthTable([{
                     Sample: sampleAndGenerators.sample.sampleName,
                     Generators: generators,
-                    Modulators: sampleAndGenerators.modulators.map(m => m.debugString()),
+                    Modulators: sampleAndGenerators.modulators.map(m => Modulator.debugString(m)),
                     Velocity: velocity,
                     TargetKey: targetKey,
                     MidiNote: midiNote,
