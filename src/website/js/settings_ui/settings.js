@@ -253,6 +253,7 @@ class SpessaSynthSettings
         }
         this.musicMode.setVisibility(!this.musicMode.visible, document.getElementById("keyboard_canvas_wrapper"));
         this.renderer.renderBool = !this.musicMode.visible;
+        this.renderer.updateSize();
     }
     
     showTopPart()

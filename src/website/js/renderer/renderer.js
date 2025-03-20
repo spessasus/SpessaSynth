@@ -253,6 +253,13 @@ class Renderer
         this._keyRange = value;
     }
     
+    updateSize()
+    {
+        this.canvas.width = this.canvas.clientWidth * window.devicePixelRatio;
+        this.canvas.height = this.canvas.clientHeight * window.devicePixelRatio;
+        this.computeColors();
+    }
+    
     toggleDarkMode()
     {
         this.canvas.classList.toggle("light_mode");
