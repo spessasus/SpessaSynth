@@ -384,12 +384,12 @@ export function getSF2ModulatorFromArticulator(
     }
     
     // return the modulator!
-    return new Modulator({
-        srcEnum: sourceEnumFinal,
-        secSrcEnum: secSourceEnumFinal,
-        dest: destinationGenerator,
-        transform: 0x0,
-        amt: newValue
-    });
+    return new Modulator(
+        sourceEnumFinal,
+        secSourceEnumFinal,
+        destinationGenerator,
+        newValue,
+        0x0
+    );
     
 }

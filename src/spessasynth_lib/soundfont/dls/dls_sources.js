@@ -28,34 +28,34 @@ export const DLSSources = {
     coarseTune: 0x102
 };
 
-export const DEFAULT_DLS_REVERB = new Modulator({
-    srcEnum: 0x00DB,
-    dest: generatorTypes.reverbEffectsSend,
-    amt: 1000,
-    secSrcEnum: 0x0,
-    transform: 0
-});
+export const DEFAULT_DLS_REVERB = new Modulator(
+    0x00DB,
+    0x0,
+    generatorTypes.reverbEffectsSend,
+    1000,
+    0
+);
 
-export const DEFAULT_DLS_CHORUS = new Modulator({
-    srcEnum: 0x00DD,
-    dest: generatorTypes.chorusEffectsSend,
-    amt: 1000,
-    secSrcEnum: 0x0,
-    transform: 0
-});
+export const DEFAULT_DLS_CHORUS = new Modulator(
+    0x00DD,
+    0x0,
+    generatorTypes.chorusEffectsSend,
+    1000,
+    0
+);
 
-export const DLS_1_NO_VIBRATO_MOD = new Modulator({
-    srcEnum: 0x0081,
-    dest: generatorTypes.vibLfoToPitch,
-    amt: 0,
-    secSrcEnum: 0x0,
-    transform: 0
-});
+export const DLS_1_NO_VIBRATO_MOD = new Modulator(
+    0x0081,
+    0x0,
+    generatorTypes.vibLfoToPitch,
+    0,
+    0
+);
 
-export const DLS_1_NO_VIBRATO_PRESSURE = new Modulator({
-    srcEnum: 0x000D,
-    dest: generatorTypes.vibLfoToPitch,
-    amt: 0,
-    secSrcEnum: 0x0,
-    transform: 0
-});
+export const DLS_1_NO_VIBRATO_PRESSURE = new Modulator(
+    0x000D,
+    0x0,
+    generatorTypes.vibLfoToPitch,
+    0,
+    0
+);

@@ -11,13 +11,12 @@ export class ReadModulator extends Modulator
      */
     constructor(dataArray)
     {
-        super({
-            srcEnum: readLittleEndian(dataArray, 2),
-            dest: readLittleEndian(dataArray, 2),
-            amt: signedInt16(dataArray[dataArray.currentIndex++], dataArray[dataArray.currentIndex++]),
-            secSrcEnum: readLittleEndian(dataArray, 2),
-            transform: readLittleEndian(dataArray, 2)
-        });
+        const srcEnum = readLittleEndian(dataArray, 2);
+        const destination = readLittleEndian(dataArray, 2);
+        const amount = signedInt16(dataArray[dataArray.currentIndex++], dataArray[dataArray.currentIndex++]);
+        const secSrcEnum = readLittleEndian(dataArray, 2);
+        const transformType = readLittleEndian(dataArray, 2);
+        super(srcEnum, secSrcEnum, destination, amount, transformType);
     }
 }
 
