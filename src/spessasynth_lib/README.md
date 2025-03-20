@@ -32,13 +32,28 @@ document.getElementById("button").onclick = async () =>
 
 ## Current Features
 
-### Easy Integration
-- **Modular design:** Easy integration into other projects (load what you need)
-- **[Detailed documentation:](https://github.com/spessasus/SpessaSynth/wiki/Home)** With [examples!](https://github.com/spessasus/SpessaSynth/wiki/Usage-As-Library#examples)
-- **Easy to Use:** basic setup is just [two lines of code!](https://github.com/spessasus/SpessaSynth/wiki/Usage-As-Library#minimal-setup)
-- **No dependencies:** _batteries included!_
+### Numerous Format Support
+Supported formats list:
+- `.mid` - Standard MIDI File
+- `.kar` - Soft Karaoke MIDI File
+- `.sf2` - SoundFont2 File
+- `.sf3` - SoundFont2 Compressed File
+- `.sfogg` - SF2Pack With Vorbis Compression
+- `.dls` - Downloadable Sounds Levels 1 & 2 (as well as Mobile DLS)
+- `.rmi` - RIFF MIDI File
+- `.rmi` - RIFF MIDI File With Embedded DLS
+- `.rmi` - [RIFF MIDI File With Embedded SF2](https://github.com/spessasus/sf2-rmidi-specification)
 
-### Powerful SoundFont Synthesizer
+*With [an easy way of converting between them!](https://github.com/spessasus/SpessaSynth/wiki/Converting-Between-Formats)*
+
+### Easy Integration
+- **Modular design:** *Easy integration into other projects (load what you need)*
+- **[Detailed documentation:](https://github.com/spessasus/SpessaSynth/wiki/Home)** *With [examples!](https://github.com/spessasus/SpessaSynth/wiki/Usage-As-Library#examples)*
+- **Flexible:** *It's not just a MIDI player!*
+- **Easy to Use:** *Basic setup is just [two lines of code!](https://github.com/spessasus/SpessaSynth/wiki/Usage-As-Library#minimal-setup)*
+- **No dependencies:** *Batteries included!*
+
+### Powerful Synthesizer
 - Suitable for both **real-time** and **offline** synthesis
 - **Excellent SoundFont support:**
   - **Full Generator Support**
@@ -63,19 +78,22 @@ document.getElementById("button").onclick = async () =>
 - **[Custom modulators for additional controllers](https://github.com/spessasus/SpessaSynth/wiki/Modulator-Class#default-modulators):** *Why not?*
 - **Written using AudioWorklets:** 
   - Runs in a **separate thread** for maximum performance
+  - Doesn't stop playing even when the main thread is frozen
   - Supported by all modern browsers
 - **Unlimited channel count:** Your CPU is the limit!
 - **Excellent MIDI Standards Support:**
   - **MIDI Controller Support:** Default supported controllers [here](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-controllers)
+  - **Portamento Support:** Glide the notes!
+  - **Sound Controllers:** Real-time filter and envelope control!
   - **MIDI Tuning Standard Support:** [more info here](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#midi-tuning-standard)
   - [Full **RPN** and limited **NRPN** support](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-registered-parameters)
   - Supports some [**Roland GS** and **Yamaha XG** system exclusives](https://github.com/spessasus/SpessaSynth/wiki/MIDI-Implementation#supported-system-exclusives)
-- **High-performance mode:** Play Rush E! _note: may kill your browser ;)_
+- **High-performance mode:** Play Rush E! *note: may kill your browser ;)*
 
-### Built-in Powerful and Fast Sequencer
-- **Supports MIDI formats 0, 1, and 2:** _note: format 2 support is experimental as it's very, very rare_
+### Powerful and Fast MIDI Sequencer
+- **Supports MIDI formats 0, 1, and 2:** *note: format 2 support is experimental as it's very, very rare.*
 - **[Multi-Port MIDI](https://github.com/spessasus/SpessaSynth/wiki/About-Multi-Port) support:** More than 16 channels!
-- **Smart preloading:** Only preloads the samples used in the MIDI file for smooth playback (down to key and velocity!)
+- **Smart preloading:** Only preloads the samples used in the MIDI file for smooth playback *(down to key and velocity!)*
 - **Lyrics support:** Add karaoke to your program!
 - **Raw lyrics available:** Decode in any encoding! *(Kanji? No problem!)*
 - **Runs in Audio Thread as well:** Never blocks the main thread
@@ -89,7 +107,7 @@ document.getElementById("button").onclick = async () =>
   - **Used channels on track:** Quickly determine which channels are used
   - **Key range detection:** Detect the key range of the MIDI
   - **Easy MIDI editing:** Use [helper functions](https://github.com/spessasus/SpessaSynth/wiki/Writing-MIDI-Files#modifymidi) to modify the song to your needs!
-  - **Loop detection:** Automatically detects loops in MIDIs (e.g., from _Touhou Project_)
+  - **Loop detection:** Automatically detects loops in MIDIs (e.g., from *Touhou Project*)
   - **First note detection:** Skip unnecessary silence at the start by jumping to the first note!
   - **Lyrics support:** Both regular MIDI and .kar files!
   - **[Write MIDI files from scratch](https://github.com/spessasus/SpessaSynth/wiki/Creating-MIDI-Files)**

@@ -7,6 +7,7 @@ import {
     customResetArray,
     dataEntryStates,
     NON_CC_INDEX_OFFSET,
+    PORTAMENTO_CONTROL_UNSET,
     resetArray
 } from "../../worklet_utilities/controller_tables.js";
 import { midiControllers } from "../../../../midi_parser/midi_message.js";
@@ -130,8 +131,14 @@ export function resetControllers()
         const resetValue = resetArray[i];
         if (this.midiControllers[i] !== resetValue && i < 127)
         {
-            // reset if reset
-            this.controllerChange(i, resetValue >> 7);
+            if (i === midiControllers.portamentoControl)
+            {
+                this.midiControllers[i] = PORTAMENTO_CONTROL_UNSET;
+            }
+            else
+            {
+                this.controllerChange(i, resetValue >> 7);
+            }
         }
         else
         {
@@ -201,7 +208,14 @@ export function resetControllersRP15Compliant()
         const resetValue = resetArray[i];
         if (!nonResetableCCs.has(i) && resetValue !== this.midiControllers[i])
         {
-            this.controllerChange(i, resetValue);
+            if (i === midiControllers.portamentoControl)
+            {
+                this.midiControllers[i] = PORTAMENTO_CONTROL_UNSET;
+            }
+            else
+            {
+                this.controllerChange(i, resetValue >> 7);
+            }
         }
     }
 }

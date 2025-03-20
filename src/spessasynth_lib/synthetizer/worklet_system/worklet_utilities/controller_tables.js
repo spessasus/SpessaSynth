@@ -42,11 +42,12 @@ setResetValue(midiControllers.NRPNLsb, 127);
 setResetValue(midiControllers.NRPNMsb, 127);
 
 
+export const PORTAMENTO_CONTROL_UNSET = 1;
 // special case: portamento control
 // since it is only 7-bit, only the values at multiple of 128 are allowed.
 // a value of just 1 indicates no key set, hence no portamento.
 // this is the "initial unset portamento key" flag.
-resetArray[midiControllers.portamentoControl] = 1;
+resetArray[midiControllers.portamentoControl] = PORTAMENTO_CONTROL_UNSET;
 
 // pitch wheel
 setResetValue(NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel, 64);
