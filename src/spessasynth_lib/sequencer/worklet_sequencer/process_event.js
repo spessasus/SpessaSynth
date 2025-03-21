@@ -171,7 +171,10 @@ export function _processEvent(event, trackIndex)
     }
     if (statusByteData.status >= 0 && statusByteData.status < 0x80)
     {
-        this.post(WorkletSequencerReturnMessageType.metaEvent, [event.messageStatusByte, event.messageData]);
+        this.post(
+            WorkletSequencerReturnMessageType.metaEvent,
+            [event.messageStatusByte, event.messageData, trackIndex]
+        );
     }
 }
 

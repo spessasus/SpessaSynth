@@ -99,7 +99,7 @@ export class Sequencer
     
     /**
      * Fires on meta-event
-     * @type {Object<string, function([number, Uint8Array])>}
+     * @type {Object<string, function([number, Uint8Array, number])>}
      */
     onMetaEvent = {};
     
@@ -438,7 +438,7 @@ export class Sequencer
     
     /**
      * Adds a new event that gets called when a meta-event occurs
-     * @param callback {function([number, Uint8Array])} the meta-event type and its data
+     * @param callback {function([number, Uint8Array, number])} the meta-event type, its data and the track number
      * @param id {string} must be unique
      */
     addOnMetaEvent(callback, id)

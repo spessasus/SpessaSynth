@@ -47,6 +47,6 @@ export const WorkletSequencerReturnMessageType = {
     pause: 4,                   // no data
     getMIDI: 5,                 // midiData<MIDI>
     midiError: 6,               // errorMSG<string>
-    metaEvent: 7,               // [messageType<number>, messageData<Uint8Array>]
+    metaEvent: 7,               // [messageType<number>, messageData<Uint8Array>, trackNum<number>]
     loopCountChange: 8          // newLoopCount<number>
 };
