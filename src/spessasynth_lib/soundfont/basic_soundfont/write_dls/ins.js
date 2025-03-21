@@ -9,7 +9,7 @@ import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd } from "../../../utils/l
 import { consoleColors } from "../../../utils/other.js";
 
 /**
- * @this {BasicSoundFont}
+ * @this {BasicSoundBank}
  * @param preset {BasicPreset}
  * @returns {IndexedByteArray}
  */
@@ -65,7 +65,7 @@ export function writeIns(preset)
         );
     }
     
-    // write region list
+    // write the region list
     const lrgnData = combineArrays(combined.reduce((arrs, z) =>
     {
         if (!z.isGlobal)

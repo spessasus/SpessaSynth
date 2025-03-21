@@ -16,9 +16,10 @@ import { writeWord } from "../../../utils/byte_functions/little_endian.js";
 import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo } from "../../../utils/loggin.js";
 /**
  * @typedef {Object} SoundFont2WriteOptions
- * @property {boolean} compress - if the soundfont should be compressed with the ogg vorbis codec
+ * @property {boolean} compress - if the soundfont should be compressed with the Ogg Vorbis codec
  * @property {number} compressionQuality - the vorbis compression quality, from -0.1 to 1
- * @property {EncodeVorbisFunction|undefined} compressionFunction - the encode vorbis function. Can be undefined if not compressing.
+ * @property {EncodeVorbisFunction|undefined} compressionFunction - the encode vorbis function.
+ * Can be undefined if not compressed.
  */
 
 /**
@@ -32,7 +33,7 @@ const DEFAULT_WRITE_OPTIONS = {
 
 /**
  * Write the soundfont as an .sf2 file. This method is DESTRUCTIVE
- * @this {BasicSoundFont}
+ * @this {BasicSoundBank}
  * @param {SoundFont2WriteOptions} options
  * @returns {Uint8Array}
  */
@@ -115,7 +116,7 @@ export function write(options = DEFAULT_WRITE_OPTIONS)
         "%cWriting SDTA...",
         consoleColors.info
     );
-    // write sdata
+    // write sdta
     const smplStartOffsets = [];
     const smplEndOffsets = [];
     const sdtaChunk = getSDTA.call(
@@ -131,7 +132,7 @@ export function write(options = DEFAULT_WRITE_OPTIONS)
         "%cWriting PDTA...",
         consoleColors.info
     );
-    // write pdata
+    // write pdta
     // go in reverse so the indexes are correct
     // instruments
     SpessaSynthInfo(
@@ -178,7 +179,7 @@ export function write(options = DEFAULT_WRITE_OPTIONS)
     const phdrChunk = getPHDR.call(this);
     // combine in the sfspec order
     const pdtadata = combineArrays([
-        new IndexedByteArray([112, 100, 116, 97]), // "ptda"
+        new IndexedByteArray([112, 100, 116, 97]), // "pdta"
         phdrChunk,
         pbagChunk,
         pmodChunk,

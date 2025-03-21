@@ -19,7 +19,7 @@ export class DLSPreset extends BasicPreset
         const isDrums = ulBank >> 31;
         if (isDrums)
         {
-            // soundfont bank is 128 so we change it here
+            // soundfont bank is 128, so we change it here
             this.bank = 128;
         }
         

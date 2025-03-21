@@ -4,17 +4,19 @@ import { DEFAULT_PERCUSSION } from "../synthetizer/synthetizer.js";
 import { messageTypes, midiControllers } from "./midi_message.js";
 
 /**
- * @param mid {BasicMIDI}
- * @param soundfont {{getPreset: function(number, number): BasicPreset}}
+ * Gets the used programs and keys for this MIDI file with a given sound bank
+ * @this {BasicMIDI}
+ * @param soundfont {{getPreset: function(number, number): BasicPreset}} - the sound bank
  * @returns {Object<string, Set<string>>}
  */
-export function getUsedProgramsAndKeys(mid, soundfont)
+export function getUsedProgramsAndKeys(soundfont)
 {
+    const mid = this;
     SpessaSynthGroupCollapsed(
         "%cSearching for all used programs and keys...",
         consoleColors.info
     );
-    // find every bank:program combo and every key:velocity for each. Make sure to care about ports and drums
+    // Find every bank:program combo and every key:velocity for each. Make sure to care about ports and drums
     const channelsAmount = 16 + mid.midiPortChannelOffsets.reduce((max, cur) => cur > max ? cur : max);
     /**
      * @type {{program: number, bank: number, drums: boolean, string: string}[]}
@@ -152,7 +154,7 @@ export function getUsedProgramsAndKeys(mid, soundfont)
                     continue;
                 }
                 channelPresets[channel].bank = realBank;
-                // do not update the data, bank change doesnt change the preset
+                // do not update the data, bank change doesn't change the preset
                 break;
             
             case messageTypes.noteOn:

@@ -129,6 +129,7 @@ export function readRegion(chunk)
     readLittleEndian(waveLinkChunk.chunkData, 4);
     // sampleID
     const sampleID = readLittleEndian(waveLinkChunk.chunkData, 4);
+    // noinspection JSValidateTypes
     /**
      * @type {DLSSample}
      */

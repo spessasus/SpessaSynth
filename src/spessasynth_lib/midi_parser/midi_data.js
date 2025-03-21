@@ -5,7 +5,7 @@ import { MIDISequenceData } from "./midi_sequence.js";
  * Use getMIDI() to get the actual sequence.
  * This class contains all properties that MIDI does, except for tracks and the embedded soundfont.
  */
-export class MidiData extends MIDISequenceData
+export class MIDIData extends MIDISequenceData
 {
     
     /**
@@ -53,7 +53,7 @@ export class MidiData extends MIDISequenceData
 
 /**
  * Temporary MIDI data used when the MIDI is not loaded.
- * @type {MidiData}
+ * @type {MIDIData}
  */
 export const DUMMY_MIDI_DATA = {
     duration: 99999,

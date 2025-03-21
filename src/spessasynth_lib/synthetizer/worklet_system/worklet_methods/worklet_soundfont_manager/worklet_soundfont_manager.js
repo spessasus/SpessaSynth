@@ -5,7 +5,7 @@ import { loadSoundFont } from "../../../../soundfont/load_soundfont.js";
 /**
  * @typedef {Object} SoundFontType
  * @property {string} id - unique id for the soundfont
- * @property {BasicSoundFont} soundfont - the soundfont itself
+ * @property {BasicSoundBank} soundfont - the soundfont itself
  * @property {number} bankOffset - the soundfont's bank offset
  */
 
@@ -245,7 +245,7 @@ export class WorkletSoundfontManager
     {
         this.soundfontList.forEach(s =>
         {
-            s.soundfont.destroySoundfont();
+            s.soundfont.destroySoundBank();
         });
         delete this.soundfontList;
     }

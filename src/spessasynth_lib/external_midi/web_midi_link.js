@@ -8,7 +8,7 @@ import { SpessaSynthInfo } from "../utils/loggin.js";
  * https://www.g200kg.com/en/docs/webmidilink/
  */
 
-export class WebMidiLinkHandler
+export class WebMIDILinkHandler
 {
     /**
      * @param synth {Synthetizer} the synth to play to

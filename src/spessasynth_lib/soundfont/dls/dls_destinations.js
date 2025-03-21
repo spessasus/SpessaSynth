@@ -9,9 +9,9 @@ export const DLSDestinations = {
     pitch: 0x3,                 // pitch in cents
     pan: 0x4,                   // pan 10ths of a percent
     keyNum: 0x5,                // MIDI key number
-    // nuh uh, the channel controllers are not supported!!!!
-    chorusSend: 0x80,           // chorus send 10ths of a percent
-    reverbSend: 0x81,           // reverb send 10ths of a percent
+    // nuh uh, the channel controllers are not supported!
+    chorusSend: 0x80,           // chorus send level 10ths of a percent
+    reverbSend: 0x81,           // reverb send level 10ths of a percent
     
     modLfoFreq: 0x104,          // modulation LFO frequency
     modLfoDelay: 0x105,         // modulation LFO delay

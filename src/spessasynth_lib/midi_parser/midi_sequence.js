@@ -2,10 +2,10 @@
  * This is the base type for MIDI files. It contains all the "metadata" and information.
  * It extends to:
  * - BasicMIDI, which contains the actual track data of the MIDI file. Essentially the MIDI file itself.
- * - MidiData, which contains all properties that MIDI does, except for tracks and the embedded soundfont.
- * MidiData is the "shell" of the file which is available on the main thread at all times, containing the metadata.
+ * - MIDIData, which contains all properties that MIDI does, except for tracks and the embedded soundfont.
+ * MIDIData is the "shell" of the file which is available on the main thread at all times, containing the metadata.
  */
-export class MIDISequenceData
+class MIDISequenceData
 {
     /**
      * The time division of the sequence, representing the number of ticks per beat.
@@ -143,4 +143,32 @@ export class MIDISequenceData
      * @type {boolean}
      */
     isKaraokeFile = false;
+    
+    /**
+     * Converts ticks to time in seconds
+     * @param ticks {number} time in MIDI ticks
+     * @returns {number} time in seconds
+     */
+    MIDIticksToSeconds(ticks)
+    {
+        let totalSeconds = 0;
+        
+        while (ticks > 0)
+        {
+            // tempo changes are reversed, so the first element is the last tempo change
+            // and the last element is the first tempo change
+            // (always at tick 0 and tempo 120)
+            // find the last tempo change that has occurred
+            let tempo = this.tempoChanges.find(v => v.ticks < ticks);
+            
+            // calculate the difference and tempo time
+            let timeSinceLastTempo = ticks - tempo.ticks;
+            totalSeconds += (timeSinceLastTempo * 60) / (tempo.tempo * this.timeDivision);
+            ticks -= timeSinceLastTempo;
+        }
+        
+        return totalSeconds;
+    }
 }
+
+export { MIDISequenceData };

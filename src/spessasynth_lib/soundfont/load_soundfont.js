@@ -6,7 +6,7 @@ import { SoundFont2 } from "./read_sf2/soundfont.js";
 /**
  * Loads a soundfont file
  * @param buffer {ArrayBuffer}
- * @returns {BasicSoundFont}
+ * @returns {BasicSoundBank}
  */
 export function loadSoundFont(buffer)
 {

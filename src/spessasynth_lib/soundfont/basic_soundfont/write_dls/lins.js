@@ -3,7 +3,7 @@ import { combineArrays } from "../../../utils/indexed_array.js";
 import { writeIns } from "./ins.js";
 
 /**
- * @this {BasicSoundFont}
+ * @this {BasicSoundBank}
  * @returns {IndexedByteArray}
  */
 export function writeLins()

@@ -372,4 +372,7 @@ const customModulators = [
     )
 ];
 
+/**
+ * @type {Modulator[]}
+ */
 export const defaultModulators = soundFontModulators.concat(customModulators);

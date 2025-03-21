@@ -5,7 +5,7 @@ import { Renderer } from "../renderer/renderer.js";
 import { SequencerUI } from "../sequencer_ui/sequencer_ui.js";
 import { SynthetizerUI } from "../synthesizer_ui/synthetizer_ui.js";
 import { MIDIDeviceHandler } from "../../../spessasynth_lib/external_midi/midi_handler.js";
-import { WebMidiLinkHandler } from "../../../spessasynth_lib/external_midi/web_midi_link.js";
+import { WebMIDILinkHandler } from "../../../spessasynth_lib/external_midi/web_midi_link.js";
 import { Sequencer } from "../../../spessasynth_lib/sequencer/sequencer.js";
 import { SpessaSynthSettings } from "../settings_ui/settings.js";
 import { MusicModeUI } from "../music_mode_ui/music_mode_ui.js";
@@ -25,7 +25,6 @@ import { IndexedByteArray } from "../../../spessasynth_lib/utils/indexed_array.j
 import { closeNotification, showNotification } from "../notification/notification.js";
 import { DropFileHandler } from "../utils/drop_file_handler.js";
 import { _exportDLS } from "./export_dls.js";
-import { writeRMIDI } from "../../../spessasynth_lib/midi_parser/rmidi_writer.js";
 
 // this enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
 document.body.classList.add("load");
@@ -211,7 +210,7 @@ class Manager
         this.midHandler = new MIDIDeviceHandler();
         
         // set up web midi link
-        new WebMidiLinkHandler(this.synth);
+        new WebMIDILinkHandler(this.synth);
         
         // set up keyboard
         this.keyboard = new MidiKeyboard(this.channelColors, this.synth);
@@ -555,9 +554,8 @@ class Manager
     {
         const mid = await this.seq.getMIDI();
         const sf = loadSoundFont(this.soundFont);
-        const out = writeRMIDI(
+        const out = mid.writeRMIDI(
             sf.writeDLS(),
-            mid,
             sf
         );
         const blob = new Blob([out.buffer], { type: "audio/rmid" });

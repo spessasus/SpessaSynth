@@ -1,4 +1,4 @@
-import { BasicSoundFont } from "../basic_soundfont/basic_soundfont.js";
+import { BasicSoundBank } from "../basic_soundfont/basic_soundfont.js";
 import { IndexedByteArray } from "../../utils/indexed_array.js";
 import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo } from "../../utils/loggin.js";
 import { consoleColors } from "../../utils/other.js";
@@ -11,7 +11,7 @@ import { readLart } from "./read_lart.js";
 import { readRegion } from "./read_region.js";
 import { readDLSSamples } from "./read_samples.js";
 
-class DLSSoundFont extends BasicSoundFont
+class DLSSoundFont extends BasicSoundBank
 {
     /**
      * Loads a new DLS (Downloadable sounds) soundfont
@@ -34,7 +34,7 @@ class DLSSoundFont extends BasicSoundFont
         this.verifyText(readBytesAsString(this.dataArray, 4).toLowerCase(), "dls ");
         
         /**
-         * Read list
+         * Read the list
          * @type {RiffChunk[]}
          */
         const chunks = [];
@@ -95,7 +95,7 @@ class DLSSoundFont extends BasicSoundFont
             consoleColors.recognized
         );
         
-        // read wave list
+        // read the wave list
         let waveListChunk = findRIFFListType(chunks, "wvpl");
         if (!waveListChunk)
         {
@@ -104,7 +104,7 @@ class DLSSoundFont extends BasicSoundFont
         }
         this.readDLSSamples(waveListChunk);
         
-        // read instrument list
+        // read the instrument list
         let instrumentListChunk = findRIFFListType(chunks, "lins");
         if (!instrumentListChunk)
         {
@@ -170,9 +170,9 @@ class DLSSoundFont extends BasicSoundFont
         throw new Error(`DLS parse error: ${error} The file may be corrupted.`);
     }
     
-    destroySoundfont()
+    destroySoundBank()
     {
-        super.destroySoundfont();
+        super.destroySoundBank();
         delete this.dataArray;
     }
 }

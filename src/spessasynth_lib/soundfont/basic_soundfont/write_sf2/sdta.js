@@ -4,7 +4,7 @@ import { SpessaSynthInfo } from "../../../utils/loggin.js";
 import { consoleColors } from "../../../utils/other.js";
 
 /**
- * @this {BasicSoundFont}
+ * @this {BasicSoundBank}
  * @param smplStartOffsets {number[]}
  * @param smplEndOffsets {number[]}
  * @param compress {boolean}

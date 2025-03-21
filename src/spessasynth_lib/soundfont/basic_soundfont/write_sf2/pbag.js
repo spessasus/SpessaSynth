@@ -3,12 +3,12 @@ import { writeWord } from "../../../utils/byte_functions/little_endian.js";
 import { RiffChunk, writeRIFFChunk } from "../riff_chunk.js";
 
 /**
- * @this {BasicSoundFont}
+ * @this {BasicSoundBank}
  * @returns {IndexedByteArray}
  */
 export function getPBAG()
 {
-    // write all pbags with their start indexes as they were changed in getPGEN() and getPMOD()
+    // write all pbag with their start indexes as they were changed in getPGEN() and getPMOD()
     const pbagsize = this.presets.reduce((sum, i) => i.presetZones.length * 4 + sum, 4);
     const pbagdata = new IndexedByteArray(pbagsize);
     let zoneID = 0;

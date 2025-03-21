@@ -6,7 +6,7 @@ import { readBytesAsUintBigEndian } from "../../utils/byte_functions/big_endian.
 
 /**
  * Processes a single event
- * @param event {MidiMessage}
+ * @param event {MIDIMessage}
  * @param trackIndex {number}
  * @this {WorkletSequencer}
  * @private

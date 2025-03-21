@@ -3,12 +3,12 @@ import { writeWord } from "../../../utils/byte_functions/little_endian.js";
 import { RiffChunk, writeRIFFChunk } from "../riff_chunk.js";
 
 /**
- * @this {BasicSoundFont}
+ * @this {BasicSoundBank}
  * @returns {IndexedByteArray}
  */
 export function getIBAG()
 {
-    // write all ibags with their start indexes as they were changed in getIGEN() and getIMOD()
+    // write all ibag with their start indexes as they were changed in getIGEN() and getIMOD()
     const ibagsize = this.instruments.reduce((sum, i) => i.instrumentZones.length * 4 + sum, 4);
     const ibagdata = new IndexedByteArray(ibagsize);
     let zoneID = 0;

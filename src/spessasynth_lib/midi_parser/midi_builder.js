@@ -1,5 +1,5 @@
 import { BasicMIDI } from "./basic_midi.js";
-import { messageTypes, MidiMessage } from "./midi_message.js";
+import { messageTypes, MIDIMessage } from "./midi_message.js";
 import { IndexedByteArray } from "../utils/indexed_array.js";
 import { SpessaSynthWarn } from "../utils/loggin.js";
 
@@ -59,7 +59,7 @@ export class MIDIBuilder extends BasicMIDI
         }
         this.tracks.push([]);
         this.tracks[this.tracksAmount - 1].push(
-            new MidiMessage(0, messageTypes.endOfTrack, new IndexedByteArray(0))
+            new MIDIMessage(0, messageTypes.endOfTrack, new IndexedByteArray(0))
         );
         this.addEvent(0, this.tracksAmount - 1, messageTypes.trackName, this.encoder.encode(name));
         this.addEvent(0, this.tracksAmount - 1, messageTypes.midiPort, [port]);
@@ -83,15 +83,15 @@ export class MIDIBuilder extends BasicMIDI
             SpessaSynthWarn("The EndOfTrack is added automatically. Ignoring!");
             return;
         }
-        // remove end of track
+        // remove the end of track
         this.tracks[track].pop();
-        this.tracks[track].push(new MidiMessage(
+        this.tracks[track].push(new MIDIMessage(
             ticks,
             event,
             new IndexedByteArray(eventData)
         ));
-        // add end of track
-        this.tracks[track].push(new MidiMessage(
+        // add the end of track
+        this.tracks[track].push(new MIDIMessage(
             ticks,
             messageTypes.endOfTrack,
             new IndexedByteArray(0)

@@ -1,4 +1,4 @@
-import { dataBytesAmount, getChannel, MidiMessage } from "./midi_message.js";
+import { dataBytesAmount, getChannel, MIDIMessage } from "./midi_message.js";
 import { IndexedByteArray } from "../utils/indexed_array.js";
 import { consoleColors } from "../utils/other.js";
 import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo, SpessaSynthWarn } from "../utils/loggin.js";
@@ -172,7 +172,7 @@ class MIDI extends BasicMIDI
         for (let i = 0; i < this.tracksAmount; i++)
         {
             /**
-             * @type {MidiMessage[]}
+             * @type {MIDIMessage[]}
              */
             const track = [];
             const trackChunk = this.readMIDIChunk(fileByteArray);
@@ -262,7 +262,7 @@ class MIDI extends BasicMIDI
                     trackChunk.data.currentIndex,
                     trackChunk.data.currentIndex + eventDataLength
                 ), 0);
-                const event = new MidiMessage(totalTicks, statusByte, eventData);
+                const event = new MIDIMessage(totalTicks, statusByte, eventData);
                 track.push(event);
                 // advance the track chunk
                 trackChunk.data.currentIndex += eventDataLength;

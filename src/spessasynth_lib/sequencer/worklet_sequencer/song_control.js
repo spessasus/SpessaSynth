@@ -6,10 +6,9 @@ import {
     SpessaSynthInfo,
     SpessaSynthWarn
 } from "../../utils/loggin.js";
-import { MidiData } from "../../midi_parser/midi_data.js";
+import { MIDIData } from "../../midi_parser/midi_data.js";
 import { MIDI } from "../../midi_parser/midi_loader.js";
-import { getUsedProgramsAndKeys } from "../../midi_parser/used_keys_loaded.js";
-import { MIDIticksToSeconds } from "../../midi_parser/basic_midi.js";
+
 
 /**
  * @param trackNum {number}
@@ -80,7 +79,7 @@ export function loadNewSequence(parsedMidi, autoPlay = true)
         }
         SpessaSynthGroupCollapsed("%cPreloading samples...", consoleColors.info);
         // smart preloading: load only samples used in the midi!
-        const used = getUsedProgramsAndKeys(this.midiData, this.synth.soundfontManager);
+        const used = this.midiData.getUsedProgramsAndKeys(this.synth.soundfontManager);
         for (const [programBank, combos] of Object.entries(used))
         {
             const bank = parseInt(programBank.split(":")[0]);
@@ -103,7 +102,7 @@ export function loadNewSequence(parsedMidi, autoPlay = true)
     
     /**
      * the midi track data
-     * @type {MidiMessage[][]}
+     * @type {MIDIMessage[][]}
      */
     this.tracks = this.midiData.tracks;
     
@@ -124,10 +123,10 @@ export function loadNewSequence(parsedMidi, autoPlay = true)
      * @type {number}
      */
     this.duration = this.midiData.duration;
-    this.firstNoteTime = MIDIticksToSeconds(this.midiData.firstNoteOn, this.midiData);
+    this.firstNoteTime = this.midiData.MIDIticksToSeconds(this.midiData.firstNoteOn);
     SpessaSynthInfo(`%cTotal song time: ${formatTime(Math.ceil(this.duration)).time}`, consoleColors.recognized);
     
-    this.post(WorkletSequencerReturnMessageType.songChange, [new MidiData(this.midiData), this.songIndex, autoPlay]);
+    this.post(WorkletSequencerReturnMessageType.songChange, [new MIDIData(this.midiData), this.songIndex, autoPlay]);
     
     if (this.duration <= 1)
     {

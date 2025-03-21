@@ -1,8 +1,7 @@
 import { combineArrays, IndexedByteArray } from "../utils/indexed_array.js";
-import { writeMIDIFile } from "./midi_writer.js";
 import { writeRIFFOddSize } from "../soundfont/basic_soundfont/riff_chunk.js";
 import { getStringBytes, getStringBytesZero } from "../utils/byte_functions/string.js";
-import { messageTypes, midiControllers, MidiMessage } from "./midi_message.js";
+import { messageTypes, midiControllers, MIDIMessage } from "./midi_message.js";
 import { DEFAULT_PERCUSSION } from "../synthetizer/synthetizer.js";
 import { getGsOn } from "./midi_editor.js";
 import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo } from "../utils/loggin.js";
@@ -48,9 +47,9 @@ const DEFAULT_COPYRIGHT = "Created using SpessaSynth";
 
 /**
  * Writes an RMIDI file
+ * @this {BasicMIDI}
  * @param soundfontBinary {Uint8Array}
- * @param mid {BasicMIDI}
- * @param soundfont {BasicSoundFont}
+ * @param soundfont {BasicSoundBank}
  * @param bankOffset {number} the bank offset for RMIDI
  * @param encoding {string} the encoding of the RMIDI info chunk
  * @param metadata {RMIDMetadata} the metadata of the file. Optional. If provided, the encoding is forced to utf-8/
@@ -59,7 +58,6 @@ const DEFAULT_COPYRIGHT = "Created using SpessaSynth";
  */
 export function writeRMIDI(
     soundfontBinary,
-    mid,
     soundfont,
     bankOffset = 0,
     encoding = "Shift_JIS",
@@ -67,6 +65,7 @@ export function writeRMIDI(
     correctBankOffset = true
 )
 {
+    const mid = this;
     SpessaSynthGroup("%cWriting the RMIDI File...", consoleColors.info);
     SpessaSynthInfo(
         `%cConfiguration: Bank offset: %c${bankOffset}%c, encoding: %c${encoding}`,
@@ -79,14 +78,14 @@ export function writeRMIDI(
     SpessaSynthInfo("Initial bank offset", mid.bankOffset);
     if (correctBankOffset)
     {
-        // add offset to bank.
+        // Add the offset to the bank.
         // See https://github.com/spessasus/sf2-rmidi-specification#readme
-        // also fix presets that don't exists
-        // since midiplayer6 doesn't seem to default to 0 when nonextistent...
+        // also fix presets that don't exist
+        // since midi player6 doesn't seem to default to 0 when non-existent...
         let system = "gm";
         /**
          * The unwanted system messages such as gm/gm2 on
-         * @type {{tNum: number, e: MidiMessage}[]}
+         * @type {{tNum: number, e: MIDIMessage}[]}
          */
         let unwantedSystems = [];
         /**
@@ -115,14 +114,14 @@ export function writeRMIDI(
             return index;
         }
         
-        // it copies midiPorts everywhere else, but here 0 works so DO NOT CHANGE!!!!!!!
+        // it copies midiPorts everywhere else, but here 0 works so DO NOT CHANGE!
         const ports = Array(mid.tracks.length).fill(0);
         const channelsAmount = 16 + mid.midiPortChannelOffsets.reduce((max, cur) => cur > max ? cur : max);
         /**
          * @type {{
          *     program: number,
          *     drums: boolean,
-         *     lastBank: MidiMessage,
+         *     lastBank: MIDIMessage,
          *     hasBankSelect: boolean
          * }[]}
          */
@@ -222,7 +221,7 @@ export function writeRMIDI(
                 {
                     if (soundfont.presets.findIndex(p => p.program === e.messageData[0] && p.bank === 128) === -1)
                     {
-                        // doesn't exist. pick any preset that has the 128 bank.
+                        // doesn't exist. pick any preset that has bank 128.
                         e.messageData[0] = soundfont.presets.find(p => p.bank === 128)?.program || 0;
                     }
                 }
@@ -230,7 +229,7 @@ export function writeRMIDI(
                 {
                     if (soundfont.presets.findIndex(p => p.program === e.messageData[0] && p.bank !== 128) === -1)
                     {
-                        // doesn't exist. pick any preset that does not have the 128 bank.
+                        // doesn't exist. pick any preset that does not have bank 128.
                         e.messageData[0] = soundfont.presets.find(p => p.bank !== 128)?.program || 0;
                     }
                 }
@@ -244,7 +243,7 @@ export function writeRMIDI(
                 }
                 if (system === "xg" && channel.drums)
                 {
-                    // drums override: set bank to 127
+                    // drums override: set the bank to 127
                     channelsInfo[chNum].lastBank.messageData[1] = 127;
                 }
                 
@@ -262,7 +261,7 @@ export function writeRMIDI(
                 }
                 else
                 {
-                    // there is a preset with this bank. add offset. For drums add the normal offset.
+                    // There is a preset with this bank. Add offset. For drums add the normal offset.
                     let drumBank = system === "xg" ? 127 : 0;
                     const newBank = (bank === 128 ? drumBank : realBank) + bankOffset;
                     channel.lastBank.messageData[1] = newBank;
@@ -298,7 +297,7 @@ export function writeRMIDI(
             {
                 return;
             }
-            // find first program change (for the given channel)
+            // find the first program change (for the given channel)
             const midiChannel = ch % 16;
             const status = messageTypes.programChange | midiChannel;
             // find track with this channel being used
@@ -325,7 +324,7 @@ export function writeRMIDI(
                 }
                 const programTicks = track[programIndex].ticks;
                 const targetProgram = soundfont.getPreset(0, 0).program;
-                track.splice(programIndex, 0, new MidiMessage(
+                track.splice(programIndex, 0, new MIDIMessage(
                     programTicks,
                     messageTypes.programChange | midiChannel,
                     new IndexedByteArray([targetProgram])
@@ -342,7 +341,7 @@ export function writeRMIDI(
                 0,
                 has.program
             )?.bank + bankOffset) || bankOffset;
-            track.splice(indexToAdd, 0, new MidiMessage(
+            track.splice(indexToAdd, 0, new MIDIMessage(
                 ticks,
                 messageTypes.controllerChange | midiChannel,
                 new IndexedByteArray([midiControllers.bankSelect, targetBank])
@@ -364,9 +363,9 @@ export function writeRMIDI(
             mid.tracks[0].splice(index, 0, getGsOn(0));
         }
     }
-    const newMid = new IndexedByteArray(writeMIDIFile(mid).buffer);
+    const newMid = new IndexedByteArray(mid.writeMIDI().buffer);
     
-    // infodata for RMID
+    // info data for RMID
     /**
      * @type {Uint8Array[]}
      */

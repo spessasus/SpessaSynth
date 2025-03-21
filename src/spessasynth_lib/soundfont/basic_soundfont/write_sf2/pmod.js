@@ -3,12 +3,12 @@ import { writeLittleEndian, writeWord } from "../../../utils/byte_functions/litt
 import { RiffChunk, writeRIFFChunk } from "../riff_chunk.js";
 
 /**
- * @this {BasicSoundFont}
+ * @this {BasicSoundBank}
  * @returns {IndexedByteArray}
  */
 export function getPMOD()
 {
-    // very similar to imod
+    // very similar to imod,
     // go through all presets -> zones and write modulators sequentially
     let pmodsize = 10;
     for (const preset of this.presets)

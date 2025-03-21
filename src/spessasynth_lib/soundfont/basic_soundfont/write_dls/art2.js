@@ -66,7 +66,7 @@ export function writeArticulator(zone)
     
     // read_articulation.js:
     // according to viena and another strange (with modulators) rendition of gm.dls in sf2,
-    // it shall be divided by -128
+    // it shall be divided by -128,
     // and a strange correction needs to be applied to the real value:
     // real + (60 / 128) * scale
     // we invert this here

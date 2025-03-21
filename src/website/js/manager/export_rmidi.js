@@ -1,5 +1,3 @@
-import { trimSoundfont } from "../../../spessasynth_lib/soundfont/basic_soundfont/write_sf2/soundfont_trimmer.js";
-import { applySnapshotToMIDI } from "../../../spessasynth_lib/midi_parser/midi_editor.js";
 import { closeNotification, showNotification } from "../notification/notification.js";
 import {
     SpessaSynthGroupCollapsed,
@@ -7,7 +5,6 @@ import {
     SpessaSynthWarn
 } from "../../../spessasynth_lib/utils/loggin.js";
 import { consoleColors } from "../../../spessasynth_lib/utils/other.js";
-import { writeRMIDI } from "../../../spessasynth_lib/midi_parser/rmidi_writer.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { loadSoundFont } from "../../../spessasynth_lib/soundfont/load_soundfont.js";
 
@@ -190,7 +187,7 @@ export async function _exportRMIDI()
                     
                     try
                     {
-                        applySnapshotToMIDI(mid, await this.synth.getSynthesizerSnapshot());
+                        mid.applySnapshotToMIDI(await this.synth.getSynthesizerSnapshot());
                     }
                     catch (e)
                     {
@@ -200,7 +197,7 @@ export async function _exportRMIDI()
                     message.textContent = this.localeManager.getLocaleString(localePath + "modifyingSoundfont");
                     await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
                     
-                    trimSoundfont(font, mid);
+                    font.trimSoundBank(mid);
                     const newFont = font.write({
                         compress: compressed,
                         compressionQuality: quality,
@@ -220,16 +217,15 @@ export async function _exportRMIDI()
                         fileBuffer = mid.RMIDInfo["IPIC"].buffer;
                     }
                     
-                    const rmidBinary = writeRMIDI(
+                    const rmidBinary = mid.writeRMIDI(
                         newFont,
-                        mid,
                         font,
                         bankOffset,
                         this.seqUI.encoding,
                         {
                             name: songTitle,
                             comment: comment,
-                            engineer: font.soundFontInfo["IENG"], // use soundfont egineer
+                            engineer: font.soundFontInfo["IENG"], // use soundfont engineer
                             picture: fileBuffer,
                             album: album.length > 0 ? album : undefined,
                             artist: artist.length > 0 ? artist : undefined,

@@ -1,6 +1,5 @@
 import { getEvent, messageTypes, midiControllers } from "../../midi_parser/midi_message.js";
 import { WorkletSequencerReturnMessageType } from "./sequencer_message.js";
-import { MIDIticksToSeconds } from "../../midi_parser/basic_midi.js";
 import { resetArray } from "../../synthetizer/worklet_system/worklet_utilities/controller_tables.js";
 import {
     nonResetableCCs
@@ -158,7 +157,7 @@ export function _playTo(time, ticks = undefined)
                     }
                     else if (controllerNumber === midiControllers.resetAllControllers)
                     {
-                        resetAllControlllers(savedControllers[channel]);
+                        resetAllControlllers(channel);
                     }
                     if (this.sendMIDIMessages)
                     {
@@ -324,7 +323,7 @@ export function setTimeTicks(ticks)
     this.pausedTime = undefined;
     this.post(
         WorkletSequencerReturnMessageType.timeChange,
-        currentTime - MIDIticksToSeconds(ticks, this.midiData)
+        currentTime - this.midiData.MIDIticksToSeconds(ticks)
     );
     const isNotFinished = this._playTo(0, ticks);
     this._recalculateStartTime(this.playedTime);

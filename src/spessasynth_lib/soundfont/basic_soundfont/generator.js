@@ -7,7 +7,7 @@ export const generatorTypes = {
     endAddrOffset: 1,                   // sample control - moves sample end point
     startloopAddrsOffset: 2,            // loop control - moves loop start point
     endloopAddrsOffset: 3,              // loop control - moves loop end point
-    startAddrsCoarseOffset: 4,          // sample control - moves sample start point in 32768 increments
+    startAddrsCoarseOffset: 4,          // sample control - moves sample start point in 32,768 increments
     modLfoToPitch: 5,                   // pitch modulation - modulation lfo pitch modulation in cents
     vibLfoToPitch: 6,                   // pitch modulation - vibrato lfo pitch modulation in cents
     modEnvToPitch: 7,                   // pitch modulation - modulation envelope pitch modulation in cents
@@ -15,7 +15,7 @@ export const generatorTypes = {
     initialFilterQ: 9,                  // filter - lowpass filter resonance
     modLfoToFilterFc: 10,               // filter modulation - modulation lfo lowpass filter cutoff in cents
     modEnvToFilterFc: 11,               // filter modulation - modulation envelope lowpass filter cutoff in cents
-    endAddrsCoarseOffset: 12,           // ample control - moves sample end point in 32768 increments
+    endAddrsCoarseOffset: 12,           // ample control - move sample end point in 32,768 increments
     modLfoToVolume: 13,                 // modulation lfo - volume (tremolo), where 100 = 10dB
     unused1: 14,                        // unused
     chorusEffectsSend: 15,              // effect send - how much is sent to chorus 0 - 1000
@@ -24,11 +24,11 @@ export const generatorTypes = {
     unused2: 18,                        // unused
     unused3: 19,                        // unused
     unused4: 20,                        // unused
-    delayModLFO: 21,                    // mod lfo - delay for mod lfo to start from zero (weird scale)
-    freqModLFO: 22,                     // mod lfo - frequency of mod lfo, 0 = 8.176Hz, unit: f => 1200log2(f/8.176)
-    delayVibLFO: 23,                    // vib lfo - delay for vibrato lfo to start from zero (weird scale)
+    delayModLFO: 21,                    // mod lfo - delay for mod lfo to start from zero
+    freqModLFO: 22,                     // mod lfo - frequency of mod lfo, 0 = 8.176 Hz, units: f => 1200log2(f/8.176)
+    delayVibLFO: 23,                    // vib lfo - delay for vibrato lfo to start from zero
     freqVibLFO: 24,                     // vib lfo - frequency of vibrato lfo, 0 = 8.176Hz, unit: f => 1200log2(f/8.176)
-    delayModEnv: 25,                    // mod env - 0 = 1s declay till mod env starts
+    delayModEnv: 25,                    // mod env - 0 = 1 s decay till mod env starts
     attackModEnv: 26,                   // mod env - attack of mod env
     holdModEnv: 27,                     // mod env - hold of mod env
     decayModEnv: 28,                    // mod env - decay of mod env
@@ -48,16 +48,16 @@ export const generatorTypes = {
     reserved1: 42,                      // reserved
     keyRange: 43,                       // zone - key range for which preset / instrument zone is active
     velRange: 44,                       // zone - velocity range for which preset / instrument zone is active
-    startloopAddrsCoarseOffset: 45,     // sample control - moves sample loop start point in 32768 increments
+    startloopAddrsCoarseOffset: 45,     // sample control - moves sample loop start point in 32,768 increments
     keyNum: 46,                         // zone - instrument only: always use this midi number (ignore what's pressed)
     velocity: 47,                       // zone - instrument only: always use this velocity (ignore what's pressed)
     initialAttenuation: 48,             // zone - allows turning down the volume, 10 = -1dB
     reserved2: 49,                      // reserved
-    endloopAddrsCoarseOffset: 50,       // sample control - moves sample loop end point in 32768 increments
+    endloopAddrsCoarseOffset: 50,       // sample control - moves sample loop end point in 32,768 increments
     coarseTune: 51,                     // tune - pitch offset in semitones
     fineTune: 52,                       // tune - pitch offset in cents
     sampleID: 53,                       // sample - instrument zone only: which sample to use
-    sampleModes: 54,                    // sample - 0 = no loop, 1 = loop, 2 = reserved, 3 = loop and play till end in release phase
+    sampleModes: 54,                    // sample - 0 = no loop, 1 = loop, 2 = reserved, 3 = loop and play till the end in release phase
     reserved3: 55,                      // reserved
     scaleTuning: 56,                    // sample - the degree to which MIDI key number influences pitch, 100 = default
     exclusiveClass: 57,                 // sample - = cut = choke group
@@ -103,13 +103,14 @@ generatorLimits[generatorTypes.delayVibLFO] = { min: -12000, max: 5000, def: -12
 generatorLimits[generatorTypes.freqVibLFO] = { min: -16000, max: 4500, def: 0 };
 
 // mod env
-generatorLimits[generatorTypes.delayModEnv] = { min: -32768, max: 5000, def: -32768 }; // -32768 indicates instant phase, this is done to prevent click at the start of filter modenv
+generatorLimits[generatorTypes.delayModEnv] = { min: -32768, max: 5000, def: -32768 }; // -32,768 indicates instant phase,
+// this is done to prevent click at the start of filter modenv
 generatorLimits[generatorTypes.attackModEnv] = { min: -32768, max: 8000, def: -32768 };
 generatorLimits[generatorTypes.holdModEnv] = { min: -12000, max: 5000, def: -12000 };
 generatorLimits[generatorTypes.decayModEnv] = { min: -12000, max: 8000, def: -12000 };
 generatorLimits[generatorTypes.sustainModEnv] = { min: 0, max: 1000, def: 0 };
 generatorLimits[generatorTypes.releaseModEnv] = { min: -7200, max: 8000, def: -12000 }; // min is set to -7200 to prevent lowpass clicks
-// keynum to mod env
+// key num to mod env
 generatorLimits[generatorTypes.keyNumToModEnvHold] = { min: -1200, max: 1200, def: 0 };
 generatorLimits[generatorTypes.keyNumToModEnvDecay] = { min: -1200, max: 1200, def: 0 };
 
@@ -119,8 +120,8 @@ generatorLimits[generatorTypes.attackVolEnv] = { min: -12000, max: 8000, def: -1
 generatorLimits[generatorTypes.holdVolEnv] = { min: -12000, max: 5000, def: -12000 };
 generatorLimits[generatorTypes.decayVolEnv] = { min: -12000, max: 8000, def: -12000 };
 generatorLimits[generatorTypes.sustainVolEnv] = { min: 0, max: 1440, def: 0 };
-generatorLimits[generatorTypes.releaseVolEnv] = { min: -7200, max: 8000, def: -12000 }; // min is set to -7200  prevent clicks
-// keynum to vol env
+generatorLimits[generatorTypes.releaseVolEnv] = { min: -7200, max: 8000, def: -12000 }; // min is set to -7200 prevent clicks
+// key num to vol env
 generatorLimits[generatorTypes.keyNumToVolEnvHold] = { min: -1200, max: 1200, def: 0 };
 generatorLimits[generatorTypes.keyNumToVolEnvDecay] = { min: -1200, max: 1200, def: 0 };
 
@@ -128,7 +129,7 @@ generatorLimits[generatorTypes.startloopAddrsCoarseOffset] = { min: -32768, max:
 generatorLimits[generatorTypes.keyNum] = { min: -1, max: 127, def: -1 };
 generatorLimits[generatorTypes.velocity] = { min: -1, max: 127, def: -1 };
 
-generatorLimits[generatorTypes.initialAttenuation] = { min: -250, max: 1440, def: 0 }; // soundblaster allows 10dB of gain (divide by 0.4)
+generatorLimits[generatorTypes.initialAttenuation] = { min: -250, max: 1440, def: 0 }; // sound blaster allows 10dB of gain (divide by 0.4)
 
 generatorLimits[generatorTypes.endloopAddrsCoarseOffset] = { min: -32768, max: 32768, def: 0 };
 
@@ -180,7 +181,8 @@ export class Generator
 
 /**
  * generator.js
- * purpose: contains enums for generators and their limis parses reads soundfont generators, sums them and applies limits
+ * purpose: contains enums for generators,
+ * and their limis parses reads soundfont generators, sums them and applies limits
  */
 /**
  * @param generatorType {number}
@@ -206,7 +208,7 @@ export function addAndClampGenerator(generatorType, presetGens, instrumentGens)
     
     let value = instruValue + presetValue;
     
-    // special case, intial attenuation.
+    // Special case, initial attenuation.
     // Shall get clamped in the volume envelope,
     // so the modulators can be affected by negative generators (the "Brass" patch was problematic...)
     if (generatorType === generatorTypes.initialAttenuation)

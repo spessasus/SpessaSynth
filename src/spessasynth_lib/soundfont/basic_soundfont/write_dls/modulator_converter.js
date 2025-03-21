@@ -75,7 +75,7 @@ function getDLSDestinationFromSf2(dest, amount)
             return undefined;
         
         case generatorTypes.initialAttenuation:
-            // amount does not get EMU corrected here, as this only applies to modulator attenuation
+            // the amount does not get EMU corrected here, as this only applies to modulator attenuation
             // the generator (affected) attenuation is handled in wsmp.
             return { dest: DLSDestinations.gain, amount: -amount };
         case generatorTypes.fineTune:
@@ -193,10 +193,10 @@ function checkSF2SpecialCombos(dest, amt)
                 isBipolar: true
             };
         
-        // scale tuning is implemented in DLS via an articulator:
-        // keyNum to relative pitch at 12800 cents.
+        // Scale tuning is implemented in DLS via an articulator:
+        // keyNum to relative pitch at 12,800 cents.
         // Change that to scale tuning * 128.
-        // therefore regular scale is still 12800, half is 6400 etc.
+        // Therefore, a regular scale is still 12,800, half is 6400, etc.
         case generatorTypes.scaleTuning:
             return {
                 source: DLSSources.keyNum,
@@ -265,7 +265,7 @@ export function getDLSArticulatorFromSf2Modulator(mod)
         SpessaSynthWarn(`Invalid source: ${mod.sourceIndex}, CC: ${mod.sourceUsesCC}`);
         return undefined;
     }
-    // attenuation is the opposite of gain. Invert
+    // Attenuation is the opposite of gain. Invert.
     if (mod.modulatorDestination === generatorTypes.initialAttenuation)
     {
         sourceDirection = sourceDirection === 1 ? 0 : 1;
@@ -291,13 +291,13 @@ export function getDLSArticulatorFromSf2Modulator(mod)
     if (specialCombo !== undefined)
     {
         amt = specialCombo.amt;
-        // move source to control
+        // move the source to control
         control = source;
         controlTransformType = sourceTransformType;
         controlBipolar = sourceBipolar;
         controlDirection = sourceDirection;
         
-        // set source as static as it's either: env, lfo or keynum
+        // set source as static as it's either: env, lfo or key num
         sourceTransformType = modulatorCurveTypes.linear;
         sourceBipolar = specialCombo.isBipolar ? 1 : 0;
         sourceDirection = 0;
@@ -310,13 +310,13 @@ export function getDLSArticulatorFromSf2Modulator(mod)
         return undefined;
     }
     
-    // source curve type maps to desfont curve type in section 2.10, table 9
+    // source curve type maps to a desfont curve type in section 2.10, table 9
     let transform = 0;
     transform |= controlTransformType << 4;
     transform |= controlBipolar << 8;
     transform |= controlDirection << 9;
     
-    // use use the source curve in output transform
+    // use the source curve in output transform
     transform |= sourceTransformType;
     transform |= sourceBipolar << 14;
     transform |= sourceDirection << 15;

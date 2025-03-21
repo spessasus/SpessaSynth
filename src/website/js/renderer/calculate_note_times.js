@@ -15,7 +15,7 @@ export function calculateNoteTimes(midi)
     
     /**
      * gets tempo from the midi message
-     * @param event {MidiMessage}
+     * @param event {MIDIMessage}
      * @return {number} the tempo in bpm
      */
     function getTempo(event)

@@ -192,6 +192,7 @@ function checkForSpecialDLSCombo(source, destination)
     }
 }
 
+// noinspection JSUnusedGlobalSymbols
 /**
  * @param source {number}
  * @param control {number}

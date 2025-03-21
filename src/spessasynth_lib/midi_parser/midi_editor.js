@@ -1,4 +1,4 @@
-import { messageTypes, midiControllers, MidiMessage } from "./midi_message.js";
+import { messageTypes, midiControllers, MIDIMessage } from "./midi_message.js";
 import { IndexedByteArray } from "../utils/indexed_array.js";
 import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo } from "../utils/loggin.js";
 import { consoleColors } from "../utils/other.js";
@@ -8,11 +8,11 @@ import { customControllers } from "../synthetizer/worklet_system/worklet_utiliti
 
 /**
  * @param ticks {number}
- * @returns {MidiMessage}
+ * @returns {MIDIMessage}
  */
 export function getGsOn(ticks)
 {
-    return new MidiMessage(
+    return new MIDIMessage(
         ticks,
         messageTypes.systemExclusive,
         new IndexedByteArray([
@@ -35,11 +35,11 @@ export function getGsOn(ticks)
  * @param cc {number}
  * @param value {number}
  * @param ticks {number}
- * @returns {MidiMessage}
+ * @returns {MIDIMessage}
  */
 function getControllerChange(channel, cc, value, ticks)
 {
-    return new MidiMessage(
+    return new MIDIMessage(
         ticks,
         messageTypes.controllerChange | (channel % 16),
         new IndexedByteArray([cc, value])
@@ -49,7 +49,7 @@ function getControllerChange(channel, cc, value, ticks)
 /**
  * @param channel {number}
  * @param ticks {number}
- * @returns {MidiMessage}
+ * @returns {MIDIMessage}
  */
 function getDrumChange(channel, ticks)
 {
@@ -70,7 +70,7 @@ function getDrumChange(channel, ticks)
     const sum = 0x40 + chanAddress + 0x15 + 0x01;
     const checksum = 128 - (sum % 128);
     // add system exclusive to enable drums
-    return new MidiMessage(
+    return new MIDIMessage(
         ticks,
         messageTypes.systemExclusive,
         new IndexedByteArray([
@@ -110,20 +110,20 @@ function getDrumChange(channel, ticks)
  * Allows easy editing of the file by removing channels, changing programs,
  * changing controllers and transposing channels. Note that this modifies the MIDI in-place.
  *
- * @param {BasicMIDI} midi - The MIDI file to modify.
+ * @this {BasicMIDI}
  * @param {DesiredProgramChange[]} desiredProgramChanges - The programs to set on given channels.
  * @param {DesiredControllerChange[]} desiredControllerChanges - The controllers to set on given channels.
  * @param {number[]} desiredChannelsToClear - The channels to remove from the sequence.
  * @param {DesiredChanneltranspose[]} desiredChannelsToTranspose - The channels to transpose.
  */
 export function modifyMIDI(
-    midi,
     desiredProgramChanges = [],
     desiredControllerChanges = [],
     desiredChannelsToClear = [],
     desiredChannelsToTranspose = []
 )
 {
+    const midi = this;
     SpessaSynthGroupCollapsed("%cApplying changes to the MIDI file...", consoleColors.info);
     
     /**
@@ -252,7 +252,7 @@ export function modifyMIDI(
         };
         
         /**
-         * @param e {MidiMessage}
+         * @param e {MIDIMessage}
          * @param offset{number}
          */
         const addEventBefore = (e, offset = 0) =>
@@ -352,7 +352,7 @@ export function modifyMIDI(
                         // the output event order is: drums -> lsb -> msb -> program change
                         
                         // add program change
-                        const programChange = new MidiMessage(
+                        const programChange = new MIDIMessage(
                             e.ticks,
                             messageTypes.programChange | midiChannel,
                             new IndexedByteArray([
@@ -527,10 +527,10 @@ export function modifyMIDI(
 
 /**
  * Modifies the sequence according to the locked presets and controllers in the given snapshot
- * @param midi {BasicMIDI}
+ * @this {BasicMIDI}
  * @param snapshot {SynthesizerSnapshot}
  */
-export function applySnapshotToMIDI(midi, snapshot)
+export function applySnapshotToMIDI(snapshot)
 {
     /**
      * @type {{
@@ -600,5 +600,5 @@ export function applySnapshotToMIDI(midi, snapshot)
             });
         });
     });
-    modifyMIDI(midi, programChanges, controllerChanges, channelsToClear, channelsToTranspose);
+    this.modifyMIDI(programChanges, controllerChanges, channelsToClear, channelsToTranspose);
 }

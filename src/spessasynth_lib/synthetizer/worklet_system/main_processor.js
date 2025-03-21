@@ -166,7 +166,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
     
     /**
      * Overrides the main soundfont (embedded, for example)
-     * @type {BasicSoundFont}
+     * @type {BasicSoundBank}
      */
     overrideSoundfont = undefined;
     
