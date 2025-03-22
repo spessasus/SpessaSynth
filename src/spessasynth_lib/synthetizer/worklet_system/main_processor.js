@@ -1,4 +1,3 @@
-import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE, VOICE_CAP } from "../synthetizer.js";
 import { WorkletSequencer } from "../../sequencer/worklet_sequencer/worklet_sequencer.js";
 import { SpessaSynthInfo } from "../../utils/loggin.js";
 import { consoleColors } from "../../utils/other.js";
@@ -28,6 +27,7 @@ import { sendSynthesizerSnapshot } from "./snapshot/send_synthesizer_snapshot.js
 import { applySynthesizerSnapshot } from "./snapshot/apply_synthesizer_snapshot.js";
 import { createWorkletChannel } from "./worklet_methods/create_worklet_channel.js";
 import { FILTER_SMOOTHING_FACTOR } from "./worklet_utilities/lowpass_filter.js";
+import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE, VOICE_CAP } from "../synth_constants.js";
 
 
 /**

@@ -1,3 +1,5 @@
+import { reverbBufferBinary } from "./reverb_as_binary.js";
+
 /**
  * Creates a reverb processor
  * @param context {BaseAudioContext}
@@ -13,12 +15,10 @@ export function getReverbProcessor(context, reverbBuffer = undefined)
     }
     else
     {
-        // resolve relative url
-        const impulseURL = new URL("impulse_response_2.flac", import.meta.url);
-        fetch(impulseURL).then(async response =>
+        // decode
+        context.decodeAudioData(reverbBufferBinary.buffer).then(b =>
         {
-            const data = await response.arrayBuffer();
-            convolver.buffer = await context.decodeAudioData(data);
+            convolver.buffer = b;
         });
     }
     return convolver;

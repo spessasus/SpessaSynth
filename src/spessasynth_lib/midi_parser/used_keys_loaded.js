@@ -1,7 +1,7 @@
 import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo } from "../utils/loggin.js";
 import { consoleColors } from "../utils/other.js";
-import { DEFAULT_PERCUSSION } from "../synthetizer/synthetizer.js";
 import { messageTypes, midiControllers } from "./midi_message.js";
+import { DEFAULT_PERCUSSION } from "../synthetizer/synth_constants.js";
 
 /**
  * Gets the used programs and keys for this MIDI file with a given sound bank

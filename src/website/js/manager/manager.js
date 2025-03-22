@@ -25,6 +25,7 @@ import { IndexedByteArray } from "../../../spessasynth_lib/utils/indexed_array.j
 import { closeNotification, showNotification } from "../notification/notification.js";
 import { DropFileHandler } from "../utils/drop_file_handler.js";
 import { _exportDLS } from "./export_dls.js";
+import { reverbBufferBinary } from "../../../spessasynth_lib/synthetizer/audio_effects/reverb_as_binary.js";
 
 // this enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
 document.body.classList.add("load");
@@ -169,12 +170,7 @@ class Manager
         }
         
         // set up buffer here (if we let spessasynth use the default buffer, there's no reverb for the first second.)
-        const impulseURL = new URL(
-            prePath + "synthetizer/audio_effects/impulse_response_2.flac",
-            import.meta.url
-        );
-        const response = await fetch(impulseURL);
-        const data = await response.arrayBuffer();
+        const data = reverbBufferBinary;
         this.impulseResponseRaw = data;
         this.impulseResponse = await context.decodeAudioData(data.slice(0, data.byteLength));
         

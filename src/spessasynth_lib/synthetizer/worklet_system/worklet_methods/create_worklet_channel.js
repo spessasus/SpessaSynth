@@ -1,5 +1,6 @@
 import { WorkletProcessorChannel } from "../worklet_utilities/worklet_processor_channel.js";
-import { DEFAULT_PERCUSSION } from "../../synthetizer.js";
+
+import { DEFAULT_PERCUSSION } from "../../synth_constants.js";
 
 /**
  * @param sendEvent {boolean}

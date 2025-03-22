@@ -2,9 +2,9 @@ import { messageTypes, midiControllers, MIDIMessage } from "./midi_message.js";
 import { IndexedByteArray } from "../utils/indexed_array.js";
 import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo } from "../utils/loggin.js";
 import { consoleColors } from "../utils/other.js";
-import { DEFAULT_PERCUSSION } from "../synthetizer/synthetizer.js";
 
 import { customControllers } from "../synthetizer/worklet_system/worklet_utilities/controller_tables.js";
+import { DEFAULT_PERCUSSION } from "../synthetizer/synth_constants.js";
 
 /**
  * @param ticks {number}
