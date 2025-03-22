@@ -7,7 +7,8 @@ import { getCheckSvg, getExclamationSvg, getHourglassSvg } from "../utils/icons.
 import { closeNotification, showNotification } from "../notification/notification.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { LocaleManager } from "../locale/locale_manager.js";
-import { VOICE_CAP } from "../../../spessasynth_lib/synthetizer/synthetizer.js";
+
+import { VOICE_CAP } from "../../../spessasynth_lib/synthetizer/synth_constants.js";
 
 /**
  * demo_main.js

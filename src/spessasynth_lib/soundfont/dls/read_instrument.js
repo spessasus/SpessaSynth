@@ -82,7 +82,7 @@ export function readDLSInstrument(chunk)
     }
     // remove generators with default values
     globalZone.generators = globalZone.generators.filter(g => g.generatorValue !== generatorLimits[g.generatorType].def);
-    // override reverb and chorus with 1000 instead of 200 (if not overriden)
+    // override reverb and chorus with 1000 instead of 200 (if not override)
     // reverb
     if (globalZone.modulators.find(m => m.modulatorDestination === generatorTypes.reverbEffectsSend) === undefined)
     {

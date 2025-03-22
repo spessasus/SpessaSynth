@@ -7,6 +7,14 @@
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
       <excludeFolder url="file://$MODULE_DIR$/disabled_sf2s" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea/dictionaries" />
+      <excludeFolder url="file://$MODULE_DIR$/soundfonts/.ark-.ZIyEGv" />
+      <excludeFolder url="file://$MODULE_DIR$/soundfonts/.ark-.hcTDoq" />
+      <excludeFolder url="file://$MODULE_DIR$/soundfonts/FluidR3Mono" />
+      <excludeFolder url="file://$MODULE_DIR$/soundfonts/downloadable_sounds" />
+      <excludeFolder url="file://$MODULE_DIR$/soundfonts/excluded" />
+      <excludeFolder url="file://$MODULE_DIR$/soundfonts/sf2pack_bin" />
+      <excludeFolder url="file://$MODULE_DIR$/soundfonts/sf3convert" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.10" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -26,7 +26,7 @@ export class Preset extends BasicPreset
         this.bank = readLittleEndian(presetChunk.chunkData, 2);
         this.presetZoneStartIndex = readLittleEndian(presetChunk.chunkData, 2);
         
-        // read the dwords
+        // read the dword
         this.library = readLittleEndian(presetChunk.chunkData, 4);
         this.genre = readLittleEndian(presetChunk.chunkData, 4);
         this.morphology = readLittleEndian(presetChunk.chunkData, 4);

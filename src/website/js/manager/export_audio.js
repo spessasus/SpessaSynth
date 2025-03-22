@@ -3,7 +3,6 @@ import { Synthetizer } from "../../../spessasynth_lib/synthetizer/synthetizer.js
 import { consoleColors, formatTime } from "../../../spessasynth_lib/utils/other.js";
 import { audioBufferToWav } from "../../../spessasynth_lib/utils/buffer_to_wav.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
-import { MIDIticksToSeconds } from "../../../spessasynth_lib/midi_parser/basic_midi.js";
 import { SpessaSynthInfo } from "../../../spessasynth_lib/utils/loggin.js";
 
 const RENDER_AUDIO_TIME_INTERVAL = 1000;
@@ -40,8 +39,8 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
         false
     );
     const parsedMid = await this.seq.getMIDI();
-    const loopStartAbsolute = MIDIticksToSeconds(parsedMid.loop.start, parsedMid);
-    const loopEndAbsolute = MIDIticksToSeconds(parsedMid.loop.end, parsedMid);
+    const loopStartAbsolute = parsedMid.MIDIticksToSeconds(parsedMid.loop.start);
+    const loopEndAbsolute = parsedMid.MIDIticksToSeconds(parsedMid.loop.end);
     let loopDuration = loopEndAbsolute - loopStartAbsolute;
     const duration = parsedMid.duration + additionalTime + loopDuration * loopCount;
     
@@ -70,7 +69,7 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
     }
     
     /**
-     * take snapshot of the real synth
+     * take the snapshot of the real synth
      * @type {SynthesizerSnapshot}
      */
     const snapshot = await this.synth.getSynthesizerSnapshot();
@@ -82,7 +81,7 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
      */
     let synth;
     
-    // sample rate may differ, so we need to fetch revbuff again
+    // sample rate may differ, so we need to fetch reverb buffer again
     const revbuff = await offline.decodeAudioData(this.impulseResponseRaw.slice(0, this.impulseResponseRaw.byteLength));
     const effects = {
         reverbEnabled: true,
@@ -146,7 +145,7 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
     
     const buf = await offline.startRendering();
     progressDiv.style.width = "100%";
-    // clear intervals and save file
+    // clear intervals and save the file
     clearInterval(interval);
     detailMessage.innerText = this.localeManager.getLocaleString(
         "locale.exportAudio.formats.formats.wav.exportMessage.convertWav");
@@ -154,7 +153,7 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
     await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
     if (!separateChannels)
     {
-        const startOffset = MIDIticksToSeconds(parsedMid.firstNoteOn, parsedMid);
+        const startOffset = parsedMid.MIDIticksToSeconds(parsedMid.firstNoteOn);
         const loopStart = loopStartAbsolute - startOffset;
         const loopEnd = loopEndAbsolute - startOffset;
         let loop = { start: loopStart, end: loopEnd };

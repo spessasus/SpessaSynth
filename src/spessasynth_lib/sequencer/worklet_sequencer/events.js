@@ -4,7 +4,8 @@ import {
 } from "../../synthetizer/worklet_system/message_protocol/worklet_message.js";
 import { SongChangeType, WorkletSequencerMessageType, WorkletSequencerReturnMessageType } from "./sequencer_message.js";
 import { messageTypes, midiControllers } from "../../midi_parser/midi_message.js";
-import { MIDI_CHANNEL_COUNT } from "../../synthetizer/synthetizer.js";
+
+import { MIDI_CHANNEL_COUNT } from "../../synthetizer/synth_constants.js";
 
 /**
  * @param messageType {WorkletSequencerMessageType}

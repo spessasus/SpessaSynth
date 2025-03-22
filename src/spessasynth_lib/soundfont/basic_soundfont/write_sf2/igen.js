@@ -2,10 +2,10 @@ import { writeDword, writeWord } from "../../../utils/byte_functions/little_endi
 import { IndexedByteArray } from "../../../utils/indexed_array.js";
 import { RiffChunk, writeRIFFChunk } from "../riff_chunk.js";
 
-import { generatorTypes } from "../generator.js";
+import { Generator, generatorTypes } from "../generator.js";
 
 /**
- * @this {BasicSoundFont}
+ * @this {BasicSoundBank}
  * @returns {IndexedByteArray}
  */
 export function getIGEN()
@@ -16,35 +16,38 @@ export function getIGEN()
     {
         igensize += inst.instrumentZones.reduce((sum, z) =>
         {
-            // clear sample and range generators before derermining the size
+            // clear sample and range generators before determining the size
             z.generators = z.generators.filter(g =>
                 g.generatorType !== generatorTypes.sampleID &&
                 g.generatorType !== generatorTypes.keyRange &&
                 g.generatorType !== generatorTypes.velRange
             );
-            // add sample and ranges if needed
-            // unshift vel then key ( to make key first) and instrument is last
+            // add sample and ranges if necessary
+            // unshift vel then key (to make key first) and the instrument is last
             if (z.velRange.max !== 127 || z.velRange.min !== 0)
             {
-                z.generators.unshift({
-                    generatorType: generatorTypes.velRange,
-                    generatorValue: z.velRange.max << 8 | Math.max(z.velRange.min, 0)
-                });
+                z.generators.unshift(new Generator(
+                    generatorTypes.velRange,
+                    z.velRange.max << 8 | Math.max(z.velRange.min, 0),
+                    false
+                ));
             }
             if (z.keyRange.max !== 127 || z.keyRange.min !== 0)
             {
-                z.generators.unshift({
-                    generatorType: generatorTypes.keyRange,
-                    generatorValue: z.keyRange.max << 8 | Math.max(z.keyRange.min, 0)
-                });
+                z.generators.unshift(new Generator(
+                    generatorTypes.keyRange,
+                    z.keyRange.max << 8 | Math.max(z.keyRange.min, 0),
+                    false
+                ));
             }
             if (!z.isGlobal)
             {
                 // write sample
-                z.generators.push({
-                    generatorType: generatorTypes.sampleID,
-                    generatorValue: this.samples.indexOf(z.sample)
-                });
+                z.generators.push(new Generator(
+                    generatorTypes.sampleID,
+                    this.samples.indexOf(z.sample),
+                    false
+                ));
             }
             return z.generators.length * 4 + sum;
         }, 0);

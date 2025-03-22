@@ -4,13 +4,17 @@ import { messageTypes } from "./midi_message.js";
 import { readBytesAsUintBigEndian } from "../utils/byte_functions/big_endian.js";
 import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo } from "../utils/loggin.js";
 import { consoleColors, formatTitle, sanitizeKarLyrics } from "../utils/other.js";
+import { writeMIDI } from "./midi_writer.js";
+import { applySnapshotToMIDI, modifyMIDI } from "./midi_editor.js";
+import { writeRMIDI } from "./rmidi_writer.js";
+import { getUsedProgramsAndKeys } from "./used_keys_loaded.js";
 
 /**
  * BasicMIDI is the base of a complete MIDI file, used by the sequencer internally.
  * BasicMIDI is not available on the main thread, as it contains the actual track data which can be large.
  * It can be accessed by calling getMIDI() on the Sequencer.
  */
-export class BasicMIDI extends MIDISequenceData
+class BasicMIDI extends MIDISequenceData
 {
     
     /**
@@ -21,8 +25,8 @@ export class BasicMIDI extends MIDISequenceData
     
     /**
      * The actual track data of the MIDI file, represented as an array of tracks.
-     * Tracks are arrays of MidiMessage objects.
-     * @type {MidiMessage[][]}
+     * Tracks are arrays of MIDIMessage objects.
+     * @type {MIDIMessage[][]}
      */
     tracks = [];
     
@@ -560,7 +564,7 @@ export class BasicMIDI extends MIDISequenceData
          * The total playback time, in seconds
          * @type {number}
          */
-        this.duration = MIDIticksToSeconds(this.lastVoiceEventTick, this);
+        this.duration = this.MIDIticksToSeconds(this.lastVoiceEventTick);
         
         SpessaSynthInfo("%cSuccess!", consoleColors.recognized);
         SpessaSynthGroupEnd();
@@ -581,29 +585,10 @@ export class BasicMIDI extends MIDISequenceData
     }
 }
 
-/**
- * Converts ticks to time in seconds
- * @param ticks {number} time in MIDI ticks
- * @param mid {BasicMIDI|MidiData} the MIDI
- * @returns {number} time in seconds
- */
-export function MIDIticksToSeconds(ticks, mid)
-{
-    let totalSeconds = 0;
-    
-    while (ticks > 0)
-    {
-        // tempo changes are reversed, so the first element is the last tempo change
-        // and the last element is the first tempo change
-        // (always at tick 0 and tempo 120)
-        // find the last tempo change that has occurred
-        let tempo = mid.tempoChanges.find(v => v.ticks < ticks);
-        
-        // calculate the difference and tempo time
-        let timeSinceLastTempo = ticks - tempo.ticks;
-        totalSeconds += (timeSinceLastTempo * 60) / (tempo.tempo * mid.timeDivision);
-        ticks -= timeSinceLastTempo;
-    }
-    
-    return totalSeconds;
-}
+BasicMIDI.prototype.writeMIDI = writeMIDI;
+BasicMIDI.prototype.modifyMIDI = modifyMIDI;
+BasicMIDI.prototype.applySnapshotToMIDI = applySnapshotToMIDI;
+BasicMIDI.prototype.writeRMIDI = writeRMIDI;
+BasicMIDI.prototype.getUsedProgramsAndKeys = getUsedProgramsAndKeys;
+
+export { BasicMIDI };

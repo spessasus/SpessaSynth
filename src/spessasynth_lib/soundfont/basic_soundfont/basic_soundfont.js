@@ -1,4 +1,10 @@
-import { SpessaSynthWarn } from "../../utils/loggin.js";
+import {
+    SpessaSynthGroup,
+    SpessaSynthGroupCollapsed,
+    SpessaSynthGroupEnd,
+    SpessaSynthInfo,
+    SpessaSynthWarn
+} from "../../utils/loggin.js";
 import { consoleColors } from "../../utils/other.js";
 import { write } from "./write_sf2/write.js";
 import { defaultModulators, Modulator } from "./modulator.js";
@@ -9,7 +15,7 @@ import { Generator, generatorTypes } from "./generator.js";
 import { BasicInstrument } from "./basic_instrument.js";
 import { BasicPreset } from "./basic_preset.js";
 
-class BasicSoundFont
+class BasicSoundBank
 {
     /**
      * Creates a new basic soundfont template
@@ -18,7 +24,7 @@ class BasicSoundFont
     constructor(data = undefined)
     {
         /**
-         * Soundfont's info stored as name: value. ifil and iver are stored as string representation of float (e.g. 2.1)
+         * Soundfont's info stored as name: value. ifil and iver are stored as string representation of float (e.g., 2.1)
          * @type {Object<string, string|IndexedByteArray>}
          */
         this.soundFontInfo = {};
@@ -56,10 +62,10 @@ class BasicSoundFont
     
     /**
      * Merges soundfonts with the given order. Keep in mind that the info read is copied from the first one
-     * @param soundfonts {...BasicSoundFont} the soundfonts to merge, the first overwrites the last
-     * @returns {BasicSoundFont}
+     * @param soundfonts {...BasicSoundBank} the soundfonts to merge, the first overwrites the last
+     * @returns {BasicSoundBank}
      */
-    static mergeSoundfonts(...soundfonts)
+    static mergeSoundBanks(...soundfonts)
     {
         const mainSf = soundfonts.shift();
         const presets = mainSf.presets;
@@ -77,7 +83,7 @@ class BasicSoundFont
             });
         }
         
-        return new BasicSoundFont({ presets: presets, info: mainSf.soundFontInfo });
+        return new BasicSoundBank({ presets: presets, info: mainSf.soundFontInfo });
     }
     
     /**
@@ -86,7 +92,7 @@ class BasicSoundFont
      */
     static getDummySoundfontFile()
     {
-        const font = new BasicSoundFont();
+        const font = new BasicSoundBank();
         const sample = new BasicSample(
             "Saw",
             44100,
@@ -137,6 +143,184 @@ class BasicSoundFont
         font.soundFontInfo["isng"] = "EMU8000";
         font.soundFontInfo["INAM"] = "Dummy";
         return font.write().buffer;
+    }
+    
+    /**
+     * Trims a sound bank to only contain samples in a given MIDI file
+     * @param mid {BasicMIDI} - the MIDI file
+     */
+    trimSoundBank(mid)
+    {
+        const soundfont = this;
+        
+        /**
+         * @param instrument {Instrument}
+         * @param combos {{key: number, velocity: number}[]}
+         * @returns {number}
+         */
+        function trimInstrumentZones(instrument, combos)
+        {
+            let trimmedIZones = 0;
+            for (let iZoneIndex = 0; iZoneIndex < instrument.instrumentZones.length; iZoneIndex++)
+            {
+                const iZone = instrument.instrumentZones[iZoneIndex];
+                if (iZone.isGlobal)
+                {
+                    continue;
+                }
+                const iKeyRange = iZone.keyRange;
+                const iVelRange = iZone.velRange;
+                let isIZoneUsed = false;
+                for (const iCombo of combos)
+                {
+                    if (
+                        (iCombo.key >= iKeyRange.min && iCombo.key <= iKeyRange.max) &&
+                        (iCombo.velocity >= iVelRange.min && iCombo.velocity <= iVelRange.max)
+                    )
+                    {
+                        isIZoneUsed = true;
+                        break;
+                    }
+                }
+                if (!isIZoneUsed)
+                {
+                    SpessaSynthInfo(
+                        `%c${iZone.sample.sampleName} %cremoved from %c${instrument.instrumentName}%c. Use count: %c${iZone.useCount - 1}`,
+                        consoleColors.recognized,
+                        consoleColors.info,
+                        consoleColors.recognized,
+                        consoleColors.info,
+                        consoleColors.recognized
+                    );
+                    if (instrument.safeDeleteZone(iZoneIndex))
+                    {
+                        trimmedIZones++;
+                        iZoneIndex--;
+                        SpessaSynthInfo(
+                            `%c${iZone.sample.sampleName} %cdeleted`,
+                            consoleColors.recognized,
+                            consoleColors.info
+                        );
+                    }
+                    if (iZone.sample.useCount < 1)
+                    {
+                        soundfont.deleteSample(iZone.sample);
+                    }
+                }
+                
+            }
+            return trimmedIZones;
+        }
+        
+        SpessaSynthGroup(
+            "%cTrimming soundfont...",
+            consoleColors.info
+        );
+        const usedProgramsAndKeys = mid.getUsedProgramsAndKeys(soundfont);
+        
+        SpessaSynthGroupCollapsed(
+            "%cModifying soundfont...",
+            consoleColors.info
+        );
+        SpessaSynthInfo("Detected keys for midi:", usedProgramsAndKeys);
+        // modify the soundfont to only include programs and samples that are used
+        for (let presetIndex = 0; presetIndex < soundfont.presets.length; presetIndex++)
+        {
+            const p = soundfont.presets[presetIndex];
+            const string = p.bank + ":" + p.program;
+            const used = usedProgramsAndKeys[string];
+            if (used === undefined)
+            {
+                SpessaSynthInfo(
+                    `%cDeleting preset %c${p.presetName}%c and its zones`,
+                    consoleColors.info,
+                    consoleColors.recognized,
+                    consoleColors.info
+                );
+                soundfont.deletePreset(p);
+                presetIndex--;
+            }
+            else
+            {
+                const combos = [...used].map(s =>
+                {
+                    const split = s.split("-");
+                    return {
+                        key: parseInt(split[0]),
+                        velocity: parseInt(split[1])
+                    };
+                });
+                SpessaSynthGroupCollapsed(
+                    `%cTrimming %c${p.presetName}`,
+                    consoleColors.info,
+                    consoleColors.recognized
+                );
+                SpessaSynthInfo(`Keys for ${p.presetName}:`, combos);
+                let trimmedZones = 0;
+                // clean the preset to only use zones that are used
+                for (let zoneIndex = 0; zoneIndex < p.presetZones.length; zoneIndex++)
+                {
+                    const zone = p.presetZones[zoneIndex];
+                    if (zone.isGlobal)
+                    {
+                        continue;
+                    }
+                    const keyRange = zone.keyRange;
+                    const velRange = zone.velRange;
+                    // check if any of the combos matches the zone
+                    let isZoneUsed = false;
+                    for (const combo of combos)
+                    {
+                        if (
+                            (combo.key >= keyRange.min && combo.key <= keyRange.max) &&
+                            (combo.velocity >= velRange.min && combo.velocity <= velRange.max)
+                        )
+                        {
+                            // zone is used, trim the instrument zones
+                            isZoneUsed = true;
+                            const trimmedIZones = trimInstrumentZones(zone.instrument, combos);
+                            SpessaSynthInfo(
+                                `%cTrimmed off %c${trimmedIZones}%c zones from %c${zone.instrument.instrumentName}`,
+                                consoleColors.info,
+                                consoleColors.recognized,
+                                consoleColors.info,
+                                consoleColors.recognized
+                            );
+                            break;
+                        }
+                    }
+                    if (!isZoneUsed)
+                    {
+                        trimmedZones++;
+                        p.deleteZone(zoneIndex);
+                        if (zone.instrument.useCount < 1)
+                        {
+                            soundfont.deleteInstrument(zone.instrument);
+                        }
+                        zoneIndex--;
+                    }
+                }
+                SpessaSynthInfo(
+                    `%cTrimmed off %c${trimmedZones}%c zones from %c${p.presetName}`,
+                    consoleColors.info,
+                    consoleColors.recognized,
+                    consoleColors.info,
+                    consoleColors.recognized
+                );
+                SpessaSynthGroupEnd();
+            }
+        }
+        soundfont.removeUnusedElements();
+        
+        soundfont.soundFontInfo["ICMT"] = `NOTE: This soundfont was trimmed by SpessaSynth to only contain presets used in "${mid.midiName}"\n\n`
+            + soundfont.soundFontInfo["ICMT"];
+        
+        SpessaSynthInfo(
+            "%cSoundfont modified!",
+            consoleColors.recognized
+        );
+        SpessaSynthGroupEnd();
+        SpessaSynthGroupEnd();
     }
     
     removeUnusedElements()
@@ -254,7 +438,7 @@ class BasicSoundFont
             }
             else
             {
-                // non drum preset: find any preset with the given program that is not a drum preset
+                // non-drum preset: find any preset with the given program that is not a drum preset
                 preset = this.presets.find(p => p.program === programNr && p.bank !== 128);
             }
             if (preset)
@@ -299,7 +483,7 @@ class BasicSoundFont
         throw new Error(`SF parsing error: ${error} The file may be corrupted.`);
     }
     
-    destroySoundfont()
+    destroySoundBank()
     {
         delete this.presets;
         delete this.instruments;
@@ -307,7 +491,7 @@ class BasicSoundFont
     }
 }
 
-BasicSoundFont.prototype.write = write;
-BasicSoundFont.prototype.writeDLS = writeDLS;
+BasicSoundBank.prototype.write = write;
+BasicSoundBank.prototype.writeDLS = writeDLS;
 
-export { BasicSoundFont };
+export { BasicSoundBank };

@@ -1,8 +1,8 @@
 import { IndexedByteArray } from "../../../spessasynth_lib/utils/indexed_array.js";
 import { SpessaSynthInfo } from "../../../spessasynth_lib/utils/loggin.js";
 import { consoleColors } from "../../../spessasynth_lib/utils/other.js";
-import { DEFAULT_PERCUSSION } from "../../../spessasynth_lib/synthetizer/synthetizer.js";
 import { readBytesAsUintBigEndian } from "../../../spessasynth_lib/utils/byte_functions/big_endian.js";
+import { DEFAULT_PERCUSSION } from "../../../spessasynth_lib/synthetizer/synth_constants.js";
 
 const MIN_NOTE_TIME = 0.02;
 
@@ -15,7 +15,7 @@ export function calculateNoteTimes(midi)
     
     /**
      * gets tempo from the midi message
-     * @param event {MidiMessage}
+     * @param event {MIDIMessage}
      * @return {number} the tempo in bpm
      */
     function getTempo(event)

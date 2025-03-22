@@ -22,7 +22,7 @@ const notGlobalizedTypes = new Set([
     generatorTypes.coarseTune,         // written into wsmp, there's no global wsmp
     generatorTypes.keyNumToVolEnvHold, // KEY TO SOMETHING:
     generatorTypes.keyNumToVolEnvDecay,// cannot be globalized as they modify their respective generators
-    generatorTypes.keyNumToModEnvHold, // (for example KNTVED modifies VolEnvDecay)
+    generatorTypes.keyNumToModEnvHold, // (for example, keyNumToVolEnvDecay modifies VolEnvDecay)
     generatorTypes.keyNumToModEnvDecay
 ]);
 
@@ -78,7 +78,7 @@ export function combineZones(preset, globalize = true)
     let globalPresetKeyRange = { min: 0, max: 127 };
     let globalPresetVelRange = { min: 0, max: 127 };
     
-    // find the global zone and apply ranges, generators and modulators
+    // find the global zone and apply ranges, generators, and modulators
     const globalPresetZone = preset.presetZones.find(z => z.isGlobal);
     if (globalPresetZone)
     {
@@ -151,7 +151,7 @@ export function combineZones(preset, globalize = true)
             instZoneKeyRange = subtractRanges(instZoneKeyRange, presetZoneKeyRange);
             instZoneVelRange = subtractRanges(instZoneVelRange, presetZoneVelRange);
             
-            // if either of the zones is out of range (i.e. min larger than max)
+            // if either of the zones is out of range (i.e.m min larger than the max),
             // then we discard that zone
             if (instZoneKeyRange.max < instZoneKeyRange.min || instZoneVelRange.max < instZoneVelRange.min)
             {
@@ -175,7 +175,9 @@ export function combineZones(preset, globalize = true)
                     m => Modulator.isIdentical(mod, m));
                 if (identicalInstMod !== -1)
                 {
-                    // sum the amounts (this makes a new modulator because otherwise it would overwrite the one in the soundfont!!!
+                    // sum the amounts
+                    // (this makes a new modulator
+                    // because otherwise it would overwrite the one in the soundfont!
                     finalModList[identicalInstMod] = finalModList[identicalInstMod].sumTransform(
                         mod);
                 }
@@ -308,10 +310,10 @@ export function combineZones(preset, globalize = true)
                     break;
                 }
             }
-            // if at least one occurence, find the most used one and add it to global
+            // if at least one occurrence, find the most used one and add it to global
             if (Object.keys(occurencesForValues).length > 0)
             {
-                // [value, occurences]
+                // [value, occurrences]
                 const valueToGlobalize = Object.entries(occurencesForValues).reduce((max, curr) =>
                 {
                     if (max[1] < curr[1])
@@ -336,13 +338,13 @@ export function combineZones(preset, globalize = true)
                     {
                         if (z.generators[gen].generatorValue === targetValue)
                         {
-                            // that exact value exists. Since it's global now, remove it
+                            // That exact value exists. Since it's global now, remove it
                             z.generators.splice(gen, 1);
                         }
                     }
                     else
                     {
-                        // that type does not exist at all here.
+                        // That type does not exist at all here.
                         // Since we're globalizing, we need to add the default here.
                         if (targetValue !== defaultForChecked)
                         {
@@ -378,13 +380,13 @@ export function combineZones(preset, globalize = true)
             if (existsForAllZones === true)
             {
                 globalZone.modulators.push(Modulator.copy(checkedModulator));
-                // delete from local zones.
+                // delete it from local zones.
                 for (const zone of finalZones)
                 {
                     const modulator = zone.modulators.find(m => Modulator.isIdentical(m, checkedModulator));
                     // Check if the amount is correct.
                     // If so, delete it since it's global.
-                    // if not, then it will simply override global as it's identical.
+                    // If not, then it will simply override global as it's identical.
                     if (modulator.transformAmount === checkedModulator.transformAmount)
                     {
                         zone.modulators.splice(zone.modulators.indexOf(modulator), 1);

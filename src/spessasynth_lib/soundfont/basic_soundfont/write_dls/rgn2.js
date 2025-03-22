@@ -8,7 +8,7 @@ import { writeArticulator } from "./art2.js";
 /**
  * @param zone {BasicInstrumentZone}
  * @param globalZone {BasicInstrumentZone}
- * @this {BasicSoundFont}
+ * @this {BasicSoundBank}
  * @returns {IndexedByteArray}
  */
 export function writeDLSRegion(zone, globalZone)
@@ -35,8 +35,8 @@ export function writeDLSRegion(zone, globalZone)
     
     let rootKey = zone.getGeneratorValue(generatorTypes.overridingRootKey, zone.sample.samplePitch);
     
-    // a lot of soundfonts like to set scaletuning to 0 in drums and keep the key at 60
-    // since we implement scaletuning via a dls articulator and fluid doesn't support these,
+    // a lot of soundfonts like to set scale tuning to 0 in drums and keep the key at 60
+    // since we implement scale tuning via a dls articulator and fluid doesn't support these,
     // change the root key here
     const scaleTuning = zone.getGeneratorValue(
         generatorTypes.scaleTuning,
@@ -47,7 +47,7 @@ export function writeDLSRegion(zone, globalZone)
         rootKey = zone.keyRange.min;
     }
     
-    // wavesample (Wsmp)
+    // wave sample (Wsmp)
     const wsmp = writeWavesample(
         zone.sample,
         rootKey,
@@ -67,7 +67,7 @@ export function writeDLSRegion(zone, globalZone)
         zone.getGeneratorValue(generatorTypes.sampleModes, 0)
     );
     
-    // wavelink (wlnk)
+    // wave link (wlnk)
     const wlnkData = new IndexedByteArray(12);
     writeWord(wlnkData, 0); // fusOptions
     writeWord(wlnkData, 0); // usPhaseGroup

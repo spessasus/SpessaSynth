@@ -55,7 +55,7 @@ export function processTick()
             this.setTimeTicks(this.midiData.loop.start);
             return;
         }
-        // if the song has endeed
+        // if the song has ended
         else if (current >= this.duration)
         {
             if (canLoop)

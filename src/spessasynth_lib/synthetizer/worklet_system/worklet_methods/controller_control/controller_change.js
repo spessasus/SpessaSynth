@@ -2,8 +2,8 @@ import { SpessaSynthInfo } from "../../../../utils/loggin.js";
 import { midiControllers } from "../../../../midi_parser/midi_message.js";
 import { computeModulators } from "../../worklet_utilities/worklet_modulator.js";
 import { consoleColors } from "../../../../utils/other.js";
-import { DEFAULT_PERCUSSION } from "../../../synthetizer.js";
 import { channelConfiguration, dataEntryStates } from "../../worklet_utilities/controller_tables.js";
+import { DEFAULT_PERCUSSION } from "../../../synth_constants.js";
 
 /**
  * @param controllerNumber {number}

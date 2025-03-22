@@ -9,7 +9,7 @@ import { consoleColors } from "../../../utils/other.js";
 
 /**
  * Write the soundfont as a .dls file. Experimental
- * @this {BasicSoundFont}
+ * @this {BasicSoundBank}
  * @returns {Uint8Array}
  */
 export function writeDLS()

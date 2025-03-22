@@ -4,7 +4,7 @@ import { writeDword, writeWord } from "../../../utils/byte_functions/little_endi
 import { RiffChunk, writeRIFFChunk } from "../riff_chunk.js";
 
 /**
- * @this {BasicSoundFont}
+ * @this {BasicSoundBank}
  * @returns {IndexedByteArray}
  */
 export function getPHDR()
@@ -19,7 +19,7 @@ export function getPHDR()
         writeWord(phdrdata, preset.program);
         writeWord(phdrdata, preset.bank);
         writeWord(phdrdata, presetStart);
-        // 3 unused dwords, spec says to keep em so we do
+        // 3 unused dword, spec says to keep em so we do
         writeDword(phdrdata, preset.library);
         writeDword(phdrdata, preset.genre);
         writeDword(phdrdata, preset.morphology);

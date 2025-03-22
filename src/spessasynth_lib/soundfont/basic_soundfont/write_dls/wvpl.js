@@ -3,7 +3,7 @@ import { writeRIFFOddSize } from "../riff_chunk.js";
 import { combineArrays } from "../../../utils/indexed_array.js";
 
 /**
- * @this {BasicSoundFont}
+ * @this {BasicSoundBank}
  * @returns {{data: IndexedByteArray, indexes: number[] }}
  */
 export function writeWavePool()

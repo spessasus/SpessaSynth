@@ -6,7 +6,7 @@ import { readBytesAsUintBigEndian } from "../../utils/byte_functions/big_endian.
 
 /**
  * Processes a single event
- * @param event {MidiMessage}
+ * @param event {MIDIMessage}
  * @param trackIndex {number}
  * @this {WorkletSequencer}
  * @private
@@ -171,7 +171,10 @@ export function _processEvent(event, trackIndex)
     }
     if (statusByteData.status >= 0 && statusByteData.status < 0x80)
     {
-        this.post(WorkletSequencerReturnMessageType.metaEvent, [event.messageStatusByte, event.messageData]);
+        this.post(
+            WorkletSequencerReturnMessageType.metaEvent,
+            [event.messageStatusByte, event.messageData, trackIndex]
+        );
     }
 }
 

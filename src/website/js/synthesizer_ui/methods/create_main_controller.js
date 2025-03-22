@@ -1,5 +1,4 @@
 import { Meter } from "./synthui_meter.js";
-import { VOICE_CAP } from "../../../../spessasynth_lib/synthetizer/synthetizer.js";
 import { LOCALE_PATH } from "../synthetizer_ui.js";
 import {
     ALL_CHANNELS_OR_DIFFERENT_ACTION
@@ -8,6 +7,7 @@ import { getEmptyMicSvg, getVolumeSvg } from "../../utils/icons.js";
 import { ICON_SIZE } from "./create_channel_controller.js";
 import { closeNotification } from "../../notification/notification.js";
 import { showAdvancedConfiguration } from "./advanced_configuration.js";
+import { VOICE_CAP } from "../../../../spessasynth_lib/synthetizer/synth_constants.js";
 
 /**
  * @this {SynthetizerUI}

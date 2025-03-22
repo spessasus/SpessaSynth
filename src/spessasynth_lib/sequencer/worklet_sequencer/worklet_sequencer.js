@@ -14,7 +14,8 @@ import {
     sendMIDIReset
 } from "./events.js";
 import { SpessaSynthWarn } from "../../utils/loggin.js";
-import { MIDI_CHANNEL_COUNT } from "../../synthetizer/synthetizer.js";
+
+import { MIDI_CHANNEL_COUNT } from "../../synthetizer/synth_constants.js";
 
 class WorkletSequencer
 {

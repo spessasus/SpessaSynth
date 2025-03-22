@@ -5,7 +5,7 @@ import { IndexedByteArray } from "../utils/indexed_array.js";
  * purpose: contains enums for midi events and controllers and functions to parse them
  */
 
-export class MidiMessage
+export class MIDIMessage
 {
     /**
      * Absolute number of MIDI ticks from the start of the track.
@@ -249,6 +249,6 @@ export const dataBytesAmount = {
     0xA: 2, // note at
     0xB: 2, // cc change
     0xC: 1, // pg change
-    0xD: 1, // channel aftertouch
+    0xD: 1, // channel after touch
     0xE: 2  // pitch wheel
 };

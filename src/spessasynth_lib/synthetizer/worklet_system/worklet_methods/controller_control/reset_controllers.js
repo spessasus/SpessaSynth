@@ -1,5 +1,4 @@
 import { consoleColors } from "../../../../utils/other.js";
-import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE } from "../../../synthetizer.js";
 import { SpessaSynthInfo } from "../../../../utils/loggin.js";
 import { modulatorSources } from "../../../../soundfont/basic_soundfont/modulator.js";
 import {
@@ -11,6 +10,7 @@ import {
     resetArray
 } from "../../worklet_utilities/controller_tables.js";
 import { midiControllers } from "../../../../midi_parser/midi_message.js";
+import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE } from "../../../synth_constants.js";
 
 
 /**

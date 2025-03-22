@@ -74,7 +74,7 @@ export function writeRIFFChunk(chunk, prepend = undefined)
         size += prepend.length;
     }
     const array = new IndexedByteArray(size);
-    // prepend data (for example type before the read)
+    // prepend data (for example, type before the read)
     if (prepend)
     {
         array.set(prepend, array.currentIndex);
@@ -82,7 +82,7 @@ export function writeRIFFChunk(chunk, prepend = undefined)
     }
     // write header
     writeStringAsBytes(array, chunk.header);
-    // write size (excluding header and the size itself) and the prepend if specified
+    // write size (excluding header and the size itself) and then prepend if specified
     writeDword(array, size - 8 - (prepend?.length || 0));
     // write data
     array.set(chunk.chunkData, array.currentIndex);

@@ -1,7 +1,5 @@
-import { applySnapshotToMIDI } from "../../../spessasynth_lib/midi_parser/midi_editor.js";
 import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthWarn } from "../../../spessasynth_lib/utils/loggin.js";
 import { consoleColors } from "../../../spessasynth_lib/utils/other.js";
-import { trimSoundfont } from "../../../spessasynth_lib/soundfont/basic_soundfont/write_sf2/soundfont_trimmer.js";
 import { closeNotification, showNotification } from "../notification/notification.js";
 import { loadSoundFont } from "../../../spessasynth_lib/soundfont/load_soundfont.js";
 
@@ -51,10 +49,10 @@ export async function _exportDLS()
                     );
                     const mid = await this.seq.getMIDI();
                     const soundfont = loadSoundFont(mid.embeddedSoundFont || this.soundFont);
-                    applySnapshotToMIDI(mid, await this.synth.getSynthesizerSnapshot());
+                    mid.applySnapshotToMIDI(await this.synth.getSynthesizerSnapshot());
                     if (trimmed)
                     {
-                        trimSoundfont(soundfont, mid);
+                        soundfont.trimSoundBank(mid);
                     }
                     try
                     {

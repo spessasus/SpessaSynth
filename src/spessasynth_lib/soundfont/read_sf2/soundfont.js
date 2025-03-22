@@ -11,7 +11,7 @@ import { consoleColors } from "../../utils/other.js";
 import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo } from "../../utils/loggin.js";
 import { readBytesAsString } from "../../utils/byte_functions/string.js";
 import { stbvorbis } from "../../externals/stbvorbis_sync/stbvorbis_sync.min.js";
-import { BasicSoundFont } from "../basic_soundfont/basic_soundfont.js";
+import { BasicSoundBank } from "../basic_soundfont/basic_soundfont.js";
 import { Generator } from "../basic_soundfont/generator.js";
 import { Modulator } from "../basic_soundfont/modulator.js";
 
@@ -20,7 +20,7 @@ import { Modulator } from "../basic_soundfont/modulator.js";
  * purpose: parses a soundfont2 file
  */
 
-export class SoundFont2 extends BasicSoundFont
+export class SoundFont2 extends BasicSoundBank
 {
     /**
      * Initializes a new SoundFont2 Parser and parses the given data array
@@ -54,7 +54,7 @@ export class SoundFont2 extends BasicSoundFont
         }
         /*
         Some SF2Pack description:
-        this is essentially sf2, but the entire smpl chunk is compressed (we only support ogg vorbis here)
+        this is essentially sf2, but the entire smpl chunk is compressed (we only support Ogg Vorbis here)
         and the only other difference is that the main chunk isn't "sfbk" but rather "sfpk"
          */
         const isSF2Pack = type === "sfpk";
@@ -297,9 +297,9 @@ export class SoundFont2 extends BasicSoundFont
         }
     }
     
-    destroySoundfont()
+    destroySoundBank()
     {
-        super.destroySoundfont();
+        super.destroySoundBank();
         delete this.dataArray;
     }
 }

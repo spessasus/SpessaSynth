@@ -34,10 +34,10 @@ export function writeWavesample(
     // gain correction, use InitialAttenuation, apply attenuation correction
     const attenuationCb = attenuationCentibels * 0.4;
     
-    // gain correction:  Each unit of gain represents 1/655360 dB
+    // gain correction: Each unit of gain represents 1/655360 dB
     const lGain = Math.floor(attenuationCb * -65536);
     writeDword(wsmpData, lGain);
-    // fulOptions: has to be 2 according to all DLS files I have
+    // fulOptions: has to be 2, according to all DLS files I have
     writeDword(wsmpData, 2);
     
     const loopSize = loopEnd - loopStart;

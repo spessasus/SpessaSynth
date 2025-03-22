@@ -8,7 +8,7 @@ import {
     WorkletSequencerReturnMessageType
 } from "./worklet_sequencer/sequencer_message.js";
 import { SpessaSynthWarn } from "../utils/loggin.js";
-import { DUMMY_MIDI_DATA, MidiData } from "../midi_parser/midi_data.js";
+import { DUMMY_MIDI_DATA, MIDIData } from "../midi_parser/midi_data.js";
 import { BasicMIDI } from "../midi_parser/basic_midi.js";
 import { readBytesAsUintBigEndian } from "../utils/byte_functions/big_endian.js";
 import { IndexedByteArray } from "../utils/indexed_array.js";
@@ -68,12 +68,12 @@ export class Sequencer
     
     /**
      * The sequence's data, except for the track data.
-     *  @type {MidiData}
+     *  @type {MIDIData}
      */
     midiData;
     
     /**
-     * @type {Object<string, function(MidiData)>}
+     * @type {Object<string, function(MIDIData)>}
      * @private
      */
     onSongChange = {};
@@ -99,7 +99,7 @@ export class Sequencer
     
     /**
      * Fires on meta-event
-     * @type {Object<string, function([number, Uint8Array])>}
+     * @type {Object<string, function([number, Uint8Array, number])>}
      */
     onMetaEvent = {};
     
@@ -398,7 +398,7 @@ export class Sequencer
     
     /**
      * Adds a new event that gets called when the song changes
-     * @param callback {function(MidiData)}
+     * @param callback {function(MIDIData)}
      * @param id {string} must be unique
      */
     addOnSongChangeEvent(callback, id)
@@ -438,7 +438,7 @@ export class Sequencer
     
     /**
      * Adds a new event that gets called when a meta-event occurs
-     * @param callback {function([number, Uint8Array])} the meta-event type and its data
+     * @param callback {function([number, Uint8Array, number])} the meta-event type, its data and the track number
      * @param id {string} must be unique
      */
     addOnMetaEvent(callback, id)
@@ -538,8 +538,8 @@ export class Sequencer
             
             case WorkletSequencerReturnMessageType.songChange:
                 /**
-                 * messageData is expected to be {MidiData}
-                 * @type {MidiData}
+                 * messageData is expected to be {MIDIData}
+                 * @type {MIDIData}
                  */
                 let songChangeData = messageData[0];
                 this.songIndex = messageData[1];

@@ -4,7 +4,7 @@ import { writeDword, writeWord } from "../../../utils/byte_functions/little_endi
 import { RiffChunk, writeRIFFChunk } from "../riff_chunk.js";
 
 /**
- * @this {BasicSoundFont}
+ * @this {BasicSoundBank}
  * @param smplStartOffsets {number[]}
  * @param smplEndOffsets {number[]}
  * @returns {IndexedByteArray}

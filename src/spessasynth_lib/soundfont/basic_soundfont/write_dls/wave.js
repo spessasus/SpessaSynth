@@ -46,7 +46,8 @@ export function writeDLSSample(sample)
         
         for (let i = 0; i < audio.length; i++)
         {
-            data16[i] = audio[i] * 32768;
+            // 32,767, as 32,768 may cause overflow (because vorbis can go above 1 sometimes)
+            data16[i] = audio[i] * 32767;
         }
         
         

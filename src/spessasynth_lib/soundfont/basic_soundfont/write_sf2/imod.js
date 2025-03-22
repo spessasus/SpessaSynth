@@ -3,13 +3,13 @@ import { writeLittleEndian, writeWord } from "../../../utils/byte_functions/litt
 import { RiffChunk, writeRIFFChunk } from "../riff_chunk.js";
 
 /**
- * @this {BasicSoundFont}
+ * @this {BasicSoundBank}
  * @returns {IndexedByteArray}
  */
 export function getIMOD()
 {
-    // very similar to igen
-    // go through all instruments ->  zones and write modulators sequentially
+    // very similar to igen,
+    // go through all instruments -> zones and write modulators sequentially
     let imodsize = 10;
     for (const inst of this.instruments)
     {
