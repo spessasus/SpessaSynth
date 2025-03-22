@@ -65,10 +65,20 @@ export function _processEvent(event, trackIndex)
             break;
         
         case messageTypes.controllerChange:
+            // empty tracks cannot cc change
+            if (this.midiData.usedChannelsOnTrack[trackIndex].size === 0)
+            {
+                return;
+            }
             this.synth.controllerChange(statusByteData.channel, event.messageData[0], event.messageData[1]);
             break;
         
         case messageTypes.programChange:
+            // empty tracks cannot program change
+            if (this.midiData.usedChannelsOnTrack[trackIndex].size === 0)
+            {
+                return;
+            }
             this.synth.programChange(statusByteData.channel, event.messageData[0]);
             break;
         

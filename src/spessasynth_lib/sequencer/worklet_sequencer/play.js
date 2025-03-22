@@ -138,12 +138,22 @@ export function _playTo(time, ticks = undefined)
                 break;
             
             case messageTypes.programChange:
+                // empty tracks cannot program change
+                if (this.midiData.usedChannelsOnTrack[trackIndex].size === 0)
+                {
+                    break;
+                }
                 const p = programs[channel];
                 p.program = event.messageData[0];
                 p.actualBank = p.bank;
                 break;
             
             case messageTypes.controllerChange:
+                // empty tracks cannot controller change
+                if (this.midiData.usedChannelsOnTrack[trackIndex].size === 0)
+                {
+                    break;
+                }
                 // do not skip data entries
                 const controllerNumber = event.messageData[0];
                 if (isCCNonSkippable(controllerNumber))
