@@ -16,7 +16,7 @@ export function getReverbProcessor(context, reverbBuffer = undefined)
     else
     {
         // decode
-        context.decodeAudioData(reverbBufferBinary).then(b =>
+        context.decodeAudioData(reverbBufferBinary.slice(0, reverbBufferBinary.byteLength)).then(b =>
         {
             convolver.buffer = b;
         });
