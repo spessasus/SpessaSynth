@@ -8,6 +8,7 @@ import {
 } from "../../utils/loggin.js";
 import { MIDIData } from "../../midi_parser/midi_data.js";
 import { MIDI } from "../../midi_parser/midi_loader.js";
+import { BasicMIDI } from "../../midi_parser/basic_midi.js";
 
 
 /**
@@ -164,7 +165,7 @@ export function loadNewSongList(midiBuffers, autoPlay = true)
     {
         if (b.duration)
         {
-            mids.push(b);
+            mids.push(BasicMIDI.copyFrom(b));
             return mids;
         }
         try

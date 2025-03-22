@@ -54,7 +54,7 @@ export function showEffectsConfigWindow(locale, path, synth)
                         }
                         e.stopImmediatePropagation();
                         e.preventDefault();
-                        const btn = e.target.parentElement.parentElement;
+                        const btn = e.target.parentElement.parentElement.getElementsByTagName("label")[0];
                         btn.textContent = locale.getLocaleString("locale.synthInit.genericLoading");
                         const buffer = await synth.context.decodeAudioData(await e.target.files[0].arrayBuffer());
                         synth.setReverbResponse(buffer);
