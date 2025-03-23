@@ -291,11 +291,9 @@ Local edition comes with easier soundfont management than the demo version.
 - [3.0.0](https://github.com/spessasus/SpessaSynth/commit/b7f9e382a2f62eef462755ac9ebfe603663e4106) - Moved to audioWorkletGlobalScope for offline audio rendering
 
 ### License
-Copyright © 2025 Spessasus. Licensed under the MIT License.
-
-> [!IMPORTANT]
-> Please note that the bundled [stbvorbis_sync.js](https://github.com/spessasus/stbvorbis_sync.js) is licensed under the Apache-2.0 license.
-> The license and the file can be found in the `externals` folder in the spessasynth_lib directory.
+Copyright © 2025 Spessasus.
+Licensed under the Apache-2.0 License.
+Please read the NOTICE file for more details.
 
 #### Legal
 This project is in no way endorsed or otherwise affiliated with the MIDI Manufacturers Association,

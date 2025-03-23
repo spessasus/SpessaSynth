@@ -155,4 +155,6 @@ Supported formats list:
 
 # License
 Copyright © 2025 Spessasus
-MIT License, except for the stbvorbis_sync.js in the `externals` folder which is licensed under the Apache-2.0 license.
+Licensed under the Apache-2.0 License.
+
+SoundFont® is a registered trademark of Creative Technology Ltd.
