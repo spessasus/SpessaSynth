@@ -7,6 +7,7 @@ import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo } from "../utils
 import { consoleColors } from "../utils/other.js";
 import { writeLittleEndian } from "../utils/byte_functions/little_endian.js";
 import { DEFAULT_PERCUSSION } from "../synthetizer/synth_constants.js";
+import { isXGDrums } from "../synthetizer/worklet_system/worklet_methods/is_xg_drums.js";
 
 /**
  * @enum {string}
@@ -284,7 +285,7 @@ export function writeRMIDI(
             if (system === "xg")
             {
                 // check for xg drums
-                channel.drums = e.messageData[1] === 120 || e.messageData[1] === 126 || e.messageData[1] === 127;
+                channel.drums = isXGDrums(e.messageData[1]);
             }
             channel.lastBank = e;
         }

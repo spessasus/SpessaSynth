@@ -148,17 +148,17 @@ export function systemExclusive(messageData, channelOffset = 0)
                     if (messageData[3] === 0x01)
                     {
                         SpessaSynthInfo("%cGM system on", consoleColors.info);
-                        this.system = "gm";
+                        this.setSystem("gm");
                     }
                     else if (messageData[3] === 0x03)
                     {
                         SpessaSynthInfo("%cGM2 system on", consoleColors.info);
-                        this.system = "gm2";
+                        this.setSystem("gm2");
                     }
                     else
                     {
                         SpessaSynthInfo("%cGM system off, defaulting to GS", consoleColors.info);
-                        this.system = "gs";
+                        this.setSystem("gs");
                     }
                     break;
                 
@@ -312,14 +312,14 @@ export function systemExclusive(messageData, channelOffset = 0)
                         // this is a GS reset
                         SpessaSynthInfo("%cGS Reset received!", consoleColors.info);
                         this.resetAllControllers(false);
-                        this.system = "gs";
+                        this.setSystem("gs");
                     }
                     else if (messageValue === 0x7F)
                     {
                         // GS mode off
                         SpessaSynthInfo("%cGS system off, switching to GM2", consoleColors.info);
                         this.resetAllControllers(false);
-                        this.system = "gm2";
+                        this.setSystem("gm2");
                     }
                     return;
                 }
@@ -606,7 +606,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                         case 0x7E:
                             SpessaSynthInfo("%cXG system on", consoleColors.info);
                             this.resetAllControllers(false);
-                            this.system = "xg";
+                            this.setSystem("xg");
                             break;
                     }
                 }

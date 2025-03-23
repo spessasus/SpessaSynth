@@ -158,6 +158,9 @@ export function handleMessage(message)
                 case masterParameterType.interpolationType:
                     this.interpolationType = value;
                     break;
+                
+                case masterParameterType.midiSystem:
+                    this.setSystem(value);
             }
             break;
         

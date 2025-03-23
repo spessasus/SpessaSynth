@@ -94,7 +94,7 @@ export class SynthesizerSnapshot
     static applySnapshot(workletProcessor, snapshot)
     {
         // restore system
-        workletProcessor.system = snapshot.system;
+        workletProcessor.setSystem(snapshot.system);
         
         // restore pan and volume
         workletProcessor.setMasterGain(snapshot.mainVolume);

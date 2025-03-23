@@ -25,6 +25,7 @@ export function resetAllControllers(log = true)
         SpessaSynthInfo("%cResetting all controllers!", consoleColors.info);
     }
     this.callEvent("allcontrollerreset", undefined);
+    this.setSystem(DEFAULT_SYNTH_MODE);
     for (let channelNumber = 0; channelNumber < this.workletProcessorChannels.length; channelNumber++)
     {
         this.workletProcessorChannels[channelNumber].resetControllers();
@@ -38,7 +39,7 @@ export function resetAllControllers(log = true)
         if (!ch.lockPreset)
         {
             ch.presetUsesOverride = true;
-            ch.setBankSelect(0);
+            ch.setBankSelect(0, true);
             if (channelNumber % 16 === DEFAULT_PERCUSSION)
             {
                 this.workletProcessorChannels[channelNumber].setPreset(this.drumPreset);
@@ -110,7 +111,6 @@ export function resetAllControllers(log = true)
     }
     
     this.setMIDIVolume(1);
-    this.system = DEFAULT_SYNTH_MODE;
 }
 
 /**

@@ -2,7 +2,11 @@ import { WorkletSequencer } from "../../sequencer/worklet_sequencer/worklet_sequ
 import { SpessaSynthInfo } from "../../utils/loggin.js";
 import { consoleColors } from "../../utils/other.js";
 import { voiceKilling } from "./worklet_methods/stopping_notes/voice_killing.js";
-import { ALL_CHANNELS_OR_DIFFERENT_ACTION, returnMessageType } from "./message_protocol/worklet_message.js";
+import {
+    ALL_CHANNELS_OR_DIFFERENT_ACTION,
+    masterParameterType,
+    returnMessageType
+} from "./message_protocol/worklet_message.js";
 import { stbvorbis } from "../../externals/stbvorbis_sync/stbvorbis_sync.min.js";
 import { VOLUME_ENVELOPE_SMOOTHING_FACTOR } from "./worklet_utilities/volume_envelope.js";
 import { handleMessage } from "./message_protocol/handle_message.js";
@@ -181,7 +185,6 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
      * @type {SynthSystem}
      */
     system = DEFAULT_SYNTH_MODE;
-    
     /**
      * Current total voices amount
      * @type {number}
@@ -298,6 +301,18 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
     get currentGain()
     {
         return this.masterGain * this.midiVolume;
+    }
+    
+    /**
+     * @param value {SynthSystem}
+     */
+    setSystem(value)
+    {
+        this.system = value;
+        this.post({
+            messageType: returnMessageType.masterParameterChange,
+            messageData: [masterParameterType.midiSystem, this.system]
+        });
     }
     
     /**

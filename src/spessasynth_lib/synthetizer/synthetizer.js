@@ -15,7 +15,13 @@ import { DEFAULT_SYNTH_CONFIG } from "./audio_effects/effects_config.js";
 import { SoundfontManager } from "./synth_soundfont_manager.js";
 import { KeyModifierManager } from "./key_modifier_manager.js";
 import { channelConfiguration } from "./worklet_system/worklet_utilities/controller_tables.js";
-import { DEFAULT_PERCUSSION, MIDI_CHANNEL_COUNT, VOICE_CAP, WORKLET_PROCESSOR_NAME } from "./synth_constants.js";
+import {
+    DEFAULT_PERCUSSION,
+    DEFAULT_SYNTH_MODE,
+    MIDI_CHANNEL_COUNT,
+    VOICE_CAP,
+    WORKLET_PROCESSOR_NAME
+} from "./synth_constants.js";
 
 
 /**
@@ -240,6 +246,30 @@ export class Synthetizer
     }
     
     /**
+     * @type {"gm"|"gm2"|"gs"|"xg"}
+     * @private
+     */
+    _midiSystem = DEFAULT_SYNTH_MODE;
+    
+    /**
+     * The current MIDI system used by the synthesizer
+     * @returns {"gm"|"gm2"|"gs"|"xg"}
+     */
+    get midiSystem()
+    {
+        return this._midiSystem;
+    }
+    
+    /**
+     * The current MIDI system used by the synthesizer
+     * @param value {"gm"|"gm2"|"gs"|"xg"}
+     */
+    set midiSystem(value)
+    {
+        this._midiSystem = value;
+    }
+    
+    /**
      * current voice amount
      * @type {number}
      * @private
@@ -380,6 +410,23 @@ export class Synthetizer
                 if (this.sequencerCallbackFunction)
                 {
                     this.sequencerCallbackFunction(messageData.messageType, messageData.messageData);
+                }
+                break;
+            
+            case returnMessageType.masterParameterChange:
+                /**
+                 * @type {masterParameterType}
+                 */
+                const param = messageData[0];
+                const value = messageData[1];
+                switch (param)
+                {
+                    default:
+                        break;
+                    
+                    case masterParameterType.midiSystem:
+                        this._midiSystem = value;
+                        break;
                 }
                 break;
             

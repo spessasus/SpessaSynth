@@ -1,4 +1,3 @@
-import { MIDI } from "../midi_parser/midi_loader.js";
 import { Synthetizer } from "../synthetizer/synthetizer.js";
 import { messageTypes } from "../midi_parser/midi_message.js";
 import { workletMessageType } from "../synthetizer/worklet_system/message_protocol/worklet_message.js";

@@ -2,6 +2,7 @@ import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo } from 
 import { consoleColors } from "../utils/other.js";
 import { messageTypes, midiControllers } from "./midi_message.js";
 import { DEFAULT_PERCUSSION } from "../synthetizer/synth_constants.js";
+import { isXGDrums } from "../synthetizer/worklet_system/worklet_methods/is_xg_drums.js";
 
 /**
  * Gets the used programs and keys for this MIDI file with a given sound bank
@@ -139,7 +140,7 @@ export function getUsedProgramsAndKeys(soundfont)
                 if (system === "xg")
                 {
                     // check for xg drums
-                    const drumsBool = bank === 120 || bank === 126 || bank === 127;
+                    const drumsBool = isXGDrums(bank);
                     if (drumsBool !== ch.drums)
                     {
                         // drum change is a program change

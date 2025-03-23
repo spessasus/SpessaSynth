@@ -70,7 +70,8 @@ export const masterParameterType = {
     mainVolume: 0,
     masterPan: 1,
     voicesCap: 2,
-    interpolationType: 3
+    interpolationType: 3,
+    midiSystem: 4
 };
 
 
@@ -110,12 +111,11 @@ export const ALL_CHANNELS_OR_DIFFERENT_ACTION = -1;
  *
  * 0 - channel properties           -> [...<ChannelProperty>] see message_sending.js line 29
  * 1 - event call                   -> {eventName<string>, eventData:<the event's data>}
- * 2 - reported current time        -> currentTime<number>
+ * 2 - master parameter change      -> [parameter<masterParameterType>, value<string|number>]
  * 3 - sequencer specific           -> [messageType<WorkletSequencerReturnMessageType> messageData<any>] note: refer to sequencer_message.js
  * 4 - synthesizer snapshot         -> snapshot<SynthesizerSnapshot> note: refer to synthesizer_snapshot.js
  * 5 - ready                        -> (no data)
  * 6 - soundfontError               -> errorMessage<string>
- * 7 - idenfity                     -> version<string>
  */
 
 /**
@@ -124,10 +124,9 @@ export const ALL_CHANNELS_OR_DIFFERENT_ACTION = -1;
 export const returnMessageType = {
     channelProperties: 0,
     eventCall: 1,
-    reportedCurrentTime: 2,
+    masterParameterChange: 2,
     sequencerSpecific: 3,
     synthesizerSnapshot: 4,
     ready: 5,
-    soundfontError: 6,
-    identify: 7
+    soundfontError: 6
 };
