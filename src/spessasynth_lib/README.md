@@ -43,6 +43,8 @@ Supported formats list:
 - `.rmi` - RIFF MIDI File
 - `.rmi` - RIFF MIDI File With Embedded DLS
 - `.rmi` - [RIFF MIDI File With Embedded SF2](https://github.com/spessasus/sf2-rmidi-specification)
+- `.xmf` - eXtensible Music Format
+- `.mxmf` - Mobile eXtensible Music format
 
 *With [an easy way of converting between them!](https://github.com/spessasus/SpessaSynth/wiki/Converting-Between-Formats)*
 

@@ -31,13 +31,15 @@ export function formatTitle(fileName)
         .replaceAll(".mid", "")
         .replaceAll(".kar", "")
         .replaceAll(".rmi", "")
+        .replaceAll(".xmf", "")
+        .replaceAll(".mxmf", "")
         .replaceAll("_", " ")
         .trim();
 }
 
 /**
  * Does what it says
- * @param arr {number[]}
+ * @param arr {number[]|Uint8Array}
  * @returns {string}
  */
 export function arrayToHexString(arr)

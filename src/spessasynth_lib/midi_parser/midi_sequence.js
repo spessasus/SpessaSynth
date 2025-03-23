@@ -145,6 +145,12 @@ class MIDISequenceData
     isKaraokeFile = false;
     
     /**
+     * Indicates if this file is a Multi-Port MIDI file.
+     * @type {boolean}
+     */
+    isMultiPort = false;
+    
+    /**
      * Converts ticks to time in seconds
      * @param ticks {number} time in MIDI ticks
      * @returns {number} time in seconds

@@ -44,6 +44,7 @@ export class MIDIData extends MIDISequenceData
         this.RMIDInfo = midi.RMIDInfo;
         this.bankOffset = midi.bankOffset;
         this.isKaraokeFile = midi.isKaraokeFile;
+        this.isMultiPort = midi.isMultiPort;
         
         // Set isEmbedded based on the presence of an embeddedSoundFont
         this.isEmbedded = midi.embeddedSoundFont !== undefined;

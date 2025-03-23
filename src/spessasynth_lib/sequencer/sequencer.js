@@ -53,7 +53,7 @@ export class Sequencer
 {
     /**
      * Executes when MIDI parsing has an error.
-     * @type {function(string)}
+     * @type {function(Error)}
      */
     onError;
     

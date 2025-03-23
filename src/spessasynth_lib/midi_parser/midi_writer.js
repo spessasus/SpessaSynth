@@ -31,7 +31,7 @@ export function writeMIDI()
              */
             let messageData;
             // determine the message
-            if (event.messageStatusByte <= messageTypes.keySignature || event.messageStatusByte === messageTypes.sequenceSpecific)
+            if (event.messageStatusByte <= messageTypes.sequenceSpecific)
             {
                 // this is a meta-message
                 // syntax is FF<type><length><data>

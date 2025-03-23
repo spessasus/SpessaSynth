@@ -174,7 +174,8 @@ export function loadNewSongList(midiBuffers, autoPlay = true)
         }
         catch (e)
         {
-            this.post(WorkletSequencerReturnMessageType.midiError, e.message);
+            console.error(e);
+            this.post(WorkletSequencerReturnMessageType.midiError, e);
             return mids;
         }
         return mids;

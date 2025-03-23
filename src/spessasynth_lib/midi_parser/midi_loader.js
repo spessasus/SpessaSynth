@@ -9,6 +9,7 @@ import { readBytesAsString } from "../utils/byte_functions/string.js";
 import { readLittleEndian } from "../utils/byte_functions/little_endian.js";
 import { RMIDINFOChunks } from "./rmidi_writer.js";
 import { BasicMIDI } from "./basic_midi.js";
+import { loadXMF } from "./xmf_loader.js";
 
 /**
  * midi_loader.js
@@ -145,6 +146,11 @@ class MIDI extends BasicMIDI
                 this.bankOffset = 0;
             }
         }
+        else if (initialString === "XMF_")
+        {
+            // XMF file
+            fileByteArray = loadXMF(this, binaryData);
+        }
         else
         {
             fileByteArray = binaryData;
@@ -212,7 +218,7 @@ class MIDI extends BasicMIDI
                 }
                 else
                 { // noinspection PointlessBooleanExpressionJS
-                    if (!runningByte && statusByteCheck < 0x80)
+                    if (runningByte === undefined && statusByteCheck < 0x80)
                     {
                         // if we don't have a running byte and the status byte isn't valid, it's an error.
                         SpessaSynthGroupEnd();

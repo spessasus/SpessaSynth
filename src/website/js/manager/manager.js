@@ -522,7 +522,8 @@ class Manager
         
         this.seq.onError = e =>
         {
-            document.getElementById("title").textContent = e;
+            console.error(e);
+            document.getElementById("title").textContent = e.message;
         };
         
         // connect to the UI

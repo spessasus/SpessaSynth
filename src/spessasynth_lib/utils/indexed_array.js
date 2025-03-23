@@ -9,7 +9,7 @@ export class IndexedByteArray extends Uint8Array
      * The current index of the array
      * @type {number}
      */
-    currentIndex;
+    currentIndex = 0;
     
     /**
      * Creates a new instance of an Uint8Array with a currentIndex property
@@ -18,7 +18,18 @@ export class IndexedByteArray extends Uint8Array
     constructor(args)
     {
         super(args);
-        this.currentIndex = 0;
+    }
+    
+    /**
+     * @param start {number?}
+     * @param end {number?}
+     * @returns {IndexedByteArray}
+     */
+    slice(start, end)
+    {
+        const a = super.slice(start, end);
+        a.currentIndex = 0;
+        return a;
     }
 }
 

@@ -139,7 +139,7 @@ export function _playTo(time, ticks = undefined)
             
             case messageTypes.programChange:
                 // empty tracks cannot program change
-                if (this.midiData.usedChannelsOnTrack[trackIndex].size === 0)
+                if (this.midiData.isMultiPort && this.midiData.usedChannelsOnTrack[trackIndex].size === 0)
                 {
                     break;
                 }
@@ -150,7 +150,7 @@ export function _playTo(time, ticks = undefined)
             
             case messageTypes.controllerChange:
                 // empty tracks cannot controller change
-                if (this.midiData.usedChannelsOnTrack[trackIndex].size === 0)
+                if (this.midiData.isMultiPort && this.midiData.usedChannelsOnTrack[trackIndex].size === 0)
                 {
                     break;
                 }
