@@ -27,10 +27,7 @@ import { channelPressure } from "../worklet_methods/tuning_control/channel_press
 import { pitchWheel } from "../worklet_methods/tuning_control/pitch_wheel.js";
 import { setOctaveTuning } from "../worklet_methods/tuning_control/set_octave_tuning.js";
 import { programChange } from "../worklet_methods/program_change.js";
-import { SpessaSynthInfo } from "../../../utils/loggin.js";
-import { consoleColors } from "../../../utils/other.js";
-import { isXGDrums } from "../worklet_methods/is_xg_drums.js";
-import { DEFAULT_PERCUSSION } from "../../synth_constants.js";
+import { parseBankSelect } from "../../../utils/xg_hacks.js";
 
 /**
  * This class represents a single MIDI Channel within the synthesizer.
@@ -248,88 +245,31 @@ class WorkletProcessorChannel
         if (force)
         {
             this.bank = bank;
-            return;
-        }
-        // 64 means SFX in MSB, so it is allowed
-        const isValidMSB = b => isXGDrums(b) || b === 64;
-        if (isLSB)
-        {
-            if (this.synth.system === "xg")
-            {
-                if (!this.drumChannel)
-                {
-                    // some soundfonts use 127 as drums and
-                    // if it's not marked as drums by bank MSB (line 47),
-                    // then we DO NOT want the drums!
-                    if (!isValidMSB(bank))
-                    {
-                        this.bank = bank;
-                    }
-                }
-            }
-            else if (this.synth.system === "gm2")
-            {
-                this.bank = bank;
-            }
         }
         else
         {
-            let canSetBankSelect = true;
-            switch (this.synth.system)
+            const bankLogic = parseBankSelect(
+                this.getBankSelect(),
+                bank,
+                this.synth.system,
+                isLSB,
+                this.drumChannel,
+                this.channelNumber
+            );
+            this.bank = bankLogic.newBank;
+            switch (bankLogic.drumsStatus)
             {
-                case "gm":
-                    // gm ignores bank select
-                    SpessaSynthInfo(
-                        `%cIgnoring the Bank Select (${bank}), as the synth is in GM mode.`,
-                        consoleColors.info
-                    );
-                    canSetBankSelect = false;
+                default:
+                case 0:
                     break;
                 
-                case "xg":
-                    canSetBankSelect = isValidMSB(bank);
-                    // for xg, if msb is 120, 126 or 127, then it's drums
-                    if (isXGDrums(bank))
-                    {
-                        this.setDrums(true);
-                    }
-                    else
-                    {
-                        // drums shall not be disabled on channel 9
-                        if (this.channelNumber % 16 !== DEFAULT_PERCUSSION)
-                        {
-                            this.setDrums(false);
-                        }
-                    }
+                case 1:
+                    this.setDrums(false);
                     break;
                 
-                case "gm2":
-                    if (bank === 120)
-                    {
-                        this.setDrums(true);
-                    }
-                    else
-                    {
-                        if (this.channelNumber % 16 !== DEFAULT_PERCUSSION)
-                        {
-                            this.setDrums(false);
-                        }
-                    }
-            }
-            
-            if (this.drumChannel)
-            {
-                // 128 for percussion channel
-                bank = 128;
-            }
-            if (bank === 128 && !this.drumChannel)
-            {
-                // if a channel is not for percussion, default to bank current
-                bank = this.getBankSelect();
-            }
-            if (canSetBankSelect)
-            {
-                this.bank = bank;
+                case 2:
+                    this.setDrums(true);
+                    break;
             }
         }
     }

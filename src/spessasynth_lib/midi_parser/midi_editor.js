@@ -5,6 +5,7 @@ import { consoleColors } from "../utils/other.js";
 
 import { customControllers } from "../synthetizer/worklet_system/worklet_utilities/controller_tables.js";
 import { DEFAULT_PERCUSSION } from "../synthetizer/synth_constants.js";
+import { isGMOn, isGSOn, isXGOn } from "../utils/sysex_detector.js";
 
 /**
  * @param ticks {number}
@@ -450,12 +451,7 @@ export function modifyMIDI(
             
             case messageTypes.systemExclusive:
                 // check for xg on
-                if (
-                    e.messageData[0] === 0x43 && // Yamaha
-                    e.messageData[2] === 0x4C && // XG ON
-                    e.messageData[5] === 0x7E &&
-                    e.messageData[6] === 0x00
-                )
+                if (isXGOn(e))
                 {
                     SpessaSynthInfo("%cXG system on detected", consoleColors.info);
                     system = "xg";
@@ -479,11 +475,7 @@ export function modifyMIDI(
                 }
                 else
                     // check for GS on
-                if (
-                    e.messageData[0] === 0x41    // roland
-                    && e.messageData[2] === 0x42 // GS
-                    && e.messageData[6] === 0x7F // Mode set
-                )
+                if (isGSOn(e))
                 {
                     // that's a GS on, we're done here
                     addedGs = true;
@@ -495,10 +487,7 @@ export function modifyMIDI(
                 }
                 else
                     // check for GM/2 on
-                if (
-                    e.messageData[0] === 0x7E // non realtime
-                    && e.messageData[2] === 0x09 // gm system
-                )
+                if (isGMOn(e))
                 {
                     // that's a GM/2 system change, remove it!
                     SpessaSynthInfo(
@@ -511,7 +500,7 @@ export function modifyMIDI(
         }
     }
     // check for gs
-    if (!addedGs)
+    if (!addedGs && desiredProgramChanges.length > 0)
     {
         // gs is not on, add it on the first track at index 0 (or 1 if track name is first)
         let index = 0;

@@ -7,7 +7,8 @@ import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo } from "../utils
 import { consoleColors } from "../utils/other.js";
 import { writeLittleEndian } from "../utils/byte_functions/little_endian.js";
 import { DEFAULT_PERCUSSION } from "../synthetizer/synth_constants.js";
-import { isXGDrums } from "../synthetizer/worklet_system/worklet_methods/is_xg_drums.js";
+import { chooseBank, parseBankSelect } from "../utils/xg_hacks.js";
+import { isGMOn, isGSDrumsOn, isGSOn, isXGOn } from "../utils/sysex_detector.js";
 
 /**
  * @enum {string}
@@ -123,6 +124,7 @@ export function writeRMIDI(
          *     program: number,
          *     drums: boolean,
          *     lastBank: MIDIMessage,
+         *     lastBankLSB: MIDIMessage,
          *     hasBankSelect: boolean
          * }[]}
          */
@@ -133,6 +135,7 @@ export function writeRMIDI(
                 program: 0,
                 drums: i % 16 === DEFAULT_PERCUSSION, // drums appear on 9 every 16 channels,
                 lastBank: undefined,
+                lastBankLSB: undefined,
                 hasBankSelect: false
             });
         }
@@ -167,37 +170,18 @@ export function writeRMIDI(
             if (status === messageTypes.systemExclusive)
             {
                 // check for drum sysex
-                if (
-                    e.messageData[0] !== 0x41 || // roland
-                    e.messageData[2] !== 0x42 || // GS
-                    e.messageData[3] !== 0x12 || // GS
-                    e.messageData[4] !== 0x40 || // system parameter
-                    (e.messageData[5] & 0x10) === 0 || // part parameter
-                    e.messageData[6] !== 0x15 // drum part
-                )
+                if (!isGSDrumsOn(e))
                 {
                     // check for XG
-                    if (
-                        e.messageData[0] === 0x43 && // yamaha
-                        e.messageData[2] === 0x4C && // sXG ON
-                        e.messageData[5] === 0x7E &&
-                        e.messageData[6] === 0x00
-                    )
+                    if (isXGOn(e))
                     {
                         system = "xg";
                     }
-                    else if (
-                        e.messageData[0] === 0x41    // roland
-                        && e.messageData[2] === 0x42 // GS
-                        && e.messageData[6] === 0x7F // Mode set
-                    )
+                    else if (isGSOn(e))
                     {
                         system = "gs";
                     }
-                    else if (
-                        e.messageData[0] === 0x7E // non realtime
-                        && e.messageData[2] === 0x09 // gm system
-                    )
+                    else if (isGMOn(e))
                     {
                         system = "gm";
                         unwantedSystems.push({
@@ -214,6 +198,9 @@ export function writeRMIDI(
             
             // program change
             const chNum = (e.messageStatusByte & 0xF) + portOffset;
+            /**
+             * @type {{program: number, drums: boolean, lastBank: MIDIMessage, lastBankLSB: MIDIMessage, hasBankSelect: boolean}}
+             */
             const channel = channelsInfo[chNum];
             if (status === messageTypes.programChange)
             {
@@ -237,15 +224,24 @@ export function writeRMIDI(
                 channel.program = e.messageData[0];
                 // check if this preset exists for program and bank
                 const realBank = Math.max(0, channel.lastBank?.messageData[1] - mid.bankOffset); // make sure to take the previous bank offset into account
-                const bank = channel.drums ? 128 : realBank;
+                let bank = channel.drums ? 128 : realBank;
                 if (channel.lastBank === undefined)
                 {
                     continue;
                 }
-                if (system === "xg" && channel.drums)
+                if (system === "xg")
                 {
-                    // drums override: set the bank to 127
-                    channelsInfo[chNum].lastBank.messageData[1] = 127;
+                    if (channel.drums)
+                    {
+                        // drums override: set the bank to 127
+                        channelsInfo[chNum].lastBank.messageData[1] = 127;
+                    }
+                    else
+                    {
+                        // potential bank lsb override
+                        const bankLSB = (channel?.lastBankLSB?.messageData[1] - mid.bankOffset) || 0;
+                        bank = chooseBank(bank, bankLSB);
+                    }
                 }
                 
                 if (soundfont.presets.findIndex(p => p.bank === bank && p.program === e.messageData[0]) === -1)
@@ -253,6 +249,10 @@ export function writeRMIDI(
                     // no preset with this bank. find this program with any bank
                     const targetBank = (soundfont.presets.find(p => p.program === e.messageData[0])?.bank + bankOffset) || bankOffset;
                     channel.lastBank.messageData[1] = targetBank;
+                    if (channel?.lastBankLSB?.messageData)
+                    {
+                        channel.lastBankLSB.messageData[1] = targetBank;
+                    }
                     SpessaSynthInfo(
                         `%cNo preset %c${bank}:${e.messageData[0]}%c. Changing bank to ${targetBank}.`,
                         consoleColors.info,
@@ -266,6 +266,10 @@ export function writeRMIDI(
                     let drumBank = system === "xg" ? 127 : 0;
                     const newBank = (bank === 128 ? drumBank : realBank) + bankOffset;
                     channel.lastBank.messageData[1] = newBank;
+                    if (channel?.lastBankLSB?.messageData)
+                    {
+                        channel.lastBankLSB.messageData[1] = channel.lastBankLSB.messageData[1] - mid.bankOffset + bankOffset;
+                    }
                     SpessaSynthInfo(
                         `%cPreset %c${bank}:${e.messageData[0]}%c exists. Changing bank to ${newBank}.`,
                         consoleColors.info,
@@ -275,19 +279,45 @@ export function writeRMIDI(
                 }
                 continue;
             }
-            // we only care about bank select
-            if (e.messageData[0] !== midiControllers.bankSelect)
+            
+            // controller change
+            // we only care about bank-selects
+            const isLSB = e.messageData[0] === midiControllers.lsbForControl0BankSelect;
+            if (e.messageData[0] !== midiControllers.bankSelect && !isLSB)
             {
                 continue;
             }
             // bank select
             channel.hasBankSelect = true;
-            if (system === "xg")
+            const bankNumber = e.messageData[1];
+            // interpret
+            const intepretation = parseBankSelect(
+                channel?.lastBank?.messageData[1] || 0,
+                bankNumber,
+                system,
+                isLSB,
+                channel.drums,
+                chNum
+            );
+            if (intepretation.drumsStatus === 2)
             {
-                // check for xg drums
-                channel.drums = isXGDrums(e.messageData[1]);
+                channel.drums = true;
             }
-            channel.lastBank = e;
+            else if (intepretation.drumsStatus === 1)
+            {
+                channel.drums = false;
+            }
+            if (bankNumber === intepretation.newBank || channel.drums)
+            {
+                if (isLSB)
+                {
+                    channel.lastBankLSB = e;
+                }
+                else
+                {
+                    channel.lastBank = e;
+                }
+            }
         }
         
         // add missing bank selects

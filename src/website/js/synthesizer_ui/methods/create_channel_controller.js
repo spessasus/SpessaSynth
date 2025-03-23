@@ -27,7 +27,7 @@ import {
     NON_CC_INDEX_OFFSET
 } from "../../../../spessasynth_lib/synthetizer/worklet_system/worklet_utilities/controller_tables.js";
 import { DEFAULT_PERCUSSION } from "../../../../spessasynth_lib/synthetizer/synth_constants.js";
-import { isXGDrums } from "../../../../spessasynth_lib/synthetizer/worklet_system/worklet_methods/is_xg_drums.js";
+import { isXGDrums } from "../../../../spessasynth_lib/utils/xg_hacks.js";
 
 export const ICON_SIZE = 32;
 
