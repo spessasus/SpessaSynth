@@ -179,7 +179,7 @@ npm install --save spessasynth_lib
 <p align='center'>The complete GUI for spessasynth_lib, allowing remixing, experimenting, and playing MIDIs in the coolest way possible.</p>
 
 <p align='center'>
-<img src="https://github.com/spessasus/SpessaSynth/assets/95608008/e2e6c4c6-0762-4c11-8887-a2318d431854" alt="SpessaSynth promotional image" width="75%">
+<img src="https://github.com/user-attachments/assets/42f5cf2d-0b5b-492d-8929-064d55d8c11f" alt="SpessaSynth promotional image" width="75%">
 </p>
 <h3 align='center'><a href='https://github.com/spessasus/SpessaSynth/wiki/How-To-Use-App'>Usage Guide</a></h3>
 <h2 align='center'>Features</h2>
@@ -226,12 +226,13 @@ MARKDOWN VERSION
 ![image](https://github.com/user-attachments/assets/c57c4229-92e1-4ab3-81ef-b1162a917220)
 -->
 <p align='center'>
-<img src="https://github.com/user-attachments/assets/b0c9a1f3-3278-4208-8d35-f63b0943ae39" width="45%"></img>
+<img src="https://github.com/user-attachments/assets/d6fe5993-ad1b-4979-aed5-85f3c77862f3" width="45%"></img>
 <img src="https://github.com/user-attachments/assets/b7aeef1d-3f9a-4bff-a5cc-cdee700a8a54" width="45%"></img> 
 <img src="https://github.com/user-attachments/assets/7499503e-9dec-4f7c-8c58-b4960f63bc39" width="45%"></img>
 <img src="https://github.com/user-attachments/assets/772c1636-26cb-4efd-a9d1-daef5f12c566" width="45%"></img>
 <img src="https://github.com/user-attachments/assets/0c98f317-69d1-499c-968d-0870d9f5bec5" width="45%"></img>
-<img src="https://github.com/user-attachments/assets/c57c4229-92e1-4ab3-81ef-b1162a917220" width="45%"></img> 
+<img src="https://github.com/user-attachments/assets/b9f7c939-7097-44a7-a02e-5262c8b61102" width="45%"></img> 
+
 </p>
 
 ### Installation (Local Edition)
