@@ -3,6 +3,9 @@ import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo, SpessaSynthWarn
 import { consoleColors } from "../utils/other.js";
 import { readBytesAsUintBigEndian } from "../utils/byte_functions/big_endian.js";
 import { readVariableLengthQuantity } from "../utils/byte_functions/variable_length_quantity.js";
+import { RMIDINFOChunks } from "./rmidi_writer.js";
+import { inflateSync } from "../externals/fflate/fflate.min.js";
+import { IndexedByteArray } from "../utils/indexed_array.js";
 
 /**
  * @enum {number}
@@ -37,12 +40,37 @@ const referenceTypeIds = {
     XMFFileURIandNodeID: 6
 };
 
-const resourceFomatIds = {
+/**
+ * @enum {number}
+ */
+const resourceFormatIDs = {
     StandardMIDIFile: 0,
     StandardMIDIFileType1: 1,
     DLS1: 2,
     DLS2: 3,
-    DLS22: 4
+    DLS22: 4,
+    mobileDLS: 5
+};
+
+/**
+ * @enum {number}
+ */
+const formatTypeIDs = {
+    standard: 0,
+    MMA: 1,
+    registered: 2,
+    nonRegistered: 3
+};
+
+
+/**
+ * @enum {number}
+ */
+const unpackerIDs = {
+    none: 0,
+    MMAUnpacker: 1,
+    registered: 2,
+    nonRegistered: 3
 };
 
 class XMFNode
@@ -78,6 +106,20 @@ class XMFNode
     
     packedContent = false;
     
+    nodeUnpackers = [];
+    
+    
+    /**
+     * @type {"StandardMIDIFile"|
+     * "StandardMIDIFileType1"|
+     * "DLS1"|
+     * "DLS2"|
+     * "DLS22"|
+     * "mobileDLS"|
+     * "unknown"|"folder"}
+     */
+    resourceFormat = "unknown";
+    
     /**
      * @param binaryData {IndexedByteArray}
      */
@@ -86,7 +128,6 @@ class XMFNode
         let nodeStartIndex = binaryData.currentIndex;
         this.length = readVariableLengthQuantity(binaryData);
         this.itemCount = readVariableLengthQuantity(binaryData);
-        console.log("node length", this.length, "child count", this.itemCount);
         // header length
         const headerLength = readVariableLengthQuantity(binaryData);
         const readBytes = binaryData.currentIndex - nodeStartIndex;
@@ -97,7 +138,6 @@ class XMFNode
             binaryData.currentIndex + remainingHeader
         );
         binaryData.currentIndex += remainingHeader;
-        const dataLength = this.length - headerLength;
         
         this.metadataLength = readVariableLengthQuantity(headerData);
         
@@ -106,7 +146,6 @@ class XMFNode
             headerData.currentIndex + this.metadataLength
         );
         headerData.currentIndex += this.metadataLength;
-        console.log("meta length", this.metadataLength);
         
         /**
          * @type {metadataTypes|string|number}
@@ -155,35 +194,72 @@ class XMFNode
                 }
                 else
                 {
-                    this.metadata[key] = contentsChunk;
+                    this.metadata[key] = contentsChunk.slice(contentsChunk.currentIndex);
                 }
             }
             else
             {
                 // throw new Error ("International content is not supported.");
                 // Skip the number of versions
-                console.warn(`International content: ${numberOfVersions}`);
-                // Length in bytes.
+                SpessaSynthWarn(`International content: ${numberOfVersions}`);
+                // Length in bytes
                 // Skip the whole thing!
                 metadataChunk.currentIndex += readVariableLengthQuantity(metadataChunk);
             }
         }
-        console.log(this.metadata);
         
+        const unpackersStart = headerData.currentIndex;
         const unpackersLength = readVariableLengthQuantity(headerData);
-        headerData.currentIndex += unpackersLength;
+        const unpackersData = headerData.slice(headerData.currentIndex, unpackersStart + unpackersLength);
+        headerData.currentIndex = unpackersStart + unpackersLength;
         if (unpackersLength > 0)
         {
-            console.warn(`packed content: ${unpackersLength}`);
             this.packedContent = true;
+            while (unpackersData.currentIndex < unpackersLength)
+            {
+                const unpacker = {};
+                unpacker.id = readVariableLengthQuantity(unpackersData);
+                switch (unpacker.id)
+                {
+                    case unpackerIDs.nonRegistered:
+                    case unpackerIDs.registered:
+                        SpessaSynthGroupEnd();
+                        throw new Error(`Unsupported unpacker ID: ${unpacker.id}`);
+                    
+                    default:
+                        SpessaSynthGroupEnd();
+                        throw new Error(`Unknown unpacker ID: ${unpacker.id}`);
+                    
+                    case unpackerIDs.none:
+                        unpacker.standardID = readVariableLengthQuantity(unpackersData);
+                        break;
+                    
+                    case unpackerIDs.MMAUnpacker:
+                        let manufacturerID = unpackersData[unpackersData.currentIndex++];
+                        // one or three byte form, depending on if the first byte is zero
+                        if (manufacturerID === 0)
+                        {
+                            manufacturerID <<= 8;
+                            manufacturerID |= unpackersData[unpackersData.currentIndex++];
+                            manufacturerID <<= 8;
+                            manufacturerID |= unpackersData[unpackersData.currentIndex++];
+                        }
+                        const manufacturerInternalID = readVariableLengthQuantity(unpackersData);
+                        unpacker.manufacturerID = manufacturerID;
+                        unpacker.manufacturerInternalID = manufacturerInternalID;
+                        break;
+                }
+                unpacker.decodedSize = readVariableLengthQuantity(unpackersData);
+                this.nodeUnpackers.push(unpacker);
+            }
         }
-        
+        binaryData.currentIndex = nodeStartIndex + headerLength;
         /**
          * @type {referenceTypeIds|number}
          */
         this.referenceTypeID = readVariableLengthQuantity(binaryData);
-        this.nodeData = binaryData.slice(binaryData.currentIndex, binaryData.currentIndex + dataLength);
-        binaryData.currentIndex += dataLength;
+        this.nodeData = binaryData.slice(binaryData.currentIndex, nodeStartIndex + this.length);
+        binaryData.currentIndex = nodeStartIndex + this.length;
         switch (this.referenceTypeID)
         {
             case referenceTypeIds.inLineResource:
@@ -194,36 +270,77 @@ class XMFNode
             case referenceTypeIds.XMFFileURIandNodeID:
             case referenceTypeIds.externalFile:
             case referenceTypeIds.inFileResource:
+                SpessaSynthGroupEnd();
                 throw new Error(`Unsupported reference type: ${this.referenceTypeID}`);
             
             default:
+                SpessaSynthGroupEnd();
                 throw new Error(`Unknown reference type: ${this.referenceTypeID}`);
         }
         
         // read the data
-        if (this.packedContent)
-        {
-            return this;
-        }
         if (this.isFile)
         {
-            // interpret the content
-            const resourceFormat = this.metadata[metadataTypes.resourceFormat];
+            if (this.packedContent)
+            {
+                const compressed = this.nodeData.slice(2, this.nodeData.length);
+                SpessaSynthInfo(
+                    `%cPacked content. Attemting to deflate. Target size: %c${this.nodeUnpackers[0].decodedSize}`,
+                    consoleColors.warn,
+                    consoleColors.value
+                );
+                try
+                {
+                    this.nodeData = new IndexedByteArray(inflateSync(compressed).buffer);
+                }
+                catch (e)
+                {
+                    SpessaSynthGroupEnd();
+                    throw new Error(`Error unpacking XMF file contents: ${e.message}.`);
+                }
+            }
+            /**
+             * interpret the content
+             * @type {number[]}
+             */
+            const resourceFormat = this.metadata["resourceFormat"];
             if (resourceFormat === undefined)
             {
                 SpessaSynthWarn("No resource format for this file node!");
+            }
+            else
+            {
+                const formatTypeID = resourceFormat[0];
+                if (formatTypeID !== formatTypeIDs.standard)
+                {
+                    SpessaSynthWarn(`Non-standard formatTypeID: ${resourceFormat}`);
+                    this.resourceFormat = resourceFormat.toString();
+                }
+                const resourceFormatID = resourceFormat[1];
+                if (Object.values(resourceFormatIDs).indexOf(resourceFormatID) === -1)
+                {
+                    SpessaSynthWarn(`Unrecognized resource format: ${resourceFormatID}`);
+                }
+                else
+                {
+                    this.resourceFormat = Object.keys(resourceFormatIDs)
+                        .find(k => resourceFormatIDs[k] === resourceFormatID);
+                }
             }
         }
         else
         {
             // folder node
-            console.log("folder node", this.length, this.itemCount);
+            this.resourceFormat = "folder";
             while (this.nodeData.currentIndex < this.nodeData.length)
             {
-                this.innerNodes.push(new XMFNode(this.nodeData));
+                const nodeStartIndex = this.nodeData.currentIndex;
+                const nodeLength = readVariableLengthQuantity(this.nodeData);
+                const nodeData = this.nodeData.slice(nodeStartIndex, nodeStartIndex + nodeLength);
+                this.nodeData.currentIndex = nodeStartIndex + nodeLength;
+                this.innerNodes.push(new XMFNode(nodeData));
             }
         }
-        
     }
     
     get isFile()
@@ -280,6 +397,58 @@ export function loadXMF(midi, binaryData)
     // skip to tree root
     binaryData.currentIndex = readVariableLengthQuantity(binaryData);
     const rootNode = new XMFNode(binaryData);
-    console.log(rootNode);
+    /**
+     * @type {IndexedByteArray}
+     */
+    let midiArray;
+    /**
+     * find the stuff we care about
+     * @param node {XMFNode}
+     */
+    const searchNode = node =>
+    {
+        const checkMeta = (xmf, rmid) =>
+        {
+            if (node.metadata[xmf] !== undefined && typeof node.metadata[xmf] === "string")
+            {
+                midi.RMIDInfo[rmid] = node.metadata[xmf];
+            }
+        };
+        // meta
+        checkMeta("nodeName", RMIDINFOChunks.name);
+        checkMeta("title", RMIDINFOChunks.name);
+        checkMeta("copyrightNotice", RMIDINFOChunks.copyright);
+        checkMeta("comment", RMIDINFOChunks.comment);
+        if (node.isFile)
+        {
+            switch (node.resourceFormat)
+            {
+                default:
+                    return;
+                case "DLS1":
+                case "DLS2":
+                case "DLS22":
+                case "mobileDLS":
+                    SpessaSynthInfo("%cFound embedded DLS!", consoleColors.recognized);
+                    midi.embeddedSoundFont = node.nodeData.buffer;
+                    break;
+                
+                case "StandardMIDIFile":
+                case "StandardMIDIFileType1":
+                    SpessaSynthInfo("%cFound embedded MIDI!", consoleColors.recognized);
+                    midiArray = node.nodeData;
+                    break;
+            }
+        }
+        else
+        {
+            for (const n of node.innerNodes)
+            {
+                searchNode(n);
+            }
+        }
+    };
+    searchNode(rootNode);
     SpessaSynthGroupEnd();
+    return midiArray;
 }

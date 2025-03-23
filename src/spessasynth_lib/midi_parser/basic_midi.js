@@ -59,6 +59,7 @@ class BasicMIDI extends MIDISequenceData
         m.format = mid.format;
         m.bankOffset = mid.bankOffset;
         m.isKaraokeFile = mid.isKaraokeFile;
+        m.isMultiPort = mid.isMultiPort;
         m.isDLSRMIDI = mid.isDLSRMIDI;
         
         // Copying arrays
@@ -452,6 +453,7 @@ class BasicMIDI extends MIDISequenceData
         }
         else
         {
+            this.isMultiPort = true;
             SpessaSynthInfo(`%cMIDI Ports detected!`, consoleColors.recognized);
         }
         

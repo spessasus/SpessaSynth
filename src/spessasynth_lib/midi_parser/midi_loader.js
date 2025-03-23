@@ -218,7 +218,7 @@ class MIDI extends BasicMIDI
                 }
                 else
                 { // noinspection PointlessBooleanExpressionJS
-                    if (!runningByte && statusByteCheck < 0x80)
+                    if (runningByte === undefined && statusByteCheck < 0x80)
                     {
                         // if we don't have a running byte and the status byte isn't valid, it's an error.
                         SpessaSynthGroupEnd();

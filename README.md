@@ -44,6 +44,8 @@ Supported formats list:
 - `.rmi` - RIFF MIDI File
 - `.rmi` - RIFF MIDI File With Embedded DLS
 - `.rmi` - [RIFF MIDI File With Embedded SF2](https://github.com/spessasus/sf2-rmidi-specification)
+- `.xmf` - eXtensible Music Format
+- `.mxmf` - Mobile eXtensible Music format
 
 *With [an easy way of converting between them!](https://github.com/spessasus/SpessaSynth/wiki/Converting-Between-Formats)*
 
@@ -275,6 +277,8 @@ Local edition comes with easier soundfont management than the demo version.
 - [RecordingBlogs](https://www.recordingblogs.com/) - for detailed explanations on MIDI messages
 - [stbvorbis.js](https://github.com/hajimehoshi/stbvorbis.js) - for the Vorbis decoder
 - [OggVorbisEncoder](https://github.com/higuma/ogg-vorbis-encoder-js) - for the MIT Vorbis encoder
+- [fflate](https://github.com/101arrowz/fflate) - for the MIT DEFLATE implementation
+- [foo_midi](https://github.com/stuerp/foo_midi) - for useful resources on XMF file format
 - [Composers](https://github.com/spessasus/spessasynth-demo-songs#readme) - for the demo songs
 - [Falcosoft](https://falcosoft.hu) - for help with the RMIDI format
 - [Christian Collins](https://schristiancollins.com) - for the bundled GeneralUserGS soundfont and various bug reports regarding the synthesizer

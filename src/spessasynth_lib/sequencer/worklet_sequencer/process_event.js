@@ -66,7 +66,7 @@ export function _processEvent(event, trackIndex)
         
         case messageTypes.controllerChange:
             // empty tracks cannot cc change
-            if (this.midiData.usedChannelsOnTrack[trackIndex].size === 0)
+            if (this.midiData.isMultiPort && this.midiData.usedChannelsOnTrack[trackIndex].size === 0)
             {
                 return;
             }
@@ -75,7 +75,7 @@ export function _processEvent(event, trackIndex)
         
         case messageTypes.programChange:
             // empty tracks cannot program change
-            if (this.midiData.usedChannelsOnTrack[trackIndex].size === 0)
+            if (this.midiData.isMultiPort && this.midiData.usedChannelsOnTrack[trackIndex].size === 0)
             {
                 return;
             }
