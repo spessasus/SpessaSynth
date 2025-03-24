@@ -2,6 +2,8 @@ import { SpessaSynthInfo } from "./loggin.js";
 import { consoleColors } from "./other.js";
 import { DEFAULT_PERCUSSION } from "../synthetizer/synth_constants.js";
 
+export const XG_SFX_VOICE = 64;
+
 /**
  * @param bankNr {number}
  * @returns {boolean}
@@ -9,6 +11,15 @@ import { DEFAULT_PERCUSSION } from "../synthetizer/synth_constants.js";
 export function isXGDrums(bankNr)
 {
     return bankNr === 120 || bankNr === 126 || bankNr === 127;
+}
+
+/**
+ * @param bank {number}
+ * @returns {boolean}
+ */
+export function isValidXGMSB(bank)
+{
+    return isXGDrums(bank) || bank === XG_SFX_VOICE;
 }
 
 /**
@@ -29,12 +40,11 @@ export function parseBankSelect(bankBefore, bank, system, isLSB, isDrums, channe
     // 64 means SFX in MSB, so it is allowed
     let out = bankBefore;
     let drumsStatus = 0;
-    const isValidMSB = b => isXGDrums(b) || b === 64;
     if (isLSB)
     {
         if (system === "xg")
         {
-            if (!isValidMSB(bank))
+            if (!isValidXGMSB(bank))
             {
                 out = bank;
             }
@@ -59,7 +69,7 @@ export function parseBankSelect(bankBefore, bank, system, isLSB, isDrums, channe
                 break;
             
             case "xg":
-                canSetBankSelect = isValidMSB(bank);
+                canSetBankSelect = isValidXGMSB(bank);
                 // for xg, if msb is 120, 126 or 127, then it's drums
                 if (isXGDrums(bank))
                 {
@@ -112,17 +122,55 @@ export function parseBankSelect(bankBefore, bank, system, isLSB, isDrums, channe
 
 
 /**
+ * Chooses a bank number according to spessasynth logic
+ * That is:
+ * for GS, bank MSB if not drum, otherwise 128
+ * for XG: bank MSB if drum and MSB is valid, 128 othewise, bank MSB if it is SFX voice, LSB otherwise
  * @param msb {number}
  * @param lsb {number}
+ * @param isDrums {boolean}
+ * @param isXG {boolean}
+ * @returns {number}
  */
-export function chooseBank(msb, lsb)
+export function chooseBank(msb, lsb, isDrums, isXG)
 {
-    if (lsb > 0)
+    if (isXG)
     {
-        if (!isXGDrums(msb) && msb !== 64)
+        if (isDrums)
         {
-            return lsb;
+            if (isXGDrums(msb))
+            {
+                return msb;
+            }
+            else
+            {
+                return 128;
+            }
+        }
+        else
+        {
+            // check for SFX
+            if (msb !== XG_SFX_VOICE)
+            {
+                // if lsb is 0 and msb is not, use that
+                if (lsb === 0 && msb !== 0)
+                {
+                    return msb;
+                }
+                if (!isXGDrums(lsb))
+                {
+                    return lsb;
+                }
+                return 0;
+            }
+            else
+            {
+                return XG_SFX_VOICE;
+            }
         }
     }
-    return msb;
+    else
+    {
+        return isDrums ? 128 : msb;
+    }
 }

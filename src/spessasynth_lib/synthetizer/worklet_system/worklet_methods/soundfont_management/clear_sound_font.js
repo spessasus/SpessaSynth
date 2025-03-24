@@ -11,8 +11,7 @@ export function clearSoundFont(sendPresets = true, clearOverride = true)
         delete this.overrideSoundfont;
         this.overrideSoundfont = undefined;
     }
-    this.defaultPreset = this.getPreset(0, 0);
-    this.drumPreset = this.getPreset(128, 0);
+    this.getDefaultPresets();
     this.cachedVoices = [];
     
     for (let i = 0; i < this.workletProcessorChannels.length; i++)
@@ -20,7 +19,7 @@ export function clearSoundFont(sendPresets = true, clearOverride = true)
         const channelObject = this.workletProcessorChannels[i];
         if (!clearOverride || (clearOverride && channelObject.presetUsesOverride))
         {
-            channelObject.lockPreset = false;
+            channelObject.setPresetLock(false);
         }
         channelObject.programChange(channelObject.preset.program);
     }

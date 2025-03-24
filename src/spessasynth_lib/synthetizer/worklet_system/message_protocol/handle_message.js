@@ -186,7 +186,7 @@ export function handleMessage(message)
         case workletMessageType.lockController:
             if (data[0] === ALL_CHANNELS_OR_DIFFERENT_ACTION)
             {
-                channelObject.lockPreset = data[1];
+                channelObject.setPresetLock(data[1]);
             }
             else
             {

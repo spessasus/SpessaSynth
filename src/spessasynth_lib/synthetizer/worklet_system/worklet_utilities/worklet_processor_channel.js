@@ -27,7 +27,8 @@ import { channelPressure } from "../worklet_methods/tuning_control/channel_press
 import { pitchWheel } from "../worklet_methods/tuning_control/pitch_wheel.js";
 import { setOctaveTuning } from "../worklet_methods/tuning_control/set_octave_tuning.js";
 import { programChange } from "../worklet_methods/program_change.js";
-import { parseBankSelect } from "../../../utils/xg_hacks.js";
+import { chooseBank, parseBankSelect } from "../../../utils/xg_hacks.js";
+import { DEFAULT_PERCUSSION } from "../../synth_constants.js";
 
 /**
  * This class represents a single MIDI Channel within the synthesizer.
@@ -115,6 +116,12 @@ class WorkletProcessorChannel
     bank = 0;
     
     /**
+     * The bank LSB number of the channel (used for patch changes in XG mode).
+     * @type {number}
+     */
+    bankLSB = 0;
+    
+    /**
      * The preset currently assigned to the channel.
      * @type {BasicPreset}
      */
@@ -125,6 +132,12 @@ class WorkletProcessorChannel
      * @type {boolean}
      */
     lockPreset = false;
+    
+    /**
+     * Indicates the MIDI system when the preset was locked.
+     * @type {SynthSystem}
+     */
+    lockedSystem = "gs";
     
     /**
      * Indicates whether the channel uses a preset from the override soundfont.
@@ -190,6 +203,11 @@ class WorkletProcessorChannel
         this.channelNumber = channelNumber;
     }
     
+    get isXGChannel()
+    {
+        return this.synth.system === "xg" || (this.lockPreset && this.lockedSystem === "xg");
+    }
+    
     /**
      * @param type {customControllers|number}
      * @param value {number}
@@ -232,31 +250,42 @@ class WorkletProcessorChannel
     }
     
     /**
+     * @param locked {boolean}
+     */
+    setPresetLock(locked)
+    {
+        this.lockPreset = locked;
+        if (locked)
+        {
+            this.lockedSystem = this.synth.system;
+        }
+    }
+    
+    /**
      * @param bank {number}
-     * @param force {boolean}
      * @param isLSB {boolean}
      */
-    setBankSelect(bank, force = false, isLSB = false)
+    setBankSelect(bank, isLSB = false)
     {
         if (this.lockPreset)
         {
             return;
         }
-        if (force)
+        if (isLSB)
         {
-            this.bank = bank;
+            this.bankLSB = bank;
         }
         else
         {
+            this.bank = bank;
             const bankLogic = parseBankSelect(
                 this.getBankSelect(),
                 bank,
                 this.synth.system,
-                isLSB,
+                false,
                 this.drumChannel,
                 this.channelNumber
             );
-            this.bank = bankLogic.newBank;
             switch (bankLogic.drumsStatus)
             {
                 default:
@@ -264,7 +293,11 @@ class WorkletProcessorChannel
                     break;
                 
                 case 1:
-                    this.setDrums(false);
+                    if (this.channelNumber % 16 === DEFAULT_PERCUSSION)
+                    {
+                        // cannot disable drums on channel 9
+                        this.bank = 127;
+                    }
                     break;
                 
                 case 2:
@@ -279,11 +312,7 @@ class WorkletProcessorChannel
      */
     getBankSelect()
     {
-        if (this.drumChannel)
-        {
-            return 128;
-        }
-        return this.bank;
+        return chooseBank(this.bank, this.bankLSB, this.drumChannel, this.isXGChannel);
     }
     
     /**
@@ -319,23 +348,17 @@ class WorkletProcessorChannel
             // clear transpose
             this.channelTransposeKeyShift = 0;
             this.drumChannel = true;
-            this.setPreset(this.synth.getPreset(this.getBankSelect(), this.preset.program));
         }
         else
         {
             this.drumChannel = false;
-            this.setPreset(
-                this.synth.getPreset(
-                    this.getBankSelect(),
-                    this.preset.program
-                )
-            );
         }
         this.presetUsesOverride = false;
         this.synth.callEvent("drumchange", {
             channel: this.channelNumber,
             isDrumChannel: this.drumChannel
         });
+        this.programChange(this.preset.program);
         this.synth.sendChannelProperties();
     }
     

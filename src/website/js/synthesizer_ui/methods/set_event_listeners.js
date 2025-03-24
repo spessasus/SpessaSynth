@@ -49,7 +49,9 @@ export function setEventListeners()
     this.synth.eventHandler.addEvent("drumchange", "synthui-drum-change", e =>
     {
         this.controllers[e.channel].drumsToggle.innerHTML = (e.isDrumChannel ? getDrumsSvg(32) : getNoteSvg(32));
-        this.controllers[e.channel].preset.reload(e.isDrumChannel ? this.percussionList : this.instrumentList);
+        const preset = this.controllers[e.channel].preset;
+        preset.reload(e.isDrumChannel ? this.percussionList : this.instrumentList);
+        preset.set(preset.value);
     });
     
     this.synth.eventHandler.addEvent("newchannel", "synthui-new-channel", () =>

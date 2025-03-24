@@ -32,8 +32,7 @@ export function reloadSoundFont(buffer, isOverride = false)
         });
         return;
     }
-    this.defaultPreset = this.getPreset(0, 0);
-    this.drumPreset = this.getPreset(128, 0);
+    this.getDefaultPresets();
     this.workletProcessorChannels.forEach(c =>
         c.programChange(c.preset.program)
     );

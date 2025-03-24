@@ -14,6 +14,7 @@ import { BasicInstrumentZone, BasicPresetZone } from "./basic_zones.js";
 import { Generator, generatorTypes } from "./generator.js";
 import { BasicInstrument } from "./basic_instrument.js";
 import { BasicPreset } from "./basic_preset.js";
+import { isXGDrums } from "../../utils/xg_hacks.js";
 
 class BasicSoundBank
 {
@@ -392,54 +393,63 @@ class BasicSoundBank
      * Get the appropriate preset, undefined if not foun d
      * @param bankNr {number}
      * @param programNr {number}
-     * @param fallbackToProgram {boolean} if true, if no exact match is found, will use any bank with the given preset
+     * @param allowXGDrums {boolean} if true, allows XG drum banks (120, 126 and 127) as drum preset
      * @return {BasicPreset}
      */
-    getPresetNoFallback(bankNr, programNr, fallbackToProgram = false)
+    getPresetNoFallback(bankNr, programNr, allowXGDrums = false)
     {
+        // check for exact match
         const p = this.presets.find(p => p.bank === bankNr && p.program === programNr);
         if (p)
         {
             return p;
         }
-        if (fallbackToProgram === false)
+        // no match...
+        const isDrum = bankNr === 128 || (allowXGDrums && isXGDrums(bankNr));
+        if (isDrum)
         {
-            return undefined;
+            if (allowXGDrums)
+            {
+                // try any drum preset with matching program?
+                const p = this.presets.find(p => p.isDrumPreset(allowXGDrums) && p.program === programNr);
+                if (p)
+                {
+                    return p;
+                }
+            }
         }
-        if (bankNr === 128)
-        {
-            // any drum preset
-            return this.presets.find(p => p.bank === 128);
-        }
-        return this.presets.find(p => p.program === programNr);
+        return undefined;
     }
     
     /**
      * Get the appropriate preset
      * @param bankNr {number}
      * @param programNr {number}
+     * @param allowXGDrums {boolean} if true, allows XG drum banks (120, 126 and 127) as drum preset
      * @returns {BasicPreset}
      */
-    getPreset(bankNr, programNr)
+    getPreset(bankNr, programNr, allowXGDrums = false)
     {
         // check for exact match
         let preset = this.presets.find(p => p.bank === bankNr && p.program === programNr);
+        const isDrums = bankNr === 128 || (allowXGDrums && isXGDrums(bankNr));
         if (!preset)
         {
             // no match...
-            if (bankNr === 128)
+            if (isDrums)
             {
                 // drum preset: find any preset with bank 128
-                preset = this.presets.find(p => p.bank === 128 && p.program === programNr);
+                preset = this.presets.find(p => p.isDrumPreset(allowXGDrums) && p.program === programNr);
                 if (!preset)
                 {
-                    preset = this.presets.find(p => p.bank === 128);
+                    // only allow 128, otherwise it would default to XG SFX
+                    preset = this.presets.find(p => p.isDrumPreset(allowXGDrums));
                 }
             }
             else
             {
                 // non-drum preset: find any preset with the given program that is not a drum preset
-                preset = this.presets.find(p => p.program === programNr && p.bank !== 128);
+                preset = this.presets.find(p => p.program === programNr && !p.isDrumPreset(allowXGDrums));
             }
             if (preset)
             {

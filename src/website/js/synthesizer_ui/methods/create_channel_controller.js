@@ -27,7 +27,7 @@ import {
     NON_CC_INDEX_OFFSET
 } from "../../../../spessasynth_lib/synthetizer/worklet_system/worklet_utilities/controller_tables.js";
 import { DEFAULT_PERCUSSION } from "../../../../spessasynth_lib/synthetizer/synth_constants.js";
-import { isXGDrums } from "../../../../spessasynth_lib/utils/xg_hacks.js";
+import { isValidXGMSB } from "../../../../spessasynth_lib/utils/xg_hacks.js";
 
 export const ICON_SIZE = 32;
 
@@ -288,18 +288,20 @@ export function createChannelController(channelNumber)
             const data = presetName.split(":");
             const bank = parseInt(data[0]);
             this.synth.lockController(channelNumber, ALL_CHANNELS_OR_DIFFERENT_ACTION, false);
-            if (this.synth.midiSystem === "xg" && !isXGDrums(bank) && bank !== 64)
+            if (this.synth.midiSystem === "xg" && !isValidXGMSB(bank))
             {
+                // msb 0
+                this.synth.controllerChange(channelNumber, midiControllers.bankSelect, 0);
+                // lsb actual
                 this.synth.controllerChange(
                     channelNumber,
                     midiControllers.lsbForControl0BankSelect,
-                    bank,
-                    true
+                    bank
                 );
             }
             else
             {
-                this.synth.controllerChange(channelNumber, midiControllers.bankSelect, bank, true);
+                this.synth.controllerChange(channelNumber, midiControllers.bankSelect, bank);
             }
             this.synth.programChange(channelNumber, parseInt(data[1]), true);
             presetSelector.mainButton.classList.add("locked_selector");

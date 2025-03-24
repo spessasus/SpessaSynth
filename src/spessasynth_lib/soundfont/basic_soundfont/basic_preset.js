@@ -9,6 +9,7 @@
  */
 import { generatorTypes } from "./generator.js";
 import { Modulator } from "./modulator.js";
+import { isXGDrums } from "../../utils/xg_hacks.js";
 
 export class BasicPreset
 {
@@ -76,6 +77,17 @@ export class BasicPreset
          * @type {Modulator[]}
          */
         this.defaultModulators = modulators;
+    }
+    
+    /**
+     * @param allowXG {boolean}
+     * @param allowSFX {boolean}
+     * @returns {boolean}
+     */
+    isDrumPreset(allowXG, allowSFX = false)
+    {
+        // sfx is not cool
+        return this.bank === 128 || (allowXG && isXGDrums(this.bank) && (this.bank !== 126 || allowSFX));
     }
     
     deletePreset()

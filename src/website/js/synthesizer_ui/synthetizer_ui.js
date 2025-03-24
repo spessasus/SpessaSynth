@@ -12,6 +12,7 @@ import { keybinds } from "../utils/keybinds.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { closeNotification } from "../notification/notification.js";
 import { midiControllers } from "../../../spessasynth_lib/midi_parser/midi_message.js";
+import { isXGDrums } from "../../../spessasynth_lib/utils/xg_hacks.js";
 
 
 export const LOCALE_PATH = "locale.synthesizerController.";
@@ -225,7 +226,7 @@ class SynthetizerUI
             /**
              * @type {{name: string, program: number, bank: number}[]}
              */
-            this.instrumentList = presetList.filter(p => p.bank !== 128)
+            this.instrumentList = presetList.filter(p => !isXGDrums(p.bank) && p.bank !== 128)
                 .sort((a, b) =>
                 {
                     if (a.program === b.program)
@@ -246,7 +247,7 @@ class SynthetizerUI
             /**
              * @type {{name: string, program: number, bank: number}[]}
              */
-            this.percussionList = presetList.filter(p => p.bank === 128)
+            this.percussionList = presetList.filter(p => isXGDrums(p.bank) || p.bank === 128)
                 .sort((a, b) => a.program - b.program)
                 .map(p =>
                 {

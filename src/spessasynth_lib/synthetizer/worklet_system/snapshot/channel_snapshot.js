@@ -16,6 +16,12 @@ export class ChannelSnapshot
     bank;
     
     /**
+     * If the bank is LSB. For restoring.
+     * @type {boolean}
+     */
+    isBankLSB;
+    
+    /**
      * The name of the patch currently loaded in the channel.
      * @type {string}
      */
@@ -26,6 +32,12 @@ export class ChannelSnapshot
      * @type {boolean}
      */
     lockPreset;
+    
+    /**
+     * Indicates the MIDI system when the preset was locked
+     * @type {SynthSystem}
+     */
+    lockedSystem;
     
     /**
      * The array of all MIDI controllers (in 14-bit values) with the modulator sources at the end.
@@ -103,7 +115,9 @@ export class ChannelSnapshot
         // program data
         channelSnapshot.program = channelObject.preset.program;
         channelSnapshot.bank = channelObject.getBankSelect();
+        channelSnapshot.isBankLSB = channelSnapshot.bank !== channelObject.bank;
         channelSnapshot.lockPreset = channelObject.lockPreset;
+        channelSnapshot.lockedSystem = channelObject.lockedSystem;
         channelSnapshot.patchName = channelObject.preset.presetName;
         
         // controller data
@@ -152,9 +166,10 @@ export class ChannelSnapshot
         channelObject.velocityOverride = channelSnapshot.velocityOverride;
         
         // restore preset and lock
-        channelObject.lockPreset = false;
-        channelObject.setBankSelect(channelSnapshot.bank, true);
+        channelObject.setPresetLock(false);
+        channelObject.setBankSelect(channelSnapshot.bank, channelSnapshot.isBankLSB);
         channelObject.programChange(channelSnapshot.program);
-        channelObject.lockPreset = channelSnapshot.lockPreset;
+        channelObject.setPresetLock(channelSnapshot.lockPreset);
+        channelObject.lockedSystem = channelSnapshot.lockedSystem;
     }
 }

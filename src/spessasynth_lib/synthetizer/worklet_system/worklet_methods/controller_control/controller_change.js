@@ -66,18 +66,11 @@ export function controllerChange(controllerNumber, controllerValue, force = fals
             
             // special case: bank select
             case midiControllers.bankSelect:
-                if (!force)
-                {
-                    this.setBankSelect(controllerValue);
-                }
-                else
-                {
-                    this.bank = controllerValue;
-                }
+                this.setBankSelect(controllerValue);
                 break;
             
             case midiControllers.lsbForControl0BankSelect:
-                this.setBankSelect(controllerValue, false, true);
+                this.setBankSelect(controllerValue, true);
                 break;
             
             // check for RPN and NPRN and data entry

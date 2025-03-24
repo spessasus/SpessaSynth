@@ -1,6 +1,7 @@
 import { SpessaSynthWarn } from "../../../../utils/loggin.js";
 import { WorkletSoundfontManagerMessageType } from "./sfman_message.js";
 import { loadSoundFont } from "../../../../soundfont/load_soundfont.js";
+import { isXGDrums } from "../../../../utils/xg_hacks.js";
 
 /**
  * @typedef {Object} SoundFontType
@@ -194,9 +195,10 @@ export class WorkletSoundfontManager
      * Gets a given preset from the soundfont stack
      * @param bankNumber {number}
      * @param programNumber {number}
+     * @param allowXGDrums {boolean} if true, allows XG drum banks (120, 126 and 127) as drum preset
      * @returns {BasicPreset} the preset
      */
-    getPreset(bankNumber, programNumber)
+    getPreset(bankNumber, programNumber, allowXGDrums = false)
     {
         if (this.soundfontList.length < 1)
         {
@@ -205,19 +207,25 @@ export class WorkletSoundfontManager
         for (const sf of this.soundfontList)
         {
             // check for the preset (with given offset)
-            const preset = sf.soundfont.getPresetNoFallback(bankNumber - sf.bankOffset, programNumber);
+            const preset = sf.soundfont.getPresetNoFallback(
+                bankNumber - sf.bankOffset,
+                programNumber,
+                allowXGDrums
+            );
             if (preset !== undefined)
             {
                 return preset;
             }
             // if not found, advance to the next soundfont
         }
+        const isDrum = bankNumber === 128 || (allowXGDrums && isXGDrums(bankNumber));
         // if none found, return the first correct preset found
-        if (bankNumber !== 128)
+        if (!isDrum)
         {
             for (const sf of this.soundfontList)
             {
-                const preset = sf.soundfont.presets.find(p => p.program === programNumber);
+                const preset = sf.soundfont.presets.find(p => p.program === programNumber && !p.isDrumPreset(
+                    allowXGDrums));
                 if (preset)
                 {
                     return preset;
@@ -230,7 +238,14 @@ export class WorkletSoundfontManager
         {
             for (const sf of this.soundfontList)
             {
-                const preset = sf.soundfont.presets.find(p => p.bank === 128);
+                // check for any drum type (127/128) and matching program
+                const p = sf.soundfont.presets.find(p => p.isDrumPreset(allowXGDrums) && p.program === programNumber);
+                if (p)
+                {
+                    return p;
+                }
+                // check for any drum preset
+                const preset = sf.soundfont.presets.find(p => p.isDrumPreset(allowXGDrums));
                 if (preset)
                 {
                     return preset;

@@ -8,7 +8,7 @@ import { isGSDrumsOn, isXGOn } from "../utils/sysex_detector.js";
 /**
  * Gets the used programs and keys for this MIDI file with a given sound bank
  * @this {BasicMIDI}
- * @param soundfont {{getPreset: function(number, number): BasicPreset}} - the sound bank
+ * @param soundfont {BasicSoundBank|WorkletSoundfontManager} - the sound bank
  * @returns {Object<string, Set<string>>}
  */
 export function getUsedProgramsAndKeys(soundfont)
@@ -21,7 +21,7 @@ export function getUsedProgramsAndKeys(soundfont)
     // Find every bank:program combo and every key:velocity for each. Make sure to care about ports and drums
     const channelsAmount = 16 + mid.midiPortChannelOffsets.reduce((max, cur) => cur > max ? cur : max);
     /**
-     * @type {{program: number, bank: number, bankLSB: number, drums: boolean, string: string}[]}
+     * @type {{program: number, bank: number, bankLSB: number, drums: boolean, string: string, actualBank: number}[]}
      */
     const channelPresets = [];
     for (let i = 0; i < channelsAmount; i++)
@@ -31,20 +31,23 @@ export function getUsedProgramsAndKeys(soundfont)
             program: 0,
             bank: bank,
             bankLSB: 0,
+            actualBank: bank,
             drums: i % 16 === DEFAULT_PERCUSSION, // drums appear on 9 every 16 channels,
             string: `${bank}:0`
         });
     }
     
+    // check for xg
+    let system = "gs";
+    
     function updateString(ch)
     {
-        const bank = chooseBank(ch.bank, ch.bankLSB);
+        const bank = chooseBank(ch.bank, ch.bankLSB, ch.drums, system === "xg");
         // check if this exists in the soundfont
-        let exists = soundfont.getPreset(bank, ch.program);
-        ch.bank = exists.bank;
-        ch.bankLSB = 0;
+        let exists = soundfont.getPreset(bank, ch.program, system === "xg");
+        ch.actualBank = exists.bank;
         ch.program = exists.program;
-        ch.string = ch.bank + ":" + ch.program;
+        ch.string = ch.actualBank + ":" + ch.program;
         if (!usedProgramsAndKeys[ch.string])
         {
             SpessaSynthInfo(
@@ -90,8 +93,11 @@ export function getUsedProgramsAndKeys(soundfont)
     }
     
     const ports = mid.midiPorts.slice();
-    // check for xg
-    let system = "gs";
+    // initialize
+    channelPresets.forEach(c =>
+    {
+        updateString(c);
+    });
     while (remainingTracks > 0)
     {
         let trackNum = findFirstEventIndex();
@@ -142,6 +148,14 @@ export function getUsedProgramsAndKeys(soundfont)
                 }
                 const bank = event.messageData[1];
                 const realBank = Math.max(0, bank - mid.bankOffset);
+                if (isLSB)
+                {
+                    ch.bankLSB = realBank;
+                }
+                else
+                {
+                    ch.bank = realBank;
+                }
                 // interpret the bank
                 const intepretation = parseBankSelect(
                     ch.bank,
@@ -151,7 +165,6 @@ export function getUsedProgramsAndKeys(soundfont)
                     ch.drums,
                     channel
                 );
-                
                 switch (intepretation.drumsStatus)
                 {
                     case 0:
@@ -162,7 +175,6 @@ export function getUsedProgramsAndKeys(soundfont)
                         // drums changed to off
                         // drum change is a program change
                         ch.drums = false;
-                        ch.bank = realBank;
                         updateString(ch);
                         break;
                     
@@ -170,17 +182,8 @@ export function getUsedProgramsAndKeys(soundfont)
                         // drums changed to on
                         // drum change is a program change
                         ch.drums = true;
-                        ch.bank = 128;
                         updateString(ch);
                         break;
-                }
-                if (isLSB)
-                {
-                    ch.bankLSB = intepretation.newBank;
-                }
-                else
-                {
-                    ch.bank = ch.drums ? 128 : intepretation.newBank;
                 }
                 // do not update the data, bank change doesn't change the preset
                 break;
@@ -191,7 +194,6 @@ export function getUsedProgramsAndKeys(soundfont)
                     // that's a note off
                     continue;
                 }
-                updateString(ch);
                 usedProgramsAndKeys[ch.string].add(`${event.messageData[0]}-${event.messageData[1]}`);
                 break;
             
@@ -203,6 +205,10 @@ export function getUsedProgramsAndKeys(soundfont)
                     if (isXGOn(event))
                     {
                         system = "xg";
+                        SpessaSynthInfo(
+                            "%cXG on detected!",
+                            consoleColors.recognized
+                        );
                     }
                     continue;
                 }
@@ -210,7 +216,6 @@ export function getUsedProgramsAndKeys(soundfont)
                 const isDrum = !!(event.messageData[7] > 0 && event.messageData[5] >> 4);
                 ch = channelPresets[sysexChannel];
                 ch.drums = isDrum;
-                ch.bank = isDrum ? 128 : 0;
                 updateString(ch);
                 break;
             

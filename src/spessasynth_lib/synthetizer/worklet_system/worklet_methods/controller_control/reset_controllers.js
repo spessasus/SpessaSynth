@@ -38,11 +38,11 @@ export function resetAllControllers(log = true)
         // if preset is unlocked, switch to non-drums and call event
         if (!ch.lockPreset)
         {
-            ch.presetUsesOverride = true;
-            ch.setBankSelect(0, true);
+            ch.setBankSelect(0);
             if (channelNumber % 16 === DEFAULT_PERCUSSION)
             {
-                this.workletProcessorChannels[channelNumber].setPreset(this.drumPreset);
+                ch.setPreset(this.drumPreset);
+                ch.presetUsesOverride = this.defaultDrumsUsesOverride;
                 ch.drumChannel = true;
                 this.callEvent("drumchange", {
                     channel: channelNumber,
@@ -52,6 +52,7 @@ export function resetAllControllers(log = true)
             else
             {
                 ch.drumChannel = false;
+                ch.presetUsesOverride = this.defaultDrumsUsesOverride;
                 ch.setPreset(this.defaultPreset);
                 this.callEvent("drumchange", {
                     channel: channelNumber,
@@ -67,11 +68,14 @@ export function resetAllControllers(log = true)
             });
         }
         
+        const presetBank = ch.preset.bank;
+        const sentBank = presetBank === 128 ? 128 : (ch.presetUsesOverride ? presetBank + this.soundfontBankOffset : presetBank);
+        
         // call program change
         this.callEvent("programchange", {
             channel: channelNumber,
             program: ch.preset.program,
-            bank: ch.getBankSelect(),
+            bank: sentBank,
             userCalled: false
         });
         

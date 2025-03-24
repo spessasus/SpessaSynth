@@ -192,6 +192,22 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
     totalVoicesAmount = 0;
     
     /**
+     * Synth's default (reset) preset
+     * @type {BasicPreset}
+     */
+    defaultPreset;
+    
+    defaultPresetUsesOverride = false;
+    
+    /**
+     * Synth's default (reset) drum preset
+     * @type {BasicPreset}
+     */
+    drumPreset;
+    
+    defaultDrumsUsesOverride = false;
+    
+    /**
      * Creates a new worklet synthesis system. contains all channels
      * @param options {{
      * processorOptions: {
@@ -235,8 +251,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
         }
         this.sendPresetList();
         
-        this.defaultPreset = this.getPreset(0, 0);
-        this.drumPreset = this.getPreset(128, 0);
+        this.getDefaultPresets();
         
         
         for (let i = 0; i < options.processorOptions.midiChannels; i++)
@@ -301,6 +316,18 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
     get currentGain()
     {
         return this.masterGain * this.midiVolume;
+    }
+    
+    getDefaultPresets()
+    {
+        // override this to XG, to set the default preset to NOT be XG drums!
+        const sys = this.system;
+        this.system = "xg";
+        this.defaultPreset = this.getPreset(0, 0);
+        this.defaultPresetUsesOverride = this.overrideSoundfont?.presets?.indexOf(this.defaultPreset) >= 0;
+        this.system = sys;
+        this.drumPreset = this.getPreset(128, 0);
+        this.defaultDrumsUsesOverride = this.overrideSoundfont?.presets?.indexOf(this.drumPreset) >= 0;
     }
     
     /**

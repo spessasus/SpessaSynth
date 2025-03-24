@@ -11,31 +11,36 @@ export function programChange(programNumber, userChange = false)
         return;
     }
     // always 128 for percussion
-    const bank = this.getBankSelect();
+    let bank = this.getBankSelect();
     let sentBank;
     let preset;
     
+    const isXG = this.isXGChannel;
     // check if override
     if (this.synth.overrideSoundfont)
     {
         const bankWithOffset = bank === 128 ? 128 : bank - this.synth.soundfontBankOffset;
-        const p = this.synth.overrideSoundfont.getPresetNoFallback(bankWithOffset, programNumber);
+        const p = this.synth.overrideSoundfont.getPresetNoFallback(
+            bankWithOffset,
+            programNumber,
+            isXG
+        );
         if (p)
         {
-            sentBank = bank;
+            sentBank = p.bank === 128 ? 128 : p.bank + this.synth.soundfontBankOffset;
             preset = p;
             this.presetUsesOverride = true;
         }
         else
         {
-            preset = this.synth.soundfontManager.getPreset(bank, programNumber);
+            preset = this.synth.soundfontManager.getPreset(bank, programNumber, isXG);
             sentBank = preset.bank;
             this.presetUsesOverride = false;
         }
     }
     else
     {
-        preset = this.synth.soundfontManager.getPreset(bank, programNumber);
+        preset = this.synth.soundfontManager.getPreset(bank, programNumber, isXG);
         sentBank = preset.bank;
         this.presetUsesOverride = false;
     }

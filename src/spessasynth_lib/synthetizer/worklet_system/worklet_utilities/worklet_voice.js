@@ -408,7 +408,7 @@ export function getWorkletVoices(channel,
     let preset = channelObject.preset;
     if (overridePatch)
     {
-        preset = this.soundfontManager.getPreset(bank, program);
+        preset = this.soundfontManager.getPreset(bank, program, this.system === "xg");
     }
     /**
      * @returns {WorkletVoice[]}
@@ -503,8 +503,7 @@ export function getWorkletVoices(channel,
                     targetKey,
                     realKey,
                     generators,
-                    sampleAndGenerators.modulators.map(m => Modulator.copy(m)),
-                    this.filterSmoothingFactor
+                    sampleAndGenerators.modulators.map(m => Modulator.copy(m))
                 )
             );
             return voices;

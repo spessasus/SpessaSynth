@@ -6,6 +6,7 @@ import { consoleColors } from "../utils/other.js";
 import { customControllers } from "../synthetizer/worklet_system/worklet_utilities/controller_tables.js";
 import { DEFAULT_PERCUSSION } from "../synthetizer/synth_constants.js";
 import { isGMOn, isGSOn, isXGOn } from "../utils/sysex_detector.js";
+import { isXGDrums, XG_SFX_VOICE } from "../utils/xg_hacks.js";
 
 /**
  * @param ticks {number}
@@ -126,6 +127,11 @@ export function modifyMIDI(
 {
     const midi = this;
     SpessaSynthGroupCollapsed("%cApplying changes to the MIDI file...", consoleColors.info);
+    
+    SpessaSynthInfo("Desired program changes:", desiredProgramChanges);
+    SpessaSynthInfo("Desired CC changes:", desiredControllerChanges);
+    SpessaSynthInfo("Desired channels to clear:", desiredChannelsToClear);
+    SpessaSynthInfo("Desired channels to transpose:", desiredChannelsToTranspose);
     
     /**
      * @type {Set<number>}
@@ -337,7 +343,7 @@ export function modifyMIDI(
                     if (channelsToChangeProgram.has(channel))
                     {
                         const change = desiredProgramChanges.find(c => c.channel === channel);
-                        let desiredBank = change.bank;
+                        let desiredBank = Math.max(0, Math.min(change.bank, 127));
                         const desiredProgram = change.program;
                         SpessaSynthInfo(
                             `%cSetting %c${change.channel}%c to %c${desiredBank}:${desiredProgram}%c. Track num: %c${trackNum}`,
@@ -362,50 +368,61 @@ export function modifyMIDI(
                         );
                         addEventBefore(programChange);
                         
-                        // on xg, add lsb
-                        if (!change.isDrum && system === "xg")
+                        const addBank = (isLSB, v) =>
                         {
-                            const bankChangeLSB = getControllerChange(
+                            const bankChange = getControllerChange(
                                 midiChannel,
-                                midiControllers.lsbForControl0BankSelect,
-                                desiredBank,
+                                isLSB ? midiControllers.lsbForControl0BankSelect : midiControllers.bankSelect,
+                                v,
                                 e.ticks
                             );
-                            addEventBefore(bankChangeLSB);
-                        }
+                            addEventBefore(bankChange);
+                        };
                         
-                        // add the bank MSB
-                        const bankChange = getControllerChange(
-                            midiChannel,
-                            midiControllers.bankSelect,
-                            desiredBank,
-                            e.ticks
-                        );
-                        addEventBefore(bankChange);
-                        
-                        // is drums?
-                        // if so, adjust
-                        // do not add gs drum change on the drum channel
-                        if (change.isDrum)
+                        // on xg, add lsb
+                        if (system === "xg")
                         {
-                            if (system === "gs" && midiChannel !== DEFAULT_PERCUSSION)
-                            {
-                                SpessaSynthInfo(
-                                    `%cAdding GS Drum change on track %c${trackNum}`,
-                                    consoleColors.recognized,
-                                    consoleColors.value
-                                );
-                                addEventBefore(getDrumChange(midiChannel, e.ticks));
-                            }
-                            else if (system === "xg")
+                            // xg drums: msb can be 120, 126 or 127
+                            if (change.isDrum)
                             {
                                 SpessaSynthInfo(
                                     `%cAdding XG Drum change on track %c${trackNum}`,
                                     consoleColors.recognized,
                                     consoleColors.value
                                 );
-                                // the system is xg. drums are on msb bank 127.
-                                desiredBank = 127;
+                                addBank(false, isXGDrums(desiredBank) ? desiredBank : 127);
+                                addBank(true, 0);
+                            }
+                            else
+                            {
+                                // sfx voice is set via MSB
+                                if (desiredBank === XG_SFX_VOICE)
+                                {
+                                    addBank(false, XG_SFX_VOICE);
+                                    addBank(true, 0);
+                                }
+                                else
+                                {
+                                    // add variation as LSB
+                                    addBank(false, 0);
+                                    addBank(true, desiredBank);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // add just msb
+                            addBank(false, desiredBank);
+                            
+                            if (change.isDrum && midiChannel !== DEFAULT_PERCUSSION)
+                            {
+                                // add gs drum change
+                                SpessaSynthInfo(
+                                    `%cAdding GS Drum change on track %c${trackNum}`,
+                                    consoleColors.recognized,
+                                    consoleColors.value
+                                );
+                                addEventBefore(getDrumChange(midiChannel, e.ticks));
                             }
                         }
                     }

@@ -204,46 +204,54 @@ export function writeRMIDI(
             const channel = channelsInfo[chNum];
             if (status === messageTypes.programChange)
             {
+                const isXG = system === "xg";
                 // check if the preset for this program exists
+                const initialProgram = e.messageData[0];
                 if (channel.drums)
                 {
-                    if (soundfont.presets.findIndex(p => p.program === e.messageData[0] && p.bank === 128) === -1)
+                    if (soundfont.presets.findIndex(p => p.program === initialProgram && p.isDrumPreset(
+                        isXG,
+                        true
+                    )) === -1)
                     {
                         // doesn't exist. pick any preset that has bank 128.
-                        e.messageData[0] = soundfont.presets.find(p => p.bank === 128)?.program || 0;
+                        e.messageData[0] = soundfont.presets.find(p => p.isDrumPreset(isXG))?.program || 0;
+                        SpessaSynthInfo(
+                            `%cNo drum preset %c${initialProgram}%c. Channel %c${chNum}%c. Changing program to ${e.messageData[0]}.`,
+                            consoleColors.info,
+                            consoleColors.unrecognized,
+                            consoleColors.info,
+                            consoleColors.recognized,
+                            consoleColors.info
+                        );
                     }
                 }
                 else
                 {
-                    if (soundfont.presets.findIndex(p => p.program === e.messageData[0] && p.bank !== 128) === -1)
+                    if (soundfont.presets.findIndex(p => p.program === initialProgram && !p.isDrumPreset(isXG)) === -1)
                     {
                         // doesn't exist. pick any preset that does not have bank 128.
-                        e.messageData[0] = soundfont.presets.find(p => p.bank !== 128)?.program || 0;
+                        e.messageData[0] = soundfont.presets.find(p => !p.isDrumPreset(isXG))?.program || 0;
+                        SpessaSynthInfo(
+                            `%cNo preset %c${initialProgram}%c. Channel %c${chNum}%c. Changing program to ${e.messageData[0]}.`,
+                            consoleColors.info,
+                            consoleColors.unrecognized,
+                            consoleColors.info,
+                            consoleColors.recognized,
+                            consoleColors.info
+                        );
                     }
                 }
                 channel.program = e.messageData[0];
                 // check if this preset exists for program and bank
                 const realBank = Math.max(0, channel.lastBank?.messageData[1] - mid.bankOffset); // make sure to take the previous bank offset into account
-                let bank = channel.drums ? 128 : realBank;
+                const bankLSB = (channel?.lastBankLSB?.messageData[1] - mid.bankOffset) || 0;
                 if (channel.lastBank === undefined)
                 {
                     continue;
                 }
-                if (system === "xg")
-                {
-                    if (channel.drums)
-                    {
-                        // drums override: set the bank to 127
-                        channelsInfo[chNum].lastBank.messageData[1] = 127;
-                    }
-                    else
-                    {
-                        // potential bank lsb override
-                        const bankLSB = (channel?.lastBankLSB?.messageData[1] - mid.bankOffset) || 0;
-                        bank = chooseBank(bank, bankLSB);
-                    }
-                }
-                
+                // adjust bank for XG
+                let bank = chooseBank(realBank, bankLSB, channel.drums, isXG);
                 if (soundfont.presets.findIndex(p => p.bank === bank && p.program === e.messageData[0]) === -1)
                 {
                     // no preset with this bank. find this program with any bank
@@ -254,7 +262,9 @@ export function writeRMIDI(
                         channel.lastBankLSB.messageData[1] = targetBank;
                     }
                     SpessaSynthInfo(
-                        `%cNo preset %c${bank}:${e.messageData[0]}%c. Changing bank to ${targetBank}.`,
+                        `%cNo preset %c${bank}:${e.messageData[0]}%c. Channel %c${chNum}%c. Changing bank to ${targetBank}.`,
+                        consoleColors.info,
+                        consoleColors.unrecognized,
                         consoleColors.info,
                         consoleColors.recognized,
                         consoleColors.info
@@ -263,15 +273,21 @@ export function writeRMIDI(
                 else
                 {
                     // There is a preset with this bank. Add offset. For drums add the normal offset.
-                    let drumBank = system === "xg" ? 127 : 0;
-                    const newBank = (bank === 128 ? drumBank : realBank) + bankOffset;
+                    let drumBank = bank;
+                    if (system === "xg" && bank === 128)
+                    {
+                        bank = 127;
+                    }
+                    const newBank = (bank === 128 ? 128 : drumBank) + bankOffset;
                     channel.lastBank.messageData[1] = newBank;
-                    if (channel?.lastBankLSB?.messageData)
+                    if (channel?.lastBankLSB?.messageData && !channel.drums)
                     {
                         channel.lastBankLSB.messageData[1] = channel.lastBankLSB.messageData[1] - mid.bankOffset + bankOffset;
                     }
                     SpessaSynthInfo(
-                        `%cPreset %c${bank}:${e.messageData[0]}%c exists. Changing bank to ${newBank}.`,
+                        `%cPreset %c${bank}:${e.messageData[0]}%c exists. Channel %c${chNum}%c.  Changing bank to ${newBank}.`,
+                        consoleColors.info,
+                        consoleColors.recognized,
                         consoleColors.info,
                         consoleColors.recognized,
                         consoleColors.info
@@ -307,16 +323,13 @@ export function writeRMIDI(
             {
                 channel.drums = false;
             }
-            if (bankNumber === intepretation.newBank || channel.drums)
+            if (isLSB)
             {
-                if (isLSB)
-                {
-                    channel.lastBankLSB = e;
-                }
-                else
-                {
-                    channel.lastBank = e;
-                }
+                channel.lastBankLSB = e;
+            }
+            else
+            {
+                channel.lastBank = e;
             }
         }
         
@@ -370,7 +383,8 @@ export function writeRMIDI(
             const ticks = track[indexToAdd].ticks;
             const targetBank = (soundfont.getPreset(
                 0,
-                has.program
+                has.program,
+                system === "xg"
             )?.bank + bankOffset) || bankOffset;
             track.splice(indexToAdd, 0, new MIDIMessage(
                 ticks,

@@ -71,6 +71,9 @@ async function doModifyKey(synth, locale, keyboard, presetList)
     {
         presetOptions[p.presetName] = p.presetName;
     }
+    /**
+     * @type {KeyModifier}
+     */
     const mod = synth.keyModifierManager.getModifier(keyboard.channel, key);
     const vel = mod?.velocity ?? -1;
     const n = showNotification(
