@@ -293,8 +293,7 @@ Local edition comes with easier soundfont management than the demo version.
 
 ### License
 Copyright © 2025 Spessasus.
-Licensed under the Apache-2.0 License, except for the French translation.
-Please read the [NOTICE](NOTICE) file for more details.
+Licensed under the Apache-2.0 License.
 
 #### Legal
 This project is in no way endorsed or otherwise affiliated with the MIDI Manufacturers Association,
