@@ -5,7 +5,7 @@ import { consoleColors } from "../utils/other.js";
 
 import { customControllers } from "../synthetizer/worklet_system/worklet_utilities/controller_tables.js";
 import { DEFAULT_PERCUSSION } from "../synthetizer/synth_constants.js";
-import { isGMOn, isGSOn, isXGOn } from "../utils/sysex_detector.js";
+import { isGM2On, isGMOn, isGSOn, isXGOn } from "../utils/sysex_detector.js";
 import { isSystemXG, isXGDrums, XG_SFX_VOICE } from "../utils/xg_hacks.js";
 
 /**
@@ -503,12 +503,12 @@ export function modifyMIDI(
                     break;
                 }
                 else
-                    // check for GM1 on
-                if (isGMOn(e))
+                    // check for GM/2 on
+                if (isGMOn(e) || isGM2On(e))
                 {
                     // that's a GM1 system change, remove it!
                     SpessaSynthInfo(
-                        "%cGM1 on detected, removing!",
+                        "%cGM/2 on detected, removing!",
                         consoleColors.info
                     );
                     deleteThisEvent();
