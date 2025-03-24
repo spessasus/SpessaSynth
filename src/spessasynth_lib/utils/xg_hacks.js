@@ -157,7 +157,7 @@ export function chooseBank(msb, lsb, isDrums, isXG)
                 {
                     return msb;
                 }
-                if (!isXGDrums(lsb))
+                if (!isValidXGMSB(lsb))
                 {
                     return lsb;
                 }
