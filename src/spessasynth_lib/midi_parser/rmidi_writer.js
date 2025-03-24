@@ -7,8 +7,8 @@ import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo } from "../utils
 import { consoleColors } from "../utils/other.js";
 import { writeLittleEndian } from "../utils/byte_functions/little_endian.js";
 import { DEFAULT_PERCUSSION } from "../synthetizer/synth_constants.js";
-import { chooseBank, parseBankSelect } from "../utils/xg_hacks.js";
-import { isGMOn, isGSDrumsOn, isGSOn, isXGOn } from "../utils/sysex_detector.js";
+import { chooseBank, isSystemXG, parseBankSelect } from "../utils/xg_hacks.js";
+import { isGM2On, isGMOn, isGSDrumsOn, isGSOn, isXGOn } from "../utils/sysex_detector.js";
 
 /**
  * @enum {string}
@@ -183,11 +183,16 @@ export function writeRMIDI(
                     }
                     else if (isGMOn(e))
                     {
+                        // we do not want gm1
                         system = "gm";
                         unwantedSystems.push({
                             tNum: trackNum,
                             e: e
                         });
+                    }
+                    else if (isGM2On(e))
+                    {
+                        system = "gm2";
                     }
                     continue;
                 }
@@ -204,7 +209,7 @@ export function writeRMIDI(
             const channel = channelsInfo[chNum];
             if (status === messageTypes.programChange)
             {
-                const isXG = system === "xg";
+                const isXG = isSystemXG(system);
                 // check if the preset for this program exists
                 const initialProgram = e.messageData[0];
                 if (channel.drums)
@@ -274,7 +279,7 @@ export function writeRMIDI(
                 {
                     // There is a preset with this bank. Add offset. For drums add the normal offset.
                     let drumBank = bank;
-                    if (system === "xg" && bank === 128)
+                    if (isSystemXG(system) && bank === 128)
                     {
                         bank = 127;
                     }
@@ -384,7 +389,7 @@ export function writeRMIDI(
             const targetBank = (soundfont.getPreset(
                 0,
                 has.program,
-                system === "xg"
+                isSystemXG(system)
             )?.bank + bankOffset) || bankOffset;
             track.splice(indexToAdd, 0, new MIDIMessage(
                 ticks,
@@ -394,7 +399,7 @@ export function writeRMIDI(
         });
         
         // make sure to put xg if gm
-        if (system !== "gs" && system !== "xg")
+        if (system !== "gs" && !isSystemXG(system))
         {
             for (const m of unwantedSystems)
             {

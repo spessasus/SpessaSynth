@@ -10,6 +10,7 @@ import { WorkletVolumeEnvelope } from "./volume_envelope.js";
 import { WorkletModulationEnvelope } from "./modulation_envelope.js";
 import { addAndClampGenerator, generatorTypes } from "../../../soundfont/basic_soundfont/generator.js";
 import { Modulator } from "../../../soundfont/basic_soundfont/modulator.js";
+import { isSystemXG } from "../../../utils/xg_hacks.js";
 
 const EXCLUSIVE_CUTOFF_TIME = -2320;
 const EXCLUSIVE_MOD_CUTOFF_TIME = -1130; // less because filter shenanigans
@@ -408,7 +409,7 @@ export function getWorkletVoices(channel,
     let preset = channelObject.preset;
     if (overridePatch)
     {
-        preset = this.soundfontManager.getPreset(bank, program, this.system === "xg");
+        preset = this.soundfontManager.getPreset(bank, program, isSystemXG(this.system));
     }
     /**
      * @returns {WorkletVoice[]}

@@ -27,7 +27,7 @@ import { channelPressure } from "../worklet_methods/tuning_control/channel_press
 import { pitchWheel } from "../worklet_methods/tuning_control/pitch_wheel.js";
 import { setOctaveTuning } from "../worklet_methods/tuning_control/set_octave_tuning.js";
 import { programChange } from "../worklet_methods/program_change.js";
-import { chooseBank, parseBankSelect } from "../../../utils/xg_hacks.js";
+import { chooseBank, isSystemXG, parseBankSelect } from "../../../utils/xg_hacks.js";
 import { DEFAULT_PERCUSSION } from "../../synth_constants.js";
 
 /**
@@ -205,7 +205,7 @@ class WorkletProcessorChannel
     
     get isXGChannel()
     {
-        return this.synth.system === "xg" || (this.lockPreset && this.lockedSystem === "xg");
+        return isSystemXG(this.synth.system) || (this.lockPreset && isSystemXG(this.lockedSystem));
     }
     
     /**

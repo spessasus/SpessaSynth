@@ -2,7 +2,7 @@ import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo } from 
 import { consoleColors } from "../utils/other.js";
 import { messageTypes, midiControllers } from "./midi_message.js";
 import { DEFAULT_PERCUSSION } from "../synthetizer/synth_constants.js";
-import { chooseBank, parseBankSelect } from "../utils/xg_hacks.js";
+import { chooseBank, isSystemXG, parseBankSelect } from "../utils/xg_hacks.js";
 import { isGSDrumsOn, isXGOn } from "../utils/sysex_detector.js";
 
 /**
@@ -42,9 +42,9 @@ export function getUsedProgramsAndKeys(soundfont)
     
     function updateString(ch)
     {
-        const bank = chooseBank(ch.bank, ch.bankLSB, ch.drums, system === "xg");
+        const bank = chooseBank(ch.bank, ch.bankLSB, ch.drums, isSystemXG(system));
         // check if this exists in the soundfont
-        let exists = soundfont.getPreset(bank, ch.program, system === "xg");
+        let exists = soundfont.getPreset(bank, ch.program, isSystemXG(system));
         ch.actualBank = exists.bank;
         ch.program = exists.program;
         ch.string = ch.actualBank + ":" + ch.program;

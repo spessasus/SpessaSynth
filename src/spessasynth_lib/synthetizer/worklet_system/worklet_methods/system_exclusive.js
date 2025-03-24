@@ -2,6 +2,7 @@ import { arrayToHexString, consoleColors } from "../../../utils/other.js";
 import { SpessaSynthInfo, SpessaSynthWarn } from "../../../utils/loggin.js";
 import { midiControllers } from "../../../midi_parser/midi_message.js";
 import { ALL_CHANNELS_OR_DIFFERENT_ACTION } from "../message_protocol/worklet_message.js";
+import { isSystemXG } from "../../../utils/xg_hacks.js";
 
 /**
  * KeyNum: tuning
@@ -147,7 +148,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                     // gm system related
                     if (messageData[3] === 0x01)
                     {
-                        SpessaSynthInfo("%cGM system on", consoleColors.info);
+                        SpessaSynthInfo("%cGM1 system on", consoleColors.info);
                         this.setSystem("gm");
                     }
                     else if (messageData[3] === 0x03)
@@ -614,7 +615,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                     // XG part parameter
                 if (messageData[3] === 0x08)
                 {
-                    if (this.system !== "xg")
+                    if (!isSystemXG(this.system))
                     {
                         return;
                     }
@@ -714,7 +715,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                         }
                     );
                 }
-                else if (this.system === "xg")
+                else if (isSystemXG(this.system))
                 {
                     SpessaSynthWarn(
                         `%cUnrecognized Yamaha XG SysEx: %c${arrayToHexString(messageData)}`,
@@ -726,7 +727,7 @@ export function systemExclusive(messageData, channelOffset = 0)
             }
             else
             {
-                if (this.system === "xg")
+                if (isSystemXG(this.system))
                 {
                     SpessaSynthWarn(
                         `%cUnrecognized Yamaha SysEx: %c${arrayToHexString(messageData)}`,

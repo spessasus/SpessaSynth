@@ -6,7 +6,7 @@ import { consoleColors } from "../utils/other.js";
 import { customControllers } from "../synthetizer/worklet_system/worklet_utilities/controller_tables.js";
 import { DEFAULT_PERCUSSION } from "../synthetizer/synth_constants.js";
 import { isGMOn, isGSOn, isXGOn } from "../utils/sysex_detector.js";
-import { isXGDrums, XG_SFX_VOICE } from "../utils/xg_hacks.js";
+import { isSystemXG, isXGDrums, XG_SFX_VOICE } from "../utils/xg_hacks.js";
 
 /**
  * @param ticks {number}
@@ -380,7 +380,7 @@ export function modifyMIDI(
                         };
                         
                         // on xg, add lsb
-                        if (system === "xg")
+                        if (isSystemXG(system))
                         {
                             // xg drums: msb can be 120, 126 or 127
                             if (change.isDrum)
@@ -503,12 +503,12 @@ export function modifyMIDI(
                     break;
                 }
                 else
-                    // check for GM/2 on
+                    // check for GM1 on
                 if (isGMOn(e))
                 {
-                    // that's a GM/2 system change, remove it!
+                    // that's a GM1 system change, remove it!
                     SpessaSynthInfo(
-                        "%cGM/2 on detected, removing!",
+                        "%cGM1 on detected, removing!",
                         consoleColors.info
                     );
                     deleteThisEvent();

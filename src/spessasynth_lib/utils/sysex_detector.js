@@ -42,5 +42,17 @@ export function isGSOn(e)
 export function isGMOn(e)
 {
     return e.messageData[0] === 0x7E  // non realtime
-        && e.messageData[2] === 0x09; // gm system
+        && e.messageData[2] === 0x09  // gm system
+        && e.messageData[3] === 0x01; // gm1
+}
+
+/**
+ * @param e {MIDIMessage}
+ * @returns boolean
+ */
+export function isGM2On(e)
+{
+    return e.messageData[0] === 0x7E  // non realtime
+        && e.messageData[2] === 0x09  // gm system
+        && e.messageData[3] === 0x03; // gm2
 }

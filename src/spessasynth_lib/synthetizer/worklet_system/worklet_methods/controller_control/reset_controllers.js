@@ -11,6 +11,7 @@ import {
 } from "../../worklet_utilities/controller_tables.js";
 import { midiControllers } from "../../../../midi_parser/midi_message.js";
 import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE } from "../../../synth_constants.js";
+import { getDefaultBank } from "../../../../utils/xg_hacks.js";
 
 
 /**
@@ -38,7 +39,7 @@ export function resetAllControllers(log = true)
         // if preset is unlocked, switch to non-drums and call event
         if (!ch.lockPreset)
         {
-            ch.setBankSelect(0);
+            ch.setBankSelect(getDefaultBank(this.system));
             if (channelNumber % 16 === DEFAULT_PERCUSSION)
             {
                 ch.setPreset(this.drumPreset);

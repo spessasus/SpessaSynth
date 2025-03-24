@@ -4,6 +4,17 @@ import { DEFAULT_PERCUSSION } from "../synthetizer/synth_constants.js";
 
 export const XG_SFX_VOICE = 64;
 
+const GM2_DEFAULT_BANK = 121;
+
+/**
+ * @param sys {SynthSystem}
+ * @returns {number}
+ */
+export function getDefaultBank(sys)
+{
+    return sys === "gm2" ? GM2_DEFAULT_BANK : 0;
+}
+
 /**
  * @param bankNr {number}
  * @returns {boolean}
@@ -19,7 +30,7 @@ export function isXGDrums(bankNr)
  */
 export function isValidXGMSB(bank)
 {
-    return isXGDrums(bank) || bank === XG_SFX_VOICE;
+    return isXGDrums(bank) || bank === XG_SFX_VOICE || bank === GM2_DEFAULT_BANK;
 }
 
 /**
@@ -42,7 +53,7 @@ export function parseBankSelect(bankBefore, bank, system, isLSB, isDrums, channe
     let drumsStatus = 0;
     if (isLSB)
     {
-        if (system === "xg")
+        if (isSystemXG(system))
         {
             if (!isValidXGMSB(bank))
             {
@@ -150,27 +161,33 @@ export function chooseBank(msb, lsb, isDrums, isXG)
         else
         {
             // check for SFX
-            if (msb !== XG_SFX_VOICE)
+            if (isValidXGMSB(msb))
             {
-                // if lsb is 0 and msb is not, use that
-                if (lsb === 0 && msb !== 0)
-                {
-                    return msb;
-                }
-                if (!isValidXGMSB(lsb))
-                {
-                    return lsb;
-                }
-                return 0;
+                return msb;
             }
-            else
+            // if lsb is 0 and msb is not, use that
+            if (lsb === 0 && msb !== 0)
             {
-                return XG_SFX_VOICE;
+                return msb;
             }
+            if (!isValidXGMSB(lsb))
+            {
+                return lsb;
+            }
+            return 0;
         }
     }
     else
     {
         return isDrums ? 128 : msb;
     }
+}
+
+/**
+ * @param system {SynthSystem}
+ * @returns boolean
+ */
+export function isSystemXG(system)
+{
+    return system === "gm2" || system === "xg";
 }
