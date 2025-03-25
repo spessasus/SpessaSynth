@@ -139,20 +139,19 @@ export class WorkletLowpassFilter
         
         // the final cutoff for this calculation
         const targetCutoff = filter.currentInitialFc + fcExcursion;
-        
+        const modulatedResonance = voice.modulatedGenerators[generatorTypes.initialFilterQ];
         /* note:
          * the check for initialFC is because of the filter optimization
          * (if cents are the maximum then the filter is open)
          * filter cannot use this optimization if it's dynamic (see #53), and
          * the filter can only be dynamic if the initial filter is not open
          */
-        if (filter.currentInitialFc > 13499 && targetCutoff > 13499 && filter.resonanceCb === 0)
+        if (filter.currentInitialFc > 13499 && targetCutoff > 13499 && modulatedResonance === 0)
         {
             filter.currentInitialFc = 13500;
             return; // filter is open
         }
         
-        const modulatedResonance = voice.modulatedGenerators[generatorTypes.initialFilterQ];
         // check if the frequency has changed. if so, calculate new coefficients
         if (Math.abs(filter.lastTargetCutoff - targetCutoff) > 1 || filter.resonanceCb !== modulatedResonance)
         {
