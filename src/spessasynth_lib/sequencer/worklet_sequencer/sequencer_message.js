@@ -1,8 +1,9 @@
 export const SongChangeType = {
-    backwards: 0,
-    forwards: 1,
-    shuffleOn: 2,
-    shuffleOff: 3
+    backwards: 0,   // no additional data
+    forwards: 1,    // no additional data
+    shuffleOn: 2,   // no additional data
+    shuffleOff: 3,  // no additional data
+    index: 4        // songIndex<number>
 };
 
 /**
@@ -14,8 +15,8 @@ export const SongChangeType = {
  * @property {number} setTime                  - 4 -> time<number>
  * @property {number} changeMIDIMessageSending - 5 -> sendMIDIMessages<boolean>
  * @property {number} setPlaybackRate          - 6 -> playbackRate<number>
- * @property {number} setLoop                  - 7 -> [loop<boolean>, count<number]
- * @property {number} changeSong               - 8 -> changeType<number> 0 - back, 1 - forward, 2 - shuffle ON, 3 - shuffle OFF
+ * @property {number} setLoop                  - 7 -> [loop<boolean>, count<number>]
+ * @property {number} changeSong               - 8 -> [changeType<SongChangeType>, data<number>]
  * @property {number} getMIDI                  - 9 -> (no data)
  * @property {number} setSkipToFirstNote       -10 -> skipToFirstNoteOn<boolean>
  * @property {number} setPreservePlaybackState -11 -> preservePlaybackState<boolean>
@@ -41,12 +42,13 @@ export const WorkletSequencerMessageType = {
  */
 export const WorkletSequencerReturnMessageType = {
     midiEvent: 0,               // [...midiEventBytes<number>]
-    songChange: 1,              // [midiData<MIDIData>, songIndex<number>, isAutoPlayed<boolean>]
+    songChange: 1,              // [songIndex<number>, isAutoPlayed<boolean>]
     textEvent: 2,               // [messageData<number[]>, statusByte<number>, lyricsIndex<number>]
     timeChange: 3,              // newAbsoluteTime<number>
     pause: 4,                   // no data
     getMIDI: 5,                 // midiData<MIDI>
     midiError: 6,               // errorMSG<string>
     metaEvent: 7,               // [messageType<number>, messageData<Uint8Array>, trackNum<number>]
-    loopCountChange: 8          // newLoopCount<number>
+    loopCountChange: 8,         // newLoopCount<number>
+    songListChange: 9          // songListData<MIDIData[]>
 };

@@ -61,7 +61,7 @@ export function processMessage(messageType, messageData)
             break;
         
         case WorkletSequencerMessageType.changeSong:
-            switch (messageData)
+            switch (messageData[0])
             {
                 case SongChangeType.forwards:
                     this.nextSong();
@@ -81,6 +81,12 @@ export function processMessage(messageType, messageData)
                     this.shuffleSongIndexes();
                     this.songIndex = 0;
                     this.loadCurrentSong();
+                    break;
+                
+                case SongChangeType.index:
+                    this.songIndex = messageData[1];
+                    this.loadCurrentSong();
+                    break;
             }
             break;
         

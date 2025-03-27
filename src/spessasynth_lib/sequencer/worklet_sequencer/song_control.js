@@ -127,7 +127,7 @@ export function loadNewSequence(parsedMidi, autoPlay = true)
     this.firstNoteTime = this.midiData.MIDIticksToSeconds(this.midiData.firstNoteOn);
     SpessaSynthInfo(`%cTotal song time: ${formatTime(Math.ceil(this.duration)).time}`, consoleColors.recognized);
     
-    this.post(WorkletSequencerReturnMessageType.songChange, [new MIDIData(this.midiData), this.songIndex, autoPlay]);
+    this.post(WorkletSequencerReturnMessageType.songChange, [this.songIndex, autoPlay]);
     
     if (this.duration <= 1)
     {
@@ -190,6 +190,8 @@ export function loadNewSongList(midiBuffers, autoPlay = true)
         this.loop = false;
     }
     this.shuffleSongIndexes();
+    const midiDatas = this.songs.map(s => new MIDIData(s));
+    this.post(WorkletSequencerReturnMessageType.songListChange, midiDatas);
     this.loadCurrentSong(autoPlay);
 }
 

@@ -66,10 +66,16 @@ export class Sequencer
     onTextEvent;
     
     /**
-     * The sequence's data, except for the track data.
+     * The current MIDI data, with the exclusion of the embedded sound bank and event data.
      *  @type {MIDIData}
      */
     midiData;
+    
+    /**
+     * The current MIDI data for all songs, like the midiData property.
+     * @type {MIDIData[]}
+     */
+    songListData = [];
     
     /**
      * @type {Object<string, function(MIDIData)>}
@@ -285,11 +291,11 @@ export class Sequencer
         this._shuffleSongs = value;
         if (value)
         {
-            this._sendMessage(WorkletSequencerMessageType.changeSong, SongChangeType.shuffleOn);
+            this._sendMessage(WorkletSequencerMessageType.changeSong, [SongChangeType.shuffleOn]);
         }
         else
         {
-            this._sendMessage(WorkletSequencerMessageType.changeSong, SongChangeType.shuffleOff);
+            this._sendMessage(WorkletSequencerMessageType.changeSong, [SongChangeType.shuffleOff]);
         }
     }
     
@@ -476,14 +482,30 @@ export class Sequencer
         });
     }
     
+    /**
+     * Switch to the next song in the playlist
+     */
     nextSong()
     {
-        this._sendMessage(WorkletSequencerMessageType.changeSong, SongChangeType.forwards);
+        this._sendMessage(WorkletSequencerMessageType.changeSong, [SongChangeType.forwards]);
     }
     
+    /**
+     * Switch to the previous song in the playlist
+     */
     previousSong()
     {
-        this._sendMessage(WorkletSequencerMessageType.changeSong, SongChangeType.backwards);
+        this._sendMessage(WorkletSequencerMessageType.changeSong, [SongChangeType.backwards]);
+    }
+    
+    /**
+     * Sets the song index in the playlist
+     * @param index
+     */
+    setSongIndex(index)
+    {
+        const clamped = Math.max(Math.min(this.songsAmount - 1, index), 0);
+        this._sendMessage(WorkletSequencerMessageType.changeSong, [SongChangeType.index, clamped]);
     }
     
     /**
@@ -536,19 +558,15 @@ export class Sequencer
                 break;
             
             case WorkletSequencerReturnMessageType.songChange:
-                /**
-                 * messageData is expected to be {MIDIData}
-                 * @type {MIDIData}
-                 */
-                let songChangeData = messageData[0];
-                this.songIndex = messageData[1];
+                this.songIndex = messageData[0];
+                const songChangeData = this.songListData[this.songIndex];
                 this.midiData = songChangeData;
                 this.hasDummyData = false;
                 this.absoluteStartTime = 0;
                 this.duration = this.midiData.duration;
                 this._callEvents(this.onSongChange, songChangeData);
                 // if is auto played, unpause
-                if (messageData[2] === true)
+                if (messageData[1] === true)
                 {
                     this.unpause();
                 }
@@ -624,6 +642,10 @@ export class Sequencer
                 {
                     this._loop = false;
                 }
+                break;
+            
+            case WorkletSequencerReturnMessageType.songListChange:
+                this.songListData = messageData;
                 break;
             
             default:
