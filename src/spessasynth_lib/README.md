@@ -55,7 +55,7 @@ Supported formats list:
 - **Easy to Use:** *Basic setup is just [two lines of code!](https://github.com/spessasus/SpessaSynth/wiki/Usage-As-Library#minimal-setup)*
 - **No dependencies:** *Batteries included!*
 
-### Powerful Synthesizer
+### Powerful MIDI Synthesizer
 - Suitable for both **real-time** and **offline** synthesis
 - **Excellent SoundFont support:**
   - **Full Generator Support**
