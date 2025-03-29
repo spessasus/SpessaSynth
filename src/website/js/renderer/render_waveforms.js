@@ -119,6 +119,9 @@ export function renderBigFft()
     const multiplier = (0.8 + this.waveMultiplier / 10) * -waveHeight;
     const max = this.dynamicGain ? Math.max.apply(undefined, waveform) : 255;
     
+    const minNote = this._keyRange.min - 1;
+    const noteRange = this._keyRange.max - minNote + 0.5;
+    
     let xPos = 0;
     if (this.logarithmicFrequency)
     {
@@ -128,7 +131,7 @@ export function renderBigFft()
         for (let i = 0; i < waveWidth; i++)
         {
             // calculate the MIDI note (from the lowest piano note to the entire MIDI range)
-            const midiNote = i / waveWidth * 127;
+            const midiNote = minNote + i / waveWidth * noteRange;
             const targetFrequency = 440 * Math.pow(2, (midiNote - 69) / 12);
             const fftIndex = Math.floor(targetFrequency / maxFrequencyInTable * fftSize);
             
@@ -198,7 +201,7 @@ export function renderSingleFft(channelNumber, waveWidth, waveHeight)
     if (this.logarithmicFrequency)
     {
         const minNote = 21;
-        const noteRange = 108;
+        const noteRange = 88;
         let lastHeight = -Infinity;
         const maxFrequencyInTable = this.synth.context.sampleRate / 2;
         for (let i = 0; i < waveWidth; i++)
