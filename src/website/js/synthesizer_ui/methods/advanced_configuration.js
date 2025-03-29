@@ -46,6 +46,7 @@ export function showAdvancedConfiguration()
                     "input": e =>
                     {
                         this.synth.voiceCap = parseInt(e.target.value) || 100;
+                        this.voiceMeter.max = this.synth.voiceCap;
                     }
                 },
                 attributes: {
