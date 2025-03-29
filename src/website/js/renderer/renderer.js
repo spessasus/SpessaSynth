@@ -273,7 +273,7 @@ class Renderer
         value.min = Math.max(0, value.min);
         value.max = Math.min(127, value.max);
         this._keyRange = value;
-        this.updateSize();
+        setTimeout(this.updateSize.bind(this), 100);
     }
     
     /**
@@ -291,6 +291,7 @@ class Renderer
         this.canvas.height = this.canvas.clientHeight * window.devicePixelRatio;
         this.computeColors();
         this.updateFftSize();
+        this.render(false, true);
     }
     
     toggleDarkMode()
