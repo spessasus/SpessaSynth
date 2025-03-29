@@ -96,4 +96,5 @@ export function _changeLayout(layout)
             this.renderer.direction = "down";
             this.renderer.sideways = true;
     }
+    this.renderer.updateSize();
 }

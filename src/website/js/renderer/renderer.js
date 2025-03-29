@@ -273,6 +273,7 @@ class Renderer
         value.min = Math.max(0, value.min);
         value.max = Math.min(127, value.max);
         this._keyRange = value;
+        this.updateSize();
     }
     
     /**

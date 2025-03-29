@@ -66,7 +66,7 @@ export function _createKeyboardHandler(keyboard, synthui, renderer)
         
         option.value = channelNumber.toString();
         const channelDisplay = document.createElement("p");
-        // Channel: {0} gets formatred to channel number
+        // Channel: {0} gets formatted to channel number
         this.locale.bindObjectProperty(
             channelDisplay,
             "textContent",
@@ -149,7 +149,6 @@ export function _createKeyboardHandler(keyboard, synthui, renderer)
                     renderer.keyRange = this.keyboardSizes[keyboardControls.sizeSelector.value];
                 }
                 this._saveSettings();
-                this.renderer.updateSize();
             }, 600);
             return;
         }
@@ -200,7 +199,7 @@ export function _createKeyboardHandler(keyboard, synthui, renderer)
         createChannel();
     });
     
-    // QoL: change keyboard channel to the changed one when user changed it: adjust selector here
+    // QoL: change the keyboard channel to the changed one when user changed it: adjust selector here
     synthui.synth.eventHandler.addEvent("programchange", "settings-keyboard-program-change", e =>
     {
         if (e.userCalled)
@@ -217,7 +216,7 @@ export function _createKeyboardHandler(keyboard, synthui, renderer)
         {
             if (e.channel === keyboard.channel)
             {
-                // find the first non selected channel
+                // find the first non-selected channel
                 let channelNumber = 0;
                 while (synthui.synth.channelProperties[channelNumber].isMuted)
                 {
