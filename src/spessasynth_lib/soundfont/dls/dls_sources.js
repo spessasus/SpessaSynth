@@ -20,8 +20,9 @@ export const DLSSources = {
     volume: 0x87,
     pan: 0x8a,
     expression: 0x8b,
-    chorus: 0xdb,
-    reverb: 0xdd,
+    // note: these are flipped unintentionally in DLS2 table 9. Argh!
+    chorus: 0xdd,
+    reverb: 0xdb,
     
     pitchWheelRange: 0x100,
     fineTune: 0x101,

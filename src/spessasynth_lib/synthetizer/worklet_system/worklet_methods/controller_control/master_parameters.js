@@ -6,7 +6,8 @@ import { SYNTHESIZER_GAIN } from "../../main_processor.js";
  */
 export function setMIDIVolume(volume)
 {
-    this.midiVolume = volume;
+    // GM2 specification, section 4.1: master volume is squared
+    this.midiVolume = Math.pow(volume, 2);
     this.setMasterPan(this.pan);
 }
 
