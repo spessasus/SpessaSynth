@@ -12,6 +12,7 @@
  *   },
  *   renderer: {
  *     renderNotes: boolean,
+ *     renderingMode: rendererModes
  *     keyRange: {
  *       min: number,
  *       max: number
@@ -25,6 +26,9 @@
  *     showVisualPitch: boolean,
  *     sampleSize: number,
  *     waveformThickness: number
+ *     dynamicGain: boolean,
+ *     exponentialGain: boolean,
+ *     logarithmicFrequency: boolean
  *   },
  *   midi: {
  *     output: (null | string),

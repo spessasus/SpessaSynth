@@ -155,6 +155,9 @@ export class Synthetizer
                     return new AudioWorkletNode(ctx, name, opts);
                 };
             }
+            /**
+             * @type {AudioWorkletNode}
+             */
             this.worklet = workletConstructor(this.context, WORKLET_PROCESSOR_NAME, {
                 outputChannelCount: processorChannelCount,
                 numberOfOutputs: processorOutputsCount,
@@ -523,6 +526,24 @@ export class Synthetizer
         {
             // + 2 because chorus and reverb come first!
             this.worklet.connect(audioNodes[outputNumber], outputNumber + 2);
+        }
+    }
+    
+    /**
+     * Disconnects the individual audio outputs to the given audio nodes. In the app, it's used by the renderer.
+     * @param audioNodes {AudioNode[]}
+     */
+    disconnectIndividualOutputs(audioNodes)
+    {
+        if (audioNodes.length !== this._outputsAmount)
+        {
+            throw new Error(`input nodes amount differs from the system's outputs amount!
+            Expected ${this._outputsAmount} got ${audioNodes.length}`);
+        }
+        for (let outputNumber = 0; outputNumber < this._outputsAmount; outputNumber++)
+        {
+            // + 2 because chorus and reverb come first!
+            this.worklet.disconnect(audioNodes[outputNumber], outputNumber + 2);
         }
     }
     

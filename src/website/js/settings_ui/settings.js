@@ -16,6 +16,7 @@ import { localeList } from "../locale/locale_files/locale_list.js";
 import { keybinds } from "../utils/keybinds.js";
 import { handleSliders } from "./sliders.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
+import { rendererModes } from "../renderer/renderer.js";
 
 
 const TRANSITION_TIME = 0.2;
@@ -358,6 +359,7 @@ class SpessaSynthSettings
         // get the HTML controllers
         this.htmlControls = {
             renderer: {
+                renderingMode: document.getElementById("renderer_mode_selector"),
                 noteTimeSlider: document.getElementById("note_time_slider"),
                 noteAfterTriggerTimeSlider: document.getElementById("note_after_time_slider"),
                 analyserToggler: document.getElementById("analyser_toggler"),
@@ -365,6 +367,10 @@ class SpessaSynthSettings
                 activeNoteToggler: document.getElementById("active_note_toggler"),
                 visualPitchToggler: document.getElementById("visual_pitch_toggler"),
                 stabilizeWaveformsToggler: document.getElementById("stabilize_waveforms_toggler"),
+                
+                exponentialGainToggler: document.getElementById("exponential_gain_toggler"),
+                dynamicGainToggler: document.getElementById("dynamic_gain_toggler"),
+                logarithmicFrequencyToggler: document.getElementById("logarithmic_frequency_toggler"),
                 
                 analyserThicknessSlider: document.getElementById("analyser_thickness_slider"),
                 analyserFftSlider: document.getElementById("analyser_fft_slider"),
@@ -396,7 +402,7 @@ class SpessaSynthSettings
         let delayTime;
         // calculate delay:
         // 16384 fft size = 0.37 s
-        if (fft >= 2048)
+        if (fft >= 2048 && this.renderer.rendererMode !== rendererModes.frequencySingle)
         {
             delayTime = niceDelayLookupTable[fft];//fft / this.synthui.synth.context.sampleRate;
         }

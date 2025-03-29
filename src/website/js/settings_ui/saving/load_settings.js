@@ -1,6 +1,7 @@
 import { SpessaSynthInfo } from "../../../../spessasynth_lib/utils/loggin.js";
 import { getSpan } from "../sliders.js";
 import { USE_MIDI_RANGE } from "../handlers/keyboard_handler.js";
+import { rendererModes } from "../../renderer/renderer.js";
 
 /**
  * @private
@@ -24,6 +25,11 @@ export async function _loadSettings()
     const rendererControls = this.htmlControls.renderer;
     const renderer = this.renderer;
     const rendererValues = savedSettings?.renderer;
+    
+    // rendering mode
+    const renderingMode = getValue(rendererValues?.renderingMode, rendererModes.waveforms);
+    rendererControls.renderingMode.value = renderingMode;
+    renderer.setRendererMode(renderingMode);
     
     // note falling time
     const fallingTime = getValue(rendererValues?.noteFallingTimeMs, 1000);
@@ -89,6 +95,21 @@ export async function _loadSettings()
     const stabilize = getValue(rendererValues?.stabilizeWaveforms, true);
     renderer.stabilizeWaveforms = stabilize;
     controls.stabilizeWaveformsToggler.checked = stabilize;
+    
+    // dynamic gain
+    const dynamic = getValue(rendererValues?.dynamicGain, false);
+    renderer.dynamicGain = dynamic;
+    controls.dynamicGainToggler.checked = dynamic;
+    
+    // exponential gain
+    const exponential = getValue(rendererValues?.exponentialGain, true);
+    renderer.exponentialGain = exponential;
+    controls.exponentialGainToggler.checked = exponential;
+    
+    // log frequency
+    const logFrequency = getValue(rendererValues?.logarithmicFrequency, true);
+    renderer.logarithmicFrequency = logFrequency;
+    controls.logarithmicFrequencyToggler.checked = logFrequency;
     
     // keyboard size
     renderer.keyRange = getValue(rendererValues?.keyRange, { min: 0, max: 128 });

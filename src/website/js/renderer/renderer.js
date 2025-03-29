@@ -1,5 +1,5 @@
 import { Synthetizer } from "../../../spessasynth_lib/synthetizer/synthetizer.js";
-import { calculateRGB } from "../utils/calculate_rgb.js";
+import { calculateRGB, RGBAOpacity } from "../utils/calculate_rgb.js";
 import { render } from "./render.js";
 import { computeNotePositions } from "./compute_note_positions.js";
 import {
@@ -9,7 +9,7 @@ import {
     updateFftSize
 } from "./channel_analysers.js";
 import { connectSequencer, resetIndexes } from "./connect_sequencer.js";
-import { renderWaveforms } from "./render_waveforms.js";
+import { renderBigFft, renderSingleFft, renderSingleWaveform, renderWaveforms } from "./render_waveforms.js";
 import { calculateNoteTimes } from "./calculate_note_times.js";
 
 /**
@@ -30,9 +30,19 @@ import { calculateNoteTimes } from "./calculate_note_times.js";
  * }}NoteToRender
  */
 
+/**
+ * @enum {number}
+ */
+export const rendererModes = {
+    waveforms: 0,
+    frequencySplit: 1,
+    frequencySingle: 2
+};
+
 // analysers
 const CHANNEL_ANALYSER_FFT = 1024;
 const DRUMS_ANALYSER_FFT = 4096;
+export const ANALYSER_SMOOTHING = 0.4;
 const WAVE_MULTIPLIER = 2;
 const ANALYSER_STROKE = 2;
 
@@ -99,25 +109,33 @@ class Renderer
         // will be updated by locale manager
         this.holdPedalIsDownText = "";
         locale.bindObjectProperty(this, "holdPedalIsDownText", "locale.synthesizerController.holdPedalDown");
-        this.showHoldPedal = false;
+        this.currentTimeSignature = "4/4";
         
+        /**
+         * @type {rendererModes}
+         */
+        this.rendererMode = rendererModes.waveforms;
+        
+        // booleans
         /**
          * @type {boolean}
          * @private
          */
         this._notesFall = true;
+        this.showHoldPedal = false;
         this.sideways = false;
-        
-        this.currentTimeSignature = "4/4";
-        
-        
-        // booleans
         this._renderBool = true;
         this.renderAnalysers = true;
         this.renderNotes = true;
         this.drawActiveNotes = true;
         this.showVisualPitch = true;
         this._stabilizeWaveforms = true;
+        
+        // fft config
+        this.exponentialGain = true;
+        this.logarithmicFrequency = true;
+        this.dynamicGain = false;
+        
         /**
          * @type {boolean[]}
          */
@@ -148,6 +166,10 @@ class Renderer
          * @type {AnalyserNode[]}
          */
         this.channelAnalysers = [];
+        this.bigAnalyser = new AnalyserNode(synth.context, {
+            fftSize: this._normalAnalyserFft,
+            smoothingTimeConstant: ANALYSER_SMOOTHING
+        });
         this.createChannelAnalysers(synth);
         this.connectChannelAnalysers(synth);
     }
@@ -253,11 +275,21 @@ class Renderer
         this._keyRange = value;
     }
     
+    /**
+     * @param mode {rendererModes|number}
+     */
+    setRendererMode(mode)
+    {
+        this.rendererMode = mode;
+        this.updateFftSize();
+    }
+    
     updateSize()
     {
         this.canvas.width = this.canvas.clientWidth * window.devicePixelRatio;
         this.canvas.height = this.canvas.clientHeight * window.devicePixelRatio;
         this.computeColors();
+        this.updateFftSize();
     }
     
     toggleDarkMode()
@@ -305,6 +337,29 @@ class Renderer
             return gradient;
         });
         
+        /**
+         * @type {CanvasGradient[]}
+         */
+        this.gradientColors = this.plainColors.map((c, channelNumber) =>
+        {
+            const x = channelNumber % 4;
+            const y = Math.floor(channelNumber / 4);
+            const waveWidth = this.canvas.width / 4;
+            const waveHeight = this.canvas.height / 4;
+            const relativeX = waveWidth * x;
+            const relativeY = waveHeight * y + waveHeight;
+            const gradient = this.drawingContext.createLinearGradient(
+                relativeX, relativeY - waveHeight,
+                relativeX, relativeY + waveHeight * 0.5
+            );
+            gradient.addColorStop(0, this.plainColors[channelNumber]);
+            gradient.addColorStop(1, RGBAOpacity(this.plainColors[channelNumber], 0));
+            return gradient;
+        });
+        
+        /**
+         * @type {CanvasGradient[]}
+         */
         this.sidewaysChannelColors = this.plainColors.map(c =>
         {
             const gradient = this.drawingContext.createLinearGradient(
@@ -364,5 +419,8 @@ Renderer.prototype.calculateNoteTimes = calculateNoteTimes;
 Renderer.prototype.resetIndexes = resetIndexes;
 
 Renderer.prototype.renderWaveforms = renderWaveforms;
+Renderer.prototype.renderSingleWaveform = renderSingleWaveform;
+Renderer.prototype.renderSingleFft = renderSingleFft;
+Renderer.prototype.renderBigFft = renderBigFft;
 
 export { Renderer };

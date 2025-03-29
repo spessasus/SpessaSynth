@@ -1,5 +1,14 @@
 export const rendererSettingsLocale = {
     title: "Ustawienia wizualizacji",
+    
+    mode: {
+        title: "Tryb wizualizacji",
+        description: "Zmień tryb wizualizacji kanałów",
+        waveforms: "Kształt fali",
+        frequencySplit: "Częstotliwości rodzielone",
+        frequency: "Częstotliwości"
+    },
+    
     noteFallingTime: {
         title: "Czas spadania nut (ms)",
         description: "Jak szybko spadają z góry nuty (w milisekundach)"
@@ -23,6 +32,21 @@ export const rendererSettingsLocale = {
     waveformAmplifier: {
         title: "Wzmacniasz fal",
         description: "Jak 'żywe' są fale. Kontroluje ich amplitudę"
+    },
+    
+    toggleExponentialGain: {
+        title: "Wykładniczy przyrost",
+        description: "Wyodrębnij różnice w głośności częstotliwości poprzez zastosowanie funkcji wykładniczej"
+    },
+    
+    toggleDynamicGain: {
+        title: "Dynamiczny przyrost",
+        description: "Automatycznie dostosuj przysrost aby najgłośniejsza częstotliwośc zapełniała całą wysokość"
+    },
+    
+    toggleLogarithmicFrequency: {
+        title: "Logarytmiczna częstotliwość",
+        description: "Rozłóż częstotliwości w sposób logarytmiczny zamiast liniowego. Zalecane"
     },
     
     toggleWaveformsRendering: {

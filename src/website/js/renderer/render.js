@@ -1,4 +1,4 @@
-import { FONT_SIZE } from "./renderer.js";
+import { FONT_SIZE, rendererModes } from "./renderer.js";
 import { drawNotes } from "./draw_notes.js";
 
 let hasRenderedNoVoices = false;
@@ -11,7 +11,11 @@ let hasRenderedNoVoices = false;
  */
 export function render(auto = true, force = false)
 {
-    let nothingToDo = (this.seq === undefined || this?.seq?.paused === true) && this.synth.voicesAmount === 0 && !force;
+    let nothingToDo =
+        (this.seq === undefined || this?.seq?.paused === true)
+        && this.synth.voicesAmount === 0
+        && this.rendererMode === rendererModes.waveforms
+        && !force;
     let forceStraight = false;
     if (!this.renderBool || nothingToDo)
     {

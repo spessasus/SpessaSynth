@@ -1,4 +1,5 @@
 import { getSpan } from "../sliders.js";
+import { rendererModes } from "../../renderer/renderer.js";
 
 /**
  * @param renderer {Renderer}
@@ -9,13 +10,39 @@ export function _createRendererHandler(renderer)
 {
     const rendererControls = this.htmlControls.renderer;
     
+    // rendering mode
+    rendererControls.renderingMode.addEventListener("change", () =>
+    {
+        /**
+         * @type {rendererModes|number}
+         */
+        const renderingMode = parseInt(rendererControls.renderingMode.value);
+        this.renderer.setRendererMode(renderingMode);
+        // show appropriate settings
+        const waveformSettings = document.getElementById("renderer_waveform_settings");
+        const freqSettings = document.getElementById("renderer_frequency_settings");
+        if (renderingMode === rendererModes.waveforms)
+        {
+            waveformSettings.classList.remove("hidden");
+            freqSettings.classList.add("hidden");
+        }
+        else
+        {
+            waveformSettings.classList.add("hidden");
+            freqSettings.classList.remove("hidden");
+        }
+        this._saveSettings();
+    });
+    
+    rendererControls.renderingMode.dispatchEvent(new CustomEvent("change"));
+    
     // note falling time
     rendererControls.noteTimeSlider.addEventListener("input", () =>
     {
         renderer.noteFallingTimeMs = rendererControls.noteTimeSlider.value;
         getSpan(rendererControls.noteTimeSlider).innerText = `${rendererControls.noteTimeSlider.value}ms`;
     });
-    // bind to onchange instead of oniinput to prevent spam
+    // bind to onchange instead of oninput to prevent spam
     rendererControls.noteTimeSlider.onchange = () =>
     {
         this._saveSettings();
@@ -101,6 +128,27 @@ export function _createRendererHandler(renderer)
     rendererControls.stabilizeWaveformsToggler.onclick = () =>
     {
         renderer.stabilizeWaveforms = !renderer.stabilizeWaveforms;
+        this._saveSettings();
+    };
+    
+    // dynamic gain
+    rendererControls.dynamicGainToggler.onclick = () =>
+    {
+        renderer.dynamicGain = !renderer.dynamicGain;
+        this._saveSettings();
+    };
+    
+    // logarithmic frequency
+    rendererControls.logarithmicFrequencyToggler.onclick = () =>
+    {
+        renderer.logarithmicFrequency = !renderer.logarithmicFrequency;
+        this._saveSettings();
+    };
+    
+    // exponential gain
+    rendererControls.exponentialGainToggler.onclick = () =>
+    {
+        renderer.exponentialGain = !renderer.exponentialGain;
         this._saveSettings();
     };
 }

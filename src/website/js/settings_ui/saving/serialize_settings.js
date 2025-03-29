@@ -10,6 +10,7 @@ export function _serializeSettings()
 {
     return {
         renderer: {
+            renderingMode: this.renderer.rendererMode,
             noteFallingTimeMs: this.renderer.noteFallingTimeMs,
             noteAfterTriggerTimeMs: this.renderer.noteAfterTriggerTimeMs,
             waveformThickness: this.renderer.lineThickness,
@@ -20,6 +21,9 @@ export function _serializeSettings()
             drawActiveNotes: this.renderer.drawActiveNotes,
             showVisualPitch: this.renderer.showVisualPitch,
             stabilizeWaveforms: this.renderer.stabilizeWaveforms,
+            dynamicGain: this.renderer.dynamicGain,
+            exponentialGain: this.renderer.exponentialGain,
+            logarithmicFrequency: this.renderer.logarithmicFrequency,
             keyRange: this.renderer.keyRange
         },
         
@@ -32,8 +36,8 @@ export function _serializeSettings()
         },
         
         midi: {
-            input: this.midiDeviceHandler.selectedInput === null ? null : this.midiDeviceHandler.selectedInput.name,
-            output: this.midiDeviceHandler.selectedOutput === null ? null : this.midiDeviceHandler.selectedOutput.name
+            input: !this.midiDeviceHandler?.selectedInput ? null : this.midiDeviceHandler?.selectedInput.name,
+            output: !this.midiDeviceHandler?.selectedOutput ? null : this.midiDeviceHandler?.selectedOutput.name
         },
         
         interface: {

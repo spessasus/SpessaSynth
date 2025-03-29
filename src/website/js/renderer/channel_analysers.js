@@ -1,6 +1,7 @@
 import { SpessaSynthInfo } from "../../../spessasynth_lib/utils/loggin.js";
 import { consoleColors } from "../../../spessasynth_lib/utils/other.js";
 import { STABILIZE_WAVEFORMS_FFT_MULTIPLIER } from "./render_waveforms.js";
+import { ANALYSER_SMOOTHING } from "./renderer.js";
 
 /**
  * @param synth {Synthetizer}
@@ -8,7 +9,8 @@ import { STABILIZE_WAVEFORMS_FFT_MULTIPLIER } from "./render_waveforms.js";
  */
 export function createChannelAnalysers(synth)
 {
-    // disconnect the analysers from earlier
+    this.bigAnalyser.disconnect();
+    // disconnect the analyzers from earlier
     for (const analyser of this.channelAnalysers)
     {
         analyser.disconnect();
@@ -17,10 +19,10 @@ export function createChannelAnalysers(synth)
     this.channelAnalysers = [];
     for (let i = 0; i < synth.channelsAmount; i++)
     {
-        // create the analyser
+        // create the analyzer
         const analyser = new AnalyserNode(synth.context, {
             fftSize: this._normalAnalyserFft,
-            smoothingTimeConstant: 0.4
+            smoothingTimeConstant: ANALYSER_SMOOTHING
         });
         this.channelAnalysers.push(analyser);
     }
@@ -44,18 +46,18 @@ export function updateFftSize()
         const mul = drum ? STABILIZE_WAVEFORMS_FFT_MULTIPLIER / 2 : STABILIZE_WAVEFORMS_FFT_MULTIPLIER;
         this.channelAnalysers[i].fftSize = Math.min(32768, this._stabilizeWaveforms ? fft * mul : fft);
     }
+    this.bigAnalyser.fftSize = Math.min(32768, this._normalAnalyserFft * STABILIZE_WAVEFORMS_FFT_MULTIPLIER);
 }
 
 /**
- * Connect the 16 channels to their respective analysers
+ * Connect the 16 channels to their respective analyzers
  * @param synth {Synthetizer}
  * @this {Renderer}
  */
 export function connectChannelAnalysers(synth)
 {
     synth.connectIndividualOutputs(this.channelAnalysers);
-    
-    
+    synth.targetNode.connect(this.bigAnalyser);
     // connect for drum change
     synth.eventHandler.addEvent("drumchange", "renderer-drum-change", () =>
     {
@@ -68,9 +70,7 @@ export function connectChannelAnalysers(synth)
  */
 export function disconnectChannelAnalysers()
 {
-    for (const channelAnalyser of this.channelAnalysers)
-    {
-        channelAnalyser.disconnect();
-    }
+    this.synth.disconnectIndividualOutputs(this.channelAnalysers);
+    this.bigAnalyser.disconnect();
     SpessaSynthInfo("%cAnalysers disconnected!", consoleColors.recognized);
 }

@@ -1,5 +1,14 @@
 export const rendererSettingsLocale = {
     title: "Renderer settings",
+    
+    mode: {
+        title: "Visualization mode",
+        description: "Change the visualization mode of the channels",
+        waveforms: "Waveforms",
+        frequencySplit: "Frequencies split",
+        frequency: "Frequencies"
+    },
+    
     noteFallingTime: {
         title: "Note falling time (milliseconds)",
         description: "How fast the notes fall (visually)"
@@ -7,7 +16,7 @@ export const rendererSettingsLocale = {
     
     noteAfterTriggerTime: {
         title: "Note after trigger time (milliseconds)",
-        description: "How long the notes fall after they get triggered. Zero means that they trigger at the bottom."
+        description: "How long the notes fall after they get triggered. Zero means that they trigger at the bottom"
     },
     
     waveformThickness: {
@@ -17,12 +26,27 @@ export const rendererSettingsLocale = {
     
     waveformSampleSize: {
         title: "Waveform sample size",
-        description: "How detailed the waveforms are (Note: high values might impact performance). Also note that high values will add a delay to the audio to sync the waveforms with the audio."
+        description: "How detailed the waveforms are (Note: high values might impact performance). Also note that high values will add a delay to the audio to sync the waveforms with the audio"
     },
     
     waveformAmplifier: {
         title: "Waveform amplifier",
         description: "How vibrant the waveforms are"
+    },
+    
+    toggleExponentialGain: {
+        title: "Enable exponential gain",
+        description: "Make the differences in gain more visible by using exponential curve rather than linear for height calculation"
+    },
+    
+    toggleDynamicGain: {
+        title: "Enable dynamic gain",
+        description: "Adjust the gain automatically so the highest point always touches the ceiling of the display"
+    },
+    
+    toggleLogarithmicFrequency: {
+        title: "Enable logarithmic frequency",
+        description: "Spread the frequency bins in a logarithmic fashion, rather than linear. Recommended"
     },
     
     toggleWaveformsRendering: {

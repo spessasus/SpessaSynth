@@ -1,6 +1,6 @@
 /**
  * settings_html.js
- * purpose: the inner html for the settings element
+ * purpose: the inner HTML for the settings element
  */
 import { USE_MIDI_RANGE } from "./handlers/keyboard_handler.js";
 
@@ -10,23 +10,66 @@ export const settingsHtml = `
 <div class='settings_groups_parent'>
     <div class='settings_group'>
         <h2 translate-path='locale.settings.rendererSettings.title'></h2>
+        
+        <label for='renderer_mode_selector' translate-path-title='locale.settings.rendererSettings.mode'></label>
+        <select id='renderer_mode_selector'>
+            <option value='0' translate-path='locale.settings.rendererSettings.mode.waveforms'></option>
+            <option value='1' translate-path='locale.settings.rendererSettings.mode.frequencySplit'></option>
+            <option value='2' translate-path='locale.settings.rendererSettings.mode.frequency'></option>
+        </select>
+        
         <label translate-path-title='locale.settings.rendererSettings.noteFallingTime'></label>
         <spessarange min='1' max='9999' value='1000' class='settings_slider' input_id='note_time_slider' units='ms'></spessarange>
         
         <label translate-path-title='locale.settings.rendererSettings.noteAfterTriggerTime'></label>
         <spessarange min='0' max='9999' value='0' class='settings_slider' input_id='note_after_time_slider' units='ms'></spessarange>
         
-        
-        <label translate-path-title='locale.settings.rendererSettings.waveformThickness'></label>
-        <spessarange min='0' max='10' value='2' class='settings_slider' input_id='analyser_thickness_slider' units='px'></spessarange>
-        
-        <label 
+        <label
         translate-path-title='locale.settings.rendererSettings.waveformSampleSize'></label>
         <spessarange min='5' max='15' value='10' class='settings_slider' input_id='analyser_fft_slider' units=''></spessarange>
         
         <label translate-path-title='locale.settings.rendererSettings.waveformAmplifier'></label>
         <spessarange min='-10' max='10' value='2' class='settings_slider' input_id='wave_multiplier_slider' units=''></spessarange>
         
+        <div id='renderer_waveform_settings'>
+            <label translate-path-title='locale.settings.rendererSettings.waveformThickness'></label>
+            <spessarange min='0' max='10' value='2' class='settings_slider' input_id='analyser_thickness_slider' units='px'></spessarange>
+            
+            <div class='switch_label'>
+                <label for='stabilize_waveforms_toggler' translate-path-title='locale.settings.rendererSettings.toggleStabilizeWaveforms'></label>
+                <label class='switch'>
+                    <input type='checkbox' checked id='stabilize_waveforms_toggler'>
+                    <span class='switch_slider'></span>
+                </label>
+            </div>
+        </div>
+        
+        <div id='renderer_frequency_settings' class='hidden'>
+            <div class='switch_label'>
+                <label for='exponential_gain_toggler' translate-path-title='locale.settings.rendererSettings.toggleExponentialGain'></label>
+                <label class='switch'>
+                    <input type='checkbox' checked id='exponential_gain_toggler'>
+                    <span class='switch_slider'></span>
+                </label>
+            </div>
+            
+            <div class='switch_label'>
+                <label for='dynamic_gain_toggler' translate-path-title='locale.settings.rendererSettings.toggleDynamicGain'></label>
+                <label class='switch'>
+                    <input type='checkbox' checked id='dynamic_gain_toggler'>
+                    <span class='switch_slider'></span>
+                </label>
+            </div>
+            
+            <div class='switch_label'>
+                <label for='logarithmic_frequency_toggler' translate-path-title='locale.settings.rendererSettings.toggleLogarithmicFrequency'></label>
+                <label class='switch'>
+                    <input type='checkbox' checked id='logarithmic_frequency_toggler'>
+                    <span class='switch_slider'></span>
+                </label>
+            </div>
+        </div>
+       
         <div class='switch_label'>
             <label for='analyser_toggler' translate-path-title='locale.settings.rendererSettings.toggleWaveformsRendering'></label>
             <label class='switch'>
@@ -55,14 +98,6 @@ export const settingsHtml = `
             <label for='visual_pitch_toggler' translate-path-title='locale.settings.rendererSettings.toggleDrawingVisualPitch'></label>
             <label class='switch'>
                 <input type='checkbox' checked id='visual_pitch_toggler'>
-                <span class='switch_slider'></span>
-            </label>
-        </div>
-        
-        <div class='switch_label'>
-            <label for='stabilize_waveforms_toggler' translate-path-title='locale.settings.rendererSettings.toggleStabilizeWaveforms'></label>
-            <label class='switch'>
-                <input type='checkbox' checked id='stabilize_waveforms_toggler'>
                 <span class='switch_slider'></span>
             </label>
         </div>

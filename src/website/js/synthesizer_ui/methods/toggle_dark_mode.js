@@ -19,13 +19,10 @@ export function toggleDarkMode()
     {
         controller.voiceMeter.toggleMode();
         controller.pitchWheel.toggleMode();
-        controller.pan.toggleMode();
-        controller.expression.toggleMode();
-        controller.volume.toggleMode();
-        controller.mod.toggleMode();
-        controller.chorus.toggleMode();
-        controller.reverb.toggleMode();
-        controller.brightness.toggleMode();
+        Object.values(controller.controllerMeters).forEach(c =>
+        {
+            c.toggleMode();
+        });
         controller.preset.toggleMode();
         controller.drumsToggle.classList.toggle("mute_button_light");
         controller.muteButton.classList.toggle("mute_button_light");
