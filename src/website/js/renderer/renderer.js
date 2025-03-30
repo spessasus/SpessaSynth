@@ -14,7 +14,7 @@ import { calculateNoteTimes } from "./calculate_note_times.js";
 
 /**
  * renderer.js
- * purpose: renders midi file and channel waveforms to a canvas
+ * purpose: renders midi file and channel waveformsMode to a canvas
  */
 
 /**
@@ -34,9 +34,9 @@ import { calculateNoteTimes } from "./calculate_note_times.js";
  * @enum {number}
  */
 export const rendererModes = {
-    waveforms: 0,
-    frequencySplit: 1,
-    frequencySingle: 2
+    waveformsMode: 0,
+    spectrumSplitMode: 1,
+    spectrumSingleMode: 2
 };
 
 // analysers
@@ -114,7 +114,7 @@ class Renderer
         /**
          * @type {rendererModes}
          */
-        this.rendererMode = rendererModes.waveforms;
+        this.rendererMode = rendererModes.waveformsMode;
         
         // booleans
         /**

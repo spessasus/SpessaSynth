@@ -401,7 +401,7 @@ class SpessaSynthSettings
         let delayTime;
         // calculate delay:
         // 16384 fft size = 0.37 s
-        if (fft >= 2048 && this.renderer.rendererMode !== rendererModes.frequencySingle)
+        if (fft >= 2048 && this.renderer.rendererMode !== rendererModes.spectrumSingleMode)
         {
             delayTime = niceDelayLookupTable[fft];//fft / this.synthui.synth.context.sampleRate;
         }

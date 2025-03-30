@@ -5,8 +5,8 @@ export const rendererSettingsLocale = {
         title: "Tryb wizualizacji",
         description: "Zmień tryb wizualizacji kanałów",
         waveforms: "Kształt fali",
-        frequencySplit: "Częstotliwości rodzielone",
-        frequency: "Częstotliwości"
+        spectrumSplit: "Spektrum rozdzielone",
+        spectrum: "Spektrum"
     },
     
     noteFallingTime: {

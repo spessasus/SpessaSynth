@@ -14,7 +14,7 @@ export function render(auto = true, force = false)
     let nothingToDo =
         (this.seq === undefined || this?.seq?.paused === true)
         && this.synth.voicesAmount === 0
-        && this.rendererMode === rendererModes.waveforms
+        && this.rendererMode === rendererModes.waveformsMode
         && !force;
     let forceStraight = false;
     if (!this.renderBool || nothingToDo)

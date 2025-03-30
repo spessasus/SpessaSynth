@@ -27,7 +27,7 @@ export async function _loadSettings()
     const rendererValues = savedSettings?.renderer;
     
     // rendering mode
-    const renderingMode = getValue(rendererValues?.renderingMode, rendererModes.waveforms.toString());
+    const renderingMode = getValue(rendererValues?.renderingMode, rendererModes.waveformsMode.toString());
     rendererControls.renderingMode.value = renderingMode;
     this._setRendererMode(renderingMode);
     
@@ -86,7 +86,7 @@ export async function _loadSettings()
     renderer.showVisualPitch = visualPitch;
     controls.visualPitchToggler.checked = visualPitch;
     
-    // stabilize waveforms
+    // stabilize waveformsMode
     const stabilize = getValue(rendererValues?.stabilizeWaveforms, true);
     renderer.stabilizeWaveforms = stabilize;
     controls.stabilizeWaveformsToggler.checked = stabilize;

@@ -14,8 +14,8 @@ export const settingsHtml = `
         <label for='renderer_mode_selector' translate-path-title='locale.settings.rendererSettings.mode'></label>
         <select id='renderer_mode_selector'>
             <option value='0' translate-path='locale.settings.rendererSettings.mode.waveforms'></option>
-            <option value='1' translate-path='locale.settings.rendererSettings.mode.frequencySplit'></option>
-            <option value='2' translate-path='locale.settings.rendererSettings.mode.frequency'></option>
+            <option value='1' translate-path='locale.settings.rendererSettings.mode.spectrumSplit'></option>
+            <option value='2' translate-path='locale.settings.rendererSettings.mode.spectrum'></option>
             <option value='none' translate-path='locale.none'></option>
         </select>
         

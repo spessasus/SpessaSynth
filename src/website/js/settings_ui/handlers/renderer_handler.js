@@ -29,7 +29,7 @@ export function _setRendererMode(mode)
     const renderingMode = parseInt(mode);
     this.renderer.setRendererMode(renderingMode);
     // show appropriate settings
-    if (renderingMode === rendererModes.waveforms)
+    if (renderingMode === rendererModes.waveformsMode)
     {
         waveformSettings.classList.remove("hidden");
         freqSettings.classList.add("hidden");
@@ -140,7 +140,7 @@ export function _createRendererHandler(renderer)
         this._saveSettings();
     };
     
-    // stabilize waveforms
+    // stabilize waveformsMode
     rendererControls.stabilizeWaveformsToggler.onclick = () =>
     {
         renderer.stabilizeWaveforms = !renderer.stabilizeWaveforms;

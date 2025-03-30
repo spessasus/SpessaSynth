@@ -268,21 +268,21 @@ export function renderWaveforms(forceStraightLine = false)
         default:
             break;
         
-        case rendererModes.waveforms:
+        case rendererModes.waveformsMode:
             for (let i = 0; i < this.channelAnalysers.length; i++)
             {
                 this.renderSingleWaveform(i, forceStraightLine, waveWidth, waveHeight);
             }
             break;
         
-        case rendererModes.frequencySplit:
+        case rendererModes.spectrumSplitMode:
             for (let i = 0; i < this.channelAnalysers.length; i++)
             {
                 this.renderSingleFft(i, waveWidth, waveHeight);
             }
             break;
         
-        case rendererModes.frequencySingle:
+        case rendererModes.spectrumSingleMode:
             this.renderBigFft();
     }
 }
