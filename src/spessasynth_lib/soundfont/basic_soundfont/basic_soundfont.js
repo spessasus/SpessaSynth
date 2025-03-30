@@ -181,7 +181,6 @@ class BasicSoundBank
                 if (!allowedPrograms.has(preset.program))
                 {
                     // not valid!
-                    console.log("not XG!!");
                     this.isXGBank = false;
                     break;
                 }

@@ -87,7 +87,6 @@ export class BasicPreset
     isDrumPreset(allowXG, allowSFX = false)
     {
         const xg = allowXG && this.parentSoundBank.isXGBank;
-        console.log(xg);
         // sfx is not cool
         return this.bank === 128 || (
             xg &&
