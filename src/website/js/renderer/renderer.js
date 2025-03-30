@@ -205,6 +205,9 @@ class Renderer
         this._notesFall = val === "down";
     }
     
+    /**
+     * @returns {number}
+     */
     get normalAnalyserFft()
     {
         return this._normalAnalyserFft;

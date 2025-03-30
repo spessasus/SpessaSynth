@@ -10,7 +10,7 @@ import { exportAudio } from "./export_audio.js";
  */
 export const localeEnglish = {
     localeName: "English",
-    // title messsage
+    // title message
     titleMessage: "SpessaSynth: SoundFont2 Javascript Synthesizer",
     demoTitleMessage: "SpessaSynth: SF2/DLS Javascript Synthesizer Online Demo",
     
@@ -32,6 +32,7 @@ export const localeEnglish = {
     error: "Error",
     yes: "Yes",
     no: "No",
+    none: "None",
     
     
     demoSoundfontUploadButton: "Upload the soundfont",

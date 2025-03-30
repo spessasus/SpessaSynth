@@ -8,9 +8,14 @@ import { USE_MIDI_RANGE } from "../handlers/keyboard_handler.js";
  */
 export function _serializeSettings()
 {
+    let renderingMode = this.renderer.rendererMode.toString();
+    if (!this.renderer.renderAnalysers)
+    {
+        renderingMode = "none";
+    }
     return {
         renderer: {
-            renderingMode: this.renderer.rendererMode,
+            renderingMode: renderingMode,
             noteFallingTimeMs: this.renderer.noteFallingTimeMs,
             noteAfterTriggerTimeMs: this.renderer.noteAfterTriggerTimeMs,
             waveformThickness: this.renderer.lineThickness,

@@ -27,9 +27,9 @@ export async function _loadSettings()
     const rendererValues = savedSettings?.renderer;
     
     // rendering mode
-    const renderingMode = getValue(rendererValues?.renderingMode, rendererModes.waveforms);
+    const renderingMode = getValue(rendererValues?.renderingMode, rendererModes.waveforms.toString());
     rendererControls.renderingMode.value = renderingMode;
-    renderer.setRendererMode(renderingMode);
+    this._setRendererMode(renderingMode);
     
     // note falling time
     const fallingTime = getValue(rendererValues?.noteFallingTimeMs, 1000);
@@ -70,13 +70,8 @@ export async function _loadSettings()
     rendererControls.waveMultiplierSlizer.dispatchEvent(new CustomEvent("input"));
     getSpan(rendererControls.waveMultiplierSlizer).innerText = multiplier.toString();
     
-    // render waveforms
-    let controls = this.htmlControls.renderer;
-    const renderWaveforms = getValue(rendererValues?.renderWaveforms, true);
-    renderer.renderAnalysers = renderWaveforms;
-    controls.analyserToggler.checked = renderWaveforms;
-    
     // render notes
+    let controls = this.htmlControls.renderer;
     const renderNotes = getValue(rendererValues?.renderNotes, true);
     renderer.renderNotes = renderNotes;
     controls.noteToggler.checked = renderNotes;

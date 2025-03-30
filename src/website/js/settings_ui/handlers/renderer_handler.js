@@ -2,6 +2,47 @@ import { getSpan } from "../sliders.js";
 import { rendererModes } from "../../renderer/renderer.js";
 
 /**
+ * @param mode {string}
+ * @this {SpessaSynthSettings}
+ * @private
+ */
+export function _setRendererMode(mode)
+{
+    const waveformSettings = document.getElementById("renderer_waveform_settings");
+    const freqSettings = document.getElementById("renderer_frequency_settings");
+    const generalAnalyserSettings = document.getElementById("renderer_analyser_settings");
+    // check for none
+    if (mode === "none")
+    {
+        this.renderer.renderAnalysers = false;
+        freqSettings.classList.add("hidden");
+        waveformSettings.classList.add("hidden");
+        generalAnalyserSettings.classList.add("hidden");
+        this._saveSettings();
+        return;
+    }
+    generalAnalyserSettings.classList.remove("hidden");
+    this.renderer.renderAnalysers = true;
+    /**
+     * @type {rendererModes|number}
+     */
+    const renderingMode = parseInt(mode);
+    this.renderer.setRendererMode(renderingMode);
+    // show appropriate settings
+    if (renderingMode === rendererModes.waveforms)
+    {
+        waveformSettings.classList.remove("hidden");
+        freqSettings.classList.add("hidden");
+    }
+    else
+    {
+        waveformSettings.classList.add("hidden");
+        freqSettings.classList.remove("hidden");
+    }
+    this._saveSettings();
+}
+
+/**
  * @param renderer {Renderer}
  * @this {SpessaSynthSettings}
  * @private
@@ -13,25 +54,7 @@ export function _createRendererHandler(renderer)
     // rendering mode
     rendererControls.renderingMode.addEventListener("change", () =>
     {
-        /**
-         * @type {rendererModes|number}
-         */
-        const renderingMode = parseInt(rendererControls.renderingMode.value);
-        this.renderer.setRendererMode(renderingMode);
-        // show appropriate settings
-        const waveformSettings = document.getElementById("renderer_waveform_settings");
-        const freqSettings = document.getElementById("renderer_frequency_settings");
-        if (renderingMode === rendererModes.waveforms)
-        {
-            waveformSettings.classList.remove("hidden");
-            freqSettings.classList.add("hidden");
-        }
-        else
-        {
-            waveformSettings.classList.add("hidden");
-            freqSettings.classList.remove("hidden");
-        }
-        this._saveSettings();
+        this._setRendererMode(rendererControls.renderingMode.value);
     });
     
     rendererControls.renderingMode.dispatchEvent(new CustomEvent("change"));
@@ -93,13 +116,6 @@ export function _createRendererHandler(renderer)
     });
     rendererControls.waveMultiplierSlizer.onchange = () =>
     {
-        this._saveSettings();
-    };
-    
-    // render waveforms
-    rendererControls.analyserToggler.onclick = () =>
-    {
-        renderer.renderAnalysers = !renderer.renderAnalysers;
         this._saveSettings();
     };
     

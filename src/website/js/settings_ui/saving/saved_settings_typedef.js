@@ -12,7 +12,7 @@
  *   },
  *   renderer: {
  *     renderNotes: boolean,
- *     renderingMode: rendererModes
+ *     renderingMode: string
  *     keyRange: {
  *       min: number,
  *       max: number

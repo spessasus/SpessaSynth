@@ -25,13 +25,13 @@ export const rendererSettingsLocale = {
     },
     
     waveformSampleSize: {
-        title: "Waveform sample size",
-        description: "How detailed the waveforms are (Note: high values might impact performance). Also note that high values will add a delay to the audio to sync the waveforms with the audio"
+        title: "Sample size",
+        description: "How detailed the visualizations are (Note: high values might impact performance). Also note that high values will add a delay to the audio to sync the waveforms with the audio"
     },
     
     waveformAmplifier: {
-        title: "Waveform amplifier",
-        description: "How vibrant the waveforms are"
+        title: "Amplifier",
+        description: "How vibrant the visualizaions are"
     },
     
     toggleExponentialGain: {

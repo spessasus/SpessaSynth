@@ -128,6 +128,7 @@ export function renderBigFft()
         const maxFrequencyInTable = this.synth.context.sampleRate / 2;
         let lastHeight = -Infinity;
         let lastXpos = 0;
+        let width = 0;
         for (let i = 0; i < waveWidth; i++)
         {
             // calculate the MIDI note (from the lowest piano note to the entire MIDI range)
@@ -138,6 +139,7 @@ export function renderBigFft()
             if (waveform[fftIndex] === lastHeight && lastHeight > 0)
             {
                 xPos += 1;
+                width += 1;
                 continue;
             }
             lastHeight = waveform[fftIndex];
@@ -146,8 +148,9 @@ export function renderBigFft()
             const valueRemapped = value * max;
             this.drawingContext.fillStyle = intensityColors[valueRemapped];
             
-            this.drawingContext.fillRect(lastXpos, relativeY, xPos - lastXpos, multiplier * height);
+            this.drawingContext.fillRect(lastXpos, relativeY, width, multiplier * height);
             lastXpos = xPos;
+            width = 0;
             xPos += 1;
         }
     }

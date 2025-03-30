@@ -25,13 +25,13 @@ export const rendererSettingsLocale = {
     },
     
     waveformSampleSize: {
-        title: "Rozmiar próbki fali",
-        description: "Jak szczegółowe są linie fal dźwiękowcyh (Uwaga: wysokie wartości mogą pogorszyć wydajność) Pamiętaj, że wysokie wartości dodadzą opóźnienie do dźwięku, aby zsynchronizować fale z dźwiękiem."
+        title: "Rozmiar próbki",
+        description: "Jak szczegółowe są wizualizacje (Uwaga: wysokie wartości mogą pogorszyć wydajność) Pamiętaj, że wysokie wartości dodadzą opóźnienie do dźwięku, aby zsynchronizować fale z dźwiękiem."
     },
     
     waveformAmplifier: {
-        title: "Wzmacniasz fal",
-        description: "Jak 'żywe' są fale. Kontroluje ich amplitudę"
+        title: "Wzmacniasz",
+        description: "Jak 'żywe' są wizualizacje. Kontroluje ich amplitudę"
     },
     
     toggleExponentialGain: {

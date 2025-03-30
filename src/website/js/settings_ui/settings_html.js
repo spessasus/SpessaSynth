@@ -16,6 +16,7 @@ export const settingsHtml = `
             <option value='0' translate-path='locale.settings.rendererSettings.mode.waveforms'></option>
             <option value='1' translate-path='locale.settings.rendererSettings.mode.frequencySplit'></option>
             <option value='2' translate-path='locale.settings.rendererSettings.mode.frequency'></option>
+            <option value='none' translate-path='locale.none'></option>
         </select>
         
         <label translate-path-title='locale.settings.rendererSettings.noteFallingTime'></label>
@@ -24,12 +25,14 @@ export const settingsHtml = `
         <label translate-path-title='locale.settings.rendererSettings.noteAfterTriggerTime'></label>
         <spessarange min='0' max='9999' value='0' class='settings_slider' input_id='note_after_time_slider' units='ms'></spessarange>
         
-        <label
-        translate-path-title='locale.settings.rendererSettings.waveformSampleSize'></label>
-        <spessarange min='5' max='15' value='10' class='settings_slider' input_id='analyser_fft_slider' units=''></spessarange>
-        
-        <label translate-path-title='locale.settings.rendererSettings.waveformAmplifier'></label>
-        <spessarange min='-10' max='10' value='2' class='settings_slider' input_id='wave_multiplier_slider' units=''></spessarange>
+        <div id='renderer_analyser_settings'>
+            <label
+            translate-path-title='locale.settings.rendererSettings.waveformSampleSize'></label>
+            <spessarange min='5' max='15' value='10' class='settings_slider' input_id='analyser_fft_slider' units=''></spessarange>
+            
+            <label translate-path-title='locale.settings.rendererSettings.waveformAmplifier'></label>
+            <spessarange min='-10' max='10' value='2' class='settings_slider' input_id='wave_multiplier_slider' units=''></spessarange>
+        </div>
         
         <div id='renderer_waveform_settings'>
             <label translate-path-title='locale.settings.rendererSettings.waveformThickness'></label>
@@ -68,14 +71,6 @@ export const settingsHtml = `
                     <span class='switch_slider'></span>
                 </label>
             </div>
-        </div>
-       
-        <div class='switch_label'>
-            <label for='analyser_toggler' translate-path-title='locale.settings.rendererSettings.toggleWaveformsRendering'></label>
-            <label class='switch'>
-                <input type='checkbox' checked id='analyser_toggler'>
-                <span class='switch_slider'></span>
-            </label>
         </div>
         
         <div class='switch_label'>

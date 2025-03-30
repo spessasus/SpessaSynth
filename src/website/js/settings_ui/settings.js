@@ -5,7 +5,7 @@ import { _saveSettings } from "./saving/save_settings.js";
 import { _serializeSettings } from "./saving/serialize_settings.js";
 import { _changeLayout, _createInterfaceSettingsHandler } from "./handlers/interface_handler.js";
 import { _toggleDarkMode } from "./handlers/toggle_dark_mode.js";
-import { _createRendererHandler } from "./handlers/renderer_handler.js";
+import { _createRendererHandler, _setRendererMode } from "./handlers/renderer_handler.js";
 import {
     _createMidiInputHandler,
     _createMidiOutputHandler,
@@ -362,7 +362,6 @@ class SpessaSynthSettings
                 renderingMode: document.getElementById("renderer_mode_selector"),
                 noteTimeSlider: document.getElementById("note_time_slider"),
                 noteAfterTriggerTimeSlider: document.getElementById("note_after_time_slider"),
-                analyserToggler: document.getElementById("analyser_toggler"),
                 noteToggler: document.getElementById("note_toggler"),
                 activeNoteToggler: document.getElementById("active_note_toggler"),
                 visualPitchToggler: document.getElementById("visual_pitch_toggler"),
@@ -420,6 +419,7 @@ SpessaSynthSettings.prototype._toggleDarkMode = _toggleDarkMode;
 SpessaSynthSettings.prototype._createInterfaceSettingsHandler = _createInterfaceSettingsHandler;
 SpessaSynthSettings.prototype._changeLayout = _changeLayout;
 SpessaSynthSettings.prototype._createRendererHandler = _createRendererHandler;
+SpessaSynthSettings.prototype._setRendererMode = _setRendererMode;
 
 SpessaSynthSettings.prototype._createMidiSettingsHandler = _createMidiSettingsHandler;
 SpessaSynthSettings.prototype._createMidiInputHandler = _createMidiInputHandler;

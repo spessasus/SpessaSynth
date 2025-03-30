@@ -68,7 +68,17 @@ const server = http.createServer((req, res) =>
             req.on("end", () =>
             {
                 const settings = JSON.parse(body);
-                const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+                const jsonSettings = fs.readFileSync(configPath, "utf-8");
+                let config;
+                try
+                {
+                    config = JSON.parse(jsonSettings);
+                }
+                catch (e)
+                {
+                    console.error("Invalid config:", jsonSettings, e);
+                    config = {};
+                }
                 config.settings = settings;
                 
                 fs.writeFile(configPath, JSON.stringify(config), { flag: "w" }, () =>
