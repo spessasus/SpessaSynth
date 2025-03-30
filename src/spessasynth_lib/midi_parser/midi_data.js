@@ -22,29 +22,7 @@ export class MIDIData extends MIDISequenceData
     constructor(midi)
     {
         super();
-        this.timeDivision = midi.timeDivision;
-        this.duration = midi.duration;
-        this.tempoChanges = midi.tempoChanges;
-        this.copyright = midi.copyright;
-        this.tracksAmount = midi.tracksAmount;
-        this.lyrics = midi.lyrics;
-        this.lyricsTicks = midi.lyricsTicks;
-        this.firstNoteOn = midi.firstNoteOn;
-        this.keyRange = midi.keyRange;
-        this.lastVoiceEventTick = midi.lastVoiceEventTick;
-        this.midiPorts = midi.midiPorts;
-        this.midiPortChannelOffsets = midi.midiPortChannelOffsets;
-        this.usedChannelsOnTrack = midi.usedChannelsOnTrack;
-        this.loop = midi.loop;
-        this.midiName = midi.midiName;
-        this.midiNameUsesFileName = midi.midiNameUsesFileName;
-        this.fileName = midi.fileName;
-        this.rawMidiName = midi.rawMidiName;
-        this.format = midi.format;
-        this.RMIDInfo = midi.RMIDInfo;
-        this.bankOffset = midi.bankOffset;
-        this.isKaraokeFile = midi.isKaraokeFile;
-        this.isMultiPort = midi.isMultiPort;
+        this._copyFromSequence(midi);
         
         // Set isEmbedded based on the presence of an embeddedSoundFont
         this.isEmbedded = midi.embeddedSoundFont !== undefined;

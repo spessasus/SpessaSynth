@@ -39,6 +39,12 @@ class MIDISequenceData
     tracksAmount = 0;
     
     /**
+     * The track names in the MIDI file, an empty string if not set.
+     * @type {[]}
+     */
+    trackNames = [];
+    
+    /**
      * An array containing the lyrics of the sequence, stored as binary chunks (Uint8Array).
      * @type {Uint8Array[]}
      */
@@ -174,6 +180,45 @@ class MIDISequenceData
         }
         
         return totalSeconds;
+    }
+    
+    /**
+     * INTERNAL USE ONLY!
+     * DO NOT USE IN SPESSASYNTH_LIB
+     * @param sequence {MIDISequenceData}
+     * @protected
+     */
+    _copyFromSequence(sequence)
+    {
+        // properties can be assigned
+        this.midiName = sequence.midiName;
+        this.midiNameUsesFileName = sequence.midiNameUsesFileName;
+        this.fileName = sequence.fileName;
+        this.timeDivision = sequence.timeDivision;
+        this.duration = sequence.duration;
+        this.copyright = sequence.copyright;
+        this.tracksAmount = sequence.tracksAmount;
+        this.firstNoteOn = sequence.firstNoteOn;
+        this.lastVoiceEventTick = sequence.lastVoiceEventTick;
+        this.format = sequence.format;
+        this.bankOffset = sequence.bankOffset;
+        this.isKaraokeFile = sequence.isKaraokeFile;
+        this.isMultiPort = sequence.isMultiPort;
+        
+        // copying arrays
+        this.tempoChanges = [...sequence.tempoChanges];
+        this.lyrics = sequence.lyrics.map(arr => new Uint8Array(arr));
+        this.lyricsTicks = [...sequence.lyricsTicks];
+        this.midiPorts = [...sequence.midiPorts];
+        this.trackNames = [...sequence.trackNames];
+        this.midiPortChannelOffsets = [...sequence.midiPortChannelOffsets];
+        this.usedChannelsOnTrack = sequence.usedChannelsOnTrack.map(set => new Set(set));
+        this.rawMidiName = sequence.rawMidiName ? new Uint8Array(sequence.rawMidiName) : undefined;
+        
+        // copying objects
+        this.loop = { ...sequence.loop };
+        this.keyRange = { ...sequence.keyRange };
+        this.RMIDInfo = { ...sequence.RMIDInfo };
     }
 }
 

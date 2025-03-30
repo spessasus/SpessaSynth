@@ -44,38 +44,10 @@ class BasicMIDI extends MIDISequenceData
     static copyFrom(mid)
     {
         const m = new BasicMIDI();
+        m._copyFromSequence(mid);
         
-        m.midiName = mid.midiName;
-        m.midiNameUsesFileName = mid.midiNameUsesFileName;
-        m.fileName = mid.fileName;
-        m.timeDivision = mid.timeDivision;
-        m.duration = mid.duration;
-        m.copyright = mid.copyright;
-        m.tracksAmount = mid.tracksAmount;
-        m.firstNoteOn = mid.firstNoteOn;
-        m.keyRange = { ...mid.keyRange }; // Deep copy of keyRange
-        m.lastVoiceEventTick = mid.lastVoiceEventTick;
-        m.loop = { ...mid.loop }; // Deep copy of loop
-        m.format = mid.format;
-        m.bankOffset = mid.bankOffset;
-        m.isKaraokeFile = mid.isKaraokeFile;
-        m.isMultiPort = mid.isMultiPort;
         m.isDLSRMIDI = mid.isDLSRMIDI;
-        
-        // Copying arrays
-        m.tempoChanges = [...mid.tempoChanges]; // Shallow copy
-        m.lyrics = mid.lyrics.map(arr => new Uint8Array(arr)); // Deep copy of each binary chunk
-        m.lyricsTicks = [...mid.lyricsTicks]; // Shallow copy
-        m.midiPorts = [...mid.midiPorts]; // Shallow copy
-        m.midiPortChannelOffsets = [...mid.midiPortChannelOffsets]; // Shallow copy
-        m.usedChannelsOnTrack = mid.usedChannelsOnTrack.map(set => new Set(set)); // Deep copy
-        m.rawMidiName = mid.rawMidiName ? new Uint8Array(mid.rawMidiName) : undefined; // Deep copy
         m.embeddedSoundFont = mid.embeddedSoundFont ? mid.embeddedSoundFont.slice(0) : undefined; // Deep copy
-        
-        // Copying RMID Info object (deep copy)
-        m.RMIDInfo = { ...mid.RMIDInfo };
-        
-        // Copying track data (deep copy of each track)
         m.tracks = mid.tracks.map(track => [...track]); // Shallow copy of each track array
         
         return m;
@@ -310,21 +282,27 @@ class BasicMIDI extends MIDISequenceData
                             }
                         }
                         break;
+                    
+                    case messageTypes.trackName:
+                        break;
                 }
             }
             // add used channels
             this.usedChannelsOnTrack.push(usedChannels);
             
-            // If the track has no voice messages, its "track name" event (if it has any)
-            // is some metadata.
-            // Add it to copyright
-            if (!trackHasVoiceMessages)
+            // track name
+            this.trackNames[i] = "";
+            const trackName = track.find(e => e.messageStatusByte === messageTypes.trackName);
+            if (trackName)
             {
-                const trackName = track.find(e => e.messageStatusByte === messageTypes.trackName);
-                if (trackName)
+                trackName.messageData.currentIndex = 0;
+                const name = readBytesAsString(trackName.messageData, trackName.messageData.length);
+                this.trackNames[i] = name;
+                // If the track has no voice messages, its "track name" event (if it has any)
+                // is some metadata.
+                // Add it to copyright
+                if (!trackHasVoiceMessages)
                 {
-                    trackName.messageData.currentIndex = 0;
-                    const name = readBytesAsString(trackName.messageData, trackName.messageData.length);
                     copyrightComponents.push(name);
                 }
             }
