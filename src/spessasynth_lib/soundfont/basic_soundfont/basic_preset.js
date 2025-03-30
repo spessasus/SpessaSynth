@@ -14,69 +14,69 @@ import { isXGDrums } from "../../utils/xg_hacks.js";
 export class BasicPreset
 {
     /**
-     * @param modulators {Modulator[]}
+     * The parent soundbank instance
+     * Currently used for determining default modulators and XG status
+     * @type {BasicSoundBank}
      */
-    constructor(modulators)
+    parentSoundBank;
+    
+    /**
+     * The preset's name
+     * @type {string}
+     */
+    presetName = "";
+    
+    /**
+     * The preset's MIDI program number
+     * @type {number}
+     */
+    program = 0;
+    
+    /**
+     * The preset's MIDI bank number
+     * @type {number}
+     */
+    bank = 0;
+    
+    /**
+     * The preset's zones
+     * @type {BasicPresetZone[]}
+     */
+    presetZones = [];
+    
+    /**
+     * Stores already found getSamplesAndGenerators for reuse
+     * @type {SampleAndGenerators[][][]}
+     */
+    foundSamplesAndGenerators = [];
+    
+    /**
+     * unused metadata
+     * @type {number}
+     */
+    library = 0;
+    /**
+     * unused metadata
+     * @type {number}
+     */
+    genre = 0;
+    /**
+     * unused metadata
+     * @type {number}
+     */
+    morphology = 0;
+    
+    /**
+     * Creates a new preset representation
+     * @param parentSoundBank {BasicSoundBank}
+     */
+    constructor(parentSoundBank)
     {
-        /**
-         * The preset's name
-         * @type {string}
-         */
-        this.presetName = "";
-        /**
-         * The preset's MIDI program number
-         * @type {number}
-         */
-        this.program = 0;
-        /**
-         * The preset's MIDI bank number
-         * @type {number}
-         */
-        this.bank = 0;
-        
-        /**
-         * The preset's zones
-         * @type {BasicPresetZone[]}
-         */
-        this.presetZones = [];
-        
-        /**
-         * SampleID offset for this preset
-         * @type {number}
-         */
-        this.sampleIDOffset = 0;
-        
-        /**
-         * Stores already found getSamplesAndGenerators for reuse
-         * @type {SampleAndGenerators[][][]}
-         */
-        this.foundSamplesAndGenerators = [];
+        this.parentSoundBank = parentSoundBank;
         for (let i = 0; i < 128; i++)
         {
             this.foundSamplesAndGenerators[i] = [];
         }
-        
-        /**
-         * unused metadata
-         * @type {number}
-         */
-        this.library = 0;
-        /**
-         * unused metadata
-         * @type {number}
-         */
-        this.genre = 0;
-        /**
-         * unused metadata
-         * @type {number}
-         */
-        this.morphology = 0;
-        
-        /**
-         * Default modulators
-         * @type {Modulator[]}
-         */
-        this.defaultModulators = modulators;
     }
     
     /**
@@ -86,8 +86,13 @@ export class BasicPreset
      */
     isDrumPreset(allowXG, allowSFX = false)
     {
+        const xg = allowXG && this.parentSoundBank.isXGBank;
+        console.log(xg);
         // sfx is not cool
-        return this.bank === 128 || (allowXG && isXGDrums(this.bank) && (this.bank !== 126 || allowSFX));
+        return this.bank === 128 || (
+            xg &&
+            (isXGDrums(this.bank) && (this.bank !== 126 || allowSFX))
+        );
     }
     
     deletePreset()
@@ -286,7 +291,7 @@ export class BasicPreset
                 // default mods
                 addUniqueMods(
                     instrumentModulators,
-                    this.defaultModulators
+                    this.parentSoundBank.defaultModulators
                 );
                 
                 /**

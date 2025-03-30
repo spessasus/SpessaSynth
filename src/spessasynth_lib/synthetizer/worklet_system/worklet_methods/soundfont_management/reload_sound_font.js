@@ -16,8 +16,6 @@ export function reloadSoundFont(buffer, isOverride = false)
         if (isOverride)
         {
             this.overrideSoundfont = loadSoundFont(buffer);
-            // assign sample offset
-            this.overrideSoundfont.setSampleIDOffset(this.soundfontManager.totalSoundfontOffset);
         }
         else
         {

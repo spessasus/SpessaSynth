@@ -4,9 +4,11 @@ import { generatorTypes } from "../../../soundfont/basic_soundfont/generator.js"
 /**
  * lowpass_filter.js
  * purpose: applies a low pass filter to a voice
- * note to self: a lot of tricks and fixes come from fluidsynth.
+ * note to self: a lot of tricks and come from fluidsynth.
  * They are the real smart guys.
  * Shoutout to them!
+ * Give their repo a star over at:
+ * https://github.com/FluidSynth/fluidsynth
  */
 
 export const FILTER_SMOOTHING_FACTOR = 0.1;
@@ -123,9 +125,8 @@ export class WorkletLowpassFilter
         
         if (!filter.initialized)
         {
-            // filter initialization
+            // filter initialization, set the current fc to target
             filter.initialized = true;
-            // don't smooth, override
             filter.currentInitialFc = initialFc;
         }
         else
@@ -161,6 +162,7 @@ export class WorkletLowpassFilter
         }
         
         // filter the input
+        // initial filtering code was ported from meltysynth created by sinshu.
         for (let i = 0; i < outputBuffer.length; i++)
         {
             let input = outputBuffer[i];
@@ -201,19 +203,23 @@ export class WorkletLowpassFilter
         }
         let cutoffHz = absCentsToHz(cutoffCents);
         
-        // fix cutoff on low frequencies (fluid_iir_filter.c line 392)
+        // fix cutoff on low sample rates
         cutoffHz = Math.min(cutoffHz, 0.45 * sampleRate);
         
+        // the coefficient calculation code was originally ported from meltysynth by sinshu.
+        // turn resonance to gain, -3.01 so it gives a non-resonant peak
         const qDb = qCb / 10;
-        // correct the filter gain, like fluid does
-        const resonanceGain = decibelAttenuationToGain(-1 * (qDb - 3.01)); // -1 because it's attenuation, and we don't want attenuation
+        // -1 because it's attenuation, and we don't want attenuation
+        const resonanceGain = decibelAttenuationToGain(-(qDb - 3.01));
         
-        // reduce the gain by the Q factor (fluid_iir_filter.c line 250)
+        // the sfspec asks for a reduction in gain based on the Q value.
+        // note that we calculate it again,
+        // without the 3.01-peak offset as it only applies to the coefficients, not the gain.
         const qGain = 1 / Math.sqrt(decibelAttenuationToGain(-qDb));
         
         
-        // initial filtering code was ported from meltysynth created by sinshu.
-        let w = 2 * Math.PI * cutoffHz / sampleRate; // we're in the AudioWorkletGlobalScope so we can use sampleRate
+        // note: no sin or cos tables here as the coefficients are cached
+        let w = 2 * Math.PI * cutoffHz / sampleRate;
         let cosw = Math.cos(w);
         let alpha = Math.sin(w) / (2 * resonanceGain);
         
@@ -248,7 +254,7 @@ export class WorkletLowpassFilter
     }
 }
 
-// precompute all the cutoffs for 0q
+// precompute all the cutoffs for 0q (most common)
 const dummy = new WorkletLowpassFilter();
 dummy.resonanceCb = 0;
 // sfspec section 8.1.3: initialFilterFc ranges from 1500 to 13,500 cents

@@ -1,19 +1,23 @@
 export class BasicInstrument
 {
-    constructor()
-    {
-        /**
-         * The instrument's name
-         * @type {string}
-         */
-        this.instrumentName = "";
-        /**
-         * The instrument's zones
-         * @type {BasicInstrumentZone[]}
-         */
-        this.instrumentZones = [];
-        this._useCount = 0;
-    }
+    /**
+     * The instrument's name
+     * @type {string}
+     */
+    instrumentName = "";
+    
+    /**
+     * The instrument's zones
+     * @type {BasicInstrumentZone[]}
+     */
+    instrumentZones = [];
+    
+    /**
+     * Instrument's use count, used for trimming
+     * @type {number}
+     * @private
+     */
+    _useCount = 0;
     
     /**
      * @returns {number}

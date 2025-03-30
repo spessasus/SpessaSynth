@@ -1,7 +1,6 @@
 import { readLittleEndian } from "../../utils/byte_functions/little_endian.js";
 import { IndexedByteArray } from "../../utils/indexed_array.js";
 import { RiffChunk } from "../basic_soundfont/riff_chunk.js";
-import { Instrument } from "./instruments.js";
 import { BasicInstrumentZone, BasicPresetZone } from "../basic_soundfont/basic_zones.js";
 import { Generator, generatorTypes } from "../basic_soundfont/generator.js";
 import { Modulator } from "../basic_soundfont/modulator.js";
@@ -185,7 +184,7 @@ export class PresetZone extends BasicPresetZone
     
     /**
      * grab the instrument
-     * @param instruments {Instrument[]}
+     * @param instruments {BasicInstrument[]}
      */
     getInstrument(instruments)
     {
@@ -229,7 +228,7 @@ export class PresetZone extends BasicPresetZone
  * Reads the given preset zone read
  * @param zonesChunk {RiffChunk}
  * @param presetGenerators {Generator[]}
- * @param instruments {Instrument[]}
+ * @param instruments {BasicInstrument[]}
  * @param presetModulators {Modulator[]}
  * @returns {PresetZone[]}
  */

@@ -10,6 +10,79 @@ const RESAMPLE_RATE = 48000;
 
 export class BasicSample
 {
+    
+    /**
+     * The sample's name
+     * @type {string}
+     */
+    sampleName;
+    
+    /**
+     * Sample rate in Hz
+     * @type {number}
+     */
+    sampleRate;
+    
+    /**
+     * Original pitch of the sample as a MIDI note number
+     * @type {number}
+     */
+    samplePitch;
+    
+    /**
+     * Pitch correction, in cents. Can be negative
+     * @type {number}
+     */
+    samplePitchCorrection;
+    
+    /**
+     * Sample link, currently unused here
+     * @type {number}
+     */
+    sampleLink;
+    
+    /**
+     * Type of the sample, currently only used for SF3
+     * @type {number}
+     */
+    sampleType;
+    
+    /**
+     * Relative to the start of the sample in sample points
+     * @type {number}
+     */
+    sampleLoopStartIndex;
+    
+    /**
+     * Relative to the start of the sample in sample points
+     * @type {number}
+     */
+    sampleLoopEndIndex;
+    
+    /**
+     * Indicates if the sample is compressed
+     * @type {boolean}
+     */
+    isCompressed;
+    
+    /**
+     * The compressed sample data if it was compressed by spessasynth
+     * @type {Uint8Array}
+     */
+    compressedData = undefined;
+    
+    /**
+     * The sample's use count
+     * @type {number}
+     */
+    useCount = 0;
+    
+    /**
+     * The sample's audio data
+     * @type {Float32Array}
+     */
+    sampleData = undefined;
+    
     /**
      * The basic representation of a soundfont sample
      * @param sampleName {string} The sample's name
@@ -32,71 +105,18 @@ export class BasicSample
         loopEnd
     )
     {
-        /**
-         * Sample's name
-         * @type {string}
-         */
         this.sampleName = sampleName;
-        /**
-         * Sample rate in Hz
-         * @type {number}
-         */
         this.sampleRate = sampleRate;
-        /**
-         * Original pitch of the sample as a MIDI note number
-         * @type {number}
-         */
         this.samplePitch = samplePitch;
-        /**
-         * Pitch correction, in cents. Can be negative
-         * @type {number}
-         */
         this.samplePitchCorrection = samplePitchCorrection;
-        /**
-         * Sample link, currently unused.
-         * @type {number}
-         */
         this.sampleLink = sampleLink;
-        /**
-         * Type of the sample, an enum
-         * @type {number}
-         */
         this.sampleType = sampleType;
-        /**
-         * Relative to the start of the sample in sample points
-         * @type {number}
-         */
         this.sampleLoopStartIndex = loopStart;
-        /**
-         * Relative to the start of the sample in sample points
-         * @type {number}
-         */
         this.sampleLoopEndIndex = loopEnd;
-        
-        /**
-         * Indicates if the sample is compressed
-         * @type {boolean}
-         */
+        // https://github.com/FluidSynth/fluidsynth/wiki/SoundFont3Format
         this.isCompressed = (sampleType & 0x10) > 0;
-        
-        /**
-         * The compressed sample data if it was compressed by spessasynth
-         * @type {Uint8Array}
-         */
-        this.compressedData = undefined;
-        
-        /**
-         * The sample's use count
-         * @type {number}
-         */
-        this.useCount = 0;
-        
-        /**
-         * The sample's audio data
-         * @type {Float32Array}
-         */
-        this.sampleData = undefined;
     }
+    
     
     /**
      * @returns {Uint8Array|IndexedByteArray}

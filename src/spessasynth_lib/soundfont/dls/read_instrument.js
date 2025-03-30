@@ -38,7 +38,7 @@ export function readDLSInstrument(chunk)
     const regions = readLittleEndian(instrumentHeader.chunkData, 4);
     const ulBank = readLittleEndian(instrumentHeader.chunkData, 4);
     const ulInstrument = readLittleEndian(instrumentHeader.chunkData, 4);
-    const preset = new DLSPreset(ulBank, ulInstrument);
+    const preset = new DLSPreset(this, ulBank, ulInstrument);
     
     // read preset name in INFO
     let presetName = "unnamedPreset";

@@ -23,24 +23,11 @@ export class WorkletSoundfontManager
          * @type {Function}
          */
         this.ready = readyCallback;
-        this.totalSoundfontOffset = 0;
         this.reloadManager(initialSoundFontBuffer);
-    }
-    
-    _assingSampleOffsets()
-    {
-        let offset = 0;
-        this.soundfontList.forEach(s =>
-        {
-            s.soundfont.setSampleIDOffset(offset);
-            offset += s.soundfont.samples.length;
-        });
-        this.totalSoundfontOffset = offset;
     }
     
     generatePresetList()
     {
-        this._assingSampleOffsets();
         /**
          * <"bank-program", "presetName">
          * @type {Object<string, string>}

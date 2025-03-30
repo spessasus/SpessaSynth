@@ -45,6 +45,7 @@ export function programChange(programNumber, userChange = false)
         this.presetUsesOverride = false;
     }
     this.setPreset(preset);
+    console.log(preset.presetName, this.isXGChannel, this.drumChannel, bank);
     this.synth.callEvent("programchange", {
         channel: this.channelNumber,
         program: preset.program,

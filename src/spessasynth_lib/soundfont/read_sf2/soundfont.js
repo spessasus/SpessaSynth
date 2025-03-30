@@ -247,9 +247,9 @@ export class SoundFont2 extends BasicSoundBank
         
         let presetZones = readPresetZones(presetZonesChunk, presetGenerators, presetModulators, this.instruments);
         
-        this.presets.push(...readPresets(presetHeadersChunk, presetZones, this.defaultModulators));
+        this.presets.push(...readPresets(presetHeadersChunk, presetZones, this));
         this.presets.sort((a, b) => (a.program - b.program) + (a.bank - b.bank));
-        // preload the first preset
+        this._parseInternal();
         SpessaSynthInfo(
             `%cParsing finished! %c"${this.soundFontInfo["INAM"]}"%c has %c${this.presets.length} %cpresets,
         %c${this.instruments.length}%c instruments and %c${this.samples.length}%c samples.`,

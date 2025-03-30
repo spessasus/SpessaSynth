@@ -6,7 +6,7 @@ import { SpessaSynthWarn } from "../../utils/loggin.js";
 import { readBytesAsString } from "../../utils/byte_functions/string.js";
 import { BasicSample } from "../basic_soundfont/basic_sample.js";
 
-export class LoadedSample extends BasicSample
+export class SoundFontSample extends BasicSample
 {
     /**
      * Creates a sample
@@ -25,19 +25,20 @@ export class LoadedSample extends BasicSample
      * @param isDataRaw {boolean} if false, the data is decoded as float32.
      * Used for SF2Pack support
      */
-    constructor(sampleName,
-                sampleStartIndex,
-                sampleEndIndex,
-                sampleLoopStartIndex,
-                sampleLoopEndIndex,
-                sampleRate,
-                samplePitch,
-                samplePitchCorrection,
-                sampleLink,
-                sampleType,
-                smplArr,
-                sampleIndex,
-                isDataRaw
+    constructor(
+        sampleName,
+        sampleStartIndex,
+        sampleEndIndex,
+        sampleLoopStartIndex,
+        sampleLoopEndIndex,
+        sampleRate,
+        samplePitch,
+        samplePitchCorrection,
+        sampleLink,
+        sampleType,
+        smplArr,
+        sampleIndex,
+        isDataRaw
     )
     {
         super(
@@ -216,12 +217,12 @@ export class LoadedSample extends BasicSample
  * @param sampleHeadersChunk {RiffChunk}
  * @param smplChunkData {IndexedByteArray|Float32Array}
  * @param isSmplDataRaw {boolean}
- * @returns {LoadedSample[]}
+ * @returns {SoundFontSample[]}
  */
 export function readSamples(sampleHeadersChunk, smplChunkData, isSmplDataRaw = true)
 {
     /**
-     * @type {LoadedSample[]}
+     * @type {SoundFontSample[]}
      */
     let samples = [];
     let index = 0;
@@ -245,7 +246,7 @@ export function readSamples(sampleHeadersChunk, smplChunkData, isSmplDataRaw = t
  * @param sampleHeaderData {IndexedByteArray}
  * @param smplArrayData {IndexedByteArray|Float32Array}
  * @param isDataRaw {boolean} true means binary 16-bit data, false means float32
- * @returns {LoadedSample}
+ * @returns {SoundFontSample}
  */
 function readSample(index, sampleHeaderData, smplArrayData, isDataRaw)
 {
@@ -285,7 +286,7 @@ function readSample(index, sampleHeaderData, smplArrayData, isDataRaw)
     let sampleType = readLittleEndian(sampleHeaderData, 2);
     
     
-    return new LoadedSample(
+    return new SoundFontSample(
         sampleName,
         sampleStartIndex,
         sampleEndIndex,

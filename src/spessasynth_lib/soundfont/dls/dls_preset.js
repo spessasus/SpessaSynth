@@ -1,19 +1,19 @@
 import { BasicPreset } from "../basic_soundfont/basic_preset.js";
 import { BasicPresetZone } from "../basic_soundfont/basic_zones.js";
 import { BasicInstrument } from "../basic_soundfont/basic_instrument.js";
-import { defaultModulators } from "../basic_soundfont/modulator.js";
 
 export class DLSPreset extends BasicPreset
 {
     /**
      * Creates a new DLS preset
+     * @param dls {BasicSoundBank}
      * @param ulBank {number}
      * @param ulInstrument {number}
      */
-    constructor(ulBank, ulInstrument)
+    constructor(dls, ulBank, ulInstrument)
     {
         // use stock default modulators, dls won't ever have DMOD chunk
-        super(defaultModulators);
+        super(dls);
         this.program = ulInstrument & 127;
         const bankMSB = (ulBank >> 8) & 127;
         const bankLSB = ulBank & 127;

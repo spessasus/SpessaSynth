@@ -52,9 +52,7 @@ const server = http.createServer((req, res) =>
             const config = JSON.parse(configJson);
             config["lastUsedSf2"] = sfname;
             
-            fs.writeFile(configPath, JSON.stringify(config), { flag: "w" }, () =>
-            {
-            });
+            fs.writeFileSync(configPath, JSON.stringify(config), { flag: "w" });
             res.writeHead(200, { "Content-Type": "text/plain" });
             res.end("Soundfont updated");
             break;

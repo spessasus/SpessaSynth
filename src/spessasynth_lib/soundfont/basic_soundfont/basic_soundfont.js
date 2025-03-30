@@ -18,42 +18,49 @@ import { isXGDrums } from "../../utils/xg_hacks.js";
 
 class BasicSoundBank
 {
+    
+    /**
+     * Soundfont's info stored as name: value. ifil and iver are stored as string representation of float (e.g., 2.1)
+     * @type {Object<string, string|IndexedByteArray>}
+     */
+    soundFontInfo = {};
+    
+    /**
+     * The soundfont's presets
+     * @type {BasicPreset[]}
+     */
+    presets = [];
+    
+    /**
+     * The soundfont's samples
+     * @type {BasicSample[]}
+     */
+    samples = [];
+    
+    /**
+     * The soundfont's instruments
+     * @type {BasicInstrument[]}
+     */
+    instruments = [];
+    
+    /**
+     * Soundfont's default modulatorss
+     * @type {Modulator[]}
+     */
+    defaultModulators = defaultModulators.map(m => Modulator.copy(m));
+    
+    /**
+     * Checks for XG drumsets and considers if this soundfont is XG.
+     * @type {boolean}
+     */
+    isXGBank = false;
+    
     /**
      * Creates a new basic soundfont template
      * @param data {undefined|{presets: BasicPreset[], info: Object<string, string>}}
      */
     constructor(data = undefined)
     {
-        /**
-         * Soundfont's info stored as name: value. ifil and iver are stored as string representation of float (e.g., 2.1)
-         * @type {Object<string, string|IndexedByteArray>}
-         */
-        this.soundFontInfo = {};
-        
-        /**
-         * The soundfont's presets
-         * @type {BasicPreset[]}
-         */
-        this.presets = [];
-        
-        /**
-         * The soundfont's samples
-         * @type {BasicSample[]}
-         */
-        this.samples = [];
-        
-        /**
-         * The soundfont's instruments
-         * @type {BasicInstrument[]}
-         */
-        this.instruments = [];
-        
-        /**
-         * Soundfont's default modulatorss
-         * @type {Modulator[]}
-         */
-        this.defaultModulators = defaultModulators.map(m => Modulator.copy(m));
-        
         if (data?.presets)
         {
             this.presets.push(...data.presets);
@@ -135,7 +142,7 @@ class BasicSoundBank
         const pZone = new BasicPresetZone();
         pZone.instrument = inst;
         
-        const preset = new BasicPreset(font.defaultModulators);
+        const preset = new BasicPreset(font);
         preset.presetName = "Saw Wave";
         preset.presetZones.push(pZone);
         font.presets.push(preset);
@@ -143,7 +150,43 @@ class BasicSoundBank
         font.soundFontInfo["ifil"] = "2.1";
         font.soundFontInfo["isng"] = "EMU8000";
         font.soundFontInfo["INAM"] = "Dummy";
+        font._parseInternal();
         return font.write().buffer;
+    }
+    
+    /**
+     * parses the bank after loading is done
+     * @protected
+     */
+    _parseInternal()
+    {
+        this.isXGBank = false;
+        // definitions for XG:
+        // at least one preset with bank 127, 126 or 120
+        // MUST be a valid XG bank.
+        // allowed banks: (see XG specification)
+        // 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 16, 17, 24,
+        // 25, 27, 28, 29, 30, 31, 32, 33, 40, 41, 48,
+        // 64, 65, 66, 126, 127
+        const allowedPrograms = new Set([
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 16, 17, 24,
+            25, 27, 28, 29, 30, 31, 32, 33, 40, 41, 48,
+            64, 65, 66, 126, 127
+        ]);
+        for (const preset of this.presets)
+        {
+            if (isXGDrums(preset.bank))
+            {
+                this.isXGBank = true;
+                if (!allowedPrograms.has(preset.program))
+                {
+                    // not valid!
+                    console.log("not XG!!");
+                    this.isXGBank = false;
+                    break;
+                }
+            }
+        }
     }
     
     /**
@@ -381,16 +424,7 @@ class BasicSoundBank
     }
     
     /**
-     * To avoid overlapping on multiple desfonts
-     * @param offset {number}
-     */
-    setSampleIDOffset(offset)
-    {
-        this.presets.forEach(p => p.sampleIDOffset = offset);
-    }
-    
-    /**
-     * Get the appropriate preset, undefined if not foun d
+     * Get the appropriate preset, undefined if not found
      * @param bankNr {number}
      * @param programNr {number}
      * @param allowXGDrums {boolean} if true, allows XG drum banks (120, 126 and 127) as drum preset
@@ -398,14 +432,22 @@ class BasicSoundBank
      */
     getPresetNoFallback(bankNr, programNr, allowXGDrums = false)
     {
+        const isDrum = bankNr === 128 || (allowXGDrums && isXGDrums(bankNr));
         // check for exact match
-        const p = this.presets.find(p => p.bank === bankNr && p.program === programNr);
+        let p;
+        if (isDrum)
+        {
+            p = this.presets.find(p => p.bank === bankNr && p.isDrumPreset(allowXGDrums) && p.program === programNr);
+        }
+        else
+        {
+            p = this.presets.find(p => p.bank === bankNr && p.program === programNr);
+        }
         if (p)
         {
             return p;
         }
         // no match...
-        const isDrum = bankNr === 128 || (allowXGDrums && isXGDrums(bankNr));
         if (isDrum)
         {
             if (allowXGDrums)
@@ -430,36 +472,47 @@ class BasicSoundBank
      */
     getPreset(bankNr, programNr, allowXGDrums = false)
     {
-        // check for exact match
-        let preset = this.presets.find(p => p.bank === bankNr && p.program === programNr);
         const isDrums = bankNr === 128 || (allowXGDrums && isXGDrums(bankNr));
-        if (!preset)
+        // check for exact match
+        let preset;
+        // only allow drums if the preset is considered to be a drum preset
+        if (isDrums)
         {
-            // no match...
-            if (isDrums)
+            preset = this.presets.find(p => p.bank === bankNr && p.isDrumPreset(allowXGDrums) && p.program === programNr);
+        }
+        else
+        {
+            preset = this.presets.find(p => p.bank === bankNr && p.program === programNr);
+        }
+        if (preset)
+        {
+            return preset;
+        }
+        // no match...
+        if (isDrums)
+        {
+            // drum preset: find any preset with bank 128
+            preset = this.presets.find(p => p.isDrumPreset(allowXGDrums) && p.program === programNr);
+            if (!preset)
             {
-                // drum preset: find any preset with bank 128
-                preset = this.presets.find(p => p.isDrumPreset(allowXGDrums) && p.program === programNr);
-                if (!preset)
-                {
-                    // only allow 128, otherwise it would default to XG SFX
-                    preset = this.presets.find(p => p.isDrumPreset(allowXGDrums));
-                }
-            }
-            else
-            {
-                // non-drum preset: find any preset with the given program that is not a drum preset
-                preset = this.presets.find(p => p.program === programNr && !p.isDrumPreset(allowXGDrums));
-            }
-            if (preset)
-            {
-                SpessaSynthWarn(
-                    `%cPreset ${bankNr}.${programNr} not found. Replaced with %c${preset.presetName} (${preset.bank}.${preset.program})`,
-                    consoleColors.warn,
-                    consoleColors.recognized
-                );
+                // only allow 128, otherwise it would default to XG SFX
+                preset = this.presets.find(p => p.isDrumPreset(allowXGDrums));
             }
         }
+        else
+        {
+            // non-drum preset: find any preset with the given program that is not a drum preset
+            preset = this.presets.find(p => p.program === programNr && !p.isDrumPreset(allowXGDrums));
+        }
+        if (preset)
+        {
+            SpessaSynthWarn(
+                `%cPreset ${bankNr}.${programNr} not found. Replaced with %c${preset.presetName} (${preset.bank}.${preset.program})`,
+                consoleColors.warn,
+                consoleColors.recognized
+            );
+        }
+        
         // no preset, use the first one available
         if (!preset)
         {

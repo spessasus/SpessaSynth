@@ -64,7 +64,15 @@ export function serveSfontList(res)
     {
         configJson = "{}";
     }
-    const config = JSON.parse(configJson);
+    let config = {};
+    try
+    {
+        config = JSON.parse(configJson);
+    }
+    catch (e)
+    {
+        console.error("error parsing config:", configJson, e);
+    }
     if (config["lastUsedSf2"])
     {
         if (fileNames.includes(config["lastUsedSf2"]))
@@ -97,7 +105,15 @@ export function serveSettings(res)
     {
         configJson = "{}";
     }
-    const config = JSON.parse(configJson);
+    let config = {};
+    try
+    {
+        config = JSON.parse(configJson);
+    }
+    catch (e)
+    {
+        console.error("error parsing config:", configJson, e);
+    }
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify(config.settings || {}));
 }
