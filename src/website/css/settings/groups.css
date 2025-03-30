@@ -24,3 +24,10 @@
     margin-top: 1em;
     display: block;
 }
+
+.settings_group .error_message {
+    color: red;
+    max-width: 20ch;
+    white-space: wrap;
+    margin: 1.5rem auto auto;
+}

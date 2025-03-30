@@ -1,5 +1,4 @@
 import { isMobile } from "../../utils/is_mobile.js";
-import { showNotification } from "../../notification/notification.js";
 
 /**
  * @param handler {MIDIDeviceHandler}
@@ -21,16 +20,22 @@ export function _createMidiSettingsHandler(handler, sequi, synthui)
         {
             if (!isMobile)
             {
-                showNotification(
-                    this.locale.getLocaleString("locale.warnings.warning"),
-                    [{
-                        type: "text",
-                        textContent: this.locale.getLocaleString(
-                            "locale.warnings.noMidiSupport")
-                    }]
-                );
+                const parent = document.getElementById("midi_settings");
+                // show midi as not available
+                const input = this.htmlControls.midi.inputSelector;
+                const output = this.htmlControls.midi.outputSelector;
+                // hide everything
+                input.classList.add("hidden");
+                output.classList.add("hidden");
+                parent.querySelector("label[for='midi_input_selector']").classList.add("hidden");
+                parent.querySelector("label[for='midi_output_selector']").classList.add("hidden");
+                
+                // show error
+                const errorMessage = document.createElement("h3");
+                errorMessage.classList.add("error_message");
+                parent.appendChild(errorMessage);
+                this.locale.bindObjectProperty(errorMessage, "textContent", "locale.warnings.noMidiSupport");
             }
-            document.getElementById("midi_settings").style.display = "none";
         }
     });
 }
@@ -53,7 +58,7 @@ export function _createMidiInputHandler(handler, synth)
     for (const input of handler.inputs)
     {
         const option = document.createElement("option");
-        option.value = input[0];
+        option.value = input[0].toString();
         option.innerText = input[1].name;
         select.appendChild(option);
     }
@@ -79,7 +84,7 @@ export function _createMidiInputHandler(handler, synth)
 }
 
 /**
- * note that using sequi allows us to obtain the sequencer after it has been created
+ * note that using sequi allows us to get the sequencer after it has been created
  * @param handler {MIDIDeviceHandler}
  * @param sequi {SequencerUI}
  * @this {SpessaSynthSettings}
@@ -103,7 +108,7 @@ export function _createMidiOutputHandler(handler, sequi)
     for (const output of handler.outputs)
     {
         const option = document.createElement("option");
-        option.value = output[0];
+        option.value = output[0].toString();
         option.innerText = output[1].name;
         select.appendChild(option);
     }
@@ -112,7 +117,7 @@ export function _createMidiOutputHandler(handler, sequi)
     {
         if (!sequi.seq)
         {
-            // set timeou to wait for sequencer to exist
+            // set timeout to wait for sequencer to exist
             setTimeout(select.onchange, 1000);
             return;
         }
