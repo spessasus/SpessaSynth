@@ -34,6 +34,9 @@ const ICON_DISABLED_COLOR_L = "#ddd";
 
 const DEFAULT_ENCODING = "Shift_JIS";
 
+// zero width space
+const ZWSP = "\u200b";
+
 class SequencerUI
 {
     /**
@@ -198,7 +201,6 @@ class SequencerUI
         {
             this.seq.play();
         }
-        this.lyricsIndex = -1;
         this.playPause.innerHTML = getPauseSvg(ICON_SIZE);
         this.createNavigatorHandler();
         this.updateTitleAndMediaStatus();
@@ -217,7 +219,6 @@ class SequencerUI
         }
         this.playPause.innerHTML = getPlaySvg(ICON_SIZE);
         this.createNavigatorHandler();
-        this.updateTitleAndMediaStatus();
         if (!navigator.mediaSession)
         {
             return;
@@ -299,6 +300,7 @@ class SequencerUI
         
         this.seq.addOnTimeChangeEvent(() =>
         {
+            this.lyricsIndex = -1;
             this.seqPlay(false);
         }, "sequi-time-change");
         
@@ -385,14 +387,15 @@ class SequencerUI
             this.infoDecoder = new TextDecoder(encoding);
         }
         this.updateOtherTextEvents();
+        this.decodeLyricData();
         // update all spans with the new encoding
         this.lyricsElement.text.separateLyrics.forEach((span, index) =>
         {
-            if (this.currentLyrics[index] === undefined)
+            if (this.currentLyricsString[index] === undefined)
             {
                 return;
             }
-            span.innerText = this.decodeTextFix(this.currentLyrics[index].buffer);
+            span.innerText = this.currentLyricsString[index];
         });
         this.lyricsElement.selector.value = encoding;
         this.updateTitleAndMediaStatus(false);
@@ -724,10 +727,8 @@ class SequencerUI
         setInterval(this._updateInterval.bind(this), 100);
     }
     
-    loadLyricData()
+    decodeLyricData()
     {
-        // load lyrics
-        this.currentLyrics = this.seq.midiData.lyrics;
         this.currentLyricsString = this.currentLyrics.map(l => this.decodeTextFix(l.buffer));
         if (this.currentLyrics.length === 0)
         {
@@ -735,6 +736,8 @@ class SequencerUI
         }
         else
         {
+            // a check for lilypond later
+            let containsZWSP = false;
             // perform a check for double lyrics:
             // for example in some midi's, every lyric event is duplicated:
             // "He's " turns into two "He's " and another "He's " event
@@ -744,6 +747,13 @@ class SequencerUI
             for (let i = 1; i < this.currentLyricsString.length - 1; i += 2)
             {
                 const first = this.currentLyricsString[i];
+                if (!containsZWSP)
+                {
+                    if (first.includes(ZWSP))
+                    {
+                        containsZWSP = true;
+                    }
+                }
                 const second = this.currentLyricsString[i + 1];
                 // note: newline should be skipped
                 if (first.trim() === "" || second.trim() === "")
@@ -772,9 +782,66 @@ class SequencerUI
                 
             }
             
+            // perform a lilypond fix
+            // see https://github.com/spessasus/SpessaSynth/issues/141
+            if (containsZWSP)
+            {
+                for (let i = 0; i < this.currentLyricsString.length; i++)
+                {
+                    const string = this.currentLyricsString[i];
+                    if (string[0] === ZWSP)
+                    {
+                        // When adding ZWSP in front of a word: consider it as the start of a newline
+                        this.currentLyricsString[i] = " \n" + string.substring(1);
+                    }
+                    else if (string[string.length - 1] === ZWSP)
+                    {
+                        // When appending a ZWSP at the end of a word, consider it as a syllable
+                        this.currentLyricsString[i] = string.substring(0, string.length - 1);
+                    }
+                    else
+                    {
+                        this.currentLyricsString[i] = string + " ";
+                    }
+                }
+            }
+            
+        }
+        // lyrics fix:
+        // sometimes, all lyrics events lack spaces at the start or end of the lyric
+        // then, and only then, add space at the end of each lyric
+        // space ASCII is 32
+        let lacksSpaces = true;
+        for (const lyric of this.currentLyricsString)
+        {
+            if (lyric[0] === " " || lyric[lyric.length - 1] === " ")
+            {
+                lacksSpaces = false;
+                break;
+            }
+        }
+        
+        if (lacksSpaces)
+        {
+            this.currentLyricsString = this.currentLyricsString.map(lyric =>
+            {
+                // One exception: hyphens at the end. Don't add a space to them
+                if (lyric[lyric.length - 1] === "-")
+                {
+                    return lyric;
+                }
+                return lyric + " ";
+            });
         }
         // sanitize lyrics, as in replacement "/" with newline
         this.currentLyricsString = this.currentLyricsString.map(l => l.replace("/", "\n"));
+    }
+    
+    loadLyricData()
+    {
+        // load lyrics
+        this.currentLyrics = this.seq.midiData.lyrics;
+        this.decodeLyricData();
         // create lyrics as separate spans
         // clear previous lyrics
         this.lyricsElement.text.main.innerHTML = "";

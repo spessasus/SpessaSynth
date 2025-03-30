@@ -533,35 +533,7 @@ class BasicMIDI extends MIDISequenceData
             );
         }
         
-        // lyrics fix:
-        // sometimes, all lyrics events lack spaces at the start or end of the lyric
-        // then, and only then, add space at the end of each lyric
-        // space ASCII is 32
-        let lacksSpaces = true;
-        for (const lyric of this.lyrics)
-        {
-            if (lyric[0] === 32 || lyric[lyric.length - 1] === 32)
-            {
-                lacksSpaces = false;
-                break;
-            }
-        }
         
-        if (lacksSpaces)
-        {
-            this.lyrics = this.lyrics.map(lyric =>
-            {
-                // One exception: hyphens at the end. Don't add a space to them
-                if (lyric[lyric.length - 1] === 45)
-                {
-                    return lyric;
-                }
-                const withSpaces = new Uint8Array(lyric.length + 1);
-                withSpaces.set(lyric, 0);
-                withSpaces[lyric.length] = 32;
-                return withSpaces;
-            });
-        }
         /**
          * The total playback time, in seconds
          * @type {number}
