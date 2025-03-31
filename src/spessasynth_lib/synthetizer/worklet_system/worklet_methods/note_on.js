@@ -165,7 +165,7 @@ export function noteOn(midiNote, velocity, enableDebugging = false, sendEvent = 
     channelVoices.push(...voices);
     if (sendEvent)
     {
-        this.synth.sendChannelProperties();
+        this.sendChannelProperty();
         this.synth.callEvent("noteon", {
             midiNote: midiNote,
             channel: this.channelNumber,

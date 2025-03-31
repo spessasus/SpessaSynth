@@ -10,7 +10,7 @@ export function stopAllNotes(force = false)
         // force stop all
         this.voices.length = 0;
         this.sustainedVoices.length = 0;
-        this.synth.sendChannelProperties();
+        this.sendChannelProperty();
     }
     else
     {

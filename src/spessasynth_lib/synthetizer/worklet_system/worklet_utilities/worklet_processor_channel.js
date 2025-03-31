@@ -2,7 +2,8 @@ import {
     CONTROLLER_TABLE_SIZE,
     CUSTOM_CONTROLLER_TABLE_SIZE,
     customControllers,
-    dataEntryStates
+    dataEntryStates,
+    NON_CC_INDEX_OFFSET
 } from "./controller_tables.js";
 import {
     resetControllers,
@@ -29,6 +30,8 @@ import { setOctaveTuning } from "../worklet_methods/tuning_control/set_octave_tu
 import { programChange } from "../worklet_methods/program_change.js";
 import { chooseBank, isSystemXG, parseBankSelect } from "../../../utils/xg_hacks.js";
 import { DEFAULT_PERCUSSION } from "../../synth_constants.js";
+import { modulatorSources } from "../../../soundfont/basic_soundfont/modulator.js";
+import { returnMessageType } from "../message_protocol/worklet_message.js";
 
 /**
  * This class represents a single MIDI Channel within the synthesizer.
@@ -114,6 +117,12 @@ class WorkletProcessorChannel
      * @type {number}
      */
     bank = 0;
+    
+    /**
+     * The bank number sent as channel properties.
+     * @type {number}
+     */
+    sentBank = 0;
     
     /**
      * The bank LSB number of the channel (used for patch changes in XG mode).
@@ -359,7 +368,7 @@ class WorkletProcessorChannel
             isDrumChannel: this.drumChannel
         });
         this.programChange(this.preset.program);
-        this.synth.sendChannelProperties();
+        this.sendChannelProperty();
     }
     
     /**
@@ -385,6 +394,48 @@ class WorkletProcessorChannel
         this.channelVibrato.rate = 0;
         this.channelVibrato.delay = 0;
         this.channelVibrato.depth = 0;
+    }
+    
+    
+    /**
+     * @typedef {Object} ChannelProperty
+     * @property {number} voicesAmount - the channel's current voice amount
+     * @property {number} pitchBend - the channel's current pitch bend from -8192 do 8192
+     * @property {number} pitchBendRangeSemitones - the pitch bend's range, in semitones
+     * @property {boolean} isMuted - indicates whether the channel is muted
+     * @property {boolean} isDrum - indicates whether the channel is a drum channel
+     * @property {number} transposition - the channel's transposition, in semitones
+     * @property {number} bank - the bank number of the current preset
+     * @property {number} program - the MIDI program number of the current preset
+     */
+    
+    
+    /**
+     * Sends this channel's property
+     */
+    sendChannelProperty()
+    {
+        if (!this.synth.enableEventSystem)
+        {
+            return;
+        }
+        /**
+         * @type {ChannelProperty}
+         */
+        const data = {
+            voicesAmount: this.voices.length,
+            pitchBend: this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheel],
+            pitchBendRangeSemitones: this.midiControllers[NON_CC_INDEX_OFFSET + modulatorSources.pitchWheelRange] / 128,
+            isMuted: this.isMuted,
+            isDrum: this.drumChannel,
+            transposition: this.channelTransposeKeyShift + this.customControllers[customControllers.channelTransposeFine] / 100,
+            bank: this.sentBank,
+            program: this.preset.program
+        };
+        this.synth.post({
+            messageType: returnMessageType.channelPropertyChange,
+            messageData: [this.channelNumber, data]
+        });
     }
 }
 

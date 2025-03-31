@@ -13,6 +13,9 @@ export function programChange(programNumber, userChange = false)
     // always 128 for percussion
     let bank = this.getBankSelect();
     let sentBank;
+    /**
+     * @type {BasicPreset}
+     */
     let preset;
     
     const isXG = this.isXGChannel;
@@ -34,21 +37,27 @@ export function programChange(programNumber, userChange = false)
         else
         {
             preset = this.synth.soundfontManager.getPreset(bank, programNumber, isXG);
-            sentBank = preset.bank;
+            const offset = this.synth.soundfontManager.soundfontList
+                .find(s => s.soundfont === preset.parentSoundBank).bankOffset;
+            sentBank = preset.bank - offset;
             this.presetUsesOverride = false;
         }
     }
     else
     {
         preset = this.synth.soundfontManager.getPreset(bank, programNumber, isXG);
-        sentBank = preset.bank;
+        const offset = this.synth.soundfontManager.soundfontList
+            .find(s => s.soundfont === preset.parentSoundBank).bankOffset;
+        sentBank = preset.bank - offset;
         this.presetUsesOverride = false;
     }
     this.setPreset(preset);
+    this.sentBank = sentBank;
     this.synth.callEvent("programchange", {
         channel: this.channelNumber,
         program: preset.program,
         bank: sentBank,
         userCalled: userChange
     });
+    this.sendChannelProperty();
 }

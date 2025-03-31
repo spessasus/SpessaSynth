@@ -29,5 +29,5 @@ export function pitchWheel(MSB, LSB)
             0,
             modulatorSources.pitchWheel
         ));
-    this.synth.sendChannelProperties();
+    this.sendChannelProperty();
 }

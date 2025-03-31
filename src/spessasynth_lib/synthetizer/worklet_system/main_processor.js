@@ -10,7 +10,7 @@ import {
 import { stbvorbis } from "../../externals/stbvorbis_sync/stbvorbis_sync.min.js";
 import { VOLUME_ENVELOPE_SMOOTHING_FACTOR } from "./worklet_utilities/volume_envelope.js";
 import { handleMessage } from "./message_protocol/handle_message.js";
-import { callEvent, sendChannelProperties } from "./message_protocol/message_sending.js";
+import { callEvent } from "./message_protocol/message_sending.js";
 import { systemExclusive } from "./worklet_methods/system_exclusive.js";
 import { setMasterGain, setMasterPan, setMIDIVolume } from "./worklet_methods/controller_control/master_parameters.js";
 import { resetAllControllers } from "./worklet_methods/controller_control/reset_controllers.js";
@@ -437,7 +437,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
         this.sequencer.processTick();
         
         // for every channel
-        let totalCurrentVoices = 0;
+        this.totalVoicesAmount = 0;
         this.workletProcessorChannels.forEach((channel, index) =>
         {
             if (channel.voices.length < 1 || channel.isMuted)
@@ -445,6 +445,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
                 // skip the channels
                 return;
             }
+            let voiceCount = channel.voices.length;
             let outputIndex;
             let outputL;
             let outputR;
@@ -480,15 +481,14 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
                 chorusL, chorusR
             );
             
-            totalCurrentVoices += channel.voices.length;
+            this.totalVoicesAmount += channel.voices.length;
+            // if voice count changed, update voice amount
+            if (channel.voices.length !== voiceCount)
+            {
+                channel.sendChannelProperty();
+            }
         });
-        
-        // if voice count changed, update voice amount
-        if (totalCurrentVoices !== this.totalVoicesAmount)
-        {
-            this.totalVoicesAmount = totalCurrentVoices;
-            this.sendChannelProperties();
-        }
+        // keep the processor alive
         return true;
     }
     
@@ -591,7 +591,6 @@ SpessaSynthProcessor.prototype.getWorkletVoices = getWorkletVoices;
 
 // message port related
 SpessaSynthProcessor.prototype.handleMessage = handleMessage;
-SpessaSynthProcessor.prototype.sendChannelProperties = sendChannelProperties;
 SpessaSynthProcessor.prototype.callEvent = callEvent;
 
 // system-exclusive related

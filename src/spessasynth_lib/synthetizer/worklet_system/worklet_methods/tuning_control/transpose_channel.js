@@ -30,5 +30,5 @@ export function transposeChannel(semitones, force = false)
     // apply transpose
     this.channelTransposeKeyShift = keyShift;
     this.setCustomController(customControllers.channelTransposeFine, (semitones - keyShift) * 100);
-    this.synth.sendChannelProperties();
+    this.sendChannelProperty();
 }

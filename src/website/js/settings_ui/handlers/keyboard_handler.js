@@ -75,7 +75,7 @@ export function _createKeyboardHandler(keyboard, synthui, renderer)
         );
         
         const nameDisplay = document.createElement("p");
-        nameDisplay.textContent = ": not ";
+        nameDisplay.textContent = ": UNKNOWN";
         nameDisplays.push(nameDisplay);
         channelTrackers.push({
             program: 0,

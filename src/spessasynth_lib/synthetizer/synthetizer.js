@@ -78,6 +78,12 @@ export class Synthetizer
     channelProperties = [];
     
     /**
+     * The current preset list
+     * @type {{presetName: string, bank: number, program: number}[]}
+     */
+    presetList = [];
+    
+    /**
      * Creates a new instance of the SpessaSynth synthesizer.
      * @param targetNode {AudioNode}
      * @param soundFontBuffer {ArrayBuffer} the soundfont file array buffer.
@@ -242,9 +248,15 @@ export class Synthetizer
         }
         
         // attach a new channel to keep track of channels count
-        this.eventHandler.addEvent("newchannel", "synth-new-channel", () =>
+        this.eventHandler.addEvent("newchannel", `synth-new-channel-${Math.random()}`, () =>
         {
             this.channelsAmount++;
+        });
+        
+        // attach a new event for preset list change
+        this.eventHandler.addEvent("presetlistchange", `synth-preset-list-change-${Math.random()}`, e =>
+        {
+            this.presetList = e;
         });
     }
     
@@ -396,11 +408,17 @@ export class Synthetizer
         const messageData = message.messageData;
         switch (message.messageType)
         {
-            case returnMessageType.channelProperties:
+            case returnMessageType.channelPropertyChange:
                 /**
-                 * @type {ChannelProperty[]}
+                 * @type {number}
                  */
-                this.channelProperties = messageData;
+                const channelNumber = messageData[0];
+                /**
+                 * @type {ChannelProperty}
+                 */
+                const property = messageData[1];
+                
+                this.channelProperties[channelNumber] = property;
                 
                 this._voicesAmount = this.channelProperties.reduce((sum, voices) => sum + voices.voicesAmount, 0);
                 break;
@@ -485,7 +503,9 @@ export class Synthetizer
             pitchBendRangeSemitones: 0,
             isMuted: false,
             isDrum: false,
-            transposition: 0
+            transposition: 0,
+            program: 0,
+            bank: this.channelsAmount % 16 === DEFAULT_PERCUSSION ? 128 : 0
         });
         if (!postMessage)
         {

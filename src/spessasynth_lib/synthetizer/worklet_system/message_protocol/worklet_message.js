@@ -79,16 +79,15 @@ export const ALL_CHANNELS_OR_DIFFERENT_ACTION = -1;
 /**
  * @typedef {{
  *     channelNumber: number
- *     messageType: workletMessageType,
+ *     messageType: (workletMessageType|number),
  *     messageData: (
+ *     boolean|
  *     number[]
  *     |undefined
  *     |boolean[]
  *     |WorkletVoice[]
  *     |number
- *     |{sampleData: Float32Array, sampleID: number}
  *     |{rate: number, depth: number, delay: number}
- *     |boolean
  *     |ArrayBuffer
  *     |{messageType: WorkletSequencerMessageType, messageData: any}
  *     |{messageType: workletKeyModifierMessageType, messageData: any}
@@ -102,14 +101,14 @@ export const ALL_CHANNELS_OR_DIFFERENT_ACTION = -1;
  * @property {{
  *     eventName: string,
  *     eventData: any
- * }|ChannelProperty[]
+ * }|ChannelProperty
  * |PresetListElement[]
  * |string
  * |{messageType: WorkletSequencerReturnMessageType, messageData: any}
  * |SynthesizerSnapshot
  * |[WorkletSoundfontManagerMessageType, any]} messageData - the message's data
  *
- * 0 - channel properties           -> [...<ChannelProperty>] see message_sending.js line 29
+ * 0 - channel property change      -> [channel<number>, property<ChannelProperty>] see message_sending.js line 29
  * 1 - event call                   -> {eventName<string>, eventData:<the event's data>}
  * 2 - master parameter change      -> [parameter<masterParameterType>, value<string|number>]
  * 3 - sequencer specific           -> [messageType<WorkletSequencerReturnMessageType> messageData<any>] note: refer to sequencer_message.js
@@ -122,7 +121,7 @@ export const ALL_CHANNELS_OR_DIFFERENT_ACTION = -1;
  * @enum {number}
  */
 export const returnMessageType = {
-    channelProperties: 0,
+    channelPropertyChange: 0,
     eventCall: 1,
     masterParameterChange: 2,
     sequencerSpecific: 3,

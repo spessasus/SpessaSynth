@@ -14,7 +14,7 @@ export function createWorkletChannel(sendEvent = false)
     const channel = new WorkletProcessorChannel(this, this.defaultPreset, this.workletProcessorChannels.length);
     this.workletProcessorChannels.push(channel);
     channel.resetControllers();
-    this.sendChannelProperties();
+    channel.sendChannelProperty();
     if (sendEvent)
     {
         this.callEvent("newchannel", undefined);
