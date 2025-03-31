@@ -155,7 +155,7 @@ class MIDI extends BasicMIDI
         {
             fileByteArray = binaryData;
         }
-        const headerChunk = this.readMIDIChunk(fileByteArray);
+        const headerChunk = this._readMIDIChunk(fileByteArray);
         if (headerChunk.type !== "MThd")
         {
             SpessaSynthGroupEnd();
@@ -181,7 +181,7 @@ class MIDI extends BasicMIDI
              * @type {MIDIMessage[]}
              */
             const track = [];
-            const trackChunk = this.readMIDIChunk(fileByteArray);
+            const trackChunk = this._readMIDIChunk(fileByteArray);
             
             if (trackChunk.type !== "MTrk")
             {
@@ -303,8 +303,9 @@ class MIDI extends BasicMIDI
     /**
      * @param fileByteArray {IndexedByteArray}
      * @returns {{type: string, size: number, data: IndexedByteArray}}
+     * @private
      */
-    readMIDIChunk(fileByteArray)
+    _readMIDIChunk(fileByteArray)
     {
         const chunk = {};
         // type
