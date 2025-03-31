@@ -737,7 +737,7 @@ class SequencerUI
         else
         {
             // a check for lilypond later
-            let containsZWSP = false;
+            let containsZWSP = this.currentLyricsString.some(s => s.includes(ZWSP));
             // perform a check for double lyrics:
             // for example in some midi's, every lyric event is duplicated:
             // "He's " turns into two "He's " and another "He's " event
@@ -747,13 +747,6 @@ class SequencerUI
             for (let i = 1; i < this.currentLyricsString.length - 1; i += 2)
             {
                 const first = this.currentLyricsString[i];
-                if (!containsZWSP)
-                {
-                    if (first.includes(ZWSP))
-                    {
-                        containsZWSP = true;
-                    }
-                }
                 const second = this.currentLyricsString[i + 1];
                 // note: newline should be skipped
                 if (first.trim() === "" || second.trim() === "")
@@ -788,21 +781,24 @@ class SequencerUI
             {
                 for (let i = 0; i < this.currentLyricsString.length; i++)
                 {
-                    const string = this.currentLyricsString[i];
+                    let string = this.currentLyricsString[i];
                     if (string[0] === ZWSP)
                     {
                         // When adding ZWSP in front of a word: consider it as the start of a newline
-                        this.currentLyricsString[i] = " \n" + string.substring(1);
+                        string = " \n" + string.substring(1);
                     }
-                    else if (string[string.length - 1] === ZWSP)
+                    if (string[string.length - 1] === ZWSP)
                     {
                         // When appending a ZWSP at the end of a word, consider it as a syllable
-                        this.currentLyricsString[i] = string.substring(0, string.length - 1);
+                        // remove ZWSP
+                        string = string.substring(0, string.length - 1);
                     }
                     else
                     {
-                        this.currentLyricsString[i] = string + " ";
+                        // Otherwise it's a word. Add a space
+                        string = string + " ";
                     }
+                    this.currentLyricsString[i] = string;
                 }
             }
             
