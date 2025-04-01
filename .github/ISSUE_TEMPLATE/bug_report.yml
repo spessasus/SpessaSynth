@@ -1,86 +1,86 @@
 name: Bug report
 description: Report a bug/incorrect behavior in SpessaSynth.
-labels: ["bug"]
+labels: [ "bug" ]
 body:
-- type: checkboxes
-  attributes:
-    label: Duplicated issue check
-    description: Please make sure that this issue has not been reported before.
-    options:
-    - label: I confirm that I have searched the existing issues
+  - type: checkboxes
+    attributes:
+      label: Duplicated issue check
+      description: Please make sure that this issue has not been reported before.
+      options:
+        - label: I confirm that I have searched the existing issues
+          required: true
+  - type: input
+    id: version
+    attributes:
+      label: SpessaSynth version
+      description: The version of SpessaSynth you are using. Either the NPM package version or the app version (top right corner)
+    validations:
       required: true
-- type: input
-  id: version
-  attributes:
-    label: SpessaSynth version
-    description: The version of SpessaSynth you are using. Either the NPM package version or the app version (top right corner)
-  validations:
-    required: true
-- type: dropdown
-  id: scope
-  attributes:
-    label: Bug Scope
-    description: Is the bug report about spessasynth_lib or the SpessaSynth app? If both, pick spessasynth_lib
-    options:
-      - Web App/Local Edition
-      - spessasynth_lib
-  validations:
-    required: true
-- type: textarea
-  id: description
-  attributes:
-    label: Description
-    description: Describe the bug.
-  validations:
-    required: true
-- type: textarea
-  id: expected
-  attributes:
-    label: Expected Behavior
-    description: A concise description of what you expected to happen.
-  validations:
-    required: true
-- type: textarea
-  id: reproduction
-  attributes:
-    label: Reproduction steps
-    description: Steps to reproduce the behavior.
-    placeholder: |
-      1. Load this MIDI...
-      1. Click this...
-      1. Play '...'
-      1. See error...
-  validations:
-    required: true
-- type: dropdown
-  id: os
-  attributes:
-    label: Operating System
-    description: Which operating system are you on?
-    options:
-      - Microsoft Windows
-      - Linux
-      - MacOS
-      - Android
-      - iOS
-      - Other (please specify in additional info)
-  validations:
-    required: false
-- type: dropdown
-  id: browser
-  attributes:
-    label: Browser Engine
-    description: Which browser are you using? This is very important!
-    options:
-      - Chromium (Chrome, Edge, Brave, Opera, etc.)
-      - Gecko (Firefox, Librewolf, Waterfox, etc.)
-      - WebKit (Safari on MacOS, all browsers on iOs)
-      - Other (please specify in additional info)
-  validations:
-    required: true
-- type: textarea
-  attributes:
-    label: Additional info
-    description: Any additional info and attachments (screenshots, MIDIs, soundfonts, other environments) go here.
-  validations:
-    required: false
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Bug Scope
+      description: Is the bug report about spessasynth_lib or the SpessaSynth app? If both, pick spessasynth_lib
+      options:
+        - Web App/Local Edition
+        - spessasynth_lib
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the bug.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: A concise description of what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Load this MIDI...
+        1. Click this...
+        1. Play '...'
+        1. See error...
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      description: Which operating system are you on?
+      options:
+        - Microsoft Windows
+        - Linux
+        - MacOS
+        - Android
+        - iOS
+        - Other (please specify in additional info)
+    validations:
+      required: false
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser Engine
+      description: Which browser are you using? This is very important!
+      options:
+        - Chromium (Chrome, Edge, Brave, Opera, etc.)
+        - Gecko (Firefox, Librewolf, Waterfox, etc.)
+        - WebKit (Safari on MacOS, all browsers on iOs)
+        - Other (please specify in additional info)
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Additional info
+      description: Any additional info and attachments (screenshots, MIDIs, soundfonts, other environments) go here.
+    validations:
+      required: false
