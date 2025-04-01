@@ -34,7 +34,7 @@ export function reloadSoundFont(buffer, isOverride = false)
     this.workletProcessorChannels.forEach(c =>
         c.programChange(c.preset.program)
     );
-    this.post({ messageType: returnMessageType.ready, messageData: undefined });
+    this.postReady();
     this.sendPresetList();
     SpessaSynthInfo("%cSpessaSynth is ready!", consoleColors.recognized);
 }

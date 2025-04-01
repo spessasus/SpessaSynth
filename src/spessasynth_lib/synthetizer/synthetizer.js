@@ -90,7 +90,9 @@ export class Synthetizer
      * @param soundFontBuffer {ArrayBuffer} the soundfont file array buffer.
      * @param enableEventSystem {boolean} enables the event system.
      * Defaults to true.
-     * @param startRenderingData {StartRenderingDataConfig} if set, starts playing this immediately and restores the values.
+     * Disable only when you're rendering audio offline with no actions from the main thread
+     * @param startRenderingData {StartRenderingDataConfig} if it is set,
+     * starts playing this immediately and restores the values.
      * @param synthConfig {SynthConfig} optional configuration for the synthesizer.
      */
     constructor(targetNode,
@@ -189,12 +191,11 @@ export class Synthetizer
         }
         
         /**
+         * used in "presetlistchange" event
          * @typedef {Object} PresetListElement
          * @property {string} presetName
          * @property {number} program
          * @property {number} bank
-         *
-         * used in "presetlistchange" event
          */
         
         // worklet sends us some data back
@@ -465,7 +466,7 @@ export class Synthetizer
                 }
                 break;
             
-            case returnMessageType.ready:
+            case returnMessageType.isFullyInitialized:
                 this._resolveWhenReady();
                 break;
             

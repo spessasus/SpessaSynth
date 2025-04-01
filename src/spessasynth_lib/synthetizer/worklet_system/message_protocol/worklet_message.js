@@ -113,7 +113,7 @@ export const ALL_CHANNELS_OR_DIFFERENT_ACTION = -1;
  * 2 - master parameter change      -> [parameter<masterParameterType>, value<string|number>]
  * 3 - sequencer specific           -> [messageType<WorkletSequencerReturnMessageType> messageData<any>] note: refer to sequencer_message.js
  * 4 - synthesizer snapshot         -> snapshot<SynthesizerSnapshot> note: refer to synthesizer_snapshot.js
- * 5 - ready                        -> (no data)
+ * 5 - isFullyInitialized           -> (no data)
  * 6 - soundfontError               -> errorMessage<string>
  */
 
@@ -126,6 +126,6 @@ export const returnMessageType = {
     masterParameterChange: 2,
     sequencerSpecific: 3,
     synthesizerSnapshot: 4,
-    ready: 5,
+    isFullyInitialized: 5,
     soundfontError: 6
 };

@@ -208,6 +208,12 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
     defaultDrumsUsesOverride = false;
     
     /**
+     * Controls if the worklet processor is fully initialized
+     * @type {Promise<boolean>}
+     */
+    processorInitialized = stbvorbis.isInitialized;
+    
+    /**
      * Creates a new worklet synthesis system. contains all channels
      * @param options {{
      * processorOptions: {
@@ -299,15 +305,14 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
                 }
                 // set voice cap to unlimited
                 this.voiceCap = Infinity;
-                this.sequencer.loadNewSongList([options.processorOptions.startRenderingData.parsedMIDI]);
+                this.processorInitialized.then(() =>
+                {
+                    this.sequencer.loadNewSongList([options.processorOptions.startRenderingData.parsedMIDI]);
+                });
             }
         }
         
-        stbvorbis.isInitialized.then(() =>
-        {
-            this.postReady();
-            SpessaSynthInfo("%cSpessaSynth is ready!", consoleColors.recognized);
-        });
+        this.postReady();
     }
     
     /**
@@ -400,10 +405,15 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
     
     postReady()
     {
-        // post-ready cannot be constrained by the event system
-        this.port.postMessage({
-            messageType: returnMessageType.ready,
-            messageData: undefined
+        // ensure stbvorbis is fully initialized
+        this.processorInitialized.then(() =>
+        {
+            // post-ready cannot be constrained by the event system
+            this.port.postMessage({
+                messageType: returnMessageType.isFullyInitialized,
+                messageData: undefined
+            });
+            SpessaSynthInfo("%cSpessaSynth is ready!", consoleColors.recognized);
         });
     }
     
