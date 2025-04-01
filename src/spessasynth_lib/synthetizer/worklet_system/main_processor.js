@@ -400,10 +400,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
     
     postReady()
     {
-        if (!this.enableEventSystem)
-        {
-            return;
-        }
+        // post-ready cannot be constrained by the event system
         this.port.postMessage({
             messageType: returnMessageType.ready,
             messageData: undefined

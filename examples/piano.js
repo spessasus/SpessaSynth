@@ -15,7 +15,7 @@ document.getElementById("soundfont_input").onchange = async e =>
     const context = new AudioContext();
     await context.audioWorklet.addModule(new URL("../src/spessasynth_lib/" + WORKLET_URL_ABSOLUTE, import.meta.url));
     const synth = new Synthetizer(context.destination, soundFontBuffer);     // create the synthesizer
-    
+    await synth.isReady;
     // create a 36-key piano
     const piano = document.getElementById("piano");
     for (let i = 0; i < 36; i++)

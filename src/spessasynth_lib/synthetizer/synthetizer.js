@@ -110,7 +110,7 @@ export class Synthetizer
         this._resolveWhenReady = undefined;
         
         /**
-         * Indicates if the synth is fully ready
+         * Indicates if the synth is fully ready with the SF3 decoder
          * @type {Promise<void>}
          */
         this.isReady = new Promise(resolve => this._resolveWhenReady = resolve);

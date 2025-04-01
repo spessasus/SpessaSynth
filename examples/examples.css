@@ -14,22 +14,21 @@ button {
     display: inline-block;
 }
 
-button:hover{
+button:hover {
     filter: brightness(1.1);
 }
 
-button:active{
+button:active {
     transform: scale(0.9);
 }
 
-canvas{
+canvas {
     width: 100%;
     min-height: 0;
     max-height: 40vh;
 }
 
-input[type='range']
-{
+input[type='range'] {
     width: 100%;
 }
 
@@ -41,7 +40,7 @@ body {
     max-height: 100vh;
 }
 
-.example_content{
+.example_content {
     width: 80%;
     background: #333;
     padding: 5em;
