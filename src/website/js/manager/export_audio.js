@@ -46,7 +46,10 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
     
     let sampleDuration = sampleRate * duration;
     
-    // prepare audio context
+    /**
+     * prepare audio context
+     * @type {OfflineAudioContext}
+     */
     let offline;
     try
     {

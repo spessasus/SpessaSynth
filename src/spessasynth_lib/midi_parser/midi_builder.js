@@ -27,7 +27,7 @@ export class MIDIBuilder extends BasicMIDI
     }
     
     /**
-     * Adds a new "set tempo" message
+     * Adds a new Set Tempo event
      * @param ticks {number} the tick number of the event
      * @param tempo {number} the tempo in beats per minute (BPM)
      */
@@ -135,6 +135,25 @@ export class MIDIBuilder extends BasicMIDI
             track,
             messageTypes.noteOff | channel,
             [midiNote, 64]
+        );
+    }
+    
+    /**
+     * Adds a new Program Change event
+     * @param ticks {number} the tick time of the event
+     * @param track {number} the track number to use
+     * @param channel {number} the channel to use
+     * @param programNumber {number} the MIDI program to use
+     */
+    addProgramChange(ticks, track, channel, programNumber)
+    {
+        channel %= 16;
+        programNumber %= 128;
+        this.addEvent(
+            ticks,
+            track,
+            messageTypes.programChange | channel,
+            [programNumber]
         );
     }
     
