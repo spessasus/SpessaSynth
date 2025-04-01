@@ -22,6 +22,7 @@ import {
     VOICE_CAP,
     WORKLET_PROCESSOR_NAME
 } from "./synth_constants.js";
+import { BasicMIDI } from "../midi_parser/basic_midi.js";
 
 
 /**
@@ -147,6 +148,12 @@ export class Synthetizer
              * @type {SynthConfig}
              */
             this.effectsConfig = synthConfig;
+        }
+        
+        if (startRenderingData?.parsedMIDI)
+        {
+            // copy to avoid non-cloneable properties, like MIDIBuilder.encoder
+            startRenderingData.parsedMIDI = BasicMIDI.copyFrom(startRenderingData?.parsedMIDI);
         }
         
         // first two outputs: reverb, chorus, the others are the channel outputs

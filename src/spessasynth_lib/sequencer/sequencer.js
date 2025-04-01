@@ -687,7 +687,19 @@ export class Sequencer
         this.midiData = DUMMY_MIDI_DATA;
         this.hasDummyData = true;
         this.duration = 99999;
-        this._sendMessage(WorkletSequencerMessageType.loadNewSongList, [midiBuffers, autoPlay]);
+        /**
+         * sanitize MIDIs
+         * @type {({binary: ArrayBuffer, altName: string}|BasicMIDI)[]}
+         */
+        const sanitizedMidis = midiBuffers.map(m =>
+        {
+            if (m.altName)
+            {
+                return m;
+            }
+            return BasicMIDI.copyFrom(m);
+        });
+        this._sendMessage(WorkletSequencerMessageType.loadNewSongList, [sanitizedMidis, autoPlay]);
         this.songIndex = 0;
         this.songsAmount = midiBuffers.length;
         if (this.songsAmount > 1)
