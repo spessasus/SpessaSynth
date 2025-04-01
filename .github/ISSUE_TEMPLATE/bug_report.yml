@@ -1,6 +1,5 @@
 name: Bug report
 description: Report a bug/incorrect behavior in SpessaSynth.
-title: ""
 labels: ["bug"]
 body:
 - type: checkboxes
