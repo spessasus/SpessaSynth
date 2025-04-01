@@ -20,7 +20,7 @@ body:
   id: scope
   attributes:
     label: Bug Scope
-    description: Is the bug report about spessasynth_lib or the SpessaSynth app?
+    description: Is the bug report about spessasynth_lib or the SpessaSynth app? If both, pick spessasynth_lib
     options:
       - Web App/Local Edition
       - spessasynth_lib
