@@ -736,47 +736,48 @@ class SequencerUI
         }
         else
         {
-            // a check for lilypond later
-            let containsZWSP = this.currentLyricsString.some(s => s.includes(ZWSP));
-            // perform a check for double lyrics:
-            // for example in some midi's, every lyric event is duplicated:
-            // "He's " turns into two "He's " and another "He's " event
-            // if that's the case for all events in the current lyrics, set duplicates to "" to avoid index errors
-            let isDoubleLyrics = true;
-            // note: the first lyrics is usually a control character
-            for (let i = 1; i < this.currentLyricsString.length - 1; i += 2)
+            if (this.currentLyricsString.length > 2)
             {
-                const first = this.currentLyricsString[i];
-                const second = this.currentLyricsString[i + 1];
-                // note: newline should be skipped
-                if (first.trim() === "" || second.trim() === "")
+                // perform a check for double lyrics:
+                // for example in some midi's, every lyric event is duplicated:
+                // "He's " turns into two "He's " and another "He's " event
+                // if that's the case for all events in the current lyrics, set duplicates to "" to avoid index errors
+                let isDoubleLyrics = true;
+                // note: the first lyrics is usually a control character
+                for (let i = 1; i < this.currentLyricsString.length - 1; i += 2)
                 {
-                    i -= 1;
-                    continue;
-                }
-                if (first.trim() !== second.trim())
-                {
-                    isDoubleLyrics = false;
-                    break;
-                }
-            }
-            if (isDoubleLyrics)
-            {
-                for (let i = 0; i < this.currentLyricsString.length; i += 2)
-                {
+                    const first = this.currentLyricsString[i];
+                    const second = this.currentLyricsString[i + 1];
                     // note: newline should be skipped
-                    if (this.currentLyricsString[i] === "\n")
+                    if (first.trim() === "" || second.trim() === "")
                     {
                         i -= 1;
                         continue;
                     }
-                    this.currentLyricsString[i] = "";
+                    if (first.trim() !== second.trim())
+                    {
+                        isDoubleLyrics = false;
+                        break;
+                    }
                 }
-                
+                if (isDoubleLyrics)
+                {
+                    for (let i = 0; i < this.currentLyricsString.length; i += 2)
+                    {
+                        // note: newline should be skipped
+                        if (this.currentLyricsString[i] === "\n")
+                        {
+                            i -= 1;
+                            continue;
+                        }
+                        this.currentLyricsString[i] = "";
+                    }
+                    
+                }
             }
-            
             // perform a lilypond fix
             // see https://github.com/spessasus/SpessaSynth/issues/141
+            let containsZWSP = this.currentLyricsString.some(s => s.includes(ZWSP));
             if (containsZWSP)
             {
                 for (let i = 0; i < this.currentLyricsString.length; i++)
