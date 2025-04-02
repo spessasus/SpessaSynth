@@ -2,7 +2,7 @@ import { readBytesAsString } from "../../utils/byte_functions/string.js";
 import { readLittleEndian } from "../../utils/byte_functions/little_endian.js";
 import { DLSPreset } from "./dls_preset.js";
 import { findRIFFListType, readRIFFChunk } from "../basic_soundfont/riff_chunk.js";
-import { SpessaSynthGroup, SpessaSynthGroupEnd } from "../../utils/loggin.js";
+import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd } from "../../utils/loggin.js";
 import { BasicInstrumentZone } from "../basic_soundfont/basic_zones.js";
 import { consoleColors } from "../../utils/other.js";
 import { generatorLimits, generatorTypes } from "../basic_soundfont/generator.js";
@@ -54,7 +54,7 @@ export function readDLSInstrument(chunk)
     }
     preset.presetName = presetName;
     preset.DLSInstrument.instrumentName = presetName;
-    SpessaSynthGroup(
+    SpessaSynthGroupCollapsed(
         `%cParsing %c"${presetName}"%c...`,
         consoleColors.info,
         consoleColors.recognized,
