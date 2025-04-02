@@ -32,6 +32,8 @@ import { applySynthesizerSnapshot } from "./snapshot/apply_synthesizer_snapshot.
 import { createWorkletChannel } from "./worklet_methods/create_worklet_channel.js";
 import { FILTER_SMOOTHING_FACTOR } from "./worklet_utilities/lowpass_filter.js";
 import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE, VOICE_CAP } from "../synth_constants.js";
+import { fillWithDefaults } from "../../utils/fill_with_defaults.js";
+import { DEFAULT_SEQUENCER_OPTIONS } from "../../sequencer/default_sequencer_options.js";
 
 
 /**
@@ -307,6 +309,17 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
                 this.voiceCap = Infinity;
                 this.processorInitialized.then(() =>
                 {
+                    /**
+                     * set options
+                     * @type {SequencerOptions}
+                     */
+                    const seqOptions = fillWithDefaults(
+                        options.processorOptions.startRenderingData.sequencerOptions,
+                        DEFAULT_SEQUENCER_OPTIONS
+                    );
+                    this.sequencer.skipToFirstNoteOn = seqOptions.skipToFirstNoteOn;
+                    this.sequencer.preservePlaybackState = seqOptions.preservePlaybackState;
+                    // auto play is ignored
                     this.sequencer.loadNewSongList([options.processorOptions.startRenderingData.parsedMIDI]);
                 });
             }

@@ -11,6 +11,7 @@ import { DUMMY_MIDI_DATA, MIDIData } from "../midi_parser/midi_data.js";
 import { BasicMIDI } from "../midi_parser/basic_midi.js";
 import { readBytesAsUintBigEndian } from "../utils/byte_functions/big_endian.js";
 import { IndexedByteArray } from "../utils/indexed_array.js";
+import { DEFAULT_SEQUENCER_OPTIONS } from "./default_sequencer_options.js";
 
 /**
  * sequencer.js
@@ -37,15 +38,6 @@ import { IndexedByteArray } from "../utils/indexed_array.js";
  * @property {boolean|unescape} preservePlaybackState - if true,
  * the sequencer will stay paused when seeking or changing the playback rate
  */
-
-/**
- * @type {SequencerOptions}
- */
-const DEFAULT_OPTIONS = {
-    skipToFirstNoteOn: true,
-    autoPlay: true,
-    preservePlaybackState: false
-};
 
 // noinspection JSUnusedGlobalSymbols
 export class Sequencer
@@ -153,7 +145,7 @@ export class Sequencer
      * @param synth {Synthetizer} synth to send events to
      * @param options {SequencerOptions} the sequencer's options
      */
-    constructor(midiBinaries, synth, options = DEFAULT_OPTIONS)
+    constructor(midiBinaries, synth, options = DEFAULT_SEQUENCER_OPTIONS)
     {
         this.ignoreEvents = false;
         this.synth = synth;

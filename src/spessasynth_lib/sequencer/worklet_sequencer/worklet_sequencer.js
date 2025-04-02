@@ -127,9 +127,8 @@ class WorkletSequencer
     
     /**
      * @type {boolean}
-     * @private
      */
-    _skipToFirstNoteOn = true;
+    skipToFirstNoteOn = true;
     
     /**
      * If true, seq will stay paused when seeking or changing the playback rate
@@ -178,7 +177,7 @@ class WorkletSequencer
         if (time > this.duration || time < 0)
         {
             // time is 0
-            if (this._skipToFirstNoteOn)
+            if (this.skipToFirstNoteOn)
             {
                 this.setTimeTicks(this.midiData.firstNoteOn - 1);
             }
@@ -188,7 +187,7 @@ class WorkletSequencer
             }
             return;
         }
-        if (this._skipToFirstNoteOn)
+        if (this.skipToFirstNoteOn)
         {
             if (time < this.firstNoteTime)
             {

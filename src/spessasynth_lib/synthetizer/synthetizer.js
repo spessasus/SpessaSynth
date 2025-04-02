@@ -1,5 +1,5 @@
 import { IndexedByteArray } from "../utils/indexed_array.js";
-import { consoleColors, fillWithDefaults } from "../utils/other.js";
+import { consoleColors } from "../utils/other.js";
 import { getEvent, messageTypes, midiControllers } from "../midi_parser/midi_message.js";
 import { EventHandler } from "./synth_event_handler.js";
 import { FancyChorus } from "./audio_effects/fancy_chorus.js";
@@ -23,6 +23,8 @@ import {
     WORKLET_PROCESSOR_NAME
 } from "./synth_constants.js";
 import { BasicMIDI } from "../midi_parser/basic_midi.js";
+import { fillWithDefaults } from "../utils/fill_with_defaults.js";
+import { DEFAULT_SEQUENCER_OPTIONS } from "../sequencer/default_sequencer_options.js";
 
 
 /**
@@ -150,6 +152,15 @@ export class Synthetizer
                 }
                 sequencerRenderingData.snapshot = snapshot;
             }
+            if (startRenderingData?.sequencerOptions)
+            {
+                // sequencer options
+                sequencerRenderingData.sequencerOptions = fillWithDefaults(
+                    startRenderingData.sequencerOptions,
+                    DEFAULT_SEQUENCER_OPTIONS
+                );
+            }
+            
             sequencerRenderingData.loopCount = startRenderingData?.loopCount ?? 0;
         }
         
