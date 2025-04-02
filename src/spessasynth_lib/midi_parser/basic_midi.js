@@ -331,7 +331,7 @@ class BasicMIDI extends MIDISequenceData
                     track.unshift(new MIDIMessage(
                         0,
                         messageTypes.sequenceNumber,
-                        new IndexedByteArray([0x0])
+                        new IndexedByteArray([0x0, 0x0]) // two bytes
                     ));
                 }
             }
