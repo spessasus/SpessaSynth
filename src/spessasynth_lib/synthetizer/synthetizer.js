@@ -104,34 +104,24 @@ export class Synthetizer
         SpessaSynthInfo("%cInitializing SpessaSynth synthesizer...", consoleColors.info);
         this.context = targetNode.context;
         this.targetNode = targetNode;
-        // ensure defaults
+        
+        // ensure default values for options
         enableEventSystem = enableEventSystem ?? true;
         synthConfig = synthConfig ?? DEFAULT_SYNTH_CONFIG;
         
-        /**
-         * SF3 decoder resolve
-         * @private
-         * @type {function}
-         */
+        // initialize internal promise resolution
         this._resolveWhenReady = undefined;
-        /**
-         * Indicates if the synth is fully ready with the SF3 decoder
-         * @type {Promise<void>}
-         */
         this.isReady = new Promise(resolve => this._resolveWhenReady = resolve);
         
-        
-        // add new channels
+        // create initial channels
         for (let i = 0; i < this.channelsAmount; i++)
         {
             this.addNewChannel(false);
         }
         this.channelProperties[DEFAULT_PERCUSSION].isDrum = true;
         
-        // determine one output mode
+        // determine output mode and channel configuration
         const oneOutputMode = startRenderingData?.oneOutput ?? false;
-        
-        // determine channel numbers
         let processorChannelCount = Array(this._outputsAmount + 2).fill(2);
         let processorOutputsCount = this._outputsAmount + 2;
         if (oneOutputMode)
@@ -140,56 +130,37 @@ export class Synthetizer
             processorChannelCount = [32];
         }
         
-        /**
-         * @type {{parsedMIDI: BasicMIDI, loopCount: number, snapshot: SynthesizerSnapshot}}
-         */
-        const sequencerRenderingData = {};
-        /**
-         * @type {SynthConfig}
-         */
+        // initialize effects configuration
         this.effectsConfig = fillWithDefaults(synthConfig, DEFAULT_SYNTH_CONFIG);
         
-        // check if rendering is enabled in the first place
+        // process start rendering data
+        const sequencerRenderingData = {};
         if (startRenderingData?.parsedMIDI !== undefined)
         {
-            // copy to avoid non-cloneable properties, like MIDIBuilder.encoder
             sequencerRenderingData.parsedMIDI = BasicMIDI.copyFrom(startRenderingData.parsedMIDI);
-            
-            const snapshot = startRenderingData?.snapshot;
-            if (snapshot)
+            if (startRenderingData?.snapshot)
             {
-                // check for config data in snapshot, which overrides if start rendering is enabled
+                const snapshot = startRenderingData.snapshot;
                 if (snapshot?.effectsConfig !== undefined)
                 {
-                    /**
-                     * @type {SynthConfig}
-                     */
+                    // overwrite effects configuration with the snapshot
                     this.effectsConfig = fillWithDefaults(snapshot.effectsConfig, DEFAULT_SYNTH_CONFIG);
-                    // delete the property as it cannot be cloned
+                    // delete effects config as it cannot be cloned to the worklet (and does not need to be)
                     delete snapshot.effectsConfig;
                 }
                 sequencerRenderingData.snapshot = snapshot;
-                
             }
             sequencerRenderingData.loopCount = startRenderingData?.loopCount ?? 0;
         }
         
-        // first two outputs: reverb, chorus, the others are the channel outputs
+        // create the audio worklet node
         try
         {
-            /**
-             *
-             * @type {function(Object, string, Object)}
-             */
             let workletConstructor = (synthConfig?.audioNodeCreators?.worklet) ??
                 ((context, name, options) =>
                 {
-                    // noinspection JSCheckFunctionSignatures
                     return new AudioWorkletNode(context, name, options);
                 });
-            /**
-             * @type {AudioWorkletNode}
-             */
             this.worklet = workletConstructor(this.context, WORKLET_PROCESSOR_NAME, {
                 outputChannelCount: processorChannelCount,
                 numberOfOutputs: processorOutputsCount,
@@ -207,49 +178,20 @@ export class Synthetizer
             throw new Error("Could not create the audioWorklet. Did you forget to addModule()?");
         }
         
-        /**
-         * used in "presetlistchange" event
-         * @typedef {Object} PresetListElement
-         * @property {string} presetName
-         * @property {number} program
-         * @property {number} bank
-         */
-        
-        // worklet sends us some data back
+        // set up message handling and managers
         this.worklet.port.onmessage = e => this.handleMessage(e.data);
-        
-        /**
-         * The synth's soundfont manager
-         * @type {SoundfontManager}
-         */
         this.soundfontManager = new SoundfontManager(this);
-        
-        /**
-         * The synth's key modifier manager
-         * @type {KeyModifierManager}
-         */
         this.keyModifierManager = new KeyModifierManager(this);
-        
-        /**
-         * @type {function(SynthesizerSnapshot)}
-         * @private
-         */
         this._snapshotCallback = undefined;
-        
-        /**
-         * for the worklet sequencer's messages
-         * @type {function(WorkletSequencerReturnMessageType, any)}
-         */
         this.sequencerCallbackFunction = undefined;
         
+        // connect worklet outputs
         if (oneOutputMode)
         {
-            // one output mode: one output (duh)
             this.worklet.connect(targetNode, 0);
         }
         else
         {
-            // add reverb and chorus processors
             const reverbOn = this.effectsConfig?.reverbEnabled ?? true;
             const chorusOn = this.effectsConfig?.chorusEnabled ?? true;
             if (reverbOn)
@@ -258,32 +200,28 @@ export class Synthetizer
                 this.reverbProcessor.connect(targetNode);
                 this.worklet.connect(this.reverbProcessor, 0);
             }
-            
             if (chorusOn)
             {
                 this.chorusProcessor = new FancyChorus(targetNode, this.effectsConfig.chorusConfig);
                 this.worklet.connect(this.chorusProcessor.input, 1);
             }
-            
-            // connect all outputs to the output node
             for (let i = 2; i < this.channelsAmount + 2; i++)
             {
                 this.worklet.connect(targetNode, i);
             }
         }
         
-        // attach a new channel to keep track of channels count
+        // attach event handlers
         this.eventHandler.addEvent("newchannel", `synth-new-channel-${Math.random()}`, () =>
         {
             this.channelsAmount++;
         });
-        
-        // attach a new event for preset list change
         this.eventHandler.addEvent("presetlistchange", `synth-preset-list-change-${Math.random()}`, e =>
         {
             this.presetList = e;
         });
     }
+    
     
     /**
      * @type {"gm"|"gm2"|"gs"|"xg"}
