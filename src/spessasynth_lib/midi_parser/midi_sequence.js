@@ -40,7 +40,7 @@ class MIDISequenceData
     
     /**
      * The track names in the MIDI file, an empty string if not set.
-     * @type {[]}
+     * @type {string[]}
      */
     trackNames = [];
     

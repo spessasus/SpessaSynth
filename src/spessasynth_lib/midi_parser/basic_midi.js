@@ -1,6 +1,6 @@
 import { MIDISequenceData } from "./midi_sequence.js";
 import { getStringBytes, readBytesAsString } from "../utils/byte_functions/string.js";
-import { messageTypes } from "./midi_message.js";
+import { messageTypes, MIDIMessage } from "./midi_message.js";
 import { readBytesAsUintBigEndian } from "../utils/byte_functions/big_endian.js";
 import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo } from "../utils/loggin.js";
 import { consoleColors, formatTitle, sanitizeKarLyrics } from "../utils/other.js";
@@ -8,6 +8,7 @@ import { writeMIDI } from "./midi_writer.js";
 import { applySnapshotToMIDI, modifyMIDI } from "./midi_editor.js";
 import { writeRMIDI } from "./rmidi_writer.js";
 import { getUsedProgramsAndKeys } from "./used_keys_loaded.js";
+import { IndexedByteArray } from "../utils/indexed_array.js";
 
 /**
  * BasicMIDI is the base of a complete MIDI file, used by the sequencer internally.
@@ -98,6 +99,9 @@ class BasicMIDI extends MIDISequenceData
         
         for (let i = 0; i < this.tracks.length; i++)
         {
+            /**
+             * @type {MIDIMessage[]}
+             */
             const track = this.tracks[i];
             const usedChannels = new Set();
             let trackHasVoiceMessages = false;
@@ -304,6 +308,31 @@ class BasicMIDI extends MIDISequenceData
                 if (!trackHasVoiceMessages)
                 {
                     copyrightComponents.push(name);
+                }
+            }
+            
+            // if the first event is not at 0 ticks, add a track name
+            // https://github.com/spessasus/SpessaSynth/issues/145
+            if (track[0].ticks > 0)
+            {
+                const name = this.trackNames[i];
+                if (name.length > 0)
+                {
+                    // can copy
+                    track.unshift(new MIDIMessage(
+                        0,
+                        messageTypes.trackName,
+                        getStringBytes(name)
+                    ));
+                }
+                else
+                {
+                    // sequence number
+                    track.unshift(new MIDIMessage(
+                        0,
+                        messageTypes.sequenceNumber,
+                        new IndexedByteArray([0x0])
+                    ));
                 }
             }
         }

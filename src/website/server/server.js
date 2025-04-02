@@ -49,7 +49,16 @@ const server = http.createServer((req, res) =>
                 configJson = "{}";
             }
             
-            const config = JSON.parse(configJson);
+            let config;
+            try
+            {
+                config = JSON.parse(configJson);
+            }
+            catch (e)
+            {
+                console.error("Invalid config:", configJson, e);
+                config = {};
+            }
             config["lastUsedSf2"] = sfname;
             
             fs.writeFileSync(configPath, JSON.stringify(config), { flag: "w" });
