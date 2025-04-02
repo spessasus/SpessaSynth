@@ -1,5 +1,5 @@
 import { IndexedByteArray } from "../utils/indexed_array.js";
-import { consoleColors } from "../utils/other.js";
+import { consoleColors, fillWithDefaults } from "../utils/other.js";
 import { getEvent, messageTypes, midiControllers } from "../midi_parser/midi_message.js";
 import { EventHandler } from "./synth_event_handler.js";
 import { FancyChorus } from "./audio_effects/fancy_chorus.js";
@@ -104,14 +104,16 @@ export class Synthetizer
         SpessaSynthInfo("%cInitializing SpessaSynth synthesizer...", consoleColors.info);
         this.context = targetNode.context;
         this.targetNode = targetNode;
-        const oneOutputMode = startRenderingData?.oneOutput === true;
+        // ensure defaults
+        enableEventSystem = enableEventSystem ?? true;
+        synthConfig = synthConfig ?? DEFAULT_SYNTH_CONFIG;
         
         /**
+         * SF3 decoder resolve
          * @private
          * @type {function}
          */
         this._resolveWhenReady = undefined;
-        
         /**
          * Indicates if the synth is fully ready with the SF3 decoder
          * @type {Promise<void>}
@@ -119,13 +121,17 @@ export class Synthetizer
         this.isReady = new Promise(resolve => this._resolveWhenReady = resolve);
         
         
+        // add new channels
         for (let i = 0; i < this.channelsAmount; i++)
         {
             this.addNewChannel(false);
         }
         this.channelProperties[DEFAULT_PERCUSSION].isDrum = true;
         
-        // create a worklet processor
+        // determine one output mode
+        const oneOutputMode = startRenderingData?.oneOutput ?? false;
+        
+        // determine channel numbers
         let processorChannelCount = Array(this._outputsAmount + 2).fill(2);
         let processorOutputsCount = this._outputsAmount + 2;
         if (oneOutputMode)
@@ -134,42 +140,53 @@ export class Synthetizer
             processorChannelCount = [32];
         }
         
-        // check for config data in snapshot
-        if (startRenderingData?.snapshot?.effectsConfig !== undefined)
-        {
-            /**
-             * @type {SynthConfig}
-             */
-            this.effectsConfig = startRenderingData.snapshot.effectsConfig;
-            // remove from config as it can't be cloned
-            delete startRenderingData.snapshot.effectsConfig;
-        }
-        else
-        {
-            /**
-             * @type {SynthConfig}
-             */
-            this.effectsConfig = synthConfig;
-        }
+        /**
+         * @type {{parsedMIDI: BasicMIDI, loopCount: number, snapshot: SynthesizerSnapshot}}
+         */
+        const sequencerRenderingData = {};
+        /**
+         * @type {SynthConfig}
+         */
+        this.effectsConfig = fillWithDefaults(synthConfig, DEFAULT_SYNTH_CONFIG);
         
-        if (startRenderingData?.parsedMIDI)
+        // check if rendering is enabled in the first place
+        if (startRenderingData?.parsedMIDI !== undefined)
         {
             // copy to avoid non-cloneable properties, like MIDIBuilder.encoder
-            startRenderingData.parsedMIDI = BasicMIDI.copyFrom(startRenderingData?.parsedMIDI);
+            sequencerRenderingData.parsedMIDI = BasicMIDI.copyFrom(startRenderingData.parsedMIDI);
+            
+            const snapshot = startRenderingData?.snapshot;
+            if (snapshot)
+            {
+                // check for config data in snapshot, which overrides if start rendering is enabled
+                if (snapshot?.effectsConfig !== undefined)
+                {
+                    /**
+                     * @type {SynthConfig}
+                     */
+                    this.effectsConfig = fillWithDefaults(snapshot.effectsConfig, DEFAULT_SYNTH_CONFIG);
+                    // delete the property as it cannot be cloned
+                    delete snapshot.effectsConfig;
+                }
+                sequencerRenderingData.snapshot = snapshot;
+                
+            }
+            sequencerRenderingData.loopCount = startRenderingData?.loopCount ?? 0;
         }
         
         // first two outputs: reverb, chorus, the others are the channel outputs
         try
         {
-            let workletConstructor = synthConfig?.audioNodeCreators?.worklet;
-            if (!workletConstructor)
-            {
-                workletConstructor = (ctx, name, opts) =>
+            /**
+             *
+             * @type {function(Object, string, Object)}
+             */
+            let workletConstructor = (synthConfig?.audioNodeCreators?.worklet) ??
+                ((context, name, options) =>
                 {
                     // noinspection JSCheckFunctionSignatures
-                    return new AudioWorkletNode(ctx, name, opts);
-                };
-            }
+                    return new AudioWorkletNode(context, name, options);
+                });
             /**
              * @type {AudioWorkletNode}
              */
@@ -180,7 +197,7 @@ export class Synthetizer
                     midiChannels: this._outputsAmount,
                     soundfont: soundFontBuffer,
                     enableEventSystem: enableEventSystem,
-                    startRenderingData: startRenderingData
+                    startRenderingData: sequencerRenderingData
                 }
             });
         }
