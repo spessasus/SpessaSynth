@@ -528,6 +528,7 @@ export function modifyMIDI(
         midi.tracks[0].splice(index, 0, getGsOn(0));
         SpessaSynthInfo("%cGS on not detected. Adding it.", consoleColors.info);
     }
+    this.flush();
     SpessaSynthGroupEnd();
 }
 
