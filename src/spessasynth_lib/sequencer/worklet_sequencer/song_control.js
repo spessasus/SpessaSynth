@@ -144,7 +144,7 @@ export function loadNewSequence(parsedMidi, autoPlay = true)
     else
     {
         // this shall not play: play to the first note and then wait
-        const targetTime = this._skipToFirstNoteOn ? this.midiData.firstNoteOn - 1 : 0;
+        const targetTime = this.skipToFirstNoteOn ? this.midiData.firstNoteOn - 1 : 0;
         this.setTimeTicks(targetTime);
         this.pause();
     }
