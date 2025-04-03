@@ -10,7 +10,6 @@ import { SpessaSynthWarn } from "../utils/loggin.js";
 import { DUMMY_MIDI_DATA, MIDIData } from "../midi_parser/midi_data.js";
 import { BasicMIDI } from "../midi_parser/basic_midi.js";
 import { readBytesAsUintBigEndian } from "../utils/byte_functions/big_endian.js";
-import { IndexedByteArray } from "../utils/indexed_array.js";
 import { DEFAULT_SEQUENCER_OPTIONS } from "./default_sequencer_options.js";
 
 /**
@@ -616,8 +615,9 @@ export class Sequencer
                 switch (event.messageStatusByte)
                 {
                     case messageTypes.setTempo:
-                        const arr = new IndexedByteArray(messageData[1]);
-                        const bpm = 60000000 / readBytesAsUintBigEndian(arr, 3);
+                        event.messageData.currentIndex = 0;
+                        const bpm = 60000000 / readBytesAsUintBigEndian(event.messageData, 3);
+                        event.messageData.currentIndex = 0;
                         this.currentTempo = Math.round(bpm * 100) / 100;
                         if (this.onTempoChange)
                         {
