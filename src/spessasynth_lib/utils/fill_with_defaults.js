@@ -6,6 +6,10 @@
  */
 export function fillWithDefaults(obj, defObj)
 {
+    if (obj === undefined)
+    {
+        obj = {};
+    }
     for (const key in defObj)
     {
         if (defObj.hasOwnProperty(key) && !(key in obj))
