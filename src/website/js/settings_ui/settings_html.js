@@ -157,6 +157,14 @@ export const settingsHtml = `
             </label>
         </div>
         
+        <div class='switch_label'>
+            <label translate-path-title='locale.settings.interfaceSettings.showControls'></label>
+            <label class='switch'>
+                <input type='checkbox' checked id='show_sequencer_controls_button'>
+                <span class='switch_slider'></span>
+            </label>
+        </div>
+        
         <label for='language_selector' translate-path-title='locale.settings.interfaceSettings.selectLanguage'></label>
         <select id='language_selector'>
          <option value='help-translate' translate-path='locale.settings.interfaceSettings.selectLanguage.helpTranslate'></option>

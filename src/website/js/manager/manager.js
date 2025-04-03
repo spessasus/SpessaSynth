@@ -345,29 +345,6 @@ class Manager
             }
             switch (e.key.toLowerCase())
             {
-                case keybinds.cinematicMode:
-                    if (this.seq)
-                    {
-                        this.seq.pause();
-                    }
-                    const response = window.prompt(
-                        "Cinematic mode activated!\n Paste the link to the image for canvas (leave blank to disable)",
-                        ""
-                    );
-                    if (this.seq)
-                    {
-                        this.seq.play();
-                    }
-                    if (response === null)
-                    {
-                        return;
-                    }
-                    canvas.style.background = `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), center center / cover url("${response}")`;
-                    document.getElementsByClassName("top_part")[0].style.display = "none";
-                    document.getElementsByClassName("bottom_part")[0].style.display = "none";
-                    document.body.requestFullscreen().then();
-                    break;
-                
                 case keybinds.videoMode:
                     if (this.seq)
                     {

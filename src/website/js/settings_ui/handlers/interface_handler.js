@@ -39,6 +39,21 @@ export function _createInterfaceSettingsHandler()
         this._saveSettings();
         layoutSelect.blur();
     };
+    
+    // IMPORTANT
+    // this DOES NOT get saved in settings!
+    const seqControls = this.htmlControls.interface.showControlsToggle;
+    seqControls.onchange = () =>
+    {
+        if (seqControls.checked)
+        {
+            document.getElementsByClassName("bottom_part")[0].classList.remove("hidden");
+        }
+        else
+        {
+            document.getElementsByClassName("bottom_part")[0].classList.add("hidden");
+        }
+    };
 }
 
 /**

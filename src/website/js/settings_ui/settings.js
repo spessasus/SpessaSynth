@@ -390,6 +390,7 @@ class SpessaSynthSettings
             
             interface: {
                 themeSelector: document.getElementById("toggle_mode_button"),
+                showControlsToggle: document.getElementById("show_sequencer_controls_button"),
                 languageSelector: document.getElementById("language_selector"),
                 layoutSelector: document.getElementById("layout_selector")
             }

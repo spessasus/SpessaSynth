@@ -18,6 +18,5 @@ export const keybinds = {
     toggleSubtitles: "escape",
     sustainPedal: "shift",
     
-    cinematicMode: "c",
     videoMode: "v"
 };
