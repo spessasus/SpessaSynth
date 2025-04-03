@@ -43,12 +43,11 @@ export const WorkletSequencerMessageType = {
 export const WorkletSequencerReturnMessageType = {
     midiEvent: 0,               // [...midiEventBytes<number>]
     songChange: 1,              // [songIndex<number>, isAutoPlayed<boolean>]
-    textEvent: 2,               // [messageData<number[]>, statusByte<number>, lyricsIndex<number>]
-    timeChange: 3,              // newAbsoluteTime<number>
-    pause: 4,                   // no data
-    getMIDI: 5,                 // midiData<MIDI>
-    midiError: 6,               // errorMSG<string>
-    metaEvent: 7,               // [messageType<number>, messageData<Uint8Array>, trackNum<number>]
-    loopCountChange: 8,         // newLoopCount<number>
-    songListChange: 9          // songListData<MIDIData[]>
+    timeChange: 2,              // newAbsoluteTime<number>
+    pause: 3,                   // no data
+    getMIDI: 4,                 // midiData<MIDI>
+    midiError: 5,               // errorMSG<string>
+    metaEvent: 6,               // [event<MIDIMessage>, trackNum<number>]
+    loopCountChange: 7,         // newLoopCount<number>
+    songListChange: 8          // songListData<MIDIData[]>
 };

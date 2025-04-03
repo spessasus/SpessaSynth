@@ -121,7 +121,7 @@ export function setLyricsText(index)
 {
     // if there are no lyrics, there's one element:
     // ["No lyrics available"]
-    if (this.currentLyricsString.length < 2 || index < 0 || index > this.currentLyricsString.length)
+    if (this.currentLyricsString.length < 1 || index < 0 || index > this.currentLyricsString.length)
     {
         return;
     }

@@ -31,6 +31,7 @@ import { DEFAULT_SEQUENCER_OPTIONS } from "./default_sequencer_options.js";
  * @typedef {BasicMIDI|MidFile} MIDIFile
  */
 
+// noinspection JSUnusedGlobalSymbols
 /**
  * @typedef {Object} SequencerOptions
  * @property {boolean|undefined} skipToFirstNoteOn - if true, the sequencer will skip to the first note
@@ -50,7 +51,7 @@ export class Sequencer
     
     /**
      * Fires on text event
-     * @type {function}
+     * @type {Function}
      * @param data {Uint8Array} the data text
      * @param type {number} the status byte of the message (the meta-status byte)
      * @param lyricsIndex {number} if the text is a lyric, the index of the lyric in midiData.lyrics, otherwise -1
@@ -96,7 +97,7 @@ export class Sequencer
     
     /**
      * Fires on meta-event
-     * @type {Object<string, function([number, Uint8Array, number])>}
+     * @type {Object<string, function([number, Uint8Array, number, number])>}
      */
     onMetaEvent = {};
     
@@ -435,7 +436,8 @@ export class Sequencer
     
     /**
      * Adds a new event that gets called when a meta-event occurs
-     * @param callback {function([number, Uint8Array, number])} the meta-event type, its data and the track number
+     * @param callback {function([number, Uint8Array, number, number])} the meta-event type,
+     * its data, the track number and MIDI ticks
      * @param id {string} must be unique
      */
     addOnMetaEvent(callback, id)
@@ -564,13 +566,6 @@ export class Sequencer
                 }
                 break;
             
-            case WorkletSequencerReturnMessageType.textEvent:
-                if (this.onTextEvent)
-                {
-                    this.onTextEvent(...(messageData));
-                }
-                break;
-            
             case WorkletSequencerReturnMessageType.timeChange:
                 // message data is absolute time
                 const time = this.synth.currentTime - messageData;
@@ -614,16 +609,62 @@ export class Sequencer
                 break;
             
             case WorkletSequencerReturnMessageType.metaEvent:
-                const type = messageData[0];
-                if (type === messageTypes.setTempo)
+                /**
+                 * @type {MIDIMessage}
+                 */
+                const event = messageData[0];
+                switch (event.messageStatusByte)
                 {
-                    const arr = new IndexedByteArray(messageData[1]);
-                    const bpm = 60000000 / readBytesAsUintBigEndian(arr, 3);
-                    this.currentTempo = Math.round(bpm * 100) / 100;
-                    if (this.onTempoChange)
-                    {
-                        this._callEvents(this.onTempoChange, this.currentTempo);
-                    }
+                    case messageTypes.setTempo:
+                        const arr = new IndexedByteArray(messageData[1]);
+                        const bpm = 60000000 / readBytesAsUintBigEndian(arr, 3);
+                        this.currentTempo = Math.round(bpm * 100) / 100;
+                        if (this.onTempoChange)
+                        {
+                            this._callEvents(this.onTempoChange, this.currentTempo);
+                        }
+                        break;
+                    
+                    case messageTypes.text:
+                    case messageTypes.lyric:
+                    case messageTypes.copyright:
+                    case messageTypes.trackName:
+                    case messageTypes.marker:
+                    case messageTypes.cuePoint:
+                    case messageTypes.instrumentName:
+                    case messageTypes.programName:
+                        let lyricsIndex = -1;
+                        if (event.messageStatusByte === messageTypes.lyric)
+                        {
+                            lyricsIndex = Math.min(
+                                this.midiData.lyricsTicks.indexOf(event.ticks),
+                                this.midiData.lyrics.length - 1
+                            );
+                        }
+                        let sentStatus = event.messageStatusByte;
+                        // if MIDI is a karaoke file, it uses the "text" event type or "lyrics" for lyrics (duh)
+                        // why?
+                        // because the MIDI standard is a messy pile of garbage,
+                        // and it's not my fault that it's like this :(
+                        // I'm just trying to make the best out of a bad situation.
+                        // I'm sorry
+                        // okay I should get back to work
+                        // anyway,
+                        // check for a karaoke file and change the status byte to "lyric"
+                        // if it's a karaoke file
+                        if (this.midiData.isKaraokeFile && (
+                            event.messageStatusByte === messageTypes.text ||
+                            event.messageStatusByte === messageTypes.lyric
+                        ))
+                        {
+                            lyricsIndex = Math.min(
+                                this.midiData.lyricsTicks.indexOf(event.ticks),
+                                this.midiData.lyricsTicks.length
+                            );
+                            sentStatus = messageTypes.lyric;
+                        }
+                        this.onTextEvent(event.messageData, sentStatus, lyricsIndex, event.ticks);
+                        break;
                 }
                 this._callEvents(this.onMetaEvent, messageData);
                 break;

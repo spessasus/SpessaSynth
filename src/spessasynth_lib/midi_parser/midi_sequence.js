@@ -121,7 +121,7 @@ class MIDISequenceData
      * Useful when the MIDI file uses a different code page.
      * @type {Uint8Array}
      */
-    rawMidiName = undefined;
+    rawMidiName;
     
     /**
      * The format of the MIDI file, which can be 0, 1, or 2, indicating the type of the MIDI file.

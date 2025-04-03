@@ -310,31 +310,6 @@ class BasicMIDI extends MIDISequenceData
                     copyrightComponents.push(name);
                 }
             }
-            
-            // if the first event is not at 0 ticks, add a track name
-            // https://github.com/spessasus/SpessaSynth/issues/145
-            if (track[0].ticks > 0)
-            {
-                const name = this.trackNames[i];
-                if (name.length > 0)
-                {
-                    // can copy
-                    track.unshift(new MIDIMessage(
-                        0,
-                        messageTypes.trackName,
-                        getStringBytes(name)
-                    ));
-                }
-                else
-                {
-                    // sequence number
-                    track.unshift(new MIDIMessage(
-                        0,
-                        messageTypes.sequenceNumber,
-                        new IndexedByteArray([0x0, 0x0]) // two bytes
-                    ));
-                }
-            }
         }
         
         // reverse the tempo changes
@@ -538,6 +513,19 @@ class BasicMIDI extends MIDISequenceData
                 consoleColors.info,
                 consoleColors.recognized
             );
+        }
+        
+        // if the first event is not at 0 ticks, add a track name
+        // https://github.com/spessasus/SpessaSynth/issues/145
+        if (!this.tracks.some(t => t[0].ticks === 0))
+        {
+            const track = this.tracks[0];
+            // can copy
+            track.unshift(new MIDIMessage(
+                0,
+                messageTypes.trackName,
+                new IndexedByteArray(this.rawMidiName.buffer)
+            ));
         }
         
         
