@@ -83,14 +83,10 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
      * @type {Synthetizer}
      */
     let synth;
-    
-    // sample rate may differ, so we need to fetch reverb buffer again
-    const revbuff = await offline.decodeAudioData(this.impulseResponseRaw.slice(0, this.impulseResponseRaw.byteLength));
     const effects = {
         reverbEnabled: true,
         chorusEnabled: true,
-        chorusConfig: undefined,
-        reverbImpulseResponse: revbuff
+        chorusConfig: undefined
     };
     snapshot.effectsConfig = effects;
     try
@@ -119,6 +115,7 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
         );
         throw e;
     }
+    await synth.isReady;
     
     const detailMessage = notification.div.getElementsByTagName("p")[0];
     const progressDiv = notification.div.getElementsByClassName("notification_progress")[0];

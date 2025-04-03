@@ -1,6 +1,8 @@
-import { rb } from "./reverb_buffer.min.js";
+import { rbCompressed } from "./rb_compressed.min.js";
+import { inflateSync } from "../../externals/fflate/fflate.min.js";
 
-const binaryString = atob(rb);
+// convert the base64 string to array buffer
+const binaryString = atob(rbCompressed);
 const binary = new Uint8Array(binaryString.length);
 for (let i = 0; i < binaryString.length; i++)
 {
@@ -9,7 +11,8 @@ for (let i = 0; i < binaryString.length; i++)
 
 
 /**
+ * the reverb is zlib compressed, decompress here
  * @type {ArrayBuffer}
  */
-const reverbBufferBinary = binary.buffer;
+const reverbBufferBinary = inflateSync(binary).buffer;
 export { reverbBufferBinary };

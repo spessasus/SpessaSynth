@@ -207,7 +207,9 @@ export class Synthetizer
             const chorusOn = this.effectsConfig?.chorusEnabled ?? true;
             if (reverbOn)
             {
-                this.reverbProcessor = getReverbProcessor(this.context, this.effectsConfig.reverbImpulseResponse);
+                const proc = getReverbProcessor(this.context, this.effectsConfig.reverbImpulseResponse);
+                this.reverbProcessor = proc.conv;
+                this.isReady = Promise.all([this.isReady, proc.promise]);
                 this.reverbProcessor.connect(targetNode);
                 this.worklet.connect(this.reverbProcessor, 0);
             }
