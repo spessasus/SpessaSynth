@@ -663,7 +663,10 @@ export class Sequencer
                             );
                             sentStatus = messageTypes.lyric;
                         }
-                        this.onTextEvent(event.messageData, sentStatus, lyricsIndex, event.ticks);
+                        if (this.onTextEvent)
+                        {
+                            this.onTextEvent(event.messageData, sentStatus, lyricsIndex, event.ticks);
+                        }
                         break;
                 }
                 this._callEvents(this.onMetaEvent, messageData);
@@ -726,7 +729,7 @@ export class Sequencer
          */
         const sanitizedMidis = midiBuffers.map(m =>
         {
-            if (m.altName)
+            if (m.binary !== undefined)
             {
                 return m;
             }
