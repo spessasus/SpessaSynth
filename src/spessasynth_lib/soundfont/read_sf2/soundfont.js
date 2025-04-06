@@ -44,20 +44,65 @@ export class SoundFont2 extends BasicSoundBank
         
         // read the main read
         let firstChunk = readRIFFChunk(this.dataArray, false);
-        this.verifyHeader(firstChunk, "riff");
-        
-        const type = readBytesAsString(this.dataArray, 4).toLowerCase();
-        if (type !== "sfbk" && type !== "sfpk")
+        const firstHeader = firstChunk.header.toLowerCase();
+        if (firstHeader !== "riff" && firstHeader !== "rf64")
         {
             SpessaSynthGroupEnd();
-            throw new SyntaxError(`Invalid soundFont! Expected "sfbk" or "sfpk" got "${type}"`);
+            this.parsingError(`Invalid chunk header! Expected "riff" or "rf64" got "${firstHeader}"`);
+        }
+
+        const type = readBytesAsString(this.dataArray, 4).toLowerCase();
+        if (type !== "sfbk" && type !== "sfpk" && type !== "sfen")
+        {
+            SpessaSynthGroupEnd();
+            throw new SyntaxError(`Invalid soundFont! Expected "sfbk", "sfpk" or "sfen" got "${type}"`);
         }
         /*
         Some SF2Pack description:
         this is essentially sf2, but the entire smpl chunk is compressed (we only support Ogg Vorbis here)
         and the only other difference is that the main chunk isn't "sfbk" but rather "sfpk"
          */
-        const isSF2Pack = type === "sfpk";
+        
+        let bankType = "";
+        
+        switch (firstHeader)
+        {
+            case "riff":
+                switch (type)
+                {
+                    case "sfbk":
+                        bankType = "sf2";
+                        break;
+                    case "sfpk":
+                        bankType = "sf2pack";
+                        break;
+                    case "sfen":
+                        bankType = "sfe32";
+                        break;
+                    default:
+                        bankType = "invalid";
+                        break;
+                }
+                break;
+            case "rf64":
+                switch (type)
+                {
+                    case "sfen":
+                        bankType = "sfe64";
+                        break;
+                    default:
+                        bankType = "invalid";
+                        break;
+                }
+                break;
+        }
+        const isSF2Pack = bankType === "sf2pack";
+
+        if (bankType === "invalid")
+        {
+            SpessaSynthGroupEnd();
+            this.parsingError(`Invalid bank type: "${firstHeader}" and "${type}"`);
+        }
         
         // INFO
         let infoChunk = readRIFFChunk(this.dataArray);
@@ -71,7 +116,7 @@ export class SoundFont2 extends BasicSoundBank
             // special cases
             switch (chunk.header.toLowerCase())
             {
-                case  "ifil":
+                case "ifil":
                 case "iver":
                     text = `${readLittleEndian(chunk.chunkData, 2)}.${readLittleEndian(chunk.chunkData, 2)}`;
                     this.soundFontInfo[chunk.header] = text;

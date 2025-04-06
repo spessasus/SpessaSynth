@@ -48,6 +48,7 @@ function isSoundFont(name)
     const fName = name.toLowerCase();
     return fName.slice(-3) === "sf2" ||
         fName.slice(-3) === "sf3" ||
+        fName.slice(-3) === "sf4" ||
         fName.slice(-5) === "sfogg" ||
         fName.slice(-3) === "dls";
 }
@@ -127,6 +128,7 @@ export function serveStaticFile(res, filePath, mimeType = undefined)
 {
     filePath = decodeURIComponent(filePath);
     if (
+        filePath.toLowerCase().endsWith(".sf4") ||
         filePath.toLowerCase().endsWith(".sf3") ||
         filePath.toLowerCase().endsWith(".sf2") ||
         filePath.toLowerCase().endsWith(".sfogg") ||
