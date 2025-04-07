@@ -176,7 +176,7 @@ export class Synthetizer
                 outputChannelCount: processorChannelCount,
                 numberOfOutputs: processorOutputsCount,
                 processorOptions: {
-                    midiChannels: this._outputsAmount,
+                    midiChannels: oneOutputMode ? 1 : this._outputsAmount,
                     soundfont: soundFontBuffer,
                     enableEventSystem: enableEventSystem,
                     startRenderingData: sequencerRenderingData

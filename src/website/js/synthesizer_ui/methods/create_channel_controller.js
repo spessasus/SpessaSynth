@@ -433,6 +433,19 @@ export function createChannelController(channelNumber)
  */
 export function appendNewController(channelNumber)
 {
+    // port check
+    if (channelNumber % 16 === 0)
+    {
+        // do not add the first port
+        const portNum = Math.floor(channelNumber / 16);
+        if (portNum > 0)
+        {
+            const portElement = document.createElement("div");
+            portElement.classList.add("synthui_port_descriptor");
+            this.locale.bindObjectProperty(portElement, "textContent", "locale.synthesizerController.port", [portNum]);
+            this.mainDivWrapper.appendChild(portElement);
+        }
+    }
     const controller = this.createChannelController(channelNumber);
     this.controllers.push(controller);
     this.mainDivWrapper.appendChild(controller.controller);

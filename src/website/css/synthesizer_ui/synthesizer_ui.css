@@ -27,7 +27,7 @@
     flex-wrap: wrap;
     align-items: stretch;
     justify-content: center;
-    margin: 1em;
+    margin: 0.1rem;
 }
 
 .main_controller_element {
@@ -41,6 +41,13 @@
     flex: 1;
     border-radius: var(--synthui-border-radius);
     margin: var(--synthui-margin);
+}
+
+.synthui_port_descriptor {
+    font-weight: bold;
+    font-style: italic;
+    font-size: 1.2rem;
+    padding: 0.3rem;
 }
 
 .synthui_controller {

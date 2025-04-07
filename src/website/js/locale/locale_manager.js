@@ -30,7 +30,7 @@ export class LocaleManager
         this.locale = localeList[initialLocale] || localeList[DEFAULT_LOCALE];
         
         /**
-         * @type {CompleteLocaleTypedef}
+         * @type {CompleteLocaleTypedef|localeList}
          */
         this.fallbackLocale = localeList[DEFAULT_LOCALE];
         
@@ -47,7 +47,7 @@ export class LocaleManager
     }
     
     /**
-     * Resolves and gets a the localized string for the current path
+     * Resolves and gets the localized string for the current path
      * @param localePath {string} The locale path to the text, written as JS object path, starts with "locale."
      * @param formattingArguments {string|number[]} optional arguments if the locale uses formatting ("{0} {1}") etc.
      * @returns {string} The localized string
@@ -118,7 +118,7 @@ export class LocaleManager
     /**
      * Binds a given object's property to a locale path and applies it
      * @param object {HTMLElement|Object} the object that holds the bound property
-     * @param propertyName {string} the object's property to bind
+     * @param propertyName {string|"textContent"|"title"} the object's property to bind
      * @param localePath {string} The locale path to the text, written as JS object path, starts with "locale."
      * @param formattingArguments {(string|number)[]} optional arguments if the locale uses formatting ("{0} {1}") etc.
      */
@@ -137,7 +137,7 @@ export class LocaleManager
         };
         // apply value to the property
         this._applyPropertyInternal(property);
-        // add to bound properties list
+        // add to the bound properties list
         this._boundObjectProperties.push(property);
     }
     
@@ -213,7 +213,7 @@ export class LocaleManager
         SpessaSynthInfo("Changing locale to", newLocaleObject.localeName);
         if (!force)
         {
-            // check if the property has been changed to something else. If so, don't change it back.
+            // Check if the property has been changed to something else. If so, don't change it back.
             this._boundObjectProperties.forEach(property =>
             {
                 this._validatePropertyIntegrity(property);

@@ -82,6 +82,7 @@ export const synthesizerControllerLocale = {
     },
     
     holdPedalDown: "Hold pedal is down (Shift)",
+    port: "Port {0}",
     channelController: channelControllerLocale,
     effectsConfig: effectsConfig,
     keyModifiers: keyModifiers
