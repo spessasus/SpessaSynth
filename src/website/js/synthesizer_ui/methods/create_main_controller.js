@@ -102,20 +102,7 @@ export function createMainSynthController()
         undefined,
         active =>
         {
-            if (active)
-            {
-                for (let i = 0; i < this.controllers.length; i++)
-                {
-                    this.hideChannelController(i);
-                }
-            }
-            else
-            {
-                for (let i = 0; i < this.controllers.length; i++)
-                {
-                    this.showChannelController(i);
-                }
-            }
+            this.setCCVisibilityStartingFrom(0, !active);
         }
     );
     this.transposeController.bar.classList.add("voice_meter_bar_smooth");

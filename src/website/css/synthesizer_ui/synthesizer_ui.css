@@ -27,12 +27,21 @@
     flex-wrap: wrap;
     align-items: stretch;
     justify-content: center;
-    margin: 0.1rem;
+    margin: 0.6rem;
 }
 
 .main_controller_element {
     margin-left: 0.5em;
     margin-right: 0.5em;
+}
+
+.synthui_port_group {
+    transition: transform 0.3s ease;
+    transform-origin: top center;
+}
+
+.synthui_port_group.collapsed {
+    transform: scale(1, 0);
 }
 
 .controller_element {
@@ -48,6 +57,12 @@
     font-style: italic;
     font-size: 1.2rem;
     padding: 0.3rem;
+    cursor: pointer;
+}
+
+.synthui_port_descriptor:hover {
+    color: #fff;
+    text-shadow: 0 0 5px white;
 }
 
 .synthui_controller {

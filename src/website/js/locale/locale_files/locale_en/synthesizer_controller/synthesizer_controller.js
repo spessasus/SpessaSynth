@@ -82,7 +82,7 @@ export const synthesizerControllerLocale = {
     },
     
     holdPedalDown: "Hold pedal is down (Shift)",
-    port: "Port {0}",
+    port: "Port {0} (click to toggle visibility)",
     channelController: channelControllerLocale,
     effectsConfig: effectsConfig,
     keyModifiers: keyModifiers
