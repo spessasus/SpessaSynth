@@ -28,6 +28,7 @@ import {
 } from "../../../../spessasynth_lib/synthetizer/worklet_system/worklet_utilities/controller_tables.js";
 import { DEFAULT_PERCUSSION } from "../../../../spessasynth_lib/synthetizer/synth_constants.js";
 import { isSystemXG, isValidXGMSB } from "../../../../spessasynth_lib/utils/xg_hacks.js";
+import { ANIMATION_REFLOW_TIME } from "../../utils/animation_utils.js";
 
 export const ICON_SIZE = 32;
 
@@ -257,21 +258,7 @@ export function createChannelController(channelNumber)
             {
                 return;
             }
-            if (active)
-            {
-                for (let i = channelNumber + 1; i < this.controllers.length; i++)
-                {
-                    this.hideChannelController(i);
-                    this.controllers[i].controller.classList.add("hidden");
-                }
-            }
-            else
-            {
-                for (let i = 0; i < this.controllers.length; i++)
-                {
-                    this.showChannelController(i);
-                }
-            }
+            this.setCCVisibilityStartingFrom(channelNumber + 1, !active);
         }
     );
     controller.appendChild(transpose.div);
@@ -433,6 +420,7 @@ export function createChannelController(channelNumber)
  */
 export function appendNewController(channelNumber)
 {
+    let lastPortElement = this.ports[this.ports.length - 1];
     // port check
     if (channelNumber % 16 === 0)
     {
@@ -443,12 +431,46 @@ export function appendNewController(channelNumber)
             const portElement = document.createElement("div");
             portElement.classList.add("synthui_port_descriptor");
             this.locale.bindObjectProperty(portElement, "textContent", "locale.synthesizerController.port", [portNum]);
+            let timeout = 0;
+            portElement.onclick = () =>
+            {
+                const port = this.ports[portNum];
+                clearTimeout(timeout);
+                if (!port.classList.contains("collapsed"))
+                {
+                    port.classList.add("collapsed");
+                    timeout = setTimeout(() =>
+                    {
+                        port.classList.add("hidden");
+                    }, 350);
+                }
+                else
+                {
+                    port.classList.remove("hidden");
+                    timeout = setTimeout(() =>
+                    {
+                        port.classList.remove("collapsed");
+                    }, ANIMATION_REFLOW_TIME);
+                }
+            };
+            
+            // this gets added to the main div, not the port group, to allow closing
             this.mainDivWrapper.appendChild(portElement);
+            this.portDescriptors.push(portElement);
         }
     }
     const controller = this.createChannelController(channelNumber);
     this.controllers.push(controller);
-    this.mainDivWrapper.appendChild(controller.controller);
+    lastPortElement.appendChild(controller.controller);
+    
+    // create a new port group if needed
+    if (channelNumber % 16 === 15)
+    {
+        this.mainDivWrapper.appendChild(lastPortElement);
+        lastPortElement = document.createElement("div");
+        lastPortElement.classList.add("synthui_port_group");
+        this.ports.push(lastPortElement);
+    }
 }
 
 /**

@@ -38,7 +38,7 @@ async function getKey(locale, keyboard)
  * @param synth {Synthetizer}
  * @param locale {LocaleManager}
  * @param keyboard {MidiKeyboard}
- * @param presetList {PresetListElement[]}
+ * @param presetList {{presetName: string, program: number, bank: number}[]}
  */
 async function doModifyKey(synth, locale, keyboard, presetList)
 {
@@ -205,7 +205,7 @@ async function doRemoveModification(synth, locale, keyboard)
  * @param synth {Synthetizer}
  * @param locale {LocaleManager}
  * @param keyboard {MidiKeyboard}
- * @param presetList {PresetListElement[]}
+ * @param presetList {{presetName: string, program: number, bank: number}[]}
  */
 export function startKeyModifiersMenu(synth, locale, keyboard, presetList)
 {

@@ -31,6 +31,16 @@ class SynthetizerUI
     controllers = [];
     
     /**
+     * @type {HTMLDivElement[]}
+     */
+    ports = [];
+    
+    /**
+     * @type {HTMLDivElement[]}
+     */
+    portDescriptors = [];
+    
+    /**
      * @type {HTMLDivElement}
      */
     mainDivWrapper;
@@ -41,6 +51,21 @@ class SynthetizerUI
     sequencer = undefined;
     
     showOnlyUsedEnabled = false;
+    
+    /**
+     * @type {{name: string, program: number, bank: number}[]}
+     */
+    instrumentList = [];
+    
+    /**
+     * @type {{name: string, program: number, bank: number}[]}
+     */
+    percussionList = [];
+    
+    /**
+     * @type {{presetName: string, program: number, bank: number}[]}
+     */
+    presetList = [];
     
     /**
      * Creates a new instance of synthetizer UI
@@ -65,6 +90,10 @@ class SynthetizerUI
          * @type {undefined|number}
          */
         this.effectsConfigWindow = undefined;
+        
+        const firstPort = document.createElement("div");
+        firstPort.classList.add("synthui_port_group");
+        this.ports.push(firstPort);
     }
     
     /**
@@ -216,16 +245,10 @@ class SynthetizerUI
         this.synth.eventHandler.addEvent("presetlistchange", "synthui-preset-list-change", e =>
         {
             /**
-             * @type {PresetListElement[]}
+             * @type {{presetName: string, program: number, bank: number}[]}
              */
             const presetList = e;
-            /**
-             * @type {PresetListElement[]}
-             */
             this.presetList = presetList;
-            /**
-             * @type {{name: string, program: number, bank: number}[]}
-             */
             this.instrumentList = presetList.filter(p => !isXGDrums(p.bank) && p.bank !== 128)
                 .sort((a, b) =>
                 {
@@ -243,10 +266,6 @@ class SynthetizerUI
                         program: p.program
                     };
                 });
-            
-            /**
-             * @type {{name: string, program: number, bank: number}[]}
-             */
             this.percussionList = presetList.filter(p => isXGDrums(p.bank) || p.bank === 128)
                 .sort((a, b) => a.program - b.program)
                 .map(p =>
@@ -277,6 +296,34 @@ class SynthetizerUI
     }
     
     /**
+     * @param start {number}
+     * @param visible {boolean}
+     */
+    setCCVisibilityStartingFrom(start, visible)
+    {
+        if (visible)
+        {
+            for (let i = 0; i < this.controllers.length; i++)
+            {
+                this.setChannelControllerVisibility(i, true);
+            }
+            this.portDescriptors.forEach(e =>
+            {
+                // do not show ports that are empty
+                e.classList.remove("hidden");
+            });
+        }
+        else
+        {
+            for (let i = start; i < this.controllers.length; i++)
+            {
+                this.setChannelControllerVisibility(i, false);
+            }
+            this.portDescriptors.forEach(e => e.classList.add("hidden"));
+        }
+    }
+    
+    /**
      * @param enabled {boolean}
      */
     setOnlyUsedControllersVisible(enabled)
@@ -290,7 +337,7 @@ class SynthetizerUI
         {
             for (let i = 0; i < this.controllers.length; i++)
             {
-                this.showChannelController(i, true);
+                this.setChannelControllerVisibility(i, true, true);
                 this.controllers[i].isHidingLocked = false;
             }
             return;
@@ -310,33 +357,40 @@ class SynthetizerUI
         {
             if (usedChannels.has(i))
             {
-                this.showChannelController(i, true);
+                this.setChannelControllerVisibility(i, true, true);
                 this.controllers[i].isHidingLocked = false;
             }
             else
             {
-                this.hideChannelController(i, true);
+                this.setChannelControllerVisibility(i, false, true);
             }
         }
     }
     
-    hideChannelController(channelNumber, force = false)
+    /**
+     * @param channelNumber {number}
+     * @param isVisible {boolean}
+     * @param force {boolean}
+     */
+    setChannelControllerVisibility(channelNumber, isVisible, force = false)
     {
-        const c = this.controllers[channelNumber];
-        if (!c.isHidingLocked || force)
+        if (isVisible)
         {
-            c.controller.classList.add("hidden");
-            c.isHidingLocked = force;
+            const c = this.controllers[channelNumber];
+            if (!c.isHidingLocked || force)
+            {
+                c.controller.classList.remove("hidden");
+                c.isHidingLocked = force;
+            }
         }
-    }
-    
-    showChannelController(channelNumber, force = false)
-    {
-        const c = this.controllers[channelNumber];
-        if (!c.isHidingLocked || force)
+        else
         {
-            c.controller.classList.remove("hidden");
-            c.isHidingLocked = force;
+            const c = this.controllers[channelNumber];
+            if (!c.isHidingLocked || force)
+            {
+                c.controller.classList.add("hidden");
+                c.isHidingLocked = force;
+            }
         }
     }
     

@@ -81,7 +81,7 @@ export const synthesizerControllerLocale = {
     },
     
     holdPedalDown: "Pedał podtrzymania naciśnięty (Shift)",
-    port: "Port {0}",
+    port: "Port {0} (kliknij aby zmienić widoczność)",
     channelController: channelControllerLocale,
     effectsConfig: effectsConfig,
     keyModifiers: keyModifiers
