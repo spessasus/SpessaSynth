@@ -53,6 +53,7 @@
 
 #sequencer_controls .control_buttons:hover {
     cursor: pointer;
+    filter: brightness(1.6);
 }
 
 #sequencer_controls .playback_rate_slider_wrapper {
