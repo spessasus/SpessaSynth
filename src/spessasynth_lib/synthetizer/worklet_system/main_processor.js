@@ -228,8 +228,13 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
     constructor(options)
     {
         super();
-        this.oneOutputMode = options.processorOptions?.startRenderingData?.oneOutput === true;
-        this._outputsAmount = this.oneOutputMode ? 1 : options.processorOptions.midiChannels;
+        this.midiOutputsCount = options.processorOptions.midiChannels;
+        let initialChannelCount = this.midiOutputsCount;
+        this.oneOutputMode = this.midiOutputsCount === 1;
+        if (this.oneOutputMode)
+        {
+            initialChannelCount = 16;
+        }
         
         this.enableEventSystem = options.processorOptions.enableEventSystem;
         
@@ -262,7 +267,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
         this.getDefaultPresets();
         
         
-        for (let i = 0; i < options.processorOptions.midiChannels; i++)
+        for (let i = 0; i < initialChannelCount; i++)
         {
             this.createWorkletChannel(false);
         }
@@ -435,7 +440,6 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
         SpessaSynthInfo({
             channels: this.workletProcessorChannels,
             voicesAmount: this.totalVoicesAmount,
-            outputAmount: this._outputsAmount,
             dumpedSamples: this.workletDumpedSamplesList
         });
     }
@@ -473,6 +477,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
             let reverbR;
             let chorusL;
             let chorusR;
+            // one output mode
             if (this.oneOutputMode)
             {
                 // first output only
@@ -485,7 +490,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
             else
             {
                 // 2 first outputs are reverb and chorus, others are for channels
-                outputIndex = (index % this._outputsAmount) + 2;
+                outputIndex = (index % this.midiOutputsCount) + 2;
                 outputL = outputs[outputIndex][0];
                 outputR = outputs[outputIndex][1];
                 reverbL = outputs[0][0];
