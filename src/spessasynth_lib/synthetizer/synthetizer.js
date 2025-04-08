@@ -571,14 +571,13 @@ export class Synthetizer
      * @param channel {number} usually 0-15: the channel to play the note.
      * @param midiNote {number} 0-127 the key number of the note.
      * @param velocity {number} 0-127 the velocity of the note (generally controls loudness).
-     * @param enableDebugging {boolean} set to true to log technical details to console.
      */
-    noteOn(channel, midiNote, velocity, enableDebugging = false)
+    noteOn(channel, midiNote, velocity)
     {
         this.post({
             channelNumber: channel,
             messageType: workletMessageType.noteOn,
-            messageData: [midiNote, velocity, enableDebugging]
+            messageData: [midiNote, velocity]
         });
     }
     

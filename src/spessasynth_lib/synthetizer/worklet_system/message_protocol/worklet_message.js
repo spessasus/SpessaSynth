@@ -2,7 +2,7 @@
  * @enum {number}
  * // NOTE: Every message needs a channel number (if not relevant or all, set to -1)
  * @property {number} noteOff                    - 0  -> midiNote<number>
- * @property {number} noteOn                     - 1  -> [midiNote<number>, velocity<number>, enableDebugging<boolean>]
+ * @property {number} noteOn                     - 1  -> [midiNote<number>, velocity<number>]
  * @property {number} ccChange                   - 2  -> [ccNumber<number>, ccValue<number>, force<boolean>]
  * @property {number} programChange              - 3  -> [programNumber<number>, userChange<boolean>]
  * @property {number} channelPressure            - 4  -> pressure<number>
@@ -102,7 +102,7 @@ export const ALL_CHANNELS_OR_DIFFERENT_ACTION = -1;
  *     eventName: string,
  *     eventData: any
  * }|ChannelProperty
- * |PresetListElement[]
+ * |{presetName: string, bank: number, program: number}[]
  * |string
  * |{messageType: WorkletSequencerReturnMessageType, messageData: any}
  * |SynthesizerSnapshot

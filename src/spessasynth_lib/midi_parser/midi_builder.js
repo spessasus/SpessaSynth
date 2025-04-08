@@ -80,7 +80,8 @@ export class MIDIBuilder extends BasicMIDI
         }
         if (event === messageTypes.endOfTrack)
         {
-            SpessaSynthWarn("The EndOfTrack is added automatically. Ignoring!");
+            SpessaSynthWarn(
+                "The EndOfTrack is added automatically and does not influence the duration. Consider adding a voice event instead.");
             return;
         }
         // remove the end of track

@@ -552,12 +552,10 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
      * @param channel {number}
      * @param midiNote {number}
      * @param velocity {number}
-     * @param enableDebug {boolean}
-     * @param sendEvent {boolean}
      */
-    noteOn(channel, midiNote, velocity, enableDebug = false, sendEvent = true)
+    noteOn(channel, midiNote, velocity)
     {
-        this.workletProcessorChannels[channel].noteOn(midiNote, velocity, enableDebug, sendEvent);
+        this.workletProcessorChannels[channel].noteOn(midiNote, velocity);
     }
     
     /**

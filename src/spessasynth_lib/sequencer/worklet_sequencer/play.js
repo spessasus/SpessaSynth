@@ -316,7 +316,7 @@ export function play(resetTime = false)
     {
         this.playingNotes.forEach(n =>
         {
-            this.synth.noteOn(n.channel, n.midiNote, n.velocity, false, true);
+            this.synth.noteOn(n.channel, n.midiNote, n.velocity);
         });
     }
     this.setProcessHandler();
