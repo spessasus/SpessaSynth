@@ -81,6 +81,11 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
      */
     deviceID = ALL_CHANNELS_OR_DIFFERENT_ACTION;
     
+    /**
+     * Synth's event queue from the main thread
+     * @type {{callback: function(), time: number}[]}
+     */
+    eventQueue = [];
     
     /**
      * Interpolation type used
@@ -462,6 +467,13 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
         // process the sequencer playback
         this.sequencer.processTick();
         
+        // process event queue
+        const time = currentTime;
+        while (this.eventQueue[0]?.time <= time)
+        {
+            this.eventQueue.shift().callback();
+        }
+        
         // for every channel
         this.totalVoicesAmount = 0;
         this.workletProcessorChannels.forEach((channel, index) =>
@@ -611,69 +623,87 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
      * @param message {Uint8Array}
      * @param channelOffset {number}
      * @param force {boolean} cool stuff
+     * @param options {SynthMethodOptions}
      */
-    processMessage(message, channelOffset, force)
+    processMessage(message, channelOffset, force, options)
     {
-        const statusByteData = getEvent(message[0]);
-        
-        const channel = statusByteData.channel + channelOffset;
-        // process the event
-        switch (statusByteData.status)
+        const call = () =>
         {
-            case messageTypes.noteOn:
-                const velocity = message[2];
-                if (velocity > 0)
-                {
-                    this.noteOn(channel, message[1], velocity);
-                }
-                else
-                {
-                    this.noteOff(channel, message[1]);
-                }
-                break;
+            const statusByteData = getEvent(message[0]);
             
-            case messageTypes.noteOff:
-                if (force)
-                {
-                    this.workletProcessorChannels[channel].killNote(message[1]);
-                }
-                else
-                {
-                    this.noteOff(channel, message[1]);
-                }
-                break;
-            
-            case messageTypes.pitchBend:
-                this.pitchWheel(channel, message[2], message[1]);
-                break;
-            
-            case messageTypes.controllerChange:
-                this.controllerChange(channel, message[1], message[2], force);
-                break;
-            
-            case messageTypes.programChange:
-                this.programChange(channel, message[1]);
-                break;
-            
-            case messageTypes.polyPressure:
-                this.polyPressure(channel, message[0], message[1]);
-                break;
-            
-            case messageTypes.channelPressure:
-                this.channelPressure(channel, message[1]);
-                break;
-            
-            case messageTypes.systemExclusive:
-                this.systemExclusive(new IndexedByteArray(message.slice(1)), channelOffset);
-                break;
-            
-            case messageTypes.reset:
-                this.stopAllChannels(true);
-                this.resetAllControllers();
-                break;
-            
-            default:
-                break;
+            const channel = statusByteData.channel + channelOffset;
+            // process the event
+            switch (statusByteData.status)
+            {
+                case messageTypes.noteOn:
+                    const velocity = message[2];
+                    if (velocity > 0)
+                    {
+                        this.noteOn(channel, message[1], velocity);
+                    }
+                    else
+                    {
+                        this.noteOff(channel, message[1]);
+                    }
+                    break;
+                
+                case messageTypes.noteOff:
+                    if (force)
+                    {
+                        this.workletProcessorChannels[channel].killNote(message[1]);
+                    }
+                    else
+                    {
+                        this.noteOff(channel, message[1]);
+                    }
+                    break;
+                
+                case messageTypes.pitchBend:
+                    this.pitchWheel(channel, message[2], message[1]);
+                    break;
+                
+                case messageTypes.controllerChange:
+                    this.controllerChange(channel, message[1], message[2], force);
+                    break;
+                
+                case messageTypes.programChange:
+                    this.programChange(channel, message[1]);
+                    break;
+                
+                case messageTypes.polyPressure:
+                    this.polyPressure(channel, message[0], message[1]);
+                    break;
+                
+                case messageTypes.channelPressure:
+                    this.channelPressure(channel, message[1]);
+                    break;
+                
+                case messageTypes.systemExclusive:
+                    this.systemExclusive(new IndexedByteArray(message.slice(1)), channelOffset);
+                    break;
+                
+                case messageTypes.reset:
+                    this.stopAllChannels(true);
+                    this.resetAllControllers();
+                    break;
+                
+                default:
+                    break;
+            }
+        };
+        
+        const time = options.time;
+        if (time > currentTime)
+        {
+            this.eventQueue.push({
+                callback: call.bind(this),
+                time: time
+            });
+            this.eventQueue.sort((e1, e2) => e1.time - e2.time);
+        }
+        else
+        {
+            call();
         }
     }
 }
