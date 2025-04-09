@@ -7,12 +7,9 @@ import { portamentoTimeToSeconds } from "./portamento_time.js";
  * sends a "MIDI Note on message"
  * @param midiNote {number}
  * @param velocity {number}
- * @param enableDebugging {boolean}
- * @param sendEvent {boolean}
- * @param startTime {number}
  * @this {WorkletProcessorChannel}
  */
-export function noteOn(midiNote, velocity, enableDebugging = false, sendEvent = true, startTime = currentTime)
+export function noteOn(midiNote, velocity)
 {
     if (velocity < 1)
     {
@@ -86,9 +83,8 @@ export function noteOn(midiNote, velocity, enableDebugging = false, sendEvent = 
         this.channelNumber,
         sentMidiNote,
         velocity,
-        startTime,
-        realKey,
-        enableDebugging
+        currentTime,
+        realKey
     );
     
     // zero means disabled
@@ -163,13 +159,11 @@ export function noteOn(midiNote, velocity, enableDebugging = false, sendEvent = 
         this.synth.voiceKilling(voices.length);
     }
     channelVoices.push(...voices);
-    if (sendEvent)
-    {
-        this.sendChannelProperty();
-        this.synth.callEvent("noteon", {
-            midiNote: midiNote,
-            channel: this.channelNumber,
-            velocity: velocity
-        });
-    }
+    this.sendChannelProperty();
+    this.synth.callEvent("noteon", {
+        midiNote: midiNote,
+        channel: this.channelNumber,
+        velocity: velocity
+    });
+    
 }

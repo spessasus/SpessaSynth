@@ -4,7 +4,7 @@
  * note: sample dumping means sending it over to the AudioWorkletGlobalScope
  */
 import { MIN_EXCLUSIVE_LENGTH, MIN_NOTE_LENGTH } from "../main_processor.js";
-import { SpessaSynthTable, SpessaSynthWarn } from "../../../utils/loggin.js";
+import { SpessaSynthWarn } from "../../../utils/loggin.js";
 import { WorkletLowpassFilter } from "./lowpass_filter.js";
 import { WorkletVolumeEnvelope } from "./volume_envelope.js";
 import { WorkletModulationEnvelope } from "./modulation_envelope.js";
@@ -368,7 +368,6 @@ class WorkletVoice
  * @param velocity {number} the velocity to use
  * @param currentTime {number} the current time in seconds
  * @param realKey {number} the real MIDI note if the "midiNote" was changed by MIDI Tuning Standard
- * @param debug {boolean} enable debugging?
  * @this {SpessaSynthProcessor}
  * @returns {WorkletVoice[]} output is an array of WorkletVoices
  */
@@ -376,8 +375,7 @@ export function getWorkletVoices(channel,
                                  midiNote,
                                  velocity,
                                  currentTime,
-                                 realKey,
-                                 debug = false)
+                                 realKey)
 {
     /**
      * @type {WorkletVoice[]}
@@ -479,18 +477,16 @@ export function getWorkletVoices(channel,
                 velocity = generators[generatorTypes.velocity];
             }
             
-            if (debug)
-            {
-                SpessaSynthTable([{
-                    Sample: sampleAndGenerators.sample.sampleName,
-                    Generators: generators,
-                    Modulators: sampleAndGenerators.modulators.map(m => Modulator.debugString(m)),
-                    Velocity: velocity,
-                    TargetKey: targetKey,
-                    MidiNote: midiNote,
-                    WorkletSample: workletSample
-                }]);
-            }
+            // uncomment to print debug info
+            // SpessaSynthTable([{
+            //     Sample: sampleAndGenerators.sample.sampleName,
+            //     Generators: generators,
+            //     Modulators: sampleAndGenerators.modulators.map(m => Modulator.debugString(m)),
+            //     Velocity: velocity,
+            //     TargetKey: targetKey,
+            //     MidiNote: midiNote,
+            //     WorkletSample: workletSample
+            // }]);
             
             
             voices.push(

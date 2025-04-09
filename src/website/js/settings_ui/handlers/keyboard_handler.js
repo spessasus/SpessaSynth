@@ -199,16 +199,6 @@ export function _createKeyboardHandler(keyboard, synthui, renderer)
         createChannel();
     });
     
-    // QoL: change the keyboard channel to the changed one when user changed it: adjust selector here
-    synthui.synth.eventHandler.addEvent("programchange", "settings-keyboard-program-change", e =>
-    {
-        if (e.userCalled)
-        {
-            keyboard.selectChannel(e.channel);
-            keyboardControls.channelSelector.value = e.channel;
-        }
-    });
-    
     // QoL: change selected channel if the given channel is muted
     synthui.synth.eventHandler.addEvent("mutechannel", "settings-keuboard-mute-channel", e =>
     {

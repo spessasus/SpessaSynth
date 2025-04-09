@@ -29,42 +29,14 @@ export function handleMessage(message)
     }
     switch (message.messageType)
     {
-        case workletMessageType.noteOn:
-            channelObject.noteOn(...data);
-            break;
-        
-        case workletMessageType.noteOff:
-            channelObject.noteOff(data);
-            break;
-        
-        case workletMessageType.pitchWheel:
-            channelObject.pitchWheel(...data);
-            break;
-        
-        case workletMessageType.ccChange:
-            channelObject.controllerChange(...data);
+        case workletMessageType.midiMessage:
+            this.processMessage(...data);
             break;
         
         case workletMessageType.customcCcChange:
             // custom controller change
             channelObject.setCustomController(data[0], data[1]);
             channelObject.updateChannelTuning();
-            break;
-        
-        case workletMessageType.killNote:
-            channelObject.killNote(data);
-            break;
-        
-        case workletMessageType.programChange:
-            this.programChange(channel, data[0], data[1]);
-            break;
-        
-        case workletMessageType.channelPressure:
-            channelObject.channelPressure(data);
-            break;
-        
-        case workletMessageType.polyPressure:
-            channelObject.polyPressure(...data);
             break;
         
         case workletMessageType.ccReset:

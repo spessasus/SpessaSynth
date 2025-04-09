@@ -76,8 +76,7 @@ export function resetAllControllers(log = true)
         this.callEvent("programchange", {
             channel: channelNumber,
             program: ch.preset.program,
-            bank: sentBank,
-            userCalled: false
+            bank: sentBank
         });
         
         for (let ccNum = 0; ccNum < 128; ccNum++)

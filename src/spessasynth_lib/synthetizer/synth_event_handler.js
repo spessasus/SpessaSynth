@@ -27,7 +27,6 @@
  * @property {number} channel - The MIDI channel number.
  * @property {number} program - The program number.
  * @property {number} bank - The bank number.
- * @property {boolean} userCalled - Indicates if the change was user-initiated.
  */
 
 /**

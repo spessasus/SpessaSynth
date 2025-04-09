@@ -1,13 +1,7 @@
 /**
  * @enum {number}
  * // NOTE: Every message needs a channel number (if not relevant or all, set to -1)
- * @property {number} noteOff                    - 0  -> midiNote<number>
- * @property {number} noteOn                     - 1  -> [midiNote<number>, velocity<number>, enableDebugging<boolean>]
- * @property {number} ccChange                   - 2  -> [ccNumber<number>, ccValue<number>, force<boolean>]
- * @property {number} programChange              - 3  -> [programNumber<number>, userChange<boolean>]
- * @property {number} channelPressure            - 4  -> pressure<number>
- * @property {number} polyPressure               - 5  -> [midiNote<number>, pressure<number>]
- * @property {number} killNote                   - 6  -> midiNote<number>
+ * @property {number} midiMessage                - 0  -> [messageData<Uint8Array>, channelOffset<number>, force<boolean>]
  * @property {number} ccReset                    - 7  -> (no data) note: if channel is -1 then reset all channels
  * @property {number} setChannelVibrato          - 8  -> {frequencyHz: number, depthCents: number, delaySeconds: number} note: if channel is -1 then stop all channels note 2: if rate is -1, it means locking
  * @property {number} soundFontManager           - 9  -> [messageType<WorkletSoundfontManagerMessageType> messageData<any>] note: refer to sfman_message.js
@@ -20,25 +14,19 @@
  * @property {number} systemExclusive            - 16 -> [messageData<number[]> (without the F0 byte), channelOffset<number>]
  * @property {number} setMasterParameter         - 17 -> [parameter<masterParameterType>, value<number>]
  * @property {number} setDrums                   - 18 -> isDrums<boolean>
- * @property {number} pitchWheel                 - 19 -> [MSB<number>, LSB<number>]
- * @property {number} transpose                  - 20 -> [semitones<number>, force<boolean>] note: if channel is -1 then transpose all channels
- * @property {number} highPerformanceMode        - 21 -> isOn<boolean>
- * @property {number} lockController             - 22 -> [controllerNumber<number>, isLocked<boolean>]
- * @property {number} sequencerSpecific          - 23 -> [messageType<WorkletSequencerMessageType> messageData<any>] note: refer to sequencer_message.js
- * @property {number} requestSynthesizerSnapshot - 24 -> (no data)
- * @property {number} setLogLevel                - 25 -> [enableInfo<boolean>, enableWarning<boolean>, enableGroup<boolean>, enableTable<boolean>]
- * @property {number} keyModifier                - 26 -> [messageType<workletKeyModifierMessageType> messageData<any>]
- * @property {number} setEffectsGain             - 27 -> [reverbGain<number>, chorusGain<number>]
- * @property {number} destroyWorklet             - 28 -> (no data)
+ * @property {number} transpose                  - 19 -> [semitones<number>, force<boolean>] note: if channel is -1 then transpose all channels
+ * @property {number} highPerformanceMode        - 20 -> isOn<boolean>
+ * @property {number} lockController             - 21 -> [controllerNumber<number>, isLocked<boolean>]
+ * @property {number} sequencerSpecific          - 22 -> [messageType<WorkletSequencerMessageType> messageData<any>] note: refer to sequencer_message.js
+ * @property {number} requestSynthesizerSnapshot - 23 -> (no data)
+ * @property {number} setLogLevel                - 24 -> [enableInfo<boolean>, enableWarning<boolean>, enableGroup<boolean>, enableTable<boolean>]
+ * @property {number} keyModifier                - 25 -> [messageType<workletKeyModifierMessageType> messageData<any>]
+ * @property {number} setEffectsGain             - 26 -> [reverbGain<number>, chorusGain<number>]
+ * @property {number} destroyWorklet             - 27 -> (no data)
  */
 export const workletMessageType = {
-    noteOff: 0,
-    noteOn: 1,
-    ccChange: 2,
-    programChange: 3,
-    channelPressure: 4,
-    polyPressure: 5,
-    killNote: 6,
+    midiMessage: 0,
+    // free 6 slots here, use when needed instead of adding new ones
     ccReset: 7,
     setChannelVibrato: 8,
     soundFontManager: 9,
@@ -51,16 +39,15 @@ export const workletMessageType = {
     systemExclusive: 16,
     setMasterParameter: 17,
     setDrums: 18,
-    pitchWheel: 19,
-    transpose: 20,
-    highPerformanceMode: 21,
-    lockController: 22,
-    sequencerSpecific: 23,
-    requestSynthesizerSnapshot: 24,
-    setLogLevel: 25,
-    keyModifierManager: 26,
-    setEffectsGain: 27,
-    destroyWorklet: 28
+    transpose: 19,
+    highPerformanceMode: 20,
+    lockController: 21,
+    sequencerSpecific: 22,
+    requestSynthesizerSnapshot: 23,
+    setLogLevel: 24,
+    keyModifierManager: 25,
+    setEffectsGain: 26,
+    destroyWorklet: 27
 };
 
 /**
@@ -82,9 +69,10 @@ export const ALL_CHANNELS_OR_DIFFERENT_ACTION = -1;
  *     messageType: (workletMessageType|number),
  *     messageData: (
  *     boolean|
- *     number[]
+ *     (number|Uint8Array)[]
  *     |undefined
  *     |boolean[]
+ *     |boolean
  *     |WorkletVoice[]
  *     |number
  *     |{rate: number, depth: number, delay: number}
@@ -102,7 +90,7 @@ export const ALL_CHANNELS_OR_DIFFERENT_ACTION = -1;
  *     eventName: string,
  *     eventData: any
  * }|ChannelProperty
- * |PresetListElement[]
+ * |{presetName: string, bank: number, program: number}[]
  * |string
  * |{messageType: WorkletSequencerReturnMessageType, messageData: any}
  * |SynthesizerSnapshot

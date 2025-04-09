@@ -34,6 +34,8 @@ import { FILTER_SMOOTHING_FACTOR } from "./worklet_utilities/lowpass_filter.js";
 import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE, VOICE_CAP } from "../synth_constants.js";
 import { fillWithDefaults } from "../../utils/fill_with_defaults.js";
 import { DEFAULT_SEQUENCER_OPTIONS } from "../../sequencer/default_sequencer_options.js";
+import { getEvent, messageTypes } from "../../midi_parser/midi_message.js";
+import { IndexedByteArray } from "../../utils/indexed_array.js";
 
 
 /**
@@ -324,7 +326,7 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
                     );
                     this.sequencer.skipToFirstNoteOn = seqOptions.skipToFirstNoteOn;
                     this.sequencer.preservePlaybackState = seqOptions.preservePlaybackState;
-                    // auto play is ignored
+                    // autoplay is ignored
                     this.sequencer.loadNewSongList([options.processorOptions.startRenderingData.parsedMIDI]);
                 });
             }
@@ -552,12 +554,10 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
      * @param channel {number}
      * @param midiNote {number}
      * @param velocity {number}
-     * @param enableDebug {boolean}
-     * @param sendEvent {boolean}
      */
-    noteOn(channel, midiNote, velocity, enableDebug = false, sendEvent = true)
+    noteOn(channel, midiNote, velocity)
     {
-        this.workletProcessorChannels[channel].noteOn(midiNote, velocity, enableDebug, sendEvent);
+        this.workletProcessorChannels[channel].noteOn(midiNote, velocity);
     }
     
     /**
@@ -601,11 +601,80 @@ class SpessaSynthProcessor extends AudioWorkletProcessor
     /**
      * @param channel {number}
      * @param programNumber {number}
-     * @param userChange {boolean}
      */
-    programChange(channel, programNumber, userChange = false)
+    programChange(channel, programNumber)
     {
-        this.workletProcessorChannels[channel].programChange(programNumber, userChange);
+        this.workletProcessorChannels[channel].programChange(programNumber);
+    }
+    
+    /**
+     * @param message {Uint8Array}
+     * @param channelOffset {number}
+     * @param force {boolean} cool stuff
+     */
+    processMessage(message, channelOffset, force)
+    {
+        const statusByteData = getEvent(message[0]);
+        
+        const channel = statusByteData.channel + channelOffset;
+        // process the event
+        switch (statusByteData.status)
+        {
+            case messageTypes.noteOn:
+                const velocity = message[2];
+                if (velocity > 0)
+                {
+                    this.noteOn(channel, message[1], velocity);
+                }
+                else
+                {
+                    this.noteOff(channel, message[1]);
+                }
+                break;
+            
+            case messageTypes.noteOff:
+                if (force)
+                {
+                    this.workletProcessorChannels[channel].killNote(message[1]);
+                }
+                else
+                {
+                    this.noteOff(channel, message[1]);
+                }
+                break;
+            
+            case messageTypes.pitchBend:
+                this.pitchWheel(channel, message[2], message[1]);
+                break;
+            
+            case messageTypes.controllerChange:
+                this.controllerChange(channel, message[1], message[2], force);
+                break;
+            
+            case messageTypes.programChange:
+                this.programChange(channel, message[1]);
+                break;
+            
+            case messageTypes.polyPressure:
+                this.polyPressure(channel, message[0], message[1]);
+                break;
+            
+            case messageTypes.channelPressure:
+                this.channelPressure(channel, message[1]);
+                break;
+            
+            case messageTypes.systemExclusive:
+                this.systemExclusive(new IndexedByteArray(message.slice(1)), channelOffset);
+                break;
+            
+            case messageTypes.reset:
+                this.stopAllChannels(true);
+                this.resetAllControllers();
+                break;
+            
+            default:
+                break;
+        }
     }
 }
 
