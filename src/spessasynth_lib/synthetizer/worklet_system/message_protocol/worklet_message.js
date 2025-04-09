@@ -1,7 +1,7 @@
 /**
  * @enum {number}
  * // NOTE: Every message needs a channel number (if not relevant or all, set to -1)
- * @property {number} midiMessage                - 0  -> [messageData<Uint8Array>, channelOffset<number>, force<boolean>]
+ * @property {number} midiMessage                - 0  -> [messageData<Uint8Array>, channelOffset<number>, force<boolean>, options<SynthMethodOptions>]
  * @property {number} ccReset                    - 7  -> (no data) note: if channel is -1 then reset all channels
  * @property {number} setChannelVibrato          - 8  -> {frequencyHz: number, depthCents: number, delaySeconds: number} note: if channel is -1 then stop all channels note 2: if rate is -1, it means locking
  * @property {number} soundFontManager           - 9  -> [messageType<WorkletSoundfontManagerMessageType> messageData<any>] note: refer to sfman_message.js
@@ -11,7 +11,6 @@
  * @property {number} addNewChannel              - 13 -> (no data)
  * @property {number} customCcChange             - 14 -> [ccNumber<number>, ccValue<number>]
  * @property {number} debugMessage               - 15 -> (no data)
- * @property {number} systemExclusive            - 16 -> [messageData<number[]> (without the F0 byte), channelOffset<number>]
  * @property {number} setMasterParameter         - 17 -> [parameter<masterParameterType>, value<number>]
  * @property {number} setDrums                   - 18 -> isDrums<boolean>
  * @property {number} transpose                  - 19 -> [semitones<number>, force<boolean>] note: if channel is -1 then transpose all channels
@@ -36,7 +35,7 @@ export const workletMessageType = {
     addNewChannel: 13,
     customcCcChange: 14,
     debugMessage: 15,
-    systemExclusive: 16,
+    // free slot here
     setMasterParameter: 17,
     setDrums: 18,
     transpose: 19,
@@ -69,7 +68,7 @@ export const ALL_CHANNELS_OR_DIFFERENT_ACTION = -1;
  *     messageType: (workletMessageType|number),
  *     messageData: (
  *     boolean|
- *     (number|Uint8Array)[]
+ *     (number|Uint8Array|object)[]
  *     |undefined
  *     |boolean[]
  *     |boolean

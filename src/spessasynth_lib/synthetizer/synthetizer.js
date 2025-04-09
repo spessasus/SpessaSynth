@@ -31,6 +31,18 @@ import { DEFAULT_SEQUENCER_OPTIONS } from "../sequencer/default_sequencer_option
  * purpose: responds to midi messages and called functions, managing the channels and passing the messages to them
  */
 
+/**
+ * @typedef {Object} SynthMethodOptions
+ * @property {number} time - the audio context time when the event should execute, in seconds.
+ */
+
+/**
+ * @type {SynthMethodOptions}
+ */
+const DEFAULT_SYNTH_METHOD_OPTIONS = {
+    time: 0
+};
+
 
 export class Synthetizer
 {
@@ -566,18 +578,52 @@ export class Synthetizer
     }
     
     /**
+     * sends a raw MIDI message to the synthesizer.
+     * @param message {number[]|Uint8Array} the midi message, each number is a byte.
+     * @param channelOffset {number} the channel offset of the message.
+     * @param eventOptions {SynthMethodOptions} additional options for this command.
+     */
+    sendMessage(message, channelOffset = 0, eventOptions = DEFAULT_SYNTH_METHOD_OPTIONS)
+    {
+        this._sendInternal(message, channelOffset, false, eventOptions);
+    }
+    
+    /**
+     * @param message {number[]|Uint8Array}
+     * @param offset {number}
+     * @param force {boolean}
+     * @param eventOptions {SynthMethodOptions}
+     * @private
+     */
+    _sendInternal(message, offset, force = false, eventOptions)
+    {
+        const opts = fillWithDefaults(eventOptions ?? {}, DEFAULT_SYNTH_METHOD_OPTIONS);
+        this.post({
+            messageType: workletMessageType.midiMessage,
+            messageData: [new Uint8Array(message), offset, force, opts]
+        });
+    }
+    
+    
+    /**
      * Starts playing a note
      * @param channel {number} usually 0-15: the channel to play the note.
      * @param midiNote {number} 0-127 the key number of the note.
      * @param velocity {number} 0-127 the velocity of the note (generally controls loudness).
+     * @param eventOptions {SynthMethodOptions} additional options for this command.
      */
-    noteOn(channel, midiNote, velocity)
+    noteOn(channel, midiNote, velocity, eventOptions = DEFAULT_SYNTH_METHOD_OPTIONS)
     {
         const ch = channel % 16;
         const offset = channel - ch;
         midiNote %= 128;
         velocity %= 128;
-        this.sendMessage([messageTypes.noteOn | ch, midiNote, velocity], offset);
+        // check for legacy "enableDebugging"
+        if (eventOptions === true)
+        {
+            eventOptions = DEFAULT_SYNTH_METHOD_OPTIONS;
+        }
+        this.sendMessage([messageTypes.noteOn | ch, midiNote, velocity], offset, eventOptions);
     }
     
     /**
@@ -585,14 +631,15 @@ export class Synthetizer
      * @param channel {number} usually 0-15: the channel of the note.
      * @param midiNote {number} 0-127 the key number of the note.
      * @param force {boolean} instantly kills the note if true.
+     * @param eventOptions {SynthMethodOptions} additional options for this command.
      */
-    noteOff(channel, midiNote, force = false)
+    noteOff(channel, midiNote, force = false, eventOptions = DEFAULT_SYNTH_METHOD_OPTIONS)
     {
         midiNote %= 128;
         
         const ch = channel % 16;
         const offset = channel - ch;
-        this._sendInternal([messageTypes.noteOff | ch, midiNote], offset, force);
+        this._sendInternal([messageTypes.noteOff | ch, midiNote], offset, force, eventOptions);
     }
     
     /**
@@ -615,8 +662,9 @@ export class Synthetizer
      * @param controllerNumber {number} 0-127 the MIDI CC number.
      * @param controllerValue {number} 0-127 the controller value.
      * @param force {boolean} forces the controller-change message, even if it's locked or gm system is set and the cc is bank select.
+     * @param eventOptions {SynthMethodOptions} additional options for this command.
      */
-    controllerChange(channel, controllerNumber, controllerValue, force = false)
+    controllerChange(channel, controllerNumber, controllerValue, force = false, eventOptions = DEFAULT_SYNTH_METHOD_OPTIONS)
     {
         if (controllerNumber > 127 || controllerNumber < 0)
         {
@@ -627,7 +675,12 @@ export class Synthetizer
         // controller change has its own message for the force property
         const ch = channel % 16;
         const offset = channel - ch;
-        this._sendInternal([messageTypes.controllerChange | ch, controllerNumber, controllerValue], offset, force);
+        this._sendInternal(
+            [messageTypes.controllerChange | ch, controllerNumber, controllerValue],
+            offset,
+            force,
+            eventOptions
+        );
     }
     
     /**
@@ -646,13 +699,14 @@ export class Synthetizer
      * Applies pressure to a given channel.
      * @param channel {number} usually 0-15: the channel to change the controller.
      * @param pressure {number} 0-127: the pressure to apply.
+     * @param eventOptions {SynthMethodOptions} additional options for this command.
      */
-    channelPressure(channel, pressure)
+    channelPressure(channel, pressure, eventOptions = DEFAULT_SYNTH_METHOD_OPTIONS)
     {
         const ch = channel % 16;
         const offset = channel - ch;
         pressure %= 128;
-        this.sendMessage([messageTypes.channelPressure | ch, pressure], offset);
+        this.sendMessage([messageTypes.channelPressure | ch, pressure], offset, eventOptions);
     }
     
     /**
@@ -660,14 +714,29 @@ export class Synthetizer
      * @param channel {number} usually 0-15: the channel to change the controller.
      * @param midiNote {number} 0-127: the MIDI note.
      * @param pressure {number} 0-127: the pressure to apply.
+     * @param eventOptions {SynthMethodOptions} additional options for this command.
      */
-    polyPressure(channel, midiNote, pressure)
+    polyPressure(channel, midiNote, pressure, eventOptions = DEFAULT_SYNTH_METHOD_OPTIONS)
     {
         const ch = channel % 16;
         const offset = channel - ch;
         midiNote %= 128;
         pressure %= 128;
-        this.sendMessage([messageTypes.polyPressure | ch, midiNote, pressure], offset);
+        this.sendMessage([messageTypes.polyPressure | ch, midiNote, pressure], offset, eventOptions);
+    }
+    
+    /**
+     * Sets the pitch of the given channel.
+     * @param channel {number} usually 0-15: the channel to change pitch.
+     * @param MSB {number} SECOND byte of the MIDI pitchWheel message.
+     * @param LSB {number} FIRST byte of the MIDI pitchWheel message.
+     * @param eventOptions {SynthMethodOptions} additional options for this command.
+     */
+    pitchWheel(channel, MSB, LSB, eventOptions = DEFAULT_SYNTH_METHOD_OPTIONS)
+    {
+        const ch = channel % 16;
+        const offset = channel - ch;
+        this.sendMessage([messageTypes.pitchBend | ch, LSB, MSB], offset, eventOptions);
     }
     
     /**
@@ -680,19 +749,6 @@ export class Synthetizer
             throw new Error("This synthesizer instance has been destroyed!");
         }
         this.worklet.port.postMessage(data);
-    }
-    
-    /**
-     * Sets the pitch of the given channel.
-     * @param channel {number} usually 0-15: the channel to change pitch.
-     * @param MSB {number} SECOND byte of the MIDI pitchWheel message.
-     * @param LSB {number} FIRST byte of the MIDI pitchWheel message.
-     */
-    pitchWheel(channel, MSB, LSB)
-    {
-        const ch = channel % 16;
-        const offset = channel - ch;
-        this.sendMessage([messageTypes.pitchBend | ch, LSB, MSB], offset);
     }
     
     /**
@@ -782,7 +838,8 @@ export class Synthetizer
         this._sendInternal(
             [messageTypes.controllerChange | ch, channelConfiguration.velocityOverride, velocity],
             offset,
-            true
+            true,
+            DEFAULT_SYNTH_METHOD_OPTIONS
         );
     }
     
@@ -834,14 +891,16 @@ export class Synthetizer
      * @param messageData {number[]|ArrayLike|Uint8Array} the message's data
      * (excluding the F0 byte, but including the F7 at the end).
      * @param channelOffset {number} channel offset for the system exclusive message, defaults to zero.
+     * @param eventOptions {SynthMethodOptions} additional options for this command.
      */
-    systemExclusive(messageData, channelOffset = 0)
+    systemExclusive(messageData, channelOffset = 0, eventOptions = DEFAULT_SYNTH_METHOD_OPTIONS)
     {
-        this.post({
-            channelNumber: ALL_CHANNELS_OR_DIFFERENT_ACTION,
-            messageType: workletMessageType.systemExclusive,
-            messageData: [Array.from(messageData), channelOffset]
-        });
+        this._sendInternal(
+            [messageTypes.systemExclusive, ...Array.from(messageData)],
+            channelOffset,
+            false,
+            eventOptions
+        );
     }
     
     // noinspection JSUnusedGlobalSymbols
@@ -899,30 +958,6 @@ export class Synthetizer
             channelNumber: channel,
             messageType: workletMessageType.setDrums,
             messageData: isDrum
-        });
-    }
-    
-    /**
-     * sends a raw MIDI message to the synthesizer.
-     * @param message {number[]|Uint8Array} the midi message, each number is a byte.
-     * @param channelOffset {number} the channel offset of the message.
-     */
-    sendMessage(message, channelOffset = 0)
-    {
-        this._sendInternal(message, channelOffset);
-    }
-    
-    /**
-     * @param message {number[]|Uint8Array}
-     * @param offset {number}
-     * @param force {boolean}
-     * @private
-     */
-    _sendInternal(message, offset, force = false)
-    {
-        this.post({
-            messageType: workletMessageType.midiMessage,
-            messageData: [new Uint8Array(message), offset, force]
         });
     }
     

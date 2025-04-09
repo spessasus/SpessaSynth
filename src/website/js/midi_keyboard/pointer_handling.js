@@ -50,7 +50,7 @@ export function _handlePointers()
         {
             this.onNotePressed(note, velocity);
         }
-        this.synth.noteOn(this.channel, note, velocity, this.enableDebugging);
+        this.synth.noteOn(this.channel, note, velocity);
     };
     
     /**
