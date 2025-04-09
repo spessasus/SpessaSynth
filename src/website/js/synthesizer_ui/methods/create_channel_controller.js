@@ -290,7 +290,11 @@ export function createChannelController(channelNumber)
             {
                 this.synth.controllerChange(channelNumber, midiControllers.bankSelect, bank);
             }
-            this.synth.programChange(channelNumber, parseInt(data[1]), true);
+            this.synth.programChange(channelNumber, parseInt(data[1]));
+            if (this.onProgramChange)
+            {
+                this.onProgramChange(channelNumber);
+            }
             presetSelector.mainButton.classList.add("locked_selector");
             this.synth.lockController(channelNumber, ALL_CHANNELS_OR_DIFFERENT_ACTION, true);
         },

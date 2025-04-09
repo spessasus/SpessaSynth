@@ -1,10 +1,9 @@
 /**
  * executes a program change
  * @param programNumber {number}
- * @param userChange {boolean}
  * @this {WorkletProcessorChannel}
  */
-export function programChange(programNumber, userChange = false)
+export function programChange(programNumber)
 {
     if (this.lockPreset)
     {
@@ -56,8 +55,7 @@ export function programChange(programNumber, userChange = false)
     this.synth.callEvent("programchange", {
         channel: this.channelNumber,
         program: preset.program,
-        bank: sentBank,
-        userCalled: userChange
+        bank: sentBank
     });
     this.sendChannelProperty();
 }

@@ -293,6 +293,13 @@ class Manager
             this.audioDelay
         );
         
+        this.synthUI.onProgramChange = channel =>
+        {
+            // QoL: change the keyboard channel to the changed one when user changed it: adjust selector here
+            this.keyboard.selectChannel(channel);
+            this.settingsUI.htmlControls.keyboard.channelSelector.value = channel;
+        };
+        
         // set up drop file handler
         new DropFileHandler(async data =>
         {

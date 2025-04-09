@@ -1,6 +1,5 @@
-import { IndexedByteArray } from "../utils/indexed_array.js";
 import { consoleColors } from "../utils/other.js";
-import { getEvent, messageTypes, midiControllers } from "../midi_parser/midi_message.js";
+import { messageTypes, midiControllers } from "../midi_parser/midi_message.js";
 import { EventHandler } from "./synth_event_handler.js";
 import { FancyChorus } from "./audio_effects/fancy_chorus.js";
 import { getReverbProcessor } from "./audio_effects/reverb.js";
@@ -574,11 +573,11 @@ export class Synthetizer
      */
     noteOn(channel, midiNote, velocity)
     {
-        this.post({
-            channelNumber: channel,
-            messageType: workletMessageType.noteOn,
-            messageData: [midiNote, velocity]
-        });
+        const ch = channel % 16;
+        const offset = channel - ch;
+        midiNote %= 128;
+        velocity %= 128;
+        this.sendMessage([messageTypes.noteOn | ch, midiNote, velocity], offset);
     }
     
     /**
@@ -589,22 +588,11 @@ export class Synthetizer
      */
     noteOff(channel, midiNote, force = false)
     {
-        if (force)
-        {
-            this.post({
-                channelNumber: channel,
-                messageType: workletMessageType.killNote,
-                messageData: midiNote
-            });
-        }
-        else
-        {
-            this.post({
-                channelNumber: channel,
-                messageType: workletMessageType.noteOff,
-                messageData: midiNote
-            });
-        }
+        midiNote %= 128;
+        
+        const ch = channel % 16;
+        const offset = channel - ch;
+        this._sendInternal([messageTypes.noteOff | ch, midiNote], offset, force);
     }
     
     /**
@@ -634,13 +622,12 @@ export class Synthetizer
         {
             throw new Error(`Invalid controller number: ${controllerNumber}`);
         }
-        controllerValue = Math.floor(controllerValue);
-        controllerNumber = Math.floor(controllerNumber);
-        this.post({
-            channelNumber: channel,
-            messageType: workletMessageType.ccChange,
-            messageData: [controllerNumber, controllerValue, force]
-        });
+        controllerValue = Math.floor(controllerValue) % 128;
+        controllerNumber = Math.floor(controllerNumber) % 128;
+        // controller change has its own message for the force property
+        const ch = channel % 16;
+        const offset = channel - ch;
+        this._sendInternal([messageTypes.controllerChange | ch, controllerNumber, controllerValue], offset, force);
     }
     
     /**
@@ -662,11 +649,10 @@ export class Synthetizer
      */
     channelPressure(channel, pressure)
     {
-        this.post({
-            channelNumber: channel,
-            messageType: workletMessageType.channelPressure,
-            messageData: pressure
-        });
+        const ch = channel % 16;
+        const offset = channel - ch;
+        pressure %= 128;
+        this.sendMessage([messageTypes.channelPressure | ch, pressure], offset);
     }
     
     /**
@@ -677,11 +663,11 @@ export class Synthetizer
      */
     polyPressure(channel, midiNote, pressure)
     {
-        this.post({
-            channelNumber: channel,
-            messageType: workletMessageType.polyPressure,
-            messageData: [midiNote, pressure]
-        });
+        const ch = channel % 16;
+        const offset = channel - ch;
+        midiNote %= 128;
+        pressure %= 128;
+        this.sendMessage([messageTypes.polyPressure | ch, midiNote, pressure], offset);
     }
     
     /**
@@ -704,11 +690,9 @@ export class Synthetizer
      */
     pitchWheel(channel, MSB, LSB)
     {
-        this.post({
-            channelNumber: channel,
-            messageType: workletMessageType.pitchWheel,
-            messageData: [MSB, LSB]
-        });
+        const ch = channel % 16;
+        const offset = channel - ch;
+        this.sendMessage([messageTypes.pitchBend | ch, LSB, MSB], offset);
     }
     
     /**
@@ -775,16 +759,14 @@ export class Synthetizer
      * Changes the patch for a given channel
      * @param channel {number} usually 0-15: the channel to change
      * @param programNumber {number} 0-127 the MIDI patch number
-     * @param userChange {boolean} indicates if user has called the program change.
      * defaults to false
      */
-    programChange(channel, programNumber, userChange = false)
+    programChange(channel, programNumber)
     {
-        this.post({
-            channelNumber: channel,
-            messageType: workletMessageType.programChange,
-            messageData: [programNumber, userChange]
-        });
+        const ch = channel % 16;
+        const offset = channel - ch;
+        programNumber %= 128;
+        this.sendMessage([messageTypes.programChange | ch, programNumber], offset);
     }
     
     /**
@@ -795,11 +777,13 @@ export class Synthetizer
      */
     velocityOverride(channel, velocity)
     {
-        this.post({
-            channelNumber: channel,
-            messageType: workletMessageType.ccChange,
-            messageData: [channelConfiguration.velocityOverride, velocity, true]
-        });
+        const ch = channel % 16;
+        const offset = channel - ch;
+        this._sendInternal(
+            [messageTypes.controllerChange | ch, channelConfiguration.velocityOverride, velocity],
+            offset,
+            true
+        );
     }
     
     /**
@@ -925,61 +909,21 @@ export class Synthetizer
      */
     sendMessage(message, channelOffset = 0)
     {
-        // discard as soon as possible if high perf
-        const statusByteData = getEvent(message[0]);
-        
-        statusByteData.channel += channelOffset;
-        // process the event
-        switch (statusByteData.status)
-        {
-            case messageTypes.noteOn:
-                const velocity = message[2];
-                if (velocity > 0)
-                {
-                    this.noteOn(statusByteData.channel, message[1], velocity);
-                }
-                else
-                {
-                    this.noteOff(statusByteData.channel, message[1]);
-                }
-                break;
-            
-            case messageTypes.noteOff:
-                this.noteOff(statusByteData.channel, message[1]);
-                break;
-            
-            case messageTypes.pitchBend:
-                this.pitchWheel(statusByteData.channel, message[2], message[1]);
-                break;
-            
-            case messageTypes.controllerChange:
-                this.controllerChange(statusByteData.channel, message[1], message[2]);
-                break;
-            
-            case messageTypes.programChange:
-                this.programChange(statusByteData.channel, message[1]);
-                break;
-            
-            case messageTypes.polyPressure:
-                this.polyPressure(statusByteData.channel, message[0], message[1]);
-                break;
-            
-            case messageTypes.channelPressure:
-                this.channelPressure(statusByteData.channel, message[1]);
-                break;
-            
-            case messageTypes.systemExclusive:
-                this.systemExclusive(new IndexedByteArray(message.slice(1)));
-                break;
-            
-            case messageTypes.reset:
-                this.stopAll(true);
-                this.resetControllers();
-                break;
-            
-            default:
-                break;
-        }
+        this._sendInternal(message, channelOffset);
+    }
+    
+    /**
+     * @param message {number[]|Uint8Array}
+     * @param offset {number}
+     * @param force {boolean}
+     * @private
+     */
+    _sendInternal(message, offset, force = false)
+    {
+        this.post({
+            messageType: workletMessageType.midiMessage,
+            messageData: [new Uint8Array(message), offset, force]
+        });
     }
     
     /**

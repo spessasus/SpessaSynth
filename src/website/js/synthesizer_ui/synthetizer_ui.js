@@ -26,6 +26,11 @@ class SynthetizerUI
 {
     
     /**
+     * @type {function(channel: number)}
+     */
+    onProgramChange = undefined;
+    
+    /**
      * @type {ChannelController[]}
      */
     controllers = [];
