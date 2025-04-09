@@ -37,11 +37,7 @@ export function readRegion(chunk)
         velMax = 127;
         velMin = 0;
     }
-    if (keyMin === 0 && keyMax === 0)
-    {
-        keyMax = 127;
-        keyMin = 0;
-    }
+    // cannot do the same to key zones sadly
     
     const zone = new DLSZone(
         { min: keyMin, max: keyMax },
