@@ -167,10 +167,8 @@ Supported formats list:
 ```shell
 npm install --save spessasynth_lib
 ```
-#### Or
-1. Clone this repository.
-2. Copy `src/spessasynth_lib` to your project.
-3. [Use the library](https://github.com/spessasus/SpessaSynth/wiki/Home)
+
+> Copying the `spessasynth_lib` folder is no longer the recommended way for installing the library.
 
 > [!TIP]
 > Looking for a Node.js version? Try [spessasynth_core](https://www.npmjs.com/package/spessasynth_core)!

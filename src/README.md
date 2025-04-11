@@ -2,6 +2,7 @@
 The two folders represent the two main things that are spessasynth:
 - `spessasynth_lib` - the library. This is what the NPM package contains.
 - `website` - the application. This is the demo website and the Local Edition app with all the frontend code.
+- `build` - this folder contains the build scripts.
 
 ## The two HTML files
 One HTML file is at the top of the repository, called `index.html`.
