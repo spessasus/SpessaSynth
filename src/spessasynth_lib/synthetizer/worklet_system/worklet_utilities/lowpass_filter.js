@@ -109,6 +109,23 @@ export class WorkletLowpassFilter
      * @type {boolean}
      */
     initialized = false;
+    /**
+     * Hertz
+     * @type {number}
+     */
+    sampleRate;
+    
+    /**
+     * @param sampleRate {number}
+     */
+    constructor(sampleRate)
+    {
+        this.sampleRate = sampleRate;
+        /**
+         * @type {number}
+         */
+        this.maxCutoff = sampleRate * 0.45;
+    }
     
     /**
      * Applies a low-pass filter to the given buffer
@@ -204,7 +221,7 @@ export class WorkletLowpassFilter
         let cutoffHz = absCentsToHz(cutoffCents);
         
         // fix cutoff on low sample rates
-        cutoffHz = Math.min(cutoffHz, 0.45 * sampleRate);
+        cutoffHz = Math.min(cutoffHz, filter.maxCutoff);
         
         // the coefficient calculation code was originally ported from meltysynth by sinshu.
         // turn resonance to gain, -3.01 so it gives a non-resonant peak
@@ -219,7 +236,7 @@ export class WorkletLowpassFilter
         
         
         // note: no sin or cos tables here as the coefficients are cached
-        let w = 2 * Math.PI * cutoffHz / sampleRate;
+        let w = 2 * Math.PI * cutoffHz / filter.sampleRate;
         let cosw = Math.cos(w);
         let alpha = Math.sin(w) / (2 * resonanceGain);
         
@@ -255,7 +272,7 @@ export class WorkletLowpassFilter
 }
 
 // precompute all the cutoffs for 0q (most common)
-const dummy = new WorkletLowpassFilter();
+const dummy = new WorkletLowpassFilter(44100);
 dummy.resonanceCb = 0;
 // sfspec section 8.1.3: initialFilterFc ranges from 1500 to 13,500 cents
 for (let i = 1500; i < 13500; i++)

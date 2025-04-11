@@ -112,7 +112,7 @@ export function controllerChange(controllerNumber, controllerValue, force = fals
                     this.holdPedal = false;
                     this.sustainedVoices.forEach(v =>
                     {
-                        v.release();
+                        v.release(this.synth.currentSynthTime);
                     });
                     this.sustainedVoices = [];
                 }

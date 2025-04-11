@@ -83,7 +83,7 @@ class WorkletSequencer
      * Absolute playback startTime, bases on the synth's time
      * @type {number}
      */
-    absoluteStartTime = currentTime;
+    absoluteStartTime = 0;
     /**
      * Currently playing notes (for pausing and resuming)
      * @type {{
@@ -142,6 +142,7 @@ class WorkletSequencer
     constructor(spessasynthProcessor)
     {
         this.synth = spessasynthProcessor;
+        this.absoluteStartTime = this.synth.currentSynthTime;
     }
     
     /**
@@ -169,7 +170,7 @@ class WorkletSequencer
             return this.pausedTime;
         }
         
-        return (currentTime - this.absoluteStartTime) * this._playbackRate;
+        return (this.synth.currentSynthTime - this.absoluteStartTime) * this._playbackRate;
     }
     
     set currentTime(time)
@@ -199,7 +200,7 @@ class WorkletSequencer
         this.playingNotes = [];
         const wasPaused = this.paused && this.preservePlaybackState;
         this.pausedTime = undefined;
-        this.post(WorkletSequencerReturnMessageType.timeChange, currentTime - time);
+        this.post(WorkletSequencerReturnMessageType.timeChange, this.synth.currentSynthTime - time);
         if (this.midiData.duration === 0)
         {
             SpessaSynthWarn("No duration!");

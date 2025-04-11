@@ -124,7 +124,7 @@ class WorkletVoice
      * Lowpass filter applied to the voice.
      * @type {WorkletLowpassFilter}
      */
-    filter = new WorkletLowpassFilter();
+    filter;
     
     /**
      * The unmodulated (copied to) generators of the voice.
@@ -292,6 +292,7 @@ class WorkletVoice
         this.exclusiveClass = this.generators[generatorTypes.exclusiveClass];
         this.modulatedGenerators = new Int16Array(generators);
         this.modulators = modulators;
+        this.filter = new WorkletLowpassFilter(sampleRate);
         
         this.velocity = velocity;
         this.midiNote = midiNote;
@@ -337,10 +338,11 @@ class WorkletVoice
     
     /**
      * Releases the voice as exclusiveClass
+     * @param currentTime {number}
      */
-    exclusiveRelease()
+    exclusiveRelease(currentTime)
     {
-        this.release(MIN_EXCLUSIVE_LENGTH);
+        this.release(currentTime, MIN_EXCLUSIVE_LENGTH);
         this.modulatedGenerators[generatorTypes.releaseVolEnv] = EXCLUSIVE_CUTOFF_TIME; // make the release nearly instant
         this.modulatedGenerators[generatorTypes.releaseModEnv] = EXCLUSIVE_MOD_CUTOFF_TIME;
         WorkletVolumeEnvelope.recalculate(this);
@@ -349,9 +351,10 @@ class WorkletVoice
     
     /**
      * Stops the voice
+     * @param currentTime {number}
      * @param minNoteLength {number} minimum note length in seconds
      */
-    release(minNoteLength = MIN_NOTE_LENGTH)
+    release(currentTime, minNoteLength = MIN_NOTE_LENGTH)
     {
         this.releaseStartTime = currentTime;
         // check if the note is shorter than the min note time, if so, extend it
@@ -366,7 +369,6 @@ class WorkletVoice
  * @param channel {number} a hint for the processor to recalculate sample cursors when sample dumping
  * @param midiNote {number} the MIDI note to use
  * @param velocity {number} the velocity to use
- * @param currentTime {number} the current time in seconds
  * @param realKey {number} the real MIDI note if the "midiNote" was changed by MIDI Tuning Standard
  * @this {SpessaSynthProcessor}
  * @returns {WorkletVoice[]} output is an array of WorkletVoices
@@ -374,7 +376,6 @@ class WorkletVoice
 export function getWorkletVoices(channel,
                                  midiNote,
                                  velocity,
-                                 currentTime,
                                  realKey)
 {
     /**
@@ -400,7 +401,7 @@ export function getWorkletVoices(channel,
     // if cached, return it!
     if (cached !== undefined)
     {
-        return cached.map(v => WorkletVoice.copy(v, currentTime));
+        return cached.map(v => WorkletVoice.copy(v, this.currentSynthTime));
     }
     
     // not cached...
@@ -460,7 +461,7 @@ export function getWorkletVoices(channel,
              */
             const workletSample = new WorkletSample(
                 sampleAndGenerators.sample.sampleData,
-                (sampleAndGenerators.sample.sampleRate / sampleRate) * Math.pow(
+                (sampleAndGenerators.sample.sampleRate / this.sampleRate) * Math.pow(
                     2,
                     sampleAndGenerators.sample.samplePitchCorrection / 1200
                 ), // cent tuning
@@ -491,12 +492,12 @@ export function getWorkletVoices(channel,
             
             voices.push(
                 new WorkletVoice(
-                    sampleRate,
+                    this.sampleRate,
                     workletSample,
                     midiNote,
                     velocity,
                     channel,
-                    currentTime,
+                    this.currentSynthTime,
                     targetKey,
                     realKey,
                     generators,
@@ -507,6 +508,6 @@ export function getWorkletVoices(channel,
         }, []);
     // cache the voice
     this.setCachedVoice(bank, program, midiNote, velocity, workletVoices.map(v =>
-        WorkletVoice.copy(v, currentTime)));
+        WorkletVoice.copy(v, this.currentSynthTime)));
     return workletVoices;
 }

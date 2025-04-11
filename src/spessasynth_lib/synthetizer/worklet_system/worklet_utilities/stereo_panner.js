@@ -71,8 +71,8 @@ export function panVoice(voice,
     const gainLeft = panTableLeft[index] * gain * this.synth.panLeft;
     const gainRight = panTableRight[index] * gain * this.synth.panRight;
     
-    // disable reverb and chorus in one output mode
-    if (!this.synth.oneOutputMode)
+    // disable reverb and chorus if necessary
+    if (this.synth.effectsEnabled)
     {
         const reverbSend = voice.modulatedGenerators[generatorTypes.reverbEffectsSend];
         if (reverbSend > 0)

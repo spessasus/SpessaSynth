@@ -15,6 +15,6 @@ export function killNote(midiNote, releaseTime = -12000)
             return;
         }
         v.modulatedGenerators[generatorTypes.releaseVolEnv] = releaseTime; // set release to be very short
-        v.release();
+        v.release(this.synth.currentSynthTime);
     });
 }
