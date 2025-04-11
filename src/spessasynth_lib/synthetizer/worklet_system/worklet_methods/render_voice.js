@@ -10,6 +10,7 @@ import { WorkletLowpassFilter } from "../worklet_utilities/lowpass_filter.js";
 /**
  * Renders a voice to the stereo output buffer
  * @param voice {WorkletVoice} the voice to render
+ * @param timeNow {number} current time in seconds
  * @param outputLeft {Float32Array} the left output buffer
  * @param outputRight {Float32Array} the right output buffer
  * @param reverbOutputLeft {Float32Array} left output for reverb
@@ -20,14 +21,12 @@ import { WorkletLowpassFilter } from "../worklet_utilities/lowpass_filter.js";
  * @returns {boolean} true if the voice is finished
  */
 export function renderVoice(
-    voice,
+    voice, timeNow,
     outputLeft, outputRight,
     reverbOutputLeft, reverbOutputRight,
     chorusOutputLeft, chorusOutputRight
 )
 {
-    // avoid jetbrains errors
-    const timeNow = currentTime;
     // check if release
     if (!voice.isInRelease)
     {

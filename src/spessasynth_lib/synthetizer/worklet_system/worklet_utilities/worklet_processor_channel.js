@@ -251,7 +251,7 @@ class WorkletProcessorChannel
     )
     {
         this.voices = this.voices.filter(v => !this.renderVoice(
-            v,
+            v, this.synth.currentSynthTime,
             outputLeft, outputRight,
             reverbOutputLeft, reverbOutputRight,
             chorusOutputLeft, chorusOutputRight

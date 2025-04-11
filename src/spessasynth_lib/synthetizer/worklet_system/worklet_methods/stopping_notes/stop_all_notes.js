@@ -20,11 +20,11 @@ export function stopAllNotes(force = false)
             {
                 return;
             }
-            v.release();
+            v.release(this.synth.currentSynthTime);
         });
         this.sustainedVoices.forEach(v =>
         {
-            v.release();
+            v.release(this.synth.currentSynthTime);
         });
     }
 }

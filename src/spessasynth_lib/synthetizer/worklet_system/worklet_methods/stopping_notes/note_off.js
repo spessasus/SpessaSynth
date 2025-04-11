@@ -44,7 +44,7 @@ export function noteOff(midiNote)
         }
         else
         {
-            v.release();
+            v.release(this.synth.currentSynthTime);
         }
     });
     this.synth.callEvent("noteoff", {

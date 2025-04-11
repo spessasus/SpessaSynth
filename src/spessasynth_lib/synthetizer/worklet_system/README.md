@@ -10,3 +10,16 @@ For those interested, `render_voice.js` file contains the actual DSP synthesis c
 
 `minify_processor.js` uses esbuild to minify the processor code. Importing this instead of `worklet_processor.js` is
 recommended.
+
+## How it works
+Both `Synthetizer` and `Sequencer` are essentially "remote control"
+for the actual sequencer and synthesizer in the audio worklet thread.
+These core components are wrapped in the AudioWorkletProcessor, which is receiving both commands and data (MIDIs, sound banks)
+through the message port, and sends data back (events, time changes, status changes, etc.).
+
+For example,
+the playback to WebMIDIAPI is actually the sequencer in the worklet thread
+playing back the sequence and then postMessaging the commands through the synthesizer to the sequencer
+which actually sends them to the specified output.
+
+The wonders of separate audio thread...

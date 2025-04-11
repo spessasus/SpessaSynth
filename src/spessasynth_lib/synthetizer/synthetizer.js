@@ -44,6 +44,7 @@ const DEFAULT_SYNTH_METHOD_OPTIONS = {
 };
 
 
+// the "remote controller" of the worklet processor in the audio thread from the main thread
 export class Synthetizer
 {
     

@@ -83,7 +83,6 @@ export function noteOn(midiNote, velocity)
         this.channelNumber,
         sentMidiNote,
         velocity,
-        currentTime,
         realKey
     );
     
@@ -115,7 +114,7 @@ export function noteOn(midiNote, velocity)
             {
                 if (v.exclusiveClass === exclusive)
                 {
-                    v.exclusiveRelease();
+                    v.exclusiveRelease(this.synth.currentSynthTime);
                 }
             });
         }

@@ -333,7 +333,7 @@ export function setTimeTicks(ticks)
     this.pausedTime = undefined;
     this.post(
         WorkletSequencerReturnMessageType.timeChange,
-        currentTime - this.midiData.MIDIticksToSeconds(ticks)
+        this.synth.currentSynthTime - this.midiData.MIDIticksToSeconds(ticks)
     );
     const isNotFinished = this._playTo(0, ticks);
     this._recalculateStartTime(this.playedTime);
@@ -351,5 +351,5 @@ export function setTimeTicks(ticks)
  */
 export function _recalculateStartTime(time)
 {
-    this.absoluteStartTime = currentTime - time / this._playbackRate;
+    this.absoluteStartTime = this.synth.currentSynthTime - time / this._playbackRate;
 }
