@@ -83,7 +83,7 @@ class WorkletSpessaProcessor extends AudioWorkletProcessor
         const data = message.messageData;
         const channel = message.channelNumber;
         /**
-         * @type {WorkletProcessorChannel}
+         * @type {MidiAudioChannel}
          */
         let channelObject;
         if (channel >= 0)

@@ -72,7 +72,7 @@ export const ALL_CHANNELS_OR_DIFFERENT_ACTION = -1;
  *     |undefined
  *     |boolean[]
  *     |boolean
- *     |WorkletVoice[]
+ *     |Voice[]
  *     |number
  *     |{rate: number, depth: number, delay: number}
  *     |ArrayBuffer

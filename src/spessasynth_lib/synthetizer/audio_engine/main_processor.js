@@ -1,34 +1,34 @@
 import { SpessaSynthSequencer } from "../../sequencer/sequencer_engine/sequencer_engine.js";
 import { SpessaSynthInfo } from "../../utils/loggin.js";
 import { consoleColors } from "../../utils/other.js";
-import { voiceKilling } from "./worklet_methods/stopping_notes/voice_killing.js";
+import { voiceKilling } from "./engine_methods/stopping_notes/voice_killing.js";
 import {
     ALL_CHANNELS_OR_DIFFERENT_ACTION,
     masterParameterType,
     returnMessageType
 } from "./message_protocol/worklet_message.js";
 import { stbvorbis } from "../../externals/stbvorbis_sync/stbvorbis_sync.min.js";
-import { VOLUME_ENVELOPE_SMOOTHING_FACTOR } from "./worklet_utilities/volume_envelope.js";
+import { VOLUME_ENVELOPE_SMOOTHING_FACTOR } from "./engine_components/volume_envelope.js";
 import { callEvent } from "./message_protocol/message_sending.js";
-import { systemExclusive } from "./worklet_methods/system_exclusive.js";
-import { setMasterGain, setMasterPan, setMIDIVolume } from "./worklet_methods/controller_control/master_parameters.js";
-import { resetAllControllers } from "./worklet_methods/controller_control/reset_controllers.js";
-import { WorkletSoundfontManager } from "./worklet_methods/worklet_soundfont_manager/worklet_soundfont_manager.js";
-import { interpolationTypes } from "./worklet_utilities/wavetable_oscillator.js";
-import { WorkletKeyModifierManager } from "./worklet_methods/worklet_key_modifier.js";
-import { getWorkletVoices } from "./worklet_utilities/worklet_voice.js";
-import { PAN_SMOOTHING_FACTOR } from "./worklet_utilities/stereo_panner.js";
-import { stopAllChannels } from "./worklet_methods/stopping_notes/stop_all_channels.js";
-import { setEmbeddedSoundFont } from "./worklet_methods/soundfont_management/set_embedded_sound_font.js";
-import { reloadSoundFont } from "./worklet_methods/soundfont_management/reload_sound_font.js";
-import { clearSoundFont } from "./worklet_methods/soundfont_management/clear_sound_font.js";
-import { sendPresetList } from "./worklet_methods/soundfont_management/send_preset_list.js";
-import { getPreset } from "./worklet_methods/soundfont_management/get_preset.js";
-import { transposeAllChannels } from "./worklet_methods/tuning_control/transpose_all_channels.js";
-import { setMasterTuning } from "./worklet_methods/tuning_control/set_master_tuning.js";
+import { systemExclusive } from "./engine_methods/system_exclusive.js";
+import { setMasterGain, setMasterPan, setMIDIVolume } from "./engine_methods/controller_control/master_parameters.js";
+import { resetAllControllers } from "./engine_methods/controller_control/reset_controllers.js";
+import { WorkletSoundfontManager } from "./engine_methods/soundfont_manager/soundfont_manager.js";
+import { interpolationTypes } from "./engine_components/wavetable_oscillator.js";
+import { KeyModifierManager } from "./engine_methods/key_modifier_manager.js";
+import { getVoices } from "./engine_components/voice.js";
+import { PAN_SMOOTHING_FACTOR } from "./engine_components/stereo_panner.js";
+import { stopAllChannels } from "./engine_methods/stopping_notes/stop_all_channels.js";
+import { setEmbeddedSoundFont } from "./engine_methods/soundfont_management/set_embedded_sound_font.js";
+import { reloadSoundFont } from "./engine_methods/soundfont_management/reload_sound_font.js";
+import { clearSoundFont } from "./engine_methods/soundfont_management/clear_sound_font.js";
+import { sendPresetList } from "./engine_methods/soundfont_management/send_preset_list.js";
+import { getPreset } from "./engine_methods/soundfont_management/get_preset.js";
+import { transposeAllChannels } from "./engine_methods/tuning_control/transpose_all_channels.js";
+import { setMasterTuning } from "./engine_methods/tuning_control/set_master_tuning.js";
 import { applySynthesizerSnapshot } from "./snapshot/apply_synthesizer_snapshot.js";
-import { createWorkletChannel } from "./worklet_methods/create_worklet_channel.js";
-import { FILTER_SMOOTHING_FACTOR } from "./worklet_utilities/lowpass_filter.js";
+import { createMidiChannel } from "./engine_methods/create_midi_channel.js";
+import { FILTER_SMOOTHING_FACTOR } from "./engine_components/lowpass_filter.js";
 import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE, VOICE_CAP } from "../synth_constants.js";
 import { fillWithDefaults } from "../../utils/fill_with_defaults.js";
 import { DEFAULT_SEQUENCER_OPTIONS } from "../../sequencer/worklet_wrapper/default_sequencer_options.js";
@@ -61,8 +61,8 @@ class SpessaSynthProcessor
     /**
      * Cached voices for all presets for this synthesizer.
      * Nesting goes like this:
-     * this.cachedVoices[bankNumber][programNumber][midiNote][velocity] = a list of workletvoices for that.
-     * @type {WorkletVoice[][][][][]}
+     * this.cachedVoices[bankNumber][programNumber][midiNote][velocity] = a list of Voices for that.
+     * @type {Voice[][][][][]}
      */
     cachedVoices = [];
     
@@ -164,9 +164,9 @@ class SpessaSynthProcessor
     
     /**
      * Handlese custom key overrides: velocity and preset
-     * @type {WorkletKeyModifierManager}
+     * @type {KeyModifierManager}
      */
-    keyModifierManager = new WorkletKeyModifierManager();
+    keyModifierManager = new KeyModifierManager();
     
     /**
      * Overrides the main soundfont (embedded, for example)
@@ -176,7 +176,7 @@ class SpessaSynthProcessor
     
     /**
      * contains all the channels with their voices on the processor size
-     * @type {WorkletProcessorChannel[]}
+     * @type {MidiAudioChannel[]}
      */
     midiAudioChannels = [];
     
@@ -402,7 +402,7 @@ class SpessaSynthProcessor
      * @param program {number}
      * @param midiNote {number}
      * @param velocity {number}
-     * @returns {WorkletVoice[]|undefined}
+     * @returns {Voice[]|undefined}
      */
     getCachedVoice(bank, program, midiNote, velocity)
     {
@@ -414,7 +414,7 @@ class SpessaSynthProcessor
      * @param program {number}
      * @param midiNote {number}
      * @param velocity {number}
-     * @param voices {WorkletVoice[]}
+     * @param voices {Voice[]}
      */
     setCachedVoice(bank, program, midiNote, velocity, voices)
     {
@@ -725,7 +725,7 @@ class SpessaSynthProcessor
 // include other methods
 // voice related
 SpessaSynthProcessor.prototype.voiceKilling = voiceKilling;
-SpessaSynthProcessor.prototype.getWorkletVoices = getWorkletVoices;
+SpessaSynthProcessor.prototype.getVoices = getVoices;
 
 // message port related
 SpessaSynthProcessor.prototype.callEvent = callEvent;
@@ -735,7 +735,7 @@ SpessaSynthProcessor.prototype.systemExclusive = systemExclusive;
 
 // channel related
 SpessaSynthProcessor.prototype.stopAllChannels = stopAllChannels;
-SpessaSynthProcessor.prototype.createWorkletChannel = createWorkletChannel;
+SpessaSynthProcessor.prototype.createWorkletChannel = createMidiChannel;
 SpessaSynthProcessor.prototype.resetAllControllers = resetAllControllers;
 
 // master parameter related

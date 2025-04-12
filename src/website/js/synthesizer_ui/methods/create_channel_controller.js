@@ -25,7 +25,7 @@ import {
 import { modulatorSources } from "../../../../spessasynth_lib/soundfont/basic_soundfont/modulator.js";
 import {
     NON_CC_INDEX_OFFSET
-} from "../../../../spessasynth_lib/synthetizer/audio_engine/worklet_utilities/controller_tables.js";
+} from "../../../../spessasynth_lib/synthetizer/audio_engine/engine_components/controller_tables.js";
 import { DEFAULT_PERCUSSION } from "../../../../spessasynth_lib/synthetizer/synth_constants.js";
 import { isSystemXG, isValidXGMSB } from "../../../../spessasynth_lib/utils/xg_hacks.js";
 import { ANIMATION_REFLOW_TIME } from "../../utils/animation_utils.js";

@@ -12,8 +12,8 @@ import {
 import { SpessaSynthInfo, SpessaSynthWarn } from "../../utils/loggin.js";
 import { DEFAULT_SYNTH_CONFIG } from "../audio_effects/effects_config.js";
 import { SoundfontManager } from "./synth_soundfont_manager.js";
-import { KeyModifierManager } from "./key_modifier_manager.js";
-import { channelConfiguration } from "../audio_engine/worklet_utilities/controller_tables.js";
+import { WorkletKeyModifierManagerWrapper } from "./key_modifier_manager.js";
+import { channelConfiguration } from "../audio_engine/engine_components/controller_tables.js";
 import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE, MIDI_CHANNEL_COUNT, VOICE_CAP } from "../synth_constants.js";
 import { BasicMIDI } from "../../midi_parser/basic_midi.js";
 import { fillWithDefaults } from "../../utils/fill_with_defaults.js";
@@ -199,7 +199,7 @@ export class Synthetizer
         // set up message handling and managers
         this.worklet.port.onmessage = e => this.handleMessage(e.data);
         this.soundfontManager = new SoundfontManager(this);
-        this.keyModifierManager = new KeyModifierManager(this);
+        this.keyModifierManager = new WorkletKeyModifierManagerWrapper(this);
         this._snapshotCallback = undefined;
         this.sequencerCallbackFunction = undefined;
         
