@@ -10,6 +10,8 @@ import {
 } from "./channel_analysers.js";
 import { connectSequencer, resetIndexes } from "./connect_sequencer.js";
 import { renderBigFft, renderSingleFft, renderSingleWaveform, renderWaveforms } from "./render_waveforms.js";
+import { SpessaSynthInfo } from "../../../spessasynth_lib/utils/loggin.js";
+import { consoleColors } from "../../../spessasynth_lib/utils/other.js";
 
 /**
  * renderer.js
@@ -320,6 +322,7 @@ class Renderer
                 rendererStartIndex: 0
             };
         });
+        SpessaSynthInfo(`%cFinished loading note times and ready to render the sequence!`, consoleColors.info);
     }
     
     computeColors()
