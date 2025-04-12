@@ -1,12 +1,12 @@
 import { MidiKeyboard } from "../midi_keyboard/midi_keyboard.js";
-import { Synthetizer } from "../../../spessasynth_lib/synthetizer/synthetizer.js";
+import { Synthetizer } from "../../../spessasynth_lib/synthetizer/worklet_wrapper/synthetizer.js";
 import { Renderer } from "../renderer/renderer.js";
 
 import { SequencerUI } from "../sequencer_ui/sequencer_ui.js";
 import { SynthetizerUI } from "../synthesizer_ui/synthetizer_ui.js";
 import { MIDIDeviceHandler } from "../../../spessasynth_lib/external_midi/midi_handler.js";
 import { WebMIDILinkHandler } from "../../../spessasynth_lib/external_midi/web_midi_link.js";
-import { Sequencer } from "../../../spessasynth_lib/sequencer/sequencer.js";
+import { Sequencer } from "../../../spessasynth_lib/sequencer/worklet_wrapper/sequencer.js";
 import { SpessaSynthSettings } from "../settings_ui/settings.js";
 import { MusicModeUI } from "../music_mode_ui/music_mode_ui.js";
 import { LocaleManager } from "../locale/locale_manager.js";
@@ -18,7 +18,7 @@ import { exportMidi } from "./export_midi.js";
 import { _exportSoundfont } from "./export_soundfont.js";
 import { exportSong } from "./export_song.js";
 import { _exportRMIDI } from "./export_rmidi.js";
-import { WORKLET_URL_ABSOLUTE } from "../../../spessasynth_lib/synthetizer/worklet_url.js";
+import { WORKLET_URL_ABSOLUTE } from "../../../spessasynth_lib/synthetizer/worklet_wrapper/worklet_url.js";
 import { loadSoundFont } from "../../../spessasynth_lib/soundfont/load_soundfont.js";
 import { readBytesAsString } from "../../../spessasynth_lib/utils/byte_functions/string.js";
 import { IndexedByteArray } from "../../../spessasynth_lib/utils/indexed_array.js";
@@ -154,7 +154,7 @@ class Manager
          */
         this.soundFont = soundFont;
         
-        const DEBUG_PATH = "synthetizer/worklet_system/worklet_processor.js";
+        const DEBUG_PATH = "synthetizer/worklet_wrapper/worklet_processor.js";
         const WORKLET_PATH = this.enableDebug ? DEBUG_PATH : WORKLET_URL_ABSOLUTE;
         if (this.enableDebug)
         {

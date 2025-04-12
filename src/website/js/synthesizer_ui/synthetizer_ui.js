@@ -1,4 +1,4 @@
-import { Synthetizer } from "../../../spessasynth_lib/synthetizer/synthetizer.js";
+import { Synthetizer } from "../../../spessasynth_lib/synthetizer/worklet_wrapper/synthetizer.js";
 import { hideControllers, showControllers } from "./methods/hide_show_controllers.js";
 import { toggleDarkMode } from "./methods/toggle_dark_mode.js";
 import {

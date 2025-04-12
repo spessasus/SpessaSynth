@@ -1,7 +1,7 @@
 // import the modules
-import { Sequencer } from "../src/spessasynth_lib/sequencer/sequencer.js";
-import { Synthetizer } from "../src/spessasynth_lib/synthetizer/synthetizer.js";
-import { WORKLET_URL_ABSOLUTE } from "../src/spessasynth_lib/synthetizer/worklet_url.js";
+import { Sequencer } from "../src/spessasynth_lib/sequencer/worklet_wrapper/sequencer.js";
+import { Synthetizer } from "../src/spessasynth_lib/synthetizer/worklet_wrapper/synthetizer.js";
+import { WORKLET_URL_ABSOLUTE } from "../src/spessasynth_lib/synthetizer/worklet_wrapper/worklet_url.js";
 
 // add different colors to channels!
 const channelColors = [

@@ -1,7 +1,7 @@
 // import the modules
-import { Sequencer } from "../src/spessasynth_lib/sequencer/sequencer.js";
-import { Synthetizer } from "../src/spessasynth_lib/synthetizer/synthetizer.js";
-import { WORKLET_URL_ABSOLUTE } from "../src/spessasynth_lib/synthetizer/worklet_url.js";
+import { Sequencer } from "../src/spessasynth_lib/sequencer/worklet_wrapper/sequencer.js";
+import { Synthetizer } from "../src/spessasynth_lib/synthetizer/worklet_wrapper/synthetizer.js";
+import { WORKLET_URL_ABSOLUTE } from "../src/spessasynth_lib/synthetizer/worklet_wrapper/worklet_url.js";
 
 // load the soundfont (your path may vary)
 fetch("../soundfonts/GeneralUserGS.sf3").then(async response =>
