@@ -12,6 +12,11 @@ import { MIDI_CHANNEL_COUNT } from "../synth_constants.js";
 import { workletKeyModifierMessageType } from "../audio_engine/engine_components/key_modifier_manager.js";
 import { masterParameterType } from "../audio_engine/engine_methods/controller_control/master_parameters.js";
 import { WorkletSoundfontManagerMessageType } from "./sfman_message.js";
+import {
+    SongChangeType,
+    SpessaSynthSequencerMessageType,
+    SpessaSynthSequencerReturnMessageType
+} from "../../sequencer/worklet_wrapper/sequencer_message.js";
 
 
 // a worklet processor wrapper for the synthesizer core
@@ -213,7 +218,96 @@ class WorkletSpessaProcessor extends AudioWorkletProcessor
                 break;
             
             case workletMessageType.sequencerSpecific:
-                this.synthesizer.sequencer.processMessage(data.messageType, data.messageData);
+                const seq = this.synthesizer.sequencer;
+                const messageData = data.messageData;
+                const messageType = data.messageType;
+                switch (messageType)
+                {
+                    default:
+                        break;
+                    
+                    case SpessaSynthSequencerMessageType.loadNewSongList:
+                        seq.loadNewSongList(messageData[0], messageData[1]);
+                        break;
+                    
+                    case SpessaSynthSequencerMessageType.pause:
+                        seq.pause();
+                        break;
+                    
+                    case SpessaSynthSequencerMessageType.play:
+                        seq.play(messageData);
+                        break;
+                    
+                    case SpessaSynthSequencerMessageType.stop:
+                        seq.stop();
+                        break;
+                    
+                    case SpessaSynthSequencerMessageType.setTime:
+                        seq.currentTime = messageData;
+                        break;
+                    
+                    case SpessaSynthSequencerMessageType.changeMIDIMessageSending:
+                        seq.sendMIDIMessages = messageData;
+                        break;
+                    
+                    case SpessaSynthSequencerMessageType.setPlaybackRate:
+                        seq.playbackRate = messageData;
+                        break;
+                    
+                    case SpessaSynthSequencerMessageType.setLoop:
+                        const [loop, count] = messageData;
+                        seq.loop = loop;
+                        if (count === ALL_CHANNELS_OR_DIFFERENT_ACTION)
+                        {
+                            seq.loopCount = Infinity;
+                        }
+                        else
+                        {
+                            seq.loopCount = count;
+                        }
+                        break;
+                    
+                    case SpessaSynthSequencerMessageType.changeSong:
+                        switch (messageData[0])
+                        {
+                            case SongChangeType.forwards:
+                                seq.nextSong();
+                                break;
+                            
+                            case SongChangeType.backwards:
+                                seq.previousSong();
+                                break;
+                            
+                            case SongChangeType.shuffleOff:
+                                seq.shuffleMode = false;
+                                seq.songIndex = seq.shuffledSongIndexes[seq.songIndex];
+                                break;
+                            
+                            case SongChangeType.shuffleOn:
+                                seq.shuffleMode = true;
+                                seq.shuffleSongIndexes();
+                                seq.songIndex = 0;
+                                seq.loadCurrentSong();
+                                break;
+                            
+                            case SongChangeType.index:
+                                seq.songIndex = messageData[1];
+                                seq.loadCurrentSong();
+                                break;
+                        }
+                        break;
+                    
+                    case SpessaSynthSequencerMessageType.getMIDI:
+                        seq.post(SpessaSynthSequencerReturnMessageType.getMIDI, seq.midiData);
+                        break;
+                    
+                    case SpessaSynthSequencerMessageType.setSkipToFirstNote:
+                        seq.skipToFirstNoteOn = messageData;
+                        break;
+                    
+                    case SpessaSynthSequencerMessageType.setPreservePlaybackState:
+                        seq.preservePlaybackState = messageData;
+                }
                 break;
             
             case workletMessageType.soundFontManager:
