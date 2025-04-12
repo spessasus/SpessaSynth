@@ -17,17 +17,24 @@ export class KeyModifier
     patch = { bank: -1, program: -1 };
     
     /**
+     * Linear gain override for the voice
+     */
+    gain = 1;
+    
+    /**
      * @param velocity {number}
      * @param bank {number}
      * @param program {number}
+     * @param gain {number}
      */
-    constructor(velocity = -1, bank = -1, program = -1)
+    constructor(velocity = -1, bank = -1, program = -1, gain = 1)
     {
         this.velocity = velocity;
         this.patch = {
             bank: bank,
             program: program
         };
+        this.gain = gain;
     }
 }
 
@@ -100,12 +107,17 @@ export class KeyModifierManager
      */
     getVelocity(channel, midiNote)
     {
-        const modifier = this._keyMappings[channel]?.[midiNote];
-        if (modifier)
-        {
-            return modifier.velocity;
-        }
-        return -1;
+        return this._keyMappings[channel]?.[midiNote]?.velocity ?? -1;
+    }
+    
+    /**
+     * @param channel {number}
+     * @param midiNote {number}
+     * @returns {number} linear gain
+     */
+    getGain(channel, midiNote)
+    {
+        return this._keyMappings[channel]?.[midiNote]?.gain ?? 1;
     }
     
     /**

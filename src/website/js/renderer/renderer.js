@@ -15,7 +15,7 @@ import { consoleColors } from "../../../spessasynth_lib/utils/other.js";
 
 /**
  * renderer.js
- * purpose: renders midi file and channel waveformsMode to a canvas
+ * purpose: renders midi file and channel waveforms to a canvas
  */
 
 /**

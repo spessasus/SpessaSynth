@@ -76,6 +76,7 @@ async function doModifyKey(synth, locale, keyboard, presetList)
      */
     const mod = synth.keyModifierManager.getModifier(keyboard.channel, key);
     const vel = mod?.velocity ?? -1;
+    const gain = mod?.gain ?? 1;
     const n = showNotification(
         locale.getLocaleString(LOCALE_PATH + "modifyKey.title"),
         [
@@ -104,6 +105,11 @@ async function doModifyKey(synth, locale, keyboard, presetList)
                 attributes: getInput("vel", 0, 127, vel)
             },
             {
+                type: "input",
+                translatePathTitle: LOCALE_PATH + "modifyKey.gain",
+                attributes: getInput("gain", 0, 10, gain)
+            },
+            {
                 type: "select",
                 translatePathTitle: LOCALE_PATH + "modifyKey.preset",
                 attributes: { "preset-selector": "true" },
@@ -116,6 +122,7 @@ async function doModifyKey(synth, locale, keyboard, presetList)
                 {
                     const channel = parseInt(n.div.querySelector("input[chan]").value) ?? -1;
                     const velocity = parseInt(n.div.querySelector("input[vel]").value) ?? -1;
+                    const gain = parseFloat(n.div.querySelector("input[gain]").value) ?? 1;
                     const presetName = n.div.querySelector("select[preset-selector]").value;
                     let bank = -1;
                     let program = -1;
@@ -130,7 +137,8 @@ async function doModifyKey(synth, locale, keyboard, presetList)
                         patch: {
                             program: program,
                             bank: bank
-                        }
+                        },
+                        gain: gain
                     });
                     closeNotification(n.id);
                 }

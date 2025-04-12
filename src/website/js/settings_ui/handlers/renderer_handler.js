@@ -140,7 +140,7 @@ export function _createRendererHandler(renderer)
         this._saveSettings();
     };
     
-    // stabilize waveformsMode
+    // stabilize waveforms
     rendererControls.stabilizeWaveformsToggler.onclick = () =>
     {
         renderer.stabilizeWaveforms = !renderer.stabilizeWaveforms;

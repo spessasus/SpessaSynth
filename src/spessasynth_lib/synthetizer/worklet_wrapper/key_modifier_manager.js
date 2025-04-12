@@ -42,7 +42,8 @@ export class WorkletKeyModifierManagerWrapper
      *     patch: {
      *         bank: number,
      *         program: number
-     *     }|undefined
+     *     }|undefined,
+     *     gain: number|undefined
      * }} the key's modifiers
      */
     addModifier(channel, midiNote, options)
@@ -50,7 +51,8 @@ export class WorkletKeyModifierManagerWrapper
         const velocity = options?.velocity ?? -1;
         const program = options?.patch?.program ?? -1;
         const bank = options?.patch?.bank ?? -1;
-        const mod = new KeyModifier(velocity, bank, program);
+        const gain = options?.gain ?? 1;
+        const mod = new KeyModifier(velocity, bank, program, gain);
         if (this._keyModifiers[channel] === undefined)
         {
             this._keyModifiers[channel] = [];
