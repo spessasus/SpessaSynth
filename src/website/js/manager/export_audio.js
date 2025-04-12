@@ -1,5 +1,5 @@
 import { closeNotification, showNotification } from "../notification/notification.js";
-import { Synthetizer } from "../../../spessasynth_lib/synthetizer/synthetizer.js";
+import { Synthetizer } from "../../../spessasynth_lib/synthetizer/worklet_wrapper/synthetizer.js";
 import { consoleColors, formatTime } from "../../../spessasynth_lib/utils/other.js";
 import { audioBufferToWav } from "../../../spessasynth_lib/utils/buffer_to_wav.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";

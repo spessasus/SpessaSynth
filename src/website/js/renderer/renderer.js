@@ -1,4 +1,4 @@
-import { Synthetizer } from "../../../spessasynth_lib/synthetizer/synthetizer.js";
+import { Synthetizer } from "../../../spessasynth_lib/synthetizer/worklet_wrapper/synthetizer.js";
 import { calculateRGB, RGBAOpacity } from "../utils/calculate_rgb.js";
 import { render } from "./render.js";
 import { computeNotePositions } from "./compute_note_positions.js";

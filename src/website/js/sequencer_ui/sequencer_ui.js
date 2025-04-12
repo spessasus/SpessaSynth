@@ -1,4 +1,4 @@
-import { Sequencer } from "../../../spessasynth_lib/sequencer/sequencer.js";
+import { Sequencer } from "../../../spessasynth_lib/sequencer/worklet_wrapper/sequencer.js";
 import { formatTime } from "../../../spessasynth_lib/utils/other.js";
 import { supportedEncodings } from "../utils/encodings.js";
 import {
