@@ -483,9 +483,9 @@ class SpessaSynthProcessor
     /**
      * Renders float32 audio data to stereo outputs; buffer size of 128 is recommended
      * All float arrays must have the same length
-     * @param outputs {Float32Array[]} output stereo channels
-     * @param reverb {Float32Array[]} reverb stereo channels
-     * @param chorus {Float32Array[]} chorus stereo channels
+     * @param outputs {Float32Array[]} output stereo channels (L, R)
+     * @param reverb {Float32Array[]} reverb stereo channels (L, R)
+     * @param chorus {Float32Array[]} chorus stereo channels (L, R)
      */
     renderAudio(outputs, reverb, chorus)
     {
@@ -495,9 +495,9 @@ class SpessaSynthProcessor
     /**
      * Renders the float32 audio data of each channel; buffer size of 128 is recommended
      * All float arrays must have the same length
-     * @param reverbChannels {Float32Array[]} reverb stereo channels
-     * @param chorusChannels {Float32Array[]} chorus stereo channels
-     * @param separateChannels {Float32Array[][]} a total of 16 stereo pairs for each MIDI channel
+     * @param reverbChannels {Float32Array[]} reverb stereo channels (L, R)
+     * @param chorusChannels {Float32Array[]} chorus stereo channels (L, R)
+     * @param separateChannels {Float32Array[][]} a total of 16 stereo pairs (L, R) for each MIDI channel
      */
     renderAudioSplit(reverbChannels, chorusChannels, separateChannels)
     {
