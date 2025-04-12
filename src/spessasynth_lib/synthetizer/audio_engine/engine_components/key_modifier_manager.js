@@ -1,3 +1,7 @@
+/**
+ * A manager for custom key overrides for channels
+ */
+
 export class KeyModifier
 {
     
@@ -44,30 +48,6 @@ export class KeyModifierManager
      * @private
      */
     _keyMappings = [];
-    
-    /**
-     * @param type {workletKeyModifierMessageType}
-     * @param data {any}
-     */
-    handleMessage(type, data)
-    {
-        switch (type)
-        {
-            default:
-                return;
-            
-            case workletKeyModifierMessageType.addMapping:
-                this.addMapping(...data);
-                break;
-            
-            case workletKeyModifierMessageType.clearMappings:
-                this.clearMappings();
-                break;
-            
-            case workletKeyModifierMessageType.deleteMapping:
-                this.deleteMapping(...data);
-        }
-    }
     
     /**
      * @param channel {number}

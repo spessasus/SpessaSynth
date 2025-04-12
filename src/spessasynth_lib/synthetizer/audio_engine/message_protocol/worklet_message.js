@@ -49,17 +49,6 @@ export const workletMessageType = {
     destroyWorklet: 27
 };
 
-/**
- * @enum {number}
- */
-export const masterParameterType = {
-    mainVolume: 0,
-    masterPan: 1,
-    voicesCap: 2,
-    interpolationType: 3,
-    midiSystem: 4
-};
-
 
 export const ALL_CHANNELS_OR_DIFFERENT_ACTION = -1;
 /**

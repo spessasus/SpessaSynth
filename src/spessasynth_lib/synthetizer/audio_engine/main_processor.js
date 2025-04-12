@@ -2,16 +2,12 @@ import { SpessaSynthSequencer } from "../../sequencer/sequencer_engine/sequencer
 import { SpessaSynthInfo } from "../../utils/loggin.js";
 import { consoleColors } from "../../utils/other.js";
 import { voiceKilling } from "./engine_methods/stopping_notes/voice_killing.js";
-import {
-    ALL_CHANNELS_OR_DIFFERENT_ACTION,
-    masterParameterType,
-    returnMessageType
-} from "./message_protocol/worklet_message.js";
+import { ALL_CHANNELS_OR_DIFFERENT_ACTION, returnMessageType } from "./message_protocol/worklet_message.js";
 import { stbvorbis } from "../../externals/stbvorbis_sync/stbvorbis_sync.min.js";
 import { VOLUME_ENVELOPE_SMOOTHING_FACTOR } from "./engine_components/volume_envelope.js";
 import { callEvent } from "./message_protocol/message_sending.js";
 import { systemExclusive } from "./engine_methods/system_exclusive.js";
-import { setMasterGain, setMasterPan, setMIDIVolume } from "./engine_methods/controller_control/master_parameters.js";
+import { masterParameterType, setMasterParameter } from "./engine_methods/controller_control/master_parameters.js";
 import { resetAllControllers } from "./engine_methods/controller_control/reset_controllers.js";
 import { WorkletSoundfontManager } from "./engine_components/soundfont_manager/soundfont_manager.js";
 import { interpolationTypes } from "./engine_components/wavetable_oscillator.js";
@@ -720,6 +716,17 @@ class SpessaSynthProcessor
             call();
         }
     }
+    
+    /**
+     * @param volume {number} 0 to 1
+     */
+    setMIDIVolume(volume)
+    {
+        // GM2 specification, section 4.1: volume is squared.
+        // though, according to my own testing, Math.E seems like a better choice
+        this.midiVolume = Math.pow(volume, Math.E);
+        this.setMasterParameter(masterParameterType.masterPan, this.pan);
+    }
 }
 
 // include other methods
@@ -739,9 +746,7 @@ SpessaSynthProcessor.prototype.createWorkletChannel = createMidiChannel;
 SpessaSynthProcessor.prototype.resetAllControllers = resetAllControllers;
 
 // master parameter related
-SpessaSynthProcessor.prototype.setMasterGain = setMasterGain;
-SpessaSynthProcessor.prototype.setMasterPan = setMasterPan;
-SpessaSynthProcessor.prototype.setMIDIVolume = setMIDIVolume;
+SpessaSynthProcessor.prototype.setMasterParameter = setMasterParameter;
 
 // tuning related
 SpessaSynthProcessor.prototype.transposeAllChannels = transposeAllChannels;

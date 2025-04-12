@@ -3,6 +3,7 @@ import { SpessaSynthInfo, SpessaSynthWarn } from "../../../utils/loggin.js";
 import { midiControllers } from "../../../midi/midi_message.js";
 import { ALL_CHANNELS_OR_DIFFERENT_ACTION } from "../message_protocol/worklet_message.js";
 import { isSystemXG } from "../../../utils/xg_hacks.js";
+import { masterParameterType } from "./controller_control/master_parameters.js";
 
 /**
  * KeyNum: tuning
@@ -101,7 +102,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                             // midi spec page 62
                             const balance = messageData[5] << 7 | messageData[4];
                             const pan = (balance - 8192) / 8192;
-                            this.setMasterPan(pan);
+                            this.setMasterParameter(masterParameterType.masterPan, pan);
                             SpessaSynthInfo(
                                 `%cMaster Pan. Pan: %c${pan}`,
                                 consoleColors.info,
@@ -457,7 +458,7 @@ export function systemExclusive(messageData, channelOffset = 0)
                             consoleColors.info,
                             consoleColors.value
                         );
-                        this.setMasterPan((messageValue - 64) / 64);
+                        this.setMasterParameter(masterParameterType.masterPan, (messageValue - 64) / 64);
                         return;
                     }
                     else if (messageData[5] === 0x00 && messageData[6] === 0x05)
