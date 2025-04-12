@@ -1,7 +1,6 @@
-import { SpessaSynthWarn } from "../../../../utils/loggin.js";
-import { WorkletSoundfontManagerMessageType } from "./sfman_message.js";
-import { loadSoundFont } from "../../../../soundfont/load_soundfont.js";
-import { isXGDrums } from "../../../../utils/xg_hacks.js";
+import { SpessaSynthWarn } from "../../../utils/loggin.js";
+import { loadSoundFont } from "../../../soundfont/load_soundfont.js";
+import { isXGDrums } from "../../../utils/xg_hacks.js";
 
 /**
  * @typedef {Object} SoundFontType
@@ -67,31 +66,6 @@ export class WorkletSoundfontManager
                 program: parseInt(pb[1]),
                 bank: parseInt(pb[0])
             });
-        }
-    }
-    
-    /**
-     * @param type {WorkletSoundfontManagerMessageType}
-     * @param data {any}
-     */
-    handleMessage(type, data)
-    {
-        switch (type)
-        {
-            case WorkletSoundfontManagerMessageType.addNewSoundFont:
-                this.addNewSoundFont(data[0], data[1], data[2]);
-                break;
-            
-            case WorkletSoundfontManagerMessageType.reloadSoundFont:
-                this.reloadManager(data);
-                break;
-            
-            case WorkletSoundfontManagerMessageType.deleteSoundFont:
-                this.deleteSoundFont(data);
-                break;
-            
-            case WorkletSoundfontManagerMessageType.rearrangeSoundFonts:
-                this.rearrangeSoundFonts(data);
         }
     }
     

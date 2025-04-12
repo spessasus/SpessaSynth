@@ -9,7 +9,7 @@ import { callEvent } from "./message_protocol/message_sending.js";
 import { systemExclusive } from "./engine_methods/system_exclusive.js";
 import { masterParameterType, setMasterParameter } from "./engine_methods/controller_control/master_parameters.js";
 import { resetAllControllers } from "./engine_methods/controller_control/reset_controllers.js";
-import { WorkletSoundfontManager } from "./engine_components/soundfont_manager/soundfont_manager.js";
+import { WorkletSoundfontManager } from "./engine_components/soundfont_manager.js";
 import { interpolationTypes } from "./engine_components/wavetable_oscillator.js";
 import { KeyModifierManager } from "./engine_components/key_modifier_manager.js";
 import { getVoices } from "./engine_components/voice.js";

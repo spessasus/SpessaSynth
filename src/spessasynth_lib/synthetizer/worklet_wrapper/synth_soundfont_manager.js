@@ -1,7 +1,5 @@
 import { workletMessageType } from "../audio_engine/message_protocol/worklet_message.js";
-import {
-    WorkletSoundfontManagerMessageType
-} from "../audio_engine/engine_components/soundfont_manager/sfman_message.js";
+import { WorkletSoundfontManagerMessageType } from "./sfman_message.js";
 import { SpessaSynthWarn } from "../../utils/loggin.js";
 
 export class SoundfontManager

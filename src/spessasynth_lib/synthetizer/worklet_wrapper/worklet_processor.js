@@ -11,6 +11,7 @@ import { WORKLET_PROCESSOR_NAME } from "./worklet_url.js";
 import { MIDI_CHANNEL_COUNT } from "../synth_constants.js";
 import { workletKeyModifierMessageType } from "../audio_engine/engine_components/key_modifier_manager.js";
 import { masterParameterType } from "../audio_engine/engine_methods/controller_control/master_parameters.js";
+import { WorkletSoundfontManagerMessageType } from "./sfman_message.js";
 
 
 // a worklet processor wrapper for the synthesizer core
@@ -218,7 +219,26 @@ class WorkletSpessaProcessor extends AudioWorkletProcessor
             case workletMessageType.soundFontManager:
                 try
                 {
-                    this.synthesizer.soundfontManager.handleMessage(data[0], data[1]);
+                    const sfman = this.synthesizer.soundfontManager;
+                    const type = data[0];
+                    const messageData = data[1];
+                    switch (type)
+                    {
+                        case WorkletSoundfontManagerMessageType.addNewSoundFont:
+                            sfman.addNewSoundFont(messageData[0], messageData[1], messageData[2]);
+                            break;
+                        
+                        case WorkletSoundfontManagerMessageType.reloadSoundFont:
+                            sfman.reloadManager(messageData);
+                            break;
+                        
+                        case WorkletSoundfontManagerMessageType.deleteSoundFont:
+                            sfman.deleteSoundFont(messageData);
+                            break;
+                        
+                        case WorkletSoundfontManagerMessageType.rearrangeSoundFonts:
+                            sfman.rearrangeSoundFonts(messageData);
+                    }
                 }
                 catch (e)
                 {
