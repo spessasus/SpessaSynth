@@ -26,7 +26,7 @@ export const rendererSettingsLocale = {
     
     waveformSampleSize: {
         title: "Sample size",
-        description: "How detailed the visualizations are (Note: high values might impact performance). Also note that high values will add a delay to the audio to sync the waveformsMode with the audio"
+        description: "How detailed the visualizations are (Note: high values might impact performance). Also note that high values will add a delay to the audio to sync the waveforms with the audio"
     },
     
     waveformAmplifier: {
@@ -50,8 +50,8 @@ export const rendererSettingsLocale = {
     },
     
     toggleWaveformsRendering: {
-        title: "Enable waveformsMode rendering",
-        description: "Enable rendering the channel waveformsMode (colorful lines showing audio)"
+        title: "Enable waveforms rendering",
+        description: "Enable rendering the channel waveforms (colorful lines showing audio)"
     },
     
     toggleNotesRendering: {
@@ -70,7 +70,7 @@ export const rendererSettingsLocale = {
     },
     
     toggleStabilizeWaveforms: {
-        title: "Stabilize waveformsMode",
+        title: "Stabilize waveforms",
         description: "Enable oscilloscope triggering"
     }
 };

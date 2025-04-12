@@ -86,7 +86,7 @@ export async function _loadSettings()
     renderer.showVisualPitch = visualPitch;
     controls.visualPitchToggler.checked = visualPitch;
     
-    // stabilize waveformsMode
+    // stabilize waveforms
     const stabilize = getValue(rendererValues?.stabilizeWaveforms, true);
     renderer.stabilizeWaveforms = stabilize;
     controls.stabilizeWaveformsToggler.checked = stabilize;
