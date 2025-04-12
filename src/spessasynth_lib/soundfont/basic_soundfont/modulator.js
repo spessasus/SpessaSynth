@@ -1,5 +1,5 @@
 import { generatorTypes } from "./generator.js";
-import { midiControllers } from "../../midi_parser/midi_message.js";
+import { midiControllers } from "../../midi/midi_message.js";
 
 /**
  * modulators.js

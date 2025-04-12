@@ -1,4 +1,4 @@
-import { getEvent, messageTypes } from "../../midi_parser/midi_message.js";
+import { getEvent, messageTypes } from "../../midi/midi_message.js";
 import { SpessaSynthSequencerReturnMessageType } from "../worklet_wrapper/sequencer_message.js";
 import { consoleColors } from "../../utils/other.js";
 import { SpessaSynthWarn } from "../../utils/loggin.js";

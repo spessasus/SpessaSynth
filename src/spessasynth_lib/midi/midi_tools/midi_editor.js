@@ -1,12 +1,12 @@
-import { messageTypes, midiControllers, MIDIMessage } from "./midi_message.js";
-import { IndexedByteArray } from "../utils/indexed_array.js";
-import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo } from "../utils/loggin.js";
-import { consoleColors } from "../utils/other.js";
+import { messageTypes, midiControllers, MIDIMessage } from "../midi_message.js";
+import { IndexedByteArray } from "../../utils/indexed_array.js";
+import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo } from "../../utils/loggin.js";
+import { consoleColors } from "../../utils/other.js";
 
-import { customControllers } from "../synthetizer/audio_engine/engine_components/controller_tables.js";
-import { DEFAULT_PERCUSSION } from "../synthetizer/synth_constants.js";
-import { isGM2On, isGMOn, isGSOn, isXGOn } from "../utils/sysex_detector.js";
-import { isSystemXG, isXGDrums, XG_SFX_VOICE } from "../utils/xg_hacks.js";
+import { customControllers } from "../../synthetizer/audio_engine/engine_components/controller_tables.js";
+import { DEFAULT_PERCUSSION } from "../../synthetizer/synth_constants.js";
+import { isGM2On, isGMOn, isGSOn, isXGOn } from "../../utils/sysex_detector.js";
+import { isSystemXG, isXGDrums, XG_SFX_VOICE } from "../../utils/xg_hacks.js";
 
 /**
  * @param ticks {number}

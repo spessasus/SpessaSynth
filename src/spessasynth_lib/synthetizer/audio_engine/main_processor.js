@@ -32,7 +32,7 @@ import { FILTER_SMOOTHING_FACTOR } from "./engine_components/lowpass_filter.js";
 import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE, VOICE_CAP } from "../synth_constants.js";
 import { fillWithDefaults } from "../../utils/fill_with_defaults.js";
 import { DEFAULT_SEQUENCER_OPTIONS } from "../../sequencer/worklet_wrapper/default_sequencer_options.js";
-import { getEvent, messageTypes } from "../../midi_parser/midi_message.js";
+import { getEvent, messageTypes } from "../../midi/midi_message.js";
 import { IndexedByteArray } from "../../utils/indexed_array.js";
 
 

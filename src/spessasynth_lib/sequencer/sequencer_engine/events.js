@@ -7,7 +7,7 @@ import {
     SpessaSynthSequencerMessageType,
     SpessaSynthSequencerReturnMessageType
 } from "../worklet_wrapper/sequencer_message.js";
-import { messageTypes, midiControllers } from "../../midi_parser/midi_message.js";
+import { messageTypes, midiControllers } from "../../midi/midi_message.js";
 
 import { MIDI_CHANNEL_COUNT } from "../../synthetizer/synth_constants.js";
 

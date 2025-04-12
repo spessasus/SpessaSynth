@@ -15,7 +15,7 @@
 
 import { Meter } from "./synthui_meter.js";
 import { LOCALE_PATH } from "../synthetizer_ui.js";
-import { midiControllers } from "../../../../spessasynth_lib/midi_parser/midi_message.js";
+import { midiControllers } from "../../../../spessasynth_lib/midi/midi_message.js";
 import { getDrumsSvg, getEmptyMicSvg, getMicSvg, getMuteSvg, getNoteSvg, getVolumeSvg } from "../../utils/icons.js";
 import { Selector } from "./synthui_selector.js";
 import {

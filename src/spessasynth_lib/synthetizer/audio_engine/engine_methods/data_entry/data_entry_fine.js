@@ -2,7 +2,7 @@ import { consoleColors } from "../../../../utils/other.js";
 import { SpessaSynthInfo } from "../../../../utils/loggin.js";
 import { modulatorSources } from "../../../../soundfont/basic_soundfont/modulator.js";
 import { customControllers, dataEntryStates, NON_CC_INDEX_OFFSET } from "../../engine_components/controller_tables.js";
-import { midiControllers } from "../../../../midi_parser/midi_message.js";
+import { midiControllers } from "../../../../midi/midi_message.js";
 
 /**
  * Executes a data entry for an RPN tuning

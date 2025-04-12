@@ -1,6 +1,6 @@
-import { messageTypes } from "./midi_message.js";
-import { writeVariableLengthQuantity } from "../utils/byte_functions/variable_length_quantity.js";
-import { writeBytesAsUintBigEndian } from "../utils/byte_functions/big_endian.js";
+import { messageTypes } from "../midi_message.js";
+import { writeVariableLengthQuantity } from "../../utils/byte_functions/variable_length_quantity.js";
+import { writeBytesAsUintBigEndian } from "../../utils/byte_functions/big_endian.js";
 
 /**
  * Exports the midi as a standard MIDI file

@@ -1,4 +1,4 @@
-import { getEvent, messageTypes, midiControllers } from "../../midi_parser/midi_message.js";
+import { getEvent, messageTypes, midiControllers } from "../../midi/midi_message.js";
 import { SpessaSynthSequencerReturnMessageType } from "../worklet_wrapper/sequencer_message.js";
 import { resetArray } from "../../synthetizer/audio_engine/engine_components/controller_tables.js";
 import { nonResetableCCs } from "../../synthetizer/audio_engine/engine_methods/controller_control/reset_controllers.js";

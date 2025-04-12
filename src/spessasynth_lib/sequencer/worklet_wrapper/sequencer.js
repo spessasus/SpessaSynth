@@ -1,5 +1,5 @@
 import { Synthetizer } from "../../synthetizer/worklet_wrapper/synthetizer.js";
-import { messageTypes } from "../../midi_parser/midi_message.js";
+import { messageTypes } from "../../midi/midi_message.js";
 import {
     ALL_CHANNELS_OR_DIFFERENT_ACTION,
     workletMessageType
@@ -10,8 +10,8 @@ import {
     SpessaSynthSequencerReturnMessageType
 } from "./sequencer_message.js";
 import { SpessaSynthWarn } from "../../utils/loggin.js";
-import { DUMMY_MIDI_DATA, MIDIData } from "../../midi_parser/midi_data.js";
-import { BasicMIDI } from "../../midi_parser/basic_midi.js";
+import { DUMMY_MIDI_DATA, MIDIData } from "../../midi/midi_data.js";
+import { BasicMIDI } from "../../midi/basic_midi.js";
 import { readBytesAsUintBigEndian } from "../../utils/byte_functions/big_endian.js";
 import { DEFAULT_SEQUENCER_OPTIONS } from "./default_sequencer_options.js";
 

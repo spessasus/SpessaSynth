@@ -1,5 +1,5 @@
 import { customControllers } from "../../engine_components/controller_tables.js";
-import { midiControllers } from "../../../../midi_parser/midi_message.js";
+import { midiControllers } from "../../../../midi/midi_message.js";
 
 /**
  * Transposes the channel by given amount of semitones

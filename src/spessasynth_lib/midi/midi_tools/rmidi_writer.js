@@ -1,14 +1,14 @@
-import { combineArrays, IndexedByteArray } from "../utils/indexed_array.js";
-import { writeRIFFOddSize } from "../soundfont/basic_soundfont/riff_chunk.js";
-import { getStringBytes, getStringBytesZero } from "../utils/byte_functions/string.js";
-import { messageTypes, midiControllers, MIDIMessage } from "./midi_message.js";
+import { combineArrays, IndexedByteArray } from "../../utils/indexed_array.js";
+import { writeRIFFOddSize } from "../../soundfont/basic_soundfont/riff_chunk.js";
+import { getStringBytes, getStringBytesZero } from "../../utils/byte_functions/string.js";
+import { messageTypes, midiControllers, MIDIMessage } from "../midi_message.js";
 import { getGsOn } from "./midi_editor.js";
-import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo } from "../utils/loggin.js";
-import { consoleColors } from "../utils/other.js";
-import { writeLittleEndian } from "../utils/byte_functions/little_endian.js";
-import { DEFAULT_PERCUSSION } from "../synthetizer/synth_constants.js";
-import { chooseBank, isSystemXG, parseBankSelect } from "../utils/xg_hacks.js";
-import { isGM2On, isGMOn, isGSDrumsOn, isGSOn, isXGOn } from "../utils/sysex_detector.js";
+import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo } from "../../utils/loggin.js";
+import { consoleColors } from "../../utils/other.js";
+import { writeLittleEndian } from "../../utils/byte_functions/little_endian.js";
+import { DEFAULT_PERCUSSION } from "../../synthetizer/synth_constants.js";
+import { chooseBank, isSystemXG, parseBankSelect } from "../../utils/xg_hacks.js";
+import { isGM2On, isGMOn, isGSDrumsOn, isGSOn, isXGOn } from "../../utils/sysex_detector.js";
 
 /**
  * @enum {string}
