@@ -3,13 +3,14 @@ import { SpessaSynthInfo, SpessaSynthLogging, SpessaSynthWarn } from "../../util
 import { SpessaSynthProcessor } from "../audio_engine/main_processor.js";
 import {
     ALL_CHANNELS_OR_DIFFERENT_ACTION,
-    masterParameterType,
     returnMessageType,
     workletMessageType
 } from "../audio_engine/message_protocol/worklet_message.js";
 import { SynthesizerSnapshot } from "../audio_engine/snapshot/synthesizer_snapshot.js";
 import { WORKLET_PROCESSOR_NAME } from "./worklet_url.js";
 import { MIDI_CHANNEL_COUNT } from "../synth_constants.js";
+import { workletKeyModifierMessageType } from "../audio_engine/engine_components/key_modifier_manager.js";
+import { masterParameterType } from "../audio_engine/engine_methods/controller_control/master_parameters.js";
 
 
 // a worklet processor wrapper for the synthesizer core
@@ -177,27 +178,7 @@ class WorkletSpessaProcessor extends AudioWorkletProcessor
                  */
                 const type = data[0];
                 const value = data[1];
-                switch (type)
-                {
-                    case masterParameterType.masterPan:
-                        this.synthesizer.setMasterPan(value);
-                        break;
-                    
-                    case masterParameterType.mainVolume:
-                        this.synthesizer.setMasterGain(value);
-                        break;
-                    
-                    case masterParameterType.voicesCap:
-                        this.synthesizer.voiceCap = value;
-                        break;
-                    
-                    case masterParameterType.interpolationType:
-                        this.synthesizer.interpolationType = value;
-                        break;
-                    
-                    case masterParameterType.midiSystem:
-                        this.synthesizer.setSystem(value);
-                }
+                this.synthesizer.setMasterParameter(type, value);
                 break;
             
             case workletMessageType.setDrums:
@@ -250,7 +231,27 @@ class WorkletSpessaProcessor extends AudioWorkletProcessor
                 break;
             
             case workletMessageType.keyModifierManager:
-                this.synthesizer.keyModifierManager.handleMessage(data[0], data[1]);
+                /**
+                 * @type {workletKeyModifierMessageType}
+                 */
+                const keyMessageType = data[0];
+                const man = this.synthesizer.keyModifierManager;
+                switch (keyMessageType)
+                {
+                    default:
+                        return;
+                    
+                    case workletKeyModifierMessageType.addMapping:
+                        man.addMapping(...data);
+                        break;
+                    
+                    case workletKeyModifierMessageType.clearMappings:
+                        man.clearMappings();
+                        break;
+                    
+                    case workletKeyModifierMessageType.deleteMapping:
+                        man.deleteMapping(...data);
+                }
                 break;
             
             case workletMessageType.requestSynthesizerSnapshot:

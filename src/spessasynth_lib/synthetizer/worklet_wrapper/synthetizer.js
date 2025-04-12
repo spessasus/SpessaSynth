@@ -5,7 +5,6 @@ import { FancyChorus } from "../audio_effects/fancy_chorus.js";
 import { getReverbProcessor } from "../audio_effects/reverb.js";
 import {
     ALL_CHANNELS_OR_DIFFERENT_ACTION,
-    masterParameterType,
     returnMessageType,
     workletMessageType
 } from "../audio_engine/message_protocol/worklet_message.js";
@@ -19,6 +18,7 @@ import { BasicMIDI } from "../../midi/basic_midi.js";
 import { fillWithDefaults } from "../../utils/fill_with_defaults.js";
 import { DEFAULT_SEQUENCER_OPTIONS } from "../../sequencer/worklet_wrapper/default_sequencer_options.js";
 import { WORKLET_PROCESSOR_NAME } from "./worklet_url.js";
+import { masterParameterType } from "../audio_engine/engine_methods/controller_control/master_parameters.js";
 
 
 /**

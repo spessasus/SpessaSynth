@@ -1,6 +1,7 @@
 import { SpessaSynthInfo } from "../../../utils/loggin.js";
 import { consoleColors } from "../../../utils/other.js";
 import { ChannelSnapshot } from "./channel_snapshot.js";
+import { masterParameterType } from "../engine_methods/controller_control/master_parameters.js";
 
 /**
  * Represents a snapshot of the synthesizer's state.
@@ -97,8 +98,8 @@ export class SynthesizerSnapshot
         workletProcessor.setSystem(snapshot.system);
         
         // restore pan and volume
-        workletProcessor.setMasterGain(snapshot.mainVolume);
-        workletProcessor.setMasterPan(snapshot.pan);
+        workletProcessor.setMasterParameter(masterParameterType.mainVolume, snapshot.mainVolume);
+        workletProcessor.setMasterParameter(masterParameterType.masterPan, snapshot.pan);
         workletProcessor.transposeAllChannels(snapshot.transposition);
         workletProcessor.interpolationType = snapshot.interpolation;
         workletProcessor.keyModifierManager.setMappings(snapshot.keyMappings);
