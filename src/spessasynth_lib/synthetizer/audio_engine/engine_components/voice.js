@@ -127,6 +127,12 @@ class Voice
     filter;
     
     /**
+     * Linear gain of the voice. Used with Key Modifiers.
+     * @type {number}
+     */
+    gain = 1;
+    
+    /**
      * The unmodulated (copied to) generators of the voice.
      * @type {Int16Array}
      */
@@ -381,7 +387,7 @@ export function getVoices(channel,
     /**
      * @type {Voice[]}
      */
-    let Voices;
+    let voices;
     const channelObject = this.midiAudioChannels[channel];
     
     // override patch
@@ -413,7 +419,7 @@ export function getVoices(channel,
     /**
      * @returns {Voice[]}
      */
-    Voices = preset.getSamplesAndGenerators(midiNote, velocity)
+    voices = preset.getSamplesAndGenerators(midiNote, velocity)
         .reduce((voices, sampleAndGenerators) =>
         {
             if (sampleAndGenerators.sample.getAudioData() === undefined)
@@ -507,7 +513,7 @@ export function getVoices(channel,
             return voices;
         }, []);
     // cache the voice
-    this.setCachedVoice(bank, program, midiNote, velocity, Voices.map(v =>
+    this.setCachedVoice(bank, program, midiNote, velocity, voices.map(v =>
         Voice.copy(v, this.currentSynthTime)));
-    return Voices;
+    return voices;
 }

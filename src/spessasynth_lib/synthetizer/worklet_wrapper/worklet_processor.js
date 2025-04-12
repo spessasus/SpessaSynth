@@ -236,13 +236,14 @@ class WorkletSpessaProcessor extends AudioWorkletProcessor
                  */
                 const keyMessageType = data[0];
                 const man = this.synthesizer.keyModifierManager;
+                const keyMessageData = data[1];
                 switch (keyMessageType)
                 {
                     default:
                         return;
                     
                     case workletKeyModifierMessageType.addMapping:
-                        man.addMapping(...data);
+                        man.addMapping(...keyMessageData);
                         break;
                     
                     case workletKeyModifierMessageType.clearMappings:
@@ -250,7 +251,7 @@ class WorkletSpessaProcessor extends AudioWorkletProcessor
                         break;
                     
                     case workletKeyModifierMessageType.deleteMapping:
-                        man.deleteMapping(...data);
+                        man.deleteMapping(...keyMessageData);
                 }
                 break;
             

@@ -65,7 +65,7 @@ export function panVoice(voice,
         pan = voice.currentPan;
     }
     
-    const gain = this.synth.currentGain;
+    const gain = this.synth.currentGain * voice.gain;
     const index = ~~(pan + 500);
     // get voice's gain levels for each channel
     const gainLeft = panTableLeft[index] * gain * this.synth.panLeft;

@@ -53,6 +53,9 @@ export function noteOn(midiNote, velocity)
         velocity = keyVel;
     }
     
+    // gain
+    const voiceGain = this.synth.keyModifierManager.getGain(this.channelNumber, realKey);
+    
     // portamento
     let portamentoFromKey = -1;
     let portamentoDuration = 0;
@@ -104,6 +107,9 @@ export function noteOn(midiNote, velocity)
         
         // apply pan override
         voice.overridePan = panOverride;
+        
+        // apply gain override
+        voice.gain = voiceGain;
         
         // apply exclusive class
         const exclusive = voice.exclusiveClass;

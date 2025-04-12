@@ -35,6 +35,10 @@ export const keyModifiers = {
             title: "Velocity override",
             description: "The velocity to use on this key, ignoring the MIDI velocity. Leave at -1 for unchanged"
         },
+        gain: {
+            title: "Gain",
+            description: "Linear gain for this voice. Set to 1 for unchanged."
+        },
         preset: {
             title: "Preset override",
             description: "The preset to use on this key.",
