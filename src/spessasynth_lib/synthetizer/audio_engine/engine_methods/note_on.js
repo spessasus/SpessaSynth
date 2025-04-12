@@ -1,6 +1,6 @@
 import { computeModulators } from "../engine_components/compute_modulator.js";
 import { generatorTypes } from "../../../soundfont/basic_soundfont/generator.js";
-import { midiControllers } from "../../../midi_parser/midi_message.js";
+import { midiControllers } from "../../../midi/midi_message.js";
 import { portamentoTimeToSeconds } from "./portamento_time.js";
 
 /**

@@ -1,4 +1,4 @@
-import { midiControllers } from "../../../midi_parser/midi_message.js";
+import { midiControllers } from "../../../midi/midi_message.js";
 import { DLSSources } from "../../dls/dls_sources.js";
 import { modulatorCurveTypes, modulatorSources } from "../modulator.js";
 import { generatorTypes } from "../generator.js";

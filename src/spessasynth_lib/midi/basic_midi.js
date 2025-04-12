@@ -4,11 +4,12 @@ import { messageTypes, MIDIMessage } from "./midi_message.js";
 import { readBytesAsUintBigEndian } from "../utils/byte_functions/big_endian.js";
 import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo } from "../utils/loggin.js";
 import { consoleColors, formatTitle, sanitizeKarLyrics } from "../utils/other.js";
-import { writeMIDI } from "./midi_writer.js";
-import { applySnapshotToMIDI, modifyMIDI } from "./midi_editor.js";
-import { writeRMIDI } from "./rmidi_writer.js";
-import { getUsedProgramsAndKeys } from "./used_keys_loaded.js";
+import { writeMIDI } from "./midi_tools/midi_writer.js";
+import { applySnapshotToMIDI, modifyMIDI } from "./midi_tools/midi_editor.js";
+import { writeRMIDI } from "./midi_tools/rmidi_writer.js";
+import { getUsedProgramsAndKeys } from "./midi_tools/used_keys_loaded.js";
 import { IndexedByteArray } from "../utils/indexed_array.js";
+import { getNoteTimes } from "./midi_tools/get_note_times.js";
 
 /**
  * BasicMIDI is the base of a complete MIDI file, used by the sequencer internally.
@@ -559,5 +560,6 @@ BasicMIDI.prototype.modifyMIDI = modifyMIDI;
 BasicMIDI.prototype.applySnapshotToMIDI = applySnapshotToMIDI;
 BasicMIDI.prototype.writeRMIDI = writeRMIDI;
 BasicMIDI.prototype.getUsedProgramsAndKeys = getUsedProgramsAndKeys;
+BasicMIDI.prototype.getNoteTimes = getNoteTimes;
 
 export { BasicMIDI };

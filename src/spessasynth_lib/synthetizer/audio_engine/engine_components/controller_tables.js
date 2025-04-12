@@ -1,4 +1,4 @@
-import { midiControllers } from "../../../midi_parser/midi_message.js";
+import { midiControllers } from "../../../midi/midi_message.js";
 import { modulatorSources } from "../../../soundfont/basic_soundfont/modulator.js";
 
 /*

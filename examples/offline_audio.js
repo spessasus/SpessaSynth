@@ -2,7 +2,7 @@
 import { WORKLET_URL_ABSOLUTE } from "../src/spessasynth_lib/synthetizer/worklet_wrapper/worklet_url.js";
 import { Synthetizer } from "../src/spessasynth_lib/synthetizer/worklet_wrapper/synthetizer.js";
 import { audioBufferToWav } from "../src/spessasynth_lib/utils/buffer_to_wav.js";
-import { MIDI } from "../src/spessasynth_lib/midi_parser/midi_loader.js";
+import { MIDI } from "../src/spessasynth_lib/midi/midi_loader.js";
 
 // load the soundfont
 fetch("../soundfonts/GeneralUserGS.sf3").then(async response =>

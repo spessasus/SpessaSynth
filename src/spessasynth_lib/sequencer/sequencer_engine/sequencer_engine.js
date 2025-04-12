@@ -3,7 +3,7 @@ import { _addNewMidiPort, _processEvent } from "./process_event.js";
 import { _findFirstEventIndex, processTick } from "./process_tick.js";
 import { assignMIDIPort, loadNewSequence, loadNewSongList, nextSong, previousSong } from "./song_control.js";
 import { _playTo, _recalculateStartTime, play, setTimeTicks } from "./play.js";
-import { messageTypes, midiControllers } from "../../midi_parser/midi_message.js";
+import { messageTypes, midiControllers } from "../../midi/midi_message.js";
 import {
     post,
     processMessage,

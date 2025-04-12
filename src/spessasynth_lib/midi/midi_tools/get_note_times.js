@@ -1,16 +1,20 @@
-import { IndexedByteArray } from "../../../spessasynth_lib/utils/indexed_array.js";
-import { SpessaSynthInfo } from "../../../spessasynth_lib/utils/loggin.js";
-import { consoleColors } from "../../../spessasynth_lib/utils/other.js";
-import { readBytesAsUintBigEndian } from "../../../spessasynth_lib/utils/byte_functions/big_endian.js";
-import { DEFAULT_PERCUSSION } from "../../../spessasynth_lib/synthetizer/synth_constants.js";
-
-const MIN_NOTE_TIME = 0.02;
+import { IndexedByteArray } from "../../utils/indexed_array.js";
+import { readBytesAsUintBigEndian } from "../../utils/byte_functions/big_endian.js";
+import { DEFAULT_PERCUSSION } from "../../synthetizer/synth_constants.js";
 
 /**
- * @param midi {BasicMIDI}
- * @this {Renderer}
+ * Calculates all note times in seconds.
+ * @this {BasicMIDI}
+ * @param minDrumLength {number} the shortest a drum note (channel 10) can be, in seconds.
+ * @returns {{
+ *          midiNote: number,
+ *          start: number,
+ *          length: number,
+ *          velocity: number,
+ *      }[][]} an array of 16 channels, each channel containing its notes,
+ *      with their key number, velocity, absolute start time and length in seconds.
  */
-export function calculateNoteTimes(midi)
+export function getNoteTimes(minDrumLength = 0)
 {
     
     /**
@@ -27,39 +31,35 @@ export function calculateNoteTimes(midi)
     }
     
     /**
-     * an array of 16 arrays (channels) and the notes are stored there
-     * @typedef {{
+     * an array of 16 arrays (channels)
+     * @type {{
      *          midiNote: number,
      *          start: number,
      *          length: number,
      *          velocity: number,
-     *      }} NoteTime
-     *
-     * @typedef {{
-     *      notes: NoteTime[],
-     *      renderStartIndex: number
-     * }[]} NoteTimes
-     */
-    
-    /**
-     * @type {NoteTimes}
+     *      }[][]}
      */
     const noteTimes = [];
     // flatten and sort by ticks
-    const trackData = midi.tracks;
+    const trackData = this.tracks;
     let events = trackData.flat();
     events.sort((e1, e2) => e1.ticks - e2.ticks);
     
     for (let i = 0; i < 16; i++)
     {
-        noteTimes.push({ renderStartIndex: 0, notes: [] });
+        noteTimes.push([]);
     }
     let elapsedTime = 0;
-    let oneTickToSeconds = 60 / (120 * midi.timeDivision);
+    let oneTickToSeconds = 60 / (120 * this.timeDivision);
     let eventIndex = 0;
     let unfinished = 0;
     /**
-     * @type {NoteTime[][]}
+     * @type {{
+     *          midiNote: number,
+     *          start: number,
+     *          length: number,
+     *          velocity: number,
+     *      }[][]}
      */
     const unfinishedNotes = [];
     for (let i = 0; i < 16; i++)
@@ -73,7 +73,11 @@ export function calculateNoteTimes(midi)
         if (note)
         {
             const time = elapsedTime - note.start;
-            note.length = (time < MIN_NOTE_TIME && channel === DEFAULT_PERCUSSION ? MIN_NOTE_TIME : time);
+            note.length = time;
+            if (channel === DEFAULT_PERCUSSION)
+            {
+                note.length = time < minDrumLength ? minDrumLength : time;
+            }
             // delete from unfinished
             unfinishedNotes[channel].splice(noteIndex, 1);
         }
@@ -96,7 +100,7 @@ export function calculateNoteTimes(midi)
         {
             if (event.messageData[1] === 0)
             {
-                // nevermind, its note off
+                // never mind, its note off
                 noteOff(event.messageData[0], channel);
             }
             else
@@ -109,7 +113,7 @@ export function calculateNoteTimes(midi)
                     length: -1,
                     velocity: event.messageData[1] / 127
                 };
-                noteTimes[channel].notes.push(noteTime);
+                noteTimes[channel].push(noteTime);
                 unfinishedNotes[channel].push(noteTime);
                 unfinished++;
                 
@@ -118,7 +122,7 @@ export function calculateNoteTimes(midi)
         // set tempo
         else if (event.messageStatusByte === 0x51)
         {
-            oneTickToSeconds = 60 / (getTempo(event) * midi.timeDivision);
+            oneTickToSeconds = 60 / (getTempo(event) * this.timeDivision);
         }
         
         if (++eventIndex >= events.length)
@@ -138,10 +142,13 @@ export function calculateNoteTimes(midi)
             channelNotes.forEach(note =>
             {
                 const time = elapsedTime - note.start;
-                note.length = (time < MIN_NOTE_TIME && channel === DEFAULT_PERCUSSION ? MIN_NOTE_TIME : time);
+                note.length = time;
+                if (channel === DEFAULT_PERCUSSION)
+                {
+                    note.length = time < minDrumLength ? minDrumLength : time;
+                }
             });
         });
     }
-    this.noteTimes = noteTimes;
-    SpessaSynthInfo(`%cFinished loading note times and ready to render the sequence!`, consoleColors.info);
+    return noteTimes;
 }

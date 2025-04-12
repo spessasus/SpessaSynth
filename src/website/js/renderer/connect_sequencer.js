@@ -1,4 +1,4 @@
-import { messageTypes } from "../../../spessasynth_lib/midi_parser/midi_message.js";
+import { messageTypes } from "../../../spessasynth_lib/midi/midi_message.js";
 
 /**
  * @param sequencer {Sequencer}

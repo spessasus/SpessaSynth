@@ -10,7 +10,8 @@ import {
 } from "./channel_analysers.js";
 import { connectSequencer, resetIndexes } from "./connect_sequencer.js";
 import { renderBigFft, renderSingleFft, renderSingleWaveform, renderWaveforms } from "./render_waveforms.js";
-import { calculateNoteTimes } from "./calculate_note_times.js";
+import { SpessaSynthInfo } from "../../../spessasynth_lib/utils/loggin.js";
+import { consoleColors } from "../../../spessasynth_lib/utils/other.js";
 
 /**
  * renderer.js
@@ -189,6 +190,7 @@ class Renderer
         this.updateFftSize();
     }
     
+    // noinspection JSUnusedGlobalSymbols
     /**
      * @returns {"down"|"up"}
      */
@@ -219,6 +221,7 @@ class Renderer
         this.updateFftSize();
     }
     
+    // noinspection JSUnusedGlobalSymbols
     get drumAnalyserFft()
     {
         return this._drumAnalyserFft;
@@ -300,6 +303,26 @@ class Renderer
     toggleDarkMode()
     {
         this.canvas.classList.toggle("light_mode");
+    }
+    
+    /**
+     * @param mid {BasicMIDI}
+     */
+    calculateNoteTimes(mid)
+    {
+        const MIN_NOTE_TIME = 0.02;
+        const times = mid.getNoteTimes(MIN_NOTE_TIME);
+        /**
+         * @type {{notes: {midiNote: number, start: number, length: number, velocity: number}[], rendererStartIndex: number}[]}
+         */
+        this.noteTimes = times.map(t =>
+        {
+            return {
+                notes: t,
+                rendererStartIndex: 0
+            };
+        });
+        SpessaSynthInfo(`%cFinished loading note times and ready to render the sequence!`, consoleColors.info);
     }
     
     computeColors()
@@ -420,7 +443,6 @@ Renderer.prototype.connectChannelAnalysers = connectChannelAnalysers;
 Renderer.prototype.disconnectChannelAnalysers = disconnectChannelAnalysers;
 
 Renderer.prototype.connectSequencer = connectSequencer;
-Renderer.prototype.calculateNoteTimes = calculateNoteTimes;
 Renderer.prototype.resetIndexes = resetIndexes;
 
 Renderer.prototype.renderWaveforms = renderWaveforms;

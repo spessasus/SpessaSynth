@@ -1,6 +1,6 @@
 import { arrayToHexString, consoleColors } from "../../../utils/other.js";
 import { SpessaSynthInfo, SpessaSynthWarn } from "../../../utils/loggin.js";
-import { midiControllers } from "../../../midi_parser/midi_message.js";
+import { midiControllers } from "../../../midi/midi_message.js";
 import { ALL_CHANNELS_OR_DIFFERENT_ACTION } from "../message_protocol/worklet_message.js";
 import { isSystemXG } from "../../../utils/xg_hacks.js";
 

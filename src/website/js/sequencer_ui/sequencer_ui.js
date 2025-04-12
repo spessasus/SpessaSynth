@@ -11,12 +11,12 @@ import {
     getSpeedSvg,
     getTextSvg
 } from "../utils/icons.js";
-import { messageTypes } from "../../../spessasynth_lib/midi_parser/midi_message.js";
+import { messageTypes } from "../../../spessasynth_lib/midi/midi_message.js";
 import { getSeqUIButton } from "./sequi_button.js";
 import { keybinds } from "../utils/keybinds.js";
 import { createNavigatorHandler, updateTitleAndMediaStatus } from "./title_and_media_status.js";
 import { createLyrics, setLyricsText, updateOtherTextEvents } from "./lyrics.js";
-import { RMIDINFOChunks } from "../../../spessasynth_lib/midi_parser/rmidi_writer.js";
+import { RMIDINFOChunks } from "../../../spessasynth_lib/midi/midi_tools/rmidi_writer.js";
 import { createSlider } from "../settings_ui/sliders.js";
 
 /**

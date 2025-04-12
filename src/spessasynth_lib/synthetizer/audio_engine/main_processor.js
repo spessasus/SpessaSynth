@@ -13,9 +13,9 @@ import { callEvent } from "./message_protocol/message_sending.js";
 import { systemExclusive } from "./engine_methods/system_exclusive.js";
 import { setMasterGain, setMasterPan, setMIDIVolume } from "./engine_methods/controller_control/master_parameters.js";
 import { resetAllControllers } from "./engine_methods/controller_control/reset_controllers.js";
-import { WorkletSoundfontManager } from "./engine_methods/soundfont_manager/soundfont_manager.js";
+import { WorkletSoundfontManager } from "./engine_components/soundfont_manager/soundfont_manager.js";
 import { interpolationTypes } from "./engine_components/wavetable_oscillator.js";
-import { KeyModifierManager } from "./engine_methods/key_modifier_manager.js";
+import { KeyModifierManager } from "./engine_components/key_modifier_manager.js";
 import { getVoices } from "./engine_components/voice.js";
 import { PAN_SMOOTHING_FACTOR } from "./engine_components/stereo_panner.js";
 import { stopAllChannels } from "./engine_methods/stopping_notes/stop_all_channels.js";
@@ -32,7 +32,7 @@ import { FILTER_SMOOTHING_FACTOR } from "./engine_components/lowpass_filter.js";
 import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE, VOICE_CAP } from "../synth_constants.js";
 import { fillWithDefaults } from "../../utils/fill_with_defaults.js";
 import { DEFAULT_SEQUENCER_OPTIONS } from "../../sequencer/worklet_wrapper/default_sequencer_options.js";
-import { getEvent, messageTypes } from "../../midi_parser/midi_message.js";
+import { getEvent, messageTypes } from "../../midi/midi_message.js";
 import { IndexedByteArray } from "../../utils/indexed_array.js";
 
 

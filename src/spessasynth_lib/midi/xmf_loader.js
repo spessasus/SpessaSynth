@@ -3,7 +3,7 @@ import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthInfo, SpessaSynthWarn
 import { consoleColors } from "../utils/other.js";
 import { readBytesAsUintBigEndian } from "../utils/byte_functions/big_endian.js";
 import { readVariableLengthQuantity } from "../utils/byte_functions/variable_length_quantity.js";
-import { RMIDINFOChunks } from "./rmidi_writer.js";
+import { RMIDINFOChunks } from "./midi_tools/rmidi_writer.js";
 import { inflateSync } from "../externals/fflate/fflate.min.js";
 import { IndexedByteArray } from "../utils/indexed_array.js";
 

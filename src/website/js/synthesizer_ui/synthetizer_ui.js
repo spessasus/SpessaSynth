@@ -11,7 +11,7 @@ import { setEventListeners } from "./methods/set_event_listeners.js";
 import { keybinds } from "../utils/keybinds.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { closeNotification } from "../notification/notification.js";
-import { midiControllers } from "../../../spessasynth_lib/midi_parser/midi_message.js";
+import { midiControllers } from "../../../spessasynth_lib/midi/midi_message.js";
 import { isXGDrums } from "../../../spessasynth_lib/utils/xg_hacks.js";
 
 

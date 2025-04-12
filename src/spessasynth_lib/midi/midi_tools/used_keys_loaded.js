@@ -1,15 +1,15 @@
-import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo } from "../utils/loggin.js";
-import { consoleColors } from "../utils/other.js";
-import { messageTypes, midiControllers } from "./midi_message.js";
-import { DEFAULT_PERCUSSION } from "../synthetizer/synth_constants.js";
-import { chooseBank, isSystemXG, parseBankSelect } from "../utils/xg_hacks.js";
-import { isGSDrumsOn, isXGOn } from "../utils/sysex_detector.js";
+import { SpessaSynthGroupCollapsed, SpessaSynthGroupEnd, SpessaSynthInfo } from "../../utils/loggin.js";
+import { consoleColors } from "../../utils/other.js";
+import { messageTypes, midiControllers } from "../midi_message.js";
+import { DEFAULT_PERCUSSION } from "../../synthetizer/synth_constants.js";
+import { chooseBank, isSystemXG, parseBankSelect } from "../../utils/xg_hacks.js";
+import { isGSDrumsOn, isXGOn } from "../../utils/sysex_detector.js";
 
 /**
  * Gets the used programs and keys for this MIDI file with a given sound bank
  * @this {BasicMIDI}
  * @param soundfont {BasicSoundBank|WorkletSoundfontManager} - the sound bank
- * @returns {Object<string, Set<string>>}
+ * @returns {Object<string, Set<string>>} Object<bank:program, Set<key-velocity>>
  */
 export function getUsedProgramsAndKeys(soundfont)
 {

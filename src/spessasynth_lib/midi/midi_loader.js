@@ -7,7 +7,7 @@ import { readVariableLengthQuantity } from "../utils/byte_functions/variable_len
 import { readBytesAsUintBigEndian } from "../utils/byte_functions/big_endian.js";
 import { readBytesAsString } from "../utils/byte_functions/string.js";
 import { readLittleEndian } from "../utils/byte_functions/little_endian.js";
-import { RMIDINFOChunks } from "./rmidi_writer.js";
+import { RMIDINFOChunks } from "./midi_tools/rmidi_writer.js";
 import { BasicMIDI } from "./basic_midi.js";
 import { loadXMF } from "./xmf_loader.js";
 

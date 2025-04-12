@@ -9,7 +9,7 @@ import {
     PORTAMENTO_CONTROL_UNSET,
     resetArray
 } from "../../engine_components/controller_tables.js";
-import { midiControllers } from "../../../../midi_parser/midi_message.js";
+import { midiControllers } from "../../../../midi/midi_message.js";
 import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE } from "../../../synth_constants.js";
 import { getDefaultBank } from "../../../../utils/xg_hacks.js";
 

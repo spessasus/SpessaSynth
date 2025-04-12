@@ -1,5 +1,5 @@
 import { consoleColors } from "../../utils/other.js";
-import { messageTypes, midiControllers } from "../../midi_parser/midi_message.js";
+import { messageTypes, midiControllers } from "../../midi/midi_message.js";
 import { EventHandler } from "./synth_event_handler.js";
 import { FancyChorus } from "../audio_effects/fancy_chorus.js";
 import { getReverbProcessor } from "../audio_effects/reverb.js";
@@ -15,7 +15,7 @@ import { SoundfontManager } from "./synth_soundfont_manager.js";
 import { WorkletKeyModifierManagerWrapper } from "./key_modifier_manager.js";
 import { channelConfiguration } from "../audio_engine/engine_components/controller_tables.js";
 import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE, MIDI_CHANNEL_COUNT, VOICE_CAP } from "../synth_constants.js";
-import { BasicMIDI } from "../../midi_parser/basic_midi.js";
+import { BasicMIDI } from "../../midi/basic_midi.js";
 import { fillWithDefaults } from "../../utils/fill_with_defaults.js";
 import { DEFAULT_SEQUENCER_OPTIONS } from "../../sequencer/worklet_wrapper/default_sequencer_options.js";
 import { WORKLET_PROCESSOR_NAME } from "./worklet_url.js";

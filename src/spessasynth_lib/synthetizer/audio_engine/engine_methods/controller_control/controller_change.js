@@ -1,4 +1,4 @@
-import { midiControllers } from "../../../../midi_parser/midi_message.js";
+import { midiControllers } from "../../../../midi/midi_message.js";
 import { computeModulators } from "../../engine_components/compute_modulator.js";
 import { channelConfiguration, dataEntryStates } from "../../engine_components/controller_tables.js";
 
