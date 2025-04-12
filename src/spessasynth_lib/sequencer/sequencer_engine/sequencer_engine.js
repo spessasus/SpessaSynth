@@ -6,7 +6,6 @@ import { _playTo, _recalculateStartTime, play, setTimeTicks } from "./play.js";
 import { messageTypes, midiControllers } from "../../midi/midi_message.js";
 import {
     post,
-    processMessage,
     sendMIDICC,
     sendMIDIMessage,
     sendMIDIPitchWheel,
@@ -317,7 +316,6 @@ SpessaSynthSequencer.prototype.sendMIDIPitchWheel = sendMIDIPitchWheel;
 SpessaSynthSequencer.prototype.assignMIDIPort = assignMIDIPort;
 
 SpessaSynthSequencer.prototype.post = post;
-SpessaSynthSequencer.prototype.processMessage = processMessage;
 
 SpessaSynthSequencer.prototype._processEvent = _processEvent;
 SpessaSynthSequencer.prototype._addNewMidiPort = _addNewMidiPort;
