@@ -1,4 +1,3 @@
-import { SpessaSynthSequencer } from "../../sequencer/sequencer_engine/sequencer_engine.js";
 import { SpessaSynthInfo } from "../../utils/loggin.js";
 import { consoleColors } from "../../utils/other.js";
 import { voiceKilling } from "./engine_methods/stopping_notes/voice_killing.js";
@@ -26,8 +25,6 @@ import { applySynthesizerSnapshot } from "./snapshot/apply_synthesizer_snapshot.
 import { createMidiChannel } from "./engine_methods/create_midi_channel.js";
 import { FILTER_SMOOTHING_FACTOR } from "./engine_components/lowpass_filter.js";
 import { DEFAULT_PERCUSSION, DEFAULT_SYNTH_MODE, VOICE_CAP } from "../synth_constants.js";
-import { fillWithDefaults } from "../../utils/fill_with_defaults.js";
-import { DEFAULT_SEQUENCER_OPTIONS } from "../../sequencer/worklet_wrapper/default_sequencer_options.js";
 import { getEvent, messageTypes } from "../../midi/midi_message.js";
 import { IndexedByteArray } from "../../utils/indexed_array.js";
 
@@ -79,12 +76,6 @@ class SpessaSynthProcessor
      * @type {interpolationTypes}
      */
     interpolationType = interpolationTypes.fourthOrder;
-    
-    /**
-     * The sequencer attached to this processor
-     * @type {SpessaSynthSequencer}
-     */
-    sequencer = new SpessaSynthSequencer(this);
     
     /**
      * Global transposition in semitones
@@ -226,7 +217,6 @@ class SpessaSynthProcessor
      * @param midiChannels {number}
      * @param soundfont {ArrayBuffer}
      * @param enableEventSystem {boolean}
-     * @param startRenderingData {StartRenderingDataConfig}
      * @param postCallback {function(data: WorkletReturnMessage)}
      * @param sampleRate {number}
      * @param initialTime {number}
@@ -238,7 +228,6 @@ class SpessaSynthProcessor
                 postCallback,
                 effectsEnabled = true,
                 enableEventSystem = true,
-                startRenderingData = {},
                 initialTime = 0)
     {
         /**
@@ -309,54 +298,6 @@ class SpessaSynthProcessor
         this.volumeEnvelopeSmoothingFactor = VOLUME_ENVELOPE_SMOOTHING_FACTOR * (44100 / sampleRate);
         this.panSmoothingFactor = PAN_SMOOTHING_FACTOR * (44100 / sampleRate);
         this.filterSmoothingFactor = FILTER_SMOOTHING_FACTOR * (44100 / sampleRate);
-        
-        /**
-         * The snapshot that synth was restored from
-         * @type {SynthesizerSnapshot|undefined}
-         * @private
-         */
-        this._snapshot = startRenderingData?.snapshot;
-        
-        // if sent, start rendering
-        if (startRenderingData)
-        {
-            if (this._snapshot !== undefined)
-            {
-                this.applySynthesizerSnapshot(this._snapshot);
-                this.resetAllControllers();
-            }
-            
-            SpessaSynthInfo("%cRendering enabled! Starting render.", consoleColors.info);
-            if (startRenderingData.parsedMIDI)
-            {
-                if (startRenderingData?.loopCount !== undefined)
-                {
-                    this.sequencer.loopCount = startRenderingData?.loopCount;
-                    this.sequencer.loop = true;
-                }
-                else
-                {
-                    this.sequencer.loop = false;
-                }
-                // set voice cap to unlimited
-                this.voiceCap = Infinity;
-                this.processorInitialized.then(() =>
-                {
-                    /**
-                     * set options
-                     * @type {SequencerOptions}
-                     */
-                    const seqOptions = fillWithDefaults(
-                        startRenderingData.sequencerOptions,
-                        DEFAULT_SEQUENCER_OPTIONS
-                    );
-                    this.sequencer.skipToFirstNoteOn = seqOptions.skipToFirstNoteOn;
-                    this.sequencer.preservePlaybackState = seqOptions.preservePlaybackState;
-                    // autoplay is ignored
-                    this.sequencer.loadNewSongList([startRenderingData.parsedMIDI]);
-                });
-            }
-        }
         
         this.postReady();
     }
@@ -497,9 +438,6 @@ class SpessaSynthProcessor
      */
     renderAudioSplit(reverbChannels, chorusChannels, separateChannels)
     {
-        // process the sequencer playback
-        this.sequencer.processTick();
-        
         // process event queue
         const time = this.currentSynthTime;
         while (this.eventQueue[0]?.time <= time)
@@ -555,8 +493,6 @@ class SpessaSynthProcessor
         });
         delete this.cachedVoices;
         delete this.midiAudioChannels;
-        delete this.sequencer.midiData;
-        delete this.sequencer;
         this.soundfontManager.destroyManager();
         delete this.soundfontManager;
     }

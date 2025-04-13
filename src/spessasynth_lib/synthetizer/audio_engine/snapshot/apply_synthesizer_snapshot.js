@@ -11,4 +11,5 @@ export function applySynthesizerSnapshot(snapshot)
 {
     SynthesizerSnapshot.applySnapshot(this, snapshot);
     SpessaSynthInfo("%cFinished applying snapshot!", consoleColors.info);
+    this.resetAllControllers();
 }
