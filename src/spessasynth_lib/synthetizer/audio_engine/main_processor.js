@@ -269,7 +269,7 @@ class SpessaSynthProcessor
         this.enableEventSystem = enableEventSystem && typeof postCallback === "function";
         
         
-        for (let i = 0; i < 127; i++)
+        for (let i = 0; i < 128; i++)
         {
             this.tunings.push([]);
         }

@@ -109,7 +109,7 @@ export function resetAllControllers(log = true)
     }
     this.tunings = [];
     this.tunings = [];
-    for (let i = 0; 127 > i; i++)
+    for (let i = 0; i < 128; i++)
     {
         this.tunings.push([]);
     }
