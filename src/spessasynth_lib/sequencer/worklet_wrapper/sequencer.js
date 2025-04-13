@@ -570,7 +570,7 @@ export class Sequencer
             
             case SpessaSynthSequencerReturnMessageType.timeChange:
                 // message data is absolute time
-                const time = this.synth.currentTime - messageData;
+                const time = messageData;
                 this._callEvents(this.onTimeChange, time);
                 this._recalculateStartTime(time);
                 if (this.paused && this._preservePlaybackState)

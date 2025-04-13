@@ -1,17 +1,9 @@
-import { SpessaSynthSequencerReturnMessageType } from "../worklet_wrapper/sequencer_message.js";
 import { _addNewMidiPort, _processEvent } from "./process_event.js";
 import { _findFirstEventIndex, processTick } from "./process_tick.js";
 import { assignMIDIPort, loadNewSequence, loadNewSongList, nextSong, previousSong } from "./song_control.js";
 import { _playTo, _recalculateStartTime, play, setTimeTicks } from "./play.js";
 import { messageTypes, midiControllers } from "../../midi/midi_message.js";
-import {
-    post,
-    sendMIDICC,
-    sendMIDIMessage,
-    sendMIDIPitchWheel,
-    sendMIDIProgramChange,
-    sendMIDIReset
-} from "./events.js";
+import { sendMIDICC, sendMIDIMessage, sendMIDIPitchWheel, sendMIDIProgramChange, sendMIDIReset } from "./events.js";
 import { SpessaSynthWarn } from "../../utils/loggin.js";
 
 import { MIDI_CHANNEL_COUNT } from "../../synthetizer/synth_constants.js";
@@ -136,6 +128,48 @@ class SpessaSynthSequencer
     preservePlaybackState = false;
     
     /**
+     * Called on a MIDI message if sending MIDI messages is enabled
+     * @type {function(message: number[])}
+     */
+    onMIDIMessage;
+    
+    /**
+     * Called when the time changes
+     * @type {function(newTime: number)}
+     */
+    onTimeChange;
+    
+    /**
+     * Calls when sequencer stops the playback
+     * @type {function(isFinished: boolean)}
+     */
+    onPlaybackStop;
+    
+    /**
+     * Calls after the songs have been processed but before the playback begins
+     * @type {function(newSongList: BasicMIDI[])}
+     */
+    onSongListChange;
+    
+    /**
+     * Calls when the song is changed (for example, in a playlist)
+     * @type {function(songIndex: number, autoPlay: boolean)}
+     */
+    onSongChange;
+    
+    /**
+     * Calls when a meta-event occurs
+     * @type {function(e: MIDIMessage, trackIndex: number)}
+     */
+    onMetaEvent;
+    
+    /**
+     * Calls when the loop count changes (usually decreases)
+     * @type {function(count: number)}
+     */
+    onLoopCountChange;
+    
+    /**
      * @param spessasynthProcessor {SpessaSynthProcessor}
      */
     constructor(spessasynthProcessor)
@@ -199,11 +233,11 @@ class SpessaSynthSequencer
         this.playingNotes = [];
         const wasPaused = this.paused && this.preservePlaybackState;
         this.pausedTime = undefined;
-        this.post(SpessaSynthSequencerReturnMessageType.timeChange, this.synth.currentSynthTime - time);
+        this?.onTimeChange?.(time);
         if (this.midiData.duration === 0)
         {
             SpessaSynthWarn("No duration!");
-            this.post(SpessaSynthSequencerReturnMessageType.pause, true);
+            this?.onPlaybackStop?.(true);
             return;
         }
         this._playTo(time);
@@ -240,7 +274,7 @@ class SpessaSynthSequencer
         }
         this.pausedTime = this.currentTime;
         this.stop();
-        this.post(SpessaSynthSequencerReturnMessageType.pause, isFinished);
+        this?.onPlaybackStop?.(isFinished);
     }
     
     /**
@@ -314,8 +348,6 @@ SpessaSynthSequencer.prototype.sendMIDICC = sendMIDICC;
 SpessaSynthSequencer.prototype.sendMIDIProgramChange = sendMIDIProgramChange;
 SpessaSynthSequencer.prototype.sendMIDIPitchWheel = sendMIDIPitchWheel;
 SpessaSynthSequencer.prototype.assignMIDIPort = assignMIDIPort;
-
-SpessaSynthSequencer.prototype.post = post;
 
 SpessaSynthSequencer.prototype._processEvent = _processEvent;
 SpessaSynthSequencer.prototype._addNewMidiPort = _addNewMidiPort;

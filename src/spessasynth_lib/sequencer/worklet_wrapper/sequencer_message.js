@@ -43,7 +43,7 @@ export const SpessaSynthSequencerMessageType = {
 export const SpessaSynthSequencerReturnMessageType = {
     midiEvent: 0,               // [...midiEventBytes<number>]
     songChange: 1,              // [songIndex<number>, isAutoPlayed<boolean>]
-    timeChange: 2,              // newAbsoluteTime<number>
+    timeChange: 2,              // newTime<number>
     pause: 3,                   // no data
     getMIDI: 4,                 // midiData<MIDI>
     midiError: 5,               // errorMSG<string>
