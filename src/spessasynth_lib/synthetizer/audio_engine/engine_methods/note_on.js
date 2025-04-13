@@ -35,9 +35,10 @@ export function noteOn(midiNote, velocity)
         return;
     }
     const program = this.preset.program;
-    if (this.synth.tunings[program]?.[realKey]?.midiNote >= 0)
+    const tune = this.synth.tunings[program]?.[realKey]?.midiNote;
+    if (tune >= 0)
     {
-        sentMidiNote = this.synth.tunings[program]?.[realKey].midiNote;
+        sentMidiNote = tune;
     }
     
     // velocity override

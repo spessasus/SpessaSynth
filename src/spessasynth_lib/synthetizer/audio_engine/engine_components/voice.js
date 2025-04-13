@@ -313,9 +313,10 @@ class Voice
      * copies the voice
      * @param voice {Voice}
      * @param currentTime {number}
+     * @param realKey {number}
      * @returns Voice
      */
-    static copy(voice, currentTime)
+    static copy(voice, currentTime, realKey)
     {
         const sampleToCopy = voice.sample;
         const sample = new AudioSample(
@@ -336,7 +337,7 @@ class Voice
             voice.channelNumber,
             currentTime,
             voice.targetKey,
-            voice.realKey,
+            realKey,
             voice.generators,
             voice.modulators.map(m => Modulator.copy(m))
         );
@@ -403,11 +404,10 @@ export function getVoices(channel,
     }
     
     const cached = this.getCachedVoice(bank, program, midiNote, velocity);
-    
     // if cached, return it!
     if (cached !== undefined)
     {
-        return cached.map(v => Voice.copy(v, this.currentSynthTime));
+        return cached.map(v => Voice.copy(v, this.currentSynthTime, realKey));
     }
     
     // not cached...
@@ -514,6 +514,6 @@ export function getVoices(channel,
         }, []);
     // cache the voice
     this.setCachedVoice(bank, program, midiNote, velocity, voices.map(v =>
-        Voice.copy(v, this.currentSynthTime)));
+        Voice.copy(v, this.currentSynthTime, realKey)));
     return voices;
 }

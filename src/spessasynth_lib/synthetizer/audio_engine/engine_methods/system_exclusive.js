@@ -4,6 +4,7 @@ import { midiControllers } from "../../../midi/midi_message.js";
 import { ALL_CHANNELS_OR_DIFFERENT_ACTION } from "../message_protocol/worklet_message.js";
 import { isSystemXG } from "../../../utils/xg_hacks.js";
 import { masterParameterType } from "./controller_control/master_parameters.js";
+import { readBytesAsString } from "../../../utils/byte_functions/string.js";
 
 /**
  * KeyNum: tuning
@@ -167,13 +168,44 @@ export function systemExclusive(messageData, channelOffset = 0)
                 // MIDI Tuning standard
                 // https://midi.org/midi-tuning-updated-specification
                 case 0x08:
+                    let currentMessageIndex = 4;
                     switch (messageData[3])
                     {
+                        // bulk tuning dump: all 128 notes
+                        case 0x01:
+                            const program = messageData[currentMessageIndex++];
+                            // read the name
+                            messageData.currentIndex = currentMessageIndex;
+                            const tuningName = readBytesAsString(messageData, 16);
+                            currentMessageIndex += 16;
+                            if (messageData.length < 384)
+                            {
+                                SpessaSynthWarn(`The Bulk Tuning Dump is too short! (${messageData.length} bytes, at least 384 are expected)`);
+                                return;
+                            }
+                            // 128 frequencies follow
+                            for (let i = 0; i < 128; i++)
+                            {
+                                // set the given tuning to the program
+                                this.tunings[program][i] = getTuning(
+                                    messageData[currentMessageIndex++],
+                                    messageData[currentMessageIndex++],
+                                    messageData[currentMessageIndex++]
+                                );
+                            }
+                            SpessaSynthInfo(
+                                `%cBulk Tuning Dump %c${tuningName}%c Program: %c${program}`,
+                                consoleColors.info,
+                                consoleColors.value,
+                                consoleColors.info,
+                                consoleColors.recognized
+                            );
+                            break;
+                        
                         // single note change
                         // single note change bank
                         case 0x02:
                         case 0x07:
-                            let currentMessageIndex = 4;
                             if (messageData[3] === 0x07)
                             {
                                 // skip the bank
