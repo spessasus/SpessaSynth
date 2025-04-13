@@ -1,29 +1,6 @@
-import { returnMessageType } from "../../synthetizer/audio_engine/message_protocol/worklet_message.js";
-import { SpessaSynthSequencerReturnMessageType } from "../worklet_wrapper/sequencer_message.js";
 import { messageTypes, midiControllers } from "../../midi/midi_message.js";
 
 import { MIDI_CHANNEL_COUNT } from "../../synthetizer/synth_constants.js";
-
-/**
- *
- * @param messageType {SpessaSynthSequencerReturnMessageType}
- * @param messageData {any}
- * @this {SpessaSynthSequencer}
- */
-export function post(messageType, messageData = undefined)
-{
-    if (!this.synth.enableEventSystem)
-    {
-        return;
-    }
-    this.synth.post({
-        messageType: returnMessageType.sequencerSpecific,
-        messageData: {
-            messageType: messageType,
-            messageData: messageData
-        }
-    });
-}
 
 /**
  * @param message {number[]}
@@ -35,7 +12,7 @@ export function sendMIDIMessage(message)
     {
         return;
     }
-    this.post(SpessaSynthSequencerReturnMessageType.midiEvent, message);
+    this?.onMIDIMessage?.(message);
 }
 
 /**

@@ -1,5 +1,3 @@
-import { SpessaSynthSequencerReturnMessageType } from "../worklet_wrapper/sequencer_message.js";
-
 /**
  * Processes a single tick
  * @this {SpessaSynthSequencer}
@@ -50,7 +48,7 @@ export function processTick()
             if (this.loopCount !== Infinity)
             {
                 this.loopCount--;
-                this.post(SpessaSynthSequencerReturnMessageType.loopCountChange, this.loopCount);
+                this?.onLoopCountChange?.(this.loopCount);
             }
             this.setTimeTicks(this.midiData.loop.start);
             return;
@@ -64,7 +62,7 @@ export function processTick()
                 if (this.loopCount !== Infinity)
                 {
                     this.loopCount--;
-                    this.post(SpessaSynthSequencerReturnMessageType.loopCountChange, this.loopCount);
+                    this?.onLoopCountChange?.(this.loopCount);
                 }
                 this.setTimeTicks(this.midiData.loop.start);
                 return;

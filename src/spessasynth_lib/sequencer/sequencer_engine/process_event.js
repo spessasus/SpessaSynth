@@ -1,5 +1,4 @@
 import { getEvent, messageTypes } from "../../midi/midi_message.js";
-import { SpessaSynthSequencerReturnMessageType } from "../worklet_wrapper/sequencer_message.js";
 import { consoleColors } from "../../utils/other.js";
 import { SpessaSynthWarn } from "../../utils/loggin.js";
 import { readBytesAsUintBigEndian } from "../../utils/byte_functions/big_endian.js";
@@ -148,10 +147,7 @@ export function _processEvent(event, trackIndex)
     }
     if (statusByteData.status >= 0 && statusByteData.status < 0x80)
     {
-        this.post(
-            SpessaSynthSequencerReturnMessageType.metaEvent,
-            [event, trackIndex]
-        );
+        this?.onMetaEvent?.(event, trackIndex);
     }
 }
 

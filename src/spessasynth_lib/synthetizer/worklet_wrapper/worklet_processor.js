@@ -20,6 +20,7 @@ import {
 import { SpessaSynthSequencer } from "../../sequencer/sequencer_engine/sequencer_engine.js";
 import { fillWithDefaults } from "../../utils/fill_with_defaults.js";
 import { DEFAULT_SEQUENCER_OPTIONS } from "../../sequencer/worklet_wrapper/default_sequencer_options.js";
+import { MIDIData } from "../../midi/midi_data.js";
 
 
 // a worklet processor wrapper for the synthesizer core
@@ -74,6 +75,57 @@ class WorkletSpessaProcessor extends AudioWorkletProcessor
         // initialize the sequencer engine
         this.sequencer = new SpessaSynthSequencer(this.synthesizer);
         
+        const postSeq = (type, data) =>
+        {
+            this.postMessageToMainThread({
+                messageType: returnMessageType.sequencerSpecific,
+                messageData: {
+                    messageType: type,
+                    messageData: data
+                }
+            });
+        };
+        
+        // receive messages from the main thread
+        this.port.onmessage = e => this.handleMessage(e.data);
+        
+        // sequencer events
+        this.sequencer.onMIDIMessage = m =>
+        {
+            postSeq(SpessaSynthSequencerReturnMessageType.midiEvent, m);
+        };
+        this.sequencer.onTimeChange = t =>
+        {
+            postSeq(SpessaSynthSequencerReturnMessageType.timeChange, t);
+        };
+        this.sequencer.onPlaybackStop = p =>
+        {
+            postSeq(SpessaSynthSequencerReturnMessageType.pause, p);
+        };
+        this.sequencer.onSongChange = (i, a) =>
+        {
+            postSeq(SpessaSynthSequencerReturnMessageType.songChange, [i, a]);
+        };
+        this.sequencer.onMetaEvent = (e, i) =>
+        {
+            postSeq(SpessaSynthSequencerReturnMessageType.metaEvent, [e, i]);
+        };
+        this.sequencer.onLoopCountChange = c =>
+        {
+            postSeq(SpessaSynthSequencerReturnMessageType.loopCountChange, c);
+        };
+        this.sequencer.onSongListChange = l =>
+        {
+            const midiDatas = l.map(s => new MIDIData(s));
+            this.postMessageToMainThread({
+                messageType: returnMessageType.sequencerSpecific,
+                messageData: {
+                    messageType: SpessaSynthSequencerReturnMessageType.songListChange,
+                    messageData: midiDatas
+                }
+            });
+        };
+        
         // start rendering data
         const startRenderingData = opts?.startRenderingData;
         /**
@@ -118,13 +170,18 @@ class WorkletSpessaProcessor extends AudioWorkletProcessor
                     this.sequencer.skipToFirstNoteOn = seqOptions.skipToFirstNoteOn;
                     this.sequencer.preservePlaybackState = seqOptions.preservePlaybackState;
                     // autoplay is ignored
-                    this.sequencer.loadNewSongList([startRenderingData.parsedMIDI]);
+                    try
+                    {
+                        this.sequencer.loadNewSongList([startRenderingData.parsedMIDI]);
+                    }
+                    catch (e)
+                    {
+                        console.error(e);
+                        postSeq(SpessaSynthSequencerReturnMessageType.midiEvent, e);
+                    }
                 });
             }
         }
-        
-        // receive messages from the main thread
-        this.port.onmessage = e => this.handleMessage(e.data);
     }
     
     /**
@@ -281,7 +338,14 @@ class WorkletSpessaProcessor extends AudioWorkletProcessor
                         break;
                     
                     case SpessaSynthSequencerMessageType.loadNewSongList:
-                        seq.loadNewSongList(messageData[0], messageData[1]);
+                        try
+                        {
+                            seq.loadNewSongList(messageData[0], messageData[1]);
+                        }
+                        catch (e)
+                        {
+                            console.error(e);
+                        }
                         break;
                     
                     case SpessaSynthSequencerMessageType.pause:
@@ -352,7 +416,13 @@ class WorkletSpessaProcessor extends AudioWorkletProcessor
                         break;
                     
                     case SpessaSynthSequencerMessageType.getMIDI:
-                        seq.post(SpessaSynthSequencerReturnMessageType.getMIDI, seq.midiData);
+                        this.postMessageToMainThread({
+                            messageType: returnMessageType.sequencerSpecific,
+                            messageData: {
+                                messageType: SpessaSynthSequencerReturnMessageType.getMIDI,
+                                messageData: seq.midiData
+                            }
+                        });
                         break;
                     
                     case SpessaSynthSequencerMessageType.setSkipToFirstNote:

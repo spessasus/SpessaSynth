@@ -1,4 +1,3 @@
-import { SpessaSynthSequencerReturnMessageType } from "../worklet_wrapper/sequencer_message.js";
 import { consoleColors, formatTime } from "../../utils/other.js";
 import {
     SpessaSynthGroupCollapsed,
@@ -6,7 +5,6 @@ import {
     SpessaSynthInfo,
     SpessaSynthWarn
 } from "../../utils/loggin.js";
-import { MIDIData } from "../../midi/midi_data.js";
 import { MIDI } from "../../midi/midi_loader.js";
 import { BasicMIDI } from "../../midi/basic_midi.js";
 
@@ -126,8 +124,7 @@ export function loadNewSequence(parsedMidi, autoPlay = true)
     this.duration = this.midiData.duration;
     this.firstNoteTime = this.midiData.MIDIticksToSeconds(this.midiData.firstNoteOn);
     SpessaSynthInfo(`%cTotal song time: ${formatTime(Math.ceil(this.duration)).time}`, consoleColors.recognized);
-    
-    this.post(SpessaSynthSequencerReturnMessageType.songChange, [this.songIndex, autoPlay]);
+    this?.onSongChange?.(this.songIndex, autoPlay);
     
     if (this.duration <= 1)
     {
@@ -168,16 +165,7 @@ export function loadNewSongList(midiBuffers, autoPlay = true)
             mids.push(BasicMIDI.copyFrom(b));
             return mids;
         }
-        try
-        {
-            mids.push(new MIDI(b.binary, b.altName || ""));
-        }
-        catch (e)
-        {
-            console.error(e);
-            this.post(SpessaSynthSequencerReturnMessageType.midiError, e);
-            return mids;
-        }
+        mids.push(new MIDI(b.binary, b.altName || ""));
         return mids;
     }, []);
     if (this.songs.length < 1)
@@ -190,8 +178,7 @@ export function loadNewSongList(midiBuffers, autoPlay = true)
         this.loop = false;
     }
     this.shuffleSongIndexes();
-    const midiDatas = this.songs.map(s => new MIDIData(s));
-    this.post(SpessaSynthSequencerReturnMessageType.songListChange, midiDatas);
+    this?.onSongListChange?.(this.songs);
     this.loadCurrentSong(autoPlay);
 }
 

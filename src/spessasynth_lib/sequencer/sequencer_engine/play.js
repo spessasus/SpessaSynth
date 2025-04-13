@@ -1,5 +1,4 @@
 import { getEvent, messageTypes, midiControllers } from "../../midi/midi_message.js";
-import { SpessaSynthSequencerReturnMessageType } from "../worklet_wrapper/sequencer_message.js";
 import { resetArray } from "../../synthetizer/audio_engine/engine_components/controller_tables.js";
 import { nonResetableCCs } from "../../synthetizer/audio_engine/engine_methods/controller_control/reset_controllers.js";
 
@@ -329,10 +328,7 @@ export function setTimeTicks(ticks)
     this.stop();
     this.playingNotes = [];
     this.pausedTime = undefined;
-    this.post(
-        SpessaSynthSequencerReturnMessageType.timeChange,
-        this.synth.currentSynthTime - this.midiData.MIDIticksToSeconds(ticks)
-    );
+    this?.onTimeChange?.(this.midiData.MIDIticksToSeconds(ticks));
     const isNotFinished = this._playTo(0, ticks);
     this._recalculateStartTime(this.playedTime);
     if (!isNotFinished)
