@@ -170,9 +170,6 @@ npm install --save spessasynth_lib
 
 > Copying the `spessasynth_lib` folder is no longer the recommended way for installing the library.
 
-> [!TIP]
-> Looking for a Node.js version? Try [spessasynth_core](https://www.npmjs.com/package/spessasynth_core)!
-
 <h1 align='center'>Web App / Local Edition</h1>
 <p align='center'>The complete GUI for spessasynth_lib, allowing remixing, experimenting, and playing MIDIs in the coolest way possible.</p>
 
