@@ -2,6 +2,11 @@ name: Bug report
 description: Report a bug/incorrect behavior in SpessaSynth.
 labels: [ "bug" ]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Please note that this repository is for the web application **only.**
+        Any bug reports for the audio playback/conversions should go to the [spessasynth_core](https://github.com/spessasus/spessasynth_core) repository.
   - type: checkboxes
     attributes:
       label: Duplicated issue check
@@ -13,17 +18,7 @@ body:
     id: version
     attributes:
       label: SpessaSynth version
-      description: The version of SpessaSynth you are using. Either the NPM package version or the app version (top right corner)
-    validations:
-      required: true
-  - type: dropdown
-    id: scope
-    attributes:
-      label: Bug Scope
-      description: Is the bug report about spessasynth_lib or the SpessaSynth app? If both, pick spessasynth_lib
-      options:
-        - Web App/Local Edition
-        - spessasynth_lib
+      description: The version of SpessaSynth you are using. The app version (top right corner)
     validations:
       required: true
   - type: textarea
@@ -46,7 +41,7 @@ body:
       label: Reproduction steps
       description: Steps to reproduce the behavior.
       placeholder: |
-        1. Load this MIDI...
+        1. Load this...
         1. Click this...
         1. Play '...'
         1. See error...

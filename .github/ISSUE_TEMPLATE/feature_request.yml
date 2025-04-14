@@ -2,14 +2,11 @@ name: Feature request
 description: Suggest an idea for SpessaSynth!
 labels: [ "enhancement" ]
 body:
-  - type: dropdown
-    id: scope
+  - type: markdown
     attributes:
-      label: Is your feature related to the sound library or the app/website?
-      description: The library is responsible for making the sound and the website is what you see in the browser
-      options:
-        - spessasynth_lib
-        - Web App/Local Edition
+    value: |
+      Please note that this repository is for the web application **only.**
+      Any suggestions for the audio playback / conversions should go to the [spessasynth_lib](https://github.com/spessasus/spessasynth_lib) repository.
   - type: textarea
     id: problem
     attributes:
