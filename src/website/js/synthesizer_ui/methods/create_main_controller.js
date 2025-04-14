@@ -2,7 +2,7 @@ import { Meter } from "./synthui_meter.js";
 import { LOCALE_PATH } from "../synthetizer_ui.js";
 import {
     ALL_CHANNELS_OR_DIFFERENT_ACTION
-} from "../../../../spessasynth_lib/synthetizer/audio_engine/message_protocol/worklet_message.js";
+} from "../../../../spessasynth_lib/synthetizer/worklet_wrapper/worklet_message.js";
 import { getEmptyMicSvg, getVolumeSvg } from "../../utils/icons.js";
 import { ICON_SIZE } from "./create_channel_controller.js";
 import { closeNotification } from "../../notification/notification.js";

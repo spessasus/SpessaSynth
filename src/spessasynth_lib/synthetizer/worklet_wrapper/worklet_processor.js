@@ -1,11 +1,7 @@
 import { consoleColors } from "../../utils/other.js";
 import { SpessaSynthInfo, SpessaSynthLogging, SpessaSynthWarn } from "../../utils/loggin.js";
 import { SpessaSynthProcessor } from "../audio_engine/main_processor.js";
-import {
-    ALL_CHANNELS_OR_DIFFERENT_ACTION,
-    returnMessageType,
-    workletMessageType
-} from "../audio_engine/message_protocol/worklet_message.js";
+import { ALL_CHANNELS_OR_DIFFERENT_ACTION, returnMessageType, workletMessageType } from "./worklet_message.js";
 import { SynthesizerSnapshot } from "../audio_engine/snapshot/synthesizer_snapshot.js";
 import { WORKLET_PROCESSOR_NAME } from "./worklet_url.js";
 import { MIDI_CHANNEL_COUNT } from "../synth_constants.js";
@@ -57,6 +53,20 @@ class WorkletSpessaProcessor extends AudioWorkletProcessor
         // one output is indicated by setting midiChannels to 1
         this.oneOutputMode = opts.midiChannels === 1;
         
+        // prepare synthesizer connections
+        /**
+         * @param t {returnMessageType}
+         * @param d {any}
+         */
+        const postSyn = (t, d) =>
+        {
+            // noinspection JSCheckFunctionSignatures
+            this.postMessageToMainThread({
+                messageType: t,
+                messageData: d
+            });
+        };
+        
         // noinspection JSUnresolvedReference
         /**
          * Initialize the synthesis engine
@@ -66,7 +76,18 @@ class WorkletSpessaProcessor extends AudioWorkletProcessor
             MIDI_CHANNEL_COUNT,                      // midi channel count (16)
             opts.soundfont,                          // initial sound bank
             sampleRate,                              // AudioWorkletGlobalScope
-            this.postMessageToMainThread.bind(this), // connect to message port
+            {
+                eventCall: (t, d) =>
+                {
+                    postSyn(returnMessageType.eventCall, {
+                        eventName: t,
+                        eventData: d
+                    });
+                },
+                ready: this.postReady.bind(this),
+                channelPropertyChange: (p, n) => postSyn(returnMessageType.channelPropertyChange, [n, p]),
+                masterParameterChange: (t, v) => postSyn(returnMessageType.masterParameterChange, [t, v])
+            },
             !this.oneOutputMode,                     // one output mode disables effects
             opts?.enableEventSystem,                 // enable message port?
             currentTime                              // AudioWorkletGlobalScope, sync with audioContext time
@@ -182,6 +203,14 @@ class WorkletSpessaProcessor extends AudioWorkletProcessor
                 });
             }
         }
+    }
+    
+    postReady()
+    {
+        this.postMessageToMainThread({
+            messageType: returnMessageType.isFullyInitialized,
+            messageData: undefined
+        });
     }
     
     /**

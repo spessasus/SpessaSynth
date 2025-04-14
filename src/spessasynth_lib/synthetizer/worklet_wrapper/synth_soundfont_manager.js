@@ -1,4 +1,4 @@
-import { workletMessageType } from "../audio_engine/message_protocol/worklet_message.js";
+import { workletMessageType } from "./worklet_message.js";
 import { WorkletSoundfontManagerMessageType } from "./sfman_message.js";
 import { SpessaSynthWarn } from "../../utils/loggin.js";
 
@@ -46,6 +46,7 @@ export class SoundfontManager
         });
     }
     
+    // noinspection JSUnusedGlobalSymbols
     /**
      * Adds a new soundfont buffer with a given ID
      * @param soundfontBuffer {ArrayBuffer} - the soundfont's buffer
@@ -66,6 +67,7 @@ export class SoundfontManager
         });
     }
     
+    // noinspection JSUnusedGlobalSymbols
     /**
      * Deletes a soundfont with the given ID
      * @param id {string} - the soundfont to delete
@@ -85,6 +87,7 @@ export class SoundfontManager
         this._sendToWorklet(WorkletSoundfontManagerMessageType.deleteSoundFont, id);
     }
     
+    // noinspection JSUnusedGlobalSymbols
     /**
      * Rearranges the soundfonts in a given order
      * @param newList {string[]} the order of soundfonts, a list of identifiers, first overwrites second
@@ -98,7 +101,7 @@ export class SoundfontManager
     }
     
     /**
-     * DELETES ALL SOUNDFONTS!! and creates a new one with id "main"
+     * DELETES ALL SOUNDFONTS! and creates a new one with id "main"
      * @param newBuffer {ArrayBuffer}
      */
     async reloadManager(newBuffer)

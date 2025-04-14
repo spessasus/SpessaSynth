@@ -20,7 +20,7 @@ import { getDrumsSvg, getEmptyMicSvg, getMicSvg, getMuteSvg, getNoteSvg, getVolu
 import { Selector } from "./synthui_selector.js";
 import {
     ALL_CHANNELS_OR_DIFFERENT_ACTION
-} from "../../../../spessasynth_lib/synthetizer/audio_engine/message_protocol/worklet_message.js";
+} from "../../../../spessasynth_lib/synthetizer/worklet_wrapper/worklet_message.js";
 
 import { modulatorSources } from "../../../../spessasynth_lib/soundfont/basic_soundfont/modulator.js";
 import {

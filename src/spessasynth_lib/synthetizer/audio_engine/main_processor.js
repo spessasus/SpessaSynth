@@ -1,10 +1,9 @@
 import { SpessaSynthInfo } from "../../utils/loggin.js";
 import { consoleColors } from "../../utils/other.js";
 import { voiceKilling } from "./engine_methods/stopping_notes/voice_killing.js";
-import { ALL_CHANNELS_OR_DIFFERENT_ACTION, returnMessageType } from "./message_protocol/worklet_message.js";
+import { ALL_CHANNELS_OR_DIFFERENT_ACTION } from "../worklet_wrapper/worklet_message.js";
 import { stbvorbis } from "../../externals/stbvorbis_sync/stbvorbis_sync.min.js";
 import { VOLUME_ENVELOPE_SMOOTHING_FACTOR } from "./engine_components/volume_envelope.js";
-import { callEvent } from "./message_protocol/message_sending.js";
 import { systemExclusive } from "./engine_methods/system_exclusive.js";
 import { masterParameterType, setMasterParameter } from "./engine_methods/controller_control/master_parameters.js";
 import { resetAllControllers } from "./engine_methods/controller_control/reset_controllers.js";
@@ -213,22 +212,32 @@ class SpessaSynthProcessor
     sampleRate;
     
     /**
+     * @typedef {Object} CallbacksTypedef
+     * @property {function?} ready
+     * @property {function(EventTypes, EventCallbackData)?} eventCall
+     * @property {function(ChannelProperty, number)?} channelPropertyChange
+     * @property {function(masterParameterType, number|string)?} masterParameterChange
+     */
+    
+    /**
      * Creates a new worklet synthesis system. contains all channels
      * @param midiChannels {number}
      * @param soundfont {ArrayBuffer}
      * @param enableEventSystem {boolean}
-     * @param postCallback {function(data: WorkletReturnMessage)}
+     * @param callbacks {CallbacksTypedef}
      * @param sampleRate {number}
      * @param initialTime {number}
      * @param effectsEnabled {boolean}
+     * @param snapshot {SynthesizerSnapshot}
      */
     constructor(midiChannels,
                 soundfont,
                 sampleRate,
-                postCallback,
+                callbacks,
                 effectsEnabled = true,
                 enableEventSystem = true,
-                initialTime = 0)
+                initialTime = 0,
+                snapshot = undefined)
     {
         /**
          * Midi output count
@@ -241,10 +250,11 @@ class SpessaSynthProcessor
          */
         this.effectsEnabled = effectsEnabled;
         let initialChannelCount = this.midiOutputsCount;
+        
         /**
-         * @type {function(WorkletReturnMessage)}
+         * @type {CallbacksTypedef}
          */
-        this.postCallback = postCallback;
+        this.callbacks = callbacks;
         
         this.currentSynthTime = initialTime;
         this.sampleRate = sampleRate;
@@ -255,7 +265,7 @@ class SpessaSynthProcessor
          */
         this.sampleTime = 1 / sampleRate;
         
-        this.enableEventSystem = enableEventSystem && typeof postCallback === "function";
+        this.enableEventSystem = enableEventSystem;
         
         
         for (let i = 0; i < 128; i++)
@@ -263,24 +273,12 @@ class SpessaSynthProcessor
             this.tunings.push([]);
         }
         
-        try
-        {
-            /**
-             * @type {WorkletSoundfontManager}
-             */
-            this.soundfontManager = new WorkletSoundfontManager(
-                soundfont,
-                this.postReady.bind(this)
-            );
-        }
-        catch (e)
-        {
-            this.post({
-                messageType: returnMessageType.soundfontError,
-                messageData: e
-            });
-            throw e;
-        }
+        /**
+         * @type {WorkletSoundfontManager}
+         */
+        this.soundfontManager = new WorkletSoundfontManager(
+            soundfont
+        );
         this.sendPresetList();
         
         this.getDefaultPresets();
@@ -298,6 +296,12 @@ class SpessaSynthProcessor
         this.volumeEnvelopeSmoothingFactor = VOLUME_ENVELOPE_SMOOTHING_FACTOR * (44100 / sampleRate);
         this.panSmoothingFactor = PAN_SMOOTHING_FACTOR * (44100 / sampleRate);
         this.filterSmoothingFactor = FILTER_SMOOTHING_FACTOR * (44100 / sampleRate);
+        
+        this._snapshot = snapshot;
+        if (this?._snapshot)
+        {
+            this.applySynthesizerSnapshot(snapshot);
+        }
         
         this.postReady();
     }
@@ -328,10 +332,7 @@ class SpessaSynthProcessor
     setSystem(value)
     {
         this.system = value;
-        this.post({
-            messageType: returnMessageType.masterParameterChange,
-            messageData: [masterParameterType.midiSystem, this.system]
-        });
+        this?.callbacks?.masterParameterChange?.(masterParameterType.midiSystem, this.system);
     }
     
     /**
@@ -386,11 +387,7 @@ class SpessaSynthProcessor
     {
         if (!this.enableEventSystem && !force)
         {
-            return;
-        }
-        if (this.postCallback)
-        {
-            this.postCallback(data);
+        
         }
     }
     
@@ -399,12 +396,8 @@ class SpessaSynthProcessor
         // ensure stbvorbis is fully initialized
         this.processorInitialized.then(() =>
         {
-            // post-ready cannot be constrained by the event system
-            this.post({
-                messageType: returnMessageType.isFullyInitialized,
-                messageData: undefined
-            }, true);
             SpessaSynthInfo("%cSpessaSynth is ready!", consoleColors.recognized);
+            this?.callbacks?.ready?.();
         });
     }
     
@@ -663,15 +656,23 @@ class SpessaSynthProcessor
         this.midiVolume = Math.pow(volume, Math.E);
         this.setMasterParameter(masterParameterType.masterPan, this.pan);
     }
+    
+    /**
+     * Calls synth event from the worklet side
+     * @param eventName {EventTypes} the event name
+     * @param eventData {EventCallbackData}
+     * @this {SpessaSynthProcessor}
+     */
+    callEvent(eventName, eventData)
+    {
+        this?.callbacks?.eventCall?.(eventName, eventData);
+    }
 }
 
 // include other methods
 // voice related
 SpessaSynthProcessor.prototype.voiceKilling = voiceKilling;
 SpessaSynthProcessor.prototype.getVoices = getVoices;
-
-// message port related
-SpessaSynthProcessor.prototype.callEvent = callEvent;
 
 // system-exclusive related
 SpessaSynthProcessor.prototype.systemExclusive = systemExclusive;

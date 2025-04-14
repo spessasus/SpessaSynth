@@ -3,7 +3,7 @@ import { messageTypes } from "../../midi/midi_message.js";
 import {
     ALL_CHANNELS_OR_DIFFERENT_ACTION,
     workletMessageType
-} from "../../synthetizer/audio_engine/message_protocol/worklet_message.js";
+} from "../../synthetizer/worklet_wrapper/worklet_message.js";
 import {
     SongChangeType,
     SpessaSynthSequencerMessageType,

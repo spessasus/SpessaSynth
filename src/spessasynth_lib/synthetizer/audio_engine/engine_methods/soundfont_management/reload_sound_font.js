@@ -1,5 +1,4 @@
 import { loadSoundFont } from "../../../../soundfont/load_soundfont.js";
-import { returnMessageType } from "../../message_protocol/worklet_message.js";
 import { SpessaSynthInfo } from "../../../../utils/loggin.js";
 import { consoleColors } from "../../../../utils/other.js";
 
@@ -11,24 +10,13 @@ import { consoleColors } from "../../../../utils/other.js";
 export function reloadSoundFont(buffer, isOverride = false)
 {
     this.clearSoundFont(false, isOverride);
-    try
+    if (isOverride)
     {
-        if (isOverride)
-        {
-            this.overrideSoundfont = loadSoundFont(buffer);
-        }
-        else
-        {
-            this.soundfontManager.reloadManager(buffer);
-        }
+        this.overrideSoundfont = loadSoundFont(buffer);
     }
-    catch (e)
+    else
     {
-        this.post({
-            messageType: returnMessageType.soundfontError,
-            messageData: e
-        });
-        return;
+        this.soundfontManager.reloadManager(buffer);
     }
     this.getDefaultPresets();
     this.midiAudioChannels.forEach(c =>
