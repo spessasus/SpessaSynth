@@ -7,7 +7,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please note that this repository is for the web application **only.**
+        Please note that this repository is for the web application *only.*
         You probably want to ask in either [spessasynth_core](https://github.com/spessasus/spessasynth_core) or [spessasynth_lib](https://github.com/spessasus/spessasynth_lib).
   - type: textarea
     id: question

@@ -4,9 +4,9 @@ labels: [ "enhancement" ]
 body:
   - type: markdown
     attributes:
-    value: |
-      Please note that this repository is for the web application **only.**
-      Any suggestions for the audio playback / conversions should go to the [spessasynth_lib](https://github.com/spessasus/spessasynth_lib) repository.
+      value: |
+        Please note that this repository is for the web application *only.*
+        Any suggestions for the audio playback / conversions should go to the [spessasynth_lib](https://github.com/spessasus/spessasynth_lib) repository.
   - type: textarea
     id: problem
     attributes:

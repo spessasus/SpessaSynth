@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please note that this repository is for the web application **only.**
+        Please note that this repository is for the web application *only.*
         Any bug reports for the audio playback/conversions should go to the [spessasynth_core](https://github.com/spessasus/spessasynth_core) repository.
   - type: checkboxes
     attributes:
