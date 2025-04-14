@@ -31,7 +31,6 @@ import { programChange } from "../engine_methods/program_change.js";
 import { chooseBank, isSystemXG, parseBankSelect } from "../../../utils/xg_hacks.js";
 import { DEFAULT_PERCUSSION } from "../../synth_constants.js";
 import { modulatorSources } from "../../../soundfont/basic_soundfont/modulator.js";
-import { returnMessageType } from "../message_protocol/worklet_message.js";
 
 /**
  * This class represents a single MIDI Channel within the synthesizer.
@@ -432,10 +431,7 @@ class MidiAudioChannel
             bank: this.sentBank,
             program: this.preset.program
         };
-        this.synth.post({
-            messageType: returnMessageType.channelPropertyChange,
-            messageData: [this.channelNumber, data]
-        });
+        this.synth?.callbacks?.channelPropertyChange?.(data, this.channelNumber);
     }
 }
 

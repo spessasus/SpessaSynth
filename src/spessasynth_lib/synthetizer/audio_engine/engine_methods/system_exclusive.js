@@ -1,7 +1,7 @@
 import { arrayToHexString, consoleColors } from "../../../utils/other.js";
 import { SpessaSynthInfo, SpessaSynthWarn } from "../../../utils/loggin.js";
 import { midiControllers } from "../../../midi/midi_message.js";
-import { ALL_CHANNELS_OR_DIFFERENT_ACTION } from "../message_protocol/worklet_message.js";
+import { ALL_CHANNELS_OR_DIFFERENT_ACTION } from "../../worklet_wrapper/worklet_message.js";
 import { isSystemXG } from "../../../utils/xg_hacks.js";
 import { masterParameterType } from "./controller_control/master_parameters.js";
 import { readBytesAsString } from "../../../utils/byte_functions/string.js";

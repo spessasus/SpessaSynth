@@ -3,11 +3,7 @@ import { messageTypes, midiControllers } from "../../midi/midi_message.js";
 import { EventHandler } from "./synth_event_handler.js";
 import { FancyChorus } from "../audio_effects/fancy_chorus.js";
 import { getReverbProcessor } from "../audio_effects/reverb.js";
-import {
-    ALL_CHANNELS_OR_DIFFERENT_ACTION,
-    returnMessageType,
-    workletMessageType
-} from "../audio_engine/message_protocol/worklet_message.js";
+import { ALL_CHANNELS_OR_DIFFERENT_ACTION, returnMessageType, workletMessageType } from "./worklet_message.js";
 import { SpessaSynthInfo, SpessaSynthWarn } from "../../utils/loggin.js";
 import { DEFAULT_SYNTH_CONFIG } from "../audio_effects/effects_config.js";
 import { SoundfontManager } from "./synth_soundfont_manager.js";

@@ -14,14 +14,9 @@ export class WorkletSoundfontManager
     /**
      * Creates a new instance of worklet soundfont manager (worklet scope)
      * @param initialSoundFontBuffer {ArrayBuffer} Array buffer of the soundfont. This soudfont always has the id "main"
-     * @param readyCallback {function} postReady() method from synth
      */
-    constructor(initialSoundFontBuffer, readyCallback)
+    constructor(initialSoundFontBuffer)
     {
-        /**
-         * @type {Function}
-         */
-        this.ready = readyCallback;
         this.reloadManager(initialSoundFontBuffer);
     }
     
@@ -96,7 +91,6 @@ export class WorkletSoundfontManager
             soundfont: font
         });
         this.generatePresetList();
-        this.ready();
     }
     
     deleteSoundFont(id)
@@ -137,7 +131,6 @@ export class WorkletSoundfontManager
             bankOffset: bankOffset
         });
         this.generatePresetList();
-        this.ready();
     }
     
     /**

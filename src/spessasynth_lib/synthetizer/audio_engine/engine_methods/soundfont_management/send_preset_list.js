@@ -27,8 +27,5 @@ export function sendPresetList()
             }
         });
     }
-    this.processorInitialized.then(() =>
-    {
-        this.callEvent("presetlistchange", mainFont);
-    });
+    this.callEvent("presetlistchange", mainFont);
 }

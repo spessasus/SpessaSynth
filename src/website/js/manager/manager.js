@@ -193,7 +193,6 @@ class Manager
                 this.sfError(e.message);
             }
         });
-        await this.synth.isReady;
         
         // set up midi access
         this.midHandler = new MIDIDeviceHandler();
@@ -418,6 +417,8 @@ class Manager
                     break;
             }
         });
+        
+        await this.synth.isReady;
         
         this.renderer.render(false, true);
         // ANY TEST CODE FOR THE SYNTHESIZER GOES HERE

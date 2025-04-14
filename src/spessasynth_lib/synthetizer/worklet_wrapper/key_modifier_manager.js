@@ -1,4 +1,4 @@
-import { workletMessageType } from "../audio_engine/message_protocol/worklet_message.js";
+import { workletMessageType } from "./worklet_message.js";
 import { KeyModifier, workletKeyModifierMessageType } from "../audio_engine/engine_components/key_modifier_manager.js";
 
 export class WorkletKeyModifierManagerWrapper
