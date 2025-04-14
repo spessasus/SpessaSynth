@@ -473,10 +473,18 @@ class WorkletSpessaProcessor extends AudioWorkletProcessor
                     {
                         case WorkletSoundfontManagerMessageType.addNewSoundFont:
                             sfman.addNewSoundFont(messageData[0], messageData[1], messageData[2]);
+                            this.postMessageToMainThread({
+                                messageType: returnMessageType.isFullyInitialized,
+                                messageData: undefined
+                            });
                             break;
                         
                         case WorkletSoundfontManagerMessageType.reloadSoundFont:
                             sfman.reloadManager(messageData);
+                            this.postMessageToMainThread({
+                                messageType: returnMessageType.isFullyInitialized,
+                                messageData: undefined
+                            });
                             break;
                         
                         case WorkletSoundfontManagerMessageType.deleteSoundFont:
