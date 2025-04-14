@@ -1,5 +1,3 @@
-import { SpessaSynthWarn } from "../../../spessasynth_lib/utils/loggin.js";
-
 /**
  * Changes the MIDI according to locked controllers and programs and exports it as a file
  * @private
@@ -14,7 +12,7 @@ export async function exportMidi()
     }
     catch (e)
     {
-        SpessaSynthWarn("Failed to modify MIDI:", e);
+        console.warn("Failed to modify MIDI:", e);
     }
     // export modified midi and write out
     const file = mid.writeMIDI();

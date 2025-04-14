@@ -1,4 +1,4 @@
-import { formatTitle } from "../../../spessasynth_lib/utils/other.js";
+import { formatTitle } from "../utils/other.js";
 
 /**
  * @this {SequencerUI}

@@ -14,21 +14,32 @@
  */
 
 import { Meter } from "./synthui_meter.js";
-import { LOCALE_PATH } from "../synthetizer_ui.js";
-import { midiControllers } from "../../../../spessasynth_lib/midi/midi_message.js";
+import { isXGDrums, LOCALE_PATH } from "../synthetizer_ui.js";
+import {
+    ALL_CHANNELS_OR_DIFFERENT_ACTION,
+    DEFAULT_PERCUSSION,
+    midiControllers,
+    modulatorSources,
+    NON_CC_INDEX_OFFSET
+} from "spessasynth_core";
 import { getDrumsSvg, getEmptyMicSvg, getMicSvg, getMuteSvg, getNoteSvg, getVolumeSvg } from "../../utils/icons.js";
 import { Selector } from "./synthui_selector.js";
-import {
-    ALL_CHANNELS_OR_DIFFERENT_ACTION
-} from "../../../../spessasynth_lib/synthetizer/worklet_wrapper/worklet_message.js";
-
-import { modulatorSources } from "../../../../spessasynth_lib/soundfont/basic_soundfont/modulator.js";
-import {
-    NON_CC_INDEX_OFFSET
-} from "../../../../spessasynth_lib/synthetizer/audio_engine/engine_components/controller_tables.js";
-import { DEFAULT_PERCUSSION } from "../../../../spessasynth_lib/synthetizer/synth_constants.js";
-import { isSystemXG, isValidXGMSB } from "../../../../spessasynth_lib/utils/xg_hacks.js";
 import { ANIMATION_REFLOW_TIME } from "../../utils/animation_utils.js";
+
+/**
+ * @param bank {number}
+ * @returns {boolean}
+ */
+export function isValidXGMSB(bank)
+{
+    return isXGDrums(bank) || bank === 64 || bank === 120;
+}
+
+
+export function isSystemXG(system)
+{
+    return system === "gm2" || system === "xg";
+}
 
 export const ICON_SIZE = 32;
 

@@ -1,6 +1,7 @@
-import { formatTime } from "../../../spessasynth_lib/utils/other.js";
+import { formatTime } from "../utils/other.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { musicModeInnerHTML } from "./music_mode_html.js";
+import { Sequencer } from "spessasynth_lib";
 
 /**
  * music_mode_ui.js

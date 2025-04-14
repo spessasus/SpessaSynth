@@ -3,7 +3,7 @@
 import { Manager } from "../manager/manager.js";
 import { showNotification } from "../notification/notification.js";
 import { LocaleManager } from "../locale/locale_manager.js";
-import { SpessaSynthLogging } from "../../../spessasynth_lib/utils/loggin.js";
+import { SpessaSynthLogging } from "spessasynth_core";
 
 /**
  * local_main.js
@@ -122,7 +122,7 @@ async function startMidi(midiFiles)
     document.getElementById("file_upload").innerText = fName;
     document.getElementById("file_upload").title = midiFiles[0].name;
     /**
-     * @type {MIDIFile[]}
+     * @type {{binary: ArrayBuffer, altName: string}[]}
      */
     const parsed = [];
     for (const file of midiFiles)
@@ -311,7 +311,7 @@ fetch("soundfonts").then(async r =>
 
 /**
  * saves the settings (settings.js) selected data to config.json
- * (only on local edition that's why it's here and not in the demo_main.js)
+ * (only on the local edition that's why it's here and not in the demo_main.js)
  * @param settingsData {Object}
  */
 function saveSettings(settingsData)

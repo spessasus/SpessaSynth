@@ -1,4 +1,3 @@
-import { SpessaSynthInfo } from "../../../../spessasynth_lib/utils/loggin.js";
 import { getSpan } from "../sliders.js";
 import { USE_MIDI_RANGE } from "../handlers/keyboard_handler.js";
 import { rendererModes } from "../../renderer/renderer.js";
@@ -14,7 +13,7 @@ export async function _loadSettings()
      */
     const savedSettings = await window.savedSettings;
     
-    SpessaSynthInfo("Loading saved settings...", savedSettings);
+    console.info("Loading saved settings...", savedSettings);
     
     const getValue = (v, def) =>
     {

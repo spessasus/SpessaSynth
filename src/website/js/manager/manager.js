@@ -1,30 +1,35 @@
 import { MidiKeyboard } from "../midi_keyboard/midi_keyboard.js";
-import { Synthetizer } from "../../../spessasynth_lib/synthetizer/worklet_wrapper/synthetizer.js";
+import { MIDIDeviceHandler, Sequencer, Synthetizer, WebMIDILinkHandler } from "spessasynth_lib";
+
 import { Renderer } from "../renderer/renderer.js";
 
 import { SequencerUI } from "../sequencer_ui/sequencer_ui.js";
 import { SynthetizerUI } from "../synthesizer_ui/synthetizer_ui.js";
-import { MIDIDeviceHandler } from "../../../spessasynth_lib/external_midi/midi_handler.js";
-import { WebMIDILinkHandler } from "../../../spessasynth_lib/external_midi/web_midi_link.js";
-import { Sequencer } from "../../../spessasynth_lib/sequencer/worklet_wrapper/sequencer.js";
 import { SpessaSynthSettings } from "../settings_ui/settings.js";
 import { MusicModeUI } from "../music_mode_ui/music_mode_ui.js";
 import { LocaleManager } from "../locale/locale_manager.js";
 import { isMobile } from "../utils/is_mobile.js";
-import { SpessaSynthInfo } from "../../../spessasynth_lib/utils/loggin.js";
 import { keybinds } from "../utils/keybinds.js";
 import { _doExportAudioData, _exportAudioData } from "./export_audio.js";
 import { exportMidi } from "./export_midi.js";
 import { _exportSoundfont } from "./export_soundfont.js";
 import { exportSong } from "./export_song.js";
 import { _exportRMIDI } from "./export_rmidi.js";
-import { WORKLET_URL_ABSOLUTE } from "../../../spessasynth_lib/synthetizer/worklet_wrapper/worklet_url.js";
-import { loadSoundFont } from "../../../spessasynth_lib/soundfont/load_soundfont.js";
-import { readBytesAsString } from "../../../spessasynth_lib/utils/byte_functions/string.js";
-import { IndexedByteArray } from "../../../spessasynth_lib/utils/indexed_array.js";
 import { closeNotification, showNotification } from "../notification/notification.js";
 import { DropFileHandler } from "../utils/drop_file_handler.js";
 import { _exportDLS } from "./export_dls.js";
+import { BasicMIDI, IndexedByteArray, loadSoundFont, SpessaSynthCoreUtils as util } from "spessasynth_core";
+
+
+/**
+ * @typedef MidFile {Object}
+ * @property {ArrayBuffer} binary - the binary data of the file.
+ * @property {string|undefined} altName - the alternative name for the file
+ */
+
+/**
+ * @typedef {BasicMIDI|MidFile} MIDIFile
+ */
 
 // this enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
 document.body.classList.add("load");
@@ -110,7 +115,7 @@ class Manager
         a.href = url;
         a.download = name;
         a.click();
-        SpessaSynthInfo(a);
+        console.info(a);
     }
     
     /**
@@ -130,7 +135,7 @@ class Manager
         // bind every element with translate-path to translation
         for (const element of document.querySelectorAll("*[translate-path]"))
         {
-            this.localeManager.bindObjectProperty(element, "innerText", element.getAttribute("translate-path"));
+            this.localeManager.bindObjectProperty(element, "textContent", element.getAttribute("translate-path"));
         }
         
         // same with title
@@ -138,7 +143,7 @@ class Manager
         {
             this.localeManager.bindObjectProperty(
                 element,
-                "innerText",
+                "textContent",
                 element.getAttribute("translate-path-title") + ".title"
             );
             this.localeManager.bindObjectProperty(
@@ -154,14 +159,13 @@ class Manager
          */
         this.soundFont = soundFont;
         
-        const DEBUG_PATH = "synthetizer/worklet_wrapper/worklet_processor.js";
-        const WORKLET_PATH = this.enableDebug ? DEBUG_PATH : WORKLET_URL_ABSOLUTE;
+        
         if (this.enableDebug)
         {
             console.warn("DEBUG ENABLED! DEBUGGING ENABLED!!");
         }
-        
-        const prePath = window.isLocalEdition ? "../../../spessasynth_lib/" : "../../spessasynth_lib/";
+        const WORKLET_PATH = "website/minified/worklet_processor.min.js";
+        const prePath = window.isLocalEdition ? "../../" : "../../";
         this.workletPath = prePath + WORKLET_PATH;
         if (context.audioWorklet)
         {
@@ -429,7 +433,7 @@ class Manager
         if (window.isLocalEdition !== true)
         {
             const text = this.soundFont.slice(8, 12);
-            const header = readBytesAsString(new IndexedByteArray(text), 4);
+            const header = util.readBytesAsString(new IndexedByteArray(text), 4);
             if (header.toLowerCase() === "dls ")
             {
                 showNotification(

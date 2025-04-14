@@ -1,7 +1,8 @@
 import { showNotification } from "../../notification/notification.js";
-import { SpessaSynthInfo } from "../../../../spessasynth_lib/utils/loggin.js";
-import { consoleColors } from "../../../../spessasynth_lib/utils/other.js";
-import { DEFAULT_CHORUS_CONFIG } from "../../../../spessasynth_lib/synthetizer/audio_effects/fancy_chorus.js";
+import { consoleColors } from "../../utils/console_colors.js";
+import { DEFAULT_SYNTH_CONFIG, Synthetizer } from "spessasynth_lib";
+
+const DEFAULT_CHORUS_CONFIG = DEFAULT_SYNTH_CONFIG.chorusConfig;
 
 const USER_CONFIG = {
     nodesAmount: DEFAULT_CHORUS_CONFIG.nodesAmount,
@@ -59,7 +60,7 @@ export function showEffectsConfigWindow(locale, path, synth)
                         const buffer = await synth.context.decodeAudioData(await e.target.files[0].arrayBuffer());
                         synth.setReverbResponse(buffer);
                         btn.textContent = locale.getLocaleString("locale.synthInit.done");
-                        SpessaSynthInfo(
+                        console.info(
                             "%cReverb response set!",
                             consoleColors.info
                         );

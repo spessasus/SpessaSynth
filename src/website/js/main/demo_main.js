@@ -1,14 +1,13 @@
 "use strict";
 
 import { Manager } from "../manager/manager.js";
-import { SpessaSynthInfo, SpessaSynthWarn } from "../../../spessasynth_lib/utils/loggin.js";
 import { isMobile } from "../utils/is_mobile.js";
 import { getCheckSvg, getExclamationSvg, getHourglassSvg } from "../utils/icons.js";
 import { closeNotification, showNotification } from "../notification/notification.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { LocaleManager } from "../locale/locale_manager.js";
 
-import { VOICE_CAP } from "../../../spessasynth_lib/synthetizer/synth_constants.js";
+import { VOICE_CAP } from "spessasynth_core";
 
 /**
  * demo_main.js
@@ -118,7 +117,7 @@ async function saveSoundFontToIndexedDB(arr)
             const request = objectStore.put({ id: "buffer", data: arr });
             request.onsuccess = () =>
             {
-                SpessaSynthInfo("SoundFont stored successfully");
+                console.info("SoundFont stored successfully");
             };
             
             request.onerror = e =>
@@ -128,7 +127,7 @@ async function saveSoundFontToIndexedDB(arr)
         }
         catch (e)
         {
-            SpessaSynthWarn("Failed saving soundfont:", e);
+            console.warn("Failed saving soundfont:", e);
         }
     });
 }
@@ -156,7 +155,7 @@ async function demoInit(initLocale)
     let loadedFromDb = true;
     if (soundFontBuffer === undefined)
     {
-        SpessaSynthWarn("Failed to load from db, fetching online instead");
+        console.warn("Failed to load from db, fetching online instead");
         loadedFromDb = false;
         const progressBar = document.getElementById("progress_bar");
         const sFontLoadMessage = localeManager.getLocaleString("locale.synthInit.loadingBundledSoundfont");
@@ -169,7 +168,7 @@ async function demoInit(initLocale)
     }
     else
     {
-        SpessaSynthInfo("Loaded the soundfont from the database succesfully");
+        console.info("Loaded the soundfont from the database succesfully");
     }
     window.soundFontParser = soundFontBuffer;
     if (!loadedFromDb)
@@ -198,7 +197,7 @@ async function demoInit(initLocale)
         changeIcon(getExclamationSvg(256));
         if (loadedFromDb)
         {
-            SpessaSynthWarn("Invalid soundfont in the database. Resetting.");
+            console.warn("Invalid soundfont in the database. Resetting.");
             // restore to default
             initDatabase(db =>
             {
@@ -292,7 +291,7 @@ async function startMidi(midiFiles)
     document.getElementById("file_upload").innerText = fName;
     document.getElementById("file_upload").title = midiFiles[0].name;
     /**
-     * @type {MIDIFile[]}
+     * @type {{binary: ArrayBuffer, altName: string}[]}
      */
     const parsed = [];
     for (const file of midiFiles)
@@ -326,7 +325,7 @@ async function startMidi(midiFiles)
 function saveSettings(settingsData)
 {
     localStorage.setItem("spessasynth-settings", JSON.stringify(settingsData));
-    SpessaSynthInfo("saved as", settingsData);
+    console.info("saved as", settingsData);
 }
 
 let voiceCap = VOICE_CAP;

@@ -8,7 +8,7 @@ export const musicModeInnerHTML = `
                 <img src='' alt='' style='display: none;'>
             </div>
             <div class='player_info_details_wrapper'>
-                <p style='font-size: small'><i translate-path='locale.musicPlayerMode.currentlyPlaying'></i></p>
+                <p style='font-size: small;'><i translate-path='locale.musicPlayerMode.currentlyPlaying'></i></p>
                 <h2  id='player_info_title' translate-path='locale.musicPlayerMode.nothingPlaying'></h2>
                 
                 <div class='player_info_detail_element'>

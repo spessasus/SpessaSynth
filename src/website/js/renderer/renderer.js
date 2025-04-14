@@ -1,4 +1,4 @@
-import { Synthetizer } from "../../../spessasynth_lib/synthetizer/worklet_wrapper/synthetizer.js";
+import { Synthetizer } from "spessasynth_lib";
 import { calculateRGB, RGBAOpacity } from "../utils/calculate_rgb.js";
 import { render } from "./render.js";
 import { computeNotePositions } from "./compute_note_positions.js";
@@ -10,8 +10,9 @@ import {
 } from "./channel_analysers.js";
 import { connectSequencer, resetIndexes } from "./connect_sequencer.js";
 import { renderBigFft, renderSingleFft, renderSingleWaveform, renderWaveforms } from "./render_waveforms.js";
-import { SpessaSynthInfo } from "../../../spessasynth_lib/utils/loggin.js";
-import { consoleColors } from "../../../spessasynth_lib/utils/other.js";
+import { consoleColors } from "../utils/console_colors.js";
+import { BasicMIDI } from "spessasynth_core";
+
 
 /**
  * renderer.js
@@ -322,7 +323,7 @@ class Renderer
                 rendererStartIndex: 0
             };
         });
-        SpessaSynthInfo(`%cFinished loading note times and ready to render the sequence!`, consoleColors.info);
+        console.info(`%cFinished loading note times and ready to render the sequence!`, consoleColors.info);
     }
     
     computeColors()

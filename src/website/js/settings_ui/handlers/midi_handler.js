@@ -1,4 +1,5 @@
 import { isMobile } from "../../utils/is_mobile.js";
+import { MIDIDeviceHandler, Synthetizer } from "spessasynth_lib";
 
 /**
  * @param handler {MIDIDeviceHandler}

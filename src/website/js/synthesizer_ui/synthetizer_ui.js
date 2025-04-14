@@ -1,4 +1,4 @@
-import { Synthetizer } from "../../../spessasynth_lib/synthetizer/worklet_wrapper/synthetizer.js";
+import { Sequencer, Synthetizer } from "spessasynth_lib";
 import { hideControllers, showControllers } from "./methods/hide_show_controllers.js";
 import { toggleDarkMode } from "./methods/toggle_dark_mode.js";
 import {
@@ -11,8 +11,12 @@ import { setEventListeners } from "./methods/set_event_listeners.js";
 import { keybinds } from "../utils/keybinds.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { closeNotification } from "../notification/notification.js";
-import { midiControllers } from "../../../spessasynth_lib/midi/midi_message.js";
-import { isXGDrums } from "../../../spessasynth_lib/utils/xg_hacks.js";
+import { midiControllers } from "spessasynth_core";
+
+export function isXGDrums(bankNr)
+{
+    return bankNr === 120 || bankNr === 126 || bankNr === 127;
+}
 
 
 export const LOCALE_PATH = "locale.synthesizerController.";

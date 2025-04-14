@@ -1,7 +1,6 @@
-import { SpessaSynthGroup, SpessaSynthGroupEnd } from "../../../spessasynth_lib/utils/loggin.js";
-import { consoleColors } from "../../../spessasynth_lib/utils/other.js";
+import { consoleColors } from "../utils/console_colors.js";
 import { closeNotification, showNotification } from "../notification/notification.js";
-import { loadSoundFont } from "../../../spessasynth_lib/soundfont/load_soundfont.js";
+import { loadSoundFont } from "spessasynth_core";
 
 /**
  * @this {Manager}
@@ -47,7 +46,7 @@ export async function _exportSoundfont()
                     const compressed = n.div.querySelector("input[compress-toggle='1']").checked;
                     const quality = parseInt(n.div.querySelector("input[type='range']").value) / 10;
                     closeNotification(n.id);
-                    SpessaSynthGroup(
+                    console.group(
                         "%cExporting minified soundfont...",
                         consoleColors.info
                     );
@@ -66,7 +65,7 @@ export async function _exportSoundfont()
                     const blob = new Blob([binary.buffer], { type: "audio/soundfont" });
                     let extension = soundfont.soundFontInfo["ifil"].split(".")[0] === "3" ? "sf3" : "sf2";
                     this.saveBlob(blob, `${soundfont.soundFontInfo["INAM"] || "unnamed"}.${extension}`);
-                    SpessaSynthGroupEnd();
+                    console.groupEnd();
                 }
             }
         ],

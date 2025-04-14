@@ -1,12 +1,7 @@
+import { consoleColors } from "../utils/console_colors.js";
 import { closeNotification, showNotification } from "../notification/notification.js";
-import {
-    SpessaSynthGroupCollapsed,
-    SpessaSynthGroupEnd,
-    SpessaSynthWarn
-} from "../../../spessasynth_lib/utils/loggin.js";
-import { consoleColors } from "../../../spessasynth_lib/utils/other.js";
+import { loadSoundFont } from "spessasynth_core";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
-import { loadSoundFont } from "../../../spessasynth_lib/soundfont/load_soundfont.js";
 
 /**
  * @this {Manager}
@@ -159,7 +154,7 @@ export async function _exportRMIDI()
                     const picture = n.div.querySelector("input[type='file']")?.files[0];
                     closeNotification(n.id);
                     
-                    SpessaSynthGroupCollapsed(
+                    console.groupCollapsed(
                         "%cExporting RMIDI...",
                         consoleColors.info
                     );
@@ -191,7 +186,7 @@ export async function _exportRMIDI()
                     }
                     catch (e)
                     {
-                        SpessaSynthWarn("Failed to modify MIDI:", e);
+                        console.warn("Failed to modify MIDI:", e);
                     }
                     
                     message.textContent = this.localeManager.getLocaleString(localePath + "modifyingSoundfont");
@@ -238,7 +233,7 @@ export async function _exportRMIDI()
                     this.saveBlob(blob, `${songTitle || "unnamed_song"}.rmi`);
                     message.textContent = this.localeManager.getLocaleString(localePath + "done");
                     closeNotification(notification.id);
-                    SpessaSynthGroupEnd();
+                    console.groupEnd();
                 }
             }
         ],

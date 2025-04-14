@@ -1,11 +1,21 @@
 import { closeNotification, showNotification } from "../notification/notification.js";
-import { Synthetizer } from "../../../spessasynth_lib/synthetizer/worklet_wrapper/synthetizer.js";
-import { consoleColors, formatTime } from "../../../spessasynth_lib/utils/other.js";
-import { audioBufferToWav } from "../../../spessasynth_lib/utils/buffer_to_wav.js";
+import { audioBufferToWav, Synthetizer } from "spessasynth_lib";
+import { SynthesizerSnapshot } from "spessasynth_core";
+import { formatTime } from "../utils/other.js";
+import { consoleColors } from "../utils/console_colors.js";
+
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
-import { SpessaSynthInfo } from "../../../spessasynth_lib/utils/loggin.js";
 
 const RENDER_AUDIO_TIME_INTERVAL = 1000;
+
+/**
+ * @typedef {Object} WaveMetadata
+ * @property {string|undefined} title - the song's title
+ * @property {string|undefined} artist - the song's artist
+ * @property {string|undefined} album - the song's album
+ * @property {string|undefined} genre - the song's genre
+ */
+
 
 /**
  * @this {Manager}
@@ -157,7 +167,7 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
         const loopStart = loopStartAbsolute - startOffset;
         const loopEnd = loopEndAbsolute - startOffset;
         let loop = { start: loopStart, end: loopEnd };
-        SpessaSynthInfo(
+        console.info(
             `%cWriting loop points: start %c${loopStart}%c, end:%c${loopEnd}`,
             consoleColors.info,
             consoleColors.recognized,

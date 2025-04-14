@@ -1,5 +1,5 @@
-import { SpessaSynthInfo } from "../../../spessasynth_lib/utils/loggin.js";
-import { consoleColors } from "../../../spessasynth_lib/utils/other.js";
+import { consoleColors } from "../utils/console_colors.js";
+import { Synthetizer } from "spessasynth_lib";
 import { STABILIZE_WAVEFORMS_FFT_MULTIPLIER } from "./render_waveforms.js";
 import { ANALYSER_SMOOTHING } from "./renderer.js";
 
@@ -72,5 +72,5 @@ export function disconnectChannelAnalysers()
 {
     this.synth.disconnectIndividualOutputs(this.channelAnalysers);
     this.bigAnalyser.disconnect();
-    SpessaSynthInfo("%cAnalysers disconnected!", consoleColors.recognized);
+    console.info("%cAnalysers disconnected!", consoleColors.recognized);
 }

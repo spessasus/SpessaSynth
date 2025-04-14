@@ -1,7 +1,6 @@
-import { SpessaSynthGroup, SpessaSynthGroupEnd, SpessaSynthWarn } from "../../../spessasynth_lib/utils/loggin.js";
-import { consoleColors } from "../../../spessasynth_lib/utils/other.js";
+import { consoleColors } from "../utils/console_colors.js";
 import { closeNotification, showNotification } from "../notification/notification.js";
-import { loadSoundFont } from "../../../spessasynth_lib/soundfont/load_soundfont.js";
+import { loadSoundFont } from "spessasynth_core";
 
 /**
  * @this {Manager}
@@ -43,7 +42,7 @@ export async function _exportDLS()
                 {
                     const trimmed = n.div.querySelector("input[trim-toggle='1']").checked;
                     closeNotification(n.id);
-                    SpessaSynthGroup(
+                    console.group(
                         "%cExporting DLS...",
                         consoleColors.info
                     );
@@ -62,7 +61,7 @@ export async function _exportDLS()
                     }
                     catch (e)
                     {
-                        SpessaSynthWarn(
+                        console.warn(
                             "Failed to export DLS: ",
                             e
                         );
@@ -79,7 +78,7 @@ export async function _exportDLS()
                             ]
                         );
                     }
-                    SpessaSynthGroupEnd();
+                    console.groupEnd();
                 }
             }
         ],

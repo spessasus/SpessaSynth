@@ -1,5 +1,5 @@
-import { Sequencer } from "../../../spessasynth_lib/sequencer/worklet_wrapper/sequencer.js";
-import { formatTime } from "../../../spessasynth_lib/utils/other.js";
+import { Sequencer } from "spessasynth_lib";
+import { formatTime } from "../utils/other.js";
 import { supportedEncodings } from "../utils/encodings.js";
 import {
     getBackwardSvg,
@@ -11,12 +11,11 @@ import {
     getSpeedSvg,
     getTextSvg
 } from "../utils/icons.js";
-import { messageTypes } from "../../../spessasynth_lib/midi/midi_message.js";
+import { messageTypes, RMIDINFOChunks } from "spessasynth_core";
 import { getSeqUIButton } from "./sequi_button.js";
 import { keybinds } from "../utils/keybinds.js";
 import { createNavigatorHandler, updateTitleAndMediaStatus } from "./title_and_media_status.js";
 import { createLyrics, setLyricsText, updateOtherTextEvents } from "./lyrics.js";
-import { RMIDINFOChunks } from "../../../spessasynth_lib/midi/midi_tools/rmidi_writer.js";
 import { createSlider } from "../settings_ui/sliders.js";
 
 /**

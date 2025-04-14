@@ -7,7 +7,6 @@
  *  isEdited: boolean
  * }} PropertyType
  */
-import { SpessaSynthInfo, SpessaSynthWarn } from "../../../spessasynth_lib/utils/loggin.js";
 import { DEFAULT_LOCALE, localeList } from "./locale_files/locale_list.js";
 
 export class LocaleManager
@@ -206,11 +205,11 @@ export class LocaleManager
         const newLocaleObject = localeList[newLocale];
         if (!newLocaleObject)
         {
-            SpessaSynthWarn(`Locale ${newLocale} not found. Not switching.`);
+            console.warn(`Locale ${newLocale} not found. Not switching.`);
             return;
         }
         this.localeCode = newLocale;
-        SpessaSynthInfo("Changing locale to", newLocaleObject.localeName);
+        console.info("Changing locale to", newLocaleObject.localeName);
         if (!force)
         {
             // Check if the property has been changed to something else. If so, don't change it back.

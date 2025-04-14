@@ -1,4 +1,6 @@
 *
 !.gitignore
 !demo_main.min.js
+!local_main.min.js
 !style.min.css
+!worklet_processor.min.js

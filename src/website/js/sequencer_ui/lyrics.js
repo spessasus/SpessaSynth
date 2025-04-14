@@ -1,5 +1,5 @@
 import { supportedEncodings } from "../utils/encodings.js";
-import { messageTypes } from "../../../spessasynth_lib/midi/midi_message.js";
+import { messageTypes } from "spessasynth_core";
 import { AssManager } from "../utils/ass_manager/ass_manager.js";
 
 /**

@@ -1,6 +1,0 @@
-LICENSE is for stbvorbis_sync.js which is licensed under Apache-2.0
-
-Modifications made to stbvorbis_sync.js
-1. minified the code
-2. added types declaration
-3. changed the not initialized error message

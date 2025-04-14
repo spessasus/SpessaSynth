@@ -1,4 +1,6 @@
 import { closeNotification, showNotification } from "../../notification/notification.js";
+import { Synthetizer } from "spessasynth_lib";
+import { KeyModifier } from "spessasynth_core";
 
 
 const LOCALE_PATH = "locale.synthesizerController.keyModifiers.";

@@ -14,7 +14,7 @@
  */
 import { DialogueEvent } from "./dialogue_event.js";
 import { keybinds } from "../keybinds.js";
-import { SpessaSynthInfo } from "../../../../spessasynth_lib/utils/loggin.js";
+import { Sequencer } from "spessasynth_lib";
 
 const DEFAULT_RES_X = 384;
 const DEFAULT_RES_Y = 288;
@@ -29,12 +29,12 @@ function ASStimeToFloat(timeString)
 export class SubContent
 {
     /**
-     * For example "Dialogue"
+     * For example, "Dialogue"
      * @type {string}
      */
     type;
     /**
-     * for example: "0,0:00:01.00,0:00:03.00,Default,,0,0,0,,Normal text."
+     * for example, "0,0:00:01.00,0:00:03.00,Default,,0,0,0,,Normal text."
      * @type {string}
      */
     data;
@@ -197,7 +197,7 @@ export class AssManager
     {
         this.visible = visible;
         this.tick();
-        // for good measure, re-render in 10ms
+        // for good measure, re-render in 10 ms
         setTimeout(() => this.tick(), 10);
     }
     
@@ -226,7 +226,7 @@ export class AssManager
     {
         // reset all data
         this.init();
-        // time to parse!!
+        // time to parse!
         const lines = assString.replaceAll("\r\n", "\n").split("\n");
         let isSection = false;
         let sectionName = "";
@@ -248,7 +248,7 @@ export class AssManager
                 this.subData.push(new SubSection(sectionName, sectionContents));
                 sectionContents = [];
             }
-            // for fonts, load up section as one big name
+            // for fonts, load up the section as one big name
             else if (sectionName === "[Fonts]")
             {
                 
@@ -355,13 +355,13 @@ export class AssManager
         }
         
         /*
-        decode fonts:
+        Decode fonts:
         ASS/SSA uses a custom encoding to turn arbitrary binary data into uppercase letters and non-alphabetic,
         non-space symbols.
         Binary input data is processed in chunks of 3 bytes.
-        Those bytes in are split into four 6-bit chunks such that most-significant bits are processed first.
-        To each chunk the value 33 is added and then they are written out as UTF-8/ASCII text.
-        After writing exactly 80 bytes a single linebreak must be inserted.
+        Those bytes are split into four 6-bit chunks such that most-significant bits are processed first.
+        To each chunk value 33 is added, and then they are written out as UTF-8/ASCII text.
+        After writing exactly 80 bytes, a single linebreak must be inserted.
         Only the last line may be shorter than 80 characters if the end of the source file is reached.
         If at the end of the file only fewer than 3 bytes remain,
         pad the data beyond the file end with zeros before splitting into 6-bit chunks,
@@ -395,7 +395,7 @@ export class AssManager
                 }
             }
             font.dataDecoded = new Uint8Array(decodedData);
-            // add the font with css
+            // add the font with CSS
             const fontBlob = new Blob([font.dataDecoded]);
             const fontUrl = URL.createObjectURL(fontBlob);
             const styleElement = document.createElement("style");
@@ -408,7 +408,7 @@ export class AssManager
         
         this.firstEmbeddedFontName = this.fonts[0]?.name || "sans-serif";
         
-        SpessaSynthInfo(
+        console.info(
             "Subtitles:",
             this.styles, this.events, this.fonts
         );
