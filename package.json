@@ -4,7 +4,9 @@
   "type": "module",
   "scripts": {
     "start": "node src/website/server/server.js",
-    "build": "src/build/minify_website.sh"
+    "build": "src/build/minify_website.sh",
+    "debug": "src/build/enable_debug.sh",
+    "release": "src/build/disable_debug.sh"
   },
   "dependencies": {
     "spessasynth_core": "latest",

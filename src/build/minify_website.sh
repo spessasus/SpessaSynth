@@ -3,6 +3,7 @@ cd "$(dirname "$0")" || exit
 
 
 cp ../../node_modules/spessasynth_lib/synthetizer/worklet_processor.min.js ../website/minified/worklet_processor.min.js
+cp ../../node_modules/spessasynth_lib/synthetizer/worklet_processor.min.js.map ../website/minified/worklet_processor.min.js.map || echo "no proc!"
 
 cd ../website
 
