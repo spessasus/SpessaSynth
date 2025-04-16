@@ -3,4 +3,5 @@ npm install spessasynth_lib
 npm install spessasynth_core
 npm pkg set dependencies.spessasynth_core=latest
 npm pkg set dependencies.spessasynth_lib=latest
+npm i
 npm run build
