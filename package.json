@@ -8,6 +8,9 @@
     "debug": "src/build/enable_debug.sh",
     "release": "src/build/disable_debug.sh"
   },
+  "devDependencies": {
+    "esbuild": "^0.25.2"
+  },
   "dependencies": {
     "spessasynth_core": "latest",
     "spessasynth_lib": "latest"

@@ -65,7 +65,6 @@ It only contains the web application now.*
   - Or compress it as .sf3!
   - Bundle both as .rmi with metadata such as album cover!
 - Comes bundled with a compressed [GeneralUser GS](https://schristiancollins.com/generaluser.php) SoundFont to get you started
-- No additional dependencies!
 
 <h3 align='center'>Still not convinced? Check out these screenshots:</h3>
 
