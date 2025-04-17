@@ -6,7 +6,7 @@ body:
     attributes:
       value: |
         Please note that this repository is for the web application *only.*
-        Any suggestions for the audio playback / conversions should go to the [spessasynth_lib](https://github.com/spessasus/spessasynth_lib) repository.
+        Any suggestions for the audio playback / conversions should go to the [spessasynth_core](https://github.com/spessasus/spessasynth_core) repository.
   - type: textarea
     id: problem
     attributes:
