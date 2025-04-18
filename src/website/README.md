@@ -19,4 +19,4 @@ You're on your own!
 Note 2: Pretty much all of these require a SpessaSynth instance to work, so they cannot be used for different synths
 without large modifications.
 
-Note 3: use `minify_website.sh` to minify the code.
+Note 3: use `npm run build` to minify the code.
