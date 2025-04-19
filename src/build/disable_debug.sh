@@ -1,7 +1,7 @@
 #!/bin/bash
 cd "$(dirname "$0")" || exit
 
-cd ..
+cd ../..
 
 echo "Disabling debug mode, installing dependencies from the npm registry"
 npm uninstall spessasynth_lib spessasynth_core

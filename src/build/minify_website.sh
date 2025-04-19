@@ -4,8 +4,8 @@ cd ../..
 
 echo "Attempting to build spessasynth_lib"
 
-node node_modules/spessasynth_lib/build_scripts/build.js > /dev/null 2>&1 \
-  && echo "Spessasynth_lib build succeeded: debugging for spessasynth_lib enabled!" \
+variable=$(node node_modules/spessasynth_lib/build_scripts/build.js 2>&1) \
+  && echo "$variable" \
   || echo "Unable to build spessasynth_lib: installed from npm registry"
 
 
