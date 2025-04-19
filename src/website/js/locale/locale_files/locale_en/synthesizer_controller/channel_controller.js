@@ -79,7 +79,7 @@ export const channelControllerLocale = {
         effects: "Effects",
         volumeEnvelope: "Vol. Envelope",
         filter: "Filter",
-        portamento: "Portamento"
+        portamento: "Portamento (glide)"
     },
     
     presetSelector: {
