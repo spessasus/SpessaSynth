@@ -4,7 +4,7 @@
 </p>
 
 **SpessaSynth** is a SoundFont2-based real-time synthesizer and MIDI library written in vanilla JavaScript.
-It’s a powerful and versatile library that allows you to:
+It is a powerful and versatile library that allows you to:
 - Play MIDI files using SF2/SF3/DLS files
 - Write MIDI files
 - Write SF2/SF3 files
@@ -24,9 +24,11 @@ It only contains the web application now.*
 <a href="https://www.youtube.com/watch?v=Cu_A1IR65yQ"><img width='500' alt="Watch the YouTube video" src="https://github.com/user-attachments/assets/d73c0585-67eb-4490-ad39-839b22ab7577"></a>
 </p>
 
-**This repository contains the web application.
- For the library,
- see [spessasynth_core](https://github.com/spessasus/spessasynth_core) and [spessasynth_lib](https://github.com/spessasus/spessasynth_lib)**
+**Project index**
+
+- [spessasynth_core](https://github.com/spessasus/spessasynth_core) - SF2/DLS/MIDI library
+- [spessasynth_lib—](https://github.com/spessasus/spessasynth_lib)spessasynth_core wrapper optimized for browsers and WebAudioAPI
+- SpessaSynth (you are here) - online/local web player/editor application
 
 <h1 align='center'>Web App / Local Edition</h1>
 <p align='center'>The complete GUI for spessasynth_lib, allowing remixing, experimenting, and playing MIDIs in the coolest way possible.</p>
