@@ -48,11 +48,14 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
         9999999,
         false
     );
+    // calculate times
+    const playbackRate = this.seq.playbackRate;
+    
     const parsedMid = await this.seq.getMIDI();
-    const loopStartAbsolute = parsedMid.MIDIticksToSeconds(parsedMid.loop.start);
-    const loopEndAbsolute = parsedMid.MIDIticksToSeconds(parsedMid.loop.end);
+    const loopStartAbsolute = parsedMid.MIDIticksToSeconds(parsedMid.loop.start) / playbackRate;
+    const loopEndAbsolute = parsedMid.MIDIticksToSeconds(parsedMid.loop.end) / playbackRate;
     let loopDuration = loopEndAbsolute - loopStartAbsolute;
-    const duration = parsedMid.duration + additionalTime + loopDuration * loopCount;
+    const duration = parsedMid.duration / playbackRate + additionalTime + loopDuration * loopCount;
     
     let sampleDuration = sampleRate * duration;
     
@@ -109,7 +112,10 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
                 parsedMIDI: parsedMid,
                 snapshot: snapshot,
                 oneOutput: separateChannels,
-                loopCount: loopCount
+                loopCount: loopCount,
+                sequencerOptions: {
+                    initialPlaybackRate: playbackRate
+                }
             },
             effects
         );
@@ -132,7 +138,7 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
     
     const RATI_SECONDS = RENDER_AUDIO_TIME_INTERVAL / 1000;
     let rendered = synth.currentTime;
-    let estimatedTime = duration;
+    let estimatedTime = duration * playbackRate;
     const smoothingFactor = 0.1; // for smoothing estimated time
     
     const interval = setInterval(() =>
