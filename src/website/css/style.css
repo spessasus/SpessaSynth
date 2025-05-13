@@ -161,6 +161,23 @@ button {
     animation: spin 1s ease-in-out infinite;
 }
 
+.loading h1 {
+    margin-bottom: 3rem;
+}
+
+.loading p {
+    margin-top: 6rem;
+}
+
+.loading h2, .loading h3, .loading h4, .loading h5 {
+    margin-top: 0.5rem;
+}
+
+.loading a {
+    color: #cccccc;
+    font-weight: bolder;
+}
+
 .loading.done {
     transform: translateY(-100%);
 }
