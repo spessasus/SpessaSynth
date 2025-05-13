@@ -1,6 +1,5 @@
 name: Question
 description: Something is unclear? Ask a question!
-title: "[QUESTION] "
 labels: [ "question" ]
 
 body:
