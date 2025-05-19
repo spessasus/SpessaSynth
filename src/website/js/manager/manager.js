@@ -333,10 +333,6 @@ class Manager
             this.reloadSf(buf);
         });
         
-        // set up soundfont mixer (unfinished)
-        //this.soundFontMixer = new SoundFontMixer(document.getElementsByClassName("midi_and_sf_controller")[0], this.synth, this.synthUI);
-        //this.soundFontMixer.soundFontChange(soundFont);
-        
         // add key presses
         document.addEventListener("keydown", e =>
         {
@@ -472,7 +468,6 @@ class Manager
      */
     async reloadSf(sf)
     {
-        //this.soundFontMixer.soundFontChange(sf);
         await this.synth.soundfontManager.reloadManager(sf);
         this.soundFont = sf;
         setTimeout(() =>
