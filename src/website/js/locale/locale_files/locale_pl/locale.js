@@ -31,6 +31,28 @@ export const localePolish = {
         description: "Zapisz audio do pliku WAV lub MIDI"
     },
     
+    
+    extraBank: {
+        title: "Wybór dodatkowego banku",
+        offset: {
+            title: "Przesunięcie banku",
+            description: "Przesunięcie banku dla dodatkowego banku"
+        },
+        file: {
+            title: "Plik banku",
+            description: "Wybierz plik dla banku dźwiękowego (DLS/SF2/SF3)"
+        },
+        confirm: {
+            title: "Zatwierdź",
+            description: "Potwierdź i zastosuj wybrany bank"
+        },
+        clear: {
+            title: "Wyczyść",
+            description: "Wyczyść dodatkowy bank"
+        },
+        button: "Dodaj dodatkowy bank dźwięków"
+    },
+    
     exportAudio: exportAudio,
     
     yes: "Tak",
