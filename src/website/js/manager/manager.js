@@ -184,7 +184,9 @@ class Manager
                                 return;
                             }
                             const b = await file.arrayBuffer();
+                            // add bank and rearrange
                             await this.synth.soundfontManager.addNewSoundFont(b, EXTRA_BANK_ID, bank);
+                            await this.synth.soundfontManager.rearrangeSoundFonts([EXTRA_BANK_ID, "main"]);
                             if (this.seq?.paused === false)
                             {
                                 this.seq.currentTime -= 0.1;
