@@ -48,15 +48,22 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
         9999999,
         false
     );
-    // calculate times
-    const playbackRate = this.seq.playbackRate;
     
     const parsedMid = await this.seq.getMIDI();
+    
+    // hack: if we have an extra bank and the MIDI doesn't have one itself, put it in there
+    if (!parsedMid.embeddedSoundFont && this.extraBankBuffer)
+    {
+        parsedMid.embeddedSoundFont = this.extraBankBuffer;
+        parsedMid.bankOffset = this.extraBankOffset;
+    }
+    
+    // calculate times
+    const playbackRate = this.seq.playbackRate;
     const loopStartAbsolute = parsedMid.MIDIticksToSeconds(parsedMid.loop.start) / playbackRate;
     const loopEndAbsolute = parsedMid.MIDIticksToSeconds(parsedMid.loop.end) / playbackRate;
     let loopDuration = loopEndAbsolute - loopStartAbsolute;
     const duration = parsedMid.duration / playbackRate + additionalTime + loopDuration * loopCount;
-    
     let sampleDuration = sampleRate * duration;
     
     /**

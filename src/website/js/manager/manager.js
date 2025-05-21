@@ -19,7 +19,7 @@ import { closeNotification, showNotification } from "../notification/notificatio
 import { DropFileHandler } from "../utils/drop_file_handler.js";
 import { _exportDLS } from "./export_dls.js";
 import { BasicMIDI, IndexedByteArray, loadSoundFont, SpessaSynthCoreUtils as util } from "spessasynth_core";
-import { getSf2LogoSvg } from "../utils/icons.js";
+import { prepareExtraBankUpload } from "./extra_bank_handling.js";
 
 
 /**
@@ -41,7 +41,6 @@ document.body.classList.add("load");
  */
 
 const ENABLE_DEBUG = false;
-const EXTRA_BANK_ID = "spessasynth-extra-bank";
 
 class Manager
 {
@@ -141,91 +140,7 @@ class Manager
         }
         
         // set the extra bank upload
-        let extraBankName = "";
-        const extra = document.getElementById("extra_bank_button");
-        extra.innerHTML = getSf2LogoSvg(24);
-        this.localeManager.bindObjectProperty(extra, "title", "locale.extraBank.button");
-        extra.onclick = () =>
-        {
-            const notification = showNotification(
-                this.localeManager.getLocaleString("locale.extraBank.title"),
-                [
-                    {
-                        type: "input",
-                        attributes: {
-                            "type": "number",
-                            "min": "0",
-                            "max": "127",
-                            "value": "1"
-                        },
-                        translatePathTitle: "locale.extraBank.offset"
-                    },
-                    {
-                        type: "file",
-                        translatePathTitle: "locale.extraBank.file",
-                        attributes: {
-                            "value": "",
-                            "name": "bank",
-                            "accept": ".dls,.sf2,.sf3,.sfogg"
-                        }
-                    },
-                    {
-                        type: "button",
-                        translatePathTitle: "locale.extraBank.confirm",
-                        onClick: async n =>
-                        {
-                            const bank = parseInt(n.div.querySelector("input[type='number']").value) || 0;
-                            /**
-                             * @type {File}
-                             */
-                            const file = notification.div.querySelector("input[type='file']").files[0];
-                            if (!file)
-                            {
-                                return;
-                            }
-                            const b = await file.arrayBuffer();
-                            // add bank and rearrange
-                            await this.synth.soundfontManager.addNewSoundFont(b, EXTRA_BANK_ID, bank);
-                            await this.synth.soundfontManager.rearrangeSoundFonts([EXTRA_BANK_ID, "main"]);
-                            if (this.seq?.paused === false)
-                            {
-                                this.seq.currentTime -= 0.1;
-                            }
-                            closeNotification(n.id);
-                        }
-                    },
-                    {
-                        type: "button",
-                        translatePathTitle: "locale.extraBank.clear",
-                        onClick: async n =>
-                        {
-                            await this.synth.soundfontManager.deleteSoundFont(EXTRA_BANK_ID);
-                            if (this.seq?.paused === false)
-                            {
-                                this.seq.currentTime -= 0.1;
-                            }
-                            closeNotification(n.id);
-                        }
-                    }
-                ],
-                999999,
-                true,
-                this.localeManager
-            );
-            const input = notification.div.querySelector("input[type='file']");
-            if (extraBankName)
-            {
-                input.parentElement.firstChild.textContent = extraBankName;
-            }
-            input.oninput = () =>
-            {
-                if (input.files[0])
-                {
-                    extraBankName = input.files[0].name;
-                    input.parentElement.firstChild.textContent = extraBankName;
-                }
-            };
-        };
+        prepareExtraBankUpload.call(this);
         
         // same with title
         for (const element of document.querySelectorAll("*[translate-path-title]"))

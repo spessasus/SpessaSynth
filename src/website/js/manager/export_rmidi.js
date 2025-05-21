@@ -33,6 +33,14 @@ export async function _exportRMIDI()
         decoder
     );
     
+    // get the MIDI and pick the bank now to improve recommended settings
+    const mid = await this.seq.getMIDI();
+    // pick a bank:
+    // if midi has an embedded bank, use that
+    // if we have an extra bank, use that
+    // otherwise pick the normal bank
+    const fontBuffer = mid.embeddedSoundFont || this.extraBankBuffer || this.soundFont;
+    
     const path = "locale.exportAudio.formats.formats.rmidi.options.";
     const metadataPath = "locale.exportAudio.formats.metadata.";
     const n = showNotification(
@@ -49,8 +57,7 @@ export async function _exportRMIDI()
                 type: "toggle",
                 translatePathTitle: path + "compress",
                 attributes: {
-                    "compress-toggle": "1",
-                    "checked": "true"
+                    "compress-toggle": "1"
                 }
             },
             {
@@ -120,7 +127,7 @@ export async function _exportRMIDI()
                 type: "input",
                 translatePathTitle: path + "bankOffset",
                 attributes: {
-                    "value": this.seq.midiData.bankOffset,
+                    "value": this.extraBankOffset ?? this.seq.midiData.bankOffset,
                     "name": "bank_offset",
                     "type": "number"
                 }
@@ -129,8 +136,7 @@ export async function _exportRMIDI()
                 type: "toggle",
                 translatePathTitle: path + "adjust",
                 attributes: {
-                    "name": "adjust",
-                    "checked": "checked"
+                    "name": "adjust"
                 }
             },
             {
@@ -174,8 +180,8 @@ export async function _exportRMIDI()
                     // allow the notification to show
                     await new Promise(r => setTimeout(r, 500));
                     const message = notification.div.getElementsByClassName("export_rmidi_message")[0];
-                    const mid = await this.seq.getMIDI();
-                    const font = loadSoundFont(mid.embeddedSoundFont || this.soundFont);
+                    
+                    const font = loadSoundFont(fontBuffer);
                     
                     message.textContent = this.localeManager.getLocaleString(localePath + "modifyingMIDI");
                     await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
@@ -241,6 +247,12 @@ export async function _exportRMIDI()
         true,
         this.localeManager
     );
+    
+    // compress if the bank is larger than 20MB
+    n.div.querySelector("input[compress-toggle='1']").checked = fontBuffer.byteLength > 1024 * 1024 * 20;
+    // adjust for the normal bank only
+    n.div.querySelector("input[name='adjust']").checked = fontBuffer === this.soundFont;
+    
     const input = n.div.querySelector("input[type='file']");
     input.oninput = () =>
     {
