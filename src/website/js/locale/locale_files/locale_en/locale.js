@@ -27,6 +27,27 @@ export const localeEnglish = {
     // top bar buttons
     midiUploadButton: "Upload your MIDI files",
     
+    extraBank: {
+        title: "Extra bank selection",
+        offset: {
+            title: "Bank offset",
+            description: "Bank offset for the extra bank"
+        },
+        file: {
+            title: "Sound bank",
+            description: "Select the sound bank (DLS/SF2/SF3)"
+        },
+        confirm: {
+            title: "Confirm",
+            description: "Confirm and apply the extra bank"
+        },
+        clear: {
+            title: "Clear",
+            description: "Clear the extra bank"
+        },
+        button: "Add an extra sound bank"
+    },
+    
     exportAudio: exportAudio,
     
     error: "Error",
