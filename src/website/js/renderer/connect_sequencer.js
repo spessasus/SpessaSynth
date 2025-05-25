@@ -27,12 +27,13 @@ export function connectSequencer(sequencer)
         }
     }, "renderer-song-change");
     
+    
     this.seq.addOnMetaEvent(ev =>
     {
-        const [type, data] = ev;
-        if (type === messageTypes.timeSignature)
+        const event = ev[0];
+        if (event.messageStatusByte === messageTypes.timeSignature)
         {
-            this.currentTimeSignature = `${data[0]}/${Math.pow(2, data[1])}`;
+            this.currentTimeSignature = `${event.messageData[0]}/${Math.pow(2, event.messageData[1])}`;
         }
     }, "renderer-meta-event");
 }
