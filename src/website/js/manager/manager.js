@@ -352,6 +352,7 @@ class Manager
                     if (this.seq)
                     {
                         this.seq.pause();
+                        this.seqUI.releaseWakeLock();
                     }
                     const videoSource = window.prompt(
                         "Video mode!\n Paste the link to the video source (leave blank to disable)\n" +
@@ -495,6 +496,7 @@ class Manager
         {
             this.seq.loadNewSongList(parsedMidi);
             this.seq.play(true);
+            this.seqUI.setWakeLock();
             return;
         }
         
@@ -525,6 +527,7 @@ class Manager
         
         // play the midi
         this.seq.play(true);
+        this.seqUI.setWakeLock();
     }
     
     // noinspection JSUnusedGlobalSymbols

@@ -38,6 +38,12 @@ const ZWSP = "\u200b";
 
 class SequencerUI
 {
+    
+    /**
+     * @type {WakeLockSentinel}
+     */
+    wakeLock;
+    
     /**
      * Creates a new User Interface for the given MidiSequencer
      * @param element {HTMLElement} the element to create sequi in
@@ -194,12 +200,39 @@ class SequencerUI
         this.lyricsElement.selector.classList.toggle("lyrics_light");
     }
     
+    setWakeLock()
+    {
+        try
+        {
+            navigator.wakeLock.request("screen").then(r =>
+            {
+                this.wakeLock = r;
+            });
+        }
+        catch (e)
+        {
+            console.warn(`Could not get wakelock:`, e);
+        }
+    }
+    
+    releaseWakeLock()
+    {
+        if (this.wakeLock)
+        {
+            this.wakeLock.release().then(() =>
+            {
+                this.wakeLock = undefined;
+            });
+        }
+    }
+    
     seqPlay(sendPlay = true)
     {
         if (sendPlay)
         {
             this.seq.play();
         }
+        this.setWakeLock();
         this.playPause.innerHTML = getPauseSvg(ICON_SIZE);
         this.createNavigatorHandler();
         this.updateTitleAndMediaStatus();
@@ -216,6 +249,7 @@ class SequencerUI
         {
             this.seq.pause();
         }
+        this.releaseWakeLock();
         this.playPause.innerHTML = getPlaySvg(ICON_SIZE);
         this.createNavigatorHandler();
         if (!navigator.mediaSession)
