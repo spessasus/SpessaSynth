@@ -30,7 +30,7 @@ export const keyModifiers = {
     
     modifyKey: {
         title: "Zmodyfikuj klawisz",
-        description: "Zmodyfikuj pojedynczy klawisz na danym kanale",
+        description: "Zmodyfikuj pojedynczy klawisz na danym kanale.",
         velocity: {
             title: "Siła nacisku",
             description: "Siła nacisku dla tego klawisza. Pozostaw -1 dla braku zmian."
@@ -39,6 +39,10 @@ export const keyModifiers = {
             title: "Nadpisanie instrumentu",
             description: "Instrument dla tego klawisza.",
             unchanged: "Bez zmian"
+        },
+        gain: {
+            title: "Głośność",
+            description: "Liniowy przyrost głośności dla tego klawisza. Pozostaw na 1 dla braku zmian."
         },
         apply: {
             title: "Zastosuj",
