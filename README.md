@@ -3,13 +3,7 @@
 <img src="src/website/spessasynth_logo_rounded.png" width='300' alt='SpessaSynth logo'>
 </p>
 
-**SpessaSynth** is a SoundFont2-based real-time synthesizer and MIDI library written in vanilla JavaScript.
-It is a powerful and versatile library that allows you to:
-- Play MIDI files using SF2/SF3/DLS files
-- Write MIDI files
-- Write SF2/SF3 files
-- Convert DLS to SF2 (and back)
-- [and more!](https://github.com/spessasus/spessasynth_core?tab=readme-ov-file#current-features)
+**SpessaSynth** is a SoundFont2-based real-time synthesizer written in vanilla JavaScript.
 
 ### The project has been split!
 
