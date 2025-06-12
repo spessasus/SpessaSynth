@@ -41,6 +41,7 @@ export function render(auto = true, force = false)
     
     if (auto)
     {
+        requestAnimationFrame(this.render.bind(this));
         this.drawingContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
     
@@ -104,9 +105,5 @@ export function render(auto = true, force = false)
     if (this.onRender)
     {
         this.onRender();
-    }
-    if (auto)
-    {
-        requestAnimationFrame(this.render.bind(this));
     }
 }
