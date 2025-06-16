@@ -7,7 +7,7 @@ import { closeNotification, showNotification } from "../notification/notificatio
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { LocaleManager } from "../locale/locale_manager.js";
 
-import { VOICE_CAP } from "spessasynth_core";
+import { BasicSoundBank, VOICE_CAP } from "spessasynth_core";
 
 /**
  * demo_main.js
@@ -151,6 +151,9 @@ async function demoInit(initLocale)
         
     }
     loadingMessage.textContent = localeManager.getLocaleString("locale.synthInit.loadingSoundfont");
+    /**
+     * @type {ArrayBuffer|undefined}
+     */
     let soundFontBuffer = await loadLastSoundFontFromDatabase();
     let loadedFromDb = true;
     if (soundFontBuffer === undefined)
@@ -160,10 +163,19 @@ async function demoInit(initLocale)
         const progressBar = document.getElementById("progress_bar");
         const sFontLoadMessage = localeManager.getLocaleString("locale.synthInit.loadingBundledSoundfont");
         loadingMessage.textContent = sFontLoadMessage;
-        soundFontBuffer = await fetchFont(`soundfonts/${SF_NAME}`, percent =>
+        try
         {
-            loadingMessage.textContent = `${sFontLoadMessage} ${percent}%`;
-        });
+            soundFontBuffer = await fetchFont(`soundfonts/${SF_NAME}`, percent =>
+            {
+                loadingMessage.textContent = `${sFontLoadMessage} ${percent}%`;
+            });
+        }
+        catch (e)
+        {
+            console.error("Error loading bundled:", e);
+            soundFontBuffer = BasicSoundBank.getDummySoundfontFile();
+        }
+        
         progressBar.style.width = "0";
     }
     else
@@ -249,23 +261,37 @@ async function fetchFont(url, callback)
         titleMessage.innerText = "Error downloading soundfont!";
         throw response;
     }
-    let size = response.headers.get("content-length");
+    let size = parseInt(response.headers.get("content-length"));
     let reader = await (await response.body).getReader();
     let done = false;
-    let dataArray = new Uint8Array(parseInt(size));
+    /**
+     * No data array but chunks because gh pages sends the wrong size?
+     * @type {Uint8Array[]}
+     */
+    let chunks = [];
     let offset = 0;
     do
     {
         let readData = await reader.read();
         if (readData.value)
         {
-            dataArray.set(readData.value, offset);
+            chunks.push(readData.value);
             offset += readData.value.length;
         }
         done = readData.done;
         let percent = Math.round((offset / size) * 100);
         callback(percent);
     } while (!done);
+    
+    // combine
+    const outSize = chunks.reduce((size, chunk) => size + chunk.length, 0);
+    const dataArray = new Uint8Array(outSize);
+    let written = 0;
+    chunks.forEach(c =>
+    {
+        dataArray.set(c, written);
+        written += c.length;
+    });
     return dataArray.buffer;
 }
 
