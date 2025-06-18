@@ -26,7 +26,7 @@ export async function _loadSettings()
     const rendererValues = savedSettings?.renderer;
     
     // rendering mode
-    const renderingMode = getValue(rendererValues?.renderingMode, rendererModes.waveformsMode.toString());
+    const renderingMode = getValue(rendererValues?.renderingMode, rendererModes.waveformsMode);
     rendererControls.renderingMode.value = renderingMode;
     this._setRendererMode(renderingMode);
     

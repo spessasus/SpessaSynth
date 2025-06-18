@@ -6,7 +6,8 @@ export const rendererSettingsLocale = {
         description: "Zmień tryb wizualizacji kanałów",
         waveforms: "Kształt fali",
         spectrumSplit: "Spektrum rozdzielone",
-        spectrum: "Spektrum"
+        spectrum: "Spektrum",
+        filledWaveforms: "Wypełnione fale"
     },
     
     noteFallingTime: {

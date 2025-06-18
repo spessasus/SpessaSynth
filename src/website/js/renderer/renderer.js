@@ -38,7 +38,8 @@ import { BasicMIDI } from "spessasynth_core";
 export const rendererModes = {
     waveformsMode: 0,
     spectrumSplitMode: 1,
-    spectrumSingleMode: 2
+    spectrumSingleMode: 2,
+    filledWaveformsMode: 4
 };
 
 // analysers

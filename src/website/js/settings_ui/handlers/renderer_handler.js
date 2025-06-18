@@ -29,7 +29,7 @@ export function _setRendererMode(mode)
     const renderingMode = parseInt(mode);
     this.renderer.setRendererMode(renderingMode);
     // show appropriate settings
-    if (renderingMode === rendererModes.waveformsMode)
+    if (renderingMode === rendererModes.waveformsMode || renderingMode === rendererModes.filledWaveformsMode)
     {
         waveformSettings.classList.remove("hidden");
         freqSettings.classList.add("hidden");

@@ -3,6 +3,7 @@
  * purpose: the inner HTML for the settings element
  */
 import { USE_MIDI_RANGE } from "./handlers/keyboard_handler.js";
+import { rendererModes } from "../renderer/renderer.js";
 
 // translate-path: only innerText: translate-path-title: inner text by adding .title and title by adding .description
 export const settingsHtml = `
@@ -13,9 +14,10 @@ export const settingsHtml = `
         
         <label for='renderer_mode_selector' translate-path-title='locale.settings.rendererSettings.mode'></label>
         <select id='renderer_mode_selector'>
-            <option value='0' translate-path='locale.settings.rendererSettings.mode.waveforms'></option>
-            <option value='1' translate-path='locale.settings.rendererSettings.mode.spectrumSplit'></option>
-            <option value='2' translate-path='locale.settings.rendererSettings.mode.spectrum'></option>
+            <option value='${rendererModes.waveformsMode}' translate-path='locale.settings.rendererSettings.mode.waveforms'></option>
+            <option value='${rendererModes.filledWaveformsMode}' translate-path='locale.settings.rendererSettings.mode.filledWaveforms'></option>
+            <option value='${rendererModes.spectrumSplitMode}' translate-path='locale.settings.rendererSettings.mode.spectrumSplit'></option>
+            <option value='${rendererModes.spectrumSingleMode}' translate-path='locale.settings.rendererSettings.mode.spectrum'></option>
             <option value='none' translate-path='locale.none'></option>
         </select>
         

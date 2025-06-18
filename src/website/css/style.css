@@ -164,12 +164,30 @@ button {
     margin-bottom: 3rem;
 }
 
-.loading p {
-    margin-top: 6rem;
+.loading_bottom {
+    position: absolute;
+    bottom: 1rem;
 }
 
-.loading h2, .loading h3, .loading h4, .loading h5 {
-    margin-top: 0.5rem;
+.loading_bottom * {
+    margin-bottom: 0.5rem;
+}
+
+.loading .whats_new_wrapper {
+    margin: 1rem;
+    padding: 0.5rem;
+    border-radius: var(--primary-border-radius);
+    background: var(--top-buttons-color);
+    border: solid 1px #444;
+}
+
+#whats_new_content li {
+    text-align: left;
+    padding: 0.2rem;
+}
+
+#whats_new_version {
+    font-family: "JetBrains Mono", monospace;
 }
 
 .loading a {

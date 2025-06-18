@@ -8,6 +8,7 @@ import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { LocaleManager } from "../locale/locale_manager.js";
 
 import { BasicSoundBank, VOICE_CAP } from "spessasynth_core";
+import { WHATS_NEW } from "../../CHANGELOG.js";
 
 /**
  * demo_main.js
@@ -39,6 +40,24 @@ window.SPESSASYNTH_VERSION = r["version"];
 // IndexedDB stuff
 const dbName = "spessasynth-db";
 const objectStoreName = "soundFontStore";
+
+// load what's new
+const whatsNew = document.getElementById("whats_new_content");
+if (whatsNew)
+{
+    whatsNew.innerHTML = "";
+    WHATS_NEW.forEach(w =>
+    {
+        const li = document.createElement("li");
+        li.textContent = w;
+        whatsNew.appendChild(li);
+    });
+    const whatsNewVer = document.getElementById("whats_new_version");
+    if (whatsNewVer)
+    {
+        whatsNewVer.textContent = window.SPESSASYNTH_VERSION || "0.0.0";
+    }
+}
 
 /**
  * @param callback {function(IDBDatabase)}
