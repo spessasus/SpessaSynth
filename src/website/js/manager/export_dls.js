@@ -55,7 +55,7 @@ export async function _exportDLS()
                     }
                     try
                     {
-                        const binary = soundfont.writeDLS();
+                        const binary = await soundfont.writeDLS();
                         const blob = new Blob([binary.buffer], { type: "audio/dls" });
                         this.saveBlob(blob, `${soundfont.soundFontInfo["INAM"] || "unnamed"}.dls`);
                     }

@@ -236,7 +236,11 @@ class SynthetizerUI
         this.controllers.forEach((controller, i) =>
         {
             // update channel
-            let voices = this.synth.channelProperties[i].voicesAmount;
+            let voices = this.synth.channelProperties[i]?.voicesAmount;
+            if (voices === undefined)
+            {
+                return;
+            }
             controller.voiceMeter.update(voices);
             if (voices < 1 && this.synth.voicesAmount > 0)
             {

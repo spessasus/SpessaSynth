@@ -18,7 +18,7 @@ export async function _exportRMIDI()
      */
     const verifyDecode = (type, def, decoder) =>
     {
-        return this.seq.midiData.RMIDInfo?.[type] === undefined ? def : decoder.decode(this.seq.midiData.RMIDInfo?.[type])
+        return this.seq.midiData.RMIDInfo?.[type] === undefined ? def : decoder.decode(this.seq.midiData.RMIDInfo?.[type].buffer)
             .replace(/\0$/, "");
     };
     const encoding = verifyDecode("IENC", "ascii", new TextDecoder());
@@ -199,10 +199,21 @@ export async function _exportRMIDI()
                     await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
                     
                     font.trimSoundBank(mid);
-                    const newFont = font.write({
+                    const compressFunc = await this.getVorbisEncodeFunction();
+                    /**
+                     * @param data {Float32Array}
+                     * @param rate {number}
+                     * @returns {Uint8Array}
+                     */
+                    const compressReal = (data, rate) => compressFunc([data], rate, quality);
+                    const newFont = await font.write({
                         compress: compressed,
-                        compressionQuality: quality,
-                        compressionFunction: await this.getVorbisEncodeFunction()
+                        compressionFunction: compressReal,
+                        progressFunction: (n, i, p) =>
+                        {
+                            const percentProgress = (i / p * 100).toFixed(1);
+                            message.textContent = this.localeManager.getLocaleString(localePath + "modifyingSoundfont") + ` (${percentProgress}%)`;
+                        }
                     });
                     
                     message.textContent = this.localeManager.getLocaleString(localePath + "saving");

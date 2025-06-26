@@ -1,23 +1,25 @@
-import { libvorbis } from "./OggVorbisEncoder.min.js";
+import { libvorbis } from "./libvorbis/OggVorbisEncoder.min.js";
 
 /**
  * @typedef {function} EncodeVorbisFunction
- * @param channelAudioData {Float32Array[]}
+ * @param audioDatas {Float32Array[]}
  * @param sampleRate {number}
- * @param channels {number}
- * @param quality {number} -0.1 to 1
+ * @param quality {number}
  * @returns {Uint8Array}
  */
 
 /**
- * @type {EncodeVorbisFunction}
+ * @param audioDatas {Float32Array[]}
+ * @param sampleRate {number}
+ * @param quality {number}
+ * @returns {Uint8Array}
  */
-export function encodeVorbis(channelAudioData, channels, sampleRate, quality)
+export async function encodeVorbis(audioDatas, sampleRate, quality)
 {
     // https://github.com/higuma/ogg-vorbis-encoder-js
     //libvorbis.init();
-    const encoder = new libvorbis.OggVorbisEncoder(sampleRate, channels, quality);
-    encoder.encode(channelAudioData);
+    const encoder = new libvorbis.OggVorbisEncoder(sampleRate, audioDatas.length, quality);
+    encoder.encode(audioDatas);
     /**
      * @type {Uint8Array[]}
      */

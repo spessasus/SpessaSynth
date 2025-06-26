@@ -98,7 +98,7 @@ export function _createRendererHandler(renderer)
     {
         let value = Math.pow(2, parseInt(rendererControls.analyserFftSlider.value));
         renderer.normalAnalyserFft = value;
-        renderer.drumAnalyserFft = Math.pow(2, Math.min(15, parseInt(rendererControls.analyserFftSlider.value) + 2));
+        renderer.drumAnalyserFft = Math.pow(2, Math.min(15, parseInt(rendererControls.analyserFftSlider.value) + 1));
         renderer.updateFftSize();
         this.setTimeDelay(value);
         getSpan(rendererControls.analyserFftSlider).innerText = `${value}`;

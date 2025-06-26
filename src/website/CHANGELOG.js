@@ -4,6 +4,8 @@
  */
 export const WHATS_NEW = [
     `This menu!`,
+    `New demo song: TV WORLD!`,
     `Performance improvements!`,
-    `New rendered mode: Filled Waveforms!`
+    `New rendered mode: Filled Waveforms!`,
+    `Fixed drum FFT size!`
 ];

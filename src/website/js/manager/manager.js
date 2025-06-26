@@ -93,16 +93,13 @@ class Manager
         });
     }
     
-    /**
-     * @returns {EncodeVorbisFunction}
-     */
     async getVorbisEncodeFunction()
     {
         if (this.compressionFunction !== undefined)
         {
             return this.compressionFunction;
         }
-        this.compressionFunction = (await import("../../externals/libvorbis/encode_vorbis.js")).encodeVorbis;
+        this.compressionFunction = (await import("../../externals/encode_vorbis.js")).encodeVorbis;
         return this.compressionFunction;
     }
     
@@ -450,7 +447,7 @@ class Manager
                             onClick: n =>
                             {
                                 closeNotification(n.id);
-                                this.downloadDesfont();
+                                this.downloadDesfont().then();
                             }
                         },
                         {
@@ -536,17 +533,17 @@ class Manager
         const mid = await this.seq.getMIDI();
         const sf = loadSoundFont(this.soundFont);
         const out = mid.writeRMIDI(
-            sf.writeDLS(),
+            await sf.writeDLS(),
             sf
         );
         const blob = new Blob([out.buffer], { type: "audio/rmid" });
         this.saveBlob(blob, `${mid.midiName}.rmi`);
     }
     
-    downloadDesfont()
+    async downloadDesfont()
     {
         const soundfont = loadSoundFont(this.soundFont);
-        const binary = soundfont.write();
+        const binary = await soundfont.write();
         const blob = new Blob([binary.buffer], { type: "audio/soundfont" });
         this.saveBlob(blob, `${soundfont.soundFontInfo["INAM"]}.sf2`);
     }

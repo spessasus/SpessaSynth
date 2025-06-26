@@ -57,7 +57,7 @@ export async function _loadSettings()
     rendererControls.analyserFftSlider.value = Math.log2(fftSize);
     rendererControls.analyserFftSlider.dispatchEvent(new CustomEvent("input"));
     renderer.normalAnalyserFft = fftSize;
-    renderer.drumAnalyserFft = Math.pow(2, Math.min(15, Math.log2(fftSize) + 2));
+    renderer.drumAnalyserFft = Math.pow(2, Math.min(15, Math.log2(fftSize) + 1));
     renderer.updateFftSize();
     this.setTimeDelay(fftSize);
     getSpan(rendererControls.analyserFftSlider).innerText = `${fftSize}`;

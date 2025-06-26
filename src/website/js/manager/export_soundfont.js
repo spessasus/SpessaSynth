@@ -57,10 +57,16 @@ export async function _exportSoundfont()
                     {
                         soundfont.trimSoundBank(mid);
                     }
-                    const binary = soundfont.write({
+                    const compressFunc = await this.getVorbisEncodeFunction();
+                    /**
+                     * @param data {Float32Array}
+                     * @param rate {number}
+                     * @returns {Uint8Array}
+                     */
+                    const compressReal = (data, rate) => compressFunc([data], rate, quality);
+                    const binary = await soundfont.write({
                         compress: compressed,
-                        compressionQuality: quality,
-                        compressionFunction: await this.getVorbisEncodeFunction()
+                        compressionFunction: compressReal
                     });
                     const blob = new Blob([binary.buffer], { type: "audio/soundfont" });
                     let extension = soundfont.soundFontInfo["ifil"].split(".")[0] === "3" ? "sf3" : "sf2";
