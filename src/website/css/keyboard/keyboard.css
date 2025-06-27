@@ -13,6 +13,7 @@
     touch-action: none;
     transform-origin: bottom center;
     --key-border-radius: 0.4vmin;
+    border: solid 1px black;
 }
 
 #keyboard.mode_transform {
