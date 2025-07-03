@@ -13,9 +13,7 @@ DEMO_DIR="$REPO_ROOT/dist"
 LOCAL_DIR="$REPO_ROOT/local-dev"
 
 ZIP_NAME="SpessaSynth-LocalEdition.zip"
-ZIP_FOLDER="local-edition-build"
-
-
+ZIP_FOLDER="local-edition-compiled-$(date +%Y-%m-%d)"
 
 echo
 echo "⚙️  0) Build spessasynth_lib"
