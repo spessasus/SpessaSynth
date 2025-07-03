@@ -98,14 +98,17 @@ also allowing to use it offline!
 4. Enjoy!
 
 #### Linux
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/spessasus/SpessaSynth --depth 1
-   cd SpessaSynth
-   npm start
-   ```
+1. [Download the program](https://spessasus.github.io/SpessaSynth/SpessaSynth-LocalEdition.zip).
 2. Put your SoundFonts into the `soundfonts` folder (you can select SoundFonts in the program).
-3. Enjoy!
+3. `node server/server.js`
+4. Enjoy!
+
+### Building from source
+```shell
+git clone "https://github.com/spessasus/SpessaSynth"
+npm i
+npm run build
+```
 
 [If you would like to help translate SpessaSynth, please read this guide (and thank you!)](src/website/js/locale/locale_files/README.md)
 
