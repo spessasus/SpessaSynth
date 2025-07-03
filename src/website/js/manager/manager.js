@@ -165,9 +165,7 @@ class Manager
         {
             console.warn("DEBUG ENABLED! DEBUGGING ENABLED!!");
         }
-        const WORKLET_PATH = "./worklet_processor.min.js";
-        const prePath = window.isLocalEdition ? "../../" : "../../";
-        this.workletPath = prePath + WORKLET_PATH;
+        this.workletPath = "./worklet_processor.min.js";
         if (context.audioWorklet)
         {
             await context.audioWorklet.addModule(new URL(this.workletPath, import.meta.url));
