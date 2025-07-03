@@ -25,7 +25,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        
+
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
@@ -37,6 +37,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Apply permissions
+        run: npm run perms
 
       - name: Build
         run: npm run build
