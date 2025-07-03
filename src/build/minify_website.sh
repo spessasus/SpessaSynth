@@ -123,6 +123,8 @@ cp "$LOCAL_DIR/local_edition_index.html" "$ZIP_FOLDER/local-dev"
 cp -r "$WEBSITE_DIR/server" "$ZIP_FOLDER"
 cp "$REPO_ROOT/Open SpessaSynth.bat" "$ZIP_FOLDER"
 cp "$REPO_ROOT/package.json" "$ZIP_FOLDER"
+cp "$REPO_ROOT/LICENSE" "$ZIP_FOLDER"
+cp "$REPO_ROOT/README.md" "$ZIP_FOLDER"
 
 mkdir -p "$ZIP_FOLDER/soundfonts"
 cp "$REPO_ROOT/soundfonts/$SOUNDFONT" "$ZIP_FOLDER/soundfonts/$SOUNDFONT"
