@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!--suppress ALL -->
+<!--suppress HtmlFormInputWithoutLabel, HtmlUnknownTarget -->
 <html lang='en'>
 <head>
     <meta charset='UTF-8'>
@@ -36,9 +36,8 @@
 
 
     <title>SpessaSynth Local Edition</title>
-    <link as='style' href='website/minified/style.min.css' rel='preload'>
-    <link href='website/minified/style.min.css' rel='stylesheet'>
-    <link href='website/favicon.ico' rel='icon'>
+    <link href='./style.min.css' rel='stylesheet'>
+    <link href='./favicon.ico' rel='icon'>
 </head>
 <body>
 <div class='drop_prompt hidden'>
@@ -51,7 +50,7 @@
 
         <div id='title_wrapper'>
             <div id='progress_bar'></div>
-            <h1 id='title' translate-path='locale.titleMessage'>SpessaSynth: SoundFont2 Javascript Synthetizer</h1>
+            <h1 id='title' translate-path='locale.titleMessage'>SpessaSynth: SoundFont2 JavaScript Synthetizer</h1>
             <noscript><h1>SpessaSynth requires JavaScript to work.</h1></noscript>
             <div class='midi_and_sf_controller'>
                 <label for='midi_file_input' id='file_upload' translate-path='locale.midiUploadButton'>Upload your MIDI
@@ -84,6 +83,6 @@
     <div class='notification_field'></div>
     <div class='ass_renderer_field'></div>
 </div>
-<script src='website/minified/local_main.min.js' type='module'></script> <!-- Here the magic happens ;) -->
+<script src='./local_main.js' type='module'></script> <!-- Here the magic happens ;) -->
 </body>
 </html>

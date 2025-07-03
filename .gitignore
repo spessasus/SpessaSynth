@@ -1,7 +1,11 @@
 /node_modules/
 /disabled_sf2s/
+/dist/
+/local-dev/
+/local-edition-build/
 /src/spessasynth_lib/synthetizer/freeverb_unused/
 /src/website/server/config.json
+/server
 
 *~
 
@@ -66,4 +70,4 @@ $RECYCLE.BIN/
 *.msp
 
 # Windows shortcuts
-*.lnk
+*.lnk!/src/website/public/

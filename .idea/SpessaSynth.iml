@@ -15,6 +15,10 @@
       <excludeFolder url="file://$MODULE_DIR$/soundfonts/excluded" />
       <excludeFolder url="file://$MODULE_DIR$/soundfonts/sf2pack_bin" />
       <excludeFolder url="file://$MODULE_DIR$/soundfonts/sf3convert" />
+      <excludeFolder url="file://$MODULE_DIR$/local-dev" />
+      <excludeFolder url="file://$MODULE_DIR$/local-edition-build" />
+      <excludeFolder url="file://$MODULE_DIR$/server" />
+      <excludeFolder url="file://$MODULE_DIR$/src/externals/libvorbis" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.10" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

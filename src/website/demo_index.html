@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <!-- DEMO html index -->
+<!--suppress HtmlUnknownTarget -->
 <html lang='en'>
 <head>
     <meta charset='UTF-8'>
@@ -48,12 +49,10 @@
         name='keywords' />
 
     <title>SpessaSynth SoundFont/DLS MIDI Player Online</title>
-    <link as='style' href='src/website/minified/style.min.css' rel='preload'>
-    <link href='src/website/minified/demo_main.min.js' rel='modulepreload'>
 
-    <link href='src/website/minified/style.min.css' rel='stylesheet'>
-    <link href='src/website/favicon.ico' rel='icon' type='image/png'>
-    <link href='src/website/manifest.json' rel='manifest'>
+    <link href='minified/style.min.css' rel='stylesheet'>
+    <link href='favicon.ico' rel='icon' type='image/png'>
+    <link href='manifest.json' rel='manifest'>
     <noscript>
         <style>
             .loading_icon .bi-hourglass {
@@ -142,11 +141,16 @@
                 <label id='extra_bank_button'></label>
 
                 <label class='link'>
-                    <a href='https://github.com/spessasus/SpessaSynth/archive/refs/heads/master.zip' target='_blank'
+                    <a download='SpessaSynth-LocalEdition.zip' href='SpessaSynth-LocalEdition.zip'
                        translate-path='locale.demoDownload.main'></a>
                 </label>
                 <label class='link'>
-                    <a href='https://github.com/spessasus/SpessaSynth#readme' id='github_page'
+                    <a href='https:/spessasus.github.io/SpessaFont'
+                       target='_blank'
+                       translate-path='locale.soundfontEditor'></a>
+                </label>
+                <label class='link'>
+                    <a href='https://github.com/spessasus/SpessaSynth#readme'
                        target='_blank'
                        translate-path='locale.demoGithubPage'></a>
                 </label>
@@ -171,6 +175,6 @@
 </div>
 
 <!-- here the magic happens ;) -->
-<script src='src/website/minified/demo_main.min.js' type='module'></script>
+<script src='minified/demo_main.js' type='module'></script>
 </body>
 </html>

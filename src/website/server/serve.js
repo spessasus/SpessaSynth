@@ -145,6 +145,7 @@ export function serveStaticFile(res, filePath, mimeType = undefined)
     }
     catch (e)
     {
+        console.log("Not found for", filePath);
         res.writeHead(404);
         res.end(`
 <html lang='en'>
