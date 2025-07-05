@@ -218,6 +218,7 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
             {
                 continue;
             }
+            const channel = i;
             content.push({
                 type: "button",
                 textContent: this.localeManager.getLocaleString(separatePath + "save", [i + 1]),
@@ -229,8 +230,9 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
                         "locale.exportAudio.formats.formats.wav.exportMessage.convertWav");
                     await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
                     
-                    const audioOut = audioBufferToWav(buf, false, i * 2);
-                    const fileName = `${i + 1} - ${snapshot.channelSnapshots[i].patchName}.wav`;
+                    // stereo
+                    const audioOut = audioBufferToWav(buf, false, channel * 2, undefined, undefined, 2);
+                    const fileName = `${channel + 1} - ${snapshot.channelSnapshots[i].patchName}.wav`;
                     this.saveBlob(audioOut, fileName);
                     target.classList.add("green_button");
                     target.textContent = text;
