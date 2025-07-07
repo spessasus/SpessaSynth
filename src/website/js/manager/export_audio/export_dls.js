@@ -1,5 +1,5 @@
-import { consoleColors } from "../utils/console_colors.js";
-import { closeNotification, showNotification } from "../notification/notification.js";
+import { consoleColors } from "../../utils/console_colors.js";
+import { closeNotification, showNotification } from "../../notification/notification.js";
 import { loadSoundFont } from "spessasynth_core";
 
 /**

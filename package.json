@@ -5,13 +5,15 @@
   "scripts": {
     "perms": "chmod +x src/build/*",
     "start": "src/build/dev_mode.sh",
-    "build": "src/build/minify_website.sh",
+    "build": "vite build",
+    "dev": "vite",
     "debug": "src/build/enable_debug.sh",
     "release": "src/build/disable_debug.sh",
     "clean": "rm -rf dist; rm -rf local"
   },
   "devDependencies": {
-    "esbuild": "^0.25.2"
+    "esbuild": "^0.25.2",
+    "vite": "^7.0.2"
   },
   "dependencies": {
     "spessasynth_core": "latest",

@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <!-- DEMO html index -->
-<!--suppress HtmlUnknownTarget -->
 <html lang='en'>
 <head>
     <meta charset='UTF-8'>
@@ -50,9 +49,9 @@
 
     <title>SpessaSynth SoundFont/DLS MIDI Player Online</title>
 
-    <link href='minified/style.min.css' rel='stylesheet'>
-    <link href='favicon.ico' rel='icon' type='image/png'>
-    <link href='manifest.json' rel='manifest'>
+    <link href='src/website/css/style.css' rel='stylesheet'>
+    <link href='src/website/favicon.ico' rel='icon' type='image/png'>
+    <link href='src/website/manifest.json' rel='manifest'>
     <noscript>
         <style>
             .loading_icon .bi-hourglass {
@@ -141,7 +140,7 @@
                 <label id='extra_bank_button'></label>
 
                 <label class='link'>
-                    <a download='SpessaSynth-LocalEdition.zip' href='SpessaSynth-LocalEdition.zip'
+                    <a download='SpessaSynth-LocalEdition.zip' href='https://example.com/SpessaSynth-LocalEdition.zip'
                        translate-path='locale.demoDownload.main'></a>
                 </label>
                 <label class='link'>
@@ -175,6 +174,6 @@
 </div>
 
 <!-- here the magic happens ;) -->
-<script src='minified/demo_main.js' type='module'></script>
+<script src='src/website/js/main/demo_main.js' type='module'></script>
 </body>
 </html>

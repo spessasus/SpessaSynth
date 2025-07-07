@@ -1,4 +1,4 @@
-import { Sequencer, Synthetizer } from "spessasynth_lib";
+import { Sequencer } from "spessasynth_lib";
 import { hideControllers, showControllers } from "./methods/hide_show_controllers.js";
 import { toggleDarkMode } from "./methods/toggle_dark_mode.js";
 import {
@@ -29,6 +29,10 @@ export const LOCALE_PATH = "locale.synthesizerController.";
 class SynthetizerUI
 {
     
+    /**
+     * @type {CustomSynth}
+     */
+    synth;
     /**
      * @type {function(channel: number)}
      */
@@ -77,7 +81,7 @@ class SynthetizerUI
     presetList = [];
     
     /**
-     * Creates a new instance of synthetizer UI
+     * Creates a new instance of CustomSynth UI
      * @param colors {string[]}
      * @param element {HTMLElement} the element to create synthui in
      * @param localeManager {LocaleManager}
@@ -115,7 +119,7 @@ class SynthetizerUI
     
     /**
      * Connects the synth to UI
-     * @param synth {Synthetizer}
+     * @param synth {CustomSynth}
      */
     connectSynth(synth)
     {

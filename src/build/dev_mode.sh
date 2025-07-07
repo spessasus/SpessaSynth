@@ -4,9 +4,12 @@ cd "$(dirname "$0")" || exit
 
 cd ../..
 
-echo "‍🖥️  Dev mode enabled! Building..."
+echo "‍🖥️  Dev mode enabled!"
 
+if [  ! -f "./server/server.js" ]; then
+echo "Server doesn't exist. Rebuilding..."
 npm run build
+fi
 
-echo "🖥️ Starting server...",
+echo "🖥️ Starting server..."
 node ./server/server.js

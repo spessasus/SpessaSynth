@@ -1,6 +1,6 @@
 import { showNotification } from "../../notification/notification.js";
 import { consoleColors } from "../../utils/console_colors.js";
-import { DEFAULT_SYNTH_CONFIG, Synthetizer } from "spessasynth_lib";
+import { DEFAULT_SYNTH_CONFIG } from "spessasynth_lib";
 
 const DEFAULT_CHORUS_CONFIG = DEFAULT_SYNTH_CONFIG.chorusConfig;
 
@@ -17,7 +17,7 @@ const USER_CONFIG = {
 /**
  * @param locale {LocaleManager}
  * @param path {string}
- * @param synth {Synthetizer}
+ * @param synth {CustomSynth}
  * @returns {NotificationType}
  */
 export function showEffectsConfigWindow(locale, path, synth)

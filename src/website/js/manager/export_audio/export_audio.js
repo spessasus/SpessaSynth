@@ -1,10 +1,10 @@
-import { closeNotification, showNotification } from "../notification/notification.js";
-import { audioBufferToWav, Synthetizer } from "spessasynth_lib";
+import { closeNotification, showNotification } from "../../notification/notification.js";
+import { audioBufferToWav } from "spessasynth_lib";
 import { SynthesizerSnapshot } from "spessasynth_core";
-import { formatTime } from "../utils/other.js";
-import { consoleColors } from "../utils/console_colors.js";
+import { formatTime } from "../../utils/other.js";
+import { consoleColors } from "../../utils/console_colors.js";
 
-import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
+import { ANIMATION_REFLOW_TIME } from "../../utils/animation_utils.js";
 
 const RENDER_AUDIO_TIME_INTERVAL = 1000;
 
@@ -100,9 +100,10 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
     const soundfont = this.soundFont;
     /**
      * Prepare synthesizer
-     * @type {Synthetizer}
+     * @type {CustomSynth}
      */
     let synth;
+    throw "NOT DONE";
     const effects = {
         reverbEnabled: true,
         chorusEnabled: true,
@@ -111,21 +112,21 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
     snapshot.effectsConfig = effects;
     try
     {
-        synth = new Synthetizer(
-            offline.destination,
-            soundfont,
-            false,
-            {
-                parsedMIDI: parsedMid,
-                snapshot: snapshot,
-                oneOutput: separateChannels,
-                loopCount: loopCount,
-                sequencerOptions: {
-                    initialPlaybackRate: playbackRate
-                }
-            },
-            effects
-        );
+        // synth = new CustomSynth(
+        //     offline.destination,
+        //     soundfont,
+        //     false,
+        //     {
+        //         parsedMIDI: parsedMid,
+        //         snapshot: snapshot,
+        //         oneOutput: separateChannels,
+        //         loopCount: loopCount,
+        //         sequencerOptions: {
+        //             initialPlaybackRate: playbackRate
+        //         }
+        //     },
+        //     effects
+        // );
     }
     catch (e)
     {
@@ -138,7 +139,6 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
         );
         throw e;
     }
-    await synth.isReady;
     
     const detailMessage = notification.div.getElementsByTagName("p")[0];
     const progressDiv = notification.div.getElementsByClassName("notification_progress")[0];

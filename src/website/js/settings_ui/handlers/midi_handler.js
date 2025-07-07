@@ -1,5 +1,5 @@
 import { isMobile } from "../../utils/is_mobile.js";
-import { MIDIDeviceHandler, Synthetizer } from "spessasynth_lib";
+import { MIDIDeviceHandler } from "spessasynth_lib";
 
 /**
  * @param handler {MIDIDeviceHandler}
@@ -43,7 +43,7 @@ export function _createMidiSettingsHandler(handler, sequi, synthui)
 
 /**
  * @param handler {MIDIDeviceHandler}
- * @param synth {Synthetizer}
+ * @param synth {CustomSynth}
  * @this {SpessaSynthSettings}
  * @private
  */
@@ -71,6 +71,7 @@ export function _createMidiInputHandler(handler, synth)
         }
         else
         {
+            // noinspection JSCheckFunctionSignatures
             handler.connectDeviceToSynth(handler.inputs.get(select.value), synth);
         }
         this._saveSettings();
@@ -79,6 +80,7 @@ export function _createMidiInputHandler(handler, synth)
     if (handler.inputs.size > 0)
     {
         const firstInput = handler.inputs.entries().next().value;
+        // noinspection JSCheckFunctionSignatures
         handler.connectDeviceToSynth(firstInput[1], synth);
         select.value = firstInput[0];
     }

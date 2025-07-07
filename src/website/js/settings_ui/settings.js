@@ -46,7 +46,7 @@ class SpessaSynthSettings
     addSequencer;
     
     /**
-     * Creates a new instance of synthetizer UI
+     * Creates a new instance of CustomSynth UI
      * @param settingsWrapper {HTMLElement} the element to create the settings in
      * @param sythui {SynthetizerUI}
      * @param sequi {SequencerUI}

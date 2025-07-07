@@ -1,4 +1,3 @@
-import { Synthetizer } from "spessasynth_lib";
 import { calculateRGB, RGBAOpacity } from "../utils/calculate_rgb.js";
 import { render } from "./render.js";
 import { computeNotePositions } from "./compute_note_positions.js";
@@ -73,7 +72,7 @@ class Renderer
     /**
      * Creates a new midi renderer for rendering notes visually.
      * @param channelColors {Array<string>}
-     * @param synth {Synthetizer}
+     * @param synth {CustomSynth}
      * @param canvas {HTMLCanvasElement}
      * @param locale {LocaleManager}
      * @param version {string}
@@ -161,6 +160,9 @@ class Renderer
         this.computeColors();
         
         // synth and analyzers
+        /**
+         * @type {CustomSynth}
+         */
         this.synth = synth;
         this.notesOnScreen = 0;
         this.timeOffset = 0;

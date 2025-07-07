@@ -1,4 +1,3 @@
-import { Synthetizer } from "spessasynth_lib";
 import { midiControllers } from "spessasynth_core";
 import { _handlePointers } from "./pointer_handling.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
@@ -22,7 +21,7 @@ class MidiKeyboard
     /**
      * Creates a new midi keyboard(keyboard)
      * @param channelColors {Array<string>}
-     * @param synth {Synthetizer}
+     * @param synth {CustomSynth}
      */
     constructor(channelColors, synth)
     {
@@ -35,7 +34,6 @@ class MidiKeyboard
          * @type {"light"|"dark"}
          */
         this.mode = "light";
-        this.enableDebugging = false;
         this.sizeChangeAnimationId = -1;
         this.modeChangeAnimationId = -1;
         
