@@ -1,6 +1,6 @@
 {
   "name": "SpessaSynth",
-  "version": "3.27.1",
+  "version": "3.27.10",
   "type": "module",
   "scripts": {
     "perms": "chmod +x src/build/*",
@@ -16,6 +16,7 @@
     "vite": "^7.0.2"
   },
   "dependencies": {
+    "jszip": "^3.10.1",
     "spessasynth_core": "latest",
     "spessasynth_lib": "latest"
   }

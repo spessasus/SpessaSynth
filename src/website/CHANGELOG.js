@@ -3,10 +3,9 @@
  * @type {string[]}
  */
 export const WHATS_NEW = [
-    `This menu!`,
+    `Internal audio engine rework!`,
+    `Chromium bursts of noise fixed!`,
+    `RAM usage decreased!`,
     `SF2/DLS Editor: SpessaFont!`,
-    `New demo song: TV WORLD!`,
-    `Performance improvements!`,
-    `New rendered mode: Filled Waveforms!`,
-    `Fixed drum FFT size!`
+    `New demo song: TV WORLD!`
 ];

@@ -34,7 +34,7 @@ class PlaybackProcessor extends AudioWorkletProcessor
                 this.sentPort = e.ports[0];
                 this.sentPort.onmessage = (e) =>
                 {
-                    this.data.push(e.data);
+                    this.data.push(...e.data);
                 };
                 
             }

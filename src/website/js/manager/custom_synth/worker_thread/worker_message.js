@@ -8,6 +8,7 @@ import { SynthesizerSnapshot } from "spessasynth_core";
  * @property {number} midiMessage                - 0  -> [messageData<Uint8Array>, channelOffset<number>, force<boolean>, options<SynthMethodOptions>]
  * @property {number} sampleRate                 - 1  -> [rate<number>, currentTime<number>]
  * @property {number} initialSoundBank           - 2  -> bank<ArrayBuffer>
+ * @property {number} renderAudio                - 3  -> {sampleRate: number, separateChannels: boolean, loopCount: number, additionalTime: number}
  * @property {number} ccReset                    - 7  -> (no data) note: if channel is -1 then reset all channels
  * @property {number} setChannelVibrato          - 8  -> {frequencyHz: number, depthCents: number, delaySeconds: number} note: if channel is -1 then stop all channels note 2: if rate is -1, it means locking
  * @property {number} soundFontManager           - 9  -> [messageType<WorkerSoundfontManagerMessageType> messageData<any>] note: refer to sfman_message.js
@@ -32,6 +33,7 @@ export const workerMessageType = {
     midiMessage: 0,
     sampleRate: 1,
     initialSoundBank: 2,
+    renderAudio: 3,
     // free 6 slots here, use when needed instead of adding new ones
     ccReset: 7,
     setChannelVibrato: 8,
@@ -72,6 +74,7 @@ export const workerMessageType = {
  *     |{messageType: seqMessageType, messageData: any}
  *     |{messageType: workerKeyModifierMessageType, messageData: any}
  *     |Uint8Array
+ *     |{sampleRate: number, separateChannels: boolean, loopCount: number, additionalTime: number}
  *     )
  * }} WorkerMessage
  */
@@ -88,6 +91,8 @@ export const workerMessageType = {
  * |string
  * |{messageType: SpessaSynthSequencerReturnMessageType, messageData: any}
  * |SynthesizerSnapshot
+ * |number
+ * |AudioChunks
  * |[WorkerSoundfontManagerMessageType, any]} messageData - the message's data
  *
  * 0 - channel property change      -> [channel<number>, property<ChannelProperty>, currentTime<number>] see message_sending.js line 29
@@ -97,6 +102,8 @@ export const workerMessageType = {
  * 4 - synthesizer snapshot         -> snapshot<SynthesizerSnapshot> note: refer to synthesizer_snapshot.js
  * 5 - isFullyInitialized           -> (no data)
  * 6 - soundfontError               -> errorMessage<string>
+ * 7 - renderingProgress            -> progress<number>
+ * 8 - renderedSong                 -> Float32Array[]
  */
 
 /**
@@ -109,7 +116,9 @@ export const returnMessageType = {
     sequencerSpecific: 3,
     synthesizerSnapshot: 4,
     isFullyInitialized: 5,
-    soundfontError: 6
+    soundfontError: 6,
+    renderingProgress: 7,
+    renderedSong: 8
 };
 
 

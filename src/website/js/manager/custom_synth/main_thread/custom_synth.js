@@ -160,6 +160,14 @@ export class CustomSynth
      * @private
      */
     _timeDifference = 0;
+    /**
+     * @type {(p: number) => unknown}
+     */
+    workerProgressCallback;
+    /**
+     * @type {(d: ArrayBuffer|AudioChunks) => unknown}
+     */
+    workerFinishCallback;
     
     /**
      * @param target {AudioNode}
@@ -240,6 +248,7 @@ export class CustomSynth
         this._voiceCap = value;
     }
     
+    // noinspection JSUnusedGlobalSymbols
     /**
      * @returns {number} the audioContext's current time.
      */
@@ -389,7 +398,6 @@ export class CustomSynth
             messageData: [enableInfo, enableWarning, enableGroup, enableTable]
         });
     }
-    
     
     /**
      * @param data {WorkerMessage}
@@ -570,7 +578,6 @@ export class CustomSynth
         this.sendMessage([messageTypes.programChange | ch, programNumber], offset);
     }
     
-    
     // noinspection JSUnusedGlobalSymbols
     /**
      * Overrides velocity on a given channel.
@@ -618,7 +625,6 @@ export class CustomSynth
         });
     }
     
-    
     /**
      * Toggles drums on a given channel.
      * @param channel {number}
@@ -655,6 +661,33 @@ export class CustomSynth
         this.chorusProcessor = new FancyChorus(this.target, config);
         this.worklet.connect(this.chorusProcessor.input, 1);
         this.effectsConfig.chorusConfig = config;
+    }
+    
+    /**
+     * @param sampleRate {number}
+     * @param additionalTime {number}
+     * @param separateChannels {boolean}
+     * @param loopCount {number}
+     * @param callback {(progress: number) => void}
+     * @returns {Promise<AudioChunks>}
+     */
+    async renderAudio(sampleRate, additionalTime, separateChannels, loopCount, callback)
+    {
+        /**
+         * @type {Promise<AudioChunks>}
+         */
+        const promise = new Promise(r => this.workerFinishCallback = r);
+        this.workerProgressCallback = callback;
+        this.post({
+            messageType: workerMessageType.renderAudio,
+            messageData: {
+                sampleRate,
+                additionalTime,
+                separateChannels,
+                loopCount
+            }
+        });
+        return promise;
     }
     
     /**
@@ -742,9 +775,17 @@ export class CustomSynth
                 this?._resolveWhenReady();
                 break;
             
+            case returnMessageType.renderingProgress:
+                this?.workerProgressCallback(messageData);
+                break;
+            
             case returnMessageType.soundfontError:
                 SpessaSynthCoreUtils.SpessaSynthWarn(new Error(messageData));
                 this.eventHandler.callEvent("soundfonterror", messageData);
+                break;
+            
+            case returnMessageType.renderedSong:
+                this?.workerFinishCallback(messageData);
                 break;
         }
     }

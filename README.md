@@ -122,6 +122,7 @@ npm run build
 - [stbvorbis.js](https://github.com/hajimehoshi/stbvorbis.js) - for the Vorbis decoder
 - [OggVorbisEncoder](https://github.com/higuma/ogg-vorbis-encoder-js) - for the MIT Vorbis encoder
 - [fflate](https://github.com/101arrowz/fflate) - for the MIT DEFLATE implementation
+- [JSZip](https://github.com/Stuk/jszip) - for the ZIP creation library
 - [foo_midi](https://github.com/stuerp/foo_midi) - for useful resources on XMF file format
 - [Composers](https://github.com/spessasus/spessasynth-demo-songs#readme) - for the demo songs
 - [Falcosoft](https://falcosoft.hu) - for help with the RMIDI format

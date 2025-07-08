@@ -34,7 +34,8 @@ export const exportAudio = {
                         description: "Save each channel as a separate file. Useful for things like oscilloscope viewers. Note that this disables reverb and chorus.",
                         saving: {
                             title: "Channel files",
-                            save: "Save channel {0}"
+                            save: "Save channel {0}",
+                            saveAll: "Save all"
                         }
                     },
                     loopCount: {

@@ -173,16 +173,18 @@ class Manager
             console.warn("DEBUG ENABLED! DEBUGGING ENABLED!!");
         }
         
+        
+        this.synth.eventHandler.addEvent("soundfonterror", "manager-sf-error", e =>
+        {
+            if (this.sfError)
+            {
+                this.sfError(e.message);
+            }
+        });
+        
         // set up the worker synth engine
         await this.synth.init(soundFont);
         
-        // this.synth.eventHandler.addEvent("soundfonterror", "manager-sf-error", e =>
-        // {
-        //     if (this.sfError)
-        //     {
-        //         this.sfError(e.message);
-        //     }
-        // });
         
         // set up midi access
         this.midHandler = new MIDIDeviceHandler();

@@ -126,6 +126,15 @@ function changeIcon(html, disableAnimation = true)
  */
 async function saveSoundFontToIndexedDB(arr)
 {
+    const check = arr.slice(8, 12);
+    const dec = new TextDecoder().decode(check).toLowerCase();
+    if (dec !== "sfbk" && dec !== "sfpl" && dec !== "dls ")
+    {
+        console.warn("Not viable to save!");
+        return;
+    }
+    let solve;
+    const promise = new Promise(r => solve = r);
     initDatabase(db =>
     {
         const transaction = db.transaction([objectStoreName], "readwrite");
@@ -147,7 +156,9 @@ async function saveSoundFontToIndexedDB(arr)
         {
             console.warn("Failed saving soundfont:", e);
         }
+        solve();
     });
+    return promise;
 }
 
 // attempt to load soundfont from indexed db
@@ -191,7 +202,7 @@ async function demoInit(initLocale)
         catch (e)
         {
             console.error("Error loading bundled:", e);
-            soundFontBuffer = BasicSoundBank.getDummySoundfontFile();
+            soundFontBuffer = await BasicSoundBank.getDummySoundfontFile();
         }
         
         progressBar.style.width = "0";
@@ -519,6 +530,13 @@ demoInit(initLocale).then(() =>
                 changeIcon(getExclamationSvg(256));
                 console.error(e);
             };
+            
+            if (soundFontBuffer.byteLength <= 1_153_433_617)
+            {
+                loadingMessage.textContent = window.manager.localeManager.getLocaleString(
+                    "locale.synthInit.savingSoundfont");
+                await saveSoundFontToIndexedDB(soundFontBuffer);
+            }
             loadingMessage.textContent = window.manager.localeManager.getLocaleString(
                 "locale.synthInit.startingSynthesizer");
             await window.manager.reloadSf(soundFontBuffer);
@@ -526,9 +544,7 @@ demoInit(initLocale).then(() =>
             {
                 window.manager.seq.currentTime -= 0.1;
             }
-            loadingMessage.textContent = window.manager.localeManager.getLocaleString(
-                "locale.synthInit.savingSoundfont");
-            await saveSoundFontToIndexedDB(soundFontBuffer);
+            
             // wait to make sure that the animation has finished
             const elapsed = (performance.now() / 1000) - parseStart;
             await new Promise(r => setTimeout(r, 1000 - elapsed));

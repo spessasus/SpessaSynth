@@ -23,7 +23,7 @@ import {
 } from "./worker_message.js";
 
 /*
-This file emulates the worklet_processor.js from spessasynth_lib. However, it also provides an offline rendering method to avoid copying the SF file array buffer, as these can be LARGE
+This file emulates the worklet_processor.js from spessasynth_lib. However, it also provides an offline rendering method to avoid copying the SF file array buffer, as these can be LARGE.
 The main thread controller is replaced with CustomSynth, however, the Sequencer is left as-is, and its messages are interpreted here.
  */
 
@@ -44,8 +44,8 @@ let soundBank = undefined;
 
 
 const BLOCK_SIZE = 128;
-const MAX_CHUNKS_QUEUED = 16; // 16 * 128 = 2,048
-
+const MAX_CHUNKS_QUEUED = 24; // 16 * 128 = 3,072
+const RENDER_BLOCKS_PER_PROGRESS = 64;
 
 /**
  * @param t {returnMessageType}
@@ -64,50 +64,188 @@ const postSyn = (t, d) =>
  */
 let workletPort = undefined;
 
-const renderLoop = (queuedChunks) =>
+// set as queued, the worklet will set to 0 when ready
+let queuedChunks = MAX_CHUNKS_QUEUED;
+let loopOn = true;
+// we are using intervals to wait for the chunk to finish rendering, we don't want to schedule another before this one is done!
+const renderLoop = () =>
 {
     if (queuedChunks >= MAX_CHUNKS_QUEUED)
     {
+        setTimeout(renderLoop);
         return;
     }
-    // data is encoded into a single f32 array as follows
-    // revL, revR
-    // chrL, chrR,
-    // dry1L, dry1R
-    // dryNL, dryNR
-    // dry16L, dry16R
-    // to improve performance
-    
-    const byteStep = BLOCK_SIZE * Float32Array.BYTES_PER_ELEMENT;
-    const data = new Float32Array(BLOCK_SIZE * 36);
-    let byteOffset = 0;
-    const revR = new Float32Array(data.buffer, byteOffset, BLOCK_SIZE);
-    byteOffset += byteStep;
-    const revL = new Float32Array(data.buffer, byteOffset, BLOCK_SIZE);
-    const rev = [revL, revR];
-    byteOffset += byteStep;
-    const chrL = new Float32Array(data.buffer, byteOffset, BLOCK_SIZE);
-    byteOffset += byteStep;
-    const chrR = new Float32Array(data.buffer, byteOffset, BLOCK_SIZE);
-    const chr = [chrL, chrR];
-    /**
-     * @type {AudioChunks}
-     */
-    const dry = [];
-    for (let i = 0; i < 16; i++)
+    const toRender = MAX_CHUNKS_QUEUED - queuedChunks;
+    const transferable = [];
+    const datas = [];
+    for (let i = 0; i < toRender; i++)
     {
+        // data is encoded into a single f32 array as follows
+        // revL, revR
+        // chrL, chrR,
+        // dry1L, dry1R
+        // dryNL, dryNR
+        // dry16L, dry16R
+        // to improve performance
+        
+        const byteStep = BLOCK_SIZE * Float32Array.BYTES_PER_ELEMENT;
+        const data = new Float32Array(BLOCK_SIZE * 36);
+        let byteOffset = 0;
+        const revR = new Float32Array(data.buffer, byteOffset, BLOCK_SIZE);
         byteOffset += byteStep;
-        const dryL = new Float32Array(data.buffer, byteOffset, BLOCK_SIZE);
+        const revL = new Float32Array(data.buffer, byteOffset, BLOCK_SIZE);
+        const rev = [revL, revR];
         byteOffset += byteStep;
-        const dryR = new Float32Array(data.buffer, byteOffset, BLOCK_SIZE);
-        dry.push([dryL, dryR]);
+        const chrL = new Float32Array(data.buffer, byteOffset, BLOCK_SIZE);
+        byteOffset += byteStep;
+        const chrR = new Float32Array(data.buffer, byteOffset, BLOCK_SIZE);
+        const chr = [chrL, chrR];
+        /**
+         * @type {AudioChunks}
+         */
+        const dry = [];
+        for (let i = 0; i < 16; i++)
+        {
+            byteOffset += byteStep;
+            const dryL = new Float32Array(data.buffer, byteOffset, BLOCK_SIZE);
+            byteOffset += byteStep;
+            const dryR = new Float32Array(data.buffer, byteOffset, BLOCK_SIZE);
+            dry.push([dryL, dryR]);
+        }
+        
+        seqEngine.processTick();
+        synthEngine.renderAudioSplit(rev, chr, dry);
+        datas.push(data);
+        transferable.push(data.buffer);
     }
-    
-    seqEngine.processTick();
-    synthEngine.renderAudioSplit(rev, chr, dry);
-    workletPort.postMessage(data, [data.buffer]);
+    workletPort.postMessage(datas, transferable);
+    if (loopOn)
+    {
+        setTimeout(renderLoop);
+    }
 };
 
+
+const startAudioLoop = () =>
+{
+    loopOn = true;
+    renderLoop();
+};
+const stopAudioLoop = () =>
+{
+    loopOn = false;
+};
+
+
+// FIXME: Sounds different when exporting. Testcase: th07_08 with HiDef.sf2
+/**
+ * @param extraBank {BasicSoundBank|null}
+ * @param extraBankOffset {number}
+ * @param sampleRate {number}
+ * @param separateChannels {boolean}
+ * @param loopCount {number}
+ * @param additionalTime {number}
+ * @param progressCallback {(p: number) => void}
+ * @returns {Promise<AudioChunks>}
+ */
+export async function renderAudio(
+    extraBank,
+    extraBankOffset,
+    sampleRate,
+    separateChannels,
+    loopCount,
+    additionalTime,
+    progressCallback
+)
+{
+    stopAudioLoop();
+    // modify MIDI
+    const parsedMid = BasicMIDI.copyFrom(seqEngine.midiData);
+    parsedMid.applySnapshotToMIDI(SynthesizerSnapshot.createSynthesizerSnapshot(synthEngine));
+    const playbackRate = seqEngine._playbackRate;
+    // calculate times
+    const loopStartAbsolute = parsedMid.MIDIticksToSeconds(parsedMid.loop.start) / playbackRate;
+    const loopEndAbsolute = parsedMid.MIDIticksToSeconds(parsedMid.loop.end) / playbackRate;
+    let loopDuration = loopEndAbsolute - loopStartAbsolute;
+    const duration = parsedMid.duration / playbackRate + additionalTime + loopDuration * loopCount;
+    let sampleDuration = sampleRate * duration;
+    
+    const synth = new SpessaSynthProcessor(sampleRate);
+    
+    // load font
+    synth.soundfontManager.reloadManager(soundBank);
+    if (extraBank)
+    {
+        synth.soundfontManager.addNewSoundFont(extraBank, "extra-bank", extraBankOffset);
+    }
+    const seq = new SpessaSynthSequencer(synth);
+    seq.loopCount = loopCount;
+    seq.playbackRate = playbackRate;
+    if (!loopCount)
+    {
+        seq.loop = false;
+    }
+    seq.loadNewSongList([parsedMid]);
+    // reverb, chorus
+    const reverb = [new Float32Array(sampleDuration), new Float32Array(sampleDuration)];
+    const chorus = [new Float32Array(sampleDuration), new Float32Array(sampleDuration)];
+    const out = [reverb, chorus];
+    const sampleDurationNoLastQuantum = sampleDuration - BLOCK_SIZE;
+    if (separateChannels)
+    {
+        /**
+         * @type {AudioChunks}
+         */
+        const dry = [];
+        for (let i = 0; i < 16; i++)
+        {
+            const d = [new Float32Array(sampleDuration), new Float32Array(sampleDuration)];
+            dry.push(d);
+            out.push(d);
+        }
+        let index = 0;
+        while (true)
+        {
+            for (let i = 0; i < RENDER_BLOCKS_PER_PROGRESS; i++)
+            {
+                if (index >= sampleDurationNoLastQuantum)
+                {
+                    seq.processTick();
+                    synth.renderAudioSplit(reverb, chorus, dry, index, sampleDuration - index);
+                    startAudioLoop();
+                    return out;
+                }
+                seq.processTick();
+                synth.renderAudioSplit(reverb, chorus, dry, index, BLOCK_SIZE);
+                index += BLOCK_SIZE;
+            }
+            progressCallback(index / sampleDuration);
+        }
+    }
+    else
+    {
+        const dry = [new Float32Array(sampleDuration), new Float32Array(sampleDuration)];
+        out.push(dry);
+        let index = 0;
+        while (true)
+        {
+            for (let i = 0; i < RENDER_BLOCKS_PER_PROGRESS; i++)
+            {
+                if (index >= sampleDurationNoLastQuantum)
+                {
+                    seq.processTick();
+                    synth.renderAudio(dry, reverb, chorus, index, sampleDuration - index);
+                    startAudioLoop();
+                    return out;
+                }
+                seq.processTick();
+                synth.renderAudio(dry, reverb, chorus, index, BLOCK_SIZE);
+                index += BLOCK_SIZE;
+            }
+            progressCallback(index / sampleDuration);
+        }
+    }
+}
 
 class MIDIData extends MIDISequenceData
 {
@@ -202,10 +340,7 @@ const initSynthEngine = async (sampleRate, initialTime) =>
     };
     
     // initial queue
-    for (let i = 0; i < MAX_CHUNKS_QUEUED; i++)
-    {
-        renderLoop(0);
-    }
+    startAudioLoop();
 };
 
 
@@ -216,7 +351,7 @@ onmessage = async e =>
         workletPort = e.ports[0];
         workletPort.onmessage = async ev =>
         {
-            renderLoop(ev.data);
+            queuedChunks = ev.data;
         };
     }
     /**
@@ -236,6 +371,8 @@ onmessage = async e =>
             return;
         }
     }
+    
+    const seq = seqEngine;
     switch (msg.messageType)
     {
         case workerMessageType.sampleRate:
@@ -360,7 +497,6 @@ onmessage = async e =>
             break;
         
         case workerMessageType.sequencerSpecific:
-            const seq = seqEngine;
             const messageData = data.messageData;
             const messageType = data.messageType;
             switch (messageType)
@@ -552,6 +688,26 @@ onmessage = async e =>
         case workerMessageType.setEffectsGain:
             synthEngine.reverbGain = data[0];
             synthEngine.chorusGain = data[1];
+            break;
+        
+        case workerMessageType.renderAudio:
+            synthEngine.stopAllChannels(true);
+            seqEngine.pause();
+            const rendered = await renderAudio(
+                null,
+                0,
+                data.sampleRate,
+                data.separateChannels,
+                data.loopCount,
+                data.additionalTime,
+                (p) => postSyn(returnMessageType.renderingProgress, p)
+            );
+            const transfer = [];
+            rendered.forEach(r => r.forEach(arr => transfer.push(arr.buffer)));
+            postMessage({
+                messageType: returnMessageType.renderedSong,
+                messageData: rendered
+            }, transfer);
             break;
         
         default:
