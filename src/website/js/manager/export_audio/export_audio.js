@@ -7,7 +7,7 @@ import { ANIMATION_REFLOW_TIME } from "../../utils/animation_utils.js";
 import { audioToWav } from "spessasynth_core";
 import JSZip from "jszip";
 
-const RENDER_AUDIO_TIME_INTERVAL = 1000;
+const RENDER_AUDIO_TIME_INTERVAL = 250;
 
 /**
  * @typedef {Object} WaveMetadata
@@ -39,6 +39,8 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
     // get locales
     const exportingMessage = manager.localeManager.getLocaleString(`locale.exportAudio.formats.formats.wav.exportMessage.message`);
     const estimatedMessage = manager.localeManager.getLocaleString(`locale.exportAudio.formats.formats.wav.exportMessage.estimated`);
+    const addingEffects = this.localeManager.getLocaleString(
+        "locale.exportAudio.formats.formats.wav.exportMessage.addingEffects");
     const loadingMessage = manager.localeManager.getLocaleString(`locale.synthInit.genericLoading`);
     const notification = showNotification(
         exportingMessage,
@@ -68,27 +70,34 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
     
     
     let lastProgress = 0;
-    const showProgress = (prog, max, offs = 0) =>
+    const showProgress = (prog, str, time = true) =>
     {
-        // calculate estimated time
-        let hasRendered = (prog - lastProgress) * duration;
-        lastProgress = prog;
-        progressDiv.style.width = `${(prog * max) + offs}%`;
-        const speed = hasRendered / RATI_SECONDS;
-        const estimated = (1 - prog) / speed * duration;
-        if (estimated === Infinity)
+        progressDiv.style.width = `${prog * 100}%`;
+        if (time)
         {
-            return;
+            // calculate estimated time
+            let hasRendered = (prog - lastProgress) * duration;
+            lastProgress = prog;
+            const speed = hasRendered / RATI_SECONDS;
+            const estimated = (1 - prog) / speed * duration;
+            if (estimated === Infinity)
+            {
+                return;
+            }
+            // smooth out estimated using exponential moving average
+            estimatedTime = smoothingFactor * estimated + (1 - smoothingFactor) * estimatedTime;
+            detailMessage.innerText = `${str} ${formatTime(estimatedTime).time}`;
         }
-        // smooth out estimated using exponential moving average
-        estimatedTime = smoothingFactor * estimated + (1 - smoothingFactor) * estimatedTime;
-        detailMessage.innerText = `${estimatedMessage} ${formatTime(estimatedTime).time}`;
+        else
+        {
+            detailMessage.innerText = `${str} ${Math.floor(prog * 100_0) / 10}%`;
+        }
     };
     
     let progress = 0;
     const interval = setInterval(() =>
     {
-        showProgress(progress, separateChannels ? 100 : 50);
+        showProgress(progress, estimatedMessage);
     }, RENDER_AUDIO_TIME_INTERVAL);
     
     // first pass: render dry audio in the worker
@@ -302,8 +311,8 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
         
         const progressTracker = setInterval(() =>
         {
-            showProgress(offline.currentTime / duration, 50, 50);
-        }, RENDER_AUDIO_TIME_INTERVAL);
+            showProgress(offline.currentTime / duration, addingEffects, false);
+        }, RENDER_AUDIO_TIME_INTERVAL / 4);
         
         console.info(
             "%cSecond pass: rendering effects...",

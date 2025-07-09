@@ -45,6 +45,7 @@ export const exportAudio = {
                 },
                 exportMessage: {
                     message: "Exporting WAV audio...",
+                    addingEffects: "Adding effects...",
                     estimated: "Remaining:",
                     convertWav: "Converting to wav..."
                 }

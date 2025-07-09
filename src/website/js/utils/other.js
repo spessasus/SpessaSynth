@@ -21,14 +21,22 @@ export function formatTime(totalSeconds)
  */
 export function formatTitle(fileName)
 {
-    return fileName
-        .trim()
-        .replaceAll(".mid", "")
-        .replaceAll(".kar", "")
-        .replaceAll(".rmi", "")
-        .replaceAll(".xmf", "")
-        .replaceAll(".mxmf", "")
-        .replaceAll("_", " ")
-        .trim();
+    const extensions = [
+        ".midi", ".smf", ".mid", ".kar",
+        ".rmi", ".xmf", ".mxmf"
+    ];
+    
+    // loop through extensions and remove them, case-insensitive
+    extensions.forEach(ext =>
+    {
+        const regex = new RegExp(`${ext}$`, "i");
+        fileName = fileName.replace(regex, "");
+    });
+    
+    // replace underscores with spaces
+    fileName = fileName.replace(/_/g, " ").trim();
+    
+    return fileName;
 }
+
 

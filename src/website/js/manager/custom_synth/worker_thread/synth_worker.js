@@ -60,25 +60,32 @@ const postSyn = (t, d) =>
     });
 };
 /**
+ * the mesage port to the playback audio worklet
  * @type {undefined|MessagePort}
  */
 let workletPort = undefined;
 
-// set as queued, the worklet will set to 0 when ready
-let queuedChunks = MAX_CHUNKS_QUEUED;
+// set as nothing to render, the worklet will set to the required number
+let toRender = 0;
+const handleWorkletMessage = (e) =>
+{
+    toRender = Math.max(0, MAX_CHUNKS_QUEUED - e.data);
+};
+
 let loopOn = true;
 // we are using intervals to wait for the chunk to finish rendering, we don't want to schedule another before this one is done!
 const renderLoop = () =>
 {
-    if (queuedChunks >= MAX_CHUNKS_QUEUED)
+    if (toRender < 1)
     {
+        // post an empty message (request enqueued chunk count update)
+        workletPort.postMessage(undefined);
         setTimeout(renderLoop);
         return;
     }
-    const toRender = MAX_CHUNKS_QUEUED - queuedChunks;
     const transferable = [];
     const datas = [];
-    for (let i = 0; i < toRender; i++)
+    for (; toRender > 0; toRender--)
     {
         // data is encoded into a single f32 array as follows
         // revL, revR
@@ -118,6 +125,7 @@ const renderLoop = () =>
         datas.push(data);
         transferable.push(data.buffer);
     }
+    toRender = 0;
     workletPort.postMessage(datas, transferable);
     if (loopOn)
     {
@@ -136,8 +144,18 @@ const stopAudioLoop = () =>
     loopOn = false;
 };
 
+const syncTime = () =>
+{
+    synthEngine.midiAudioChannels[0].sendChannelProperty();
+};
 
-// FIXME: Sounds different when exporting. Testcase: th07_08 with HiDef.sf2
+const resumeSeq = () =>
+{
+    syncTime();
+    seqEngine.currentTime -= 0.001;
+};
+
+
 /**
  * @param extraBank {BasicSoundBank|null}
  * @param extraBankOffset {number}
@@ -158,6 +176,9 @@ export async function renderAudio(
     progressCallback
 )
 {
+    const playing = !seqEngine.paused;
+    synthEngine.stopAllChannels(true);
+    seqEngine.pause();
     stopAudioLoop();
     // modify MIDI
     const parsedMid = BasicMIDI.copyFrom(seqEngine.midiData);
@@ -236,6 +257,10 @@ export async function renderAudio(
                     seq.processTick();
                     synth.renderAudio(dry, reverb, chorus, index, sampleDuration - index);
                     startAudioLoop();
+                    if (playing)
+                    {
+                        resumeSeq();
+                    }
                     return out;
                 }
                 seq.processTick();
@@ -349,10 +374,7 @@ onmessage = async e =>
     if (e.ports[0])
     {
         workletPort = e.ports[0];
-        workletPort.onmessage = async ev =>
-        {
-            queuedChunks = ev.data;
-        };
+        workletPort.onmessage = handleWorkletMessage;
     }
     /**
      * @type {WorkerMessage}
@@ -540,6 +562,7 @@ onmessage = async e =>
                 
                 case seqMessageType.play:
                     seq.play(messageData);
+                    syncTime();
                     break;
                 
                 case seqMessageType.stop:
@@ -618,6 +641,7 @@ onmessage = async e =>
                 case seqMessageType.setPreservePlaybackState:
                     seq.preservePlaybackState = messageData;
             }
+            syncTime();
             break;
         
         case workerMessageType.soundFontManager:
@@ -626,12 +650,11 @@ onmessage = async e =>
                 const sfManager = synthEngine.soundfontManager;
                 const type = data[0];
                 const messageData = data[1];
-                let font;
                 switch (type)
                 {
                     case WorkerSoundfontManagerMessageType.addNewSoundFont:
-                        font = loadSoundFont(messageData[0]);
-                        sfManager.addNewSoundFont(font, messageData[1], messageData[2]);
+                        soundBank = loadSoundFont(messageData[0]);
+                        sfManager.addNewSoundFont(soundBank, messageData[1], messageData[2]);
                         postMessage({
                             messageType: returnMessageType.isFullyInitialized,
                             messageData: undefined
@@ -691,8 +714,6 @@ onmessage = async e =>
             break;
         
         case workerMessageType.renderAudio:
-            synthEngine.stopAllChannels(true);
-            seqEngine.pause();
             const rendered = await renderAudio(
                 null,
                 0,

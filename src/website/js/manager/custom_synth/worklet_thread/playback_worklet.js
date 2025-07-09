@@ -3,6 +3,8 @@
  * @typedef {AudioChunk[]} AudioChunks
  */
 
+const BLOCK_SIZE = 128;
+
 /**
  * An AudioWorkletProcessor that plays back 18 separate streams of stereo audio: reverb, and chorus and 16 dry channels.
  */
@@ -14,11 +16,13 @@ class PlaybackProcessor extends AudioWorkletProcessor
     /** @type {Float32Array[]} */
     data = [];
     
+    requestUpdate = false;
+    
     /**
      *
-     * @type {undefined|MessagePort}
+     * @type {MessagePort}
      */
-    sentPort = undefined;
+    sentPort;
     
     constructor()
     {
@@ -31,9 +35,16 @@ class PlaybackProcessor extends AudioWorkletProcessor
         {
             if (e.ports.length)
             {
-                this.sentPort = e.ports[0];
-                this.sentPort.onmessage = (e) =>
+                const sentPort = e.ports[0];
+                this.sentPort = sentPort;
+                sentPort.onmessage = (e) =>
                 {
+                    this.requestUpdate = true;
+                    if (!e.data)
+                    {
+                        // worker has nothing to do, but requested the postMessage update
+                        return;
+                    }
                     this.data.push(...e.data);
                 };
                 
@@ -49,24 +60,26 @@ class PlaybackProcessor extends AudioWorkletProcessor
      */
     process(_inputs, outputs)
     {
-        const blockSize = outputs[0][0].length;
-        
         const data = this.data.shift();
+        if (this.requestUpdate)
+        {
+            this.sentPort.postMessage(this.data.length);
+            this.requestUpdate = false;
+        }
         if (!data)
         {
-            this.sentPort?.postMessage(this.data.length);
             return true;
         }
         let offset = 0;
+        // decode the data nicely
         for (let i = 0; i < 18; i++)
         {
-            outputs[i][0].set(data.subarray(offset, offset + blockSize));
-            offset += blockSize;
-            outputs[i][1].set(data.subarray(offset, offset + blockSize));
-            offset += blockSize;
+            outputs[i][0].set(data.subarray(offset, offset + BLOCK_SIZE));
+            offset += BLOCK_SIZE;
+            outputs[i][1].set(data.subarray(offset, offset + BLOCK_SIZE));
+            offset += BLOCK_SIZE;
         }
-        
-        this.sentPort?.postMessage(this.data.length);
+        // keep it online
         return true;
     }
 }
