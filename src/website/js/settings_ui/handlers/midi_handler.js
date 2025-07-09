@@ -1,5 +1,5 @@
 import { isMobile } from "../../utils/is_mobile.js";
-import { MIDIDeviceHandler } from "spessasynth_lib";
+import { MIDIDeviceHandler, Sequencer } from "spessasynth_lib";
 
 /**
  * @param handler {MIDIDeviceHandler}
@@ -126,11 +126,11 @@ export function _createMidiOutputHandler(handler, sequi)
         }
         if (select.value === "-1")
         {
-            handler.disconnectSeqFromMIDI(sequi.seq);
+            handler.disconnectSeqFromMIDI(/** @type {Sequencer}*/sequi.seq);
         }
         else
         {
-            handler.connectMIDIOutputToSeq(handler.outputs.get(select.value), sequi.seq);
+            handler.connectMIDIOutputToSeq(handler.outputs.get(select.value), /** @type {Sequencer}*/sequi.seq);
         }
         this._saveSettings();
     };

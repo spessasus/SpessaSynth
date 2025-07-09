@@ -14,7 +14,6 @@
  */
 import { DialogueEvent } from "./dialogue_event.js";
 import { keybinds } from "../keybinds.js";
-import { Sequencer } from "spessasynth_lib";
 
 const DEFAULT_RES_X = 384;
 const DEFAULT_RES_Y = 288;
@@ -124,7 +123,7 @@ export class AssManager
     
     /**
      * Creates a new subtitle manager
-     * @param seq {Sequencer}
+     * @param seq {CustomSeq}
      * @param screen {HTMLDivElement}
      * @param renderer {Renderer}
      */

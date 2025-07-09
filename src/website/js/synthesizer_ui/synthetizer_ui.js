@@ -1,4 +1,3 @@
-import { Sequencer } from "spessasynth_lib";
 import { hideControllers, showControllers } from "./methods/hide_show_controllers.js";
 import { toggleDarkMode } from "./methods/toggle_dark_mode.js";
 import {
@@ -59,7 +58,7 @@ class SynthetizerUI
     mainDivWrapper;
     
     /**
-     * @type {Sequencer}
+     * @type {CustomSeq}
      */
     sequencer = undefined;
     
@@ -186,7 +185,7 @@ class SynthetizerUI
     }
     
     /**
-     * @param seq {Sequencer}
+     * @param seq {CustomSeq}
      */
     connectSequencer(seq)
     {

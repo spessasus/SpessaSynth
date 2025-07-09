@@ -19,7 +19,7 @@ import { WorkerKeyModifierManagerWrapper } from "./key_modifier_manager.js";
 
 /*
 custom_synth.js
-purpose: a custom recreation of spessasynth_lib's `CustomSynth` class that uses a web worker instead of audio worklet,
+purpose: a custom recreation of spessasynth_lib's `Synthetizer` class that uses a web worker instead of audio worklet,
 to allow offline rendering without parsing the same sound bank twice
  */
 

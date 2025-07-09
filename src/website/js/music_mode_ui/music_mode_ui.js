@@ -1,7 +1,6 @@
 import { formatTime } from "../utils/other.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { musicModeInnerHTML } from "./music_mode_html.js";
-import { Sequencer } from "spessasynth_lib";
 
 /**
  * music_mode_ui.js
@@ -54,10 +53,13 @@ export class MusicModeUI
     }
     
     /**
-     * @param seq {Sequencer}
+     * @param seq {CustomSeq}
      */
     connectSequencer(seq)
     {
+        /**
+         * @type {CustomSeq}
+         */
         this.seq = seq;
         this.seq.addOnSongChangeEvent(mid =>
         {
@@ -131,7 +133,7 @@ export class MusicModeUI
             const verifyDecode = (type, def, decoder, prepend = "") =>
             {
                 return this.seq.midiData.RMIDInfo?.[type] === undefined ? def : prepend + decoder.decode(
-                    this.seq.midiData.RMIDInfo?.[type]).replace(/\0$/, "");
+                    this.seq.midiData.RMIDInfo?.[type]?.buffer).replace(/\0$/, "");
             };
             // initialize decoder
             let encoding = verifyDecode("IENC", "ascii", new TextDecoder());

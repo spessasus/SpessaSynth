@@ -1,4 +1,3 @@
-import { Sequencer } from "spessasynth_lib";
 import { formatTime } from "../utils/other.js";
 import { supportedEncodings } from "../utils/encodings.js";
 import {
@@ -297,10 +296,13 @@ class SequencerUI
     
     /**
      *
-     * @param sequencer {Sequencer} the sequencer to be used
+     * @param sequencer {CustomSeq} the sequencer to be used
      */
     connectSequencer(sequencer)
     {
+        /**
+         * @type {CustomSeq}
+         */
         this.seq = sequencer;
         this.createControls();
         this.setSliderInterval();
@@ -369,7 +371,7 @@ class SequencerUI
                 const verifyDecode = (type, def, decoder, prepend = "") =>
                 {
                     return this.seq.midiData.RMIDInfo?.[type] === undefined ? def : prepend + decoder.decode(
-                        this.seq.midiData.RMIDInfo?.[type]).replace(/\0$/, "");
+                        this.seq.midiData.RMIDInfo?.[type]?.buffer).replace(/\0$/, "");
                 };
                 const dec = new TextDecoder();
                 const midiEncoding = verifyDecode(

@@ -1,5 +1,5 @@
 import { MidiKeyboard } from "../midi_keyboard/midi_keyboard.js";
-import { MIDIDeviceHandler, Sequencer, WebMIDILinkHandler } from "spessasynth_lib";
+import { MIDIDeviceHandler, WebMIDILinkHandler } from "spessasynth_lib";
 
 import { Renderer } from "../renderer/renderer.js";
 
@@ -21,6 +21,7 @@ import { _exportDLS } from "./export_audio/export_dls.js";
 import { BasicMIDI, IndexedByteArray, loadSoundFont, SpessaSynthCoreUtils as util } from "spessasynth_core";
 import { prepareExtraBankUpload } from "./extra_bank_handling.js";
 import { CustomSynth } from "./custom_synth/main_thread/custom_synth.js";
+import { CustomSeq } from "./custom_synth/main_thread/custom_seq.js";
 
 
 /**
@@ -482,7 +483,7 @@ class Manager
         }
         
         // create a new sequencer
-        this.seq = new Sequencer(parsedMidi, this.synth);
+        this.seq = new CustomSeq(parsedMidi, this.synth);
         
         this.seq.onError = e =>
         {
@@ -509,19 +510,6 @@ class Manager
         // play the midi
         this.seq.play(true);
         this.seqUI.setWakeLock();
-    }
-    
-    // noinspection JSUnusedGlobalSymbols
-    async downloadDLSRMI()
-    {
-        const mid = await this.seq.getMIDI();
-        const sf = loadSoundFont(this.soundFont);
-        const out = mid.writeRMIDI(
-            await sf.writeDLS(),
-            sf
-        );
-        const blob = new Blob([out.buffer], { type: "audio/rmid" });
-        this.saveBlob(blob, `${mid.midiName}.rmi`);
     }
     
     async downloadDesfont()

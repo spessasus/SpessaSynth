@@ -17,7 +17,7 @@ import { keybinds } from "../utils/keybinds.js";
 import { handleSliders } from "./sliders.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { rendererModes } from "../renderer/renderer.js";
-import { MIDIDeviceHandler, Sequencer } from "spessasynth_lib";
+import { MIDIDeviceHandler } from "spessasynth_lib";
 
 
 const TRANSITION_TIME = 0.2;
@@ -41,7 +41,7 @@ class SpessaSynthSettings
 {
     /**
      * @type {function}
-     * @param {Sequencer} seq
+     * @param {CustomSeq} seq
      */
     addSequencer;
     
