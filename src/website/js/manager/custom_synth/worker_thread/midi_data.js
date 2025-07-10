@@ -1,4 +1,4 @@
-import { MIDISequenceData, BasicMIDI } from "spessasynth_core";
+import { BasicMIDI, MIDISequenceData } from "spessasynth_core";
 
 export class MIDIData extends MIDISequenceData
 {
@@ -18,6 +18,14 @@ export class MIDIData extends MIDISequenceData
     {
         super();
         this._copyFromSequence(midi);
+        
+        // keep so it doesn't break IPIC
+        if (midi["isEmbedded"])
+        {
+            this.isEmbedded = midi["isEmbedded"];
+            console.log("MID");
+            return this;
+        }
         
         // Set isEmbedded based on the presence of an embeddedSoundFont
         this.isEmbedded = midi.embeddedSoundFont !== undefined;

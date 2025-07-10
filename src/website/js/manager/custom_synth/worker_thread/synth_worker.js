@@ -36,7 +36,6 @@ The main thread controller is replaced with CustomSynth, however, the Sequencer 
 
 class WorkerSynthEngine
 {
-    
     /**
      * @type {SpessaSynthProcessor|undefined}
      */
@@ -116,8 +115,6 @@ class WorkerSynthEngine
             setTimeout(this.renderLoop.bind(this));
             return;
         }
-        const transferable = [];
-        const datas = [];
         for (; this.toRender > 0; this.toRender--)
         {
             // data is encoded into a single f32 array as follows
@@ -155,11 +152,9 @@ class WorkerSynthEngine
             
             this.seqEngine.processTick();
             this.synthEngine.renderAudioSplit(rev, chr, dry);
-            datas.push(data);
-            transferable.push(data.buffer);
+            this.workletPort.postMessage(data, [data.buffer]);
         }
         this.toRender = 0;
-        this.workletPort.postMessage(datas, transferable);
         if (this.loopOn)
         {
             setTimeout(this.renderLoop.bind(this));

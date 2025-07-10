@@ -45,7 +45,7 @@ class PlaybackProcessor extends AudioWorkletProcessor
                         // worker has nothing to do, but requested the postMessage update
                         return;
                     }
-                    this.data.push(...e.data);
+                    this.data.push(e.data);
                 };
                 
             }
