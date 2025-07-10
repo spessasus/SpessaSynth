@@ -1,4 +1,6 @@
 import { workerMessageType, WorkerSoundfontManagerMessageType } from "../worker_thread/worker_message.js";
+import { SpessaSynthCoreUtils } from "spessasynth_core";
+import { WorkletSoundfontManagerMessageType } from "spessasynth_lib/src/synthetizer/sfman_message.js";
 
 export class SoundfontManager
 {
@@ -46,6 +48,25 @@ export class SoundfontManager
     }
     
     /**
+     * Deletes a soundfont with the given ID
+     * @param id {string} - the soundfont to delete
+     */
+    deleteSoundFont(id)
+    {
+        if (this.soundfontList.length === 0)
+        {
+            SpessaSynthCoreUtils.SpessaSynthWarn("1 soundfont left. Aborting!");
+            return;
+        }
+        if (this.soundfontList.findIndex(s => s.id === id) === -1)
+        {
+            SpessaSynthCoreUtils.SpessaSynthWarn(`No soundfont with id of "${id}" found. Aborting!`);
+            return;
+        }
+        this._sendToWorklet(WorkletSoundfontManagerMessageType.deleteSoundFont, id);
+    }
+    
+    /**
      * Adds a new soundfont buffer with a given ID
      * @param soundfontBuffer {ArrayBuffer} - the soundfont's buffer
      * @param id {string} - the soundfont's unique identifier
@@ -70,5 +91,17 @@ export class SoundfontManager
                 bankOffset: bankOffset
             });
         }
+    }
+    
+    /**
+     * Rearranges the soundfonts in a given order
+     * @param newList {string[]} the order of soundfonts, a list of identifiers, first overwrites second
+     */
+    rearrangeSoundFonts(newList)
+    {
+        this._sendToWorker(WorkerSoundfontManagerMessageType.rearrangeSoundFonts, newList, []);
+        this.soundfontList.sort((a, b) =>
+            newList.indexOf(a.id) - newList.indexOf(b.id)
+        );
     }
 }

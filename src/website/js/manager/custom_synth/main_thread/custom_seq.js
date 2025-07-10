@@ -12,7 +12,8 @@ import {
     SpessaSynthSequencerReturnMessageType,
     workerMessageType
 } from "../worker_thread/worker_message.js";
-import { MIDIData } from "spessasynth_lib/src/sequencer/midi_data.js";
+import { MIDIData } from "../worker_thread/midi_data.js";
+
 /*
 custom_seq.js
 purpose: a custom recreation of spessasynth_lib's `Sequencer` class that is tweaked for compatibility with the CustomSynth.

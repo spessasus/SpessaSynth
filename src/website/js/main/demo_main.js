@@ -26,6 +26,7 @@ let titleMessage = document.getElementById("title");
 let fileInput = document.getElementById("midi_file_input");
 let sfInput = document.getElementById("sf_file_input");
 let demoSongButton = document.getElementById("demo_song");
+let downloadButton = document.getElementById("download_button");
 /**
  * @type {HTMLButtonElement}
  */
@@ -84,6 +85,7 @@ function initDatabase(callback)
  */
 async function loadLastSoundFontFromDatabase()
 {
+    console.info("Loading the soundfont from the database...");
     return await new Promise(resolve =>
     {
         // fetch from db
@@ -330,6 +332,7 @@ async function fetchFont(url, callback)
 async function startMidi(midiFiles)
 {
     demoSongButton.style.display = "none";
+    downloadButton.style.display = "none";
     let fName;
     if (midiFiles[0].name.length > 20)
     {

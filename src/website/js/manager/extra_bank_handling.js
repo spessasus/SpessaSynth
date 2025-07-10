@@ -1,7 +1,7 @@
 import { getSf2LogoSvg } from "../utils/icons.js";
 import { closeNotification, showNotification } from "../notification/notification.js";
+import { EXTRA_BANK_ID } from "./extra_bank_id.js";
 
-const EXTRA_BANK_ID = "spessasynth-extra-bank";
 
 /**
  * @this {Manager}

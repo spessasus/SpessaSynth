@@ -1,0 +1,1 @@
+export const EXTRA_BANK_ID = "spessasynth-extra-bank";
