@@ -117,9 +117,8 @@ class Manager
         return this.compressionFunction;
     }
     
-    saveBlob(blob, name)
+    saveUrl(url, name)
     {
-        const url = URL.createObjectURL(blob);
         /**
          * @type {HTMLAnchorElement}
          */
@@ -128,6 +127,12 @@ class Manager
         a.download = name;
         a.click();
         console.info(a);
+    }
+    
+    saveBlob(blob, name)
+    {
+        const url = URL.createObjectURL(blob);
+        this.saveUrl(url, name);
     }
     
     /**

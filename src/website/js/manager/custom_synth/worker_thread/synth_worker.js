@@ -24,6 +24,7 @@ import { MIDIData } from "./midi_data.js";
 import { renderAudio } from "./render_audio.js";
 import { WorkletSoundfontManagerMessageType } from "spessasynth_lib/src/synthetizer/sfman_message.js";
 import { EXTRA_BANK_ID } from "../../extra_bank_id.js";
+import { exportSoundBank } from "./export_sf.js";
 
 
 const BLOCK_SIZE = 128;
@@ -88,14 +89,15 @@ class WorkerSynthEngine
     /**
      * @param t {returnMessageType}
      * @param d {any}
+     * @param transferable {Transferable[]?}
      */
-    postSyn(t, d)
+    postSyn(t, d, transferable = [])
     {
         // noinspection JSCheckFunctionSignatures
         postMessage({
             messageType: t,
             messageData: d
-        });
+        }, transferable);
     };
     
     handleWorkletMessage(e)
@@ -163,13 +165,14 @@ class WorkerSynthEngine
     
     startAudioLoop()
     {
-        
         this.loopOn = true;
         this.renderLoop();
     }
     
     stopAudioLoop()
     {
+        this.synthEngine.stopAllChannels(true);
+        this.seqEngine.pause();
         this.loopOn = false;
     }
     
@@ -630,9 +633,19 @@ class WorkerSynthEngine
                 const transfer = [];
                 rendered.forEach(r => r.forEach(arr => transfer.push(arr.buffer)));
                 postMessage({
-                    messageType: returnMessageType.renderedSong,
+                    messageType: returnMessageType.exportedData,
                     messageData: rendered
                 }, transfer);
+                break;
+            
+            case workerMessageType.exportSoundBank:
+                const exported = await this.exportSoundBank(
+                    data.isSf2,
+                    data.trim,
+                    data.compress,
+                    data.quality
+                );
+                this.postSyn(returnMessageType.exportedData, exported);
                 break;
             
             default:
@@ -644,6 +657,7 @@ class WorkerSynthEngine
 }
 
 WorkerSynthEngine.prototype.renderAudio = renderAudio;
+WorkerSynthEngine.prototype.exportSoundBank = exportSoundBank;
 
 const worker = new WorkerSynthEngine();
 onmessage = worker.handleMainThreadMessage.bind(worker);

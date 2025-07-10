@@ -691,6 +691,50 @@ export class CustomSynth
     }
     
     /**
+     * @param trim {boolean}
+     * @param compress {boolean}
+     * @param quality {number}
+     * @param callback {(progress: number) => unknown}
+     * @returns {Promise<{fileName: string, url: string}>}
+     */
+    async exportSoundFont(trim, compress, quality, callback)
+    {
+        const promise = new Promise(r => this.workerFinishCallback = r);
+        this.workerProgressCallback = callback;
+        this.post({
+            messageType: workerMessageType.exportSoundBank,
+            messageData: {
+                isSf2: true,
+                trim,
+                compress,
+                quality
+            }
+        });
+        return promise;
+    }
+    
+    /**
+     * @param trim {boolean}
+     * @param callback {(progress: number) => unknown}
+     * @returns {Promise<{fileName: string, url: string}>}
+     */
+    async exportDLS(trim, callback)
+    {
+        const promise = new Promise(r => this.workerFinishCallback = r);
+        this.workerProgressCallback = callback;
+        this.post({
+            messageType: workerMessageType.exportSoundBank,
+            messageData: {
+                isSf2: false,
+                trim,
+                compress: false,
+                quality: 0
+            }
+        });
+        return promise;
+    }
+    
+    /**
      * Changes the effects gain.
      * @param reverbGain {number} the reverb gain, 0-1.
      * @param chorusGain {number} the chorus gain, 0-1.
@@ -784,7 +828,7 @@ export class CustomSynth
                 this.eventHandler.callEvent("soundfonterror", messageData);
                 break;
             
-            case returnMessageType.renderedSong:
+            case returnMessageType.exportedData:
                 this?.workerFinishCallback(messageData);
                 break;
         }

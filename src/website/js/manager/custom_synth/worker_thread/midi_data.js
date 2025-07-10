@@ -23,7 +23,6 @@ export class MIDIData extends MIDISequenceData
         if (midi["isEmbedded"])
         {
             this.isEmbedded = midi["isEmbedded"];
-            console.log("MID");
             return this;
         }
         

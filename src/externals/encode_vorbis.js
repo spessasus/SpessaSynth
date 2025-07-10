@@ -7,7 +7,6 @@ import { libvorbis } from "./libvorbis/OggVorbisEncoder.min.js";
  * @param quality {number}
  * @returns {Uint8Array}
  */
-
 /**
  * @param audioDatas {Float32Array[]}
  * @param sampleRate {number}
@@ -17,7 +16,10 @@ import { libvorbis } from "./libvorbis/OggVorbisEncoder.min.js";
 export async function encodeVorbis(audioDatas, sampleRate, quality)
 {
     // https://github.com/higuma/ogg-vorbis-encoder-js
-    //libvorbis.init();
+    if (!libvorbis["OggVorbisEncoder"])
+    {
+        libvorbis.init();
+    }
     const encoder = new libvorbis.OggVorbisEncoder(sampleRate, audioDatas.length, quality);
     encoder.encode(audioDatas);
     /**

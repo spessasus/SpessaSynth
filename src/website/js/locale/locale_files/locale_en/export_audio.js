@@ -60,7 +60,7 @@ export const exportAudio = {
             
             soundfont: {
                 button: {
-                    title: "SoundFont (.sf2)",
+                    title: "SoundFont (.sf2, .sf3)",
                     description: "Export a SoundFont2 file"
                 },
                 
@@ -80,6 +80,10 @@ export const exportAudio = {
                         title: "Compression quality",
                         description: "The quality of compression. Higher is better"
                     }
+                },
+                
+                exportMessage: {
+                    message: "Exporting SoundFont..."
                 }
             },
             
@@ -93,6 +97,10 @@ export const exportAudio = {
                     message: "DLS export is limited and may produce broken files with large and complex SoundFonts.",
                     details: "More info",
                     confirm: "Export anyways"
+                },
+                
+                exportMessage: {
+                    message: "Exporting DLS..."
                 }
             },
             

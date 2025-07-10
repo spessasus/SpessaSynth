@@ -1,6 +1,5 @@
 import { consoleColors } from "../../utils/console_colors.js";
 import { closeNotification, showNotification } from "../../notification/notification.js";
-import { loadSoundFont } from "spessasynth_core";
 
 /**
  * @this {Manager}
@@ -46,38 +45,24 @@ export async function _exportDLS()
                         "%cExporting DLS...",
                         consoleColors.info
                     );
-                    const mid = await this.seq.getMIDI();
-                    const soundfont = loadSoundFont(mid.embeddedSoundFont || this.soundFont);
-                    mid.applySnapshotToMIDI(await this.synth.getSynthesizerSnapshot());
-                    if (trimmed)
+                    const exportingMessage = manager.localeManager.getLocaleString(`locale.exportAudio.formats.formats.dls.exportMessage.message`);
+                    const notification = showNotification(
+                        exportingMessage,
+                        [
+                            { type: "text", textContent: exportingMessage },
+                            { type: "progress" }
+                        ],
+                        9999999,
+                        false
+                    );
+                    const progressDiv = notification.div.getElementsByClassName("notification_progress")[0];
+                    const callback = (p) =>
                     {
-                        soundfont.trimSoundBank(mid);
-                    }
-                    try
-                    {
-                        const binary = await soundfont.writeDLS();
-                        const blob = new Blob([binary.buffer], { type: "audio/dls" });
-                        this.saveBlob(blob, `${soundfont.soundFontInfo["INAM"] || "unnamed"}.dls`);
-                    }
-                    catch (e)
-                    {
-                        console.warn(
-                            "Failed to export DLS: ",
-                            e
-                        );
-                        showNotification(
-                            this.localeManager.getLocaleString("locale.error"),
-                            [
-                                {
-                                    type: "text",
-                                    textContent: e,
-                                    attributes: {
-                                        "style": "font-weight: bold; color: red"
-                                    }
-                                }
-                            ]
-                        );
-                    }
+                        progressDiv.style.width = `${p * 100}%`;
+                    };
+                    const exported = await this.synth.exportDLS(trimmed, callback);
+                    this.saveUrl(exported.url, exported.fileName);
+                    closeNotification(notification.id);
                     console.groupEnd();
                 }
             }

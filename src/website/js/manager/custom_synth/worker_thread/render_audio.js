@@ -35,8 +35,6 @@ export async function renderAudio(
     const seqEngine = this.seqEngine;
     const soundBank = this.soundBank;
     const playing = !this.seqEngine.paused;
-    synthEngine.stopAllChannels(true);
-    seqEngine.pause();
     this.stopAudioLoop();
     // modify MIDI
     const parsedMid = BasicMIDI.copyFrom(seqEngine.midiData);

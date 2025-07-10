@@ -57,7 +57,7 @@ export const exportAudio = {
             
             soundfont: {
                 button: {
-                    title: "SoundFont (.sf2)",
+                    title: "SoundFont (.sf2, .sf3)",
                     description: "Exportar um arquivo SoundFont2"
                 },
                 

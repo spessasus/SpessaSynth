@@ -9,11 +9,12 @@ import { SynthesizerSnapshot } from "spessasynth_core";
  * @property {number} sampleRate                 - 1  -> [rate<number>, currentTime<number>]
  * @property {number} initialSoundBank           - 2  -> bank<ArrayBuffer>
  * @property {number} renderAudio                - 3  -> {sampleRate: number, separateChannels: boolean, loopCount: number, additionalTime: number}
+ * @property {number} exportSoundFont            - 4  -> {compress:boolean, trim: boolean: quality: number}
  * @property {number} ccReset                    - 7  -> (no data) note: if channel is -1 then reset all channels
  * @property {number} setChannelVibrato          - 8  -> {frequencyHz: number, depthCents: number, delaySeconds: number} note: if channel is -1 then stop all channels note 2: if rate is -1, it means locking
  * @property {number} soundFontManager           - 9  -> [messageType<WorkerSoundfontManagerMessageType> messageData<any>] note: refer to sfman_message.js
- * @property {number} stopAll                    - 10  -> force<number> (0 false, 1 true) note: if channel is -1 then stop all channels
- * @property {number} killNotes                  - 11  -> amount<number>
+ * @property {number} stopAll                    - 10 -> force<number> (0 false, 1 true) note: if channel is -1 then stop all channels
+ * @property {number} killNotes                  - 11 -> amount<number>
  * @property {number} muteChannel                - 12 -> isMuted<boolean>
  * @property {number} addNewChannel              - 13 -> (no data)
  * @property {number} customCcChange             - 14 -> [ccNumber<number>, ccValue<number>]
@@ -34,6 +35,7 @@ export const workerMessageType = {
     sampleRate: 1,
     initialSoundBank: 2,
     renderAudio: 3,
+    exportSoundBank: 4,
     // free 6 slots here, use when needed instead of adding new ones
     ccReset: 7,
     setChannelVibrato: 8,
@@ -59,7 +61,7 @@ export const workerMessageType = {
 
 /**
  * @typedef {{
- *     channelNumber: number
+ *     channelNumber: number|undefined
  *     messageType: (workerMessageType|number),
  *     messageData: (
  *     boolean|
@@ -75,6 +77,7 @@ export const workerMessageType = {
  *     |{messageType: workerKeyModifierMessageType, messageData: any}
  *     |Uint8Array
  *     |{sampleRate: number, separateChannels: boolean, loopCount: number, additionalTime: number}
+ *     |{trim: boolean, compress: boolean, quality: number, isSf2: boolean}
  *     )
  * }} WorkerMessage
  */
@@ -103,7 +106,7 @@ export const workerMessageType = {
  * 5 - isFullyInitialized           -> (no data)
  * 6 - soundfontError               -> errorMessage<string>
  * 7 - renderingProgress            -> progress<number>
- * 8 - renderedSong                 -> Float32Array[]
+ * 8 - exportedData                 -> Float32Array[] or {url: string, fileName: string} for files
  */
 
 /**
@@ -118,7 +121,7 @@ export const returnMessageType = {
     isFullyInitialized: 5,
     soundfontError: 6,
     renderingProgress: 7,
-    renderedSong: 8
+    exportedData: 8
 };
 
 
