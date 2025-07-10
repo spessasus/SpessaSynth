@@ -605,19 +605,18 @@ export class CustomSeq
                 const songChangeData = this.songListData[this.songIndex];
                 this.midiData = songChangeData;
                 this.hasDummyData = false;
-                this.absoluteStartTime = 0;
                 this.duration = this.midiData.duration;
+                this._recalculateStartTime(messageData[2]);
                 this._callEvents(this.onSongChange, songChangeData);
                 // if is auto played, unpause
                 if (messageData[1] === true)
                 {
                     this.unpause();
                 }
-                this._recalculateStartTime(this.absoluteStartTime);
                 break;
             
             case SpessaSynthSequencerReturnMessageType.timeChange:
-                // message data is absolute time
+                // message data is song time (0 means the start of the song)
                 const time = messageData;
                 this._callEvents(this.onTimeChange, time);
                 this._recalculateStartTime(time);
@@ -638,7 +637,7 @@ export class CustomSeq
                 {
                     this._callEvents(this.onSongEnded, undefined);
                 }
-                this._recalculateStartTime(this.absoluteStartTime);
+                this.syncSequencer();
                 break;
             
             case SpessaSynthSequencerReturnMessageType.midiError:
@@ -657,6 +656,7 @@ export class CustomSeq
                 {
                     this._getMIDIResolve(BasicMIDI.copyFrom(messageData));
                 }
+                this.syncSequencer();
                 break;
             
             case SpessaSynthSequencerReturnMessageType.metaEvent:
@@ -730,15 +730,27 @@ export class CustomSeq
                 {
                     this._loop = false;
                 }
+                this.syncSequencer();
                 break;
             
             case SpessaSynthSequencerReturnMessageType.songListChange:
-                this.songListData = messageData;
+                this.songListData = messageData.map(s => new MIDIData(s));
+                this.syncSequencer();
+                // Band-Aid fix, but it is what it is
+                setTimeout(() =>
+                {
+                    this.currentTime = 0;
+                }, 10);
                 break;
             
             default:
                 break;
         }
+    }
+    
+    syncSequencer()
+    {
+        this._recalculateStartTime(this.currentTime);
     }
     
     /**
@@ -844,6 +856,7 @@ export class CustomSeq
         this._recalculateStartTime(this.pausedTime || 0);
         this.unpause();
         this._sendMessage(seqMessageType.play, resetTime);
+        setTimeout(this.syncSequencer.bind(this), 100);
     }
     
     /**

@@ -316,6 +316,18 @@ class Renderer
     {
         const MIN_NOTE_TIME = 0.02;
         const times = mid.getNoteTimes(MIN_NOTE_TIME);
+        // special and cool case (triangle.mid)
+        times.forEach(t =>
+        {
+            if (t.length === 1)
+            {
+                const n = t[0];
+                if (n.length === -1)
+                {
+                    n.length = mid.duration;
+                }
+            }
+        });
         /**
          * @type {{notes: {midiNote: number, start: number, length: number, velocity: number}[], rendererStartIndex: number}[]}
          */

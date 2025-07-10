@@ -342,7 +342,7 @@ const initSynthEngine = async (sampleRate, initialTime) =>
     };
     seqEngine.onSongChange = (i, a) =>
     {
-        postSeq(SpessaSynthSequencerReturnMessageType.songChange, [i, a]);
+        postSeq(SpessaSynthSequencerReturnMessageType.songChange, [i, a, seqEngine.currentTime]);
     };
     seqEngine.onMetaEvent = (e, i) =>
     {
