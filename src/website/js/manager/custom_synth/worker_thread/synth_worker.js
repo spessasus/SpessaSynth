@@ -28,7 +28,7 @@ import { exportSoundBank } from "./export_sf.js";
 
 
 const BLOCK_SIZE = 128;
-const MAX_CHUNKS_QUEUED = 20; // 16 * 128 = 2,048
+const MAX_CHUNKS_QUEUED = 40; // 16 * 128 = 2,048
 
 /*
 This file emulates the worklet_processor.js from spessasynth_lib. However, it also provides an offline rendering method to avoid copying the SF file array buffer, as these can be LARGE.
