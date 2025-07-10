@@ -5,15 +5,14 @@
   "scripts": {
     "perms": "chmod +x src/build/*",
     "start": "src/build/dev_mode.sh",
-    "build": "vite build",
-    "dev": "vite",
+    "build": "src/build/minify_website.sh",
     "debug": "src/build/enable_debug.sh",
     "release": "src/build/disable_debug.sh",
     "clean": "rm -rf dist; rm -rf local"
   },
   "devDependencies": {
-    "esbuild": "^0.25.2",
-    "vite": "^7.0.2"
+    "@chialab/esbuild-plugin-meta-url": "^0.18.2",
+    "esbuild": "^0.25.2"
   },
   "dependencies": {
     "jszip": "^3.10.1",

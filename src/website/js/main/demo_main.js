@@ -35,7 +35,10 @@ const loading = document.getElementsByClassName("loading")[0];
 const loadingMessage = document.getElementById("loading_message");
 
 // load version
-window.SPESSASYNTH_VERSION = __APP_VERSION__;
+const p = await fetch("package.json");
+const t = await p.text();
+const packageJson = JSON.parse(t);
+window.SPESSASYNTH_VERSION = packageJson["version"] || "UNKNOWN";
 
 // IndexedDB stuff
 const dbName = "spessasynth-db";

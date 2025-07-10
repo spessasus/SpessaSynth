@@ -68,6 +68,7 @@ class PlaybackProcessor extends AudioWorkletProcessor
         }
         if (!data)
         {
+            console.warn("No audio data!");
             return true;
         }
         let offset = 0;

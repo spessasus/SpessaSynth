@@ -3,8 +3,6 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")"/../.. && pwd)"
 cd "$REPO_ROOT"
 
-BUILD_SCRIPT="node $REPO_ROOT/node_modules/spessasynth_lib/build_scripts/build.js"
-LIB_WORKLET="$REPO_ROOT/node_modules/spessasynth_lib/synthetizer/worklet_processor.min.js"
 WEBSITE_DIR="$REPO_ROOT/src/website"
 SOUNDFONT="GeneralUserGS.sf3"
 
@@ -16,39 +14,20 @@ ZIP_NAME="SpessaSynth-LocalEdition.zip"
 ZIP_FOLDER="local-edition-compiled-$(date +%Y-%m-%d)"
 
 echo
-echo "⚙️  0) Build spessasynth_lib"
-if out=$($BUILD_SCRIPT 2>&1); then
-  echo "$out"
-else
-  echo "⚠️  spessasynth_lib was not locally installed; using npm‑published version"
-fi
-
-echo
 echo "⚙️  1) Clean dist directories"
 rm -rf "$DEMO_DIR"
 rm -rf "$LOCAL_DIR"
 rm -rf "$ZIP_FOLDER"
 
+echo
+echo "⚙️  2) Create directories and copy files"
+
 mkdir -p "$DEMO_DIR_SRC"
 mkdir -p "$LOCAL_DIR"
 
-echo
-echo "📋  2) Copy files (+ map if any)"
-# worklet
-cp "$LIB_WORKLET" \
-   "$DEMO_DIR_SRC"
-cp "$LIB_WORKLET" \
-    "$LOCAL_DIR"
-
-# worklet map
-cp "$LIB_WORKLET.map" \
-   "$LOCAL_DIR" 2>/dev/null && \
-   echo "• Map copied (debug enabled)" || \
-   echo "• No map found (npm‑published)"
-
 # html
-cp "$WEBSITE_DIR/demo_index.html" "$DEMO_DIR/index.html"
-cp "$WEBSITE_DIR/local_edition_index.html" "$LOCAL_DIR"
+cp "$WEBSITE_DIR/html/demo_index.html" "$DEMO_DIR/index.html"
+cp "$WEBSITE_DIR/html/local_edition_index.html" "$LOCAL_DIR"
 
 # favicon
 cp "$WEBSITE_DIR/favicon.ico" "$DEMO_DIR"
@@ -64,42 +43,7 @@ cp -p "$REPO_ROOT/soundfonts/$SOUNDFONT" "$DEMO_DIR/soundfonts/"
 echo
 echo "🏗️  3) Build"
 
-# dist (pages)
-# no sourcemap for dist
-esbuild "$WEBSITE_DIR/js/main/demo_main.js" \
---bundle \
---tree-shaking=true \
---minify \
---splitting \
---format=esm \
---outdir="$DEMO_DIR_SRC" \
---platform=browser
-esbuild "$WEBSITE_DIR/css/style.css" \
---bundle  \
---minify \
---tree-shaking=true \
---format=esm \
---outfile="$DEMO_DIR_SRC/style.min.css" \
---platform=browser
-
-# local (local edition)
-esbuild "$WEBSITE_DIR/js/main/local_main.js" \
---bundle \
---tree-shaking=true \
---minify \
---sourcemap=linked \
---format=esm \
---outdir="$LOCAL_DIR" \
---splitting \
---platform=browser
-esbuild "$WEBSITE_DIR/css/style.css" \
---bundle  \
---minify \
---tree-shaking=true \
---sourcemap=linked \
---format=esm \
---outfile="$LOCAL_DIR/style.min.css" \
---platform=browser
+node "$REPO_ROOT/src/build/build.js"
 
 echo
 echo "🗂️  4) Prepare Local‑Edition ZIP"
