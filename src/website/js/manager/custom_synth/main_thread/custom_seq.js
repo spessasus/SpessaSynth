@@ -512,9 +512,10 @@ export class CustomSeq
     /**
      * @param messageType {seqMessageType}
      * @param messageData {any}
+     * @param transferable {Transferable[]}
      * @private
      */
-    _sendMessage(messageType, messageData = undefined)
+    _sendMessage(messageType, messageData = undefined, transferable = [])
     {
         this.synth.post({
             channelNumber: ALL_CHANNELS_OR_DIFFERENT_ACTION,
@@ -523,7 +524,7 @@ export class CustomSeq
                 messageType: messageType,
                 messageData: messageData
             }
-        });
+        }, transferable);
     }
     
     /**
@@ -789,6 +790,10 @@ export class CustomSeq
         this.hasDummyData = true;
         this.duration = 99999;
         /**
+         * @type {ArrayBuffer[]}
+         */
+        const transferable = [];
+        /**
          * sanitize MIDIs
          * @type {({binary: ArrayBuffer, altName: string}|BasicMIDI)[]}
          */
@@ -796,11 +801,12 @@ export class CustomSeq
         {
             if (m.binary !== undefined)
             {
+                transferable.push(m.binary);
                 return m;
             }
             return BasicMIDI.copyFrom(m);
         });
-        this._sendMessage(seqMessageType.loadNewSongList, [sanitizedMidis, autoPlay]);
+        this._sendMessage(seqMessageType.loadNewSongList, [sanitizedMidis, autoPlay], transferable);
         this.songIndex = 0;
         this.songsAmount = midiBuffers.length;
         if (this.songsAmount > 1)

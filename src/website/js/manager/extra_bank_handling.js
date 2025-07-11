@@ -9,10 +9,6 @@ import { EXTRA_BANK_ID } from "./extra_bank_id.js";
 export function prepareExtraBankUpload()
 {
     this.extraBankName = "";
-    /**
-     * @type {ArrayBuffer}
-     */
-    this.extraBankBuffer = undefined;
     this.extraBankOffset = 0;
     let extraBankName = "";
     const extra = document.getElementById("extra_bank_button");
@@ -61,7 +57,6 @@ export function prepareExtraBankUpload()
                         await this.synth.soundfontManager.addNewSoundFont(b, EXTRA_BANK_ID, bank);
                         await this.synth.soundfontManager.rearrangeSoundFonts([EXTRA_BANK_ID, "main"]);
                         this.extraBankName = extraBankName;
-                        this.extraBankBuffer = b;
                         this.extraBankOffset = bank;
                         if (this.seq?.paused === false)
                         {
