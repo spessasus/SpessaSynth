@@ -66,7 +66,6 @@ const DUMMY_MIDI_DATA = Object.assign({
     format: 0
 }, MIDIData.prototype);
 
-// noinspection JSUnusedGlobalSymbols
 /**
  * @typedef {Object} SequencerOptions
  * @property {boolean|undefined} skipToFirstNoteOn - if true, the sequencer will skip to the first note
@@ -532,6 +531,7 @@ export class CustomSeq
      */
     nextSong()
     {
+        this.pausedTime = this.currentTime;
         this._sendMessage(seqMessageType.changeSong, [SongChangeType.forwards]);
     }
     
@@ -540,6 +540,7 @@ export class CustomSeq
      */
     previousSong()
     {
+        this.pausedTime = this.currentTime;
         this._sendMessage(seqMessageType.changeSong, [SongChangeType.backwards]);
     }
     
@@ -549,6 +550,7 @@ export class CustomSeq
      */
     setSongIndex(index)
     {
+        this.pausedTime = this.currentTime;
         const clamped = Math.max(Math.min(this.songsAmount - 1, index), 0);
         this._sendMessage(seqMessageType.changeSong, [SongChangeType.index, clamped]);
     }
@@ -615,6 +617,11 @@ export class CustomSeq
                 {
                     this.unpause();
                 }
+                // Band-Aid fix, but it is what it is
+                setTimeout(() =>
+                {
+                    this.currentTime = 0;
+                }, 10);
                 break;
             
             case SpessaSynthSequencerReturnMessageType.timeChange:
@@ -738,11 +745,6 @@ export class CustomSeq
             case SpessaSynthSequencerReturnMessageType.songListChange:
                 this.songListData = messageData.map(s => new MIDIData(s));
                 this.syncSequencer();
-                // Band-Aid fix, but it is what it is
-                setTimeout(() =>
-                {
-                    this.currentTime = 0;
-                }, 10);
                 break;
             
             default:
@@ -784,7 +786,7 @@ export class CustomSeq
      */
     loadNewSongList(midiBuffers, autoPlay = true)
     {
-        this.pause();
+        this.pausedTime = this.currentTime;
         // add some fake data
         this.midiData = DUMMY_MIDI_DATA;
         this.hasDummyData = true;
