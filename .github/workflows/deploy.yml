@@ -32,9 +32,6 @@ jobs:
           node-version: lts/*
           cache: 'npm'
 
-      - name: Install rsync
-        run: sudo apt-get update && sudo apt-get install -y rsync
-
       - name: Install dependencies
         run: npm ci
 

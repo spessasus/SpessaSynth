@@ -4,11 +4,11 @@
   "type": "module",
   "scripts": {
     "perms": "chmod +x src/build/*",
-    "start": "src/build/dev_mode.sh",
-    "build": "src/build/minify_website.sh",
+    "start": "node src/build/start.js",
+    "build": "node src/build/build.js",
     "debug": "src/build/enable_debug.sh",
     "release": "src/build/disable_debug.sh",
-    "clean": "rm -rf dist; rm -rf local"
+    "clean": "rm -rf dist; rm -rf local-dev; rm -rf server"
   },
   "devDependencies": {
     "@chialab/esbuild-plugin-meta-url": "^0.18.2",
