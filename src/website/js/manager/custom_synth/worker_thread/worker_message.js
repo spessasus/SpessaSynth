@@ -10,6 +10,8 @@ import { SynthesizerSnapshot } from "spessasynth_core";
  * @property {number} initialSoundBank           - 2  -> bank<ArrayBuffer>
  * @property {number} renderAudio                - 3  -> {sampleRate: number, separateChannels: boolean, loopCount: number, additionalTime: number}
  * @property {number} exportSoundFont            - 4  -> {compress:boolean, trim: boolean: quality: number}
+ * @property {number} exportMIDI                 - 5  -> (no data)
+ * @property {number} exportRMI                  - 6  -> {compress: boolean, quality: number, adjust: boolean, metadata: Partial<RMIDIMetadata>} or no data for recommended settings
  * @property {number} ccReset                    - 7  -> (no data) note: if channel is -1 then reset all channels
  * @property {number} setChannelVibrato          - 8  -> {frequencyHz: number, depthCents: number, delaySeconds: number} note: if channel is -1 then stop all channels note 2: if rate is -1, it means locking
  * @property {number} soundFontManager           - 9  -> [messageType<WorkerSoundfontManagerMessageType> messageData<any>] note: refer to sfman_message.js
@@ -36,7 +38,8 @@ export const workerMessageType = {
     initialSoundBank: 2,
     renderAudio: 3,
     exportSoundBank: 4,
-    // free 6 slots here, use when needed instead of adding new ones
+    exportMIDI: 5,
+    exportRMI: 6,
     ccReset: 7,
     setChannelVibrato: 8,
     soundFontManager: 9,
@@ -78,6 +81,7 @@ export const workerMessageType = {
  *     |Uint8Array
  *     |{sampleRate: number, separateChannels: boolean, loopCount: number, additionalTime: number}
  *     |{trim: boolean, compress: boolean, quality: number, isSf2: boolean}
+ *     |{compress: boolean, quality: number, adjust: boolean, metadata: Partial<RMIDIMetadata>}
  *     )
  * }} WorkerMessage
  */

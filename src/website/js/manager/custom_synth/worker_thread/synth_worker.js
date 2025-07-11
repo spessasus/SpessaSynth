@@ -25,6 +25,8 @@ import { renderAudio } from "./render_audio.js";
 import { WorkletSoundfontManagerMessageType } from "spessasynth_lib/src/synthetizer/sfman_message.js";
 import { EXTRA_BANK_ID } from "../../extra_bank_id.js";
 import { exportSoundBank } from "./export_sf.js";
+import { exportMIDI } from "./export_midi.js";
+import { exportRMIDI } from "./export_rmidi.js";
 
 
 const BLOCK_SIZE = 128;
@@ -639,6 +641,7 @@ class WorkerSynthEngine
                 break;
             
             case workerMessageType.exportSoundBank:
+            {
                 const exported = await this.exportSoundBank(
                     data.isSf2,
                     data.trim,
@@ -646,6 +649,34 @@ class WorkerSynthEngine
                     data.quality
                 );
                 this.postSyn(returnMessageType.exportedData, exported);
+            }
+                break;
+            
+            case workerMessageType.exportMIDI:
+            {
+                const exported = this.exportMIDI();
+                this.postSyn(returnMessageType.exportedData, exported);
+            }
+                break;
+            
+            case workerMessageType.exportRMI:
+            {
+                if (data === undefined)
+                {
+                    // recommended settings
+                    this.postSyn(returnMessageType.exportedData, this.getRecommendedRMIDISettings());
+                }
+                else
+                {
+                    const exported = await this.exportRMIDI(
+                        data.compress,
+                        data.quality,
+                        data.metadata,
+                        data.adjust
+                    );
+                    this.postSyn(returnMessageType.exportedData, exported);
+                }
+            }
                 break;
             
             default:
@@ -654,10 +685,30 @@ class WorkerSynthEngine
         }
     }
     
+    
+    /**
+     * @returns {{compress: boolean, adjust: boolean}}
+     */
+    getRecommendedRMIDISettings()
+    {
+        const mid = this.seqEngine.midiData;
+        // pick a bank:
+        // if midi has an embedded bank, use that
+        // if we have an extra bank, use that
+        // otherwise pick the normal bank
+        const fontBuffer = mid.embeddedSoundFont || this.extraSoundBank || this.soundBank;
+        
+        return {
+            compress: true,
+            adjust: fontBuffer === this.soundBank
+        };
+    }
 }
 
 WorkerSynthEngine.prototype.renderAudio = renderAudio;
 WorkerSynthEngine.prototype.exportSoundBank = exportSoundBank;
+WorkerSynthEngine.prototype.exportMIDI = exportMIDI;
+WorkerSynthEngine.prototype.exportRMIDI = exportRMIDI;
 
 const worker = new WorkerSynthEngine();
 onmessage = worker.handleMainThreadMessage.bind(worker);

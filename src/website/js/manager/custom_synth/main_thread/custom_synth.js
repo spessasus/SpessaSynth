@@ -401,10 +401,11 @@ export class CustomSynth
     
     /**
      * @param data {WorkerMessage}
+     * @param transferable {Transferable[]?}
      */
-    post(data)
+    post(data, transferable = [])
     {
-        this.worker.postMessage(data);
+        this.worker.postMessage(data, transferable);
     }
     
     /**
@@ -664,77 +665,6 @@ export class CustomSynth
     }
     
     /**
-     * @param sampleRate {number}
-     * @param additionalTime {number}
-     * @param separateChannels {boolean}
-     * @param loopCount {number}
-     * @param callback {(progress: number) => void}
-     * @returns {Promise<AudioChunks>}
-     */
-    async renderAudio(sampleRate, additionalTime, separateChannels, loopCount, callback)
-    {
-        /**
-         * @type {Promise<AudioChunks>}
-         */
-        const promise = new Promise(r => this.workerFinishCallback = r);
-        this.workerProgressCallback = callback;
-        this.post({
-            messageType: workerMessageType.renderAudio,
-            messageData: {
-                sampleRate,
-                additionalTime,
-                separateChannels,
-                loopCount
-            }
-        });
-        return promise;
-    }
-    
-    /**
-     * @param trim {boolean}
-     * @param compress {boolean}
-     * @param quality {number}
-     * @param callback {(progress: number) => unknown}
-     * @returns {Promise<{fileName: string, url: string}>}
-     */
-    async exportSoundFont(trim, compress, quality, callback)
-    {
-        const promise = new Promise(r => this.workerFinishCallback = r);
-        this.workerProgressCallback = callback;
-        this.post({
-            messageType: workerMessageType.exportSoundBank,
-            messageData: {
-                isSf2: true,
-                trim,
-                compress,
-                quality
-            }
-        });
-        return promise;
-    }
-    
-    /**
-     * @param trim {boolean}
-     * @param callback {(progress: number) => unknown}
-     * @returns {Promise<{fileName: string, url: string}>}
-     */
-    async exportDLS(trim, callback)
-    {
-        const promise = new Promise(r => this.workerFinishCallback = r);
-        this.workerProgressCallback = callback;
-        this.post({
-            messageType: workerMessageType.exportSoundBank,
-            messageData: {
-                isSf2: false,
-                trim,
-                compress: false,
-                quality: 0
-            }
-        });
-        return promise;
-    }
-    
-    /**
      * Changes the effects gain.
      * @param reverbGain {number} the reverb gain, 0-1.
      * @param chorusGain {number} the chorus gain, 0-1.
@@ -893,5 +823,133 @@ export class CustomSynth
             this.lockController(i, midiControllers.reverbDepth, true);
         }
         return "That's the spirit!";
+    }
+    
+    
+    /**
+     * @param sampleRate {number}
+     * @param additionalTime {number}
+     * @param separateChannels {boolean}
+     * @param loopCount {number}
+     * @param callback {(progress: number) => void}
+     * @returns {Promise<AudioChunks>}
+     */
+    async renderAudio(sampleRate, additionalTime, separateChannels, loopCount, callback)
+    {
+        /**
+         * @type {Promise<AudioChunks>}
+         */
+        const promise = new Promise(r => this.workerFinishCallback = r);
+        this.workerProgressCallback = callback;
+        this.post({
+            messageType: workerMessageType.renderAudio,
+            messageData: {
+                sampleRate,
+                additionalTime,
+                separateChannels,
+                loopCount
+            }
+        });
+        return promise;
+    }
+    
+    /**
+     * @param trim {boolean}
+     * @param compress {boolean}
+     * @param quality {number}
+     * @param callback {(progress: number) => unknown}
+     * @returns {Promise<{fileName: string, url: string}>}
+     */
+    async exportSoundFont(trim, compress, quality, callback)
+    {
+        const promise = new Promise(r => this.workerFinishCallback = r);
+        this.workerProgressCallback = callback;
+        this.post({
+            messageType: workerMessageType.exportSoundBank,
+            messageData: {
+                isSf2: true,
+                trim,
+                compress,
+                quality
+            }
+        });
+        return promise;
+    }
+    
+    /**
+     * @param trim {boolean}
+     * @param callback {(progress: number) => unknown}
+     * @returns {Promise<{fileName: string, url: string}>}
+     */
+    async exportDLS(trim, callback)
+    {
+        const promise = new Promise(r => this.workerFinishCallback = r);
+        this.workerProgressCallback = callback;
+        this.post({
+            messageType: workerMessageType.exportSoundBank,
+            messageData: {
+                isSf2: false,
+                trim,
+                compress: false,
+                quality: 0
+            }
+        });
+        return promise;
+    }
+    
+    /**
+     * @returns {Promise<{fileName: string, url: string}>}
+     */
+    async exportMIDI()
+    {
+        const promise = new Promise(r => this.workerFinishCallback = r);
+        this.post({
+            messageType: workerMessageType.exportMIDI,
+            messageData: undefined
+        });
+        return promise;
+    }
+    
+    /**
+     * @param compress {boolean}
+     * @param quality {number}
+     * @param metadata {Partial<RMIDIMetadata>}
+     * @param adjust {boolean}
+     * @param callback {(progress: number) => unknown}
+     * @returns {Promise<{fileName: string, url: string}>}
+     */
+    async exportRMI(compress, quality, metadata, adjust, callback)
+    {
+        const promise = new Promise(r => this.workerFinishCallback = r);
+        this.workerProgressCallback = callback;
+        const transferable = [];
+        if (metadata.picture)
+        {
+            transferable.push(metadata.picture);
+        }
+        this.post({
+            messageType: workerMessageType.exportRMI,
+            messageData: {
+                compress,
+                quality,
+                metadata,
+                adjust
+            }
+        }, transferable);
+        return promise;
+    }
+    
+    
+    /**
+     * @returns {Promise<{compress: boolean, adjust: boolean}>}
+     */
+    async getRecommendedRMIDIExportSettings()
+    {
+        const promise = new Promise(r => this.workerFinishCallback = r);
+        this.post({
+            messageType: workerMessageType.exportRMI,
+            messageData: undefined
+        });
+        return promise;
     }
 }

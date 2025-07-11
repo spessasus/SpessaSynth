@@ -11,14 +11,13 @@ import { LocaleManager } from "../locale/locale_manager.js";
 import { isMobile } from "../utils/is_mobile.js";
 import { keybinds } from "../utils/keybinds.js";
 import { _doExportAudioData, _exportAudioData } from "./export_audio/export_audio.js";
-import { exportMidi } from "./export_audio/export_midi.js";
 import { _exportSoundfont } from "./export_audio/export_soundfont.js";
 import { exportSong } from "./export_audio/export_song.js";
 import { _exportRMIDI } from "./export_audio/export_rmidi.js";
 import { closeNotification, showNotification } from "../notification/notification.js";
 import { DropFileHandler } from "../utils/drop_file_handler.js";
 import { _exportDLS } from "./export_audio/export_dls.js";
-import { BasicMIDI, IndexedByteArray, loadSoundFont, SpessaSynthCoreUtils as util } from "spessasynth_core";
+import { BasicMIDI, IndexedByteArray, SpessaSynthCoreUtils as util } from "spessasynth_core";
 import { prepareExtraBankUpload } from "./extra_bank_handling.js";
 import { CustomSynth } from "./custom_synth/main_thread/custom_synth.js";
 import { CustomSeq } from "./custom_synth/main_thread/custom_seq.js";
@@ -68,10 +67,6 @@ class Manager
      * @type {function(string)}
      */
     sfError;
-    /**
-     * @type {EncodeVorbisFunction}
-     */
-    compressionFunction = undefined;
     
     /**
      * @type {CustomSynth}
@@ -105,16 +100,6 @@ class Manager
         {
             solve();
         });
-    }
-    
-    async getVorbisEncodeFunction()
-    {
-        if (this.compressionFunction !== undefined)
-        {
-            return this.compressionFunction;
-        }
-        this.compressionFunction = (await import("../../../externals/encode_vorbis.js")).encodeVorbis;
-        return this.compressionFunction;
     }
     
     saveUrl(url, name)
@@ -519,17 +504,28 @@ class Manager
     
     async downloadDesfont()
     {
-        const soundfont = loadSoundFont(this.soundFont);
-        const binary = await soundfont.write();
-        const blob = new Blob([binary.buffer], { type: "audio/soundfont" });
-        this.saveBlob(blob, `${soundfont.soundFontInfo["INAM"]}.sf2`);
+        const exported = await this.synth.exportSoundFont(
+            false,
+            false,
+            0,
+            (p) =>
+            {
+                console.info(`%cExporting SF2: ${p}`);
+            }
+        );
+        this.saveUrl(exported.url, exported.fileName);
+    }
+    
+    async exportMidi()
+    {
+        const mid = await this.synth.exportMIDI();
+        this.saveUrl(mid.url, `${this.seqUI.currentSongTitle || "unnamed_song"}.mid`);
     }
 }
 
 Manager.prototype.exportSong = exportSong;
 Manager.prototype._exportAudioData = _exportAudioData;
 Manager.prototype._doExportAudioData = _doExportAudioData;
-Manager.prototype.exportMidi = exportMidi;
 Manager.prototype._exportSoundfont = _exportSoundfont;
 Manager.prototype._exportDLS = _exportDLS;
 Manager.prototype._exportRMIDI = _exportRMIDI;
