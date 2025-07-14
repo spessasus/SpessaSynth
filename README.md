@@ -8,6 +8,9 @@
 
 <h1 align="center"><a href="https://spessasus.github.io/SpessaSynth/">Live Demo (no download needed!)</a></h1>
 
+<p align='center'><b><!--suppress HtmlUnknownAnchorTarget -->
+<a href='#windows'>Download Local Edition</a></b></p>
+
 <h2 align="center">Made with SpessaSynth</h2>
 <p align="center">
 <a href="https://www.youtube.com/watch?v=Cu_A1IR65yQ"><img width='500' alt="Watch the YouTube video" src="https://github.com/user-attachments/assets/d73c0585-67eb-4490-ad39-839b22ab7577"></a>
@@ -80,7 +83,7 @@ MARKDOWN VERSION
 
 </p>
 
-### Installation (Local Edition)
+### Downloading the Local Edition
 Local edition comes with easier soundfont management than the demo version,
 also allowing to use it offline!
 
@@ -94,13 +97,13 @@ also allowing to use it offline!
 
 #### Windows
 1. [Download the program](https://spessasus.github.io/SpessaSynth/SpessaSynth-LocalEdition.zip).
-2. Put your SoundFonts into the `soundfonts` folder (you can select SoundFonts in the program).
-3. Double-click `Open SpessaSynth.bat`.
+2. Put your SoundFonts and DLS files into the `soundfonts` folder (you can select sound banks in the program).
+3. Double-click `Open SpessaSynth.bat` (or you can type `node server/server.js` in the Command Prompt)
 4. Enjoy!
 
 #### Linux
 1. [Download the program](https://spessasus.github.io/SpessaSynth/SpessaSynth-LocalEdition.zip).
-2. Put your SoundFonts into the `soundfonts` folder (you can select SoundFonts in the program).
+2. Put your SoundFonts and DLS files into the `soundfonts` folder (you can select sound banks in the program).
 3. `node server/server.js`
 4. Enjoy!
 
