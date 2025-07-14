@@ -746,10 +746,18 @@ class SequencerUI
             return;
         }
         this.lastTimeUpdate = seqTime;
-        this.progressBar.style.width = `${(seqTime / this.seq.duration) * 100}%`;
-        const time = formatTime(seqTime);
-        const total = formatTime(this.seq.duration);
-        this.progressTime.innerText = `${time.time} / ${total.time}`;
+        if (this.seq.hasDummyData)
+        {
+            this.progressBar.style.width = "0%";
+            this.progressTime.innerText = "--:-- / --:--";
+        }
+        else
+        {
+            this.progressBar.style.width = `${(seqTime / this.seq.duration) * 100}%`;
+            const time = formatTime(seqTime);
+            const total = formatTime(this.seq.duration);
+            this.progressTime.innerText = `${time.time} / ${total.time}`;
+        }
         if (this.requiresTextUpdate)
         {
             this.updateOtherTextEvents();
