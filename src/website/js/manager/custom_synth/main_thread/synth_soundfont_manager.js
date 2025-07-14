@@ -1,6 +1,5 @@
 import { workerMessageType, WorkerSoundfontManagerMessageType } from "../worker_thread/worker_message.js";
 import { SpessaSynthCoreUtils } from "spessasynth_core";
-import { WorkletSoundfontManagerMessageType } from "spessasynth_lib/src/synthetizer/sfman_message.js";
 
 export class SoundfontManager
 {
@@ -63,7 +62,7 @@ export class SoundfontManager
             SpessaSynthCoreUtils.SpessaSynthWarn(`No soundfont with id of "${id}" found. Aborting!`);
             return;
         }
-        this._sendToWorklet(WorkletSoundfontManagerMessageType.deleteSoundFont, id);
+        this._sendToWorker(WorkerSoundfontManagerMessageType.deleteSoundFont, id, []);
     }
     
     /**

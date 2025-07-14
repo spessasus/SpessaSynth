@@ -72,7 +72,6 @@ export function prepareExtraBankUpload()
                     {
                         await this.synth.soundfontManager.deleteSoundFont(EXTRA_BANK_ID);
                         this.extraBankName = "";
-                        this.extraBankBuffer = undefined;
                         this.extraBankOffset = 0;
                         if (this.seq?.paused === false)
                         {

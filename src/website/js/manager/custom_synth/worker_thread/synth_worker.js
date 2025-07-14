@@ -22,7 +22,6 @@ import {
 } from "./worker_message.js";
 import { MIDIData } from "./midi_data.js";
 import { renderAudio } from "./render_audio.js";
-import { WorkletSoundfontManagerMessageType } from "spessasynth_lib/src/synthetizer/sfman_message.js";
 import { EXTRA_BANK_ID } from "../../extra_bank_id.js";
 import { exportSoundBank } from "./export_sf.js";
 import { exportMIDI } from "./export_midi.js";
@@ -561,11 +560,11 @@ class WorkerSynthEngine
                             });
                             break;
                         
-                        case WorkletSoundfontManagerMessageType.deleteSoundFont:
+                        case WorkerSoundfontManagerMessageType.deleteSoundFont:
                             sfManager.deleteSoundFont(messageData);
                             break;
                         
-                        case WorkletSoundfontManagerMessageType.rearrangeSoundFonts:
+                        case WorkerSoundfontManagerMessageType.rearrangeSoundFonts:
                             sfManager.rearrangeSoundFonts(messageData);
                         
                     }

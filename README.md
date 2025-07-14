@@ -1,5 +1,6 @@
 <!--suppress HtmlDeprecatedAttribute, HtmlRequiredAltAttribute, HtmlExtraClosingTag -->
 <p align='center'>
+<!--suppress CheckImageSize -->
 <img src="src/website/spessasynth_logo_rounded.png" width='300' alt='SpessaSynth logo'>
 </p>
 
@@ -105,10 +106,15 @@ also allowing to use it offline!
 
 ### Building from source
 ```shell
-git clone "https://github.com/spessasus/SpessaSynth"
+# clone
+git clone "https://github.com/spessasus/SpessaSynth" --depth 1
+# install dependencies
 npm i
-npm run build
+# build and start the local edition
+npm run start
 ```
+The "start" will automatically build the script and then invoke server.js. 
+Then it will only invoke server.js so you need to `npm run build` to rebuild.
 
 [If you would like to help translate SpessaSynth, please read this guide (and thank you!)](src/website/js/locale/locale_files/README.md)
 
