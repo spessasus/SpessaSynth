@@ -166,29 +166,6 @@ export function getUnlockSVG(size)
 </svg>`;
 }
 
-export function getSf2LogoSvg(size)
-{
-    return `<svg width='${size}' height='${size}' viewBox='0 0 83.174 81.103' fill='currentColor' xml:space='preserve' xmlns='http://www.w3.org/2000/svg'>
-<defs>
-<clipPath id='clipPath7'>
-<rect transform='rotate(44.958)' x='65.485' y='103.08' width='83.745' height='81.546' fill='currentColor' stroke-width='.26458'/>
-</clipPath>
-<clipPath id='clipPath9'
-><rect transform='matrix(.67799 -.73507 .73806 .67473 0 0)' x='67.253' y='100.5' width='86.006' height='79.511' fill='currentColor' fill-opacity='.09612' stroke-width='.26476'/>
-</clipPath>
-<clipPath id='clipPath10'><rect x='65.485' y='103.08' width='83.745' height='81.546' fill='#0ff' stroke-width='.26458'/>
-</clipPath>
-<clipPath id='clipPath11'><rect x='65.485' y='103.08' width='83.745' height='81.546' fill='currentColor' stroke-width='.26458'/>
-</clipPath>
-</defs>
-<g transform='translate(-65.485 -103.23)'>
-<path d='m65.262 139.48c1.3624-6.7496 1.6548-14.043 5.7345-19.888 5.7864-8.3588 14.537-15.846 25.154-16.3 1.7234-0.0776 5.5034-0.28571 1.9074 0.65373-7.4866 2.6362-13.723 7.7642-19.543 12.986-6.2291 6.337-9.3022 14.78-13.252 22.549z' clip-path='url(#clipPath11)' stroke-width='.26458'/><path d='m83.381 144.84c0.987-5.348 1.5703-11.153 5.4341-15.36 4.1817-5.3006 10.757-8.715 17.552-8.6209-6.116 1.9994-11.467 6.0247-15.711 10.776-3.242 3.9158-4.9545 8.7506-7.2747 13.206z' clip-path='url(#clipPath10)' stroke-width='.17519'/>
-<path transform='matrix(.657 .75389 -.71867 .69536 0 0)' d='m176.97-34.49a50.988 16.042 90 0 0-10.353 47.674 50.988 16.042 90 0 0 16.042 50.988 50.988 16.042 90 0 0 15.091-33.843c0.03523-0.004687 0.08911-0.032268 0.12752-0.040899l-0.30503 0.026749-1.2845-35.938 1.2651-0.11118a50.988 16.042 90 0 0-14.894-32.069 50.988 16.042 90 0 0-5.6883 3.3134zm-2.8904 43.129c0.95278-1.0096 1.7992-1.5659 0.54206 0.59765-1.2633 3.6709-1.2266 8.239 1.5374 11.026-3.874-1.5224-5.9894-6.4334-3.2573-10.178 0.28939-0.43335 0.74478-0.98606 1.1779-1.445zm23.969-14.417 0.03731-0.0032873c-0.01217 1.409e-4 -0.02503 0.0027689-0.03731 0.0032873zm0.3756 0.055028 1.2362 34.585c1.8993-1.8327 3.683-3.8858 5.5702-5.7411l-0.5343-23.05c-0.9706-1.4279-2.6664-2.5006-3.9092-3.7953-0.84642-0.47048-1.4531-1.7381-2.3628-1.9983z' clip-path='url(#clipPath9)' stroke-width='.28839'/>
-<rect transform='rotate(-44.958)' x='-37.937' y='206.86' width='23.377' height='6.8056' clip-path='url(#clipPath7)' stroke-width='.26458'/></g></svg>
-
-    `;
-}
-
 export function getHourglassSvg(size)
 {
     return `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}' fill='currentColor' class='bi bi-hourglass' viewBox='0 0 16 16'>

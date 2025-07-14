@@ -1,4 +1,3 @@
-import { getSf2LogoSvg } from "../utils/icons.js";
 import { closeNotification, showNotification } from "../notification/notification.js";
 import { EXTRA_BANK_ID } from "./extra_bank_id.js";
 
@@ -12,7 +11,6 @@ export function prepareExtraBankUpload()
     this.extraBankOffset = 0;
     let extraBankName = "";
     const extra = document.getElementById("extra_bank_button");
-    extra.innerHTML = getSf2LogoSvg(24);
     this.localeManager.bindObjectProperty(extra, "title", "locale.extraBank.button");
     extra.onclick = () =>
     {
