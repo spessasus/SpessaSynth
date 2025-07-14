@@ -45,7 +45,6 @@ export const localePortuguese = {
     warnings: {
         outOfMemory: "Seu navegador ficou sem memória. Tente usar o Firefox ou uma SoundFont SF3 (veja o console para detalhes).",
         noMidiSupport: "Nenhuma porta MIDI detectada, essa função será desativada.",
-        chromeMobile: "SpessaSynth pode ter um desempenho reduzido no Chrome Mobile. Considere usar o Firefox para Android.",
         warning: "Atenção"
     },
     hideTopBar: {

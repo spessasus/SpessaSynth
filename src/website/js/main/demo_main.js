@@ -1,7 +1,6 @@
 "use strict";
 
 import { Manager } from "../manager/manager.js";
-import { isMobile } from "../utils/is_mobile.js";
 import { getCheckSvg, getExclamationSvg, getHourglassSvg } from "../utils/icons.js";
 import { closeNotification, showNotification } from "../notification/notification.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
@@ -461,25 +460,6 @@ demoInit(initLocale).then(() =>
         loading.style.display = "none";
         document.body.classList.remove("no_scroll");
         document.documentElement.classList.remove("no_scroll");
-        
-        // check for chrome android
-        if (isMobile)
-        {
-            // noinspection JSUnresolvedReference
-            if (window.chrome)
-            {
-                showNotification(
-                    window.manager.localeManager.getLocaleString(
-                        "locale.warnings.warning"),
-                    [{
-                        type: "text",
-                        textContent: window.manager.localeManager.getLocaleString(
-                            "locale.warnings.chromeMobile")
-                    }],
-                    7
-                );
-            }
-        }
     }, 1000);
     /**
      * @param e {{target: HTMLInputElement}}

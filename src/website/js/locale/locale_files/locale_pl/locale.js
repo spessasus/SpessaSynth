@@ -77,7 +77,6 @@ export const localePolish = {
     warnings: {
         outOfMemory: "Twojej przeglądarce skończyła się pamięć. Rozważ użycie Firefoxa albo plików SF3. (Zobacz błąd w konsoli)",
         noMidiSupport: "Nie wykryto MIDI. Korzystanie z portów MIDI nie będzie dostępne.",
-        chromeMobile: "SpessaSynth działa wolno na Chromie na telefon. Rozważ użycie Firefoxa Android.",
         warning: "Uwaga"
     },
     
