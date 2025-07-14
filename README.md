@@ -114,10 +114,15 @@ git clone "https://github.com/spessasus/SpessaSynth" --depth 1
 # install dependencies
 npm i
 # build and start the local edition
-npm run start
+npm start
 ```
 The "start" will automatically build the script and then invoke server.js. 
 Then it will only invoke server.js so you need to `npm run build` to rebuild.
+
+The build files:
+- dist: the online demo along with the bundled Local edition ZIP for downloading. This is what's hosted on GH pages.
+- local-dev: Local Edition sources with sourcemaps. For development.
+- server: the Local Edition server. It is here so it can use the root "soundfonts" folder. This is what `npm start` invokes.
 
 [If you would like to help translate SpessaSynth, please read this guide (and thank you!)](src/website/js/locale/locale_files/README.md)
 
