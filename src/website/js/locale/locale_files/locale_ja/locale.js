@@ -11,7 +11,7 @@ import { exportAudio } from "./export_audio.js";
 export const localeJapanese = {
     localeName: "日本語",
     // title messsage
-    titleMessage: "SpessaSynth: SoundFont2 Javascript シンセサイザー",
+    titleMessage: "SpessaSynth: SF2/DLS Javascript シンセサイザー",
     demoTitleMessage: "SpessaSynth: SF2/DLS Javascript シンセサイザー オンラインデモ",
     
     synthInit: {

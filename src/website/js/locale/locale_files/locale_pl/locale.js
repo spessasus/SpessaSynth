@@ -11,7 +11,7 @@ import { exportAudio } from "./export_audio.js";
 export const localePolish = {
     localeName: "Polski",
     // title messsage
-    titleMessage: "SpessaSynth: JavaScriptowy Syntezator SoundFont2",
+    titleMessage: "SpessaSynth: JavaScriptowy Syntezator SF2/DLS",
     demoTitleMessage: "SpessaSynth: JavaScriptowy Syntezator SF2/DLS Wersja Demo",
     
     synthInit: {
