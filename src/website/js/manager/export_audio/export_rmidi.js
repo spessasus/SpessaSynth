@@ -1,7 +1,6 @@
-import { consoleColors } from "../utils/console_colors.js";
-import { closeNotification, showNotification } from "../notification/notification.js";
-import { loadSoundFont } from "spessasynth_core";
-import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
+import { consoleColors } from "../../utils/console_colors.js";
+import { closeNotification, showNotification } from "../../notification/notification.js";
+import { ANIMATION_REFLOW_TIME } from "../../utils/animation_utils.js";
 
 /**
  * @this {Manager}
@@ -32,14 +31,6 @@ export async function _exportRMIDI()
         "Created using SpessaSynth: https://spessasus.github.io/SpessaSynth",
         decoder
     );
-    
-    // get the MIDI and pick the bank now to improve recommended settings
-    const mid = await this.seq.getMIDI();
-    // pick a bank:
-    // if midi has an embedded bank, use that
-    // if we have an extra bank, use that
-    // otherwise pick the normal bank
-    const fontBuffer = mid.embeddedSoundFont || this.extraBankBuffer || this.soundFont;
     
     const path = "locale.exportAudio.formats.formats.rmidi.options.";
     const metadataPath = "locale.exportAudio.formats.metadata.";
@@ -173,6 +164,8 @@ export async function _exportRMIDI()
                             attributes: {
                                 "class": "export_rmidi_message"
                             }
+                        }, {
+                            type: "progress"
                         }],
                         9999999,
                         false
@@ -180,74 +173,41 @@ export async function _exportRMIDI()
                     // allow the notification to show
                     await new Promise(r => setTimeout(r, 500));
                     const message = notification.div.getElementsByClassName("export_rmidi_message")[0];
-                    
-                    const font = loadSoundFont(fontBuffer);
-                    
+                    const progressDiv = notification.div.getElementsByClassName("notification_progress")[0];
                     message.textContent = this.localeManager.getLocaleString(localePath + "modifyingMIDI");
                     await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
                     
-                    try
+                    let pictureBuffer = undefined;
+                    if (picture?.["type"]?.split("/")[0] === "image")
                     {
-                        mid.applySnapshotToMIDI(await this.synth.getSynthesizerSnapshot());
-                    }
-                    catch (e)
-                    {
-                        console.warn("Failed to modify MIDI:", e);
+                        pictureBuffer = await picture.arrayBuffer();
                     }
                     
-                    message.textContent = this.localeManager.getLocaleString(localePath + "modifyingSoundfont");
-                    await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
+                    const modifyingSoundFont = this.localeManager.getLocaleString(localePath + "modifyingSoundfont");
                     
-                    font.trimSoundBank(mid);
-                    const compressFunc = await this.getVorbisEncodeFunction();
-                    /**
-                     * @param data {Float32Array}
-                     * @param rate {number}
-                     * @returns {Uint8Array}
-                     */
-                    const compressReal = (data, rate) => compressFunc([data], rate, quality);
-                    const newFont = await font.write({
-                        compress: compressed,
-                        compressionFunction: compressReal,
-                        progressFunction: (n, i, p) =>
+                    // export
+                    const mid = await this.synth.exportRMI(
+                        compressed,
+                        quality,
                         {
-                            const percentProgress = (i / p * 100).toFixed(1);
-                            message.textContent = this.localeManager.getLocaleString(localePath + "modifyingSoundfont") + ` (${percentProgress}%)`;
-                        }
-                    });
-                    
-                    message.textContent = this.localeManager.getLocaleString(localePath + "saving");
-                    await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
-                    
-                    let fileBuffer = undefined;
-                    if (picture?.type.split("/")[0] === "image")
-                    {
-                        fileBuffer = await picture.arrayBuffer();
-                    }
-                    else if (mid.RMIDInfo?.["IPIC"] !== undefined)
-                    {
-                        fileBuffer = mid.RMIDInfo["IPIC"].buffer;
-                    }
-                    
-                    const rmidBinary = mid.writeRMIDI(
-                        newFont,
-                        font,
-                        bankOffset,
-                        this.seqUI.encoding,
-                        {
-                            name: songTitle,
-                            comment: comment,
-                            engineer: font.soundFontInfo["IENG"], // use soundfont engineer
-                            picture: fileBuffer,
-                            album: album.length > 0 ? album : undefined,
-                            artist: artist.length > 0 ? artist : undefined,
-                            genre: genre.length > 0 ? genre : undefined,
-                            midiEncoding: this.seqUI.encoding // use the selected encoding
+                            songTitle,
+                            artist,
+                            album,
+                            bankOffset,
+                            picture: pictureBuffer,
+                            encoding: this.seqUI.encoding,
+                            comment,
+                            genre
                         },
-                        adjust
+                        adjust,
+                        (progress) =>
+                        {
+                            message.textContent = modifyingSoundFont;
+                            progressDiv.style.width = `${progress * 100}%`;
+                        }
                     );
-                    const blob = new Blob([rmidBinary.buffer], { type: "audio/rmid" });
-                    this.saveBlob(blob, `${songTitle || "unnamed_song"}.rmi`);
+                    
+                    this.saveUrl(mid.url, mid.fileName);
                     message.textContent = this.localeManager.getLocaleString(localePath + "done");
                     closeNotification(notification.id);
                     console.groupEnd();
@@ -259,10 +219,12 @@ export async function _exportRMIDI()
         this.localeManager
     );
     
+    const recommended = await this.synth.getRecommendedRMIDIExportSettings();
+    
     // compress if the bank is larger than 20MB
-    n.div.querySelector("input[compress-toggle='1']").checked = fontBuffer.byteLength > 1024 * 1024 * 20;
+    n.div.querySelector("input[compress-toggle='1']").checked = recommended.compress;
     // adjust for the normal bank only
-    n.div.querySelector("input[name='adjust']").checked = fontBuffer === this.soundFont;
+    n.div.querySelector("input[name='adjust']").checked = recommended.adjust;
     
     const input = n.div.querySelector("input[type='file']");
     input.oninput = () =>

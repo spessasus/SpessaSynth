@@ -126,6 +126,12 @@ export function serveSettings(res)
 export function serveStaticFile(res, filePath, mimeType = undefined)
 {
     filePath = decodeURIComponent(filePath);
+    // filter out the something.js?hash=5637f
+    const questionMark = filePath.split("?");
+    if (questionMark.length === 2)
+    {
+        filePath = questionMark[0];
+    }
     if (
         filePath.toLowerCase().endsWith(".sf3") ||
         filePath.toLowerCase().endsWith(".sf2") ||

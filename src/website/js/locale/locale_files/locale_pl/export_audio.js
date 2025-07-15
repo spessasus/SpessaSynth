@@ -33,7 +33,8 @@ export const exportAudio = {
                         description: "Zapisz każdy kanał w osobnym pliuku. Przydatne dla rzeczy jak widok oscyloskopowy. Należy pamiętać że to wyłącza ekfet pogłosu i chóru",
                         saving: {
                             title: "Pliki audio kanałów",
-                            save: "Zapisz kanał {0}"
+                            save: "Zapisz kanał {0}",
+                            saveAll: "Zapisz wszystkie"
                         }
                     },
                     loopCount: {
@@ -43,6 +44,7 @@ export const exportAudio = {
                 },
                 exportMessage: {
                     message: "Eksportowanie audio...",
+                    addingEffects: "Dodawanie efektów...",
                     estimated: "Pozostało:",
                     convertWav: "Konwertowanie do wav..."
                 }
@@ -57,7 +59,7 @@ export const exportAudio = {
             
             soundfont: {
                 button: {
-                    title: "SoundFont (.sf2)",
+                    title: "SoundFont (.sf2, .sf3)",
                     description: "Eksportuj SoundFont"
                 },
                 

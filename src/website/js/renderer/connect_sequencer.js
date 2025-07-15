@@ -1,12 +1,14 @@
 import { messageTypes } from "spessasynth_core";
-import { Sequencer } from "spessasynth_lib";
 
 /**
- * @param sequencer {Sequencer}
+ * @param sequencer {CustomSeq}
  * @this {Renderer}
  */
 export function connectSequencer(sequencer)
 {
+    /**
+     * @type {CustomSeq}
+     */
     this.seq = sequencer;
     this.seq.addOnTimeChangeEvent(() => this.resetIndexes(), "renderer-time-change");
     

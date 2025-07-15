@@ -57,7 +57,7 @@ export const exportAudio = {
             
             soundfont: {
                 button: {
-                    title: "SoundFont (.sf2)",
+                    title: "SoundFont (.sf2, .sf3)",
                     description: "Exporter une banque de sons au format SoundFont2"
                 },
                 
@@ -70,7 +70,7 @@ export const exportAudio = {
                     },
                     compress: {
                         title: "Compresser",
-                        description: "Compacter les échantillons grâce à l'algorithme de compression avec pertes Ogg Vorbis\n" + 
+                        description: "Compacter les échantillons grâce à l'algorithme de compression avec pertes Ogg Vorbis\n" +
                             "Ceci réduit de manière significative le poids du fichier\nNote : si la banque de sons était déjà compressée, cette option ne décompressera pas même en étant désactivée"
                     },
                     quality: {

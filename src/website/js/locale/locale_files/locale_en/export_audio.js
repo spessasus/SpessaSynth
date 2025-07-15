@@ -34,7 +34,8 @@ export const exportAudio = {
                         description: "Save each channel as a separate file. Useful for things like oscilloscope viewers. Note that this disables reverb and chorus.",
                         saving: {
                             title: "Channel files",
-                            save: "Save channel {0}"
+                            save: "Save channel {0}",
+                            saveAll: "Save all"
                         }
                     },
                     loopCount: {
@@ -44,6 +45,7 @@ export const exportAudio = {
                 },
                 exportMessage: {
                     message: "Exporting WAV audio...",
+                    addingEffects: "Adding effects...",
                     estimated: "Remaining:",
                     convertWav: "Converting to wav..."
                 }
@@ -58,7 +60,7 @@ export const exportAudio = {
             
             soundfont: {
                 button: {
-                    title: "SoundFont (.sf2)",
+                    title: "SoundFont (.sf2, .sf3)",
                     description: "Export a SoundFont2 file"
                 },
                 
@@ -78,6 +80,10 @@ export const exportAudio = {
                         title: "Compression quality",
                         description: "The quality of compression. Higher is better"
                     }
+                },
+                
+                exportMessage: {
+                    message: "Exporting SoundFont..."
                 }
             },
             
@@ -91,6 +97,10 @@ export const exportAudio = {
                     message: "DLS export is limited and may produce broken files with large and complex SoundFonts.",
                     details: "More info",
                     confirm: "Export anyways"
+                },
+                
+                exportMessage: {
+                    message: "Exporting DLS..."
                 }
             },
             

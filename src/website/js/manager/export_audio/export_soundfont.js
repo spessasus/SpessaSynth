@@ -1,6 +1,5 @@
-import { consoleColors } from "../utils/console_colors.js";
-import { closeNotification, showNotification } from "../notification/notification.js";
-import { loadSoundFont } from "spessasynth_core";
+import { consoleColors } from "../../utils/console_colors.js";
+import { closeNotification, showNotification } from "../../notification/notification.js";
 
 /**
  * @this {Manager}
@@ -47,31 +46,30 @@ export async function _exportSoundfont()
                     const quality = parseInt(n.div.querySelector("input[type='range']").value) / 10;
                     closeNotification(n.id);
                     console.group(
-                        "%cExporting minified soundfont...",
+                        "%cExporting soundfont...",
                         consoleColors.info
                     );
-                    const mid = await this.seq.getMIDI();
-                    const soundfont = loadSoundFont(mid.embeddedSoundFont || this.soundFont);
-                    mid.applySnapshotToMIDI(await this.synth.getSynthesizerSnapshot());
-                    if (trimmed)
+                    const exportingMessage = manager.localeManager.getLocaleString(`locale.exportAudio.formats.formats.soundfont.exportMessage.message`);
+                    const notification = showNotification(
+                        exportingMessage,
+                        [
+                            { type: "text", textContent: exportingMessage },
+                            { type: "progress" }
+                        ],
+                        9999999,
+                        false
+                    );
+                    const progressDiv = notification.div.getElementsByClassName("notification_progress")[0];
+                    const detailMessage = notification.div.getElementsByTagName("p")[0];
+                    const callback = (p) =>
                     {
-                        soundfont.trimSoundBank(mid);
-                    }
-                    const compressFunc = await this.getVorbisEncodeFunction();
-                    /**
-                     * @param data {Float32Array}
-                     * @param rate {number}
-                     * @returns {Uint8Array}
-                     */
-                    const compressReal = (data, rate) => compressFunc([data], rate, quality);
-                    const binary = await soundfont.write({
-                        compress: compressed,
-                        compressionFunction: compressReal
-                    });
-                    const blob = new Blob([binary.buffer], { type: "audio/soundfont" });
-                    let extension = soundfont.soundFontInfo["ifil"].split(".")[0] === "3" ? "sf3" : "sf2";
-                    this.saveBlob(blob, `${soundfont.soundFontInfo["INAM"] || "unnamed"}.${extension}`);
+                        progressDiv.style.width = `${p * 100}%`;
+                        detailMessage.textContent = `${exportingMessage} ${Math.floor(p * 100)}%`;
+                    };
+                    const exported = await this.synth.exportSoundFont(trimmed, compressed, quality, callback);
+                    this.saveUrl(exported.url, exported.fileName);
                     console.groupEnd();
+                    closeNotification(notification.id);
                 }
             }
         ],

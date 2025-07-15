@@ -1,15 +1,13 @@
 import http from "http";
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
 import { getVersion, serveSettings, serveSfontList, serveStaticFile } from "./serve.js";
 import { openURL } from "./open.js";
 
 let PORT = 8181;
 const HOST = "0.0.0.0";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = import.meta.dirname;
 
 export const configPath = path.join(__dirname, "./config.json");
 export const soundfontsPath = path.join(__dirname, "../soundfonts");

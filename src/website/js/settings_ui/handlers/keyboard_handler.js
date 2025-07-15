@@ -1,5 +1,3 @@
-import { Sequencer } from "spessasynth_lib";
-
 export const USE_MIDI_RANGE = "midi range";
 
 /**
@@ -177,7 +175,7 @@ export function _createKeyboardHandler(keyboard, synthui, renderer)
     };
     
     /**
-     * @param seq {Sequencer}
+     * @param seq {CustomSeq}
      */
     this.addSequencer = seq =>
     {

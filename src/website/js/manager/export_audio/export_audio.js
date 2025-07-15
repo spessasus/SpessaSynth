@@ -1,12 +1,13 @@
-import { closeNotification, showNotification } from "../notification/notification.js";
-import { audioBufferToWav, Synthetizer } from "spessasynth_lib";
-import { SynthesizerSnapshot } from "spessasynth_core";
-import { formatTime } from "../utils/other.js";
-import { consoleColors } from "../utils/console_colors.js";
+import { closeNotification, showNotification } from "../../notification/notification.js";
+import { audioBufferToWav, FancyChorus, getReverbProcessor } from "spessasynth_lib";
+import { formatTime } from "../../utils/other.js";
+import { consoleColors } from "../../utils/console_colors.js";
 
-import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
+import { ANIMATION_REFLOW_TIME } from "../../utils/animation_utils.js";
+import { audioToWav } from "spessasynth_core";
+import JSZip from "jszip";
 
-const RENDER_AUDIO_TIME_INTERVAL = 1000;
+const RENDER_AUDIO_TIME_INTERVAL = 250;
 
 /**
  * @typedef {Object} WaveMetadata
@@ -38,6 +39,8 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
     // get locales
     const exportingMessage = manager.localeManager.getLocaleString(`locale.exportAudio.formats.formats.wav.exportMessage.message`);
     const estimatedMessage = manager.localeManager.getLocaleString(`locale.exportAudio.formats.formats.wav.exportMessage.estimated`);
+    const addingEffects = this.localeManager.getLocaleString(
+        "locale.exportAudio.formats.formats.wav.exportMessage.addingEffects");
     const loadingMessage = manager.localeManager.getLocaleString(`locale.synthInit.genericLoading`);
     const notification = showNotification(
         exportingMessage,
@@ -50,14 +53,6 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
     );
     
     const parsedMid = await this.seq.getMIDI();
-    
-    // hack: if we have an extra bank and the MIDI doesn't have one itself, put it in there
-    if (!parsedMid.embeddedSoundFont && this.extraBankBuffer)
-    {
-        parsedMid.embeddedSoundFont = this.extraBankBuffer;
-        parsedMid.bankOffset = this.extraBankOffset;
-    }
-    
     // calculate times
     const playbackRate = this.seq.playbackRate;
     const loopStartAbsolute = parsedMid.MIDIticksToSeconds(parsedMid.loop.start) / playbackRate;
@@ -66,132 +61,64 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
     const duration = parsedMid.duration / playbackRate + additionalTime + loopDuration * loopCount;
     let sampleDuration = sampleRate * duration;
     
-    /**
-     * prepare audio context
-     * @type {OfflineAudioContext}
-     */
-    let offline;
-    try
-    {
-        offline = new OfflineAudioContext({
-            numberOfChannels: separateChannels ? 32 : 2,
-            sampleRate: sampleRate,
-            length: sampleDuration
-        });
-        await offline.audioWorklet.addModule(new URL(this.workletPath, import.meta.url));
-    }
-    catch (e)
-    {
-        showNotification(
-            "ERROR",
-            [
-                { type: "text", textContent: e }
-            ]
-        );
-        return;
-    }
-    
-    /**
-     * take the snapshot of the real synth
-     * @type {SynthesizerSnapshot}
-     */
-    const snapshot = await this.synth.getSynthesizerSnapshot();
-    
-    const soundfont = this.soundFont;
-    /**
-     * Prepare synthesizer
-     * @type {Synthetizer}
-     */
-    let synth;
-    const effects = {
-        reverbEnabled: true,
-        chorusEnabled: true,
-        chorusConfig: undefined
-    };
-    snapshot.effectsConfig = effects;
-    try
-    {
-        synth = new Synthetizer(
-            offline.destination,
-            soundfont,
-            false,
-            {
-                parsedMIDI: parsedMid,
-                snapshot: snapshot,
-                oneOutput: separateChannels,
-                loopCount: loopCount,
-                sequencerOptions: {
-                    initialPlaybackRate: playbackRate
-                }
-            },
-            effects
-        );
-    }
-    catch (e)
-    {
-        showNotification(
-            this.localeManager.getLocaleString("locale.warnings.warning"),
-            [{
-                type: "text",
-                textContent: this.localeManager.getLocaleString("locale.warnings.outOfMemory")
-            }]
-        );
-        throw e;
-    }
-    await synth.isReady;
-    
+    // progress tracking
     const detailMessage = notification.div.getElementsByTagName("p")[0];
     const progressDiv = notification.div.getElementsByClassName("notification_progress")[0];
-    
     const RATI_SECONDS = RENDER_AUDIO_TIME_INTERVAL / 1000;
-    let rendered = synth.currentTime;
     let estimatedTime = duration * playbackRate;
     const smoothingFactor = 0.1; // for smoothing estimated time
     
+    
+    let lastProgress = 0;
+    const showProgress = (prog, str, time = true) =>
+    {
+        progressDiv.style.width = `${prog * 100}%`;
+        if (time)
+        {
+            // calculate estimated time
+            let hasRendered = (prog - lastProgress) * duration;
+            lastProgress = prog;
+            const speed = hasRendered / RATI_SECONDS;
+            const estimated = (1 - prog) / speed * duration;
+            if (estimated === Infinity)
+            {
+                return;
+            }
+            // smooth out estimated using exponential moving average
+            estimatedTime = smoothingFactor * estimated + (1 - smoothingFactor) * estimatedTime;
+            detailMessage.innerText = `${str} ${formatTime(estimatedTime).time}`;
+        }
+        else
+        {
+            detailMessage.innerText = `${str} ${Math.floor(prog * 100_0) / 10}%`;
+        }
+    };
+    
+    let progress = 0;
     const interval = setInterval(() =>
     {
-        // calculate estimated time
-        let hasRendered = synth.currentTime - rendered;
-        rendered = synth.currentTime;
-        const progress = synth.currentTime / duration;
-        progressDiv.style.width = `${progress * 100}%`;
-        const speed = hasRendered / RATI_SECONDS;
-        const estimated = (1 - progress) / speed * duration;
-        if (estimated === Infinity)
-        {
-            return;
-        }
-        // smooth out estimated using exponential moving average
-        estimatedTime = smoothingFactor * estimated + (1 - smoothingFactor) * estimatedTime;
-        detailMessage.innerText = `${estimatedMessage} ${formatTime(estimatedTime).time}`;
+        showProgress(progress, estimatedMessage);
     }, RENDER_AUDIO_TIME_INTERVAL);
     
-    const buf = await offline.startRendering();
-    progressDiv.style.width = "100%";
-    // clear intervals and save the file
+    // first pass: render dry audio in the worker
+    const renderedNoEffectsData = await this.synth.renderAudio(
+        sampleRate,
+        additionalTime,
+        separateChannels,
+        loopCount,
+        (p) => progress = p
+    );
+    progressDiv.style.width = "50%";
+    // clear intervals
     clearInterval(interval);
-    detailMessage.innerText = this.localeManager.getLocaleString(
-        "locale.exportAudio.formats.formats.wav.exportMessage.convertWav");
-    // let the browser show
-    await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
-    if (!separateChannels)
+    
+    
+    if (separateChannels)
     {
-        const startOffset = parsedMid.MIDIticksToSeconds(parsedMid.firstNoteOn);
-        const loopStart = loopStartAbsolute - startOffset;
-        const loopEnd = loopEndAbsolute - startOffset;
-        let loop = { start: loopStart, end: loopEnd };
-        console.info(
-            `%cWriting loop points: start %c${loopStart}%c, end:%c${loopEnd}`,
-            consoleColors.info,
-            consoleColors.recognized,
-            consoleColors.info,
-            consoleColors.recognized
-        );
-        const wav = audioBufferToWav(buf, normalizeAudio, 0, meta, loop);
-        this.saveBlob(wav, `${this.seqUI.currentSongTitle || "unnamed_song"}.wav`);
-    }
-    else
-    {
+        
+        const snapshot = await this.synth.getSynthesizerSnapshot();
+        // discard effects
+        const renderedChannels = renderedNoEffectsData.slice(2);
         const separatePath = `locale.exportAudio.formats.formats.wav.options.separateChannels.saving.`;
         /**
          * @type {NotificationContent[]}
@@ -224,21 +151,77 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
                 textContent: this.localeManager.getLocaleString(separatePath + "save", [i + 1]),
                 onClick: async (n, target) =>
                 {
-                    
                     const text = target.textContent;
                     target.textContent = this.localeManager.getLocaleString(
                         "locale.exportAudio.formats.formats.wav.exportMessage.convertWav");
                     await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
                     
                     // stereo
-                    const audioOut = audioBufferToWav(buf, false, channel * 2, undefined, undefined, 2);
+                    const audioOut = audioToWav(
+                        renderedChannels[channel],
+                        sampleRate,
+                        false,
+                        undefined,
+                        undefined
+                    );
                     const fileName = `${channel + 1} - ${snapshot.channelSnapshots[i].patchName}.wav`;
-                    this.saveBlob(audioOut, fileName);
+                    this.saveBlob(new Blob([audioOut], { type: "audio/wav" }), fileName);
                     target.classList.add("green_button");
                     target.textContent = text;
                 }
             });
         }
+        content.push({
+            type: "button",
+            textContent: this.localeManager.getLocaleString(separatePath + "saveAll"),
+            onClick: async (n, target) =>
+            {
+                const text = target.textContent;
+                target.textContent = this.localeManager.getLocaleString(
+                    "locale.exportAudio.formats.formats.wav.exportMessage.convertWav");
+                await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
+                
+                const zipped = new JSZip();
+                renderedChannels.forEach((channel, i) =>
+                {
+                    // check if all channels are muted
+                    let muted = true;
+                    for (let j = i; j < snapshot.channelSnapshots.length; j += 16)
+                    {
+                        if (!snapshot.channelSnapshots[j].isMuted)
+                        {
+                            muted = false;
+                            break;
+                        }
+                    }
+                    if (!usedChannels.has(i) || muted)
+                    {
+                        return;
+                    }
+                    // stereo
+                    const audioOut = audioToWav(
+                        channel,
+                        sampleRate,
+                        false,
+                        undefined,
+                        undefined
+                    );
+                    const fileName = `${i + 1} - ${snapshot.channelSnapshots[i].patchName}.wav`;
+                    zipped.file(fileName, audioOut);
+                    console.info(
+                        `%cAdding file %c${fileName}%c to zip...`,
+                        consoleColors.info,
+                        consoleColors.recognized,
+                        consoleColors.info
+                    );
+                });
+                const zipFile = await zipped.generateAsync({ type: "blob" });
+                this.saveBlob(zipFile, `${parsedMid.midiName}.zip`);
+                target.classList.add("green_button");
+                target.textContent = text;
+                
+            }
+        });
         const n = showNotification(
             this.localeManager.getLocaleString(separatePath + "title"),
             content,
@@ -252,6 +235,112 @@ export async function _doExportAudioData(normalizeAudio = true, sampleRate = 441
             }
         );
         n.div.style.width = "30rem";
+    }
+    else
+    {
+        /**
+         * second pass: the effects
+         * @type {OfflineAudioContext}
+         */
+        let offline;
+        try
+        {
+            offline = new OfflineAudioContext({
+                numberOfChannels: separateChannels ? 32 : 2,
+                sampleRate: sampleRate,
+                length: sampleDuration
+            });
+        }
+        catch (e)
+        {
+            showNotification(
+                "ERROR",
+                [
+                    { type: "text", textContent: e }
+                ]
+            );
+            return;
+        }
+        // prepare the effects
+        const r = getReverbProcessor(offline, this.synth.effectsConfig.reverbImpulseResponse);
+        await r.promise;
+        const reverb = r.conv;
+        const chorus = new FancyChorus(offline.destination, this.synth.effectsConfig.chorusConfig);
+        reverb.connect(offline.destination);
+        
+        // connect the playback sources
+        const reverbAudio = new AudioBuffer({
+            length: sampleDuration,
+            sampleRate,
+            numberOfChannels: 2
+        });
+        const rev = renderedNoEffectsData[0];
+        reverbAudio.copyToChannel(rev[0], 0);
+        reverbAudio.copyToChannel(rev[1], 1);
+        const revSource = offline.createBufferSource();
+        revSource.buffer = reverbAudio;
+        revSource.connect(reverb);
+        revSource.start();
+        
+        
+        const chorusAudio = new AudioBuffer({
+            length: sampleDuration,
+            sampleRate,
+            numberOfChannels: 2
+        });
+        const chr = renderedNoEffectsData[1];
+        chorusAudio.copyToChannel(chr[0], 0);
+        chorusAudio.copyToChannel(chr[1], 1);
+        const chrSource = offline.createBufferSource();
+        chrSource.buffer = chorusAudio;
+        chrSource.connect(chorus.input);
+        chrSource.start();
+        
+        const dryAudio = new AudioBuffer({
+            length: sampleDuration,
+            sampleRate,
+            numberOfChannels: 2
+        });
+        const dry = renderedNoEffectsData[2];
+        dryAudio.copyToChannel(dry[0], 0);
+        dryAudio.copyToChannel(dry[1], 1);
+        const drySource = offline.createBufferSource();
+        drySource.buffer = dryAudio;
+        drySource.connect(offline.destination);
+        drySource.start();
+        
+        const progressTracker = setInterval(() =>
+        {
+            showProgress(offline.currentTime / duration, addingEffects, false);
+        }, RENDER_AUDIO_TIME_INTERVAL / 4);
+        
+        console.info(
+            "%cSecond pass: rendering effects...",
+            consoleColors.info
+        );
+        const buf = await offline.startRendering();
+        
+        clearInterval(progressTracker);
+        progressDiv.style.width = "100%";
+        
+        detailMessage.innerText = this.localeManager.getLocaleString(
+            "locale.exportAudio.formats.formats.wav.exportMessage.convertWav");
+        // let the browser show
+        await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
+        
+        const startOffset = parsedMid.MIDIticksToSeconds(parsedMid.firstNoteOn);
+        const loopStart = loopStartAbsolute - startOffset;
+        const loopEnd = loopEndAbsolute - startOffset;
+        let loop = { start: loopStart, end: loopEnd };
+        console.info(
+            `%cWriting loop points: start %c${loopStart}%c, end:%c${loopEnd}`,
+            consoleColors.info,
+            consoleColors.recognized,
+            consoleColors.info,
+            consoleColors.recognized
+        );
+        const wav = audioBufferToWav(buf, normalizeAudio, 0, meta, loop);
+        this.saveBlob(wav, `${this.seqUI.currentSongTitle || "unnamed_song"}.wav`);
     }
     closeNotification(notification.id);
     this.isExporting = false;

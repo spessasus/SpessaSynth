@@ -1,4 +1,4 @@
-import { closeNotification, showNotification } from "../notification/notification.js";
+import { closeNotification, showNotification } from "../../notification/notification.js";
 
 /**
  * @this {Manager}

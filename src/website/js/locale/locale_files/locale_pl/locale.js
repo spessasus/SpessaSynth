@@ -11,7 +11,7 @@ import { exportAudio } from "./export_audio.js";
 export const localePolish = {
     localeName: "Polski",
     // title messsage
-    titleMessage: "SpessaSynth: JavaScriptowy Syntezator SoundFont2",
+    titleMessage: "SpessaSynth: JavaScriptowy Syntezator SF2/DLS",
     demoTitleMessage: "SpessaSynth: JavaScriptowy Syntezator SF2/DLS Wersja Demo",
     
     synthInit: {
@@ -77,7 +77,6 @@ export const localePolish = {
     warnings: {
         outOfMemory: "Twojej przeglądarce skończyła się pamięć. Rozważ użycie Firefoxa albo plików SF3. (Zobacz błąd w konsoli)",
         noMidiSupport: "Nie wykryto MIDI. Korzystanie z portów MIDI nie będzie dostępne.",
-        chromeMobile: "SpessaSynth działa wolno na Chromie na telefon. Rozważ użycie Firefoxa Android.",
         warning: "Uwaga"
     },
     

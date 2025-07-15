@@ -1,4 +1,3 @@
-import { Sequencer } from "spessasynth_lib";
 import { formatTime } from "../utils/other.js";
 import { supportedEncodings } from "../utils/encodings.js";
 import {
@@ -297,10 +296,13 @@ class SequencerUI
     
     /**
      *
-     * @param sequencer {Sequencer} the sequencer to be used
+     * @param sequencer {CustomSeq} the sequencer to be used
      */
     connectSequencer(sequencer)
     {
+        /**
+         * @type {CustomSeq}
+         */
         this.seq = sequencer;
         this.createControls();
         this.setSliderInterval();
@@ -369,7 +371,7 @@ class SequencerUI
                 const verifyDecode = (type, def, decoder, prepend = "") =>
                 {
                     return this.seq.midiData.RMIDInfo?.[type] === undefined ? def : prepend + decoder.decode(
-                        this.seq.midiData.RMIDInfo?.[type]).replace(/\0$/, "");
+                        this.seq.midiData.RMIDInfo?.[type]?.buffer).replace(/\0$/, "");
                 };
                 const dec = new TextDecoder();
                 const midiEncoding = verifyDecode(
@@ -744,10 +746,18 @@ class SequencerUI
             return;
         }
         this.lastTimeUpdate = seqTime;
-        this.progressBar.style.width = `${(seqTime / this.seq.duration) * 100}%`;
-        const time = formatTime(seqTime);
-        const total = formatTime(this.seq.duration);
-        this.progressTime.innerText = `${time.time} / ${total.time}`;
+        if (this.seq.hasDummyData)
+        {
+            this.progressBar.style.width = "0%";
+            this.progressTime.innerText = "--:-- / --:--";
+        }
+        else
+        {
+            this.progressBar.style.width = `${(seqTime / this.seq.duration) * 100}%`;
+            const time = formatTime(seqTime);
+            const total = formatTime(this.seq.duration);
+            this.progressTime.innerText = `${time.time} / ${total.time}`;
+        }
         if (this.requiresTextUpdate)
         {
             this.updateOtherTextEvents();

@@ -1,10 +1,9 @@
 import { consoleColors } from "../utils/console_colors.js";
-import { Synthetizer } from "spessasynth_lib";
 import { STABILIZE_WAVEFORMS_FFT_MULTIPLIER } from "./render_waveforms.js";
 import { ANALYSER_SMOOTHING } from "./renderer.js";
 
 /**
- * @param synth {Synthetizer}
+ * @param synth {CustomSynth}
  * @this {Renderer}
  */
 export function createChannelAnalysers(synth)
@@ -51,13 +50,17 @@ export function updateFftSize()
 
 /**
  * Connect the 16 channels to their respective analyzers
- * @param synth {Synthetizer}
+ * @param synth {CustomSynth}
  * @this {Renderer}
  */
 export function connectChannelAnalysers(synth)
 {
-    synth.connectIndividualOutputs(this.channelAnalysers);
-    synth.targetNode.connect(this.bigAnalyser);
+    for (let outputNumber = 2; outputNumber < 18; outputNumber++)
+    {
+        // + 2 because chorus and reverb come first!
+        this.synth.worklet.connect(this.channelAnalysers[outputNumber - 2], outputNumber);
+    }
+    synth.target.connect(this.bigAnalyser);
     // connect for drum change
     synth.eventHandler.addEvent("drumchange", "renderer-drum-change", () =>
     {
@@ -70,7 +73,10 @@ export function connectChannelAnalysers(synth)
  */
 export function disconnectChannelAnalysers()
 {
-    this.synth.disconnectIndividualOutputs(this.channelAnalysers);
+    for (let outputNumber = 2; outputNumber < 18; outputNumber++)
+    {
+        this.synth.worklet.disconnect(this.channelAnalysers[outputNumber - 2], outputNumber);
+    }
     this.bigAnalyser.disconnect();
     console.info("%cAnalysers disconnected!", consoleColors.recognized);
 }

@@ -40,9 +40,9 @@
     box-sizing: border-box;
 }
 
-select option {
-    background: var(--top-color-start);
-    color: var(--font-color);
+option, optgroup {
+    background: var(--top-color-start) !important;
+    color: var(--font-color) !important;
 }
 
 pre {

@@ -11,7 +11,7 @@ import { exportAudio } from "./export_audio.js";
 export const localeJapanese = {
     localeName: "日本語",
     // title messsage
-    titleMessage: "SpessaSynth: SoundFont2 Javascript シンセサイザー",
+    titleMessage: "SpessaSynth: SF2/DLS Javascript シンセサイザー",
     demoTitleMessage: "SpessaSynth: SF2/DLS Javascript シンセサイザー オンラインデモ",
     
     synthInit: {
@@ -43,7 +43,6 @@ export const localeJapanese = {
     warnings: {
         noMidiSupport: "このブラウザはMIDI入力をサポートしていないため、この機能は利用できません。ChromeまたはFirefoxを使用することを検討してください。",
         outOfMemory: "ブラウザのメモリが不足しました。FirefoxやSF3サウンドフォントの使用を検討してください。\n\n（エラーについてはコンソールを参照してください）。",
-        chromeMobile: "SpessaSynthはChrome Mobileでの動作が良くありません。\n\n代わりにFirefox Androidを使用することを検討してください。",
         warning: "注意"
     },
     

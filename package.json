@@ -1,19 +1,21 @@
 {
   "name": "SpessaSynth",
-  "version": "3.27.1",
+  "version": "3.27.10",
   "type": "module",
   "scripts": {
     "perms": "chmod +x src/build/*",
-    "start": "src/build/dev_mode.sh",
-    "build": "src/build/minify_website.sh",
+    "start": "node src/build/start.js",
+    "build": "node src/build/build.js",
     "debug": "src/build/enable_debug.sh",
     "release": "src/build/disable_debug.sh",
-    "clean": "rm -rf dist; rm -rf local"
+    "clean": "rm -rf dist; rm -rf local-dev; rm -rf server"
   },
   "devDependencies": {
+    "@chialab/esbuild-plugin-meta-url": "^0.18.2",
     "esbuild": "^0.25.2"
   },
   "dependencies": {
+    "jszip": "^3.10.1",
     "spessasynth_core": "latest",
     "spessasynth_lib": "latest"
   }

@@ -1,7 +1,6 @@
 "use strict";
 
 import { Manager } from "../manager/manager.js";
-import { isMobile } from "../utils/is_mobile.js";
 import { getCheckSvg, getExclamationSvg, getHourglassSvg } from "../utils/icons.js";
 import { closeNotification, showNotification } from "../notification/notification.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
@@ -26,6 +25,7 @@ let titleMessage = document.getElementById("title");
 let fileInput = document.getElementById("midi_file_input");
 let sfInput = document.getElementById("sf_file_input");
 let demoSongButton = document.getElementById("demo_song");
+let downloadButton = document.getElementById("download_button");
 /**
  * @type {HTMLButtonElement}
  */
@@ -34,8 +34,10 @@ const loading = document.getElementsByClassName("loading")[0];
 const loadingMessage = document.getElementById("loading_message");
 
 // load version
-const r = await (await fetch("package.json")).json();
-window.SPESSASYNTH_VERSION = r["version"];
+const p = await fetch("package.json");
+const t = await p.text();
+const packageJson = JSON.parse(t);
+window.SPESSASYNTH_VERSION = packageJson["version"] || "UNKNOWN";
 
 // IndexedDB stuff
 const dbName = "spessasynth-db";
@@ -85,6 +87,7 @@ function initDatabase(callback)
  */
 async function loadLastSoundFontFromDatabase()
 {
+    console.info("Loading the soundfont from the database...");
     return await new Promise(resolve =>
     {
         // fetch from db
@@ -127,6 +130,15 @@ function changeIcon(html, disableAnimation = true)
  */
 async function saveSoundFontToIndexedDB(arr)
 {
+    const check = arr.slice(8, 12);
+    const dec = new TextDecoder().decode(check).toLowerCase();
+    if (dec !== "sfbk" && dec !== "sfpl" && dec !== "dls ")
+    {
+        console.warn("Not viable to save!");
+        return;
+    }
+    let solve;
+    const promise = new Promise(r => solve = r);
     initDatabase(db =>
     {
         const transaction = db.transaction([objectStoreName], "readwrite");
@@ -148,7 +160,9 @@ async function saveSoundFontToIndexedDB(arr)
         {
             console.warn("Failed saving soundfont:", e);
         }
+        solve();
     });
+    return promise;
 }
 
 // attempt to load soundfont from indexed db
@@ -192,7 +206,7 @@ async function demoInit(initLocale)
         catch (e)
         {
             console.error("Error loading bundled:", e);
-            soundFontBuffer = BasicSoundBank.getDummySoundfontFile();
+            soundFontBuffer = await BasicSoundBank.getDummySoundfontFile();
         }
         
         progressBar.style.width = "0";
@@ -320,6 +334,7 @@ async function fetchFont(url, callback)
 async function startMidi(midiFiles)
 {
     demoSongButton.style.display = "none";
+    downloadButton.style.display = "none";
     let fName;
     if (midiFiles[0].name.length > 20)
     {
@@ -445,25 +460,6 @@ demoInit(initLocale).then(() =>
         loading.style.display = "none";
         document.body.classList.remove("no_scroll");
         document.documentElement.classList.remove("no_scroll");
-        
-        // check for chrome android
-        if (isMobile)
-        {
-            // noinspection JSUnresolvedReference
-            if (window.chrome)
-            {
-                showNotification(
-                    window.manager.localeManager.getLocaleString(
-                        "locale.warnings.warning"),
-                    [{
-                        type: "text",
-                        textContent: window.manager.localeManager.getLocaleString(
-                            "locale.warnings.chromeMobile")
-                    }],
-                    7
-                );
-            }
-        }
     }, 1000);
     /**
      * @param e {{target: HTMLInputElement}}
@@ -520,6 +516,13 @@ demoInit(initLocale).then(() =>
                 changeIcon(getExclamationSvg(256));
                 console.error(e);
             };
+            
+            if (soundFontBuffer.byteLength <= 1_153_433_617)
+            {
+                loadingMessage.textContent = window.manager.localeManager.getLocaleString(
+                    "locale.synthInit.savingSoundfont");
+                await saveSoundFontToIndexedDB(soundFontBuffer);
+            }
             loadingMessage.textContent = window.manager.localeManager.getLocaleString(
                 "locale.synthInit.startingSynthesizer");
             await window.manager.reloadSf(soundFontBuffer);
@@ -527,9 +530,7 @@ demoInit(initLocale).then(() =>
             {
                 window.manager.seq.currentTime -= 0.1;
             }
-            loadingMessage.textContent = window.manager.localeManager.getLocaleString(
-                "locale.synthInit.savingSoundfont");
-            await saveSoundFontToIndexedDB(soundFontBuffer);
+            
             // wait to make sure that the animation has finished
             const elapsed = (performance.now() / 1000) - parseStart;
             await new Promise(r => setTimeout(r, 1000 - elapsed));

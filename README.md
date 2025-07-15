@@ -1,11 +1,15 @@
 <!--suppress HtmlDeprecatedAttribute, HtmlRequiredAltAttribute, HtmlExtraClosingTag -->
 <p align='center'>
+<!--suppress CheckImageSize -->
 <img src="src/website/spessasynth_logo_rounded.png" width='300' alt='SpessaSynth logo'>
 </p>
 
 **SpessaSynth** is a SoundFont2-based real-time synthesizer written in vanilla JavaScript.
 
 <h1 align="center"><a href="https://spessasus.github.io/SpessaSynth/">Live Demo (no download needed!)</a></h1>
+
+<p align='center'><b><!--suppress HtmlUnknownAnchorTarget -->
+<a href='#windows'>Download Local Edition</a></b></p>
 
 <h2 align="center">Made with SpessaSynth</h2>
 <p align="center">
@@ -79,7 +83,7 @@ MARKDOWN VERSION
 
 </p>
 
-### Installation (Local Edition)
+### Downloading the Local Edition
 Local edition comes with easier soundfont management than the demo version,
 also allowing to use it offline!
 
@@ -93,22 +97,32 @@ also allowing to use it offline!
 
 #### Windows
 1. [Download the program](https://spessasus.github.io/SpessaSynth/SpessaSynth-LocalEdition.zip).
-2. Put your SoundFonts into the `soundfonts` folder (you can select SoundFonts in the program).
-3. Double-click `Open SpessaSynth.bat`.
+2. Put your SoundFonts and DLS files into the `soundfonts` folder (you can select sound banks in the program).
+3. Double-click `Open SpessaSynth.bat` (or you can type `node server/server.js` in the Command Prompt)
 4. Enjoy!
 
 #### Linux
 1. [Download the program](https://spessasus.github.io/SpessaSynth/SpessaSynth-LocalEdition.zip).
-2. Put your SoundFonts into the `soundfonts` folder (you can select SoundFonts in the program).
+2. Put your SoundFonts and DLS files into the `soundfonts` folder (you can select sound banks in the program).
 3. `node server/server.js`
 4. Enjoy!
 
 ### Building from source
 ```shell
-git clone "https://github.com/spessasus/SpessaSynth"
+# clone
+git clone "https://github.com/spessasus/SpessaSynth" --depth 1
+# install dependencies
 npm i
-npm run build
+# build and start the local edition
+npm start
 ```
+The "start" will automatically build the script and then invoke server.js. 
+Then it will only invoke server.js so you need to `npm run build` to rebuild.
+
+The build files:
+- dist: the online demo along with the bundled Local edition ZIP for downloading. This is what's hosted on GH pages.
+- local-dev: Local Edition sources with sourcemaps. For development.
+- server: the Local Edition server. It is here so it can use the root "soundfonts" folder. This is what `npm start` invokes.
 
 [If you would like to help translate SpessaSynth, please read this guide (and thank you!)](src/website/js/locale/locale_files/README.md)
 
@@ -122,6 +136,7 @@ npm run build
 - [stbvorbis.js](https://github.com/hajimehoshi/stbvorbis.js) - for the Vorbis decoder
 - [OggVorbisEncoder](https://github.com/higuma/ogg-vorbis-encoder-js) - for the MIT Vorbis encoder
 - [fflate](https://github.com/101arrowz/fflate) - for the MIT DEFLATE implementation
+- [JSZip](https://github.com/Stuk/jszip) - for the ZIP creation library
 - [foo_midi](https://github.com/stuerp/foo_midi) - for useful resources on XMF file format
 - [Composers](https://github.com/spessasus/spessasynth-demo-songs#readme) - for the demo songs
 - [Falcosoft](https://falcosoft.hu) - for help with the RMIDI format

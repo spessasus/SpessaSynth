@@ -1,5 +1,5 @@
 import { MidiKeyboard } from "../midi_keyboard/midi_keyboard.js";
-import { MIDIDeviceHandler, Sequencer, Synthetizer, WebMIDILinkHandler } from "spessasynth_lib";
+import { MIDIDeviceHandler, WebMIDILinkHandler } from "spessasynth_lib";
 
 import { Renderer } from "../renderer/renderer.js";
 
@@ -10,16 +10,17 @@ import { MusicModeUI } from "../music_mode_ui/music_mode_ui.js";
 import { LocaleManager } from "../locale/locale_manager.js";
 import { isMobile } from "../utils/is_mobile.js";
 import { keybinds } from "../utils/keybinds.js";
-import { _doExportAudioData, _exportAudioData } from "./export_audio.js";
-import { exportMidi } from "./export_midi.js";
-import { _exportSoundfont } from "./export_soundfont.js";
-import { exportSong } from "./export_song.js";
-import { _exportRMIDI } from "./export_rmidi.js";
+import { _doExportAudioData, _exportAudioData } from "./export_audio/export_audio.js";
+import { _exportSoundfont } from "./export_audio/export_soundfont.js";
+import { exportSong } from "./export_audio/export_song.js";
+import { _exportRMIDI } from "./export_audio/export_rmidi.js";
 import { closeNotification, showNotification } from "../notification/notification.js";
 import { DropFileHandler } from "../utils/drop_file_handler.js";
-import { _exportDLS } from "./export_dls.js";
-import { BasicMIDI, IndexedByteArray, loadSoundFont, SpessaSynthCoreUtils as util } from "spessasynth_core";
+import { _exportDLS } from "./export_audio/export_dls.js";
+import { BasicMIDI, IndexedByteArray, SpessaSynthCoreUtils as util } from "spessasynth_core";
 import { prepareExtraBankUpload } from "./extra_bank_handling.js";
+import { CustomSynth } from "./custom_synth/main_thread/custom_synth.js";
+import { CustomSeq } from "./custom_synth/main_thread/custom_seq.js";
 
 
 /**
@@ -66,10 +67,11 @@ class Manager
      * @type {function(string)}
      */
     sfError;
+    
     /**
-     * @type {EncodeVorbisFunction}
+     * @type {CustomSynth}
      */
-    compressionFunction = undefined;
+    synth;
     
     /**
      * Creates a new midi user interface.
@@ -85,6 +87,13 @@ class Manager
         this.enableDebug = enableDebug;
         this.isExporting = false;
         
+        
+        this.audioDelay = new DelayNode(context, {
+            delayTime: 0
+        });
+        this.audioDelay.connect(context.destination);
+        this.synth = new CustomSynth(this.audioDelay);
+        
         let solve;
         this.ready = new Promise(resolve => solve = resolve);
         this.initializeContext(context, soundFontBuffer).then(() =>
@@ -93,19 +102,8 @@ class Manager
         });
     }
     
-    async getVorbisEncodeFunction()
+    saveUrl(url, name)
     {
-        if (this.compressionFunction !== undefined)
-        {
-            return this.compressionFunction;
-        }
-        this.compressionFunction = (await import("../../../externals/encode_vorbis.js")).encodeVorbis;
-        return this.compressionFunction;
-    }
-    
-    saveBlob(blob, name)
-    {
-        const url = URL.createObjectURL(blob);
         /**
          * @type {HTMLAnchorElement}
          */
@@ -114,6 +112,12 @@ class Manager
         a.download = name;
         a.click();
         console.info(a);
+    }
+    
+    saveBlob(blob, name)
+    {
+        const url = URL.createObjectURL(blob);
+        this.saveUrl(url, name);
     }
     
     /**
@@ -154,41 +158,13 @@ class Manager
             );
         }
         
-        /**
-         * set up soundfont
-         * @type {ArrayBuffer}
-         */
-        this.soundFont = soundFont;
-        
         
         if (this.enableDebug)
         {
             console.warn("DEBUG ENABLED! DEBUGGING ENABLED!!");
         }
-        this.workletPath = "./worklet_processor.min.js";
-        if (context.audioWorklet)
-        {
-            await context.audioWorklet.addModule(new URL(this.workletPath, import.meta.url));
-        }
         
-        this.audioDelay = new DelayNode(context, {
-            delayTime: 0
-        });
-        this.audioDelay.connect(context.destination);
         
-        // set up synthetizer
-        this.synth = new Synthetizer(
-            this.audioDelay,
-            this.soundFont,
-            undefined,
-            undefined,
-            {
-                chorusEnabled: true,
-                chorusConfig: undefined,
-                reverbEnabled: true,
-                audioNodeCreators: undefined
-            }
-        );
         this.synth.eventHandler.addEvent("soundfonterror", "manager-sf-error", e =>
         {
             if (this.sfError)
@@ -197,10 +173,15 @@ class Manager
             }
         });
         
+        // set up the worker synth engine
+        await this.synth.init(soundFont);
+        
+        
         // set up midi access
         this.midHandler = new MIDIDeviceHandler();
         
         // set up web midi link
+        // noinspection JSCheckFunctionSignatures
         new WebMIDILinkHandler(this.synth);
         
         // set up keyboard
@@ -418,49 +399,40 @@ class Manager
             }
         });
         
-        await this.synth.isReady;
-        
         this.renderer.render(false, true);
         // ANY TEST CODE FOR THE SYNTHESIZER GOES HERE
     }
     
-    doDLSCheck()
+    getDLS()
     {
-        if (window.isLocalEdition !== true)
-        {
-            const text = this.soundFont.slice(8, 12);
-            const header = util.readBytesAsString(new IndexedByteArray(text), 4);
-            if (header.toLowerCase() === "dls ")
-            {
-                showNotification(
-                    this.localeManager.getLocaleString("locale.convertDls.title"),
-                    [
-                        {
-                            type: "text",
-                            textContent: this.localeManager.getLocaleString("locale.convertDls.message")
-                        },
-                        {
-                            type: "button",
-                            textContent: this.localeManager.getLocaleString("locale.yes"),
-                            onClick: n =>
-                            {
-                                closeNotification(n.id);
-                                this.downloadDesfont().then();
-                            }
-                        },
-                        {
-                            type: "button",
-                            textContent: this.localeManager.getLocaleString("locale.no"),
-                            onClick: n =>
-                            {
-                                closeNotification(n.id);
-                            }
-                        }
-                    ],
-                    99999999
-                );
-            }
-        }
+        showNotification(
+            this.localeManager.getLocaleString("locale.convertDls.title"),
+            [
+                {
+                    type: "text",
+                    textContent: this.localeManager.getLocaleString("locale.convertDls.message")
+                },
+                {
+                    type: "button",
+                    textContent: this.localeManager.getLocaleString("locale.yes"),
+                    onClick: n =>
+                    {
+                        closeNotification(n.id);
+                        this.downloadDesfont().then();
+                    }
+                },
+                {
+                    type: "button",
+                    textContent: this.localeManager.getLocaleString("locale.no"),
+                    onClick: n =>
+                    {
+                        closeNotification(n.id);
+                    }
+                }
+            ],
+            99999999
+        );
+        
     }
     
     /**
@@ -468,12 +440,17 @@ class Manager
      */
     async reloadSf(sf)
     {
+        const text = sf.slice(8, 12);
+        const header = util.readBytesAsString(new IndexedByteArray(text), 4);
+        const isDLS = header.toLowerCase() === "dls " && window.isLocalEdition !== true;
         await this.synth.soundfontManager.addNewSoundFont(sf, "main");
-        this.soundFont = sf;
-        setTimeout(() =>
+        if (isDLS)
         {
-            this.doDLSCheck();
-        }, 3000);
+            setTimeout(() =>
+            {
+                this.getDLS();
+            }, 3000);
+        }
     }
     
     /**
@@ -496,7 +473,7 @@ class Manager
         }
         
         // create a new sequencer
-        this.seq = new Sequencer(parsedMidi, this.synth);
+        this.seq = new CustomSeq(parsedMidi, this.synth);
         
         this.seq.onError = e =>
         {
@@ -525,32 +502,30 @@ class Manager
         this.seqUI.setWakeLock();
     }
     
-    // noinspection JSUnusedGlobalSymbols
-    async downloadDLSRMI()
-    {
-        const mid = await this.seq.getMIDI();
-        const sf = loadSoundFont(this.soundFont);
-        const out = mid.writeRMIDI(
-            await sf.writeDLS(),
-            sf
-        );
-        const blob = new Blob([out.buffer], { type: "audio/rmid" });
-        this.saveBlob(blob, `${mid.midiName}.rmi`);
-    }
-    
     async downloadDesfont()
     {
-        const soundfont = loadSoundFont(this.soundFont);
-        const binary = await soundfont.write();
-        const blob = new Blob([binary.buffer], { type: "audio/soundfont" });
-        this.saveBlob(blob, `${soundfont.soundFontInfo["INAM"]}.sf2`);
+        const exported = await this.synth.exportSoundFont(
+            false,
+            false,
+            0,
+            (p) =>
+            {
+                console.info(`%cExporting SF2: ${p}`);
+            }
+        );
+        this.saveUrl(exported.url, exported.fileName);
+    }
+    
+    async exportMidi()
+    {
+        const mid = await this.synth.exportMIDI();
+        this.saveUrl(mid.url, `${this.seqUI.currentSongTitle || "unnamed_song"}.mid`);
     }
 }
 
 Manager.prototype.exportSong = exportSong;
 Manager.prototype._exportAudioData = _exportAudioData;
 Manager.prototype._doExportAudioData = _doExportAudioData;
-Manager.prototype.exportMidi = exportMidi;
 Manager.prototype._exportSoundfont = _exportSoundfont;
 Manager.prototype._exportDLS = _exportDLS;
 Manager.prototype._exportRMIDI = _exportRMIDI;

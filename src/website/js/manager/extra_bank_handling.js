@@ -1,7 +1,6 @@
-import { getSf2LogoSvg } from "../utils/icons.js";
 import { closeNotification, showNotification } from "../notification/notification.js";
+import { EXTRA_BANK_ID } from "./extra_bank_id.js";
 
-const EXTRA_BANK_ID = "spessasynth-extra-bank";
 
 /**
  * @this {Manager}
@@ -9,14 +8,9 @@ const EXTRA_BANK_ID = "spessasynth-extra-bank";
 export function prepareExtraBankUpload()
 {
     this.extraBankName = "";
-    /**
-     * @type {ArrayBuffer}
-     */
-    this.extraBankBuffer = undefined;
     this.extraBankOffset = 0;
     let extraBankName = "";
     const extra = document.getElementById("extra_bank_button");
-    extra.innerHTML = getSf2LogoSvg(24);
     this.localeManager.bindObjectProperty(extra, "title", "locale.extraBank.button");
     extra.onclick = () =>
     {
@@ -61,7 +55,6 @@ export function prepareExtraBankUpload()
                         await this.synth.soundfontManager.addNewSoundFont(b, EXTRA_BANK_ID, bank);
                         await this.synth.soundfontManager.rearrangeSoundFonts([EXTRA_BANK_ID, "main"]);
                         this.extraBankName = extraBankName;
-                        this.extraBankBuffer = b;
                         this.extraBankOffset = bank;
                         if (this.seq?.paused === false)
                         {
@@ -77,7 +70,6 @@ export function prepareExtraBankUpload()
                     {
                         await this.synth.soundfontManager.deleteSoundFont(EXTRA_BANK_ID);
                         this.extraBankName = "";
-                        this.extraBankBuffer = undefined;
                         this.extraBankOffset = 0;
                         if (this.seq?.paused === false)
                         {
