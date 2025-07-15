@@ -1,10 +1,4 @@
-import {
-    BasicMIDI,
-    BasicSoundBank,
-    SpessaSynthProcessor,
-    SpessaSynthSequencer,
-    SynthesizerSnapshot
-} from "spessasynth_core";
+import { BasicSoundBank, SpessaSynthProcessor, SpessaSynthSequencer, SynthesizerSnapshot } from "spessasynth_core";
 import { EXTRA_BANK_ID } from "../../extra_bank_id.js";
 
 const RENDER_BLOCKS_PER_PROGRESS = 64;
@@ -37,7 +31,7 @@ export async function renderAudio(
     const playing = !this.seqEngine.paused;
     this.stopAudioLoop();
     // load MIDI
-    const parsedMid = BasicMIDI.copyFrom(seqEngine.midiData);
+    const parsedMid = seqEngine.midiData;
     const playbackRate = seqEngine._playbackRate;
     // calculate times
     const loopStartAbsolute = parsedMid.MIDIticksToSeconds(parsedMid.loop.start) / playbackRate;

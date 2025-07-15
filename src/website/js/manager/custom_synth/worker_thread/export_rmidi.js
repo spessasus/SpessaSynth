@@ -1,4 +1,4 @@
-import { BasicSoundBank, loadSoundFont, SynthesizerSnapshot } from "spessasynth_core";
+import { BasicMIDI, BasicSoundBank, loadSoundFont, SynthesizerSnapshot } from "spessasynth_core";
 import { returnMessageType } from "./worker_message.js";
 
 /**
@@ -25,7 +25,7 @@ export async function exportRMIDI(compress, quality, metadata, adjust)
 {
     const playing = !this.seqEngine.paused;
     this.stopAudioLoop();
-    const mid = this.seqEngine.midiData;
+    const mid = BasicMIDI.copyFromDeep(this.seqEngine.midiData);
     // pick a bank:
     // if midi has an embedded bank, use that
     // if we have an extra bank, use that

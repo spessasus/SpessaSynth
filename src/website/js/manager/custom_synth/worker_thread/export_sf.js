@@ -20,7 +20,7 @@ export async function exportSoundBank(isSf2, trim, compress, quality)
     if (trim)
     {
         const snapshot = SynthesizerSnapshot.createSynthesizerSnapshot(this.synthEngine);
-        const mid = BasicMIDI.copyFrom(this.seqEngine.midiData);
+        const mid = BasicMIDI.copyFromDeep(this.seqEngine.midiData);
         mid.applySnapshotToMIDI(snapshot);
         sf.trimSoundBank(mid);
     }

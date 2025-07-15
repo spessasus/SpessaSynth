@@ -34,11 +34,6 @@ exportButton.style.display = "none";
 
 let synthReady = false;
 
-/**
- * @type {{name: string, sf: ArrayBuffer}[]}
- */
-window.loadedSoundfonts = [];
-
 const r = await (await fetch("/getversion")).text();
 window.SPESSASYNTH_VERSION = r;
 
@@ -189,12 +184,6 @@ async function replaceFont(fontName)
         synthReady = true;
     }
     
-    if (window.loadedSoundfonts.find(sf => sf.name === fontName))
-    {
-        window.soundFontParser = window.loadedSoundfonts.find(sf => sf.name === fontName).sf;
-        await replaceSf();
-        return;
-    }
     titleMessage.innerText = "Loading soundfont...";
     const data = await fetchFont(
         fontName,
@@ -206,7 +195,6 @@ async function replaceFont(fontName)
     {
         window.soundFontParser = data;
         progressBar.style.width = "0";
-        window.loadedSoundfonts.push({ name: fontName, sf: window.soundFontParser });
         replaceSf();
     });
     titleMessage.innerText = window.TITLE;

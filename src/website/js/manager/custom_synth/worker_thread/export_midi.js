@@ -1,4 +1,4 @@
-import { SynthesizerSnapshot } from "spessasynth_core";
+import { BasicMIDI, SynthesizerSnapshot } from "spessasynth_core";
 
 /**
  * @this {WorkerSynthEngine}
@@ -6,7 +6,7 @@ import { SynthesizerSnapshot } from "spessasynth_core";
  */
 export function exportMIDI()
 {
-    const mid = this.seqEngine.midiData;
+    const mid = BasicMIDI.copyFromDeep(this.seqEngine.midiData);
     try
     {
         mid.applySnapshotToMIDI(SynthesizerSnapshot.createSynthesizerSnapshot(this.synthEngine));
