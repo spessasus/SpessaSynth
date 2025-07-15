@@ -36,9 +36,8 @@ export async function renderAudio(
     const soundBank = this.soundBank;
     const playing = !this.seqEngine.paused;
     this.stopAudioLoop();
-    // modify MIDI
+    // load MIDI
     const parsedMid = BasicMIDI.copyFrom(seqEngine.midiData);
-    parsedMid.applySnapshotToMIDI(SynthesizerSnapshot.createSynthesizerSnapshot(synthEngine));
     const playbackRate = seqEngine._playbackRate;
     // calculate times
     const loopStartAbsolute = parsedMid.MIDIticksToSeconds(parsedMid.loop.start) / playbackRate;
@@ -58,6 +57,10 @@ export async function renderAudio(
         synth.soundfontManager.addNewSoundFont(extraBank, EXTRA_BANK_ID, extraBankOffset);
         synth.soundfontManager.rearrangeSoundFonts([EXTRA_BANK_ID, "main"]);
     }
+    // apply snapshot
+    const snapshot = SynthesizerSnapshot.createSynthesizerSnapshot(synthEngine);
+    SynthesizerSnapshot.applySnapshot(synth, snapshot);
+    
     const seq = new SpessaSynthSequencer(synth);
     seq.loopCount = loopCount;
     seq.playbackRate = playbackRate;

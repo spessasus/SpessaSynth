@@ -28,11 +28,6 @@ export const interfaceSettings = {
         description: "Like this one!"
     },
     
-    useFirefox: {
-        firefox: "Firefox Web Browser",
-        recommended: "is highly recommended for the best performance."
-    },
-    
     showControls: {
         title: "Show controls",
         description: "Show the transport control buttons"
