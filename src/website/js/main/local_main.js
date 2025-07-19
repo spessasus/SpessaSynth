@@ -174,11 +174,6 @@ async function replaceFont(fontName)
                 window.manager.seq.pause();
             }
             await window.manager.reloadSf(window.soundFontParser);
-            if (window.manager.seq)
-            {
-                // resets controllers
-                window.manager.seq.currentTime -= 0.1;
-            }
         }
         titleMessage.innerText = window.manager.localeManager.getLocaleString("locale.titleMessage");
         synthReady = true;

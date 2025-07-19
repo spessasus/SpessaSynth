@@ -865,7 +865,7 @@ export class CustomSeq
         this._recalculateStartTime(this.pausedTime || 0);
         this.unpause();
         this._sendMessage(seqMessageType.play, resetTime);
-        setTimeout(this.syncSequencer.bind(this), 100);
+        this.syncSequencer();
     }
     
     /**

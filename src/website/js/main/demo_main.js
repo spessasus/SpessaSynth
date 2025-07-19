@@ -526,10 +526,6 @@ demoInit(initLocale).then(() =>
             loadingMessage.textContent = window.manager.localeManager.getLocaleString(
                 "locale.synthInit.startingSynthesizer");
             await window.manager.reloadSf(soundFontBuffer);
-            if (window.manager.seq)
-            {
-                window.manager.seq.currentTime -= 0.1;
-            }
             
             // wait to make sure that the animation has finished
             const elapsed = (performance.now() / 1000) - parseStart;

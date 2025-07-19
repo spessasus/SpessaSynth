@@ -577,6 +577,7 @@ class WorkerSynthEngine
                         messageData: e
                     });
                 }
+                this.syncTime();
                 break;
             
             case workerMessageType.keyModifierManager:
