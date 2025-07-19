@@ -156,8 +156,11 @@ export function renderSingleWaveform(channelNumber, forceStraightLine, waveWidth
         }
         this.drawingContext.stroke();
     }
-    
-    
+    // volume draw
+    const averageVolume = this.channelVelocities[channelNumber].average;
+    this.drawingContext.textAlign = "start";
+    this.drawingContext.textBaseline = "hanging";
+    this.drawingContext.fillText(`average: ${(averageVolume * 100).toFixed(0)}%`, relativeX, waveHeight * y + 10);
 }
 
 /**

@@ -177,6 +177,51 @@ class Renderer
         });
         this.createChannelAnalysers(synth);
         this.connectChannelAnalysers(synth);
+        
+        /**
+         * @type {{velocities: Map<number, number>, average: number}[]}
+         */
+        this.channelVelocities = [];
+        for (let i = 0; i < 16; i++)
+        {
+            this.channelVelocities.push({
+                velocities: new Map(),
+                average: 0
+            });
+        }
+        
+        this.synth.eventHandler.addEvent("noteon", "renderer-note-on", e =>
+        {
+            const ch = e.channel % 16;
+            const key = e.midiNote;
+            const vel = e.velocity;
+            const cV = this.channelVelocities[ch];
+            cV.velocities.set(key, vel);
+            cV.average = (cV.velocities.values().reduce((total, v) => total + v, 0) / cV.velocities.size) / 127;
+        });
+        
+        this.synth.eventHandler.addEvent("noteoff", "renderer-note-off", e =>
+        {
+            const ch = e.channel % 16;
+            const key = e.midiNote;
+            const cV = this.channelVelocities[ch];
+            cV.velocities.delete(key);
+            if (cV.velocities.size === 0)
+            {
+                cV.average = 0;
+                return;
+            }
+            cV.average = (cV.velocities.values().reduce((total, v) => total + v, 0) / cV.velocities.size) / 127;
+        });
+        
+        this.synth.eventHandler.addEvent("stopall", "renderer-stop-all", () =>
+        {
+            this.channelVelocities.forEach(c =>
+            {
+                c.velocities.clear();
+                c.average = 0;
+            });
+        });
     }
     
     get stabilizeWaveforms()
