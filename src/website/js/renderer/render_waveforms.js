@@ -1,4 +1,4 @@
-import { rendererModes } from "./renderer.js";
+import { FONT_SIZE, rendererModes } from "./renderer.js";
 import { intensityColors } from "./colors.js";
 
 export const STABILIZE_WAVEFORMS_FFT_MULTIPLIER = 4;
@@ -159,8 +159,9 @@ export function renderSingleWaveform(channelNumber, forceStraightLine, waveWidth
     // volume draw
     const averageVolume = this.channelVelocities[channelNumber].average;
     this.drawingContext.textAlign = "start";
-    this.drawingContext.textBaseline = "hanging";
-    this.drawingContext.fillText(`average: ${(averageVolume * 100).toFixed(0)}%`, relativeX, waveHeight * y + 10);
+    this.drawingContext.textBaseline = "bottom";
+    this.drawingContext.font = `${FONT_SIZE * 2}px monospace`;
+    this.drawingContext.fillText(`average: ${(averageVolume * 100).toFixed(0)}%`, relativeX, waveHeight * (y + 1));
 }
 
 /**
