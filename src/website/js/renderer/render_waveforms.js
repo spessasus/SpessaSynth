@@ -158,10 +158,13 @@ export function renderSingleWaveform(channelNumber, forceStraightLine, waveWidth
     }
     // volume draw
     const averageVolume = this.channelVelocities[channelNumber].average;
-    this.drawingContext.textAlign = "start";
-    this.drawingContext.textBaseline = "bottom";
-    this.drawingContext.font = `${FONT_SIZE * 2}px monospace`;
-    this.drawingContext.fillText(`average: ${(averageVolume * 100).toFixed(0)}%`, relativeX, waveHeight * (y + 1));
+    if (averageVolume > 0)
+    {
+        this.drawingContext.textAlign = "start";
+        this.drawingContext.textBaseline = "bottom";
+        this.drawingContext.font = `${FONT_SIZE}px monospace`;
+        this.drawingContext.fillText(`${(averageVolume * 100).toFixed(0)}%`, relativeX, waveHeight * (y + 1));
+    }
 }
 
 /**
