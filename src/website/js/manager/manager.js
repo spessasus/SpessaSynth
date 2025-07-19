@@ -453,7 +453,10 @@ class Manager
         }
         
         // resets controllers and resume
-        this.seq.currentTime -= 0.1;
+        if (this.seq)
+        {
+            this.seq.currentTime -= 0.1;
+        }
     }
     
     /**
