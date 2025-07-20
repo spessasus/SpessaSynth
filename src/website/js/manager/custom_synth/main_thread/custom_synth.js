@@ -656,11 +656,10 @@ export class CustomSynth
      */
     setChorusConfig(config)
     {
-        this.worklet.disconnect(this.chorusProcessor.input);
-        this.chorusProcessor.delete();
-        delete this.chorusProcessor;
-        this.chorusProcessor = new FancyChorus(this.target, config);
-        this.worklet.connect(this.chorusProcessor.input, 1);
+        this.worklet.disconnect(this.chorus.input);
+        this.chorus.delete();
+        this.chorus = new FancyChorus(this.target, config);
+        this.worklet.connect(this.chorus.input, 1);
         this.effectsConfig.chorusConfig = config;
     }
     
