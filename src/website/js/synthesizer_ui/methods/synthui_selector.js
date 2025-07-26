@@ -437,10 +437,14 @@ export class Selector
         const split = inputString.split(":");
         const bank = parseInt(split[0]);
         const program = parseInt(split[1]);
-        const name = this.elements.find(e => e.bank === bank && e.program === program);
+        let name = this.elements.find(e => e.bank === bank && e.program === program);
         if (!name)
         {
-            return "";
+            if (this.elements.length < 1)
+            {
+                return "-";
+            }
+            name = this.elements[0];
         }
         if (bank === 128 || this.elements.filter(e => e.program === program && e.bank !== 128).length < 2)
         {

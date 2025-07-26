@@ -297,8 +297,8 @@ class Renderer
     
     updateSize()
     {
-        this.canvas.width = this.canvas.clientWidth * window.devicePixelRatio;
-        this.canvas.height = this.canvas.clientHeight * window.devicePixelRatio;
+        this.canvas.width = this.canvas.clientWidth;
+        this.canvas.height = this.canvas.clientHeight;
         this.computeColors();
         this.updateFftSize();
         this.render(false, true);
