@@ -29,7 +29,6 @@ import { exportRMIDI } from "./export_rmidi.js";
 
 
 const BLOCK_SIZE = 128;
-const MAX_CHUNKS_QUEUED = 16; // 16 * 128 = 2,048
 
 /*
 This file emulates the worklet_processor.js from spessasynth_lib. However, it also provides an offline rendering method to avoid copying the SF file array buffer, as these can be LARGE.
@@ -58,9 +57,6 @@ class WorkerSynthEngine
      * @type {undefined|MessagePort}
      */
     workletPort = undefined;
-    
-    // set as nothing to render, the worklet will set to the required number
-    toRender = 0;
     
     loopOn = true;
     
@@ -101,73 +97,55 @@ class WorkerSynthEngine
         }, transferable);
     };
     
-    handleWorkletMessage(e)
-    {
-        this.toRender = Math.max(0, MAX_CHUNKS_QUEUED - e.data);
-        
-        
-    }
     
-    // we are using intervals to wait for the chunk to finish rendering, we don't want to schedule another before this one is done!
-    renderLoop()
+    renderAndSendChunk()
     {
-        if (this.toRender < 1)
+        if (!this.loopOn)
         {
-            // post an empty message (request enqueued chunk count update)
-            this.workletPort.postMessage(undefined);
-            setTimeout(this.renderLoop.bind(this));
             return;
         }
-        for (; this.toRender > 0; this.toRender--)
+        // data is encoded into a single f32 array as follows
+        // revL, revR
+        // chrL, chrR,
+        // dry1L, dry1R
+        // dryNL, dryNR
+        // dry16L, dry16R
+        // to improve performance
+        
+        const byteStep = BLOCK_SIZE * Float32Array.BYTES_PER_ELEMENT;
+        const data = new Float32Array(BLOCK_SIZE * 36);
+        let byteOffset = 0;
+        const revR = new Float32Array(data.buffer, byteOffset, BLOCK_SIZE);
+        byteOffset += byteStep;
+        const revL = new Float32Array(data.buffer, byteOffset, BLOCK_SIZE);
+        const rev = [revL, revR];
+        byteOffset += byteStep;
+        const chrL = new Float32Array(data.buffer, byteOffset, BLOCK_SIZE);
+        byteOffset += byteStep;
+        const chrR = new Float32Array(data.buffer, byteOffset, BLOCK_SIZE);
+        const chr = [chrL, chrR];
+        /**
+         * @type {AudioChunks}
+         */
+        const dry = [];
+        for (let i = 0; i < 16; i++)
         {
-            // data is encoded into a single f32 array as follows
-            // revL, revR
-            // chrL, chrR,
-            // dry1L, dry1R
-            // dryNL, dryNR
-            // dry16L, dry16R
-            // to improve performance
-            
-            const byteStep = BLOCK_SIZE * Float32Array.BYTES_PER_ELEMENT;
-            const data = new Float32Array(BLOCK_SIZE * 36);
-            let byteOffset = 0;
-            const revR = new Float32Array(data.buffer, byteOffset, BLOCK_SIZE);
             byteOffset += byteStep;
-            const revL = new Float32Array(data.buffer, byteOffset, BLOCK_SIZE);
-            const rev = [revL, revR];
+            const dryL = new Float32Array(data.buffer, byteOffset, BLOCK_SIZE);
             byteOffset += byteStep;
-            const chrL = new Float32Array(data.buffer, byteOffset, BLOCK_SIZE);
-            byteOffset += byteStep;
-            const chrR = new Float32Array(data.buffer, byteOffset, BLOCK_SIZE);
-            const chr = [chrL, chrR];
-            /**
-             * @type {AudioChunks}
-             */
-            const dry = [];
-            for (let i = 0; i < 16; i++)
-            {
-                byteOffset += byteStep;
-                const dryL = new Float32Array(data.buffer, byteOffset, BLOCK_SIZE);
-                byteOffset += byteStep;
-                const dryR = new Float32Array(data.buffer, byteOffset, BLOCK_SIZE);
-                dry.push([dryL, dryR]);
-            }
-            
-            this.seqEngine.processTick();
-            this.synthEngine.renderAudioSplit(rev, chr, dry);
-            this.workletPort.postMessage(data, [data.buffer]);
+            const dryR = new Float32Array(data.buffer, byteOffset, BLOCK_SIZE);
+            dry.push([dryL, dryR]);
         }
-        this.toRender = 0;
-        if (this.loopOn)
-        {
-            setTimeout(this.renderLoop.bind(this));
-        }
-    };
+        this.seqEngine.processTick();
+        this.synthEngine.renderAudioSplit(rev, chr, dry);
+        
+        this.workletPort.postMessage(data, [data.buffer]);
+    }
     
     startAudioLoop()
     {
         this.loopOn = true;
-        this.renderLoop();
+        this.renderAndSendChunk();
     }
     
     stopAudioLoop()
@@ -273,7 +251,7 @@ class WorkerSynthEngine
         {
             const port = e.ports[0];
             this.workletPort = port;
-            port.onmessage = this.handleWorkletMessage.bind(this);
+            port.onmessage = this.renderAndSendChunk.bind(this);
         }
         /**
          * @type {WorkerMessage}

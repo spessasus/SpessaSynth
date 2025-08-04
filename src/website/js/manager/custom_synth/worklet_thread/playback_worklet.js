@@ -5,6 +5,8 @@
 
 const BLOCK_SIZE = 128;
 
+const MAX_QUEUED = 20;
+
 /**
  * An AudioWorkletProcessor that plays back 18 separate streams of stereo audio: reverb, and chorus and 16 dry channels.
  */
@@ -16,7 +18,7 @@ class PlaybackProcessor extends AudioWorkletProcessor
     /** @type {Float32Array[]} */
     data = [];
     
-    requestUpdate = false;
+    updateRequested = false;
     
     /**
      *
@@ -39,13 +41,13 @@ class PlaybackProcessor extends AudioWorkletProcessor
                 this.sentPort = sentPort;
                 sentPort.onmessage = (e) =>
                 {
-                    this.requestUpdate = true;
-                    if (!e.data)
-                    {
-                        // worker has nothing to do, but requested the postMessage update
-                        return;
-                    }
                     this.data.push(e.data);
+                    this.updateRequested = false;
+                    // if we need more, request immediately
+                    if (this.data.length < MAX_QUEUED)
+                    {
+                        this.sentPort.postMessage(null);
+                    }
                 };
                 
             }
@@ -61,11 +63,6 @@ class PlaybackProcessor extends AudioWorkletProcessor
     process(_inputs, outputs)
     {
         const data = this.data.shift();
-        if (this.requestUpdate)
-        {
-            this.sentPort.postMessage(this.data.length);
-            this.requestUpdate = false;
-        }
         if (!data)
         {
             return true;
@@ -79,6 +76,14 @@ class PlaybackProcessor extends AudioWorkletProcessor
             outputs[i][1].set(data.subarray(offset, offset + BLOCK_SIZE));
             offset += BLOCK_SIZE;
         }
+        
+        // if it has already been requested, we need to wait
+        if (!this.updateRequested)
+        {
+            this.sentPort.postMessage(null);
+            this.updateRequested = true;
+        }
+        
         // keep it online
         return true;
     }
