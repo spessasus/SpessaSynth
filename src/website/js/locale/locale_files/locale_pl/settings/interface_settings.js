@@ -28,6 +28,11 @@ export const interfaceSettings = {
         description: "Tak jak ta!"
     },
     
+    useFirefox: {
+        firefox: "Przeglądarka firefox",
+        recommended: "jest mocno zalecana dla najlepszej wydajności."
+    },
+    
     showControls: {
         title: "Pokaż kontrolki",
         description: "Pokaż kontrolki do przewijania czasu"

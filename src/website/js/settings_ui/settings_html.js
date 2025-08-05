@@ -184,6 +184,10 @@ export const settingsHtml = `
         <h3><a href='https://github.com/spessasus/SpessaSynth/wiki/How-To-Use-App' target='_blank' translate-path-title='locale.synthesizerController.helpButton'></a></h3>
         
         <h4 class='hover_reminder' translate-path-title='locale.settings.interfaceSettings.reminder'></h4>
+        <h4 class='hover_reminder'>
+            <span translate-path='locale.settings.interfaceSettings.useFirefox.firefox' style='color: orange;'></span>
+            <span translate-path='locale.settings.interfaceSettings.useFirefox.recommended'></span>
+        </h4>
     </div>
 </div>
 `;
