@@ -4,19 +4,27 @@
   "type": "module",
   "scripts": {
     "perms": "chmod +x src/build/*",
-    "start": "node src/build/start.js",
-    "build": "node src/build/build.js",
+    "test:types": "eslint src/ && tsc -b",
+    "start": "node src/build/start.ts",
+    "build": "node src/build/build.ts",
     "debug": "src/build/enable_debug.sh",
     "release": "src/build/disable_debug.sh",
     "clean": "rm -rf dist; rm -rf local-dev; rm -rf server"
   },
   "devDependencies": {
     "@chialab/esbuild-plugin-meta-url": "^0.18.2",
-    "esbuild": "^0.25.2"
+    "@eslint/js": "^9.33.0",
+    "@types/node": "^24.2.1",
+    "esbuild": "^0.25.2",
+    "eslint": "^9.33.0",
+    "globals": "^16.3.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.39.0"
   },
   "dependencies": {
     "jszip": "^3.10.1",
-    "spessasynth_core": "latest",
-    "spessasynth_lib": "latest"
+    "spessasynth_core": "file:../spessasynth_core/spessasynth_core-4.0.0.tgz",
+    "spessasynth_lib": "file:../spessasynth_lib/spessasynth_lib-4.0.0.tgz"
   }
 }
