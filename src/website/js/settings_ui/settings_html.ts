@@ -1,11 +1,11 @@
 /**
- * settings_html.js
+ * Settings_html.js
  * purpose: the inner HTML for the settings element
  */
 import { USE_MIDI_RANGE } from "./handlers/keyboard_handler.js";
 import { rendererModes } from "../renderer/renderer.js";
 
-// translate-path: only innerText: translate-path-title: inner text by adding .title and title by adding .description
+// Translate-path: only innerText: translate-path-title: inner text by adding .title and title by adding .description
 export const settingsHtml = `
 <h1 translate-path='locale.settings.mainTitle'></h1>
 <div class='settings_groups_parent'>

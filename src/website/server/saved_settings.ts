@@ -1,4 +1,9 @@
 import { type RendererMode, rendererModes } from "../js/renderer/renderer.ts";
+import type { LocaleCode } from "../js/locale/locale_files/locale_list.ts";
+
+export type LayoutType = "downwards" | "upwards" | "left" | "right";
+
+export type InterfaceMode = "light" | "dark";
 
 export interface ConfigFile {
     lastUsedSf2: string | null;
@@ -11,7 +16,7 @@ export interface SavedSettings {
             min: number;
             max: number;
         };
-        mode: "light" | "dark";
+        mode: InterfaceMode;
         selectedChannel: number;
         autoRange: boolean;
         show: boolean;
@@ -25,7 +30,6 @@ export interface SavedSettings {
         };
         noteFallingTimeMs: number;
         noteAfterTriggerTimeMs: number;
-        renderWaveforms: boolean;
         drawActiveNotes: boolean;
         stabilizeWaveforms: boolean;
         amplifier: number;
@@ -41,9 +45,9 @@ export interface SavedSettings {
         input: null | string;
     };
     interface: {
-        mode: "light" | "dark";
-        language: string;
-        layout: "downwards" | "upwards" | "left" | "right";
+        mode: InterfaceMode;
+        language: LocaleCode;
+        layout: LayoutType;
     };
 }
 
@@ -77,7 +81,6 @@ export const DEFAULT_SAVED_SETTINGS: SavedSettings = {
         noteAfterTriggerTimeMs: 0,
         noteFallingTimeMs: 1000,
         drawActiveNotes: true,
-        renderWaveforms: true,
         stabilizeWaveforms: true,
         amplifier: 2,
         logarithmicFrequency: true,

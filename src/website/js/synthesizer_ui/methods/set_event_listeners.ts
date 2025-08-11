@@ -1,5 +1,5 @@
 import { getDrumsSvg, getNoteSvg } from "../../utils/icons.js";
-import type { SynthetizerUI } from "../synthetizer_ui.ts";
+import type { ControllerGroupType, SynthetizerUI } from "../synthetizer_ui.ts";
 
 /**
  * @this {SynthetizerUI}
@@ -76,7 +76,9 @@ export function setEventListeners(this: SynthetizerUI) {
         "synthui-new-channel",
         () => {
             this.appendNewController(this.controllers.length);
-            this.showControllerGroup(this.groupSelector.value);
+            this.showControllerGroup(
+                this.groupSelector.value as ControllerGroupType
+            );
             this.hideControllers();
         }
     );

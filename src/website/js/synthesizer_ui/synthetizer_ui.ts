@@ -39,7 +39,7 @@ export function isXGDrums(bankNr: number) {
 }
 
 export const LOCALE_PATH = "locale.synthesizerController.";
-type ControllerGroupType =
+export type ControllerGroupType =
     | "effects"
     | "portamento"
     | "volumeEnvelope"
@@ -75,28 +75,24 @@ export const ICON_SIZE = 32;
 
 export class SynthetizerUI {
     public readonly toggleDarkMode = toggleDarkMode.bind(this);
+    public readonly channelColors: string[];
     protected readonly synth: WorkerSynthesizer;
     protected readonly keyboard: MidiKeyboard;
     protected readonly locale: LocaleManager;
     protected readonly sequencer: Sequencer;
-
     protected readonly voiceMeter: Meter;
     protected readonly volumeController: Meter;
     protected readonly panController: Meter;
     protected readonly transposeController: Meter;
     protected readonly mainMeters: Meter[];
-
     protected readonly mainButtons: HTMLElement[];
     protected readonly mainControllerDiv: HTMLDivElement;
     protected onProgramChange?: (channel: number) => unknown;
-
     protected controllers: ChannelController[] = [];
     protected ports: HTMLDivElement[] = [];
     protected portDescriptors: HTMLDivElement[] = [];
     protected readonly soloChannels = new Set<number>();
-
     protected readonly mainDivWrapper: HTMLDivElement;
-    protected readonly channelColors: string[];
     protected readonly groupSelector: HTMLSelectElement;
     protected readonly uiDiv: HTMLDivElement;
     protected showOnlyUsedEnabled = false;

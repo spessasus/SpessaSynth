@@ -10,7 +10,7 @@ let hasRenderedNoVoices = false;
  */
 export function render(this: Renderer, auto = true, force = false) {
     const nothingToDo =
-        (this.seq === undefined || this?.seq?.paused === true) &&
+        (this.seq === undefined || this?.seq?.paused) &&
         this.synth.voicesAmount === 0 &&
         this.rendererMode === rendererModes.waveformsMode &&
         !force;
@@ -41,7 +41,7 @@ export function render(this: Renderer, auto = true, force = false) {
     }
 
     const highPerf = this.synth.getMasterParameter("blackMIDIMode");
-    if (this.renderAnalysers && !highPerf) {
+    if (!highPerf) {
         // Draw the individual analyzers
         this.renderWaveforms(forceStraight);
     }

@@ -191,10 +191,7 @@ export class MusicModeUI {
         t.textContent = title;
     }
 
-    public setVisibility(
-        visible: boolean,
-        keyboardCanvasWrapper: HTMLDivElement
-    ) {
+    public setVisibility(visible: boolean, keyboardCanvasWrapper: HTMLElement) {
         if (visible === this.visible) {
             return;
         }

@@ -317,6 +317,7 @@ export function renderWaveforms(this: Renderer, forceStraightLine = false) {
     const waveHeight = this.canvas.height / 4;
     switch (this.rendererMode) {
         default:
+        case rendererModes.none:
             break;
 
         case rendererModes.filledWaveformsMode:

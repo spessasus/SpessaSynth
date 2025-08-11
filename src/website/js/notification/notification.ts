@@ -14,7 +14,7 @@ const notifications: Record<
     }
 > = {};
 
-interface NotificationType {
+export interface NotificationType {
     div: HTMLDivElement;
     id: number;
 }
@@ -28,11 +28,33 @@ type NotificationContentCallback = (
     target: HTMLElement
 ) => unknown;
 
-export type WritableElementProperties = StringKeysOf<
-    Omit<
-        typeof Element.prototype,
-        "baseURI" | "localName" | "nodeName" | "tagName"
-    >
+// If the "structure" of the two types is exactly the same, the function types match
+type IfEquals<X, Y, A = X, B = never> =
+    // If T extends X (matches), then 1, otherwise 2
+    (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2 // Compare the same but for Y instead of X
+        ? // Matches
+          A
+        : // Does not match
+          B;
+
+type WritableStringKeys<T> = {
+    // For every string key
+    [K in keyof T]-?: T[K] extends string
+        ? IfEquals<
+              // Original readonly
+              { [P in K]: T[P] },
+              // Not readonly
+              { -readonly [P in K]: T[P] },
+              // Matches, keep as is
+              K
+              // Otherwise discard
+          >
+        : never;
+}[keyof T];
+
+type ListenerType<K extends keyof HTMLElementEventMap> = Record<
+    K,
+    (e: HTMLElementEventMap[K]) => unknown
 >;
 
 export interface NotificationContent {
@@ -50,16 +72,26 @@ export interface NotificationContent {
     textContent?: string;
     translatePathTitle?: string;
     translatePathTitleProps?: string[];
-    attributes?: Record<WritableElementProperties, string>;
+    attributes?: Partial<
+        Pick<HTMLInputElement, WritableStringKeys<HTMLInputElement>> &
+            Record<string, string> & {
+                checked: boolean;
+                style: string;
+                onchange: () => unknown;
+            }
+    >;
     onClick?: NotificationContentCallback;
-    listeners?: Record<string, () => unknown>;
+    listeners?: Partial<ListenerType<keyof HTMLElementEventMap>>;
 }
 
 export type StringKeysOf<T> = {
     [K in keyof T]: T[K] extends string ? K : never;
 }[keyof T];
 
-type WritableCSSDeclarations = StringKeysOf<CSSStyleDeclaration>;
+type WritableCSSDeclarations = keyof Pick<
+    CSSStyleDeclaration,
+    WritableStringKeys<CSSStyleDeclaration>
+>;
 
 /**
  * @param title

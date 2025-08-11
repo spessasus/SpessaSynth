@@ -2,6 +2,7 @@ import { midiControllers } from "spessasynth_core";
 import { handlePointers } from "./pointer_handling.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import type { WorkerSynthesizer } from "spessasynth_lib";
+import type { InterfaceMode } from "../../server/saved_settings.ts";
 
 /**
  * Midi_keyboard.js
@@ -17,9 +18,9 @@ export class MidiKeyboard {
      */
     public onNotePressed?: (midiNote: number, velocity: number) => unknown;
     public channel = 0;
+    public mode: InterfaceMode = "light";
     protected mouseHeld = false;
     protected pressedKeys = new Set<number>();
-    protected mode: "light" | "dark" = "light";
     protected sizeChangeAnimationId = -1;
     protected modeChangeAnimationId = -1;
     protected synth: WorkerSynthesizer;

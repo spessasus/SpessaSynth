@@ -29,7 +29,8 @@ export const rendererModes = {
     waveformsMode: 0,
     spectrumSplitMode: 1,
     spectrumSingleMode: 2,
-    filledWaveformsMode: 4
+    filledWaveformsMode: 4,
+    none: 5
 };
 
 export type RendererMode = (typeof rendererModes)[keyof typeof rendererModes];
@@ -71,7 +72,6 @@ export class Renderer {
     public holdPedalIsDownText = "";
     public rendererMode: RendererMode = rendererModes.waveformsMode;
     public showHoldPedal = false;
-    public renderAnalysers = true;
     public renderNotes = true;
     public drawActiveNotes = true;
     public showVisualPitch = true;
@@ -82,14 +82,13 @@ export class Renderer {
     public renderChannels = Array<boolean>(16).fill(true);
     public timeOffset = 0;
     public notesOnScreen = 0;
+    public sideways = false;
+    public readonly updateFftSize = updateFftSize.bind(this);
     protected version: string;
     protected _notesFall = true;
-    protected sideways = false;
     protected canvas: HTMLCanvasElement;
     protected drawingContext: CanvasRenderingContext2D;
-
     protected plainColors: string[];
-
     protected synth: WorkerSynthesizer;
     protected seq: Sequencer;
     protected channelAnalysers: AnalyserNode[] = [];
@@ -101,7 +100,6 @@ export class Renderer {
     protected sidewaysChannelColors: CanvasGradient[] = [];
     protected sidewaysDarkerColors: CanvasGradient[] = [];
     protected frameTimeStart = performance.now();
-
     protected noteTimes?: {
         notes: {
             midiNote: number;
@@ -111,17 +109,17 @@ export class Renderer {
         }[];
         renderStartIndex: number;
     }[];
-    protected computeNotePositions = computeNotePositions.bind(this);
-    protected updateFftSize = updateFftSize.bind(this);
-    protected connectChannelAnalysers = connectChannelAnalysers.bind(this);
-    protected disconnectChannelAnalysers =
+    protected readonly computeNotePositions = computeNotePositions.bind(this);
+    protected readonly connectChannelAnalysers =
+        connectChannelAnalysers.bind(this);
+    protected readonly disconnectChannelAnalysers =
         disconnectChannelAnalysers.bind(this);
-    protected resetIndexes = resetIndexes.bind(this);
-    protected renderWaveforms = renderWaveforms.bind(this);
-    protected renderSingleWaveform = renderSingleWaveform.bind(this);
-    protected renderSingleFft = renderSingleFft.bind(this);
-    protected renderBigFft = renderBigFft.bind(this);
-    protected inputNode: AudioNode;
+    protected readonly resetIndexes = resetIndexes.bind(this);
+    protected readonly renderWaveforms = renderWaveforms.bind(this);
+    protected readonly renderSingleWaveform = renderSingleWaveform.bind(this);
+    protected readonly renderSingleFft = renderSingleFft.bind(this);
+    protected readonly renderBigFft = renderBigFft.bind(this);
+    protected readonly inputNode: AudioNode;
 
     /**
      * Creates a new midi renderer for rendering notes visually.

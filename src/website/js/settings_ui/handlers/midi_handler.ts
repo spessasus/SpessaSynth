@@ -1,136 +1,115 @@
 import { isMobile } from "../../utils/is_mobile.js";
-import { MIDIDeviceHandler, Sequencer } from "spessasynth_lib";
+import type { SpessaSynthSettings } from "../settings.ts";
 
-/**
- * @param handler {MIDIDeviceHandler}
- * @param sequi {SequencerUI}
- * @param synthui {SynthetizerUI}
- * @this {SpessaSynthSettings}
- * @private
- */
-export function _createMidiSettingsHandler(handler, sequi, synthui)
-{
-    handler.createMIDIDeviceHandler().then(success =>
-    {
-        if (success)
-        {
-            this._createMidiInputHandler(handler, synthui.synth);
-            this._createMidiOutputHandler(handler, sequi);
-        }
-        else
-        {
-            if (!isMobile)
-            {
-                const parent = document.getElementById("midi_settings");
-                // show midi as not available
+export function _createMidiSettingsHandler(this: SpessaSynthSettings) {
+    void this.midiDeviceHandler.createMIDIDeviceHandler().then((success) => {
+        if (success) {
+            this._createMidiInputHandler();
+            this._createMidiOutputHandler();
+        } else {
+            if (!isMobile) {
+                const parent = document.getElementById("midi_settings")!;
+                // Show midi as not available
                 const input = this.htmlControls.midi.inputSelector;
                 const output = this.htmlControls.midi.outputSelector;
-                // hide everything
+                // Hide everything
                 input.classList.add("hidden");
                 output.classList.add("hidden");
-                parent.querySelector("label[for='midi_input_selector']").classList.add("hidden");
-                parent.querySelector("label[for='midi_output_selector']").classList.add("hidden");
-                
-                // show error
+                parent
+                    .querySelector("label[for='midi_input_selector']")!
+                    .classList.add("hidden");
+                parent
+                    .querySelector("label[for='midi_output_selector']")!
+                    .classList.add("hidden");
+
+                // Show error
                 const errorMessage = document.createElement("h3");
                 errorMessage.classList.add("error_message");
                 parent.appendChild(errorMessage);
-                this.locale.bindObjectProperty(errorMessage, "textContent", "locale.warnings.noMidiSupport");
+                this.locale.bindObjectProperty(
+                    errorMessage,
+                    "textContent",
+                    "locale.warnings.noMidiSupport"
+                );
             }
         }
     });
 }
 
-/**
- * @param handler {MIDIDeviceHandler}
- * @param synth {CustomSynth}
- * @this {SpessaSynthSettings}
- * @private
- */
-export function _createMidiInputHandler(handler, synth)
-{
-    // input selector
-    if (handler.inputs.length < 1)
-    {
+export function _createMidiInputHandler(this: SpessaSynthSettings) {
+    const handler = this.midiDeviceHandler;
+    // Input selector
+    if (!handler.inputs || handler.inputs.size < 1) {
         return;
     }
-    // no device
+    // No device
     const select = this.htmlControls.midi.inputSelector;
-    for (const input of handler.inputs)
-    {
+    for (const input of handler.inputs) {
         const option = document.createElement("option");
         option.value = input[0].toString();
-        option.innerText = input[1].name;
+        option.innerText = input[1].name ?? "NO NAME";
         select.appendChild(option);
     }
-    select.onchange = () =>
-    {
-        if (select.value === "-1")
-        {
-            handler.disconnectAllDevicesFromSynth();
+    select.onchange = () => {
+        if (!handler.inputs) {
+            return;
         }
-        else
-        {
+        if (select.value === "-1") {
+            handler.disconnectAllDevicesFromSynth();
+        } else {
             // noinspection JSCheckFunctionSignatures
-            handler.connectDeviceToSynth(handler.inputs.get(select.value), synth);
+            handler.connectDeviceToSynth(
+                handler.inputs.get(select.value)!,
+                this.synth
+            );
         }
         this._saveSettings();
     };
-    // try to connect the first input (if it exists)
-    if (handler.inputs.size > 0)
-    {
+    // Try to connect the first input (if it exists)
+    if (handler.inputs.size > 0) {
         const firstInput = handler.inputs.entries().next().value;
+        if (!firstInput) {
+            return;
+        }
         // noinspection JSCheckFunctionSignatures
-        handler.connectDeviceToSynth(firstInput[1], synth);
+        handler.connectDeviceToSynth(firstInput[1], this.synth);
         select.value = firstInput[0];
     }
 }
 
 /**
- * note that using sequi allows us to get the sequencer after it has been created
- * @param handler {MIDIDeviceHandler}
- * @param sequi {SequencerUI}
- * @this {SpessaSynthSettings}
- * @private
+ * Note that using sequi allows us to get the sequencer after it has been created
  */
-export function _createMidiOutputHandler(handler, sequi)
-{
-    if (!handler.outputs)
-    {
-        setTimeout(() =>
-        {
-            this._createMidiOutputHandler(handler, sequi);
+export function _createMidiOutputHandler(this: SpessaSynthSettings) {
+    const handler = this.midiDeviceHandler;
+    if (!handler.outputs) {
+        setTimeout(() => {
+            this._createMidiOutputHandler();
         }, 1000);
         return;
     }
-    if (handler.outputs.length < 1)
-    {
+    if (handler.outputs.size < 1) {
         return;
     }
     const select = this.htmlControls.midi.outputSelector;
-    for (const output of handler.outputs)
-    {
+    for (const output of handler.outputs) {
         const option = document.createElement("option");
         option.value = output[0].toString();
-        option.innerText = output[1].name;
+        option.innerText = output[1].name ?? "NO NAME";
         select.appendChild(option);
     }
-    
-    select.onchange = () =>
-    {
-        if (!sequi.seq)
-        {
-            // set timeout to wait for sequencer to exist
-            setTimeout(select.onchange, 1000);
+
+    select.onchange = () => {
+        if (!handler.outputs) {
             return;
         }
-        if (select.value === "-1")
-        {
-            handler.disconnectSeqFromMIDI(/** @type {Sequencer}*/sequi.seq);
-        }
-        else
-        {
-            handler.connectMIDIOutputToSeq(handler.outputs.get(select.value), /** @type {Sequencer}*/sequi.seq);
+        if (select.value === "-1") {
+            handler.disconnectSeqFromMIDI(this.seq);
+        } else {
+            handler.connectMIDIOutputToSeq(
+                handler.outputs.get(select.value)!,
+                this.seq
+            );
         }
         this._saveSettings();
     };

@@ -1,4 +1,6 @@
 import { USE_MIDI_RANGE } from "../handlers/keyboard_handler.js";
+import type { SpessaSynthSettings } from "../settings.ts";
+import type { LayoutType, SavedSettings } from "../../../server/saved_settings.ts";
 
 /**
  * Serializes settings into a nice object
@@ -6,22 +8,15 @@ import { USE_MIDI_RANGE } from "../handlers/keyboard_handler.js";
  * @returns {SavedSettings}
  * @this {SpessaSynthSettings}
  */
-export function _serializeSettings()
-{
-    let renderingMode = this.renderer.rendererMode.toString();
-    if (!this.renderer.renderAnalysers)
-    {
-        renderingMode = "none";
-    }
+export function _serializeSettings(this: SpessaSynthSettings): SavedSettings {
     return {
         renderer: {
-            renderingMode: renderingMode,
+            renderingMode: this.renderer.rendererMode,
             noteFallingTimeMs: this.renderer.noteFallingTimeMs,
             noteAfterTriggerTimeMs: this.renderer.noteAfterTriggerTimeMs,
             waveformThickness: this.renderer.lineThickness,
             sampleSize: this.renderer.normalAnalyserFft,
             amplifier: this.renderer.waveMultiplier,
-            renderWaveforms: this.renderer.renderAnalysers,
             renderNotes: this.renderer.renderNotes,
             drawActiveNotes: this.renderer.drawActiveNotes,
             showVisualPitch: this.renderer.showVisualPitch,
@@ -31,24 +26,31 @@ export function _serializeSettings()
             logarithmicFrequency: this.renderer.logarithmicFrequency,
             keyRange: this.renderer.keyRange
         },
-        
+
         keyboard: {
             selectedChannel: this.midiKeyboard.channel,
             keyRange: this.midiKeyboard.keyRange,
             mode: this.midiKeyboard.mode,
-            autoRange: this.htmlControls.keyboard.sizeSelector.value === USE_MIDI_RANGE,
-            show: this.htmlControls.keyboard.showSelector.checked === true
+            autoRange:
+                this.htmlControls.keyboard.sizeSelector.value ===
+                USE_MIDI_RANGE,
+            show: this.htmlControls.keyboard.showSelector.checked
         },
-        
+
         midi: {
-            input: !this.midiDeviceHandler?.selectedInput ? null : this.midiDeviceHandler?.selectedInput.name,
-            output: !this.midiDeviceHandler?.selectedOutput ? null : this.midiDeviceHandler?.selectedOutput.name
+            input: !this.midiDeviceHandler?.selectedInput
+                ? null
+                : this.midiDeviceHandler?.selectedInput.name,
+            output: !this.midiDeviceHandler?.selectedOutput
+                ? null
+                : this.midiDeviceHandler?.selectedOutput.name
         },
-        
+
         interface: {
             mode: this.mode,
             language: this.htmlControls.interface.languageSelector.value,
-            layout: this.htmlControls.interface.layoutSelector.value
+            layout: this.htmlControls.interface.layoutSelector
+                .value as LayoutType
         }
     };
 }

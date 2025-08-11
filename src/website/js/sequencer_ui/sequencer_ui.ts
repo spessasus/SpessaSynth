@@ -27,6 +27,7 @@ import {
 } from "spessasynth_core";
 import type { Sequencer, WorkerSynthesizer } from "spessasynth_lib";
 import { AssManager } from "../utils/ass_manager/ass_manager.ts";
+import type { InterfaceMode } from "../../server/saved_settings.ts";
 
 /**
  * Sequencer_ui.js
@@ -62,7 +63,7 @@ export class SequencerUI {
     protected requiresTextUpdate = false;
     protected lastTimeUpdate = 0;
     protected rawOtherTextEvents: MIDIMessage[] = [];
-    protected mode: "dark" | "light" = "dark";
+    protected mode: InterfaceMode = "dark";
     protected locale: LocaleManager;
     protected currentSongTitle = "";
     protected currentLyrics: MIDIMessage[] = [];

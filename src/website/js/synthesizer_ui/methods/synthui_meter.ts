@@ -15,8 +15,8 @@ export class Meter {
     public readonly div: HTMLDivElement;
     public readonly bar: HTMLDivElement;
     public currentValue;
+    public max;
     private readonly min;
-    private readonly max;
     private isShown = true;
     private isVisualValueSet = true;
     private isActive = false;
