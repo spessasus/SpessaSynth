@@ -1,11 +1,11 @@
 /**
- * locale for music player mode
- * @type {{nothingPlaying: string, currentlyPlaying: string, nothingPlayingCopyright: string, toggleButton: {description: string, title: string}}}
+ * Locale for music player mode
  */
 export const musicPlayerModeLocale = {
     toggleButton: {
         title: "Przełącz tryb odtwarzania muzyki",
-        description: "Przełącz uproszczoną wersję interfejsu, ukrywając pianino i wizualizację nut"
+        description:
+            "Przełącz uproszczoną wersję interfejsu, ukrywając pianino i wizualizację nut"
     },
     currentlyPlaying: "Teraz gramy:",
     nothingPlaying: "Nic teraz nie gra",

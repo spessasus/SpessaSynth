@@ -1,9 +1,5 @@
 import { MidiKeyboard } from "../midi_keyboard/midi_keyboard.js";
-import {
-    Sequencer,
-    WebMIDILinkHandler,
-    WorkerSynthesizer
-} from "spessasynth_lib";
+import { Sequencer, WebMIDILinkHandler, WorkerSynthesizer } from "spessasynth_lib";
 
 import { Renderer } from "../renderer/renderer.js";
 
@@ -14,23 +10,14 @@ import { MusicModeUI } from "../music_mode_ui/music_mode_ui.js";
 import { LocaleManager } from "../locale/locale_manager.js";
 import { isMobile } from "../utils/is_mobile.js";
 import { keybinds } from "../utils/keybinds.js";
-import {
-    _doExportAudioData,
-    _exportAudioData
-} from "./export_audio/export_audio.js";
+import { _doExportAudioData, _exportAudioData } from "./export_audio/export_audio.js";
 import { exportSoundBank } from "./export_audio/export_soundfont.js";
 import { exportSong } from "./export_audio/export_song.js";
 import { _exportRMIDI } from "./export_audio/export_rmidi.js";
-import {
-    closeNotification,
-    showNotification
-} from "../notification/notification.js";
+import { closeNotification, showNotification } from "../notification/notification.js";
 import { DropFileHandler, type MIDIFile } from "../utils/drop_file_handler.js";
 import { _exportDLS } from "./export_audio/export_dls.js";
-import {
-    IndexedByteArray,
-    SpessaSynthCoreUtils as util
-} from "spessasynth_core";
+import { IndexedByteArray, SpessaSynthCoreUtils as util } from "spessasynth_core";
 import { prepareExtraBankUpload } from "./extra_bank_handling.js";
 
 // This enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
@@ -50,17 +37,17 @@ export class Manager {
     public sfError?: (err: string) => unknown;
     public enableDebug;
     public readonly ready;
-    protected synth?: WorkerSynthesizer;
-    protected seq?: Sequencer;
+    public readonly localeManager;
+    public synth?: WorkerSynthesizer;
+    public seq?: Sequencer;
+    public readonly exportSong = exportSong.bind(this);
+    public seqUI?: SequencerUI;
     protected isExporting;
-    protected readonly exportSong = exportSong.bind(this);
     protected readonly _exportAudioData = _exportAudioData.bind(this);
     protected readonly _doExportAudioData = _doExportAudioData.bind(this);
     protected readonly exportSoundBank = exportSoundBank.bind(this);
     protected readonly _exportDLS = _exportDLS.bind(this);
     protected readonly _exportRMIDI = _exportRMIDI.bind(this);
-    protected readonly localeManager;
-    protected seqUI?: SequencerUI;
     protected extraBankName = "";
     protected extraBankOffset = 0;
     private readonly channelColors = [
@@ -301,9 +288,7 @@ export class Manager {
             this.audioDelay,
             canvas,
             this.localeManager,
-            "SPESSASYNTH_VERSION" in window
-                ? (window.SPESSASYNTH_VERSION as string)
-                : ""
+            window.SPESSASYNTH_VERSION
         );
         this.renderer.render(true);
 
@@ -395,7 +380,7 @@ export class Manager {
                 }
                 await this.context.resume();
                 this.play(data);
-                let firstName = data[0].altName;
+                let firstName = data[0].fileName;
                 if (firstName.length > 20) {
                     firstName = firstName.substring(0, 21) + "...";
                 }

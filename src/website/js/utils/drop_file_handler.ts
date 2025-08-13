@@ -1,6 +1,6 @@
 export interface MIDIFile {
     binary: ArrayBuffer;
-    altName: string;
+    fileName: string;
 }
 
 export class DropFileHandler {
@@ -44,7 +44,7 @@ export class DropFileHandler {
                             const rmid = buf.slice(8, 12);
                             if (decoder.decode(rmid) === "RMID") {
                                 // RMID
-                                MIDIFiles.push({ binary: buf, altName: name });
+                                MIDIFiles.push({ binary: buf, fileName: name });
                                 continue;
                             }
                             // Soundfont
@@ -52,7 +52,7 @@ export class DropFileHandler {
                             continue;
                         }
                         // Midi
-                        MIDIFiles.push({ binary: buf, altName: name });
+                        MIDIFiles.push({ binary: buf, fileName: name });
                     }
                     midiCallback(MIDIFiles);
                 })(e)

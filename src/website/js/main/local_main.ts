@@ -1,9 +1,22 @@
 "use strict";
 
+import type { MIDIFile } from "../utils/drop_file_handler.ts";
 import { Manager } from "../manager/manager.js";
 import { showNotification } from "../notification/notification.js";
 import { LocaleManager } from "../locale/locale_manager.js";
 import { SpessaSynthLogging } from "spessasynth_core";
+import type { LocaleCode } from "../locale/locale_files/locale_list.ts";
+import type { SavedSettings } from "../../server/saved_settings.ts";
+
+declare global {
+    interface Window {
+        SPESSASYNTH_VERSION: string;
+        manager?: Manager;
+        saveSettings: (s: SavedSettings) => unknown;
+        savedSettings: Promise<SavedSettings>;
+        isLocalEdition: boolean;
+    }
+}
 
 /**
  * Local_main.js
@@ -12,52 +25,48 @@ import { SpessaSynthLogging } from "spessasynth_core";
 const SAMPLE_RATE = 44100;
 
 SpessaSynthLogging(true, true, true);
+const titleMessage = document.getElementById("title")!;
+const progressBar = document.getElementById("progress_bar")!;
+const fileInput = document.getElementById(
+    "midi_file_input"
+)! as HTMLInputElement;
+const fileUpload = document.getElementById("file_upload")!;
 
-/**
- * @type {HTMLHeadingElement}
- */
-const titleMessage = document.getElementById("title");
-/**
- * @type {HTMLDivElement}
- */
-const progressBar = document.getElementById("progress_bar");
-/**
- * @type {HTMLInputElement}
- */
-const fileInput = document.getElementById("midi_file_input");
 // Remove the old files
 fileInput.value = "";
 fileInput.focus();
 
-const exportButton = document.getElementById("export_button");
+const exportButton = document.getElementById("export_button")!;
 exportButton.style.display = "none";
-
 let synthReady = false;
 
 const r = await (await fetch("/getversion")).text();
 window.SPESSASYNTH_VERSION = r;
 
-/**
- * @param fileName {string}
- * @param callback {function(number)}
- * @returns {Promise<ArrayBuffer>}
- */
-async function fetchFont(fileName, callback) {
+let sfParser: ArrayBuffer | undefined = undefined;
+const context = new AudioContext({ sampleRate: SAMPLE_RATE });
+
+let titleString = "";
+
+async function fetchFont(
+    fileName: string,
+    callback: (arg0: number) => unknown
+): Promise<ArrayBuffer> {
     const response = await fetch(`${fileName}`);
-    if (!response.ok) {
+    if (!response.ok || !response.body) {
         titleMessage.innerText = "Error downloading soundfont!";
-        throw response;
+        throw new Error(response.statusText);
     }
-    const size = response.headers.get("content-length");
-    const reader = await (await response.body).getReader();
+    const size = parseInt(response.headers.get("content-length") ?? "0");
+    const reader = response.body.getReader();
     let done = false;
     let dataArray;
     try {
-        dataArray = new Uint8Array(parseInt(size));
+        dataArray = new Uint8Array(size);
     } catch (e) {
         let message = `Your browser ran out of memory. Consider using Firefox or SF3 soundfont instead<br><br> (see console for error)`;
         if (window.manager) {
-            message = manager.localeManager.getLocaleString(
+            message = window.manager.localeManager.getLocaleString(
                 "locale.warnings.outOfMemory"
             );
         }
@@ -83,14 +92,12 @@ async function fetchFont(fileName, callback) {
     return dataArray.buffer;
 }
 
-/**
- * @param midiFiles {FileList}
- */
-async function startMidi(midiFiles) {
-    if (!synthReady) {
-        setTimeout(() => startMidi(midiFiles), 100);
+async function startMidi(midiFiles: FileList) {
+    if (!synthReady || !window.manager) {
+        setTimeout(() => void startMidi(midiFiles), 100);
         return;
     }
+    const manager = window.manager;
     await manager.ready;
     let fName;
     if (midiFiles[0].name.length > 20) {
@@ -101,16 +108,13 @@ async function startMidi(midiFiles) {
     if (midiFiles.length > 1) {
         fName += ` and ${midiFiles.length - 1} others`;
     }
-    document.getElementById("file_upload").innerText = fName;
-    document.getElementById("file_upload").title = midiFiles[0].name;
-    /**
-     * @type {{binary: ArrayBuffer, altName: string}[]}
-     */
-    const parsed = [];
+    fileUpload.innerText = fName;
+    fileUpload.title = midiFiles[0].name;
+    const parsed: MIDIFile[] = [];
     for (const file of midiFiles) {
         parsed.push({
             binary: await file.arrayBuffer(),
-            altName: file.name
+            fileName: file.name
         });
     }
 
@@ -122,40 +126,43 @@ async function startMidi(midiFiles) {
         manager.play(parsed);
     }
     exportButton.style.display = "flex";
-    exportButton.onclick = window.manager.exportSong.bind(window.manager);
+    exportButton.onclick = manager.exportSong.bind(window.manager);
 }
 
 /**
  * Fetches and replaces the current manager's font
- * @param fontName {string}
  */
-async function replaceFont(fontName) {
+async function replaceFont(fontName: string) {
     async function replaceSf() {
         // Prompt the user to click if needed
-        if (!window.audioContextMain) {
+        if (context.state === "suspended") {
             titleMessage.innerText = "Press anywhere to start the app";
+            return;
+        }
+
+        if (!sfParser) {
             return;
         }
 
         if (!window.manager) {
             // Prepare the manager
             window.manager = new Manager(
-                audioContextMain,
-                soundFontParser,
+                context,
+                sfParser,
                 localeManager,
                 true
             );
-            window.TITLE = window.manager.localeManager.getLocaleString(
+            titleString = window.manager.localeManager.getLocaleString(
                 "locale.titleMessage"
             );
             titleMessage.innerText = "Initializing...";
-            await manager.ready;
-            manager.synth.setLogLevel(true, true, true, true);
+            await window.manager.ready;
+            window.manager.synth?.setLogLevel(true, true, true);
         } else {
             if (window.manager.seq) {
                 window.manager.seq.pause();
             }
-            await window.manager.reloadSf(window.soundFontParser);
+            await window.manager.reloadSf(sfParser);
         }
         titleMessage.innerText = window.manager.localeManager.getLocaleString(
             "locale.titleMessage"
@@ -172,66 +179,51 @@ async function replaceFont(fontName) {
 
     titleMessage.innerText = "Parsing soundfont...";
     setTimeout(() => {
-        window.soundFontParser = data;
+        sfParser = data;
         progressBar.style.width = "0";
-        replaceSf();
+        void replaceSf();
     });
-    titleMessage.innerText = window.TITLE;
+    titleMessage.innerText = titleString;
 }
 
 document.body.onclick = async () => {
     // User has clicked, we can create the js
-    if (!window.audioContextMain) {
-        if (navigator.mediaSession) {
-            navigator.mediaSession.playbackState = "playing";
-        }
-        const context = window.AudioContext || window.webkitAudioContext;
-        window.audioContextMain = new context({ sampleRate: SAMPLE_RATE });
-        if (window.soundFontParser) {
-            // Prepare midi interface
-            window.manager = new Manager(
-                audioContextMain,
-                soundFontParser,
-                localeManager,
-                true
-            );
-            window.TITLE = window.manager.localeManager.getLocaleString(
-                "locale.titleMessage"
-            );
-            titleMessage.innerText = "Initializing...";
-            await manager.ready;
-            manager.synth.setLogLevel(true, true, true, true);
-            synthReady = true;
-            titleMessage.innerText =
-                window.manager.localeManager.getLocaleString(
-                    "locale.titleMessage"
-                );
-        }
+    await context.resume();
+    if (sfParser) {
+        // Prepare midi interface
+        window.manager = new Manager(context, sfParser, localeManager, true);
+        titleString = window.manager.localeManager.getLocaleString(
+            "locale.titleMessage"
+        );
+        titleMessage.innerText = "Initializing...";
+        await window.manager.ready;
+        window.manager.synth?.setLogLevel(true, true, true);
+        synthReady = true;
+        titleMessage.innerText = window.manager.localeManager.getLocaleString(
+            "locale.titleMessage"
+        );
     }
+
     document.body.onclick = null;
 };
 
-/**
- * @type {{name: string, size: number}[]}
- */
-let soundFonts = [];
+let soundFonts: { name: string; size: number }[] = [];
 
 const localeManager = new LocaleManager(
-    navigator.language.split("-")[0].toLowerCase()
+    navigator.language.split("-")[0].toLowerCase() as LocaleCode
 );
 
 // Load the list of soundfonts
-fetch("soundfonts").then(async (r) => {
+void fetch("soundfonts").then(async (r) => {
     if (!r.ok) {
         titleMessage.innerText = "Error fetching soundfonts!";
-        throw r.statusText;
+        throw new Error(r.statusText);
     }
-    /**
-     * @type {HTMLSelectElement}
-     */
-    const sfSelector = document.getElementById("sf_selector");
+    const sfSelector = document.getElementById(
+        "sf_selector"
+    )! as HTMLSelectElement;
 
-    soundFonts = JSON.parse(await r.text());
+    soundFonts = JSON.parse(await r.text()) as { name: string; size: number }[];
     for (const sf of soundFonts) {
         const option = document.createElement("option");
         option.value = sf.name;
@@ -243,17 +235,19 @@ fetch("soundfonts").then(async (r) => {
         sfSelector.appendChild(option);
     }
 
-    sfSelector.onchange = () => {
+    sfSelector.onchange = async () => {
         sfSelector.blur();
-        fetch(`/setlastsf2?sfname=${encodeURIComponent(sfSelector.value)}`);
-        if (window.manager.seq) {
+        await fetch(
+            `/setlastsf2?sfname=${encodeURIComponent(sfSelector.value)}`
+        );
+        if (window.manager?.seq) {
             window.manager.seq.pause();
         }
-        replaceFont(sfSelector.value);
+        await replaceFont(sfSelector.value);
 
-        if (window.manager.seq) {
+        if (window.manager?.seq) {
             titleMessage.innerText =
-                window.manager.seq.midiData.midiName || window.TITLE;
+                window.manager.seqUI?.currentSongTitle ?? titleString;
         }
     };
 
@@ -261,13 +255,13 @@ fetch("soundfonts").then(async (r) => {
     await replaceFont(soundFonts[0].name);
 
     // Start midi if already uploaded
-    if (fileInput.files[0]) {
+    if (fileInput.files?.[0]) {
         await startMidi(fileInput.files);
     }
 
     // And add the event listener
     fileInput.onchange = async () => {
-        if (!fileInput.files[0]) {
+        if (!fileInput.files?.[0]) {
             return;
         }
         await startMidi(fileInput.files);
@@ -277,16 +271,15 @@ fetch("soundfonts").then(async (r) => {
 /**
  * Saves the settings (settings.js) selected data to config.json
  * (only on the local edition that's why it's here and not in the demo_main.js)
- * @param settingsData {Object}
  */
-function saveSettings(settingsData) {
-    fetch("/savesettings", {
+function saveSettings(settingsData: SavedSettings) {
+    void fetch("/savesettings", {
         method: "POST",
         body: JSON.stringify(settingsData),
         headers: {
             "Content-type": "application/json; charset=UTF-8"
         }
-    }).then();
+    });
 }
 
 // Expose the function
@@ -294,12 +287,11 @@ window.saveSettings = saveSettings;
 
 /**
  * Reads the settings
- * @type {Promise<SavedSettings>}
  */
 window.savedSettings = new Promise((resolve) => {
-    fetch("/getsettings").then((response) =>
+    void fetch("/getsettings").then((response) =>
         response.json().then((parsedSettings) => {
-            resolve(parsedSettings);
+            resolve(parsedSettings as SavedSettings);
         })
     );
 });

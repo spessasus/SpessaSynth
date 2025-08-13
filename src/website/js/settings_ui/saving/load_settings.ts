@@ -1,13 +1,12 @@
 import { getSpan } from "../sliders.js";
 import { USE_MIDI_RANGE } from "../handlers/keyboard_handler.js";
-import type { SavedSettings } from "../../../server/saved_settings.ts";
 import type { SpessaSynthSettings } from "../settings.ts";
 
 export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
     if (!("savedSettings" in window)) {
         throw new Error("No saved settings!");
     }
-    const savedSettings = (await window.savedSettings) as SavedSettings;
+    const savedSettings = await window.savedSettings;
 
     console.info("Loading saved settings...", savedSettings);
 
