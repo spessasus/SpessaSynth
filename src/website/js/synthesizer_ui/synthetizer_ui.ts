@@ -76,6 +76,7 @@ export const ICON_SIZE = 32;
 export class SynthetizerUI {
     public readonly toggleDarkMode = toggleDarkMode.bind(this);
     public readonly channelColors: string[];
+    public onProgramChange?: (channel: number) => unknown;
     protected readonly synth: WorkerSynthesizer;
     protected readonly keyboard: MidiKeyboard;
     protected readonly locale: LocaleManager;
@@ -87,7 +88,6 @@ export class SynthetizerUI {
     protected readonly mainMeters: Meter[];
     protected readonly mainButtons: HTMLElement[];
     protected readonly mainControllerDiv: HTMLDivElement;
-    protected onProgramChange?: (channel: number) => unknown;
     protected controllers: ChannelController[] = [];
     protected ports: HTMLDivElement[] = [];
     protected portDescriptors: HTMLDivElement[] = [];

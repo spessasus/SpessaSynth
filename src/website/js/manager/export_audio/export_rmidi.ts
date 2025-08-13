@@ -1,37 +1,29 @@
 import { consoleColors } from "../../utils/console_colors.js";
-import { closeNotification, showNotification } from "../../notification/notification.js";
+import {
+    closeNotification,
+    showNotification
+} from "../../notification/notification.js";
 import { ANIMATION_REFLOW_TIME } from "../../utils/animation_utils.js";
+import type { Manager } from "../manager.ts";
 
-/**
- * @this {Manager}
- * @returns {Promise<void>}
- * @private
- */
-export async function _exportRMIDI()
-{
-    /**
-     * @param type {string}
-     * @param def {string}
-     * @param decoder {TextDecoder}
-     * @return {string}
-     */
-    const verifyDecode = (type, def, decoder) =>
-    {
-        return this.seq.midiData.RMIDInfo?.[type] === undefined ? def : decoder.decode(this.seq.midiData.RMIDInfo?.[type].buffer)
-            .replace(/\0$/, "");
-    };
-    const encoding = verifyDecode("IENC", "ascii", new TextDecoder());
-    const decoder = new TextDecoder(encoding);
-    
-    const startAlbum = verifyDecode("IPRD", "", decoder);
-    const startArtist = verifyDecode("IART", "", decoder);
-    const startGenre = verifyDecode("IGNR", "", decoder);
-    const startComment = verifyDecode(
-        "ICMT",
-        "Created using SpessaSynth: https://spessasus.github.io/SpessaSynth",
-        decoder
-    );
-    
+export function _exportRMIDI(this: Manager) {
+    if (!this.seq || !this.synth) {
+        return;
+    }
+    const mid = this.seq.midiData!;
+
+    const startAlbum = mid.getRMIDInfo("IPRD") ?? "";
+    const startArtist = mid.getRMIDInfo("IART") ?? "";
+    const startGenre = mid.getRMIDInfo("IGNR") ?? "";
+    const startComment =
+        mid.getRMIDInfo("ICMT") ??
+        "Created using SpessaSynth: https://spessasus.github.io/SpessaSynth";
+
+    let pictureFile: File | undefined = undefined;
+    if (mid.rmidiInfo.IPIC) {
+        pictureFile = new File([mid.rmidiInfo.IPIC], "cover.png");
+    }
+
     const path = "locale.exportAudio.formats.formats.rmidi.options.";
     const metadataPath = "locale.exportAudio.formats.metadata.";
     const n = showNotification(
@@ -39,176 +31,210 @@ export async function _exportRMIDI()
         [
             {
                 type: "text",
-                textContent: this.localeManager.getLocaleString(path + "description"),
+                textContent: this.localeManager.getLocaleString(
+                    path + "description"
+                ),
                 attributes: {
-                    "style": "max-width: 30ch; font-style: italic"
+                    style: "max-width: 30ch; font-style: italic"
                 }
             },
             {
                 type: "toggle",
                 translatePathTitle: path + "compress",
                 attributes: {
-                    "compress-toggle": "1"
+                    "compress-toggle": "1",
+                    checked: true
                 }
             },
             {
                 type: "range",
                 translatePathTitle: path + "quality",
                 attributes: {
-                    "min": "0",
-                    "max": "10",
-                    "value": "5"
+                    min: "0",
+                    max: "10",
+                    value: "5"
                 }
             },
             {
                 type: "input",
                 translatePathTitle: metadataPath + "songTitle",
                 attributes: {
-                    "name": "song_title",
-                    "type": "text",
-                    "value": this.seqUI.currentSongTitle
+                    name: "song_title",
+                    type: "text",
+                    value: this.seqUI!.currentSongTitle
                 }
             },
             {
                 type: "input",
                 translatePathTitle: metadataPath + "album",
                 attributes: {
-                    "value": startAlbum,
-                    "name": "album",
-                    "type": "text"
+                    value: startAlbum,
+                    name: "album",
+                    type: "text"
                 }
             },
             {
                 type: "input",
                 translatePathTitle: metadataPath + "artist",
                 attributes: {
-                    "value": startArtist,
-                    "name": "artist",
-                    "type": "text"
+                    value: startArtist,
+                    name: "artist",
+                    type: "text"
                 }
             },
             {
                 type: "input",
                 translatePathTitle: metadataPath + "genre",
                 attributes: {
-                    "value": startGenre,
-                    "name": "genre",
-                    "type": "text"
+                    value: startGenre,
+                    name: "genre",
+                    type: "text"
                 }
             },
             {
                 type: "input",
                 translatePathTitle: metadataPath + "comment",
                 attributes: {
-                    "value": startComment,
-                    "name": "comment",
-                    "type": "text"
+                    value: startComment,
+                    name: "comment",
+                    type: "text"
                 }
             },
             {
                 type: "file",
                 translatePathTitle: metadataPath + "albumCover",
                 attributes: {
-                    "value": this.seq.midiData.RMIDInfo?.IPIC !== undefined ? this.seq.midiData.RMIDInfo.IPIC : "",
-                    "name": "cover",
-                    "accept": "image/*"
+                    name: "cover",
+                    accept: "image/*"
                 }
             },
             {
                 type: "input",
                 translatePathTitle: path + "bankOffset",
                 attributes: {
-                    "value": this.extraBankOffset ?? this.seq.midiData.bankOffset,
-                    "name": "bank_offset",
-                    "type": "number"
+                    value:
+                        this.extraBankOffset.toString() ??
+                        mid.bankOffset.toString(),
+                    name: "bank_offset",
+                    type: "number"
                 }
             },
             {
                 type: "toggle",
                 translatePathTitle: path + "adjust",
                 attributes: {
-                    "name": "adjust"
+                    name: "adjust"
                 }
             },
             {
                 type: "button",
-                textContent: this.localeManager.getLocaleString(path + "confirm"),
-                onClick: async n =>
-                {
-                    const compressed = n.div.querySelector("input[compress-toggle='1']").checked;
-                    const quality = parseInt(n.div.querySelector("input[type='range']").value) / 10;
-                    const album = n.div.querySelector("input[name='album']").value;
-                    const artist = n.div.querySelector("input[name='artist']").value;
-                    const songTitle = n.div.querySelector("input[name='song_title']").value;
-                    const comment = n.div.querySelector("input[name='comment']").value;
-                    const genre = n.div.querySelector("input[name='genre']").value;
-                    const bankOffset = parseInt(n.div.querySelector("input[name='bank_offset']").value);
-                    const adjust = n.div.querySelector("input[name='adjust']").checked;
-                    
-                    /**
-                     * @type {File}
-                     */
-                    const picture = n.div.querySelector("input[type='file']")?.files[0];
+                textContent: this.localeManager.getLocaleString(
+                    path + "confirm"
+                ),
+                onClick: async (n) => {
+                    if (!this.synth) {
+                        return;
+                    }
+                    const getEl = (q: string) => {
+                        const e = n.div.querySelector(q);
+                        return e as HTMLInputElement;
+                    };
+                    const compressed = getEl(
+                        "input[compress-toggle='1']"
+                    ).checked;
+                    const quality =
+                        parseInt(getEl("input[type='range']").value) / 10;
+                    const album = getEl("input[name='album']").value;
+                    const artist = getEl("input[name='artist']").value;
+                    const songTitle = getEl("input[name='song_title']").value;
+                    const comment = getEl("input[name='comment']").value;
+                    const genre = getEl("input[name='genre']").value;
+                    const bankOffset = parseInt(
+                        getEl("input[name='bank_offset']").value
+                    );
+                    const adjust = getEl("input[name='adjust']").checked;
+
+                    const picture =
+                        getEl("input[type='file']")?.files?.[0] ?? pictureFile;
                     closeNotification(n.id);
-                    
+
                     console.groupCollapsed(
                         "%cExporting RMIDI...",
                         consoleColors.info
                     );
-                    const localePath = "locale.exportAudio.formats.formats.rmidi.progress.";
+                    const localePath =
+                        "locale.exportAudio.formats.formats.rmidi.progress.";
                     const notification = showNotification(
-                        this.localeManager.getLocaleString(localePath + "title"),
-                        [{
-                            type: "text",
-                            textContent: this.localeManager.getLocaleString(localePath + "loading"),
-                            attributes: {
-                                "class": "export_rmidi_message"
+                        this.localeManager.getLocaleString(
+                            localePath + "title"
+                        ),
+                        [
+                            {
+                                type: "text",
+                                textContent: this.localeManager.getLocaleString(
+                                    localePath + "loading"
+                                ),
+                                attributes: {
+                                    class: "export_rmidi_message"
+                                }
+                            },
+                            {
+                                type: "progress"
                             }
-                        }, {
-                            type: "progress"
-                        }],
+                        ],
                         9999999,
                         false
                     );
-                    // allow the notification to show
-                    await new Promise(r => setTimeout(r, 500));
-                    const message = notification.div.getElementsByClassName("export_rmidi_message")[0];
-                    const progressDiv = notification.div.getElementsByClassName("notification_progress")[0];
-                    message.textContent = this.localeManager.getLocaleString(localePath + "modifyingMIDI");
-                    await new Promise(r => setTimeout(r, ANIMATION_REFLOW_TIME));
-                    
+                    // Allow the notification to show
+                    await new Promise((r) => setTimeout(r, 500));
+                    const message = notification.div.getElementsByClassName(
+                        "export_rmidi_message"
+                    )[0] as HTMLDivElement;
+                    const progressDiv = notification.div.getElementsByClassName(
+                        "notification_progress"
+                    )[0] as HTMLDivElement;
+                    message.textContent = this.localeManager.getLocaleString(
+                        localePath + "modifyingMIDI"
+                    );
+                    await new Promise((r) =>
+                        setTimeout(r, ANIMATION_REFLOW_TIME)
+                    );
+
                     let pictureBuffer = undefined;
-                    if (picture?.["type"]?.split("/")[0] === "image")
-                    {
+                    if (picture?.type?.split("/")[0] === "image") {
                         pictureBuffer = await picture.arrayBuffer();
                     }
-                    
-                    const modifyingSoundFont = this.localeManager.getLocaleString(localePath + "modifyingSoundfont");
-                    
-                    // export
-                    const mid = await this.synth.exportRMI(
-                        compressed,
-                        quality,
-                        {
-                            songTitle,
+
+                    const modifyingSoundFont =
+                        this.localeManager.getLocaleString(
+                            localePath + "modifyingSoundfont"
+                        );
+
+                    // Export
+                    const exported = await this.synth.writeRMIDI({
+                        compressionQuality: quality,
+                        compress: compressed,
+                        metadata: {
+                            name: songTitle,
                             artist,
                             album,
-                            bankOffset,
                             picture: pictureBuffer,
-                            encoding: this.seqUI.encoding,
+                            midiEncoding: this.seqUI!.encoding,
                             comment,
                             genre
                         },
-                        adjust,
-                        (progress) =>
-                        {
+                        bankOffset,
+                        correctBankOffset: adjust,
+                        progressFunction: (p) => {
                             message.textContent = modifyingSoundFont;
-                            progressDiv.style.width = `${progress * 100}%`;
+                            progressDiv.style.width = `${(p.sampleIndex / p.sampleCount) * 100}%`;
                         }
+                    });
+
+                    this.saveBlob(new Blob([exported]), `${songTitle}.rmi`);
+                    message.textContent = this.localeManager.getLocaleString(
+                        localePath + "done"
                     );
-                    
-                    this.saveUrl(mid.url, mid.fileName);
-                    message.textContent = this.localeManager.getLocaleString(localePath + "done");
                     closeNotification(notification.id);
                     console.groupEnd();
                 }
@@ -218,20 +244,20 @@ export async function _exportRMIDI()
         true,
         this.localeManager
     );
-    
-    const recommended = await this.synth.getRecommendedRMIDIExportSettings();
-    
-    // compress if the bank is larger than 20MB
-    n.div.querySelector("input[compress-toggle='1']").checked = recommended.compress;
-    // adjust for the normal bank only
-    n.div.querySelector("input[name='adjust']").checked = recommended.adjust;
-    
-    const input = n.div.querySelector("input[type='file']");
-    input.oninput = () =>
-    {
-        if (input.files[0])
-        {
-            input.parentElement.firstChild.textContent = input.files[0].name;
+
+    const getEl = (q: string) => {
+        const e = n.div.querySelector(q);
+        return e as HTMLInputElement;
+    };
+
+    // Adjust for the normal bank only
+    getEl("input[name='adjust']").checked =
+        mid.embeddedSoundBankSize !== undefined;
+
+    const input = getEl("input[type='file']");
+    input.oninput = () => {
+        if (input.files?.[0]) {
+            input.parentElement!.firstChild!.textContent = input.files[0].name;
         }
     };
 }

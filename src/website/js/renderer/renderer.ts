@@ -84,6 +84,7 @@ export class Renderer {
     public notesOnScreen = 0;
     public sideways = false;
     public readonly updateFftSize = updateFftSize.bind(this);
+    public readonly render = render.bind(this);
     protected version: string;
     protected _notesFall = true;
     protected canvas: HTMLCanvasElement;
@@ -93,7 +94,6 @@ export class Renderer {
     protected seq: Sequencer;
     protected channelAnalysers: AnalyserNode[] = [];
     protected bigAnalyser: AnalyserNode;
-    protected render = render.bind(this);
     protected channelColors: CanvasGradient[] = [];
     protected darkerColors: CanvasGradient[] = [];
     protected gradientColors: CanvasGradient[] = [];

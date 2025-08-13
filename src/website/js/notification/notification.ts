@@ -73,24 +73,20 @@ export interface NotificationContent {
     translatePathTitle?: string;
     translatePathTitleProps?: string[];
     attributes?: Partial<
-        Pick<HTMLInputElement, WritableStringKeys<HTMLInputElement>> &
-            Record<string, string> & {
-                checked: boolean;
-                style: string;
-                onchange: () => unknown;
-            }
+        Pick<HTMLInputElement, WritableStringKeys<HTMLInputElement>> & {
+            checked: boolean;
+            style: string;
+            onchange: () => unknown;
+            [key: string]: string | boolean | (() => unknown);
+        }
     >;
     onClick?: NotificationContentCallback;
     listeners?: Partial<ListenerType<keyof HTMLElementEventMap>>;
 }
 
-export type StringKeysOf<T> = {
-    [K in keyof T]: T[K] extends string ? K : never;
-}[keyof T];
-
-type WritableCSSDeclarations = keyof Pick<
-    CSSStyleDeclaration,
-    WritableStringKeys<CSSStyleDeclaration>
+type WritableCSSDeclarations = Pick<
+    typeof CSSStyleDeclaration.prototype,
+    WritableStringKeys<typeof CSSStyleDeclaration.prototype>
 >;
 
 /**
@@ -108,7 +104,7 @@ export function showNotification(
     time: number = NOTIFICATION_TIME,
     allowClosing = true,
     locale?: LocaleManager,
-    contentStyling?: WritableCSSDeclarations,
+    contentStyling?: Partial<WritableCSSDeclarations>,
     onclose?: () => unknown
 ): NotificationType {
     const notification = document.createElement("div");
@@ -125,9 +121,7 @@ export function showNotification(
 
     if (contentStyling) {
         for (const [key, value] of Object.entries(contentStyling)) {
-            // No
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            contentWrapper.style[key as keyof WritableCSSDeclarations] = value;
+            contentWrapper.style[key as keyof WritableCSSDeclarations] = value!;
         }
     }
     notification.appendChild(contentWrapper);

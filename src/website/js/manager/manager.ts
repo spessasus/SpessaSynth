@@ -1,5 +1,9 @@
 import { MidiKeyboard } from "../midi_keyboard/midi_keyboard.js";
-import { MIDIDeviceHandler, WebMIDILinkHandler } from "spessasynth_lib";
+import {
+    Sequencer,
+    WebMIDILinkHandler,
+    WorkerSynthesizer
+} from "spessasynth_lib";
 
 import { Renderer } from "../renderer/renderer.js";
 
@@ -10,142 +14,231 @@ import { MusicModeUI } from "../music_mode_ui/music_mode_ui.js";
 import { LocaleManager } from "../locale/locale_manager.js";
 import { isMobile } from "../utils/is_mobile.js";
 import { keybinds } from "../utils/keybinds.js";
-import { _doExportAudioData, _exportAudioData } from "./export_audio/export_audio.js";
-import { _exportSoundfont } from "./export_audio/export_soundfont.js";
+import {
+    _doExportAudioData,
+    _exportAudioData
+} from "./export_audio/export_audio.js";
+import { exportSoundBank } from "./export_audio/export_soundfont.js";
 import { exportSong } from "./export_audio/export_song.js";
 import { _exportRMIDI } from "./export_audio/export_rmidi.js";
-import { closeNotification, showNotification } from "../notification/notification.js";
-import { DropFileHandler } from "../utils/drop_file_handler.js";
+import {
+    closeNotification,
+    showNotification
+} from "../notification/notification.js";
+import { DropFileHandler, type MIDIFile } from "../utils/drop_file_handler.js";
 import { _exportDLS } from "./export_audio/export_dls.js";
-import { BasicMIDI, IndexedByteArray, SpessaSynthCoreUtils as util } from "spessasynth_core";
+import {
+    IndexedByteArray,
+    SpessaSynthCoreUtils as util
+} from "spessasynth_core";
 import { prepareExtraBankUpload } from "./extra_bank_handling.js";
-import { CustomSynth } from "./custom_synth/main_thread/custom_synth.js";
-import { CustomSeq } from "./custom_synth/main_thread/custom_seq.js";
 
-
-/**
- * @typedef MidFile {Object}
- * @property {ArrayBuffer} binary - the binary data of the file.
- * @property {string|undefined} altName - the alternative name for the file
- */
-
-/**
- * @typedef {BasicMIDI|MidFile} MIDIFile
- */
-
-// this enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
+// This enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
 document.body.classList.add("load");
 
 /**
- * manager.js
+ * Manager.js
  * purpose: connects every element of spessasynth
  */
 
 const ENABLE_DEBUG = false;
 
-class Manager
-{
-    channelColors = [
-        "rgba(255, 99, 71, 1)",   // tomato
-        "rgba(255, 165, 0, 1)",   // orange
-        "rgba(255, 215, 0, 1)",   // gold
-        "rgba(50, 205, 50, 1)",   // limegreen
-        "rgba(60, 179, 113, 1)",  // mediumseagreen
-        "rgba(0, 128, 0, 1)",     // green
-        "rgba(0, 191, 255, 1)",   // deepskyblue
-        "rgba(65, 105, 225, 1)",  // royalblue
-        "rgba(138, 43, 226, 1)",  // blueviolet
-        "rgba(50, 120, 125, 1)",  //'rgba(218, 112, 214, 1)', // percussion color
-        "rgba(255, 0, 255, 1)",   // magenta
-        "rgba(255, 20, 147, 1)",  // deeppink
-        "rgba(218, 112, 214, 1)", // orchid
-        "rgba(240, 128, 128, 1)", // lightcoral
-        "rgba(255, 192, 203, 1)", // pink
-        "rgba(255, 255, 0, 1)"    // yellow
-    ];
+export class Manager {
     /**
      * @type {function(string)}
      */
-    sfError;
-    
-    /**
-     * @type {CustomSynth}
-     */
-    synth;
-    
+    public sfError?: (err: string) => unknown;
+    public enableDebug;
+    public readonly ready;
+    protected synth?: WorkerSynthesizer;
+    protected seq?: Sequencer;
+    protected isExporting;
+    protected readonly exportSong = exportSong.bind(this);
+    protected readonly _exportAudioData = _exportAudioData.bind(this);
+    protected readonly _doExportAudioData = _doExportAudioData.bind(this);
+    protected readonly exportSoundBank = exportSoundBank.bind(this);
+    protected readonly _exportDLS = _exportDLS.bind(this);
+    protected readonly _exportRMIDI = _exportRMIDI.bind(this);
+    protected readonly localeManager;
+    protected seqUI?: SequencerUI;
+    protected extraBankName = "";
+    protected extraBankOffset = 0;
+    private readonly channelColors = [
+        "rgba(255, 99, 71, 1)", // Tomato
+        "rgba(255, 165, 0, 1)", // Orange
+        "rgba(255, 215, 0, 1)", // Gold
+        "rgba(50, 205, 50, 1)", // Limegreen
+        "rgba(60, 179, 113, 1)", // Mediumseagreen
+        "rgba(0, 128, 0, 1)", // Green
+        "rgba(0, 191, 255, 1)", // Deepskyblue
+        "rgba(65, 105, 225, 1)", // Royalblue
+        "rgba(138, 43, 226, 1)", // Blueviolet
+        "rgba(50, 120, 125, 1)", //'rgba(218, 112, 214, 1)', // percussion color
+        "rgba(255, 0, 255, 1)", // Magenta
+        "rgba(255, 20, 147, 1)", // Deeppink
+        "rgba(218, 112, 214, 1)", // Orchid
+        "rgba(240, 128, 128, 1)", // Lightcoral
+        "rgba(255, 192, 203, 1)", // Pink
+        "rgba(255, 255, 0, 1)" // Yellow
+    ];
+    private keyboard?: MidiKeyboard;
+    private renderer?: Renderer;
+    private synthUI?: SynthetizerUI;
+    private musicModeUI?: MusicModeUI;
+    private settingsUI?: SpessaSynthSettings;
+    private readonly context;
+    private readonly audioDelay;
+
     /**
      * Creates a new midi user interface.
-     * @param context {AudioContext}
-     * @param soundFontBuffer {ArrayBuffer}
-     * @param locale {LocaleManager}
-     * @param enableDebug {boolean}
      */
-    constructor(context, soundFontBuffer, locale, enableDebug = ENABLE_DEBUG)
-    {
+    public constructor(
+        context: AudioContext,
+        soundFontBuffer: ArrayBuffer,
+        locale: LocaleManager,
+        enableDebug = ENABLE_DEBUG
+    ) {
         this.localeManager = locale;
         this.context = context;
         this.enableDebug = enableDebug;
         this.isExporting = false;
-        
-        
+
         this.audioDelay = new DelayNode(context, {
             delayTime: 0
         });
         this.audioDelay.connect(context.destination);
-        this.synth = new CustomSynth(this.audioDelay);
-        
-        let solve;
-        this.ready = new Promise(resolve => solve = resolve);
-        this.initializeContext(context, soundFontBuffer).then(() =>
-        {
+
+        let solve: () => void;
+        this.ready = new Promise<void>((resolve) => (solve = resolve));
+        void this.initializeContext(context, soundFontBuffer).then(() => {
             solve();
         });
     }
-    
-    saveUrl(url, name)
-    {
-        /**
-         * @type {HTMLAnchorElement}
-         */
+
+    protected get isLocalEdition() {
+        return "isLocalEdition" in window && window.isLocalEdition;
+    }
+
+    public getDLS() {
+        showNotification(
+            this.localeManager.getLocaleString("locale.convertDls.title"),
+            [
+                {
+                    type: "text",
+                    textContent: this.localeManager.getLocaleString(
+                        "locale.convertDls.message"
+                    )
+                },
+                {
+                    type: "button",
+                    textContent:
+                        this.localeManager.getLocaleString("locale.yes"),
+                    onClick: (n) => {
+                        closeNotification(n.id);
+                        void this.downloadDesfont();
+                    }
+                },
+                {
+                    type: "button",
+                    textContent:
+                        this.localeManager.getLocaleString("locale.no"),
+                    onClick: (n) => {
+                        closeNotification(n.id);
+                    }
+                }
+            ],
+            99999999
+        );
+    }
+
+    public async reloadSf(sf: ArrayBuffer) {
+        const text = sf.slice(8, 12);
+        const header = util.readBytesAsString(new IndexedByteArray(text), 4);
+        const isDLS = header.toLowerCase() === "dls " && !this.isLocalEdition;
+        await this.synth!.soundBankManager.addSoundBank(sf, "main");
+        if (isDLS) {
+            setTimeout(() => {
+                this.getDLS();
+            }, 3000);
+        }
+
+        // Resets controllers and resume
+        if (this.seq) {
+            this.seq.currentTime -= 0.1;
+        }
+    }
+
+    /**
+     * Starts playing and rendering the midi file
+     */
+    public play(parsedMidi: MIDIFile[]) {
+        if (!this.synth || !this.seq) {
+            return;
+        }
+
+        if (this.seq) {
+            this.seq.loadNewSongList(parsedMidi);
+            this.seqUI?.seqPlay();
+            return;
+        }
+    }
+
+    public async downloadDesfont() {
+        const sf = await this.synth?.writeSF2();
+        if (!sf) {
+            return;
+        }
+        this.saveBlob(new Blob([sf.binary]), sf.fileName);
+    }
+
+    public async exportMidi() {
+        const mid = await this.seq!.getMIDI();
+        const snapshot = await this.synth!.getSnapshot();
+        mid.applySnapshot(snapshot);
+        const written = mid.writeMIDI();
+        this.saveBlob(
+            new Blob([written], { type: "audio/midi" }),
+            `${this.seqUI!.currentSongTitle || mid.fileName}.mid`
+        );
+    }
+
+    protected saveBlob(blob: Blob, name: string) {
+        const url = URL.createObjectURL(blob);
+        this.saveUrl(url, name);
+    }
+
+    private saveUrl(url: string, name: string) {
         const a = document.createElement("a");
         a.href = url;
         a.download = name;
         a.click();
         console.info(a);
     }
-    
-    saveBlob(blob, name)
-    {
-        const url = URL.createObjectURL(blob);
-        this.saveUrl(url, name);
-    }
-    
-    /**
-     * @param context {BaseAudioContext}
-     * @param soundFont {ArrayBuffer}
-     * @returns {Promise<void>}
-     */
-    async initializeContext(context, soundFont)
-    {
-        
-        if (!context.audioWorklet)
-        {
+
+    private async initializeContext(
+        context: BaseAudioContext,
+        soundBank: ArrayBuffer
+    ): Promise<void> {
+        if (!context.audioWorklet) {
             alert("Audio worklet is not supported on your browser. Sorry!");
             throw new Error("Audio worklet is not supported");
         }
-        
-        // bind every element with translate-path to translation
-        for (const element of document.querySelectorAll("*[translate-path]"))
-        {
-            this.localeManager.bindObjectProperty(element, "textContent", element.getAttribute("translate-path"));
+
+        // Bind every element with translate-path to translation
+        for (const element of document.querySelectorAll("*[translate-path]")) {
+            this.localeManager.bindObjectProperty(
+                element,
+                "textContent",
+                element.getAttribute("translate-path") ?? ""
+            );
         }
-        
-        // set the extra bank upload
+
+        // Set the extra bank upload
         prepareExtraBankUpload.call(this);
-        
-        // same with title
-        for (const element of document.querySelectorAll("*[translate-path-title]"))
-        {
+
+        // Same with title
+        for (const e of document.querySelectorAll("*[translate-path-title]")) {
+            const element = e as HTMLElement;
             this.localeManager.bindObjectProperty(
                 element,
                 "textContent",
@@ -157,382 +250,246 @@ class Manager
                 element.getAttribute("translate-path-title") + ".description"
             );
         }
-        
-        
-        if (this.enableDebug)
-        {
+
+        if (this.enableDebug) {
             console.warn("DEBUG ENABLED! DEBUGGING ENABLED!!");
         }
-        
-        
-        this.synth.eventHandler.addEvent("soundfonterror", "manager-sf-error", e =>
-        {
-            if (this.sfError)
-            {
-                this.sfError(e.message);
+
+        // Create synth
+        await WorkerSynthesizer.registerPlaybackWorklet(context);
+        const worker = new Worker(new URL("./worker.ts", import.meta.url));
+        this.synth = new WorkerSynthesizer(
+            context,
+            worker.postMessage.bind(worker)
+        );
+        await this.synth.soundBankManager.addSoundBank(soundBank, "main");
+
+        // Create seq
+        this.seq = new Sequencer(this.synth);
+
+        this.synth.eventHandler.addEvent(
+            "soundBankError",
+            "manager-sf-error",
+            (e) => {
+                if (this.sfError) {
+                    this.sfError(e.message);
+                }
             }
-        });
-        
-        // set up the worker synth engine
-        await this.synth.init(soundFont);
-        
-        
-        // set up midi access
-        this.midHandler = new MIDIDeviceHandler();
-        
-        // set up web midi link
+        );
+
+        // Set up web midi link
         // noinspection JSCheckFunctionSignatures
         new WebMIDILinkHandler(this.synth);
-        
-        // set up keyboard
+
+        // Set up keyboard
         this.keyboard = new MidiKeyboard(this.channelColors, this.synth);
-        
+
         /**
-         * set up renderer
-         * @type {HTMLCanvasElement}
+         * Set up renderer
          */
-        const canvas = document.getElementById("note_canvas");
-        
+        const canvas: HTMLCanvasElement = document.getElementById(
+            "note_canvas"
+        ) as HTMLCanvasElement;
+
         canvas.width = window.innerWidth * window.devicePixelRatio;
         canvas.height = window.innerHeight * window.devicePixelRatio;
-        
+
         this.renderer = new Renderer(
             this.channelColors,
             this.synth,
+            this.seq,
+            this.audioDelay,
             canvas,
             this.localeManager,
-            window.SPESSASYNTH_VERSION
+            "SPESSASYNTH_VERSION" in window
+                ? (window.SPESSASYNTH_VERSION as string)
+                : ""
         );
         this.renderer.render(true);
-        
+
         let titleSwappedWithSettings = false;
-        const checkResize = () =>
-        {
-            this.renderer.updateSize();
-            if (isMobile)
-            {
-                if (window.innerWidth / window.innerHeight > 1)
-                {
-                    if (!titleSwappedWithSettings)
-                    {
-                        const title = document.getElementById("title_wrapper");
-                        const settings = document.getElementById("settings_div");
+        const checkResize = () => {
+            this?.renderer?.updateSize();
+            if (isMobile) {
+                if (window.innerWidth / window.innerHeight > 1) {
+                    if (!titleSwappedWithSettings) {
+                        const title = document.getElementById("title_wrapper")!;
+                        const settings =
+                            document.getElementById("settings_div")!;
                         titleSwappedWithSettings = true;
-                        title.parentElement.insertBefore(settings, title);
+                        title.parentElement?.insertBefore(settings, title);
                     }
-                }
-                else if (titleSwappedWithSettings)
-                {
-                    const title = document.getElementById("title_wrapper");
-                    const settings = document.getElementById("settings_div");
+                } else if (titleSwappedWithSettings) {
+                    const title = document.getElementById("title_wrapper")!;
+                    const settings = document.getElementById("settings_div")!;
                     titleSwappedWithSettings = false;
-                    title.parentElement.insertBefore(title, settings);
+                    title.parentElement?.insertBefore(title, settings);
                 }
-                
             }
-            this.renderer.render(false, true);
+            this.renderer?.render(false, true);
         };
         checkResize();
         window.addEventListener("resize", checkResize.bind(this));
         window.addEventListener("orientationchange", checkResize.bind(this));
-        
-        // if on mobile, switch to a 2 octave keyboard
-        if (isMobile)
-        {
+
+        // If on mobile, switch to a 2 octave keyboard
+        if (isMobile) {
             this.renderer.keyRange = { min: 48, max: 72 };
             this.keyboard.setKeyRange({ min: 48, max: 72 }, false);
         }
-        
-        // set up synth UI
+
+        // Set up synth UI
         this.synthUI = new SynthetizerUI(
             this.channelColors,
-            document.getElementById("synthetizer_controls"),
-            this.localeManager
+            document.getElementById("synthetizer_controls")!,
+            this.localeManager,
+            this.keyboard,
+            this.synth,
+            this.seq
         );
-        this.synthUI.connectSynth(this.synth);
-        this.synthUI.connectKeyboard(this.keyboard);
-        
-        // create a UI for music player mode
-        this.musicModeUI = new MusicModeUI(document.getElementById("player_info"), this.localeManager);
-        
-        // create a UI for sequencer
+
+        // Create a UI for music player mode
+        this.musicModeUI = new MusicModeUI(
+            document.getElementById("player_info")!,
+            this.localeManager,
+            this.seq
+        );
+
+        // Create a UI for sequencer
         this.seqUI = new SequencerUI(
-            document.getElementById("sequencer_controls"),
+            document.getElementById("sequencer_controls")!,
             this.localeManager,
             this.musicModeUI,
-            this.renderer
+            this.renderer,
+            this.synth,
+            this.seq
         );
-        
-        // set up settings UI
+
+        // Set up settings UI
         this.settingsUI = new SpessaSynthSettings(
-            document.getElementById("settings_div"),
+            document.getElementById("settings_div")!,
+            this.synth,
+            this.seq,
             this.synthUI,
             this.seqUI,
             this.renderer,
             this.keyboard,
-            this.midHandler,
             this.musicModeUI,
             this.localeManager,
             this.audioDelay
         );
-        
-        this.synthUI.onProgramChange = channel =>
-        {
+
+        this.synthUI.onProgramChange = (channel) => {
             // QoL: change the keyboard channel to the changed one when user changed it: adjust selector here
-            this.keyboard.selectChannel(channel);
-            this.settingsUI.htmlControls.keyboard.channelSelector.value = channel;
+            this.keyboard?.selectChannel(channel);
+
+            this.settingsUI!.htmlControls.keyboard.channelSelector.value =
+                channel.toString();
         };
-        
-        // set up drop file handler
-        new DropFileHandler(async data =>
-        {
-            if (data.length === 0)
-            {
+
+        // Set up drop file handler
+        new DropFileHandler(
+            async (data) => {
+                if (data.length === 0) {
+                    return;
+                }
+                await this.context.resume();
+                this.play(data);
+                let firstName = data[0].altName;
+                if (firstName.length > 20) {
+                    firstName = firstName.substring(0, 21) + "...";
+                }
+                // Set file name
+                document.getElementById("file_upload")!.textContent = firstName;
+                // Show export button
+                const exportButton = document.getElementById("export_button")!;
+                exportButton.style.display = "flex";
+                exportButton.onclick = this.exportSong.bind(this);
+                // If demo website, hide demo songs button
+                if (this.isLocalEdition) {
+                    document.getElementById("demo_song")!.style.display =
+                        "none";
+                }
+            },
+            (buf) => {
+                void this.reloadSf(buf);
+            }
+        );
+
+        // Add key presses
+        document.addEventListener("keydown", (e) => {
+            // Check for control
+            if (e.ctrlKey) {
+                // Do not interrupt control shortcuts
                 return;
             }
-            await this.context.resume();
-            this.play(data);
-            let firstName = data[0].altName;
-            if (firstName > 20)
-            {
-                firstName = firstName.substring(0, 21) + "...";
-            }
-            // set file name
-            document.getElementById("file_upload").textContent = firstName;
-            // show export button
-            const exportButton = document.getElementById("export_button");
-            exportButton.style.display = "flex";
-            exportButton.onclick = this.exportSong.bind(this);
-            // if demo website, hide demo songs button
-            if (!window.isLocalEdition)
-            {
-                document.getElementById("demo_song").style.display = "none";
-            }
-        }, buf =>
-        {
-            this.reloadSf(buf);
-        });
-        
-        // add key presses
-        document.addEventListener("keydown", e =>
-        {
-            // check for control
-            if (e.ctrlKey)
-            {
-                // do not interrupt control shortcuts
-                return;
-            }
-            switch (e.key.toLowerCase())
-            {
+            switch (e.key.toLowerCase()) {
                 case keybinds.videoMode:
-                    if (this.seq)
-                    {
-                        this.seq.pause();
-                        this.seqUI.releaseWakeLock();
-                    }
+                    this.seqUI?.seqPause();
                     const videoSource = window.prompt(
                         "Video mode!\n Paste the link to the video source (leave blank to disable)\n" +
-                        "Note: the video will be available in console as 'video'",
+                            "Note: the video will be available in console as 'video'",
                         ""
                     );
-                    if (videoSource === null)
-                    {
+                    if (videoSource === null) {
                         return;
                     }
-                    /**
-                     * @type {HTMLVideoElement}
-                     */
                     const video = document.createElement("video");
                     video.src = videoSource;
                     video.classList.add("secret_video");
-                    canvas.parentElement.appendChild(video);
-                    video.play();
+                    canvas.parentElement?.appendChild(video);
+                    void video.play();
+                    // @ts-expect-error Globally accessible
                     window.video = video;
-                    if (this.seq)
-                    {
-                        video.currentTime = parseFloat(window.prompt("Video offset to sync to midi, in seconds.", "0"));
-                        video.play();
+                    if (this.seq) {
+                        video.currentTime = parseFloat(
+                            window.prompt(
+                                "Video offset to sync to midi, in seconds.",
+                                "0"
+                            ) ?? "0"
+                        );
+                        void video.play();
                         this.seq.currentTime = 0;
+                        this.seq.play();
                     }
-                    document.addEventListener("keydown", e =>
-                    {
-                        if (e.key === " ")
-                        {
-                            if (video.paused)
-                            {
-                                video.play();
-                            }
-                            else
-                            {
+                    document.addEventListener("keydown", (e) => {
+                        if (e.key === " ") {
+                            if (video.paused) {
+                                void video.play();
+                            } else {
                                 video.pause();
                             }
                         }
                     });
-                    
+
                     break;
-                
+
                 case keybinds.sustainPedal:
-                    this.renderer.showHoldPedal = true;
-                    this.renderer.render(false);
-                    this.keyboard.setHoldPedal(true);
+                    this.renderer!.showHoldPedal = true;
+                    this.renderer!.render(false);
+                    this.keyboard!.setHoldPedal(true);
             }
         });
-        
-        document.addEventListener("keyup", e =>
-        {
-            // check for control
-            if (e.ctrlKey)
-            {
-                // do not interrupt control shortcuts
+
+        document.addEventListener("keyup", (e) => {
+            // Check for control
+            if (e.ctrlKey) {
+                // Do not interrupt control shortcuts
                 return;
             }
-            switch (e.key.toLowerCase())
-            {
+            switch (e.key.toLowerCase()) {
                 case keybinds.sustainPedal:
-                    this.renderer.showHoldPedal = false;
-                    this.renderer.render(false);
-                    this.keyboard.setHoldPedal(false);
+                    this.renderer!.showHoldPedal = false;
+                    this.renderer!.render(false);
+                    this.keyboard!.setHoldPedal(false);
                     break;
-                
+
                 default:
                     break;
             }
         });
-        
+
         this.renderer.render(false, true);
         // ANY TEST CODE FOR THE SYNTHESIZER GOES HERE
     }
-    
-    getDLS()
-    {
-        showNotification(
-            this.localeManager.getLocaleString("locale.convertDls.title"),
-            [
-                {
-                    type: "text",
-                    textContent: this.localeManager.getLocaleString("locale.convertDls.message")
-                },
-                {
-                    type: "button",
-                    textContent: this.localeManager.getLocaleString("locale.yes"),
-                    onClick: n =>
-                    {
-                        closeNotification(n.id);
-                        this.downloadDesfont().then();
-                    }
-                },
-                {
-                    type: "button",
-                    textContent: this.localeManager.getLocaleString("locale.no"),
-                    onClick: n =>
-                    {
-                        closeNotification(n.id);
-                    }
-                }
-            ],
-            99999999
-        );
-        
-    }
-    
-    /**
-     * @param sf {ArrayBuffer}
-     */
-    async reloadSf(sf)
-    {
-        const text = sf.slice(8, 12);
-        const header = util.readBytesAsString(new IndexedByteArray(text), 4);
-        const isDLS = header.toLowerCase() === "dls " && window.isLocalEdition !== true;
-        await this.synth.soundfontManager.addNewSoundFont(sf, "main");
-        if (isDLS)
-        {
-            setTimeout(() =>
-            {
-                this.getDLS();
-            }, 3000);
-        }
-        
-        // resets controllers and resume
-        if (this.seq)
-        {
-            this.seq.currentTime -= 0.1;
-        }
-    }
-    
-    /**
-     * starts playing and rendering the midi file
-     * @param parsedMidi {MIDIFile[]}
-     */
-    play(parsedMidi)
-    {
-        if (!this.synth)
-        {
-            return;
-        }
-        
-        if (this.seq)
-        {
-            this.seq.loadNewSongList(parsedMidi);
-            this.seq.play(true);
-            this.seqUI.setWakeLock();
-            return;
-        }
-        
-        // create a new sequencer
-        this.seq = new CustomSeq(parsedMidi, this.synth);
-        
-        this.seq.onError = e =>
-        {
-            console.error(e);
-            document.getElementById("title").textContent = e.message;
-        };
-        
-        // connect to the UI
-        this.seqUI.connectSequencer(this.seq);
-        
-        // connect to the music mode ui
-        this.musicModeUI.connectSequencer(this.seq);
-        
-        // connect to the renderer
-        this.renderer.connectSequencer(this.seq);
-        
-        // connect to settings
-        this.settingsUI.addSequencer(this.seq);
-        
-        // connect to synthui
-        
-        this.synthUI.connectSequencer(this.seq);
-        
-        // play the midi
-        this.seq.play(true);
-        this.seqUI.setWakeLock();
-    }
-    
-    async downloadDesfont()
-    {
-        const exported = await this.synth.exportSoundFont(
-            false,
-            false,
-            0,
-            (p) =>
-            {
-                console.info(`%cExporting SF2: ${p}`);
-            }
-        );
-        this.saveUrl(exported.url, exported.fileName);
-    }
-    
-    async exportMidi()
-    {
-        const mid = await this.synth.exportMIDI();
-        this.saveUrl(mid.url, `${this.seqUI.currentSongTitle || "unnamed_song"}.mid`);
-    }
 }
-
-Manager.prototype.exportSong = exportSong;
-Manager.prototype._exportAudioData = _exportAudioData;
-Manager.prototype._doExportAudioData = _doExportAudioData;
-Manager.prototype._exportSoundfont = _exportSoundfont;
-Manager.prototype._exportDLS = _exportDLS;
-Manager.prototype._exportRMIDI = _exportRMIDI;
-export { Manager };

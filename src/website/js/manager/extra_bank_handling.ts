@@ -1,29 +1,29 @@
-import { closeNotification, showNotification } from "../notification/notification.js";
+import {
+    closeNotification,
+    showNotification
+} from "../notification/notification.js";
 import { EXTRA_BANK_ID } from "./extra_bank_id.js";
+import type { Manager } from "./manager.ts";
 
-
-/**
- * @this {Manager}
- */
-export function prepareExtraBankUpload()
-{
-    this.extraBankName = "";
-    this.extraBankOffset = 0;
+export function prepareExtraBankUpload(this: Manager) {
     let extraBankName = "";
-    const extra = document.getElementById("extra_bank_button");
-    this.localeManager.bindObjectProperty(extra, "title", "locale.extraBank.button");
-    extra.onclick = () =>
-    {
+    const extra = document.getElementById("extra_bank_button")!;
+    this.localeManager.bindObjectProperty(
+        extra,
+        "title",
+        "locale.extraBank.button"
+    );
+    extra.onclick = () => {
         const notification = showNotification(
             this.localeManager.getLocaleString("locale.extraBank.title"),
             [
                 {
                     type: "input",
                     attributes: {
-                        "type": "number",
-                        "min": "0",
-                        "max": "127",
-                        "value": "1"
+                        type: "number",
+                        min: "0",
+                        max: "127",
+                        value: "1"
                     },
                     translatePathTitle: "locale.extraBank.offset"
                 },
@@ -31,33 +31,43 @@ export function prepareExtraBankUpload()
                     type: "file",
                     translatePathTitle: "locale.extraBank.file",
                     attributes: {
-                        "value": "",
-                        "name": "bank",
-                        "accept": ".dls,.sf2,.sf3,.sfogg"
+                        value: "",
+                        name: "bank",
+                        accept: ".dls,.sf2,.sf3,.sfogg"
                     }
                 },
                 {
                     type: "button",
                     translatePathTitle: "locale.extraBank.confirm",
-                    onClick: async n =>
-                    {
-                        const bank = parseInt(n.div.querySelector("input[type='number']").value) || 0;
-                        /**
-                         * @type {File}
-                         */
-                        const file = notification.div.querySelector("input[type='file']").files[0];
-                        if (!file)
-                        {
+                    onClick: async (n) => {
+                        const getEl = (q: string) => {
+                            const e = n.div.querySelector(q);
+                            return e as HTMLInputElement;
+                        };
+
+                        const bank =
+                            parseInt(getEl("input[type='number']").value) || 0;
+                        const file = getEl("input[type='file']").files?.[0];
+                        if (!file) {
+                            return;
+                        }
+                        if (!this.synth) {
                             return;
                         }
                         const b = await file.arrayBuffer();
-                        // add bank and rearrange
-                        await this.synth.soundfontManager.addNewSoundFont(b, EXTRA_BANK_ID, bank);
-                        await this.synth.soundfontManager.rearrangeSoundFonts([EXTRA_BANK_ID, "main"]);
+                        // Add bank and rearrange
+                        await this.synth?.soundBankManager.addSoundBank(
+                            b,
+                            EXTRA_BANK_ID,
+                            bank
+                        );
+                        this.synth.soundBankManager.priorityOrder = [
+                            EXTRA_BANK_ID,
+                            "main"
+                        ];
                         this.extraBankName = extraBankName;
                         this.extraBankOffset = bank;
-                        if (this.seq?.paused === false)
-                        {
+                        if (this.seq?.paused === false) {
                             this.seq.currentTime -= 0.1;
                         }
                         closeNotification(n.id);
@@ -66,13 +76,13 @@ export function prepareExtraBankUpload()
                 {
                     type: "button",
                     translatePathTitle: "locale.extraBank.clear",
-                    onClick: async n =>
-                    {
-                        await this.synth.soundfontManager.deleteSoundFont(EXTRA_BANK_ID);
+                    onClick: async (n) => {
+                        await this.synth?.soundBankManager.deleteSoundBank(
+                            EXTRA_BANK_ID
+                        );
                         this.extraBankName = "";
                         this.extraBankOffset = 0;
-                        if (this.seq?.paused === false)
-                        {
+                        if (this.seq?.paused === false) {
                             this.seq.currentTime -= 0.1;
                         }
                         closeNotification(n.id);
@@ -83,17 +93,15 @@ export function prepareExtraBankUpload()
             true,
             this.localeManager
         );
-        const input = notification.div.querySelector("input[type='file']");
-        if (this.extraBankName)
-        {
-            input.parentElement.firstChild.textContent = this.extraBankName;
+        const i = notification.div.querySelector("input[type='file']")!;
+        const input = i as HTMLInputElement;
+        if (this.extraBankName) {
+            input.parentElement!.firstChild!.textContent = this.extraBankName;
         }
-        input.oninput = () =>
-        {
-            if (input.files[0])
-            {
+        input.oninput = () => {
+            if (input?.files?.[0]) {
                 extraBankName = input.files[0].name;
-                input.parentElement.firstChild.textContent = extraBankName;
+                input.parentElement!.firstChild!.textContent = extraBankName;
             }
         };
     };

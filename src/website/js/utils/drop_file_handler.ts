@@ -1,11 +1,7 @@
-import type { BasicMIDI } from "spessasynth_core";
-
-export type MIDIFile =
-    | BasicMIDI
-    | {
-          binary: ArrayBuffer;
-          altName: string;
-      };
+export interface MIDIFile {
+    binary: ArrayBuffer;
+    altName: string;
+}
 
 export class DropFileHandler {
     /**

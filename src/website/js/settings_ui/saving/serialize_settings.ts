@@ -1,6 +1,7 @@
 import { USE_MIDI_RANGE } from "../handlers/keyboard_handler.js";
 import type { SpessaSynthSettings } from "../settings.ts";
 import type { LayoutType, SavedSettings } from "../../../server/saved_settings.ts";
+import type { LocaleCode } from "../../locale/locale_files/locale_list.ts";
 
 /**
  * Serializes settings into a nice object
@@ -38,17 +39,15 @@ export function _serializeSettings(this: SpessaSynthSettings): SavedSettings {
         },
 
         midi: {
-            input: !this.midiDeviceHandler?.selectedInput
-                ? null
-                : this.midiDeviceHandler?.selectedInput.name,
-            output: !this.midiDeviceHandler?.selectedOutput
-                ? null
-                : this.midiDeviceHandler?.selectedOutput.name
+            // Dont save these!
+            input: null,
+            output: null
         },
 
         interface: {
             mode: this.mode,
-            language: this.htmlControls.interface.languageSelector.value,
+            language: this.htmlControls.interface.languageSelector
+                .value as LocaleCode,
             layout: this.htmlControls.interface.layoutSelector
                 .value as LayoutType
         }

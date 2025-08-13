@@ -49,11 +49,12 @@ const ZWSP = "\u200b";
 
 export class SequencerUI {
     public toggleLyrics: () => void;
+    public currentSongTitle = "";
+    public encoding = DEFAULT_ENCODING;
     protected wakeLock?: WakeLockSentinel;
     protected iconColor = ICON_COLOR;
     protected iconDisabledColor = ICON_DISABLED_COLOR;
     protected controls: HTMLElement;
-    protected encoding = DEFAULT_ENCODING;
     protected decoder = new TextDecoder(this.encoding);
     /**
      * The currently displayed (highlighted) lyrics event index.
@@ -65,7 +66,6 @@ export class SequencerUI {
     protected rawOtherTextEvents: MIDIMessage[] = [];
     protected mode: InterfaceMode = "dark";
     protected locale: LocaleManager;
-    protected currentSongTitle = "";
     protected currentLyrics: MIDIMessage[] = [];
     /**
      * Current lyrics decoded as strings
@@ -756,6 +756,14 @@ export class SequencerUI {
         this.updateTitleAndMediaStatus();
     }
 
+    public releaseWakeLock() {
+        if (this.wakeLock) {
+            void this.wakeLock.release().then(() => {
+                this.wakeLock = undefined;
+            });
+        }
+    }
+
     protected setWakeLock() {
         try {
             void navigator.wakeLock.request("screen").then((r) => {
@@ -763,14 +771,6 @@ export class SequencerUI {
             });
         } catch (e) {
             console.warn(`Could not get wakelock:`, e);
-        }
-    }
-
-    protected releaseWakeLock() {
-        if (this.wakeLock) {
-            void this.wakeLock.release().then(() => {
-                this.wakeLock = undefined;
-            });
         }
     }
 

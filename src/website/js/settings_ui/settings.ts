@@ -23,11 +23,7 @@ import { keybinds } from "../utils/keybinds.js";
 import { handleSliders } from "./sliders.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { Renderer, rendererModes } from "../renderer/renderer.js";
-import {
-    MIDIDeviceHandler,
-    type Sequencer,
-    type WorkerSynthesizer
-} from "spessasynth_lib";
+import { type Sequencer, type WorkerSynthesizer } from "spessasynth_lib";
 import type { SynthetizerUI } from "../synthesizer_ui/synthetizer_ui.ts";
 import type { SequencerUI } from "../sequencer_ui/sequencer_ui.ts";
 import type { MidiKeyboard } from "../midi_keyboard/midi_keyboard.ts";
@@ -53,33 +49,7 @@ const niceDelayLookupTable = {
  */
 
 export class SpessaSynthSettings {
-    protected readonly delay: DelayNode;
-    protected readonly renderer: Renderer;
-    protected readonly synth: WorkerSynthesizer;
-    protected readonly seq: Sequencer;
-    protected readonly midiKeyboard: MidiKeyboard;
-    protected readonly midiDeviceHandler: MIDIDeviceHandler;
-    protected readonly synthui: SynthetizerUI;
-    protected readonly sequi: SequencerUI;
-    protected readonly locale: LocaleManager;
-    protected readonly musicMode: MusicModeUI;
-    protected readonly locales = localeList;
-    protected readonly keyboardSizes = {
-        full: { min: 0, max: 127 },
-        piano: { min: 21, max: 108 },
-        "5 octaves": { min: 36, max: 96 },
-        "two octaves": { min: 53, max: 77 }
-    };
-
-    protected mode: InterfaceMode = "dark";
-    protected autoKeyRange = false;
-
-    protected readonly mainDiv;
-    protected visible = false;
-    protected animationId = -1;
-    protected hideOnDocClick = true;
-    protected topPartVisible = true;
-    protected readonly htmlControls = {
+    public readonly htmlControls = {
         renderer: {
             renderingMode: document.getElementById(
                 "renderer_mode_selector"
@@ -163,6 +133,29 @@ export class SpessaSynthSettings {
             )! as HTMLSelectElement
         }
     };
+    protected readonly delay: DelayNode;
+    protected readonly renderer: Renderer;
+    protected readonly synth: WorkerSynthesizer;
+    protected readonly seq: Sequencer;
+    protected readonly midiKeyboard: MidiKeyboard;
+    protected readonly synthui: SynthetizerUI;
+    protected readonly sequi: SequencerUI;
+    protected readonly locale: LocaleManager;
+    protected readonly musicMode: MusicModeUI;
+    protected readonly locales = localeList;
+    protected readonly keyboardSizes = {
+        full: { min: 0, max: 127 },
+        piano: { min: 21, max: 108 },
+        "5 octaves": { min: 36, max: 96 },
+        "two octaves": { min: 53, max: 77 }
+    };
+    protected mode: InterfaceMode = "dark";
+    protected autoKeyRange = false;
+    protected readonly mainDiv;
+    protected visible = false;
+    protected animationId = -1;
+    protected hideOnDocClick = true;
+    protected topPartVisible = true;
     protected _toggleDarkMode = _toggleDarkMode.bind(this);
     protected _createInterfaceSettingsHandler =
         _createInterfaceSettingsHandler.bind(this);
@@ -187,7 +180,6 @@ export class SpessaSynthSettings {
      * @param sequi
      * @param renderer
      * @param midiKeyboard
-     * @param midiDeviceHandler
      * @param playerInfo
      * @param localeManager
      * @param delayNode
@@ -200,7 +192,6 @@ export class SpessaSynthSettings {
         sequi: SequencerUI,
         renderer: Renderer,
         midiKeyboard: MidiKeyboard,
-        midiDeviceHandler: MIDIDeviceHandler,
         playerInfo: MusicModeUI,
         localeManager: LocaleManager,
         delayNode: DelayNode
@@ -212,7 +203,6 @@ export class SpessaSynthSettings {
         this.seq = seq;
         this.renderer = renderer;
         this.midiKeyboard = midiKeyboard;
-        this.midiDeviceHandler = midiDeviceHandler;
         this.synthui = sythui;
         this.sequi = sequi;
         this.locale = localeManager;

@@ -1,13 +1,11 @@
 import { consoleColors } from "../../utils/console_colors.js";
-import { closeNotification, showNotification } from "../../notification/notification.js";
+import {
+    closeNotification,
+    showNotification
+} from "../../notification/notification.js";
+import type { Manager } from "../manager.ts";
 
-/**
- * @this {Manager}
- * @returns {Promise<void>}
- * @private
- */
-export async function _exportSoundfont()
-{
+export function exportSoundBank(this: Manager) {
     const path = "locale.exportAudio.formats.formats.soundfont.options.";
     showNotification(
         this.localeManager.getLocaleString(path + "title"),
@@ -17,7 +15,7 @@ export async function _exportSoundfont()
                 translatePathTitle: path + "trim",
                 attributes: {
                     "trim-toggle": "1",
-                    "checked": "checked"
+                    checked: true
                 }
             },
             {
@@ -31,25 +29,38 @@ export async function _exportSoundfont()
                 type: "range",
                 translatePathTitle: path + "quality",
                 attributes: {
-                    "min": "0",
-                    "max": "10",
-                    "value": "5"
+                    min: "0",
+                    max: "10",
+                    value: "5"
                 }
             },
             {
                 type: "button",
-                textContent: this.localeManager.getLocaleString(path + "confirm"),
-                onClick: async n =>
-                {
-                    const trimmed = n.div.querySelector("input[trim-toggle='1']").checked;
-                    const compressed = n.div.querySelector("input[compress-toggle='1']").checked;
-                    const quality = parseInt(n.div.querySelector("input[type='range']").value) / 10;
+                textContent: this.localeManager.getLocaleString(
+                    path + "confirm"
+                ),
+                onClick: async (n) => {
+                    if (!this.synth) {
+                        return;
+                    }
+                    const getEl = (q: string) => {
+                        const e = n.div.querySelector(q);
+                        return e as HTMLInputElement;
+                    };
+                    const trimmed = getEl("input[trim-toggle='1']").checked;
+                    const compressed = getEl(
+                        "input[compress-toggle='1']"
+                    ).checked;
+                    const quality =
+                        parseInt(getEl("input[type='range']").value) / 10;
                     closeNotification(n.id);
                     console.group(
                         "%cExporting soundfont...",
                         consoleColors.info
                     );
-                    const exportingMessage = manager.localeManager.getLocaleString(`locale.exportAudio.formats.formats.soundfont.exportMessage.message`);
+                    const exportingMessage = this.localeManager.getLocaleString(
+                        `locale.exportAudio.formats.formats.soundfont.exportMessage.message`
+                    );
                     const notification = showNotification(
                         exportingMessage,
                         [
@@ -59,15 +70,25 @@ export async function _exportSoundfont()
                         9999999,
                         false
                     );
-                    const progressDiv = notification.div.getElementsByClassName("notification_progress")[0];
-                    const detailMessage = notification.div.getElementsByTagName("p")[0];
-                    const callback = (p) =>
-                    {
-                        progressDiv.style.width = `${p * 100}%`;
-                        detailMessage.textContent = `${exportingMessage} ${Math.floor(p * 100)}%`;
-                    };
-                    const exported = await this.synth.exportSoundFont(trimmed, compressed, quality, callback);
-                    this.saveUrl(exported.url, exported.fileName);
+                    const progressDiv = notification.div.getElementsByClassName(
+                        "notification_progress"
+                    )[0] as HTMLDivElement;
+                    const detailMessage =
+                        notification.div.getElementsByTagName("p")[0];
+                    const exported = await this.synth.writeSF2({
+                        trim: trimmed,
+                        compress: compressed,
+                        compressionQuality: quality,
+                        progressFunction: (p) => {
+                            const progress = p.sampleIndex / p.sampleCount;
+                            progressDiv.style.width = `${progress * 100}%`;
+                            detailMessage.textContent = `${exportingMessage} ${Math.floor(progress * 100)}%`;
+                        }
+                    });
+                    this.saveBlob(
+                        new Blob([exported.binary]),
+                        exported.fileName
+                    );
                     console.groupEnd();
                     closeNotification(notification.id);
                 }
