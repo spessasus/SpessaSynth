@@ -1,6 +1,6 @@
 import path from "node:path";
 import fs from "node:fs/promises";
-import { buildSpessaSynth } from "./build_script.js";
+import { buildSpessaSynth } from "./build_script.ts";
 
 const REPO_ROOT = path.resolve(import.meta.dirname, "../..");
 const SERVER_FILE = path.resolve(REPO_ROOT, "server/server.js");

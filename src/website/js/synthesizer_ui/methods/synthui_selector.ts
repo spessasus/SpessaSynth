@@ -49,9 +49,6 @@ export class Selector {
         editCallback?: (arg0: string) => unknown,
         lockCallback?: (arg0: boolean) => unknown
     ) {
-        /**
-         * @type {{name: string, program: number, bank: number, stringified: string}[]}
-         */
         this.elements = elements.map((e) => {
             return {
                 name: e.name,

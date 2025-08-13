@@ -10,7 +10,7 @@ export const synthesizerControllerLocale = {
         description: "シンセサイザーコントローラーを表示"
     },
     
-    // meters
+    // Meters
     mainVoiceMeter: {
         title: "ボイス: ",
         description: "現在再生中のボイスの総数"
@@ -31,7 +31,7 @@ export const synthesizerControllerLocale = {
         description: "シンセサイザーを移調します（セミトーンまたはキー）"
     },
     
-    // buttons
+    // Buttons
     midiPanic: {
         title: "MIDIパニック",
         description: "すべてのボイスを即座に停止"

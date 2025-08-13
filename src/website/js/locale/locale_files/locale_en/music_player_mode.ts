@@ -1,5 +1,5 @@
 /**
- * locale for music player mode
+ * Locale for music player mode
  * @type {{nothingPlaying: string, currentlyPlaying: string, nothingPlayingCopyright: string, toggleButton: {description: string, title: string}}}
  */
 export const musicPlayerModeLocale = {

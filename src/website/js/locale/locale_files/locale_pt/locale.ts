@@ -1,5 +1,5 @@
 // SpessaSynth Português do Brasil
-// por Lucas Gabriel (lucmsilva)
+// Por Lucas Gabriel (lucmsilva)
 // https://github.com/lucmsilva651
 
 import { settingsLocale } from "./settings/settings.js";
@@ -14,7 +14,7 @@ import { exportAudio } from "./export_audio.js";
  */
 export const localePortuguese = {
     localeName: "Português (Brasil)",
-    // title messsage
+    // Title messsage
     titleMessage: "SpessaSynth: Sintetizador JavaScript SF2/DLS",
     demoTitleMessage: "SpessaSynth: Demo Online do Sintetizador JavaScript SF2/DLS",
     
@@ -28,7 +28,7 @@ export const localePortuguese = {
         done: "Pronto!"
     },
     
-    // top bar buttons
+    // Top bar buttons
     midiUploadButton: "Envie seus arquivos MIDI",
     
     exportAudio: exportAudio,
@@ -57,7 +57,7 @@ export const localePortuguese = {
         message: "Parece que você enviou um arquivo DLS. Quer converter para SF2?"
     },
     
-    // all translations split up
+    // All translations split up
     musicPlayerMode: musicPlayerModeLocale,
     settings: settingsLocale,
     synthesizerController: synthesizerControllerLocale,

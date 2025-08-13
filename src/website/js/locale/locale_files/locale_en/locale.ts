@@ -10,7 +10,7 @@ import { exportAudio } from "./export_audio.js";
  */
 export const localeEnglish = {
     localeName: "English",
-    // title message
+    // Title message
     titleMessage: "SpessaSynth: SF2/DLS Javascript Synthesizer",
     demoTitleMessage: "SpessaSynth: SF2/DLS Javascript Synthesizer Online Demo",
     
@@ -24,7 +24,7 @@ export const localeEnglish = {
         done: "Ready!"
     },
     
-    // top bar buttons
+    // Top bar buttons
     midiUploadButton: "Upload your MIDI files",
     
     extraBank: {
@@ -85,7 +85,7 @@ export const localeEnglish = {
         message: "Looks like you've uploaded a DLS file. Do you want to convert it to SF2?"
     },
     
-    // all translations split up
+    // All translations split up
     musicPlayerMode: musicPlayerModeLocale,
     settings: settingsLocale,
     synthesizerController: synthesizerControllerLocale,

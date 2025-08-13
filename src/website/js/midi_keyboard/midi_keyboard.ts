@@ -343,9 +343,6 @@ export class MidiKeyboard {
             const spread = GLOW_PX * brightness;
             key.style.boxShadow = `${color} 0px 0px ${spread}px ${spread / 5}px`;
         }
-        /**
-         * @type {string[]}
-         */
         this.keyColors[midiNote - this._keyRange.min].push(
             this.channelColors[channel % 16]
         );

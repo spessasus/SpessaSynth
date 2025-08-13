@@ -1,7 +1,4 @@
-import {
-    closeNotification,
-    showNotification
-} from "../../notification/notification.js";
+import { closeNotification, showNotification } from "../../notification/notification.js";
 import { LOCALE_PATH, SynthetizerUI } from "../synthetizer_ui.js";
 import { showEffectsConfigWindow } from "./effects_config.js";
 import { startKeyModifiersMenu } from "./key_modifier_ui.js";
@@ -68,7 +65,6 @@ export function showAdvancedConfiguration(this: SynthetizerUI) {
             {
                 type: "toggle",
                 translatePathTitle: LOCALE_PATH + "blackMidiMode",
-                // @ts-expect-error No!
                 attributes: {
                     checked: this.synth.getMasterParameter("blackMIDIMode")
                 },

@@ -402,9 +402,6 @@ export function _exportAudioData(this: Manager) {
         }
     ];
 
-    /**
-     * @type {NotificationContent[]}
-     */
     showNotification(
         this.localeManager.getLocaleString(wavPath + "title"),
         WAV_OPTIONS,

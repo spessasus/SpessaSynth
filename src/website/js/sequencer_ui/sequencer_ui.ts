@@ -683,7 +683,7 @@ export class SequencerUI {
                 let midiEncoding = data.getRMIDInfo(
                     rmidInfoChunks.midiEncoding
                 );
-                if (data.isEmbedded) {
+                if (typeof data.embeddedSoundBankSize !== "undefined") {
                     // RMID defaults to utf-8
                     midiEncoding = "utf-8";
                 }

@@ -15,6 +15,7 @@ declare global {
         saveSettings: (s: SavedSettings) => unknown;
         savedSettings: Promise<SavedSettings>;
         isLocalEdition: boolean;
+        rememberVoiceCap?: (cap: number) => unknown;
     }
 }
 
@@ -29,17 +30,17 @@ const titleMessage = document.getElementById("title")!;
 const progressBar = document.getElementById("progress_bar")!;
 const fileInput = document.getElementById(
     "midi_file_input"
-)! as HTMLInputElement;
+) as HTMLInputElement;
 const fileUpload = document.getElementById("file_upload")!;
+const exportButton = document.getElementById("export_button")!;
 
 // Remove the old files
 fileInput.value = "";
 fileInput.focus();
 
-const exportButton = document.getElementById("export_button")!;
-exportButton.style.display = "none";
 let synthReady = false;
 
+// Load version
 const r = await (await fetch("/getversion")).text();
 window.SPESSASYNTH_VERSION = r;
 
@@ -119,12 +120,7 @@ async function startMidi(midiFiles: FileList) {
     }
 
     titleMessage.style.fontStyle = "italic";
-
-    if (manager.seq) {
-        manager.seq.loadNewSongList(parsed);
-    } else {
-        manager.play(parsed);
-    }
+    manager.play(parsed);
     exportButton.style.display = "flex";
     exportButton.onclick = manager.exportSong.bind(window.manager);
 }

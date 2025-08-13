@@ -37,13 +37,14 @@
     ]
   },
   "include": [
-    "src"
+    "src",
+    "src/externals/encode_vorbis.ts"
   ],
   "exclude": [
     "node_modules",
     "dist",
     "local-dev",
     "server",
-    "src/externals"
+    "src/**/*.js"
   ]
 }

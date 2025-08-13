@@ -1,9 +1,9 @@
 import { libvorbis } from "./libvorbis/OggVorbisEncoder.min.js";
 
-type OggVorbisEncoder = {
+interface OggVorbisEncoder {
     encode: (data: Float32Array[]) => unknown;
     finish: () => Uint8Array<ArrayBuffer>[];
-};
+}
 
 const vorbisEncoder = libvorbis as {
     init: () => unknown;
@@ -14,6 +14,7 @@ const vorbisEncoder = libvorbis as {
     ) => OggVorbisEncoder;
 };
 
+// noinspection JSUnusedGlobalSymbols
 export async function encodeVorbis(
     audioDatas: Float32Array[],
     sampleRate: number,
@@ -27,7 +28,10 @@ export async function encodeVorbis(
         sampleRate,
         audioDatas.length,
         quality
-    ) as OggVorbisEncoder;
+    );
+    if (!encoder) {
+        throw new Error("Unexpected vorbis encoder error.");
+    }
     encoder.encode(audioDatas);
     const arrs = encoder.finish();
     const outLen = arrs.reduce((l, c) => l + c.length, 0);
@@ -37,5 +41,5 @@ export async function encodeVorbis(
         out.set(a, offset);
         offset += a.length;
     }
-    return out;
+    return new Promise((r) => r(out));
 }

@@ -12,7 +12,7 @@ export const synthesizerControllerLocale = {
         description: "Show the synthesizer controller"
     },
     
-    // meters
+    // Meters
     mainVoiceMeter: {
         title: "Voices: ",
         description: "The total amount of voices currently playing"
@@ -33,7 +33,7 @@ export const synthesizerControllerLocale = {
         description: "Transpose: Transposes the synthesizer (in semitones or keys)"
     },
     
-    // buttons
+    // Buttons
     midiPanic: {
         title: "MIDI Panic",
         description: "MIDI Panic: Stops all voices immediately"

@@ -1,5 +1,9 @@
 import { MidiKeyboard } from "../midi_keyboard/midi_keyboard.js";
-import { Sequencer, WebMIDILinkHandler, WorkerSynthesizer } from "spessasynth_lib";
+import {
+    Sequencer,
+    WebMIDILinkHandler,
+    WorkerSynthesizer
+} from "spessasynth_lib";
 
 import { Renderer } from "../renderer/renderer.js";
 
@@ -10,14 +14,23 @@ import { MusicModeUI } from "../music_mode_ui/music_mode_ui.js";
 import { LocaleManager } from "../locale/locale_manager.js";
 import { isMobile } from "../utils/is_mobile.js";
 import { keybinds } from "../utils/keybinds.js";
-import { _doExportAudioData, _exportAudioData } from "./export_audio/export_audio.js";
+import {
+    _doExportAudioData,
+    _exportAudioData
+} from "./export_audio/export_audio.js";
 import { exportSoundBank } from "./export_audio/export_soundfont.js";
 import { exportSong } from "./export_audio/export_song.js";
 import { _exportRMIDI } from "./export_audio/export_rmidi.js";
-import { closeNotification, showNotification } from "../notification/notification.js";
+import {
+    closeNotification,
+    showNotification
+} from "../notification/notification.js";
 import { DropFileHandler, type MIDIFile } from "../utils/drop_file_handler.js";
 import { _exportDLS } from "./export_audio/export_dls.js";
-import { IndexedByteArray, SpessaSynthCoreUtils as util } from "spessasynth_core";
+import {
+    IndexedByteArray,
+    SpessaSynthCoreUtils as util
+} from "spessasynth_core";
 import { prepareExtraBankUpload } from "./extra_bank_handling.js";
 
 // This enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
@@ -31,9 +44,6 @@ document.body.classList.add("load");
 const ENABLE_DEBUG = false;
 
 export class Manager {
-    /**
-     * @type {function(string)}
-     */
     public sfError?: (err: string) => unknown;
     public enableDebug;
     public readonly ready;
@@ -163,11 +173,8 @@ export class Manager {
             return;
         }
 
-        if (this.seq) {
-            this.seq.loadNewSongList(parsedMidi);
-            this.seqUI?.seqPlay();
-            return;
-        }
+        this.seq.loadNewSongList(parsedMidi);
+        this.seqUI?.seqPlay();
     }
 
     public async downloadDesfont() {

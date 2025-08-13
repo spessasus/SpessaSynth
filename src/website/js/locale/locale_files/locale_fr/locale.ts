@@ -10,7 +10,7 @@ import { exportAudio } from "./export_audio.js";
  */
 export const localeFrench = {
     localeName: "Français",
-    // title message
+    // Title message
     titleMessage: "SpessaSynth : synthétiseur compatible SF2, écrit en javascript",
     demoTitleMessage: "SpessaSynth : démo en ligne du synthétiseur compatible SF2/DLS",
     
@@ -24,7 +24,7 @@ export const localeFrench = {
         done: "Prêt !"
     },
     
-    // top bar buttons
+    // Top bar buttons
     midiUploadButton: "Charger des fichiers MIDI",
     
     exportAudio: exportAudio,
@@ -55,7 +55,7 @@ export const localeFrench = {
         message: "Le fichier chargé semble être au format DLS. Voulez-vous le convertir au format SF2 ?"
     },
     
-    // all translations split up
+    // All translations split up
     musicPlayerMode: musicPlayerModeLocale,
     settings: settingsLocale,
     synthesizerController: synthesizerControllerLocale,

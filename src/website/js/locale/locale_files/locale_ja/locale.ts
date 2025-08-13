@@ -10,7 +10,7 @@ import { exportAudio } from "./export_audio.js";
  */
 export const localeJapanese = {
     localeName: "日本語",
-    // title messsage
+    // Title messsage
     titleMessage: "SpessaSynth: SF2/DLS Javascript シンセサイザー",
     demoTitleMessage: "SpessaSynth: SF2/DLS Javascript シンセサイザー オンラインデモ",
     
@@ -24,7 +24,7 @@ export const localeJapanese = {
         done: "準備完了！"
     },
     
-    // top bar buttons
+    // Top bar buttons
     midiUploadButton: "MIDIファイルをアップロード",
     
     exportAudio: exportAudio,
@@ -57,7 +57,7 @@ export const localeJapanese = {
     },
     
     
-    // all translations split up
+    // All translations split up
     musicPlayerMode: musicPlayerModeLocale,
     settings: settingsLocale,
     synthesizerController: synthesizerControllerLocale,

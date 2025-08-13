@@ -15,6 +15,11 @@ export function runCommandSync(command: string) {
         cwd: dirname
     });
 
+    if (proc.status !== 0) {
+        console.error(`${command} returned ${proc.status}`);
+        process.exit(proc.status);
+    }
+
     if (proc.error) {
         console.error(`Error executing command: ${command}`, proc.error);
         process.exit(proc.status);

@@ -1,5 +1,5 @@
 // SpessaSynth Português do Brasil
-// por Lucas Gabriel (lucmsilva)
+// Por Lucas Gabriel (lucmsilva)
 // https://github.com/lucmsilva651
 
 export const channelControllerLocale = {
