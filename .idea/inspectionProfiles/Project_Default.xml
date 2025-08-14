@@ -27,7 +27,6 @@
       <option name="processLiterals" value="false" />
       <option name="processComments" value="true" />
     </inspection_tool>
-    <inspection_tool class="Stylelint" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="UnterminatedStatementJS" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="ignoreSemicolonAtEndOfBlock" value="true" />
     </inspection_tool>

@@ -9,8 +9,8 @@ import type { LayoutType } from "../../../server/saved_settings.ts";
 export function _createInterfaceSettingsHandler(this: SpessaSynthSettings) {
     const button = this.htmlControls.interface.themeSelector;
     button.onclick = () => {
-        this._toggleDarkMode();
-        this._saveSettings();
+        this.toggleDarkMode();
+        this.saveSettings();
     };
     const select = this.htmlControls.interface.languageSelector;
     // Load up the languages
@@ -30,12 +30,12 @@ export function _createInterfaceSettingsHandler(this: SpessaSynthSettings) {
             return;
         }
         this.locale.changeGlobalLocale(select.value as keyof typeof localeList);
-        this._saveSettings();
+        this.saveSettings();
     };
     const layoutSelect = this.htmlControls.interface.layoutSelector;
     layoutSelect.onchange = () => {
-        this._changeLayout(layoutSelect.value as LayoutType);
-        this._saveSettings();
+        this.changeLayout(layoutSelect.value as LayoutType);
+        this.saveSettings();
         layoutSelect.blur();
     };
 

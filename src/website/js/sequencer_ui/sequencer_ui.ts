@@ -13,13 +13,14 @@ import {
 import { getSeqUIButton } from "./sequi_button.js";
 import { keybinds } from "../utils/keybinds.js";
 import { updateTitleAndMediaStatus } from "./title_and_media_status.js";
-import { setLyricsText, updateOtherTextEvents } from "./lyrics.js";
+import { sanitizeKarLyrics, setLyricsText } from "./lyrics.js";
 import { createSlider } from "../settings_ui/sliders.js";
 import type { LocaleManager } from "../locale/locale_manager.ts";
 import type { MusicModeUI } from "../music_mode_ui/music_mode_ui.ts";
 import type { Renderer } from "../renderer/renderer.ts";
 import {
     type MIDIMessage,
+    type MIDIMessageType,
     midiMessageTypes,
     rmidInfoChunks,
     SpessaSynthCoreUtils,
@@ -46,6 +47,15 @@ const DEFAULT_ENCODING = "Shift_JIS";
 
 // Zero width space
 const ZWSP = "\u200b";
+
+// Parser for turning MIDI status bytes into text
+const reversedMIDITypes = new Map<MIDIMessageType, string>();
+for (const key in midiMessageTypes) {
+    reversedMIDITypes.set(
+        midiMessageTypes[key as keyof typeof midiMessageTypes],
+        key.replace(/([a-z])([A-Z])/g, "$1 $2")
+    );
+}
 
 export class SequencerUI {
     public toggleLyrics: () => void;
@@ -101,9 +111,9 @@ export class SequencerUI {
     protected subtitleManager: AssManager;
     protected loopButton: HTMLDivElement;
     protected lyricsShown = false;
-    protected updateTitleAndMediaStatus = updateTitleAndMediaStatus.bind(this);
-    protected setLyricsText = setLyricsText.bind(this);
-    protected updateOtherTextEvents = updateOtherTextEvents.bind(this);
+    protected readonly updateTitleAndMediaStatus =
+        updateTitleAndMediaStatus.bind(this);
+    protected readonly setLyricsText = setLyricsText.bind(this);
 
     /**
      * Creates a new User Interface for the given MidiSequencer
@@ -212,8 +222,6 @@ export class SequencerUI {
             }
         );
 
-        // Set up sequencer
-
         // Create controls
         {
             // Time
@@ -227,7 +235,6 @@ export class SequencerUI {
                 const width = barPosition.width;
 
                 this.seq.currentTime = (x / width) * this.seq.duration;
-                playPauseButton.innerHTML = getPauseSvg(ICON_SIZE);
             };
 
             // Create lyrics
@@ -627,30 +634,14 @@ export class SequencerUI {
                 }
             });
         }
-        this.setSliderInterval();
-        this.updateTitleAndMediaStatus();
 
         this.seq.eventHandler.addEvent("textEvent", "sequi-text-event", (e) => {
-            const type = e.event.statusByte;
-            switch (type) {
-                default:
-                    return;
-
-                case midiMessageTypes.text:
-                case midiMessageTypes.copyright:
-                case midiMessageTypes.cuePoint:
-                case midiMessageTypes.trackName:
-                case midiMessageTypes.instrumentName:
-                case midiMessageTypes.programName:
-                case midiMessageTypes.marker:
-                    this.rawOtherTextEvents.push(e.event);
-                    this.requiresTextUpdate = true;
-                    return;
-
-                case midiMessageTypes.lyric:
-                    this.setLyricsText(e.lyricsIndex);
-                    break;
+            if (e.lyricsIndex >= 0) {
+                this.setLyricsText(e.lyricsIndex);
+                return;
             }
+            this.rawOtherTextEvents.push(e.event);
+            this.requiresTextUpdate = true;
         });
 
         this.seq.eventHandler.addEvent(
@@ -658,7 +649,7 @@ export class SequencerUI {
             "sequi-time-change",
             () => {
                 this.lyricsIndex = -1;
-                this.seqPlay(false);
+                this.updateTitleAndMediaStatus();
             }
         );
 
@@ -669,7 +660,6 @@ export class SequencerUI {
                 this.synthDisplayMode.enabled = false;
                 this.lyricsIndex = -1;
                 this.updateTitleAndMediaStatus();
-                this.seqPlay(false);
                 // Disable loop if more than 1 song
                 if (this.seq.songsAmount > 1) {
                     this.seq.loopCount = 0;
@@ -704,6 +694,10 @@ export class SequencerUI {
             }
             // Otherwise, we're already dark
         }
+
+        // Hide for now
+        this.controls.style.display = "none";
+        this.setSliderInterval();
     }
 
     public toggleDarkMode() {
@@ -716,7 +710,7 @@ export class SequencerUI {
             this.iconColor = ICON_COLOR;
             this.iconDisabledColor = ICON_DISABLED_COLOR;
         }
-        if (!this.seq) {
+        if (!this.seq.midiData) {
             this.requiresThemeUpdate = true;
             return;
         }
@@ -729,12 +723,13 @@ export class SequencerUI {
         this.lyricsElement.selector.classList.toggle("lyrics_light");
     }
 
-    public seqPlay(sendPlay = true) {
-        if (sendPlay) {
-            this.seq.play();
-        }
+    public seqPlay() {
+        this.seq.play();
         this.setWakeLock();
         this.playPause.innerHTML = getPauseSvg(ICON_SIZE);
+
+        // Show and start
+        this.controls.style.display = "block";
         this.updateTitleAndMediaStatus();
     }
 
@@ -764,6 +759,14 @@ export class SequencerUI {
         }
     }
 
+    protected updateOtherTextEvents() {
+        let text = "";
+        for (const raw of this.rawOtherTextEvents) {
+            text += `<span><pre>${reversedMIDITypes.get(raw.statusByte)}:</pre> <i>${this.decodeTextFix(raw.data.buffer)}</i></span><br>`;
+        }
+        this.lyricsElement.text.other.innerHTML = text;
+    }
+
     protected setWakeLock() {
         try {
             void navigator.wakeLock.request("screen").then((r) => {
@@ -774,7 +777,7 @@ export class SequencerUI {
         }
     }
 
-    protected decodeTextFix(text: ArrayBuffer) {
+    protected decodeTextFix(text: ArrayBufferLike) {
         let encodingIndex = 0;
         while (true) {
             try {
@@ -793,7 +796,7 @@ export class SequencerUI {
      */
     protected restoreDisplay() {
         let textToShow = this.currentSongTitle;
-        if (!this.seq) {
+        if (!this.seq.midiData) {
             // Set to default title
             textToShow = this.locale.getLocaleString("locale.titleMessage");
         }
@@ -845,9 +848,10 @@ export class SequencerUI {
     }
 
     protected decodeLyricData() {
-        this.currentLyricsString = this.currentLyrics.map((l) =>
-            this.decodeTextFix(l.data.buffer)
-        );
+        this.currentLyricsString = this.currentLyrics.map((l) => {
+            const b = sanitizeKarLyrics(l.data);
+            return this.decodeTextFix(b.buffer);
+        });
         if (this.currentLyrics.length === 0) {
             this.currentLyricsString = [
                 this.locale.getLocaleString(

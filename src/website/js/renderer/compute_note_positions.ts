@@ -39,7 +39,7 @@ export function computeNotePositions(
     this.synth.channelProperties.forEach((channel) => {
         // Pitch range * (bend - 8192) / 8192)) * key width
         if (this.showVisualPitch) {
-            const bend = channel.pitchBend - 8192 + this.visualPitchBendOffset; // -8192 to 8192
+            const bend = channel.pitchBend - 8192; // -8192 to 8192
             const pixelShift =
                 channel.pitchBendRangeSemitones * (bend / 8192) * keyStep;
             pitchBendXShift.push(pixelShift);

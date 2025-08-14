@@ -365,8 +365,8 @@ let initLocale: LocaleCode;
 // Get locale from saved settings or browser: "en-US" will turn into just "en"
 if (saved?.interface?.language) {
     initLocale =
-        (await window.savedSettings).interface.language ||
-        navigator.language.split("-")[0].toLowerCase();
+        (await window.savedSettings)?.interface?.language ??
+        (navigator.language.split("-")[0].toLowerCase() as LocaleCode);
 } else {
     initLocale = navigator.language.split("-")[0].toLowerCase() as LocaleCode;
 }

@@ -2,7 +2,6 @@ import { calculateRGB, RGBAOpacity } from "../utils/calculate_rgb.js";
 import { render } from "./render.js";
 import { computeNotePositions } from "./compute_note_positions.js";
 import { connectChannelAnalysers, disconnectChannelAnalysers, updateFftSize } from "./channel_analysers.js";
-import { resetIndexes } from "./connect_sequencer.js";
 import { renderBigFft, renderSingleFft, renderSingleWaveform, renderWaveforms } from "./render_waveforms.js";
 import { consoleColors } from "../utils/console_colors.js";
 import { BasicMIDI, midiMessageTypes } from "spessasynth_core";
@@ -62,10 +61,6 @@ export class Renderer {
 
     public noteFallingTimeMs = 1000;
     public noteAfterTriggerTimeMs = 0;
-    /**
-     * Adds this to the synth's visual pitch in position calculation.
-     */
-    public visualPitchBendOffset = 0;
     public lineThickness = ANALYSER_STROKE;
     public waveMultiplier = WAVE_MULTIPLIER;
     public currentTimeSignature = "4/4";
@@ -114,7 +109,6 @@ export class Renderer {
         connectChannelAnalysers.bind(this);
     protected readonly disconnectChannelAnalysers =
         disconnectChannelAnalysers.bind(this);
-    protected readonly resetIndexes = resetIndexes.bind(this);
     protected readonly renderWaveforms = renderWaveforms.bind(this);
     protected readonly renderSingleWaveform = renderSingleWaveform.bind(this);
     protected readonly renderSingleFft = renderSingleFft.bind(this);
@@ -236,9 +230,9 @@ export class Renderer {
         }
     }
 
-    // noinspection JSUnusedGlobalSymbols
-
     protected _stabilizeWaveforms = true;
+
+    // noinspection JSUnusedGlobalSymbols
 
     public get stabilizeWaveforms() {
         return this._stabilizeWaveforms;
@@ -349,6 +343,14 @@ export class Renderer {
             `%cFinished loading note times and ready to render the sequence!`,
             consoleColors.info
         );
+    }
+
+    protected resetIndexes() {
+        if (!this.noteTimes) {
+            return;
+        }
+        this.noteTimes.forEach((n) => (n.renderStartIndex = 0));
+        this.render(false, true);
     }
 
     protected computeColors() {

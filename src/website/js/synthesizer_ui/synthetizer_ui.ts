@@ -17,6 +17,7 @@ import {
     midiControllers,
     modulatorSources,
     NON_CC_INDEX_OFFSET,
+    type PresetListChangeCallback,
     type SynthSystem
 } from "spessasynth_core";
 import type { Sequencer, WorkerSynthesizer } from "spessasynth_lib";
@@ -159,7 +160,13 @@ export class SynthetizerUI {
         firstPort.classList.add("synthui_port_group");
         this.ports.push(firstPort);
 
-        this.getInstrumentList();
+        this.synth.eventHandler.addEvent(
+            "presetListChange",
+            "synthui-preset-list-change",
+            (e) => {
+                this.updatePresetList(e);
+            }
+        );
 
         // Create main controller
         {
@@ -612,6 +619,9 @@ export class SynthetizerUI {
                 );
             }
         });
+
+        // Update preset list
+        this.updatePresetList(this.synth.presetList);
     }
 
     public toggleVisibility() {
@@ -750,6 +760,35 @@ export class SynthetizerUI {
             case "portamento":
                 showCCs(portamentoControllers);
         }
+    }
+
+    protected updatePresetList(presetList: PresetListChangeCallback) {
+        this.presetList = presetList;
+        this.instrumentList = presetList
+            .filter((p) => !isXGDrums(p.bank) && p.bank !== 128)
+            .sort((a, b) => {
+                if (a.program === b.program) {
+                    return a.bank - b.bank;
+                }
+                return a.program - b.program;
+            });
+        this.percussionList = presetList
+            .filter((p) => isXGDrums(p.bank) || p.bank === 128)
+            .sort((a, b) => a.program - b.program);
+
+        if (this.percussionList.length === 0) {
+            this.percussionList = this.instrumentList;
+        } else if (this.instrumentList.length === 0) {
+            this.instrumentList = this.percussionList;
+        }
+
+        this.controllers.forEach((controller, i) => {
+            const list = this.synth.channelProperties[i].isDrum
+                ? this.percussionList
+                : this.instrumentList;
+            controller.preset.reload(list);
+            controller.preset.set(`${list[0].bank}:${list[0].program}`);
+        });
     }
 
     protected appendNewController(channelNumber: number) {
@@ -1247,42 +1286,6 @@ export class SynthetizerUI {
                 controller.controller.classList.remove("no_voices");
             }
         });
-    }
-
-    protected getInstrumentList() {
-        this.synth.eventHandler.addEvent(
-            "presetListChange",
-            "synthui-preset-list-change",
-            (e) => {
-                const presetList = e;
-                this.presetList = presetList;
-                this.instrumentList = presetList
-                    .filter((p) => !isXGDrums(p.bank) && p.bank !== 128)
-                    .sort((a, b) => {
-                        if (a.program === b.program) {
-                            return a.bank - b.bank;
-                        }
-                        return a.program - b.program;
-                    });
-                this.percussionList = presetList
-                    .filter((p) => isXGDrums(p.bank) || p.bank === 128)
-                    .sort((a, b) => a.program - b.program);
-
-                if (this.percussionList.length === 0) {
-                    this.percussionList = this.instrumentList;
-                } else if (this.instrumentList.length === 0) {
-                    this.instrumentList = this.percussionList;
-                }
-
-                this.controllers.forEach((controller, i) => {
-                    const list = this.synth.channelProperties[i].isDrum
-                        ? this.percussionList
-                        : this.instrumentList;
-                    controller.preset.reload(list);
-                    controller.preset.set(`${list[0].bank}:${list[0].program}`);
-                });
-            }
-        );
     }
 
     protected setChannelControllerVisibility(

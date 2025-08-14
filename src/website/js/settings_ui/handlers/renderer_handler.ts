@@ -32,7 +32,7 @@ export function _setRendererMode(
         waveformSettings.classList.add("hidden");
         freqSettings.classList.remove("hidden");
     }
-    this._saveSettings();
+    this.saveSettings();
 }
 
 export function _createRendererHandler(this: SpessaSynthSettings) {
@@ -40,7 +40,7 @@ export function _createRendererHandler(this: SpessaSynthSettings) {
 
     // Rendering mode
     rendererControls.renderingMode.addEventListener("change", () => {
-        this._setRendererMode(parseInt(rendererControls.renderingMode.value));
+        this.setRendererMode(parseInt(rendererControls.renderingMode.value));
     });
 
     rendererControls.renderingMode.dispatchEvent(new CustomEvent("change"));
@@ -55,7 +55,7 @@ export function _createRendererHandler(this: SpessaSynthSettings) {
     });
     // Bind to onchange instead of oninput to prevent spam
     rendererControls.noteTimeSlider.onchange = () => {
-        this._saveSettings();
+        this.saveSettings();
     };
 
     // Note after trigger time
@@ -70,7 +70,7 @@ export function _createRendererHandler(this: SpessaSynthSettings) {
         }
     );
     rendererControls.noteAfterTriggerTimeSlider.onchange = () => {
-        this._saveSettings();
+        this.saveSettings();
     };
 
     // Waveform line thickness
@@ -82,7 +82,7 @@ export function _createRendererHandler(this: SpessaSynthSettings) {
             `${rendererControls.analyserThicknessSlider.value}px`;
     });
     rendererControls.analyserThicknessSlider.onchange = () => {
-        this._saveSettings();
+        this.saveSettings();
     };
 
     // Fft size (sample size)
@@ -101,7 +101,7 @@ export function _createRendererHandler(this: SpessaSynthSettings) {
         getSpan(rendererControls.analyserFftSlider).innerText = `${value}`;
     });
     rendererControls.analyserFftSlider.onchange = () => {
-        this._saveSettings();
+        this.saveSettings();
     };
 
     // Wave multiplier
@@ -113,49 +113,49 @@ export function _createRendererHandler(this: SpessaSynthSettings) {
             rendererControls.waveMultiplierSlizer.value;
     });
     rendererControls.waveMultiplierSlizer.onchange = () => {
-        this._saveSettings();
+        this.saveSettings();
     };
 
     // Render notes
     rendererControls.noteToggler.onclick = () => {
         this.renderer.renderNotes = !this.renderer.renderNotes;
-        this._saveSettings();
+        this.saveSettings();
     };
 
     // Render active notes effect
     rendererControls.activeNoteToggler.onclick = () => {
         this.renderer.drawActiveNotes = !this.renderer.drawActiveNotes;
-        this._saveSettings();
+        this.saveSettings();
     };
 
     // Show visual pitch
     rendererControls.visualPitchToggler.onclick = () => {
         this.renderer.showVisualPitch = !this.renderer.showVisualPitch;
-        this._saveSettings();
+        this.saveSettings();
     };
 
     // Stabilize waveforms
     rendererControls.stabilizeWaveformsToggler.onclick = () => {
         this.renderer.stabilizeWaveforms = !this.renderer.stabilizeWaveforms;
-        this._saveSettings();
+        this.saveSettings();
     };
 
     // Dynamic gain
     rendererControls.dynamicGainToggler.onclick = () => {
         this.renderer.dynamicGain = !this.renderer.dynamicGain;
-        this._saveSettings();
+        this.saveSettings();
     };
 
     // Logarithmic frequency
     rendererControls.logarithmicFrequencyToggler.onclick = () => {
         this.renderer.logarithmicFrequency =
             !this.renderer.logarithmicFrequency;
-        this._saveSettings();
+        this.saveSettings();
     };
 
     // Exponential gain
     rendererControls.exponentialGainToggler.onclick = () => {
         this.renderer.exponentialGain = !this.renderer.exponentialGain;
-        this._saveSettings();
+        this.saveSettings();
     };
 }

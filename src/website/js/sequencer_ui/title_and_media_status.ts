@@ -5,7 +5,7 @@ export function updateTitleAndMediaStatus(
     this: SequencerUI,
     cleanOtherTextEvents = true
 ) {
-    if (!this.seq.midiData) {
+    if (!this.seq?.midiData) {
         return;
     }
     if (this.seq.hasDummyData) {
@@ -20,12 +20,10 @@ export function updateTitleAndMediaStatus(
             this.currentSongTitle = name;
         }
     }
-    if (this.seq.midiData) {
-        this.loadLyricData();
-        this.setLyricsText(this.lyricsIndex);
-        if (cleanOtherTextEvents) {
-            this.rawOtherTextEvents = [];
-        }
+    this.loadLyricData();
+    this.setLyricsText(this.lyricsIndex);
+    if (cleanOtherTextEvents) {
+        this.rawOtherTextEvents = [];
     }
     if (!this.synthDisplayMode.enabled) {
         this.mainTitleMessageDisplay.innerText = this.currentSongTitle;

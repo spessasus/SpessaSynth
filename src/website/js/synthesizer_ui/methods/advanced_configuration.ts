@@ -1,4 +1,7 @@
-import { closeNotification, showNotification } from "../../notification/notification.js";
+import {
+    closeNotification,
+    showNotification
+} from "../../notification/notification.js";
 import { LOCALE_PATH, SynthetizerUI } from "../synthetizer_ui.js";
 import { showEffectsConfigWindow } from "./effects_config.js";
 import { startKeyModifiersMenu } from "./key_modifier_ui.js";

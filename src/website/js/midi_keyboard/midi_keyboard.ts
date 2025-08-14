@@ -98,7 +98,7 @@ export class MidiKeyboard {
      */
     public set keyRange(value: { min: number; max: number }) {
         if (value.max === undefined || value.min === undefined) {
-            throw new TypeError("No min or max property!");
+            throw new Error("No min or max property!");
         }
         if (value.min > value.max) {
             const temp = value.min;
@@ -178,6 +178,12 @@ export class MidiKeyboard {
     }
 
     public setKeyRange(range: { min: number; max: number }, animate = true) {
+        if (
+            range.max === this._keyRange.max &&
+            range.min === this._keyRange.min
+        ) {
+            return;
+        }
         const diff = Math.abs(range.max - range.min);
         if (diff < 12) {
             range.min -= 6;

@@ -17,7 +17,7 @@ export class Meter {
     public currentValue;
     public max;
     private readonly min;
-    private isShown = true;
+    private isShown = false;
     private isVisualValueSet = true;
     private isActive = false;
     private readonly lockCallback;

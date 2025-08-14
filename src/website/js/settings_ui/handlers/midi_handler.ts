@@ -5,8 +5,8 @@ import { MIDIDeviceHandler } from "spessasynth_lib";
 export function _createMidiSettingsHandler(this: SpessaSynthSettings) {
     MIDIDeviceHandler.createMIDIDeviceHandler()
         .then((handler) => {
-            this._createMidiInputHandler(handler);
-            this._createMidiOutputHandler(handler);
+            this.createMIDIInputHandler(handler);
+            this.createMIDIOutputHandler(handler);
         })
         .catch((e) => {
             console.error(e);
@@ -60,7 +60,7 @@ export function _createMidiInputHandler(
         }
         handler.inputs.forEach((i) => i.disconnect(this.synth));
         handler.inputs.get(select.value)?.connect(this.synth);
-        this._saveSettings();
+        this.saveSettings();
     };
     // Try to connect the first input (if it exists)
     if (handler.inputs.size > 0) {
@@ -98,6 +98,6 @@ export function _createMidiOutputHandler(
         }
         handler.outputs.forEach((o) => o.disconnect(this.seq));
         handler.outputs.get(select.value)?.connect(this.seq);
-        this._saveSettings();
+        this.saveSettings();
     };
 }

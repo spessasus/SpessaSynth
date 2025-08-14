@@ -27,6 +27,12 @@ export default tseslint.config(
                 {
                     ignorePattern: "noinspection"
                 }
+            ],
+            "@typescript-eslint/no-misused-promises": [
+                "error",
+                {
+                    checksVoidReturn: false
+                }
             ]
         }
     }

@@ -46,7 +46,7 @@ export function render(this: Renderer, auto = true, force = false) {
         this.renderWaveforms(forceStraight);
     }
 
-    if (this.renderNotes && this.seq) {
+    if (this.renderNotes && this.noteTimes) {
         /**
          * Compute positions
          */
@@ -82,7 +82,7 @@ export function render(this: Renderer, auto = true, force = false) {
     );
 
     // Draw time signature and tempo (if note times are available)
-    if (this.seq) {
+    if (this.seq.midiData) {
         this.drawingContext.textAlign = "start";
         this.drawingContext.fillText(
             Math.round(this.seq.currentTempo * this.seq.playbackRate * 100) /

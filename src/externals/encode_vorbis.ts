@@ -16,7 +16,7 @@ const vorbisEncoder = libvorbis as {
 
 // noinspection JSUnusedGlobalSymbols
 export async function encodeVorbis(
-    audioDatas: Float32Array[],
+    audioData: Float32Array,
     sampleRate: number,
     quality: number
 ): Promise<Uint8Array> {
@@ -24,15 +24,11 @@ export async function encodeVorbis(
     if (!("OggVorbisEncoder" in vorbisEncoder)) {
         vorbisEncoder.init();
     }
-    const encoder = vorbisEncoder?.OggVorbisEncoder?.(
-        sampleRate,
-        audioDatas.length,
-        quality
-    );
+    const encoder = vorbisEncoder?.OggVorbisEncoder?.(sampleRate, 1, quality);
     if (!encoder) {
         throw new Error("Unexpected vorbis encoder error.");
     }
-    encoder.encode(audioDatas);
+    encoder.encode([audioData]);
     const arrs = encoder.finish();
     const outLen = arrs.reduce((l, c) => l + c.length, 0);
     const out = new Uint8Array(outLen);

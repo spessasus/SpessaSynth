@@ -105,10 +105,10 @@ export class Manager {
         });
         this.audioDelay.connect(context.destination);
 
-        let solve: () => void;
-        this.ready = new Promise<void>((resolve) => (solve = resolve));
-        void this.initializeContext(context, soundFontBuffer).then(() => {
-            solve();
+        this.ready = new Promise<void>((resolve) => {
+            void this.initializeContext(context, soundFontBuffer).then(() => {
+                resolve();
+            });
         });
     }
 
@@ -160,8 +160,9 @@ export class Manager {
         }
 
         // Resets controllers and resume
-        if (this.seq) {
+        if (this.seq?.midiData) {
             this.seq.currentTime -= 0.1;
+            this.seqUI?.seqPlay();
         }
     }
 
@@ -210,7 +211,7 @@ export class Manager {
     }
 
     private async initializeContext(
-        context: BaseAudioContext,
+        context: AudioContext,
         soundBank: ArrayBuffer
     ): Promise<void> {
         if (!context.audioWorklet) {
@@ -250,12 +251,20 @@ export class Manager {
         }
 
         // Create synth
+        await context.resume();
         await WorkerSynthesizer.registerPlaybackWorklet(context);
-        const worker = new Worker(new URL("./worker.ts", import.meta.url));
+        const worker = new Worker(new URL("worker.ts", import.meta.url));
         this.synth = new WorkerSynthesizer(
             context,
             worker.postMessage.bind(worker)
         );
+        worker.onmessage = (e) =>
+            this.synth!.handleWorkerMessage(
+                e.data as Parameters<typeof this.synth.handleWorkerMessage>[0]
+            );
+
+        this.synth.connect(this.audioDelay);
+        await this.synth.isReady;
         await this.synth.soundBankManager.addSoundBank(soundBank, "main");
 
         // Create seq

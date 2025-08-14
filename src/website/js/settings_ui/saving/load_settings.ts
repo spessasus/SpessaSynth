@@ -1,14 +1,19 @@
 import { getSpan } from "../sliders.js";
 import { USE_MIDI_RANGE } from "../handlers/keyboard_handler.js";
 import type { SpessaSynthSettings } from "../settings.ts";
+import { fillWithDefaults } from "../../utils/fill_with_defaults.ts";
+import { DEFAULT_SAVED_SETTINGS } from "../../../server/saved_settings.ts";
 
 export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
     if (!("savedSettings" in window)) {
         throw new Error("No saved settings!");
     }
-    const savedSettings = await window.savedSettings;
+    const savedSettingsPartial = await window.savedSettings;
 
-    console.info("Loading saved settings...", savedSettings);
+    const savedSettings = fillWithDefaults(
+        savedSettingsPartial,
+        DEFAULT_SAVED_SETTINGS
+    );
 
     // Renderer
     const rendererControls = this.htmlControls.renderer;
@@ -18,7 +23,7 @@ export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
     // Rendering mode
     const renderingMode = rendererValues.renderingMode;
     rendererControls.renderingMode.value = renderingMode.toString();
-    this._setRendererMode(renderingMode);
+    this.setRendererMode(renderingMode);
 
     // Note falling time
     const fallingTime = rendererValues.noteFallingTimeMs;
@@ -154,7 +159,7 @@ export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
             savedSettings.interface.language;
     }, 100);
     if (savedSettings?.interface?.mode === "light") {
-        this._toggleDarkMode();
+        this.toggleDarkMode();
         this.htmlControls.interface.themeSelector.checked = false;
     } else {
         this.htmlControls.interface.themeSelector.checked = true;
@@ -162,5 +167,5 @@ export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
 
     this.htmlControls.interface.layoutSelector.value =
         savedSettings?.interface?.layout || "downwards";
-    this._changeLayout(savedSettings?.interface?.layout || "downwards");
+    this.changeLayout(savedSettings?.interface?.layout || "downwards");
 }

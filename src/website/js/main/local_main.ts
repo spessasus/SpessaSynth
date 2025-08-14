@@ -13,7 +13,7 @@ declare global {
         SPESSASYNTH_VERSION: string;
         manager?: Manager;
         saveSettings: (s: SavedSettings) => unknown;
-        savedSettings: Promise<SavedSettings>;
+        savedSettings: Promise<Partial<SavedSettings>>;
         isLocalEdition: boolean;
         rememberVoiceCap?: (cap: number) => unknown;
     }
@@ -125,47 +125,28 @@ async function startMidi(midiFiles: FileList) {
     exportButton.onclick = manager.exportSong.bind(window.manager);
 }
 
+const createManager = async () => {
+    if (!sfParser) {
+        return;
+    }
+    // Prepare midi interface
+    window.manager = new Manager(context, sfParser, localeManager, true);
+    titleString = window.manager.localeManager.getLocaleString(
+        "locale.titleMessage"
+    );
+    titleMessage.innerText = "Initializing...";
+    await window.manager.ready;
+    //Window.manager.synth?.setLogLevel(true, true, true);
+    synthReady = true;
+    titleMessage.innerText = window.manager.localeManager.getLocaleString(
+        "locale.titleMessage"
+    );
+};
+
 /**
  * Fetches and replaces the current manager's font
  */
 async function replaceFont(fontName: string) {
-    async function replaceSf() {
-        // Prompt the user to click if needed
-        if (context.state === "suspended") {
-            titleMessage.innerText = "Press anywhere to start the app";
-            return;
-        }
-
-        if (!sfParser) {
-            return;
-        }
-
-        if (!window.manager) {
-            // Prepare the manager
-            window.manager = new Manager(
-                context,
-                sfParser,
-                localeManager,
-                true
-            );
-            titleString = window.manager.localeManager.getLocaleString(
-                "locale.titleMessage"
-            );
-            titleMessage.innerText = "Initializing...";
-            await window.manager.ready;
-            window.manager.synth?.setLogLevel(true, true, true);
-        } else {
-            if (window.manager.seq) {
-                window.manager.seq.pause();
-            }
-            await window.manager.reloadSf(sfParser);
-        }
-        titleMessage.innerText = window.manager.localeManager.getLocaleString(
-            "locale.titleMessage"
-        );
-        synthReady = true;
-    }
-
     titleMessage.innerText = "Loading soundfont...";
     const data = await fetchFont(
         fontName,
@@ -174,33 +155,32 @@ async function replaceFont(fontName: string) {
     );
 
     titleMessage.innerText = "Parsing soundfont...";
-    setTimeout(() => {
-        sfParser = data;
-        progressBar.style.width = "0";
-        void replaceSf();
-    });
+    sfParser = data;
+    progressBar.style.width = "0";
+    // Prompt the user to click if needed
+    if (context.state === "suspended") {
+        titleMessage.innerText = "Press anywhere to start the app";
+        return;
+    }
+
+    if (!sfParser) {
+        return;
+    }
+    if (!window.manager) {
+        await createManager();
+    }
+    titleMessage.innerText = window.manager!.localeManager.getLocaleString(
+        "locale.titleMessage"
+    );
+    synthReady = true;
     titleMessage.innerText = titleString;
 }
 
 document.body.onclick = async () => {
     // User has clicked, we can create the js
     await context.resume();
-    if (sfParser) {
-        // Prepare midi interface
-        window.manager = new Manager(context, sfParser, localeManager, true);
-        titleString = window.manager.localeManager.getLocaleString(
-            "locale.titleMessage"
-        );
-        titleMessage.innerText = "Initializing...";
-        await window.manager.ready;
-        window.manager.synth?.setLogLevel(true, true, true);
-        synthReady = true;
-        titleMessage.innerText = window.manager.localeManager.getLocaleString(
-            "locale.titleMessage"
-        );
-    }
-
     document.body.onclick = null;
+    await createManager();
 };
 
 let soundFonts: { name: string; size: number }[] = [];
@@ -268,7 +248,7 @@ void fetch("soundfonts").then(async (r) => {
  * Saves the settings (settings.js) selected data to config.json
  * (only on the local edition that's why it's here and not in the demo_main.js)
  */
-function saveSettings(settingsData: SavedSettings) {
+window.saveSettings = (settingsData: SavedSettings) => {
     void fetch("/savesettings", {
         method: "POST",
         body: JSON.stringify(settingsData),
@@ -276,10 +256,7 @@ function saveSettings(settingsData: SavedSettings) {
             "Content-type": "application/json; charset=UTF-8"
         }
     });
-}
-
-// Expose the function
-window.saveSettings = saveSettings;
+};
 
 /**
  * Reads the settings

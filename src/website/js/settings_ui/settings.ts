@@ -49,90 +49,7 @@ const niceDelayLookupTable = {
  */
 
 export class SpessaSynthSettings {
-    public readonly htmlControls = {
-        renderer: {
-            renderingMode: document.getElementById(
-                "renderer_mode_selector"
-            )! as HTMLSelectElement,
-            noteTimeSlider: document.getElementById(
-                "note_time_slider"
-            )! as HTMLInputElement,
-            noteAfterTriggerTimeSlider: document.getElementById(
-                "note_after_time_slider"
-            )! as HTMLInputElement,
-            noteToggler: document.getElementById(
-                "note_toggler"
-            )! as HTMLInputElement,
-            activeNoteToggler: document.getElementById(
-                "active_note_toggler"
-            )! as HTMLInputElement,
-            visualPitchToggler: document.getElementById(
-                "visual_pitch_toggler"
-            )! as HTMLInputElement,
-            stabilizeWaveformsToggler: document.getElementById(
-                "stabilize_waveforms_toggler"
-            )! as HTMLInputElement,
-
-            exponentialGainToggler: document.getElementById(
-                "exponential_gain_toggler"
-            )! as HTMLInputElement,
-            dynamicGainToggler: document.getElementById(
-                "dynamic_gain_toggler"
-            )! as HTMLInputElement,
-            logarithmicFrequencyToggler: document.getElementById(
-                "logarithmic_frequency_toggler"
-            )! as HTMLInputElement,
-
-            analyserThicknessSlider: document.getElementById(
-                "analyser_thickness_slider"
-            )! as HTMLInputElement,
-            analyserFftSlider: document.getElementById(
-                "analyser_fft_slider"
-            )! as HTMLInputElement,
-            waveMultiplierSlizer: document.getElementById(
-                "wave_multiplier_slider"
-            )! as HTMLInputElement
-        },
-
-        keyboard: {
-            channelSelector: document.getElementById(
-                "channel_selector"
-            )! as HTMLSelectElement,
-            modeSelector: document.getElementById(
-                "mode_selector"
-            )! as HTMLInputElement,
-            sizeSelector: document.getElementById(
-                "keyboard_size_selector"
-            )! as HTMLSelectElement,
-            showSelector: document.getElementById(
-                "keyboard_show"
-            )! as HTMLInputElement
-        },
-
-        midi: {
-            outputSelector: document.getElementById(
-                "midi_output_selector"
-            )! as HTMLSelectElement,
-            inputSelector: document.getElementById(
-                "midi_input_selector"
-            )! as HTMLSelectElement
-        },
-
-        interface: {
-            themeSelector: document.getElementById(
-                "toggle_mode_button"
-            )! as HTMLInputElement,
-            showControlsToggle: document.getElementById(
-                "show_sequencer_controls_button"
-            )! as HTMLInputElement,
-            languageSelector: document.getElementById(
-                "language_selector"
-            )! as HTMLSelectElement,
-            layoutSelector: document.getElementById(
-                "layout_selector"
-            )! as HTMLSelectElement
-        }
-    };
+    public readonly htmlControls;
     protected readonly delay: DelayNode;
     protected readonly renderer: Renderer;
     protected readonly synth: WorkerSynthesizer;
@@ -156,20 +73,19 @@ export class SpessaSynthSettings {
     protected animationId = -1;
     protected hideOnDocClick = true;
     protected topPartVisible = true;
-    protected _toggleDarkMode = _toggleDarkMode.bind(this);
-    protected _createInterfaceSettingsHandler =
+    protected toggleDarkMode = _toggleDarkMode.bind(this);
+    protected createInterfaceSettingsHandler =
         _createInterfaceSettingsHandler.bind(this);
-    protected _changeLayout = _changeLayout.bind(this);
-    protected _createRendererHandler = _createRendererHandler.bind(this);
-    protected _setRendererMode = _setRendererMode.bind(this);
-    protected _createMidiSettingsHandler =
-        _createMidiSettingsHandler.bind(this);
-    protected _createMidiInputHandler = _createMidiInputHandler.bind(this);
-    protected _createMidiOutputHandler = _createMidiOutputHandler.bind(this);
-    protected _createKeyboardHandler = _createKeyboardHandler.bind(this);
-    protected _loadSettings = _loadSettings.bind(this);
-    protected _serializeSettings = _serializeSettings.bind(this);
-    protected _saveSettings = _saveSettings.bind(this);
+    protected changeLayout = _changeLayout.bind(this);
+    protected createRendererHandler = _createRendererHandler.bind(this);
+    protected setRendererMode = _setRendererMode.bind(this);
+    protected createMidiSettingsHandler = _createMidiSettingsHandler.bind(this);
+    protected createMIDIInputHandler = _createMidiInputHandler.bind(this);
+    protected createMIDIOutputHandler = _createMidiOutputHandler.bind(this);
+    protected createKeyboardHandler = _createKeyboardHandler.bind(this);
+    protected loadSettings = _loadSettings.bind(this);
+    protected serializeSettings = _serializeSettings.bind(this);
+    protected saveSettings = _saveSettings.bind(this);
 
     /**
      * Creates a new instance of CustomSynth UI
@@ -285,6 +201,7 @@ export class SpessaSynthSettings {
 
         // Load the HTML
         this.mainDiv.innerHTML = settingsHtml;
+
         // Load input type range
         handleSliders(this.mainDiv);
 
@@ -345,8 +262,94 @@ export class SpessaSynthSettings {
             }
         });
 
+        // Get the elements
+        this.htmlControls = {
+            renderer: {
+                renderingMode: document.getElementById(
+                    "renderer_mode_selector"
+                )! as HTMLSelectElement,
+                noteTimeSlider: document.getElementById(
+                    "note_time_slider"
+                )! as HTMLInputElement,
+                noteAfterTriggerTimeSlider: document.getElementById(
+                    "note_after_time_slider"
+                )! as HTMLInputElement,
+                noteToggler: document.getElementById(
+                    "note_toggler"
+                )! as HTMLInputElement,
+                activeNoteToggler: document.getElementById(
+                    "active_note_toggler"
+                )! as HTMLInputElement,
+                visualPitchToggler: document.getElementById(
+                    "visual_pitch_toggler"
+                )! as HTMLInputElement,
+                stabilizeWaveformsToggler: document.getElementById(
+                    "stabilize_waveforms_toggler"
+                )! as HTMLInputElement,
+
+                exponentialGainToggler: document.getElementById(
+                    "exponential_gain_toggler"
+                )! as HTMLInputElement,
+                dynamicGainToggler: document.getElementById(
+                    "dynamic_gain_toggler"
+                )! as HTMLInputElement,
+                logarithmicFrequencyToggler: document.getElementById(
+                    "logarithmic_frequency_toggler"
+                )! as HTMLInputElement,
+
+                analyserThicknessSlider: document.getElementById(
+                    "analyser_thickness_slider"
+                )! as HTMLInputElement,
+                analyserFftSlider: document.getElementById(
+                    "analyser_fft_slider"
+                )! as HTMLInputElement,
+                waveMultiplierSlizer: document.getElementById(
+                    "wave_multiplier_slider"
+                )! as HTMLInputElement
+            },
+
+            keyboard: {
+                channelSelector: document.getElementById(
+                    "channel_selector"
+                )! as HTMLSelectElement,
+                modeSelector: document.getElementById(
+                    "mode_selector"
+                )! as HTMLInputElement,
+                sizeSelector: document.getElementById(
+                    "keyboard_size_selector"
+                )! as HTMLSelectElement,
+                showSelector: document.getElementById(
+                    "keyboard_show"
+                )! as HTMLInputElement
+            },
+
+            midi: {
+                outputSelector: document.getElementById(
+                    "midi_output_selector"
+                )! as HTMLSelectElement,
+                inputSelector: document.getElementById(
+                    "midi_input_selector"
+                )! as HTMLSelectElement
+            },
+
+            interface: {
+                themeSelector: document.getElementById(
+                    "toggle_mode_button"
+                )! as HTMLInputElement,
+                showControlsToggle: document.getElementById(
+                    "show_sequencer_controls_button"
+                )! as HTMLInputElement,
+                languageSelector: document.getElementById(
+                    "language_selector"
+                )! as HTMLSelectElement,
+                layoutSelector: document.getElementById(
+                    "layout_selector"
+                )! as HTMLSelectElement
+            }
+        };
+
         // If window.savedSettings exists, load it
-        void this._loadSettings().then(() => {
+        void this.loadSettings().then(() => {
             this.createHandlers();
         });
 
@@ -468,13 +471,13 @@ export class SpessaSynthSettings {
 
     public createHandlers() {
         // Create handlers for all settings
-        this._createRendererHandler();
+        this.createRendererHandler();
 
-        this._createMidiSettingsHandler();
+        this.createMidiSettingsHandler();
 
-        this._createKeyboardHandler();
+        this.createKeyboardHandler();
 
-        this._createInterfaceSettingsHandler();
+        this.createInterfaceSettingsHandler();
     }
 
     public setTimeDelay(fft: number) {

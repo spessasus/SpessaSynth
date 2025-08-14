@@ -1,5 +1,25 @@
-import { midiMessageTypes } from "spessasynth_core";
 import type { SequencerUI } from "./sequencer_ui.ts";
+
+/**
+ * Sanitizes KAR lyrics
+ */
+export function sanitizeKarLyrics(eventData: Uint8Array): Uint8Array {
+    // For KAR files:
+    // https://www.mixagesoftware.com/en/midikit/help/HTML/karaoke_formats.html
+    // "/" is the newline character
+    // "\" is also the newline character
+    // "\" ASCII code is 92
+    // "/" ASCII code is 47
+    // Newline ASCII code is 10
+    const sanitized: number[] = [];
+    for (let byte of eventData) {
+        if (byte === 47 || byte === 92) {
+            byte = 10;
+        }
+        sanitized.push(byte);
+    }
+    return new Uint8Array(sanitized);
+}
 
 export function setLyricsText(this: SequencerUI, index: number) {
     // If there are no lyrics, there's one element:
@@ -40,21 +60,4 @@ export function setLyricsText(this: SequencerUI, index: number) {
             inline: "center"
         });
     }
-}
-
-export function updateOtherTextEvents(this: SequencerUI) {
-    let text = "";
-    for (const raw of this.rawOtherTextEvents) {
-        text += `<span><pre>${Object.keys(midiMessageTypes)
-            .find(
-                (k) =>
-                    midiMessageTypes[k as keyof typeof midiMessageTypes] ===
-                    raw.statusByte
-            )
-            ?.replace(
-                /([a-z])([A-Z])/g,
-                "$1 $2"
-            )}:</pre> <i>${this.decodeTextFix(raw.data.buffer)}</i></span><br>`;
-    }
-    this.lyricsElement.text.other.innerHTML = text;
 }

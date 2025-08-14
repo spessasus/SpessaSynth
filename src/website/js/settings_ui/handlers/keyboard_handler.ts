@@ -151,7 +151,7 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
                                 .value as keyof typeof this.keyboardSizes
                         ];
                 }
-                this._saveSettings();
+                this.saveSettings();
             }, 600);
             return;
         }
@@ -174,7 +174,7 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
                         .value as keyof typeof this.keyboardSizes
                 ];
         }
-        this._saveSettings();
+        this.saveSettings();
     };
 
     this.seq.eventHandler.addEvent(
@@ -242,18 +242,18 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
             );
             setTimeout(() => {
                 this.midiKeyboard.toggleMode();
-                this._saveSettings();
+                this.saveSettings();
                 this.renderer.updateSize();
             }, 600);
             return;
         }
         this.midiKeyboard.toggleMode();
-        this._saveSettings();
+        this.saveSettings();
     };
 
     // Keyboard show toggle
     keyboardControls.showSelector.onclick = () => {
         this.midiKeyboard.shown = !this.midiKeyboard.shown;
-        this._saveSettings();
+        this.saveSettings();
     };
 }

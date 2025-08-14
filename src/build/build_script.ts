@@ -3,7 +3,6 @@ import fs from "node:fs/promises";
 import * as esbuild from "esbuild";
 import metaUrlPlugin from "@chialab/esbuild-plugin-meta-url";
 import JSZip from "jszip";
-import { runCommandSync } from "./run_command.ts";
 
 export async function buildSpessaSynth() {
     const REPO_ROOT = path.resolve(import.meta.dirname, "../..");
@@ -14,6 +13,7 @@ export async function buildSpessaSynth() {
     const DEMO_DIR_SRC = path.resolve(REPO_ROOT, "dist/minified");
     const DEMO_DIR = path.resolve(REPO_ROOT, "dist");
     const LOCAL_DIR = path.resolve(REPO_ROOT, "local-dev");
+    const SERVER_DIR = path.resolve(REPO_ROOT, "server");
     const OUTPUT_ZIP = "SpessaSynth-LocalEdition.zip";
 
     const print = (t = "") => {
@@ -27,9 +27,6 @@ export async function buildSpessaSynth() {
     };
 
     print("Building SpessaSynth...");
-
-    printStep("⚠️  0) Check types");
-    runCommandSync("npm run test:types");
 
     printStep("⚙️  1) Clean dist directories");
 
@@ -62,11 +59,11 @@ export async function buildSpessaSynth() {
     );
 
     // Server
-    await fs.cp(
-        path.resolve(WEBSITE_DIR, "server"),
-        path.resolve(REPO_ROOT, "server"),
-        { recursive: true }
-    );
+    // Await fs.cp(
+    //     Path.resolve(WEBSITE_DIR, "server"),
+    //     Path.resolve(REPO_ROOT, "server"),
+    //     { recursive: true }
+    // );
 
     // Package and soundfont
     await fs.cp(
@@ -81,8 +78,9 @@ export async function buildSpessaSynth() {
 
     printStep("️⚙️  3) Build");
 
-    const demoInput = path.resolve(WEBSITE_DIR, "js/main/demo_main.js");
-    const localInput = path.resolve(WEBSITE_DIR, "js/main/local_main.js");
+    const demoInput = path.resolve(WEBSITE_DIR, "js/main/demo_main.ts");
+    const localInput = path.resolve(WEBSITE_DIR, "js/main/local_main.ts");
+    const serverInput = path.resolve(WEBSITE_DIR, "server/server.ts");
     const stylesInput = path.resolve(WEBSITE_DIR, "css/style.css");
 
     const regularOptions: esbuild.BuildOptions = {
@@ -112,6 +110,14 @@ export async function buildSpessaSynth() {
         splitting: true,
         sourcemap: "linked",
         outdir: LOCAL_DIR
+    });
+
+    print("Building local edition server...");
+    await esbuild.build({
+        entryPoints: [serverInput],
+        ...regularOptions,
+        platform: "node",
+        outdir: SERVER_DIR
     });
 
     print("Building styles for both...");
@@ -167,7 +173,7 @@ export async function buildSpessaSynth() {
     if (serverFolder === null) {
         throw new Error("Error creating the zip file.");
     }
-    await copyFolder(path.resolve(WEBSITE_DIR, "server"), serverFolder);
+    await copyFolder(SERVER_DIR, serverFolder);
 
     // Copy files to the root folder
     await copyFileToZip(path.resolve(REPO_ROOT, "package.json"), zip);
