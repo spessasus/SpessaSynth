@@ -1,7 +1,4 @@
-import {
-    closeNotification,
-    showNotification
-} from "../notification/notification.js";
+import { closeNotification, showNotification } from "../notification/notification.js";
 import { EXTRA_BANK_ID } from "./extra_bank_id.js";
 import type { Manager } from "./manager.ts";
 
@@ -77,7 +74,7 @@ export function prepareExtraBankUpload(this: Manager) {
                     type: "button",
                     translatePathTitle: "locale.extraBank.clear",
                     onClick: async (n) => {
-                        await this.synth?.soundBankManager.deleteSoundBank(
+                        await this.synth!.soundBankManager.deleteSoundBank(
                             EXTRA_BANK_ID
                         );
                         this.extraBankName = "";

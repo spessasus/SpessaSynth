@@ -296,10 +296,6 @@ export class Renderer {
         this.updateFftSize();
     }
 
-    public get direction() {
-        return this._notesFall ? "down" : "up";
-    }
-
     public set direction(val: "down" | "up") {
         this._notesFall = val === "down";
     }

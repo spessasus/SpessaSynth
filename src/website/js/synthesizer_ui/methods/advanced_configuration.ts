@@ -8,6 +8,9 @@ import { startKeyModifiersMenu } from "./key_modifier_ui.js";
 
 export function showAdvancedConfiguration(this: SynthetizerUI) {
     this.hideOnDocClick = false;
+    const blackMIDIAttribute = this.synth.getMasterParameter("blackMIDIMode")
+        ? { checked: true }
+        : {};
     showNotification(
         this.locale.getLocaleString(
             LOCALE_PATH + "advancedConfiguration.title"
@@ -68,9 +71,7 @@ export function showAdvancedConfiguration(this: SynthetizerUI) {
             {
                 type: "toggle",
                 translatePathTitle: LOCALE_PATH + "blackMidiMode",
-                attributes: {
-                    checked: this.synth.getMasterParameter("blackMIDIMode")
-                },
+                attributes: blackMIDIAttribute,
                 listeners: {
                     input: (e) =>
                         this.synth.setMasterParameter(

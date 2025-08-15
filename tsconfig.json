@@ -45,6 +45,7 @@
     "dist",
     "local-dev",
     "server",
+    "src/externals/libvorbis",
     "src/**/*.js"
   ]
 }

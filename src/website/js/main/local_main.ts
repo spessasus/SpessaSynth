@@ -184,9 +184,13 @@ async function replaceFont(fontName: string) {
 }
 
 document.body.onclick = async () => {
+    if (!soundBankBufferCurrent) {
+        return;
+    }
     // User has clicked, we can create the js
     await context.resume();
     document.body.onclick = null;
+
     await createManager();
 };
 
