@@ -72,13 +72,14 @@ export function _exportDLS(this: Manager) {
                         "notification_progress"
                     )[0] as HTMLDivElement;
                     const exported = await this.synth.writeDLS({
-                        bankID: SOUND_BANK_ID,
+                        bankID: this.extraBankName || SOUND_BANK_ID,
                         trim: trimmed,
                         progressFunction: (p) => {
                             const progress = p.sampleIndex / p.sampleCount;
                             progressDiv.style.width = `${progress * 100}%`;
                         }
                     });
+                    this.seq?.play();
                     this.saveBlob(
                         new Blob([exported.binary], { type: "audio/dls" }),
                         exported.fileName

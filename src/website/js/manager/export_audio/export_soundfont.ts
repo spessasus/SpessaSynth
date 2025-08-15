@@ -1,5 +1,8 @@
 import { consoleColors } from "../../utils/console_colors.js";
-import { closeNotification, showNotification } from "../../notification/notification.js";
+import {
+    closeNotification,
+    showNotification
+} from "../../notification/notification.js";
 import type { Manager } from "../manager.ts";
 
 import { SOUND_BANK_ID } from "../bank_id.ts";
@@ -75,7 +78,7 @@ export function exportSoundBank(this: Manager) {
                     const detailMessage =
                         notification.div.getElementsByTagName("p")[0];
                     const exported = await this.synth.writeSF2({
-                        bankID: SOUND_BANK_ID,
+                        bankID: this.extraBankName || SOUND_BANK_ID,
                         trim: trimmed,
                         compress: compressed,
                         compressionQuality: quality,
@@ -85,6 +88,7 @@ export function exportSoundBank(this: Manager) {
                             detailMessage.textContent = `${exportingMessage} ${Math.floor(progress * 100)}%`;
                         }
                     });
+                    this.seq?.play();
                     this.saveBlob(
                         new Blob([exported.binary]),
                         exported.fileName

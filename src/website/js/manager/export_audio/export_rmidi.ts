@@ -214,7 +214,7 @@ export function _exportRMIDI(this: Manager) {
 
                     // Export
                     const exported = await this.synth.writeRMIDI({
-                        bankID: SOUND_BANK_ID,
+                        bankID: this.extraBankName || SOUND_BANK_ID,
                         compressionQuality: quality,
                         compress: compressed,
                         metadata: {
@@ -224,7 +224,8 @@ export function _exportRMIDI(this: Manager) {
                             picture: pictureBuffer,
                             midiEncoding: this.seqUI!.encoding,
                             comment,
-                            genre
+                            genre,
+                            copyright: mid.getRMIDInfo("ICOP")
                         },
                         bankOffset,
                         correctBankOffset: adjust,
