@@ -125,27 +125,30 @@ async function startMidi(midiFiles: FileList) {
     exportButton.onclick = manager.exportSong.bind(window.manager);
 }
 
-const createManager = async () => {
+const initManagerSF = async () => {
     if (!soundBankBufferCurrent) {
         return;
     }
-    // Prepare midi interface
-    window.manager = new Manager(
-        context,
-        soundBankBufferCurrent,
-        localeManager,
-        true
-    );
-    titleString = window.manager.localeManager.getLocaleString(
-        "locale.titleMessage"
-    );
     titleMessage.innerText = "Initializing...";
-    await window.manager.ready;
-    //Window.manager.synth?.setLogLevel(true, true, true);
+    if (!window.manager) {
+        window.manager = new Manager(
+            context,
+            soundBankBufferCurrent,
+            localeManager,
+            true
+        );
+        titleString = window.manager.localeManager.getLocaleString(
+            "locale.titleMessage"
+        );
+
+        await window.manager.ready;
+        window.manager.synth?.setLogLevel(true, true, true);
+    } else {
+        await window.manager.reloadSf(soundBankBufferCurrent);
+    }
+
     synthReady = true;
-    titleMessage.innerText = window.manager.localeManager.getLocaleString(
-        "locale.titleMessage"
-    );
+    titleMessage.innerText = titleString;
 };
 
 /**
@@ -171,11 +174,7 @@ async function replaceFont(fontName: string) {
     if (!soundBankBufferCurrent) {
         return;
     }
-    if (!window.manager) {
-        await createManager();
-    } else {
-        await window.manager.reloadSf(soundBankBufferCurrent);
-    }
+    await initManagerSF();
     titleMessage.innerText = window.manager!.localeManager.getLocaleString(
         "locale.titleMessage"
     );
@@ -191,10 +190,10 @@ document.body.onclick = async () => {
     await context.resume();
     document.body.onclick = null;
 
-    await createManager();
+    await initManagerSF();
 };
 
-let soundFonts: { name: string; size: number }[] = [];
+let soundBanks: { name: string; size: number }[] = [];
 
 const localeManager = new LocaleManager(
     navigator.language.split("-")[0].toLowerCase() as LocaleCode
@@ -210,8 +209,8 @@ void fetch("soundfonts").then(async (r) => {
         "sf_selector"
     )! as HTMLSelectElement;
 
-    soundFonts = JSON.parse(await r.text()) as { name: string; size: number }[];
-    for (const sf of soundFonts) {
+    soundBanks = JSON.parse(await r.text()) as { name: string; size: number }[];
+    for (const sf of soundBanks) {
         const option = document.createElement("option");
         option.value = sf.name;
         let displayName = sf.name;
@@ -244,7 +243,7 @@ void fetch("soundfonts").then(async (r) => {
     };
 
     // Fetch the first sf2
-    await replaceFont(soundFonts[0].name);
+    await replaceFont(soundBanks[0].name);
 
     // Start midi if already uploaded
     if (fileInput.files?.[0]) {

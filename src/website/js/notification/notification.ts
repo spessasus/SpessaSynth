@@ -74,10 +74,9 @@ export interface NotificationContent {
     translatePathTitleProps?: string[];
     attributes?: Partial<
         Pick<HTMLInputElement, WritableStringKeys<HTMLInputElement>> & {
-            checked: boolean;
-            style: string;
+            checked: "checked";
             onchange: () => unknown;
-            [key: string]: string | boolean | (() => unknown);
+            [key: string]: string | (() => unknown);
         }
     >;
     onClick?: NotificationContentCallback;

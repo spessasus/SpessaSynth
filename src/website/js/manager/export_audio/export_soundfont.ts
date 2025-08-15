@@ -15,7 +15,7 @@ export function exportSoundBank(this: Manager) {
                 translatePathTitle: path + "trim",
                 attributes: {
                     "trim-toggle": "1",
-                    checked: true
+                    checked: "checked"
                 }
             },
             {

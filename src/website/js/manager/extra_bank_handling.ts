@@ -1,4 +1,7 @@
-import { closeNotification, showNotification } from "../notification/notification.js";
+import {
+    closeNotification,
+    showNotification
+} from "../notification/notification.js";
 import { EXTRA_BANK_ID } from "./extra_bank_id.js";
 import type { Manager } from "./manager.ts";
 

@@ -8,9 +8,10 @@ import { startKeyModifiersMenu } from "./key_modifier_ui.js";
 
 export function showAdvancedConfiguration(this: SynthetizerUI) {
     this.hideOnDocClick = false;
-    const blackMIDIAttribute = this.synth.getMasterParameter("blackMIDIMode")
-        ? { checked: true }
-        : {};
+    const blackMIDIAttribute: { checked: "checked" } | object =
+        this.synth.getMasterParameter("blackMIDIMode")
+            ? { checked: "checked" }
+            : {};
     showNotification(
         this.locale.getLocaleString(
             LOCALE_PATH + "advancedConfiguration.title"

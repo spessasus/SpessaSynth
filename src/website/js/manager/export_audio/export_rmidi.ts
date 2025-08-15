@@ -43,7 +43,7 @@ export function _exportRMIDI(this: Manager) {
                 translatePathTitle: path + "compress",
                 attributes: {
                     "compress-toggle": "1",
-                    checked: true
+                    checked: "checked"
                 }
             },
             {

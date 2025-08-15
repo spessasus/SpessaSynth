@@ -266,9 +266,9 @@ export function _exportAudioData(this: Manager) {
     const wavPath = `locale.exportAudio.formats.formats.wav.options.`;
     const metadataPath = "locale.exportAudio.formats.metadata.";
     const mid = this.seq!.midiData!;
-    const startAlbum = mid.getRMIDInfo(rmidInfoChunks.album);
-    const startArtist = mid.getRMIDInfo(rmidInfoChunks.artist);
-    const startGenre = mid.getRMIDInfo(rmidInfoChunks.genre);
+    const startAlbum = mid.getRMIDInfo(rmidInfoChunks.album) ?? "";
+    const startArtist = mid.getRMIDInfo(rmidInfoChunks.artist) ?? "";
+    const startGenre = mid.getRMIDInfo(rmidInfoChunks.genre) ?? "";
     const WAV_OPTIONS: NotificationContent[] = [
         {
             type: "text",
@@ -284,7 +284,7 @@ export function _exportAudioData(this: Manager) {
             translatePathTitle: wavPath + "normalizeVolume",
             attributes: {
                 "normalize-volume-toggle": "1",
-                checked: true
+                checked: "checked"
             }
         },
         {
