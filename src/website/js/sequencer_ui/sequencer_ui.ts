@@ -653,6 +653,10 @@ export class SequencerUI {
             }
         );
 
+        this.seq.eventHandler.addEvent("songEnded", "sequi-song-ended", () => {
+            this.seqPause(false);
+        });
+
         this.seq.eventHandler.addEvent(
             "songChange",
             "sequi-song-change",

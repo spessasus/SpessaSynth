@@ -5,6 +5,8 @@ import {
 } from "../../notification/notification.js";
 import type { Manager } from "../manager.ts";
 
+import { SOUND_BANK_ID } from "../bank_id.ts";
+
 export function _exportDLS(this: Manager) {
     const path = "locale.exportAudio.formats.formats.dls.warning.";
     showNotification(
@@ -70,6 +72,7 @@ export function _exportDLS(this: Manager) {
                         "notification_progress"
                     )[0] as HTMLDivElement;
                     const exported = await this.synth.writeDLS({
+                        bankID: SOUND_BANK_ID,
                         trim: trimmed,
                         progressFunction: (p) => {
                             const progress = p.sampleIndex / p.sampleCount;

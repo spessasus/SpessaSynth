@@ -82,7 +82,8 @@ export async function buildSpessaSynth() {
         treeShaking: true,
         format: "esm",
         platform: "browser",
-        logLevel: "info"
+        logLevel: "info",
+        tsconfig: path.resolve(REPO_ROOT, "tsconfig.json")
     };
 
     print("Building demo...");

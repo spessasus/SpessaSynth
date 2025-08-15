@@ -107,12 +107,18 @@ export class MusicModeUI {
                         el?.parentElement?.classList?.add("hidden");
                     }
                 };
-                // Copyright
-                const decoder = new TextDecoder(mid.encoding ?? "Shift_JIS");
-                const copyright = mid.extraMetadata
-                    .map((m) => decoder.decode(m.data.buffer).trim())
-                    .join("\n");
-                setInfoText("player_info_detail", copyright);
+                // Details
+                const copy = mid.getRMIDInfo("ICOP");
+                if (copy) {
+                    setInfoText("player_info_detail", copy);
+                } else {
+                    setInfoText(
+                        "player_info_detail",
+                        mid
+                            .getExtraMetadata(mid.encoding ?? "Shift_JIS")
+                            .join("\n")
+                    );
+                }
                 // Time
                 setInfoText(
                     "player_info_time",

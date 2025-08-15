@@ -34,7 +34,12 @@
     "allowImportingTsExtensions": true,
     "types": [
       "node"
-    ]
+    ],
+    "paths": {
+      "sl-web-ogg": [
+        "./externals/sl-web-ogg/dist/index.min.js"
+      ]
+    }
   },
   "include": [
     "src",
@@ -44,8 +49,6 @@
     "node_modules",
     "dist",
     "local-dev",
-    "server",
-    "src/externals/libvorbis",
-    "src/**/*.js"
+    "server"
   ]
 }

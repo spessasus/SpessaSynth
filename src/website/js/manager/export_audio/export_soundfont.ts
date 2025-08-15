@@ -1,9 +1,8 @@
 import { consoleColors } from "../../utils/console_colors.js";
-import {
-    closeNotification,
-    showNotification
-} from "../../notification/notification.js";
+import { closeNotification, showNotification } from "../../notification/notification.js";
 import type { Manager } from "../manager.ts";
+
+import { SOUND_BANK_ID } from "../bank_id.ts";
 
 export function exportSoundBank(this: Manager) {
     const path = "locale.exportAudio.formats.formats.soundfont.options.";
@@ -76,6 +75,7 @@ export function exportSoundBank(this: Manager) {
                     const detailMessage =
                         notification.div.getElementsByTagName("p")[0];
                     const exported = await this.synth.writeSF2({
+                        bankID: SOUND_BANK_ID,
                         trim: trimmed,
                         compress: compressed,
                         compressionQuality: quality,

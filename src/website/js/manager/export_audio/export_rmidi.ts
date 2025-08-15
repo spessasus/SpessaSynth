@@ -6,6 +6,8 @@ import {
 import { ANIMATION_REFLOW_TIME } from "../../utils/animation_utils.js";
 import type { Manager } from "../manager.ts";
 
+import { SOUND_BANK_ID } from "../bank_id.ts";
+
 export function _exportRMIDI(this: Manager) {
     if (!this.seq || !this.synth) {
         return;
@@ -212,6 +214,7 @@ export function _exportRMIDI(this: Manager) {
 
                     // Export
                     const exported = await this.synth.writeRMIDI({
+                        bankID: SOUND_BANK_ID,
                         compressionQuality: quality,
                         compress: compressed,
                         metadata: {

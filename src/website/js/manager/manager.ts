@@ -1,5 +1,9 @@
 import { MidiKeyboard } from "../midi_keyboard/midi_keyboard.js";
-import { Sequencer, WebMIDILinkHandler, WorkerSynthesizer } from "spessasynth_lib";
+import {
+    Sequencer,
+    WebMIDILinkHandler,
+    WorkerSynthesizer
+} from "spessasynth_lib";
 
 import { Renderer } from "../renderer/renderer.js";
 
@@ -10,15 +14,26 @@ import { MusicModeUI } from "../music_mode_ui/music_mode_ui.js";
 import { LocaleManager } from "../locale/locale_manager.js";
 import { isMobile } from "../utils/is_mobile.js";
 import { keybinds } from "../utils/keybinds.js";
-import { _doExportAudioData, _exportAudioData } from "./export_audio/export_audio.js";
+import {
+    _doExportAudioData,
+    _exportAudioData
+} from "./export_audio/export_audio.js";
 import { exportSoundBank } from "./export_audio/export_soundfont.js";
 import { exportSong } from "./export_audio/export_song.js";
 import { _exportRMIDI } from "./export_audio/export_rmidi.js";
-import { closeNotification, showNotification } from "../notification/notification.js";
+import {
+    closeNotification,
+    showNotification
+} from "../notification/notification.js";
 import { DropFileHandler, type MIDIFile } from "../utils/drop_file_handler.js";
 import { _exportDLS } from "./export_audio/export_dls.js";
-import { IndexedByteArray, SpessaSynthCoreUtils as util } from "spessasynth_core";
+import {
+    IndexedByteArray,
+    SpessaSynthCoreUtils as util
+} from "spessasynth_core";
 import { prepareExtraBankUpload } from "./extra_bank_handling.js";
+
+import { SOUND_BANK_ID } from "./bank_id.ts";
 
 // This enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
 document.body.classList.add("load");
@@ -141,11 +156,12 @@ export class Manager {
         if (sf === this.sBankBuffer) {
             return;
         }
+        this.seq?.pause();
         this.sBankBuffer = sf;
         const text = sf.slice(8, 12);
         const header = util.readBytesAsString(new IndexedByteArray(text), 4);
         const isDLS = header.toLowerCase() === "dls " && !this.isLocalEdition;
-        await this.synth!.soundBankManager.addSoundBank(sf, "main");
+        await this.synth!.soundBankManager.addSoundBank(sf, SOUND_BANK_ID);
         if (isDLS) {
             setTimeout(() => {
                 this.getDLS();
@@ -246,7 +262,9 @@ export class Manager {
         // Create synth
         await context.resume();
         await WorkerSynthesizer.registerPlaybackWorklet(context);
-        const worker = new Worker(new URL("worker.ts", import.meta.url));
+        const worker = new Worker(new URL("worker.ts", import.meta.url), {
+            type: "module"
+        });
         this.synth = new WorkerSynthesizer(
             context,
             worker.postMessage.bind(worker)
@@ -258,7 +276,10 @@ export class Manager {
 
         this.synth.connect(this.audioDelay);
         await this.synth.isReady;
-        await this.synth.soundBankManager.addSoundBank(soundBank, "main");
+        await this.synth.soundBankManager.addSoundBank(
+            soundBank,
+            SOUND_BANK_ID
+        );
 
         // Create seq
         this.seq = new Sequencer(this.synth);

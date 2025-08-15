@@ -1,18 +1,7 @@
-import { libvorbis } from "./libvorbis/OggVorbisEncoder.min.js";
+import { encodeAudioBuffer } from "./sl-web-ogg/dist/index.min";
+import type { encodeAudioBuffer as abuf } from "sl-web-ogg";
 
-interface OggVorbisEncoder {
-    encode: (data: Float32Array[]) => unknown;
-    finish: () => Uint8Array<ArrayBuffer>[];
-}
-
-const vorbisEncoder = libvorbis as {
-    init: () => unknown;
-    OggVorbisEncoder?: (
-        sampleRate: number,
-        channels: number,
-        quality: number
-    ) => OggVorbisEncoder;
-};
+const encodeFunc = encodeAudioBuffer as typeof abuf;
 
 // noinspection JSUnusedGlobalSymbols
 export async function encodeVorbis(
@@ -20,22 +9,17 @@ export async function encodeVorbis(
     sampleRate: number,
     quality: number
 ): Promise<Uint8Array> {
-    // https://github.com/higuma/ogg-vorbis-encoder-js
-    if (!("OggVorbisEncoder" in vorbisEncoder)) {
-        vorbisEncoder.init();
-    }
-    const encoder = vorbisEncoder?.OggVorbisEncoder?.(sampleRate, 1, quality);
-    if (!encoder) {
+    const chunks = await encodeFunc([audioData], sampleRate, {
+        quality
+    });
+    if (!chunks) {
         throw new Error("Unexpected vorbis encoder error.");
     }
-    encoder.encode([audioData]);
-    const arrs = encoder.finish();
-    const outLen = arrs.reduce((l, c) => l + c.length, 0);
-    const out = new Uint8Array(outLen);
+    const arr = new Uint8Array(chunks.reduce((l, c) => l + c.length, 0));
     let offset = 0;
-    for (const a of arrs) {
-        out.set(a, offset);
-        offset += a.length;
-    }
-    return new Promise((r) => r(out));
+    chunks.forEach((c) => {
+        arr.set(c, offset);
+        offset += c.length;
+    });
+    return arr;
 }
