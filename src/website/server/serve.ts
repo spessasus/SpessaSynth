@@ -1,8 +1,8 @@
 import fs from "fs";
 import path from "path";
-import { configPath, packageJSON, soundfontsPath } from "./server.js";
+import { packageJSON, soundfontsPath } from "./server.js";
 import type { ServerResponse } from "node:http";
-import { type ConfigFile, DEFAULT_CONFIG_FILE } from "./saved_settings.ts";
+import type { LocalEditionConfig } from "./config_management.ts";
 
 export function serveSfont(path: string, res: ServerResponse) {
     const fileStream = fs.createReadStream(path);
@@ -40,29 +40,23 @@ function isSoundBank(name: string): boolean {
     );
 }
 
-export function serveSfontList(res: ServerResponse) {
+export async function serveSfontList(
+    res: ServerResponse,
+    config: LocalEditionConfig
+) {
     const fileNames = fs
         .readdirSync(soundfontsPath)
         .filter((fName) => isSoundBank(fName));
 
-    let configJson = fs.readFileSync(configPath, "utf-8").trim();
-    if (configJson.length < 1) {
-        configJson = "{}";
-    }
-    let config = DEFAULT_CONFIG_FILE;
-    try {
-        config = JSON.parse(configJson) as ConfigFile;
-    } catch (e) {
-        console.error("error parsing config:", configJson, e);
-    }
-    if (config.lastUsedSf2) {
-        if (fileNames.includes(config.lastUsedSf2)) {
-            fileNames.splice(fileNames.indexOf(config.lastUsedSf2), 1);
-            fileNames.unshift(config.lastUsedSf2);
+    if (config.config.lastUsedSf2) {
+        if (fileNames.includes(config.config.lastUsedSf2)) {
+            fileNames.splice(fileNames.indexOf(config.config.lastUsedSf2), 1);
+            fileNames.unshift(config.config.lastUsedSf2);
         }
     } else {
-        config.lastUsedSf2 = fileNames[0];
+        config.config.lastUsedSf2 = fileNames[0];
     }
+    await config.flush();
 
     const files = fileNames.map((file) => {
         return { name: file };
@@ -72,19 +66,9 @@ export function serveSfontList(res: ServerResponse) {
     res.end(JSON.stringify(files));
 }
 
-export function serveSettings(res: ServerResponse) {
-    let configJson = fs.readFileSync(configPath, "utf-8").trim();
-    if (configJson.length < 1) {
-        configJson = "{}";
-    }
-    let config = DEFAULT_CONFIG_FILE;
-    try {
-        config = JSON.parse(configJson) as ConfigFile;
-    } catch (e) {
-        console.error("error parsing config:", configJson, e);
-    }
+export function serveSettings(res: ServerResponse, config: LocalEditionConfig) {
     res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify(config.settings || {}));
+    res.end(JSON.stringify(config.config.settings));
 }
 
 export function serveStaticFile(

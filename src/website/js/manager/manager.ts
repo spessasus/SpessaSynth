@@ -389,33 +389,27 @@ export class Manager {
         };
 
         // Set up drop file handler
-        new DropFileHandler(
-            async (data) => {
-                if (data.length === 0) {
-                    return;
-                }
-                await this.context.resume();
-                this.play(data);
-                let firstName = data[0].fileName;
-                if (firstName.length > 20) {
-                    firstName = firstName.substring(0, 21) + "...";
-                }
-                // Set file name
-                document.getElementById("file_upload")!.textContent = firstName;
-                // Show export button
-                const exportButton = document.getElementById("export_button")!;
-                exportButton.style.display = "flex";
-                exportButton.onclick = this.exportSong.bind(this);
-                // If demo website, hide demo songs button
-                if (this.isLocalEdition) {
-                    document.getElementById("demo_song")!.style.display =
-                        "none";
-                }
-            },
-            (buf) => {
-                void this.reloadSf(buf);
+        new DropFileHandler(async (data) => {
+            if (data.length === 0) {
+                return;
             }
-        );
+            await this.context.resume();
+            this.play(data);
+            let firstName = data[0].fileName;
+            if (firstName.length > 20) {
+                firstName = firstName.substring(0, 21) + "...";
+            }
+            // Set file name
+            document.getElementById("file_upload")!.textContent = firstName;
+            // Show export button
+            const exportButton = document.getElementById("export_button")!;
+            exportButton.style.display = "flex";
+            exportButton.onclick = this.exportSong.bind(this);
+            // If demo website, hide demo songs button
+            if (this.isLocalEdition) {
+                document.getElementById("demo_song")!.style.display = "none";
+            }
+        }, this.reloadSf.bind(this));
 
         // Add key presses
         document.addEventListener("keydown", (e) => {

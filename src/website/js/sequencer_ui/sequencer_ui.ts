@@ -971,12 +971,19 @@ export class SequencerUI {
     }
 
     protected enableIcon(icon: HTMLElement) {
-        icon.firstElementChild?.setAttribute("fill", this.iconColor);
-        icon.firstElementChild?.setAttribute("stroke", this.iconDisabledColor);
+        icon.firstElementChild!.setAttribute("fill", this.iconColor);
+        if (icon.firstElementChild!.getAttribute("stroke")) {
+            icon.firstElementChild!.setAttribute("stroke", this.iconColor);
+        }
     }
 
     protected disableIcon(icon: HTMLElement) {
         icon.firstElementChild?.setAttribute("fill", this.iconDisabledColor);
-        icon.firstElementChild?.setAttribute("stroke", this.iconDisabledColor);
+        if (icon.firstElementChild!.getAttribute("stroke")) {
+            icon.firstElementChild!.setAttribute(
+                "stroke",
+                this.iconDisabledColor
+            );
+        }
     }
 }

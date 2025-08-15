@@ -58,13 +58,6 @@ export async function buildSpessaSynth() {
         path.resolve(LOCAL_DIR, "favicon.ico")
     );
 
-    // Server
-    // Await fs.cp(
-    //     Path.resolve(WEBSITE_DIR, "server"),
-    //     Path.resolve(REPO_ROOT, "server"),
-    //     { recursive: true }
-    // );
-
     // Package and soundfont
     await fs.cp(
         path.resolve(REPO_ROOT, "package.json"),
@@ -117,7 +110,8 @@ export async function buildSpessaSynth() {
         entryPoints: [serverInput],
         ...regularOptions,
         platform: "node",
-        outdir: SERVER_DIR
+        outdir: SERVER_DIR,
+        sourcemap: "linked"
     });
 
     print("Building styles for both...");
@@ -173,7 +167,7 @@ export async function buildSpessaSynth() {
     if (serverFolder === null) {
         throw new Error("Error creating the zip file.");
     }
-    await copyFolder(SERVER_DIR, serverFolder);
+    await copyFileToZip(path.resolve(SERVER_DIR, "server.js"), serverFolder);
 
     // Copy files to the root folder
     await copyFileToZip(path.resolve(REPO_ROOT, "package.json"), zip);

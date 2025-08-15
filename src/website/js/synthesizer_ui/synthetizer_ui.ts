@@ -11,13 +11,14 @@ import {
     ALL_CHANNELS_OR_DIFFERENT_ACTION,
     DEFAULT_MASTER_PARAMETERS,
     DEFAULT_PERCUSSION,
+    defaultMIDIControllerValues,
     type InterpolationType,
     interpolationTypes,
     type MIDIController,
     midiControllers,
     modulatorSources,
     NON_CC_INDEX_OFFSET,
-    type PresetListChangeCallback,
+    type PresetList,
     type SynthSystem
 } from "spessasynth_core";
 import type { Sequencer, WorkerSynthesizer } from "spessasynth_lib";
@@ -762,7 +763,7 @@ export class SynthetizerUI {
         }
     }
 
-    protected updatePresetList(presetList: PresetListChangeCallback) {
+    protected updatePresetList(presetList: PresetList) {
         this.presetList = presetList;
         this.instrumentList = presetList
             .filter((p) => !isXGDrums(p.bank) && p.bank !== 128)
@@ -882,10 +883,7 @@ export class SynthetizerUI {
                     );
                 }
                 val = Math.round(val) + 8192;
-                // Get bend values
-                const msb = val >> 7;
-                const lsb = val & 0x7f;
-                this.synth.pitchWheel(channelNumber, msb, lsb);
+                this.synth.pitchWheel(channelNumber, val);
                 if (meterLocked) {
                     this.synth.lockController(
                         channelNumber,
@@ -931,7 +929,6 @@ export class SynthetizerUI {
         const createCCMeterHelper = (
             ccNum: MIDIController,
             localePath: string,
-            defaultValue: number,
             allowLocking = true
         ): Meter => {
             const meter = new Meter(
@@ -941,7 +938,7 @@ export class SynthetizerUI {
                 [channelNumber + 1],
                 0,
                 127,
-                defaultValue,
+                defaultMIDIControllerValues[ccNum] >> 7,
                 true,
                 (val) => {
                     changeCCUserFunction(ccNum, Math.round(val), meter);
@@ -962,80 +959,70 @@ export class SynthetizerUI {
         // Pan controller
         const pan = createCCMeterHelper(
             midiControllers.pan,
-            "channelController.panMeter",
-            64
+            "channelController.panMeter"
         );
         controller.appendChild(pan.div);
 
         // Expression controller
         const expression = createCCMeterHelper(
             midiControllers.expressionController,
-            "channelController.expressionMeter",
-            127
+            "channelController.expressionMeter"
         );
         controller.appendChild(expression.div);
 
         // Volume controller
         const volume = createCCMeterHelper(
             midiControllers.mainVolume,
-            "channelController.volumeMeter",
-            100
+            "channelController.volumeMeter"
         );
         controller.appendChild(volume.div);
 
         // Modulation wheel
         const modulation = createCCMeterHelper(
             midiControllers.modulationWheel,
-            "channelController.modulationWheelMeter",
-            0
+            "channelController.modulationWheelMeter"
         );
         controller.appendChild(modulation.div);
 
         // Chorus
         const chorus = createCCMeterHelper(
             midiControllers.chorusDepth,
-            "channelController.chorusMeter",
-            0
+            "channelController.chorusMeter"
         );
         controller.appendChild(chorus.div);
 
         // Reverb
         const reverb = createCCMeterHelper(
             midiControllers.reverbDepth,
-            "channelController.reverbMeter",
-            0
+            "channelController.reverbMeter"
         );
         controller.appendChild(reverb.div);
 
         // Filter cutoff
         const filterCutoff = createCCMeterHelper(
             midiControllers.brightness,
-            "channelController.filterMeter",
-            64
+            "channelController.filterMeter"
         );
         controller.appendChild(filterCutoff.div);
 
         // Attack time
         const attackTime = createCCMeterHelper(
             midiControllers.attackTime,
-            "channelController.attackMeter",
-            64
+            "channelController.attackMeter"
         );
         controller.appendChild(attackTime.div);
 
         // Release time
         const releaseTime = createCCMeterHelper(
             midiControllers.releaseTime,
-            "channelController.releaseMeter",
-            64
+            "channelController.releaseMeter"
         );
         controller.appendChild(releaseTime.div);
 
         // Portamento time
         const portamentoTime = createCCMeterHelper(
             midiControllers.portamentoTime,
-            "channelController.portamentoTimeMeter",
-            0
+            "channelController.portamentoTimeMeter"
         );
         controller.appendChild(portamentoTime.div);
 
@@ -1043,7 +1030,6 @@ export class SynthetizerUI {
         const portamentoControl = createCCMeterHelper(
             midiControllers.portamentoControl,
             "channelController.portamentoControlMeter",
-            60,
             false // Don't allow locking portamento control
         );
         controller.appendChild(portamentoControl.div);
@@ -1051,8 +1037,7 @@ export class SynthetizerUI {
         // Resonance
         const filterResonance = createCCMeterHelper(
             midiControllers.filterResonance,
-            "channelController.resonanceMeter",
-            64
+            "channelController.resonanceMeter"
         );
         controller.appendChild(filterResonance.div);
 

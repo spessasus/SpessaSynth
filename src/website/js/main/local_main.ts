@@ -44,10 +44,10 @@ let synthReady = false;
 const r = await (await fetch("/getversion")).text();
 window.SPESSASYNTH_VERSION = r;
 
-let sfParser: ArrayBuffer | undefined = undefined;
+let soundBankBufferCurrent: ArrayBuffer | undefined = undefined;
 const context = new AudioContext({ sampleRate: SAMPLE_RATE });
 
-let titleString = "";
+let titleString = "TITLE STRING";
 
 async function fetchFont(
     fileName: string,
@@ -126,11 +126,16 @@ async function startMidi(midiFiles: FileList) {
 }
 
 const createManager = async () => {
-    if (!sfParser) {
+    if (!soundBankBufferCurrent) {
         return;
     }
     // Prepare midi interface
-    window.manager = new Manager(context, sfParser, localeManager, true);
+    window.manager = new Manager(
+        context,
+        soundBankBufferCurrent,
+        localeManager,
+        true
+    );
     titleString = window.manager.localeManager.getLocaleString(
         "locale.titleMessage"
     );
@@ -155,7 +160,7 @@ async function replaceFont(fontName: string) {
     );
 
     titleMessage.innerText = "Parsing soundfont...";
-    sfParser = data;
+    soundBankBufferCurrent = data;
     progressBar.style.width = "0";
     // Prompt the user to click if needed
     if (context.state === "suspended") {
@@ -163,11 +168,13 @@ async function replaceFont(fontName: string) {
         return;
     }
 
-    if (!sfParser) {
+    if (!soundBankBufferCurrent) {
         return;
     }
     if (!window.manager) {
         await createManager();
+    } else {
+        await window.manager.reloadSf(soundBankBufferCurrent);
     }
     titleMessage.innerText = window.manager!.localeManager.getLocaleString(
         "locale.titleMessage"
@@ -216,14 +223,19 @@ void fetch("soundfonts").then(async (r) => {
         await fetch(
             `/setlastsf2?sfname=${encodeURIComponent(sfSelector.value)}`
         );
-        if (window.manager?.seq) {
+        if (window.manager?.seq?.midiData) {
             window.manager.seq.pause();
         }
         await replaceFont(sfSelector.value);
-
-        if (window.manager?.seq) {
+        if (window.manager?.seqUI?.currentSongTitle) {
             titleMessage.innerText =
-                window.manager.seqUI?.currentSongTitle ?? titleString;
+                window.manager.seqUI?.currentSongTitle || titleString;
+        } else {
+            titleMessage.innerText = titleString;
+        }
+
+        if (window?.manager?.seq?.midiData) {
+            window?.manager?.seqUI?.seqPlay?.();
         }
     };
 
