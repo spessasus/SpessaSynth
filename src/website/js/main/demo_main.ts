@@ -144,17 +144,16 @@ async function saveSoundFontToIndexedDB(arr: ArrayBuffer) {
     });
 }
 
-const context = new AudioContext({
-    sampleRate: SAMPLE_RATE
-});
+let context: AudioContext;
 
 // Attempt to load soundfont from indexed db
 async function demoInit(initLocale: LocaleCode) {
     // Initialize the locale management system. do it here because we want it ready before all js classes do their things
     const localeManager = new LocaleManager(initLocale);
     try {
-        // noinspection JSUnresolvedReference
-        await context.resume();
+        context = new AudioContext({
+            sampleRate: SAMPLE_RATE
+        });
     } catch (e) {
         changeIcon(getExclamationSvg(256));
         loadingMessage.textContent = localeManager.getLocaleString(
@@ -395,8 +394,9 @@ async function playDemoSong(fileName: string) {
 }
 
 void demoInit(initLocale).then(() => {
+    console.info("Demo init finished");
     sfUpload.style.display = "flex";
-    fileInput.style.display = "flex";
+    fileUpload.style.display = "flex";
     loading.classList.add("done");
     document.documentElement.classList.add("no_scroll");
     document.body.classList.add("no_scroll");
