@@ -131,7 +131,7 @@ export async function buildSpessaSynth() {
 
     printStep("🗂️  4) Prepare The Local‑Edition Distribution ZIP");
 
-    const ZIP_FOLDER_NAME = `local-edition-compiled-${new Date().toISOString().split("T")[0]}`;
+    const ZIP_FOLDER_NAME = `spessasynth-local-edition-${new Date().toISOString().split("T")[0]}`;
     const mainZip = new JSZip();
     const zip = mainZip.folder(ZIP_FOLDER_NAME);
     if (zip === null) {
