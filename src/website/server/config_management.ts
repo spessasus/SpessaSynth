@@ -13,8 +13,16 @@ export class LocalEditionConfig {
     }
 
     public static async initialize(): Promise<LocalEditionConfig> {
+        let configJSON: string;
         try {
-            const configJSON = await fs.readFile(configPath, "utf-8");
+            configJSON = await fs.readFile(configPath, "utf-8");
+        } catch {
+            console.info("Unable to read the config file, creating a new one");
+            const c = new LocalEditionConfig(DEFAULT_CONFIG_FILE);
+            await c.flush();
+            return c;
+        }
+        try {
             const conf = JSON.parse(configJSON) as Partial<ConfigFile>;
             return new LocalEditionConfig(
                 fillWithDefaults(conf, DEFAULT_CONFIG_FILE)
