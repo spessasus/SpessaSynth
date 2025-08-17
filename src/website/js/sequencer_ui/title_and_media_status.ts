@@ -13,12 +13,9 @@ export function updateTitleAndMediaStatus(
             "locale.synthInit.genericLoading"
         );
     } else {
-        const name = this.seq.midiData.getName(this.encoding) ?? "Song";
-        if (name === this.seq.midiData.fileName) {
-            this.currentSongTitle = formatTitle(name);
-        } else {
-            this.currentSongTitle = name;
-        }
+        this.currentSongTitle = formatTitle(
+            this.seq.midiData.getName(this.encoding) ?? "Unnamed Song.mid"
+        );
     }
     this.loadLyricData();
     this.setLyricsText(this.lyricsIndex);

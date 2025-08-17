@@ -18,6 +18,7 @@ export function formatTime(totalSeconds: number): {
 }
 
 export function formatTitle(fileName: string): string {
+    console.log("FOMAT TITLE", fileName);
     const extensions = [
         ".midi",
         ".smf",
@@ -30,8 +31,9 @@ export function formatTitle(fileName: string): string {
 
     // Loop through extensions and remove them, case-insensitive
     extensions.forEach((ext) => {
-        const regex = new RegExp(`${ext}$`, "i");
-        fileName = fileName.replace(regex, "");
+        if (fileName.toLowerCase().endsWith(ext)) {
+            fileName = fileName.substring(0, fileName.length - ext.length);
+        }
     });
 
     // Replace underscores with spaces
