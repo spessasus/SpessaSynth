@@ -33,7 +33,7 @@ import {
 } from "spessasynth_core";
 import { prepareExtraBankUpload } from "./extra_bank_handling.js";
 
-import { SOUND_BANK_ID } from "./bank_id.ts";
+import { EXTRA_BANK_ID, SOUND_BANK_ID } from "./bank_id.ts";
 
 // This enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
 document.body.classList.add("load");
@@ -114,6 +114,13 @@ export class Manager {
                 resolve();
             });
         });
+    }
+
+    protected get soundBankID() {
+        if (this.extraBankName.length > 0) {
+            return EXTRA_BANK_ID;
+        }
+        return SOUND_BANK_ID;
     }
 
     protected get isLocalEdition() {

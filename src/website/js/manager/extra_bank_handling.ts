@@ -2,7 +2,7 @@ import {
     closeNotification,
     showNotification
 } from "../notification/notification.js";
-import { EMBEDDED_BANK_ID } from "./bank_id.js";
+import { EXTRA_BANK_ID } from "./bank_id.js";
 import type { Manager } from "./manager.ts";
 
 export function prepareExtraBankUpload(this: Manager) {
@@ -58,11 +58,11 @@ export function prepareExtraBankUpload(this: Manager) {
                         // Add bank and rearrange
                         await this.synth?.soundBankManager.addSoundBank(
                             b,
-                            EMBEDDED_BANK_ID,
+                            EXTRA_BANK_ID,
                             bank
                         );
                         this.synth.soundBankManager.priorityOrder = [
-                            EMBEDDED_BANK_ID,
+                            EXTRA_BANK_ID,
                             "main"
                         ];
                         this.extraBankName = extraBankName;
@@ -78,7 +78,7 @@ export function prepareExtraBankUpload(this: Manager) {
                     translatePathTitle: "locale.extraBank.clear",
                     onClick: async (n) => {
                         await this.synth!.soundBankManager.deleteSoundBank(
-                            EMBEDDED_BANK_ID
+                            EXTRA_BANK_ID
                         );
                         this.extraBankName = "";
                         this.extraBankOffset = 0;
