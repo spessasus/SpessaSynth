@@ -1,8 +1,5 @@
 import { consoleColors } from "../../utils/console_colors.js";
-import {
-    closeNotification,
-    showNotification
-} from "../../notification/notification.js";
+import { closeNotification, showNotification } from "../../notification/notification.js";
 import { ANIMATION_REFLOW_TIME } from "../../utils/animation_utils.js";
 import type { Manager } from "../manager.ts";
 
@@ -210,6 +207,16 @@ export function _exportRMIDI(this: Manager) {
                             localePath + "modifyingSoundfont"
                         );
 
+                    let copy = mid.getRMIDInfo("copyright");
+
+                    if (!copy) {
+                        const enc = this.seqUI!.encoding;
+                        const dec = new TextDecoder(enc);
+                        copy = mid.extraMetadata
+                            .map((m) => dec.decode(m.data))
+                            .join("\n");
+                    }
+
                     // Export
                     const exported = await this.synth.writeRMIDI({
                         bankID: this.soundBankID,
@@ -223,7 +230,7 @@ export function _exportRMIDI(this: Manager) {
                             midiEncoding: this.seqUI!.encoding,
                             comment,
                             genre,
-                            copyright: mid.getRMIDInfo("copyright")
+                            copyright: copy
                         },
                         bankOffset,
                         correctBankOffset: adjust,
