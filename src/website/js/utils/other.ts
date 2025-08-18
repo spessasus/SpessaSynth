@@ -18,7 +18,6 @@ export function formatTime(totalSeconds: number): {
 }
 
 export function formatTitle(fileName: string): string {
-    console.log("FOMAT TITLE", fileName);
     const extensions = [
         ".midi",
         ".smf",

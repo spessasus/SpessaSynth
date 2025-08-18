@@ -22,7 +22,6 @@ import {
     type MIDIMessage,
     type MIDIMessageType,
     midiMessageTypes,
-    rmidInfoChunks,
     SpessaSynthCoreUtils,
     synthDisplayTypes
 } from "spessasynth_core";
@@ -674,9 +673,7 @@ export class SequencerUI {
                 }
                 this.restoreDisplay();
 
-                let midiEncoding = data.getRMIDInfo(
-                    rmidInfoChunks.midiEncoding
-                );
+                let midiEncoding = data.getRMIDInfo("midiEncoding");
                 if (typeof data.embeddedSoundBankSize !== "undefined") {
                     // RMID defaults to utf-8
                     midiEncoding = "utf-8";

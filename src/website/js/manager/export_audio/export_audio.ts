@@ -8,7 +8,7 @@ import { formatTime } from "../../utils/other.js";
 import { consoleColors } from "../../utils/console_colors.js";
 
 import { ANIMATION_REFLOW_TIME } from "../../utils/animation_utils.js";
-import { rmidInfoChunks, type WaveMetadata } from "spessasynth_core";
+import { type WaveMetadata } from "spessasynth_core";
 import JSZip from "jszip";
 import type { Manager } from "../manager.ts";
 
@@ -267,9 +267,9 @@ export function _exportAudioData(this: Manager) {
     const wavPath = `locale.exportAudio.formats.formats.wav.options.`;
     const metadataPath = "locale.exportAudio.formats.metadata.";
     const mid = this.seq!.midiData!;
-    const startAlbum = mid.getRMIDInfo(rmidInfoChunks.album) ?? "";
-    const startArtist = mid.getRMIDInfo(rmidInfoChunks.artist) ?? "";
-    const startGenre = mid.getRMIDInfo(rmidInfoChunks.genre) ?? "";
+    const startAlbum = mid.getRMIDInfo("album") ?? "";
+    const startArtist = mid.getRMIDInfo("artist") ?? "";
+    const startGenre = mid.getRMIDInfo("genre") ?? "";
     const WAV_OPTIONS: NotificationContent[] = [
         {
             type: "text",

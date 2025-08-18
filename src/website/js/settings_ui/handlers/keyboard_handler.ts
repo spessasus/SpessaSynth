@@ -185,7 +185,7 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
                 this.midiKeyboard.keyRange = mid.keyRange;
                 this.renderer.keyRange = mid.keyRange;
             }
-            if (mid.rmidiInfo?.IPIC !== undefined) {
+            if (mid.rmidiInfo?.picture !== undefined) {
                 // Switch to music mode if picture available
                 if (!this.musicMode.visible) {
                     this.toggleMusicPlayerMode();

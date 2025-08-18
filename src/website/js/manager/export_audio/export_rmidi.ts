@@ -12,16 +12,16 @@ export function _exportRMIDI(this: Manager) {
     }
     const mid = this.seq.midiData!;
 
-    const startAlbum = mid.getRMIDInfo("IPRD") ?? "";
-    const startArtist = mid.getRMIDInfo("IART") ?? "";
-    const startGenre = mid.getRMIDInfo("IGNR") ?? "";
+    const startAlbum = mid.getRMIDInfo("album") ?? "";
+    const startArtist = mid.getRMIDInfo("artist") ?? "";
+    const startGenre = mid.getRMIDInfo("genre") ?? "";
     const startComment =
-        mid.getRMIDInfo("ICMT") ??
+        mid.getRMIDInfo("comment") ??
         "Created using SpessaSynth: https://spessasus.github.io/SpessaSynth";
 
     let pictureFile: File | undefined = undefined;
-    if (mid.rmidiInfo.IPIC) {
-        pictureFile = new File([mid.rmidiInfo.IPIC], "cover.png");
+    if (mid.rmidiInfo.picture) {
+        pictureFile = new File([mid.rmidiInfo.picture], "cover.png");
     }
 
     const path = "locale.exportAudio.formats.formats.rmidi.options.";
@@ -223,7 +223,7 @@ export function _exportRMIDI(this: Manager) {
                             midiEncoding: this.seqUI!.encoding,
                             comment,
                             genre,
-                            copyright: mid.getRMIDInfo("ICOP")
+                            copyright: mid.getRMIDInfo("copyright")
                         },
                         bankOffset,
                         correctBankOffset: adjust,

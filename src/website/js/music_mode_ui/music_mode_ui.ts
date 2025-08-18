@@ -3,7 +3,6 @@ import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { musicModeInnerHTML } from "./music_mode_html.js";
 import type { LocaleManager } from "../locale/locale_manager.ts";
 import type { Sequencer } from "spessasynth_lib";
-import { rmidInfoChunks } from "spessasynth_core";
 
 /**
  * Music_mode_ui.js
@@ -108,14 +107,14 @@ export class MusicModeUI {
                     }
                 };
                 // Details
-                const copy = mid.getRMIDInfo("ICOP");
+                const copy = mid.getRMIDInfo("copyright");
                 if (copy) {
                     setInfoText("player_info_detail", copy);
                 } else {
                     setInfoText(
                         "player_info_detail",
                         mid
-                            .getExtraMetadata(mid.encoding ?? "Shift_JIS")
+                            .getExtraMetadata(mid.infoEncoding ?? "Shift_JIS")
                             .join("\n")
                     );
                 }
@@ -133,27 +132,31 @@ export class MusicModeUI {
                 // Artist, album, creation date, subject
                 setInfoText(
                     "player_info_album",
-                    mid.getRMIDInfo(rmidInfoChunks.album) ?? ""
+                    mid.getRMIDInfo("album") ?? ""
                 );
                 setInfoText(
                     "player_info_artist",
-                    mid.getRMIDInfo(rmidInfoChunks.artist) ?? ""
+                    mid.getRMIDInfo("artist") ?? ""
                 );
                 setInfoText(
                     "player_info_genre",
-                    mid.getRMIDInfo(rmidInfoChunks.genre) ?? ""
+                    mid.getRMIDInfo("genre") ?? ""
                 );
                 setInfoText(
                     "player_info_subject",
-                    mid.getRMIDInfo(rmidInfoChunks.subject) ?? ""
+                    mid.getRMIDInfo("subject") ?? ""
+                );
+                setInfoText(
+                    "player_info_software",
+                    mid.getRMIDInfo("software") ?? ""
                 );
                 setInfoText(
                     "player_info_creation",
-                    mid.getRMIDInfo(rmidInfoChunks.creationDate) ?? ""
+                    mid.getRMIDInfo("creationDate")?.toDateString() ?? ""
                 );
                 setInfoText(
                     "player_info_comment",
-                    mid.getRMIDInfo(rmidInfoChunks.comment) ?? ""
+                    mid.getRMIDInfo("comment") ?? ""
                 );
 
                 // Image
@@ -166,7 +169,7 @@ export class MusicModeUI {
                     throw new Error("Unexpected lack of background image.");
                 }
                 // Add album cover if available
-                if (mid.rmidiInfo.IPIC === undefined) {
+                if (mid.rmidiInfo.picture === undefined) {
                     svg.style.display = "";
                     img.style.display = "none";
                     bg.style.setProperty("--bg-image", "undefined");
@@ -174,7 +177,7 @@ export class MusicModeUI {
                 }
                 svg.style.display = "none";
                 img.style.display = "";
-                const pic = new Blob([mid.rmidiInfo.IPIC.buffer]);
+                const pic = new Blob([mid.rmidiInfo.picture.buffer]);
                 const url = URL.createObjectURL(pic);
                 img.src = url;
                 bg.style.setProperty("--bg-image", `url('${url}')`);

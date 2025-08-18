@@ -190,8 +190,8 @@ export class Renderer {
                 }
                 this.calculateNoteTimes(await this.seq.getMIDI());
                 this.resetIndexes();
-                if (mid.rmidiInfo?.IPIC !== undefined) {
-                    const blob = new Blob([mid.rmidiInfo.IPIC.buffer]);
+                if (mid.rmidiInfo?.picture !== undefined) {
+                    const blob = new Blob([mid.rmidiInfo.picture.buffer]);
                     const url = URL.createObjectURL(blob);
                     const opacity = this.canvas.classList.contains("light_mode")
                         ? 0
