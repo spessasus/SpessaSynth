@@ -684,6 +684,9 @@ export class SequencerUI {
                         `Changing encoding via MENC to ${midiEncoding}`
                     );
                 }
+
+                // Unload subtitles
+                this.subtitleManager.init();
             }
         );
 
