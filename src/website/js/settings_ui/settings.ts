@@ -418,7 +418,7 @@ export class SpessaSynthSettings {
     }
 
     public hideTopPart() {
-        if (this.topPartVisible) {
+        if (!this.topPartVisible) {
             return;
         }
         this.topPartVisible = false;

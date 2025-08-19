@@ -104,7 +104,7 @@ export class DialogueEvent {
         if (this.element !== undefined) {
             this.element.remove();
         }
-        this.element = undefined;
+        delete this.element;
     }
 
     public updateHighlights(currentVideoTime: number) {
@@ -343,6 +343,7 @@ export class DialogueEvent {
             this.element.style.textDecoration = "line-through";
         }
 
+        this.textChunks = [];
         for (const chunk of this.text) {
             if (!chunk.startsWith("{")) {
                 const span = document.createElement("span");

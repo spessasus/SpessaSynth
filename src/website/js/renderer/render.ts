@@ -109,7 +109,5 @@ export function render(this: Renderer, auto = true, force = false) {
         );
     }
 
-    if (this.onRender) {
-        this.onRender();
-    }
+    this.onRender?.();
 }
