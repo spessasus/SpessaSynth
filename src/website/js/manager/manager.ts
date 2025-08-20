@@ -283,6 +283,7 @@ export class Manager {
 
         this.synth.connect(this.audioDelay);
         await this.synth.isReady;
+        await this.synth.reverbProcessor?.isReady;
         await this.synth.soundBankManager.addSoundBank(
             soundBank,
             SOUND_BANK_ID
