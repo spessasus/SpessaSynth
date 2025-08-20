@@ -210,6 +210,12 @@ void fetch("soundfonts").then(async (r) => {
     )! as HTMLSelectElement;
 
     soundBanks = JSON.parse(await r.text()) as { name: string; size: number }[];
+
+    if (!(0 in soundBanks)) {
+        titleMessage.innerText = "No files in the 'soundfonts' folder!";
+        throw new Error("No sound banks exist in the folder");
+    }
+
     for (const sf of soundBanks) {
         const option = document.createElement("option");
         option.value = sf.name;

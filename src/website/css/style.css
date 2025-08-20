@@ -42,8 +42,8 @@
 
 /* fix for windows browsers */
 option, optgroup {
-    background: var(--top-buttons-color-start) !important;
-    color: var(--font-color) !important;
+    background: #000000 !important;
+    color: #cccccc !important;
     text-shadow: none !important;
 }
 
