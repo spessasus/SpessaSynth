@@ -100,7 +100,7 @@ export function serveStaticFile(
     try {
         file = fs.readFileSync(filePath);
     } catch {
-        console.log("Not found for", filePath);
+        console.warn("Not found for", filePath);
         res.writeHead(404);
         res.end(`
 <html lang='en'>

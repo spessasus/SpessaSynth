@@ -409,6 +409,11 @@ export class Manager {
                 channel.toString();
         };
 
+        // Transpose should also preview in pause mode #182
+        this.synthUI.onTranspose = () => {
+            this.renderer?.render(false, true);
+        };
+
         // Set up drop file handler
         new DropFileHandler(async (data) => {
             if (data.length === 0) {

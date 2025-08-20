@@ -1,7 +1,4 @@
-import {
-    hideControllers,
-    showControllers
-} from "./methods/hide_show_controllers.js";
+import { hideControllers, showControllers } from "./methods/hide_show_controllers.js";
 import { toggleDarkMode } from "./methods/toggle_dark_mode.js";
 import { setEventListeners } from "./methods/set_event_listeners.js";
 import { keybinds } from "../utils/keybinds.js";
@@ -25,14 +22,7 @@ import type { Sequencer, WorkerSynthesizer } from "spessasynth_lib";
 import type { LocaleManager } from "../locale/locale_manager.ts";
 import type { MidiKeyboard } from "../midi_keyboard/midi_keyboard.ts";
 import { Meter } from "./methods/synthui_meter.ts";
-import {
-    getDrumsSvg,
-    getEmptyMicSvg,
-    getMicSvg,
-    getMuteSvg,
-    getNoteSvg,
-    getVolumeSvg
-} from "../utils/icons.ts";
+import { getDrumsSvg, getEmptyMicSvg, getMicSvg, getMuteSvg, getNoteSvg, getVolumeSvg } from "../utils/icons.ts";
 import { showAdvancedConfiguration } from "./methods/advanced_configuration.ts";
 import { Selector } from "./methods/synthui_selector.ts";
 
@@ -79,6 +69,7 @@ export class SynthetizerUI {
     public readonly toggleDarkMode = toggleDarkMode.bind(this);
     public readonly channelColors: string[];
     public onProgramChange?: (channel: number) => unknown;
+    public onTranspose?: () => unknown;
     protected readonly synth: WorkerSynthesizer;
     protected readonly keyboard: MidiKeyboard;
     protected readonly locale: LocaleManager;
@@ -252,6 +243,7 @@ export class SynthetizerUI {
                         Math.round(v * 2) / 2
                     );
                     this.transposeController.update(Math.round(v * 2) / 2);
+                    this.onTranspose?.();
                 },
                 undefined,
                 undefined,
@@ -1055,6 +1047,7 @@ export class SynthetizerUI {
                 val = Math.round(val);
                 this.synth.transposeChannel(channelNumber, val, true);
                 transpose.update(val);
+                this.onTranspose?.();
             },
             undefined,
             undefined,
