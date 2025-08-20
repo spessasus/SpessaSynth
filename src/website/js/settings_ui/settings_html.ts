@@ -18,7 +18,7 @@ export const settingsHtml = `
             <option value='${rendererModes.filledWaveformsMode}' translate-path='locale.settings.rendererSettings.mode.filledWaveforms'></option>
             <option value='${rendererModes.spectrumSplitMode}' translate-path='locale.settings.rendererSettings.mode.spectrumSplit'></option>
             <option value='${rendererModes.spectrumSingleMode}' translate-path='locale.settings.rendererSettings.mode.spectrum'></option>
-            <option value='none' translate-path='locale.none'></option>
+            <option value='${rendererModes.none}' translate-path='locale.none'></option>
         </select>
         
         <label translate-path-title='locale.settings.rendererSettings.noteFallingTime'></label>
