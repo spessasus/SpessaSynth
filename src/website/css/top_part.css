@@ -114,11 +114,6 @@ input[type="file"] {
     transform: scale(var(--active-scale));
 }
 
-#sf_selector option {
-    background: #000;
-    text-align: center;
-}
-
 #sf_selector {
     display: block;
     border: none;

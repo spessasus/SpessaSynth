@@ -39,12 +39,6 @@
     padding: .5rem;
 }
 
-.settings_menu select option {
-    background: black;
-    color: white;
-    border: none;
-}
-
 .settings_menu select:hover {
     cursor: pointer;
     text-shadow: 0 0 5px white;

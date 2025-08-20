@@ -114,10 +114,6 @@
     background: transparent;
 }
 
-.lyrics_selector option {
-    background: black;
-}
-
 .lyrics_show {
     transform: scaleX(1) !important;
     visibility: visible !important;
