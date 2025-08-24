@@ -19,6 +19,7 @@ import {
     modulatorSources,
     NON_CC_INDEX_OFFSET,
     type PresetList,
+    type PresetListEntry,
     type SynthSystem
 } from "spessasynth_core";
 import type { Sequencer, WorkerSynthesizer } from "spessasynth_lib";
@@ -35,10 +36,6 @@ import {
 } from "../utils/icons.ts";
 import { showAdvancedConfiguration } from "./methods/advanced_configuration.ts";
 import { Selector } from "./methods/synthui_selector.ts";
-
-export function isXGDrums(bankNr: number) {
-    return bankNr === 120 || bankNr === 126 || bankNr === 127;
-}
 
 export const LOCALE_PATH = "locale.synthesizerController.";
 export type ControllerGroupType =
@@ -58,10 +55,6 @@ export interface ChannelController {
     soloButton: HTMLDivElement;
     muteButton: HTMLDivElement;
     isHidingLocked: boolean;
-}
-
-export function isValidXGMSB(bank: number) {
-    return isXGDrums(bank) || bank === 64 || bank === 120;
 }
 
 export function isSystemXG(system: SynthSystem) {
@@ -106,21 +99,9 @@ export class SynthetizerUI {
      * For closing the effect window when closing the synthui.
      */
     protected effectsConfigWindow?: number;
-    protected instrumentList: {
-        name: string;
-        program: number;
-        bank: number;
-    }[] = [];
-    protected percussionList: {
-        name: string;
-        program: number;
-        bank: number;
-    }[] = [];
-    protected presetList: {
-        name: string;
-        program: number;
-        bank: number;
-    }[] = [];
+    protected instrumentList: PresetList = [];
+    protected percussionList: PresetList = [];
+    protected presetList: PresetList = [];
     protected readonly hideControllers = hideControllers.bind(this);
     protected readonly showControllers = showControllers.bind(this);
     protected readonly setEventListeners = setEventListeners.bind(this);
@@ -768,16 +749,11 @@ export class SynthetizerUI {
     protected updatePresetList(presetList: PresetList) {
         this.presetList = presetList;
         this.instrumentList = presetList
-            .filter((p) => !isXGDrums(p.bank) && p.bank !== 128)
-            .sort((a, b) => {
-                if (a.program === b.program) {
-                    return a.bank - b.bank;
-                }
-                return a.program - b.program;
-            });
+            .filter((p) => !p.isAnyDrums)
+            .sort(this.presetSort.bind(this));
         this.percussionList = presetList
-            .filter((p) => isXGDrums(p.bank) || p.bank === 128)
-            .sort((a, b) => a.program - b.program);
+            .filter((p) => p.isAnyDrums)
+            .sort(this.presetSort.bind(this));
 
         if (this.percussionList.length === 0) {
             this.percussionList = this.instrumentList;
@@ -790,7 +766,7 @@ export class SynthetizerUI {
                 ? this.percussionList
                 : this.instrumentList;
             controller.preset.reload(list);
-            controller.preset.set(`${list[0].bank}:${list[0].program}`);
+            controller.preset.set(list[0]);
         });
     }
 
@@ -1077,9 +1053,7 @@ export class SynthetizerUI {
             this.locale,
             LOCALE_PATH + "channelController.presetSelector",
             [channelNumber + 1],
-            (presetName) => {
-                const data = presetName.split(":");
-                const bank = parseInt(data[0]);
+            (patch) => {
                 this.synth.lockController(
                     channelNumber,
                     ALL_CHANNELS_OR_DIFFERENT_ACTION,
@@ -1087,28 +1061,21 @@ export class SynthetizerUI {
                 );
                 if (
                     isSystemXG(this.synth.getMasterParameter("midiSystem")) &&
-                    !isValidXGMSB(bank)
+                    patch.isGMGSDrum
                 ) {
-                    // Msb 0
-                    this.synth.controllerChange(
-                        channelNumber,
-                        midiControllers.bankSelect,
-                        0
-                    );
-                    // Lsb actual
-                    this.synth.controllerChange(
-                        channelNumber,
-                        midiControllers.lsbForControl0BankSelect,
-                        bank
-                    );
-                } else {
-                    this.synth.controllerChange(
-                        channelNumber,
-                        midiControllers.bankSelect,
-                        bank
-                    );
+                    this.synth.setDrums(channelNumber, true);
                 }
-                this.synth.programChange(channelNumber, parseInt(data[1]));
+                this.synth.controllerChange(
+                    channelNumber,
+                    midiControllers.bankSelect,
+                    patch.bankMSB
+                );
+                this.synth.controllerChange(
+                    channelNumber,
+                    midiControllers.bankSelectLSB,
+                    patch.bankLSB
+                );
+                this.synth.programChange(channelNumber, patch.program);
                 if (this.onProgramChange) {
                     this.onProgramChange(channelNumber);
                 }
@@ -1294,5 +1261,28 @@ export class SynthetizerUI {
                 c.isHidingLocked = force;
             }
         }
+    }
+
+    private presetSort(a: PresetListEntry, b: PresetListEntry): number {
+        // Force drum presets to be last
+        if (a.isGMGSDrum && !b.isGMGSDrum) {
+            return 1;
+        }
+        if (!a.isGMGSDrum && b.isGMGSDrum) {
+            return -1;
+        }
+
+        // First, sort by program
+        if (a.program !== b.program) {
+            return a.program - b.program;
+        }
+
+        // Next, sort by bankMSB
+        if (a.bankMSB !== b.bankMSB) {
+            return a.bankMSB - b.bankMSB;
+        }
+
+        // Finally, sort by bankLSB
+        return a.bankLSB - b.bankLSB;
     }
 }

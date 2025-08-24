@@ -5,6 +5,7 @@ import {
 import type { LocaleManager } from "../../locale/locale_manager.ts";
 import type { MidiKeyboard } from "../../midi_keyboard/midi_keyboard.ts";
 import type { WorkerSynthesizer } from "spessasynth_lib";
+import { type MIDIPatchNamed, MIDIPatchTools } from "spessasynth_core";
 
 const LOCALE_PATH = "locale.synthesizerController.keyModifiers.";
 
@@ -40,7 +41,7 @@ async function doModifyKey(
     synth: WorkerSynthesizer,
     locale: LocaleManager,
     keyboard: MidiKeyboard,
-    presetList: { name: string; program: number; bank: number }[]
+    presetList: MIDIPatchNamed[]
 ) {
     const key = await getKey(locale, keyboard);
     const getInput = (name: string, min: number, max: number, val: number) => {
@@ -133,8 +134,10 @@ async function doModifyKey(
                         "select[preset-selector]"
                     )!;
                     const presetName = (selector as HTMLSelectElement).value;
-                    let bank = -1;
+                    let bankMSB = -1;
+                    let bankLSB = -1;
                     let program = -1;
+                    let isGMGSDrum = false;
                     if (presetName !== "unchanged") {
                         const preset = presetList.find(
                             (p) => p.name === presetName
@@ -142,14 +145,18 @@ async function doModifyKey(
                         if (!preset) {
                             throw new Error("Unexpected lack of preset!");
                         }
-                        bank = preset.bank;
+                        bankMSB = preset.bankMSB;
+                        bankLSB = preset.bankLSB;
                         program = preset.program;
+                        isGMGSDrum = preset.isGMGSDrum;
                     }
                     synth.keyModifierManager.addModifier(channel, key, {
                         velocity: velocity,
                         patch: {
-                            program: program,
-                            bank: bank
+                            program,
+                            bankLSB,
+                            bankMSB,
+                            isGMGSDrum
                         },
                         gain: gain
                     });
@@ -161,13 +168,17 @@ async function doModifyKey(
         true,
         locale
     );
-    const prog = mod?.patch?.program ?? -1;
-    const bank = mod?.patch?.bank ?? -1;
-    if (bank !== -1 && prog !== -1) {
+    const patch = mod?.patch ?? {
+        bankMSB: -1,
+        bankLSB: -1,
+        isGMGSDrum: false,
+        program: -1
+    };
+    if (patch.bankMSB !== -1 && patch.bankLSB !== -1) {
         const selector = n.div.querySelector("select[preset-selector]")!;
         (selector as HTMLSelectElement).value =
-            presetList.find((p) => p.bank === bank && p.program === prog)
-                ?.name ?? "-";
+            presetList.find((p) => MIDIPatchTools.matches(p, patch))?.name ??
+            "-";
     }
 }
 
@@ -228,7 +239,7 @@ export function startKeyModifiersMenu(
     synth: WorkerSynthesizer,
     locale: LocaleManager,
     keyboard: MidiKeyboard,
-    presetList: { name: string; program: number; bank: number }[]
+    presetList: MIDIPatchNamed[]
 ) {
     showNotification(
         locale.getLocaleString(LOCALE_PATH + "mainTitle"),

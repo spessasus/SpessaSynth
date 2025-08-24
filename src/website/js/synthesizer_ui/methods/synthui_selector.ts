@@ -3,24 +3,23 @@ import { getLockSVG, getUnlockSVG } from "../../utils/icons.js";
 import { ICON_SIZE, LOCALE_PATH } from "../synthetizer_ui.js";
 import { isMobile } from "../../utils/is_mobile.js";
 import type { LocaleManager } from "../../locale/locale_manager.ts";
+import { type MIDIPatch, MIDIPatchTools, type PresetListEntry } from "spessasynth_core";
 
 /**
  * Syntui_selector.js
  * purpose: manages a single selector element for selecting the presets
  */
 
-interface PresetListElement {
-    name: string;
-    program: number;
-    bank: number;
+interface PresetListElement extends PresetListEntry {
     stringified: string;
 }
 
 export class Selector {
     public readonly mainButton: HTMLButtonElement;
     // Shown on the  selector
-    public value: string;
+    public value: PresetListElement;
     private elements: PresetListElement[];
+    private elementsToTable?: Map<HTMLTableRowElement, PresetListElement>;
     private readonly locale;
     private readonly localePath;
     private readonly localeArgs;
@@ -42,28 +41,20 @@ export class Selector {
      * @param lockCallback
      */
     public constructor(
-        elements: { name: string; program: number; bank: number }[],
+        elements: PresetListEntry[],
         locale: LocaleManager,
         descriptionPath: string,
         descriptionArgs: (string | number)[],
-        editCallback?: (arg0: string) => unknown,
+        editCallback?: (arg0: MIDIPatch) => unknown,
         lockCallback?: (arg0: boolean) => unknown
     ) {
         this.elements = elements.map((e) => {
             return {
-                name: e.name,
-                program: e.program,
-                bank: e.bank,
-                stringified: `${e.bank.toString().padStart(3, "0")}:${e.program
-                    .toString()
-                    .padStart(3, "0")} ${e.name}`
+                ...e,
+                stringified: MIDIPatchTools.toNamedMIDIString(e)
             };
         });
-        if (this.elements.length > 0) {
-            this.value = `${this.elements[0].bank}:${this.elements[0].program}`;
-        } else {
-            this.value = "";
-        }
+        this.value = this.elements[0];
 
         this.mainButton = document.createElement("button");
         this.mainButton.classList.add("voice_selector");
@@ -203,9 +194,12 @@ export class Selector {
             switch (e.key) {
                 // When enter pressed, select the selected preset
                 case "Enter":
-                    const bank = selectedProgram.getAttribute("bank");
-                    const program = selectedProgram.getAttribute("program");
-                    const newVal = `${bank}:${program}`;
+                    const newVal = this.elementsToTable?.get(
+                        selectedProgram as HTMLTableRowElement
+                    );
+                    if (!newVal) {
+                        return;
+                    }
                     if (this.value === newVal) {
                         this.hideSelectionMenu();
                         return;
@@ -283,38 +277,27 @@ export class Selector {
         this.mainButton.classList.toggle("voice_selector_light");
     }
 
-    public reload(
-        elements: Omit<PresetListElement, "stringified">[] = this.elements
-    ) {
+    public reload(elements: PresetListEntry[] = this.elements) {
         this.elements = elements.map((e) => {
             return {
-                name: e.name,
-                program: e.program,
-                bank: e.bank,
-                stringified: `${e.bank.toString().padStart(3, "0")}:${e.program
-                    .toString()
-                    .padStart(3, "0")} ${e.name}`
+                ...e,
+                stringified: MIDIPatchTools.toNamedMIDIString(e)
             };
         });
         if (this.elements.length > 0) {
             const firstEl = this.elements[0];
-            const bank = firstEl.bank;
-            const currentProgram = parseInt(this.value.split(":")[1]);
-            let program = currentProgram;
-            if (
-                this.elements.find((e) => e.program === currentProgram) ===
-                undefined
-            ) {
-                program = firstEl.program;
-            }
-            this.mainButton.textContent = this.getString(`${bank}:${program}`);
+            this.mainButton.textContent = this.getString(firstEl);
         }
     }
 
-    public set(value: string) {
-        this.value = value;
+    public set(p: MIDIPatch) {
+        const patch = this.elements.find((e) => MIDIPatchTools.matches(e, p));
+        if (!patch) {
+            return;
+        }
+        this.value = patch;
         this.reload();
-        this.mainButton.textContent = this.getString(this.value);
+        this.mainButton.textContent = this.getString(patch);
 
         if (this.isWindowShown && this.selectionMenu) {
             // Remove the old selected class
@@ -328,15 +311,15 @@ export class Selector {
                 "voice_selector_table"
             )[0] as HTMLTableElement;
             // Find the newly selected class
-            const selectedBank = parseInt(this.value.split(":")[0]);
-            const selectedProgram = parseInt(this.value.split(":")[1]);
             for (const row of table.rows) {
                 if (row.cells.length === 1) {
                     continue;
                 }
-                const bank = parseInt(row.cells[0].textContent);
-                const program = parseInt(row.cells[1].textContent);
-                if (bank === selectedBank && program === selectedProgram) {
+                const patch = this.elementsToTable?.get(row);
+                if (!patch) {
+                    continue;
+                }
+                if (patch === this.value) {
                     row.classList.add("voice_selector_selected");
                     row.scrollIntoView({
                         behavior: "smooth",
@@ -348,27 +331,22 @@ export class Selector {
         }
     }
 
-    public getString(inputString: string) {
-        const split = inputString.split(":");
-        const bank = parseInt(split[0]);
-        const program = parseInt(split[1]);
-        let name = this.elements.find(
-            (e) => e.bank === bank && e.program === program
-        );
-        if (!name) {
+    public getString(patch: PresetListElement) {
+        if (!patch) {
             if (this.elements.length < 1) {
                 return "-";
             }
-            name = this.elements[0];
+            patch = this.elements[0];
         }
         if (
-            bank === 128 ||
-            this.elements.filter((e) => e.program === program && e.bank !== 128)
-                .length < 2
+            patch.isAnyDrums ||
+            this.elements.filter(
+                (e) => e.program === patch.program && !e.isAnyDrums
+            ).length < 2
         ) {
-            return `${program}. ${name.name}`;
+            return `${patch.program}. ${patch.name}`;
         }
-        return `${bank}:${program} ${name.name}`;
+        return MIDIPatchTools.toNamedMIDIString(patch);
     }
 
     /**
@@ -376,25 +354,24 @@ export class Selector {
      * @param wrapper the wrapper
      * @param elements
      */
-    private generateTable(
-        wrapper: HTMLElement,
-        elements: { name: string; program: number; bank: number }[]
-    ) {
+    private generateTable(wrapper: HTMLElement, elements: PresetListElement[]) {
+        this.elementsToTable = new Map<
+            HTMLTableRowElement,
+            PresetListElement
+        >();
         const table = document.createElement("table");
         table.classList.add("voice_selector_table");
 
-        const selectedBank = parseInt(this.value.split(":")[0]);
-        const selectedProgram = parseInt(this.value.split(":")[1]);
+        const selectedPatch = this.value;
 
         let lastProgram = -20;
         for (const preset of elements) {
             const row = document.createElement("tr");
             const program = preset.program;
             row.classList.add("voice_selector_option");
-            row.setAttribute("program", program.toString());
-            row.setAttribute("bank", preset.bank.toString());
+            this.elementsToTable.set(row, preset);
 
-            if (program === selectedProgram && preset.bank === selectedBank) {
+            if (MIDIPatchTools.matches(selectedPatch, preset)) {
                 row.classList.add("voice_selector_selected");
                 setTimeout(() => {
                     row.scrollIntoView({
@@ -406,7 +383,7 @@ export class Selector {
             }
 
             row.onclick = () => {
-                const newVal = `${preset.bank}:${program}`;
+                const newVal = preset;
                 if (this.value === newVal) {
                     this.hideSelectionMenu();
                     return;
@@ -423,17 +400,22 @@ export class Selector {
             if (program !== lastProgram) {
                 lastProgram = program;
                 // Create the header (not for drums
-                if (preset.bank !== 128) {
+                if (!preset.isAnyDrums) {
                     const headerRow = document.createElement("tr");
                     const header = document.createElement("th");
-                    header.colSpan = 3;
+                    header.colSpan = 4;
                     header.textContent = midiPatchNames[lastProgram];
                     headerRow.appendChild(header);
                     table.appendChild(headerRow);
                 }
             }
             const programText = `${preset.program.toString().padStart(3, "0")}`;
-            const bankText = `${preset.bank.toString().padStart(3, "0")}`;
+            const bankMSBText = preset.isGMGSDrum
+                ? ""
+                : `${preset.bankLSB.toString().padStart(3, "0")}`;
+            const bankLSBText = preset.isGMGSDrum
+                ? ""
+                : `${preset.bankMSB.toString().padStart(3, "0")}`;
 
             const presetName = document.createElement("td");
             presetName.classList.add("voice_selector_preset_name");
@@ -443,11 +425,16 @@ export class Selector {
             presetName.classList.add("voice_selector_preset_program");
             presetProgram.textContent = programText;
 
-            const presetBank = document.createElement("td");
+            const presetBankMSB = document.createElement("td");
             presetName.classList.add("voice_selector_preset_program");
-            presetBank.textContent = bankText;
+            presetBankMSB.textContent = bankMSBText;
 
-            row.appendChild(presetBank);
+            const presetBankLSB = document.createElement("td");
+            presetName.classList.add("voice_selector_preset_program");
+            presetBankLSB.textContent = bankLSBText;
+
+            row.appendChild(presetBankMSB);
+            row.appendChild(presetBankLSB);
             row.appendChild(presetProgram);
             row.appendChild(presetName);
             table.appendChild(row);
