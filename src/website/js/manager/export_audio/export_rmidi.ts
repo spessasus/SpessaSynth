@@ -1,5 +1,8 @@
 import { consoleColors } from "../../utils/console_colors.js";
-import { closeNotification, showNotification } from "../../notification/notification.js";
+import {
+    closeNotification,
+    showNotification
+} from "../../notification/notification.js";
 import { ANIMATION_REFLOW_TIME } from "../../utils/animation_utils.js";
 import type { Manager } from "../manager.ts";
 
