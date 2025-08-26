@@ -153,7 +153,7 @@ export async function _doExportAudioData(
                             normalizeAudio: false
                         }
                     );
-                    const fileName = `${channel + 1} - ${snapshot.channelSnapshots[i].patchName}.wav`;
+                    const fileName = `${channel + 1} - ${snapshot.channelSnapshots[i].patch.name}.wav`;
                     this.saveBlob(
                         new Blob([audioOut], { type: "audio/wav" }),
                         fileName
@@ -197,7 +197,7 @@ export async function _doExportAudioData(
                     const audioOut = audioBufferToWav(channel, {
                         normalizeAudio: false
                     });
-                    const fileName = `${i + 1} - ${snapshot.channelSnapshots[i].patchName}.wav`;
+                    const fileName = `${i + 1} - ${snapshot.channelSnapshots[i].patch.name}.wav`;
                     zipped.file(fileName, audioOut);
                     console.info(
                         `%cAdding file %c${fileName}%c to zip...`,

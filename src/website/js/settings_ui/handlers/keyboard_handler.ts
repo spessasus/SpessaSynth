@@ -1,4 +1,5 @@
 import type { SpessaSynthSettings } from "../settings.ts";
+import type { MIDIPatch, MIDIPatchNamed } from "spessasynth_core";
 
 export const USE_MIDI_RANGE = "midi range";
 
@@ -12,23 +13,14 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
 
     const nameDisplays: HTMLParagraphElement[] = [];
 
-    const channelTrackers: {
-        program: number;
-        bank: number;
-        drum: boolean;
-    }[] = [];
+    const channelTrackers: MIDIPatch[] = [];
 
-    let presetList: {
-        name: string;
-        program: number;
-        bank: number;
-    }[] = [];
+    let presetList: MIDIPatchNamed[] = [];
 
     const updateChannel = (channel: number) => {
         const chan = channelTrackers[channel];
-        const bank = chan.drum ? 128 : chan.bank;
         let preset = presetList.find(
-            (p) => p.bank === bank && p.program === chan.program
+            (p) => p.bankMSB === chan.bankMSB && p.program === chan.program
         );
         preset ??= presetList[0];
         nameDisplays[channel].textContent = ": " + preset.name;
@@ -61,8 +53,9 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
         nameDisplays.push(nameDisplay);
         channelTrackers.push({
             program: 0,
-            bank: 0,
-            drum: channelNumber % 16 === 9
+            bankMSB: 0,
+            bankLSB: 0,
+            isGMGSDrum: channelNumber % 16 === 9
         });
         updateChannels();
 
@@ -101,16 +94,10 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
         "settings-program-change",
         (e) => {
             const c = channelTrackers[e.channel];
-            c.bank = e.bank;
+            c.bankLSB = e.bankLSB;
+            c.bankMSB = e.bankMSB;
             c.program = e.program;
-            updateChannel(e.channel);
-        }
-    );
-    this.synth.eventHandler.addEvent(
-        "drumChange",
-        "settings-drum-change",
-        (e) => {
-            channelTrackers[e.channel].drum = e.isDrumChannel;
+            c.isGMGSDrum = e.isGMGSDrum;
             updateChannel(e.channel);
         }
     );

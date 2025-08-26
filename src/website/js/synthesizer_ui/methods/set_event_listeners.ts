@@ -11,7 +11,7 @@ export function setEventListeners(this: SynthetizerUI) {
         "synthui-program-change",
         (e) => {
             const p = this.controllers[e.channel].preset;
-            p.set(`${e.bank}:${e.program}`);
+            p.set(e);
         }
     );
 
