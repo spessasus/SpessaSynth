@@ -19,8 +19,7 @@ import {
     modulatorSources,
     NON_CC_INDEX_OFFSET,
     type PresetList,
-    type PresetListEntry,
-    type SynthSystem
+    type PresetListEntry
 } from "spessasynth_core";
 import type { Sequencer, WorkerSynthesizer } from "spessasynth_lib";
 import type { LocaleManager } from "../locale/locale_manager.ts";
@@ -55,10 +54,6 @@ export interface ChannelController {
     soloButton: HTMLDivElement;
     muteButton: HTMLDivElement;
     isHidingLocked: boolean;
-}
-
-export function isSystemXG(system: SynthSystem) {
-    return system === "gm2" || system === "xg";
 }
 
 export const ICON_SIZE = 32;
@@ -1059,22 +1054,18 @@ export class SynthetizerUI {
                     ALL_CHANNELS_OR_DIFFERENT_ACTION,
                     false
                 );
-                if (
-                    isSystemXG(this.synth.getMasterParameter("midiSystem")) &&
-                    patch.isGMGSDrum
-                ) {
-                    this.synth.setDrums(channelNumber, true);
+                if (!patch.isGMGSDrum) {
+                    this.synth.controllerChange(
+                        channelNumber,
+                        midiControllers.bankSelect,
+                        patch.bankMSB
+                    );
+                    this.synth.controllerChange(
+                        channelNumber,
+                        midiControllers.bankSelectLSB,
+                        patch.bankLSB
+                    );
                 }
-                this.synth.controllerChange(
-                    channelNumber,
-                    midiControllers.bankSelect,
-                    patch.bankMSB
-                );
-                this.synth.controllerChange(
-                    channelNumber,
-                    midiControllers.bankSelectLSB,
-                    patch.bankLSB
-                );
                 this.synth.programChange(channelNumber, patch.program);
                 if (this.onProgramChange) {
                     this.onProgramChange(channelNumber);
