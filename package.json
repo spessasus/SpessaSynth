@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "jszip": "^3.10.1",
-    "spessasynth_core": "file:../spessasynth_core/spessasynth_core-4.0.0.tgz",
-    "spessasynth_lib": "file:../spessasynth_lib/spessasynth_lib-4.0.0.tgz"
+    "spessasynth_core": "latest",
+    "spessasynth_lib": "latest"
   }
 }

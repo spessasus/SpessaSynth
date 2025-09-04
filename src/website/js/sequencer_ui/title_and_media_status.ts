@@ -6,9 +6,6 @@ export function updateTitleAndMediaStatus(
     cleanOtherTextEvents = true
 ) {
     if (!this.seq?.midiData) {
-        return;
-    }
-    if (this.seq.hasDummyData) {
         this.currentSongTitle = this.locale.getLocaleString(
             "locale.synthInit.genericLoading"
         );

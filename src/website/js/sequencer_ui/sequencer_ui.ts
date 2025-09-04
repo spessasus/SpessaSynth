@@ -832,7 +832,7 @@ export class SequencerUI {
             return;
         }
         this.lastTimeUpdate = seqTime;
-        if (this.seq.hasDummyData) {
+        if (!this.seq?.midiData) {
             this.progressBar.style.width = "0%";
             this.progressTime.innerText = "--:-- / --:--";
         } else {
