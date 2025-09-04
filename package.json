@@ -2,6 +2,7 @@
   "name": "SpessaSynth",
   "version": "4.0.0",
   "type": "module",
+  "private": true,
   "scripts": {
     "perms": "chmod +x src/build/*",
     "test:types": "eslint src/ && tsc -b",

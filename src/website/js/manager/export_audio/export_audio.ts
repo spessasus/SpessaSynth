@@ -108,7 +108,9 @@ export async function _doExportAudioData(
             }
         }
     });
-    this.seq.play();
+    setTimeout(() => {
+        this.seq?.play();
+    }, 500);
 
     if (separateChannels) {
         const snapshot = await this.synth.getSnapshot();
