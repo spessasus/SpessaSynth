@@ -99,6 +99,7 @@ export async function _doExportAudioData(
         extraTime: additionalTime,
         separateChannels,
         loopCount,
+        enableEffects: !separateChannels,
         progressCallback: (progress, stage) => {
             if (stage === 0) {
                 showProgress(progress, estimatedMessage);
