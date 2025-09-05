@@ -26,7 +26,7 @@ import { Renderer, rendererModes } from "../renderer/renderer.js";
 import { type Sequencer, type WorkerSynthesizer } from "spessasynth_lib";
 import type { SynthetizerUI } from "../synthesizer_ui/synthetizer_ui.ts";
 import type { SequencerUI } from "../sequencer_ui/sequencer_ui.ts";
-import type { MidiKeyboard } from "../midi_keyboard/midi_keyboard.ts";
+import type { MIDIKeyboard } from "../midi_keyboard/midi_keyboard.ts";
 import type { MusicModeUI } from "../music_mode_ui/music_mode_ui.ts";
 import type { LocaleManager } from "../locale/locale_manager.ts";
 import type { InterfaceMode } from "../../server/saved_settings.ts";
@@ -54,7 +54,7 @@ export class SpessaSynthSettings {
     protected readonly renderer: Renderer;
     protected readonly synth: WorkerSynthesizer;
     protected readonly seq: Sequencer;
-    protected readonly midiKeyboard: MidiKeyboard;
+    protected readonly midiKeyboard: MIDIKeyboard;
     protected readonly synthui: SynthetizerUI;
     protected readonly sequi: SequencerUI;
     protected readonly locale: LocaleManager;
@@ -107,7 +107,7 @@ export class SpessaSynthSettings {
         sythui: SynthetizerUI,
         sequi: SequencerUI,
         renderer: Renderer,
-        midiKeyboard: MidiKeyboard,
+        midiKeyboard: MIDIKeyboard,
         playerInfo: MusicModeUI,
         localeManager: LocaleManager,
         delayNode: DelayNode

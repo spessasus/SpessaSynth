@@ -11,7 +11,7 @@ import type { InterfaceMode } from "../../server/saved_settings.ts";
 
 const GLOW_PX = 20;
 
-export class MidiKeyboard {
+export class MIDIKeyboard {
     /**
      * @param midiNote the MIDI note number that was pressed
      * @param velocity the velocity that was used
@@ -364,7 +364,6 @@ export class MidiKeyboard {
         if (keyElement === undefined) {
             return;
         }
-
         channel %= this.channelColors.length;
         const pressedColors = this.keyColors[relativeKey];
         if (!pressedColors) {
@@ -445,6 +444,7 @@ export class MidiKeyboard {
     protected _createKeyboard() {
         this.keyboard.innerHTML = "";
 
+        this.keys.length = 0;
         // Create keyboard
         for (
             let midiNote = this._keyRange.min;

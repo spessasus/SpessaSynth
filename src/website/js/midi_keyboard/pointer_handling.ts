@@ -1,7 +1,7 @@
 import { isMobile } from "../utils/is_mobile.js";
-import type { MidiKeyboard } from "./midi_keyboard.ts";
+import type { MIDIKeyboard } from "./midi_keyboard.ts";
 
-export function handlePointers(this: MidiKeyboard) {
+export function handlePointers(this: MIDIKeyboard) {
     // POINTER HANDLING
     const userNoteOff = (note: number) => {
         this.pressedKeys.delete(note);
@@ -92,11 +92,11 @@ export function handlePointers(this: MidiKeyboard) {
                 userNoteOff(key);
             });
         };
+    } else {
+        // Touch
+        this.keyboard.ontouchstart = moveHandler.bind(this);
+        this.keyboard.ontouchend = moveHandler.bind(this);
+        // Some fingers may still be pressed so we move handler here
+        this.keyboard.ontouchmove = moveHandler.bind(this);
     }
-
-    // Touch
-    this.keyboard.ontouchstart = moveHandler.bind(this);
-    this.keyboard.ontouchend = moveHandler.bind(this);
-    // Some fingers may still be pressed so we move handler here
-    this.keyboard.ontouchmove = moveHandler.bind(this);
 }

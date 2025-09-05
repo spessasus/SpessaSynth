@@ -23,7 +23,7 @@ import {
 } from "spessasynth_core";
 import type { Sequencer, WorkerSynthesizer } from "spessasynth_lib";
 import type { LocaleManager } from "../locale/locale_manager.ts";
-import type { MidiKeyboard } from "../midi_keyboard/midi_keyboard.ts";
+import type { MIDIKeyboard } from "../midi_keyboard/midi_keyboard.ts";
 import { Meter } from "./methods/synthui_meter.ts";
 import {
     getDrumsSvg,
@@ -69,7 +69,7 @@ export class SynthetizerUI {
     public onProgramChange?: (channel: number) => unknown;
     public onTranspose?: () => unknown;
     protected readonly synth: WorkerSynthesizer;
-    protected readonly keyboard: MidiKeyboard;
+    protected readonly keyboard: MIDIKeyboard;
     protected readonly locale: LocaleManager;
     protected readonly sequencer: Sequencer;
     protected readonly voiceMeter: Meter;
@@ -114,7 +114,7 @@ export class SynthetizerUI {
         colors: string[],
         element: HTMLElement,
         localeManager: LocaleManager,
-        keyboard: MidiKeyboard,
+        keyboard: MIDIKeyboard,
         synth: WorkerSynthesizer,
         seq: Sequencer
     ) {

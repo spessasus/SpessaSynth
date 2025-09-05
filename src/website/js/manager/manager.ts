@@ -1,4 +1,4 @@
-import { MidiKeyboard } from "../midi_keyboard/midi_keyboard.js";
+import { MIDIKeyboard } from "../midi_keyboard/midi_keyboard.js";
 import {
     Sequencer,
     WebMIDILinkHandler,
@@ -81,7 +81,7 @@ export class Manager {
         "rgba(255, 192, 203, 1)", // Pink
         "rgba(255, 255, 0, 1)" // Yellow
     ];
-    private keyboard?: MidiKeyboard;
+    private keyboard?: MIDIKeyboard;
     private renderer?: Renderer;
     private synthUI?: SynthetizerUI;
     private musicModeUI?: MusicModeUI;
@@ -244,6 +244,15 @@ export class Manager {
             );
         }
 
+        // Ensure that the context is running
+        if (context.state !== "running") {
+            document.addEventListener("mousedown", () => {
+                if (context.state !== "running") {
+                    void context.resume();
+                }
+            });
+        }
+
         // Set the extra bank upload
         prepareExtraBankUpload.call(this);
 
@@ -267,7 +276,6 @@ export class Manager {
         }
 
         // Create synth
-        await context.resume();
         await WorkerSynthesizer.registerPlaybackWorklet(context);
         const worker = new Worker(new URL("worker.ts", import.meta.url), {
             type: "module"
@@ -307,7 +315,7 @@ export class Manager {
         new WebMIDILinkHandler(this.synth);
 
         // Set up keyboard
-        this.keyboard = new MidiKeyboard(this.channelColors, this.synth);
+        this.keyboard = new MIDIKeyboard(this.channelColors, this.synth);
 
         /**
          * Set up renderer
@@ -522,6 +530,8 @@ export class Manager {
         });
 
         this.renderer.render(false, true);
+        // This will resume the context on first user interaction
+        void context.resume();
         // ANY TEST CODE FOR THE SYNTHESIZER GOES HERE
     }
 }

@@ -58,7 +58,7 @@ export const localePolish = {
 
     demoSoundfontUploadButton: "Wgraj SoundFonta",
     demoGithubPage: "Strona projektu",
-    soundfontEditor: "Edytor SoundFontów",
+    soundfontEditor: "Edytor SF2/DLS",
     demoDownload: {
         main: "Pobierz",
         downloadLocal: {

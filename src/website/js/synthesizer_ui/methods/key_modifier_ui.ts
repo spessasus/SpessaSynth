@@ -3,7 +3,7 @@ import {
     showNotification
 } from "../../notification/notification.js";
 import type { LocaleManager } from "../../locale/locale_manager.ts";
-import type { MidiKeyboard } from "../../midi_keyboard/midi_keyboard.ts";
+import type { MIDIKeyboard } from "../../midi_keyboard/midi_keyboard.ts";
 import type { WorkerSynthesizer } from "spessasynth_lib";
 import { type MIDIPatchNamed, MIDIPatchTools } from "spessasynth_core";
 
@@ -11,7 +11,7 @@ const LOCALE_PATH = "locale.synthesizerController.keyModifiers.";
 
 async function getKey(
     locale: LocaleManager,
-    keyboard: MidiKeyboard
+    keyboard: MIDIKeyboard
 ): Promise<number> {
     return new Promise((r) => {
         const notification = showNotification(
@@ -40,7 +40,7 @@ async function getKey(
 async function doModifyKey(
     synth: WorkerSynthesizer,
     locale: LocaleManager,
-    keyboard: MidiKeyboard,
+    keyboard: MIDIKeyboard,
     presetList: MIDIPatchNamed[]
 ) {
     const key = await getKey(locale, keyboard);
@@ -185,7 +185,7 @@ async function doModifyKey(
 async function doRemoveModification(
     synth: WorkerSynthesizer,
     locale: LocaleManager,
-    keyboard: MidiKeyboard
+    keyboard: MIDIKeyboard
 ) {
     const key = await getKey(locale, keyboard);
     showNotification(
@@ -238,7 +238,7 @@ async function doRemoveModification(
 export function startKeyModifiersMenu(
     synth: WorkerSynthesizer,
     locale: LocaleManager,
-    keyboard: MidiKeyboard,
+    keyboard: MIDIKeyboard,
     presetList: MIDIPatchNamed[]
 ) {
     showNotification(

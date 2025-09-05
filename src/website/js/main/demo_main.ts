@@ -199,12 +199,15 @@ async function demoInit(initLocale: LocaleCode) {
         await saveSoundFontToIndexedDB(soundFontBuffer);
     }
 
+    const resumeCtx = () => {
+        if (context.state !== "running") {
+            void context.resume();
+            document.removeEventListener("mousedown", resumeCtx);
+        }
+    };
+
     if (context.state !== "running") {
-        document.addEventListener("mousedown", () => {
-            if (context.state !== "running") {
-                void context.resume();
-            }
-        });
+        document.addEventListener("mousedown", resumeCtx);
     }
 
     // Prepare midi interface
