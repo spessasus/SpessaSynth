@@ -2,7 +2,7 @@ import {
     closeNotification,
     showNotification
 } from "../notification/notification.js";
-import { EXTRA_BANK_ID } from "./bank_id.js";
+import { EXTRA_BANK_ID, SOUND_BANK_ID } from "./bank_id.js";
 import type { Manager } from "./manager.ts";
 
 export function prepareExtraBankUpload(this: Manager) {
@@ -55,6 +55,12 @@ export function prepareExtraBankUpload(this: Manager) {
                             return;
                         }
                         const b = await file.arrayBuffer();
+                        this.extraBank = {
+                            // Copy as it gets transferred
+                            buffer: b.slice(),
+                            offset: bank,
+                            name: extraBankName
+                        };
                         // Add bank and rearrange
                         await this.synth?.soundBankManager.addSoundBank(
                             b,
@@ -63,10 +69,8 @@ export function prepareExtraBankUpload(this: Manager) {
                         );
                         this.synth.soundBankManager.priorityOrder = [
                             EXTRA_BANK_ID,
-                            "main"
+                            SOUND_BANK_ID
                         ];
-                        this.extraBankName = extraBankName;
-                        this.extraBankOffset = bank;
                         if (this.seq?.paused === false) {
                             this.seq.currentTime -= 0.1;
                         }
@@ -80,8 +84,7 @@ export function prepareExtraBankUpload(this: Manager) {
                         await this.synth!.soundBankManager.deleteSoundBank(
                             EXTRA_BANK_ID
                         );
-                        this.extraBankName = "";
-                        this.extraBankOffset = 0;
+                        delete this.extraBank;
                         if (this.seq?.paused === false) {
                             this.seq.currentTime -= 0.1;
                         }
@@ -95,8 +98,8 @@ export function prepareExtraBankUpload(this: Manager) {
         );
         const i = notification.div.querySelector("input[type='file']")!;
         const input = i as HTMLInputElement;
-        if (this.extraBankName) {
-            input.parentElement!.firstChild!.textContent = this.extraBankName;
+        if (this.extraBank) {
+            input.parentElement!.firstChild!.textContent = this.extraBank.name;
         }
         input.oninput = () => {
             if (input?.files?.[0]) {

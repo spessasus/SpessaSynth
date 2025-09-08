@@ -7,7 +7,6 @@ import { showEffectsConfigWindow } from "./effects_config.js";
 import { startKeyModifiersMenu } from "./key_modifier_ui.js";
 
 export function showAdvancedConfiguration(this: SynthetizerUI) {
-    this.hideOnDocClick = false;
     const blackMIDIAttribute: { checked: "checked" } | object =
         this.synth.getMasterParameter("blackMIDIMode")
             ? { checked: "checked" }

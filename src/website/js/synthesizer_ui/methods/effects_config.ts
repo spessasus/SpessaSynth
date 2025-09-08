@@ -4,12 +4,12 @@ import {
     showNotification
 } from "../../notification/notification.js";
 import { consoleColors } from "../../utils/console_colors.js";
-import { type WorkerSynthesizer } from "spessasynth_lib";
+import type { Synthesizer } from "../../utils/synthesizer.ts";
 
 export function showEffectsConfigWindow(
     locale: LocaleManager,
     path: string,
-    synth: WorkerSynthesizer
+    synth: Synthesizer
 ): NotificationType {
     const ACTUAL_PATH = path + "effectsConfig.";
     const chorus = synth.chorusProcessor?.config;

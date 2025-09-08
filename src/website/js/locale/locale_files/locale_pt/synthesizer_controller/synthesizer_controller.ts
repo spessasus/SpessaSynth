@@ -7,7 +7,7 @@ import { effectsConfig } from "./effects_config.js";
 
 export const synthesizerControllerLocale = {
     toggleButton: {
-        title: "Controlador de Sintetizador",
+        title: "Controlador de Sintetizador (S)",
         description: "Mostra o controlador do sintetizador"
     },
 

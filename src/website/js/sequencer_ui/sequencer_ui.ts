@@ -25,9 +25,10 @@ import {
     SpessaSynthCoreUtils,
     synthDisplayTypes
 } from "spessasynth_core";
-import type { Sequencer, WorkerSynthesizer } from "spessasynth_lib";
+import type { Sequencer } from "spessasynth_lib";
 import { AssManager } from "../utils/ass_manager/ass_manager.ts";
 import type { InterfaceMode } from "../../server/saved_settings.ts";
+import type { Synthesizer } from "../utils/synthesizer.ts";
 
 /**
  * Sequencer_ui.js
@@ -82,7 +83,7 @@ export class SequencerUI {
     protected currentLyricsString: string[] = [];
     protected musicModeUI: MusicModeUI;
     protected renderer: Renderer;
-    protected synth: WorkerSynthesizer;
+    protected synth: Synthesizer;
     protected seq: Sequencer;
     protected mainTitleMessageDisplay: HTMLElement;
     protected synthDisplayMode = {
@@ -128,7 +129,7 @@ export class SequencerUI {
         locale: LocaleManager,
         musicMode: MusicModeUI,
         renderer: Renderer,
-        synth: WorkerSynthesizer,
+        synth: Synthesizer,
         seq: Sequencer
     ) {
         this.controls = element;
@@ -751,8 +752,12 @@ export class SequencerUI {
     }
 
     public switchToPreviousSong() {
-        this.seq.songIndex--;
-        this.updateTitleAndMediaStatus();
+        if (this.seq.songIndex === 0) {
+            this.seq.currentTime = 0;
+        } else {
+            this.seq.songIndex--;
+            this.updateTitleAndMediaStatus();
+        }
     }
 
     public releaseWakeLock() {

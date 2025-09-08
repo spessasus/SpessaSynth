@@ -4,6 +4,7 @@ import {
     showNotification
 } from "../../notification/notification.js";
 import type { Manager } from "../manager.ts";
+import { WorkletSynthesizer } from "spessasynth_lib";
 
 export function _exportDLS(this: Manager) {
     const path = "locale.exportAudio.formats.formats.dls.warning.";
@@ -46,6 +47,9 @@ export function _exportDLS(this: Manager) {
                 onClick: async (n) => {
                     if (!this.synth) {
                         return;
+                    }
+                    if (this.synth instanceof WorkletSynthesizer) {
+                        throw new Error("Not implemented");
                     }
                     const getEl = (q: string) => {
                         const e = n.div.querySelector(q);

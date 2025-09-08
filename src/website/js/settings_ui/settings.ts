@@ -23,13 +23,14 @@ import { keybinds } from "../utils/keybinds.js";
 import { handleSliders } from "./sliders.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { Renderer, rendererModes } from "../renderer/renderer.js";
-import { type Sequencer, type WorkerSynthesizer } from "spessasynth_lib";
+import { type Sequencer } from "spessasynth_lib";
 import type { SynthetizerUI } from "../synthesizer_ui/synthetizer_ui.ts";
 import type { SequencerUI } from "../sequencer_ui/sequencer_ui.ts";
 import type { MIDIKeyboard } from "../midi_keyboard/midi_keyboard.ts";
 import type { MusicModeUI } from "../music_mode_ui/music_mode_ui.ts";
 import type { LocaleManager } from "../locale/locale_manager.ts";
 import type { InterfaceMode } from "../../server/saved_settings.ts";
+import type { Synthesizer } from "../utils/synthesizer.ts";
 
 const TRANSITION_TIME = 0.2;
 
@@ -52,7 +53,7 @@ export class SpessaSynthSettings {
     public readonly htmlControls;
     protected readonly delay: DelayNode;
     protected readonly renderer: Renderer;
-    protected readonly synth: WorkerSynthesizer;
+    protected readonly synth: Synthesizer;
     protected readonly seq: Sequencer;
     protected readonly midiKeyboard: MIDIKeyboard;
     protected readonly synthui: SynthetizerUI;
@@ -102,7 +103,7 @@ export class SpessaSynthSettings {
      */
     public constructor(
         settingsWrapper: HTMLElement,
-        synth: WorkerSynthesizer,
+        synth: Synthesizer,
         seq: Sequencer,
         sythui: SynthetizerUI,
         sequi: SequencerUI,

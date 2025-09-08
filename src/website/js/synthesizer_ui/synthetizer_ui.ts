@@ -21,7 +21,7 @@ import {
     type PresetList,
     type PresetListEntry
 } from "spessasynth_core";
-import type { Sequencer, WorkerSynthesizer } from "spessasynth_lib";
+import type { Sequencer } from "spessasynth_lib";
 import type { LocaleManager } from "../locale/locale_manager.ts";
 import type { MIDIKeyboard } from "../midi_keyboard/midi_keyboard.ts";
 import { Meter } from "./methods/synthui_meter.ts";
@@ -35,6 +35,7 @@ import {
 } from "../utils/icons.ts";
 import { showAdvancedConfiguration } from "./methods/advanced_configuration.ts";
 import { Selector } from "./methods/synthui_selector.ts";
+import type { Synthesizer } from "../utils/synthesizer.ts";
 
 export const LOCALE_PATH = "locale.synthesizerController.";
 export type ControllerGroupType =
@@ -68,7 +69,7 @@ export class SynthetizerUI {
     public readonly channelColors: string[];
     public onProgramChange?: (channel: number) => unknown;
     public onTranspose?: () => unknown;
-    protected readonly synth: WorkerSynthesizer;
+    protected readonly synth: Synthesizer;
     protected readonly keyboard: MIDIKeyboard;
     protected readonly locale: LocaleManager;
     protected readonly sequencer: Sequencer;
@@ -89,7 +90,6 @@ export class SynthetizerUI {
     protected showOnlyUsedEnabled = false;
     protected isShown = false;
     protected animationId = -1;
-    protected hideOnDocClick = true;
     /**
      * For closing the effect window when closing the synthui.
      */
@@ -115,7 +115,7 @@ export class SynthetizerUI {
         element: HTMLElement,
         localeManager: LocaleManager,
         keyboard: MIDIKeyboard,
-        synth: WorkerSynthesizer,
+        synth: Synthesizer,
         seq: Sequencer
     ) {
         this.channelColors = colors;
@@ -471,7 +471,6 @@ export class SynthetizerUI {
             );
             showControllerButton.classList.add("synthui_button");
             showControllerButton.onclick = () => {
-                this.hideOnDocClick = false;
                 this.toggleVisibility();
             };
 
@@ -505,22 +504,6 @@ export class SynthetizerUI {
             this.uiDiv.appendChild(showControllerButton);
             controller.appendChild(controlsWrapper);
             this.mainControllerDiv = controller;
-            // Stop propagation to not hide
-            this.mainControllerDiv.onclick = (e) => e.stopPropagation();
-            // Hide if clicked outside
-            document.addEventListener("click", () => {
-                if (!this.hideOnDocClick) {
-                    this.hideOnDocClick = true;
-                    return;
-                }
-                if (this.effectsConfigWindow !== undefined) {
-                    closeNotification(this.effectsConfigWindow);
-                    this.effectsConfigWindow = undefined;
-                }
-                controller.classList.remove("synthui_controller_show");
-                this.isShown = false;
-                this.hideControllers();
-            });
         }
 
         // Create channel controllers

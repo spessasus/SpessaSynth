@@ -11,10 +11,11 @@ import { ANIMATION_REFLOW_TIME } from "../../utils/animation_utils.js";
 import { type WaveMetadata } from "spessasynth_core";
 import JSZip from "jszip";
 import type { Manager } from "../manager.ts";
+import { renderAudioData } from "./render_audio_data.ts";
 
 const RENDER_AUDIO_TIME_INTERVAL = 250;
 
-export async function _doExportAudioData(
+export async function renderAndExportAudioData(
     this: Manager,
     normalizeAudio = true,
     sampleRate = 44100,
@@ -28,8 +29,9 @@ export async function _doExportAudioData(
         throw new Error("No sequencer active");
     }
     if (!this.synth) {
-        throw new Error("No Synth active!");
+        return;
     }
+
     // Get locales
     const exportingMessage = this.localeManager.getLocaleString(
         `locale.exportAudio.formats.formats.wav.exportMessage.message`
@@ -95,10 +97,11 @@ export async function _doExportAudioData(
     };
 
     // Rendering time!
-    const renderedData = await this.synth.renderAudio(sampleRate, {
+    const renderedData = await renderAudioData.call(this, sampleRate, {
         extraTime: additionalTime,
         separateChannels,
         loopCount,
+        preserveSynthParams: true,
         enableEffects: !separateChannels,
         progressCallback: (progress, stage) => {
             if (stage === 0) {
@@ -263,7 +266,7 @@ export async function _doExportAudioData(
     this.isExporting = false;
 }
 
-export function _exportAudioData(this: Manager) {
+export function showAudioExportMenu(this: Manager) {
     if (this.isExporting) {
         return;
     }
@@ -394,7 +397,8 @@ export function _exportAudioData(this: Manager) {
                     genre: genre.length > 0 ? genre : undefined
                 };
 
-                void this._doExportAudioData(
+                void renderAndExportAudioData.call(
+                    this,
                     normalizeVolume,
                     parseInt(sampleRate),
                     parseInt(additionalTime),

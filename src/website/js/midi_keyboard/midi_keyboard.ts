@@ -1,8 +1,8 @@
 import { midiControllers } from "spessasynth_core";
 import { handlePointers } from "./pointer_handling.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
-import type { WorkerSynthesizer } from "spessasynth_lib";
 import type { InterfaceMode } from "../../server/saved_settings.ts";
+import type { Synthesizer } from "../utils/synthesizer.ts";
 
 /**
  * Midi_keyboard.js
@@ -23,7 +23,7 @@ export class MIDIKeyboard {
     protected pressedKeys = new Set<number>();
     protected sizeChangeAnimationId = -1;
     protected modeChangeAnimationId = -1;
-    protected synth: WorkerSynthesizer;
+    protected synth: Synthesizer;
     protected channelColors: string[];
     protected keyboard: HTMLDivElement;
     protected keys: HTMLDivElement[] = [];
@@ -33,7 +33,7 @@ export class MIDIKeyboard {
     /**
      * Creates a new midi keyboard(keyboard)
      */
-    public constructor(channelColors: string[], synth: WorkerSynthesizer) {
+    public constructor(channelColors: string[], synth: Synthesizer) {
         this.synth = synth;
         this.channelColors = channelColors;
 

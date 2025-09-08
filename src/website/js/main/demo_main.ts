@@ -323,7 +323,7 @@ async function startMidi(midiFiles: FileList | File[]) {
     window.manager.play(parsed);
 
     exportButton.style.display = "flex";
-    exportButton.onclick = window.manager.exportSong.bind(window.manager);
+    exportButton.onclick = window.manager.showExportMenu.bind(window.manager);
 }
 
 /**

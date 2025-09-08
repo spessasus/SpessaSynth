@@ -5,6 +5,7 @@ import {
 } from "../../notification/notification.js";
 import { ANIMATION_REFLOW_TIME } from "../../utils/animation_utils.js";
 import type { Manager } from "../manager.ts";
+import { WorkletSynthesizer } from "spessasynth_lib";
 
 export function _exportRMIDI(this: Manager) {
     if (!this.seq || !this.synth) {
@@ -113,7 +114,7 @@ export function _exportRMIDI(this: Manager) {
                 translatePathTitle: path + "bankOffset",
                 attributes: {
                     value:
-                        this.extraBankOffset.toString() ??
+                        this.extraBank?.offset?.toString?.() ??
                         mid.bankOffset.toString(),
                     name: "bank_offset",
                     type: "number"
@@ -135,6 +136,9 @@ export function _exportRMIDI(this: Manager) {
                 onClick: async (n) => {
                     if (!this.synth) {
                         return;
+                    }
+                    if (this.synth instanceof WorkletSynthesizer) {
+                        throw new Error("Not implemented");
                     }
                     const getEl = (q: string) => {
                         const e = n.div.querySelector(q);

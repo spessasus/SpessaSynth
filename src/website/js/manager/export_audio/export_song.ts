@@ -3,8 +3,11 @@ import {
     showNotification
 } from "../../notification/notification.js";
 import type { Manager } from "../manager.ts";
+import { _exportDLS } from "./export_dls.ts";
+import { _exportRMIDI } from "./export_rmidi.ts";
+import { exportAndSaveSF2 } from "./export_soundfont.ts";
 
-export function exportSong(this: Manager) {
+export function showExportMenu(this: Manager) {
     const path = "locale.exportAudio.formats.";
     showNotification(
         this.localeManager.getLocaleString(path + "title"),
@@ -14,7 +17,7 @@ export function exportSong(this: Manager) {
                 translatePathTitle: path + "formats.wav.button",
                 onClick: (n) => {
                     closeNotification(n.id);
-                    void this._exportAudioData();
+                    void this.showAudioExportMenu();
                 }
             },
             {
@@ -31,7 +34,7 @@ export function exportSong(this: Manager) {
                 onClick: (n) => {
                     closeNotification(n.id);
                     try {
-                        this.exportSoundBank();
+                        exportAndSaveSF2.call(this);
                     } catch (e) {
                         console.error(e);
                         showNotification("Warning", [
@@ -51,7 +54,7 @@ export function exportSong(this: Manager) {
                 onClick: (n) => {
                     closeNotification(n.id);
                     try {
-                        void this._exportDLS();
+                        void _exportDLS.call(this);
                     } catch (e) {
                         console.error(e);
                         showNotification("Warning", [
@@ -71,7 +74,7 @@ export function exportSong(this: Manager) {
                 onClick: (n) => {
                     closeNotification(n.id);
                     try {
-                        void this._exportRMIDI();
+                        void _exportRMIDI.call(this);
                     } catch (e) {
                         console.error(e);
                         showNotification("Warning", [

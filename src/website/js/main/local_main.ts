@@ -122,7 +122,7 @@ async function startMidi(midiFiles: FileList) {
     titleMessage.style.fontStyle = "italic";
     manager.play(parsed);
     exportButton.style.display = "flex";
-    exportButton.onclick = manager.exportSong.bind(window.manager);
+    exportButton.onclick = manager.showExportMenu.bind(window.manager);
 }
 
 const initManagerSF = async () => {
@@ -156,11 +156,10 @@ const initManagerSF = async () => {
  */
 async function replaceFont(fontName: string) {
     titleMessage.innerText = "Loading soundfont...";
-    const data = await fetchFont(
-        fontName,
-        (percent) =>
-            (progressBar.style.width = `${(percent / 100) * titleMessage.offsetWidth}px`)
-    );
+    const data = await fetchFont(fontName, (percent) => {
+        progressBar.style.width = `${(percent / 100) * titleMessage.offsetWidth}px`;
+        console.info(`Loading sound bank: ${percent}%`);
+    });
 
     titleMessage.innerText = "Parsing soundfont...";
     soundBankBufferCurrent = data;
