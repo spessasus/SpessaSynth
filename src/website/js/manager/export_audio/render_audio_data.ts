@@ -10,7 +10,7 @@ type RenderAudioOptions =
         ? T
         : never;
 
-const RENDER_BLOCKS_PER_PROGRESS = 128;
+const RENDER_BLOCKS_PER_PROGRESS = 256;
 const BLOCK_SIZE = 128;
 
 type StereoAudioChunk = [Float32Array<ArrayBuffer>, Float32Array<ArrayBuffer>];

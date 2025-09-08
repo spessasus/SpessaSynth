@@ -54,7 +54,7 @@ export async function buildSpessaSynth() {
     );
 
     // Worklet
-    await fs.cp(WORKLET_PATH, path.resolve(DEMO_DIR_SRC, WORKLET_NAME));
+    await fs.cp(WORKLET_PATH, path.resolve(DEMO_DIR, WORKLET_NAME));
     await fs.cp(WORKLET_PATH, path.resolve(LOCAL_DIR, WORKLET_NAME));
     // Sourcemap
     await fs.cp(
