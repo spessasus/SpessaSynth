@@ -1,10 +1,52 @@
 import { consoleColors } from "../../utils/console_colors.js";
-import {
-    closeNotification,
-    showNotification
-} from "../../notification/notification.js";
+import { closeNotification, showNotification } from "../../notification/notification.js";
 import type { Manager } from "../manager.ts";
-import { WorkletSynthesizer } from "spessasynth_lib";
+import { WorkerSynthesizer, WorkletSynthesizer } from "spessasynth_lib";
+import { type BasicSoundBank, SoundBankLoader } from "spessasynth_core";
+
+type writeDLSOptions =
+    NonNullable<
+        Parameters<typeof WorkerSynthesizer.prototype.writeDLS>[0]
+    > extends Partial<infer T>
+        ? T
+        : never;
+
+export async function writeDLS(
+    this: Manager,
+    options: writeDLSOptions
+): Promise<{ binary: ArrayBuffer; fileName: string; sf?: BasicSoundBank }> {
+    if (!this.synth || !this.seq) {
+        throw new Error("Unexpected error.");
+    }
+    if (this.synth instanceof WorkerSynthesizer) {
+        return this.synth.writeDLS(options);
+    }
+
+    const mid = await this.seq.getMIDI();
+
+    const sfBin = mid.embeddedSoundBank ?? this.sBankBuffer;
+
+    const sf = SoundBankLoader.fromArrayBuffer(sfBin);
+
+    if (options.trim) {
+        sf.trimSoundBank(mid);
+    }
+
+    const b = await sf.writeDLS({
+        ...options,
+        progressFunction: async (sampleName, sampleIndex, sampleCount) =>
+            await options.progressFunction?.({
+                sampleCount,
+                sampleIndex,
+                sampleName
+            })
+    });
+    return {
+        binary: b,
+        fileName: sf.soundBankInfo.name + ".dls",
+        sf
+    };
+}
 
 export function _exportDLS(this: Manager) {
     const path = "locale.exportAudio.formats.formats.dls.warning.";
@@ -73,9 +115,10 @@ export function _exportDLS(this: Manager) {
                     const progressDiv = notification.div.getElementsByClassName(
                         "notification_progress"
                     )[0] as HTMLDivElement;
-                    const exported = await this.synth.writeDLS({
+                    const exported = await writeDLS.call(this, {
                         bankID: this.soundBankID,
                         trim: trimmed,
+                        writeEmbeddedSoundBank: true,
                         progressFunction: (p) => {
                             const progress = p.sampleIndex / p.sampleCount;
                             progressDiv.style.width = `${progress * 100}%`;

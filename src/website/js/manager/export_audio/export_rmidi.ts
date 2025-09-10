@@ -5,7 +5,44 @@ import {
 } from "../../notification/notification.js";
 import { ANIMATION_REFLOW_TIME } from "../../utils/animation_utils.js";
 import type { Manager } from "../manager.ts";
-import { WorkletSynthesizer } from "spessasynth_lib";
+import { WorkerSynthesizer } from "spessasynth_lib";
+import { writeSF2 } from "./export_soundfont.ts";
+
+type writeRMIDIOptions =
+    NonNullable<
+        Parameters<typeof WorkerSynthesizer.prototype.writeRMIDI>[0]
+    > extends Partial<infer T>
+        ? T
+        : never;
+
+async function writeRMIDI(
+    this: Manager,
+    opts: writeRMIDIOptions
+): Promise<ArrayBuffer> {
+    if (!this.synth || !this.seq) {
+        throw new Error("Unexpected error.");
+    }
+    if (this.synth instanceof WorkerSynthesizer) {
+        return this.synth.writeRMIDI(opts);
+    }
+
+    if (!this.seq.midiData) {
+        throw new Error("No MIDI is loaded!");
+    }
+    if (!(opts.format === "sf2")) {
+        throw new Error("DLS RMIDI write is not implemented here.");
+    }
+    const mid = await this.seq.getMIDI();
+    const sfBin = await writeSF2.call(this, mid, opts);
+    if (!sfBin.sf) {
+        throw new Error("Unexpected error.");
+    }
+
+    return mid.writeRMIDI(sfBin.binary, {
+        ...opts,
+        soundBank: sfBin.sf
+    });
+}
 
 export function _exportRMIDI(this: Manager) {
     if (!this.seq || !this.synth) {
@@ -137,9 +174,6 @@ export function _exportRMIDI(this: Manager) {
                     if (!this.synth) {
                         return;
                     }
-                    if (this.synth instanceof WorkletSynthesizer) {
-                        throw new Error("Not implemented");
-                    }
                     const getEl = (q: string) => {
                         const e = n.div.querySelector(q);
                         return e as HTMLInputElement;
@@ -226,7 +260,7 @@ export function _exportRMIDI(this: Manager) {
                     }
 
                     // Export
-                    const exported = await this.synth.writeRMIDI({
+                    const exported = await writeRMIDI.call(this, {
                         bankID: this.soundBankID,
                         compressionQuality: quality,
                         compress: compressed,
@@ -240,6 +274,12 @@ export function _exportRMIDI(this: Manager) {
                             genre,
                             copyright: copy
                         },
+                        trim: true,
+                        writeEmbeddedSoundBank: true,
+                        format: "sf2",
+                        decompress: false,
+                        writeDefaultModulators: true,
+                        writeExtendedLimits: true,
                         bankOffset,
                         correctBankOffset: adjust,
                         progressFunction: (p) => {
@@ -269,7 +309,7 @@ export function _exportRMIDI(this: Manager) {
 
     // Adjust for the normal bank only
     getEl("input[name='adjust']").checked =
-        mid.embeddedSoundBankSize !== undefined;
+        mid.embeddedSoundBankSize === undefined;
 
     const input = getEl("input[type='file']");
     input.oninput = () => {

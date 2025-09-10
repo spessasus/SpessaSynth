@@ -1,6 +1,14 @@
-import { ChorusProcessor, ReverbProcessor, WorkerSynthesizer } from "spessasynth_lib";
+import {
+    ChorusProcessor,
+    ReverbProcessor,
+    WorkerSynthesizer
+} from "spessasynth_lib";
 import type { Manager } from "../manager.ts";
-import { SoundBankLoader, SpessaSynthProcessor, SpessaSynthSequencer } from "spessasynth_core";
+import {
+    SoundBankLoader,
+    SpessaSynthProcessor,
+    SpessaSynthSequencer
+} from "spessasynth_core";
 import { EXTRA_BANK_ID, SOUND_BANK_ID } from "../bank_id.ts";
 
 type RenderAudioOptions =
@@ -10,8 +18,8 @@ type RenderAudioOptions =
         ? T
         : never;
 
-const RENDER_BLOCKS_PER_PROGRESS = 256;
-const BLOCK_SIZE = 128;
+const RENDER_BLOCKS_PER_PROGRESS = 256; // Blocks
+const BLOCK_SIZE = 128; // Samples
 
 type StereoAudioChunk = [Float32Array<ArrayBuffer>, Float32Array<ArrayBuffer>];
 
