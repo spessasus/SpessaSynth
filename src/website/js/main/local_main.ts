@@ -137,15 +137,18 @@ const initManagerSF = async () => {
             localeManager,
             true
         );
-        titleString = window.manager.localeManager.getLocaleString(
-            "locale.titleMessage"
-        );
+        // Override temporarily
+        titleMessage.innerText = "Initializing...";
 
         await window.manager.ready;
         window.manager.synth?.setLogLevel(true, true, true);
     } else {
         await window.manager.reloadSf(soundBankBufferCurrent);
     }
+
+    titleString = window.manager.localeManager.getLocaleString(
+        "locale.titleMessage"
+    );
 
     synthReady = true;
     titleMessage.innerText = titleString;
@@ -174,9 +177,6 @@ async function replaceFont(fontName: string) {
         return;
     }
     await initManagerSF();
-    titleMessage.innerText = window.manager!.localeManager.getLocaleString(
-        "locale.titleMessage"
-    );
     synthReady = true;
     titleMessage.innerText = titleString;
 }

@@ -17,7 +17,7 @@ interface PresetListElement extends PresetListEntry {
 export class Selector {
     public readonly mainButton: HTMLButtonElement;
     // Shown on the  selector
-    public value: PresetListElement;
+    public value?: PresetListElement;
     private elements: PresetListElement[];
     private elementsToTable?: Map<HTMLTableRowElement, PresetListElement>;
     private readonly locale;
@@ -54,7 +54,10 @@ export class Selector {
                 stringified: MIDIPatchTools.toNamedMIDIString(e)
             };
         });
-        this.value = this.elements[0];
+        // The preset list may not be always available
+        if (this.elements.length > 0) {
+            this.value = this.elements[0];
+        }
 
         this.mainButton = document.createElement("button");
         this.mainButton.classList.add("voice_selector");
@@ -80,6 +83,9 @@ export class Selector {
     }
 
     public showSelectionMenu() {
+        if (!this.value) {
+            return;
+        }
         /**
          * Create the wrapper
          */
@@ -151,13 +157,20 @@ export class Selector {
         selectionWindow.appendChild(tableWrapper);
 
         // Add the table
-        const table = this.generateTable(tableWrapper, this.elements);
+        const table = this.generateTable(
+            tableWrapper,
+            this.elements,
+            this.value
+        );
 
         /**
          * Add search function
          */
         let selectedProgram = table.querySelector(".voice_selector_selected")!;
         searchInput.oninput = (e) => {
+            if (!this.value) {
+                return;
+            }
             e.stopPropagation();
             const text = searchInput.value;
             const filtered = this.elements.filter(
@@ -170,7 +183,11 @@ export class Selector {
                 return;
             }
             tableWrapper.replaceChildren();
-            const filteredTable = this.generateTable(tableWrapper, filtered);
+            const filteredTable = this.generateTable(
+                tableWrapper,
+                filtered,
+                this.value
+            );
             // If the already selected preset is not on the new list, select the first one
             const alreadySelected = filteredTable.querySelector(
                 ".voice_selector_selected"
@@ -297,6 +314,9 @@ export class Selector {
     }
 
     public set(p: MIDIPatch) {
+        if (!p) {
+            throw new Error("Can't set a patch that does not exist.");
+        }
         const patch = this.elements.find((e) => MIDIPatchTools.matches(e, p));
         if (!patch) {
             return;
@@ -359,16 +379,19 @@ export class Selector {
      * Generates the instrument table for displaying
      * @param wrapper the wrapper
      * @param elements
+     * @param selectedPatch
      */
-    private generateTable(wrapper: HTMLElement, elements: PresetListElement[]) {
+    private generateTable(
+        wrapper: HTMLElement,
+        elements: PresetListElement[],
+        selectedPatch: PresetListElement
+    ) {
         this.elementsToTable = new Map<
             HTMLTableRowElement,
             PresetListElement
         >();
         const table = document.createElement("table");
         table.classList.add("voice_selector_table");
-
-        const selectedPatch = this.value;
 
         let lastProgram = -20;
         for (const preset of elements) {

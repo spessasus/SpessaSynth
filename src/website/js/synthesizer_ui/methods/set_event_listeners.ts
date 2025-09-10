@@ -67,7 +67,9 @@ export function setEventListeners(this: SynthetizerUI) {
             preset.reload(
                 e.isDrumChannel ? this.percussionList : this.instrumentList
             );
-            preset.set(preset.value);
+            if (preset.value) {
+                preset.set(preset.value);
+            }
         }
     );
 

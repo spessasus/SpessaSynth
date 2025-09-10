@@ -32,7 +32,9 @@ async function writeRMIDI(
     if (!(opts.format === "sf2")) {
         throw new Error("DLS RMIDI write is not implemented here.");
     }
+    const snapshot = await this.synth.getSnapshot();
     const mid = await this.seq.getMIDI();
+    mid.applySnapshot(snapshot);
     const sfBin = await writeSF2.call(this, mid, opts);
     if (!sfBin.sf) {
         throw new Error("Unexpected error.");

@@ -744,7 +744,9 @@ export class SynthetizerUI {
                 ? this.percussionList
                 : this.instrumentList;
             controller.preset.reload(list);
-            controller.preset.set(list[0]);
+            if (list.length > 0) {
+                controller.preset.set(list[0]);
+            }
         });
     }
 
