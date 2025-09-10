@@ -68,34 +68,47 @@ export function render(this: Renderer, auto = true, force = false) {
     this.drawingContext.textAlign = "end";
     this.drawingContext.font = `${FONT_SIZE}px monospace`;
     this.drawingContext.fillStyle = "white";
-    this.drawingContext.strokeStyle = "white";
+
+    let y = 5;
+    // App version
+    this.drawingContext.fillText(this.version, this.canvas.width, y);
+    y += FONT_SIZE;
+    // FPS
     this.drawingContext.fillText(
         Math.round(fps).toString() + " FPS",
         this.canvas.width,
-        FONT_SIZE * 2 + 5
+        y
     );
-    this.drawingContext.fillText(this.version, this.canvas.width, 5);
+    y += FONT_SIZE;
+    // Note count
     this.drawingContext.fillText(
         `${this.notesOnScreen} notes`,
         this.canvas.width,
-        FONT_SIZE + 5
+        y
     );
+
+    // Left side
+    y = 5;
+    this.drawingContext.textAlign = "start";
+    // Engine mode
+    this.drawingContext.fillText(
+        this.workerMode ? "WORKER (CHROMIUM) MODE" : "WORKLET MODE",
+        0,
+        y
+    );
+    y += FONT_SIZE;
 
     // Draw time signature and tempo (if note times are available)
     if (this.seq.midiData) {
-        this.drawingContext.textAlign = "start";
         this.drawingContext.fillText(
             Math.round(this.seq.currentTempo * this.seq.playbackRate * 100) /
                 100 +
                 "BPM",
             0,
-            5
+            y
         );
-        this.drawingContext.fillText(
-            this.currentTimeSignature,
-            0,
-            FONT_SIZE + 5
-        );
+        y += FONT_SIZE;
+        this.drawingContext.fillText(this.currentTimeSignature, 0, y);
     }
 
     // Show the hold pedal message

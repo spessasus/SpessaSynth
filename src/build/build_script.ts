@@ -8,6 +8,11 @@ export async function buildSpessaSynth() {
     const REPO_ROOT = path.resolve(import.meta.dirname, "../..");
 
     const WEBSITE_DIR = path.resolve(REPO_ROOT, "src/website");
+    const WORKLET_NAME = "spessasynth_processor.min.js";
+    const WORKLET_PATH = path.resolve(
+        REPO_ROOT,
+        `node_modules/spessasynth_lib/dist/${WORKLET_NAME}`
+    );
     const SOUNDFONT_NAME = "GeneralUserGS.sf3";
 
     const DEMO_DIR_SRC = path.resolve(REPO_ROOT, "dist/minified");
@@ -46,6 +51,15 @@ export async function buildSpessaSynth() {
     await fs.cp(
         path.resolve(WEBSITE_DIR, "html/local_edition_index.html"),
         path.resolve(LOCAL_DIR, "local_edition_index.html")
+    );
+
+    // Worklet
+    await fs.cp(WORKLET_PATH, path.resolve(DEMO_DIR, WORKLET_NAME));
+    await fs.cp(WORKLET_PATH, path.resolve(LOCAL_DIR, WORKLET_NAME));
+    // Sourcemap
+    await fs.cp(
+        WORKLET_PATH + ".map",
+        path.resolve(LOCAL_DIR, WORKLET_NAME + ".map")
     );
 
     // Favicon

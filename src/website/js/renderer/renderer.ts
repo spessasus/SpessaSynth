@@ -5,8 +5,9 @@ import { connectChannelAnalysers, disconnectChannelAnalysers, updateFftSize } fr
 import { renderBigFft, renderSingleFft, renderSingleWaveform, renderWaveforms } from "./render_waveforms.js";
 import { consoleColors } from "../utils/console_colors.js";
 import { BasicMIDI, midiMessageTypes } from "spessasynth_core";
-import type { Sequencer, WorkerSynthesizer } from "spessasynth_lib";
+import type { Sequencer } from "spessasynth_lib";
 import type { LocaleManager } from "../locale/locale_manager.ts";
+import type { Synthesizer } from "../utils/synthesizer.ts";
 
 /**
  * Renderer.js
@@ -85,7 +86,7 @@ export class Renderer {
     protected canvas: HTMLCanvasElement;
     protected drawingContext: CanvasRenderingContext2D;
     protected plainColors: string[];
-    protected synth: WorkerSynthesizer;
+    protected synth: Synthesizer;
     protected seq: Sequencer;
     protected channelAnalysers: AnalyserNode[] = [];
     protected bigAnalyser: AnalyserNode;
@@ -114,17 +115,19 @@ export class Renderer {
     protected readonly renderSingleFft = renderSingleFft.bind(this);
     protected readonly renderBigFft = renderBigFft.bind(this);
     protected readonly inputNode: AudioNode;
+    protected readonly workerMode: boolean;
 
     /**
      * Creates a new midi renderer for rendering notes visually.
      */
     public constructor(
         channelColors: string[],
-        synth: WorkerSynthesizer,
+        synth: Synthesizer,
         seq: Sequencer,
         inputNode: AudioNode,
         canvas: HTMLCanvasElement,
         locale: LocaleManager,
+        workletMode: boolean,
         version = ""
     ) {
         this.synth = synth;
@@ -133,6 +136,7 @@ export class Renderer {
         this.inputNode = inputNode;
         this.canvas = canvas;
         this.plainColors = channelColors;
+        this.workerMode = workletMode;
 
         // Will be updated by locale manager
         locale.bindObjectProperty(

@@ -138,6 +138,9 @@ function applyAttributes(
     if (content.attributes) {
         for (const [key, value] of Object.entries(content.attributes)) {
             for (const element of elements) {
+                if (key === "checked") {
+                    continue;
+                }
                 if (key === "onchange") {
                     element.onchange = value as () => unknown;
                 } else {
@@ -178,5 +181,9 @@ function getSwitch(
 
     switchWrapper.appendChild(toggleText);
     switchWrapper.appendChild(toggle);
+
+    if (content.attributes?.checked === "checked") {
+        toggleInput.checked = true;
+    }
     return switchWrapper;
 }

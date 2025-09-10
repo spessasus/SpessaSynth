@@ -2,7 +2,8 @@ import { MIDIKeyboard } from "../midi_keyboard/midi_keyboard.js";
 import {
     Sequencer,
     WebMIDILinkHandler,
-    WorkerSynthesizer
+    WorkerSynthesizer,
+    WorkletSynthesizer
 } from "spessasynth_lib";
 
 import { Renderer } from "../renderer/renderer.js";
@@ -14,19 +15,13 @@ import { MusicModeUI } from "../music_mode_ui/music_mode_ui.js";
 import { LocaleManager } from "../locale/locale_manager.js";
 import { isMobile } from "../utils/is_mobile.js";
 import { keybinds } from "../utils/keybinds.js";
-import {
-    _doExportAudioData,
-    _exportAudioData
-} from "./export_audio/export_audio.js";
-import { exportSoundBank } from "./export_audio/export_soundfont.js";
-import { exportSong } from "./export_audio/export_song.js";
-import { _exportRMIDI } from "./export_audio/export_rmidi.js";
+import { showAudioExportMenu } from "./export_audio/export_audio.js";
+import { showExportMenu } from "./export_audio/export_song.js";
 import {
     closeNotification,
     showNotification
 } from "../notification/notification.js";
 import { DropFileHandler, type MIDIFile } from "../utils/drop_file_handler.js";
-import { _exportDLS } from "./export_audio/export_dls.js";
 import {
     IndexedByteArray,
     SpessaSynthCoreUtils as util
@@ -34,6 +29,7 @@ import {
 import { prepareExtraBankUpload } from "./extra_bank_handling.js";
 
 import { EXTRA_BANK_ID, SOUND_BANK_ID } from "./bank_id.ts";
+import type { Synthesizer } from "../utils/synthesizer.ts";
 
 // This enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
 document.body.classList.add("load");
@@ -50,19 +46,23 @@ export class Manager {
     public enableDebug;
     public readonly ready;
     public readonly localeManager;
-    public synth?: WorkerSynthesizer;
+    public readonly workerMode = "chrome" in window;
+    public synth?: Synthesizer;
     public seq?: Sequencer;
-    public readonly exportSong = exportSong.bind(this);
+    public readonly showExportMenu = showExportMenu.bind(this);
     public seqUI?: SequencerUI;
     public sBankBuffer: ArrayBuffer;
     protected isExporting;
-    protected readonly _exportAudioData = _exportAudioData.bind(this);
-    protected readonly _doExportAudioData = _doExportAudioData.bind(this);
-    protected readonly exportSoundBank = exportSoundBank.bind(this);
-    protected readonly _exportDLS = _exportDLS.bind(this);
-    protected readonly _exportRMIDI = _exportRMIDI.bind(this);
-    protected extraBankName = "";
-    protected extraBankOffset = 0;
+    protected readonly showAudioExportMenu = showAudioExportMenu.bind(this);
+    /**
+     * Extra sound bank upload tracking (for rendering audio and file name)
+     * @protected
+     */
+    protected extraBank?: {
+        name: string;
+        offset: number;
+        buffer: ArrayBuffer;
+    };
     private readonly channelColors = [
         "rgba(255, 99, 71, 1)", // Tomato
         "rgba(255, 165, 0, 1)", // Orange
@@ -117,7 +117,7 @@ export class Manager {
     }
 
     protected get soundBankID() {
-        if (this.extraBankName.length > 0) {
+        if (this.extraBank) {
             return EXTRA_BANK_ID;
         }
         return SOUND_BANK_ID;
@@ -164,11 +164,10 @@ export class Manager {
             return;
         }
         this.seq?.pause();
-        this.sBankBuffer = sf;
         const text = sf.slice(8, 12);
         const header = util.readBytesAsString(new IndexedByteArray(text), 4);
         const isDLS = header.toLowerCase() === "dls " && !this.isLocalEdition;
-        await this.synth!.soundBankManager.addSoundBank(sf, SOUND_BANK_ID);
+        await this.setSF(sf);
         if (isDLS) {
             setTimeout(() => {
                 this.getDLS();
@@ -195,11 +194,13 @@ export class Manager {
     }
 
     public async downloadDesfont() {
-        const sf = await this.synth?.writeSF2();
-        if (!sf) {
-            return;
+        if (this.synth instanceof WorkerSynthesizer) {
+            const sf = await this.synth?.writeSF2();
+            if (!sf) {
+                return;
+            }
+            this.saveBlob(new Blob([sf.binary]), sf.fileName);
         }
-        this.saveBlob(new Blob([sf.binary]), sf.fileName);
     }
 
     public async exportMidi() {
@@ -218,12 +219,60 @@ export class Manager {
         this.saveUrl(url, name);
     }
 
+    private async setSF(sf: ArrayBuffer) {
+        if (!this.synth) {
+            throw new Error("Unexpected lack of synth!");
+        }
+        this.sBankBuffer = sf;
+        if (this.synth instanceof WorkletSynthesizer) {
+            console.info("Copying array buffer for reuse...");
+            const copy = sf.slice();
+            console.info("Copy created, transferring to worklet...");
+            await this.synth.soundBankManager.addSoundBank(copy, SOUND_BANK_ID);
+        } else {
+            console.info("Transferring to worker directly...");
+            await this.synth.soundBankManager.addSoundBank(sf, SOUND_BANK_ID);
+        }
+        console.info("Sound bank reloaded succesfully.");
+    }
+
     private saveUrl(url: string, name: string) {
         const a = document.createElement("a");
         a.href = url;
         a.download = name;
         a.click();
         console.info(a);
+    }
+
+    /**
+     * Here are the two synths:
+     * Worker is used on Chromium-based browsers to reduce memory usage and to work around the WebAudio bug.
+     * Firefox suffers greatly from worker but works great on worklet so it uses worklet.
+     * @param context
+     * @private
+     */
+    private async initializeSynth(context: BaseAudioContext) {
+        if (this.workerMode) {
+            await WorkerSynthesizer.registerPlaybackWorklet(context);
+            const worker = new Worker(new URL("worker.ts", import.meta.url), {
+                type: "module"
+            });
+
+            const synth = new WorkerSynthesizer(
+                context,
+                worker.postMessage.bind(worker)
+            );
+            worker.onmessage = (e) =>
+                synth.handleWorkerMessage(
+                    e.data as Parameters<typeof synth.handleWorkerMessage>[0]
+                );
+            return synth;
+        } else {
+            await context.audioWorklet.addModule(
+                "./spessasynth_processor.min.js"
+            );
+            return new WorkletSynthesizer(context);
+        }
     }
 
     private async initializeContext(
@@ -276,31 +325,18 @@ export class Manager {
         }
 
         // Create synth
-        await WorkerSynthesizer.registerPlaybackWorklet(context);
-        const worker = new Worker(new URL("worker.ts", import.meta.url), {
-            type: "module"
-        });
-        this.synth = new WorkerSynthesizer(
-            context,
-            worker.postMessage.bind(worker)
-        );
-        worker.onmessage = (e) =>
-            this.synth!.handleWorkerMessage(
-                e.data as Parameters<typeof this.synth.handleWorkerMessage>[0]
-            );
+        const synth = await this.initializeSynth(context);
+        this.synth = synth;
 
-        this.synth.connect(this.audioDelay);
-        await this.synth.isReady;
-        await this.synth.reverbProcessor?.isReady;
-        await this.synth.soundBankManager.addSoundBank(
-            soundBank,
-            SOUND_BANK_ID
-        );
+        synth.connect(this.audioDelay);
+        await synth.isReady;
+        await synth.reverbProcessor?.isReady;
+        await this.setSF(soundBank);
 
         // Create seq
-        this.seq = new Sequencer(this.synth);
+        this.seq = new Sequencer(synth);
 
-        this.synth.eventHandler.addEvent(
+        synth.eventHandler.addEvent(
             "soundBankError",
             "manager-sf-error",
             (e) => {
@@ -334,6 +370,7 @@ export class Manager {
             this.audioDelay,
             canvas,
             this.localeManager,
+            this.workerMode,
             window.SPESSASYNTH_VERSION
         );
         this.renderer.render(true);
@@ -449,7 +486,7 @@ export class Manager {
             // Show export button
             const exportButton = document.getElementById("export_button")!;
             exportButton.style.display = "flex";
-            exportButton.onclick = this.exportSong.bind(this);
+            exportButton.onclick = this.showExportMenu.bind(this);
             // If demo website, hide demo songs button
             if (this.isLocalEdition) {
                 document.getElementById("demo_song")!.style.display = "none";

@@ -4,8 +4,64 @@ import {
     showNotification
 } from "../../notification/notification.js";
 import type { Manager } from "../manager.ts";
+import { WorkerSynthesizer } from "spessasynth_lib";
+import {
+    type BasicMIDI,
+    type BasicSoundBank,
+    SoundBankLoader
+} from "spessasynth_core";
+import { encodeVorbis } from "../../../../externals/encode_vorbis.ts";
 
-export function exportSoundBank(this: Manager) {
+type writeSF2Options =
+    NonNullable<
+        Parameters<typeof WorkerSynthesizer.prototype.writeSF2>[0]
+    > extends Partial<infer T>
+        ? T
+        : never;
+
+export async function writeSF2(
+    this: Manager,
+    mid: BasicMIDI,
+    options: writeSF2Options
+): Promise<{ binary: ArrayBuffer; fileName: string; sf?: BasicSoundBank }> {
+    if (!this.synth || !this.seq) {
+        throw new Error("Unexpected error.");
+    }
+    if (this.synth instanceof WorkerSynthesizer) {
+        return this.synth.writeSF2(options);
+    }
+
+    const sfBin = mid.embeddedSoundBank ?? this.sBankBuffer;
+
+    const sf = SoundBankLoader.fromArrayBuffer(sfBin);
+
+    if (options.trim) {
+        sf.trimSoundBank(mid);
+    }
+
+    const compressionFunction = (audioData: Float32Array, sampleRate: number) =>
+        encodeVorbis(audioData, sampleRate, options.compressionQuality);
+
+    const b = await sf.writeSF2({
+        ...options,
+        progressFunction: async (sampleName, sampleIndex, sampleCount) =>
+            await options.progressFunction?.({
+                sampleCount,
+                sampleIndex,
+                sampleName
+            }),
+        compressionFunction: compressionFunction
+    });
+    return {
+        binary: b,
+        sf,
+        fileName:
+            sf.soundBankInfo.name +
+            (sf.soundBankInfo.version.major === 3 ? ".sf3" : ".sf2")
+    };
+}
+
+export function exportAndSaveSF2(this: Manager) {
     const path = "locale.exportAudio.formats.formats.soundfont.options.";
     showNotification(
         this.localeManager.getLocaleString(path + "title"),
@@ -75,17 +131,25 @@ export function exportSoundBank(this: Manager) {
                     )[0] as HTMLDivElement;
                     const detailMessage =
                         notification.div.getElementsByTagName("p")[0];
-                    const exported = await this.synth.writeSF2({
-                        bankID: this.soundBankID,
-                        trim: trimmed,
-                        compress: compressed,
-                        compressionQuality: quality,
-                        progressFunction: (p) => {
-                            const progress = p.sampleIndex / p.sampleCount;
-                            progressDiv.style.width = `${progress * 100}%`;
-                            detailMessage.textContent = `${exportingMessage} ${Math.floor(progress * 100)}%`;
+                    const exported = await writeSF2.call(
+                        this,
+                        await this.seq!.getMIDI(),
+                        {
+                            bankID: this.soundBankID,
+                            trim: trimmed,
+                            compress: compressed,
+                            writeDefaultModulators: true,
+                            writeExtendedLimits: true,
+                            writeEmbeddedSoundBank: true,
+                            decompress: false,
+                            compressionQuality: quality,
+                            progressFunction: (p) => {
+                                const progress = p.sampleIndex / p.sampleCount;
+                                progressDiv.style.width = `${progress * 100}%`;
+                                detailMessage.textContent = `${exportingMessage} ${Math.floor(progress * 100)}%`;
+                            }
                         }
-                    });
+                    );
                     this.seq?.play();
                     this.saveBlob(
                         new Blob([exported.binary]),
