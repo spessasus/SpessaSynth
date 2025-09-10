@@ -225,6 +225,10 @@ button {
     margin: 0;
 }
 
+.no_bg, .no_bg * {
+    background: none !important;
+}
+
 .ass_renderer_element span {
     font-family: inherit;
     font-size: inherit;

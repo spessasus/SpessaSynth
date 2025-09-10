@@ -343,18 +343,24 @@ export class DialogueEvent {
             this.element.style.textDecoration = "line-through";
         }
 
+        let hasText = false;
         this.textChunks = [];
         for (const chunk of this.text) {
             if (!chunk.startsWith("{")) {
                 const span = document.createElement("span");
-                span.textContent = chunk
+                const outText = chunk
                     .replaceAll("\\N", "\n")
                     .replaceAll("\\h", " ")
                     .replaceAll("\\n", "\n");
+                span.textContent = outText;
+                hasText ||= /[a-zA-Z]/.test(outText);
                 span.style.color = this.secondaryColor;
                 this.element.appendChild(span);
                 this.textChunks.push(span);
             }
+        }
+        if (!hasText) {
+            this.element.classList.add("no_bg");
         }
 
         parent.appendChild(this.element);
