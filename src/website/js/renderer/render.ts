@@ -86,18 +86,20 @@ export function render(this: Renderer, auto = true, force = false) {
         this.canvas.width,
         y
     );
-    y += FONT_SIZE;
+
+    // Left side
+    y = 5;
+    this.drawingContext.textAlign = "start";
     // Engine mode
     this.drawingContext.fillText(
         this.workerMode ? "WORKER (CHROMIUM) MODE" : "WORKLET MODE",
-        this.canvas.width,
+        0,
         y
     );
+    y += FONT_SIZE;
 
     // Draw time signature and tempo (if note times are available)
     if (this.seq.midiData) {
-        let y = 5;
-        this.drawingContext.textAlign = "start";
         this.drawingContext.fillText(
             Math.round(this.seq.currentTempo * this.seq.playbackRate * 100) /
                 100 +

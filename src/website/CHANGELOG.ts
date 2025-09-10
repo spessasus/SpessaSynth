@@ -3,6 +3,8 @@
  */
 export const WHATS_NEW: string[] = [
     `Hybrid Audio Engine!`,
-    `Better performance across both Chrome and Firefox!`,
+    `Switches between modes depending on your browser:`,
+    `Worklet optimized system for Firefox!`,
+    `Worker system optimized for Chrome!`,
     `More bugs have been fixed!`
 ];
