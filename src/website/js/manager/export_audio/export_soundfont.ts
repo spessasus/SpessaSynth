@@ -35,7 +35,6 @@ export async function writeSF2(
 
     const sf = SoundBankLoader.fromArrayBuffer(sfBin);
 
-    console.log("TRIM");
     if (options.trim) {
         sf.trimSoundBank(mid);
     }
