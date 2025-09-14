@@ -152,6 +152,7 @@
     position: fixed;
     width: 100%;
     text-align: center;
+    cursor: pointer;
 }
 
 .lyrics details div {
