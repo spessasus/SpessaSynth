@@ -18,13 +18,7 @@ import { createSlider } from "../settings_ui/sliders.js";
 import type { LocaleManager } from "../locale/locale_manager.ts";
 import type { MusicModeUI } from "../music_mode_ui/music_mode_ui.ts";
 import type { Renderer } from "../renderer/renderer.ts";
-import {
-    type MIDIMessage,
-    type MIDIMessageType,
-    midiMessageTypes,
-    SpessaSynthCoreUtils,
-    synthDisplayTypes
-} from "spessasynth_core";
+import { type MIDIMessage, type MIDIMessageType, midiMessageTypes, SpessaSynthCoreUtils } from "spessasynth_core";
 import type { Sequencer } from "spessasynth_lib";
 import { AssManager } from "../utils/ass_manager/ass_manager.ts";
 import type { InterfaceMode } from "../../server/saved_settings.ts";
@@ -151,31 +145,35 @@ export class SequencerUI {
         synth.eventHandler.addEvent(
             "synthDisplay",
             "sequi-synth-display",
-            (data) => {
+            (syx) => {
+                const isYamaha = syx[0] === 0x43;
                 if (
-                    data.displayType === synthDisplayTypes.soundCanvasText ||
-                    data.displayType === synthDisplayTypes.yamahaXGText
+                    (syx[0] === 0x41 && syx[5] === 0x00) || // Roland (and ensure display letters, not dot matrix
+                    isYamaha
                 ) {
                     // Clear styles and apply monospace
                     this.mainTitleMessageDisplay.classList.add("sysex_display");
                     this.mainTitleMessageDisplay.classList.remove(
                         "xg_sysex_display"
                     );
-                    let textData = data.displayData as Uint8Array<ArrayBuffer>;
-                    // Remove "Display Letters" byte before decoding for XG display
-                    if (data.displayType === 1) {
-                        textData = textData.slice(1);
+
+                    let textDataNum: number[];
+                    if (isYamaha) {
+                        textDataNum = syx.slice(6, syx.length - 1);
+                    } else {
+                        textDataNum = syx.slice(7, syx.length - 2);
                     }
+
+                    const textData = new Uint8Array(textDataNum);
                     // Decode the text
                     let text = this.decodeTextFix(textData.buffer);
 
-                    // XG is type 1, apply some fixes to it.
                     // XG Displays have a special behavior, we try to mimic it here
                     // Reference video:
                     // https://www.youtube.com/watch?v=_mR7DV1E4KE
                     // First, extract the "Display Letters" byte
-                    if (data.displayType === synthDisplayTypes.yamahaXGText) {
-                        const displayLetters = data.displayData[0];
+                    if (isYamaha) {
+                        const displayLetters = syx[5];
                         // XG Display Letters:
                         // The screen is monospace,
                         // Two rows, 16 characters each (max)
