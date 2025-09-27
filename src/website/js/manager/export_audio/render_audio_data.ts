@@ -1,14 +1,6 @@
-import {
-    ChorusProcessor,
-    ReverbProcessor,
-    WorkerSynthesizer
-} from "spessasynth_lib";
+import { ChorusProcessor, ReverbProcessor, WorkerSynthesizer } from "spessasynth_lib";
 import type { Manager } from "../manager.ts";
-import {
-    SoundBankLoader,
-    SpessaSynthProcessor,
-    SpessaSynthSequencer
-} from "spessasynth_core";
+import { SoundBankLoader, SpessaSynthProcessor, SpessaSynthSequencer } from "spessasynth_core";
 import { EXTRA_BANK_ID, SOUND_BANK_ID } from "../bank_id.ts";
 
 type RenderAudioOptions =
@@ -56,6 +48,8 @@ export async function renderAudioData(
             enableEventSystem: false,
             enableEffects: !separated
         });
+        // No cap
+        rendererSynth.setMasterParameter("voiceCap", 4294967296);
         console.info("Parsing and loading the sound bank in the main thread.");
         const sf = SoundBankLoader.fromArrayBuffer(this.sBankBuffer);
         rendererSynth.soundBankManager.addSoundBank(sf, SOUND_BANK_ID);
