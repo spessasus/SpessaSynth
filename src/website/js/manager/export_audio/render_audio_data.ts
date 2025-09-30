@@ -1,6 +1,14 @@
-import { ChorusProcessor, ReverbProcessor, WorkerSynthesizer } from "spessasynth_lib";
+import {
+    ChorusProcessor,
+    ReverbProcessor,
+    WorkerSynthesizer
+} from "spessasynth_lib";
 import type { Manager } from "../manager.ts";
-import { SoundBankLoader, SpessaSynthProcessor, SpessaSynthSequencer } from "spessasynth_core";
+import {
+    SoundBankLoader,
+    SpessaSynthProcessor,
+    SpessaSynthSequencer
+} from "spessasynth_core";
 import { EXTRA_BANK_ID, SOUND_BANK_ID } from "../bank_id.ts";
 
 type RenderAudioOptions =
