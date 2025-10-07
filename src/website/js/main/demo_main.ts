@@ -392,6 +392,9 @@ async function playDemoSong(fileName: string) {
         "https://spessasus.github.io/spessasynth-demo-songs/demo_songs/" +
             fileName
     );
+    if (window.manager.synth) {
+        window.manager.synth.disableGSNPRNParams();
+    }
     // noinspection JSCheckFunctionSignatures
     await startMidi([new File([await r.arrayBuffer()], fileName)]);
 }
