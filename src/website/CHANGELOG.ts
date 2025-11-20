@@ -3,6 +3,5 @@
  */
 export const WHATS_NEW: string[] = [
     `Updated libs`,
-    `More seamless loops`,
-    `Better custom vibrato`
+    `Fixes for the new loop system`
 ];
