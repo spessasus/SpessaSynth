@@ -141,7 +141,8 @@ const initManagerSF = async () => {
         titleMessage.innerText = "Initializing...";
 
         await window.manager.ready;
-        window.manager.synth?.setLogLevel(true, true, true);
+        // Disabled as of 20-11-2025 (firefox regression, lags a lot with console)
+        // Window.manager.synth?.setLogLevel(true, true, true);
     } else {
         await window.manager.reloadSf(soundBankBufferCurrent);
     }
