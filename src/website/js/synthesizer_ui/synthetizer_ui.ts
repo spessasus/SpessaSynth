@@ -495,7 +495,9 @@ export class SynthetizerUI {
             this.mainButtons = [
                 midiPanicButton,
                 resetCCButton,
+                showOnlyUsedButton,
                 advancedConfigurationButton,
+                groupSelector,
                 showControllerButton,
                 interpolation
             ];
@@ -978,10 +980,79 @@ export class SynthetizerUI {
         controller.appendChild(releaseTime.div);
 
         // Portamento time
-        const portamentoTime = createCCMeterHelper(
-            midiControllers.portamentoTime,
-            "channelController.portamentoTimeMeter"
+        // Custom control to set portamento on off as well
+        const portamentoTime = new Meter(
+            this.channelColors[channelNumber % this.channelColors.length],
+            LOCALE_PATH + "channelController.portamentoTimeMeter",
+            this.locale,
+            [channelNumber + 1],
+            0,
+            127,
+            0,
+            true,
+            (val) => {
+                const meterLocked = portamentoTime.isLocked;
+                if (meterLocked) {
+                    this.synth.lockController(
+                        channelNumber,
+                        midiControllers.portamentoTime,
+                        false
+                    );
+                    this.synth.lockController(
+                        channelNumber,
+                        midiControllers.portamentoOnOff,
+                        false
+                    );
+                }
+                this.synth.controllerChange(
+                    channelNumber,
+                    midiControllers.portamentoTime,
+                    Math.round(val)
+                );
+                this.synth.controllerChange(
+                    channelNumber,
+                    midiControllers.portamentoOnOff,
+                    val > 0 ? 127 : 0
+                );
+                if (meterLocked) {
+                    this.synth.lockController(
+                        channelNumber,
+                        midiControllers.portamentoTime,
+                        true
+                    );
+                    this.synth.lockController(
+                        channelNumber,
+                        midiControllers.portamentoOnOff,
+                        true
+                    );
+                }
+            },
+            () => {
+                this.synth.lockController(
+                    channelNumber,
+                    midiControllers.portamentoTime,
+                    true
+                );
+                this.synth.lockController(
+                    channelNumber,
+                    midiControllers.portamentoOnOff,
+                    true
+                );
+            },
+            () => {
+                this.synth.lockController(
+                    channelNumber,
+                    midiControllers.portamentoTime,
+                    false
+                );
+                this.synth.lockController(
+                    channelNumber,
+                    midiControllers.portamentoOnOff,
+                    false
+                );
+            }
         );
+        controllerMeters[midiControllers.portamentoTime] = portamentoTime;
         controller.appendChild(portamentoTime.div);
 
         // Portamento control

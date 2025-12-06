@@ -142,7 +142,7 @@ const initManagerSF = async () => {
 
         await window.manager.ready;
         // Disabled as of 20-11-2025 (firefox regression, lags a lot with console)
-        // Window.manager.synth?.setLogLevel(true, true, true);
+        window.manager.synth?.setLogLevel(false, false, false);
     } else {
         await window.manager.reloadSf(soundBankBufferCurrent);
     }
