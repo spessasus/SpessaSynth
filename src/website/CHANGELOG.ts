@@ -2,6 +2,9 @@
  * Note to self: make sure to update this
  */
 export const WHATS_NEW: string[] = [
-    `Fixed light mode`,
-    `Portamento edit now controls CC#83`
+    `Updated core:`,
+    `Better MIDI support!`,
+    `New envelope controler: decay time!`,
+    `More accurate portamento`,
+    `Better external MIDI playback!`
 ] as const;

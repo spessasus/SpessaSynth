@@ -676,7 +676,8 @@ export class SynthetizerUI {
         ];
         const envelopeControllers = [
             midiControllers.attackTime,
-            midiControllers.releaseTime
+            midiControllers.releaseTime,
+            midiControllers.decayTime
         ];
         const filterControllers = [
             midiControllers.brightness,
@@ -978,6 +979,13 @@ export class SynthetizerUI {
             "channelController.releaseMeter"
         );
         controller.appendChild(releaseTime.div);
+
+        // Decay time
+        const decayTime = createCCMeterHelper(
+            midiControllers.decayTime,
+            "channelController.decayMeter"
+        );
+        controller.appendChild(decayTime.div);
 
         // Portamento time
         // Custom control to set portamento on off as well

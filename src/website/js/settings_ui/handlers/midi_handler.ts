@@ -97,7 +97,16 @@ export function _createMidiOutputHandler(
             return;
         }
         handler.outputs.forEach((o) => o.disconnect(this.seq));
-        handler.outputs.get(select.value)?.connect(this.seq);
+        const target = handler.outputs.get(select.value);
+        // QoL: Disable skipping to first note-on for external MIDI playback
+        // A lot MIDIs space out the messages to not overflow the MIDI cables.
+        // Spessasynth doesn't have this limitation.
+        if (target) {
+            target.connect(this.seq);
+            this.seq.skipToFirstNoteOn = false;
+        } else {
+            this.seq.skipToFirstNoteOn = true;
+        }
         this.saveSettings();
     };
 }
