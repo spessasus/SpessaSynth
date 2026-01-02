@@ -314,6 +314,7 @@ export class SynthetizerUI {
                     channel.muteButton.innerHTML = getVolumeSvg(ICON_SIZE);
                     this.synth.muteChannel(number, false);
                 });
+                this.soloChannels.clear();
                 this.synth.resetControllers();
             };
 
