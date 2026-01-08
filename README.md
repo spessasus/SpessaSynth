@@ -152,7 +152,7 @@ The build files:
 - [4.0.0](https://github.com/spessasus/SpessaSynth/commit/95ce4c5ad4a429d6de75426a42bbdf9dc353e9de) - Rewrote the project in TypeScript
 
 ### License
-Copyright © 2025 Spessasus.
+Copyright © 2026 Spessasus.
 Licensed under the Apache-2.0 License.
 
 #### Legal
