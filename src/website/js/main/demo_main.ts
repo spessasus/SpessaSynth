@@ -377,7 +377,6 @@ if (saved?.interface?.language) {
 fileInput.value = "";
 fileInput.focus();
 // Set initial styles
-exportButton.style.display = "none";
 sfUpload.style.display = "none";
 fileUpload.style.display = "none";
 

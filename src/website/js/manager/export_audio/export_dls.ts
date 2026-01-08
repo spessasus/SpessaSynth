@@ -1,7 +1,10 @@
 import { consoleColors } from "../../utils/console_colors.js";
-import { closeNotification, showNotification } from "../../notification/notification.js";
+import {
+    closeNotification,
+    showNotification
+} from "../../notification/notification.js";
 import type { Manager } from "../manager.ts";
-import { WorkerSynthesizer, WorkletSynthesizer } from "spessasynth_lib";
+import { WorkerSynthesizer } from "spessasynth_lib";
 import { type BasicSoundBank, SoundBankLoader } from "spessasynth_core";
 
 type writeDLSOptions =
@@ -89,9 +92,6 @@ export function _exportDLS(this: Manager) {
                 onClick: async (n) => {
                     if (!this.synth) {
                         return;
-                    }
-                    if (this.synth instanceof WorkletSynthesizer) {
-                        throw new Error("Not implemented");
                     }
                     const getEl = (q: string) => {
                         const e = n.div.querySelector(q);

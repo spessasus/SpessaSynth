@@ -1,6 +1,6 @@
 {
     "name": "SpessaSynth",
-    "version": "4.0.19",
+    "version": "4.0.20",
     "type": "module",
     "private": true,
     "scripts": {
