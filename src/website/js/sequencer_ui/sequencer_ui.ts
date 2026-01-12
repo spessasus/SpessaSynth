@@ -1052,7 +1052,6 @@ export class SequencerUI {
             this.silencePlayer.src = URL.createObjectURL(
                 new Blob([buf], { type: "audio/wav" })
             );
-            this.silenceSeekLock = true;
             this.silencePlayer.currentTime = 0;
 
             const mid = this.seq.midiData;
