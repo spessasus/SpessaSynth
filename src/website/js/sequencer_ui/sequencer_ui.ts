@@ -682,7 +682,6 @@ export class SequencerUI {
                 this.synthDisplayMode.enabled = false;
                 this.lyricsIndex = -1;
                 this.updateTitleAndMediaStatus();
-                this.updateMediaSession();
                 // Disable loop if more than 1 song
                 if (this.seq.songsAmount > 1) {
                     this.seq.loopCount = 0;
@@ -1050,11 +1049,11 @@ export class SequencerUI {
                 noise[i] = Math.sin(p * (i / 8000));
             }
             const buf = audioToWav([noise], 8000);
-            this.silencePlayer.pause();
-            URL.revokeObjectURL(this.silencePlayer.src);
             this.silencePlayer.src = URL.createObjectURL(
                 new Blob([buf], { type: "audio/wav" })
             );
+            this.silenceSeekLock = true;
+            this.silencePlayer.currentTime = 0;
 
             const mid = this.seq.midiData;
             const artwork = Array<MediaImage>();
@@ -1103,12 +1102,14 @@ export class SequencerUI {
         if (!this.seq.midiData) {
             return;
         }
-        this.silenceSeekLock = true;
         const seqTime = this.seq.currentTime;
         if (seqTime >= this.seq.midiData.duration) {
             return;
         }
-        this.silencePlayer.currentTime = seqTime;
+        if (Math.abs(this.silencePlayer.currentTime - seqTime) > 1) {
+            this.silenceSeekLock = true;
+            this.silencePlayer.currentTime = seqTime;
+        }
         navigator.mediaSession.setPositionState({
             position: seqTime,
             duration: this.seq.midiData.duration,
