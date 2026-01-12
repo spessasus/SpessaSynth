@@ -5,14 +5,19 @@ export function updateTitleAndMediaStatus(
     this: SequencerUI,
     cleanOtherTextEvents = true
 ) {
+    let requiresMediaUpdate = false;
     if (!this.seq?.midiData) {
         this.currentSongTitle = this.locale.getLocaleString(
             "locale.synthInit.genericLoading"
         );
     } else {
-        this.currentSongTitle = formatTitle(
+        const newTitle = formatTitle(
             this.seq.midiData.getName(this.encoding) ?? "Unnamed Song.mid"
         );
+        if (newTitle !== this.currentSongTitle) {
+            this.currentSongTitle = newTitle;
+            requiresMediaUpdate = true;
+        }
     }
     this.loadLyricData();
     this.setLyricsText(this.lyricsIndex);
@@ -28,4 +33,8 @@ export function updateTitleAndMediaStatus(
     }
     document.title = this.currentSongTitle + " - SpessaSynth";
     this.musicModeUI.setTitle(this.currentSongTitle);
+    this.syncSilencePlayer();
+    if (requiresMediaUpdate) {
+        this.updateMediaSession();
+    }
 }

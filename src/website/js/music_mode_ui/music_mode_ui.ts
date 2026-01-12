@@ -115,7 +115,7 @@ export class MusicModeUI {
                         "player_info_detail",
                         mid
                             .getExtraMetadata(mid.infoEncoding ?? "Shift_JIS")
-                            .join("\n")
+                            .join(",")
                     );
                 }
                 // Time

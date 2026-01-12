@@ -18,7 +18,13 @@ import { createSlider } from "../settings_ui/sliders.js";
 import type { LocaleManager } from "../locale/locale_manager.ts";
 import type { MusicModeUI } from "../music_mode_ui/music_mode_ui.ts";
 import type { Renderer } from "../renderer/renderer.ts";
-import { type MIDIMessage, type MIDIMessageType, midiMessageTypes, SpessaSynthCoreUtils } from "spessasynth_core";
+import {
+    audioToWav,
+    type MIDIMessage,
+    type MIDIMessageType,
+    midiMessageTypes,
+    SpessaSynthCoreUtils
+} from "spessasynth_core";
 import type { Sequencer } from "spessasynth_lib";
 import { AssManager } from "../utils/ass_manager/ass_manager.ts";
 import type { InterfaceMode } from "../../server/saved_settings.ts";
@@ -108,6 +114,16 @@ export class SequencerUI {
     protected readonly updateTitleAndMediaStatus =
         updateTitleAndMediaStatus.bind(this);
     protected readonly setLyricsText = setLyricsText.bind(this);
+    /**
+     * Silent player for the media session, it plays silence for the duration of the song in sync
+     * @protected
+     */
+    protected readonly silencePlayer: HTMLAudioElement;
+    /**
+     * Lock for onseeked for the silent player, as seeking it manually also triggers the event
+     * @protected
+     */
+    protected silenceSeekLock = false;
 
     /**
      * Creates a new User Interface for the given MidiSequencer
@@ -420,9 +436,11 @@ export class SequencerUI {
                 if (this.seq.loopCount > 0) {
                     this.seq.loopCount = 0;
                     this.disableIcon(loopButton);
+                    this.silencePlayer.loop = false;
                 } else {
                     this.seq.loopCount = Infinity;
                     this.enableIcon(loopButton);
+                    this.silencePlayer.loop = true;
                 }
             };
             loopButton.onclick = toggleLoop;
@@ -491,6 +509,7 @@ export class SequencerUI {
                 const playbackPercent =
                     value > 20 ? (value - 20) * 10 + 100 : value * 5;
                 this.seq.playbackRate = playbackPercent / 100;
+                this.syncSilencePlayer();
                 displaySpan.textContent = `${Math.round(playbackPercent)}%`;
             };
             displaySpan.onkeydown = (e) => {
@@ -506,6 +525,7 @@ export class SequencerUI {
                     percent = 100;
                 }
                 this.seq.playbackRate = percent / 100;
+                this.syncSilencePlayer();
 
                 // Get the value that the input would have
                 const inputValue = Math.max(
@@ -662,6 +682,7 @@ export class SequencerUI {
                 this.synthDisplayMode.enabled = false;
                 this.lyricsIndex = -1;
                 this.updateTitleAndMediaStatus();
+                this.updateMediaSession();
                 // Disable loop if more than 1 song
                 if (this.seq.songsAmount > 1) {
                     this.seq.loopCount = 0;
@@ -698,6 +719,34 @@ export class SequencerUI {
             // Otherwise, we're already dark
         }
 
+        // Media session
+        this.silencePlayer = new Audio();
+        this.silencePlayer.loop = true;
+        if (navigator.mediaSession) {
+            // Silent audio element for media session to show up
+
+            // Set up handlers
+            const session = navigator.mediaSession;
+            session.setActionHandler("pause", this.seqPause.bind(this, true));
+            session.setActionHandler("play", this.seqPlay.bind(this));
+            session.setActionHandler(
+                "nexttrack",
+                this.switchToNextSong.bind(this)
+            );
+            session.setActionHandler(
+                "previoustrack",
+                this.switchToPreviousSong.bind(this)
+            );
+
+            this.silencePlayer.onseeked = () => {
+                if (this.silenceSeekLock) {
+                    this.silenceSeekLock = false;
+                    return;
+                }
+                this.seq.currentTime = this.silencePlayer.currentTime;
+            };
+        }
+
         // Hide for now
         this.controls.style.display = "none";
         this.setSliderInterval();
@@ -730,10 +779,16 @@ export class SequencerUI {
         this.seq.play();
         this.setWakeLock();
         this.playPause.innerHTML = getPauseSvg(ICON_SIZE);
+        this.silencePlayer.volume = 0.001;
+        this.syncSilencePlayer();
+        void this.silencePlayer.play().then(() => {
+            this.silencePlayer.volume = 0.00001;
+        });
 
         // Show and start
         this.controls.style.display = "block";
         this.updateTitleAndMediaStatus();
+        navigator.mediaSession.playbackState = "playing";
     }
 
     public seqPause(sendPause = true) {
@@ -742,6 +797,9 @@ export class SequencerUI {
         }
         this.releaseWakeLock();
         this.playPause.innerHTML = getPlaySvg(ICON_SIZE);
+
+        this.silencePlayer.pause();
+        navigator.mediaSession.playbackState = "paused";
     }
 
     public switchToNextSong() {
@@ -847,6 +905,11 @@ export class SequencerUI {
         if (this.requiresTextUpdate) {
             this.updateOtherTextEvents();
             this.requiresTextUpdate = false;
+        }
+
+        // Ensure sync with silent player
+        if (this.silencePlayer.playbackRate !== this.seq.playbackRate) {
+            this.seq.playbackRate = this.silencePlayer.playbackRate;
         }
     }
 
@@ -975,6 +1038,82 @@ export class SequencerUI {
             this.lyricsElement.text.main.appendChild(span);
             this.lyricsElement.text.separateLyrics.push(span);
         }
+    }
+
+    protected updateMediaSession() {
+        if (navigator.mediaSession && this.seq.midiData) {
+            // Silence player
+            const sampleDuration = Math.ceil(this.seq.midiData.duration * 8000);
+            const noise = new Float32Array(sampleDuration);
+            const p = 2 * Math.PI * 50;
+            for (let i = 0; i < Math.min(80000, sampleDuration); i++) {
+                noise[i] = Math.sin(p * (i / 8000));
+            }
+            const buf = audioToWav([noise], 8000);
+            this.silencePlayer.pause();
+            URL.revokeObjectURL(this.silencePlayer.src);
+            this.silencePlayer.src = URL.createObjectURL(
+                new Blob([buf], { type: "audio/wav" })
+            );
+
+            const mid = this.seq.midiData;
+            const artwork = Array<MediaImage>();
+            if (mid.rmidiInfo.picture === undefined) {
+                artwork.push({
+                    // SpessaSynth logo
+                    src: "https://github.com/spessasus/SpessaSynth/blob/3edc4a5ad77712366bd827827c1799a46b9a32f0/src/website/spessasynth_logo_rounded.png?raw=true",
+                    type: "image/png"
+                });
+            } else {
+                // Always saying that it's a jpeg works on chrome
+                const pic = new Blob([mid.rmidiInfo.picture.buffer], {
+                    type: "image/jpeg"
+                });
+                const url = URL.createObjectURL(pic);
+                artwork.push({
+                    src: url
+                });
+            }
+
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: this.currentSongTitle,
+                album:
+                    mid.getRMIDInfo("album") ??
+                    mid.getRMIDInfo("copyright") ??
+                    mid
+                        .getExtraMetadata(mid.infoEncoding ?? "Shift_JIS")
+                        .join("\n"),
+                artist:
+                    mid.getRMIDInfo("artist") ??
+                    mid.getRMIDInfo("comment") ??
+                    mid.getRMIDInfo("engineer") ??
+                    "SpessaSynth",
+                artwork
+            });
+
+            // A small hack to force a refresh
+            navigator.mediaSession.playbackState = "paused";
+            setTimeout(() => {
+                navigator.mediaSession.playbackState = "playing";
+            }, 100);
+        }
+    }
+
+    protected syncSilencePlayer() {
+        if (!this.seq.midiData) {
+            return;
+        }
+        this.silenceSeekLock = true;
+        const seqTime = this.seq.currentTime;
+        if (seqTime >= this.seq.midiData.duration) {
+            return;
+        }
+        this.silencePlayer.currentTime = seqTime;
+        navigator.mediaSession.setPositionState({
+            position: seqTime,
+            duration: this.seq.midiData.duration,
+            playbackRate: this.seq.playbackRate
+        });
     }
 
     protected enableIcon(icon: HTMLElement) {
