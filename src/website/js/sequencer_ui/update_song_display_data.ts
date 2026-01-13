@@ -1,7 +1,7 @@
 import { formatTitle } from "../utils/other.js";
 import type { SequencerUI } from "./sequencer_ui.ts";
 
-export function updateTitleAndMediaStatus(
+export function updateSongDisplayData(
     this: SequencerUI,
     cleanOtherTextEvents = true
 ) {
@@ -33,8 +33,8 @@ export function updateTitleAndMediaStatus(
     }
     document.title = this.currentSongTitle + " - SpessaSynth";
     this.musicModeUI.setTitle(this.currentSongTitle);
-    this.syncSilencePlayer();
     if (requiresMediaUpdate) {
         this.updateMediaSession();
     }
+    this.syncSilencePlayer();
 }

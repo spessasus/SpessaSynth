@@ -12,7 +12,7 @@ import {
 } from "../utils/icons.js";
 import { getSeqUIButton } from "./sequi_button.js";
 import { keybinds } from "../utils/keybinds.js";
-import { updateTitleAndMediaStatus } from "./title_and_media_status.js";
+import { updateSongDisplayData } from "./update_song_display_data.js";
 import { sanitizeKarLyrics, setLyricsText } from "./lyrics.js";
 import { createSlider } from "../settings_ui/sliders.js";
 import type { LocaleManager } from "../locale/locale_manager.ts";
@@ -111,8 +111,7 @@ export class SequencerUI {
     protected subtitleManager: AssManager;
     protected loopButton: HTMLDivElement;
     protected lyricsShown = false;
-    protected readonly updateTitleAndMediaStatus =
-        updateTitleAndMediaStatus.bind(this);
+    protected readonly updateSongDisplayData = updateSongDisplayData.bind(this);
     protected readonly setLyricsText = setLyricsText.bind(this);
     /**
      * Silent player for the media session, it plays silence for the duration of the song in sync
@@ -433,15 +432,7 @@ export class SequencerUI {
                 "locale.sequencerController.loopThis"
             );
             const toggleLoop = () => {
-                if (this.seq.loopCount > 0) {
-                    this.seq.loopCount = 0;
-                    this.disableIcon(loopButton);
-                    this.silencePlayer.loop = false;
-                } else {
-                    this.seq.loopCount = Infinity;
-                    this.enableIcon(loopButton);
-                    this.silencePlayer.loop = true;
-                }
+                this.setLoopState(this.seq.loopCount < 1);
             };
             loopButton.onclick = toggleLoop;
             this.loopButton = loopButton;
@@ -509,7 +500,6 @@ export class SequencerUI {
                 const playbackPercent =
                     value > 20 ? (value - 20) * 10 + 100 : value * 5;
                 this.seq.playbackRate = playbackPercent / 100;
-                this.syncSilencePlayer();
                 displaySpan.textContent = `${Math.round(playbackPercent)}%`;
             };
             displaySpan.onkeydown = (e) => {
@@ -525,7 +515,6 @@ export class SequencerUI {
                     percent = 100;
                 }
                 this.seq.playbackRate = percent / 100;
-                this.syncSilencePlayer();
 
                 // Get the value that the input would have
                 const inputValue = Math.max(
@@ -667,7 +656,7 @@ export class SequencerUI {
             "sequi-time-change",
             () => {
                 this.lyricsIndex = -1;
-                this.updateTitleAndMediaStatus();
+                this.updateSongDisplayData();
             }
         );
 
@@ -681,15 +670,9 @@ export class SequencerUI {
             (data) => {
                 this.synthDisplayMode.enabled = false;
                 this.lyricsIndex = -1;
-                this.updateTitleAndMediaStatus();
+                this.updateSongDisplayData();
                 // Disable loop if more than 1 song
-                if (this.seq.songsAmount > 1) {
-                    this.seq.loopCount = 0;
-                    this.disableIcon(this.loopButton);
-                } else {
-                    this.seq.loopCount = Infinity;
-                    this.enableIcon(this.loopButton);
-                }
+                this.setLoopState(this.seq.songsAmount === 1);
                 this.restoreDisplay();
 
                 let midiEncoding = data.getRMIDInfo("midiEncoding");
@@ -720,6 +703,7 @@ export class SequencerUI {
 
         // Media session
         this.silencePlayer = new Audio();
+        // Default
         this.silencePlayer.loop = true;
         if (navigator.mediaSession) {
             // Silent audio element for media session to show up
@@ -738,11 +722,24 @@ export class SequencerUI {
             );
 
             this.silencePlayer.onseeked = () => {
-                if (this.silenceSeekLock) {
+                const seekTime = this.silencePlayer.currentTime;
+                const seqTime = this.seq.currentTime;
+                if (
+                    this.silenceSeekLock ||
+                    Math.abs(seqTime - seekTime) < 0.5
+                ) {
                     this.silenceSeekLock = false;
                     return;
                 }
-                this.seq.currentTime = this.silencePlayer.currentTime;
+
+                // The silencePlayer may have looped automatically
+                if (
+                    this.seq.midiData!.duration - seqTime < 0.3 &&
+                    seekTime < 0.1
+                ) {
+                    return;
+                }
+                this.seq.currentTime = seekTime;
             };
         }
 
@@ -786,7 +783,7 @@ export class SequencerUI {
 
         // Show and start
         this.controls.style.display = "block";
-        this.updateTitleAndMediaStatus();
+        this.updateSongDisplayData();
         navigator.mediaSession.playbackState = "playing";
     }
 
@@ -803,7 +800,7 @@ export class SequencerUI {
 
     public switchToNextSong() {
         this.seq.songIndex++;
-        this.updateTitleAndMediaStatus();
+        this.updateSongDisplayData();
     }
 
     public switchToPreviousSong() {
@@ -811,7 +808,7 @@ export class SequencerUI {
             this.seq.currentTime = 0;
         } else {
             this.seq.songIndex--;
-            this.updateTitleAndMediaStatus();
+            this.updateSongDisplayData();
         }
     }
 
@@ -820,6 +817,18 @@ export class SequencerUI {
             void this.wakeLock.release().then(() => {
                 this.wakeLock = undefined;
             });
+        }
+    }
+
+    protected setLoopState(loop: boolean) {
+        if (loop) {
+            this.seq.loopCount = Infinity;
+            this.enableIcon(this.loopButton);
+            this.silencePlayer.loop = true;
+        } else {
+            this.seq.loopCount = 0;
+            this.disableIcon(this.loopButton);
+            this.silencePlayer.loop = false;
         }
     }
 
@@ -882,7 +891,7 @@ export class SequencerUI {
             span.innerText = this.currentLyricsString[index];
         });
         this.lyricsElement.selector.value = encoding;
-        this.updateTitleAndMediaStatus(false);
+        this.updateSongDisplayData(false);
         this.setLyricsText(this.lyricsIndex);
     }
 
@@ -909,6 +918,9 @@ export class SequencerUI {
         // Ensure sync with silent player
         if (this.silencePlayer.playbackRate !== this.seq.playbackRate) {
             this.seq.playbackRate = this.silencePlayer.playbackRate;
+        }
+        if (this.silencePlayer.loop != this.seq.loopCount > 0) {
+            this.setLoopState(this.silencePlayer.loop);
         }
     }
 
@@ -1052,7 +1064,6 @@ export class SequencerUI {
             this.silencePlayer.src = URL.createObjectURL(
                 new Blob([buf], { type: "audio/wav" })
             );
-            this.silencePlayer.currentTime = 0;
 
             const mid = this.seq.midiData;
             const artwork = Array<MediaImage>();
@@ -1088,12 +1099,13 @@ export class SequencerUI {
                     "SpessaSynth",
                 artwork
             });
+            this.syncSilencePlayer();
 
             // A small hack to force a refresh
             navigator.mediaSession.playbackState = "paused";
             setTimeout(() => {
                 navigator.mediaSession.playbackState = "playing";
-            }, 100);
+            }, 500);
         }
     }
 
@@ -1101,19 +1113,19 @@ export class SequencerUI {
         if (!this.seq.midiData) {
             return;
         }
-        const seqTime = this.seq.currentTime;
-        if (seqTime >= this.seq.midiData.duration) {
-            return;
-        }
-        if (Math.abs(this.silencePlayer.currentTime - seqTime) > 1) {
+        const seqTime = Math.min(
+            this.seq.currentTime,
+            this.seq.midiData.duration
+        );
+        if (Math.abs(this.silencePlayer.currentTime - seqTime) > 0.2) {
             this.silenceSeekLock = true;
             this.silencePlayer.currentTime = seqTime;
+            navigator.mediaSession.setPositionState({
+                position: seqTime,
+                duration: this.seq.midiData.duration,
+                playbackRate: this.seq.playbackRate
+            });
         }
-        navigator.mediaSession.setPositionState({
-            position: seqTime,
-            duration: this.seq.midiData.duration,
-            playbackRate: this.seq.playbackRate
-        });
     }
 
     protected enableIcon(icon: HTMLElement) {
