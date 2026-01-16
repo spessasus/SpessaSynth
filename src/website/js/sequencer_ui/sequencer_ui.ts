@@ -499,7 +499,9 @@ export class SequencerUI {
                 const value = parseInt(actualInput.value);
                 const playbackPercent =
                     value > 20 ? (value - 20) * 10 + 100 : value * 5;
-                this.seq.playbackRate = playbackPercent / 100;
+                const newPlayback = playbackPercent / 100;
+                this.seq.playbackRate = newPlayback;
+                this.silencePlayer.playbackRate = newPlayback;
                 displaySpan.textContent = `${Math.round(playbackPercent)}%`;
             };
             displaySpan.onkeydown = (e) => {
@@ -514,7 +516,9 @@ export class SequencerUI {
                 if (percent < 1) {
                     percent = 100;
                 }
-                this.seq.playbackRate = percent / 100;
+                const newPlayback = percent / 100;
+                this.seq.playbackRate = newPlayback;
+                this.silencePlayer.playbackRate = newPlayback;
 
                 // Get the value that the input would have
                 const inputValue = Math.max(
