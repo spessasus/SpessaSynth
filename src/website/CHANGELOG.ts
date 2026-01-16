@@ -1,4 +1,7 @@
 /**
  * Note to self: make sure to update this
  */
-export const WHATS_NEW: string[] = [`Fixed playback rate`] as const;
+export const WHATS_NEW: string[] = [
+    `Added the 'MSGS cutoff' button`,
+    `Fixed DLS conversion prompt`
+] as const;

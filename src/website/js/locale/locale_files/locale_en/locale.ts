@@ -82,7 +82,7 @@ export const localeEnglish = {
     convertDls: {
         title: "DLS Conversion",
         message:
-            "Looks like you've uploaded a DLS file. Do you want to convert it to SF2?"
+            "Do you want to convert the DLS to SF2 for use with SF2-only programs?"
     },
 
     // All translations split up

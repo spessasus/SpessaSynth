@@ -11,6 +11,10 @@ export function showAdvancedConfiguration(this: SynthetizerUI) {
         this.synth.getMasterParameter("blackMIDIMode")
             ? { checked: "checked" }
             : {};
+    const monophonicRetriggerAttribute: { checked: "checked" } | object =
+        this.synth.getMasterParameter("monophonicRetriggerMode")
+            ? { checked: "checked" }
+            : {};
     showNotification(
         this.locale.getLocaleString(
             LOCALE_PATH + "advancedConfiguration.title"
@@ -76,6 +80,19 @@ export function showAdvancedConfiguration(this: SynthetizerUI) {
                     input: (e) =>
                         this.synth.setMasterParameter(
                             "blackMIDIMode",
+                            (e.target as HTMLInputElement).checked
+                        )
+                }
+            },
+
+            {
+                type: "toggle",
+                translatePathTitle: LOCALE_PATH + "msgsCutoff",
+                attributes: monophonicRetriggerAttribute,
+                listeners: {
+                    input: (e) =>
+                        this.synth.setMasterParameter(
+                            "monophonicRetriggerMode",
                             (e.target as HTMLInputElement).checked
                         )
                 }

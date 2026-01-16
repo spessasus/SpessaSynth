@@ -43,9 +43,15 @@ export const synthesizerControllerLocale = {
     },
 
     blackMidiMode: {
-        title: "Black MIDI mode",
+        title: "Black MIDI Mode",
         description:
-            "Transpose: Toggles the High Performance Mode, simplifying the look and killing the notes faster"
+            "Black MIDI Mode: Toggles the High Performance Mode, simplifying the look and killing the notes faster"
+    },
+
+    msgsCutoff: {
+        title: "MSGS Note Cutoff",
+        description:
+            "MSGS Note Cutoff: Immediately cuts off the previous note on the same key, emulating the Microsoft GS Wavetable Synthesizer"
     },
 
     showOnlyUsed: {

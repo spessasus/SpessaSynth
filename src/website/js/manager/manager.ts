@@ -30,6 +30,7 @@ import { prepareExtraBankUpload } from "./extra_bank_handling.js";
 
 import { EXTRA_BANK_ID, SOUND_BANK_ID } from "./bank_id.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
+import { writeDLS } from "./export_audio/export_dls.ts";
 
 // This enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
 document.body.classList.add("load");
@@ -194,13 +195,12 @@ export class Manager {
     }
 
     public async downloadDesfont() {
-        if (this.synth instanceof WorkerSynthesizer) {
-            const sf = await this.synth?.writeSF2();
-            if (!sf) {
-                return;
-            }
-            this.saveBlob(new Blob([sf.binary]), sf.fileName);
-        }
+        const sf = await writeDLS.call(this, {
+            trim: false,
+            bankID: "main",
+            writeEmbeddedSoundBank: false
+        });
+        this.saveBlob(new Blob([sf.binary]), sf.fileName);
     }
 
     public async exportMidi() {
