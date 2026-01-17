@@ -83,29 +83,15 @@ MARKDOWN VERSION
 
 </p>
 
-### Downloading the Local Edition
-Local edition comes with easier soundfont management than the demo version,
-also allowing to use it offline!
+### Local Edition Download
+*SpessaSynth: Local Edition* comes with easier soundfont management than the demo version,
+also allowing to use it offline! [You can download it here.](https://spessasus.github.io/SpessaSynth/SpessaSynth-LocalEdition.zip)
 
 > [!IMPORTANT]
-> Firefox is recommended due to Chromium's Web Audio bug and memory limit.
-> A decent computer is also recommended for handling large SoundFonts.
+> Firefox is recommended due to Chromium's 4GB memory limit.
+> A decent computer is also recommended for high-polyphony sound banks.
 
-[Recommended high-quality SoundFont (better than the built-in one)](https://musical-artifacts.com/artifacts/1176)
-
-**Local Edition requires Node.js**
-
-#### Windows
-1. [Download the program](https://spessasus.github.io/SpessaSynth/SpessaSynth-LocalEdition.zip).
-2. Put your SoundFonts and DLS files into the `soundfonts` folder (you can select sound banks in the program).
-3. Double-click `Open SpessaSynth.bat` (or you can type `node server/server.js` in the Command Prompt)
-4. Enjoy!
-
-#### Linux
-1. [Download the program](https://spessasus.github.io/SpessaSynth/SpessaSynth-LocalEdition.zip).
-2. Put your SoundFonts and DLS files into the `soundfonts` folder (you can select sound banks in the program).
-3. `node server/server.js`
-4. Enjoy!
+[Recommended high-quality SoundFont for Local Edition](https://musical-artifacts.com/artifacts/1176)
 
 ### Building from source
 ```shell
