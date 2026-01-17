@@ -2,8 +2,13 @@ import path from "path";
 import fs from "fs/promises";
 import { type ConfigFile, DEFAULT_CONFIG_FILE } from "./saved_settings.ts";
 import { fillWithDefaults } from "../js/utils/fill_with_defaults.ts";
+import { fileURLToPath } from "node:url";
 
-const configPath = path.join(import.meta.dirname, "./config.json");
+// Don't use import.meta.dirname: https://github.com/spessasus/SpessaSynth
+const configPath = path.join(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "./config.json"
+);
 
 export class LocalEditionConfig {
     public readonly config: ConfigFile;

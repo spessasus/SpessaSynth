@@ -4,9 +4,14 @@ import * as esbuild from "esbuild";
 import metaUrlPlugin from "@chialab/esbuild-plugin-meta-url";
 import JSZip from "jszip";
 import { INSTALL_INSTRUCTIONS } from "./install_instructions.ts";
+import { fileURLToPath } from "node:url";
 
 export async function buildSpessaSynth() {
-    const REPO_ROOT = path.resolve(import.meta.dirname, "../..");
+    // Don't use meta.dirname: https://github.com/spessasus/SpessaSynth
+    const REPO_ROOT = path.resolve(
+        path.dirname(fileURLToPath(import.meta.url)),
+        "../.."
+    );
 
     const WEBSITE_DIR = path.resolve(REPO_ROOT, "src/website");
     const WORKLET_NAME = "spessasynth_processor.min.js";

@@ -9,11 +9,13 @@ import {
 import { openURL } from "./open.js";
 import { type SavedSettings } from "./saved_settings.ts";
 import { LocalEditionConfig } from "./config_management.ts";
+import { fileURLToPath } from "node:url";
 
 let PORT = 8181;
 const HOST = "0.0.0.0";
 
-const __dirname = import.meta.dirname;
+// Don't use import.meta.dirname: https://github.com/spessasus/SpessaSynth
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export const soundfontsPath = path.join(__dirname, "../soundfonts");
 export const packageJSON = path.join(__dirname, "../package.json");
