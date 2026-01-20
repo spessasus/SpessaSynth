@@ -279,7 +279,6 @@ export async function renderAudioData(
                         const rendered = await offline.startRendering();
                         clearInterval(updateInterval);
                         resolve([rendered]);
-                        this.seq!.currentTime -= 0.1;
                         return;
                     }
                     rendererSeq.processTick();
