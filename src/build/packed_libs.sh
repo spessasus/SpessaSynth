@@ -9,7 +9,7 @@ echo "This expects spessasynth_core, spessasynth_lib and SpessaSynth to be in th
 echo "Building core..."
 
 cd ../spessasynth_core
-npm run build
+npm run build:fast
 
 
 echo "Building lib..."
@@ -21,5 +21,4 @@ echo "Web App"
 
 cd ../SpessaSynth
 npm run debug
-npm run build:fast
 

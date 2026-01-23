@@ -8,4 +8,4 @@ npm install ../spessasynth_core
 npm install ../spessasynth_lib
 
 echo "✅  Installed dependencies! Building..."
-npm run build
+npm run build:fast
