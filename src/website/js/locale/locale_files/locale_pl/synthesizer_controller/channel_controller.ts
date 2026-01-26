@@ -121,5 +121,9 @@ export const channelControllerLocale = {
 
     drumToggleButton: {
         description: "Przełącz perkusję na kanale {0}"
+    },
+
+    polyMonoButton: {
+        description: `Przełącz tryb poly/mono na kanale {0}`
     }
 };
