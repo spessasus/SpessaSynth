@@ -56,7 +56,7 @@ export function showAdvancedConfiguration(this: SynthetizerUI) {
                 type: "input",
                 translatePathTitle: LOCALE_PATH + "voiceCap",
                 listeners: {
-                    input: (e) => {
+                    change: (e) => {
                         const cap =
                             parseInt((e.target as HTMLInputElement).value) ||
                             100;
