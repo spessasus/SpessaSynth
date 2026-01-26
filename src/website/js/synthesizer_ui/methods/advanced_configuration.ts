@@ -1,7 +1,4 @@
-import {
-    closeNotification,
-    showNotification
-} from "../../notification/notification.js";
+import { closeNotification, showNotification } from "../../notification/notification.js";
 import { LOCALE_PATH, SynthetizerUI } from "../synthetizer_ui.js";
 import { showEffectsConfigWindow } from "./effects_config.js";
 import { startKeyModifiersMenu } from "./key_modifier_ui.js";
@@ -56,7 +53,7 @@ export function showAdvancedConfiguration(this: SynthetizerUI) {
                 type: "input",
                 translatePathTitle: LOCALE_PATH + "voiceCap",
                 listeners: {
-                    input: (e) => {
+                    change: (e) => {
                         const cap =
                             parseInt((e.target as HTMLInputElement).value) ||
                             100;
