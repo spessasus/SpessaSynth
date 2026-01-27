@@ -37,6 +37,9 @@ import { showAdvancedConfiguration } from "./methods/advanced_configuration.ts";
 import { Selector } from "./methods/synthui_selector.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
 
+export const MONO_ON = "<pre style='color: red;'>M</pre>";
+export const POLY_ON = "<pre>P</pre>";
+
 export const LOCALE_PATH = "locale.synthesizerController.";
 export type ControllerGroupType =
     | "effects"
@@ -326,7 +329,7 @@ export class SynthetizerUI {
                             midiControllers.monoModeOn,
                             false
                         );
-                        channel.polyMonoButton.innerHTML = "<pre>P</pre>";
+                        channel.polyMonoButton.innerHTML = POLY_ON;
                     }
 
                     this.synth.muteChannel(number, false);
@@ -1286,7 +1289,7 @@ export class SynthetizerUI {
 
         // Poly/mono button
         const polyMonoButton = document.createElement("div");
-        polyMonoButton.innerHTML = "<pre>P</pre>";
+        polyMonoButton.innerHTML = POLY_ON;
         this.locale.bindObjectProperty(
             polyMonoButton,
             "title",
@@ -1295,7 +1298,7 @@ export class SynthetizerUI {
         );
         polyMonoButton.classList.add("controller_element");
         polyMonoButton.classList.add("mute_button");
-        let isPoly = true;
+        polyMonoButton.setAttribute("isPoly", "false");
         polyMonoButton.onclick = () => {
             this.synth.lockController(
                 channelNumber,
@@ -1307,20 +1310,21 @@ export class SynthetizerUI {
                 midiControllers.monoModeOn,
                 false
             );
+            const isPoly = polyMonoButton.getAttribute("isPoly") === "true";
             if (isPoly) {
                 this.synth.controllerChange(
                     channelNumber,
                     midiControllers.monoModeOn,
                     0
                 );
-                polyMonoButton.innerHTML = "<pre style='color: red;'>M</pre>";
+                polyMonoButton.innerHTML = MONO_ON;
             } else {
                 this.synth.controllerChange(
                     channelNumber,
                     midiControllers.polyModeOn,
                     0
                 );
-                polyMonoButton.innerHTML = "<pre>P</pre>";
+                polyMonoButton.innerHTML = POLY_ON;
             }
             this.synth.lockController(
                 channelNumber,
@@ -1332,7 +1336,7 @@ export class SynthetizerUI {
                 midiControllers.monoModeOn,
                 true
             );
-            isPoly = !isPoly;
+            polyMonoButton.setAttribute("isPoly", (!isPoly).toString());
         };
         controller.appendChild(polyMonoButton);
 

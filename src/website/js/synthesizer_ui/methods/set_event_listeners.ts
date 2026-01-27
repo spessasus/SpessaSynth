@@ -1,5 +1,6 @@
 import { getDrumsSvg, getNoteSvg } from "../../utils/icons.js";
-import type { ControllerGroupType, SynthetizerUI } from "../synthetizer_ui.ts";
+import { type ControllerGroupType, MONO_ON, POLY_ON, type SynthetizerUI } from "../synthetizer_ui.ts";
+import { midiControllers } from "spessasynth_core";
 
 /**
  * @this {SynthetizerUI}
@@ -39,6 +40,13 @@ export function setEventListeners(this: SynthetizerUI) {
             const con = this.controllers[channel];
             if (con === undefined) {
                 return;
+            }
+            if (controller === midiControllers.monoModeOn) {
+                con.polyMonoButton.setAttribute("isPoly", "false");
+                con.polyMonoButton.innerHTML = MONO_ON;
+            } else if (controller === midiControllers.polyModeOn) {
+                con.polyMonoButton.setAttribute("isPoly", "true");
+                con.polyMonoButton.innerHTML = POLY_ON;
             }
             const meter = con.controllerMeters[controller];
             if (meter !== undefined) {
