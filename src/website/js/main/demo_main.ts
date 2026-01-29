@@ -11,12 +11,12 @@ import { WHATS_NEW } from "../../CHANGELOG.js";
 import type { LocaleCode } from "../locale/locale_files/locale_list.ts";
 import type { MIDIFile } from "../utils/drop_file_handler.ts";
 import { DEFAULT_SAVED_SETTINGS, type SavedSettings } from "../../server/saved_settings.ts";
+import { readSampleRateParam } from "../utils/sample_rate_param.ts";
 
 /**
  * Demo_main.js
  * purpose: main script for the demo, loads the soundfont and passes it to the manager.js
  */
-const SAMPLE_RATE = 44100;
 const SF_NAME = "GeneralUserGS.sf3";
 
 const titleMessage = document.getElementById("title")!;
@@ -152,7 +152,7 @@ async function demoInit(initLocale: LocaleCode) {
     const localeManager = new LocaleManager(initLocale);
     try {
         context = new AudioContext({
-            sampleRate: SAMPLE_RATE
+            sampleRate: readSampleRateParam()
         });
     } catch (e) {
         changeIcon(getExclamationSvg(256));

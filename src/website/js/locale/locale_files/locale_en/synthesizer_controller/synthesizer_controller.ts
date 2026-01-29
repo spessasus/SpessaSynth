@@ -83,6 +83,13 @@ export const synthesizerControllerLocale = {
         description: "Configure the advanced settings for the synthesizer"
     },
 
+    sampleRate: {
+        title: "Sample rate",
+        description: "Change the sample rate of the synthesizer",
+        warning:
+            "Changing the sample rate requires a reload of the page. Are you sure you want to continue?"
+    },
+
     voiceCap: {
         title: "Voice cap",
         description: "The maximum amount of voices allowed to play at once"

@@ -7,6 +7,7 @@ import { LocaleManager } from "../locale/locale_manager.js";
 import { SpessaSynthLogging } from "spessasynth_core";
 import type { LocaleCode } from "../locale/locale_files/locale_list.ts";
 import type { SavedSettings } from "../../server/saved_settings.ts";
+import { readSampleRateParam } from "../utils/sample_rate_param.ts";
 
 declare global {
     interface Window {
@@ -23,7 +24,6 @@ declare global {
  * Local_main.js
  * purpose: main script for the local edition, loads the soundfont and passes it to the manager.js, reloads soundfonts when needed and saves the settings
  */
-const SAMPLE_RATE = 44100;
 
 SpessaSynthLogging(true, true, true);
 const titleMessage = document.getElementById("title")!;
@@ -45,7 +45,7 @@ const r = await (await fetch("/getversion")).text();
 window.SPESSASYNTH_VERSION = r;
 
 let soundBankBufferCurrent: ArrayBuffer | undefined = undefined;
-const context = new AudioContext({ sampleRate: SAMPLE_RATE });
+const context = new AudioContext({ sampleRate: readSampleRateParam() });
 
 let titleString = "TITLE STRING";
 

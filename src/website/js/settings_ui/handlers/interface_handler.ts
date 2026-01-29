@@ -1,6 +1,7 @@
 import type { SpessaSynthSettings } from "../settings.ts";
 import type { localeList } from "../../locale/locale_files/locale_list.ts";
 import type { LayoutType } from "../../../server/saved_settings.ts";
+import { WorkerSynthesizer } from "spessasynth_lib";
 
 /**
  * @this {SpessaSynthSettings}
@@ -20,13 +21,13 @@ export function _createInterfaceSettingsHandler(this: SpessaSynthSettings) {
         option.textContent = locale.localeName;
         select.appendChild(option);
     }
-    select.value = this.locale.localeCode;
+    select.value = this.locale.localeCode || "en";
     select.onchange = () => {
         if (select.value === "help-translate") {
             window.open(
                 "https://github.com/spessasus/SpessaSynth/blob/master/src/website/js/locale/locale_files/README.md"
             );
-            select.value = this.locale.localeCode;
+            select.value = this.locale.localeCode || "en";
             return;
         }
         this.locale.changeGlobalLocale(select.value as keyof typeof localeList);
@@ -53,6 +54,27 @@ export function _createInterfaceSettingsHandler(this: SpessaSynthSettings) {
                 .classList.add("hidden");
         }
     };
+
+    // Reload synth
+    const anchor = document.getElementById("reload_synth") as HTMLAnchorElement;
+    const url = new URL(window.location.href);
+    if (this.synth instanceof WorkerSynthesizer) {
+        this.locale.bindObjectProperty(
+            anchor,
+            "textContent",
+            "locale.settings.interfaceSettings.synthReload.worklet"
+        );
+        url.searchParams.set("mode", "worklet");
+    } else {
+        this.locale.bindObjectProperty(
+            anchor,
+            "textContent",
+            "locale.settings.interfaceSettings.synthReload.chromium"
+        );
+        url.searchParams.set("mode", "chromium");
+    }
+
+    anchor.href = url.toString();
 }
 
 export function _changeLayout(this: SpessaSynthSettings, layout: LayoutType) {

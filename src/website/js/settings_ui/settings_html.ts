@@ -181,9 +181,11 @@ export const settingsHtml = `
             <option value='right' translate-path='locale.settings.interfaceSettings.layoutDirection.values.rightToLeft'></option>
         </select>
         
-        <h3><a href='https://github.com/spessasus/SpessaSynth/wiki/How-To-Use-App' target='_blank' translate-path-title='locale.synthesizerController.helpButton'></a></h3>
+        
+        <h3><a id='reload_synth'></></h3>
         
         <h4 class='hover_reminder' translate-path-title='locale.settings.interfaceSettings.reminder'></h4>
+        <h4><a href='https://github.com/spessasus/SpessaSynth/wiki/How-To-Use-App' target='_blank' translate-path-title='locale.synthesizerController.helpButton'></a></h4>
     </div>
 </div>
 `;

@@ -47,7 +47,7 @@ export class Manager {
     public enableDebug;
     public readonly ready;
     public readonly localeManager;
-    public readonly workerMode = "chrome" in window;
+    public readonly workerMode;
     public synth?: Synthesizer;
     public seq?: Sequencer;
     public readonly showExportMenu = showExportMenu.bind(this);
@@ -104,6 +104,14 @@ export class Manager {
         this.enableDebug = enableDebug;
         this.isExporting = false;
         this.sBankBuffer = sfBuffer;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get("mode");
+        if (mode) {
+            this.workerMode = mode === "chromium";
+        } else {
+            this.workerMode = "chrome" in window;
+        }
 
         this.audioDelay = new DelayNode(context, {
             delayTime: 0
