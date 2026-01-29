@@ -116,6 +116,7 @@ export class Renderer {
     protected readonly renderBigFft = renderBigFft.bind(this);
     protected readonly inputNode: AudioNode;
     protected readonly workerMode: boolean;
+    protected readonly sampleRateFactor: number;
 
     /**
      * Creates a new midi renderer for rendering notes visually.
@@ -137,6 +138,8 @@ export class Renderer {
         this.canvas = canvas;
         this.plainColors = channelColors;
         this.workerMode = workletMode;
+        // All data has been adjusted for 44.1kHz, correct it here
+        this.sampleRateFactor = this.synth.context.sampleRate / 44_100;
 
         // Will be updated by locale manager
         locale.bindObjectProperty(
