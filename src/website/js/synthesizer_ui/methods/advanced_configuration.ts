@@ -54,6 +54,70 @@ export function showAdvancedConfiguration(this: SynthetizerUI) {
 
             {
                 type: "input",
+                translatePathTitle: LOCALE_PATH + "sampleRate",
+                listeners: {
+                    change: (e) => {
+                        const rate =
+                            parseInt((e.target as HTMLInputElement).value) ||
+                            44100;
+                        const n = showNotification(
+                            this.locale.getLocaleString(
+                                "locale.warnings.warning"
+                            ),
+                            [
+                                {
+                                    type: "text",
+                                    textContent: this.locale.getLocaleString(
+                                        LOCALE_PATH + "sampleRate.warning"
+                                    )
+                                },
+                                {
+                                    type: "button",
+                                    textContent:
+                                        this.locale.getLocaleString(
+                                            "locale.yes"
+                                        ),
+                                    listeners: {
+                                        click: () => {
+                                            const url = new URL(
+                                                window.location.href
+                                            );
+                                            url.searchParams.set(
+                                                "samplerate",
+                                                rate.toString()
+                                            );
+                                            window.location.replace(url);
+                                        }
+                                    }
+                                },
+                                {
+                                    type: "button",
+                                    textContent:
+                                        this.locale.getLocaleString(
+                                            "locale.no"
+                                        ),
+                                    listeners: {
+                                        click: () => {
+                                            closeNotification(n.id);
+                                        }
+                                    }
+                                }
+                            ],
+                            999999,
+                            true
+                        );
+                    }
+                },
+                attributes: {
+                    type: "number",
+                    min: "1",
+                    max: "1000",
+                    value: this.synth.context.sampleRate.toString()
+                }
+            },
+
+            {
+                type: "input",
                 translatePathTitle: LOCALE_PATH + "voiceCap",
                 listeners: {
                     change: (e) => {

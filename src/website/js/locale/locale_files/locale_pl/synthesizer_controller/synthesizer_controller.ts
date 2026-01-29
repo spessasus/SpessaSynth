@@ -80,6 +80,13 @@ export const synthesizerControllerLocale = {
         description: "Skonfiguruj zaawansowane ustawienia syntezatora"
     },
 
+    sampleRate: {
+        title: "Częstotliwość próbkowania",
+        description: "Zmień częstotliwość próbkowania syntezatora",
+        warning:
+            "Zmiana częstotliwości próbkowania wymaga przeładowania strony. Czy na pewno chcesz kontynuować?"
+    },
+
     voiceCap: {
         title: "Limit głosów",
         description: "Maksymalna ilość głosów mogąca grać jednocześnie"

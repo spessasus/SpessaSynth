@@ -1,8 +1,4 @@
-import {
-    closeNotification,
-    type NotificationContent,
-    showNotification
-} from "../../notification/notification.js";
+import { closeNotification, type NotificationContent, showNotification } from "../../notification/notification.js";
 import { audioBufferToWav } from "spessasynth_lib";
 import { formatTime } from "../../utils/other.js";
 import { consoleColors } from "../../utils/console_colors.js";
@@ -307,7 +303,7 @@ export function showAudioExportMenu(this: Manager) {
             type: "input",
             translatePathTitle: wavPath + "sampleRate",
             attributes: {
-                value: "44100",
+                value: this.synth!.context.sampleRate.toString(),
                 type: "number",
                 "sample-rate": "1"
             }
