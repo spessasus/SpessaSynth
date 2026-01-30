@@ -9,14 +9,26 @@ export function updateFftSize(this: Renderer) {
         const mul = drum
             ? STABILIZE_WAVEFORMS_FFT_MULTIPLIER / 2
             : STABILIZE_WAVEFORMS_FFT_MULTIPLIER;
+
+        const targetFFT = this._stabilizeWaveforms ? fft * mul : fft;
+
         this.channelAnalysers[i].fftSize = Math.min(
             32768,
-            this._stabilizeWaveforms ? fft * mul : fft
+            // Nearest factor of 2
+            1 << (31 - Math.clz32(targetFFT * this.sampleRateFactor))
         );
     }
     this.bigAnalyser.fftSize = Math.min(
         32768,
-        this._normalAnalyserFft * STABILIZE_WAVEFORMS_FFT_MULTIPLIER * 2
+        // Nearest factor of 2
+        1 <<
+            (31 -
+                Math.clz32(
+                    this._normalAnalyserFft *
+                        STABILIZE_WAVEFORMS_FFT_MULTIPLIER *
+                        2 *
+                        this.sampleRateFactor
+                ))
     );
 }
 
