@@ -119,6 +119,7 @@ export function _exportDLS(this: Manager) {
                         bankID: this.soundBankID,
                         trim: trimmed,
                         writeEmbeddedSoundBank: true,
+                        sequencerID: 0,
                         progressFunction: (p) => {
                             const progress = p.sampleIndex / p.sampleCount;
                             progressDiv.style.width = `${progress * 100}%`;

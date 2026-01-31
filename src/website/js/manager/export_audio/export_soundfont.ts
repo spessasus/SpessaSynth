@@ -147,7 +147,8 @@ export function exportAndSaveSF2(this: Manager) {
                                 const progress = p.sampleIndex / p.sampleCount;
                                 progressDiv.style.width = `${progress * 100}%`;
                                 detailMessage.textContent = `${exportingMessage} ${Math.floor(progress * 100)}%`;
-                            }
+                            },
+                            sequencerID: 0
                         }
                     );
                     this.seq?.play();

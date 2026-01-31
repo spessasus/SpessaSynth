@@ -279,6 +279,7 @@ export function _exportRMIDI(this: Manager) {
                         trim: true,
                         writeEmbeddedSoundBank: true,
                         format: "sf2",
+                        sequencerID: 0,
                         decompress: false,
                         writeDefaultModulators: true,
                         writeExtendedLimits: true,
