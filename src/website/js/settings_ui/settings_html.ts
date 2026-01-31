@@ -130,6 +130,14 @@ export const settingsHtml = `
                 <span class='switch_slider'></span>
             </label>
         </div>
+        
+        <div class='switch_label'>
+            <label translate-path-title='locale.settings.keyboardSettings.forceMaxVelocity'></label>
+            <label class='switch'>
+                <input type='checkbox' checked id='keyboard_force_max_velocity'>
+                <span class='switch_slider'></span>
+            </label>
+        </div>
     </div>
     
     

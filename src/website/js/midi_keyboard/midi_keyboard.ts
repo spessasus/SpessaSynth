@@ -19,6 +19,7 @@ export class MIDIKeyboard {
     public onNotePressed?: (midiNote: number, velocity: number) => unknown;
     public channel = 0;
     public mode: InterfaceMode = "light";
+    public forceMaxVelocity = false;
     protected mouseHeld = false;
     protected pressedKeys = new Set<number>();
     protected sizeChangeAnimationId = -1;
@@ -307,7 +308,7 @@ export class MIDIKeyboard {
         key.classList.add("pressed");
 
         const isSharp = key.classList.contains("sharp_key");
-        const brightness = velocity / 127;
+        const brightness = this.forceMaxVelocity ? 1 : velocity / 127;
         const rgbaValues = this.channelColors[channel % 16]
             .match(/\d+(\.\d+)?/g)
             ?.map((element) => Number.parseFloat(element));

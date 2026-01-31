@@ -20,6 +20,7 @@ export interface SavedSettings {
         selectedChannel: number;
         autoRange: boolean;
         show: boolean;
+        forceMaxVelocity: boolean;
     };
     renderer: {
         renderNotes: boolean;
@@ -56,6 +57,7 @@ export const DEFAULT_SAVED_SETTINGS: SavedSettings = {
         mode: "light",
         selectedChannel: 0,
         show: true,
+        forceMaxVelocity: false,
         autoRange: false,
         keyRange: {
             max: 127,

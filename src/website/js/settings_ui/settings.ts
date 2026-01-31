@@ -332,7 +332,10 @@ export class SpessaSynthSettings {
                     "#keyboard_size_selector"
                 )!,
                 showSelector:
-                    document.querySelector<HTMLInputElement>("#keyboard_show")!
+                    document.querySelector<HTMLInputElement>("#keyboard_show")!,
+                maxVelocitySelector: document.querySelector<HTMLInputElement>(
+                    "#keyboard_force_max_velocity"
+                )!
             },
 
             midi: {

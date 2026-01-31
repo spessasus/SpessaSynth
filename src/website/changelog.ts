@@ -5,5 +5,6 @@ export const WHATS_NEW: string[] = [
     `Adjustable sample rate!`,
     `Switching between Chrome and Worklet mode!`,
     `Added support for poly/mono mode!`,
-    `Fixed visual desync!`
+    `Fixed visual desync!`,
+    `Added a new option to the keyboard!`
 ] as const;

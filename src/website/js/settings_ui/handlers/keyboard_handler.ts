@@ -239,4 +239,11 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
         this.midiKeyboard.shown = !this.midiKeyboard.shown;
         this.saveSettings();
     });
+
+    // Keyboard max velocity
+    keyboardControls.maxVelocitySelector.addEventListener("click", () => {
+        this.midiKeyboard.forceMaxVelocity =
+            !this.midiKeyboard.forceMaxVelocity;
+        this.saveSettings();
+    });
 }

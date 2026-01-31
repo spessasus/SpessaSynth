@@ -27,5 +27,10 @@ export const keyboardSettingsLocale = {
     show: {
         title: "Pokaż",
         description: "Pokaż/ukryj pianino"
+    },
+
+    forceMaxVelocity: {
+        title: "Wymuś pełny kolor",
+        description: "Wymuś pełen kolor klawiszy podczas nacisku"
     }
 };

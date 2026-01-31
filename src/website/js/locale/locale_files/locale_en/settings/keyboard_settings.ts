@@ -27,5 +27,11 @@ export const keyboardSettingsLocale = {
     show: {
         title: "Show",
         description: "Show/hide MIDI keyboard"
+    },
+
+    forceMaxVelocity: {
+        title: "Force full color",
+        description:
+            "Force full color intensity, regardless of the MIDI note-on velocity"
     }
 };

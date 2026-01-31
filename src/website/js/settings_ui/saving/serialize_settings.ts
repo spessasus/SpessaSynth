@@ -38,7 +38,9 @@ export function _serializeSettings(this: SpessaSynthSettings): SavedSettings {
             autoRange:
                 this.htmlControls.keyboard.sizeSelector.value ===
                 USE_MIDI_RANGE,
-            show: this.htmlControls.keyboard.showSelector.checked
+            show: this.htmlControls.keyboard.showSelector.checked,
+            forceMaxVelocity:
+                this.htmlControls.keyboard.maxVelocitySelector.checked
         },
 
         midi: {
