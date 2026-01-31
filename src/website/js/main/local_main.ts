@@ -8,6 +8,7 @@ import type { SavedSettings } from "../../server/saved_settings.ts";
 import { readSampleRateParam } from "../utils/sample_rate_param.ts";
 
 declare global {
+    // noinspection JSUnusedGlobalSymbols
     interface Window {
         SPESSASYNTH_VERSION: string;
         manager?: Manager;
@@ -181,17 +182,17 @@ async function replaceFont(fontName: string) {
     titleMessage.textContent = titleString;
 }
 
-const init = async () => {
+// eslint-disable-next-line unicorn/prefer-add-event-listener
+document.onclick = async () => {
     if (!soundBankBufferCurrent) {
         return;
     }
     // User has clicked, we can create the js
     await context.resume();
-    document.removeEventListener("click", init);
+    // eslint-disable-next-line unicorn/prefer-add-event-listener
+    document.onclick = null;
     await initManagerSF();
 };
-
-document.body.addEventListener("click", init);
 
 let soundBanks: { name: string; size: number }[] = [];
 
