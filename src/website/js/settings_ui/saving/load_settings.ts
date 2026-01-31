@@ -151,7 +151,7 @@ export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
     }
 
     // Keyboard force max velocity
-    if (!keyboardValues.forceMaxVelocity) {
+    if (keyboardValues.forceMaxVelocity) {
         keyboard.forceMaxVelocity = true;
         this.htmlControls.keyboard.maxVelocitySelector.checked = true;
     }
