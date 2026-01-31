@@ -14,5 +14,9 @@
 }
 
 #note_canvas.light_mode {
-    background: linear-gradient(45deg, var(--top-buttons-color-start), var(--top-buttons-color-end));
+    background: linear-gradient(
+        45deg,
+        var(--top-buttons-color-start),
+        var(--top-buttons-color-end)
+    );
 }

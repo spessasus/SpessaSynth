@@ -5,10 +5,10 @@ import { fillWithDefaults } from "../../utils/fill_with_defaults.ts";
 import { DEFAULT_SAVED_SETTINGS } from "../../../server/saved_settings.ts";
 
 export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
-    if (!("savedSettings" in window)) {
-        throw new Error("No saved settings!");
-    }
-    const savedSettingsPartial = await window.savedSettings;
+    const savedSettingsPartial =
+        "savedSettings" in window
+            ? await window.savedSettings
+            : DEFAULT_SAVED_SETTINGS;
 
     const savedSettings = fillWithDefaults(
         savedSettingsPartial,
@@ -30,7 +30,7 @@ export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
     renderer.noteFallingTimeMs = fallingTime;
     rendererControls.noteTimeSlider.value = fallingTime.toString();
     rendererControls.noteTimeSlider.dispatchEvent(new CustomEvent("input"));
-    getSpan(rendererControls.noteTimeSlider).innerText = `${fallingTime}ms`;
+    getSpan(rendererControls.noteTimeSlider).textContent = `${fallingTime}ms`;
 
     // Note after trigger time
     const afterTime = rendererValues.noteAfterTriggerTimeMs;
@@ -39,7 +39,7 @@ export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
     rendererControls.noteAfterTriggerTimeSlider.dispatchEvent(
         new CustomEvent("input")
     );
-    getSpan(rendererControls.noteAfterTriggerTimeSlider).innerText =
+    getSpan(rendererControls.noteAfterTriggerTimeSlider).textContent =
         `${afterTime}ms`;
 
     // Waveform line thickness
@@ -49,7 +49,7 @@ export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
         new CustomEvent("input")
     );
     renderer.lineThickness = thickness;
-    getSpan(rendererControls.analyserThicknessSlider).innerText =
+    getSpan(rendererControls.analyserThicknessSlider).textContent =
         `${thickness}px`;
 
     // Fft size (sample size)
@@ -64,7 +64,7 @@ export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
     );
     renderer.updateFftSize();
     this.setTimeDelay(fftSize);
-    getSpan(rendererControls.analyserFftSlider).innerText = `${fftSize}`;
+    getSpan(rendererControls.analyserFftSlider).textContent = `${fftSize}`;
 
     // Wave multiplier
     const multiplier = rendererValues.amplifier;
@@ -73,7 +73,7 @@ export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
     rendererControls.waveMultiplierSlizer.dispatchEvent(
         new CustomEvent("input")
     );
-    getSpan(rendererControls.waveMultiplierSlizer).innerText =
+    getSpan(rendererControls.waveMultiplierSlizer).textContent =
         multiplier.toString();
 
     // Render notes

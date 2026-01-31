@@ -34,10 +34,10 @@ function ASStimeToFloat(timeString: string) {
     const [hours, minutes, seconds] = timeString.split(":");
     const [sec, hundredths] = seconds.split(".");
     return (
-        parseInt(hours) * 3600 +
-        parseInt(minutes) * 60 +
-        parseInt(sec) +
-        parseInt(hundredths) / 100
+        Number.parseInt(hours) * 3600 +
+        Number.parseInt(minutes) * 60 +
+        Number.parseInt(sec) +
+        Number.parseInt(hundredths) / 100
     );
 }
 
@@ -188,7 +188,15 @@ export class AssManager {
             }
             // For fonts, load up the section as one big name
             else if (sectionName === "[Fonts]") {
-                if (!line.startsWith("fontname: ")) {
+                if (line.startsWith("fontname: ")) {
+                    const name = line.split(/: (.*)/s)[1];
+                    this.fonts.push({
+                        name: name,
+                        data: "",
+                        dataDecoded: undefined
+                    });
+                    currentFontName = name;
+                } else {
                     const font = this.fonts.find(
                         (f) => f.name === currentFontName
                     );
@@ -198,14 +206,6 @@ export class AssManager {
                         );
                     }
                     font.data += line;
-                } else {
-                    const name = line.split(/: (.*)/s)[1];
-                    this.fonts.push({
-                        name: name,
-                        data: "",
-                        dataDecoded: undefined
-                    });
-                    currentFontName = name;
                 }
             } else if (!line.startsWith("!") && !line.startsWith(";")) {
                 // Split only the first colon
@@ -223,14 +223,15 @@ export class AssManager {
         // Find the resolution
         const scriptInfo = this._getSection("[Script Info]");
 
-        this.resolutionX = parseInt(
+        this.resolutionX = Number.parseInt(
             scriptInfo.getContent("PlayResX", DEFAULT_RES_X.toString())
         );
-        this.resolutionY = parseInt(
+        this.resolutionY = Number.parseInt(
             scriptInfo.getContent("PlayResY", DEFAULT_RES_Y.toString())
         );
         this.kerning = scriptInfo.getContent("Kerning", "yes") === "yes";
-        this.timer = parseFloat(scriptInfo.getContent("Timer", "100")) / 100;
+        this.timer =
+            Number.parseFloat(scriptInfo.getContent("Timer", "100")) / 100;
 
         // Load styles
         const styles = this._getSection("[V4+ Styles]");
@@ -266,8 +267,8 @@ export class AssManager {
             let rest = event.data;
             for (let i = 0; i < eventFormats.length - 1; i++) {
                 const index = rest.indexOf(",");
-                data.push(rest.substring(0, index));
-                rest = rest.substring(index + 1);
+                data.push(rest.slice(0, Math.max(0, index)));
+                rest = rest.slice(Math.max(0, index + 1));
             }
             data.push(rest);
             if (data.length !== eventFormats.length) {
@@ -284,9 +285,9 @@ export class AssManager {
                 eventData.Start ? ASStimeToFloat(eventData.Start) : 0,
                 eventData.End ? ASStimeToFloat(eventData.End) : 0,
                 eventData.Style ?? "",
-                parseInt(eventData.MarginL ?? "0"),
-                parseInt(eventData.MarginR ?? "0"),
-                parseInt(eventData.MarginV ?? "0"),
+                Number.parseInt(eventData.MarginL ?? "0"),
+                Number.parseInt(eventData.MarginR ?? "0"),
+                Number.parseInt(eventData.MarginV ?? "0"),
                 this.styles
             );
 
@@ -337,7 +338,7 @@ export class AssManager {
                 font-family: "${font.name}";
                 src: url("${fontUrl}");
             }`;
-            document.head.appendChild(styleElement);
+            document.head.append(styleElement);
         }
 
         this.firstEmbeddedFontName = this.fonts[0]?.name || "sans-serif";

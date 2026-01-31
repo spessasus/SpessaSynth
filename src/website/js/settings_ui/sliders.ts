@@ -6,14 +6,14 @@ export function getSpan(element: HTMLInputElement): HTMLSpanElement {
 }
 
 export function handleSliders(div: HTMLDivElement) {
-    const inputs = div.getElementsByTagName(
+    const inputs = div.querySelectorAll(
         "spessarange"
-    ) as HTMLCollectionOf<HTMLInputElement>;
+    ) as unknown as HTMLCollectionOf<HTMLInputElement>;
     for (const input of inputs) {
         input.parentElement?.insertBefore(createSlider(input, true), input);
     }
-    while (inputs.length > 0) {
-        inputs[0].parentNode?.removeChild(inputs[0]);
+    for (const input of inputs) {
+        input.remove();
     }
 }
 
@@ -50,40 +50,41 @@ export function createSlider(
 
     const progressBar = document.createElement("div");
     progressBar.classList.add("settings_slider_progress");
-    visualWrapper.appendChild(progressBar);
+    visualWrapper.append(progressBar);
 
     const thumb = document.createElement("div");
     thumb.classList.add("settings_slider_thumb");
-    visualWrapper.appendChild(thumb);
-    visualWrapper.appendChild(htmlInput);
+    visualWrapper.append(thumb);
+    visualWrapper.append(htmlInput);
 
     htmlInput.addEventListener("input", () => {
         // Calculate the difference between values, if larger than 5%, enable transition
-        const val = parseInt(
+        const val = Number.parseInt(
             visualWrapper.style
                 .getPropertyValue("--visual-width")
                 .replace("%", "")
         );
         const newVal = Math.round(
-            ((parseInt(htmlInput.value) - parseInt(htmlInput.min)) /
-                (parseInt(htmlInput.max) - parseInt(htmlInput.min))) *
+            ((Number.parseInt(htmlInput.value) -
+                Number.parseInt(htmlInput.min)) /
+                (Number.parseInt(htmlInput.max) -
+                    Number.parseInt(htmlInput.min))) *
                 100
         );
-        if (Math.abs((val - newVal) / 100) > 0.05) {
-            visualWrapper.classList.add("settings_slider_transition");
-        } else {
-            visualWrapper.classList.remove("settings_slider_transition");
-        }
+        visualWrapper.classList.toggle(
+            "settings_slider_transition",
+            Math.abs((val - newVal) / 100) > 0.05
+        );
         // Apply the width
         visualWrapper.style.setProperty("--visual-width", `${newVal}%`);
     });
     visualWrapper.style.setProperty(
         "--visual-width",
-        `${((parseInt(htmlInput.value) - parseInt(htmlInput.min)) / (parseInt(htmlInput.max) - parseInt(htmlInput.min))) * 100}%`
+        `${((Number.parseInt(htmlInput.value) - Number.parseInt(htmlInput.min)) / (Number.parseInt(htmlInput.max) - Number.parseInt(htmlInput.min))) * 100}%`
     );
-    mainWrapper.appendChild(visualWrapper);
+    mainWrapper.append(visualWrapper);
     if (span) {
-        mainWrapper.appendChild(span);
+        mainWrapper.append(span);
     }
     return mainWrapper;
 }

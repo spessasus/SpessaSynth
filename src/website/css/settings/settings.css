@@ -18,7 +18,8 @@
     scroll-behavior: smooth;
     overflow-y: auto;
     display: none;
-    border-radius: 0 0 var(--settings-border-radius) var(--settings-border-radius);
+    border-radius: 0 0 var(--settings-border-radius)
+        var(--settings-border-radius);
 }
 
 .settings_menu_show {
@@ -36,7 +37,7 @@
     border: solid 1px transparent; /*to keep the same size when adding one*/
     font-size: larger;
     border-radius: var(--settings-border-radius);
-    padding: .5rem;
+    padding: 0.5rem;
 }
 
 .settings_menu select option {

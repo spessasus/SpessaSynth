@@ -1,5 +1,10 @@
 import { getDrumsSvg, getNoteSvg } from "../../utils/icons.js";
-import { type ControllerGroupType, MONO_ON, POLY_ON, type SynthetizerUI } from "../synthetizer_ui.ts";
+import {
+    type ControllerGroupType,
+    MONO_ON,
+    POLY_ON,
+    type SynthetizerUI
+} from "../synthetizer_ui.ts";
 import { midiControllers } from "spessasynth_core";
 
 /**

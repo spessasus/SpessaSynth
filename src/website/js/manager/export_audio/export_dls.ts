@@ -109,11 +109,11 @@ export function _exportDLS(this: Manager) {
                             { type: "text", textContent: exportingMessage },
                             { type: "progress" }
                         ],
-                        9999999,
+                        9_999_999,
                         false
                     );
-                    const progressDiv = notification.div.getElementsByClassName(
-                        "notification_progress"
+                    const progressDiv = notification.div.querySelectorAll(
+                        ".notification_progress"
                     )[0] as HTMLDivElement;
                     const exported = await writeDLS.call(this, {
                         bankID: this.soundBankID,
@@ -135,7 +135,7 @@ export function _exportDLS(this: Manager) {
                 }
             }
         ],
-        99999999,
+        99_999_999,
         true,
         this.localeManager
     );

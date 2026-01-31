@@ -13,13 +13,13 @@ export function updateFftSize(this: Renderer) {
         const targetFFT = this._stabilizeWaveforms ? fft * mul : fft;
 
         this.channelAnalysers[i].fftSize = Math.min(
-            32768,
+            32_768,
             // Nearest factor of 2
             1 << (31 - Math.clz32(targetFFT * this.sampleRateFactor))
         );
     }
     this.bigAnalyser.fftSize = Math.min(
-        32768,
+        32_768,
         // Nearest factor of 2
         1 <<
             (31 -

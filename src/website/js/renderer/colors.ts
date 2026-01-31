@@ -6,7 +6,7 @@ function approxColor(progress: number): string {
      * The colors may or may not come from audacity's spectogram view
      */
     const samples: { t: number; r: number; g: number; b: number }[] = [
-        { t: 0.0, r: 0, g: 0, b: 0 },
+        { t: 0, r: 0, g: 0, b: 0 },
         { t: 0.1, r: 0, g: 0, b: 105 },
         { t: 0.2, r: 0, g: 0, b: 158 },
         { t: 0.3, r: 9, g: 0, b: 160 },
@@ -20,7 +20,7 @@ function approxColor(progress: number): string {
         { t: 0.85, r: 255, g: 239, b: 0 },
         { t: 0.9, r: 255, g: 241, b: 8 },
         { t: 0.95, r: 255, g: 253, b: 140 },
-        { t: 1.0, r: 255, g: 255, b: 252 }
+        { t: 1, r: 255, g: 255, b: 252 }
     ];
 
     for (let i = 0; i < samples.length - 1; i++) {

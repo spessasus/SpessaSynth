@@ -1,7 +1,8 @@
 export const effectsConfig = {
     button: {
         title: "Konfiguracja efektów",
-        description: "Skonfiguruj efekt pogłosu i chóru oraz wyłącz niestandardowe wibrato"
+        description:
+            "Skonfiguruj efekt pogłosu i chóru oraz wyłącz niestandardowe wibrato"
     },
     reverbConfig: {
         title: "Konfiguracja pogłosu",
@@ -11,7 +12,7 @@ export const effectsConfig = {
             description: "Wybierz impuls kształtujący dźwięk pogłosu"
         }
     },
-    
+
     chorusConfig: {
         title: "Konfiguracja chóru",
         description: "Skonfiguruj procesor efektu chóru",
@@ -29,19 +30,23 @@ export const effectsConfig = {
         },
         stereoDifference: {
             title: "Różnica stereo (s)",
-            description: "Różnica opóźnień w kanałach stereo (dodane do lewego kanału i odjęte od prawego sekundy)"
+            description:
+                "Różnica opóźnień w kanałach stereo (dodane do lewego kanału i odjęte od prawego sekundy)"
         },
         oscillatorFrequency: {
             title: "Częstotliwość LFO (Hz)",
-            description: "Częstotliwość pierwszego LFO kontrolującego opóźnienie pierwszej linii w Hz."
+            description:
+                "Częstotliwość pierwszego LFO kontrolującego opóźnienie pierwszej linii w Hz."
         },
         frequencyVariation: {
             title: "Przyrost LFO (Hz)",
-            description: "Przyrost częstotliwości LFO każdej kolejnej linii w Hz"
+            description:
+                "Przyrost częstotliwości LFO każdej kolejnej linii w Hz"
         },
         oscillatorGain: {
             title: "Siła LFO (s)",
-            description: "Jak bardzo LFO będzie wpływać na opóźnienie linii, w sekundach"
+            description:
+                "Jak bardzo LFO będzie wpływać na opóźnienie linii, w sekundach"
         },
         apply: {
             title: "Zastosuj",

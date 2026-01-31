@@ -30,10 +30,10 @@ function ASSColorToRgba(colorString: string): string {
     // Note that colors are BGR (not RGB as normally) and the alpha component is inverted,
     // So 255 in completely transparent and 0 is no transparency.
     // Color: &HAABBGGRR
-    const colorAlpha = 255 - parseInt(stringSanitized.slice(0, 2), 16);
-    const colorBlue = parseInt(stringSanitized.slice(2, 4), 16);
-    const colorGreen = parseInt(stringSanitized.slice(4, 6), 16);
-    const colorRed = parseInt(stringSanitized.slice(6), 16);
+    const colorAlpha = 255 - Number.parseInt(stringSanitized.slice(0, 2), 16);
+    const colorBlue = Number.parseInt(stringSanitized.slice(2, 4), 16);
+    const colorGreen = Number.parseInt(stringSanitized.slice(4, 6), 16);
+    const colorRed = Number.parseInt(stringSanitized.slice(6), 16);
     return `rgba(${colorRed}, ${colorGreen}, ${colorBlue}, ${colorAlpha / 255})`;
 }
 
@@ -78,11 +78,11 @@ export class DialogueEvent {
     ) {
         this.text = splitByCurlyBraces(text);
         const textCleanSplit: string[] = [];
-        this.text.forEach((t) => {
+        for (const t of this.text) {
             if (!t.startsWith("{")) {
                 textCleanSplit.push(t);
             }
-        });
+        }
         this.textClean = textCleanSplit.join("");
         this.startSeconds = startSeconds;
         this.endSeconds = endSeconds;
@@ -92,10 +92,11 @@ export class DialogueEvent {
             throw new Error("No style data!");
         }
         this.styleData = styleData;
-        this.marginLeft = marginLeft || parseInt(this.styleData.MarginL);
-        this.marginRight = marginRight || parseInt(this.styleData.MarginR);
+        this.marginLeft = marginLeft || Number.parseInt(this.styleData.MarginL);
+        this.marginRight =
+            marginRight || Number.parseInt(this.styleData.MarginR);
         this.marginVertical =
-            marginVertical || parseInt(this.styleData.MarginV);
+            marginVertical || Number.parseInt(this.styleData.MarginV);
         this.primaryColor = ASSColorToRgba(this.styleData.PrimaryColour);
         this.secondaryColor = ASSColorToRgba(this.styleData.SecondaryColour);
     }
@@ -124,11 +125,12 @@ export class DialogueEvent {
             if (chunk.startsWith("{")) {
                 // Check if karaoke tag
                 const karaokeAnimation =
-                    chunk.startsWith("{\\K") || chunk.startsWith("{\\kf");
-                if (!karaokeAnimation && !chunk.startsWith("{\\k")) {
+                    chunk.startsWith(String.raw`{\K`) ||
+                    chunk.startsWith(String.raw`{\kf`);
+                if (!karaokeAnimation && !chunk.startsWith(String.raw`{\k`)) {
                     continue;
                 }
-                const duration = parseInt(chunk.slice(3, -1)) / 100;
+                const duration = Number.parseInt(chunk.slice(3, -1)) / 100;
                 if (karaokeAnimation) {
                     animationDuration = duration;
                     isNextSpanAnimated = true;
@@ -164,11 +166,10 @@ export class DialogueEvent {
                     // Minus because highlight starts instantly and the next line is delayed
                     span.style.backgroundImage = "";
                     span.style.backgroundClip = "";
-                    if (currentDelay - lastKaraokeDuration > timeSinceShown) {
-                        span.style.color = this.secondaryColor;
-                    } else {
-                        span.style.color = this.primaryColor;
-                    }
+                    span.style.color =
+                        currentDelay - lastKaraokeDuration > timeSinceShown
+                            ? this.secondaryColor
+                            : this.primaryColor;
                 }
                 currentIndex++;
             }
@@ -195,12 +196,12 @@ export class DialogueEvent {
         // Add 8 to the value for a "Midtitle".
         // E.g., 5 = left-justified toptitle.
         // Think of numpad and a 3x3 grid
-        let alignment = parseInt(this.styleData.Alignment);
+        let alignment = Number.parseInt(this.styleData.Alignment);
 
         // Alignment override \an<alignment> as the first text chunk or \a<alignment>
-        if (this.text[0].startsWith("{\\an")) {
-            alignment = parseInt(this.text[0][4]);
-        } else if (this.text[0].startsWith("{\\a")) {
+        if (this.text[0].startsWith(String.raw`{\an`)) {
+            alignment = Number.parseInt(this.text[0][4]);
+        } else if (this.text[0].startsWith(String.raw`{\a`)) {
             /*
             Legacy \a uses different alignment:
             1: Bottom left
@@ -214,38 +215,48 @@ export class DialogueEvent {
             11: Middle right
             translate to an:
              */
-            const legacyAlignment = parseInt(this.text[0][3]);
+            const legacyAlignment = Number.parseInt(this.text[0][3]);
             switch (legacyAlignment) {
-                case 1:
+                case 1: {
                     alignment = 1;
                     break;
-                case 2:
+                }
+                case 2: {
                     alignment = 2;
                     break;
-                case 3:
+                }
+                case 3: {
                     alignment = 3;
                     break;
-                case 5:
+                }
+                case 5: {
                     alignment = 7;
                     break;
-                case 6:
+                }
+                case 6: {
                     alignment = 8;
                     break;
-                case 7:
+                }
+                case 7: {
                     alignment = 9;
                     break;
-                case 9:
+                }
+                case 9: {
                     alignment = 4;
                     break;
-                case 10:
+                }
+                case 10: {
                     alignment = 5;
                     break;
-                case 11:
+                }
+                case 11: {
                     alignment = 6;
                     break;
-                default:
+                }
+                default: {
                     alignment = 5;
                     break;
+                }
             }
         }
 
@@ -254,61 +265,71 @@ export class DialogueEvent {
         const marginVerticalPercent = (this.marginVertical / resY) * 100;
 
         switch (alignment) {
-            case 1:
+            case 1: {
                 // Bottom left
                 this.element.style.left = `${marginLeftPercent}%`;
                 this.element.style.bottom = `${marginVerticalPercent}%`;
                 break;
-            case 2:
+            }
+            case 2: {
                 // Bottom center
                 this.element.style.left = `calc(50% + ${marginLeftPercent}% - ${marginRightPercent}%)`;
                 this.element.style.bottom = `${marginVerticalPercent}%`;
                 this.element.style.transform = "translateX(-50%)";
                 break;
-            case 3:
+            }
+            case 3: {
                 // Bottom right
                 this.element.style.right = `${marginRightPercent}%`;
                 this.element.style.bottom = `${marginVerticalPercent}%`;
                 break;
-            case 4:
+            }
+            case 4: {
                 // Middle left
                 this.element.style.left = `${marginLeftPercent}%`;
                 this.element.style.top = `calc(50% + ${marginVerticalPercent}% - ${marginVerticalPercent}%)`;
                 this.element.style.transform = "translateY(-50%)";
                 break;
-            case 5:
+            }
+            case 5: {
                 // Middle center
                 this.element.style.left = `calc(50% + ${marginLeftPercent}% - ${marginRightPercent}%)`;
                 this.element.style.top = `calc(50% + ${marginVerticalPercent}% - ${marginVerticalPercent}%)`;
                 this.element.style.transform = "translate(-50%, -50%)";
                 break;
-            case 6:
+            }
+            case 6: {
                 // Middle right
                 this.element.style.right = `${marginRightPercent}%`;
                 this.element.style.top = `calc(50% + ${marginVerticalPercent}% - ${marginVerticalPercent}%)`;
                 this.element.style.transform = "translateY(-50%)";
                 break;
-            case 7:
+            }
+            case 7: {
                 // Top left
                 this.element.style.left = `${marginLeftPercent}%`;
                 this.element.style.top = `${marginVerticalPercent}%`;
                 break;
-            case 8:
+            }
+            case 8: {
                 // Top center
                 this.element.style.left = `calc(50% + ${marginLeftPercent}% - ${marginRightPercent}%)`;
                 this.element.style.top = `${marginVerticalPercent}%`;
                 this.element.style.transform = "translateX(-50%)";
                 break;
-            case 9:
+            }
+            case 9: {
                 // Top right
                 this.element.style.right = `${marginRightPercent}%`;
                 this.element.style.top = `${marginVerticalPercent}%`;
                 break;
-            default:
+            }
+            default: {
                 // Default alignment
                 this.element.style.left = `${marginLeftPercent}%`;
                 this.element.style.bottom = `${marginVerticalPercent}%`;
                 break;
+            }
         }
 
         // Apply the style: formats are as follows:
@@ -318,17 +339,17 @@ export class DialogueEvent {
         // Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
         // Font color
         this.element.style.color = this.secondaryColor;
-        this.element.style.zIndex = (this.layer + 99999).toString();
+        this.element.style.zIndex = (this.layer + 99_999).toString();
         // Font family and size
         const fontFamily = `${this.styleData.Fontname}, "${embeddedFontName}", sans-serif`;
         let fontSize = this.styleData.Fontsize;
         // Font size override tag ("\fs<font size>")
-        if (this.text[0].startsWith("{\\fs")) {
+        if (this.text[0].startsWith(String.raw`{\fs`)) {
             fontSize = this.text[0].slice(4, -1);
         }
         this.element.style.fontFamily = fontFamily;
         // FontSize. Scale px with resX and resY
-        this.element.style.fontSize = `${(parseFloat(fontSize) / resY) * 0.8 * window.screen.height}px`;
+        this.element.style.fontSize = `${(Number.parseFloat(fontSize) / resY) * 0.8 * window.screen.height}px`;
         // Bold, italic, underline, strikeout
         if (this.styleData.Bold === "1") {
             this.element.style.fontWeight = "bold";
@@ -349,13 +370,13 @@ export class DialogueEvent {
             if (!chunk.startsWith("{")) {
                 const span = document.createElement("span");
                 const outText = chunk
-                    .replaceAll("\\N", "\n")
-                    .replaceAll("\\h", " ")
-                    .replaceAll("\\n", "\n");
+                    .replaceAll(String.raw`\N`, "\n")
+                    .replaceAll(String.raw`\h`, " ")
+                    .replaceAll(String.raw`\n`, "\n");
                 span.textContent = outText;
                 hasText ||= /[a-zA-Z]/.test(outText);
                 span.style.color = this.secondaryColor;
-                this.element.appendChild(span);
+                this.element.append(span);
                 this.textChunks.push(span);
             }
         }
@@ -363,7 +384,7 @@ export class DialogueEvent {
             this.element.classList.add("no_bg");
         }
 
-        parent.appendChild(this.element);
+        parent.append(this.element);
 
         // Update highlights
         this.updateHighlights(currentVideoTime);

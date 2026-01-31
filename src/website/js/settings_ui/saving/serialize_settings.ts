@@ -1,6 +1,9 @@
 import { USE_MIDI_RANGE } from "../handlers/keyboard_handler.js";
 import type { SpessaSynthSettings } from "../settings.ts";
-import type { LayoutType, SavedSettings } from "../../../server/saved_settings.ts";
+import type {
+    LayoutType,
+    SavedSettings
+} from "../../../server/saved_settings.ts";
 import type { LocaleCode } from "../../locale/locale_files/locale_list.ts";
 
 /**

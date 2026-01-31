@@ -53,7 +53,6 @@ export class Meter {
         unlockCallback?: () => unknown,
         activeChangeCallback?: (isActive: boolean) => unknown
     ) {
-        this.meterText = "";
         locale.bindObjectProperty(this, "meterText", localePath + ".title");
         this.min = min;
         this.max = max;
@@ -66,8 +65,7 @@ export class Meter {
         this.defaultValue = initialAndDefault;
 
         this.div = document.createElement("div");
-        this.div.classList.add("voice_meter");
-        this.div.classList.add("controller_element");
+        this.div.classList.add("voice_meter", "controller_element");
         if (color !== "none" && color !== "") {
             this.div.style.borderColor = color;
         }
@@ -81,17 +79,17 @@ export class Meter {
         this.bar = document.createElement("div");
         this.bar.classList.add("voice_meter_bar");
         this.bar.style.background = color;
-        this.div.appendChild(this.bar);
+        this.div.append(this.bar);
 
         this.text = document.createElement("p");
         this.text.classList.add("voice_meter_text");
-        this.div.appendChild(this.text);
+        this.div.append(this.text);
 
         if (editable) {
             if (editCallback === undefined) {
                 throw new Error("No editable function given!");
             }
-            this.div.onmousedown = (e) => {
+            this.div.addEventListener("mousedown", (e) => {
                 e.preventDefault();
                 if (e.button === 0) {
                     // Left mouse button: adjust value
@@ -103,8 +101,8 @@ export class Meter {
                     // Other, lock it
                     this.toggleLock();
                 }
-            };
-            this.div.onmousemove = (e) => {
+            });
+            this.div.addEventListener("mousemove", (e) => {
                 if (!this.isActive) {
                     return;
                 }
@@ -118,33 +116,33 @@ export class Meter {
                     this.toggleLock();
                 }
                 editCallback(percentage * (max - min) + min);
-            };
-            this.div.onmouseup = () => {
+            });
+            this.div.addEventListener("mouseup", () => {
                 this.isActive = false;
                 if (activeChangeCallback) {
                     activeChangeCallback(false);
                 }
-            };
-            this.div.onmouseleave = (e) => {
+            });
+            this.div.addEventListener("mouseleave", (e) => {
                 this.div.onmousemove?.(e);
                 this.isActive = false;
                 if (activeChangeCallback) {
                     activeChangeCallback(false);
                 }
-            };
+            });
 
             // QoL
-            this.text.oncontextmenu = (e) => {
+            this.text.addEventListener("contextmenu", (e) => {
                 e.preventDefault();
-            };
+            });
 
             // Add mobile
-            this.div.onclick = (e) => {
+            this.div.addEventListener("click", (e) => {
                 e.preventDefault();
                 this.isActive = true;
                 this.div.onmousemove?.(e);
                 this.isActive = false;
-            };
+            });
             this.div.classList.add("editable");
         }
         this.update(initialAndDefault);

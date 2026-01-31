@@ -123,26 +123,27 @@ export function showNotification(
             contentWrapper.style[key as keyof WritableCSSDeclarations] = value!;
         }
     }
-    notification.appendChild(contentWrapper);
+    notification.append(contentWrapper);
     for (const content of contents) {
         const element = getContent(content, locale);
         if (content.onClick) {
-            element.onclick = () =>
+            element.addEventListener("click", () =>
                 content.onClick?.(
                     { div: notification, id: notificationID },
                     element
-                );
+                )
+            );
         }
-        contentWrapper.appendChild(element);
+        contentWrapper.append(element);
     }
 
-    const closeButton = notification.getElementsByClassName(
-        "close_btn"
+    const closeButton = notification.querySelectorAll(
+        ".close_btn"
     )[0] as HTMLElement;
     if (allowClosing) {
-        closeButton.onclick = () => {
+        closeButton.addEventListener("click", () => {
             closeNotification(notificationID);
-        };
+        });
     } else {
         closeButton.style.display = "none";
     }
@@ -156,9 +157,7 @@ export function showNotification(
         },
         time * 1000 + ANIMATION_REFLOW_TIME
     );
-    document
-        .getElementsByClassName("notification_field")[0]
-        .appendChild(notification);
+    document.querySelectorAll(".notification_field")[0].append(notification);
     notifications[notificationID] = {
         div: notification,
         timeout: timeoutID,
@@ -178,10 +177,7 @@ export function closeNotification(id: number) {
     const notification = notificationEl.div;
     clearTimeout(notifications[id].timeout);
     notification.classList.remove("drop");
-    setTimeout(
-        () => notification?.parentElement?.removeChild(notification),
-        500
-    );
+    setTimeout(() => notification.remove(), 500);
     if (notificationEl.onclose) {
         notificationEl.onclose();
     }

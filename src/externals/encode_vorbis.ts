@@ -17,9 +17,9 @@ export async function encodeVorbis(
     }
     const arr = new Uint8Array(chunks.reduce((l, c) => l + c.length, 0));
     let offset = 0;
-    chunks.forEach((c) => {
+    for (const c of chunks) {
         arr.set(c, offset);
         offset += c.length;
-    });
+    }
     return arr;
 }

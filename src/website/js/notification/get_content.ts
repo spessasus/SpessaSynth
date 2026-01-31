@@ -36,19 +36,21 @@ export function getContent(
     locale?: LocaleManager
 ): HTMLElement {
     switch (content.type) {
-        case "button":
+        case "button": {
             const btn = document.createElement("button");
             applyTextContent(btn, content, locale);
             applyAttributes(content, [btn]);
             return btn;
+        }
 
-        case "text":
+        case "text": {
             const p = document.createElement("p");
             applyTextContent(p, content, locale);
             applyAttributes(content, [p]);
             return p;
+        }
 
-        case "input":
+        case "input": {
             const inputWrapper = document.createElement("div");
             inputWrapper.classList.add("notification_input_wrapper");
             const input = document.createElement("input");
@@ -59,10 +61,11 @@ export function getContent(
 
             applyAttributes(content, [input, inputLabel]);
             inputWrapper.append(inputLabel);
-            inputWrapper.appendChild(input);
+            inputWrapper.append(input);
             return inputWrapper;
+        }
 
-        case "select":
+        case "select": {
             const selectWrapper = document.createElement("div");
             selectWrapper.classList.add("notification_input_wrapper");
             const select = document.createElement("select");
@@ -73,17 +76,18 @@ export function getContent(
                 const opt = document.createElement("option");
                 opt.value = option[0];
                 opt.textContent = option[1];
-                select.appendChild(opt);
+                select.append(opt);
             }
             const selectLabel = document.createElement("label");
 
             applyTextContent(selectLabel, content, locale);
             applyAttributes(content, [select, selectLabel]);
-            selectWrapper.appendChild(selectLabel);
-            selectWrapper.appendChild(select);
+            selectWrapper.append(selectLabel);
+            selectWrapper.append(select);
             return selectWrapper;
+        }
 
-        case "file":
+        case "file": {
             const fileWrapper = document.createElement("label");
             fileWrapper.classList.add("notification_input_wrapper");
             const file = document.createElement("input");
@@ -96,24 +100,27 @@ export function getContent(
             applyTextContent(fileLabel, content, locale);
 
             applyAttributes(content, [fileButton, file, fileLabel]);
-            fileButton.appendChild(file);
+            fileButton.append(file);
             fileWrapper.append(fileLabel);
-            fileWrapper.appendChild(fileButton);
+            fileWrapper.append(fileButton);
             return fileWrapper;
+        }
 
-        case "progress":
+        case "progress": {
             const background = document.createElement("div");
             background.classList.add("notification_progress_background");
             const progress = document.createElement("div");
             progress.classList.add("notification_progress");
             applyAttributes(content, [progress, background]);
-            background.appendChild(progress);
+            background.append(progress);
             return background;
+        }
 
-        case "toggle":
+        case "toggle": {
             return getSwitch(content, locale);
+        }
 
-        case "range":
+        case "range": {
             const range = document.createElement("input");
             range.type = "range";
             const label = document.createElement("label");
@@ -122,12 +129,14 @@ export function getContent(
             const slider = createSlider(range, false);
             const wrapper = document.createElement("div");
             wrapper.classList.add("notification_slider_wrapper");
-            wrapper.appendChild(label);
-            wrapper.appendChild(slider);
+            wrapper.append(label);
+            wrapper.append(slider);
             return wrapper;
+        }
 
-        default:
+        default: {
             throw new Error("Invalid type.");
+        }
     }
 }
 
@@ -142,7 +151,7 @@ function applyAttributes(
                     continue;
                 }
                 if (key === "onchange") {
-                    element.onchange = value as () => unknown;
+                    element.addEventListener("change", value as () => unknown);
                 } else {
                     element.setAttribute(key, value as string);
                 }
@@ -173,14 +182,14 @@ function getSwitch(
 
     const toggle = document.createElement("div");
     toggle.classList.add("notification_switch");
-    toggle.appendChild(toggleInput);
+    toggle.append(toggleInput);
 
     const slider = document.createElement("div");
     slider.classList.add("notification_switch_slider");
-    toggle.appendChild(slider);
+    toggle.append(slider);
 
-    switchWrapper.appendChild(toggleText);
-    switchWrapper.appendChild(toggle);
+    switchWrapper.append(toggleText);
+    switchWrapper.append(toggle);
 
     if (content.attributes?.checked === "checked") {
         toggleInput.checked = true;

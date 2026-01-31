@@ -3,12 +3,6 @@ import type { MIDIKeyboard } from "./midi_keyboard.ts";
 
 export function handlePointers(this: MIDIKeyboard) {
     // POINTER HANDLING
-    const userNoteOff = (note: number) => {
-        this.pressedKeys.delete(note);
-        this.releaseNote(note, this.channel);
-        this.synth.noteOff(this.channel, note);
-    };
-
     const userNoteOn = (note: number, touch: Touch | MouseEvent) => {
         // User note on
         let velocity;
@@ -42,61 +36,61 @@ export function handlePointers(this: MIDIKeyboard) {
         // All currently pressed keys are stored in this.pressedKeys
         const touches = "touches" in e ? Array.from(e.touches) : [e];
         const currentlyTouchedKeys = new Set<number>();
-        touches.forEach((touch) => {
+        for (const touch of touches) {
             const targetKey = document.elementFromPoint(
                 touch.clientX,
                 touch.clientY
             );
             if (!targetKey) {
-                return;
+                continue;
             }
-            const midiNote = parseInt(targetKey.id.replace("note", ""));
+            const midiNote = Number.parseInt(targetKey.id.replace("note", ""));
             currentlyTouchedKeys.add(midiNote);
             if (
-                isNaN(midiNote) ||
+                Number.isNaN(midiNote) ||
                 midiNote < 0 ||
                 this.pressedKeys.has(midiNote)
             ) {
                 // Pressed outside of bounds or already pressed
-                return;
+                continue;
             }
             this.pressedKeys.add(midiNote);
             userNoteOn(midiNote, touch);
-        });
-        this.pressedKeys.forEach((key) => {
+        }
+        for (const key of this.pressedKeys) {
             if (!currentlyTouchedKeys.has(key)) {
-                userNoteOff(key);
+                this.userNoteOff(key);
             }
-        });
+        }
     };
 
     // Mouse
-    if (!isMobile) {
+    if (isMobile) {
+        // Touch
+        this.keyboard.addEventListener("touchstart", moveHandler.bind(this));
+        this.keyboard.addEventListener("touchend", moveHandler.bind(this));
+        // Some fingers may still be pressed so we move handler here
+        this.keyboard.addEventListener("touchmove", moveHandler.bind(this));
+    } else {
         document.addEventListener("mousedown", (e) => {
             this.mouseHeld = true;
             moveHandler(e);
         });
         document.addEventListener("mouseup", () => {
             this.mouseHeld = false;
-            this.pressedKeys.forEach((key) => {
-                userNoteOff(key);
-            });
+            for (const key of this.pressedKeys) {
+                this.userNoteOff(key);
+            }
         });
-        this.keyboard.onmousemove = (e) => {
+        this.keyboard.addEventListener("mousemove", (e) => {
             if (this.mouseHeld) {
                 moveHandler(e);
             }
-        };
-        this.keyboard.onmouseleave = () => {
-            this.pressedKeys.forEach((key) => {
-                userNoteOff(key);
-            });
-        };
-    } else {
-        // Touch
-        this.keyboard.ontouchstart = moveHandler.bind(this);
-        this.keyboard.ontouchend = moveHandler.bind(this);
-        // Some fingers may still be pressed so we move handler here
-        this.keyboard.ontouchmove = moveHandler.bind(this);
+        });
+        this.keyboard.addEventListener("mouseleave", () => {
+            for (const key of this.pressedKeys) {
+                this.userNoteOff(key);
+            }
+        });
     }
 }

@@ -12,7 +12,7 @@ export const sequencerControllerLocale = {
         otherText: {
             title: "Inny tekst"
         },
-        
+
         subtitles: {
             title: "Wgraj napisy ASS",
             description: "Wgraj swoje własne napisy w formacie ASS (.ass)"

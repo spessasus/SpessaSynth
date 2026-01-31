@@ -108,7 +108,8 @@ export function exportAndSaveSF2(this: Manager) {
                         "input[compress-toggle='1']"
                     ).checked;
                     const quality =
-                        parseInt(getEl("input[type='range']").value) / 10;
+                        Number.parseInt(getEl("input[type='range']").value) /
+                        10;
                     closeNotification(n.id);
                     console.group(
                         "%cExporting soundfont...",
@@ -123,14 +124,14 @@ export function exportAndSaveSF2(this: Manager) {
                             { type: "text", textContent: exportingMessage },
                             { type: "progress" }
                         ],
-                        9999999,
+                        9_999_999,
                         false
                     );
-                    const progressDiv = notification.div.getElementsByClassName(
-                        "notification_progress"
+                    const progressDiv = notification.div.querySelectorAll(
+                        ".notification_progress"
                     )[0] as HTMLDivElement;
                     const detailMessage =
-                        notification.div.getElementsByTagName("p")[0];
+                        notification.div.querySelectorAll("p")[0];
                     const exported = await writeSF2.call(
                         this,
                         await this.seq!.getMIDI(),
@@ -161,7 +162,7 @@ export function exportAndSaveSF2(this: Manager) {
                 }
             }
         ],
-        99999999,
+        99_999_999,
         true,
         this.localeManager
     );

@@ -58,8 +58,9 @@ export function showAdvancedConfiguration(this: SynthetizerUI) {
                 listeners: {
                     change: (e) => {
                         const rate =
-                            parseInt((e.target as HTMLInputElement).value) ||
-                            44100;
+                            Number.parseInt(
+                                (e.target as HTMLInputElement).value
+                            ) || 44_100;
                         const n = showNotification(
                             this.locale.getLocaleString(
                                 "locale.warnings.warning"
@@ -103,7 +104,7 @@ export function showAdvancedConfiguration(this: SynthetizerUI) {
                                     }
                                 }
                             ],
-                            999999,
+                            999_999,
                             true
                         );
                     }
@@ -122,8 +123,9 @@ export function showAdvancedConfiguration(this: SynthetizerUI) {
                 listeners: {
                     change: (e) => {
                         const cap =
-                            parseInt((e.target as HTMLInputElement).value) ||
-                            100;
+                            Number.parseInt(
+                                (e.target as HTMLInputElement).value
+                            ) || 100;
                         this.synth.setMasterParameter("voiceCap", cap);
                         this.voiceMeter.max = cap;
                     }
@@ -162,7 +164,7 @@ export function showAdvancedConfiguration(this: SynthetizerUI) {
                 }
             }
         ],
-        99999999,
+        99_999_999,
         true,
         this.locale
     );

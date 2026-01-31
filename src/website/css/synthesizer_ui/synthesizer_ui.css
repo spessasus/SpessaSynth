@@ -81,7 +81,12 @@
 }
 
 .synthui_controller_light {
-    background: linear-gradient(115deg, rgb(200, 200, 200), rgba(255, 255, 255), rgba(200, 200, 200)) !important;
+    background: linear-gradient(
+        115deg,
+        rgb(200, 200, 200),
+        rgba(255, 255, 255),
+        rgba(200, 200, 200)
+    ) !important;
 }
 
 .synthui_controller_show {

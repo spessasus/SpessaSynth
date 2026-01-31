@@ -59,15 +59,15 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
         });
         updateChannels();
 
-        option.appendChild(channelDisplay);
-        option.appendChild(nameDisplay);
+        option.append(channelDisplay);
+        option.append(nameDisplay);
         option.style.background =
             this.synthui.channelColors[
                 channelNumber % this.synthui.channelColors.length
             ];
         option.style.color = "rgb(0, 0, 0)";
 
-        keyboardControls.channelSelector.appendChild(option);
+        keyboardControls.channelSelector.append(option);
         channelNumber++;
     };
 
@@ -106,17 +106,17 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
     for (let i = 0; i < this.synth.channelsAmount; i++) {
         createChannel();
     }
-    keyboardControls.channelSelector.onchange = () => {
+    keyboardControls.channelSelector.addEventListener("change", () => {
         this.midiKeyboard.selectChannel(
-            parseInt(keyboardControls.channelSelector.value)
+            Number.parseInt(keyboardControls.channelSelector.value)
         );
-    };
+    });
 
-    keyboardControls.sizeSelector.onchange = () => {
+    keyboardControls.sizeSelector.addEventListener("change", () => {
         if (this.musicMode.visible) {
             this.musicMode.setVisibility(
                 false,
-                document.getElementById("keyboard_canvas_wrapper")!
+                document.querySelector("#keyboard_canvas_wrapper")!
             );
             setTimeout(() => {
                 if (keyboardControls.sizeSelector.value === USE_MIDI_RANGE) {
@@ -162,7 +162,7 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
                 ];
         }
         this.saveSettings();
-    };
+    });
 
     this.seq.eventHandler.addEvent(
         "songChange",
@@ -172,11 +172,11 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
                 this.midiKeyboard.keyRange = mid.keyRange;
                 this.renderer.keyRange = mid.keyRange;
             }
-            if (mid.rmidiInfo?.picture !== undefined) {
-                // Switch to music mode if picture available
-                if (!this.musicMode.visible) {
-                    this.toggleMusicPlayerMode();
-                }
+            if (
+                mid.rmidiInfo?.picture !== undefined && // Switch to music mode if picture available
+                !this.musicMode.visible
+            ) {
+                this.toggleMusicPlayerMode();
             }
         }
     );
@@ -195,37 +195,33 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
         "muteChannel",
         "settings-keuboard-mute-channel",
         (e) => {
-            if (e.isMuted) {
-                if (e.channel === this.midiKeyboard.channel) {
-                    // Find the first non-selected channel
-                    let channelNumber = 0;
-                    while (
-                        this.synth.channelProperties[channelNumber].isMuted
+            if (e.isMuted && e.channel === this.midiKeyboard.channel) {
+                // Find the first non-selected channel
+                let channelNumber = 0;
+                while (this.synth.channelProperties[channelNumber].isMuted) {
+                    channelNumber++;
+                    if (
+                        this.synth.channelProperties[channelNumber] ===
+                        undefined
                     ) {
-                        channelNumber++;
-                        if (
-                            this.synth.channelProperties[channelNumber] ===
-                            undefined
-                        ) {
-                            return;
-                        }
+                        return;
                     }
-                    if (channelNumber < this.synth.channelsAmount) {
-                        this.midiKeyboard.selectChannel(channelNumber);
-                        keyboardControls.channelSelector.value =
-                            channelNumber.toString();
-                    }
+                }
+                if (channelNumber < this.synth.channelsAmount) {
+                    this.midiKeyboard.selectChannel(channelNumber);
+                    keyboardControls.channelSelector.value =
+                        channelNumber.toString();
                 }
             }
         }
     );
 
     // Dark mode toggle
-    keyboardControls.modeSelector.onclick = () => {
+    keyboardControls.modeSelector.addEventListener("click", () => {
         if (this.musicMode.visible) {
             this.musicMode.setVisibility(
                 false,
-                document.getElementById("keyboard_canvas_wrapper")!
+                document.querySelector("#keyboard_canvas_wrapper")!
             );
             setTimeout(() => {
                 this.midiKeyboard.toggleMode();
@@ -236,11 +232,11 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
         }
         this.midiKeyboard.toggleMode();
         this.saveSettings();
-    };
+    });
 
     // Keyboard show toggle
-    keyboardControls.showSelector.onclick = () => {
+    keyboardControls.showSelector.addEventListener("click", () => {
         this.midiKeyboard.shown = !this.midiKeyboard.shown;
         this.saveSettings();
-    };
+    });
 }

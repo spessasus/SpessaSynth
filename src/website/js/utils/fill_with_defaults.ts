@@ -6,6 +6,6 @@
 export function fillWithDefaults<T>(obj: Partial<T> | undefined, defObj: T): T {
     return {
         ...defObj,
-        ...(obj ?? {})
+        ...obj
     };
 }

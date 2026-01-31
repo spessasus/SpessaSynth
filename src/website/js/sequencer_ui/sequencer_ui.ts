@@ -46,14 +46,14 @@ const ICON_DISABLED_COLOR_L = "#ddd";
 const DEFAULT_ENCODING = "Shift_JIS";
 
 // Zero width space
-const ZWSP = "\u200b";
+const ZWSP = "\u200B";
 
 // Parser for turning MIDI status bytes into text
 const reversedMIDITypes = new Map<MIDIMessageType, string>();
 for (const key in midiMessageTypes) {
     reversedMIDITypes.set(
         midiMessageTypes[key as keyof typeof midiMessageTypes],
-        key.replace(/([a-z])([A-Z])/g, "$1 $2")
+        key.replaceAll(/([a-z])([A-Z])/g, "$1 $2")
     );
 }
 
@@ -149,7 +149,7 @@ export class SequencerUI {
         this.synth = synth;
         this.seq = seq;
 
-        const m = document.getElementById("title");
+        const m = document.querySelector<HTMLElement>("#title");
         if (!m) {
             throw new Error("Unexpected lack of title message.");
         }
@@ -172,12 +172,9 @@ export class SequencerUI {
                         "xg_sysex_display"
                     );
 
-                    let textDataNum: number[];
-                    if (isYamaha) {
-                        textDataNum = syx.slice(6, syx.length - 1);
-                    } else {
-                        textDataNum = syx.slice(7, syx.length - 2);
-                    }
+                    const textDataNum = isYamaha
+                        ? syx.slice(6, -1)
+                        : syx.slice(7, -2);
 
                     const textData = new Uint8Array(textDataNum);
                     // Decode the text
@@ -214,13 +211,12 @@ export class SequencerUI {
                         }
                     }
 
-                    if (text.trim().length === 0) {
-                        // Set the text to invisible character to keep the height
-                        this.mainTitleMessageDisplay.innerText = "‎ ";
-                    } else {
-                        // Set the display to an invisible character to keep the height
-                        this.mainTitleMessageDisplay.innerText = text;
-                    }
+                    this.mainTitleMessageDisplay.textContent =
+                        text.trim().length === 0
+                            ? // Set the text to invisible character to keep the height
+                              "‎ "
+                            : // Set the display to an invisible character to keep the height
+                              text;
 
                     this.synthDisplayMode.enabled = true;
                     this.synthDisplayMode.currentEncodedText = textData;
@@ -241,14 +237,14 @@ export class SequencerUI {
             this.progressTime = document.createElement("p");
             this.progressTime.id = "note_time";
             // It'll always be on top
-            this.progressTime.onclick = (event) => {
+            this.progressTime.addEventListener("click", (event) => {
                 event.preventDefault();
                 const barPosition = progressBarBg.getBoundingClientRect();
                 const x = event.clientX - barPosition.left;
                 const width = barPosition.width;
 
                 this.seq.currentTime = (x / width) * this.seq.duration;
-            };
+            });
 
             // Create lyrics
             {
@@ -269,27 +265,28 @@ export class SequencerUI {
                     "locale.sequencerController.lyrics.title"
                 );
                 lyricsTitle.classList.add("lyrics_title");
-                titleWrapper.appendChild(lyricsTitle);
+                titleWrapper.append(lyricsTitle);
 
                 // Encoding selector
                 const encodingSelector = document.createElement("select");
-                supportedEncodings.forEach((encoding) => {
+                for (const encoding of supportedEncodings) {
                     const option = document.createElement("option");
-                    option.innerText = encoding;
+                    option.textContent = encoding;
                     option.value = encoding;
-                    encodingSelector.appendChild(option);
-                });
+                    encodingSelector.append(option);
+                }
                 encodingSelector.value = this.encoding;
-                encodingSelector.onchange = () =>
-                    this.changeEncoding(encodingSelector.value);
+                encodingSelector.addEventListener("change", () =>
+                    this.changeEncoding(encodingSelector.value)
+                );
                 encodingSelector.classList.add("lyrics_selector");
                 this.encodingSelector = encodingSelector;
-                titleWrapper.appendChild(encodingSelector);
+                titleWrapper.append(encodingSelector);
 
                 // The actual text
                 const text = document.createElement("p");
                 text.classList.add("lyrics_text");
-                mainLyricsDiv.appendChild(text);
+                mainLyricsDiv.append(text);
 
                 // Display for other texts
                 const otherTextWrapper = document.createElement("details");
@@ -299,15 +296,15 @@ export class SequencerUI {
                     "textContent",
                     "locale.sequencerController.lyrics.otherText.title"
                 );
-                otherTextWrapper.appendChild(sum);
+                otherTextWrapper.append(sum);
                 const otherText = document.createElement("div");
-                otherText.innerText = "";
-                otherTextWrapper.appendChild(otherText);
-                mainLyricsDiv.appendChild(otherTextWrapper);
+                otherText.textContent = "";
+                otherTextWrapper.append(otherText);
+                mainLyricsDiv.append(otherTextWrapper);
 
                 // Subtitle upload
-                const subtitleField = document.getElementsByClassName(
-                    "ass_renderer_field"
+                const subtitleField = document.querySelectorAll(
+                    ".ass_renderer_field"
                 )[0] as HTMLDivElement;
                 if (!subtitleField) {
                     throw new Error("Unexpected lack of subtitles!");
@@ -322,8 +319,8 @@ export class SequencerUI {
                 input.accept = ".ass";
                 input.id = "subtitle_upload";
                 input.classList.add("hidden");
-                mainLyricsDiv.appendChild(input);
-                input.onchange = async () => {
+                mainLyricsDiv.append(input);
+                input.addEventListener("change", async () => {
                     if (input?.files?.[0] === undefined) {
                         return;
                     }
@@ -331,7 +328,7 @@ export class SequencerUI {
                     this.subtitleManager.loadASSSubtitles(await file.text());
                     this.subtitleManager.setVisibility(true);
                     this.toggleLyrics();
-                };
+                });
 
                 const subtitleUpload = document.createElement("label");
                 subtitleUpload.htmlFor = "subtitle_upload";
@@ -346,7 +343,7 @@ export class SequencerUI {
                     "title",
                     "locale.sequencerController.lyrics.subtitles.description"
                 );
-                mainLyricsDiv.appendChild(subtitleUpload);
+                mainLyricsDiv.append(subtitleUpload);
 
                 this.lyricsElement = {
                     text: {
@@ -360,7 +357,7 @@ export class SequencerUI {
                     mainDiv: mainLyricsDiv,
                     selector: encodingSelector
                 };
-                this.controls.appendChild(mainLyricsDiv);
+                this.controls.append(mainLyricsDiv);
                 this.requiresTextUpdate = true;
             }
 
@@ -395,7 +392,7 @@ export class SequencerUI {
                     this.seqPause();
                 }
             };
-            playPauseButton.onclick = togglePlayback;
+            playPauseButton.addEventListener("click", togglePlayback);
 
             // Previous song button
             const previousSongButton = getSeqUIButton(
@@ -407,7 +404,9 @@ export class SequencerUI {
                 "title",
                 "locale.sequencerController.previousSong"
             );
-            previousSongButton.onclick = () => this.switchToPreviousSong();
+            previousSongButton.addEventListener("click", () =>
+                this.switchToPreviousSong()
+            );
 
             // Next song button
             const nextSongButton = getSeqUIButton(
@@ -419,7 +418,9 @@ export class SequencerUI {
                 "title",
                 "locale.sequencerController.nextSong"
             );
-            nextSongButton.onclick = () => this.switchToNextSong();
+            nextSongButton.addEventListener("click", () =>
+                this.switchToNextSong()
+            );
 
             // Loop button
             const loopButton = getSeqUIButton(
@@ -434,7 +435,7 @@ export class SequencerUI {
             const toggleLoop = () => {
                 this.setLoopState(this.seq.loopCount < 1);
             };
-            loopButton.onclick = toggleLoop;
+            loopButton.addEventListener("click", toggleLoop);
             this.loopButton = loopButton;
 
             // Shuffle button
@@ -447,14 +448,14 @@ export class SequencerUI {
                 "title",
                 "locale.sequencerController.shuffle"
             );
-            shuffleButton.onclick = () => {
+            shuffleButton.addEventListener("click", () => {
                 this.seq.shuffleSongs = !this.seq.shuffleSongs;
                 if (this.seq.shuffleSongs) {
                     this.enableIcon(shuffleButton);
                 } else {
                     this.disableIcon(shuffleButton);
                 }
-            };
+            });
             this.disableIcon(shuffleButton);
 
             // Playback rate button
@@ -482,7 +483,7 @@ export class SequencerUI {
             playbackRateSliderWrapper.classList.add(
                 "playback_rate_slider_wrapper"
             );
-            playbackRateSliderWrapper.appendChild(playbackRateSlider);
+            playbackRateSliderWrapper.append(playbackRateSlider);
             const actualInput = playbackRateSlider.firstElementChild
                 ?.lastElementChild as HTMLInputElement;
             const displaySpan =
@@ -495,24 +496,24 @@ export class SequencerUI {
             }
             displaySpan.contentEditable = "true";
             displaySpan.textContent = `${this.seq.playbackRate * 100}%`;
-            actualInput.oninput = () => {
-                const value = parseInt(actualInput.value);
+            actualInput.addEventListener("input", () => {
+                const value = Number.parseInt(actualInput.value);
                 const playbackPercent =
                     value > 20 ? (value - 20) * 10 + 100 : value * 5;
                 const newPlayback = playbackPercent / 100;
                 this.seq.playbackRate = newPlayback;
                 this.silencePlayer.playbackRate = newPlayback;
                 displaySpan.textContent = `${Math.round(playbackPercent)}%`;
-            };
-            displaySpan.onkeydown = (e) => {
+            });
+            displaySpan.addEventListener("keydown", (e) => {
                 e.stopPropagation();
                 e.stopImmediatePropagation();
-            };
-            displaySpan.oninput = (e) => {
+            });
+            displaySpan.addEventListener("input", (e) => {
                 e.stopImmediatePropagation();
-                const num = parseInt(displaySpan.textContent);
+                const num = Number.parseInt(displaySpan.textContent);
 
-                let percent = isNaN(num) ? 100 : num;
+                let percent = Number.isNaN(num) ? 100 : num;
                 if (percent < 1) {
                     percent = 100;
                 }
@@ -537,13 +538,13 @@ export class SequencerUI {
                     "--visual-width",
                     `${((inputValue - minSlider) / (maxSlider - minSlider)) * 100}%`
                 );
-            };
-            displaySpan.onblur = () => {
+            });
+            displaySpan.addEventListener("blur", () => {
                 displaySpan.textContent = `${Math.round(this.seq.playbackRate * 100)}%`;
-            };
+            });
             playbackRateSliderWrapper.classList.add("hidden");
             let sliderShown = false;
-            playbackRateButton.onclick = () => {
+            playbackRateButton.addEventListener("click", () => {
                 sliderShown = !sliderShown;
                 playbackRateSliderWrapper.classList.toggle("hidden");
                 if (sliderShown) {
@@ -551,7 +552,7 @@ export class SequencerUI {
                 } else {
                     this.disableIcon(playbackRateButton);
                 }
-            };
+            });
             this.disableIcon(playbackRateButton);
 
             // Show text button
@@ -575,65 +576,72 @@ export class SequencerUI {
                 }
             };
             this.toggleLyrics = toggleLyrics;
-            textButton.onclick = toggleLyrics;
+            textButton.addEventListener("click", toggleLyrics);
 
             // Add everything
-            controlsDiv.appendChild(previousSongButton); // |<
-            controlsDiv.appendChild(loopButton); // ()
-            controlsDiv.appendChild(shuffleButton); // ><
-            controlsDiv.appendChild(playPauseButton); // ||
-            controlsDiv.appendChild(textButton); // ==
-            controlsDiv.appendChild(playbackRateButton); // >>
-            controlsDiv.appendChild(nextSongButton); // >|
+            controlsDiv.append(previousSongButton); // |<
+            controlsDiv.append(loopButton); // ()
+            controlsDiv.append(shuffleButton); // ><
+            controlsDiv.append(playPauseButton); // ||
+            controlsDiv.append(textButton); // ==
+            controlsDiv.append(playbackRateButton); // >>
+            controlsDiv.append(nextSongButton); // >|
 
-            this.controls.appendChild(progressBarBg);
-            progressBarBg.appendChild(this.progressBar);
-            this.controls.appendChild(this.progressTime);
-            this.controls.appendChild(playbackRateSliderWrapper);
-            this.controls.appendChild(controlsDiv);
+            this.controls.append(progressBarBg);
+            progressBarBg.append(this.progressBar);
+            this.controls.append(this.progressTime);
+            this.controls.append(playbackRateSliderWrapper);
+            this.controls.append(controlsDiv);
 
             // Keyboard control
             document.addEventListener("keydown", (e) => {
                 switch (e.key.toLowerCase()) {
-                    case keybinds.playPause:
+                    case keybinds.playPause: {
                         e.preventDefault();
                         togglePlayback();
                         break;
+                    }
 
-                    case keybinds.toggleLoop:
+                    case keybinds.toggleLoop: {
                         e.preventDefault();
                         toggleLoop();
                         break;
+                    }
 
-                    case keybinds.toggleLyrics:
+                    case keybinds.toggleLyrics: {
                         e.preventDefault();
                         toggleLyrics();
                         break;
+                    }
 
-                    case keybinds.seekBackwards:
+                    case keybinds.seekBackwards: {
                         e.preventDefault();
                         this.seq.currentTime -= 5;
                         playPauseButton.innerHTML = getPauseSvg(ICON_SIZE);
                         break;
+                    }
 
-                    case keybinds.seekForwards:
+                    case keybinds.seekForwards: {
                         e.preventDefault();
                         this.seq.currentTime += 5;
                         playPauseButton.innerHTML = getPauseSvg(ICON_SIZE);
                         break;
+                    }
 
-                    case keybinds.previousSong:
+                    case keybinds.previousSong: {
                         this.switchToPreviousSong();
                         break;
+                    }
 
-                    case keybinds.nextSong:
+                    case keybinds.nextSong: {
                         this.switchToNextSong();
                         break;
+                    }
 
-                    default:
-                        if (!isNaN(parseFloat(e.key))) {
+                    default: {
+                        if (!Number.isNaN(Number.parseFloat(e.key))) {
                             e.preventDefault();
-                            const num = parseInt(e.key);
+                            const num = Number.parseInt(e.key);
                             if (0 <= num && num <= 9) {
                                 this.seq.currentTime =
                                     this.seq.duration * (num / 10);
@@ -642,6 +650,7 @@ export class SequencerUI {
                             }
                         }
                         break;
+                    }
                 }
             });
         }
@@ -680,7 +689,7 @@ export class SequencerUI {
                 this.restoreDisplay();
 
                 let midiEncoding = data.getRMIDInfo("midiEncoding");
-                if (typeof data.embeddedSoundBankSize !== "undefined") {
+                if (data.embeddedSoundBankSize !== undefined) {
                     // RMID defaults to utf-8
                     midiEncoding = "utf-8";
                 }
@@ -696,14 +705,12 @@ export class SequencerUI {
             }
         );
 
-        if (this.requiresThemeUpdate) {
-            if (this.mode === "light") {
-                // Change to dark and then switch
-                this.mode = "dark";
-                this.toggleDarkMode();
-            }
-            // Otherwise, we're already dark
+        if (this.requiresThemeUpdate && this.mode === "light") {
+            // Change to dark and then switch
+            this.mode = "dark";
+            this.toggleDarkMode();
         }
+        // Otherwise, we're already dark
 
         // Media session
         this.silencePlayer = new Audio();
@@ -725,7 +732,7 @@ export class SequencerUI {
                 this.switchToPreviousSong.bind(this)
             );
 
-            this.silencePlayer.onseeked = () => {
+            this.silencePlayer.addEventListener("seeked", () => {
                 const seekTime = this.silencePlayer.currentTime;
                 const seqTime = this.seq.currentTime;
                 if (
@@ -744,7 +751,7 @@ export class SequencerUI {
                     return;
                 }
                 this.seq.currentTime = seekTime;
-            };
+            });
         }
 
         // Hide for now
@@ -782,7 +789,7 @@ export class SequencerUI {
         this.silencePlayer.volume = 0.001;
         this.syncSilencePlayer();
         void this.silencePlayer.play().then(() => {
-            this.silencePlayer.volume = 0.00001;
+            this.silencePlayer.volume = 0.000_01;
         });
 
         // Show and start
@@ -847,8 +854,8 @@ export class SequencerUI {
             void navigator.wakeLock.request("screen").then((r) => {
                 this.wakeLock = r;
             });
-        } catch (e) {
-            console.warn(`Could not get wakelock:`, e);
+        } catch (error) {
+            console.warn(`Could not get wakelock:`, error);
         }
     }
 
@@ -857,11 +864,11 @@ export class SequencerUI {
         while (true) {
             try {
                 return this.decoder.decode(text);
-            } catch (e) {
+            } catch (error) {
                 encodingIndex++;
                 this.changeEncoding(supportedEncodings[encodingIndex]);
                 this.encodingSelector.value = supportedEncodings[encodingIndex];
-                console.warn(`Failed to decode: ${e as string}`);
+                console.warn(`Failed to decode: ${error as string}`);
             }
         }
     }
@@ -875,9 +882,11 @@ export class SequencerUI {
             // Set to default title
             textToShow = this.locale.getLocaleString("locale.titleMessage");
         }
-        this.mainTitleMessageDisplay.innerText = textToShow;
-        this.mainTitleMessageDisplay.classList.remove("sysex_display");
-        this.mainTitleMessageDisplay.classList.remove("xg_sysex_display");
+        this.mainTitleMessageDisplay.textContent = textToShow;
+        this.mainTitleMessageDisplay.classList.remove(
+            "sysex_display",
+            "xg_sysex_display"
+        );
     }
 
     protected changeEncoding(encoding: string) {
@@ -886,12 +895,15 @@ export class SequencerUI {
         this.updateOtherTextEvents();
         this.decodeLyricData();
         // Update all spans with the new encoding
-        this.lyricsElement.text.separateLyrics.forEach((span, index) => {
+        for (const [
+            index,
+            span
+        ] of this.lyricsElement.text.separateLyrics.entries()) {
             if (this.currentLyricsString[index] === undefined) {
-                return;
+                continue;
             }
-            span.innerText = this.currentLyricsString[index];
-        });
+            span.textContent = this.currentLyricsString[index];
+        }
         this.lyricsElement.selector.value = encoding;
         this.updateSongDisplayData(false);
         this.setLyricsText(this.lyricsIndex);
@@ -903,14 +915,14 @@ export class SequencerUI {
             return;
         }
         this.lastTimeUpdate = seqTime;
-        if (!this.seq?.midiData) {
-            this.progressBar.style.width = "0%";
-            this.progressTime.innerText = "--:-- / --:--";
-        } else {
+        if (this.seq?.midiData) {
             this.progressBar.style.width = `${(seqTime / this.seq.duration) * 100}%`;
             const time = formatTime(seqTime);
             const total = formatTime(this.seq.duration);
-            this.progressTime.innerText = `${time.time} / ${total.time}`;
+            this.progressTime.textContent = `${time.time} / ${total.time}`;
+        } else {
+            this.progressBar.style.width = "0%";
+            this.progressTime.textContent = "--:-- / --:--";
         }
         if (this.requiresTextUpdate) {
             this.updateOtherTextEvents();
@@ -928,7 +940,7 @@ export class SequencerUI {
     }
 
     protected setSliderInterval() {
-        setInterval(this._updateInterval.bind(this), 100);
+        window.setInterval(this._updateInterval.bind(this), 100);
     }
 
     protected decodeLyricData() {
@@ -992,16 +1004,14 @@ export class SequencerUI {
                     let string = this.currentLyricsString[i];
                     if (string.startsWith(ZWSP)) {
                         // When adding ZWSP in front of a word: consider it as the start of a newline
-                        string = " \n" + string.substring(1);
+                        string = " \n" + string.slice(1);
                     }
-                    if (string.endsWith(ZWSP)) {
-                        // When appending a ZWSP at the end of a word, consider it as a syllable
-                        // Remove ZWSP
-                        string = string.substring(0, string.length - 1);
-                    } else {
-                        // Otherwise it's a word. Add a space
-                        string = string + " ";
-                    }
+                    string = string.endsWith(ZWSP)
+                        ? // When appending a ZWSP at the end of a word, consider it as a syllable
+                          // Remove ZWSP
+                          string.slice(0, Math.max(0, string.length - 1))
+                        : // Otherwise it's a word. Add a space
+                          string + " ";
                     this.currentLyricsString[i] = string;
                 }
             }
@@ -1046,10 +1056,10 @@ export class SequencerUI {
         this.lyricsElement.text.separateLyrics = [];
         for (const lyric of this.currentLyricsString) {
             const span = document.createElement("span");
-            span.innerText = lyric;
+            span.textContent = lyric;
             // Gray (not highlighted) text
             span.classList.add("lyrics_text_gray");
-            this.lyricsElement.text.main.appendChild(span);
+            this.lyricsElement.text.main.append(span);
             this.lyricsElement.text.separateLyrics.push(span);
         }
     }
@@ -1060,7 +1070,7 @@ export class SequencerUI {
             const sampleDuration = Math.ceil(this.seq.midiData.duration * 8000);
             const noise = new Float32Array(sampleDuration);
             const p = 2 * Math.PI * 50;
-            for (let i = 0; i < Math.min(80000, sampleDuration); i++) {
+            for (let i = 0; i < Math.min(80_000, sampleDuration); i++) {
                 noise[i] = Math.sin(p * (i / 8000));
             }
             const buf = audioToWav([noise], 8000);
@@ -1069,7 +1079,7 @@ export class SequencerUI {
             );
 
             const mid = this.seq.midiData;
-            const artwork = Array<MediaImage>();
+            const artwork = new Array<MediaImage>();
             if (mid.rmidiInfo.picture === undefined) {
                 artwork.push({
                     // SpessaSynth logo

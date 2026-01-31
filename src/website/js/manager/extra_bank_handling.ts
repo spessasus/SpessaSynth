@@ -7,13 +7,14 @@ import type { Manager } from "./manager.ts";
 
 export function prepareExtraBankUpload(this: Manager) {
     let extraBankName = "";
-    const extra = document.getElementById("extra_bank_button")!;
+    const extra =
+        document.querySelector<HTMLLabelElement>("#extra_bank_button")!;
     this.localeManager.bindObjectProperty(
         extra,
         "title",
         "locale.extraBank.button"
     );
-    extra.onclick = () => {
+    extra.addEventListener("click", () => {
         const notification = showNotification(
             this.localeManager.getLocaleString("locale.extraBank.title"),
             [
@@ -46,7 +47,9 @@ export function prepareExtraBankUpload(this: Manager) {
                         };
 
                         const bank =
-                            parseInt(getEl("input[type='number']").value) || 0;
+                            Number.parseInt(
+                                getEl("input[type='number']").value
+                            ) || 0;
                         const file = getEl("input[type='file']").files?.[0];
                         if (!file) {
                             return;
@@ -92,7 +95,7 @@ export function prepareExtraBankUpload(this: Manager) {
                     }
                 }
             ],
-            999999,
+            999_999,
             true,
             this.localeManager
         );
@@ -101,11 +104,11 @@ export function prepareExtraBankUpload(this: Manager) {
         if (this.extraBank) {
             input.parentElement!.firstChild!.textContent = this.extraBank.name;
         }
-        input.oninput = () => {
+        input.addEventListener("input", () => {
             if (input?.files?.[0]) {
                 extraBankName = input.files[0].name;
                 input.parentElement!.firstChild!.textContent = extraBankName;
             }
-        };
-    };
+        });
+    });
 }

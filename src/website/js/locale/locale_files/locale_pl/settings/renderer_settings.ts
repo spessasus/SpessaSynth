@@ -1,6 +1,6 @@
 export const rendererSettingsLocale = {
     title: "Ustawienia wizualizacji",
-    
+
     mode: {
         title: "Tryb wizualizacji",
         description: "Zmień tryb wizualizacji kanałów",
@@ -9,67 +9,75 @@ export const rendererSettingsLocale = {
         spectrum: "Spektrum",
         filledWaveforms: "Wypełnione fale"
     },
-    
+
     noteFallingTime: {
         title: "Czas spadania nut (ms)",
         description: "Jak szybko spadają z góry nuty (w milisekundach)"
     },
-    
+
     noteAfterTriggerTime: {
         title: "Czas po aktywacji nuty (ms)",
-        description: "Jak długo nuty spadają po aktywacji. Zero oznacza, że aktywują się na dole."
+        description:
+            "Jak długo nuty spadają po aktywacji. Zero oznacza, że aktywują się na dole."
     },
-    
+
     waveformThickness: {
         title: "Grubość lini fal (px)",
         description: "Jak grube są linie fal dźwiękowych"
     },
-    
+
     waveformSampleSize: {
         title: "Rozmiar próbki",
-        description: "Jak szczegółowe są wizualizacje (Uwaga: wysokie wartości mogą pogorszyć wydajność) Pamiętaj, że wysokie wartości dodadzą opóźnienie do dźwięku, aby zsynchronizować fale z dźwiękiem."
+        description:
+            "Jak szczegółowe są wizualizacje (Uwaga: wysokie wartości mogą pogorszyć wydajność) Pamiętaj, że wysokie wartości dodadzą opóźnienie do dźwięku, aby zsynchronizować fale z dźwiękiem."
     },
-    
+
     waveformAmplifier: {
         title: "Wzmacniasz",
         description: "Jak 'żywe' są wizualizacje. Kontroluje ich amplitudę"
     },
-    
+
     toggleExponentialGain: {
         title: "Wykładniczy przyrost",
-        description: "Wyodrębnij różnice w głośności częstotliwości poprzez zastosowanie funkcji wykładniczej"
+        description:
+            "Wyodrębnij różnice w głośności częstotliwości poprzez zastosowanie funkcji wykładniczej"
     },
-    
+
     toggleDynamicGain: {
         title: "Dynamiczny przyrost",
-        description: "Automatycznie dostosuj przysrost aby najgłośniejsza częstotliwośc zapełniała całą wysokość"
+        description:
+            "Automatycznie dostosuj przysrost aby najgłośniejsza częstotliwośc zapełniała całą wysokość"
     },
-    
+
     toggleLogarithmicFrequency: {
         title: "Logarytmiczna częstotliwość",
-        description: "Rozłóż częstotliwości w sposób logarytmiczny zamiast liniowego. Zalecane"
+        description:
+            "Rozłóż częstotliwości w sposób logarytmiczny zamiast liniowego. Zalecane"
     },
-    
+
     toggleWaveformsRendering: {
         title: "Włącz rysowanie fal",
-        description: "Włącz rysowanie fal dźwiękowych (16-tu kolorowych linii z tyłu)"
+        description:
+            "Włącz rysowanie fal dźwiękowych (16-tu kolorowych linii z tyłu)"
     },
-    
+
     toggleNotesRendering: {
         title: "Włącz rysowanie nut",
-        description: "Włącz rysowanie spadających nut podczas odtwarzania pliku MIDI"
+        description:
+            "Włącz rysowanie spadających nut podczas odtwarzania pliku MIDI"
     },
-    
+
     toggleDrawingActiveNotes: {
         title: "Włącz rysowanie aktywnych nut",
         description: "Włącz efekt podświetlania się nut przy aktywacji"
     },
-    
+
     toggleDrawingVisualPitch: {
         title: "Włącz wizualizację wysokości tonu",
-        description: "Włącz przesuwanie nut w lewo lub w prawo gdy wysokość nut jest zmieniana"
+        description:
+            "Włącz przesuwanie nut w lewo lub w prawo gdy wysokość nut jest zmieniana"
     },
-    
+
     toggleStabilizeWaveforms: {
         title: "Włącz stabilizację fal",
         description: "Włącz stabilizowanie fal dźwiękowych"

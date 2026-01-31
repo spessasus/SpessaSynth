@@ -1,0 +1,8 @@
+**/*.min.*
+**/*.d.ts
+dist/
+local-dev/
+soundfonts/
+disabled_sf2s/
+server/
+.husky/

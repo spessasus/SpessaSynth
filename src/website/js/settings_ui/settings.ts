@@ -40,8 +40,8 @@ const niceDelayLookupTable = {
     2048: 0.05,
     4096: 0.27,
     8192: 0.34,
-    16384: 0.37151927437641724,
-    32768: 0.48
+    16_384: 0.371_519_274_376_417_24,
+    32_768: 0.48
 };
 
 /**
@@ -127,9 +127,8 @@ export class SpessaSynthSettings {
 
         const settingsButton: HTMLElement = document.createElement("div");
         settingsButton.style.position = "relative";
-        settingsButton.classList.add("seamless_button");
-        settingsButton.classList.add("settings_button");
-        settingsWrapper.appendChild(settingsButton);
+        settingsButton.classList.add("seamless_button", "settings_button");
+        settingsWrapper.append(settingsButton);
 
         const musicModeButton = document.createElement("div");
         musicModeButton.classList.add("seamless_button");
@@ -143,7 +142,7 @@ export class SpessaSynthSettings {
             "title",
             "locale.musicPlayerMode.toggleButton.description"
         );
-        settingsWrapper.appendChild(musicModeButton);
+        settingsWrapper.append(musicModeButton);
 
         const hideTopButton = document.createElement("div");
         hideTopButton.classList.add("seamless_button");
@@ -157,11 +156,10 @@ export class SpessaSynthSettings {
             "title",
             "locale.hideTopBar.description"
         );
-        settingsWrapper.appendChild(hideTopButton);
+        settingsWrapper.append(hideTopButton);
 
         // Add svg to show top button
-        const showTopButton =
-            document.getElementsByClassName("show_top_button")[0];
+        const showTopButton = document.querySelectorAll(".show_top_button")[0];
         showTopButton.innerHTML = getDownArrowSvg(20);
 
         const text = document.createElement("span");
@@ -170,26 +168,31 @@ export class SpessaSynthSettings {
             "innerText",
             "locale.settings.toggleButton"
         );
-        settingsButton.appendChild(text);
+        settingsButton.append(text);
 
         const gear = document.createElement("div");
         gear.innerHTML = getGearSvg(24);
         gear.classList.add("gear");
-        settingsButton.appendChild(gear);
+        settingsButton.append(gear);
 
         this.mainDiv = document.createElement("div");
         this.mainDiv.classList.add("settings_menu");
-        settingsButton.onclick = () => this.setVisibility(!this.visible);
-        settingsWrapper.appendChild(this.mainDiv);
+        settingsButton.addEventListener("click", () =>
+            this.setVisibility(!this.visible)
+        );
+        settingsWrapper.append(this.mainDiv);
 
-        musicModeButton.onclick = this.toggleMusicPlayerMode.bind(this);
+        musicModeButton.addEventListener(
+            "click",
+            this.toggleMusicPlayerMode.bind(this)
+        );
 
-        hideTopButton.onclick = this.hideTopPart.bind(this);
+        hideTopButton.addEventListener("click", this.hideTopPart.bind(this));
 
         // Stop propagation to disable hide on click outside
-        this.mainDiv.onclick = () => {
+        this.mainDiv.addEventListener("click", () => {
             this.hideOnDocClick = false;
-        };
+        });
 
         // Hide if clicked outside
         document.addEventListener("click", () => {
@@ -238,7 +241,9 @@ export class SpessaSynthSettings {
             if (element.tagName === "LABEL") {
                 const forId = element.getAttribute("for");
                 if (forId) {
-                    const forElement = document.getElementById(forId);
+                    const forElement = document.querySelector<HTMLElement>(
+                        "#" + forId
+                    );
                     if (forElement) {
                         this.locale.bindObjectProperty(
                             forElement,
@@ -253,99 +258,107 @@ export class SpessaSynthSettings {
         // Key bind is "R"
         document.addEventListener("keydown", (e) => {
             switch (e.key.toLowerCase()) {
-                case keybinds.settingsShow:
+                case keybinds.settingsShow: {
                     this.setVisibility(!this.visible);
                     break;
+                }
 
                 // Hide when synth controller shown
-                case keybinds.synthesizerUIShow:
+                case keybinds.synthesizerUIShow: {
                     this.setVisibility(false);
+                }
             }
         });
 
         // Get the elements
         this.htmlControls = {
             renderer: {
-                renderingMode: document.getElementById(
-                    "renderer_mode_selector"
-                )! as HTMLSelectElement,
-                noteTimeSlider: document.getElementById(
-                    "note_time_slider"
-                )! as HTMLInputElement,
-                noteAfterTriggerTimeSlider: document.getElementById(
-                    "note_after_time_slider"
-                )! as HTMLInputElement,
-                noteToggler: document.getElementById(
-                    "note_toggler"
-                )! as HTMLInputElement,
-                activeNoteToggler: document.getElementById(
-                    "active_note_toggler"
-                )! as HTMLInputElement,
-                visualPitchToggler: document.getElementById(
-                    "visual_pitch_toggler"
-                )! as HTMLInputElement,
-                stabilizeWaveformsToggler: document.getElementById(
-                    "stabilize_waveforms_toggler"
-                )! as HTMLInputElement,
+                renderingMode: document.querySelector<HTMLSelectElement>(
+                    "#renderer_mode_selector"
+                )!,
+                noteTimeSlider:
+                    document.querySelector<HTMLInputElement>(
+                        "#note_time_slider"
+                    )!,
+                noteAfterTriggerTimeSlider:
+                    document.querySelector<HTMLInputElement>(
+                        "#note_after_time_slider"
+                    )!,
+                noteToggler:
+                    document.querySelector<HTMLInputElement>("#note_toggler")!,
+                activeNoteToggler: document.querySelector<HTMLInputElement>(
+                    "#active_note_toggler"
+                )!,
+                visualPitchToggler: document.querySelector<HTMLInputElement>(
+                    "#visual_pitch_toggler"
+                )!,
+                stabilizeWaveformsToggler:
+                    document.querySelector<HTMLInputElement>(
+                        "#stabilize_waveforms_toggler"
+                    )!,
 
-                exponentialGainToggler: document.getElementById(
-                    "exponential_gain_toggler"
-                )! as HTMLInputElement,
-                dynamicGainToggler: document.getElementById(
-                    "dynamic_gain_toggler"
-                )! as HTMLInputElement,
-                logarithmicFrequencyToggler: document.getElementById(
-                    "logarithmic_frequency_toggler"
-                )! as HTMLInputElement,
+                exponentialGainToggler:
+                    document.querySelector<HTMLInputElement>(
+                        "#exponential_gain_toggler"
+                    )!,
+                dynamicGainToggler: document.querySelector<HTMLInputElement>(
+                    "#dynamic_gain_toggler"
+                )!,
+                logarithmicFrequencyToggler:
+                    document.querySelector<HTMLInputElement>(
+                        "#logarithmic_frequency_toggler"
+                    )!,
 
-                analyserThicknessSlider: document.getElementById(
-                    "analyser_thickness_slider"
-                )! as HTMLInputElement,
-                analyserFftSlider: document.getElementById(
-                    "analyser_fft_slider"
-                )! as HTMLInputElement,
-                waveMultiplierSlizer: document.getElementById(
-                    "wave_multiplier_slider"
-                )! as HTMLInputElement
+                analyserThicknessSlider:
+                    document.querySelector<HTMLInputElement>(
+                        "#analyser_thickness_slider"
+                    )!,
+                analyserFftSlider: document.querySelector<HTMLInputElement>(
+                    "#analyser_fft_slider"
+                )!,
+                waveMultiplierSlizer: document.querySelector<HTMLInputElement>(
+                    "#wave_multiplier_slider"
+                )!
             },
 
             keyboard: {
-                channelSelector: document.getElementById(
-                    "channel_selector"
-                )! as HTMLSelectElement,
-                modeSelector: document.getElementById(
-                    "mode_selector"
-                )! as HTMLInputElement,
-                sizeSelector: document.getElementById(
-                    "keyboard_size_selector"
-                )! as HTMLSelectElement,
-                showSelector: document.getElementById(
-                    "keyboard_show"
-                )! as HTMLInputElement
+                channelSelector:
+                    document.querySelector<HTMLSelectElement>(
+                        "#channel_selector"
+                    )!,
+                modeSelector:
+                    document.querySelector<HTMLInputElement>("#mode_selector")!,
+                sizeSelector: document.querySelector<HTMLSelectElement>(
+                    "#keyboard_size_selector"
+                )!,
+                showSelector:
+                    document.querySelector<HTMLInputElement>("#keyboard_show")!
             },
 
             midi: {
-                outputSelector: document.getElementById(
-                    "midi_output_selector"
-                )! as HTMLSelectElement,
-                inputSelector: document.getElementById(
-                    "midi_input_selector"
-                )! as HTMLSelectElement
+                outputSelector: document.querySelector<HTMLSelectElement>(
+                    "#midi_output_selector"
+                )!,
+                inputSelector: document.querySelector<HTMLSelectElement>(
+                    "#midi_input_selector"
+                )!
             },
 
             interface: {
-                themeSelector: document.getElementById(
-                    "toggle_mode_button"
-                )! as HTMLInputElement,
-                showControlsToggle: document.getElementById(
-                    "show_sequencer_controls_button"
-                )! as HTMLInputElement,
-                languageSelector: document.getElementById(
-                    "language_selector"
-                )! as HTMLSelectElement,
-                layoutSelector: document.getElementById(
-                    "layout_selector"
-                )! as HTMLSelectElement
+                themeSelector: document.querySelector<HTMLInputElement>(
+                    "#toggle_mode_button"
+                )!,
+                showControlsToggle: document.querySelector<HTMLInputElement>(
+                    "#show_sequencer_controls_button"
+                )!,
+                languageSelector:
+                    document.querySelector<HTMLSelectElement>(
+                        "#language_selector"
+                    )!,
+                layoutSelector:
+                    document.querySelector<HTMLSelectElement>(
+                        "#layout_selector"
+                    )!
             }
         };
 
@@ -389,9 +402,9 @@ export class SpessaSynthSettings {
         }
         this.musicMode.setVisibility(
             !this.musicMode.visible,
-            document.getElementById("keyboard_canvas_wrapper") ??
+            document.querySelector("#keyboard_canvas_wrapper") ??
                 (() => {
-                    throw new Error();
+                    throw new Error("Very unexpected error");
                 })()
         );
         this.renderer.renderBool = !this.musicMode.visible;
@@ -403,11 +416,11 @@ export class SpessaSynthSettings {
             return;
         }
         this.topPartVisible = true;
-        const topPart = document.getElementsByClassName(
-            "top_part"
+        const topPart = document.querySelectorAll(
+            ".top_part"
         )[0] as HTMLDivElement;
-        const showTopButton = document.getElementsByClassName(
-            "show_top_button"
+        const showTopButton = document.querySelectorAll(
+            ".show_top_button"
         )[0] as HTMLDivElement;
         topPart.style.display = "";
         setTimeout(() => {
@@ -424,8 +437,8 @@ export class SpessaSynthSettings {
         }
         this.topPartVisible = false;
         // Hide top
-        const topPart = document.getElementsByClassName(
-            "top_part"
+        const topPart = document.querySelectorAll(
+            ".top_part"
         )[0] as HTMLDivElement;
         topPart.classList.add("top_part_hidden");
         setTimeout(() => {
@@ -433,15 +446,15 @@ export class SpessaSynthSettings {
         }, 200);
 
         // Show button to get it back
-        const showTopButton = document.getElementsByClassName(
-            "show_top_button"
+        const showTopButton = document.querySelectorAll(
+            ".show_top_button"
         )[0] as HTMLDivElement;
         showTopButton.style.display = "flex";
         setTimeout(() => {
             showTopButton.classList.add("shown");
         }, ANIMATION_REFLOW_TIME);
 
-        showTopButton.onclick = this.showTopPart.bind(this);
+        showTopButton.addEventListener("click", this.showTopPart.bind(this));
         window.dispatchEvent(new CustomEvent("resize"));
     }
 
@@ -453,14 +466,14 @@ export class SpessaSynthSettings {
             this.mainDiv.style.display = "block";
             setTimeout(() => {
                 document
-                    .getElementsByClassName("top_part")[0]
+                    .querySelectorAll(".top_part")[0]
                     .classList.add("settings_shown");
                 this.mainDiv.classList.add("settings_menu_show");
             }, ANIMATION_REFLOW_TIME);
             this.hideOnDocClick = false;
         } else {
             document
-                .getElementsByClassName("top_part")[0]
+                .querySelectorAll(".top_part")[0]
                 .classList.remove("settings_shown");
             this.mainDiv.classList.remove("settings_menu_show");
             this.animationId = window.setTimeout(() => {
@@ -482,18 +495,13 @@ export class SpessaSynthSettings {
     }
 
     public setTimeDelay(fft: number) {
-        let delayTime;
         // Calculate delay:
         // 16384 fft size = 0.37 s
-        if (
+        const delayTime =
             fft >= 2048 &&
             this.renderer.rendererMode !== rendererModes.spectrumSingleMode
-        ) {
-            delayTime =
-                niceDelayLookupTable[fft as keyof typeof niceDelayLookupTable]; // Fft / sampleRate;
-        } else {
-            delayTime = 0;
-        }
+                ? niceDelayLookupTable[fft as keyof typeof niceDelayLookupTable]
+                : 0;
         this.delay.delayTime.value = delayTime;
         this.renderer.timeOffset = delayTime;
         this.synth.eventHandler.timeDelay = delayTime;

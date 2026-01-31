@@ -1,8 +1,17 @@
 import { calculateRGB, RGBAOpacity } from "../utils/calculate_rgb.js";
 import { render } from "./render.js";
 import { computeNotePositions } from "./compute_note_positions.js";
-import { connectChannelAnalysers, disconnectChannelAnalysers, updateFftSize } from "./channel_analysers.js";
-import { renderBigFft, renderSingleFft, renderSingleWaveform, renderWaveforms } from "./render_waveforms.js";
+import {
+    connectChannelAnalysers,
+    disconnectChannelAnalysers,
+    updateFftSize
+} from "./channel_analysers.js";
+import {
+    renderBigFft,
+    renderSingleFft,
+    renderSingleWaveform,
+    renderWaveforms
+} from "./render_waveforms.js";
 import { consoleColors } from "../utils/console_colors.js";
 import { BasicMIDI, midiMessageTypes } from "spessasynth_core";
 import type { Sequencer } from "spessasynth_lib";
@@ -52,7 +61,7 @@ export const PRESSED_EFFECT_TIME = 0.6;
 
 // Limits
 export const MIN_NOTE_HEIGHT_PX = 2;
-export const MAX_NOTES = 81572;
+export const MAX_NOTES = 81_572;
 
 export class Renderer {
     /**
@@ -75,7 +84,7 @@ export class Renderer {
     public exponentialGain = true;
     public logarithmicFrequency = true;
     public dynamicGain = false;
-    public renderChannels = Array<boolean>(16).fill(true);
+    public renderChannels = new Array<boolean>(16).fill(true);
     public timeOffset = 0;
     public notesOnScreen = 0;
     public sideways = false;
@@ -197,15 +206,15 @@ export class Renderer {
                 }
                 this.calculateNoteTimes(await this.seq.getMIDI());
                 this.resetIndexes();
-                if (mid.rmidiInfo?.picture !== undefined) {
+                if (mid.rmidiInfo?.picture === undefined) {
+                    this.canvas.style.background = "";
+                } else {
                     const blob = new Blob([mid.rmidiInfo.picture.buffer]);
                     const url = URL.createObjectURL(blob);
                     const opacity = this.canvas.classList.contains("light_mode")
                         ? 0
                         : 0.9;
                     this.canvas.style.background = `linear-gradient(rgba(0, 0, 0, ${opacity}), rgba(0, 0, 0, ${opacity})), center center / cover url("${url}")`;
-                } else {
-                    this.canvas.style.background = "";
                 }
             }
         );
@@ -328,14 +337,14 @@ export class Renderer {
         const MIN_NOTE_TIME = 0.02;
         const times = mid.getNoteTimes(MIN_NOTE_TIME);
         // Special and cool case (triangle.mid)
-        times.forEach((t) => {
+        for (const t of times) {
             if (t.length === 1) {
                 const n = t[0];
                 if (n.length === -1) {
                     n.length = mid.duration;
                 }
             }
-        });
+        }
         this.noteTimes = times.map((t) => {
             return {
                 notes: t,
@@ -352,7 +361,9 @@ export class Renderer {
         if (!this.noteTimes) {
             return;
         }
-        this.noteTimes.forEach((n) => (n.renderStartIndex = 0));
+        for (const n of this.noteTimes) {
+            n.renderStartIndex = 0;
+        }
         this.render(false, true);
     }
 

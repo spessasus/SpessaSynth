@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import { packageJSON, soundfontsPath } from "./server.js";
 import type { ServerResponse } from "node:http";
 import type { LocalEditionConfig } from "./config_management.ts";
@@ -96,6 +96,7 @@ export function serveStaticFile(
         serveSfont(filePath, res);
         return;
     }
+    
     let file;
     try {
         file = fs.readFileSync(filePath);

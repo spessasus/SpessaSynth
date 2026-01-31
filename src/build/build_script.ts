@@ -6,6 +6,10 @@ import JSZip from "jszip";
 import { INSTALL_INSTRUCTIONS } from "./install_instructions.ts";
 import { fileURLToPath } from "node:url";
 
+const print = (t = "") => {
+    console.info(t);
+};
+
 export async function buildSpessaSynth() {
     // Don't use meta.dirname: https://github.com/spessasus/SpessaSynth
     const REPO_ROOT = path.resolve(
@@ -26,10 +30,6 @@ export async function buildSpessaSynth() {
     const LOCAL_DIR = path.resolve(REPO_ROOT, "local-dev");
     const SERVER_DIR = path.resolve(REPO_ROOT, "server");
     const OUTPUT_ZIP = "SpessaSynth-LocalEdition.zip";
-
-    const print = (t = "") => {
-        console.info(t);
-    };
 
     const printStep = (s: string) => {
         print("\n--------------------------");
@@ -172,8 +172,8 @@ export async function buildSpessaSynth() {
         try {
             const f = await fs.readFile(p);
             zip.file(name, f);
-        } catch (e) {
-            console.error(e);
+        } catch (error) {
+            console.error(error);
         }
     };
 

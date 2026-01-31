@@ -13,7 +13,11 @@
     /*global variables*/
     --top-buttons-color-start: #222;
     --top-buttons-color-end: #333;
-    --top-buttons-color: linear-gradient(201deg, var(--top-buttons-color-start), var(--top-buttons-color-end));
+    --top-buttons-color: linear-gradient(
+        201deg,
+        var(--top-buttons-color-start),
+        var(--top-buttons-color-end)
+    );
 
     --hide-top-duration: 0.2s;
 
@@ -22,13 +26,17 @@
 
     --top-color-start: #101010;
     --top-color-end: #212121;
-    --top-color: linear-gradient(31deg, var(--top-color-start), var(--top-color-end));
+    --top-color: linear-gradient(
+        31deg,
+        var(--top-color-start),
+        var(--top-color-end)
+    );
 
     --primary-border-radius: 0.5rem;
     --active-scale: 0.9;
 
     /*thanks for this bezier mozilla devtools*/
-    --bouncy-transition: cubic-bezier(.68, -0.55, .27, 1.55);
+    --bouncy-transition: cubic-bezier(0.68, -0.55, 0.27, 1.55);
 
     --music-mode-transition: 0.5s ease;
 
@@ -41,7 +49,8 @@
 }
 
 /* fix for windows browsers */
-option, optgroup {
+option,
+optgroup {
     background: var(--top-color-start) !important;
     color: var(--font-color) !important;
     text-shadow: none !important;
@@ -51,7 +60,8 @@ pre {
     font-family: monospace !important;
 }
 
-html, body {
+html,
+body {
     height: 100lvh;
     width: 100%;
     background: black;
@@ -225,7 +235,8 @@ button {
     margin: 0;
 }
 
-.no_bg, .no_bg * {
+.no_bg,
+.no_bg * {
     background: none !important;
 }
 

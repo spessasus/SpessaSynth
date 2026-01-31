@@ -4,18 +4,31 @@
     touch-action: none;
 
     flex: 1;
-    transition: transform 0.1s ease, border-radius 0.5s ease;
+    transition:
+        transform 0.1s ease,
+        border-radius 0.5s ease;
     border-radius: 0 0 var(--key-border-radius) var(--key-border-radius);
     position: relative;
     transform-origin: center top;
     --pressed-transform-skew: 0.0007;
     --pressed-transform: matrix3d(
-            1, 0, 0,
-            0, 0, 1,
-            0, var(--pressed-transform-skew), 0,
-            0, 1, 0,
-            0, 0, 0,
-            1);
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        var(--pressed-transform-skew),
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+    );
     cursor: default;
 
     /*specific key transforms*/
@@ -24,8 +37,10 @@
     --sharp-transform: scale(1, 0.7);
 
     --flat-between-transform: scale(1.9, 1);
-    --flat-left-transform: scale(var(--flat-half-width), 1) translateX(calc(var(--flat-half-translate) * -1));
-    --flat-right-transform: scale(var(--flat-half-width), 1) translateX(var(--flat-half-translate));
+    --flat-left-transform: scale(var(--flat-half-width), 1)
+        translateX(calc(var(--flat-half-translate) * -1));
+    --flat-right-transform: scale(var(--flat-half-width), 1)
+        translateX(var(--flat-half-translate));
 }
 
 /*
@@ -37,19 +52,32 @@ instead of "pressing" from top center, press and scale from center right!
     border-radius: var(--key-border-radius) 0 0 var(--key-border-radius) !important;
     transform-origin: right center !important;
     --pressed-transform: matrix3d(
-            1, 0, 0,
-            calc(var(--pressed-transform-skew) * -1), 0, 1,
-            0, 0, 0,
-            0, 1, 0,
-            0, 0, 0, 1) !important;
+        1,
+        0,
+        0,
+        calc(var(--pressed-transform-skew) * -1),
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1
+    ) !important;
 
     --sharp-transform: scale(0.7, 1) !important;
 
     --flat-between-transform: scale(1, 1.9) !important;
-    --flat-left-transform: scale(1, var(--flat-half-width)) translateY(calc(var(--flat-half-translate) * -1)) !important;
-    --flat-right-transform: scale(1, var(--flat-half-width)) translateY(var(--flat-half-translate)) !important;
+    --flat-left-transform: scale(1, var(--flat-half-width))
+        translateY(calc(var(--flat-half-translate) * -1)) !important;
+    --flat-right-transform: scale(1, var(--flat-half-width))
+        translateY(var(--flat-half-translate)) !important;
 }
-
 
 #keyboard .flat_key {
     background: linear-gradient(90deg, #bbb, white);

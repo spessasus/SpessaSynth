@@ -45,7 +45,9 @@
     top: 50%;
     transform: translateY(-50%);
     background-color: var(--track-color);
-    transition: 0.2s var(--bouncy-transition), border 0.1s;
+    transition:
+        0.2s var(--bouncy-transition),
+        border 0.1s;
     border-radius: 50%;
     border: solid var(--track-border-color) 1px;
     box-shadow: 0 0 0.125rem rgba(0, 0, 0, 0.2);
@@ -62,5 +64,8 @@ input:checked + .notification_switch_slider {
 }
 
 input:checked + .notification_switch_slider:before {
-    transform: translate(calc(var(--track-width) - var(--thumb-size) * 0.66), -50%);
+    transform: translate(
+        calc(var(--track-width) - var(--thumb-size) * 0.66),
+        -50%
+    );
 }

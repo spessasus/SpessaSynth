@@ -1,11 +1,6 @@
-import http from "http";
-import path from "path";
-import {
-    getVersion,
-    serveSettings,
-    serveSfontList,
-    serveStaticFile
-} from "./serve.js";
+import http from "node:http";
+import path from "node:path";
+import { getVersion, serveSettings, serveSfontList, serveStaticFile } from "./serve.js";
 import { openURL } from "./open.js";
 import { type SavedSettings } from "./saved_settings.ts";
 import { LocalEditionConfig } from "./config_management.ts";
@@ -31,33 +26,37 @@ const server = http.createServer(async (req, res) => {
         return;
     }
     switch (req.url.split("?")[0]) {
-        default:
+        default: {
             serveStaticFile(
                 res,
                 path.join(__dirname, "../local-dev/", req.url)
             );
             break;
+        }
 
-        case "/":
+        case "/": {
             serveStaticFile(res, rootFile, "text/html");
             break;
+        }
 
-        case "/soundfonts":
+        case "/soundfonts": {
             await serveSfontList(res, configManager);
             break;
+        }
 
-        case "/setlastsf2":
+        case "/setlastsf2": {
             const urlParams = new URL(req.url, `http://${req.headers.host}`)
                 .searchParams;
-            const sfname = urlParams.get("sfname");
+            
 
-            configManager.config.lastUsedSf2 = sfname;
+            configManager.config.lastUsedSf2 = urlParams.get("sfname");
             await configManager.flush();
             res.writeHead(200, { "Content-Type": "text/plain" });
             res.end("Soundfont updated");
             break;
+        }
 
-        case "/savesettings":
+        case "/savesettings": {
             let body = "";
             req.on("data", (chunk: number) => {
                 body += chunk.toString();
@@ -71,14 +70,17 @@ const server = http.createServer(async (req, res) => {
                 res.end("Settings saved");
             });
             break;
+        }
 
-        case "/getsettings":
+        case "/getsettings": {
             serveSettings(res, configManager);
             break;
+        }
 
-        case "/getversion":
+        case "/getversion": {
             getVersion(res);
             break;
+        }
     }
 });
 

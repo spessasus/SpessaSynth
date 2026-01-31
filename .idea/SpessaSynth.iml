@@ -20,6 +20,7 @@
       <excludeFolder url="file://$MODULE_DIR$/server" />
       <excludeFolder url="file://$MODULE_DIR$/src/externals/libvorbis" />
       <excludeFolder url="file://$MODULE_DIR$/src/externals/sl-web-ogg" />
+      <excludeFolder url="file://$MODULE_DIR$/soundfonts/TESTS" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.10" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

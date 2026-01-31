@@ -10,7 +10,7 @@ export const sequencerControllerLocale = {
         otherText: {
             title: "Autre texte"
         },
-        
+
         subtitles: {
             title: "Charger des sous-titres ASS",
             description: "Chargez vos propres sous-titres au format .ass"

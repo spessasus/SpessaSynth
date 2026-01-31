@@ -41,12 +41,12 @@ export function _toggleDarkMode(this: SpessaSynthSettings) {
     this.musicMode.toggleDarkMode();
 
     document
-        .getElementsByClassName("spessasynth_main")[0]
+        .querySelectorAll(".spessasynth_main")[0]
         .classList.toggle("light_mode");
 
     // Top part
     document
-        .getElementsByClassName("top_part")[0]
+        .querySelectorAll(".top_part")[0]
         .classList.toggle("top_part_light");
 
     // Settings
@@ -145,6 +145,23 @@ export function _toggleDarkMode(this: SpessaSynthSettings) {
 
 const intervals: Record<string, number> = {};
 
+function hexToRgb(hex: string): { r: number; b: number; g: number } {
+    // For stuff like #222
+    if (hex.length === 4) {
+        hex = `#${hex[1]}${hex[1]}${hex[2]}${hex[2]}${hex[3]}${hex[3]}`;
+    }
+    const num = Number.parseInt(hex.slice(1), 16);
+    return {
+        r: (num >> 16) & 255,
+        g: (num >> 8) & 255,
+        b: num & 255
+    };
+}
+
+function interpolate(start: number, end: number, progress: number): number {
+    return start + (end - start) * progress;
+}
+
 /**
  * @param initialColor hex
  * @param targetColor hex
@@ -162,23 +179,6 @@ function transitionColor(
     if (intervals[propertyName]) {
         clearInterval(intervals[propertyName]);
         delete intervals[propertyName];
-    }
-
-    function hexToRgb(hex: string): { r: number; b: number; g: number } {
-        // For stuff like #222
-        if (hex.length === 4) {
-            hex = `#${hex[1]}${hex[1]}${hex[2]}${hex[2]}${hex[3]}${hex[3]}`;
-        }
-        const num = parseInt(hex.slice(1), 16);
-        return {
-            r: (num >> 16) & 255,
-            g: (num >> 8) & 255,
-            b: num & 255
-        };
-    }
-
-    function interpolate(start: number, end: number, progress: number): number {
-        return start + (end - start) * progress;
     }
 
     // Parse initial and target colors

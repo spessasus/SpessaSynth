@@ -11,7 +11,7 @@ export class DropFileHandler {
         midiCallback: (arg0: MIDIFile[]) => unknown,
         soundFontCallback: (arg0: ArrayBuffer) => unknown
     ) {
-        const dragPrompt = document.getElementsByClassName("drop_prompt")[0];
+        const dragPrompt = document.querySelectorAll(".drop_prompt")[0];
         document.body.addEventListener("dragover", (e) => {
             e.preventDefault();
             dragPrompt.classList.remove("hidden");

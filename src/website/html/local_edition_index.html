@@ -1,137 +1,223 @@
-<!DOCTYPE html>
+<!doctype html>
 <!--suppress HtmlFormInputWithoutLabel -->
 <!--suppress HtmlUnknownTarget -->
-<html lang='en'>
-<head>
-    <meta charset='UTF-8'>
-    <meta content='IE=edge' http-equiv='X-UA-Compatible'>
-    <meta content='width=device-width, initial-scale=1.0' name='viewport'>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta content="IE=edge" http-equiv="X-UA-Compatible" />
+        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
 
-    <!-- open graph -->
-    <meta content='SpessaSynth MIDI SF2 and DLS Synthesizer' property='og:title' />
-    <meta content='SpessaSynth' property='og:site_name' />
-    <meta
-        content='SoundFont2 and DLS synthesizer and MIDI player/editor that runs in your browser. Converts MIDIs and SoundFonts and more!'
-        property='og:description' />
-    <meta content='https://repository-images.githubusercontent.com/643635315/905d798e-16d7-4673-8fc4-e83caf7c41e6'
-          property='og:image' />
-    <meta content='Colorful notes falling on a piano' property='og:image:alt' />
-    <meta content='1920' property='og:image:width' />
-    <meta content='1080' property='og:image:height' />
-    <meta content='https://spessasus.github.io/SpessaSynth/' property='og:url' />
-    <meta content='website' property='og:type' />
+        <!-- open graph -->
+        <meta
+            content="SpessaSynth MIDI SF2 and DLS Synthesizer"
+            property="og:title"
+        />
+        <meta content="SpessaSynth" property="og:site_name" />
+        <meta
+            content="SoundFont2 and DLS synthesizer and MIDI player/editor that runs in your browser. Converts MIDIs and SoundFonts and more!"
+            property="og:description"
+        />
+        <meta
+            content="https://repository-images.githubusercontent.com/643635315/905d798e-16d7-4673-8fc4-e83caf7c41e6"
+            property="og:image"
+        />
+        <meta
+            content="Colorful notes falling on a piano"
+            property="og:image:alt"
+        />
+        <meta content="1920" property="og:image:width" />
+        <meta content="1080" property="og:image:height" />
+        <meta
+            content="https://spessasus.github.io/SpessaSynth/"
+            property="og:url"
+        />
+        <meta content="website" property="og:type" />
 
-    <!-- darkreader -->
-    <meta name='darkreader-lock'>
+        <!-- darkreader -->
+        <meta name="darkreader-lock" />
 
-    <!-- twitter card -->
-    <meta content='summary_large_image' name='twitter:card'>
-    <meta content='SpessaSynth MIDI Synthesizer' name='twitter:title'>
-    <meta content='SoundFont2 and DLS synthesizer and MIDI player/editor that runs in your browser'
-          name='twitter:description'>
-    <meta content='https://repository-images.githubusercontent.com/643635315/905d798e-16d7-4673-8fc4-e83caf7c41e6'
-          name='twitter:image'>
-    <!-- for search engines -->
-    <meta
-        content='SpessaSynth is a powerful MIDI Player and SoundFont2 / DLS Synthesizer with MIDI editing capabilites.
+        <!-- twitter card -->
+        <meta content="summary_large_image" name="twitter:card" />
+        <meta content="SpessaSynth MIDI Synthesizer" name="twitter:title" />
+        <meta
+            content="SoundFont2 and DLS synthesizer and MIDI player/editor that runs in your browser"
+            name="twitter:description"
+        />
+        <meta
+            content="https://repository-images.githubusercontent.com/643635315/905d798e-16d7-4673-8fc4-e83caf7c41e6"
+            name="twitter:image"
+        />
+        <!-- for search engines -->
+        <meta
+            content="SpessaSynth is a powerful MIDI Player and SoundFont2 / DLS Synthesizer with MIDI editing capabilites.
         It allows to play MIDI files with .sf2 files and .dls files and convert dls to sf2 online for free without any ads!
         Supports MIDI files, XMF or Mobile XMF (MXMF) files, RMIDI files with embedded SF2 or DLS soundfonts and has full support for both playing and converting MIDI, SF2 and DLS and back!
-        Featuring advanced MIDI Controller with controller such as volume, pan or low-pass filter cutoff. Written in vanilla JavaScript'
-        name='description' />
-    <meta content='spessasus' name='author' />
-    <meta
-        content='midi, soundfont, sf2,
+        Featuring advanced MIDI Controller with controller such as volume, pan or low-pass filter cutoff. Written in vanilla JavaScript"
+            name="description"
+        />
+        <meta content="spessasus" name="author" />
+        <meta
+            content="midi, soundfont, sf2,
         synth, synthesizer, soundfont2, midi player, midi player online, player, sf3, dls, rmidi, mid, rmi,
         soundfont player, xmf player, mxmf player,
         midi soundfont player online,
         sf2 player, sf2 player online, soundfont player online
-        dls to sf2, dls to sf2 converter, sf2 to dls, sf2 to dls converter'
-        name='keywords' />
+        dls to sf2, dls to sf2 converter, sf2 to dls, sf2 to dls converter"
+            name="keywords"
+        />
 
-    <meta content='dark light' name='color-scheme' />
-    <meta content='#212121' name='theme-color' />
+        <meta content="dark light" name="color-scheme" />
+        <meta content="#212121" name="theme-color" />
 
-    <title>SpessaSynth Local Edition</title>
-    <link href='./style.min.css' rel='stylesheet'>
-    <link href='./favicon.ico' rel='icon'>
-</head>
-<body>
-<div class='drop_prompt hidden'>
-    <h1 translate-path='locale.dropPrompt'>Drop files here...</h1>
-</div>
+        <title>SpessaSynth Local Edition</title>
+        <link href="./style.min.css" rel="stylesheet" />
+        <link href="./favicon.ico" rel="icon" />
+    </head>
+    <body>
+        <div class="drop_prompt hidden">
+            <h1 translate-path="locale.dropPrompt">Drop files here...</h1>
+        </div>
 
-<div class='spessasynth_main'>
-    <div class='top_part'>
-        <div id='synthetizer_controls'></div>
+        <div class="spessasynth_main">
+            <div class="top_part">
+                <div id="synthetizer_controls"></div>
 
-        <div id='title_wrapper'>
-            <div id='progress_bar'></div>
-            <h1 id='title' translate-path='locale.titleMessage'>SpessaSynth: SoundFont2/DLS JavaScript Synthetizer</h1>
-            <noscript><h1>SpessaSynth requires JavaScript to work.</h1></noscript>
-            <div class='midi_and_sf_controller'>
-                <label for='midi_file_input' id='file_upload' translate-path='locale.midiUploadButton'>Upload your MIDI
-                    files</label>
-                <input accept='.mid, .smf, .rmi, audio/midi, .kar, .xmf, .mxmf' id='midi_file_input' multiple
-                       type='file'><br />
+                <div id="title_wrapper">
+                    <div id="progress_bar"></div>
+                    <h1 id="title" translate-path="locale.titleMessage">
+                        SpessaSynth: SoundFont2/DLS JavaScript Synthetizer
+                    </h1>
+                    <noscript
+                        ><h1>
+                            SpessaSynth requires JavaScript to work.
+                        </h1></noscript
+                    >
+                    <div class="midi_and_sf_controller">
+                        <label
+                            for="midi_file_input"
+                            id="file_upload"
+                            translate-path="locale.midiUploadButton"
+                            >Upload your MIDI files</label
+                        >
+                        <input
+                            accept=".mid, .smf, .rmi, audio/midi, .kar, .xmf, .mxmf"
+                            id="midi_file_input"
+                            multiple
+                            type="file"
+                        /><br />
 
-                <label id='extra_bank_button'>
-                    <svg fill='currentColor' height='24' viewBox='0 0 83.174 81.103' width='24' xml:space='preserve'
-                         xmlns='http://www.w3.org/2000/svg'>
-                        <defs>
-                        <clipPath id='clipPath7'>
-                        <rect fill='currentColor' height='81.546' stroke-width='.26458' transform='rotate(44.958)'
-                              width='83.745' x='65.485'
-                              y='103.08' />
-                        </clipPath>
-                            <clipPath id='clipPath9'
-                            ><rect fill='currentColor' fill-opacity='.09612' height='79.511' stroke-width='.26476' transform='matrix(.67799 -.73507 .73806 .67473 0 0)' width='86.006' x='67.253' y='100.5'/>
-                        </clipPath>
-                            <clipPath id='clipPath10'><rect fill='#0ff' height='81.546' stroke-width='.26458' width='83.745' x='65.485' y='103.08'/>
-                        </clipPath>
-                            <clipPath id='clipPath11'><rect fill='currentColor' height='81.546' stroke-width='.26458' width='83.745' x='65.485' y='103.08'/>
-                        </clipPath>
-                        </defs>
-                        <g transform='translate(-65.485 -103.23)'>
-                        <path
-                            clip-path='url(#clipPath11)'
-                            d='m65.262 139.48c1.3624-6.7496 1.6548-14.043 5.7345-19.888 5.7864-8.3588 14.537-15.846 25.154-16.3 1.7234-0.0776 5.5034-0.28571 1.9074 0.65373-7.4866 2.6362-13.723 7.7642-19.543 12.986-6.2291 6.337-9.3022 14.78-13.252 22.549z'
-                            stroke-width='.26458' />
-                            <path
-                                clip-path='url(#clipPath10)'
-                                d='m83.381 144.84c0.987-5.348 1.5703-11.153 5.4341-15.36 4.1817-5.3006 10.757-8.715 17.552-8.6209-6.116 1.9994-11.467 6.0247-15.711 10.776-3.242 3.9158-4.9545 8.7506-7.2747 13.206z'
-                                stroke-width='.17519' />
-                            <path clip-path='url(#clipPath9)'
-                                  d='m176.97-34.49a50.988 16.042 90 0 0-10.353 47.674 50.988 16.042 90 0 0 16.042 50.988 50.988 16.042 90 0 0 15.091-33.843c0.03523-0.004687 0.08911-0.032268 0.12752-0.040899l-0.30503 0.026749-1.2845-35.938 1.2651-0.11118a50.988 16.042 90 0 0-14.894-32.069 50.988 16.042 90 0 0-5.6883 3.3134zm-2.8904 43.129c0.95278-1.0096 1.7992-1.5659 0.54206 0.59765-1.2633 3.6709-1.2266 8.239 1.5374 11.026-3.874-1.5224-5.9894-6.4334-3.2573-10.178 0.28939-0.43335 0.74478-0.98606 1.1779-1.445zm23.969-14.417 0.03731-0.0032873c-0.01217 1.409e-4 -0.02503 0.0027689-0.03731 0.0032873zm0.3756 0.055028 1.2362 34.585c1.8993-1.8327 3.683-3.8858 5.5702-5.7411l-0.5343-23.05c-0.9706-1.4279-2.6664-2.5006-3.9092-3.7953-0.84642-0.47048-1.4531-1.7381-2.3628-1.9983z'
-                                  stroke-width='.28839' transform='matrix(.657 .75389 -.71867 .69536 0 0)' />
-                            <rect clip-path='url(#clipPath7)' height='6.8056' stroke-width='.26458'
-                                  transform='rotate(-44.958)' width='23.377'
-                                  x='-37.937' y='206.86' /></g></svg>
-                </label>
+                        <label id="extra_bank_button">
+                            <svg
+                                fill="currentColor"
+                                height="24"
+                                viewBox="0 0 83.174 81.103"
+                                width="24"
+                                xml:space="preserve"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <defs>
+                                    <clipPath id="clipPath7">
+                                        <rect
+                                            fill="currentColor"
+                                            height="81.546"
+                                            stroke-width=".26458"
+                                            transform="rotate(44.958)"
+                                            width="83.745"
+                                            x="65.485"
+                                            y="103.08"
+                                        />
+                                    </clipPath>
+                                    <clipPath id="clipPath9">
+                                        <rect
+                                            fill="currentColor"
+                                            fill-opacity=".09612"
+                                            height="79.511"
+                                            stroke-width=".26476"
+                                            transform="matrix(.67799 -.73507 .73806 .67473 0 0)"
+                                            width="86.006"
+                                            x="67.253"
+                                            y="100.5"
+                                        />
+                                    </clipPath>
+                                    <clipPath id="clipPath10">
+                                        <rect
+                                            fill="#0ff"
+                                            height="81.546"
+                                            stroke-width=".26458"
+                                            width="83.745"
+                                            x="65.485"
+                                            y="103.08"
+                                        />
+                                    </clipPath>
+                                    <clipPath id="clipPath11">
+                                        <rect
+                                            fill="currentColor"
+                                            height="81.546"
+                                            stroke-width=".26458"
+                                            width="83.745"
+                                            x="65.485"
+                                            y="103.08"
+                                        />
+                                    </clipPath>
+                                </defs>
+                                <g transform="translate(-65.485 -103.23)">
+                                    <path
+                                        clip-path="url(#clipPath11)"
+                                        d="m65.262 139.48c1.3624-6.7496 1.6548-14.043 5.7345-19.888 5.7864-8.3588 14.537-15.846 25.154-16.3 1.7234-0.0776 5.5034-0.28571 1.9074 0.65373-7.4866 2.6362-13.723 7.7642-19.543 12.986-6.2291 6.337-9.3022 14.78-13.252 22.549z"
+                                        stroke-width=".26458"
+                                    />
+                                    <path
+                                        clip-path="url(#clipPath10)"
+                                        d="m83.381 144.84c0.987-5.348 1.5703-11.153 5.4341-15.36 4.1817-5.3006 10.757-8.715 17.552-8.6209-6.116 1.9994-11.467 6.0247-15.711 10.776-3.242 3.9158-4.9545 8.7506-7.2747 13.206z"
+                                        stroke-width=".17519"
+                                    />
+                                    <path
+                                        clip-path="url(#clipPath9)"
+                                        d="m176.97-34.49a50.988 16.042 90 0 0-10.353 47.674 50.988 16.042 90 0 0 16.042 50.988 50.988 16.042 90 0 0 15.091-33.843c0.03523-0.004687 0.08911-0.032268 0.12752-0.040899l-0.30503 0.026749-1.2845-35.938 1.2651-0.11118a50.988 16.042 90 0 0-14.894-32.069 50.988 16.042 90 0 0-5.6883 3.3134zm-2.8904 43.129c0.95278-1.0096 1.7992-1.5659 0.54206 0.59765-1.2633 3.6709-1.2266 8.239 1.5374 11.026-3.874-1.5224-5.9894-6.4334-3.2573-10.178 0.28939-0.43335 0.74478-0.98606 1.1779-1.445zm23.969-14.417 0.03731-0.0032873c-0.01217 1.409e-4 -0.02503 0.0027689-0.03731 0.0032873zm0.3756 0.055028 1.2362 34.585c1.8993-1.8327 3.683-3.8858 5.5702-5.7411l-0.5343-23.05c-0.9706-1.4279-2.6664-2.5006-3.9092-3.7953-0.84642-0.47048-1.4531-1.7381-2.3628-1.9983z"
+                                        stroke-width=".28839"
+                                        transform="matrix(.657 .75389 -.71867 .69536 0 0)"
+                                    />
+                                    <rect
+                                        clip-path="url(#clipPath7)"
+                                        height="6.8056"
+                                        stroke-width=".26458"
+                                        transform="rotate(-44.958)"
+                                        width="23.377"
+                                        x="-37.937"
+                                        y="206.86"
+                                    />
+                                </g>
+                            </svg>
+                        </label>
 
-                <label id='export_button' style='display: none;' translate-path-title='locale.exportAudio.button'>Export
-                    audio</label>
+                        <label
+                            id="export_button"
+                            style="display: none"
+                            translate-path-title="locale.exportAudio.button"
+                            >Export audio</label
+                        >
 
-                <select id='sf_selector'></select>
+                        <select id="sf_selector"></select>
+                    </div>
+                </div>
+
+                <div id="settings_div"></div>
             </div>
+            <div class="show_top_button"></div>
+
+            <div id="keyboard_canvas_wrapper">
+                <canvas id="note_canvas"></canvas>
+                <div id="keyboard"></div>
+            </div>
+            <div id="player_info"></div>
+
+            <div class="bottom_part">
+                <div id="sequencer_controls"></div>
+            </div>
+            <div class="notification_field"></div>
+            <div class="ass_renderer_field"></div>
         </div>
-
-        <div id='settings_div'>
-        </div>
-    </div>
-    <div class='show_top_button'></div>
-
-    <div id='keyboard_canvas_wrapper'>
-        <canvas id='note_canvas'></canvas>
-        <div id='keyboard'></div>
-    </div>
-    <div id='player_info'></div>
-
-    <div class='bottom_part'>
-        <div id='sequencer_controls'></div>
-    </div>
-    <div class='notification_field'></div>
-    <div class='ass_renderer_field'></div>
-</div>
-<script src='./local_main.js' type='module'></script> <!-- Here the magic happens ;) -->
-</body>
+        <script src="./local_main.js" type="module"></script>
+        <!-- Here the magic happens ;) -->
+    </body>
 </html>
