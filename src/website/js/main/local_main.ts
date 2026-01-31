@@ -24,6 +24,34 @@ declare global {
  * purpose: main script for the local edition, loads the soundfont and passes it to the manager.js, reloads soundfonts when needed and saves the settings
  */
 
+// Init params
+/**
+ * Saves the settings (settings.js) selected data to config.json
+ * (only on the local edition that's why it's here and not in the demo_main.js)
+ */
+window.saveSettings = (settingsData: SavedSettings) => {
+    void fetch("/savesettings", {
+        method: "POST",
+        body: JSON.stringify(settingsData),
+        headers: {
+            "Content-type": "application/json; charset=UTF-8"
+        }
+    });
+};
+
+/**
+ * Reads the settings
+ */
+window.savedSettings = new Promise((resolve) => {
+    void fetch("/getsettings").then((response) =>
+        response.json().then((parsedSettings) => {
+            resolve(parsedSettings as SavedSettings);
+        })
+    );
+});
+
+window.isLocalEdition = true;
+
 SpessaSynthLogging(true, true, true);
 const titleMessage = document.querySelector<HTMLHeadingElement>("#title")!;
 const progressBar = document.querySelector<HTMLDivElement>("#progress_bar")!;
@@ -258,30 +286,3 @@ fileInput.addEventListener("change", async () => {
     }
     await startMidi(fileInput.files);
 });
-
-/**
- * Saves the settings (settings.js) selected data to config.json
- * (only on the local edition that's why it's here and not in the demo_main.js)
- */
-window.saveSettings = (settingsData: SavedSettings) => {
-    void fetch("/savesettings", {
-        method: "POST",
-        body: JSON.stringify(settingsData),
-        headers: {
-            "Content-type": "application/json; charset=UTF-8"
-        }
-    });
-};
-
-/**
- * Reads the settings
- */
-window.savedSettings = new Promise((resolve) => {
-    void fetch("/getsettings").then((response) =>
-        response.json().then((parsedSettings) => {
-            resolve(parsedSettings as SavedSettings);
-        })
-    );
-});
-
-window.isLocalEdition = true;

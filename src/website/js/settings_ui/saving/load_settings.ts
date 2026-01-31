@@ -5,10 +5,10 @@ import { fillWithDefaults } from "../../utils/fill_with_defaults.ts";
 import { DEFAULT_SAVED_SETTINGS } from "../../../server/saved_settings.ts";
 
 export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
-    if (!("savedSettings" in window)) {
-        throw new Error("No saved settings!");
-    }
-    const savedSettingsPartial = await window.savedSettings;
+    const savedSettingsPartial =
+        "savedSettings" in window
+            ? await window.savedSettings
+            : DEFAULT_SAVED_SETTINGS;
 
     const savedSettings = fillWithDefaults(
         savedSettingsPartial,
