@@ -37,6 +37,9 @@ import { showAdvancedConfiguration } from "./methods/advanced_configuration.ts";
 import { Selector } from "./methods/synthui_selector.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
 
+export const MONO_ON = "<pre style='color: red;'>M</pre>";
+export const POLY_ON = "<pre>P</pre>";
+
 export const LOCALE_PATH = "locale.synthesizerController.";
 export type ControllerGroupType =
     | "effects"
@@ -54,6 +57,7 @@ export interface ChannelController {
     drumsToggle: HTMLDivElement;
     soloButton: HTMLDivElement;
     muteButton: HTMLDivElement;
+    polyMonoButton: HTMLDivElement;
     isHidingLocked: boolean;
 }
 
@@ -312,6 +316,22 @@ export class SynthetizerUI {
                     // Mute/solo
                     channel.soloButton.innerHTML = getEmptyMicSvg(ICON_SIZE);
                     channel.muteButton.innerHTML = getVolumeSvg(ICON_SIZE);
+
+                    // Poly/mono
+                    {
+                        this.synth.lockController(
+                            number,
+                            midiControllers.polyModeOn,
+                            false
+                        );
+                        this.synth.lockController(
+                            number,
+                            midiControllers.monoModeOn,
+                            false
+                        );
+                        channel.polyMonoButton.innerHTML = POLY_ON;
+                    }
+
                     this.synth.muteChannel(number, false);
                 });
                 this.soloChannels.clear();
@@ -1267,6 +1287,59 @@ export class SynthetizerUI {
         };
         controller.appendChild(drumsToggle);
 
+        // Poly/mono button
+        const polyMonoButton = document.createElement("div");
+        polyMonoButton.innerHTML = POLY_ON;
+        this.locale.bindObjectProperty(
+            polyMonoButton,
+            "title",
+            LOCALE_PATH + "channelController.polyMonoButton.description",
+            [channelNumber + 1]
+        );
+        polyMonoButton.classList.add("controller_element");
+        polyMonoButton.classList.add("mute_button");
+        polyMonoButton.setAttribute("isPoly", "false");
+        polyMonoButton.onclick = () => {
+            this.synth.lockController(
+                channelNumber,
+                midiControllers.polyModeOn,
+                false
+            );
+            this.synth.lockController(
+                channelNumber,
+                midiControllers.monoModeOn,
+                false
+            );
+            const isPoly = polyMonoButton.getAttribute("isPoly") === "true";
+            if (isPoly) {
+                this.synth.controllerChange(
+                    channelNumber,
+                    midiControllers.monoModeOn,
+                    0
+                );
+                polyMonoButton.innerHTML = MONO_ON;
+            } else {
+                this.synth.controllerChange(
+                    channelNumber,
+                    midiControllers.polyModeOn,
+                    0
+                );
+                polyMonoButton.innerHTML = POLY_ON;
+            }
+            this.synth.lockController(
+                channelNumber,
+                midiControllers.polyModeOn,
+                true
+            );
+            this.synth.lockController(
+                channelNumber,
+                midiControllers.monoModeOn,
+                true
+            );
+            polyMonoButton.setAttribute("isPoly", (!isPoly).toString());
+        };
+        controller.appendChild(polyMonoButton);
+
         return {
             controller,
             isHidingLocked: false,
@@ -1275,6 +1348,7 @@ export class SynthetizerUI {
             transpose,
             soloButton,
             muteButton,
+            polyMonoButton,
             preset: presetSelector,
             controllerMeters,
             pitchWheel

@@ -206,7 +206,8 @@ export class Manager {
         const sf = await writeDLS.call(this, {
             trim: false,
             bankID: "main",
-            writeEmbeddedSoundBank: false
+            writeEmbeddedSoundBank: false,
+            sequencerID: 0
         });
         this.saveBlob(new Blob([sf.binary]), sf.fileName);
     }

@@ -98,6 +98,7 @@ export async function renderAndExportAudioData(
         separateChannels,
         loopCount,
         preserveSynthParams: true,
+        sequencerID: 0,
         enableEffects: !separateChannels,
         progressCallback: (progress, stage) => {
             if (stage === 0) {

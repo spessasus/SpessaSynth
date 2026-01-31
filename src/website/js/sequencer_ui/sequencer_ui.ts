@@ -708,7 +708,7 @@ export class SequencerUI {
         // Media session
         this.silencePlayer = new Audio();
         // Default
-        this.silencePlayer.loop = true;
+        this.silencePlayer.loop = false;
         if (navigator.mediaSession) {
             // Silent audio element for media session to show up
 
@@ -828,11 +828,9 @@ export class SequencerUI {
         if (loop) {
             this.seq.loopCount = Infinity;
             this.enableIcon(this.loopButton);
-            this.silencePlayer.loop = true;
         } else {
             this.seq.loopCount = 0;
             this.disableIcon(this.loopButton);
-            this.silencePlayer.loop = false;
         }
     }
 
@@ -924,7 +922,8 @@ export class SequencerUI {
             this.seq.playbackRate = this.silencePlayer.playbackRate;
         }
         if (this.silencePlayer.loop != this.seq.loopCount > 0) {
-            this.setLoopState(this.silencePlayer.loop);
+            // Causes issues by looping the audio, triggering a user seek too early
+            this.silencePlayer.loop = false;
         }
     }
 

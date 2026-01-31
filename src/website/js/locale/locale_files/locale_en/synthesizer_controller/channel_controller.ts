@@ -123,5 +123,9 @@ export const channelControllerLocale = {
 
     drumToggleButton: {
         description: "Toggle drums on channel {0}"
+    },
+
+    polyMonoButton: {
+        description: `Toggle poly/mono mode on channel {0}`
     }
 };
