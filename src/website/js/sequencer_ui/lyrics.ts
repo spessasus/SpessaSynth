@@ -25,7 +25,7 @@ export function setLyricsText(this: SequencerUI, index: number) {
     // If there are no lyrics, there's one element:
     // ["No lyrics available"]
     if (
-        this.currentLyricsString.length < 1 ||
+        this.currentLyricsString.length === 0 ||
         index < 0 ||
         index > this.currentLyricsString.length
     ) {

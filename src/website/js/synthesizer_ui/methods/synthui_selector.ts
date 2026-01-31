@@ -3,7 +3,11 @@ import { getLockSVG, getUnlockSVG } from "../../utils/icons.js";
 import { ICON_SIZE, LOCALE_PATH } from "../synthetizer_ui.js";
 import { isMobile } from "../../utils/is_mobile.js";
 import type { LocaleManager } from "../../locale/locale_manager.ts";
-import { type MIDIPatch, MIDIPatchTools, type PresetListEntry } from "spessasynth_core";
+import {
+    type MIDIPatch,
+    MIDIPatchTools,
+    type PresetListEntry
+} from "spessasynth_core";
 
 /**
  * Syntui_selector.js
@@ -60,8 +64,7 @@ export class Selector {
         }
 
         this.mainButton = document.createElement("button");
-        this.mainButton.classList.add("voice_selector");
-        this.mainButton.classList.add("controller_element");
+        this.mainButton.classList.add("voice_selector", "controller_element");
         locale.bindObjectProperty(
             this.mainButton,
             "title",
@@ -74,9 +77,9 @@ export class Selector {
 
         this.reload();
 
-        this.mainButton.onclick = () => {
+        this.mainButton.addEventListener("click", () => {
             this.showSelectionMenu();
-        };
+        });
 
         this.editCallback = editCallback;
         this.lockCallback = lockCallback;
@@ -92,8 +95,8 @@ export class Selector {
         this.selectionMenu = document.createElement("div");
         this.selectionMenu.classList.add("voice_selector_wrapper");
         document
-            .getElementsByClassName("spessasynth_main")[0]
-            .appendChild(this.selectionMenu);
+            .querySelectorAll(".spessasynth_main")[0]
+            .append(this.selectionMenu);
         const selectionWindow = document.createElement("div");
         selectionWindow.classList.add("voice_selector_window");
 
@@ -105,12 +108,12 @@ export class Selector {
             this.localePath + ".selectionPrompt",
             this.localeArgs
         );
-        selectionWindow.appendChild(selectionTitle);
+        selectionWindow.append(selectionTitle);
 
         // Add search wrapper
         const searchWrapper = document.createElement("div");
         searchWrapper.classList.add("voice_selector_search_wrapper");
-        selectionWindow.appendChild(searchWrapper);
+        selectionWindow.append(searchWrapper);
 
         // Search input
         const searchInput = document.createElement("input");
@@ -120,8 +123,8 @@ export class Selector {
             "placeholder",
             this.localePath + ".searchPrompt"
         );
-        searchWrapper.appendChild(searchInput);
-        searchInput.onkeydown = (e) => e.stopPropagation();
+        searchWrapper.append(searchInput);
+        searchInput.addEventListener("keydown", (e) => e.stopPropagation());
 
         // Preset lock button
         const presetLock = document.createElement("div");
@@ -138,23 +141,21 @@ export class Selector {
         if (this.mainButton.classList.contains("voice_selector_light")) {
             presetLock.classList.add("voice_reset_light");
         }
-        presetLock.onclick = () => {
+        presetLock.addEventListener("click", () => {
             this.locked = !this.locked;
             this.lockCallback?.(this.locked);
             this.mainButton.classList.toggle("locked_selector");
-            if (this.locked) {
-                presetLock.innerHTML = getLockSVG(ICON_SIZE);
-            } else {
-                presetLock.innerHTML = getUnlockSVG(ICON_SIZE);
-            }
-        };
-        searchWrapper.appendChild(presetLock);
+            presetLock.innerHTML = this.locked
+                ? getLockSVG(ICON_SIZE)
+                : getUnlockSVG(ICON_SIZE);
+        });
+        searchWrapper.append(presetLock);
         this.presetLock = presetLock;
 
         // Add the table, wrapper first
         const tableWrapper = document.createElement("div");
         tableWrapper.classList.add("voice_selector_table_wrapper");
-        selectionWindow.appendChild(tableWrapper);
+        selectionWindow.append(tableWrapper);
 
         // Add the table
         const table = this.generateTable(
@@ -167,7 +168,7 @@ export class Selector {
          * Add search function
          */
         let selectedProgram = table.querySelector(".voice_selector_selected")!;
-        searchInput.oninput = (e) => {
+        searchInput.addEventListener("input", (e) => {
             if (!this.value) {
                 return;
             }
@@ -204,17 +205,18 @@ export class Selector {
             }
             firstFiltered.classList.add("voice_selector_selected");
             selectedProgram = firstFiltered;
-        };
+        });
 
         // Add basic key navigation
         searchInput.addEventListener("keydown", (e) => {
             switch (e.key) {
-                case "Escape":
+                case "Escape": {
                     this.hideSelectionMenu();
                     break;
+                }
 
                 // When enter pressed, select the selected preset
-                case "Enter":
+                case "Enter": {
                     const newVal = this.elementsToTable?.get(
                         selectedProgram as HTMLTableRowElement
                     );
@@ -230,8 +232,9 @@ export class Selector {
                     presetLock.innerHTML = getLockSVG(ICON_SIZE);
                     this.hideSelectionMenu();
                     break;
+                }
 
-                case "ArrowDown":
+                case "ArrowDown": {
                     let nextEl = selectedProgram.nextElementSibling;
                     while (nextEl) {
                         if (
@@ -247,8 +250,9 @@ export class Selector {
                         nextEl = nextEl.nextElementSibling;
                     }
                     break;
+                }
 
-                case "ArrowUp":
+                case "ArrowUp": {
                     let previousEl = selectedProgram.previousElementSibling;
                     while (previousEl) {
                         if (
@@ -266,17 +270,18 @@ export class Selector {
                         previousEl = previousEl.previousElementSibling;
                     }
                     break;
+                }
             }
         });
 
-        selectionWindow.onclick = (e) => {
+        selectionWindow.addEventListener("click", (e) => {
             e.stopPropagation();
-        };
-        this.selectionMenu.appendChild(selectionWindow);
-        this.selectionMenu.onclick = (e) => {
+        });
+        this.selectionMenu.append(selectionWindow);
+        this.selectionMenu.addEventListener("click", (e) => {
             e.stopPropagation();
             this.hideSelectionMenu();
-        };
+        });
         this.isWindowShown = true;
         if (!isMobile) {
             searchInput.focus();
@@ -287,9 +292,7 @@ export class Selector {
         if (!this.selectionMenu) {
             return;
         }
-        document
-            .getElementsByClassName("spessasynth_main")[0]
-            .removeChild(this.selectionMenu);
+        this.selectionMenu.remove();
         delete this.selectionMenu;
         this.isWindowShown = false;
     }
@@ -327,14 +330,14 @@ export class Selector {
 
         if (this.isWindowShown && this.selectionMenu) {
             // Remove the old selected class
-            const oldSelected = this.selectionMenu.getElementsByClassName(
-                "voice_selector_selected"
+            const oldSelected = this.selectionMenu.querySelectorAll(
+                ".voice_selector_selected"
             )[0];
             if (oldSelected !== undefined) {
                 oldSelected.classList.remove("voice_selector_selected");
             }
-            const table = this.selectionMenu.getElementsByClassName(
-                "voice_selector_table"
+            const table = this.selectionMenu.querySelectorAll(
+                ".voice_selector_table"
             )[0] as HTMLTableElement;
             // Find the newly selected class
             for (const row of table.rows) {
@@ -359,7 +362,7 @@ export class Selector {
 
     public getString(patch: PresetListElement) {
         if (!patch) {
-            if (this.elements.length < 1) {
+            if (this.elements.length === 0) {
                 return "-";
             }
             patch = this.elements[0];
@@ -411,7 +414,7 @@ export class Selector {
                 }, 20);
             }
 
-            row.onclick = () => {
+            row.addEventListener("click", () => {
                 const newVal = preset;
                 if (this.value === newVal) {
                     this.hideSelectionMenu();
@@ -423,7 +426,7 @@ export class Selector {
                     this.presetLock.innerHTML = getLockSVG(ICON_SIZE);
                 }
                 this.hideSelectionMenu();
-            };
+            });
 
             // Create a new group
             if (program !== lastProgram) {
@@ -434,8 +437,8 @@ export class Selector {
                     const header = document.createElement("th");
                     header.colSpan = 4;
                     header.textContent = midiPatchNames[lastProgram];
-                    headerRow.appendChild(header);
-                    table.appendChild(headerRow);
+                    headerRow.append(header);
+                    table.append(headerRow);
                 }
             }
             const programText = preset.program.toString().padStart(3, "0");
@@ -469,13 +472,13 @@ export class Selector {
             presetName.classList.add("voice_selector_preset_program");
             presetBankLSB.textContent = bankLSBText;
 
-            row.appendChild(presetBankLSB);
-            row.appendChild(presetBankMSB);
-            row.appendChild(presetProgram);
-            row.appendChild(presetName);
-            table.appendChild(row);
+            row.append(presetBankLSB);
+            row.append(presetBankMSB);
+            row.append(presetProgram);
+            row.append(presetName);
+            table.append(row);
         }
-        wrapper.appendChild(table);
+        wrapper.append(table);
         return table;
     }
 }

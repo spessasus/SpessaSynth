@@ -35,8 +35,8 @@ export function showExportMenu(this: Manager) {
                     closeNotification(n.id);
                     try {
                         exportAndSaveSF2.call(this);
-                    } catch (e) {
-                        console.error(e);
+                    } catch (error) {
+                        console.error(error);
                         showNotification("Warning", [
                             {
                                 type: "text",
@@ -55,8 +55,8 @@ export function showExportMenu(this: Manager) {
                     closeNotification(n.id);
                     try {
                         void _exportDLS.call(this);
-                    } catch (e) {
-                        console.error(e);
+                    } catch (error) {
+                        console.error(error);
                         showNotification("Warning", [
                             {
                                 type: "text",
@@ -75,8 +75,8 @@ export function showExportMenu(this: Manager) {
                     closeNotification(n.id);
                     try {
                         void _exportRMIDI.call(this);
-                    } catch (e) {
-                        console.error(e);
+                    } catch (error) {
+                        console.error(error);
                         showNotification("Warning", [
                             {
                                 type: "text",
@@ -89,7 +89,7 @@ export function showExportMenu(this: Manager) {
                 }
             }
         ],
-        999999,
+        999_999,
         true,
         this.localeManager,
         {

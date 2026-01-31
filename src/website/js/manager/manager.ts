@@ -30,7 +30,7 @@ import { prepareExtraBankUpload } from "./extra_bank_handling.js";
 
 import { EXTRA_BANK_ID, SOUND_BANK_ID } from "./bank_id.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
-import { writeDLS } from "./export_audio/export_dls.ts";
+import { writeDLS } from "./export_audio/export_dls.ts"; // This enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
 
 // This enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
 document.body.classList.add("load");
@@ -107,11 +107,7 @@ export class Manager {
 
         const urlParams = new URLSearchParams(window.location.search);
         const mode = urlParams.get("mode");
-        if (mode) {
-            this.workerMode = mode === "chromium";
-        } else {
-            this.workerMode = "chrome" in window;
-        }
+        this.workerMode = mode ? mode === "chromium" : "chrome" in window;
 
         this.audioDelay = new DelayNode(context, {
             delayTime: 0
@@ -164,7 +160,7 @@ export class Manager {
                     }
                 }
             ],
-            99999999
+            99_999_999
         );
     }
 
@@ -271,6 +267,7 @@ export class Manager {
                 context,
                 worker.postMessage.bind(worker)
             );
+            // eslint-disable-next-line unicorn/prefer-add-event-listener
             worker.onmessage = (e) =>
                 synth.handleWorkerMessage(
                     e.data as Parameters<typeof synth.handleWorkerMessage>[0]
@@ -365,9 +362,8 @@ export class Manager {
         /**
          * Set up renderer
          */
-        const canvas: HTMLCanvasElement = document.getElementById(
-            "note_canvas"
-        ) as HTMLCanvasElement;
+        const canvas: HTMLCanvasElement =
+            document.querySelector("#note_canvas")!;
 
         canvas.width = window.innerWidth * window.devicePixelRatio;
         canvas.height = window.innerHeight * window.devicePixelRatio;
@@ -390,15 +386,15 @@ export class Manager {
             if (isMobile) {
                 if (window.innerWidth / window.innerHeight > 1) {
                     if (!titleSwappedWithSettings) {
-                        const title = document.getElementById("title_wrapper")!;
+                        const title = document.querySelector("#title_wrapper")!;
                         const settings =
-                            document.getElementById("settings_div")!;
+                            document.querySelector("#settings_div")!;
                         titleSwappedWithSettings = true;
                         title.parentElement?.insertBefore(settings, title);
                     }
                 } else if (titleSwappedWithSettings) {
-                    const title = document.getElementById("title_wrapper")!;
-                    const settings = document.getElementById("settings_div")!;
+                    const title = document.querySelector("#title_wrapper")!;
+                    const settings = document.querySelector("#settings_div")!;
                     titleSwappedWithSettings = false;
                     title.parentElement?.insertBefore(title, settings);
                 }
@@ -428,7 +424,7 @@ export class Manager {
         // Set up synth UI
         this.synthUI = new SynthetizerUI(
             this.channelColors,
-            document.getElementById("synthetizer_controls")!,
+            document.querySelector("#synthetizer_controls")!,
             this.localeManager,
             this.keyboard,
             this.synth,
@@ -437,14 +433,14 @@ export class Manager {
 
         // Create a UI for music player mode
         this.musicModeUI = new MusicModeUI(
-            document.getElementById("player_info")!,
+            document.querySelector("#player_info")!,
             this.localeManager,
             this.seq
         );
 
         // Create a UI for sequencer
         this.seqUI = new SequencerUI(
-            document.getElementById("sequencer_controls")!,
+            document.querySelector("#sequencer_controls")!,
             this.localeManager,
             this.musicModeUI,
             this.renderer,
@@ -454,7 +450,7 @@ export class Manager {
 
         // Set up settings UI
         this.settingsUI = new SpessaSynthSettings(
-            document.getElementById("settings_div")!,
+            document.querySelector("#settings_div")!,
             this.synth,
             this.seq,
             this.synthUI,
@@ -465,7 +461,6 @@ export class Manager {
             this.localeManager,
             this.audioDelay
         );
-
         this.synthUI.onProgramChange = (channel) => {
             // QoL: change the keyboard channel to the changed one when user changed it: adjust selector here
             this.keyboard?.selectChannel(channel);
@@ -488,17 +483,23 @@ export class Manager {
             this.play(data);
             let firstName = data[0].fileName;
             if (firstName.length > 20) {
-                firstName = firstName.substring(0, 21) + "...";
+                firstName = firstName.slice(0, 21) + "...";
             }
             // Set file name
-            document.getElementById("file_upload")!.textContent = firstName;
+            document.querySelector("#file_upload")!.textContent = firstName;
             // Show export button
-            const exportButton = document.getElementById("export_button")!;
+            const exportButton =
+                document.querySelector<HTMLLabelElement>("#export_button")!;
             exportButton.style.display = "flex";
-            exportButton.onclick = this.showExportMenu.bind(this);
+            exportButton.addEventListener(
+                "click",
+                this.showExportMenu.bind(this)
+            );
             // If demo website, hide demo songs button
             if (this.isLocalEdition) {
-                document.getElementById("demo_song")!.style.display = "none";
+                document.querySelector<HTMLLabelElement>(
+                    "#demo_song"
+                )!.style.display = "none";
             }
         }, this.reloadSf.bind(this));
 
@@ -510,7 +511,7 @@ export class Manager {
                 return;
             }
             switch (e.key.toLowerCase()) {
-                case keybinds.videoMode:
+                case keybinds.videoMode: {
                     this.seqUI?.seqPause();
                     const videoSource = window.prompt(
                         "Video mode!\n Paste the link to the video source (leave blank to disable)\n" +
@@ -523,12 +524,12 @@ export class Manager {
                     const video = document.createElement("video");
                     video.src = videoSource;
                     video.classList.add("secret_video");
-                    canvas.parentElement?.appendChild(video);
+                    canvas.parentElement?.append(video);
                     void video.play();
                     // @ts-expect-error Globally accessible
                     window.video = video;
                     if (this.seq) {
-                        video.currentTime = parseFloat(
+                        video.currentTime = Number.parseFloat(
                             window.prompt(
                                 "Video offset to sync to midi, in seconds.",
                                 "0"
@@ -549,11 +550,13 @@ export class Manager {
                     });
 
                     break;
+                }
 
-                case keybinds.sustainPedal:
+                case keybinds.sustainPedal: {
                     this.renderer!.showHoldPedal = true;
                     this.renderer!.render(false);
                     this.keyboard!.setHoldPedal(true);
+                }
             }
         });
 
@@ -564,14 +567,16 @@ export class Manager {
                 return;
             }
             switch (e.key.toLowerCase()) {
-                case keybinds.sustainPedal:
+                case keybinds.sustainPedal: {
                     this.renderer!.showHoldPedal = false;
                     this.renderer!.render(false);
                     this.keyboard!.setHoldPedal(false);
                     break;
+                }
 
-                default:
+                default: {
                     break;
+                }
             }
         });
 

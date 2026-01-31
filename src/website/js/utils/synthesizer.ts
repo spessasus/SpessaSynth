@@ -1,3 +1,3 @@
 import type { WorkerSynthesizer, WorkletSynthesizer } from "spessasynth_lib";
 
-export type Synthesizer = WorkletSynthesizer | WorkerSynthesizer
+export type Synthesizer = WorkletSynthesizer | WorkerSynthesizer;

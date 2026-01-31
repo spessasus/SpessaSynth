@@ -100,16 +100,18 @@ export class LocaleManager {
         console.info("Changing locale to", newLocaleObject.localeName);
         if (!force) {
             // Check if the property has been changed to something else. If so, don't change it back.
-            this._boundObjectProperties.forEach((property) => {
+            for (const property of this._boundObjectProperties) {
                 this._validatePropertyIntegrity(property);
-            });
+            }
         }
         this.locale = newLocaleObject;
         // Apply the new locale to bound elements
-        this._boundObjectProperties.forEach((property) => {
+        for (const property of this._boundObjectProperties) {
             this._applyPropertyInternal(property);
-        });
-        this.onLocaleChanged.forEach((l) => l());
+        }
+        for (const loc of this.onLocaleChanged) {
+            loc();
+        }
     }
 
     private _applyPropertyInternal(property: PropertyType) {
@@ -154,10 +156,10 @@ export class LocaleManager {
         template: string,
         values: (string | number)[]
     ): string {
-        return template.replace(/{(\d+)}/g, (match, number: number) => {
-            return typeof values[number] !== "undefined"
-                ? values[number].toString()
-                : match;
+        return template.replaceAll(/{(\d+)}/g, (match, number: number) => {
+            return values[number] === undefined
+                ? match
+                : values[number].toString();
         });
     }
 
@@ -189,11 +191,7 @@ export class LocaleManager {
         ) {
             const part = parts[i];
             // @ts-expect-error I have no idea how to type this :-)
-            if (current[part] !== undefined) {
-                // @ts-expect-error I have no idea how to type this :-)
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                current = current[part];
-            } else {
+            if (current[part] === undefined) {
                 if (fallback) {
                     throw new Error(
                         `Invalid locale path: ${path}: part "${parts[i]}" does not exist. Available paths: ${Object.keys(
@@ -206,12 +204,16 @@ export class LocaleManager {
                     );
                     return this._resolveLocalePath(path, true);
                 }
+            } else {
+                // @ts-expect-error I have no idea how to type this :-)
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                current = current[part];
             }
         }
 
         // Check if the final resolved value is a string
         if (typeof current !== "string") {
-            throw new Error(
+            throw new TypeError(
                 `Invalid locale path: ${path}: value is not a string. Perhaps the path is incomplete.`
             );
         }

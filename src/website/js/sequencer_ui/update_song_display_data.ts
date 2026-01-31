@@ -6,11 +6,7 @@ export function updateSongDisplayData(
     cleanOtherTextEvents = true
 ) {
     let requiresMediaUpdate = false;
-    if (!this.seq?.midiData) {
-        this.currentSongTitle = this.locale.getLocaleString(
-            "locale.synthInit.genericLoading"
-        );
-    } else {
+    if (this.seq?.midiData) {
         const newTitle = formatTitle(
             this.seq.midiData.getName(this.encoding) ?? "Unnamed Song.mid"
         );
@@ -18,19 +14,19 @@ export function updateSongDisplayData(
             this.currentSongTitle = newTitle;
             requiresMediaUpdate = true;
         }
+    } else {
+        this.currentSongTitle = this.locale.getLocaleString(
+            "locale.synthInit.genericLoading"
+        );
     }
     this.loadLyricData();
     this.setLyricsText(this.lyricsIndex);
     if (cleanOtherTextEvents) {
         this.rawOtherTextEvents = [];
     }
-    if (!this.synthDisplayMode.enabled) {
-        this.mainTitleMessageDisplay.innerText = this.currentSongTitle;
-    } else {
-        this.mainTitleMessageDisplay.innerText = this.decodeTextFix(
-            this.synthDisplayMode.currentEncodedText.buffer
-        );
-    }
+    this.mainTitleMessageDisplay.textContent = this.synthDisplayMode.enabled
+        ? this.decodeTextFix(this.synthDisplayMode.currentEncodedText.buffer)
+        : this.currentSongTitle;
     document.title = this.currentSongTitle + " - SpessaSynth";
     this.musicModeUI.setTitle(this.currentSongTitle);
     if (requiresMediaUpdate) {

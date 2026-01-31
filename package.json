@@ -5,7 +5,7 @@
     "private": true,
     "scripts": {
         "perms": "chmod +x src/build/*",
-        "test:types": "eslint src/ && tsc -b",
+        "test:types": "eslint --cache && tsc -b",
         "start": "node src/build/start.ts",
         "build": "npm run test:types && npm run build:fast",
         "build:fast": "node src/build/build.ts",
@@ -19,10 +19,19 @@
         "@types/node": "^24.2.1",
         "esbuild": "^0.25.2",
         "eslint": "^9.33.0",
+        "eslint-config-prettier": "^10.1.8",
+        "eslint-plugin-unicorn": "^62.0.0",
         "globals": "^16.3.0",
         "prettier": "^3.6.2",
         "typescript": "^5.9.2",
         "typescript-eslint": "^8.39.0"
+    },
+    "lint-staged": {
+        "*.{ts,js}": [
+            "prettier --write",
+            "eslint --cache --fix"
+        ],
+        "*.{html,json,md,yml,yaml,css}": "prettier --write"
     },
     "dependencies": {
         "jszip": "^3.10.1",

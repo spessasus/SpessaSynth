@@ -27,7 +27,7 @@ I welcome contributions from translators! To add a new locale, please follow the
       object keys unchanged.
     - You may add comments to indicate who translated the text, e.g., `// translated by: XYZ`.
     - **Note:** Strings containing placeholders, like `Channel {0}`, should keep the placeholders intact. They are used for
-       formatting and should not be altered.
+      formatting and should not be altered.
     - **Note 2:** The code sets `textContent` property, so doing HTML characters like `&lt;`
       is not needed.
       For new line, use `\n`
@@ -56,15 +56,14 @@ Here's how you can fix existing translations:
 
 2. **Find missing translation files**
     - Since the translations are split up into parts, some files may be missing in your target language.
-   Copy them from `locale_en` or any other language you want to translate from.
+      Copy them from `locale_en` or any other language you want to translate from.
     - A tip: After selecting the translation in the local edition, the console should warn about the missing translations.
 
 3. **Translate!**
     - Translate all the untranslated strings in the `locale.js` file and all `.js` files in the folders.
-    Make sure to leave the
+      Make sure to leave the
       object keys unchanged.
     - You may add comments to indicate who translated the text, e.g., `// translated by: XYZ`.
-   
 4. **Verify your work**
     - compile: `npm run build`
     - Change the language to the translated language.
@@ -73,7 +72,7 @@ Here's how you can fix existing translations:
 
 5. **Submit a Pull Request**
     - After completing the translation and updates, create a pull request with your changes.
-    Thank you for helping
+      Thank you for helping
       SpessaSynth!
 
-*If you have any questions about this guide or something is unclear, let me know by opening an issue!*
+_If you have any questions about this guide or something is unclear, let me know by opening an issue!_

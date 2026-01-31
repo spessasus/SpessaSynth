@@ -23,7 +23,6 @@
 - [SpessaSynth](https://github.com/spessasus/SpessaSynth) (you are here) - online/local MIDI player/editor application
 - [SpessaFont](https://github.com/spessasus/SpessaFont) - online SF2/DLS editor
 
-
 <h1 align='center'>Web App / Local Edition</h1>
 <p align='center'>The complete GUI for spessasynth_lib, allowing remixing, experimenting, and playing MIDIs in the coolest way possible.</p>
 
@@ -40,26 +39,26 @@
 - **Kar Lyrics support:** Karaoke but fancy!
 - **ASS Subtitle support:** Karaoke but even fancier!
 - **Music player mode:** with support for album covers in .rmi files!
-- Mobile-friendly UI (*synthesizer performance not optimized for mobile... don't tell anyone!*)
-- **Multiple language support:** 
-  - English
-  - Polish
-  - Japanese
-  - French (translated by Davy Triponney)
-  - Portuguese (translated by Lucas Gabriel)
-  - Custom locale management system, created specifically for this project
+- Mobile-friendly UI (_synthesizer performance not optimized for mobile... don't tell anyone!_)
+- **Multiple language support:**
+    - English
+    - Polish
+    - Japanese
+    - French (translated by Davy Triponney)
+    - Portuguese (translated by Lucas Gabriel)
+    - Custom locale management system, created specifically for this project
 - **Description of buttons:** Hover over the buttons to see what they do!
 - **`Web MIDI API` support:** Use your physical MIDI devices!
 - [WebMidiLink](https://www.g200kg.com/en/docs/webmidilink/) support
 - **Numerous exporting options:**
-  - Render the MIDI file (modified or unmodified) to .wav
-  - Render each channel as a separate .wav file
-  - Export the modified MIDI file to .mid
-  - Export the trimmed SoundFont to .sf2
-  - Export a DLS file to .sf2
-  - Export an SF2 file to .dls
-  - Or compress it as .sf3!
-  - Bundle both as .rmi with metadata such as album cover!
+    - Render the MIDI file (modified or unmodified) to .wav
+    - Render each channel as a separate .wav file
+    - Export the modified MIDI file to .mid
+    - Export the trimmed SoundFont to .sf2
+    - Export a DLS file to .sf2
+    - Export an SF2 file to .dls
+    - Or compress it as .sf3!
+    - Bundle both as .rmi with metadata such as album cover!
 - Comes bundled with a compressed [GeneralUser GS](https://schristiancollins.com/generaluser.php) SoundFont to get you started
 
 <h3 align='center'>Still not convinced? Check out these screenshots:</h3>
@@ -79,12 +78,13 @@ MARKDOWN VERSION
 <img src="https://github.com/user-attachments/assets/7499503e-9dec-4f7c-8c58-b4960f63bc39" width="45%"></img>
 <img src="https://github.com/user-attachments/assets/772c1636-26cb-4efd-a9d1-daef5f12c566" width="45%"></img>
 <img src="https://github.com/user-attachments/assets/0c98f317-69d1-499c-968d-0870d9f5bec5" width="45%"></img>
-<img src="https://github.com/user-attachments/assets/b9f7c939-7097-44a7-a02e-5262c8b61102" width="45%"></img> 
+<img src="https://github.com/user-attachments/assets/b9f7c939-7097-44a7-a02e-5262c8b61102" width="45%"></img>
 
 </p>
 
 ### Local Edition Download
-*SpessaSynth: Local Edition* comes with easier soundfont management than the demo version,
+
+_SpessaSynth: Local Edition_ comes with easier soundfont management than the demo version,
 also allowing to use it offline! [You can download it here.](https://spessasus.github.io/SpessaSynth/SpessaSynth-LocalEdition.zip)
 
 > [!IMPORTANT]
@@ -94,6 +94,7 @@ also allowing to use it offline! [You can download it here.](https://spessasus.g
 [Recommended high-quality SoundFont for Local Edition](https://musical-artifacts.com/artifacts/1176)
 
 ### Building from source
+
 ```shell
 # clone
 git clone "https://github.com/spessasus/SpessaSynth" --depth 1
@@ -102,10 +103,12 @@ npm i
 # build and start the local edition
 npm start
 ```
-The "start" will automatically build the script and then invoke server.js. 
+
+The "start" will automatically build the script and then invoke server.js.
 Then it will only invoke server.js so you need to `npm run build` to rebuild.
 
 The build files:
+
 - dist: the online demo along with the bundled Local edition ZIP for downloading. This is what's hosted on GH pages.
 - local-dev: Local Edition sources with sourcemaps. For development.
 - server: the Local Edition server. It is here so it can use the root "soundfonts" folder. This is what `npm start` invokes.
@@ -115,6 +118,7 @@ The build files:
 **If you like this project, consider giving it a star. It really helps out!**
 
 ### Special Thanks
+
 - [FluidSynth](https://github.com/FluidSynth/fluidsynth) - for the source code that helped implement functionality and fixes
 - [Polyphone](https://www.polyphone-soundfonts.com/) - for the soundfont testing and editing tool
 - [Meltysynth](https://github.com/sinshu/meltysynth) - for the initial low-pass filter implementation
@@ -131,6 +135,7 @@ The build files:
 - **And You!** - for checking out this project. I hope you like it :)
 
 ### Major Releases
+
 - [0.0.1](https://github.com/spessasus/SpessaSynth/commit/bc5c6516ae7edc94656b5df75d254a29280caa18) - Initial release
 - [1.0.0](https://github.com/spessasus/SpessaSynth/commit/45c23d1c2906b2dec202c0533a9737bd1fa6b3c4) - Removed the 2-sample limit per voice
 - [2.0.0](https://github.com/spessasus/SpessaSynth/commit/350e4db90210375da27e393393df743be2137d59) - Implemented the worklet system and added support for modulators
@@ -138,10 +143,12 @@ The build files:
 - [4.0.0](https://github.com/spessasus/SpessaSynth/commit/95ce4c5ad4a429d6de75426a42bbdf9dc353e9de) - Rewrote the project in TypeScript
 
 ### License
+
 Copyright © 2026 Spessasus.
 Licensed under the Apache-2.0 License.
 
 #### Legal
+
 This project is in no way endorsed or otherwise affiliated with the MIDI Manufacturers Association,
 Creative Technology Ltd. or E-mu Systems, Inc., or any other organization mentioned.
 SoundFont® is a registered trademark of Creative Technology Ltd.

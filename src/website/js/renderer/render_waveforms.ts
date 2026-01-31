@@ -317,11 +317,12 @@ export function renderWaveforms(this: Renderer, forceStraightLine = false) {
     const waveHeight = this.canvas.height / 4;
     switch (this.rendererMode) {
         default:
-        case rendererModes.none:
+        case rendererModes.none: {
             break;
+        }
 
         case rendererModes.filledWaveformsMode:
-        case rendererModes.waveformsMode:
+        case rendererModes.waveformsMode: {
             for (let i = 0; i < this.channelAnalysers.length; i++) {
                 this.renderSingleWaveform(
                     i,
@@ -332,14 +333,17 @@ export function renderWaveforms(this: Renderer, forceStraightLine = false) {
                 );
             }
             break;
+        }
 
-        case rendererModes.spectrumSplitMode:
+        case rendererModes.spectrumSplitMode: {
             for (let i = 0; i < this.channelAnalysers.length; i++) {
                 this.renderSingleFft(i, waveWidth, waveHeight);
             }
             break;
+        }
 
-        case rendererModes.spectrumSingleMode:
+        case rendererModes.spectrumSingleMode: {
             this.renderBigFft();
+        }
     }
 }

@@ -16,7 +16,6 @@
     left: 0;
 }
 
-
 #sequencer_controls .note_progress_light {
     filter: brightness(3);
 }
@@ -63,8 +62,8 @@
 
 #sequencer_controls .playback_rate_slider_wrapper span {
     border: solid white 2px;
-    border-radius: .2rem;
-    padding: .2rem;
+    border-radius: 0.2rem;
+    padding: 0.2rem;
     width: 4rem;
 }
 

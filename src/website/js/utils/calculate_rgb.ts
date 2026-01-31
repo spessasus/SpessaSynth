@@ -8,13 +8,13 @@ export function calculateRGB(
     rgbString: string,
     operation: (arg0: number) => number
 ): string {
-    const rgbValues = rgbString.replace(/[^\d,]/g, "").split(",");
-    return `rgb(${operation(parseInt(rgbValues[0]))}, ${operation(parseInt(rgbValues[1]))}, ${operation(
-        parseInt(rgbValues[2])
+    const rgbValues = rgbString.replaceAll(/[^\d,]/g, "").split(",");
+    return `rgb(${operation(Number.parseInt(rgbValues[0]))}, ${operation(Number.parseInt(rgbValues[1]))}, ${operation(
+        Number.parseInt(rgbValues[2])
     )})`;
 }
 
 export function RGBAOpacity(rgbString: string, opacity: number) {
-    const v = rgbString.replace(/[^\d,]/g, "").split(",");
+    const v = rgbString.replaceAll(/[^\d,]/g, "").split(",");
     return `rgba(${v[0]}, ${v[1]}, ${v[2]}, ${opacity})`;
 }

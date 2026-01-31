@@ -5,7 +5,8 @@
 export const musicPlayerModeLocale = {
     toggleButton: {
         title: "Toggle music player mode",
-        description: "Toggle the simplified UI version, hiding the keyboard and note visualizations"
+        description:
+            "Toggle the simplified UI version, hiding the keyboard and note visualizations"
     },
     currentlyPlaying: "Currently playing:",
     nothingPlaying: "Nothing is playing",

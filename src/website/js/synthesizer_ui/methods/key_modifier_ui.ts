@@ -24,7 +24,7 @@ async function getKey(
                     )
                 }
             ],
-            999999,
+            999_999,
             false,
             locale
         );
@@ -37,6 +37,16 @@ async function getKey(
     });
 }
 
+function getInput(name: string, min: number, max: number, val: number) {
+    return {
+        type: "number",
+        min: min.toString(),
+        max: max.toString(),
+        value: val.toString(),
+        [name]: "true"
+    };
+}
+
 async function doModifyKey(
     synth: Synthesizer,
     locale: LocaleManager,
@@ -44,15 +54,7 @@ async function doModifyKey(
     presetList: MIDIPatchNamed[]
 ) {
     const key = await getKey(locale, keyboard);
-    const getInput = (name: string, min: number, max: number, val: number) => {
-        return {
-            type: "number",
-            min: min.toString(),
-            max: max.toString(),
-            value: val.toString(),
-            [name]: "true"
-        };
-    };
+
     const presetOptions: Record<string, string> = {
         unchanged: locale.getLocaleString(
             LOCALE_PATH + "modifyKey.preset.unchanged"
@@ -125,7 +127,7 @@ async function doModifyKey(
                         if (!e) {
                             return null;
                         }
-                        return parseInt((e as HTMLInputElement).value);
+                        return Number.parseInt((e as HTMLInputElement).value);
                     };
                     const channel = getVal("input[chan]") ?? -1;
                     const velocity = getVal("input[vel]") ?? -1;
@@ -164,7 +166,7 @@ async function doModifyKey(
                 }
             }
         ],
-        99999,
+        99_999,
         true,
         locale
     );
@@ -223,13 +225,14 @@ async function doRemoveModification(
                 onClick: (n) => {
                     const input = n.div.querySelector("input[chan]")!;
                     const channel =
-                        parseInt((input as HTMLInputElement).value) ?? -1;
+                        Number.parseInt((input as HTMLInputElement).value) ??
+                        -1;
                     synth.keyModifierManager.deleteModifier(channel, key);
                     closeNotification(n.id);
                 }
             }
         ],
-        99999,
+        99_999,
         true,
         locale
     );
@@ -307,14 +310,14 @@ export function startKeyModifiersMenu(
                                 }
                             }
                         ],
-                        99999,
+                        99_999,
                         true,
                         locale
                     );
                 }
             }
         ],
-        9999999,
+        9_999_999,
         true,
         locale
     );

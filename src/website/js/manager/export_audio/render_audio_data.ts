@@ -57,7 +57,7 @@ export async function renderAudioData(
             enableEffects: !separated
         });
         // No cap
-        rendererSynth.setMasterParameter("voiceCap", 4294967296);
+        rendererSynth.setMasterParameter("voiceCap", 4_294_967_296);
         console.info("Parsing and loading the sound bank in the main thread.");
         const sf = SoundBankLoader.fromArrayBuffer(this.sBankBuffer);
         rendererSynth.soundBankManager.addSoundBank(sf, SOUND_BANK_ID);
@@ -268,7 +268,7 @@ export async function renderAudioData(
                         reverbPlayer.buffer = reverbBuffer;
                         reverbPlayer.start();
 
-                        const updateInterval = setInterval(() => {
+                        const updateInterval = window.setInterval(() => {
                             progressCallback?.(
                                 offline.currentTime / totalDuration,
                                 1

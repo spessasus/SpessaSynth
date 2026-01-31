@@ -13,9 +13,9 @@ export function drawNotes(
     sideways: boolean
 ) {
     // Render the pressed effect first
-    notesToDraw.forEach((n) => {
+    for (const n of notesToDraw) {
         if (n.pressedProgress === 0) {
-            return;
+            continue;
         }
         drawingContext.fillStyle = n.color;
         const effectStrength = n.pressedProgress * n.velocity;
@@ -28,7 +28,7 @@ export function drawNotes(
                 n.height * (effectStrength * 2 + 1)
             );
             drawingContext.globalAlpha = 1;
-            return;
+            continue;
         }
         drawingContext.fillRect(
             n.xPos - n.width * effectStrength,
@@ -37,9 +37,9 @@ export function drawNotes(
             n.height
         );
         drawingContext.globalAlpha = 1;
-    });
+    }
 
-    notesToDraw.forEach((n) => {
+    for (const n of notesToDraw) {
         // Save and change color
         drawingContext.fillStyle = n.color;
         drawingContext.save();
@@ -53,5 +53,5 @@ export function drawNotes(
         drawingContext.strokeStyle = STROKE_COLOR;
         drawingContext.lineWidth = n.stroke;
         drawingContext.strokeRect(n.xPos, n.yPos, n.width, n.height);
-    });
+    }
 }

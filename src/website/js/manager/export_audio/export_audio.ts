@@ -1,4 +1,8 @@
-import { closeNotification, type NotificationContent, showNotification } from "../../notification/notification.js";
+import {
+    closeNotification,
+    type NotificationContent,
+    showNotification
+} from "../../notification/notification.js";
 import { audioBufferToWav } from "spessasynth_lib";
 import { formatTime } from "../../utils/other.js";
 import { consoleColors } from "../../utils/console_colors.js";
@@ -14,7 +18,7 @@ const RENDER_AUDIO_TIME_INTERVAL = 250;
 export async function renderAndExportAudioData(
     this: Manager,
     normalizeAudio = true,
-    sampleRate = 44100,
+    sampleRate = 44_100,
     additionalTime = 2,
     separateChannels = false,
     meta: Partial<WaveMetadata>,
@@ -44,7 +48,7 @@ export async function renderAndExportAudioData(
     const notification = showNotification(
         exportingMessage,
         [{ type: "text", textContent: loadingMessage }, { type: "progress" }],
-        9999999,
+        9_999_999,
         false
     );
 
@@ -62,9 +66,9 @@ export async function renderAndExportAudioData(
         loopDuration * loopCount;
 
     // Progress tracking
-    const detailMessage = notification.div.getElementsByTagName("p")[0];
-    const progressDiv = notification.div.getElementsByClassName(
-        "notification_progress"
+    const detailMessage = notification.div.querySelectorAll("p")[0];
+    const progressDiv = notification.div.querySelectorAll(
+        ".notification_progress"
     )[0] as HTMLDivElement;
     const RATI_SECONDS = RENDER_AUDIO_TIME_INTERVAL / 1000;
     let estimatedTime = duration * playbackRate;
@@ -86,9 +90,9 @@ export async function renderAndExportAudioData(
             estimatedTime =
                 smoothingFactor * estimated +
                 (1 - smoothingFactor) * estimatedTime;
-            detailMessage.innerText = `${str} ${formatTime(estimatedTime).time}`;
+            detailMessage.textContent = `${str} ${formatTime(estimatedTime).time}`;
         } else {
-            detailMessage.innerText = `${str} ${Math.floor(prog * 100_0) / 10}%`;
+            detailMessage.textContent = `${str} ${Math.floor(prog * 1000) / 10}%`;
         }
     };
 
@@ -119,7 +123,9 @@ export async function renderAndExportAudioData(
         const content: NotificationContent[] = [];
         const usedChannels = new Set();
         for (const t of parsedMid.tracks) {
-            t.channels.forEach((c) => usedChannels.add(c));
+            for (const c of t.channels) {
+                usedChannels.add(c);
+            }
         }
         for (let i = 0; i < 16; i++) {
             // Check if all channels are muted
@@ -180,7 +186,7 @@ export async function renderAndExportAudioData(
                 await new Promise((r) => setTimeout(r, ANIMATION_REFLOW_TIME));
 
                 const zipped = new JSZip();
-                renderedChannels.forEach((channel, i) => {
+                for (const [i, channel] of renderedChannels.entries()) {
                     // Check if all channels are muted
                     let muted = true;
                     for (
@@ -194,7 +200,7 @@ export async function renderAndExportAudioData(
                         }
                     }
                     if (!usedChannels.has(i) || muted) {
-                        return;
+                        continue;
                     }
                     // Stereo
                     const audioOut = audioBufferToWav(channel, {
@@ -208,7 +214,7 @@ export async function renderAndExportAudioData(
                         consoleColors.recognized,
                         consoleColors.info
                     );
-                });
+                }
                 const zipFile = await zipped.generateAsync({ type: "blob" });
                 this.saveBlob(
                     zipFile,
@@ -221,7 +227,7 @@ export async function renderAndExportAudioData(
         const n = showNotification(
             this.localeManager.getLocaleString(separatePath + "title"),
             content,
-            99999999,
+            99_999_999,
             true,
             undefined,
             {
@@ -232,7 +238,7 @@ export async function renderAndExportAudioData(
         );
         n.div.style.width = "30rem";
     } else {
-        detailMessage.innerText = this.localeManager.getLocaleString(
+        detailMessage.textContent = this.localeManager.getLocaleString(
             "locale.exportAudio.formats.formats.wav.exportMessage.convertWav"
         );
         // Let the browser show
@@ -397,11 +403,11 @@ export function showAudioExportMenu(this: Manager) {
                 void renderAndExportAudioData.call(
                     this,
                     normalizeVolume,
-                    parseInt(sampleRate),
-                    parseInt(additionalTime),
+                    Number.parseInt(sampleRate),
+                    Number.parseInt(additionalTime),
                     separateChannels,
                     metadata,
-                    parseInt(loopCount)
+                    Number.parseInt(loopCount)
                 );
             }
         }
@@ -410,7 +416,7 @@ export function showAudioExportMenu(this: Manager) {
     showNotification(
         this.localeManager.getLocaleString(wavPath + "title"),
         WAV_OPTIONS,
-        9999999,
+        9_999_999,
         true,
         this.localeManager
     );

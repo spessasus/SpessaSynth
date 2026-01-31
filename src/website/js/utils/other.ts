@@ -29,14 +29,17 @@ export function formatTitle(fileName: string): string {
     ];
 
     // Loop through extensions and remove them, case-insensitive
-    extensions.forEach((ext) => {
+    for (const ext of extensions) {
         if (fileName.toLowerCase().endsWith(ext)) {
-            fileName = fileName.substring(0, fileName.length - ext.length);
+            fileName = fileName.slice(
+                0,
+                Math.max(0, fileName.length - ext.length)
+            );
         }
-    });
+    }
 
     // Replace underscores with spaces
-    fileName = fileName.replace(/_/g, " ").trim();
+    fileName = fileName.replaceAll("_", " ").trim();
 
     return fileName;
 }

@@ -17,11 +17,13 @@ export function runCommandSync(command: string) {
 
     if (proc.status !== 0) {
         console.error(`${command} returned ${proc.status}`);
+        // eslint-disable-next-line unicorn/no-process-exit
         process.exit(proc.status);
     }
 
     if (proc.error) {
         console.error(`Error executing command: ${command}`, proc.error);
+        // eslint-disable-next-line unicorn/no-process-exit
         process.exit(proc.status);
     }
 }

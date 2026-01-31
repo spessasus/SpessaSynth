@@ -184,13 +184,14 @@ export function _exportRMIDI(this: Manager) {
                         "input[compress-toggle='1']"
                     ).checked;
                     const quality =
-                        parseInt(getEl("input[type='range']").value) / 10;
+                        Number.parseInt(getEl("input[type='range']").value) /
+                        10;
                     const album = getEl("input[name='album']").value;
                     const artist = getEl("input[name='artist']").value;
                     const songTitle = getEl("input[name='song_title']").value;
                     const comment = getEl("input[name='comment']").value;
                     const genre = getEl("input[name='genre']").value;
-                    const bankOffset = parseInt(
+                    const bankOffset = Number.parseInt(
                         getEl("input[name='bank_offset']").value
                     );
                     const adjust = getEl("input[name='adjust']").checked;
@@ -223,16 +224,16 @@ export function _exportRMIDI(this: Manager) {
                                 type: "progress"
                             }
                         ],
-                        9999999,
+                        9_999_999,
                         false
                     );
                     // Allow the notification to show
                     await new Promise((r) => setTimeout(r, 500));
-                    const message = notification.div.getElementsByClassName(
-                        "export_rmidi_message"
+                    const message = notification.div.querySelectorAll(
+                        ".export_rmidi_message"
                     )[0] as HTMLDivElement;
-                    const progressDiv = notification.div.getElementsByClassName(
-                        "notification_progress"
+                    const progressDiv = notification.div.querySelectorAll(
+                        ".notification_progress"
                     )[0] as HTMLDivElement;
                     message.textContent = this.localeManager.getLocaleString(
                         localePath + "modifyingMIDI"
@@ -300,7 +301,7 @@ export function _exportRMIDI(this: Manager) {
                 }
             }
         ],
-        9999999,
+        9_999_999,
         true,
         this.localeManager
     );
@@ -315,9 +316,9 @@ export function _exportRMIDI(this: Manager) {
         mid.embeddedSoundBankSize === undefined;
 
     const input = getEl("input[type='file']");
-    input.oninput = () => {
+    input.addEventListener("input", () => {
         if (input.files?.[0]) {
             input.parentElement!.firstChild!.textContent = input.files[0].name;
         }
-    };
+    });
 }

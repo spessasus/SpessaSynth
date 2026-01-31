@@ -36,7 +36,7 @@ export function computeNotePositions(
      * Compute note pitch bend visual shift (for each channel)
      */
     const pitchBendXShift: number[] = [];
-    this.synth.channelProperties.forEach((channel) => {
+    for (const channel of this.synth.channelProperties) {
         // Pitch range * (bend - 8192) / 8192)) * key width
         if (this.showVisualPitch) {
             const bend = channel.pitchWheel - 8192; // -8192 to 8192
@@ -46,17 +46,17 @@ export function computeNotePositions(
         } else {
             pitchBendXShift.push(0);
         }
-    });
+    }
     const transposeNoteShifts = this.synth.channelProperties.map((c) =>
         this.showVisualPitch ? c.transposition : 0
     );
     const notesToDraw = new Array<NoteToRender>();
-    this.noteTimes.forEach((channel, channelNumder) => {
+    for (const [channelNumder, channel] of this.noteTimes.entries()) {
         if (
             channel.renderStartIndex >= channel.notes.length ||
             !this.renderChannels[channelNumder]
         ) {
-            return;
+            continue;
         }
 
         let noteIndex = channel.renderStartIndex;
@@ -88,13 +88,9 @@ export function computeNotePositions(
                     const position =
                         ((note.start - currentStartTime) / fallingTimeSeconds) *
                         canvasHeight;
-                    let noteY;
-                    if (this._notesFall) {
-                        noteY =
-                            canvasHeight - noteHeight - position + NOTE_MARGIN;
-                    } else {
-                        noteY = position + NOTE_MARGIN;
-                    }
+                    const noteY = this._notesFall
+                        ? canvasHeight - noteHeight - position + NOTE_MARGIN
+                        : position + NOTE_MARGIN;
 
                     // If the note out of range, skip
                     if (
@@ -155,17 +151,9 @@ export function computeNotePositions(
                         ) {
                             // This note is not pressed
                             if (this.sideways) {
-                                if (this.drawActiveNotes) {
-                                    color =
-                                        this.sidewaysDarkerColors[
-                                            channelNumder
-                                        ];
-                                } else {
-                                    color =
-                                        this.sidewaysChannelColors[
-                                            channelNumder
-                                        ];
-                                }
+                                color = this.drawActiveNotes
+                                    ? this.sidewaysDarkerColors[channelNumder]
+                                    : this.sidewaysChannelColors[channelNumder];
                             } else if (this.drawActiveNotes) {
                                 color = this.darkerColors[channelNumder];
                             } else {
@@ -197,15 +185,11 @@ export function computeNotePositions(
                                 color = this.channelColors[channelNumder];
                             }
                             // Determine for how long the note has been pressed
-                            let noteProgress;
-                            if (this.drawActiveNotes) {
-                                noteProgress =
-                                    1 +
-                                    (note.start - currentSeqTime) /
-                                        (note.length * PRESSED_EFFECT_TIME);
-                            } else {
-                                noteProgress = 0;
-                            }
+                            const noteProgress = this.drawActiveNotes
+                                ? 1 +
+                                  (note.start - currentSeqTime) /
+                                      (note.length * PRESSED_EFFECT_TIME)
+                                : 0;
                             // Active notes
                             notesToDraw.push({
                                 xPos: finalX,
@@ -231,7 +215,7 @@ export function computeNotePositions(
         if (firstNoteIndex > -1) {
             channel.renderStartIndex = firstNoteIndex;
         }
-    });
+    }
     // Sort the notes from shortest to longest (draw order)
     notesToDraw.sort((n1, n2) => n2.height - n1.height);
     return notesToDraw;

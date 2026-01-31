@@ -5,14 +5,14 @@
     margin: 0.5rem;
 }
 
-input[type='number']::-webkit-outer-spin-button,
-input[type='number']::-webkit-inner-spin-button {
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
 
-.notification input[type='number'],
-.notification input[type='text'],
+.notification input[type="number"],
+.notification input[type="text"],
 .notification select {
     display: block;
     background: var(--top-buttons-color);
@@ -24,7 +24,7 @@ input[type='number']::-webkit-inner-spin-button {
     -moz-appearance: textfield;
 }
 
-.notification input[type='text'],
+.notification input[type="text"],
 .notification select {
     width: auto !important;
 }

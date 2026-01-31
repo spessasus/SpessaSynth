@@ -11,7 +11,6 @@
     transition: transform 0.1s ease;
 }
 
-
 .notification button:active,
 .notification_file_button:active {
     transform: scale(var(--active-scale));

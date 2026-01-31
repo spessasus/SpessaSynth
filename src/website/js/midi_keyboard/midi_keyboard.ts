@@ -37,7 +37,7 @@ export class MIDIKeyboard {
         this.synth = synth;
         this.channelColors = channelColors;
 
-        const kb = document.getElementById("keyboard");
+        const kb = document.querySelector("#keyboard");
         if (!kb) {
             throw new Error("No keyboard element?");
         }
@@ -117,11 +117,7 @@ export class MIDIKeyboard {
     }
 
     public set shown(val) {
-        if (val) {
-            this.keyboard.style.display = "";
-        } else {
-            this.keyboard.style.display = "none";
-        }
+        this.keyboard.style.display = val ? "" : "none";
         this._shown = val;
     }
 
@@ -144,17 +140,13 @@ export class MIDIKeyboard {
     }
 
     public toggleMode(animate = true) {
-        if (this.mode === "light") {
-            this.mode = "dark";
-        } else {
-            this.mode = "light";
-        }
+        this.mode = this.mode === "light" ? "dark" : "light";
         if (!animate) {
-            this.keys.forEach((k) => {
+            for (const k of this.keys) {
                 if (k.classList.contains("flat_key")) {
                     k.classList.toggle("flat_dark_key");
                 }
-            });
+            }
             return;
         }
         if (this.modeChangeAnimationId) {
@@ -166,11 +158,11 @@ export class MIDIKeyboard {
             document.body.classList.add("no_scroll");
         }
         this.modeChangeAnimationId = window.setTimeout(() => {
-            this.keys.forEach((k) => {
+            for (const k of this.keys) {
                 if (k.classList.contains("flat_key")) {
                     k.classList.toggle("flat_dark_key");
                 }
-            });
+            }
             this.keyboard.classList.remove("mode_transform");
             // Restore scrolling
             setTimeout(() => document.body.classList.remove("no_scroll"), 500);
@@ -221,10 +213,10 @@ export class MIDIKeyboard {
             // Do a cool animation here.
             // Get the height ratio for animation
             const computedStyle = getComputedStyle(this.keyboard);
-            const currentHeight = parseFloat(
+            const currentHeight = Number.parseFloat(
                 computedStyle
                     .getPropertyValue("--current-min-height")
-                    .replace(/[^\d.]+/g, "")
+                    .replaceAll(/[^\d.]+/g, "")
             );
             const currentHeightPx =
                 this.keyboard.getBoundingClientRect().height;
@@ -249,10 +241,10 @@ export class MIDIKeyboard {
             const pixelShift = (currentCenterKey - newCenterKey) * keyWidth;
 
             // Get the new border radius
-            const currentBorderRadius = parseFloat(
+            const currentBorderRadius = Number.parseFloat(
                 computedStyle
                     .getPropertyValue("--key-border-radius")
-                    .replace(/[^\d.]+/g, "")
+                    .replaceAll(/[^\d.]+/g, "")
             );
             // Add margin so the keyboard takes up the new amount of space
             this.keyboard.style.marginTop = `${heightDifferencePx}px`;
@@ -318,7 +310,7 @@ export class MIDIKeyboard {
         const brightness = velocity / 127;
         const rgbaValues = this.channelColors[channel % 16]
             .match(/\d+(\.\d+)?/g)
-            ?.map(parseFloat);
+            ?.map((element) => Number.parseFloat(element));
         if (!rgbaValues) {
             throw new Error(
                 `Invalid color: ${this.channelColors[channel % 16]}`
@@ -382,7 +374,7 @@ export class MIDIKeyboard {
         if (this.mode === "dark" && color !== "") {
             keyElement.style.boxShadow = `0px 0px ${GLOW_PX}px ${color}`;
         }
-        if (pressedColors.length < 1) {
+        if (pressedColors.length === 0) {
             keyElement.classList.remove("pressed");
             keyElement.style.background = "";
             keyElement.style.boxShadow = "";
@@ -390,31 +382,26 @@ export class MIDIKeyboard {
     }
 
     public clearNotes() {
-        this.keys.forEach((key, index) => {
+        for (const [index, key] of this.keys.entries()) {
             key.classList.remove("pressed");
             key.style.background = "";
             key.style.boxShadow = "";
             this.keyColors[index] = [];
-        });
+        }
+    }
+
+    protected userNoteOff(note: number) {
+        this.pressedKeys.delete(note);
+        this.releaseNote(note, this.channel);
+        this.synth.noteOff(this.channel, note);
     }
 
     protected _createKey(midiNote: number): HTMLDivElement {
-        function isBlackNoteNumber(noteNumber: number) {
-            const pitchClass = noteNumber % 12;
-            return (
-                pitchClass === 1 ||
-                pitchClass === 3 ||
-                pitchClass === 6 ||
-                pitchClass === 8 ||
-                pitchClass === 10
-            );
-        }
-
         const keyElement = document.createElement("div");
         keyElement.classList.add("key");
         keyElement.id = `note${midiNote}`;
 
-        const isBlack = isBlackNoteNumber(midiNote);
+        const isBlack = this.isBlackNoteNumber(midiNote);
         if (isBlack) {
             // Short note
             keyElement.classList.add("sharp_key");
@@ -424,10 +411,10 @@ export class MIDIKeyboard {
             let blackNoteLeft = false;
             let blackNoteRight = false;
             if (midiNote >= 0) {
-                blackNoteLeft = isBlackNoteNumber(midiNote - 1);
+                blackNoteLeft = this.isBlackNoteNumber(midiNote - 1);
             }
             if (midiNote < 127) {
-                blackNoteRight = isBlackNoteNumber(midiNote + 1);
+                blackNoteRight = this.isBlackNoteNumber(midiNote + 1);
             }
 
             if (blackNoteRight && blackNoteLeft) {
@@ -453,7 +440,7 @@ export class MIDIKeyboard {
         ) {
             const keyElement = this._createKey(midiNote);
             this.keyColors.push([]);
-            this.keyboard.appendChild(keyElement);
+            this.keyboard.append(keyElement);
             this.keys.push(keyElement);
         }
 
@@ -463,5 +450,16 @@ export class MIDIKeyboard {
             this.mode = "light";
             this.toggleMode(false);
         }
+    }
+
+    private isBlackNoteNumber(noteNumber: number) {
+        const pitchClass = noteNumber % 12;
+        return (
+            pitchClass === 1 ||
+            pitchClass === 3 ||
+            pitchClass === 6 ||
+            pitchClass === 8 ||
+            pitchClass === 10
+        );
     }
 }

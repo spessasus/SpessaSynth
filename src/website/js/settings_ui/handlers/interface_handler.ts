@@ -9,20 +9,20 @@ import { WorkerSynthesizer } from "spessasynth_lib";
  */
 export function _createInterfaceSettingsHandler(this: SpessaSynthSettings) {
     const button = this.htmlControls.interface.themeSelector;
-    button.onclick = () => {
+    button.addEventListener("click", () => {
         this.toggleDarkMode();
         this.saveSettings();
-    };
+    });
     const select = this.htmlControls.interface.languageSelector;
     // Load up the languages
     for (const [code, locale] of Object.entries(this.locales)) {
         const option = document.createElement("option");
         option.value = code;
         option.textContent = locale.localeName;
-        select.appendChild(option);
+        select.append(option);
     }
     select.value = this.locale.localeCode || "en";
-    select.onchange = () => {
+    select.addEventListener("change", () => {
         if (select.value === "help-translate") {
             window.open(
                 "https://github.com/spessasus/SpessaSynth/blob/master/src/website/js/locale/locale_files/README.md"
@@ -32,31 +32,31 @@ export function _createInterfaceSettingsHandler(this: SpessaSynthSettings) {
         }
         this.locale.changeGlobalLocale(select.value as keyof typeof localeList);
         this.saveSettings();
-    };
+    });
     const layoutSelect = this.htmlControls.interface.layoutSelector;
-    layoutSelect.onchange = () => {
+    layoutSelect.addEventListener("change", () => {
         this.changeLayout(layoutSelect.value as LayoutType);
         this.saveSettings();
         layoutSelect.blur();
-    };
+    });
 
     // IMPORTANT
     // This DOES NOT get saved in settings!
     const seqControls = this.htmlControls.interface.showControlsToggle;
-    seqControls.onchange = () => {
+    seqControls.addEventListener("change", () => {
         if (seqControls.checked) {
             document
-                .getElementsByClassName("bottom_part")[0]
+                .querySelectorAll(".bottom_part")[0]
                 .classList.remove("hidden");
         } else {
             document
-                .getElementsByClassName("bottom_part")[0]
+                .querySelectorAll(".bottom_part")[0]
                 .classList.add("hidden");
         }
-    };
+    });
 
     // Reload synth
-    const anchor = document.getElementById("reload_synth") as HTMLAnchorElement;
+    const anchor = document.querySelector<HTMLAnchorElement>("#reload_synth")!;
     const url = new URL(window.location.href);
     if (this.synth instanceof WorkerSynthesizer) {
         this.locale.bindObjectProperty(
@@ -78,33 +78,36 @@ export function _createInterfaceSettingsHandler(this: SpessaSynthSettings) {
 }
 
 export function _changeLayout(this: SpessaSynthSettings, layout: LayoutType) {
-    const wrapper = document.getElementById("keyboard_canvas_wrapper")!;
-    const canvas = document.getElementById("note_canvas")!;
-    const keyboard = document.getElementById("keyboard")!;
+    const wrapper = document.querySelector("#keyboard_canvas_wrapper")!;
+    const canvas = document.querySelector("#note_canvas")!;
+    const keyboard = document.querySelector("#keyboard")!;
     switch (layout) {
-        case "downwards":
-            wrapper.classList.remove("upwards");
-            wrapper.classList.remove("left_to_right");
-            wrapper.classList.remove("right_to_left");
+        case "downwards": {
+            wrapper.classList.remove(
+                "upwards",
+                "left_to_right",
+                "right_to_left"
+            );
 
             canvas.classList.remove("sideways");
             keyboard.classList.remove("sideways");
             this.renderer.direction = "down";
             this.renderer.sideways = false;
             break;
+        }
 
-        case "upwards":
+        case "upwards": {
             wrapper.classList.add("upwards");
-            wrapper.classList.remove("left_to_right");
-            wrapper.classList.remove("right_to_left");
+            wrapper.classList.remove("left_to_right", "right_to_left");
 
             canvas.classList.remove("sideways");
             keyboard.classList.remove("sideways");
             this.renderer.direction = "up";
             this.renderer.sideways = false;
             break;
+        }
 
-        case "left":
+        case "left": {
             wrapper.classList.remove("upwards");
             wrapper.classList.add("left_to_right");
             wrapper.classList.remove("right_to_left");
@@ -114,16 +117,17 @@ export function _changeLayout(this: SpessaSynthSettings, layout: LayoutType) {
             this.renderer.direction = "up";
             this.renderer.sideways = true;
             break;
+        }
 
-        case "right":
-            wrapper.classList.remove("upwards");
-            wrapper.classList.remove("left_to_right");
+        case "right": {
+            wrapper.classList.remove("upwards", "left_to_right");
             wrapper.classList.add("right_to_left");
 
             canvas.classList.add("sideways");
             keyboard.classList.add("sideways");
             this.renderer.direction = "down";
             this.renderer.sideways = true;
+        }
     }
     this.renderer.updateSize();
 }

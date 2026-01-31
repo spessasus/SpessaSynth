@@ -24,7 +24,7 @@ export function showEffectsConfigWindow(
                 translatePathTitle: path + "disableCustomVibrato",
                 onClick: (_, el) => {
                     synth.disableGSNPRNParams();
-                    el.parentNode?.removeChild(el);
+                    el.remove();
                 }
             },
 
@@ -162,32 +162,33 @@ export function showEffectsConfigWindow(
                 onClick: (n) => {
                     const getVal = (q: string) => {
                         const e = n.div.querySelector(q);
-                        return parseFloat((e as HTMLInputElement).value);
+                        return Number.parseFloat((e as HTMLInputElement).value);
                     };
 
-                    const config = { ...chorus };
-                    config.nodesAmount = getVal("input[setting='nodes']");
-                    config.defaultDelay = getVal("input[setting='nodes']");
-                    config.delayVariation = getVal(
-                        "input[setting='delay-var']"
-                    );
-                    config.stereoDifference = getVal("input[setting='stereo']");
-                    config.oscillatorFrequency = getVal(
-                        "input[setting='osc-freq']"
-                    );
-                    config.defaultDelay = getVal("input[setting='delay']");
-                    config.oscillatorFrequencyVariation = getVal(
-                        "input[setting='freq-var']"
-                    );
-                    config.oscillatorGain = getVal("input[setting='osc-gain']");
+                    const config = {
+                        ...chorus,
+                        nodesAmount: getVal("input[setting='nodes']"),
+                        delayVariation: getVal("input[setting='delay-var']"),
+                        stereoDifference: getVal("input[setting='stereo']"),
+                        oscillatorFrequency: getVal(
+                            "input[setting='osc-freq']"
+                        ),
+                        defaultDelay: getVal("input[setting='delay']"),
+                        oscillatorFrequencyVariation: getVal(
+                            "input[setting='freq-var']"
+                        ),
+                        oscillatorGain: getVal("input[setting='osc-gain']")
+                    };
                     synth.chorusProcessor?.update(config);
                 }
             }
         ],
-        999999,
+        999_999,
         true,
         locale
     );
-    nofification.div.onclick = (e) => e.stopImmediatePropagation();
+    nofification.div.addEventListener("click", (e) =>
+        e.stopImmediatePropagation()
+    );
     return nofification;
 }
