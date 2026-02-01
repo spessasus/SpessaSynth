@@ -97,6 +97,19 @@ export class Meter {
                     if (activeChangeCallback) {
                         activeChangeCallback(true);
                     }
+                    const el = e.currentTarget as HTMLElement;
+                    const bounds = el.getBoundingClientRect();
+                    const relativeLeft = bounds.left;
+                    const width = bounds.width;
+                    const relative = e.clientX - relativeLeft;
+                    const percentage = Math.max(
+                        0,
+                        Math.min(1, relative / width)
+                    );
+                    if (!this.isLocked || isMobile) {
+                        this.toggleLock();
+                    }
+                    editCallback(percentage * (max - min) + min);
                 } else {
                     // Other, lock it
                     this.toggleLock();
