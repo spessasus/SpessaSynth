@@ -58,6 +58,11 @@ export function render(this: Renderer, auto = true, force = false) {
         }
     }
 
+    // Draw dot matrix
+    if (this.showDisplayMatrix !== null) {
+        this.drawDotMatrix();
+    }
+
     // Calculate fps
     const timeSinceLastFrame = performance.now() - this.frameTimeStart;
     this.frameTimeStart = performance.now();

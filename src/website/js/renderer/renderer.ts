@@ -13,10 +13,15 @@ import {
     renderWaveforms
 } from "./render_waveforms.js";
 import { consoleColors } from "../utils/console_colors.js";
-import { BasicMIDI, midiMessageTypes } from "spessasynth_core";
+import {
+    BasicMIDI,
+    midiMessageTypes,
+    type SynthSystem
+} from "spessasynth_core";
 import type { Sequencer } from "spessasynth_lib";
 import type { LocaleManager } from "../locale/locale_manager.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
+import { drawDotMatrix } from "./draw_dot_matrix.ts";
 
 /**
  * Renderer.js
@@ -43,6 +48,8 @@ export const rendererModes = {
 };
 
 export type RendererMode = (typeof rendererModes)[keyof typeof rendererModes];
+
+const DISPLAY_MATRIX_TIMEOUT = 2880;
 
 // Analysers
 const CHANNEL_ANALYSER_FFT = 1024;
@@ -90,6 +97,12 @@ export class Renderer {
     public sideways = false;
     public readonly updateFftSize = updateFftSize.bind(this);
     public readonly render = render.bind(this);
+    /**
+     * For XG/GS display matrix
+     */
+    public readonly displayMatrix = Array.from({ length: 16 }, () =>
+        new Array<boolean>(16).fill(false)
+    );
     protected version: string;
     protected _notesFall = true;
     protected canvas: HTMLCanvasElement;
@@ -120,12 +133,15 @@ export class Renderer {
     protected readonly disconnectChannelAnalysers =
         disconnectChannelAnalysers.bind(this);
     protected readonly renderWaveforms = renderWaveforms.bind(this);
+    protected readonly drawDotMatrix = drawDotMatrix.bind(this);
     protected readonly renderSingleWaveform = renderSingleWaveform.bind(this);
     protected readonly renderSingleFft = renderSingleFft.bind(this);
     protected readonly renderBigFft = renderBigFft.bind(this);
     protected readonly inputNode: AudioNode;
     protected readonly workerMode: boolean;
     protected readonly sampleRateFactor: number;
+    protected showDisplayMatrix: SynthSystem | null = null;
+    private displayMatrixTimeout = 0;
 
     /**
      * Creates a new midi renderer for rendering notes visually.
@@ -248,11 +264,11 @@ export class Renderer {
 
     protected _stabilizeWaveforms = true;
 
-    // noinspection JSUnusedGlobalSymbols
-
     public get stabilizeWaveforms() {
         return this._stabilizeWaveforms;
     }
+
+    // noinspection JSUnusedGlobalSymbols
 
     public set stabilizeWaveforms(val: boolean) {
         this._stabilizeWaveforms = val;
@@ -314,6 +330,14 @@ export class Renderer {
 
     public set direction(val: "down" | "up") {
         this._notesFall = val === "down";
+    }
+
+    public updateDisplayMatrix(mode: SynthSystem) {
+        this.showDisplayMatrix = mode;
+        clearTimeout(this.displayMatrixTimeout);
+        this.displayMatrixTimeout = window.setTimeout(() => {
+            this.showDisplayMatrix = null;
+        }, DISPLAY_MATRIX_TIMEOUT);
     }
 
     public setRendererMode(mode: RendererMode) {
