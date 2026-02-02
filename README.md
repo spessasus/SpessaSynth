@@ -4,7 +4,7 @@
 <img src="src/website/spessasynth_logo_rounded.png" width='300' alt='SpessaSynth logo'>
 </p>
 
-**SpessaSynth** is a SoundFont2-based real-time synthesizer written in vanilla JavaScript.
+**SpessaSynth** is a SoundFont2-based real-time synthesizer written in TypeScript, previously pure JavaScript.
 
 <h1 align="center"><a href="https://spessasus.github.io/SpessaSynth/">Live Demo (no download needed!)</a></h1>
 
