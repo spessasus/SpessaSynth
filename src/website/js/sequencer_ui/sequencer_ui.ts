@@ -1070,8 +1070,8 @@ export class SequencerUI {
             const sampleDuration = Math.ceil(this.seq.midiData.duration * 8000);
             const noise = new Float32Array(sampleDuration);
             const p = 2 * Math.PI * 50;
-            for (let i = 0; i < Math.min(80_000, sampleDuration); i++) {
-                noise[i] = Math.sin(p * (i / 8000));
+            for (let i = 0; i < Math.min(8000, sampleDuration); i++) {
+                noise[i] = Math.sin(p * (i / 80_000)) * 0.0001;
             }
             const buf = audioToWav([noise], 8000);
             this.silencePlayer.src = URL.createObjectURL(
