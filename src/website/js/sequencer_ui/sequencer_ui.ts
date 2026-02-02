@@ -1026,13 +1026,18 @@ export class SequencerUI {
                     type: "image/png"
                 });
             } else {
-                // Always saying that it's a jpeg works on chrome
-                const pic = new Blob([mid.rmidiInfo.picture.buffer], {
-                    type: "image/jpeg"
-                });
-                const url = URL.createObjectURL(pic);
+                // Base64 works more reliably than URL.createObjectURL on Firefox
+                const pictureArray = new Uint8Array(
+                    mid.rmidiInfo.picture.buffer
+                );
+                const base64 = btoa(
+                    pictureArray.reduce(
+                        (data, byte) => data + String.fromCharCode(byte),
+                        ""
+                    )
+                );
                 artwork.push({
-                    src: url
+                    src: `data:image/png;base64,${base64}`
                 });
             }
 
