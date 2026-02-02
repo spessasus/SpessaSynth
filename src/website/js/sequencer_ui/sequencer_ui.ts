@@ -45,6 +45,8 @@ const ICON_DISABLED_COLOR_L = "#ddd";
 
 const DEFAULT_ENCODING = "Shift_JIS";
 
+const DOT_MATRIX_QUEUE_DELAY_MS = 35;
+
 // Zero width space
 const ZWSP = "\u200B";
 
@@ -124,6 +126,11 @@ export class SequencerUI {
      */
     protected silenceSeekLock = false;
 
+    private displayTimeoutId: number | null = null;
+    private lastDotMatrixTime = 0;
+    private dotMatrixQueue = new Array<number[]>();
+    private dotMatrixQueueActive = false;
+
     /**
      * Creates a new User Interface for the given MidiSequencer
      * @param element the element to create sequi in
@@ -156,79 +163,10 @@ export class SequencerUI {
         this.mainTitleMessageDisplay = m;
 
         // Set up synth display event
-        let displayTimeoutId: number | null = null;
         synth.eventHandler.addEvent(
             "synthDisplay",
             "sequi-synth-display",
-            (syx) => {
-                const isYamaha = syx[0] === 0x43;
-                if (
-                    (syx[0] === 0x41 && syx[5] === 0x00) || // Roland (and ensure display letters, not dot matrix
-                    isYamaha
-                ) {
-                    // Clear styles and apply monospace
-                    this.mainTitleMessageDisplay.classList.add("sysex_display");
-                    this.mainTitleMessageDisplay.classList.remove(
-                        "xg_sysex_display"
-                    );
-
-                    const textDataNum = isYamaha
-                        ? syx.slice(6, -1)
-                        : syx.slice(7, -2);
-
-                    const textData = new Uint8Array(textDataNum);
-                    // Decode the text
-                    let text = this.decodeTextFix(textData.buffer);
-
-                    // XG Displays have a special behavior, we try to mimic it here
-                    // Reference video:
-                    // https://www.youtube.com/watch?v=_mR7DV1E4KE
-                    // First, extract the "Display Letters" byte
-                    if (isYamaha) {
-                        const displayLetters = syx[5];
-                        // XG Display Letters:
-                        // The screen is monospace,
-                        // Two rows, 16 characters each (max)
-                        // Since this is XG data, apply the XG display style
-                        this.mainTitleMessageDisplay.classList.add(
-                            "xg_sysex_display"
-                        );
-
-                        // 0x0c where c are the number of spaces prepended
-                        const spaces = displayLetters & 0x0f;
-                        for (let i = 0; i < spaces; i++) {
-                            text = " " + text;
-                        }
-
-                        // At 16 characters, add a newline
-                        if (text.length >= 16) {
-                            text = text.slice(0, 16) + "\n" + text.slice(16);
-                        }
-
-                        // If type is 0x1x, add a newline
-                        if ((displayLetters & 0x10) > 1) {
-                            text = "\n" + text;
-                        }
-                    }
-
-                    this.mainTitleMessageDisplay.textContent =
-                        text.trim().length === 0
-                            ? // Set the text to invisible character to keep the height
-                              "‎ "
-                            : // Set the display to an invisible character to keep the height
-                              text;
-
-                    this.synthDisplayMode.enabled = true;
-                    this.synthDisplayMode.currentEncodedText = textData;
-                    if (displayTimeoutId !== null) {
-                        window.clearTimeout(displayTimeoutId);
-                    }
-                    displayTimeoutId = window.setTimeout(() => {
-                        this.synthDisplayMode.enabled = false;
-                        this.restoreDisplay();
-                    }, 5000);
-                }
-            }
+            this.synthDisplay.bind(this)
         );
 
         // Create controls
@@ -670,6 +608,7 @@ export class SequencerUI {
             () => {
                 this.lyricsIndex = -1;
                 this.updateSongDisplayData();
+                this.dotMatrixQueue.length = 0;
             }
         );
 
@@ -1155,6 +1094,161 @@ export class SequencerUI {
                 "stroke",
                 this.iconDisabledColor
             );
+        }
+    }
+
+    private dotMatrixDisplay(syx: number[]) {
+        if (syx[0] === 0x41) {
+            // Roland Dot Matrix
+            const syxOffset = 7;
+            const matrix = this.renderer.displayMatrix;
+            for (let rowNum = 0; rowNum < 16; rowNum++) {
+                let colNum = 0;
+                for (let i = 4; i >= 0; i--) {
+                    matrix[rowNum][colNum++] =
+                        ((syx[syxOffset + rowNum] >> i) & 1) === 1;
+                }
+                for (let i = 4; i >= 0; i--) {
+                    matrix[rowNum][colNum++] =
+                        ((syx[syxOffset + rowNum + 16] >> i) & 1) === 1;
+                }
+                for (let i = 4; i >= 0; i--) {
+                    matrix[rowNum][colNum++] =
+                        ((syx[syxOffset + rowNum + 32] >> i) & 1) === 1;
+                }
+                matrix[rowNum][colNum++] =
+                    ((syx[syxOffset + 48 + rowNum] >> 4) & 1) === 1;
+            }
+            this.renderer.updateDisplayMatrix("gs");
+        } else {
+            // Yamaha Display Bitmap
+            const syxOffset = 5;
+            const matrix = this.renderer.displayMatrix;
+            for (let rowNum = 0; rowNum < 16; rowNum++) {
+                let colNum = 0;
+                for (let i = 6; i >= 0; i--) {
+                    matrix[rowNum][colNum++] =
+                        ((syx[syxOffset + rowNum] >> i) & 1) === 1;
+                }
+                for (let i = 6; i >= 0; i--) {
+                    matrix[rowNum][colNum++] =
+                        ((syx[syxOffset + rowNum + 16] >> i) & 1) === 1;
+                }
+                for (let i = 6; i >= 5; i--) {
+                    matrix[rowNum][colNum++] =
+                        ((syx[syxOffset + rowNum + 32] >> i) & 1) === 1;
+                }
+            }
+            this.renderer.updateDisplayMatrix("xg");
+        }
+    }
+
+    private enqueueDotMatrix(syx: number[]) {
+        this.dotMatrixQueue.push(syx);
+        if (!this.dotMatrixQueueActive) {
+            this.processDotMatrixQueue();
+        }
+    }
+
+    private processDotMatrixQueue() {
+        const syx = this.dotMatrixQueue.shift();
+        if (!syx) {
+            this.dotMatrixQueueActive = false;
+            return;
+        }
+        this.dotMatrixQueueActive = true;
+        this.dotMatrixDisplay(syx);
+        setTimeout(
+            this.processDotMatrixQueue.bind(this),
+            DOT_MATRIX_QUEUE_DELAY_MS
+        );
+    }
+    /**
+     * Handle GS and XG synth display
+     * @param syx
+     * @private
+     */
+    private synthDisplay(syx: number[]) {
+        const isYamaha = syx[0] === 0x43;
+        const isRoland = syx[0] === 0x41;
+        if (
+            (isRoland && syx[5] === 0x00) || // Roland (and ensure display letters, not dot matrix
+            (isYamaha && syx[3] === 0x06)
+        ) {
+            // Clear styles and apply monospace
+            this.mainTitleMessageDisplay.classList.add("sysex_display");
+            this.mainTitleMessageDisplay.classList.remove("xg_sysex_display");
+
+            const textDataNum = isYamaha ? syx.slice(6, -1) : syx.slice(7, -2);
+
+            const textData = new Uint8Array(textDataNum);
+            // Decode the text
+            let text = this.decodeTextFix(textData.buffer);
+
+            // XG Displays have a special behavior, we try to mimic it here
+            // Reference video:
+            // https://www.youtube.com/watch?v=_mR7DV1E4KE
+            // First, extract the "Display Letters" byte
+            if (isYamaha) {
+                const displayLetters = syx[5];
+                // XG Display Letters:
+                // The screen is monospace,
+                // Two rows, 16 characters each (max)
+                // Since this is XG data, apply the XG display style
+                this.mainTitleMessageDisplay.classList.add("xg_sysex_display");
+
+                // 0x0c where c are the number of spaces prepended
+                const spaces = displayLetters & 0x0f;
+                for (let i = 0; i < spaces; i++) {
+                    text = " " + text;
+                }
+
+                // At 16 characters, add a newline
+                if (text.length >= 16) {
+                    text = text.slice(0, 16) + "\n" + text.slice(16);
+                }
+
+                // If type is 0x1x, add a newline
+                if ((displayLetters & 0x10) > 1) {
+                    text = "\n" + text;
+                }
+            }
+
+            /**
+             * The synths replace ~ with →
+             */
+            text = text.replaceAll("~", "→");
+
+            this.mainTitleMessageDisplay.textContent =
+                text.trim().length === 0
+                    ? // Set the text to invisible character to keep the height
+                      "‎ "
+                    : // Set the display to an invisible character to keep the height
+                      text;
+
+            this.synthDisplayMode.enabled = true;
+            this.synthDisplayMode.currentEncodedText = textData;
+            if (this.displayTimeoutId !== null) {
+                window.clearTimeout(this.displayTimeoutId);
+            }
+            this.displayTimeoutId = window.setTimeout(() => {
+                this.synthDisplayMode.enabled = false;
+                this.restoreDisplay();
+            }, 5000);
+        } else if (
+            (isRoland && syx[5] === 0x01) ||
+            (isYamaha && syx[3] === 0x07)
+        ) {
+            // Buffer messages into a queue if needed
+            if (
+                this.dotMatrixQueue.length > 0 ||
+                Math.abs(this.lastDotMatrixTime - this.synth.currentTime) < 0.01
+            ) {
+                this.enqueueDotMatrix(syx);
+                return;
+            }
+            this.lastDotMatrixTime = this.synth.currentTime;
+            this.dotMatrixDisplay(syx);
         }
     }
 }
