@@ -45,6 +45,8 @@ const ICON_DISABLED_COLOR_L = "#ddd";
 
 const DEFAULT_ENCODING = "Shift_JIS";
 
+const DOT_MATRIX_QUEUE_DELAY_MS = 35;
+
 // Zero width space
 const ZWSP = "\u200B";
 
@@ -125,6 +127,9 @@ export class SequencerUI {
     protected silenceSeekLock = false;
 
     private displayTimeoutId: number | null = null;
+    private lastDotMatrixTime = 0;
+    private dotMatrixQueue = new Array<number[]>();
+    private dotMatrixQueueActive = false;
 
     /**
      * Creates a new User Interface for the given MidiSequencer
@@ -603,6 +608,7 @@ export class SequencerUI {
             () => {
                 this.lyricsIndex = -1;
                 this.updateSongDisplayData();
+                this.dotMatrixQueue.length = 0;
             }
         );
 
@@ -1091,6 +1097,72 @@ export class SequencerUI {
         }
     }
 
+    private dotMatrixDisplay(syx: number[]) {
+        if (syx[0] === 0x41) {
+            // Roland Dot Matrix
+            const syxOffset = 7;
+            const matrix = this.renderer.displayMatrix;
+            for (let rowNum = 0; rowNum < 16; rowNum++) {
+                let colNum = 0;
+                for (let i = 4; i >= 0; i--) {
+                    matrix[rowNum][colNum++] =
+                        ((syx[syxOffset + rowNum] >> i) & 1) === 1;
+                }
+                for (let i = 4; i >= 0; i--) {
+                    matrix[rowNum][colNum++] =
+                        ((syx[syxOffset + rowNum + 16] >> i) & 1) === 1;
+                }
+                for (let i = 4; i >= 0; i--) {
+                    matrix[rowNum][colNum++] =
+                        ((syx[syxOffset + rowNum + 32] >> i) & 1) === 1;
+                }
+                matrix[rowNum][colNum++] =
+                    ((syx[syxOffset + 48 + rowNum] >> 4) & 1) === 1;
+            }
+            this.renderer.updateDisplayMatrix("gs");
+        } else {
+            // Yamaha Display Bitmap
+            const syxOffset = 5;
+            const matrix = this.renderer.displayMatrix;
+            for (let rowNum = 0; rowNum < 16; rowNum++) {
+                let colNum = 0;
+                for (let i = 6; i >= 0; i--) {
+                    matrix[rowNum][colNum++] =
+                        ((syx[syxOffset + rowNum] >> i) & 1) === 1;
+                }
+                for (let i = 6; i >= 0; i--) {
+                    matrix[rowNum][colNum++] =
+                        ((syx[syxOffset + rowNum + 16] >> i) & 1) === 1;
+                }
+                for (let i = 6; i >= 5; i--) {
+                    matrix[rowNum][colNum++] =
+                        ((syx[syxOffset + rowNum + 32] >> i) & 1) === 1;
+                }
+            }
+            this.renderer.updateDisplayMatrix("xg");
+        }
+    }
+
+    private enqueueDotMatrix(syx: number[]) {
+        this.dotMatrixQueue.push(syx);
+        if (!this.dotMatrixQueueActive) {
+            this.processDotMatrixQueue();
+        }
+    }
+
+    private processDotMatrixQueue() {
+        const syx = this.dotMatrixQueue.shift();
+        if (!syx) {
+            this.dotMatrixQueueActive = false;
+            return;
+        }
+        this.dotMatrixQueueActive = true;
+        this.dotMatrixDisplay(syx);
+        setTimeout(
+            this.processDotMatrixQueue.bind(this),
+            DOT_MATRIX_QUEUE_DELAY_MS
+        );
+    }
     /**
      * Handle GS and XG synth display
      * @param syx
@@ -1163,46 +1235,20 @@ export class SequencerUI {
                 this.synthDisplayMode.enabled = false;
                 this.restoreDisplay();
             }, 5000);
-        } else if (isRoland && syx[5] === 0x01) {
-            const syxOffset = 7;
-            const matrix = this.renderer.displayMatrix;
-            for (let rowNum = 0; rowNum < 16; rowNum++) {
-                let colNum = 0;
-                for (let i = 4; i >= 0; i--) {
-                    matrix[rowNum][colNum++] =
-                        ((syx[syxOffset + rowNum] >> i) & 1) === 1;
-                }
-                for (let i = 4; i >= 0; i--) {
-                    matrix[rowNum][colNum++] =
-                        ((syx[syxOffset + rowNum + 16] >> i) & 1) === 1;
-                }
-                for (let i = 4; i >= 0; i--) {
-                    matrix[rowNum][colNum++] =
-                        ((syx[syxOffset + rowNum + 32] >> i) & 1) === 1;
-                }
-                matrix[rowNum][colNum++] =
-                    ((syx[syxOffset + 48 + rowNum] >> 4) & 1) === 1;
+        } else if (
+            (isRoland && syx[5] === 0x01) ||
+            (isYamaha && syx[3] === 0x07)
+        ) {
+            // Buffer messages into a queue if needed
+            if (
+                this.dotMatrixQueue.length > 0 ||
+                Math.abs(this.lastDotMatrixTime - this.synth.currentTime) < 0.01
+            ) {
+                this.enqueueDotMatrix(syx);
+                return;
             }
-            this.renderer.updateDisplayMatrix("gs");
-        } else if (isYamaha && syx[3] === 0x07) {
-            const syxOffset = 5;
-            const matrix = this.renderer.displayMatrix;
-            for (let rowNum = 0; rowNum < 16; rowNum++) {
-                let colNum = 0;
-                for (let i = 6; i >= 0; i--) {
-                    matrix[rowNum][colNum++] =
-                        ((syx[syxOffset + rowNum] >> i) & 1) === 1;
-                }
-                for (let i = 6; i >= 0; i--) {
-                    matrix[rowNum][colNum++] =
-                        ((syx[syxOffset + rowNum + 16] >> i) & 1) === 1;
-                }
-                for (let i = 6; i >= 5; i--) {
-                    matrix[rowNum][colNum++] =
-                        ((syx[syxOffset + rowNum + 32] >> i) & 1) === 1;
-                }
-            }
-            this.renderer.updateDisplayMatrix("xg");
+            this.lastDotMatrixTime = this.synth.currentTime;
+            this.dotMatrixDisplay(syx);
         }
     }
 }
