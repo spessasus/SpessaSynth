@@ -3,7 +3,6 @@ import {
     showNotification
 } from "../../notification/notification.js";
 import { LOCALE_PATH, SynthetizerUI } from "../synthetizer_ui.js";
-import { showEffectsConfigWindow } from "./effects_config.js";
 import { startKeyModifiersMenu } from "./key_modifier_ui.js";
 
 export function showAdvancedConfiguration(this: SynthetizerUI) {
@@ -30,11 +29,6 @@ export function showAdvancedConfiguration(this: SynthetizerUI) {
                         this.effectsConfigWindow = undefined;
                         return;
                     }
-                    this.effectsConfigWindow = showEffectsConfigWindow(
-                        this.locale,
-                        LOCALE_PATH,
-                        this.synth
-                    ).id;
                 }
             },
 
