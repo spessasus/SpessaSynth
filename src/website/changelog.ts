@@ -2,6 +2,6 @@
  * Note to self: make sure to update this
  */
 export const WHATS_NEW: string[] = [
-    `GS/XG display dots support!`,
-    `Fixed RMIDI album art on Firefox!`
+    `Fixed clicks on rare occasions`,
+    `Support for F5 Multi-Port message on Linux`
 ] as const;
