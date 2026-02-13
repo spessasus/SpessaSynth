@@ -79,6 +79,11 @@ export const rendererSettingsLocale = {
             "Enable notes sliding left or right when the pitch wheel is applied"
     },
 
+    toggleRenderingDotDisplay: {
+        title: "Enable drawing dot display",
+        description: "Enable drawing the GS/XG Dot Display mesages"
+    },
+
     toggleStabilizeWaveforms: {
         title: "Stabilize waveforms",
         description: "Enable oscilloscope triggering"

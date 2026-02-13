@@ -87,6 +87,7 @@ export class Renderer {
     public renderNotes = true;
     public drawActiveNotes = true;
     public showVisualPitch = true;
+    public renderDotDisplay = true;
     // Fft config
     public exponentialGain = true;
     public logarithmicFrequency = true;
@@ -338,6 +339,9 @@ export class Renderer {
         this.displayMatrixTimeout = window.setTimeout(() => {
             this.showDisplayMatrix = null;
         }, DISPLAY_MATRIX_TIMEOUT);
+        // Many MIDI files do setup in silence, and the animations usually are presented then.
+        // Spessasynth doesn't render if nothing is being played, so this bypasses that.
+        this.render(false, true);
     }
 
     public setRendererMode(mode: RendererMode) {

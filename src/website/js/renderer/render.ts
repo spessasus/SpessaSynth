@@ -59,7 +59,7 @@ export function render(this: Renderer, auto = true, force = false) {
     }
 
     // Draw dot matrix
-    if (this.showDisplayMatrix !== null) {
+    if (this.renderDotDisplay && this.showDisplayMatrix !== null) {
         this.drawDotMatrix();
     }
 

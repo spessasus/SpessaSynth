@@ -324,6 +324,9 @@ export class SequencerUI {
                 "locale.sequencerController.playPause"
             );
             const togglePlayback = () => {
+                if (!this.seq.midiData) {
+                    return;
+                }
                 if (this.seq.paused) {
                     this.seqPlay();
                 } else {

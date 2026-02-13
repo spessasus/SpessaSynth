@@ -24,6 +24,7 @@ export function _serializeSettings(this: SpessaSynthSettings): SavedSettings {
             renderNotes: this.renderer.renderNotes,
             drawActiveNotes: this.renderer.drawActiveNotes,
             showVisualPitch: this.renderer.showVisualPitch,
+            renderDotDisplay: this.renderer.renderDotDisplay,
             stabilizeWaveforms: this.renderer.stabilizeWaveforms,
             dynamicGain: this.renderer.dynamicGain,
             exponentialGain: this.renderer.exponentialGain,

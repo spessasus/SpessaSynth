@@ -98,6 +98,14 @@ export const settingsHtml = `
                 <span class='switch_slider'></span>
             </label>
         </div>
+        
+        <div class='switch_label'>
+            <label for='dot_display_toggler' translate-path-title='locale.settings.rendererSettings.toggleRenderingDotDisplay'></label>
+            <label class='switch'>
+                <input type='checkbox' checked id='dot_display_toggler'>
+                <span class='switch_slider'></span>
+            </label>
+        </div>
     </div>
 
 

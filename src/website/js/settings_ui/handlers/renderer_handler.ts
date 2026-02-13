@@ -142,6 +142,12 @@ export function _createRendererHandler(this: SpessaSynthSettings) {
         this.saveSettings();
     });
 
+    // Render dot matrix
+    rendererControls.dotDisplayToggler.addEventListener("click", () => {
+        this.renderer.renderDotDisplay = !this.renderer.renderDotDisplay;
+        this.saveSettings();
+    });
+
     // Stabilize waveforms
     rendererControls.stabilizeWaveformsToggler.addEventListener("click", () => {
         this.renderer.stabilizeWaveforms = !this.renderer.stabilizeWaveforms;
