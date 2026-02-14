@@ -92,6 +92,11 @@ export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
     renderer.showVisualPitch = visualPitch;
     controls.visualPitchToggler.checked = visualPitch;
 
+    // Render dot display
+    const dotDisplay = rendererValues.renderDotDisplay;
+    renderer.renderDotDisplay = dotDisplay;
+    controls.dotDisplayToggler.checked = dotDisplay;
+
     // Stabilize waveforms
     const stabilize = rendererValues.stabilizeWaveforms;
     renderer.stabilizeWaveforms = stabilize;

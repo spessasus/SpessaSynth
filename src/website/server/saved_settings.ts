@@ -35,6 +35,7 @@ export interface SavedSettings {
         stabilizeWaveforms: boolean;
         amplifier: number;
         showVisualPitch: boolean;
+        renderDotDisplay: boolean;
         sampleSize: number;
         waveformThickness: number;
         dynamicGain: boolean;
@@ -90,6 +91,7 @@ export const DEFAULT_SAVED_SETTINGS: SavedSettings = {
         sampleSize: 1024,
         dynamicGain: false,
         showVisualPitch: true,
+        renderDotDisplay: true,
         exponentialGain: true
     }
 };

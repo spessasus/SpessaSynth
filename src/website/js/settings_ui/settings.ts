@@ -292,6 +292,9 @@ export class SpessaSynthSettings {
                 visualPitchToggler: document.querySelector<HTMLInputElement>(
                     "#visual_pitch_toggler"
                 )!,
+                dotDisplayToggler: document.querySelector<HTMLInputElement>(
+                    "#dot_display_toggler"
+                )!,
                 stabilizeWaveformsToggler:
                     document.querySelector<HTMLInputElement>(
                         "#stabilize_waveforms_toggler"

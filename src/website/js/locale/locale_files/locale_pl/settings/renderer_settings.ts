@@ -78,6 +78,11 @@ export const rendererSettingsLocale = {
             "Włącz przesuwanie nut w lewo lub w prawo gdy wysokość nut jest zmieniana"
     },
 
+    toggleRenderingDotDisplay: {
+        title: "Włącz rysowanie obrazków XG/GS",
+        description: "Włącz rysowanie obrazków Dot Matrix w plikach MIDI XG/GS"
+    },
+
     toggleStabilizeWaveforms: {
         title: "Włącz stabilizację fal",
         description: "Włącz stabilizowanie fal dźwiękowych"
