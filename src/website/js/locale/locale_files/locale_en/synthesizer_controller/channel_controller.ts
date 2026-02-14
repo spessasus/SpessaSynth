@@ -47,6 +47,12 @@ export const channelControllerLocale = {
             "Reverb Level: The current level of reverb effect applied to channel {0} (right-click to lock)"
     },
 
+    delayMeter: {
+        title: "Delay: ",
+        description:
+            "Delay Level: The current level of delay effect applied to channel {0} (right-click to lock)"
+    },
+
     filterMeter: {
         title: "Filter: ",
         description:

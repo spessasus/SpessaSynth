@@ -45,6 +45,12 @@ export const channelControllerLocale = {
             "Poziom Pogłosu: Aktualny efekt pogłosu na kanale {0} (kliknij prawym aby zablokować)"
     },
 
+    delayMeter: {
+        title: "Opóźnienie: ",
+        description:
+            "Poziom Opóźnienia: Aktualny efekt opóźnienia na kanale {0} (kliknij prawym aby zablokować)"
+    },
+
     filterMeter: {
         title: "Filtr: ",
         description:

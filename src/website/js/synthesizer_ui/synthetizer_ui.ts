@@ -706,8 +706,9 @@ export class SynthetizerUI {
 
     public showControllerGroup(groupType: ControllerGroupType) {
         const effectControllers = [
+            midiControllers.reverbDepth,
             midiControllers.chorusDepth,
-            midiControllers.reverbDepth
+            midiControllers.detuneDepth
         ];
         const envelopeControllers = [
             midiControllers.attackTime,
@@ -967,6 +968,13 @@ export class SynthetizerUI {
         );
         controller.append(modulation.div);
 
+        // Reverb
+        const reverb = createCCMeterHelper(
+            midiControllers.reverbDepth,
+            "channelController.reverbMeter"
+        );
+        controller.append(reverb.div);
+
         // Chorus
         const chorus = createCCMeterHelper(
             midiControllers.chorusDepth,
@@ -974,12 +982,12 @@ export class SynthetizerUI {
         );
         controller.append(chorus.div);
 
-        // Reverb
-        const reverb = createCCMeterHelper(
-            midiControllers.reverbDepth,
-            "channelController.reverbMeter"
+        // Delay
+        const delay = createCCMeterHelper(
+            midiControllers.detuneDepth,
+            "channelController.delayMeter"
         );
-        controller.append(reverb.div);
+        controller.append(delay.div);
 
         // Filter cutoff
         const filterCutoff = createCCMeterHelper(
