@@ -39,7 +39,7 @@ export type ControllerGroupType =
 
 export interface ChannelController {
     controller: HTMLDivElement;
-    controllerMeters: Meter[];
+    controllerMeters: Partial<Record<MIDIController, Meter>>;
     voiceMeter: Meter;
     pitchWheel: Meter;
     transpose: Meter;
@@ -708,7 +708,7 @@ export class SynthetizerUI {
         const effectControllers = [
             midiControllers.reverbDepth,
             midiControllers.chorusDepth,
-            midiControllers.detuneDepth
+            midiControllers.variationDepth
         ];
         const envelopeControllers = [
             midiControllers.attackTime,
@@ -908,7 +908,7 @@ export class SynthetizerUI {
             }
         };
 
-        const controllerMeters: Meter[] = [];
+        const controllerMeters: Partial<Record<MIDIController, Meter>> = {};
 
         const createCCMeterHelper = (
             ccNum: MIDIController,
@@ -984,7 +984,7 @@ export class SynthetizerUI {
 
         // Delay
         const delay = createCCMeterHelper(
-            midiControllers.detuneDepth,
+            midiControllers.variationDepth,
             "channelController.delayMeter"
         );
         controller.append(delay.div);
