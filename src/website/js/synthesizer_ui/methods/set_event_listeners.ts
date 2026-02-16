@@ -61,6 +61,12 @@ export function setEventListeners(this: SynthetizerUI) {
     );
 
     this.synth.eventHandler.addEvent(
+        "effectChange",
+        "synthui-effect-change",
+        this.handleEffectChange.bind(this)
+    );
+
+    this.synth.eventHandler.addEvent(
         "pitchWheel",
         "synthui-pitch-wheel",
         (e) => {

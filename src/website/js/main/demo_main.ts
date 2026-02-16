@@ -52,6 +52,9 @@ window.SPESSASYNTH_VERSION = packageJson.version || "UNKNOWN";
 fileInput.value = "";
 fileInput.focus();
 
+// Added 1 to force a reset (v4.2.0)
+const localStorageName = "spessasynth-settings-1";
+
 // IndexedDB stuff
 const dbName = "spessasynth-db";
 const objectStoreName = "soundFontStore";
@@ -341,7 +344,7 @@ async function startMidi(midiFiles: FileList | File[]) {
  * (only on the local edition that's why it's here and not in the demo_main.js)
  */
 function saveSettings(settingsData: SavedSettings) {
-    localStorage.setItem("spessasynth-settings", JSON.stringify(settingsData));
+    localStorage.setItem(localStorageName, JSON.stringify(settingsData));
     console.info("saved as", settingsData);
 }
 
@@ -362,7 +365,7 @@ window.rememberVoiceCap = (cap: number) => {
 window.saveSettings = saveSettings;
 
 // Load saved settings
-let savedJson = localStorage.getItem("spessasynth-settings");
+let savedJson = localStorage.getItem(localStorageName);
 savedJson ??= JSON.stringify(DEFAULT_SAVED_SETTINGS);
 const saved = JSON.parse(savedJson) as SavedSettings;
 if (saved !== null) {
@@ -398,7 +401,8 @@ async function playDemoSong(fileName: string) {
             fileName
     );
     if (window.manager.synth) {
-        window.manager.synth.disableGSNPRNParams();
+        window.manager.synth.setMasterParameter("nprnParamLock", true);
+        window.manager.synth.setMasterParameter("drumLock", true);
     }
     // noinspection JSCheckFunctionSignatures
     await startMidi([new File([await r.arrayBuffer()], fileName)]);

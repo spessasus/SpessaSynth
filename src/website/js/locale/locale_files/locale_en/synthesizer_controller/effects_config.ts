@@ -3,55 +3,197 @@ export const effectsConfig = {
     button: {
         title: "Effects config"
     },
-    reverbConfig: {
+
+    goBack: {
+        title: "Go Back",
+        description: "Go Back: Go back to the MIDI channel controllers."
+    },
+
+    toggleLock: {
+        title: "Toggle Lock",
+        description:
+            "Toggle Lock: Prevent MIDI data from changing the effect's parameters."
+    },
+
+    reverb: {
         title: "Reverb configuration",
         description: "Configure the reverb processor",
-        impulseResponse: {
-            title: "Impulse response",
-            description: "Select impulse response for the convolver reverb"
+
+        level: {
+            title: "Level: ",
+            description: "Level: This parameter sets the amount of the effect."
+        },
+
+        preLowpass: {
+            title: "Pre-LPF: ",
+            description:
+                "Pre-LPF: A low-pass filter can be applied to the sound coming into the effect to cut the high frequency range. " +
+                "Higher values will cut more of the high frequencies," +
+                " resulting in a more mellow effect sound."
+        },
+
+        character: {
+            title: "Character: ",
+            description:
+                "Character: This parameter selects the type of reverb. 0–5 are reverb effects," +
+                " and 6 and 7 are delay effects."
+        },
+
+        time: {
+            title: "Time: ",
+            description:
+                "Time: This parameter sets the time over which the reverberation will continue. " +
+                "Higher values result in longer reverberation."
+        },
+
+        delayFeedback: {
+            title: "Feedback: ",
+            description:
+                "Feedback: This parameter is used when the Reverb Character is set to 6 or 7. " +
+                "It sets the way in which delays repeat. " +
+                "Higher values result in more delay repeats."
+        },
+
+        preDelayTime: {
+            title: "Pre-delay: ",
+            description:
+                "Pre-delay: This parameter sets the delay time until the reverberant sound is heard. " +
+                "Higher values result in a longer pre-delay time, simulating a larger reverberant space."
         }
     },
 
-    chorusConfig: {
+    chorus: {
         title: "Chorus configuration",
         description: "Configure the chorus processor",
-        nodesAmount: {
-            title: "Nodes amount",
+
+        level: {
+            title: "Level: ",
+            description: "Level: This parameter sets the amount of the effect."
+        },
+
+        preLowpass: {
+            title: "Pre-LPF: ",
             description:
-                "The amount of delay nodes (for each stereo channel) to use"
+                "Pre-LPF: A low-pass filter can be applied to the sound coming into the effect to cut the high frequency range. " +
+                "Higher values will cut more of the high frequencies," +
+                " resulting in a more mellow effect sound."
         },
-        defaultDelay: {
-            title: "Delay (s)",
-            description: "The delay time for the first node in seconds"
-        },
-        delayVariation: {
-            title: "Delay increment (s)",
+
+        feedback: {
+            title: "Feedback: ",
             description:
-                "The amount to increment each delay node after the first one in seconds"
+                "Feedback: This parameter sets the speed (frequency) at which the chorus sound is modulated. " +
+                "Higher values result in faster modulation."
         },
-        stereoDifference: {
-            title: "Stereo difference (s)",
+
+        delay: {
+            title: "Delay: ",
             description:
-                "The difference of delays between two channels (added to the left channel and subtracted from the right)"
+                "Delay: This parameter sets the delay time of the chorus effect."
         },
-        oscillatorFrequency: {
-            title: "LFO frequency (Hz)",
+
+        rate: {
+            title: "Rate: ",
             description:
-                "The first delay node's LFO frequency, in Hz. The LFO controls delay time."
+                "Rate: This parameter sets the speed (frequency) at which the chorus sound is modulated. " +
+                "Higher values result in faster modulation."
         },
-        frequencyVariation: {
-            title: "LFO increment (Hz)",
+
+        depth: {
+            title: "Depth: ",
             description:
-                "The amount to increment each LFO's frequency after the first one, in Hz"
+                "Depth: This parameter sets the depth at which the chorus sound is modulated. " +
+                "Higher values result in deeper modulation."
         },
-        oscillatorGain: {
-            title: "LFO gain (s)",
+
+        sendLevelToReverb: {
+            title: "Send Level To Reverb: ",
             description:
-                "How much will LFO alter the delay in delay nodes, in seconds"
+                "Send Level To Reverb: This parameter sets the amount of chorus sound that will be sent to the reverb. " +
+                "Higher values result in more sound being sent."
         },
-        apply: {
-            title: "Apply",
-            description: "Apply the selected settings"
+
+        sendLevelToDelay: {
+            title: "Send Level To Delay: ",
+            description:
+                "Send Level To Delay: This parameter sets the amount of chorus sound that will be sent to the delay. " +
+                "Higher values result in more sound being sent."
+        }
+    },
+
+    delay: {
+        title: "Delay configuration",
+        description: "Configure the delay processor",
+
+        level: {
+            title: "Level: ",
+            description: "Level: This parameter sets the amount of the effect."
+        },
+
+        preLowpass: {
+            title: "Pre-LPF: ",
+            description:
+                "Pre-LPF: A low-pass filter can be applied to the sound coming into the effect to cut the high frequency range. " +
+                "Higher values will cut more of the high frequencies," +
+                " resulting in a more mellow effect sound."
+        },
+
+        timeCenter: {
+            title: "Time Center: ",
+            description:
+                "Time Center: The delay effect has three delay times; center, " +
+                "left and right (when listening in stereo). " +
+                "Delay Time Center sets the delay time of the delay located at the center."
+        },
+
+        timeRatioLeft: {
+            title: "Time Ratio Left: ",
+            description:
+                "Time Ratio Left: This parameter sets the delay time of " +
+                "the delay located at the left as a percentage of the Delay Time Center (up to a max. of 1.0 s)."
+        },
+
+        timeRatioRight: {
+            title: "Time Ratio Right: ",
+            description:
+                "Time Ratio Right: This parameter sets the delay time of " +
+                "the delay located at the right as a percentage of the Delay Time Center (up to a max. of 1.0 s)."
+        },
+
+        levelCenter: {
+            title: "Level Center: ",
+            description:
+                "Level Center: This parameter sets the volume of the central delay. " +
+                "Higher values result in a louder center delay."
+        },
+        levelLeft: {
+            title: "Level Left: ",
+            description:
+                "Level Left: This parameter sets the volume of the left delay. " +
+                "Higher values result in a louder left delay."
+        },
+        levelRight: {
+            title: "Level Right: ",
+            description:
+                "Level Right: This parameter sets the volume of the right delay. " +
+                "Higher values result in a louder right delay."
+        },
+
+        feedback: {
+            title: "Feedback: ",
+            description:
+                "Feedback: This parameter affects the number of times the delay will repeat. " +
+                "With a value of 0, the delay will not repeat. " +
+                "With higher values there will be more repeats." +
+                " With negative (-) values, the center delay will be fed back with inverted phase." +
+                " Negative values are effective with short delay times."
+        },
+
+        sendLevelToReverb: {
+            title: "Send Level To Reverb: ",
+            description:
+                "Send Level To Reverb: This parameter sets the amount of delay sound that will be sent to the reverb. " +
+                "Higher values result in more sound being sent."
         }
     }
 };

@@ -22,7 +22,7 @@
     text-shadow: 0 0 5px white;
 }
 
-.synthui_button:active {
+.synthui_button:active:not(select) {
     filter: brightness(0.9);
     transform: scale(var(--active-scale));
 }

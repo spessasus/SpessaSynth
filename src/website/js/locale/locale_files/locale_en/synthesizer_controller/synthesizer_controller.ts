@@ -60,12 +60,6 @@ export const synthesizerControllerLocale = {
             "Show only the used MIDI channels in the synthesizer controller"
     },
 
-    disableCustomVibrato: {
-        title: "Disable custom vibrato",
-        description:
-            "Disables the custom (NRPN) Vibrato permamently. Reload the website to reenable it"
-    },
-
     helpButton: {
         title: "Help",
         description: "Help: Opens an external website with the usage guide"
@@ -99,6 +93,11 @@ export const synthesizerControllerLocale = {
         title: "Drum editing",
         description:
             "Allow editing drum instruments via MIDI system exclusive messages"
+    },
+
+    customVibrato: {
+        title: "Custom vibrato",
+        description: "Enable the custom NRPN vibrato"
     },
 
     holdPedalDown: "Hold pedal is down (Shift)",

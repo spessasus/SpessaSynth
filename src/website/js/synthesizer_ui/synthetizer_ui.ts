@@ -12,6 +12,7 @@ import {
     DEFAULT_MASTER_PARAMETERS,
     DEFAULT_PERCUSSION,
     defaultMIDIControllerValues,
+    type EffectChangeCallback,
     type InterpolationType,
     interpolationTypes,
     type MIDIController,
@@ -36,6 +37,18 @@ import {
 import { showAdvancedConfiguration } from "./methods/advanced_configuration.ts";
 import { Selector } from "./methods/synthui_selector.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
+import {
+    type ChorusController,
+    chorusData,
+    type ChorusParams,
+    type DelayController,
+    delayData,
+    type DelayParams,
+    type ParamType,
+    type ReverbController,
+    reverbData,
+    type ReverbParams
+} from "./methods/effect_params.ts";
 
 export const MONO_ON = "<pre style='color: red;'>M</pre>";
 export const POLY_ON = "<pre>P</pre>";
@@ -63,6 +76,31 @@ export interface ChannelController {
 
 export const ICON_SIZE = 32;
 
+function sendAddress(
+    s: Synthesizer,
+    a1: number,
+    a2: number,
+    a3: number,
+    data: number
+) {
+    // Calculate checksum
+    // https://cdn.roland.com/assets/media/pdf/F-20_MIDI_Imple_e01_W.pdf section 4
+    const sum = a1 + a2 + a3 + data;
+    const checksum = (128 - (sum % 128)) & 0x7f;
+    s.systemExclusive([
+        0x41, // Roland
+        0x10, // Device ID (defaults to 16 on roland)
+        0x42, // GS
+        0x12, // Command ID (DT1) (whatever that means...)
+        a1,
+        a2,
+        a3,
+        data,
+        checksum,
+        0xf7 // End of exclusive
+    ]);
+}
+
 /**
  * Synthesizer_ui.js
  * purpose: manages the graphical user interface for the synthesizer
@@ -77,6 +115,7 @@ export class SynthetizerUI {
     protected readonly keyboard: MIDIKeyboard;
     protected readonly locale: LocaleManager;
     protected readonly sequencer: Sequencer;
+
     protected readonly voiceMeter: Meter;
     protected readonly volumeController: Meter;
     protected readonly panController: Meter;
@@ -85,6 +124,12 @@ export class SynthetizerUI {
     protected readonly mainButtons: HTMLElement[];
     protected readonly mainControllerDiv: HTMLDivElement;
     protected controllers: ChannelController[] = [];
+    protected effectControllers: {
+        reverb: ReverbController;
+        chorus: ChorusController;
+        delay: DelayController;
+    };
+
     protected ports: HTMLDivElement[] = [];
     protected portDescriptors: HTMLDivElement[] = [];
     protected readonly soloChannels = new Set<number>();
@@ -543,6 +588,51 @@ export class SynthetizerUI {
             this.uiDiv.append(showControllerButton);
             controller.append(controlsWrapper);
             this.mainControllerDiv = controller;
+        }
+
+        // Create effect controllers
+        {
+            const reverbController = this.createEffectController(
+                reverbData,
+                LOCALE_PATH + "effectsConfig.reverb."
+            );
+
+            const chorusController = this.createEffectController(
+                chorusData,
+                LOCALE_PATH + "effectsConfig.chorus."
+            );
+            const delayController = this.createEffectController(
+                delayData,
+                LOCALE_PATH + "effectsConfig.delay."
+            );
+            this.effectControllers = {
+                reverb: reverbController,
+                chorus: chorusController,
+                delay: delayController
+            };
+
+            // Set the default macros
+            // Hall2 default
+            this.handleEffectChange({
+                effect: "reverb",
+                value: 4,
+                parameter: "macro"
+            });
+            // Chorus3 default
+            this.handleEffectChange({
+                effect: "chorus",
+                value: 3,
+                parameter: "macro"
+            });
+            // Delay1 default
+            this.handleEffectChange({
+                effect: "delay",
+                value: 0,
+                parameter: "macro"
+            });
+            this.mainControllerDiv.append(reverbController.wrapper);
+            this.mainControllerDiv.append(chorusController.wrapper);
+            this.mainControllerDiv.append(delayController.wrapper);
         }
 
         // Create channel controllers
@@ -1405,6 +1495,244 @@ export class SynthetizerUI {
                 c.isHidingLocked = force;
             }
         }
+    }
+
+    protected handleEffectChange(e: EffectChangeCallback) {
+        if (e.parameter === "macro") {
+            switch (e.effect) {
+                case "reverb": {
+                    const macro = reverbData.macros[e.value];
+                    const meters = this.effectControllers.reverb;
+                    for (const [param, value] of Object.entries(macro)) {
+                        if (param === "name") {
+                            continue;
+                        }
+                        const v = value as number;
+                        const params = reverbData.params.find(
+                            (p) => p.p === param
+                        );
+                        if (!params) {
+                            continue;
+                        }
+                        meters[param as ReverbParams].update(
+                            params.td ? params.td(v) : v
+                        );
+                    }
+                    this.effectControllers.reverb.macro.value =
+                        e.value.toString();
+                    return;
+                }
+
+                case "chorus": {
+                    const macro = chorusData.macros[e.value];
+                    const meters = this.effectControllers.chorus;
+                    for (const [param, value] of Object.entries(macro)) {
+                        if (param === "name") {
+                            continue;
+                        }
+                        const v = value as number;
+                        const params = chorusData.params.find(
+                            (p) => p.p === param
+                        );
+                        if (!params) {
+                            continue;
+                        }
+                        meters[param as ChorusParams].update(
+                            params.td ? params.td(v) : v
+                        );
+                    }
+                    this.effectControllers.chorus.macro.value =
+                        e.value.toString();
+                    return;
+                }
+                case "delay": {
+                    const macro = delayData.macros[e.value];
+                    const meters = this.effectControllers.delay;
+                    for (const [param, value] of Object.entries(macro)) {
+                        if (param === "name") {
+                            continue;
+                        }
+                        const v = value as number;
+                        const params = delayData.params.find(
+                            (p) => p.p === param
+                        );
+                        if (!params) {
+                            continue;
+                        }
+                        meters[param as DelayParams].update(
+                            params.td ? params.td(v) : v
+                        );
+                    }
+                    this.effectControllers.delay.macro.value =
+                        e.value.toString();
+                    return;
+                }
+            }
+        }
+        switch (e.effect) {
+            case "reverb": {
+                const param = reverbData.params.find(
+                    (p) => p.p === e.parameter
+                );
+                if (!param) {
+                    return;
+                }
+                this.effectControllers.reverb[e.parameter].update(
+                    param.td ? param.td(e.value) : e.value
+                );
+                return;
+            }
+
+            case "chorus": {
+                const param = chorusData.params.find(
+                    (p) => p.p === e.parameter
+                );
+                if (!param) {
+                    return;
+                }
+                this.effectControllers.chorus[e.parameter].update(
+                    param.td ? param.td(e.value) : e.value
+                );
+                return;
+            }
+            case "delay": {
+                const param = delayData.params.find((p) => p.p === e.parameter);
+                if (!param) {
+                    return;
+                }
+                this.effectControllers.delay[e.parameter].update(
+                    param.td ? param.td(e.value) : e.value
+                );
+                return;
+            }
+        }
+    }
+
+    private createEffectController<
+        K extends DelayParams | ChorusParams | ReverbParams
+    >(
+        data: ParamType<K>,
+        path: string
+    ): Record<K, Meter> & {
+        wrapper: HTMLElement;
+        macro: HTMLSelectElement;
+    } {
+        const wrapper = document.createElement("div");
+        wrapper.classList.add("effect_wrapper", "hidden");
+        // Title
+        const effectTitle = document.createElement("h2");
+        this.locale.bindObjectProperty(
+            effectTitle,
+            "textContent",
+            path + "title"
+        );
+        wrapper.append(effectTitle);
+
+        // Go Back
+        const goBack = document.createElement("button");
+        goBack.classList.add("synthui_button");
+        this.locale.bindObjectProperty(
+            goBack,
+            "textContent",
+            LOCALE_PATH + "effectsConfig.goBack.title"
+        );
+        this.locale.bindObjectProperty(
+            goBack,
+            "title",
+            LOCALE_PATH + "effectsConfig.goBack.description"
+        );
+        goBack.addEventListener("click", () => {
+            // Show all ports
+            for (const port of this.mainControllerDiv.querySelectorAll<HTMLElement>(
+                ".synthui_port_group"
+            )) {
+                port.classList.remove("hidden");
+            }
+            // Hide this
+            wrapper.classList.add("hidden");
+        });
+        wrapper.append(goBack);
+
+        // Macro/lock wrapper
+        const macroLockWrapper = document.createElement("div");
+        macroLockWrapper.style.display = "flex";
+        macroLockWrapper.style.flexWrap = "wrap";
+        wrapper.append(macroLockWrapper);
+
+        // Macro
+        const macroSelector = document.createElement("select");
+        macroSelector.classList.add("synthui_button");
+        for (let i = 0; i < data.macros.length; i++) {
+            const macro = data.macros[i];
+            const opt = document.createElement("option");
+            opt.textContent = macro.name;
+            opt.value = i.toString();
+            macroSelector.append(opt);
+        }
+        const a = data.macroAddress;
+        macroSelector.addEventListener("change", () => {
+            const v = Number.parseInt(macroSelector.value);
+            sendAddress(this.synth, 0x40, 0x01, a, v);
+        });
+        macroLockWrapper.append(macroSelector);
+
+        // Lock
+        const lock = document.createElement("button");
+        lock.classList.add("synthui_button");
+        this.locale.bindObjectProperty(
+            lock,
+            "textContent",
+            LOCALE_PATH + "effectsConfig.toggleLock.title"
+        );
+        this.locale.bindObjectProperty(
+            lock,
+            "title",
+            LOCALE_PATH + "effectsConfig.toggleLock.description"
+        );
+        let isLocked = false;
+        lock.addEventListener("click", () => {
+            isLocked = !isLocked;
+            this.synth.setMasterParameter(data.lockName, isLocked);
+            lock.style.color = isLocked ? "red" : "";
+        });
+        macroLockWrapper.append(lock);
+
+        // Parameters
+        const paramWrapper = document.createElement("div");
+        paramWrapper.classList.add("effect_wrapper_params");
+        wrapper.append(paramWrapper);
+        const r: Partial<Record<K, Meter>> = {};
+        for (const param of data.params) {
+            // Prevent change!
+            const a = param.a;
+            const meter = new Meter(
+                "",
+                path + param.p,
+                this.locale,
+                [],
+                param.r?.min ?? 0,
+                param?.r?.max ?? 127,
+                0,
+                true,
+                (v) => {
+                    v = Math.round(v);
+                    sendAddress(
+                        this.synth,
+                        0x40,
+                        0x01,
+                        a,
+                        param.ts ? param.ts(v) : v
+                    );
+                }
+            );
+            paramWrapper.append(meter.div);
+            r[param.p] = meter;
+        }
+        return {
+            ...(r as Record<K, Meter>),
+            wrapper,
+            macro: macroSelector
+        };
     }
 
     private showCCs(ccs: MIDIController[]) {

@@ -25,6 +25,11 @@ export function showAdvancedConfiguration(this: SynthetizerUI) {
         "monophonicRetriggerMode"
     );
     const drumEditingAttribute = getAttr(this.synth, "drumLock", true);
+    const customVibratoAttribute = getAttr(
+        this.synth,
+        "customVibratoLock",
+        true
+    );
     showNotification(
         this.locale.getLocaleString(
             LOCALE_PATH + "advancedConfiguration.title"
@@ -170,10 +175,111 @@ export function showAdvancedConfiguration(this: SynthetizerUI) {
             },
 
             {
+                type: "toggle",
+                translatePathTitle: LOCALE_PATH + "customVibrato",
+                attributes: customVibratoAttribute,
+                listeners: {
+                    input: (e) => {
+                        const enable = (e.target as HTMLInputElement).checked;
+                        if (enable) {
+                            this.synth.setMasterParameter(
+                                "customVibratoLock",
+                                false
+                            );
+                        } else {
+                            this.synth.resetControllers();
+                            this.synth.setMasterParameter(
+                                "customVibratoLock",
+                                true
+                            );
+                            if (this.sequencer) {
+                                this.sequencer.currentTime -= 0.1;
+                            }
+                        }
+                    }
+                }
+            },
+
+            {
                 type: "text",
                 textContent: this.locale.getLocaleString(
                     LOCALE_PATH + "effectsConfig.button.title"
                 )
+            },
+
+            {
+                type: "button",
+                translatePathTitle: LOCALE_PATH + "effectsConfig.reverb",
+                onClick: (n) => {
+                    closeNotification(n.id);
+                    // Hide all ports
+                    for (const port of this.mainControllerDiv.querySelectorAll<HTMLElement>(
+                        ".synthui_port_group"
+                    )) {
+                        port.classList.add("hidden");
+                    }
+                    // Hide other effects
+                    this.effectControllers.delay.wrapper.classList.add(
+                        "hidden"
+                    );
+                    this.effectControllers.chorus.wrapper.classList.add(
+                        "hidden"
+                    );
+                    // Show reverb
+                    this.effectControllers.reverb.wrapper.classList.remove(
+                        "hidden"
+                    );
+                }
+            },
+
+            {
+                type: "button",
+                translatePathTitle: LOCALE_PATH + "effectsConfig.chorus",
+                onClick: (n) => {
+                    closeNotification(n.id);
+                    // Hide all ports
+                    for (const port of this.mainControllerDiv.querySelectorAll<HTMLElement>(
+                        ".synthui_port_group"
+                    )) {
+                        port.classList.add("hidden");
+                    }
+                    // Hide other effects
+                    this.effectControllers.delay.wrapper.classList.add(
+                        "hidden"
+                    );
+                    this.effectControllers.reverb.wrapper.classList.add(
+                        "hidden"
+                    );
+                    // Show chorus
+                    this.effectControllers.chorus.wrapper.classList.remove(
+                        "hidden"
+                    );
+                }
+            },
+
+            {
+                type: "button",
+                translatePathTitle: LOCALE_PATH + "effectsConfig.delay",
+                onClick: (n) => {
+                    closeNotification(n.id);
+                    // Hide all ports
+                    for (const port of this.mainControllerDiv.querySelectorAll<HTMLElement>(
+                        ".synthui_port_group"
+                    )) {
+                        port.classList.add("hidden");
+                    }
+                    // Hide other effects
+                    this.effectControllers.reverb.wrapper.classList.add(
+                        "hidden"
+                    );
+                    this.effectControllers.chorus.wrapper.classList.add(
+                        "hidden"
+                    );
+                    // Show delay
+                    this.effectControllers.delay.wrapper.classList.remove(
+                        "hidden"
+                    );
+                }
             }
         ],
         99_999_999,
