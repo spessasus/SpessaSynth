@@ -3,41 +3,38 @@ import {
     showNotification
 } from "../../notification/notification.js";
 import { LOCALE_PATH, SynthetizerUI } from "../synthetizer_ui.js";
-import { showEffectsConfigWindow } from "./effects_config.js";
 import { startKeyModifiersMenu } from "./key_modifier_ui.js";
+import type { Synthesizer } from "../../utils/synthesizer.ts";
+
+function getAttr(
+    synth: Synthesizer,
+    param: Parameters<Synthesizer["getMasterParameter"]>[0],
+    invert = false
+): object | { checked: "checked" } {
+    let b = synth.getMasterParameter(param) as boolean;
+    if (invert) {
+        b = !b;
+    }
+    return b ? { checked: "checked" } : {};
+}
 
 export function showAdvancedConfiguration(this: SynthetizerUI) {
-    const blackMIDIAttribute: { checked: "checked" } | object =
-        this.synth.getMasterParameter("blackMIDIMode")
-            ? { checked: "checked" }
-            : {};
-    const monophonicRetriggerAttribute: { checked: "checked" } | object =
-        this.synth.getMasterParameter("monophonicRetriggerMode")
-            ? { checked: "checked" }
-            : {};
+    const blackMIDIAttribute = getAttr(this.synth, "blackMIDIMode");
+    const monophonicRetriggerAttribute = getAttr(
+        this.synth,
+        "monophonicRetriggerMode"
+    );
+    const drumEditingAttribute = getAttr(this.synth, "drumLock", true);
+    const customVibratoAttribute = getAttr(
+        this.synth,
+        "customVibratoLock",
+        true
+    );
     showNotification(
         this.locale.getLocaleString(
             LOCALE_PATH + "advancedConfiguration.title"
         ),
         [
-            {
-                type: "button",
-                translatePathTitle: LOCALE_PATH + "effectsConfig.button",
-                onClick: (n) => {
-                    closeNotification(n.id);
-                    if (this.effectsConfigWindow !== undefined) {
-                        closeNotification(this.effectsConfigWindow);
-                        this.effectsConfigWindow = undefined;
-                        return;
-                    }
-                    this.effectsConfigWindow = showEffectsConfigWindow(
-                        this.locale,
-                        LOCALE_PATH,
-                        this.synth
-                    ).id;
-                }
-            },
-
             {
                 type: "button",
                 translatePathTitle: LOCALE_PATH + "keyModifiers.button",
@@ -159,8 +156,129 @@ export function showAdvancedConfiguration(this: SynthetizerUI) {
                     input: (e) =>
                         this.synth.setMasterParameter(
                             "monophonicRetriggerMode",
-                            (e.target as HTMLInputElement).checked
+                            !(e.target as HTMLInputElement).checked
                         )
+                }
+            },
+
+            {
+                type: "toggle",
+                translatePathTitle: LOCALE_PATH + "drumEditing",
+                attributes: drumEditingAttribute,
+                listeners: {
+                    input: (e) =>
+                        this.synth.setMasterParameter(
+                            "drumLock",
+                            !(e.target as HTMLInputElement).checked
+                        )
+                }
+            },
+
+            {
+                type: "toggle",
+                translatePathTitle: LOCALE_PATH + "customVibrato",
+                attributes: customVibratoAttribute,
+                listeners: {
+                    input: (e) => {
+                        const enable = (e.target as HTMLInputElement).checked;
+                        if (enable) {
+                            this.synth.setMasterParameter(
+                                "customVibratoLock",
+                                false
+                            );
+                        } else {
+                            this.synth.resetControllers();
+                            this.synth.setMasterParameter(
+                                "customVibratoLock",
+                                true
+                            );
+                            if (this.sequencer) {
+                                this.sequencer.currentTime -= 0.1;
+                            }
+                        }
+                    }
+                }
+            },
+
+            {
+                type: "text",
+                textContent: this.locale.getLocaleString(
+                    LOCALE_PATH + "effectsConfig.button.title"
+                )
+            },
+
+            {
+                type: "button",
+                translatePathTitle: LOCALE_PATH + "effectsConfig.reverb",
+                onClick: (n) => {
+                    closeNotification(n.id);
+                    // Hide all ports
+                    for (const port of this.mainControllerDiv.querySelectorAll<HTMLElement>(
+                        ".synthui_port_group"
+                    )) {
+                        port.classList.add("hidden");
+                    }
+                    // Hide other effects
+                    this.effectControllers.delay.wrapper.classList.add(
+                        "hidden"
+                    );
+                    this.effectControllers.chorus.wrapper.classList.add(
+                        "hidden"
+                    );
+                    // Show reverb
+                    this.effectControllers.reverb.wrapper.classList.remove(
+                        "hidden"
+                    );
+                }
+            },
+
+            {
+                type: "button",
+                translatePathTitle: LOCALE_PATH + "effectsConfig.chorus",
+                onClick: (n) => {
+                    closeNotification(n.id);
+                    // Hide all ports
+                    for (const port of this.mainControllerDiv.querySelectorAll<HTMLElement>(
+                        ".synthui_port_group"
+                    )) {
+                        port.classList.add("hidden");
+                    }
+                    // Hide other effects
+                    this.effectControllers.delay.wrapper.classList.add(
+                        "hidden"
+                    );
+                    this.effectControllers.reverb.wrapper.classList.add(
+                        "hidden"
+                    );
+                    // Show chorus
+                    this.effectControllers.chorus.wrapper.classList.remove(
+                        "hidden"
+                    );
+                }
+            },
+
+            {
+                type: "button",
+                translatePathTitle: LOCALE_PATH + "effectsConfig.delay",
+                onClick: (n) => {
+                    closeNotification(n.id);
+                    // Hide all ports
+                    for (const port of this.mainControllerDiv.querySelectorAll<HTMLElement>(
+                        ".synthui_port_group"
+                    )) {
+                        port.classList.add("hidden");
+                    }
+                    // Hide other effects
+                    this.effectControllers.reverb.wrapper.classList.add(
+                        "hidden"
+                    );
+                    this.effectControllers.chorus.wrapper.classList.add(
+                        "hidden"
+                    );
+                    // Show delay
+                    this.effectControllers.delay.wrapper.classList.remove(
+                        "hidden"
+                    );
                 }
             }
         ],

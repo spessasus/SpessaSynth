@@ -31,8 +31,31 @@
 }
 
 .main_controller_element {
-    margin-left: 0.5em;
-    margin-right: 0.5em;
+    margin: var(--synthui-margin);
+}
+
+.effect_wrapper {
+    display: flex;
+    flex-direction: column;
+    max-width: 70vw;
+    margin: auto;
+    justify-content: center;
+}
+
+.effect_wrapper * {
+    width: auto;
+    margin-bottom: 1em;
+}
+
+@media (min-aspect-ratio: 0.8) {
+    .effect_wrapper .voice_meter {
+        min-width: 33%;
+    }
+}
+
+.effect_wrapper_params {
+    display: flex;
+    flex-wrap: wrap;
 }
 
 .synthui_port_group {

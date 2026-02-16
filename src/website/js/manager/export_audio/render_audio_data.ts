@@ -1,8 +1,4 @@
-import {
-    ChorusProcessor,
-    ReverbProcessor,
-    WorkerSynthesizer
-} from "spessasynth_lib";
+import { WorkerSynthesizer } from "spessasynth_lib";
 import type { Manager } from "../manager.ts";
 import {
     SoundBankLoader,
@@ -122,14 +118,15 @@ export async function renderAudioData(
                 }
                 // Sample tracking
                 let index = 0;
+                const dummy = new Float32Array(0);
                 const renderQuantum = async () => {
                     for (let i = 0; i < RENDER_BLOCKS_PER_PROGRESS; i++) {
                         if (index >= sampleDurationNoLastQuantum) {
                             rendererSeq.processTick();
-                            rendererSynth.renderAudioSplit(
-                                [],
-                                [],
+                            rendererSynth.processSplit(
                                 dry,
+                                dummy,
+                                dummy,
                                 index,
                                 sampleDuration - index
                             );
@@ -151,10 +148,10 @@ export async function renderAudioData(
                             return;
                         }
                         rendererSeq.processTick();
-                        rendererSynth.renderAudioSplit(
-                            [],
-                            [],
+                        rendererSynth.processSplit(
                             dry,
+                            dummy,
+                            dummy,
                             index,
                             BLOCK_SIZE
                         );
@@ -172,19 +169,8 @@ export async function renderAudioData(
 
         return new Promise<AudioBuffer[]>((resolve) => {
             // Allocate memory
-            // Reverb, chorus
-            const reverb: StereoAudioChunk = [
-                new Float32Array(sampleDuration),
-                new Float32Array(sampleDuration)
-            ];
-            const chorus: StereoAudioChunk = [
-                new Float32Array(sampleDuration),
-                new Float32Array(sampleDuration)
-            ];
-            const dry: StereoAudioChunk = [
-                new Float32Array(sampleDuration),
-                new Float32Array(sampleDuration)
-            ];
+            const outL = new Float32Array(sampleDuration);
+            const outR = new Float32Array(sampleDuration);
 
             // Sample tracking
             let index = 0;
@@ -192,103 +178,25 @@ export async function renderAudioData(
                 for (let i = 0; i < RENDER_BLOCKS_PER_PROGRESS; i++) {
                     if (index >= sampleDurationNoLastQuantum) {
                         rendererSeq.processTick();
-                        rendererSynth.renderAudio(
-                            dry,
-                            reverb,
-                            chorus,
+                        rendererSynth.process(
+                            outL,
+                            outR,
                             index,
                             sampleDuration - index
                         );
-                        if (!this.synth) {
-                            return;
-                        }
-
-                        // Second pass:
-                        // Render the effects in OfflineAudioContext
-                        console.info(
-                            "Initializing the second pass for effects..."
-                        );
-                        const reverbBuffer = new AudioBuffer({
+                        // Convert to buffer
+                        const buf = new AudioBuffer({
                             sampleRate,
                             numberOfChannels: 2,
                             length: sampleDuration
                         });
-                        reverbBuffer.copyToChannel(reverb[0], 0);
-                        reverbBuffer.copyToChannel(reverb[1], 1);
-                        const chorusBuffer = new AudioBuffer({
-                            sampleRate,
-                            numberOfChannels: 2,
-                            length: sampleDuration
-                        });
-                        chorusBuffer.copyToChannel(chorus[0], 0);
-                        chorusBuffer.copyToChannel(chorus[1], 1);
-
-                        const dryBuffer = new AudioBuffer({
-                            sampleRate,
-                            numberOfChannels: 2,
-                            length: sampleDuration
-                        });
-                        dryBuffer.copyToChannel(dry[0], 0);
-                        dryBuffer.copyToChannel(dry[1], 1);
-
-                        // Prepare the context
-                        const offline = new OfflineAudioContext({
-                            sampleRate,
-                            numberOfChannels: 2,
-                            length: sampleDuration
-                        });
-
-                        // Connect the playback buffers
-                        // Dry
-                        const dryPlayer = offline.createBufferSource();
-                        dryPlayer.buffer = dryBuffer;
-                        dryPlayer.connect(offline.destination);
-                        dryPlayer.start();
-
-                        // Chorus
-                        const chorusProcessor = new ChorusProcessor(
-                            offline,
-                            this.synth.chorusProcessor?.config
-                        );
-                        const chorusPlayer = offline.createBufferSource();
-                        chorusPlayer.buffer = chorusBuffer;
-                        chorusPlayer.connect(chorusProcessor.input);
-                        chorusProcessor.connect(offline.destination);
-                        chorusPlayer.start();
-
-                        // Reverb
-                        const reverbProcessor = new ReverbProcessor(
-                            offline,
-                            this.synth.reverbProcessor?.config
-                        );
-                        await reverbProcessor.isReady;
-                        const reverbPlayer = offline.createBufferSource();
-                        reverbPlayer.connect(reverbProcessor.input);
-                        reverbProcessor.connect(offline.destination);
-                        reverbPlayer.buffer = reverbBuffer;
-                        reverbPlayer.start();
-
-                        const updateInterval = window.setInterval(() => {
-                            progressCallback?.(
-                                offline.currentTime / totalDuration,
-                                1
-                            );
-                        });
-
-                        console.info("Rendering effects has started.");
-                        const rendered = await offline.startRendering();
-                        clearInterval(updateInterval);
-                        resolve([rendered]);
+                        buf.getChannelData(0).set(outL);
+                        buf.getChannelData(1).set(outR);
+                        resolve([buf]);
                         return;
                     }
                     rendererSeq.processTick();
-                    rendererSynth.renderAudio(
-                        dry,
-                        reverb,
-                        chorus,
-                        index,
-                        BLOCK_SIZE
-                    );
+                    rendererSynth.process(outL, outR, index, BLOCK_SIZE);
                     index += BLOCK_SIZE;
                 }
                 await progressCallback?.(index / sampleDuration, 0);

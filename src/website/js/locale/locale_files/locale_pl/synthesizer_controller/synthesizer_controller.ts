@@ -52,12 +52,6 @@ export const synthesizerControllerLocale = {
             "Emuluje zachowanie Microsoft GS Wavetable Synthesizer'a, które od razu ucina poprzednią nutę na tym samym klawiszu"
     },
 
-    disableCustomVibrato: {
-        title: "Wyłącz niestandardowe vibrato",
-        description:
-            "Wyłącza niestandardowe (NRPN) vibrato. Wymaga przeładowania strony aby je ponownie włączyć"
-    },
-
     helpButton: {
         title: "Pomoc",
         description: "Pokaż instrukcję obsługi"
@@ -90,6 +84,16 @@ export const synthesizerControllerLocale = {
     voiceCap: {
         title: "Limit głosów",
         description: "Maksymalna ilość głosów mogąca grać jednocześnie"
+    },
+
+    drumEditing: {
+        title: "Edycja perkusji",
+        description: "Zezwól na edycję perkusji przy użyciu MIDI"
+    },
+
+    customVibrato: {
+        title: "Niestandardowe vibrato",
+        description: "Włącz niestandardowy efekt vibrato (NRPN)"
     },
 
     holdPedalDown: "Pedał podtrzymania naciśnięty (Shift)",
