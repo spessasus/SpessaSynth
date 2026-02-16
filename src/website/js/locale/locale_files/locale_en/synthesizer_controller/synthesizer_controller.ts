@@ -95,6 +95,12 @@ export const synthesizerControllerLocale = {
         description: "The maximum amount of voices allowed to play at once"
     },
 
+    drumEditing: {
+        title: "Drum editing",
+        description:
+            "Allow editing drum instruments via MIDI system exclusive messages"
+    },
+
     holdPedalDown: "Hold pedal is down (Shift)",
     port: "Port {0} (click to toggle visibility)",
     channelController: channelControllerLocale,

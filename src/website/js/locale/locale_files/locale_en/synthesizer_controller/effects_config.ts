@@ -1,8 +1,7 @@
 export const effectsConfig = {
+    // It has this structure due to legacy effects config
     button: {
-        title: "Effects config",
-        description:
-            "Configure the chorus and reverb effects and the custom vibrato"
+        title: "Effects config"
     },
     reverbConfig: {
         title: "Reverb configuration",
