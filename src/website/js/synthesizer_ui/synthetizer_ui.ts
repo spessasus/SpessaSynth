@@ -1659,6 +1659,8 @@ export class SynthetizerUI {
         macroLockWrapper.style.flexWrap = "wrap";
         wrapper.append(macroLockWrapper);
 
+        let isEffectLocked = false;
+
         // Macro
         const macroSelector = document.createElement("select");
         macroSelector.classList.add("synthui_button");
@@ -1672,7 +1674,14 @@ export class SynthetizerUI {
         const a = data.macroAddress;
         macroSelector.addEventListener("change", () => {
             const v = Number.parseInt(macroSelector.value);
+            if (isEffectLocked) {
+                this.synth.setMasterParameter(data.lockName, false);
+            }
+
             sendAddress(this.synth, 0x40, 0x01, a, v);
+            if (isEffectLocked) {
+                this.synth.setMasterParameter(data.lockName, true);
+            }
         });
         macroLockWrapper.append(macroSelector);
 
@@ -1689,11 +1698,10 @@ export class SynthetizerUI {
             "title",
             LOCALE_PATH + "effectsConfig.toggleLock.description"
         );
-        let isLocked = false;
         lock.addEventListener("click", () => {
-            isLocked = !isLocked;
-            this.synth.setMasterParameter(data.lockName, isLocked);
-            lock.style.color = isLocked ? "red" : "";
+            isEffectLocked = !isEffectLocked;
+            this.synth.setMasterParameter(data.lockName, isEffectLocked);
+            lock.style.color = isEffectLocked ? "red" : "";
         });
         macroLockWrapper.append(lock);
 
@@ -1716,6 +1724,9 @@ export class SynthetizerUI {
                 true,
                 (v) => {
                     v = Math.round(v);
+                    if (isEffectLocked) {
+                        this.synth.setMasterParameter(data.lockName, false);
+                    }
                     sendAddress(
                         this.synth,
                         0x40,
@@ -1723,6 +1734,9 @@ export class SynthetizerUI {
                         a,
                         param.ts ? param.ts(v) : v
                     );
+                    if (isEffectLocked) {
+                        this.synth.setMasterParameter(data.lockName, true);
+                    }
                 }
             );
             paramWrapper.append(meter.div);
