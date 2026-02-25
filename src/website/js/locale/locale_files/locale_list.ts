@@ -3,6 +3,7 @@ import { localePolish } from "./locale_pl/locale.js";
 import { localeJapanese } from "./locale_ja/locale.js";
 import { localeFrench } from "./locale_fr/locale.js";
 import { localePortuguese } from "./locale_pt/locale.js";
+import { localeChinese } from "./locale_zh/locale.js";
 
 export const DEFAULT_LOCALE = "en";
 export const localeList = {
@@ -10,7 +11,8 @@ export const localeList = {
     pl: localePolish,
     ja: localeJapanese,
     fr: localeFrench,
-    pt: localePortuguese
+    pt: localePortuguese,
+    zh: localeChinese
 };
 
 export type LocaleCode = keyof typeof localeList;

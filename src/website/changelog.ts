@@ -2,5 +2,5 @@
  * Note to self: make sure to update this
  */
 export const WHATS_NEW: string[] = [
-    `Fixed a bug with RMIDI DLS files`
+    `Simplified Chinese Translation! (By 懒洋君)`
 ] as const;
