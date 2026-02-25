@@ -312,6 +312,33 @@ export function renderSingleFft(
     this.drawingContext.fill();
 }
 
+function drawEFX(this: Renderer, channel: number) {
+    const ctx = this.drawingContext;
+    ctx.fillStyle = this.darkerColors[channel];
+    const x = channel % 4;
+    const y = Math.floor(channel / 4);
+    const waveWidth = this.canvas.width / 4;
+    const waveHeight = this.canvas.height / 4;
+    const relativeX = waveWidth * x;
+    const relativeY = waveHeight * y + waveHeight;
+    let fontSize = waveHeight;
+    ctx.font = `${fontSize}px monospace`;
+    const text = "EFX";
+
+    const metrics = ctx.measureText(text);
+
+    const widthRatio = waveWidth / metrics.width;
+    const heightRatio = waveHeight / fontSize;
+
+    const scale = Math.min(widthRatio, heightRatio);
+    fontSize = Math.floor(fontSize * scale);
+
+    ctx.font = `${fontSize}px monospace`;
+    ctx.textBaseline = "middle";
+    ctx.textAlign = "center";
+    ctx.fillText(text, relativeX + waveWidth / 2, relativeY - waveHeight / 2);
+}
+
 export function renderWaveforms(this: Renderer, forceStraightLine = false) {
     const waveWidth = this.canvas.width / 4;
     const waveHeight = this.canvas.height / 4;
@@ -324,6 +351,10 @@ export function renderWaveforms(this: Renderer, forceStraightLine = false) {
         case rendererModes.filledWaveformsMode:
         case rendererModes.waveformsMode: {
             for (let i = 0; i < this.channelAnalysers.length; i++) {
+                if (this.synth.channelProperties[i].isEFX) {
+                    drawEFX.call(this, i);
+                    continue;
+                }
                 this.renderSingleWaveform(
                     i,
                     forceStraightLine,
@@ -337,6 +368,10 @@ export function renderWaveforms(this: Renderer, forceStraightLine = false) {
 
         case rendererModes.spectrumSplitMode: {
             for (let i = 0; i < this.channelAnalysers.length; i++) {
+                if (this.synth.channelProperties[i].isEFX) {
+                    drawEFX.call(this, i);
+                    continue;
+                }
                 this.renderSingleFft(i, waveWidth, waveHeight);
             }
             break;
