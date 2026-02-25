@@ -156,7 +156,7 @@ export function showAdvancedConfiguration(this: SynthetizerUI) {
                     input: (e) =>
                         this.synth.setMasterParameter(
                             "monophonicRetriggerMode",
-                            !(e.target as HTMLInputElement).checked
+                            (e.target as HTMLInputElement).checked
                         )
                 }
             },
