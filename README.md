@@ -46,6 +46,7 @@
     - Japanese
     - French (translated by Davy Triponney)
     - Portuguese (translated by Lucas Gabriel)
+    - Simplified Chinese (By 懒洋君)
     - Custom locale management system, created specifically for this project
 - **Description of buttons:** Hover over the buttons to see what they do!
 - **`Web MIDI API` support:** Use your physical MIDI devices!
