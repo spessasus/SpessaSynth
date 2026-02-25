@@ -4,6 +4,7 @@ import { localeJapanese } from "./locale_ja/locale.js";
 import { localeFrench } from "./locale_fr/locale.js";
 import { localePortuguese } from "./locale_pt/locale.js";
 import { localeChinese } from "./locale_zh/locale.js";
+import { localeItalian } from "./locale_it/locale.js";
 
 export const DEFAULT_LOCALE = "en";
 export const localeList = {
@@ -12,7 +13,8 @@ export const localeList = {
     ja: localeJapanese,
     fr: localeFrench,
     pt: localePortuguese,
-    zh: localeChinese
+    zh: localeChinese,
+    it: localeItalian
 };
 
 export type LocaleCode = keyof typeof localeList;
