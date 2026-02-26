@@ -2,5 +2,6 @@
  * Note to self: make sure to update this
  */
 export const WHATS_NEW: string[] = [
-    `Simplified Chinese Translation! (By 懒洋君)`
+    `Simplified Chinese Translation! (By 懒洋君)`,
+    `Italian Translation! (By ItsFilyy)`
 ] as const;
