@@ -2,7 +2,6 @@ import type { MIDIFile } from "../utils/drop_file_handler.ts";
 import { Manager } from "../manager/manager.js";
 import { showNotification } from "../notification/notification.js";
 import { LocaleManager } from "../locale/locale_manager.js";
-import { SpessaSynthLogging } from "spessasynth_core";
 import type { LocaleCode } from "../locale/locale_files/locale_list.ts";
 import type { SavedSettings } from "../../server/saved_settings.ts";
 import { readSampleRateParam } from "../utils/sample_rate_param.ts";
@@ -52,7 +51,6 @@ window.savedSettings = new Promise((resolve) => {
 
 window.isLocalEdition = true;
 
-SpessaSynthLogging(true, true, true);
 const titleMessage = document.querySelector<HTMLHeadingElement>("#title")!;
 const progressBar = document.querySelector<HTMLDivElement>("#progress_bar")!;
 const fileInput = document.querySelector<HTMLInputElement>("#midi_file_input")!;

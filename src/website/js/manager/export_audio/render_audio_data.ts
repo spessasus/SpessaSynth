@@ -57,7 +57,7 @@ export async function renderAudioData(
             enableEffects: !separated
         });
         // No cap
-        rendererSynth.setMasterParameter("voiceCap", 4_294_967_296);
+        rendererSynth.setMasterParameter("voiceCap", 1024);
         console.info("Parsing and loading the sound bank in the main thread.");
         const sf = SoundBankLoader.fromArrayBuffer(this.sBankBuffer);
         rendererSynth.soundBankManager.addSoundBank(sf, SOUND_BANK_ID);
