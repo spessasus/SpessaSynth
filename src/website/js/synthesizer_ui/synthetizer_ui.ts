@@ -71,6 +71,7 @@ export interface ChannelController {
     soloButton: HTMLDivElement;
     muteButton: HTMLDivElement;
     polyMonoButton: HTMLDivElement;
+    insertionEffectButton: HTMLDivElement;
     isHidingLocked: boolean;
 }
 
@@ -81,24 +82,28 @@ function sendAddress(
     a1: number,
     a2: number,
     a3: number,
-    data: number
+    data: number,
+    offset = 0
 ) {
     // Calculate checksum
     // https://cdn.roland.com/assets/media/pdf/F-20_MIDI_Imple_e01_W.pdf section 4
     const sum = a1 + a2 + a3 + data;
     const checksum = (128 - (sum % 128)) & 0x7f;
-    s.systemExclusive([
-        0x41, // Roland
-        0x10, // Device ID (defaults to 16 on roland)
-        0x42, // GS
-        0x12, // Command ID (DT1) (whatever that means...)
-        a1,
-        a2,
-        a3,
-        data,
-        checksum,
-        0xf7 // End of exclusive
-    ]);
+    s.systemExclusive(
+        [
+            0x41, // Roland
+            0x10, // Device ID (defaults to 16 on roland)
+            0x42, // GS
+            0x12, // Command ID (DT1) (whatever that means...)
+            a1,
+            a2,
+            a3,
+            data,
+            checksum,
+            0xf7 // End of exclusive
+        ],
+        offset
+    );
 }
 
 /**
@@ -1445,6 +1450,37 @@ export class SynthetizerUI {
         });
         controller.append(polyMonoButton);
 
+        // Insertion Effect button
+        const insertionEffectButton = document.createElement("div");
+        insertionEffectButton.innerHTML = "<pre>Fx</pre>";
+        this.locale.bindObjectProperty(
+            insertionEffectButton,
+            "title",
+            LOCALE_PATH + "channelController.insertionEffectButton.description",
+            [channelNumber + 1]
+        );
+        insertionEffectButton.classList.add(
+            "controller_element",
+            "mute_button"
+        );
+        insertionEffectButton.addEventListener("click", () => {
+            const isFX = !insertionEffectButton.classList.contains("red");
+            const ch = channelNumber % 16;
+            const offset = channelNumber - ch;
+            const chanAddress = [
+                1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 10, 11, 12, 13, 14, 15
+            ][ch];
+            sendAddress(
+                this.synth,
+                0x40,
+                0x40 | chanAddress,
+                0x22,
+                isFX ? 1 : 0,
+                offset
+            );
+        });
+        controller.append(insertionEffectButton);
+
         return {
             controller,
             isHidingLocked: false,
@@ -1454,6 +1490,7 @@ export class SynthetizerUI {
             soloButton,
             muteButton,
             polyMonoButton,
+            insertionEffectButton,
             preset: presetSelector,
             controllerMeters,
             pitchWheel
@@ -1604,6 +1641,28 @@ export class SynthetizerUI {
                     param.td ? param.td(e.value) : e.value
                 );
                 return;
+            }
+
+            case "insertion": {
+                switch (e.parameter) {
+                    default: {
+                        break;
+                    }
+
+                    case -1: {
+                        this.controllers[
+                            e.value
+                        ].insertionEffectButton.classList.add("red");
+                        break;
+                    }
+
+                    case -2: {
+                        this.controllers[
+                            e.value
+                        ].insertionEffectButton.classList.remove("red");
+                        break;
+                    }
+                }
             }
         }
     }

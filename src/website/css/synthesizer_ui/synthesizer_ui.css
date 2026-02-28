@@ -141,6 +141,10 @@
     font-weight: bold;
 }
 
+.mute_button.red pre {
+    color: red;
+}
+
 .mute_button_light * {
     color: black;
 }

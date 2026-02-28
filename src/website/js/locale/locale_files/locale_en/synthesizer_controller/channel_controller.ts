@@ -133,5 +133,9 @@ export const channelControllerLocale = {
 
     polyMonoButton: {
         description: `Toggle poly/mono mode on channel {0}`
+    },
+
+    insertionEffectButton: {
+        description: `Toggle insertion effect on channel {0}`
     }
 };
