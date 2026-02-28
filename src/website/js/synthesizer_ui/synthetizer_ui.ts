@@ -44,6 +44,8 @@ import {
     type DelayController,
     delayData,
     type DelayParams,
+    type InsertionController,
+    insertionData,
     type ParamType,
     type ReverbController,
     reverbData,
@@ -82,12 +84,12 @@ function sendAddress(
     a1: number,
     a2: number,
     a3: number,
-    data: number,
+    data: number[],
     offset = 0
 ) {
     // Calculate checksum
     // https://cdn.roland.com/assets/media/pdf/F-20_MIDI_Imple_e01_W.pdf section 4
-    const sum = a1 + a2 + a3 + data;
+    const sum = a1 + a2 + a3 + data.reduce((sum, cur) => sum + cur, 0);
     const checksum = (128 - (sum % 128)) & 0x7f;
     s.systemExclusive(
         [
@@ -98,7 +100,7 @@ function sendAddress(
             a1,
             a2,
             a3,
-            data,
+            ...data,
             checksum,
             0xf7 // End of exclusive
         ],
@@ -133,7 +135,9 @@ export class SynthetizerUI {
         reverb: ReverbController;
         chorus: ChorusController;
         delay: DelayController;
+        insertion: InsertionController;
     };
+    protected currentInsertionEffect;
 
     protected ports: HTMLDivElement[] = [];
     protected portDescriptors: HTMLDivElement[] = [];
@@ -209,74 +213,70 @@ export class SynthetizerUI {
             /**
              * Voice meter
              */
-            this.voiceMeter = new Meter(
-                "",
-                LOCALE_PATH + "mainVoiceMeter",
-                this.locale,
-                [],
-                0,
-                DEFAULT_MASTER_PARAMETERS.voiceCap,
-                0
-            );
+            this.voiceMeter = new Meter({
+                color: "",
+                localePath: LOCALE_PATH + "mainVoiceMeter",
+                locale: this.locale,
+                min: 0,
+                max: DEFAULT_MASTER_PARAMETERS.voiceCap,
+                initialAndDefault: 0
+            });
             this.voiceMeter.bar.classList.add("voice_meter_bar_smooth");
             this.voiceMeter.div.classList.add("main_controller_element");
 
             /**
              * Volume controller
              */
-            this.volumeController = new Meter(
-                "",
-                LOCALE_PATH + "mainVolumeMeter",
-                this.locale,
-                [],
-                0,
-                400,
-                100,
-                true,
-                (v) => {
+            this.volumeController = new Meter({
+                color: "",
+                localePath: LOCALE_PATH + "mainVolumeMeter",
+                locale: this.locale,
+                min: 0,
+                max: 400,
+                initialAndDefault: 100,
+                editable: true,
+                editCallback: (v) => {
                     this.synth.setMasterParameter(
                         "masterGain",
                         Math.round(v) / 100
                     );
                     this.volumeController.update(v);
                 }
-            );
+            });
             this.volumeController.bar.classList.add("voice_meter_bar_smooth");
             this.volumeController.div.classList.add("main_controller_element");
 
             /**
              * Pan controller
              */
-            this.panController = new Meter(
-                "",
-                LOCALE_PATH + "mainPanMeter",
-                this.locale,
-                [],
-                -1,
-                1,
-                0,
-                true,
-                (v) => {
+            this.panController = new Meter({
+                color: "",
+                localePath: LOCALE_PATH + "mainPanMeter",
+                locale: this.locale,
+                min: -1,
+                max: 1,
+                initialAndDefault: 0,
+                editable: true,
+                editCallback: (v) => {
                     this.synth.setMasterParameter("masterPan", v);
                     this.panController.update(v);
                 }
-            );
+            });
             this.panController.bar.classList.add("voice_meter_bar_smooth");
             this.panController.div.classList.add("main_controller_element");
 
             /**
              * Transpose controller
              */
-            this.transposeController = new Meter(
-                "",
-                LOCALE_PATH + "mainTransposeMeter",
-                this.locale,
-                [],
-                -12,
-                12,
-                0,
-                true,
-                (v) => {
+            this.transposeController = new Meter({
+                color: "",
+                localePath: LOCALE_PATH + "mainTransposeMeter",
+                locale: this.locale,
+                min: -12,
+                max: 12,
+                initialAndDefault: 0,
+                editable: true,
+                editCallback: (v) => {
                     // Limit to half semitone precision
                     this.synth.setMasterParameter(
                         "transposition",
@@ -285,12 +285,10 @@ export class SynthetizerUI {
                     this.transposeController.update(Math.round(v * 2) / 2);
                     this.onTranspose?.();
                 },
-                undefined,
-                undefined,
-                (active) => {
+                activeChangeCallback: (active) => {
                     this.setCCVisibilityStartingFrom(0, !active);
                 }
-            );
+            });
             this.transposeController.bar.classList.add(
                 "voice_meter_bar_smooth"
             );
@@ -610,10 +608,15 @@ export class SynthetizerUI {
                 delayData,
                 LOCALE_PATH + "effectsConfig.delay."
             );
+
+            const insertionController = this.createInsertionController();
+            this.currentInsertionEffect = insertionController.effects.get(0)!;
+
             this.effectControllers = {
                 reverb: reverbController,
                 chorus: chorusController,
-                delay: delayController
+                delay: delayController,
+                insertion: insertionController
             };
 
             // Set the default macros
@@ -638,6 +641,7 @@ export class SynthetizerUI {
             this.mainControllerDiv.append(reverbController.wrapper);
             this.mainControllerDiv.append(chorusController.wrapper);
             this.mainControllerDiv.append(delayController.wrapper);
+            this.mainControllerDiv.append(insertionController.wrapper);
         }
 
         // Create channel controllers
@@ -939,29 +943,33 @@ export class SynthetizerUI {
         controller.classList.add("channel_controller");
 
         // Voice meter
-        const voiceMeter = new Meter(
-            this.channelColors[channelNumber % this.channelColors.length],
-            LOCALE_PATH + "channelController.voiceMeter",
-            this.locale,
-            [channelNumber + 1],
-            0,
-            100,
-            0
-        );
+        const voiceMeter = new Meter({
+            color: this.channelColors[
+                channelNumber % this.channelColors.length
+            ],
+            localePath: LOCALE_PATH + "channelController.voiceMeter",
+            locale: this.locale,
+            localeArgs: [channelNumber + 1],
+            min: 0,
+            max: 100,
+            initialAndDefault: 0
+        });
         voiceMeter.bar.classList.add("voice_meter_bar_smooth");
         controller.append(voiceMeter.div);
 
         // Pitch wheel
-        const pitchWheel = new Meter(
-            this.channelColors[channelNumber % this.channelColors.length],
-            LOCALE_PATH + "channelController.pitchBendMeter",
-            this.locale,
-            [channelNumber + 1],
-            -8192,
-            8191,
-            0,
-            true,
-            (val) => {
+        const pitchWheel = new Meter({
+            color: this.channelColors[
+                channelNumber % this.channelColors.length
+            ],
+            localePath: LOCALE_PATH + "channelController.pitchBendMeter",
+            locale: this.locale,
+            localeArgs: [channelNumber + 1],
+            min: -8192,
+            max: 8191,
+            initialAndDefault: 0,
+            editable: true,
+            editCallback: (val) => {
                 const meterLocked = pitchWheel.isLocked;
                 if (meterLocked) {
                     this.synth.lockController(
@@ -982,21 +990,21 @@ export class SynthetizerUI {
                     );
                 }
             },
-            () =>
+            lockCallback: () =>
                 this.synth.lockController(
                     channelNumber,
                     (NON_CC_INDEX_OFFSET +
                         modulatorSources.pitchWheel) as MIDIController,
                     true
                 ),
-            () =>
+            unlockCallback: () =>
                 this.synth.lockController(
                     channelNumber,
                     (NON_CC_INDEX_OFFSET +
                         modulatorSources.pitchWheel) as MIDIController,
                     false
                 )
-        );
+        });
         controller.append(pitchWheel.div);
 
         const changeCCUserFunction = (
@@ -1020,27 +1028,29 @@ export class SynthetizerUI {
             localePath: string,
             allowLocking = true
         ): Meter => {
-            const meter = new Meter(
-                this.channelColors[channelNumber % this.channelColors.length],
-                LOCALE_PATH + localePath,
-                this.locale,
-                [channelNumber + 1],
-                0,
-                127,
-                defaultMIDIControllerValues[ccNum] >> 7,
-                true,
-                (val) => {
+            const meter = new Meter({
+                color: this.channelColors[
+                    channelNumber % this.channelColors.length
+                ],
+                localePath: LOCALE_PATH + localePath,
+                locale: this.locale,
+                localeArgs: [channelNumber + 1],
+                min: 0,
+                max: 127,
+                initialAndDefault: defaultMIDIControllerValues[ccNum] >> 7,
+                editable: true,
+                editCallback: (val) => {
                     changeCCUserFunction(ccNum, Math.round(val), meter);
                 },
-                allowLocking
+                lockCallback: allowLocking
                     ? () =>
                           this.synth.lockController(channelNumber, ccNum, true)
                     : undefined,
-                allowLocking
+                unlockCallback: allowLocking
                     ? () =>
                           this.synth.lockController(channelNumber, ccNum, false)
                     : undefined
-            );
+            });
             controllerMeters[ccNum] = meter;
             return meter;
         };
@@ -1124,16 +1134,18 @@ export class SynthetizerUI {
 
         // Portamento time
         // Custom control to set portamento on off as well
-        const portamentoTime = new Meter(
-            this.channelColors[channelNumber % this.channelColors.length],
-            LOCALE_PATH + "channelController.portamentoTimeMeter",
-            this.locale,
-            [channelNumber + 1],
-            0,
-            127,
-            0,
-            true,
-            (val) => {
+        const portamentoTime = new Meter({
+            color: this.channelColors[
+                channelNumber % this.channelColors.length
+            ],
+            localePath: LOCALE_PATH + "channelController.portamentoTimeMeter",
+            locale: this.locale,
+            localeArgs: [channelNumber + 1],
+            min: 0,
+            max: 127,
+            initialAndDefault: 0,
+            editable: true,
+            editCallback: (val) => {
                 const meterLocked = portamentoTime.isLocked;
                 if (meterLocked) {
                     this.synth.lockController(
@@ -1170,7 +1182,7 @@ export class SynthetizerUI {
                     );
                 }
             },
-            () => {
+            lockCallback: () => {
                 this.synth.lockController(
                     channelNumber,
                     midiControllers.portamentoTime,
@@ -1182,7 +1194,7 @@ export class SynthetizerUI {
                     true
                 );
             },
-            () => {
+            unlockCallback: () => {
                 this.synth.lockController(
                     channelNumber,
                     midiControllers.portamentoTime,
@@ -1194,7 +1206,7 @@ export class SynthetizerUI {
                     false
                 );
             }
-        );
+        });
         controllerMeters[midiControllers.portamentoTime] = portamentoTime;
         controller.append(portamentoTime.div);
 
@@ -1214,31 +1226,31 @@ export class SynthetizerUI {
         controller.append(filterResonance.div);
 
         // Transpose is not a cc, add it manually
-        const transpose = new Meter(
-            this.channelColors[channelNumber % this.channelColors.length],
-            LOCALE_PATH + "channelController.transposeMeter",
-            this.locale,
-            [channelNumber + 1],
-            -36,
-            36,
-            0,
-            true,
-            (val) => {
+        const transpose = new Meter({
+            color: this.channelColors[
+                channelNumber % this.channelColors.length
+            ],
+            localePath: LOCALE_PATH + "channelController.transposeMeter",
+            locale: this.locale,
+            localeArgs: [channelNumber + 1],
+            min: -36,
+            max: 36,
+            initialAndDefault: 0,
+            editable: true,
+            editCallback: (val) => {
                 val = Math.round(val);
                 this.synth.transposeChannel(channelNumber, val, true);
                 transpose.update(val);
                 this.onTranspose?.();
             },
-            undefined,
-            undefined,
-            (active) => {
+            activeChangeCallback: (active) => {
                 // Do hide on multi-port files
                 if (channelNumber >= 16) {
                     return;
                 }
                 this.setCCVisibilityStartingFrom(channelNumber + 1, !active);
             }
-        );
+        });
         controller.append(transpose.div);
 
         // Preset controller
@@ -1475,7 +1487,7 @@ export class SynthetizerUI {
                 0x40,
                 0x40 | chanAddress,
                 0x22,
-                isFX ? 1 : 0,
+                isFX ? [1] : [0],
                 offset
             );
         });
@@ -1535,6 +1547,63 @@ export class SynthetizerUI {
     }
 
     protected handleEffectChange(e: EffectChangeCallback) {
+        if (e.effect === "insertion") {
+            switch (e.parameter) {
+                default: {
+                    const param = this.currentInsertionEffect.controllers.get(
+                        e.parameter
+                    );
+                    if (!param) {
+                        return;
+                    }
+                    param.update(e.value);
+                    break;
+                }
+
+                case 0: {
+                    let targetEffect = e.value;
+                    if (
+                        !this.effectControllers.insertion.effects.get(
+                            targetEffect
+                        )
+                    ) {
+                        // Thru
+                        targetEffect = 0;
+                    }
+                    this.currentInsertionEffect =
+                        this.effectControllers.insertion.effects.get(
+                            targetEffect
+                        )!;
+
+                    // Hide all except the one we want
+                    for (const [key, param] of this.effectControllers.insertion
+                        .effects) {
+                        param.controllerWrapper.classList.toggle(
+                            "hidden",
+                            !(targetEffect === key)
+                        );
+                    }
+                    this.effectControllers.insertion.effectSelector.value =
+                        e.value.toString();
+                    break;
+                }
+
+                case -1: {
+                    this.controllers[
+                        e.value
+                    ].insertionEffectButton.classList.add("red");
+                    break;
+                }
+
+                case -2: {
+                    this.controllers[
+                        e.value
+                    ].insertionEffectButton.classList.remove("red");
+                    break;
+                }
+            }
+            return;
+        }
         if (e.parameter === "macro") {
             switch (e.effect) {
                 case "reverb": {
@@ -1544,16 +1613,13 @@ export class SynthetizerUI {
                         if (param === "name") {
                             continue;
                         }
-                        const v = value as number;
                         const params = reverbData.params.find(
                             (p) => p.p === param
                         );
                         if (!params) {
                             continue;
                         }
-                        meters[param as ReverbParams].update(
-                            params.td ? params.td(v) : v
-                        );
+                        meters[param as ReverbParams].update(value as number);
                     }
                     this.effectControllers.reverb.macro.value =
                         e.value.toString();
@@ -1567,16 +1633,13 @@ export class SynthetizerUI {
                         if (param === "name") {
                             continue;
                         }
-                        const v = value as number;
                         const params = chorusData.params.find(
                             (p) => p.p === param
                         );
                         if (!params) {
                             continue;
                         }
-                        meters[param as ChorusParams].update(
-                            params.td ? params.td(v) : v
-                        );
+                        meters[param as ChorusParams].update(value as number);
                     }
                     this.effectControllers.chorus.macro.value =
                         e.value.toString();
@@ -1589,16 +1652,13 @@ export class SynthetizerUI {
                         if (param === "name") {
                             continue;
                         }
-                        const v = value as number;
                         const params = delayData.params.find(
                             (p) => p.p === param
                         );
                         if (!params) {
                             continue;
                         }
-                        meters[param as DelayParams].update(
-                            params.td ? params.td(v) : v
-                        );
+                        meters[param as DelayParams].update(value as number);
                     }
                     this.effectControllers.delay.macro.value =
                         e.value.toString();
@@ -1614,9 +1674,7 @@ export class SynthetizerUI {
                 if (!param) {
                     return;
                 }
-                this.effectControllers.reverb[e.parameter].update(
-                    param.td ? param.td(e.value) : e.value
-                );
+                this.effectControllers.reverb[e.parameter].update(e.value);
                 return;
             }
 
@@ -1627,9 +1685,7 @@ export class SynthetizerUI {
                 if (!param) {
                     return;
                 }
-                this.effectControllers.chorus[e.parameter].update(
-                    param.td ? param.td(e.value) : e.value
-                );
+                this.effectControllers.chorus[e.parameter].update(e.value);
                 return;
             }
             case "delay": {
@@ -1637,34 +1693,159 @@ export class SynthetizerUI {
                 if (!param) {
                     return;
                 }
-                this.effectControllers.delay[e.parameter].update(
-                    param.td ? param.td(e.value) : e.value
-                );
+                this.effectControllers.delay[e.parameter].update(e.value);
                 return;
             }
-
-            case "insertion": {
-                switch (e.parameter) {
-                    default: {
-                        break;
-                    }
-
-                    case -1: {
-                        this.controllers[
-                            e.value
-                        ].insertionEffectButton.classList.add("red");
-                        break;
-                    }
-
-                    case -2: {
-                        this.controllers[
-                            e.value
-                        ].insertionEffectButton.classList.remove("red");
-                        break;
-                    }
-                }
-            }
         }
+    }
+
+    private createInsertionController(): InsertionController {
+        const insertionEffects = insertionData;
+
+        const wrapper = document.createElement("div");
+        wrapper.classList.add("effect_wrapper", "hidden");
+        // Title
+        const effectTitle = document.createElement("h2");
+        this.locale.bindObjectProperty(
+            effectTitle,
+            "textContent",
+            LOCALE_PATH + "effectsConfig.insertion.title"
+        );
+        wrapper.append(effectTitle);
+
+        // Go Back
+        const goBack = document.createElement("button");
+        goBack.classList.add("synthui_button");
+        this.locale.bindObjectProperty(
+            goBack,
+            "textContent",
+            LOCALE_PATH + "effectsConfig.goBack.title"
+        );
+        this.locale.bindObjectProperty(
+            goBack,
+            "title",
+            LOCALE_PATH + "effectsConfig.goBack.description"
+        );
+        goBack.addEventListener("click", () => {
+            // Show all ports
+            for (const port of this.mainControllerDiv.querySelectorAll<HTMLElement>(
+                ".synthui_port_group"
+            )) {
+                port.classList.remove("hidden");
+            }
+            // Hide this
+            wrapper.classList.add("hidden");
+        });
+        wrapper.append(goBack);
+
+        // Type/lock wrapper
+        const typeLockWrapper = document.createElement("div");
+        typeLockWrapper.style.display = "flex";
+        typeLockWrapper.style.flexWrap = "wrap";
+        wrapper.append(typeLockWrapper);
+
+        let isEffectLocked = false;
+
+        // Effect selector
+        const effectSelector = document.createElement("select");
+        effectSelector.classList.add("synthui_button");
+        for (const insertionEffect of insertionEffects) {
+            const opt = document.createElement("option");
+            opt.textContent = insertionEffect.name;
+            opt.value = insertionEffect.type.toString();
+            effectSelector.append(opt);
+        }
+        effectSelector.addEventListener("change", () => {
+            const v = Number.parseInt(effectSelector.value);
+            if (isEffectLocked) {
+                this.synth.setMasterParameter("insertionEffectLock", false);
+            }
+
+            const msb = (v >> 8) & 0x7f;
+            const lsb = v & 0x7f;
+
+            sendAddress(this.synth, 0x40, 0x03, 0x00, [msb, lsb]);
+            if (isEffectLocked) {
+                this.synth.setMasterParameter("insertionEffectLock", true);
+            }
+        });
+        typeLockWrapper.append(effectSelector);
+
+        // Lock
+        const lock = document.createElement("button");
+        lock.classList.add("synthui_button");
+        this.locale.bindObjectProperty(
+            lock,
+            "textContent",
+            LOCALE_PATH + "effectsConfig.toggleLock.title"
+        );
+        this.locale.bindObjectProperty(
+            lock,
+            "title",
+            LOCALE_PATH + "effectsConfig.toggleLock.description"
+        );
+        lock.addEventListener("click", () => {
+            isEffectLocked = !isEffectLocked;
+            this.synth.setMasterParameter(
+                "insertionEffectLock",
+                isEffectLocked
+            );
+            lock.style.color = isEffectLocked ? "red" : "";
+        });
+        typeLockWrapper.append(lock);
+
+        // FIXME: Add the effect sends
+        // Parameters
+        const params = new Map<
+            number,
+            { controllerWrapper: HTMLElement; controllers: Map<number, Meter> }
+        >();
+        for (const insertionEffect of insertionEffects) {
+            const controllerWrapper = document.createElement("div");
+            controllerWrapper.classList.add("effect_wrapper_params", "hidden");
+            wrapper.append(controllerWrapper);
+            const controllers = new Map<number, Meter>();
+            for (const param of insertionEffect.params) {
+                // Prevent change!
+                const a = param.a;
+                const meter = new Meter({
+                    rawText: param.p + ": ",
+                    min: param.r?.min ?? 0,
+                    max: param?.r?.max ?? 127,
+                    initialAndDefault: param.d,
+                    editable: true,
+                    editCallback: (v) => {
+                        if (isEffectLocked) {
+                            this.synth.setMasterParameter(
+                                "insertionEffectLock",
+                                false
+                            );
+                        }
+                        sendAddress(this.synth, 0x40, 0x03, a, [Math.round(v)]);
+                        if (isEffectLocked) {
+                            this.synth.setMasterParameter(
+                                "insertionEffectLock",
+                                true
+                            );
+                        }
+                    },
+                    transform: param?.td
+                });
+                controllerWrapper.append(meter.div);
+                controllers.set(param.a, meter);
+            }
+
+            params.set(insertionEffect.type, {
+                controllers,
+                controllerWrapper
+            });
+        }
+
+        return {
+            wrapper,
+            effectSelector,
+            effects: params
+        };
     }
 
     private createEffectController<
@@ -1737,7 +1918,7 @@ export class SynthetizerUI {
                 this.synth.setMasterParameter(data.lockName, false);
             }
 
-            sendAddress(this.synth, 0x40, 0x01, a, v);
+            sendAddress(this.synth, 0x40, 0x01, a, [v]);
             if (isEffectLocked) {
                 this.synth.setMasterParameter(data.lockName, true);
             }
@@ -1772,32 +1953,25 @@ export class SynthetizerUI {
         for (const param of data.params) {
             // Prevent change!
             const a = param.a;
-            const meter = new Meter(
-                "",
-                path + param.p,
-                this.locale,
-                [],
-                param.r?.min ?? 0,
-                param?.r?.max ?? 127,
-                0,
-                true,
-                (v) => {
-                    v = Math.round(v);
+            const meter = new Meter({
+                color: "",
+                localePath: path + param.p,
+                locale: this.locale,
+                min: param.r?.min ?? 0,
+                max: param?.r?.max ?? 127,
+                initialAndDefault: 0,
+                editable: true,
+                editCallback: (v) => {
                     if (isEffectLocked) {
                         this.synth.setMasterParameter(data.lockName, false);
                     }
-                    sendAddress(
-                        this.synth,
-                        0x40,
-                        0x01,
-                        a,
-                        param.ts ? param.ts(v) : v
-                    );
+                    sendAddress(this.synth, 0x40, 0x01, a, [Math.round(v)]);
                     if (isEffectLocked) {
                         this.synth.setMasterParameter(data.lockName, true);
                     }
-                }
-            );
+                },
+                transform: param?.td
+            });
             paramWrapper.append(meter.div);
             r[param.p] = meter;
         }

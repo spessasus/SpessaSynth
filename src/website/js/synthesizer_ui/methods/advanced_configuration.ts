@@ -225,6 +225,9 @@ export function showAdvancedConfiguration(this: SynthetizerUI) {
                     this.effectControllers.chorus.wrapper.classList.add(
                         "hidden"
                     );
+                    this.effectControllers.insertion.wrapper.classList.add(
+                        "hidden"
+                    );
                     // Show reverb
                     this.effectControllers.reverb.wrapper.classList.remove(
                         "hidden"
@@ -248,6 +251,9 @@ export function showAdvancedConfiguration(this: SynthetizerUI) {
                         "hidden"
                     );
                     this.effectControllers.reverb.wrapper.classList.add(
+                        "hidden"
+                    );
+                    this.effectControllers.insertion.wrapper.classList.add(
                         "hidden"
                     );
                     // Show chorus
@@ -275,8 +281,39 @@ export function showAdvancedConfiguration(this: SynthetizerUI) {
                     this.effectControllers.chorus.wrapper.classList.add(
                         "hidden"
                     );
+                    this.effectControllers.insertion.wrapper.classList.add(
+                        "hidden"
+                    );
                     // Show delay
                     this.effectControllers.delay.wrapper.classList.remove(
+                        "hidden"
+                    );
+                }
+            },
+
+            {
+                type: "button",
+                translatePathTitle: LOCALE_PATH + "effectsConfig.insertion",
+                onClick: (n) => {
+                    closeNotification(n.id);
+                    // Hide all ports
+                    for (const port of this.mainControllerDiv.querySelectorAll<HTMLElement>(
+                        ".synthui_port_group"
+                    )) {
+                        port.classList.add("hidden");
+                    }
+                    // Hide other effects
+                    this.effectControllers.reverb.wrapper.classList.add(
+                        "hidden"
+                    );
+                    this.effectControllers.chorus.wrapper.classList.add(
+                        "hidden"
+                    );
+                    this.effectControllers.delay.wrapper.classList.add(
+                        "hidden"
+                    );
+                    // Show insertion
+                    this.effectControllers.insertion.wrapper.classList.remove(
                         "hidden"
                     );
                 }

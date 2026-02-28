@@ -8,6 +8,53 @@ import type { LocaleManager } from "../../locale/locale_manager.ts";
 
 export type MeterCallbackFunction = (clickedValue: number) => unknown;
 
+/**
+ * Options for creating a new Meter
+ */
+export interface MeterOptions {
+    /** The color in CSS */
+    color?: string;
+
+    /** Locale path, will add .title and .description to it */
+    localePath?: string;
+
+    /** Locale manager */
+    locale?: LocaleManager;
+
+    /** Can be used instead of locale */
+    rawText?: string;
+
+    /** Args for description */
+    localeArgs?: (string | number)[];
+
+    /** Minimum value */
+    min?: number;
+
+    /** Maximum value */
+    max?: number;
+
+    /** Initial value and default value */
+    initialAndDefault: number;
+
+    /** If the meter should be editable with mouse */
+    editable?: boolean;
+
+    /** Called when the value is edited */
+    editCallback?: MeterCallbackFunction;
+
+    /** Called when the meter gets locked */
+    lockCallback?: () => unknown;
+
+    /** Called when the meter gets unlocked */
+    unlockCallback?: () => unknown;
+
+    /** When the isActive state changes */
+    activeChangeCallback?: (isActive: boolean) => unknown;
+
+    /** Transform from the internal value into the displayed value */
+    transform?: (value: number) => string;
+}
+
 export class Meter {
     public meterText = "";
     public readonly defaultValue;
@@ -23,6 +70,7 @@ export class Meter {
     private readonly lockCallback;
     private readonly unlockCallback;
     private readonly text: HTMLParagraphElement;
+    private readonly transform;
 
     /**
      * Creates a new meter
@@ -30,6 +78,7 @@ export class Meter {
      * @param localePath locale path, will add .title and .description to it
      * @param locale
      * @param localeArgs args for description
+     * @param rawText can be used instead of locale
      * @param max
      * @param min
      * @param initialAndDefault
@@ -38,22 +87,29 @@ export class Meter {
      * @param lockCallback
      * @param unlockCallback
      * @param activeChangeCallback - when the isActive state changes
+     * @param transform - transform from the internal value into the displayed value
      */
-    public constructor(
-        color = "none",
-        localePath: string,
-        locale: LocaleManager,
-        localeArgs: (string | number)[],
+    public constructor({
+        color = "",
+        localePath,
+        locale,
+        localeArgs = [],
         min = 0,
         max = 100,
-        initialAndDefault: number,
+        initialAndDefault,
         editable = false,
-        editCallback?: MeterCallbackFunction,
-        lockCallback?: () => unknown,
-        unlockCallback?: () => unknown,
-        activeChangeCallback?: (isActive: boolean) => unknown
-    ) {
-        locale.bindObjectProperty(this, "meterText", localePath + ".title");
+        editCallback,
+        lockCallback,
+        unlockCallback,
+        activeChangeCallback,
+        transform,
+        rawText = ""
+    }: MeterOptions) {
+        if (locale) {
+            locale.bindObjectProperty(this, "meterText", localePath + ".title");
+        } else {
+            this.meterText = rawText;
+        }
         this.min = min;
         this.max = max;
         this.currentValue = -1;
@@ -62,6 +118,7 @@ export class Meter {
         this.isLocked = false;
         this.lockCallback = lockCallback;
         this.unlockCallback = unlockCallback;
+        this.transform = transform;
         this.defaultValue = initialAndDefault;
 
         this.div = document.createElement("div");
@@ -69,12 +126,14 @@ export class Meter {
         if (color !== "none" && color !== "") {
             this.div.style.borderColor = color;
         }
-        locale.bindObjectProperty(
-            this.div,
-            "title",
-            localePath + ".description",
-            localeArgs
-        );
+        if (locale) {
+            locale.bindObjectProperty(
+                this.div,
+                "title",
+                localePath + ".description",
+                localeArgs
+            );
+        }
 
         this.bar = document.createElement("div");
         this.bar.classList.add("voice_meter_bar");
@@ -220,8 +279,11 @@ export class Meter {
                 Math.min((value - this.min) / (this.max - this.min), 1)
             );
             this.bar.style.width = `${percentage * 100}%`;
-            this.text.textContent =
-                this.meterText + (Math.round(value * 100) / 100).toString();
+            const v = Math.round(value * 100) / 100;
+            const transformed = this.transform
+                ? this.transform(v)
+                : v.toString();
+            this.text.textContent = this.meterText + transformed;
             this.isVisualValueSet = true;
         } else {
             this.isVisualValueSet = false;

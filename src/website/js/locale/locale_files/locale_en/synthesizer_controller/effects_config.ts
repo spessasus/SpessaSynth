@@ -195,5 +195,31 @@ export const effectsConfig = {
                 "Send Level To Reverb: This parameter sets the amount of delay sound that will be sent to the reverb. " +
                 "Higher values result in more sound being sent."
         }
+    },
+
+    insertion: {
+        title: "Insertion Effect configuration",
+        description: "Configure or select an Insertion Effect processor",
+
+        sendLevelToReverb: {
+            title: "Send Level To Reverb: ",
+            description:
+                "Send Level To Reverb: Adjust the send level of the sound that comes after the insertion effect to Reverb. " +
+                "Higher values result in more sound being sent."
+        },
+
+        sendLevelToChorus: {
+            title: "Send Level To Chorus: ",
+            description:
+                "Send Level To Chorus: Adjust the send level of the sound that comes after the insertion effect to Chorus. " +
+                "Higher values result in more sound being sent."
+        },
+
+        sendLevelToDelay: {
+            title: "Send Level To Delay: ",
+            description:
+                "Send Level To Delay: Adjust the send level of the sound that comes after the insertion effect to Delay. " +
+                "Higher values result in more sound being sent."
+        }
     }
 };
