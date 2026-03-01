@@ -34,6 +34,9 @@ export type DelayController = Record<DelayParams, Meter> & {
 export interface InsertionController {
     wrapper: HTMLElement;
     effectSelector: HTMLSelectElement;
+    delay: Meter;
+    chorus: Meter;
+    reverb: Meter;
     /**
      * Map<insertion type, {controllerWrapper: the wrapper of all the meters, controllers: Map<parameter address, Meter for that parameter>}>
      */

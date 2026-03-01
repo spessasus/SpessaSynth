@@ -1560,6 +1560,20 @@ export class SynthetizerUI {
                     break;
                 }
 
+                case 0x17: {
+                    this.effectControllers.insertion.reverb.update(e.value);
+                    break;
+                }
+
+                case 0x18: {
+                    this.effectControllers.insertion.chorus.update(e.value);
+                    break;
+                }
+                case 0x19: {
+                    this.effectControllers.insertion.delay.update(e.value);
+                    break;
+                }
+
                 case 0: {
                     let targetEffect = e.value;
                     if (
@@ -1585,6 +1599,15 @@ export class SynthetizerUI {
                     }
                     this.effectControllers.insertion.effectSelector.value =
                         targetEffect.toString();
+
+                    // Reset its effects
+                    for (const controller of this.currentInsertionEffect.controllers.values()) {
+                        controller.reset();
+                    }
+                    this.effectControllers.insertion.reverb.reset();
+                    this.effectControllers.insertion.chorus.reset();
+                    this.effectControllers.insertion.delay.reset();
+
                     break;
                 }
 
@@ -1794,7 +1817,72 @@ export class SynthetizerUI {
         });
         typeLockWrapper.append(lock);
 
-        // FIXME: Add the effect sends
+        // Effect sends
+        const effectSendsWrapper = document.createElement("div");
+        effectSendsWrapper.classList.add(
+            "effect_wrapper_params",
+            "global_insertion"
+        );
+        const reverb = new Meter({
+            locale: this.locale,
+            localePath:
+                LOCALE_PATH + "effectsConfig.insertion.sendLevelToReverb",
+            min: 0,
+            max: 127,
+            initialAndDefault: 40,
+            editable: true,
+            editCallback: (v) => {
+                if (isEffectLocked) {
+                    this.synth.setMasterParameter("insertionEffectLock", false);
+                }
+                sendAddress(this.synth, 0x40, 0x03, 0x17, [Math.round(v)]);
+                if (isEffectLocked) {
+                    this.synth.setMasterParameter("insertionEffectLock", true);
+                }
+            }
+        });
+        effectSendsWrapper.append(reverb.div);
+        const chorus = new Meter({
+            locale: this.locale,
+            localePath:
+                LOCALE_PATH + "effectsConfig.insertion.sendLevelToChorus",
+            min: 0,
+            max: 127,
+            initialAndDefault: 0,
+            editable: true,
+            editCallback: (v) => {
+                if (isEffectLocked) {
+                    this.synth.setMasterParameter("insertionEffectLock", false);
+                }
+                sendAddress(this.synth, 0x40, 0x03, 0x18, [Math.round(v)]);
+                if (isEffectLocked) {
+                    this.synth.setMasterParameter("insertionEffectLock", true);
+                }
+            }
+        });
+        effectSendsWrapper.append(chorus.div);
+        const delay = new Meter({
+            locale: this.locale,
+            localePath:
+                LOCALE_PATH + "effectsConfig.insertion.sendLevelToDelay",
+            min: 0,
+            max: 127,
+            initialAndDefault: 0,
+            editable: true,
+            editCallback: (v) => {
+                if (isEffectLocked) {
+                    this.synth.setMasterParameter("insertionEffectLock", false);
+                }
+                sendAddress(this.synth, 0x40, 0x03, 0x19, [Math.round(v)]);
+                if (isEffectLocked) {
+                    this.synth.setMasterParameter("insertionEffectLock", true);
+                }
+            }
+        });
+        effectSendsWrapper.append(delay.div);
+
+        wrapper.append(effectSendsWrapper);
+
         // Parameters
         const params = new Map<
             number,
@@ -1844,6 +1932,9 @@ export class SynthetizerUI {
         return {
             wrapper,
             effectSelector,
+            reverb,
+            chorus,
+            delay,
             effects: params
         };
     }

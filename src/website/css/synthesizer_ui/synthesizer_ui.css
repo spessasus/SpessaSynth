@@ -57,6 +57,11 @@
     display: flex;
     flex-wrap: wrap;
 }
+@media (min-aspect-ratio: 0.8) {
+    .effect_wrapper_params.global_insertion .voice_meter {
+        min-width: 32%;
+    }
+}
 
 .synthui_port_group {
     transition: transform 0.3s ease;

@@ -289,4 +289,8 @@ export class Meter {
             this.isVisualValueSet = false;
         }
     }
+
+    public reset() {
+        this.update(this.defaultValue, true);
+    }
 }

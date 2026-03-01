@@ -29,7 +29,7 @@ export function setEventListeners(this: SynthetizerUI) {
                 for (const meter of Object.values(
                     controller.controllerMeters
                 )) {
-                    meter.update(meter.defaultValue);
+                    meter.reset();
                 }
             }
         }
