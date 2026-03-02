@@ -12,6 +12,7 @@ export type ReverbParams = Exclude<
 export type ReverbController = Record<ReverbParams, Meter> & {
     wrapper: HTMLElement;
     macro: HTMLSelectElement;
+    toggleLock: () => unknown;
 };
 export type ChorusParams = Exclude<
     Extract<EffectChangeCallback, { effect: "chorus" }>["parameter"],
@@ -20,6 +21,7 @@ export type ChorusParams = Exclude<
 export type ChorusController = Record<ChorusParams, Meter> & {
     wrapper: HTMLElement;
     macro: HTMLSelectElement;
+    toggleLock: () => unknown;
 };
 export type DelayParams = Exclude<
     Extract<EffectChangeCallback, { effect: "delay" }>["parameter"],
@@ -29,11 +31,13 @@ export type DelayParams = Exclude<
 export type DelayController = Record<DelayParams, Meter> & {
     wrapper: HTMLElement;
     macro: HTMLSelectElement;
+    toggleLock: () => unknown;
 };
 
 export interface InsertionController {
     wrapper: HTMLElement;
     effectSelector: HTMLSelectElement;
+    toggleLock: () => unknown;
     delay: Meter;
     chorus: Meter;
     reverb: Meter;

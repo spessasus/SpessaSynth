@@ -138,6 +138,7 @@ export class SynthetizerUI {
         insertion: InsertionController;
     };
     protected currentInsertionEffect;
+    protected insertionLock = false;
 
     protected ports: HTMLDivElement[] = [];
     protected portDescriptors: HTMLDivElement[] = [];
@@ -336,6 +337,20 @@ export class SynthetizerUI {
             );
             resetCCButton.addEventListener("click", () => {
                 // Unlock everything
+                this.synth.setMasterParameter("drumLock", false);
+                this.synth.setMasterParameter("customVibratoLock", false);
+                if (this.synth.getMasterParameter("reverbLock")) {
+                    this.effectControllers.reverb.toggleLock();
+                }
+                if (this.synth.getMasterParameter("chorusLock")) {
+                    this.effectControllers.chorus.toggleLock();
+                }
+                if (this.synth.getMasterParameter("delayLock")) {
+                    this.effectControllers.delay.toggleLock();
+                }
+                if (this.synth.getMasterParameter("insertionEffectLock")) {
+                    this.effectControllers.insertion.toggleLock();
+                }
                 for (const [number, channel] of this.controllers.entries()) {
                     if (channel.pitchWheel.isLocked) {
                         channel.pitchWheel.toggleLock();
@@ -1482,6 +1497,9 @@ export class SynthetizerUI {
             const chanAddress = [
                 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 10, 11, 12, 13, 14, 15
             ][ch];
+            if (this.insertionLock) {
+                this.synth.setMasterParameter("insertionEffectLock", false);
+            }
             sendAddress(
                 this.synth,
                 0x40,
@@ -1490,6 +1508,9 @@ export class SynthetizerUI {
                 isFX ? [1] : [0],
                 offset
             );
+            if (this.insertionLock) {
+                this.synth.setMasterParameter("insertionEffectLock", true);
+            }
         });
         controller.append(insertionEffectButton);
 
@@ -1767,8 +1788,6 @@ export class SynthetizerUI {
         typeLockWrapper.style.flexWrap = "wrap";
         wrapper.append(typeLockWrapper);
 
-        let isEffectLocked = false;
-
         // Effect selector
         const effectSelector = document.createElement("select");
         effectSelector.classList.add("synthui_button");
@@ -1780,7 +1799,7 @@ export class SynthetizerUI {
         }
         effectSelector.addEventListener("change", () => {
             const v = Number.parseInt(effectSelector.value);
-            if (isEffectLocked) {
+            if (this.insertionLock) {
                 this.synth.setMasterParameter("insertionEffectLock", false);
             }
 
@@ -1788,7 +1807,7 @@ export class SynthetizerUI {
             const lsb = v & 0x7f;
 
             sendAddress(this.synth, 0x40, 0x03, 0x00, [msb, lsb]);
-            if (isEffectLocked) {
+            if (this.insertionLock) {
                 this.synth.setMasterParameter("insertionEffectLock", true);
             }
         });
@@ -1807,14 +1826,15 @@ export class SynthetizerUI {
             "title",
             LOCALE_PATH + "effectsConfig.toggleLock.description"
         );
-        lock.addEventListener("click", () => {
-            isEffectLocked = !isEffectLocked;
+        const toggleLock = () => {
+            this.insertionLock = !this.insertionLock;
             this.synth.setMasterParameter(
                 "insertionEffectLock",
-                isEffectLocked
+                this.insertionLock
             );
-            lock.style.color = isEffectLocked ? "red" : "";
-        });
+            lock.style.color = this.insertionLock ? "red" : "";
+        };
+        lock.addEventListener("click", toggleLock);
         typeLockWrapper.append(lock);
 
         // Effect sends
@@ -1832,11 +1852,11 @@ export class SynthetizerUI {
             initialAndDefault: 40,
             editable: true,
             editCallback: (v) => {
-                if (isEffectLocked) {
+                if (this.insertionLock) {
                     this.synth.setMasterParameter("insertionEffectLock", false);
                 }
                 sendAddress(this.synth, 0x40, 0x03, 0x17, [Math.round(v)]);
-                if (isEffectLocked) {
+                if (this.insertionLock) {
                     this.synth.setMasterParameter("insertionEffectLock", true);
                 }
             }
@@ -1851,11 +1871,11 @@ export class SynthetizerUI {
             initialAndDefault: 0,
             editable: true,
             editCallback: (v) => {
-                if (isEffectLocked) {
+                if (this.insertionLock) {
                     this.synth.setMasterParameter("insertionEffectLock", false);
                 }
                 sendAddress(this.synth, 0x40, 0x03, 0x18, [Math.round(v)]);
-                if (isEffectLocked) {
+                if (this.insertionLock) {
                     this.synth.setMasterParameter("insertionEffectLock", true);
                 }
             }
@@ -1870,11 +1890,11 @@ export class SynthetizerUI {
             initialAndDefault: 0,
             editable: true,
             editCallback: (v) => {
-                if (isEffectLocked) {
+                if (this.insertionLock) {
                     this.synth.setMasterParameter("insertionEffectLock", false);
                 }
                 sendAddress(this.synth, 0x40, 0x03, 0x19, [Math.round(v)]);
-                if (isEffectLocked) {
+                if (this.insertionLock) {
                     this.synth.setMasterParameter("insertionEffectLock", true);
                 }
             }
@@ -1903,14 +1923,14 @@ export class SynthetizerUI {
                     initialAndDefault: param.d,
                     editable: true,
                     editCallback: (v) => {
-                        if (isEffectLocked) {
+                        if (this.insertionLock) {
                             this.synth.setMasterParameter(
                                 "insertionEffectLock",
                                 false
                             );
                         }
                         sendAddress(this.synth, 0x40, 0x03, a, [Math.round(v)]);
-                        if (isEffectLocked) {
+                        if (this.insertionLock) {
                             this.synth.setMasterParameter(
                                 "insertionEffectLock",
                                 true
@@ -1935,6 +1955,7 @@ export class SynthetizerUI {
             reverb,
             chorus,
             delay,
+            toggleLock,
             effects: params
         };
     }
@@ -1947,6 +1968,7 @@ export class SynthetizerUI {
     ): Record<K, Meter> & {
         wrapper: HTMLElement;
         macro: HTMLSelectElement;
+        toggleLock: () => unknown;
     } {
         const wrapper = document.createElement("div");
         wrapper.classList.add("effect_wrapper", "hidden");
@@ -2003,7 +2025,8 @@ export class SynthetizerUI {
             macroSelector.append(opt);
         }
         const a = data.macroAddress;
-        macroSelector.addEventListener("change", () => {
+
+        const toggleLock = () => {
             const v = Number.parseInt(macroSelector.value);
             if (isEffectLocked) {
                 this.synth.setMasterParameter(data.lockName, false);
@@ -2013,7 +2036,9 @@ export class SynthetizerUI {
             if (isEffectLocked) {
                 this.synth.setMasterParameter(data.lockName, true);
             }
-        });
+        };
+
+        macroSelector.addEventListener("change", toggleLock);
         macroLockWrapper.append(macroSelector);
 
         // Lock
@@ -2069,7 +2094,8 @@ export class SynthetizerUI {
         return {
             ...(r as Record<K, Meter>),
             wrapper,
-            macro: macroSelector
+            macro: macroSelector,
+            toggleLock
         };
     }
 

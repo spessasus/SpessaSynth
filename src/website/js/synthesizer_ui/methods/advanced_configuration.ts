@@ -166,11 +166,18 @@ export function showAdvancedConfiguration(this: SynthetizerUI) {
                 translatePathTitle: LOCALE_PATH + "drumEditing",
                 attributes: drumEditingAttribute,
                 listeners: {
-                    input: (e) =>
-                        this.synth.setMasterParameter(
-                            "drumLock",
-                            !(e.target as HTMLInputElement).checked
-                        )
+                    input: (e) => {
+                        const enable = !(e.target as HTMLInputElement).checked;
+                        if (enable) {
+                            this.synth.resetControllers();
+                            this.synth.setMasterParameter("drumLock", true);
+                            if (this.sequencer) {
+                                this.sequencer.currentTime -= 0.1;
+                            }
+                        } else {
+                            this.synth.setMasterParameter("drumLock", false);
+                        }
+                    }
                 }
             },
 
