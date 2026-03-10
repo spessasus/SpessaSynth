@@ -609,5 +609,104 @@ export const insertionData: InsertionEffect[] = [
                 d: 127
             }
         ]
+    },
+    {
+        name: "Auto Wah",
+        type: 0x01_21,
+        params: [
+            {
+                p: "Fil Type",
+                a: 3,
+                r: { min: 0, max: 1 },
+                d: 1,
+                td: (v) => (v === 0 ? "LowPass" : "BandPass")
+            },
+            { p: "Sens", a: 4, d: 0 },
+            { p: "Manual", a: 5, d: 68 },
+            { p: "Peak", a: 6, d: 62 },
+            {
+                p: "Rate",
+                a: 7,
+                td: (v) => `${InsertionValueConverter.rate1(v).toString()} Hz`,
+                d: 40
+            },
+            { p: "Depth", a: 8, d: 72 },
+            {
+                p: "Polarity",
+                a: 9,
+                d: 1,
+                r: { min: 0, max: 1 },
+                td: (v) => (v === 0 ? "Down" : "Up")
+            },
+            {
+                p: "Low Gain",
+                r: { min: 0x34, max: 0x4c },
+                d: 0x40,
+                a: 0x13,
+                td: (v) => `${v - 64} dB`
+            },
+            {
+                p: "Hi Gain",
+                r: { min: 0x34, max: 0x4c },
+                d: 0x40,
+                a: 0x14,
+                td: (v) => `${v - 64} dB`
+            },
+            {
+                p: "Pan",
+                a: 0x15,
+                d: 0x40,
+                r: { min: 1, max: 127 },
+                td: (v) => (v > 64 ? `R${v - 64}` : v < 64 ? `L${64 - v}` : `0`)
+            },
+            {
+                p: "Level",
+                a: 0x16,
+                d: 127
+            }
+        ]
+    },
+    {
+        name: "Auto Pan",
+        type: 0x01_26,
+        params: [
+            {
+                p: "Mod Wave",
+                a: 3,
+                r: { min: 0, max: 4 },
+                d: 1,
+                td: (v) => ["Tri", "Sqr", "Sin", "Saw1", "Saw2"][v]
+            },
+            {
+                p: "Mod Rate",
+                a: 4,
+                d: 60,
+                td: (v) => `${InsertionValueConverter.rate1(v)} Hz`
+            },
+            {
+                p: "Mod Depth",
+                a: 5,
+                d: 96
+            },
+            {
+                p: "Low Gain",
+                r: { min: 0x34, max: 0x4c },
+                d: 0x40,
+                a: 0x13,
+                td: (v) => `${v - 64} dB`
+            },
+            {
+                p: "Hi Gain",
+                r: { min: 0x34, max: 0x4c },
+                d: 0x40,
+                a: 0x14,
+                td: (v) => `${v - 64} dB`
+            },
+            {
+                p: "Level",
+                a: 0x16,
+                d: 127
+            }
+        ]
     }
 ];
