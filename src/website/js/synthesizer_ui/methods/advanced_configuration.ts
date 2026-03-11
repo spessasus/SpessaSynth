@@ -18,6 +18,18 @@ function getAttr(
     return b ? { checked: "checked" } : {};
 }
 
+export function createAdvancedConfiguration(
+    this: SynthetizerUI
+): HTMLDivElement {
+    const wrapper = document.createElement("div");
+    wrapper.classList.add("effect_wrapper", "hidden");
+    return wrapper;
+}
+
+export function showAdvancedConfigurationA(this: SynthetizerUI) {
+    return;
+}
+
 export function showAdvancedConfiguration(this: SynthetizerUI) {
     const blackMIDIAttribute = getAttr(this.synth, "blackMIDIMode");
     const monophonicRetriggerAttribute = getAttr(
@@ -219,26 +231,13 @@ export function showAdvancedConfiguration(this: SynthetizerUI) {
                 translatePathTitle: LOCALE_PATH + "effectsConfig.reverb",
                 onClick: (n) => {
                     closeNotification(n.id);
-                    // Hide all ports
-                    for (const port of this.mainControllerDiv.querySelectorAll<HTMLElement>(
-                        ".synthui_port_group"
+                    for (const el of this.mainControllerDiv.querySelectorAll<HTMLElement>(
+                        ".synthui_tab"
                     )) {
-                        port.classList.add("hidden");
+                        el.classList.add("hidden");
                     }
-                    // Hide other effects
-                    this.effectControllers.delay.wrapper.classList.add(
-                        "hidden"
-                    );
-                    this.effectControllers.chorus.wrapper.classList.add(
-                        "hidden"
-                    );
-                    this.effectControllers.insertion.wrapper.classList.add(
-                        "hidden"
-                    );
                     // Show reverb
-                    this.effectControllers.reverb.wrapper.classList.remove(
-                        "hidden"
-                    );
+                    this.tabs.reverb.wrapper.classList.remove("hidden");
                 }
             },
 
@@ -247,26 +246,13 @@ export function showAdvancedConfiguration(this: SynthetizerUI) {
                 translatePathTitle: LOCALE_PATH + "effectsConfig.chorus",
                 onClick: (n) => {
                     closeNotification(n.id);
-                    // Hide all ports
-                    for (const port of this.mainControllerDiv.querySelectorAll<HTMLElement>(
-                        ".synthui_port_group"
+                    for (const el of this.mainControllerDiv.querySelectorAll<HTMLElement>(
+                        ".synthui_tab"
                     )) {
-                        port.classList.add("hidden");
+                        el.classList.add("hidden");
                     }
-                    // Hide other effects
-                    this.effectControllers.delay.wrapper.classList.add(
-                        "hidden"
-                    );
-                    this.effectControllers.reverb.wrapper.classList.add(
-                        "hidden"
-                    );
-                    this.effectControllers.insertion.wrapper.classList.add(
-                        "hidden"
-                    );
                     // Show chorus
-                    this.effectControllers.chorus.wrapper.classList.remove(
-                        "hidden"
-                    );
+                    this.tabs.chorus.wrapper.classList.remove("hidden");
                 }
             },
 
@@ -275,26 +261,13 @@ export function showAdvancedConfiguration(this: SynthetizerUI) {
                 translatePathTitle: LOCALE_PATH + "effectsConfig.delay",
                 onClick: (n) => {
                     closeNotification(n.id);
-                    // Hide all ports
-                    for (const port of this.mainControllerDiv.querySelectorAll<HTMLElement>(
-                        ".synthui_port_group"
+                    for (const el of this.mainControllerDiv.querySelectorAll<HTMLElement>(
+                        ".synthui_tab"
                     )) {
-                        port.classList.add("hidden");
+                        el.classList.add("hidden");
                     }
-                    // Hide other effects
-                    this.effectControllers.reverb.wrapper.classList.add(
-                        "hidden"
-                    );
-                    this.effectControllers.chorus.wrapper.classList.add(
-                        "hidden"
-                    );
-                    this.effectControllers.insertion.wrapper.classList.add(
-                        "hidden"
-                    );
                     // Show delay
-                    this.effectControllers.delay.wrapper.classList.remove(
-                        "hidden"
-                    );
+                    this.tabs.delay.wrapper.classList.remove("hidden");
                 }
             },
 
@@ -303,26 +276,13 @@ export function showAdvancedConfiguration(this: SynthetizerUI) {
                 translatePathTitle: LOCALE_PATH + "effectsConfig.insertion",
                 onClick: (n) => {
                     closeNotification(n.id);
-                    // Hide all ports
-                    for (const port of this.mainControllerDiv.querySelectorAll<HTMLElement>(
-                        ".synthui_port_group"
+                    for (const el of this.mainControllerDiv.querySelectorAll<HTMLElement>(
+                        ".synthui_tab"
                     )) {
-                        port.classList.add("hidden");
+                        el.classList.add("hidden");
                     }
-                    // Hide other effects
-                    this.effectControllers.reverb.wrapper.classList.add(
-                        "hidden"
-                    );
-                    this.effectControllers.chorus.wrapper.classList.add(
-                        "hidden"
-                    );
-                    this.effectControllers.delay.wrapper.classList.add(
-                        "hidden"
-                    );
                     // Show insertion
-                    this.effectControllers.insertion.wrapper.classList.remove(
-                        "hidden"
-                    );
+                    this.tabs.insertion.wrapper.classList.remove("hidden");
                 }
             }
         ],

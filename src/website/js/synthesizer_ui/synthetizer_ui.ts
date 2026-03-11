@@ -1,4 +1,7 @@
-import { hideControllers, showControllers } from "./methods/hide_show_controllers.js";
+import {
+    hideControllers,
+    showControllers
+} from "./methods/hide_show_controllers.js";
 import { toggleDarkMode } from "./methods/toggle_dark_mode.js";
 import { setEventListeners } from "./methods/set_event_listeners.js";
 import { keybinds } from "../utils/keybinds.js";
@@ -7,15 +10,11 @@ import { closeNotification } from "../notification/notification.js";
 import {
     ALL_CHANNELS_OR_DIFFERENT_ACTION,
     DEFAULT_MASTER_PARAMETERS,
-    DEFAULT_PERCUSSION,
-    defaultMIDIControllerValues,
     type EffectChangeCallback,
     type InterpolationType,
     interpolationTypes,
     type MIDIController,
     midiControllers,
-    modulatorSources,
-    NON_CC_INDEX_OFFSET,
     type PresetList,
     type PresetListEntry
 } from "spessasynth_core";
@@ -23,8 +22,11 @@ import type { Sequencer } from "spessasynth_lib";
 import type { LocaleManager } from "../locale/locale_manager.ts";
 import type { MIDIKeyboard } from "../midi_keyboard/midi_keyboard.ts";
 import { Meter } from "./methods/synthui_meter.ts";
-import { getDrumsSvg, getEmptyMicSvg, getMicSvg, getMuteSvg, getNoteSvg, getVolumeSvg } from "../utils/icons.ts";
-import { showAdvancedConfiguration } from "./methods/advanced_configuration.ts";
+import { getEmptyMicSvg, getVolumeSvg } from "../utils/icons.ts";
+import {
+    createAdvancedConfiguration,
+    showAdvancedConfiguration
+} from "./methods/advanced_configuration.ts";
 import { Selector } from "./methods/synthui_selector.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
 import {
@@ -35,12 +37,13 @@ import {
     delayData,
     type DelayParams,
     type InsertionController,
-    insertionData,
-    type ParamType,
     type ReverbController,
     reverbData,
     type ReverbParams
 } from "./methods/effect_params.ts";
+import { createInsertionController } from "./methods/create_insertion_controller.ts";
+import { createEffectController } from "./methods/create_effect_controller.ts";
+import { appendNewController } from "./methods/append_new_controller.ts";
 
 export const MONO_ON = "<pre style='color: red;'>M</pre>";
 export const POLY_ON = "<pre>P</pre>";
@@ -69,35 +72,6 @@ export interface ChannelController {
 
 export const ICON_SIZE = 32;
 
-function sendAddress(
-    s: Synthesizer,
-    a1: number,
-    a2: number,
-    a3: number,
-    data: number[],
-    offset = 0
-) {
-    // Calculate checksum
-    // https://cdn.roland.com/assets/media/pdf/F-20_MIDI_Imple_e01_W.pdf section 4
-    const sum = a1 + a2 + a3 + data.reduce((sum, cur) => sum + cur, 0);
-    const checksum = (128 - (sum % 128)) & 0x7f;
-    s.systemExclusive(
-        [
-            0x41, // Roland
-            0x10, // Device ID (defaults to 16 on roland)
-            0x42, // GS
-            0x12, // Command ID (DT1) (whatever that means...)
-            a1,
-            a2,
-            a3,
-            ...data,
-            checksum,
-            0xf7 // End of exclusive
-        ],
-        offset
-    );
-}
-
 /**
  * Synthesizer_ui.js
  * purpose: manages the graphical user interface for the synthesizer
@@ -120,8 +94,10 @@ export class SynthetizerUI {
     protected readonly mainMeters: Meter[];
     protected readonly mainButtons: HTMLElement[];
     protected readonly mainControllerDiv: HTMLDivElement;
+    protected readonly advancedConfiguration: HTMLDivElement;
     protected controllers: ChannelController[] = [];
-    protected effectControllers: {
+    protected tabs: {
+        channels: HTMLDivElement;
         reverb: ReverbController;
         chorus: ChorusController;
         delay: DelayController;
@@ -330,16 +306,16 @@ export class SynthetizerUI {
                 this.synth.setMasterParameter("drumLock", false);
                 this.synth.setMasterParameter("customVibratoLock", false);
                 if (this.synth.getMasterParameter("reverbLock")) {
-                    this.effectControllers.reverb.toggleLock();
+                    this.tabs.reverb.toggleLock();
                 }
                 if (this.synth.getMasterParameter("chorusLock")) {
-                    this.effectControllers.chorus.toggleLock();
+                    this.tabs.chorus.toggleLock();
                 }
                 if (this.synth.getMasterParameter("delayLock")) {
-                    this.effectControllers.delay.toggleLock();
+                    this.tabs.delay.toggleLock();
                 }
                 if (this.synth.getMasterParameter("insertionEffectLock")) {
-                    this.effectControllers.insertion.toggleLock();
+                    this.tabs.insertion.toggleLock();
                 }
                 for (const [number, channel] of this.controllers.entries()) {
                     if (channel.pitchWheel.isLocked) {
@@ -596,32 +572,48 @@ export class SynthetizerUI {
             this.uiDiv.append(showControllerButton);
             controller.append(controlsWrapper);
             this.mainControllerDiv = controller;
+
+            // Advanced configuration
+            this.advancedConfiguration = createAdvancedConfiguration.call(this);
+            this.mainControllerDiv.append(this.advancedConfiguration);
         }
 
         // Create effect controllers
         {
-            const reverbController = this.createEffectController(
-                reverbData,
-                LOCALE_PATH + "effectsConfig.reverb."
-            );
+            const reverbController =
+                (createEffectController<ReverbParams>).call(
+                    this,
+                    reverbData,
+                    LOCALE_PATH + "effectsConfig.reverb."
+                );
 
-            const chorusController = this.createEffectController(
-                chorusData,
-                LOCALE_PATH + "effectsConfig.chorus."
-            );
-            const delayController = this.createEffectController(
+            const chorusController =
+                (createEffectController<ChorusParams>).call(
+                    this,
+                    chorusData,
+                    LOCALE_PATH + "effectsConfig.chorus."
+                );
+            const delayController = (createEffectController<DelayParams>).call(
+                this,
                 delayData,
                 LOCALE_PATH + "effectsConfig.delay."
             );
 
-            const insertionController = this.createInsertionController();
+            const insertionController = createInsertionController.call(this);
             this.currentInsertionEffect = insertionController.effects.get(0)!;
 
-            this.effectControllers = {
+            const channelController = document.createElement("div");
+            channelController.classList.add(
+                "main_channel_controller",
+                "synthui_tab"
+            );
+
+            this.tabs = {
                 reverb: reverbController,
                 chorus: chorusController,
                 delay: delayController,
-                insertion: insertionController
+                insertion: insertionController,
+                channels: channelController
             };
 
             // Set the default macros
@@ -643,6 +635,7 @@ export class SynthetizerUI {
                 value: 0,
                 parameter: "macro"
             });
+            this.mainControllerDiv.append(channelController);
             this.mainControllerDiv.append(reverbController.wrapper);
             this.mainControllerDiv.append(chorusController.wrapper);
             this.mainControllerDiv.append(delayController.wrapper);
@@ -651,7 +644,7 @@ export class SynthetizerUI {
 
         // Create channel controllers
         for (let i = 0; i < this.synth.channelsAmount; i++) {
-            this.appendNewController(i);
+            appendNewController.call(this, i);
         }
         this.setEventListeners();
 
@@ -890,636 +883,6 @@ export class SynthetizerUI {
         }
     }
 
-    protected appendNewController(channelNumber: number) {
-        let lastPortElement = this.ports[this.ports.length - 1];
-        // Port check
-        if (channelNumber % 16 === 0) {
-            // Do not add the first port
-            const portNum = Math.floor(channelNumber / 16);
-            if (portNum > 0) {
-                const portElement = document.createElement("div");
-                portElement.classList.add("synthui_port_descriptor");
-                this.locale.bindObjectProperty(
-                    portElement,
-                    "textContent",
-                    "locale.synthesizerController.port",
-                    [portNum]
-                );
-                let timeout = 0;
-                portElement.addEventListener("click", () => {
-                    const port = this.ports[portNum];
-                    clearTimeout(timeout);
-                    if (port.classList.contains("collapsed")) {
-                        port.classList.remove("hidden");
-                        timeout = window.setTimeout(() => {
-                            port.classList.remove("collapsed");
-                        }, ANIMATION_REFLOW_TIME);
-                    } else {
-                        port.classList.add("collapsed");
-                        timeout = window.setTimeout(() => {
-                            port.classList.add("hidden");
-                        }, 350);
-                    }
-                });
-
-                // This gets added to the main div, not the port group, to allow closing
-                this.mainDivWrapper.append(portElement);
-                this.portDescriptors.push(portElement);
-            }
-        }
-        const controller = this.createChannelController(channelNumber);
-        this.controllers.push(controller);
-        lastPortElement.append(controller.controller);
-
-        // Create a new port group if needed
-        if (channelNumber % 16 === 15) {
-            this.mainDivWrapper.append(lastPortElement);
-            lastPortElement = document.createElement("div");
-            lastPortElement.classList.add("synthui_port_group");
-            this.ports.push(lastPortElement);
-        }
-    }
-
-    protected createChannelController(
-        channelNumber: number
-    ): ChannelController {
-        // Controller
-        const controller = document.createElement("div");
-        controller.classList.add("channel_controller");
-
-        // Voice meter
-        const voiceMeter = new Meter({
-            color: this.channelColors[
-                channelNumber % this.channelColors.length
-            ],
-            localePath: LOCALE_PATH + "channelController.voiceMeter",
-            locale: this.locale,
-            localeArgs: [channelNumber + 1],
-            min: 0,
-            max: 100,
-            initialAndDefault: 0
-        });
-        voiceMeter.bar.classList.add("voice_meter_bar_smooth");
-        controller.append(voiceMeter.div);
-
-        // Pitch wheel
-        const pitchWheel = new Meter({
-            color: this.channelColors[
-                channelNumber % this.channelColors.length
-            ],
-            localePath: LOCALE_PATH + "channelController.pitchBendMeter",
-            locale: this.locale,
-            localeArgs: [channelNumber + 1],
-            min: -8192,
-            max: 8191,
-            initialAndDefault: 0,
-            editable: true,
-            editCallback: (val) => {
-                const meterLocked = pitchWheel.isLocked;
-                if (meterLocked) {
-                    this.synth.lockController(
-                        channelNumber,
-                        (NON_CC_INDEX_OFFSET +
-                            modulatorSources.pitchWheel) as MIDIController,
-                        false
-                    );
-                }
-                val = Math.round(val) + 8192;
-                this.synth.pitchWheel(channelNumber, val);
-                if (meterLocked) {
-                    this.synth.lockController(
-                        channelNumber,
-                        (NON_CC_INDEX_OFFSET +
-                            modulatorSources.pitchWheel) as MIDIController,
-                        true
-                    );
-                }
-            },
-            lockCallback: () =>
-                this.synth.lockController(
-                    channelNumber,
-                    (NON_CC_INDEX_OFFSET +
-                        modulatorSources.pitchWheel) as MIDIController,
-                    true
-                ),
-            unlockCallback: () =>
-                this.synth.lockController(
-                    channelNumber,
-                    (NON_CC_INDEX_OFFSET +
-                        modulatorSources.pitchWheel) as MIDIController,
-                    false
-                )
-        });
-        controller.append(pitchWheel.div);
-
-        const changeCCUserFunction = (
-            cc: MIDIController,
-            val: number,
-            meter: Meter
-        ): void => {
-            if (meter.isLocked) {
-                this.synth.lockController(channelNumber, cc, false);
-                this.synth.controllerChange(channelNumber, cc, val);
-                this.synth.lockController(channelNumber, cc, true);
-            } else {
-                this.synth.controllerChange(channelNumber, cc, val);
-            }
-        };
-
-        const controllerMeters: Partial<Record<MIDIController, Meter>> = {};
-
-        const createCCMeterHelper = (
-            ccNum: MIDIController,
-            localePath: string,
-            allowLocking = true
-        ): Meter => {
-            const meter = new Meter({
-                color: this.channelColors[
-                    channelNumber % this.channelColors.length
-                ],
-                localePath: LOCALE_PATH + localePath,
-                locale: this.locale,
-                localeArgs: [channelNumber + 1],
-                min: 0,
-                max: 127,
-                initialAndDefault: defaultMIDIControllerValues[ccNum] >> 7,
-                editable: true,
-                editCallback: (val) => {
-                    changeCCUserFunction(ccNum, Math.round(val), meter);
-                },
-                lockCallback: allowLocking
-                    ? () =>
-                          this.synth.lockController(channelNumber, ccNum, true)
-                    : undefined,
-                unlockCallback: allowLocking
-                    ? () =>
-                          this.synth.lockController(channelNumber, ccNum, false)
-                    : undefined
-            });
-            controllerMeters[ccNum] = meter;
-            return meter;
-        };
-
-        // Pan controller
-        const pan = createCCMeterHelper(
-            midiControllers.pan,
-            "channelController.panMeter"
-        );
-        controller.append(pan.div);
-
-        // Expression controller
-        const expression = createCCMeterHelper(
-            midiControllers.expressionController,
-            "channelController.expressionMeter"
-        );
-        controller.append(expression.div);
-
-        // Volume controller
-        const volume = createCCMeterHelper(
-            midiControllers.mainVolume,
-            "channelController.volumeMeter"
-        );
-        controller.append(volume.div);
-
-        // Modulation wheel
-        const modulation = createCCMeterHelper(
-            midiControllers.modulationWheel,
-            "channelController.modulationWheelMeter"
-        );
-        controller.append(modulation.div);
-
-        // Reverb
-        const reverb = createCCMeterHelper(
-            midiControllers.reverbDepth,
-            "channelController.reverbMeter"
-        );
-        controller.append(reverb.div);
-
-        // Chorus
-        const chorus = createCCMeterHelper(
-            midiControllers.chorusDepth,
-            "channelController.chorusMeter"
-        );
-        controller.append(chorus.div);
-
-        // Delay
-        const delay = createCCMeterHelper(
-            midiControllers.variationDepth,
-            "channelController.delayMeter"
-        );
-        controller.append(delay.div);
-
-        // Filter cutoff
-        const filterCutoff = createCCMeterHelper(
-            midiControllers.brightness,
-            "channelController.filterMeter"
-        );
-        controller.append(filterCutoff.div);
-
-        // Attack time
-        const attackTime = createCCMeterHelper(
-            midiControllers.attackTime,
-            "channelController.attackMeter"
-        );
-        controller.append(attackTime.div);
-
-        // Release time
-        const releaseTime = createCCMeterHelper(
-            midiControllers.releaseTime,
-            "channelController.releaseMeter"
-        );
-        controller.append(releaseTime.div);
-
-        // Decay time
-        const decayTime = createCCMeterHelper(
-            midiControllers.decayTime,
-            "channelController.decayMeter"
-        );
-        controller.append(decayTime.div);
-
-        // Portamento time
-        // Custom control to set portamento on off as well
-        const portamentoTime = new Meter({
-            color: this.channelColors[
-                channelNumber % this.channelColors.length
-            ],
-            localePath: LOCALE_PATH + "channelController.portamentoTimeMeter",
-            locale: this.locale,
-            localeArgs: [channelNumber + 1],
-            min: 0,
-            max: 127,
-            initialAndDefault: 0,
-            editable: true,
-            editCallback: (val) => {
-                const meterLocked = portamentoTime.isLocked;
-                if (meterLocked) {
-                    this.synth.lockController(
-                        channelNumber,
-                        midiControllers.portamentoTime,
-                        false
-                    );
-                    this.synth.lockController(
-                        channelNumber,
-                        midiControllers.portamentoOnOff,
-                        false
-                    );
-                }
-                this.synth.controllerChange(
-                    channelNumber,
-                    midiControllers.portamentoTime,
-                    Math.round(val)
-                );
-                this.synth.controllerChange(
-                    channelNumber,
-                    midiControllers.portamentoOnOff,
-                    val > 0 ? 127 : 0
-                );
-                if (meterLocked) {
-                    this.synth.lockController(
-                        channelNumber,
-                        midiControllers.portamentoTime,
-                        true
-                    );
-                    this.synth.lockController(
-                        channelNumber,
-                        midiControllers.portamentoOnOff,
-                        true
-                    );
-                }
-            },
-            lockCallback: () => {
-                this.synth.lockController(
-                    channelNumber,
-                    midiControllers.portamentoTime,
-                    true
-                );
-                this.synth.lockController(
-                    channelNumber,
-                    midiControllers.portamentoOnOff,
-                    true
-                );
-            },
-            unlockCallback: () => {
-                this.synth.lockController(
-                    channelNumber,
-                    midiControllers.portamentoTime,
-                    false
-                );
-                this.synth.lockController(
-                    channelNumber,
-                    midiControllers.portamentoOnOff,
-                    false
-                );
-            }
-        });
-        controllerMeters[midiControllers.portamentoTime] = portamentoTime;
-        controller.append(portamentoTime.div);
-
-        // Portamento control
-        const portamentoControl = createCCMeterHelper(
-            midiControllers.portamentoControl,
-            "channelController.portamentoControlMeter",
-            false // Don't allow locking portamento control
-        );
-        controller.append(portamentoControl.div);
-
-        // Resonance
-        const filterResonance = createCCMeterHelper(
-            midiControllers.filterResonance,
-            "channelController.resonanceMeter"
-        );
-        controller.append(filterResonance.div);
-
-        // Transpose is not a cc, add it manually
-        const transpose = new Meter({
-            color: this.channelColors[
-                channelNumber % this.channelColors.length
-            ],
-            localePath: LOCALE_PATH + "channelController.transposeMeter",
-            locale: this.locale,
-            localeArgs: [channelNumber + 1],
-            min: -36,
-            max: 36,
-            initialAndDefault: 0,
-            editable: true,
-            editCallback: (val) => {
-                val = Math.round(val);
-                this.synth.transposeChannel(channelNumber, val, true);
-                transpose.update(val);
-                this.onTranspose?.();
-            },
-            activeChangeCallback: (active) => {
-                // Do hide on multi-port files
-                if (channelNumber >= 16) {
-                    return;
-                }
-                this.setCCVisibilityStartingFrom(channelNumber + 1, !active);
-            }
-        });
-        controller.append(transpose.div);
-
-        // Preset controller
-        const presetSelector = new Selector(
-            [], // Empty for now
-            this.locale,
-            LOCALE_PATH + "channelController.presetSelector",
-            [channelNumber + 1],
-            (patch) => {
-                this.synth.lockController(
-                    channelNumber,
-                    ALL_CHANNELS_OR_DIFFERENT_ACTION,
-                    false
-                );
-                if (!patch.isGMGSDrum) {
-                    this.synth.controllerChange(
-                        channelNumber,
-                        midiControllers.bankSelect,
-                        patch.bankMSB
-                    );
-                    this.synth.controllerChange(
-                        channelNumber,
-                        midiControllers.bankSelectLSB,
-                        patch.bankLSB
-                    );
-                }
-                this.synth.programChange(channelNumber, patch.program);
-                if (this.onProgramChange) {
-                    this.onProgramChange(channelNumber);
-                }
-                presetSelector.mainButton.classList.add("locked_selector");
-                this.synth.lockController(
-                    channelNumber,
-                    ALL_CHANNELS_OR_DIFFERENT_ACTION,
-                    true
-                );
-            },
-            (locked) =>
-                this.synth.lockController(
-                    channelNumber,
-                    ALL_CHANNELS_OR_DIFFERENT_ACTION,
-                    locked
-                )
-        );
-        controller.append(presetSelector.mainButton);
-
-        // Solo button
-        const soloButton = document.createElement("div");
-        soloButton.innerHTML = getEmptyMicSvg(ICON_SIZE);
-        this.locale.bindObjectProperty(
-            soloButton,
-            "title",
-            LOCALE_PATH + "channelController.soloButton.description",
-            [channelNumber + 1]
-        );
-        soloButton.classList.add("controller_element", "mute_button");
-        soloButton.addEventListener("click", () => {
-            // Toggle solo
-            if (this.soloChannels.has(channelNumber)) {
-                this.soloChannels.delete(channelNumber);
-            } else {
-                this.soloChannels.add(channelNumber);
-            }
-            if (
-                this.soloChannels.size === 0 ||
-                this.soloChannels.size >= this.synth.channelsAmount
-            ) {
-                // No channels or all channels are soloed, unmute everything
-                for (let i = 0; i < this.synth.channelsAmount; i++) {
-                    this.controllers[i].soloButton.innerHTML =
-                        getEmptyMicSvg(ICON_SIZE);
-                    this.synth.muteChannel(
-                        i,
-                        this.controllers[i].muteButton.hasAttribute("is_muted")
-                    );
-                }
-                if (this.soloChannels.size >= this.synth.channelsAmount) {
-                    // All channels are soloed, return to normal
-                    this.soloChannels.clear();
-                }
-                return;
-            }
-            // Unmute every solo channel and mute others
-            for (let i = 0; i < this.synth.channelsAmount; i++) {
-                if (this.soloChannels.has(i)) {
-                    this.controllers[i].soloButton.innerHTML =
-                        getMicSvg(ICON_SIZE);
-                    this.synth.muteChannel(
-                        i,
-                        this.controllers[i].muteButton.hasAttribute("is_muted")
-                    );
-                } else {
-                    this.controllers[i].soloButton.innerHTML =
-                        getEmptyMicSvg(ICON_SIZE);
-                    this.synth.muteChannel(i, true);
-                }
-            }
-        });
-        controller.append(soloButton);
-
-        // Mute button
-        const muteButton = document.createElement("div");
-        muteButton.innerHTML = getVolumeSvg(ICON_SIZE);
-        this.locale.bindObjectProperty(
-            muteButton,
-            "title",
-            LOCALE_PATH + "channelController.muteButton.description",
-            [channelNumber + 1]
-        );
-        muteButton.classList.add("controller_element", "mute_button");
-        muteButton.addEventListener("click", () => {
-            if (muteButton.hasAttribute("is_muted")) {
-                // Unmute
-                muteButton.removeAttribute("is_muted");
-                const canBeUnmuted =
-                    this.soloChannels.size === 0 ||
-                    this.soloChannels.has(channelNumber);
-                this.synth.muteChannel(channelNumber, !canBeUnmuted);
-                muteButton.innerHTML = getVolumeSvg(ICON_SIZE);
-            } else {
-                // Mute
-                this.synth.muteChannel(channelNumber, true);
-                muteButton.setAttribute("is_muted", "true");
-                muteButton.innerHTML = getMuteSvg(ICON_SIZE);
-            }
-        });
-        controller.append(muteButton);
-
-        // Drums toggle
-        const drumsToggle = document.createElement("div");
-        drumsToggle.innerHTML =
-            channelNumber === DEFAULT_PERCUSSION
-                ? getDrumsSvg(ICON_SIZE)
-                : getNoteSvg(ICON_SIZE);
-        this.locale.bindObjectProperty(
-            drumsToggle,
-            "title",
-            LOCALE_PATH + "channelController.drumToggleButton.description",
-            [channelNumber + 1]
-        );
-        drumsToggle.classList.add("controller_element", "mute_button");
-        drumsToggle.addEventListener("click", () => {
-            if (
-                presetSelector.mainButton.classList.contains("locked_selector")
-            ) {
-                this.synth.lockController(
-                    channelNumber,
-                    ALL_CHANNELS_OR_DIFFERENT_ACTION,
-                    false
-                );
-                presetSelector.mainButton.classList.remove("locked_selector");
-            }
-            this.synth.setDrums(
-                channelNumber,
-                !this.synth.channelProperties[channelNumber].isDrum
-            );
-        });
-        controller.append(drumsToggle);
-
-        // Poly/mono button
-        const polyMonoButton = document.createElement("div");
-        polyMonoButton.innerHTML = POLY_ON;
-        this.locale.bindObjectProperty(
-            polyMonoButton,
-            "title",
-            LOCALE_PATH + "channelController.polyMonoButton.description",
-            [channelNumber + 1]
-        );
-        polyMonoButton.classList.add("controller_element", "mute_button");
-        polyMonoButton.setAttribute("isPoly", "true");
-        polyMonoButton.addEventListener("click", () => {
-            this.synth.lockController(
-                channelNumber,
-                midiControllers.polyModeOn,
-                false
-            );
-            this.synth.lockController(
-                channelNumber,
-                midiControllers.monoModeOn,
-                false
-            );
-            const isPoly = polyMonoButton.getAttribute("isPoly") === "true";
-            if (isPoly) {
-                this.synth.controllerChange(
-                    channelNumber,
-                    midiControllers.monoModeOn,
-                    0
-                );
-                polyMonoButton.innerHTML = MONO_ON;
-            } else {
-                this.synth.controllerChange(
-                    channelNumber,
-                    midiControllers.polyModeOn,
-                    0
-                );
-                polyMonoButton.innerHTML = POLY_ON;
-            }
-            this.synth.lockController(
-                channelNumber,
-                midiControllers.polyModeOn,
-                true
-            );
-            this.synth.lockController(
-                channelNumber,
-                midiControllers.monoModeOn,
-                true
-            );
-            polyMonoButton.setAttribute("isPoly", (!isPoly).toString());
-        });
-        controller.append(polyMonoButton);
-
-        // Insertion Effect button
-        const insertionEffectButton = document.createElement("div");
-        insertionEffectButton.innerHTML = "<pre>Fx</pre>";
-        this.locale.bindObjectProperty(
-            insertionEffectButton,
-            "title",
-            LOCALE_PATH + "channelController.insertionEffectButton.description",
-            [channelNumber + 1]
-        );
-        insertionEffectButton.classList.add(
-            "controller_element",
-            "mute_button"
-        );
-        insertionEffectButton.addEventListener("click", () => {
-            const isFX = !insertionEffectButton.classList.contains("red");
-            const ch = channelNumber % 16;
-            const offset = channelNumber - ch;
-            const chanAddress = [
-                1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 10, 11, 12, 13, 14, 15
-            ][ch];
-            if (this.insertionLock) {
-                this.synth.setMasterParameter("insertionEffectLock", false);
-            }
-            sendAddress(
-                this.synth,
-                0x40,
-                0x40 | chanAddress,
-                0x22,
-                isFX ? [1] : [0],
-                offset
-            );
-            if (this.insertionLock) {
-                this.synth.setMasterParameter("insertionEffectLock", true);
-            }
-        });
-        controller.append(insertionEffectButton);
-
-        return {
-            controller,
-            isHidingLocked: false,
-            drumsToggle,
-            voiceMeter,
-            transpose,
-            soloButton,
-            muteButton,
-            polyMonoButton,
-            insertionEffectButton,
-            preset: presetSelector,
-            controllerMeters,
-            pitchWheel
-        };
-    }
-
     protected updateVoicesAmount() {
         this.voiceMeter.update(this.synth.voicesAmount);
 
@@ -1572,52 +935,45 @@ export class SynthetizerUI {
                 }
 
                 case 0x17: {
-                    this.effectControllers.insertion.reverb.update(e.value);
+                    this.tabs.insertion.reverb.update(e.value);
                     break;
                 }
 
                 case 0x18: {
-                    this.effectControllers.insertion.chorus.update(e.value);
+                    this.tabs.insertion.chorus.update(e.value);
                     break;
                 }
                 case 0x19: {
-                    this.effectControllers.insertion.delay.update(e.value);
+                    this.tabs.insertion.delay.update(e.value);
                     break;
                 }
 
                 case 0: {
                     let targetEffect = e.value;
-                    if (
-                        !this.effectControllers.insertion.effects.get(
-                            targetEffect
-                        )
-                    ) {
+                    if (!this.tabs.insertion.effects.get(targetEffect)) {
                         // Thru
                         targetEffect = 0;
                     }
                     this.currentInsertionEffect =
-                        this.effectControllers.insertion.effects.get(
-                            targetEffect
-                        )!;
+                        this.tabs.insertion.effects.get(targetEffect)!;
 
                     // Hide all except the one we want
-                    for (const [key, param] of this.effectControllers.insertion
-                        .effects) {
+                    for (const [key, param] of this.tabs.insertion.effects) {
                         param.controllerWrapper.classList.toggle(
                             "hidden",
                             !(targetEffect === key)
                         );
                     }
-                    this.effectControllers.insertion.effectSelector.value =
+                    this.tabs.insertion.effectSelector.value =
                         targetEffect.toString();
 
                     // Reset its effects
                     for (const controller of this.currentInsertionEffect.controllers.values()) {
                         controller.reset();
                     }
-                    this.effectControllers.insertion.reverb.reset();
-                    this.effectControllers.insertion.chorus.reset();
-                    this.effectControllers.insertion.delay.reset();
+                    this.tabs.insertion.reverb.reset();
+                    this.tabs.insertion.chorus.reset();
+                    this.tabs.insertion.delay.reset();
 
                     break;
                 }
@@ -1642,7 +998,7 @@ export class SynthetizerUI {
             switch (e.effect) {
                 case "reverb": {
                     const macro = reverbData.macros[e.value];
-                    const meters = this.effectControllers.reverb;
+                    const meters = this.tabs.reverb;
                     for (const [param, value] of Object.entries(macro)) {
                         if (param === "name") {
                             continue;
@@ -1655,14 +1011,13 @@ export class SynthetizerUI {
                         }
                         meters[param as ReverbParams].update(value as number);
                     }
-                    this.effectControllers.reverb.macro.value =
-                        e.value.toString();
+                    this.tabs.reverb.macro.value = e.value.toString();
                     return;
                 }
 
                 case "chorus": {
                     const macro = chorusData.macros[e.value];
-                    const meters = this.effectControllers.chorus;
+                    const meters = this.tabs.chorus;
                     for (const [param, value] of Object.entries(macro)) {
                         if (param === "name") {
                             continue;
@@ -1675,13 +1030,12 @@ export class SynthetizerUI {
                         }
                         meters[param as ChorusParams].update(value as number);
                     }
-                    this.effectControllers.chorus.macro.value =
-                        e.value.toString();
+                    this.tabs.chorus.macro.value = e.value.toString();
                     return;
                 }
                 case "delay": {
                     const macro = delayData.macros[e.value];
-                    const meters = this.effectControllers.delay;
+                    const meters = this.tabs.delay;
                     for (const [param, value] of Object.entries(macro)) {
                         if (param === "name") {
                             continue;
@@ -1694,8 +1048,7 @@ export class SynthetizerUI {
                         }
                         meters[param as DelayParams].update(value as number);
                     }
-                    this.effectControllers.delay.macro.value =
-                        e.value.toString();
+                    this.tabs.delay.macro.value = e.value.toString();
                     return;
                 }
             }
@@ -1708,7 +1061,7 @@ export class SynthetizerUI {
                 if (!param) {
                     return;
                 }
-                this.effectControllers.reverb[e.parameter].update(e.value);
+                this.tabs.reverb[e.parameter].update(e.value);
                 return;
             }
 
@@ -1719,7 +1072,7 @@ export class SynthetizerUI {
                 if (!param) {
                     return;
                 }
-                this.effectControllers.chorus[e.parameter].update(e.value);
+                this.tabs.chorus[e.parameter].update(e.value);
                 return;
             }
             case "delay": {
@@ -1727,365 +1080,10 @@ export class SynthetizerUI {
                 if (!param) {
                     return;
                 }
-                this.effectControllers.delay[e.parameter].update(e.value);
+                this.tabs.delay[e.parameter].update(e.value);
                 return;
             }
         }
-    }
-
-    private createInsertionController(): InsertionController {
-        const insertionEffects = insertionData;
-
-        const wrapper = document.createElement("div");
-        wrapper.classList.add("effect_wrapper", "hidden");
-        // Title
-        const effectTitle = document.createElement("h2");
-        this.locale.bindObjectProperty(
-            effectTitle,
-            "textContent",
-            LOCALE_PATH + "effectsConfig.insertion.title"
-        );
-        wrapper.append(effectTitle);
-
-        // Go Back
-        const goBack = document.createElement("button");
-        goBack.classList.add("synthui_button");
-        this.locale.bindObjectProperty(
-            goBack,
-            "textContent",
-            LOCALE_PATH + "effectsConfig.goBack.title"
-        );
-        this.locale.bindObjectProperty(
-            goBack,
-            "title",
-            LOCALE_PATH + "effectsConfig.goBack.description"
-        );
-        goBack.addEventListener("click", () => {
-            // Show all ports
-            for (const port of this.mainControllerDiv.querySelectorAll<HTMLElement>(
-                ".synthui_port_group"
-            )) {
-                port.classList.remove("hidden");
-            }
-            // Hide this
-            wrapper.classList.add("hidden");
-        });
-        wrapper.append(goBack);
-
-        // Type/lock wrapper
-        const typeLockWrapper = document.createElement("div");
-        typeLockWrapper.style.display = "flex";
-        typeLockWrapper.style.flexWrap = "wrap";
-        wrapper.append(typeLockWrapper);
-
-        // Effect selector
-        const effectSelector = document.createElement("select");
-        effectSelector.classList.add("synthui_button");
-        for (const insertionEffect of insertionEffects) {
-            const opt = document.createElement("option");
-            opt.textContent = insertionEffect.name;
-            opt.value = insertionEffect.type.toString();
-            effectSelector.append(opt);
-        }
-        effectSelector.addEventListener("change", () => {
-            const v = Number.parseInt(effectSelector.value);
-            if (this.insertionLock) {
-                this.synth.setMasterParameter("insertionEffectLock", false);
-            }
-
-            const msb = (v >> 8) & 0x7f;
-            const lsb = v & 0x7f;
-
-            sendAddress(this.synth, 0x40, 0x03, 0x00, [msb, lsb]);
-            if (this.insertionLock) {
-                this.synth.setMasterParameter("insertionEffectLock", true);
-            }
-        });
-        typeLockWrapper.append(effectSelector);
-
-        // Lock
-        const lock = document.createElement("button");
-        lock.classList.add("synthui_button");
-        this.locale.bindObjectProperty(
-            lock,
-            "textContent",
-            LOCALE_PATH + "effectsConfig.toggleLock.title"
-        );
-        this.locale.bindObjectProperty(
-            lock,
-            "title",
-            LOCALE_PATH + "effectsConfig.toggleLock.description"
-        );
-        const toggleLock = () => {
-            this.insertionLock = !this.insertionLock;
-            this.synth.setMasterParameter(
-                "insertionEffectLock",
-                this.insertionLock
-            );
-            lock.style.color = this.insertionLock ? "red" : "";
-        };
-        lock.addEventListener("click", toggleLock);
-        typeLockWrapper.append(lock);
-
-        // Effect sends
-        const effectSendsWrapper = document.createElement("div");
-        effectSendsWrapper.classList.add(
-            "effect_wrapper_params",
-            "global_insertion"
-        );
-        const reverb = new Meter({
-            locale: this.locale,
-            localePath:
-                LOCALE_PATH + "effectsConfig.insertion.sendLevelToReverb",
-            min: 0,
-            max: 127,
-            initialAndDefault: 40,
-            editable: true,
-            editCallback: (v) => {
-                if (this.insertionLock) {
-                    this.synth.setMasterParameter("insertionEffectLock", false);
-                }
-                sendAddress(this.synth, 0x40, 0x03, 0x17, [Math.round(v)]);
-                if (this.insertionLock) {
-                    this.synth.setMasterParameter("insertionEffectLock", true);
-                }
-            }
-        });
-        effectSendsWrapper.append(reverb.div);
-        const chorus = new Meter({
-            locale: this.locale,
-            localePath:
-                LOCALE_PATH + "effectsConfig.insertion.sendLevelToChorus",
-            min: 0,
-            max: 127,
-            initialAndDefault: 0,
-            editable: true,
-            editCallback: (v) => {
-                if (this.insertionLock) {
-                    this.synth.setMasterParameter("insertionEffectLock", false);
-                }
-                sendAddress(this.synth, 0x40, 0x03, 0x18, [Math.round(v)]);
-                if (this.insertionLock) {
-                    this.synth.setMasterParameter("insertionEffectLock", true);
-                }
-            }
-        });
-        effectSendsWrapper.append(chorus.div);
-        const delay = new Meter({
-            locale: this.locale,
-            localePath:
-                LOCALE_PATH + "effectsConfig.insertion.sendLevelToDelay",
-            min: 0,
-            max: 127,
-            initialAndDefault: 0,
-            editable: true,
-            editCallback: (v) => {
-                if (this.insertionLock) {
-                    this.synth.setMasterParameter("insertionEffectLock", false);
-                }
-                sendAddress(this.synth, 0x40, 0x03, 0x19, [Math.round(v)]);
-                if (this.insertionLock) {
-                    this.synth.setMasterParameter("insertionEffectLock", true);
-                }
-            }
-        });
-        effectSendsWrapper.append(delay.div);
-
-        wrapper.append(effectSendsWrapper);
-
-        // Parameters
-        const params = new Map<
-            number,
-            { controllerWrapper: HTMLElement; controllers: Map<number, Meter> }
-        >();
-        for (const insertionEffect of insertionEffects) {
-            const controllerWrapper = document.createElement("div");
-            controllerWrapper.classList.add("effect_wrapper_params", "hidden");
-            wrapper.append(controllerWrapper);
-            const controllers = new Map<number, Meter>();
-            for (const param of insertionEffect.params) {
-                // Prevent change!
-                const a = param.a;
-                const meter = new Meter({
-                    rawText: param.p + ": ",
-                    min: param.r?.min ?? 0,
-                    max: param?.r?.max ?? 127,
-                    initialAndDefault: param.d,
-                    editable: true,
-                    editCallback: (v) => {
-                        if (this.insertionLock) {
-                            this.synth.setMasterParameter(
-                                "insertionEffectLock",
-                                false
-                            );
-                        }
-                        sendAddress(this.synth, 0x40, 0x03, a, [Math.round(v)]);
-                        if (this.insertionLock) {
-                            this.synth.setMasterParameter(
-                                "insertionEffectLock",
-                                true
-                            );
-                        }
-                    },
-                    transform: param?.td
-                });
-                controllerWrapper.append(meter.div);
-                controllers.set(param.a, meter);
-            }
-
-            params.set(insertionEffect.type, {
-                controllers,
-                controllerWrapper
-            });
-        }
-
-        return {
-            wrapper,
-            effectSelector,
-            reverb,
-            chorus,
-            delay,
-            toggleLock,
-            effects: params
-        };
-    }
-
-    private createEffectController<
-        K extends DelayParams | ChorusParams | ReverbParams
-    >(
-        data: ParamType<K>,
-        path: string
-    ): Record<K, Meter> & {
-        wrapper: HTMLElement;
-        macro: HTMLSelectElement;
-        toggleLock: () => unknown;
-    } {
-        const wrapper = document.createElement("div");
-        wrapper.classList.add("effect_wrapper", "hidden");
-        // Title
-        const effectTitle = document.createElement("h2");
-        this.locale.bindObjectProperty(
-            effectTitle,
-            "textContent",
-            path + "title"
-        );
-        wrapper.append(effectTitle);
-
-        // Go Back
-        const goBack = document.createElement("button");
-        goBack.classList.add("synthui_button");
-        this.locale.bindObjectProperty(
-            goBack,
-            "textContent",
-            LOCALE_PATH + "effectsConfig.goBack.title"
-        );
-        this.locale.bindObjectProperty(
-            goBack,
-            "title",
-            LOCALE_PATH + "effectsConfig.goBack.description"
-        );
-        goBack.addEventListener("click", () => {
-            // Show all ports
-            for (const port of this.mainControllerDiv.querySelectorAll<HTMLElement>(
-                ".synthui_port_group"
-            )) {
-                port.classList.remove("hidden");
-            }
-            // Hide this
-            wrapper.classList.add("hidden");
-        });
-        wrapper.append(goBack);
-
-        // Macro/lock wrapper
-        const macroLockWrapper = document.createElement("div");
-        macroLockWrapper.style.display = "flex";
-        macroLockWrapper.style.flexWrap = "wrap";
-        wrapper.append(macroLockWrapper);
-
-        let isEffectLocked = false;
-
-        // Macro
-        const macroSelector = document.createElement("select");
-        macroSelector.classList.add("synthui_button");
-        for (let i = 0; i < data.macros.length; i++) {
-            const macro = data.macros[i];
-            const opt = document.createElement("option");
-            opt.textContent = macro.name;
-            opt.value = i.toString();
-            macroSelector.append(opt);
-        }
-        const a = data.macroAddress;
-
-        macroSelector.addEventListener("change", () => {
-            const v = Number.parseInt(macroSelector.value);
-            if (isEffectLocked) {
-                this.synth.setMasterParameter(data.lockName, false);
-            }
-
-            sendAddress(this.synth, 0x40, 0x01, a, [v]);
-            if (isEffectLocked) {
-                this.synth.setMasterParameter(data.lockName, true);
-            }
-        });
-        macroLockWrapper.append(macroSelector);
-
-        // Lock
-        const lock = document.createElement("button");
-        lock.classList.add("synthui_button");
-        this.locale.bindObjectProperty(
-            lock,
-            "textContent",
-            LOCALE_PATH + "effectsConfig.toggleLock.title"
-        );
-        this.locale.bindObjectProperty(
-            lock,
-            "title",
-            LOCALE_PATH + "effectsConfig.toggleLock.description"
-        );
-        const toggleLock = () => {
-            isEffectLocked = !isEffectLocked;
-            this.synth.setMasterParameter(data.lockName, isEffectLocked);
-            lock.style.color = isEffectLocked ? "red" : "";
-        };
-        lock.addEventListener("click", toggleLock);
-        macroLockWrapper.append(lock);
-
-        // Parameters
-        const paramWrapper = document.createElement("div");
-        paramWrapper.classList.add("effect_wrapper_params");
-        wrapper.append(paramWrapper);
-        const r: Partial<Record<K, Meter>> = {};
-        for (const param of data.params) {
-            // Prevent change!
-            const a = param.a;
-            const meter = new Meter({
-                color: "",
-                localePath: path + param.p,
-                locale: this.locale,
-                min: param.r?.min ?? 0,
-                max: param?.r?.max ?? 127,
-                initialAndDefault: 0,
-                editable: true,
-                editCallback: (v) => {
-                    if (isEffectLocked) {
-                        this.synth.setMasterParameter(data.lockName, false);
-                    }
-                    sendAddress(this.synth, 0x40, 0x01, a, [Math.round(v)]);
-                    if (isEffectLocked) {
-                        this.synth.setMasterParameter(data.lockName, true);
-                    }
-                },
-                transform: param?.td
-            });
-            paramWrapper.append(meter.div);
-            r[param.p] = meter;
-        }
-        return {
-            ...(r as Record<K, Meter>),
-            wrapper,
-            macro: macroSelector,
-            toggleLock
-        };
     }
 
     private showCCs(ccs: MIDIController[]) {
