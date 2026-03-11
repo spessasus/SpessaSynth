@@ -1,18 +1,51 @@
 export const effectsConfig = {
-    // It has this structure due to legacy effects config
-    button: {
-        title: "Konfiguracja efektów"
-    },
-
-    goBack: {
-        title: "Powrót",
-        description: "Powrót: Wróć do kontrolerów kanału MIDI."
-    },
-
     toggleLock: {
         title: "Przełącz blokadę",
         description:
             "Przełącz blokadę: Zapobiega zmianie parametrów efektu przez dane MIDI."
+    },
+
+    misc: {
+        blackMidiMode: {
+            title: "Tryb black MIDI",
+            description:
+                "Przełącza tryb wysokiej wydajności, upraszczając wygląd i pogarszając jakość dźwięku"
+        },
+
+        msgsCutoff: {
+            title: "Ucinanie nut MSGS",
+            description:
+                "Emuluje zachowanie Microsoft GS Wavetable Synthesizer'a, które od razu ucina poprzednią nutę na tym samym klawiszu"
+        },
+
+        interpolation: {
+            description: "Wybierz metodę interpolacji",
+            linear: "Interpolacja liniowa",
+            nearestNeighbor: "Najbliższy sąsiad",
+            cubic: "Interpolacja Sześcienna"
+        },
+
+        sampleRate: {
+            title: "Częstotliwość próbkowania",
+            description: "Zmień częstotliwość próbkowania syntezatora",
+            warning:
+                "Zmiana częstotliwości próbkowania wymaga przeładowania strony. Czy na pewno chcesz kontynuować?"
+        },
+
+        voiceCap: {
+            title: "Limit głosów",
+            description: "Maksymalna ilość głosów mogąca grać jednocześnie"
+        },
+
+        drumEditing: {
+            title: "Edycja perkusji",
+            description: "Zezwól na edycję perkusji przy użyciu MIDI"
+        },
+
+        customVibrato: {
+            title: "Niestandardowe vibrato",
+            description: "Włącz niestandardowy efekt vibrato (NRPN)"
+        }
     },
 
     reverb: {

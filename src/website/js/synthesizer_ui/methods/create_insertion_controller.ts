@@ -19,27 +19,6 @@ export function createInsertionController(
     );
     wrapper.append(effectTitle);
 
-    // Go Back
-    const goBack = document.createElement("button");
-    goBack.classList.add("synthui_button");
-    this.locale.bindObjectProperty(
-        goBack,
-        "textContent",
-        LOCALE_PATH + "effectsConfig.goBack.title"
-    );
-    this.locale.bindObjectProperty(
-        goBack,
-        "title",
-        LOCALE_PATH + "effectsConfig.goBack.description"
-    );
-    goBack.addEventListener("click", () => {
-        // Show midi cc
-        this.tabs.channels.classList.remove("hidden");
-        // Hide this
-        wrapper.classList.add("hidden");
-    });
-    wrapper.append(goBack);
-
     // Type/lock wrapper
     const typeLockWrapper = document.createElement("div");
     typeLockWrapper.style.display = "flex";

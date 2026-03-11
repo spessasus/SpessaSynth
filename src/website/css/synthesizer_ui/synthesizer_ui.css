@@ -42,7 +42,7 @@
     justify-content: center;
 }
 
-.effect_wrapper * {
+.effect_wrapper > * {
     width: auto;
     margin-bottom: 1em;
 }

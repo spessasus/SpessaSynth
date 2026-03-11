@@ -1,18 +1,57 @@
 export const effectsConfig = {
-    // It has this structure due to legacy effects config
-    button: {
-        title: "Effects config"
-    },
-
-    goBack: {
-        title: "Go Back",
-        description: "Go Back: Go back to the MIDI channel controllers."
-    },
-
     toggleLock: {
         title: "Toggle Lock",
         description:
             "Toggle Lock: Prevent MIDI data from changing the effect's parameters."
+    },
+
+    misc: {
+        title: "Synthesizer configuration",
+
+        interpolation: {
+            description:
+                "Interpolation: Select the synthesizer's interpolation method",
+            linear: "Linear Interpolation",
+            nearestNeighbor: "Nearest neighbor",
+            cubic: "Cubic Interpolation"
+        },
+
+        sampleRate: {
+            title: "Sample Rate",
+            description:
+                "Sample Rate: Change the sample rate of the synthesizer",
+            warning:
+                "Changing the sample rate requires a reload of the page. Are you sure you want to continue?"
+        },
+
+        voiceCap: {
+            title: "Voice Cap",
+            description:
+                "Voice Cap: The maximum amount of voices allowed to play at once"
+        },
+
+        msgsCutoff: {
+            title: "MSGS Note Cutoff",
+            description:
+                "MSGS Note Cutoff: Immediately cuts off the previous note on the same key, emulating the Microsoft GS Wavetable Synthesizer"
+        },
+
+        blackMidiMode: {
+            title: "Black MIDI Mode",
+            description:
+                "Black MIDI Mode: Toggles the High Performance Mode, simplifying the look and killing the notes faster"
+        },
+
+        drumEditing: {
+            title: "Drum Editing",
+            description:
+                "Drum Editing: Allow editing drum instruments via MIDI system exclusive messages"
+        },
+
+        customVibrato: {
+            title: "Custom Vibrato",
+            description: "Custom Vibrato: Enable the custom NRPN vibrato"
+        }
     },
 
     reverb: {

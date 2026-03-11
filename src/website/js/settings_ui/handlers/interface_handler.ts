@@ -33,6 +33,15 @@ export function _createInterfaceSettingsHandler(this: SpessaSynthSettings) {
         this.locale.changeGlobalLocale(select.value as keyof typeof localeList);
         this.saveSettings();
     });
+
+    // Ensure that "help-translate" is not selected
+    setTimeout(() => {
+        if (select.value === "help-translate") {
+            select.value = this.locale.localeCode || "en";
+            this.saveSettings();
+        }
+    }, 100);
+
     const layoutSelect = this.htmlControls.interface.layoutSelector;
     layoutSelect.addEventListener("change", () => {
         this.changeLayout(layoutSelect.value as LayoutType);

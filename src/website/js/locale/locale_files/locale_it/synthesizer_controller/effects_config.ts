@@ -1,58 +1,55 @@
 export const effectsConfig = {
-    button: {
-        title: "Configurazione effetti",
-        description:
-            "Configura gli effetti chorus e riverbero e il vibrato personalizzato"
-    },
-    reverbConfig: {
-        title: "Configurazione riverbero",
-        description: "Configura il processore di riverbero",
-        impulseResponse: {
-            title: "Risposta all'impulso",
-            description: "Seleziona la risposta all'impulso per il riverbero convolutivo"
+    misc: {
+        title: "Configurazione",
+
+        blackMidiMode: {
+            title: "Modalità Black MIDI",
+            description:
+                "Modalità Black MIDI: Attiva/disattiva la modalità ad alte prestazioni, semplificando l'aspetto visivo e terminando le note più rapidamente"
+        },
+
+        msgsCutoff: {
+            title: "Taglio note MSGS",
+            description:
+                "Taglio note MSGS: Interrompe immediatamente la nota precedente sullo stesso tasto, emulando il Microsoft GS Wavetable Synthesizer"
+        },
+
+        interpolation: {
+            description:
+                "Seleziona il metodo di interpolazione del sintetizzatore",
+            linear: "Interpolazione lineare",
+            nearestNeighbor: "Vicino più prossimo",
+            cubic: "Interpolazione cubica"
+        },
+
+        sampleRate: {
+            title: "Frequenza di campionamento",
+            description:
+                "Cambia la frequenza di campionamento del sintetizzatore",
+            warning:
+                "Cambiare la frequenza di campionamento richiede il ricaricamento della pagina. Sei sicuro di voler continuare?"
+        },
+
+        voiceCap: {
+            title: "Limite voci",
+            description:
+                "Il numero massimo di voci consentite contemporaneamente"
+        },
+
+        customVibrato: {
+            title: "Disabilita vibrato personalizzato",
+            description:
+                "Disabilita permanentemente il vibrato personalizzato (NRPN). Ricarica il sito per riattivarlo"
         }
     },
 
-    chorusConfig: {
+    reverb: {
+        title: "Configurazione riverbero",
+        description: "Configura il processore di riverbero"
+    },
+
+    chorus: {
         title: "Configurazione chorus",
-        description: "Configura il processore di chorus",
-        nodesAmount: {
-            title: "Numero nodi",
-            description:
-                "Il numero di nodi di ritardo (per ogni canale stereo) da utilizzare"
-        },
-        defaultDelay: {
-            title: "Ritardo (s)",
-            description: "Il tempo di ritardo per il primo nodo in secondi"
-        },
-        delayVariation: {
-            title: "Incremento ritardo (s)",
-            description:
-                "L'incremento per ogni nodo di ritardo successivo al primo, in secondi"
-        },
-        stereoDifference: {
-            title: "Differenza stereo (s)",
-            description:
-                "La differenza di ritardi tra i due canali (aggiunta al canale sinistro e sottratta dal destro)"
-        },
-        oscillatorFrequency: {
-            title: "Frequenza LFO (Hz)",
-            description:
-                "La frequenza LFO del primo nodo di ritardo, in Hz. L'LFO controlla il tempo di ritardo."
-        },
-        frequencyVariation: {
-            title: "Incremento LFO (Hz)",
-            description:
-                "L'incremento per la frequenza di ogni LFO successivo al primo, in Hz"
-        },
-        oscillatorGain: {
-            title: "Guadagno LFO (s)",
-            description:
-                "Quanto l'LFO altererà il ritardo nei nodi di ritardo, in secondi"
-        },
-        apply: {
-            title: "Applica",
-            description: "Applica le impostazioni selezionate"
-        }
+        description: "Configura il processore di chorus"
     }
 };

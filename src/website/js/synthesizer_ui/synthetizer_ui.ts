@@ -11,8 +11,6 @@ import {
     ALL_CHANNELS_OR_DIFFERENT_ACTION,
     DEFAULT_MASTER_PARAMETERS,
     type EffectChangeCallback,
-    type InterpolationType,
-    interpolationTypes,
     type MIDIController,
     midiControllers,
     type PresetList,
@@ -23,10 +21,7 @@ import type { LocaleManager } from "../locale/locale_manager.ts";
 import type { MIDIKeyboard } from "../midi_keyboard/midi_keyboard.ts";
 import { Meter } from "./methods/synthui_meter.ts";
 import { getEmptyMicSvg, getVolumeSvg } from "../utils/icons.ts";
-import {
-    createAdvancedConfiguration,
-    showAdvancedConfiguration
-} from "./methods/advanced_configuration.ts";
+import { createAdvancedConfiguration } from "./methods/create_advanced_configuration.ts";
 import { Selector } from "./methods/synthui_selector.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
 import {
@@ -94,10 +89,16 @@ export class SynthetizerUI {
     protected readonly mainMeters: Meter[];
     protected readonly mainButtons: HTMLElement[];
     protected readonly mainControllerDiv: HTMLDivElement;
-    protected readonly advancedConfiguration: HTMLDivElement;
     protected controllers: ChannelController[] = [];
-    protected tabs: {
-        channels: HTMLDivElement;
+    protected readonly tabs: {
+        channels: HTMLElement;
+        reverb: HTMLElement;
+        chorus: HTMLElement;
+        delay: HTMLElement;
+        insertion: HTMLElement;
+        configuration: HTMLElement;
+    };
+    protected readonly effectConfigs: {
         reverb: ReverbController;
         chorus: ChorusController;
         delay: DelayController;
@@ -306,16 +307,16 @@ export class SynthetizerUI {
                 this.synth.setMasterParameter("drumLock", false);
                 this.synth.setMasterParameter("customVibratoLock", false);
                 if (this.synth.getMasterParameter("reverbLock")) {
-                    this.tabs.reverb.toggleLock();
+                    this.effectConfigs.reverb.toggleLock();
                 }
                 if (this.synth.getMasterParameter("chorusLock")) {
-                    this.tabs.chorus.toggleLock();
+                    this.effectConfigs.chorus.toggleLock();
                 }
                 if (this.synth.getMasterParameter("delayLock")) {
-                    this.tabs.delay.toggleLock();
+                    this.effectConfigs.delay.toggleLock();
                 }
                 if (this.synth.getMasterParameter("insertionEffectLock")) {
-                    this.tabs.insertion.toggleLock();
+                    this.effectConfigs.insertion.toggleLock();
                 }
                 for (const [number, channel] of this.controllers.entries()) {
                     if (channel.pitchWheel.isLocked) {
@@ -395,28 +396,6 @@ export class SynthetizerUI {
                 this.setOnlyUsedControllersVisible(this.showOnlyUsedEnabled);
             });
 
-            // Advanced config
-            const advancedConfigurationButton =
-                document.createElement("button");
-            this.locale.bindObjectProperty(
-                advancedConfigurationButton,
-                "textContent",
-                LOCALE_PATH + "advancedConfiguration.title"
-            );
-            this.locale.bindObjectProperty(
-                advancedConfigurationButton,
-                "title",
-                LOCALE_PATH + "advancedConfiguration.description"
-            );
-            advancedConfigurationButton.classList.add(
-                "synthui_button",
-                "main_controller_element"
-            );
-            advancedConfigurationButton.addEventListener(
-                "click",
-                showAdvancedConfiguration.bind(this)
-            );
-
             // Shown CC group selector
             const groupSelector = document.createElement("select");
             groupSelector.classList.add(
@@ -453,65 +432,90 @@ export class SynthetizerUI {
             this.groupSelector = groupSelector;
 
             /**
-             * Interpolation type
+             * Tab selector
              */
-            const interpolation = document.createElement("select");
-            interpolation.classList.add(
+            const tabSelector = document.createElement("select");
+            tabSelector.classList.add(
                 "main_controller_element",
                 "synthui_button"
             );
+
             this.locale.bindObjectProperty(
-                interpolation,
+                tabSelector,
                 "title",
-                LOCALE_PATH + "interpolation.description"
+                LOCALE_PATH + "tabs.description"
             );
 
-            // Interpolation types
+            // Tabs
             {
-                /**
-                 * Linear (default)
-                 */
-                const linear = document.createElement("option");
-                linear.value = interpolationTypes.linear.toString();
+                // MIDI Channels (default)
+                const channels = document.createElement("option");
+                channels.value = "channels";
                 this.locale.bindObjectProperty(
-                    linear,
+                    channels,
                     "textContent",
-                    LOCALE_PATH + "interpolation.linear"
+                    LOCALE_PATH + "tabs.channels"
                 );
-                interpolation.append(linear);
+                tabSelector.append(channels);
 
-                /**
-                 * Nearest neighbor
-                 */
-                const nearest = document.createElement("option");
-                nearest.value = interpolationTypes.nearestNeighbor.toString();
+                // Configuration
+                const configuration = document.createElement("option");
+                configuration.value = "configuration";
                 this.locale.bindObjectProperty(
-                    nearest,
+                    configuration,
                     "textContent",
-                    LOCALE_PATH + "interpolation.nearestNeighbor"
+                    LOCALE_PATH + "tabs.configuration"
                 );
-                interpolation.append(nearest);
+                tabSelector.append(configuration);
 
-                /**
-                 * Cubic (default)
-                 */
-                const cubic = document.createElement("option");
-                cubic.value = interpolationTypes.hermite.toString();
-                cubic.selected = true;
+                // Reverb
+                const reverb = document.createElement("option");
+                reverb.value = "reverb";
                 this.locale.bindObjectProperty(
-                    cubic,
+                    reverb,
                     "textContent",
-                    LOCALE_PATH + "interpolation.cubic"
+                    LOCALE_PATH + "tabs.reverb"
                 );
-                interpolation.append(cubic);
+                tabSelector.append(reverb);
 
-                interpolation.addEventListener("change", () => {
-                    this.synth.setMasterParameter(
-                        "interpolationType",
-                        Number.parseInt(
-                            interpolation.value
-                        ) as InterpolationType
-                    );
+                // Chorus
+                const chorus = document.createElement("option");
+                chorus.value = "chorus";
+                this.locale.bindObjectProperty(
+                    chorus,
+                    "textContent",
+                    LOCALE_PATH + "tabs.chorus"
+                );
+                tabSelector.append(chorus);
+
+                // Delay
+                const delay = document.createElement("option");
+                delay.value = "delay";
+                this.locale.bindObjectProperty(
+                    delay,
+                    "textContent",
+                    LOCALE_PATH + "tabs.delay"
+                );
+                tabSelector.append(delay);
+
+                const insertion = document.createElement("option");
+                insertion.value = "insertion";
+                this.locale.bindObjectProperty(
+                    insertion,
+                    "textContent",
+                    LOCALE_PATH + "tabs.insertion"
+                );
+                tabSelector.append(insertion);
+
+                tabSelector.addEventListener("change", () => {
+                    const selectedTab =
+                        tabSelector.value as keyof typeof this.tabs;
+                    for (const el of this.mainControllerDiv.querySelectorAll<HTMLElement>(
+                        ".synthui_tab"
+                    )) {
+                        el.classList.add("hidden");
+                    }
+                    this.tabs[selectedTab].classList.remove("hidden");
                 });
             }
 
@@ -548,9 +552,8 @@ export class SynthetizerUI {
             controlsWrapper.append(midiPanicButton);
             controlsWrapper.append(resetCCButton);
             controlsWrapper.append(showOnlyUsedButton);
-            controlsWrapper.append(advancedConfigurationButton);
+            controlsWrapper.append(tabSelector);
             controlsWrapper.append(groupSelector);
-            controlsWrapper.append(interpolation);
 
             this.mainMeters = [
                 this.volumeController,
@@ -562,23 +565,18 @@ export class SynthetizerUI {
                 midiPanicButton,
                 resetCCButton,
                 showOnlyUsedButton,
-                advancedConfigurationButton,
+                tabSelector,
                 groupSelector,
-                showControllerButton,
-                interpolation
+                showControllerButton
             ];
             // Main synth div
             this.uiDiv.append(this.voiceMeter.div);
             this.uiDiv.append(showControllerButton);
             controller.append(controlsWrapper);
             this.mainControllerDiv = controller;
-
-            // Advanced configuration
-            this.advancedConfiguration = createAdvancedConfiguration.call(this);
-            this.mainControllerDiv.append(this.advancedConfiguration);
         }
 
-        // Create effect controllers
+        // Create tabs
         {
             const reverbController =
                 (createEffectController<ReverbParams>).call(
@@ -608,12 +606,23 @@ export class SynthetizerUI {
                 "synthui_tab"
             );
 
-            this.tabs = {
+            // Advanced configuration
+            const configuration = createAdvancedConfiguration.call(this);
+
+            this.effectConfigs = {
                 reverb: reverbController,
                 chorus: chorusController,
                 delay: delayController,
-                insertion: insertionController,
-                channels: channelController
+                insertion: insertionController
+            };
+
+            this.tabs = {
+                reverb: reverbController.wrapper,
+                chorus: chorusController.wrapper,
+                delay: delayController.wrapper,
+                insertion: insertionController.wrapper,
+                channels: channelController,
+                configuration: configuration
             };
 
             // Set the default macros
@@ -640,6 +649,7 @@ export class SynthetizerUI {
             this.mainControllerDiv.append(chorusController.wrapper);
             this.mainControllerDiv.append(delayController.wrapper);
             this.mainControllerDiv.append(insertionController.wrapper);
+            this.mainControllerDiv.append(this.tabs.configuration);
         }
 
         // Create channel controllers
@@ -682,43 +692,6 @@ export class SynthetizerUI {
                     this.synth.stopAll(true);
                     break;
                 }
-            }
-        });
-
-        // Add event listener for locale change
-        this.locale.onLocaleChanged.push(() => {
-            // Reload all meters
-            // global meters
-            this.voiceMeter.update(this.voiceMeter.currentValue, true);
-            this.volumeController.update(
-                this.volumeController.currentValue,
-                true
-            );
-            this.panController.update(this.panController.currentValue, true);
-            this.panController.update(this.panController.currentValue, true);
-            this.transposeController.update(
-                this.transposeController.currentValue,
-                true
-            );
-            // Channel controller meters
-            for (const controller of this.controllers) {
-                controller.voiceMeter.update(
-                    controller.voiceMeter.currentValue,
-                    true
-                );
-                controller.pitchWheel.update(
-                    controller.pitchWheel.currentValue,
-                    true
-                );
-                for (const meter of Object.values(
-                    controller.controllerMeters
-                )) {
-                    meter.update(meter.currentValue, true);
-                }
-                controller.transpose.update(
-                    controller.transpose.currentValue,
-                    true
-                );
             }
         });
 
@@ -921,6 +894,7 @@ export class SynthetizerUI {
     }
 
     protected handleEffectChange(e: EffectChangeCallback) {
+        const fx = this.effectConfigs;
         if (e.effect === "insertion") {
             switch (e.parameter) {
                 default: {
@@ -935,45 +909,44 @@ export class SynthetizerUI {
                 }
 
                 case 0x17: {
-                    this.tabs.insertion.reverb.update(e.value);
+                    fx.insertion.reverb.update(e.value);
                     break;
                 }
 
                 case 0x18: {
-                    this.tabs.insertion.chorus.update(e.value);
+                    fx.insertion.chorus.update(e.value);
                     break;
                 }
                 case 0x19: {
-                    this.tabs.insertion.delay.update(e.value);
+                    fx.insertion.delay.update(e.value);
                     break;
                 }
 
                 case 0: {
                     let targetEffect = e.value;
-                    if (!this.tabs.insertion.effects.get(targetEffect)) {
+                    if (!fx.insertion.effects.get(targetEffect)) {
                         // Thru
                         targetEffect = 0;
                     }
                     this.currentInsertionEffect =
-                        this.tabs.insertion.effects.get(targetEffect)!;
+                        fx.insertion.effects.get(targetEffect)!;
 
                     // Hide all except the one we want
-                    for (const [key, param] of this.tabs.insertion.effects) {
+                    for (const [key, param] of fx.insertion.effects) {
                         param.controllerWrapper.classList.toggle(
                             "hidden",
                             !(targetEffect === key)
                         );
                     }
-                    this.tabs.insertion.effectSelector.value =
-                        targetEffect.toString();
+                    fx.insertion.effectSelector.value = targetEffect.toString();
 
                     // Reset its effects
                     for (const controller of this.currentInsertionEffect.controllers.values()) {
                         controller.reset();
                     }
-                    this.tabs.insertion.reverb.reset();
-                    this.tabs.insertion.chorus.reset();
-                    this.tabs.insertion.delay.reset();
+                    fx.insertion.reverb.reset();
+                    fx.insertion.chorus.reset();
+                    fx.insertion.delay.reset();
 
                     break;
                 }
@@ -998,7 +971,7 @@ export class SynthetizerUI {
             switch (e.effect) {
                 case "reverb": {
                     const macro = reverbData.macros[e.value];
-                    const meters = this.tabs.reverb;
+                    const meters = fx.reverb;
                     for (const [param, value] of Object.entries(macro)) {
                         if (param === "name") {
                             continue;
@@ -1011,13 +984,13 @@ export class SynthetizerUI {
                         }
                         meters[param as ReverbParams].update(value as number);
                     }
-                    this.tabs.reverb.macro.value = e.value.toString();
+                    meters.macro.value = e.value.toString();
                     return;
                 }
 
                 case "chorus": {
                     const macro = chorusData.macros[e.value];
-                    const meters = this.tabs.chorus;
+                    const meters = fx.chorus;
                     for (const [param, value] of Object.entries(macro)) {
                         if (param === "name") {
                             continue;
@@ -1030,12 +1003,12 @@ export class SynthetizerUI {
                         }
                         meters[param as ChorusParams].update(value as number);
                     }
-                    this.tabs.chorus.macro.value = e.value.toString();
+                    meters.macro.value = e.value.toString();
                     return;
                 }
                 case "delay": {
                     const macro = delayData.macros[e.value];
-                    const meters = this.tabs.delay;
+                    const meters = fx.delay;
                     for (const [param, value] of Object.entries(macro)) {
                         if (param === "name") {
                             continue;
@@ -1048,7 +1021,7 @@ export class SynthetizerUI {
                         }
                         meters[param as DelayParams].update(value as number);
                     }
-                    this.tabs.delay.macro.value = e.value.toString();
+                    meters.macro.value = e.value.toString();
                     return;
                 }
             }
@@ -1061,7 +1034,7 @@ export class SynthetizerUI {
                 if (!param) {
                     return;
                 }
-                this.tabs.reverb[e.parameter].update(e.value);
+                fx.reverb[e.parameter].update(e.value);
                 return;
             }
 
@@ -1072,7 +1045,7 @@ export class SynthetizerUI {
                 if (!param) {
                     return;
                 }
-                this.tabs.chorus[e.parameter].update(e.value);
+                fx.chorus[e.parameter].update(e.value);
                 return;
             }
             case "delay": {
@@ -1080,7 +1053,7 @@ export class SynthetizerUI {
                 if (!param) {
                     return;
                 }
-                this.tabs.delay[e.parameter].update(e.value);
+                fx.delay[e.parameter].update(e.value);
                 return;
             }
         }

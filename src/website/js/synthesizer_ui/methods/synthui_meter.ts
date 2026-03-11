@@ -56,7 +56,6 @@ export interface MeterOptions {
 }
 
 export class Meter {
-    public meterText = "";
     public readonly defaultValue;
     public isLocked = true;
     public readonly div: HTMLDivElement;
@@ -108,7 +107,7 @@ export class Meter {
         if (locale) {
             locale.bindObjectProperty(this, "meterText", localePath + ".title");
         } else {
-            this.meterText = rawText;
+            this._meterText = rawText;
         }
         this.min = min;
         this.max = max;
@@ -220,6 +219,17 @@ export class Meter {
         this.update(initialAndDefault);
     }
 
+    private _meterText = "";
+
+    public get meterText(): string {
+        return this._meterText;
+    }
+
+    public set meterText(value: string) {
+        this._meterText = value;
+        this.update(this.currentValue, true);
+    }
+
     public toggleLock() {
         if (this.lockCallback === undefined) {
             // No callback, it can't be locked
@@ -255,7 +265,7 @@ export class Meter {
             );
             this.bar.style.width = `${percentage * 100}%`;
             this.text.textContent =
-                this.meterText +
+                this._meterText +
                 (Math.round(this.currentValue * 100) / 100).toString();
             this.isVisualValueSet = true;
         }
@@ -283,7 +293,7 @@ export class Meter {
             const transformed = this.transform
                 ? this.transform(v)
                 : v.toString();
-            this.text.textContent = this.meterText + transformed;
+            this.text.textContent = this._meterText + transformed;
             this.isVisualValueSet = true;
         } else {
             this.isVisualValueSet = false;

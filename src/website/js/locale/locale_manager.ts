@@ -15,10 +15,6 @@ export interface PropertyType {
 
 export class LocaleManager {
     public localeCode: LocaleCode;
-    /**
-     * Calls it when the locale has changed (no arguments)
-     */
-    public onLocaleChanged: (() => unknown)[] = [];
     private locale: Partial<CompleteLocaleTypedef>;
     private readonly fallbackLocale: CompleteLocaleTypedef;
     /**
@@ -108,9 +104,6 @@ export class LocaleManager {
         // Apply the new locale to bound elements
         for (const property of this._boundObjectProperties) {
             this._applyPropertyInternal(property);
-        }
-        for (const loc of this.onLocaleChanged) {
-            loc();
         }
     }
 
