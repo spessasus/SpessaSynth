@@ -586,7 +586,7 @@ export const insertionData: InsertionEffect[] = [
             },
             {
                 p: "Mix",
-                d: 127,
+                d: 64,
                 a: 7
             },
             {
@@ -701,6 +701,94 @@ export const insertionData: InsertionEffect[] = [
                 d: 0x40,
                 a: 0x14,
                 td: (v) => `${v - 64} dB`
+            },
+            {
+                p: "Level",
+                a: 0x16,
+                d: 127
+            }
+        ]
+    },
+    {
+        name: "PH / Auto Wah",
+        type: 0x11_08,
+        params: [
+            {
+                p: "PH:Manual",
+                d: 36,
+                a: 3,
+                td: (v) => `${InsertionValueConverter.manual(v)} Hz`
+            },
+            {
+                p: "PH:Rate",
+                d: 16,
+                a: 4,
+                td: (v) => `${InsertionValueConverter.rate1(v)} Hz`
+            },
+            {
+                p: "PH:Depth",
+                d: 64,
+                a: 5
+            },
+            {
+                p: "PH:Reso",
+                d: 16,
+                a: 6
+            },
+            {
+                p: "PH:Mix",
+                d: 64,
+                a: 7
+            },
+            {
+                p: "PH:Pan",
+                d: 1,
+                r: { min: 1, max: 127 },
+                td: (v) =>
+                    v > 64 ? `R${v - 64}` : v < 64 ? `L${64 - v}` : `0`,
+                a: 0x12
+            },
+            {
+                p: "PH:Level",
+                d: 127,
+                a: 0x13
+            },
+
+            {
+                p: "AW:Filter",
+                a: 8,
+                r: { min: 0, max: 1 },
+                d: 1,
+                td: (v) => (v === 0 ? "LowPass" : "BandPass")
+            },
+            { p: "AW:Sens", a: 9, d: 0 },
+            { p: "AW:Manual", a: 0xa, d: 68 },
+            { p: "AW:Peak", a: 0xb, d: 62 },
+            {
+                p: "AW:Rate",
+                a: 0xc,
+                td: (v) => `${InsertionValueConverter.rate1(v).toString()} Hz`,
+                d: 40
+            },
+            { p: "AW:Depth", a: 0xd, d: 72 },
+            {
+                p: "AW:Polarity",
+                a: 0xe,
+                d: 1,
+                r: { min: 0, max: 1 },
+                td: (v) => (v === 0 ? "Down" : "Up")
+            },
+            {
+                p: "AW:Pan",
+                a: 0x14,
+                d: 127,
+                r: { min: 1, max: 127 },
+                td: (v) => (v > 64 ? `R${v - 64}` : v < 64 ? `L${64 - v}` : `0`)
+            },
+            {
+                p: "AW:Level",
+                a: 0x15,
+                d: 127
             },
             {
                 p: "Level",
