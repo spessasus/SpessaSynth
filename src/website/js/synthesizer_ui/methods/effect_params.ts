@@ -666,6 +666,50 @@ export const insertionData: InsertionEffect[] = [
             }
         ]
     },
+
+    {
+        name: "Tremolo",
+        type: 0x01_25,
+        params: [
+            {
+                p: "Mod Wave",
+                a: 3,
+                r: { min: 0, max: 4 },
+                d: 1,
+                td: (v) => ["Tri", "Sqr", "Sin", "Saw1", "Saw2"][v]
+            },
+            {
+                p: "Mod Rate",
+                a: 4,
+                d: 60,
+                td: (v) => `${InsertionValueConverter.rate1(v)} Hz`
+            },
+            {
+                p: "Mod Depth",
+                a: 5,
+                d: 96
+            },
+            {
+                p: "Low Gain",
+                r: { min: 0x34, max: 0x4c },
+                d: 0x40,
+                a: 0x13,
+                td: (v) => `${v - 64} dB`
+            },
+            {
+                p: "Hi Gain",
+                r: { min: 0x34, max: 0x4c },
+                d: 0x40,
+                a: 0x14,
+                td: (v) => `${v - 64} dB`
+            },
+            {
+                p: "Level",
+                a: 0x16,
+                d: 127
+            }
+        ]
+    },
     {
         name: "Auto Pan",
         type: 0x01_26,
