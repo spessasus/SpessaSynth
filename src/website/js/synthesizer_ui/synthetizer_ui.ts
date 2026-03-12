@@ -1,7 +1,4 @@
-import {
-    hideControllers,
-    showControllers
-} from "./methods/hide_show_controllers.js";
+import { hideControllers, showControllers } from "./methods/hide_show_controllers.js";
 import { toggleDarkMode } from "./methods/toggle_dark_mode.js";
 import { setEventListeners } from "./methods/set_event_listeners.js";
 import { keybinds } from "../utils/keybinds.js";
@@ -515,8 +512,12 @@ export class SynthetizerUI {
                     )) {
                         el.classList.add("hidden");
                     }
-                    // Hide group selector if needed
+                    // Hide group selector (and show only used) if needed
                     groupSelector.classList.toggle(
+                        "hidden",
+                        selectedTab !== "channels"
+                    );
+                    showOnlyUsedButton.classList.toggle(
                         "hidden",
                         selectedTab !== "channels"
                     );
@@ -556,8 +557,10 @@ export class SynthetizerUI {
             // Buttons
             controlsWrapper.append(midiPanicButton);
             controlsWrapper.append(resetCCButton);
-            controlsWrapper.append(showOnlyUsedButton);
             controlsWrapper.append(tabSelector);
+
+            // MIDI Channel specific
+            controlsWrapper.append(showOnlyUsedButton);
             controlsWrapper.append(groupSelector);
 
             this.mainMeters = [
