@@ -7,6 +7,7 @@ export const effectsConfig = {
 
     misc: {
         title: "Synthesizer configuration",
+        description: "Configure miscellaneous settings of the synthesizer.",
 
         interpolation: {
             description:
@@ -56,7 +57,7 @@ export const effectsConfig = {
 
     reverb: {
         title: "Reverb configuration",
-        description: "Configure the reverb processor",
+        description: "Configure how the reverb effect sounds.",
 
         level: {
             title: "Level: ",
@@ -103,7 +104,7 @@ export const effectsConfig = {
 
     chorus: {
         title: "Chorus configuration",
-        description: "Configure the chorus processor",
+        description: "Configure how the chorus effects sounds.",
 
         level: {
             title: "Level: ",
@@ -162,7 +163,7 @@ export const effectsConfig = {
 
     delay: {
         title: "Delay configuration",
-        description: "Configure the delay processor",
+        description: "Configure how the delay effect sounds.",
 
         level: {
             title: "Level: ",
@@ -238,7 +239,8 @@ export const effectsConfig = {
 
     insertion: {
         title: "Insertion Effect configuration",
-        description: "Configure or select an Insertion Effect processor",
+        description:
+            "Select the Insertion Effect and configure how it should sound.",
 
         sendLevelToReverb: {
             title: "Send Level To Reverb: ",

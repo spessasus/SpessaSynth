@@ -93,6 +93,15 @@ export function createAdvancedConfiguration(
     this.locale.bindObjectProperty(title, "textContent", LOCALE_PATH + "title");
     wrapper.append(title);
 
+    // Subtitle
+    const effectSubtitle = document.createElement("h4");
+    this.locale.bindObjectProperty(
+        effectSubtitle,
+        "textContent",
+        LOCALE_PATH + "description"
+    );
+    wrapper.append(effectSubtitle);
+
     // Buttons, selects, inputs
     {
         const paramWrapper = document.createElement("div");

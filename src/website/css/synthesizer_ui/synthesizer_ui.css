@@ -42,6 +42,14 @@
     justify-content: center;
 }
 
+.effect_wrapper h2 {
+    margin-bottom: 0 !important;
+}
+
+.effect_wrapper h4 {
+    font-style: italic;
+}
+
 .effect_wrapper > * {
     width: auto;
     margin-bottom: 1em;

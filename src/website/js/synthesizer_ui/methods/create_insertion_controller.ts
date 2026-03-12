@@ -19,6 +19,15 @@ export function createInsertionController(
     );
     wrapper.append(effectTitle);
 
+    // Subtitle
+    const effectSubtitle = document.createElement("h4");
+    this.locale.bindObjectProperty(
+        effectSubtitle,
+        "textContent",
+        LOCALE_PATH + "effectsConfig.insertion.description"
+    );
+    wrapper.append(effectSubtitle);
+
     // Type/lock wrapper
     const typeLockWrapper = document.createElement("div");
     typeLockWrapper.style.display = "flex";

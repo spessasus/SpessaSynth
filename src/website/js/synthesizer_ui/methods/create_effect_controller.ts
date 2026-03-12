@@ -26,6 +26,15 @@ export function createEffectController<
     this.locale.bindObjectProperty(effectTitle, "textContent", path + "title");
     wrapper.append(effectTitle);
 
+    // Subtitle
+    const effectSubtitle = document.createElement("h4");
+    this.locale.bindObjectProperty(
+        effectSubtitle,
+        "textContent",
+        path + "description"
+    );
+    wrapper.append(effectSubtitle);
+
     // Macro/lock wrapper
     const macroLockWrapper = document.createElement("div");
     macroLockWrapper.style.display = "flex";

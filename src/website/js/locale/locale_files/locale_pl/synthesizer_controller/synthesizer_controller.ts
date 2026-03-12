@@ -50,6 +50,16 @@ export const synthesizerControllerLocale = {
         description: "Pokazuj tylko użyte kontrolery MIDI w tym menu"
     },
 
+    tabs: {
+        description: "Karty: Wybierz, co chcesz skonfigurować",
+        channels: "Kanały MIDI",
+        reverb: "Pogłos",
+        chorus: "Chór",
+        delay: "Delay",
+        insertion: "Insertion",
+        configuration: "Konfiguracja"
+    },
+
     holdPedalDown: "Pedał podtrzymania naciśnięty (Shift)",
     port: "Port {0} (kliknij aby zmienić widoczność)",
     channelController: channelControllerLocale,

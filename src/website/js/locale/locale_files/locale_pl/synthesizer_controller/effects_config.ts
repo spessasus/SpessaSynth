@@ -6,6 +6,9 @@ export const effectsConfig = {
     },
 
     misc: {
+        title: "Konfiguracja syntezatora",
+        description: "Skonfiguruj różnorakie ustawienia syntezatora.",
+
         blackMidiMode: {
             title: "Tryb black MIDI",
             description:
@@ -50,7 +53,7 @@ export const effectsConfig = {
 
     reverb: {
         title: "Konfiguracja pogłosu",
-        description: "Skonfiguruj procesor pogłosu",
+        description: "Ustaw jak ma brzmieć efekt pogłosu.",
 
         level: {
             title: "Poziom: ",
@@ -97,7 +100,7 @@ export const effectsConfig = {
 
     chorus: {
         title: "Konfiguracja chóru",
-        description: "Skonfiguruj procesor chóru",
+        description: "Ustaw jak ma brzmieć efekt chóru.",
 
         level: {
             title: "Poziom: ",
@@ -128,35 +131,35 @@ export const effectsConfig = {
         rate: {
             title: "Rate: ",
             description:
-                "Rate: Ten parametr ustawia szybkość (częstotliwość), z jaką modulowany jest dźwięk chorusa. " +
+                "Rate: Ten parametr ustawia szybkość (częstotliwość), z jaką modulowany jest dźwięk chóru. " +
                 "Wyższe wartości powodują szybszą modulację."
         },
 
         depth: {
             title: "Głębokość: ",
             description:
-                "Głębokość: Ten parametr ustawia głębokość modulacji dźwięku chorusa. " +
+                "Głębokość: Ten parametr ustawia głębokość modulacji dźwięku chóru. " +
                 "Wyższe wartości powodują głębszą modulację."
         },
 
         sendLevelToReverb: {
             title: "Poziom wysyłki do pogłosu: ",
             description:
-                "Poziom wysyłki do pogłosu: Ten parametr ustawia ilość sygnału chorusa wysyłanego do pogłosu. " +
+                "Poziom wysyłki do pogłosu: Ten parametr ustawia ilość sygnału chóru wysyłanego do pogłosu. " +
                 "Wyższe wartości powodują wysłanie większej ilości sygnału."
         },
 
         sendLevelToDelay: {
             title: "Poziom wysyłki do delay: ",
             description:
-                "Poziom wysyłki do delay: Ten parametr ustawia ilość sygnału chorusa wysyłanego do efektu delay. " +
+                "Poziom wysyłki do delay: Ten parametr ustawia ilość sygnału chóru wysyłanego do efektu delay. " +
                 "Wyższe wartości powodują wysłanie większej ilości sygnału."
         }
     },
 
     delay: {
         title: "Konfiguracja delay",
-        description: "Skonfiguruj procesor delay",
+        description: "Ustaw jak ma brzmieć efekt delay.",
 
         level: {
             title: "Poziom: ",
@@ -225,6 +228,32 @@ export const effectsConfig = {
             title: "Poziom wysyłki do pogłosu: ",
             description:
                 "Poziom wysyłki do pogłosu: Ten parametr ustawia ilość sygnału delay wysyłanego do pogłosu. " +
+                "Wyższe wartości powodują wysłanie większej ilości sygnału."
+        }
+    },
+
+    insertion: {
+        title: "Konfiguracja efektu Insertion",
+        description: "Wybierz efekt Insertion i ustaw, jak ma on brzmieć.",
+
+        sendLevelToReverb: {
+            title: "Poziom wysyłki do pogłosu: ",
+            description:
+                "Poziom wysyłki do pogłosu: Ten parametr ustawia ilość sygnału efektu wysyłanego do pogłosu. " +
+                "Wyższe wartości powodują wysłanie większej ilości sygnału."
+        },
+
+        sendLevelToChorus: {
+            title: "Poziom wysyłki do chóru: ",
+            description:
+                "Poziom wysyłki do chóru: Ten parametr ustawia ilość sygnału efektu wysyłanego do chóru. " +
+                "Wyższe wartości powodują wysłanie większej ilości sygnału."
+        },
+
+        sendLevelToDelay: {
+            title: "Poziom wysyłki do delay: ",
+            description:
+                "Poziom wysyłki do delay: Ten parametr ustawia ilość sygnału efektu wysyłanego do efektu delay. " +
                 "Wyższe wartości powodują wysłanie większej ilości sygnału."
         }
     }
