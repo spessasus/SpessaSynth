@@ -221,6 +221,14 @@ export class Meter {
                             min,
                             max
                         };
+                        const relativeLeft = rect.left;
+                        const width = rect.width;
+                        const relative = e.clientX - relativeLeft;
+                        const percentage = Math.max(
+                            0,
+                            Math.min(1, relative / width)
+                        );
+                        editCallback(percentage * (max - min) + min);
                     } else {
                         // Other, lock it
                         this.toggleLock();
