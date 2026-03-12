@@ -560,11 +560,13 @@ export class SynthetizerUI {
             // Buttons
             controlsWrapper.append(midiPanicButton);
             controlsWrapper.append(resetCCButton);
-            controlsWrapper.append(tabSelector);
 
             // MIDI Channel specific
             controlsWrapper.append(showOnlyUsedButton);
             controlsWrapper.append(groupSelector);
+
+            // Tab selector
+            controlsWrapper.append(tabSelector);
 
             this.mainMeters = [
                 this.volumeController,
