@@ -3,5 +3,6 @@ import type { SpessaSynthSettings } from "../settings.ts";
 
 export function _saveSettings(this: SpessaSynthSettings) {
     const serialized = this.serializeSettings();
+    console.info("Saving settings!");
     window.saveSettings(serialized);
 }

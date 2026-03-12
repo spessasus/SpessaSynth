@@ -74,19 +74,24 @@ export class SpessaSynthSettings {
     protected animationId = -1;
     protected hideOnDocClick = true;
     protected topPartVisible = true;
-    protected toggleDarkMode = _toggleDarkMode.bind(this);
-    protected createInterfaceSettingsHandler =
+    protected readonly toggleDarkMode = _toggleDarkMode.bind(this);
+    protected readonly createInterfaceSettingsHandler =
         _createInterfaceSettingsHandler.bind(this);
-    protected changeLayout = _changeLayout.bind(this);
-    protected createRendererHandler = _createRendererHandler.bind(this);
-    protected setRendererMode = _setRendererMode.bind(this);
-    protected createMidiSettingsHandler = _createMidiSettingsHandler.bind(this);
-    protected createMIDIInputHandler = _createMidiInputHandler.bind(this);
-    protected createMIDIOutputHandler = _createMidiOutputHandler.bind(this);
-    protected createKeyboardHandler = _createKeyboardHandler.bind(this);
-    protected loadSettings = _loadSettings.bind(this);
-    protected serializeSettings = _serializeSettings.bind(this);
-    protected saveSettings = _saveSettings.bind(this);
+    protected readonly changeLayout = _changeLayout.bind(this);
+    protected readonly createRendererHandler =
+        _createRendererHandler.bind(this);
+    protected readonly setRendererMode = _setRendererMode.bind(this);
+    protected readonly createMidiSettingsHandler =
+        _createMidiSettingsHandler.bind(this);
+    protected readonly createMIDIInputHandler =
+        _createMidiInputHandler.bind(this);
+    protected readonly createMIDIOutputHandler =
+        _createMidiOutputHandler.bind(this);
+    protected readonly createKeyboardHandler =
+        _createKeyboardHandler.bind(this);
+    protected readonly loadSettings = _loadSettings.bind(this);
+    protected readonly serializeSettings = _serializeSettings.bind(this);
+    protected readonly saveSettings = _saveSettings.bind(this);
 
     /**
      * Creates a new instance of CustomSynth UI

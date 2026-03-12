@@ -41,28 +41,9 @@ export const synthesizerControllerLocale = {
             "Réinitialise tous les contrôleurs à leur valeur par défaut"
     },
 
-    blackMidiMode: {
-        title: "Mode Black MIDI",
-        description:
-            "Active le mode haute performance, en simplifiant l'apparence générale et en arrêtant les notes plus rapidement"
-    },
-
-    disableCustomVibrato: {
-        title: "Désactiver le vibrato personnalisé",
-        description:
-            "Désactive le vibrato personnalisé (NRPN) de manière permanente\nUn rechargement de la page web sera nécessaire pour le réactiver"
-    },
-
     helpButton: {
         title: "Aide",
         description: "Ouvre une page web pour afficher un guide"
-    },
-
-    interpolation: {
-        description: "Sélection de la méthode d'interpolation du synthétiseur",
-        linear: "Interpolation linéaire",
-        nearestNeighbor: "Aucune (valeur la plus proche)",
-        cubic: "Interpolation cubique"
     },
 
     channelController: channelControllerLocale,

@@ -42,28 +42,10 @@ export const synthesizerControllerLocale = {
             "Reset Controllers: Resets all MIDI controllers to their default values"
     },
 
-    blackMidiMode: {
-        title: "Black MIDI Mode",
-        description:
-            "Black MIDI Mode: Toggles the High Performance Mode, simplifying the look and killing the notes faster"
-    },
-
-    msgsCutoff: {
-        title: "MSGS Note Cutoff",
-        description:
-            "MSGS Note Cutoff: Immediately cuts off the previous note on the same key, emulating the Microsoft GS Wavetable Synthesizer"
-    },
-
     showOnlyUsed: {
         title: "Show Only Used",
         description:
-            "Show only the used MIDI channels in the synthesizer controller"
-    },
-
-    disableCustomVibrato: {
-        title: "Disable custom vibrato",
-        description:
-            "Disables the custom (NRPN) Vibrato permamently. Reload the website to reenable it"
+            "Show Only Used: Show only the used MIDI channels in the synthesizer controller"
     },
 
     helpButton: {
@@ -71,28 +53,14 @@ export const synthesizerControllerLocale = {
         description: "Help: Opens an external website with the usage guide"
     },
 
-    interpolation: {
-        description: "Select the synthesizer's interpolation method",
-        linear: "Linear Interpolation",
-        nearestNeighbor: "Nearest neighbor",
-        cubic: "Cubic Interpolation"
-    },
-
-    advancedConfiguration: {
-        title: "Config",
-        description: "Configure the advanced settings for the synthesizer"
-    },
-
-    sampleRate: {
-        title: "Sample rate",
-        description: "Change the sample rate of the synthesizer",
-        warning:
-            "Changing the sample rate requires a reload of the page. Are you sure you want to continue?"
-    },
-
-    voiceCap: {
-        title: "Voice cap",
-        description: "The maximum amount of voices allowed to play at once"
+    tabs: {
+        description: "Tabs: Select what to configure",
+        channels: "MIDI Channels",
+        reverb: "Reverb",
+        chorus: "Chorus",
+        delay: "Delay",
+        insertion: "Insertion",
+        configuration: "Configuration"
     },
 
     holdPedalDown: "Hold pedal is down (Shift)",

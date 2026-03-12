@@ -71,7 +71,8 @@ export const localeEnglish = {
             "Your browser ran out of memory. Consider using Firefox or SF3 soundfont instead. (see console for error).",
         noMidiSupport:
             "No MIDI ports detected, this functionality will be disabled.",
-        warning: "Warning"
+        warning: "Warning",
+        invalidMidiFile: "Invalid MIDI file:"
     },
     hideTopBar: {
         title: "Hide top bar",

@@ -336,7 +336,6 @@ export class Manager {
 
         synth.connect(this.audioDelay);
         await synth.isReady;
-        await synth.reverbProcessor?.isReady;
         await this.setSF(soundBank);
 
         // Create seq

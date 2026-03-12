@@ -32,7 +32,6 @@ export function _setRendererMode(
         waveformSettings.classList.add("hidden");
         freqSettings.classList.remove("hidden");
     }
-    this.saveSettings();
 }
 
 export function _createRendererHandler(this: SpessaSynthSettings) {
@@ -43,9 +42,11 @@ export function _createRendererHandler(this: SpessaSynthSettings) {
         this.setRendererMode(
             Number.parseInt(rendererControls.renderingMode.value)
         );
+
+        this.saveSettings();
     });
 
-    rendererControls.renderingMode.dispatchEvent(new CustomEvent("change"));
+    this.setRendererMode(Number.parseInt(rendererControls.renderingMode.value));
 
     // Note falling time
     rendererControls.noteTimeSlider.addEventListener("input", () => {

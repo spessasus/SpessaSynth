@@ -31,8 +31,44 @@
 }
 
 .main_controller_element {
-    margin-left: 0.5em;
-    margin-right: 0.5em;
+    margin: var(--synthui-margin);
+}
+
+.effect_wrapper {
+    display: flex;
+    flex-direction: column;
+    max-width: 70vw;
+    margin: auto;
+    justify-content: center;
+}
+
+.effect_wrapper h2 {
+    margin-bottom: 0 !important;
+}
+
+.effect_wrapper h4 {
+    font-style: italic;
+}
+
+.effect_wrapper > * {
+    width: auto;
+    margin-bottom: 1em;
+}
+
+@media (min-aspect-ratio: 0.8) {
+    .effect_wrapper .voice_meter {
+        min-width: 33%;
+    }
+}
+
+.effect_wrapper_params {
+    display: flex;
+    flex-wrap: wrap;
+}
+@media (min-aspect-ratio: 0.8) {
+    .effect_wrapper_params.global_insertion .voice_meter {
+        min-width: 32%;
+    }
 }
 
 .synthui_port_group {
@@ -116,6 +152,10 @@
 .mute_button pre {
     font-size: 1.5rem;
     font-weight: bold;
+}
+
+.mute_button.red pre {
+    color: red;
 }
 
 .mute_button_light * {

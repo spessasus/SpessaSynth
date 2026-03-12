@@ -1,3 +1,5 @@
+export const UPDATE_NAME = "v4.2 The Effects Update";
+
 /**
  * Note to self: make sure to update this
  */

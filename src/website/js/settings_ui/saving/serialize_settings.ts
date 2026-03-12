@@ -13,6 +13,12 @@ import type { LocaleCode } from "../../locale/locale_files/locale_list.ts";
  * @this {SpessaSynthSettings}
  */
 export function _serializeSettings(this: SpessaSynthSettings): SavedSettings {
+    // Ensure valid locale
+    const loc =
+        this.htmlControls.interface.languageSelector.value === "help-translate"
+            ? "en"
+            : (this.htmlControls.interface.languageSelector
+                  .value as LocaleCode);
     return {
         renderer: {
             renderingMode: this.renderer.rendererMode,
@@ -52,8 +58,7 @@ export function _serializeSettings(this: SpessaSynthSettings): SavedSettings {
 
         interface: {
             mode: this.mode,
-            language: this.htmlControls.interface.languageSelector
-                .value as LocaleCode,
+            language: loc,
             layout: this.htmlControls.interface.layoutSelector
                 .value as LayoutType
         }

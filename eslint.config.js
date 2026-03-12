@@ -29,7 +29,7 @@ export default tseslint.config(
                 "error",
                 "always",
                 {
-                    ignorePattern: "noinspection"
+                    ignorePattern: "noinspection|prettier"
                 }
             ],
             "@typescript-eslint/no-misused-promises": [

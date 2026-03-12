@@ -45,6 +45,12 @@ export const channelControllerLocale = {
             "Poziom Pogłosu: Aktualny efekt pogłosu na kanale {0} (kliknij prawym aby zablokować)"
     },
 
+    delayMeter: {
+        title: "Opóźnienie: ",
+        description:
+            "Poziom Opóźnienia: Aktualny efekt opóźnienia na kanale {0} (kliknij prawym aby zablokować)"
+    },
+
     filterMeter: {
         title: "Filtr: ",
         description:
@@ -125,5 +131,9 @@ export const channelControllerLocale = {
 
     polyMonoButton: {
         description: `Przełącz tryb poly/mono na kanale {0}`
+    },
+
+    insertionEffectButton: {
+        description: `Przełącz efekt Insertion na kanale {0}`
     }
 };

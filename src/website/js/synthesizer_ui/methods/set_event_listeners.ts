@@ -6,6 +6,7 @@ import {
     type SynthetizerUI
 } from "../synthetizer_ui.ts";
 import { midiControllers } from "spessasynth_core";
+import { appendNewController } from "./append_new_controller.ts";
 
 /**
  * @this {SynthetizerUI}
@@ -29,7 +30,7 @@ export function setEventListeners(this: SynthetizerUI) {
                 for (const meter of Object.values(
                     controller.controllerMeters
                 )) {
-                    meter.update(meter.defaultValue);
+                    meter.reset();
                 }
             }
         }
@@ -58,6 +59,12 @@ export function setEventListeners(this: SynthetizerUI) {
                 meter.update(value);
             }
         }
+    );
+
+    this.synth.eventHandler.addEvent(
+        "effectChange",
+        "synthui-effect-change",
+        this.handleEffectChange.bind(this)
     );
 
     this.synth.eventHandler.addEvent(
@@ -90,7 +97,7 @@ export function setEventListeners(this: SynthetizerUI) {
         "newChannel",
         "synthui-new-channel",
         () => {
-            this.appendNewController(this.controllers.length);
+            appendNewController.call(this, this.controllers.length);
             this.showControllerGroup(
                 this.groupSelector.value as ControllerGroupType
             );

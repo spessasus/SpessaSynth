@@ -76,7 +76,8 @@ export const localePolish = {
             "Twojej przeglądarce skończyła się pamięć. Rozważ użycie Firefoxa albo plików SF3. (Zobacz błąd w konsoli)",
         noMidiSupport:
             "Nie wykryto MIDI. Korzystanie z portów MIDI nie będzie dostępne.",
-        warning: "Uwaga"
+        warning: "Uwaga",
+        invalidMidiFile: "Uszkodzony plik MIDI:"
     },
 
     hideTopBar: {

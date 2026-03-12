@@ -22,7 +22,7 @@
     text-shadow: 0 0 5px white;
 }
 
-.synthui_button:active {
+.synthui_button:active:not(select) {
     filter: brightness(0.9);
     transform: scale(var(--active-scale));
 }
@@ -53,4 +53,22 @@
 .synthui_button_light:active {
     filter: brightness(0.9);
     transform: scale(var(--active-scale));
+}
+
+.synthui_input:active {
+    transform: none !important;
+}
+
+.synthui_input {
+    display: flex;
+    gap: 1rem;
+}
+
+.synthui_input input {
+    background: transparent;
+    border: none;
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+    font-size: 1rem;
+    border-radius: var(--primary-border-radius);
 }

@@ -165,6 +165,15 @@ button {
     cursor: wait;
 }
 
+.loading #update_title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 1rem;
+    font-weight: normal;
+    font-style: italic;
+}
+
 .loading .loading_icon {
     max-width: 100%;
     max-height: 100%;

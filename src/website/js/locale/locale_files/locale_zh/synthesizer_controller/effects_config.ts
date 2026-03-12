@@ -1,58 +1,49 @@
 export const effectsConfig = {
-    button: {
+    misc: {
         title: "效果器配置",
-        description:
-            "配置合唱和混响效果以及自定义颤音"
-    },
-    reverbConfig: {
-        title: "混响配置",
-        description: "配置混响处理器",
-        impulseResponse: {
-            title: "脉冲响应",
-            description: "为卷积混响选择脉冲响应"
+
+        blackMidiMode: {
+            title: "黑 MIDI 模式",
+            description:
+                "黑 MIDI 模式: 切换高性能模式，简化外观并更快地终止音符"
+        },
+
+        msgsCutoff: {
+            title: "MSGS 音符截断",
+            description:
+                "MSGS 音符截断: 立即截断同一键上的前一个音符，模拟 Microsoft GS 波表合成器"
+        },
+
+        customVibrato: {
+            title: "禁用自定义颤音",
+            description: "永久禁用自定义 (NRPN) 颤音。重新加载网站以重新启用它"
+        },
+
+        interpolation: {
+            description: "选择合成器的插值方法",
+            linear: "线性插值",
+            nearestNeighbor: "最近邻插值",
+            cubic: "三次插值"
+        },
+
+        sampleRate: {
+            title: "采样率",
+            description: "更改合成器的采样率",
+            warning: "更改采样率需要重新加载页面。您确定要继续吗？"
+        },
+
+        voiceCap: {
+            title: "发声上限",
+            description: "允许同时播放的最大发声数"
         }
+    },
+    reverb: {
+        title: "混响配置",
+        description: "配置混响处理器"
     },
 
-    chorusConfig: {
+    chorus: {
         title: "合唱配置",
-        description: "配置合唱处理器",
-        nodesAmount: {
-            title: "节点数量",
-            description:
-                "要使用的延迟节点数量（每个立体声通道）"
-        },
-        defaultDelay: {
-            title: "延迟 (秒)",
-            description: "第一个节点的延迟时间（秒）"
-        },
-        delayVariation: {
-            title: "延迟增量 (秒)",
-            description:
-                "第一个节点之后每个延迟节点的增量（秒）"
-        },
-        stereoDifference: {
-            title: "立体声差异 (秒)",
-            description:
-                "两个通道之间的延迟差异（添加到左声道并从右声道减去）"
-        },
-        oscillatorFrequency: {
-            title: "LFO 频率 (Hz)",
-            description:
-                "第一个延迟节点的 LFO 频率，单位为 Hz。LFO 控制延迟时间。"
-        },
-        frequencyVariation: {
-            title: "LFO 增量 (Hz)",
-            description:
-                "第一个 LFO 之后每个 LFO 频率的增量，单位为 Hz"
-        },
-        oscillatorGain: {
-            title: "LFO 增益 (秒)",
-            description:
-                "LFO 将在延迟节点中改变延迟的量，单位为秒"
-        },
-        apply: {
-            title: "应用",
-            description: "应用所选设置"
-        }
+        description: "配置合唱处理器"
     }
 };
