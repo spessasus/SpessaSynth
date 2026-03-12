@@ -13,7 +13,7 @@ import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { LocaleManager } from "../locale/locale_manager.js";
 
 import { BasicSoundBank } from "spessasynth_core";
-import { WHATS_NEW } from "../../changelog.js";
+import { UPDATE_NAME, WHATS_NEW } from "../../changelog.js";
 import type { LocaleCode } from "../locale/locale_files/locale_list.ts";
 import type { MIDIFile } from "../utils/drop_file_handler.ts";
 import {
@@ -60,6 +60,12 @@ const dbName = "spessasynth-db";
 const objectStoreName = "soundFontStore";
 
 let sfBuffer: ArrayBuffer | undefined = undefined;
+
+// Load update title
+const updateTitle = document.querySelector("#update_title");
+if (updateTitle) {
+    updateTitle.textContent = UPDATE_NAME;
+}
 
 // Load what's new
 const whatsNew = document.querySelector("#whats_new_content");
