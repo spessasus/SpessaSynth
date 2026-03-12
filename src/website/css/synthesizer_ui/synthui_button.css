@@ -27,7 +27,7 @@
     transform: scale(var(--active-scale));
 }
 
-.synthui_button_light {
+.light_mode .synthui_button {
     border-radius: var(--synthui-border-radius);
     background: #fff;
     border: 1px #ccc solid;
@@ -44,13 +44,13 @@
     transition: all 0.1s ease;
 }
 
-.synthui_button_light:hover {
+.light_mode .synthui_button:hover {
     cursor: pointer;
     color: #666;
     text-shadow: 0 0 5px #666;
 }
 
-.synthui_button_light:active {
+.light_mode .synthui_button:active {
     filter: brightness(0.9);
     transform: scale(var(--active-scale));
 }

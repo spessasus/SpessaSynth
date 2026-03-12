@@ -116,7 +116,7 @@
     padding: 0.5em;
 }
 
-.synthui_controller_light {
+.light_mode .synthui_controller {
     background: linear-gradient(
         115deg,
         rgb(200, 200, 200),

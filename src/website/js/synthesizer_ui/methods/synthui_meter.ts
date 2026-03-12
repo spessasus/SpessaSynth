@@ -163,6 +163,8 @@ export class Meter {
         this.div.classList.add("voice_meter", "controller_element");
         if (color !== "none" && color !== "") {
             this.div.style.borderColor = color;
+        } else {
+            this.div.classList.add("default_color");
         }
         if (locale) {
             locale.bindObjectProperty(
@@ -259,14 +261,6 @@ export class Meter {
             this.lockCallback();
         }
         this.isLocked = !this.isLocked;
-    }
-
-    public toggleMode(updateColor = false) {
-        if (updateColor) {
-            this.bar.classList.toggle("voice_meter_light_color");
-            this.div.classList.toggle("voice_meter_light_color");
-        }
-        this.text.classList.toggle("voice_meter_text_light");
     }
 
     public show() {

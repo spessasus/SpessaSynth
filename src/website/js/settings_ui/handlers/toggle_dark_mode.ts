@@ -6,8 +6,8 @@ const TC_DARK = {
     end: "#212121"
 };
 const TC_LIGHT = {
-    start: "#bbb",
-    end: "#f0f0f0"
+    start: "#ccc",
+    end: "#efefef"
 };
 
 // Font color
@@ -21,7 +21,7 @@ const TBC_DARK = {
 };
 
 const TBC_LIGHT = {
-    start: "#ccc",
+    start: "#ddd",
     end: "#fff"
 };
 
