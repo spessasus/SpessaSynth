@@ -599,6 +599,11 @@ demoSongButton.addEventListener("click", async () => {
         contents,
         999_999,
         true,
-        undefined
+        undefined,
+        {
+            overflowY: "scroll",
+            flexWrap: "nowrap",
+            maxHeight: "80vh"
+        }
     );
 });
