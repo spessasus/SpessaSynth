@@ -794,7 +794,7 @@ export class SequencerUI {
         }
     }
 
-    protected setLoopState(loop: boolean) {
+    public setLoopState(loop: boolean) {
         if (loop) {
             this.seq.loopCount = Infinity;
             this.enableIcon(this.loopButton);

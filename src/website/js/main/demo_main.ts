@@ -395,8 +395,16 @@ fileInput.focus();
 sfUpload.style.display = "none";
 fileUpload.style.display = "none";
 
-async function playDemoSong(fileName: string) {
-    if (!window.manager) {
+interface DemoSong {
+    name: string;
+    fileName: string;
+    credits: string;
+    loop?: boolean;
+    fullMIDISupport: boolean;
+}
+
+async function playDemoSong(song: DemoSong) {
+    if (!window.manager?.synth) {
         throw new Error("Unexpected lack of manager!");
     }
     titleMessage.textContent = window.manager.localeManager.getLocaleString(
@@ -404,14 +412,17 @@ async function playDemoSong(fileName: string) {
     );
     const r = await fetch(
         "https://spessasus.github.io/spessasynth-demo-songs/demo_songs/" +
-            fileName
+            song.fileName
     );
-    if (window.manager.synth) {
+    if (!song.fullMIDISupport) {
         window.manager.synth.setMasterParameter("nprnParamLock", true);
         window.manager.synth.setMasterParameter("drumLock", true);
     }
     // noinspection JSCheckFunctionSignatures
-    await startMidi([new File([await r.arrayBuffer()], fileName)]);
+    await startMidi([new File([await r.arrayBuffer()], song.fileName)]);
+    setTimeout(() => {
+        window.manager?.seqUI?.setLoopState?.(song?.loop ?? false);
+    }, 500);
 }
 
 await demoInit(initLocale);
@@ -543,11 +554,7 @@ demoSongButton.addEventListener("click", async () => {
     )
         // eslint-disable-next-line unicorn/no-await-expression-member
         .text();
-    const songsJSON = JSON.parse(songs) as {
-        name: string;
-        fileName: string;
-        credits: string;
-    }[];
+    const songsJSON = JSON.parse(songs) as DemoSong[];
     for (const song of songsJSON) {
         contents.push({
             type: "button",
@@ -580,7 +587,7 @@ demoSongButton.addEventListener("click", async () => {
                     undefined,
                     undefined,
                     async () => {
-                        await playDemoSong(song.fileName);
+                        await playDemoSong(song);
                     }
                 );
             }
