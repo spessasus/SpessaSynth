@@ -55,6 +55,46 @@ export interface MeterOptions {
     transform?: (value: number) => string;
 }
 
+// Global tracking
+let currentMeter:
+    | {
+          m: Meter;
+          rect: DOMRect;
+          activeChange?: (isActive: boolean) => unknown;
+          editCallback: MeterCallbackFunction;
+          max: number;
+          min: number;
+      }
+    | undefined;
+
+if (!isMobile) {
+    document.addEventListener("pointerleave", () => {
+        currentMeter?.activeChange?.(false);
+        currentMeter = undefined;
+    });
+    document.addEventListener("pointerup", () => {
+        currentMeter?.activeChange?.(false);
+        currentMeter = undefined;
+    });
+
+    document.addEventListener("pointermove", (e) => {
+        if (!currentMeter) {
+            return;
+        }
+        const relativeLeft = currentMeter.rect.left;
+        const width = currentMeter.rect.width;
+        const relative = e.clientX - relativeLeft;
+        const percentage = Math.max(0, Math.min(1, relative / width));
+        currentMeter.editCallback(
+            percentage * (currentMeter.max - currentMeter.min) +
+                currentMeter.min
+        );
+        if (!currentMeter.m.isLocked) {
+            currentMeter.m.toggleLock();
+        }
+    });
+}
+
 export class Meter {
     public readonly defaultValue;
     public isLocked = true;
@@ -65,7 +105,6 @@ export class Meter {
     private readonly min;
     private isShown = false;
     private isVisualValueSet = true;
-    private isActive = false;
     private readonly lockCallback;
     private readonly unlockCallback;
     private readonly text: HTMLParagraphElement;
@@ -147,73 +186,50 @@ export class Meter {
             if (editCallback === undefined) {
                 throw new Error("No editable function given!");
             }
-            this.div.addEventListener("mousedown", (e) => {
-                e.preventDefault();
-                if (e.button === 0) {
-                    // Left mouse button: adjust value
-                    this.isActive = true;
-                    if (activeChangeCallback) {
-                        activeChangeCallback(true);
-                    }
-                    const el = e.currentTarget as HTMLElement;
-                    const bounds = el.getBoundingClientRect();
-                    const relativeLeft = bounds.left;
-                    const width = bounds.width;
+
+            // Add mobile
+            if (isMobile) {
+                this.div.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    const rect = this.div.getBoundingClientRect();
+                    const relativeLeft = rect.left;
+                    const width = rect.width;
                     const relative = e.clientX - relativeLeft;
                     const percentage = Math.max(
                         0,
                         Math.min(1, relative / width)
                     );
-                    if (!this.isLocked || isMobile) {
+                    editCallback(percentage * (max - min) + min);
+                    this.toggleLock();
+                });
+            } else {
+                this.div.addEventListener("pointerdown", (e) => {
+                    e.preventDefault();
+                    if (e.button === 0) {
+                        if (currentMeter) {
+                            return;
+                        }
+                        const rect = this.div.getBoundingClientRect();
+                        activeChangeCallback?.(true);
+                        currentMeter = {
+                            m: this,
+                            rect,
+                            editCallback,
+                            activeChange: activeChangeCallback,
+                            min,
+                            max
+                        };
+                    } else {
+                        // Other, lock it
                         this.toggleLock();
                     }
-                    editCallback(percentage * (max - min) + min);
-                } else {
-                    // Other, lock it
-                    this.toggleLock();
-                }
-            });
-            this.div.addEventListener("mousemove", (e) => {
-                if (!this.isActive) {
-                    return;
-                }
-                const el = e.currentTarget as HTMLElement;
-                const bounds = el.getBoundingClientRect();
-                const relativeLeft = bounds.left;
-                const width = bounds.width;
-                const relative = e.clientX - relativeLeft;
-                const percentage = Math.max(0, Math.min(1, relative / width));
-                if (!this.isLocked || isMobile) {
-                    this.toggleLock();
-                }
-                editCallback(percentage * (max - min) + min);
-            });
-            this.div.addEventListener("mouseup", () => {
-                this.isActive = false;
-                if (activeChangeCallback) {
-                    activeChangeCallback(false);
-                }
-            });
-            this.div.addEventListener("mouseleave", (e) => {
-                this.div.onmousemove?.(e);
-                this.isActive = false;
-                if (activeChangeCallback) {
-                    activeChangeCallback(false);
-                }
-            });
-
+                });
+            }
             // QoL
             this.text.addEventListener("contextmenu", (e) => {
                 e.preventDefault();
             });
 
-            // Add mobile
-            this.div.addEventListener("click", (e) => {
-                e.preventDefault();
-                this.isActive = true;
-                this.div.onmousemove?.(e);
-                this.isActive = false;
-            });
             this.div.classList.add("editable");
         }
         this.update(initialAndDefault);
