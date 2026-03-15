@@ -73,8 +73,23 @@ export function renderSingleWaveform(
         }
         const halfLength = Math.floor(length / 2);
         triggerPoint = waveform.length - halfLength;
-        for (let i = triggerPoint; i >= 1; i--) {
-            if (waveform[i - 1] < 0 && waveform[i] >= 0) {
+        let max = -Infinity;
+        // Multi-pass trigger point detection
+        // Pass 1: find the maximum in the last part of the waveform
+        const searchStart = Math.max(0, triggerPoint - halfLength);
+        let bestIndex = triggerPoint;
+        for (let i = triggerPoint; i >= searchStart; i--) {
+            const value = waveform[i];
+            if (value > max) {
+                max = value;
+                bestIndex = i;
+            }
+        }
+        triggerPoint = bestIndex;
+        // Pass 2: find the zero crossing after the trigger point
+        const zeroCrossEnd = Math.min(triggerPoint + Math.floor(halfLength / 2), waveform.length - 1);
+        for (let i = triggerPoint; i <= zeroCrossEnd; i++) {
+            if (waveform[i] <= 0) {
                 triggerPoint = i;
                 break;
             }
