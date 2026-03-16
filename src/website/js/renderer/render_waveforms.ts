@@ -123,7 +123,7 @@ export function renderSingleWaveform(
         for (let i = renderStart; i < renderEnd; i++) {
             this.drawingContext.lineTo(
                 xPos,
-                relativeY + waveform[i] * multiplier
+                relativeY - waveform[i] * multiplier
             );
             xPos += step;
         }
@@ -164,7 +164,7 @@ export function renderSingleWaveform(
             for (let i = renderStart; i < renderEnd; i++) {
                 this.drawingContext.lineTo(
                     xPos,
-                    relativeY + waveform[i] * multiplier
+                    relativeY - waveform[i] * multiplier
                 );
                 xPos += step;
             }
