@@ -78,7 +78,7 @@ export function renderSingleWaveform(
         // Pass 1: find the maximum in the last part of the waveform
         // TODO: optimize by using max function on a subarray when available
         const searchStart = Math.max(0, triggerPoint - halfLength);
-        let bestIndex = triggerPoint;
+        let bestIndex;
         for (let i = triggerPoint; i >= searchStart; i--) {
             const value = waveform[i];
             if (value > max) {
@@ -100,10 +100,13 @@ export function renderSingleWaveform(
         triggerPoint = bestIndex;
         // Pass 3: find the zero crossing after the trigger point
         const zeroCrossEnd = Math.max(triggerPoint - Math.floor(halfLength), 0);
-        const waveformAverage = waveform.reduce((sum, v) => sum + v, 0) / waveform.length;
+        const waveformAverage =
+            waveform.reduce((sum, v) => sum + v, 0) / waveform.length;
         // Look for the average to remove DC offset
-        for (let i = triggerPoint; i >= zeroCrossEnd; i--) { // reverse search for zero crossing
-            if (waveform[i] <= waveformAverage) { // Zero crossing detected
+        for (let i = triggerPoint; i >= zeroCrossEnd; i--) {
+            // Reverse search for zero crossing
+            if (waveform[i] <= waveformAverage) {
+                // Zero crossing detected
                 triggerPoint = i;
                 break;
             }
