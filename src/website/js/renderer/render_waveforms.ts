@@ -73,8 +73,40 @@ export function renderSingleWaveform(
         }
         const halfLength = Math.floor(length / 2);
         triggerPoint = waveform.length - halfLength;
-        for (let i = triggerPoint; i >= 1; i--) {
-            if (waveform[i - 1] < 0 && waveform[i] >= 0) {
+        let max = -Infinity;
+        // Multi-pass trigger point detection
+        // Pass 1: find the maximum in the last part of the waveform
+        // TODO: optimize by using max function on a subarray when available
+        const searchStart = Math.max(0, triggerPoint - halfLength);
+        let bestIndex;
+        for (let i = triggerPoint; i >= searchStart; i--) {
+            const value = waveform[i];
+            if (value > max) {
+                max = value;
+                bestIndex = i;
+            }
+        }
+        // Pass 2: find the maximum within a tolerance range around the first trigger point
+        bestIndex = triggerPoint;
+        triggerPoint = waveform.length - halfLength;
+        const maximumTolerance = 0.04; // 4% tolerance for the second pass
+        for (let i = triggerPoint; i >= searchStart; i--) {
+            const value = waveform[i];
+            if (value > max * (1 - maximumTolerance)) {
+                bestIndex = i;
+                break;
+            }
+        }
+        triggerPoint = bestIndex;
+        // Pass 3: find the zero crossing after the trigger point
+        const zeroCrossEnd = Math.max(triggerPoint - Math.floor(halfLength), 0);
+        const waveformAverage =
+            waveform.reduce((sum, v) => sum + v, 0) / waveform.length;
+        // Look for the average to remove DC offset
+        for (let i = triggerPoint; i >= zeroCrossEnd; i--) {
+            // Reverse search for zero crossing
+            if (waveform[i] <= waveformAverage) {
+                // Zero crossing detected
                 triggerPoint = i;
                 break;
             }
