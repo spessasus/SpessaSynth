@@ -103,7 +103,7 @@ export function renderSingleWaveform(
         const waveformAverage = waveform.reduce((sum, v) => sum + v, 0) / waveform.length;
         // Look for the average to remove DC offset
         for (let i = triggerPoint; i <= zeroCrossEnd; i++) {
-            if (waveform[i] <= waveformAverage) { // Zero crossing detected
+            if (waveform[i] >= waveformAverage) { // Zero crossing detected (upper crossing)
                 triggerPoint = i;
                 break;
             }
