@@ -76,6 +76,7 @@ export function renderSingleWaveform(
         let max = -Infinity;
         // Multi-pass trigger point detection
         // Pass 1: find the maximum in the last part of the waveform
+        // TODO: optimize by using max function on a subarray when available
         const searchStart = Math.max(0, triggerPoint - halfLength);
         let bestIndex = triggerPoint;
         for (let i = triggerPoint; i >= searchStart; i--) {
@@ -99,8 +100,10 @@ export function renderSingleWaveform(
         triggerPoint = bestIndex;
         // Pass 3: find the zero crossing after the trigger point
         const zeroCrossEnd = Math.min(triggerPoint + Math.floor(halfLength), waveform.length - 1);
+        const waveformAverage = waveform.reduce((sum, v) => sum + v, 0) / waveform.length;
+        // Look for the average to remove DC offset
         for (let i = triggerPoint; i <= zeroCrossEnd; i++) {
-            if (waveform[i] <= 0) {
+            if (waveform[i] <= waveformAverage) { // Zero crossing detected
                 triggerPoint = i;
                 break;
             }
