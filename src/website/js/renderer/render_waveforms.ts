@@ -99,11 +99,11 @@ export function renderSingleWaveform(
         }
         triggerPoint = bestIndex;
         // Pass 3: find the zero crossing after the trigger point
-        const zeroCrossEnd = Math.min(triggerPoint - Math.floor(halfLength),0);
+        const zeroCrossEnd = Math.min(triggerPoint + Math.floor(halfLength), waveform.length - 1);
         const waveformAverage = waveform.reduce((sum, v) => sum + v, 0) / waveform.length;
         // Look for the average to remove DC offset
-        for (let i = triggerPoint; i >= zeroCrossEnd; i--) { // perform reverse search for zero crossing
-            if (waveform[i] < waveformAverage) { // Zero crossing detected (lower crossing)
+        for (let i = triggerPoint; i <= zeroCrossEnd; i++) {
+            if (waveform[i] <= waveformAverage) { // Zero crossing detected
                 triggerPoint = i;
                 break;
             }
@@ -123,7 +123,7 @@ export function renderSingleWaveform(
         for (let i = renderStart; i < renderEnd; i++) {
             this.drawingContext.lineTo(
                 xPos,
-                relativeY - waveform[i] * multiplier
+                relativeY + waveform[i] * multiplier
             );
             xPos += step;
         }
@@ -164,7 +164,7 @@ export function renderSingleWaveform(
             for (let i = renderStart; i < renderEnd; i++) {
                 this.drawingContext.lineTo(
                     xPos,
-                    relativeY - waveform[i] * multiplier
+                    relativeY + waveform[i] * multiplier
                 );
                 xPos += step;
             }
