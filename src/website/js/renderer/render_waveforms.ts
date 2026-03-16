@@ -98,7 +98,7 @@ export function renderSingleWaveform(
         }
         triggerPoint = bestIndex;
         // Pass 3: find the zero crossing after the trigger point
-        const zeroCrossEnd = Math.min(triggerPoint + Math.floor(halfLength / 2), waveform.length - 1);
+        const zeroCrossEnd = Math.min(triggerPoint + Math.floor(halfLength), waveform.length - 1);
         for (let i = triggerPoint; i <= zeroCrossEnd; i++) {
             if (waveform[i] <= 0) {
                 triggerPoint = i;
