@@ -11,5 +11,6 @@ export const WHATS_NEW: string[] = [
     `Delay effect!`,
     `Insertion effects!`,
     `Overhauled synthesizer controller!`,
+    `Better waveform stabilization! (by src3453)`,
     `Bug fixes!`
 ] as const;
