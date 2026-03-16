@@ -43,9 +43,16 @@ export function renderSingleWaveform(
         straightLine();
         return;
     }
-    const waveform = new Float32Array(analyser.frequencyBinCount);
+    const sampleCount = analyser.fftSize;
+    const waveform = this.sampleBuffer;
     analyser.getFloatTimeDomainData(waveform);
-    const voicesPlaying = waveform.some((v) => v !== 0);
+    let voicesPlaying = false;
+    for (let i = 0; i < sampleCount; i++) {
+        if (waveform[i] !== 0) {
+            voicesPlaying = true;
+            break;
+        }
+    }
     if (!voicesPlaying) {
         // Draw a straight line
         straightLine();
@@ -62,17 +69,17 @@ export function renderSingleWaveform(
     this.drawingContext.fillStyle = this.plainColors[channelNumber];
 
     let triggerPoint = 0;
-    let length = waveform.length;
+    let length = sampleCount;
     let renderStart = 0;
-    let renderEnd = waveform.length;
+    let renderEnd = sampleCount;
     if (this._stabilizeWaveforms) {
         // Fraction length
-        length = waveform.length / STABILIZE_WAVEFORMS_FFT_MULTIPLIER;
+        length = sampleCount / STABILIZE_WAVEFORMS_FFT_MULTIPLIER;
         if (this.synth.channelProperties[channelNumber].isDrum) {
             length *= 2;
         }
         const halfLength = Math.floor(length / 2);
-        triggerPoint = waveform.length - halfLength;
+        triggerPoint = sampleCount - halfLength;
         let max = -Infinity;
         // Multi-pass trigger point detection
         // Pass 1: find the maximum in the last part of the waveform
@@ -88,7 +95,7 @@ export function renderSingleWaveform(
         }
         // Pass 2: find the maximum within a tolerance range around the first trigger point
         bestIndex = triggerPoint;
-        triggerPoint = waveform.length - halfLength;
+        triggerPoint = sampleCount - halfLength;
         const maximumTolerance = 0.04; // 4% tolerance for the second pass
         for (let i = triggerPoint; i >= searchStart; i--) {
             const value = waveform[i];
@@ -100,8 +107,11 @@ export function renderSingleWaveform(
         triggerPoint = bestIndex;
         // Pass 3: find the zero crossing after the trigger point
         const zeroCrossEnd = Math.max(triggerPoint - Math.floor(halfLength), 0);
-        const waveformAverage =
-            waveform.reduce((sum, v) => sum + v, 0) / waveform.length;
+        let sum = 0;
+        for (let i = 0; i < sampleCount; i++) {
+            sum += waveform[i];
+        }
+        const waveformAverage = sum / sampleCount;
         // Look for the average to remove DC offset
         for (let i = triggerPoint; i >= zeroCrossEnd; i--) {
             // Reverse search for zero crossing
@@ -112,7 +122,7 @@ export function renderSingleWaveform(
             }
         }
         renderStart = Math.max(0, triggerPoint - halfLength);
-        renderEnd = Math.min(triggerPoint + halfLength, waveform.length);
+        renderEnd = Math.min(triggerPoint + halfLength, sampleCount);
     }
 
     const dataLength = renderEnd - renderStart;

@@ -37,11 +37,9 @@ const TRANSITION_TIME = 0.2;
 // These delays sync with the AnalyserNode delay
 // Tested on firefox
 const niceDelayLookupTable = {
-    2048: 0.05,
-    4096: 0.27,
-    8192: 0.34,
-    16_384: 0.371_519_274_376_417_24,
-    32_768: 0.48
+    8192: 0.01,
+    16_384: 0.05,
+    32_768: 0.1
 };
 
 /**
@@ -509,7 +507,7 @@ export class SpessaSynthSettings {
         // Calculate delay:
         // 16384 fft size = 0.37 s
         const delayTime =
-            fft >= 2048 &&
+            fft >= 8192 &&
             this.renderer.rendererMode !== rendererModes.spectrumSingleMode
                 ? niceDelayLookupTable[fft as keyof typeof niceDelayLookupTable]
                 : 0;

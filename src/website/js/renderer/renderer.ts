@@ -111,6 +111,7 @@ export class Renderer {
     protected plainColors: string[];
     protected synth: Synthesizer;
     protected seq: Sequencer;
+    protected readonly sampleBuffer = new Float32Array(32_768); // Max allowed by AnalyserNode
     protected channelAnalysers: AnalyserNode[] = [];
     protected bigAnalyser: AnalyserNode;
     protected channelColors: CanvasGradient[] = [];
