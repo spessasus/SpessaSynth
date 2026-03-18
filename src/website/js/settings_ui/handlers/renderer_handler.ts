@@ -97,14 +97,7 @@ export function _createRendererHandler(this: SpessaSynthSettings) {
             2,
             Number.parseInt(rendererControls.analyserFftSlider.value)
         );
-        this.renderer.normalAnalyserFft = value;
-        this.renderer.drumAnalyserFft = Math.pow(
-            2,
-            Math.min(
-                15,
-                Number.parseInt(rendererControls.analyserFftSlider.value) + 1
-            )
-        );
+        this.renderer.analyserFftSize = value;
         this.renderer.updateFftSize();
         this.setTimeDelay(value);
         getSpan(rendererControls.analyserFftSlider).textContent = `${value}`;

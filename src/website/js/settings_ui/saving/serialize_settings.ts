@@ -25,7 +25,7 @@ export function _serializeSettings(this: SpessaSynthSettings): SavedSettings {
             noteFallingTimeMs: this.renderer.noteFallingTimeMs,
             noteAfterTriggerTimeMs: this.renderer.noteAfterTriggerTimeMs,
             waveformThickness: this.renderer.lineThickness,
-            sampleSize: this.renderer.normalAnalyserFft,
+            sampleSize: this.renderer.analyserFftSize,
             amplifier: this.renderer.waveMultiplier,
             renderNotes: this.renderer.renderNotes,
             drawActiveNotes: this.renderer.drawActiveNotes,

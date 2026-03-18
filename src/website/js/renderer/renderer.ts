@@ -53,7 +53,6 @@ const DISPLAY_MATRIX_TIMEOUT = 2880;
 
 // Analysers
 const CHANNEL_ANALYSER_FFT = 1024;
-const DRUMS_ANALYSER_FFT = 4096;
 export const ANALYSER_SMOOTHING = 0.4;
 const WAVE_MULTIPLIER = 2;
 const ANALYSER_STROKE = 2;
@@ -186,13 +185,13 @@ export class Renderer {
 
         // Analysers
         this.bigAnalyser = new AnalyserNode(synth.context, {
-            fftSize: this._normalAnalyserFft,
+            fftSize: this._analyserFftSize,
             smoothingTimeConstant: ANALYSER_SMOOTHING
         });
         for (let i = 0; i < synth.channelsAmount; i++) {
             // Create the analyzer
             const analyser = new AnalyserNode(synth.context, {
-                fftSize: this._normalAnalyserFft,
+                fftSize: this._analyserFftSize,
                 smoothingTimeConstant: ANALYSER_SMOOTHING
             });
             this.channelAnalysers.push(analyser);
@@ -307,26 +306,14 @@ export class Renderer {
         setTimeout(this.updateSize.bind(this), 100);
     }
 
-    protected _normalAnalyserFft = CHANNEL_ANALYSER_FFT;
+    protected _analyserFftSize = CHANNEL_ANALYSER_FFT;
 
-    public get normalAnalyserFft() {
-        return this._normalAnalyserFft;
+    public get analyserFftSize() {
+        return this._analyserFftSize;
     }
 
-    public set normalAnalyserFft(value) {
-        this._normalAnalyserFft = value;
-        this.updateFftSize();
-    }
-
-    protected _drumAnalyserFft = DRUMS_ANALYSER_FFT;
-
-    // noinspection JSUnusedGlobalSymbols
-    public get drumAnalyserFft() {
-        return this._drumAnalyserFft;
-    }
-
-    public set drumAnalyserFft(value) {
-        this._drumAnalyserFft = value;
+    public set analyserFftSize(value) {
+        this._analyserFftSize = value;
         this.updateFftSize();
     }
 

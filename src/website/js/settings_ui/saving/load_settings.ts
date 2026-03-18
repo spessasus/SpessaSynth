@@ -58,11 +58,7 @@ export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
     // Math.pow(2, parseInt(rendererControls.analyserFftSlider.value)); we need to invert this
     rendererControls.analyserFftSlider.value = Math.log2(fftSize).toString();
     rendererControls.analyserFftSlider.dispatchEvent(new CustomEvent("input"));
-    renderer.normalAnalyserFft = fftSize;
-    renderer.drumAnalyserFft = Math.pow(
-        2,
-        Math.min(15, Math.log2(fftSize) + 1)
-    );
+    renderer.analyserFftSize = fftSize;
     renderer.updateFftSize();
     this.setTimeDelay(fftSize);
     getSpan(rendererControls.analyserFftSlider).textContent = `${fftSize}`;
