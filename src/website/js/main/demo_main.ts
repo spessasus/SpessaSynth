@@ -339,10 +339,6 @@ async function startMidi(midiFiles: FileList | File[]) {
     window.manager.play(parsed);
 
     exportButton.style.display = "flex";
-    exportButton.addEventListener(
-        "click",
-        window.manager.showExportMenu.bind(window.manager)
-    );
 }
 
 /**
@@ -531,6 +527,14 @@ sfInput.addEventListener("change", (e) => {
         })();
     }, ANIMATION_REFLOW_TIME);
 });
+
+// Add export event listener
+exportButton.addEventListener("click", () => {
+    if ("manager" in window && window.manager instanceof Manager) {
+        window.manager.showExportMenu();
+    }
+});
+
 demoSongButton.addEventListener("click", async () => {
     if (!window.manager) {
         throw new Error("Unexpected lack of manager!");

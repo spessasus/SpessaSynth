@@ -146,10 +146,6 @@ async function startMidi(midiFiles: FileList) {
     titleMessage.style.fontStyle = "italic";
     manager.play(parsed);
     exportButton.style.display = "flex";
-    exportButton.addEventListener(
-        "click",
-        manager.showExportMenu.bind(window.manager)
-    );
 }
 
 const initManagerSF = async () => {
@@ -284,4 +280,11 @@ fileInput.addEventListener("change", async () => {
         return;
     }
     await startMidi(fileInput.files);
+});
+
+// Add export event listener
+exportButton.addEventListener("click", () => {
+    if ("manager" in window && window.manager instanceof Manager) {
+        window.manager.showExportMenu();
+    }
 });
