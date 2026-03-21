@@ -4,6 +4,7 @@ import { intensityColors } from "./colors.js";
 export const STABILIZE_WAVEFORMS_FFT_MULTIPLIER = 4;
 const EXPONENTIAL_GAIN = Math.E;
 const EXPONENTIAL_AGGRESSIVE = 3;
+const WAVE_GAIN = 0.7;;
 
 /**
  * @param channelNumber
@@ -61,7 +62,7 @@ export function renderSingleWaveform(
 
     const relativeX = waveWidth * x;
     const relativeY = waveHeight * y + waveHeight / 2;
-    const multiplier = this.waveMultiplier * waveHeight;
+    const multiplier = this.waveMultiplier * WAVE_GAIN * waveHeight;
 
     // Draw
     this.drawingContext.lineWidth = this.lineThickness;
