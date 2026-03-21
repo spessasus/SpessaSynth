@@ -5,16 +5,7 @@
 </p>
 
 **SpessaSynth** is a SoundFont2-based real-time synthesizer written in TypeScript, previously pure JavaScript.
-
-<h1 align="center"><a href="https://spessasus.github.io/SpessaSynth/">Live Demo (no download needed!)</a></h1>
-
-<p align='center'><b><!--suppress HtmlUnknownAnchorTarget -->
-<a href='#windows'>Download Local Edition</a></b></p>
-
-<h2 align="center">Made with SpessaSynth</h2>
-<p align="center">
-<a href="https://www.youtube.com/watch?v=Cu_A1IR65yQ"><img width='500' alt="Watch the YouTube video" src="https://github.com/user-attachments/assets/d73c0585-67eb-4490-ad39-839b22ab7577"></a>
-</p>
+This is a repository for the web application, it used to be a monorepo containing the entire project.
 
 **SpessaSynth Project index**
 
@@ -23,12 +14,23 @@
 - [SpessaSynth](https://github.com/spessasus/SpessaSynth) (you are here) - online/local MIDI player/editor application
 - [SpessaFont](https://github.com/spessasus/SpessaFont) - online SF2/DLS editor
 
-<h1 align='center'>Web App / Local Edition</h1>
+<h1 align='center'>SpessaSynth Web App</h1>
 <p align='center'>The complete GUI for spessasynth_lib, allowing remixing, experimenting, and playing MIDIs in the coolest way possible.</p>
 
 <p align='center'>
 <img src="https://github.com/user-attachments/assets/42f5cf2d-0b5b-492d-8929-064d55d8c11f" alt="SpessaSynth promotional image" width="75%">
 </p>
+
+<h2 align="center"><a href="https://spessasus.github.io/SpessaSynth/">Online Version (no download needed!)</a></h2>
+
+<!--suppress HtmlUnknownAnchorTarget -->
+<h2 align="center"><a href='https://spessasus.github.io/SpessaSynth/SpessaSynth-LocalEdition.zip'>Download Local Edition</a></h2>
+
+<h2 align="center">Made with SpessaSynth</h2>
+<p align="center">
+<a href="https://www.youtube.com/watch?v=Cu_A1IR65yQ"><img width='500' alt="Watch the YouTube video" src="https://github.com/user-attachments/assets/d73c0585-67eb-4490-ad39-839b22ab7577"></a>
+</p>
+
 <h3 align='center'><a href='https://github.com/spessasus/SpessaSynth/wiki/How-To-Use-App'>Usage Guide</a></h3>
 <h2 align='center'>Features</h2>
 
@@ -39,14 +41,15 @@
 - **Kar Lyrics support:** Karaoke but fancy!
 - **ASS Subtitle support:** Karaoke but even fancier!
 - **Music player mode:** with support for album covers in .rmi files!
-- Mobile-friendly UI (_synthesizer performance not optimized for mobile... don't tell anyone!_)
-- **Multiple language support:**
+- **Mobile-friendly UI:** Enjoy SpessaSynth on your phone!
+- **Extensive language support:**
     - English
     - Polish
     - Japanese
     - French (translated by Davy Triponney)
     - Portuguese (translated by Lucas Gabriel)
     - Simplified Chinese (By 懒洋君)
+    - Italian (By ItsFilyy)
     - Custom locale management system, created specifically for this project
 - **Description of buttons:** Hover over the buttons to see what they do!
 - **`Web MIDI API` support:** Use your physical MIDI devices!
@@ -83,7 +86,7 @@ MARKDOWN VERSION
 
 </p>
 
-### Local Edition Download
+### Local Edition
 
 _SpessaSynth: Local Edition_ comes with easier soundfont management than the demo version,
 also allowing to use it offline! [You can download it here.](https://spessasus.github.io/SpessaSynth/SpessaSynth-LocalEdition.zip)
@@ -143,14 +146,15 @@ The build files:
 - [3.0.0](https://github.com/spessasus/SpessaSynth/commit/b7f9e382a2f62eef462755ac9ebfe603663e4106) - Moved to audioWorkletGlobalScope for offline audio rendering
 - [4.0.0](https://github.com/spessasus/SpessaSynth/commit/95ce4c5ad4a429d6de75426a42bbdf9dc353e9de) - Rewrote the project in TypeScript
 
-### License
+## License
 
-Copyright © 2026 Spessasus.
+Copyright © 2026 Spessasus
 Licensed under the Apache-2.0 License.
 
 #### Legal
 
 This project is in no way endorsed or otherwise affiliated with the MIDI Manufacturers Association,
-Creative Technology Ltd. or E-mu Systems, Inc., or any other organization mentioned.
+Roland Corporation, Yamaha Corporation, Creative Technology Ltd. or E-mu Systems, Inc.,
+or any other organization mentioned.
 SoundFont® is a registered trademark of Creative Technology Ltd.
 All other trademarks are the property of their respective owners.
