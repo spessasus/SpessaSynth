@@ -229,6 +229,9 @@ export class Meter {
                             Math.min(1, relative / width)
                         );
                         editCallback(percentage * (max - min) + min);
+                        if (!currentMeter.m.isLocked) {
+                            currentMeter.m.toggleLock();
+                        }
                     } else {
                         // Other, lock it
                         this.toggleLock();
