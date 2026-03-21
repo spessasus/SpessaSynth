@@ -4,7 +4,7 @@ import { intensityColors } from "./colors.js";
 export const STABILIZE_WAVEFORMS_FFT_MULTIPLIER = 4;
 const EXPONENTIAL_GAIN = Math.E;
 const EXPONENTIAL_AGGRESSIVE = 3;
-const WAVE_GAIN = 0.7;;
+const WAVE_GAIN = 0.7;
 
 /**
  * @param channelNumber
