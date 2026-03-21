@@ -257,6 +257,7 @@ async function demoInit(initLocale: LocaleCode) {
     await window.manager.ready;
 
     window.manager.synth?.setMasterParameter("voiceCap", voiceCap);
+    window.manager.synth?.setLogLevel(false, false, false);
 
     if (fileInput.files?.[0]) {
         await startMidi(fileInput.files);
@@ -334,7 +335,6 @@ async function startMidi(midiFiles: FileList | File[]) {
             fileName: file.name
         });
     }
-    window.manager.synth?.setLogLevel(false, false, false);
 
     window.manager.play(parsed);
 
