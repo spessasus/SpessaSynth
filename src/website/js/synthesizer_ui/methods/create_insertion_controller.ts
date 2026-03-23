@@ -2,6 +2,7 @@ import { type InsertionController, insertionData } from "./effect_params.ts";
 import { Meter } from "./synthui_meter.ts";
 import { LOCALE_PATH, SynthetizerUI } from "../synthetizer_ui.ts";
 import { sendAddress } from "./send_address.ts";
+import { Ut } from "../../utils/other.js";
 
 export function createInsertionController(
     this: SynthetizerUI
@@ -9,7 +10,8 @@ export function createInsertionController(
     const insertionEffects = insertionData;
 
     const wrapper = document.createElement("div");
-    wrapper.classList.add("effect_wrapper", "synthui_tab", "hidden");
+    wrapper.classList.add("effect_wrapper", "synthui_tab");
+    Ut.hide(wrapper);
     // Title
     const effectTitle = document.createElement("h2");
     this.locale.bindObjectProperty(
@@ -153,7 +155,8 @@ export function createInsertionController(
     >();
     for (const insertionEffect of insertionEffects) {
         const controllerWrapper = document.createElement("div");
-        controllerWrapper.classList.add("effect_wrapper_params", "hidden");
+        controllerWrapper.classList.add("effect_wrapper_params");
+        Ut.hide(controllerWrapper);
         wrapper.append(controllerWrapper);
         const controllers = new Map<number, Meter>();
         for (const param of insertionEffect.params) {

@@ -2,6 +2,7 @@ import type { SpessaSynthSettings } from "../settings.ts";
 import type { localeList } from "../../locale/locale_files/locale_list.ts";
 import type { LayoutType } from "../../../server/saved_settings.ts";
 import { WorkerSynthesizer } from "spessasynth_lib";
+import { Ut } from "../../utils/other.js";
 
 /**
  * @this {SpessaSynthSettings}
@@ -53,14 +54,12 @@ export function _createInterfaceSettingsHandler(this: SpessaSynthSettings) {
     // This DOES NOT get saved in settings!
     const seqControls = this.htmlControls.interface.showControlsToggle;
     seqControls.addEventListener("change", () => {
+        const bottomPart =
+            document.querySelectorAll<HTMLElement>(".bottom_part")[0];
         if (seqControls.checked) {
-            document
-                .querySelectorAll(".bottom_part")[0]
-                .classList.remove("hidden");
+            Ut.show(bottomPart);
         } else {
-            document
-                .querySelectorAll(".bottom_part")[0]
-                .classList.add("hidden");
+            Ut.hide(bottomPart);
         }
     });
 

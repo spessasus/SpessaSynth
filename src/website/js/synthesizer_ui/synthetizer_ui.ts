@@ -6,6 +6,7 @@ import { toggleDarkMode } from "./methods/toggle_dark_mode.js";
 import { setEventListeners } from "./methods/set_event_listeners.js";
 import { keybinds } from "../utils/keybinds.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
+import { Ut } from "../utils/other.js";
 import { closeNotification } from "../notification/notification.js";
 import {
     ALL_CHANNELS_OR_DIFFERENT_ACTION,
@@ -513,18 +514,12 @@ export class SynthetizerUI {
                     for (const el of this.mainControllerDiv.querySelectorAll<HTMLElement>(
                         ".synthui_tab"
                     )) {
-                        el.classList.add("hidden");
+                        Ut.hide(el);
                     }
                     // Hide group selector (and show only used) if needed
-                    groupSelector.classList.toggle(
-                        "hidden",
-                        selectedTab !== "channels"
-                    );
-                    showOnlyUsedButton.classList.toggle(
-                        "hidden",
-                        selectedTab !== "channels"
-                    );
-                    this.tabs[selectedTab].classList.remove("hidden");
+                    Ut.toggle(groupSelector, selectedTab !== "channels");
+                    Ut.toggle(showOnlyUsedButton, selectedTab !== "channels");
+                    Ut.show(this.tabs[selectedTab]);
                 });
             }
 
@@ -753,14 +748,14 @@ export class SynthetizerUI {
             }
             for (const e of this.portDescriptors) {
                 // Do not show ports that are empty
-                e.classList.remove("hidden");
+                Ut.show(e);
             }
         } else {
             for (let i = start; i < this.controllers.length; i++) {
                 this.setChannelControllerVisibility(i, false);
             }
             for (const e of this.portDescriptors) {
-                e.classList.add("hidden");
+                Ut.hide(e);
             }
         }
     }
@@ -894,13 +889,13 @@ export class SynthetizerUI {
         if (isVisible) {
             const c = this.controllers[channelNumber];
             if (!c.isHidingLocked || force) {
-                c.controller.classList.remove("hidden");
+                Ut.show(c.controller);
                 c.isHidingLocked = force;
             }
         } else {
             const c = this.controllers[channelNumber];
             if (!c.isHidingLocked || force) {
-                c.controller.classList.add("hidden");
+                Ut.hide(c.controller);
                 c.isHidingLocked = force;
             }
         }
@@ -1075,7 +1070,7 @@ export class SynthetizerUI {
     private showCCs(ccs: MIDIController[]) {
         for (const cc of ccs) {
             for (const controller of this.controllers) {
-                controller.controllerMeters[cc]?.div.classList.remove("hidden");
+                Ut.show(controller.controllerMeters[cc]?.div);
             }
         }
     }
@@ -1083,7 +1078,7 @@ export class SynthetizerUI {
     private hideCCs(ccs: MIDIController[]) {
         for (const cc of ccs) {
             for (const controller of this.controllers) {
-                controller.controllerMeters[cc]?.div.classList.add("hidden");
+                Ut.hide(controller.controllerMeters[cc]?.div);
             }
         }
     }

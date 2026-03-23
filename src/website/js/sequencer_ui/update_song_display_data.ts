@@ -1,4 +1,4 @@
-import { formatTitle } from "../utils/other.js";
+import { Ut } from "../utils/other.js";
 import type { SequencerUI } from "./sequencer_ui.ts";
 
 export function updateSongDisplayData(
@@ -7,7 +7,7 @@ export function updateSongDisplayData(
 ) {
     let requiresMediaUpdate = false;
     if (this.seq?.midiData) {
-        const newTitle = formatTitle(
+        const newTitle = Ut.formatTitle(
             this.seq.midiData.getName(this.encoding) ?? "Unnamed Song.mid"
         );
         if (newTitle !== this.currentSongTitle) {

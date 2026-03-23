@@ -25,6 +25,7 @@ import {
     getNoteSvg,
     getVolumeSvg
 } from "../../utils/icons.ts";
+import { Ut } from "../../utils/other.js";
 import { Selector } from "./synthui_selector.ts";
 import { sendAddress } from "./send_address.ts";
 
@@ -51,14 +52,14 @@ export function appendNewController(
                 const port = this.ports[portNum];
                 clearTimeout(timeout);
                 if (port.classList.contains("collapsed")) {
-                    port.classList.remove("hidden");
+                    Ut.show(port);
                     timeout = window.setTimeout(() => {
                         port.classList.remove("collapsed");
                     }, ANIMATION_REFLOW_TIME);
                 } else {
                     port.classList.add("collapsed");
                     timeout = window.setTimeout(() => {
-                        port.classList.add("hidden");
+                        Ut.hide(port);
                     }, 350);
                 }
             });

@@ -7,6 +7,7 @@ import type {
 import { Meter } from "./synthui_meter.ts";
 import { sendAddress } from "./send_address.ts";
 import { LOCALE_PATH, SynthetizerUI } from "../synthetizer_ui.ts";
+import { Ut } from "../../utils/other.js";
 
 export function createEffectController<
     K extends DelayParams | ChorusParams | ReverbParams
@@ -20,7 +21,8 @@ export function createEffectController<
     toggleLock: () => unknown;
 } {
     const wrapper = document.createElement("div");
-    wrapper.classList.add("effect_wrapper", "synthui_tab", "hidden");
+    wrapper.classList.add("effect_wrapper", "synthui_tab");
+    Ut.hide(wrapper);
     // Title
     const effectTitle = document.createElement("h2");
     this.locale.bindObjectProperty(effectTitle, "textContent", path + "title");

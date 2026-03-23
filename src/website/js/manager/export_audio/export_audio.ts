@@ -4,7 +4,7 @@ import {
     showNotification
 } from "../../notification/notification.js";
 import { audioBufferToWav } from "spessasynth_lib";
-import { formatTime } from "../../utils/other.js";
+import { Ut } from "../../utils/other.js";
 import { consoleColors } from "../../utils/console_colors.js";
 
 import { ANIMATION_REFLOW_TIME } from "../../utils/animation_utils.js";
@@ -90,7 +90,7 @@ export async function renderAndExportAudioData(
             estimatedTime =
                 smoothingFactor * estimated +
                 (1 - smoothingFactor) * estimatedTime;
-            detailMessage.textContent = `${str} ${formatTime(estimatedTime).time}`;
+            detailMessage.textContent = `${str} ${Ut.formatTime(estimatedTime).time}`;
         } else {
             detailMessage.textContent = `${str} ${Math.floor(prog * 1000) / 10}%`;
         }

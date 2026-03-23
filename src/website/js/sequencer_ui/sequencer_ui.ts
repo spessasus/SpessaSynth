@@ -1,4 +1,4 @@
-import { formatTime } from "../utils/other.js";
+import { Ut } from "../utils/other.js";
 import { supportedEncodings } from "../utils/encodings.js";
 import {
     getBackwardSvg,
@@ -264,7 +264,7 @@ export class SequencerUI {
                 input.type = "file";
                 input.accept = ".ass";
                 input.id = "subtitle_upload";
-                input.classList.add("hidden");
+                Ut.hide(input);
                 mainLyricsDiv.append(input);
                 input.addEventListener("change", async () => {
                     if (input?.files?.[0] === undefined) {
@@ -492,14 +492,15 @@ export class SequencerUI {
                 displaySpan.addEventListener("blur", () => {
                     displaySpan.textContent = `${Math.round(this.seq.playbackRate * 100)}%`;
                 });
-                playbackRateSliderWrapper.classList.add("hidden");
+                Ut.hide(playbackRateSliderWrapper);
                 let sliderShown = false;
                 playbackRateButton.addEventListener("click", () => {
                     sliderShown = !sliderShown;
-                    playbackRateSliderWrapper.classList.toggle("hidden");
                     if (sliderShown) {
+                        Ut.show(playbackRateSliderWrapper);
                         this.enableIcon(playbackRateButton);
                     } else {
+                        Ut.hide(playbackRateSliderWrapper);
                         this.disableIcon(playbackRateButton);
                     }
                 });
@@ -670,26 +671,14 @@ export class SequencerUI {
                 // And hide buttons to switch songs
                 if (this.seq.songsAmount === 1) {
                     this.setLoopState(true);
-                    this.transportControls.nextSongButton.classList.add(
-                        "hidden"
-                    );
-                    this.transportControls.previousSongButton.classList.add(
-                        "hidden"
-                    );
-                    this.transportControls.shuffleButton.classList.add(
-                        "hidden"
-                    );
+                    Ut.hide(this.transportControls.nextSongButton);
+                    Ut.hide(this.transportControls.previousSongButton);
+                    Ut.hide(this.transportControls.shuffleButton);
                 } else {
                     this.setLoopState(false);
-                    this.transportControls.nextSongButton.classList.remove(
-                        "hidden"
-                    );
-                    this.transportControls.previousSongButton.classList.remove(
-                        "hidden"
-                    );
-                    this.transportControls.shuffleButton.classList.remove(
-                        "hidden"
-                    );
+                    Ut.show(this.transportControls.nextSongButton);
+                    Ut.show(this.transportControls.previousSongButton);
+                    Ut.show(this.transportControls.shuffleButton);
                 }
                 this.restoreDisplay();
 
@@ -924,8 +913,8 @@ export class SequencerUI {
         this.lastTimeUpdate = seqTime;
         if (this.seq?.midiData) {
             this.progressBar.style.width = `${(seqTime / this.seq.duration) * 100}%`;
-            const time = formatTime(seqTime);
-            const total = formatTime(this.seq.duration);
+            const time = Ut.formatTime(seqTime);
+            const total = Ut.formatTime(this.seq.duration);
             this.progressTime.textContent = `${time.time} / ${total.time}`;
         } else {
             this.progressBar.style.width = "0%";

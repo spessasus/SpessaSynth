@@ -1,4 +1,4 @@
-import { formatTime } from "../utils/other.js";
+import { Ut } from "../utils/other.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { musicModeInnerHTML } from "./music_mode_html.js";
 import type { LocaleManager } from "../locale/locale_manager.ts";
@@ -75,7 +75,7 @@ export class MusicModeUI {
                     // If new lines, split up into multiple spans and only then apply marquee
                     const lines = text.trim().split("\n");
                     if (lines.length > 1) {
-                        el?.parentElement?.classList?.remove("hidden");
+                        Ut.show(el?.parentElement);
                         el.innerHTML = "";
                         for (const line of lines) {
                             const textWrap = document.createElement("span");
@@ -90,7 +90,7 @@ export class MusicModeUI {
                     }
 
                     if (text.length > 0) {
-                        el?.parentElement?.classList?.remove("hidden");
+                        Ut.show(el?.parentElement);
                         el.innerHTML = "";
                         // Add scroll if needed
                         if (text.length > 30 && enableMarquee) {
@@ -103,7 +103,7 @@ export class MusicModeUI {
                             el.textContent = text;
                         }
                     } else {
-                        el?.parentElement?.classList?.add("hidden");
+                        Ut.hide(el?.parentElement);
                     }
                 };
                 // Details
@@ -121,7 +121,7 @@ export class MusicModeUI {
                 // Time
                 setInfoText(
                     "player_info_time",
-                    formatTime(this.seq.duration).time
+                    Ut.formatTime(this.seq.duration).time
                 );
 
                 // File name

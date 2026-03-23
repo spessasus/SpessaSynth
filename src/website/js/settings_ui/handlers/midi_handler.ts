@@ -1,6 +1,7 @@
 import { isMobile } from "../../utils/is_mobile.js";
 import type { SpessaSynthSettings } from "../settings.ts";
 import { MIDIDeviceHandler } from "spessasynth_lib";
+import { Ut } from "../../utils/other.js";
 
 export function _createMidiSettingsHandler(this: SpessaSynthSettings) {
     MIDIDeviceHandler.createMIDIDeviceHandler()
@@ -16,14 +17,14 @@ export function _createMidiSettingsHandler(this: SpessaSynthSettings) {
                 const input = this.htmlControls.midi.inputSelector;
                 const output = this.htmlControls.midi.outputSelector;
                 // Hide everything
-                input.classList.add("hidden");
-                output.classList.add("hidden");
-                parent
-                    .querySelector("label[for='midi_input_selector']")!
-                    .classList.add("hidden");
-                parent
-                    .querySelector("label[for='midi_output_selector']")!
-                    .classList.add("hidden");
+                Ut.hide(input);
+                Ut.hide(output);
+                Ut.hide(
+                    parent.querySelector("label[for='midi_input_selector']")
+                );
+                Ut.hide(
+                    parent.querySelector("label[for='midi_output_selector']")
+                );
 
                 // Show error
                 const errorMessage = document.createElement("h3");

@@ -1,3 +1,5 @@
+import { Ut } from "./other.ts";
+
 export interface MIDIFile {
     binary: ArrayBuffer;
     fileName: string;
@@ -14,10 +16,10 @@ export class DropFileHandler {
         const dragPrompt = document.querySelectorAll(".drop_prompt")[0];
         document.body.addEventListener("dragover", (e) => {
             e.preventDefault();
-            dragPrompt.classList.remove("hidden");
+            Ut.show(dragPrompt);
         });
         document.body.addEventListener("dragend", () => {
-            dragPrompt.classList.add("hidden");
+            Ut.hide(dragPrompt);
         });
 
         document.body.addEventListener(
@@ -25,7 +27,7 @@ export class DropFileHandler {
             (e) =>
                 void (async (e) => {
                     e.preventDefault();
-                    dragPrompt.classList.add("hidden");
+                    Ut.hide(dragPrompt);
                     if (!e.dataTransfer?.files[0]) {
                         return;
                     }

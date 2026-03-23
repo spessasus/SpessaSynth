@@ -1,6 +1,7 @@
 import { getSpan } from "../sliders.js";
 import { type RendererMode, rendererModes } from "../../renderer/renderer.js";
 import type { SpessaSynthSettings } from "../settings.ts";
+import { Ut } from "../../utils/other.js";
 
 export function _setRendererMode(
     this: SpessaSynthSettings,
@@ -15,22 +16,22 @@ export function _setRendererMode(
     const generalAnalyserSettings = document.querySelector(
         "#renderer_analyser_settings"
     )!;
-    generalAnalyserSettings.classList.remove("hidden");
+    Ut.show(generalAnalyserSettings);
     this.renderer.setRendererMode(mode);
     if (mode === rendererModes.none) {
-        freqSettings.classList.add("hidden");
-        waveformSettings.classList.add("hidden");
-        generalAnalyserSettings.classList.add("hidden");
+        Ut.hide(freqSettings);
+        Ut.hide(waveformSettings);
+        Ut.hide(generalAnalyserSettings);
     } else if (
         mode === rendererModes.waveformsMode ||
         mode === rendererModes.filledWaveformsMode
     ) {
         // Show appropriate settings
-        waveformSettings.classList.remove("hidden");
-        freqSettings.classList.add("hidden");
+        Ut.show(waveformSettings);
+        Ut.hide(freqSettings);
     } else {
-        waveformSettings.classList.add("hidden");
-        freqSettings.classList.remove("hidden");
+        Ut.hide(waveformSettings);
+        Ut.show(freqSettings);
     }
 }
 

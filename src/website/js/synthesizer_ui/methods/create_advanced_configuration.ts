@@ -5,6 +5,7 @@ import {
 import { SynthetizerUI } from "../synthetizer_ui.js";
 import { startKeyModifiersMenu } from "./key_modifier_ui.js";
 import { Meter } from "./synthui_meter.ts";
+import { Ut } from "../../utils/other.js";
 import type { LocaleManager } from "../../locale/locale_manager.ts";
 import { type InterpolationType, interpolationTypes } from "spessasynth_core";
 
@@ -86,7 +87,8 @@ export function createAdvancedConfiguration(
     this: SynthetizerUI
 ): HTMLDivElement {
     const wrapper = document.createElement("div");
-    wrapper.classList.add("effect_wrapper", "synthui_tab", "hidden");
+    wrapper.classList.add("effect_wrapper", "synthui_tab");
+    Ut.hide(wrapper);
 
     // Title
     const title = document.createElement("h2");
