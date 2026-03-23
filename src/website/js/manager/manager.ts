@@ -1,5 +1,10 @@
 import { MIDIKeyboard } from "../midi_keyboard/midi_keyboard.js";
-import { Sequencer, WebMIDILinkHandler, WorkerSynthesizer, WorkletSynthesizer } from "spessasynth_lib";
+import {
+    Sequencer,
+    WebMIDILinkHandler,
+    WorkerSynthesizer,
+    WorkletSynthesizer
+} from "spessasynth_lib";
 
 import { Renderer } from "../renderer/renderer.js";
 
@@ -12,9 +17,15 @@ import { isMobile } from "../utils/is_mobile.js";
 import { keybinds } from "../utils/keybinds.js";
 import { showAudioExportMenu } from "./export_audio/export_audio.js";
 import { showExportMenu } from "./export_audio/export_song.js";
-import { closeNotification, showNotification } from "../notification/notification.js";
+import {
+    closeNotification,
+    showNotification
+} from "../notification/notification.js";
 import { DropFileHandler, type MIDIFile } from "../utils/drop_file_handler.js";
-import { IndexedByteArray, SpessaSynthCoreUtils as util } from "spessasynth_core";
+import {
+    IndexedByteArray,
+    SpessaSynthCoreUtils as util
+} from "spessasynth_core";
 import { prepareExtraBankUpload } from "./extra_bank_handling.js";
 
 import { EXTRA_BANK_ID, SOUND_BANK_ID } from "./bank_id.ts";
@@ -281,6 +292,17 @@ export class Manager {
                 element,
                 "textContent",
                 element.getAttribute("translate-path") ?? ""
+            );
+        }
+
+        // Bind every element with translate-path to translation
+        for (const element of document.querySelectorAll<HTMLElement>(
+            "*[translate-path-description]"
+        )) {
+            this.localeManager.bindObjectProperty(
+                element,
+                "title",
+                element.getAttribute("translate-path-description") ?? ""
             );
         }
 

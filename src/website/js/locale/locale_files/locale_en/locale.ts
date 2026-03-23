@@ -53,6 +53,7 @@ export const localeEnglish = {
 
     demoSoundfontUploadButton: "Upload the soundfont",
     demoGithubPage: "Project page",
+    discord: "Join the Discord server!",
     soundfontEditor: "SF2/DLS Editor",
     demoDownload: {
         main: "Download",

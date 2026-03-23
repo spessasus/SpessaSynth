@@ -91,6 +91,12 @@ input[type="file"] {
     flex-wrap: wrap;
     justify-content: space-around;
 }
+.midi_and_sf_controller label,
+.midi_and_sf_controller a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
 .midi_and_sf_controller label,
 .general_button {
@@ -100,14 +106,12 @@ input[type="file"] {
     background: var(--top-buttons-color);
     font-weight: bolder;
     margin: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     transition: all 0.1s ease;
     border: none;
 }
 
-.link a {
+.link a,
+.link svg * {
     color: yellowgreen;
 }
 
