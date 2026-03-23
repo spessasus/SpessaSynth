@@ -110,9 +110,16 @@ export class SequencerUI {
     };
     protected progressBarBackground: HTMLDivElement;
     protected progressBar: HTMLDivElement;
-    protected playPause: HTMLDivElement;
+    protected readonly transportControls: {
+        previousSongButton: HTMLDivElement;
+        playPauseButton: HTMLDivElement;
+        loopButton: HTMLDivElement;
+        shuffleButton: HTMLDivElement;
+        textButton: HTMLDivElement;
+        playbackRateButton: HTMLDivElement;
+        nextSongButton: HTMLDivElement;
+    };
     protected subtitleManager: AssManager;
-    protected loopButton: HTMLDivElement;
     protected lyricsShown = false;
     protected readonly updateSongDisplayData = updateSongDisplayData.bind(this);
     protected readonly setLyricsText = setLyricsText.bind(this);
@@ -318,7 +325,6 @@ export class SequencerUI {
                 "Play/Pause",
                 getPauseSvg(ICON_SIZE)
             );
-            this.playPause = playPauseButton;
             this.locale.bindObjectProperty(
                 playPauseButton,
                 "title",
@@ -378,7 +384,6 @@ export class SequencerUI {
                 this.setLoopState(this.seq.loopCount < 1);
             };
             loopButton.addEventListener("click", toggleLoop);
-            this.loopButton = loopButton;
 
             // Shuffle button
             const shuffleButton = getSeqUIButton(
@@ -405,97 +410,101 @@ export class SequencerUI {
                 "Playback speed",
                 getSpeedSvg(ICON_SIZE)
             );
-            this.locale.bindObjectProperty(
-                playbackRateButton,
-                "title",
-                "locale.sequencerController.playbackRate"
-            );
-
-            const input = document.createElement("input");
-            input.type = "number";
-            input.id = "playback_rate_slider";
-            const minSlider = 1;
-            const maxSlider = 60;
-            input.min = minSlider.toString();
-            input.max = maxSlider.toString();
-            input.value = "20"; // Note about these: 100% and below are incremented by five,
-            // While above 100 is incremented by 10
-            const playbackRateSlider = createSlider(input, true);
             const playbackRateSliderWrapper = document.createElement("div");
-            playbackRateSliderWrapper.classList.add(
-                "playback_rate_slider_wrapper"
-            );
-            playbackRateSliderWrapper.append(playbackRateSlider);
-            const actualInput = playbackRateSlider.firstElementChild
-                ?.lastElementChild as HTMLInputElement;
-            const displaySpan =
-                playbackRateSlider.lastElementChild as HTMLSpanElement;
-            if (!actualInput) {
-                throw new Error("Unexpected lack of elements!");
-            }
-            if (!displaySpan) {
-                throw new Error("Unexpected lack of elements!");
-            }
-            displaySpan.contentEditable = "true";
-            displaySpan.textContent = `${this.seq.playbackRate * 100}%`;
-            actualInput.addEventListener("input", () => {
-                const value = Number.parseInt(actualInput.value);
-                const playbackPercent =
-                    value > 20 ? (value - 20) * 10 + 100 : value * 5;
-                const newPlayback = playbackPercent / 100;
-                this.seq.playbackRate = newPlayback;
-                this.silencePlayer.playbackRate = newPlayback;
-                displaySpan.textContent = `${Math.round(playbackPercent)}%`;
-            });
-            displaySpan.addEventListener("keydown", (e) => {
-                e.stopPropagation();
-                e.stopImmediatePropagation();
-            });
-            displaySpan.addEventListener("input", (e) => {
-                e.stopImmediatePropagation();
-                const num = Number.parseInt(displaySpan.textContent);
-
-                let percent = Number.isNaN(num) ? 100 : num;
-                if (percent < 1) {
-                    percent = 100;
-                }
-                const newPlayback = percent / 100;
-                this.seq.playbackRate = newPlayback;
-                this.silencePlayer.playbackRate = newPlayback;
-
-                // Get the value that the input would have
-                const inputValue = Math.max(
-                    minSlider,
-                    Math.min(
-                        maxSlider,
-                        percent > 100 ? (percent - 100) / 10 + 20 : percent / 5
-                    )
+            {
+                this.locale.bindObjectProperty(
+                    playbackRateButton,
+                    "title",
+                    "locale.sequencerController.playbackRate"
                 );
-                actualInput.value = inputValue.toString();
 
-                const wrapper = playbackRateSlider.querySelector(
-                    ".settings_visual_wrapper"
-                )!;
-                (wrapper as HTMLElement).style.setProperty(
-                    "--visual-width",
-                    `${((inputValue - minSlider) / (maxSlider - minSlider)) * 100}%`
+                const input = document.createElement("input");
+                input.type = "number";
+                input.id = "playback_rate_slider";
+                const minSlider = 1;
+                const maxSlider = 60;
+                input.min = minSlider.toString();
+                input.max = maxSlider.toString();
+                input.value = "20"; // Note about these: 100% and below are incremented by five,
+                // While above 100 is incremented by 10
+                const playbackRateSlider = createSlider(input, true);
+                playbackRateSliderWrapper.classList.add(
+                    "playback_rate_slider_wrapper"
                 );
-            });
-            displaySpan.addEventListener("blur", () => {
-                displaySpan.textContent = `${Math.round(this.seq.playbackRate * 100)}%`;
-            });
-            playbackRateSliderWrapper.classList.add("hidden");
-            let sliderShown = false;
-            playbackRateButton.addEventListener("click", () => {
-                sliderShown = !sliderShown;
-                playbackRateSliderWrapper.classList.toggle("hidden");
-                if (sliderShown) {
-                    this.enableIcon(playbackRateButton);
-                } else {
-                    this.disableIcon(playbackRateButton);
+                playbackRateSliderWrapper.append(playbackRateSlider);
+                const actualInput = playbackRateSlider.firstElementChild
+                    ?.lastElementChild as HTMLInputElement;
+                const displaySpan =
+                    playbackRateSlider.lastElementChild as HTMLSpanElement;
+                if (!actualInput) {
+                    throw new Error("Unexpected lack of elements!");
                 }
-            });
-            this.disableIcon(playbackRateButton);
+                if (!displaySpan) {
+                    throw new Error("Unexpected lack of elements!");
+                }
+                displaySpan.contentEditable = "true";
+                displaySpan.textContent = `${this.seq.playbackRate * 100}%`;
+                actualInput.addEventListener("input", () => {
+                    const value = Number.parseInt(actualInput.value);
+                    const playbackPercent =
+                        value > 20 ? (value - 20) * 10 + 100 : value * 5;
+                    const newPlayback = playbackPercent / 100;
+                    this.seq.playbackRate = newPlayback;
+                    this.silencePlayer.playbackRate = newPlayback;
+                    displaySpan.textContent = `${Math.round(playbackPercent)}%`;
+                });
+                displaySpan.addEventListener("keydown", (e) => {
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                });
+                displaySpan.addEventListener("input", (e) => {
+                    e.stopImmediatePropagation();
+                    const num = Number.parseInt(displaySpan.textContent);
+
+                    let percent = Number.isNaN(num) ? 100 : num;
+                    if (percent < 1) {
+                        percent = 100;
+                    }
+                    const newPlayback = percent / 100;
+                    this.seq.playbackRate = newPlayback;
+                    this.silencePlayer.playbackRate = newPlayback;
+
+                    // Get the value that the input would have
+                    const inputValue = Math.max(
+                        minSlider,
+                        Math.min(
+                            maxSlider,
+                            percent > 100
+                                ? (percent - 100) / 10 + 20
+                                : percent / 5
+                        )
+                    );
+                    actualInput.value = inputValue.toString();
+
+                    const wrapper = playbackRateSlider.querySelector(
+                        ".settings_visual_wrapper"
+                    )!;
+                    (wrapper as HTMLElement).style.setProperty(
+                        "--visual-width",
+                        `${((inputValue - minSlider) / (maxSlider - minSlider)) * 100}%`
+                    );
+                });
+                displaySpan.addEventListener("blur", () => {
+                    displaySpan.textContent = `${Math.round(this.seq.playbackRate * 100)}%`;
+                });
+                playbackRateSliderWrapper.classList.add("hidden");
+                let sliderShown = false;
+                playbackRateButton.addEventListener("click", () => {
+                    sliderShown = !sliderShown;
+                    playbackRateSliderWrapper.classList.toggle("hidden");
+                    if (sliderShown) {
+                        this.enableIcon(playbackRateButton);
+                    } else {
+                        this.disableIcon(playbackRateButton);
+                    }
+                });
+                this.disableIcon(playbackRateButton);
+            }
 
             // Show text button
             const textButton = getSeqUIButton(
@@ -519,6 +528,16 @@ export class SequencerUI {
             };
             this.toggleLyrics = toggleLyrics;
             textButton.addEventListener("click", toggleLyrics);
+
+            this.transportControls = {
+                previousSongButton,
+                loopButton,
+                shuffleButton,
+                playPauseButton,
+                textButton,
+                playbackRateButton,
+                nextSongButton
+            };
 
             // Add everything
             controlsDiv.append(previousSongButton); // |<
@@ -648,7 +667,30 @@ export class SequencerUI {
                 this.lyricsIndex = -1;
                 this.updateSongDisplayData();
                 // Disable loop if more than 1 song
-                this.setLoopState(this.seq.songsAmount === 1);
+                // And hide buttons to switch songs
+                if (this.seq.songsAmount === 1) {
+                    this.setLoopState(true);
+                    this.transportControls.nextSongButton.classList.add(
+                        "hidden"
+                    );
+                    this.transportControls.previousSongButton.classList.add(
+                        "hidden"
+                    );
+                    this.transportControls.shuffleButton.classList.add(
+                        "hidden"
+                    );
+                } else {
+                    this.setLoopState(false);
+                    this.transportControls.nextSongButton.classList.remove(
+                        "hidden"
+                    );
+                    this.transportControls.previousSongButton.classList.remove(
+                        "hidden"
+                    );
+                    this.transportControls.shuffleButton.classList.remove(
+                        "hidden"
+                    );
+                }
                 this.restoreDisplay();
 
                 let midiEncoding = data.getRMIDInfo("midiEncoding");
@@ -748,7 +790,8 @@ export class SequencerUI {
     public seqPlay() {
         this.seq.play();
         this.setWakeLock();
-        this.playPause.innerHTML = getPauseSvg(ICON_SIZE);
+        this.transportControls.playPauseButton.innerHTML =
+            getPauseSvg(ICON_SIZE);
         this.silencePlayer.volume = 0.001;
         this.syncSilencePlayer();
         void this.silencePlayer.play().then(() => {
@@ -766,7 +809,8 @@ export class SequencerUI {
             this.seq.pause();
         }
         this.releaseWakeLock();
-        this.playPause.innerHTML = getPlaySvg(ICON_SIZE);
+        this.transportControls.playPauseButton.innerHTML =
+            getPlaySvg(ICON_SIZE);
 
         this.silencePlayer.pause();
         navigator.mediaSession.playbackState = "paused";
@@ -797,10 +841,10 @@ export class SequencerUI {
     public setLoopState(loop: boolean) {
         if (loop) {
             this.seq.loopCount = Infinity;
-            this.enableIcon(this.loopButton);
+            this.enableIcon(this.transportControls.loopButton);
         } else {
             this.seq.loopCount = 0;
-            this.disableIcon(this.loopButton);
+            this.disableIcon(this.transportControls.loopButton);
         }
     }
 
