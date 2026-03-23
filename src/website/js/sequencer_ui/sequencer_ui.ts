@@ -1052,7 +1052,7 @@ export class SequencerUI {
         this.lyricsElement.text.separateLyrics = [];
         for (const lyric of this.currentLyricsString) {
             const span = document.createElement("span");
-            span.textContent = lyric;
+            span.innerHTML = lyric.replaceAll(/\r?\n|\r/g, "<br>");
             // Gray (not highlighted) text
             span.classList.add("lyrics_text_gray");
             this.lyricsElement.text.main.append(span);
