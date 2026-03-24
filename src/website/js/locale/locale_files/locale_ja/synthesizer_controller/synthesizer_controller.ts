@@ -4,67 +4,73 @@ import { keyModifiers } from "./key_modifiers.js";
 
 export const synthesizerControllerLocale = {
     toggleButton: {
-        title: "Synthesizer controller (S)",
-        description: "Show the synthesizer controller"
+        title: "シンセサイザーコントローラー (S)",
+        description: "シンセサイザーコントローラーの表示を切り替えます。"
     },
 
     // Meters
     mainVoiceMeter: {
-        title: "Voices: ",
-        description: "The total amount of voices currently playing"
+        title: "ボイス: ",
+        description: //"The total amount of voices currently playing"
+            "現在再生中の音の総数"
     },
 
     mainVolumeMeter: {
-        title: "Volume: ",
-        description: "The current master volume of the synthesizer"
+        title: "音量: ",
+        description: //"The current master volume of the synthesizer"
+            "シンセサイザーの現在のマスターボリューム"
     },
 
     mainPanMeter: {
-        title: "Pan: ",
-        description: "The current master stereo panning of the synthesizer"
+        title: "パン: ",
+        description: //"The current master stereo panning of the synthesizer"
+            "シンセサイザーの現在のマスターステレオパン"
     },
 
     mainTransposeMeter: {
-        title: "Transpose: ",
+        title: "トランスポーズ: ",
         description:
-            "Transpose: Transposes the synthesizer (in semitones or keys)"
+            //"Transpose: Transposes the synthesizer (in semitones or keys)"
+            "トランスポーズ: シンセサイザーを移調します（セミトーンまたはキー単位）"
     },
 
     // Buttons
     midiPanic: {
-        title: "MIDI Panic",
-        description: "MIDI Panic: Stops all voices immediately"
+        title: "MIDIパニック",
+        description: "MIDIパニック: すべての音を即座に停止します"
     },
 
     systemReset: {
-        title: "Reset Controllers",
+        title: "コントローラをリセット",
         description:
-            "Reset Controllers: Resets all MIDI controllers to their default values"
+            //"Reset Controllers: Resets all MIDI controllers to their default values"
+            "コントローラーをリセット: すべてのMIDIコントローラーをデフォルト値にリセットします"
     },
 
     showOnlyUsed: {
-        title: "Show Only Used",
+        title: "使用中のチャンネルのみを表示",
         description:
-            "Show Only Used: Show only the used MIDI channels in the synthesizer controller"
+            "使用中のチャンネルのみを表示: シンセサイザー コントローラーで使用中のMIDIチャンネルのみを表示します"
     },
 
     helpButton: {
-        title: "Help",
-        description: "Help: Opens an external website with the usage guide"
+        title: "ヘルプ",
+        description: //"Help: Opens an external website with the usage guide"
+            "ヘルプ: 使い方ガイドが記載された外部ウェブサイトを開きます"
     },
 
     tabs: {
-        description: "Tabs: Select what to configure",
-        channels: "MIDI Channels",
-        reverb: "Reverb",
-        chorus: "Chorus",
-        delay: "Delay",
-        insertion: "Insertion",
-        configuration: "Configuration"
+        description: "タブ: 設定する項目を選択します",
+        channels: "MIDIチャンネル",
+        reverb: "リバーブ設定",
+        chorus: "コーラス設定",
+        delay: "ディレイ設定",
+        insertion: "インサーションFX設定",
+        configuration: "全般設定",
     },
 
-    holdPedalDown: "Hold pedal is down (Shift)",
-    port: "Port {0} (click to toggle visibility)",
+    holdPedalDown: "ホールドペダルが押されています (Shift)",
+    port: "ポート{0} (クリックして表示を切り替え)",
     channelController: channelControllerLocale,
     effectsConfig: effectsConfig,
     keyModifiers: keyModifiers

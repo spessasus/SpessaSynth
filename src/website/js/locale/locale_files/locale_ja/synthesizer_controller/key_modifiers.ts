@@ -1,74 +1,74 @@
 export const keyModifiers = {
     button: {
-        title: "Key Modifiers",
-        description: "Modify individual key parameters"
+        title: "キー修飾",
+        description: "個別のキーパラメータを修正"
     },
 
-    mainTitle: "Key Modification editor",
+    mainTitle: "キー修飾エディタ",
 
     detailedDescription:
-        "This menu allows you to modify a MIDI note on a given channel.\n" +
-        "Currently you can modify its velocity and assign a patch (instrument) it uses.\n" +
-        " This is especially useful for drums.",
+        "このメニューでは、指定されたチャネル上のMIDIノートを修正できます。\n" +
+        "現在、ベロシティを修正し、使用するパッチ（楽器）を割り当てることができます。\n" +
+        "これは特にドラムに便利です。",
 
-    prompt: "What would you like to do?",
+    prompt: "何をしたいですか？",
 
     selectKey: {
-        prompt: "Press the key you want to modify on the keyboard.",
-        title: "Select key",
-        change: "Change key"
+        prompt: "キーボードで修正したいキーを押してください。",
+        title: "キーを選択",
+        change: "キーを変更"
     },
 
     selectedChannel: {
-        title: "Selected channel",
-        description: "The channel to which the key you want to modify belongs"
+        title: "選択されたチャネル",
+        description: "修正したいキーが属するチャネル"
     },
 
     selectedKey: {
-        title: "Selected key: {0}",
-        description: "You have selected the MIDI note number {0}"
+        title: "選択されたキー: {0}",
+        description: "MIDIノート番号 {0} を選択しました"
     },
 
     modifyKey: {
-        title: "Modify a key",
-        description: "Modify a single key on a given channel",
+        title: "キーを修正",
+        description: "指定されたチャネル上の単一キーを修正",
         velocity: {
-            title: "Velocity override",
+            title: "ベロシティオーバーライド",
             description:
-                "The velocity to use on this key, ignoring the MIDI velocity. Leave at -1 for unchanged"
+                "このキーで使用するベロシティで、MIDIベロシティを無視します。変更がない場合は -1 のままにしてください"
         },
         gain: {
-            title: "Gain",
-            description: "Linear gain for this voice. Set to 1 for unchanged."
+            title: "ゲイン",
+            description: "このボイスの直線ゲイン。変更がない場合は 1 に設定します。"
         },
         preset: {
-            title: "Preset override",
-            description: "The preset to use on this key.",
-            unchanged: "Unchanged"
+            title: "プリセットオーバーライド",
+            description: "このキーで使用するプリセット。",
+            unchanged: "変更なし"
         },
         apply: {
-            title: "Apply",
-            description: "Apply the selected modifier"
+            title: "適用",
+            description: "選択した修飾子を適用"
         }
     },
 
     removeModification: {
-        title: "Remove modification",
-        description: "Remove modification from a single key on a given channel",
+        title: "修正を削除",
+        description: "指定されたチャネル上の単一キーから修正を削除",
 
         remove: {
-            title: "Remove",
-            description: "Remove this key modifier"
+            title: "削除",
+            description: "このキー修飾を削除"
         }
     },
 
     resetModifications: {
-        title: "Reset changes",
-        description: "Clear and reset all key modifications from all channels",
+        title: "変更をリセット",
+        description: "すべてのチャネルからすべてのキー修正をクリアおよびリセット",
 
         confirmation: {
-            title: "Confirm your actions",
-            description: "Are you sure you want to remove ALL modifications?"
+            title: "アクションを確認",
+            description: "すべての修正を削除してよろしいですか？"
         }
     }
 };
