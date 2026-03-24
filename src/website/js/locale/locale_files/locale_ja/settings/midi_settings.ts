@@ -3,7 +3,7 @@ export const midiSettingsLocale = {
 
     midiInput: {
         title: "MIDI入力",
-        description: "MIDIメッセージを受信するポート",
+        description: "MIDIメッセージをリッスンするポート",
         disabled: "無効"
     },
 
@@ -14,8 +14,10 @@ export const midiSettingsLocale = {
     },
 
     reminder: {
-        title: "新しいMIDIデバイスを接続した後、ここに表示するにはブラウザを再起動する必要があることに注意してください。",
+        title: //"Note that you need to RESTART YOUR BROWSER after connecting a new MIDI device for it to show up here.",
+        "注意: 新しく接続したMIDIデバイスをここに表示するためには、ブラウザを再起動する必要があります。",
         description:
-            "また、SafariはWebMIDIをサポートしていないため、Macの場合は別のブラウザを使用する必要があります。"
+            //"Also note that Safari does not support WebMIDI, so you will need to use a different browser if you are on Mac."
+            "さらに、SafariはWebMIDIをサポートしていないため、Macを使用している場合は別のブラウザを使用する必要があることに注意してください。"
     }
 };

@@ -6,6 +6,7 @@ export const UPDATE_NAME = "v4.2.0 The Effects Update";
 export const WHATS_NEW: string[] = [
     `Simplified Chinese Translation! (By 懒洋君)`,
     `Italian Translation! (By ItsFilyy)`,
+    `Updated Japanese Translation! (by src3453)`,
     `New reverb!`,
     `New chorus!`,
     `Delay effect!`,

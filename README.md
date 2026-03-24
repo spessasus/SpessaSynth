@@ -45,7 +45,7 @@ This is a repository for the web application, it used to be a monorepo containin
 - **Extensive language support:**
     - English
     - Polish
-    - Japanese
+    - Japanese (translated by src3453)
     - French (translated by Davy Triponney)
     - Portuguese (translated by Lucas Gabriel)
     - Simplified Chinese (By 懒洋君)
