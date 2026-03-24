@@ -4,8 +4,8 @@ import { midiSettingsLocale } from "./midi_settings.js";
 import { interfaceSettings } from "./interface_settings.js";
 
 export const settingsLocale = {
-    toggleButton: "Settings",
-    mainTitle: "Program settings",
+    toggleButton: "設定",
+    mainTitle: "プログラム設定",
 
     rendererSettings: rendererSettingsLocale,
     keyboardSettings: keyboardSettingsLocale,

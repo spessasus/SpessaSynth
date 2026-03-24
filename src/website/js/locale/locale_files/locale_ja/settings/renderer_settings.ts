@@ -1,91 +1,96 @@
 export const rendererSettingsLocale = {
-    title: "Renderer settings",
+    title: "レンダラー設定",
 
     mode: {
-        title: "Visualization mode",
-        description: "Change the visualization mode of the channels",
-        waveforms: "Waveforms",
-        spectrumSplit: "Spectrum Split",
-        spectrum: "Spectrum",
-        filledWaveforms: "Filled Waveforms"
+        title: "ビジュアライゼーションモード",
+        description: "チャンネルのビジュアライゼーションモードを変更",
+        waveforms: "波形",
+        spectrumSplit: "スペクトル(分割)",
+        spectrum: "スペクトル",
+        filledWaveforms: "波形(塗りつぶし)"
     },
 
     noteFallingTime: {
-        title: "Note falling time (milliseconds)",
-        description: "How fast the notes fall (visually)"
+        title: "ノートの落下時間 (ミリ秒)",
+        description: //"How fast the notes fall (visually)"
+            "ノートの落下速度(視覚的)"
     },
 
     noteAfterTriggerTime: {
-        title: "Note after trigger time (milliseconds)",
+        title: "トリガー後のノート時間 (ミリ秒)",
         description:
-            "How long the notes fall after they get triggered. Zero means that they trigger at the bottom"
+            //"How long the notes fall after they get triggered. Zero means that they trigger at the bottom"
+            "ノートがトリガーされた後の落下時間。ゼロは、ノートが底でトリガーされることを意味します"
     },
 
     waveformThickness: {
-        title: "Waveform line thickness (px)",
-        description: "How thick the waveform lines are"
+        title: "波形の線の太さ (px)",
+        description: "波形の線の太さ"
     },
 
     waveformSampleSize: {
-        title: "Sample size",
+        title: "サンプルサイズ",
         description:
-            "How detailed the visualizations are (Note: high values might impact performance). Also note that high values will add a delay to the audio to sync the waveforms with the audio"
+            //"How detailed the visualizations are (Note: high values might impact performance). Also note that high values will add a delay to the audio to sync the waveforms with the audio"
+            "ビジュアライゼーションの詳細度 (注: 高い値はパフォーマンスに影響を与える可能性があります)。" + 
+            "また、高い値は、波形をオーディオと同期させるためにオーディオに遅延を追加することに注意してください"
     },
 
     waveformAmplifier: {
-        title: "Amplifier",
-        description: "How vibrant the visualizaions are"
+        title: "波形の振幅",
+        description: "ビジュアライゼーションの鮮明さ"
     },
 
     toggleExponentialGain: {
-        title: "Enable exponential gain",
+        title: "指数ゲインを有効にする",
         description:
-            "Make the differences in gain more visible by using exponential curve rather than linear for height calculation"
+            "高さの計算に線形ではなく指数曲線を使用して、ゲインの違いをより視覚的にする"
     },
 
     toggleDynamicGain: {
-        title: "Enable dynamic gain",
+        title: "ダイナミックゲインを有効にする",
         description:
-            "Adjust the gain automatically so the highest point always touches the ceiling of the display"
+            //"Adjust the gain automatically so the highest point always touches the ceiling of the display"
+            "ゲインを自動的に調整して、最高点が常にディスプレイの天井に触れるようにします"
     },
 
     toggleLogarithmicFrequency: {
-        title: "Enable logarithmic frequency",
+        title: "対数周波数を有効にする",
         description:
-            "Spread the frequency bins in a logarithmic fashion, rather than linear. Recommended"
+            "周波数分布を線形ではなく対数的に広げます。(推奨)"
     },
 
     toggleWaveformsRendering: {
-        title: "Enable waveforms rendering",
+        title: "波形の描画を有効にする",
         description:
-            "Enable rendering the channel waveforms (colorful lines showing audio)"
+            "チャンネルの波形を描画する (音声を示すカラフルな線)"
     },
 
     toggleNotesRendering: {
-        title: "Enable notes rendering",
+        title: "ノートの描画を有効にする",
         description:
-            "Enable rendering of the falling notes when playing a MIDI file"
+            "MIDIファイルを再生する際の落下ノートの描画を有効にする"
     },
 
     toggleDrawingActiveNotes: {
-        title: "Enable drawing active notes",
+        title: "アクティブノートの描画を有効にする",
         description:
-            "Enable notes lighting up and glowing when they get pressed"
+            "ノートが押されたときに光り、輝くようにする"
     },
 
     toggleDrawingVisualPitch: {
-        title: "Enable drawing visual pitch",
+        title: "視覚的なピッチの描画を有効にする",
         description:
-            "Enable notes sliding left or right when the pitch wheel is applied"
+            "ピッチベンドが適用されたときにノートが左右にスライドするようにする"
     },
 
     toggleRenderingDotDisplay: {
-        title: "Enable drawing dot display",
-        description: "Enable drawing the GS/XG Dot Display mesages"
+        title: "ドットディスプレイの描画を有効にする",
+        description: "GS/XGのドットディスプレイメッセージの描画を有効にする"
     },
 
     toggleStabilizeWaveforms: {
-        title: "Stabilize waveforms",
-        description: "Enable oscilloscope triggering"
+        title: "波形の安定化を有効にする",
+        description: "オシロスコープのトリガーを有効にする"
     }
 };

@@ -1,45 +1,45 @@
 export const interfaceSettings = {
-    title: "Interface settings",
+    title: "インターフェース設定",
 
     toggleTheme: {
-        title: "Use dark theme",
-        description: "Enable the dark theme for the interface"
+        title: "ダークテーマを使用",
+        description: "インターフェースのダークテーマを有効にする"
     },
 
     selectLanguage: {
-        title: "Language",
-        description: "Change the program language",
-        helpTranslate: "Translate SpessaSynth"
+        title: "言語",
+        description: "プログラムの言語を変更",
+        helpTranslate: "SpessaSynthを翻訳するのを手伝う"
     },
 
     layoutDirection: {
-        title: "Layout direction",
-        description: "The layout direction of the renderer and keyboard",
+        title: "ピアノロールの方向",
+        description: "レンダラとキーボードのレイアウト方向",
         values: {
-            downwards: "Downwards",
-            upwards: "Upwards",
-            leftToRight: "Left to right",
-            rightToLeft: "Right to left"
+            downwards: "下向き",
+            upwards: "上向き",
+            leftToRight: "左から右",
+            rightToLeft: "右から左"
         }
     },
 
     synthReload: {
-        chromium: "Reload in Chrome mode",
-        worklet: "Reload in Worklet mode"
+        chromium: "Chromium(Worker)モードで再読み込み",
+        worklet: "Workletモードで再読み込み"
     },
 
     reminder: {
-        title: "Did you know that you can hover over the settings to get more information?",
-        description: "Like this one!"
+        title: "設定にカーソルを合わせると、より詳しい情報が得られることがあります。",
+        description: "こんな感じです！"
     },
 
     useFirefox: {
-        firefox: "Firefox Web Browser",
-        recommended: "is highly recommended for the best performance."
+        firefox: "Firefoxを使用することを強くお勧めします",
+        recommended: "Firefoxは最高のパフォーマンスのために強く推奨されます。"
     },
 
     showControls: {
-        title: "Show controls",
-        description: "Show the transport control buttons"
+        title: "コントロールを表示",
+        description: "再生コントロールボタンを表示"
     }
 };

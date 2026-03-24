@@ -1,37 +1,38 @@
 export const keyboardSettingsLocale = {
-    title: "MIDI Keyboard settings",
+    title: "MIDIキーボード設定",
 
     selectedChannel: {
-        title: "Selected channel",
-        description: "The channel keyboard sends messages to",
-        channelOption: "Channel {0}"
+        title: "選択されたチャネル",
+        description: "キーボードがメッセージを送信するチャネル",
+        channelOption: "チャンネル{0}"
     },
 
     keyboardSize: {
-        title: "Keyboard size",
+        title: "キーボードサイズ",
         description:
-            "The range of keys shown on the keyboard. Adjusts the MIDI note size accordingly",
+            "キーボードに表示されるキーの範囲。MIDIノートサイズをそれに応じて調整します",
 
-        full: "128 keys (full)",
-        piano: "88 keys (piano)",
-        fiveOctaves: "5 octaves",
-        useSongKeyRange: "Use song's key range",
-        twoOctaves: "Two octaves"
+        full: "128キー(full)",
+        piano: "88キー(piano)",
+        fiveOctaves: "5オクターブ",
+        useSongKeyRange: "楽曲のキー範囲を使用",
+        twoOctaves: "2オクターブ"
     },
 
     toggleTheme: {
-        title: "Use dark theme",
-        description: "Use the dark MIDI keyboard theme"
+        title: "ダークテーマを使用",
+        description: "ダークテーマのMIDIキーボードを使用する"
     },
 
     show: {
-        title: "Show",
-        description: "Show/hide MIDI keyboard"
+        title: "表示",
+        description: "MIDIキーボードの表示/非表示"
     },
 
-    forceMaxVelocity: {
-        title: "Force full color",
+    forceMaxVelocity: { // Rock harder to translate, you know?
+        title: "最大ベロシティを強制",
         description:
-            "Force full color intensity, regardless of the MIDI note-on velocity"
+            //"Force full color intensity, regardless of the MIDI note-on velocity"
+            "MIDIノートオンのベロシティに関係なく、完全な色の強度を強制します"
     }
 };
