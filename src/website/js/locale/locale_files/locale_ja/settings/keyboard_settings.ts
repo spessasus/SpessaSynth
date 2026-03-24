@@ -12,8 +12,8 @@ export const keyboardSettingsLocale = {
         description:
             "キーボードに表示されるキーの範囲。MIDIノートサイズをそれに応じて調整します",
 
-        full: "128キー(full)",
-        piano: "88キー(piano)",
+        full: "128キー(MIDI全範囲)",
+        piano: "88キー(ピアノ)",
         fiveOctaves: "5オクターブ",
         useSongKeyRange: "楽曲のキー範囲を使用",
         twoOctaves: "2オクターブ"
