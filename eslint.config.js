@@ -74,7 +74,10 @@ export default tseslint.config(
             "unicorn/prefer-spread": "off",
 
             // This breaks a ton of TypeScript things
-            "unicorn/prefer-global-this": "off"
+            "unicorn/prefer-global-this": "off",
+
+            // We are targeting ES2022
+            "unicorn/no-array-sort": "off"
         }
     }
 );

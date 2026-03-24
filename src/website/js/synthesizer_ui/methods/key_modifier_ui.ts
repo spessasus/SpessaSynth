@@ -60,7 +60,7 @@ async function doModifyKey(
             LOCALE_PATH + "modifyKey.preset.unchanged"
         )
     };
-    for (const p of presetList.toSorted((p1, p2) => {
+    for (const p of presetList.slice().sort((p1, p2) => {
         if (p1.name < p2.name) {
             return -1;
         }
