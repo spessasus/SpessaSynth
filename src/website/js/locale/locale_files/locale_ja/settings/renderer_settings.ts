@@ -1,52 +1,91 @@
 export const rendererSettingsLocale = {
-    title: "レンダラー設定",
+    title: "Renderer settings",
+
+    mode: {
+        title: "Visualization mode",
+        description: "Change the visualization mode of the channels",
+        waveforms: "Waveforms",
+        spectrumSplit: "Spectrum Split",
+        spectrum: "Spectrum",
+        filledWaveforms: "Filled Waveforms"
+    },
+
     noteFallingTime: {
-        title: "ノートの落下時間（ミリ秒）",
-        description: "ノートが落ちる速さ（視覚的に）"
+        title: "Note falling time (milliseconds)",
+        description: "How fast the notes fall (visually)"
+    },
+
+    noteAfterTriggerTime: {
+        title: "Note after trigger time (milliseconds)",
+        description:
+            "How long the notes fall after they get triggered. Zero means that they trigger at the bottom"
     },
 
     waveformThickness: {
-        title: "波形の線の太さ（ピクセル）",
-        description: "波形の線の太さ"
+        title: "Waveform line thickness (px)",
+        description: "How thick the waveform lines are"
     },
 
     waveformSampleSize: {
-        title: "波形のサンプルサイズ",
+        title: "Sample size",
         description:
-            "波形の詳細度（注：高い値はパフォーマンスに影響を与える可能性があります） 高い値は、波形をオーディオと同期させるためにオーディオに遅延を追加します。"
+            "How detailed the visualizations are (Note: high values might impact performance). Also note that high values will add a delay to the audio to sync the waveforms with the audio"
     },
 
     waveformAmplifier: {
-        title: "波形の増幅器",
-        description: "波形の鮮やかさ"
+        title: "Amplifier",
+        description: "How vibrant the visualizaions are"
+    },
+
+    toggleExponentialGain: {
+        title: "Enable exponential gain",
+        description:
+            "Make the differences in gain more visible by using exponential curve rather than linear for height calculation"
+    },
+
+    toggleDynamicGain: {
+        title: "Enable dynamic gain",
+        description:
+            "Adjust the gain automatically so the highest point always touches the ceiling of the display"
+    },
+
+    toggleLogarithmicFrequency: {
+        title: "Enable logarithmic frequency",
+        description:
+            "Spread the frequency bins in a logarithmic fashion, rather than linear. Recommended"
     },
 
     toggleWaveformsRendering: {
-        title: "波形レンダリングの切り替え",
+        title: "Enable waveforms rendering",
         description:
-            "チャンネル波形のレンダリングを切り替えます（オーディオを表示するカラフルな線）"
+            "Enable rendering the channel waveforms (colorful lines showing audio)"
     },
 
     toggleNotesRendering: {
-        title: "ノートレンダリングの切り替え",
+        title: "Enable notes rendering",
         description:
-            "MIDIファイルを再生する際の落下ノートのレンダリングを切り替えます"
+            "Enable rendering of the falling notes when playing a MIDI file"
     },
 
     toggleDrawingActiveNotes: {
-        title: "アクティブノートの描画を切り替え",
-        description: "ノートが押されたときに光り輝く描画を切り替えます"
+        title: "Enable drawing active notes",
+        description:
+            "Enable notes lighting up and glowing when they get pressed"
     },
 
     toggleDrawingVisualPitch: {
-        title: "ビジュアルピッチ描画の切り替え",
+        title: "Enable drawing visual pitch",
         description:
-            "ピッチホイールが適用されたときにノートが左右にスライドする描画を切り替えます"
+            "Enable notes sliding left or right when the pitch wheel is applied"
+    },
+
+    toggleRenderingDotDisplay: {
+        title: "Enable drawing dot display",
+        description: "Enable drawing the GS/XG Dot Display mesages"
     },
 
     toggleStabilizeWaveforms: {
-        title: "波形を安定させる",
-        description:
-            "オーディオ波形を安定させる設定を切り替え、波形を固定します。"
+        title: "Stabilize waveforms",
+        description: "Enable oscilloscope triggering"
     }
 };

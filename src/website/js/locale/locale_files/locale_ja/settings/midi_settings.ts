@@ -1,21 +1,21 @@
 export const midiSettingsLocale = {
-    title: "MIDI設定",
+    title: "MIDI settings",
 
     midiInput: {
-        title: "MIDI入力",
-        description: "MIDIメッセージを受信するポート",
-        disabled: "無効"
+        title: "MIDI input",
+        description: "The port to listen on for MIDI messages",
+        disabled: "Disabled"
     },
 
     midiOutput: {
-        title: "MIDI出力",
-        description: "MIDIファイルを再生するポート",
-        disabled: "SpessaSynthを使用"
+        title: "MIDI output",
+        description: "The port to play the MIDI file to",
+        disabled: "Use SpessaSynth"
     },
 
     reminder: {
-        title: "新しいMIDIデバイスを接続した後、ここに表示するにはブラウザを再起動する必要があることに注意してください。",
+        title: "Note that you need to RESTART YOUR BROWSER after connecting a new MIDI device for it to show up here.",
         description:
-            "また、SafariはWebMIDIをサポートしていないため、Macの場合は別のブラウザを使用する必要があります。"
+            "Also note that Safari does not support WebMIDI, so you will need to use a different browser if you are on Mac."
     }
 };

@@ -4,11 +4,12 @@
  */
 export const musicPlayerModeLocale = {
     toggleButton: {
-        title: "音楽プレイヤーモードの切り替え",
+        title: "ミュージックプレイヤーのモード変更",
         description:
-            "簡略化されたUIバージョンに切り替え、キーボードとノートの視覚化を隠します"
+            //"Toggle the simplified UI version, hiding the keyboard and note visualizations"
+            "シンプルなUIバージョンの切り替え。キーボードとノートの視覚化を非表示にします。"
     },
     currentlyPlaying: "再生中:",
-    nothingPlaying: "再生しているものはありません",
-    nothingPlayingCopyright: "MIDIをアップロードしてください！"
+    nothingPlaying: "何も再生されていません。",
+    nothingPlayingCopyright: "MIDIファイルをアップロードしてください。"
 };

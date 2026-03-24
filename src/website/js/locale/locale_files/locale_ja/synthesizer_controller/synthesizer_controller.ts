@@ -1,65 +1,71 @@
 import { channelControllerLocale } from "./channel_controller.js";
+import { effectsConfig } from "./effects_config.js";
+import { keyModifiers } from "./key_modifiers.js";
 
 export const synthesizerControllerLocale = {
     toggleButton: {
-        title: "シンセサイザーコントローラー (S)",
-        description: "シンセサイザーコントローラーを表示"
+        title: "Synthesizer controller (S)",
+        description: "Show the synthesizer controller"
     },
 
     // Meters
     mainVoiceMeter: {
-        title: "ボイス: ",
-        description: "現在再生中のボイスの総数"
+        title: "Voices: ",
+        description: "The total amount of voices currently playing"
     },
 
     mainVolumeMeter: {
-        title: "ボリューム: ",
-        description: "シンセサイザーの現在のマスターボリューム"
+        title: "Volume: ",
+        description: "The current master volume of the synthesizer"
     },
 
     mainPanMeter: {
-        title: "パン: ",
-        description: "シンセサイザーの現在のマスターステレオパンニング"
+        title: "Pan: ",
+        description: "The current master stereo panning of the synthesizer"
     },
 
     mainTransposeMeter: {
-        title: "トランスポーズ: ",
-        description: "シンセサイザーを移調します（セミトーンまたはキー）"
+        title: "Transpose: ",
+        description:
+            "Transpose: Transposes the synthesizer (in semitones or keys)"
     },
 
     // Buttons
     midiPanic: {
-        title: "MIDIパニック",
-        description: "すべてのボイスを即座に停止"
+        title: "MIDI Panic",
+        description: "MIDI Panic: Stops all voices immediately"
     },
 
     systemReset: {
-        title: "システムリセット",
-        description: "すべてのコントローラーをデフォルト値にリセット"
+        title: "Reset Controllers",
+        description:
+            "Reset Controllers: Resets all MIDI controllers to their default values"
     },
 
-    blackMidiMode: {
-        title: "ブラックMIDIモード",
+    showOnlyUsed: {
+        title: "Show Only Used",
         description:
-            "高性能モードを切り替え、見た目を簡素化し、ノートを速く消去"
-    },
-
-    disableCustomVibrato: {
-        title: "カスタムビブラートを無効化",
-        description:
-            "カスタム（NRPN）ビブラートを永久に無効化。再度有効化するにはウェブサイトをリロード"
+            "Show Only Used: Show only the used MIDI channels in the synthesizer controller"
     },
 
     helpButton: {
-        title: "ヘルプ",
-        description: "使用ガイドを表示します"
+        title: "Help",
+        description: "Help: Opens an external website with the usage guide"
     },
 
-    interpolation: {
-        description: "シンセサイザーの補間方法を選択",
-        linear: "リニア",
-        nearestNeighbor: "なし"
+    tabs: {
+        description: "Tabs: Select what to configure",
+        channels: "MIDI Channels",
+        reverb: "Reverb",
+        chorus: "Chorus",
+        delay: "Delay",
+        insertion: "Insertion",
+        configuration: "Configuration"
     },
 
-    channelController: channelControllerLocale
+    holdPedalDown: "Hold pedal is down (Shift)",
+    port: "Port {0} (click to toggle visibility)",
+    channelController: channelControllerLocale,
+    effectsConfig: effectsConfig,
+    keyModifiers: keyModifiers
 };
