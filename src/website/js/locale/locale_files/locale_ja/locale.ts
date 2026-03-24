@@ -32,7 +32,7 @@ export const localeJapanese = {
             description: "追加バンクのバンクオフセット"
         },
         file: {
-            title: "サウンドバンク",
+            title: "ファイルの選択",
             description: "サウンドバンクを選択 (DLS/SF2/SF3)"
         },
         confirm: {
