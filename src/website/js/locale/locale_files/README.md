@@ -17,13 +17,13 @@ I welcome contributions from translators! To add a new locale, please follow the
 3. **Copy an Existing Locale**
     - Copy the contents of `locale_en` (or any other existing locale you want to translate from) into your new folder.
 
-4. **Update `locale.js`**
-    - Open `locale.js` in your new folder.
-    - Rename `export const localeEnglish` in `locale.js` to reflect your language. For example, `localeEnglish` would
+4. **Update `locale.ts`**
+    - Open `locale.ts` in your new folder.
+    - Rename `export const localeEnglish` in `locale.ts` to reflect your language. For example, `localeEnglish` would
       become `localeGerman` for German.
 
 5. **Translate!**
-    - Translate all the strings in the `locale.js` file and all `.js` files in the folders. Make sure to leave the
+    - Translate all the strings in the `locale.ts` file and all `.ts` files in the folders. Make sure to leave the
       object keys unchanged.
     - You may add comments to indicate who translated the text, e.g., `// translated by: XYZ`.
     - **Note:** Strings containing placeholders, like `Channel {0}`, should keep the placeholders intact. They are used for
@@ -32,8 +32,8 @@ I welcome contributions from translators! To add a new locale, please follow the
       is not needed.
       For new line, use `\n`
 
-6. **Update `locale_list.js`**
-    - Open `locale_list.js`.
+6. **Update `locale_list.ts`**
+    - Open `locale_list.ts`.
     - Add a new entry for your locale. For example, for German, add: `"de": localeGerman,`.
 
 7. **Verify your work**
@@ -60,7 +60,7 @@ Here's how you can fix existing translations:
     - A tip: After selecting the translation in the local edition, the console should warn about the missing translations.
 
 3. **Translate!**
-    - Translate all the untranslated strings in the `locale.js` file and all `.js` files in the folders.
+    - Translate all the untranslated strings in the `locale.ts` file and all `.ts` files in the folders.
       Make sure to leave the
       object keys unchanged.
     - You may add comments to indicate who translated the text, e.g., `// translated by: XYZ`.
