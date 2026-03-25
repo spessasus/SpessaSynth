@@ -46,7 +46,7 @@ export interface InsertionController {
      */
     effects: Map<
         number,
-        { controllerWrapper: HTMLElement; controllers: Map<number, Meter> }
+        { controllerGroups: HTMLElement[]; controllers: Map<number, Meter> }
     >;
 }
 /**
@@ -64,10 +64,11 @@ export interface ParamType<K extends string> {
         td?: (v: number) => string;
     }[];
     lockName: keyof MasterParameterType;
+    gainName: keyof MasterParameterType;
     macroAddress: number;
     macros: (Record<K, number> & { name: string })[];
 }
-export const reverbData: ParamType<ReverbParams> = {
+export const reverbEffectData: ParamType<ReverbParams> = {
     params: [
         { a: 0x31, p: "character", r: { min: 0, max: 7 } },
         { a: 0x34, p: "time" },
@@ -78,6 +79,7 @@ export const reverbData: ParamType<ReverbParams> = {
         { a: 0x32, p: "preLowpass", r: { min: 0, max: 7 } }
     ],
     lockName: "reverbLock",
+    gainName: "reverbGain",
     macroAddress: 0x30,
     macros: [
         {
@@ -154,7 +156,7 @@ export const reverbData: ParamType<ReverbParams> = {
         }
     ]
 };
-export const chorusData: ParamType<ChorusParams> = {
+export const chorusEffectData: ParamType<ChorusParams> = {
     params: [
         { a: 0x3b, p: "feedback" },
         { a: 0x3c, p: "delay" },
@@ -167,6 +169,7 @@ export const chorusData: ParamType<ChorusParams> = {
     ],
     macroAddress: 0x38,
     lockName: "chorusLock",
+    gainName: "chorusGain",
     macros: [
         {
             name: "Chorus1",
@@ -273,7 +276,7 @@ const delayTimeSegments = [
     { start: 0x69, end: 0x74, timeStart: 500, resolution: 50 }
 ] as const;
 
-export const delayData: ParamType<DelayParams> = {
+export const delayEffectData: ParamType<DelayParams> = {
     params: [
         {
             a: 0x52,
@@ -319,6 +322,7 @@ export const delayData: ParamType<DelayParams> = {
     ],
     macroAddress: 0x50,
     lockName: "delayLock",
+    gainName: "delayGain",
     macros: [
         {
             name: "Delay1",
@@ -462,6 +466,7 @@ interface InsertionEffect {
     // Name (e.g. "Thru")
     name: string;
 
+    // Can be grouped (for combo effects
     params: {
         // Name
         p: string;
@@ -473,88 +478,92 @@ interface InsertionEffect {
         r?: { min: number; max: number };
         // Transform function from sysEx to displayed
         td?: (v: number) => string;
-    }[];
+    }[][];
 }
 
-export const insertionData: InsertionEffect[] = [
+export const insertionEffectData: InsertionEffect[] = [
     { name: "Thru", params: [], type: 0x00_00 },
     {
         name: "Stereo-EQ",
         params: [
-            {
-                p: "Low Freq",
-                a: 3,
-                r: { min: 0, max: 1 },
-                td: (v) => (v === 1 ? 400 : 200) + "Hz",
-                d: 1
-            },
-            {
-                p: "Low Gain",
-                a: 4,
-                r: { min: 0x34, max: 0x4c },
-                d: 69,
-                td: (v) => (v - 64).toString()
-            },
-            {
-                p: "Hi Freq",
-                a: 5,
-                r: { min: 0, max: 1 },
-                td: (v) => (v === 1 ? 8000 : 4000) + "Hz",
-                d: 1
-            },
-            {
-                p: "Hi Gain",
-                a: 6,
-                r: { min: 0x34, max: 0x4c },
-                d: 0x34,
-                td: (v) => (v - 64).toString()
-            },
-            {
-                p: "M1 Freq",
-                a: 7,
-                td: (v) => InsertionValueConverter.eqFreq(v) + "Hz",
-                d: 72
-            },
-            {
-                p: "M1 Q",
-                a: 8,
-                r: { min: 0, max: 4 },
-                td: (v) => ["0.5", "1.0", "2.0", "4.0", "9.0"][Math.round(v)],
-                d: 0
-            },
-            {
-                p: "M1 Gain",
-                a: 9,
-                r: { min: 0x34, max: 0x4c },
-                d: 72,
-                td: (v) => (v - 64).toString()
-            },
-            {
-                p: "M2 Freq",
-                a: 0xa,
-                td: (v) => InsertionValueConverter.eqFreq(v) + "Hz",
-                d: 56
-            },
+            [
+                {
+                    p: "Low Freq",
+                    a: 3,
+                    r: { min: 0, max: 1 },
+                    td: (v) => (v === 1 ? 400 : 200) + "Hz",
+                    d: 1
+                },
+                {
+                    p: "Low Gain",
+                    a: 4,
+                    r: { min: 0x34, max: 0x4c },
+                    d: 69,
+                    td: (v) => (v - 64).toString()
+                },
+                {
+                    p: "Hi Freq",
+                    a: 5,
+                    r: { min: 0, max: 1 },
+                    td: (v) => (v === 1 ? 8000 : 4000) + "Hz",
+                    d: 1
+                },
+                {
+                    p: "Hi Gain",
+                    a: 6,
+                    r: { min: 0x34, max: 0x4c },
+                    d: 0x34,
+                    td: (v) => (v - 64).toString()
+                },
+                {
+                    p: "M1 Freq",
+                    a: 7,
+                    td: (v) => InsertionValueConverter.eqFreq(v) + "Hz",
+                    d: 72
+                },
+                {
+                    p: "M1 Q",
+                    a: 8,
+                    r: { min: 0, max: 4 },
+                    td: (v) =>
+                        ["0.5", "1.0", "2.0", "4.0", "9.0"][Math.round(v)],
+                    d: 0
+                },
+                {
+                    p: "M1 Gain",
+                    a: 9,
+                    r: { min: 0x34, max: 0x4c },
+                    d: 72,
+                    td: (v) => (v - 64).toString()
+                },
+                {
+                    p: "M2 Freq",
+                    a: 0xa,
+                    td: (v) => InsertionValueConverter.eqFreq(v) + "Hz",
+                    d: 56
+                },
 
-            {
-                p: "M2 Q",
-                a: 0xb,
-                r: { min: 0, max: 4 },
-                td: (v) => ["0.5", "1.0", "2.0", "4.0", "9.0"][Math.round(v)],
-                d: 0
-            },
-            {
-                p: "M2 Gain",
-                a: 0xc,
-                r: { min: 0x34, max: 0x4c },
-                d: 56,
-                td: (v) => (v - 64).toString()
-            },
-            {
-                p: "Level",
-                a: 0x16,
-                d: 127
-            }
+                {
+                    p: "M2 Q",
+                    a: 0xb,
+                    r: { min: 0, max: 4 },
+                    td: (v) =>
+                        ["0.5", "1.0", "2.0", "4.0", "9.0"][Math.round(v)],
+                    d: 0
+                },
+                {
+                    p: "M2 Gain",
+                    a: 0xc,
+                    r: { min: 0x34, max: 0x4c },
+                    d: 56,
+                    td: (v) => (v - 64).toString()
+                },
+                {
+                    p: "Level",
+                    a: 0x16,
+                    d: 127
+                }
+            ]
         ],
         type: 0x01_00
     },
@@ -562,108 +571,114 @@ export const insertionData: InsertionEffect[] = [
         name: "Phaser",
         type: 0x01_20,
         params: [
-            {
-                p: "Manual",
-                d: 36,
-                a: 3,
-                td: (v) => `${InsertionValueConverter.manual(v)} Hz`
-            },
-            {
-                p: "Rate",
-                d: 16,
-                a: 4,
-                td: (v) => `${InsertionValueConverter.rate1(v)} Hz`
-            },
-            {
-                p: "Depth",
-                d: 64,
-                a: 5
-            },
-            {
-                p: "Reso",
-                d: 16,
-                a: 6
-            },
-            {
-                p: "Mix",
-                d: 64,
-                a: 7
-            },
-            {
-                p: "Low Gain",
-                r: { min: 0x34, max: 0x4c },
-                d: 0x40,
-                a: 0x13,
-                td: (v) => `${v - 64} dB`
-            },
-            {
-                p: "Hi Gain",
-                r: { min: 0x34, max: 0x4c },
-                d: 0x40,
-                a: 0x14,
-                td: (v) => `${v - 64} dB`
-            },
-            {
-                p: "Level",
-                a: 0x16,
-                d: 127
-            }
+            [
+                {
+                    p: "Manual",
+                    d: 36,
+                    a: 3,
+                    td: (v) => `${InsertionValueConverter.manual(v)} Hz`
+                },
+                {
+                    p: "Rate",
+                    d: 16,
+                    a: 4,
+                    td: (v) => `${InsertionValueConverter.rate1(v)} Hz`
+                },
+                {
+                    p: "Depth",
+                    d: 64,
+                    a: 5
+                },
+                {
+                    p: "Reso",
+                    d: 16,
+                    a: 6
+                },
+                {
+                    p: "Mix",
+                    d: 64,
+                    a: 7
+                },
+                {
+                    p: "Low Gain",
+                    r: { min: 0x34, max: 0x4c },
+                    d: 0x40,
+                    a: 0x13,
+                    td: (v) => `${v - 64} dB`
+                },
+                {
+                    p: "Hi Gain",
+                    r: { min: 0x34, max: 0x4c },
+                    d: 0x40,
+                    a: 0x14,
+                    td: (v) => `${v - 64} dB`
+                },
+                {
+                    p: "Level",
+                    a: 0x16,
+                    d: 127
+                }
+            ]
         ]
     },
     {
         name: "Auto Wah",
         type: 0x01_21,
         params: [
-            {
-                p: "Fil Type",
-                a: 3,
-                r: { min: 0, max: 1 },
-                d: 1,
-                td: (v) => (v === 0 ? "LowPass" : "BandPass")
-            },
-            { p: "Sens", a: 4, d: 0 },
-            { p: "Manual", a: 5, d: 68 },
-            { p: "Peak", a: 6, d: 62 },
-            {
-                p: "Rate",
-                a: 7,
-                td: (v) => `${InsertionValueConverter.rate1(v).toString()} Hz`,
-                d: 40
-            },
-            { p: "Depth", a: 8, d: 72 },
-            {
-                p: "Polarity",
-                a: 9,
-                d: 1,
-                r: { min: 0, max: 1 },
-                td: (v) => (v === 0 ? "Down" : "Up")
-            },
-            {
-                p: "Low Gain",
-                r: { min: 0x34, max: 0x4c },
-                d: 0x40,
-                a: 0x13,
-                td: (v) => `${v - 64} dB`
-            },
-            {
-                p: "Hi Gain",
-                r: { min: 0x34, max: 0x4c },
-                d: 0x40,
-                a: 0x14,
-                td: (v) => `${v - 64} dB`
-            },
-            {
-                p: "Pan",
-                a: 0x15,
-                d: 0x40,
-                r: { min: 1, max: 127 },
-                td: (v) => (v > 64 ? `R${v - 64}` : v < 64 ? `L${64 - v}` : `0`)
-            },
-            {
-                p: "Level",
-                a: 0x16,
-                d: 127
-            }
+            [
+                {
+                    p: "Fil Type",
+                    a: 3,
+                    r: { min: 0, max: 1 },
+                    d: 1,
+                    td: (v) => (v === 0 ? "LowPass" : "BandPass")
+                },
+                { p: "Sens", a: 4, d: 0 },
+                { p: "Manual", a: 5, d: 68 },
+                { p: "Peak", a: 6, d: 62 },
+                {
+                    p: "Rate",
+                    a: 7,
+                    td: (v) =>
+                        `${InsertionValueConverter.rate1(v).toString()} Hz`,
+                    d: 40
+                },
+                { p: "Depth", a: 8, d: 72 },
+                {
+                    p: "Polarity",
+                    a: 9,
+                    d: 1,
+                    r: { min: 0, max: 1 },
+                    td: (v) => (v === 0 ? "Down" : "Up")
+                },
+                {
+                    p: "Low Gain",
+                    r: { min: 0x34, max: 0x4c },
+                    d: 0x40,
+                    a: 0x13,
+                    td: (v) => `${v - 64} dB`
+                },
+                {
+                    p: "Hi Gain",
+                    r: { min: 0x34, max: 0x4c },
+                    d: 0x40,
+                    a: 0x14,
+                    td: (v) => `${v - 64} dB`
+                },
+                {
+                    p: "Pan",
+                    a: 0x15,
+                    d: 0x40,
+                    r: { min: 1, max: 127 },
+                    td: (v) =>
+                        v > 64 ? `R${v - 64}` : v < 64 ? `L${64 - v}` : `0`
+                },
+                {
+                    p: "Level",
+                    a: 0x16,
+                    d: 127
+                }
+            ]
         ]
     },
 
@@ -671,174 +686,184 @@ export const insertionData: InsertionEffect[] = [
         name: "Tremolo",
         type: 0x01_25,
         params: [
-            {
-                p: "Mod Wave",
-                a: 3,
-                r: { min: 0, max: 4 },
-                d: 1,
-                td: (v) => ["Tri", "Sqr", "Sin", "Saw1", "Saw2"][v]
-            },
-            {
-                p: "Mod Rate",
-                a: 4,
-                d: 60,
-                td: (v) => `${InsertionValueConverter.rate1(v)} Hz`
-            },
-            {
-                p: "Mod Depth",
-                a: 5,
-                d: 96
-            },
-            {
-                p: "Low Gain",
-                r: { min: 0x34, max: 0x4c },
-                d: 0x40,
-                a: 0x13,
-                td: (v) => `${v - 64} dB`
-            },
-            {
-                p: "Hi Gain",
-                r: { min: 0x34, max: 0x4c },
-                d: 0x40,
-                a: 0x14,
-                td: (v) => `${v - 64} dB`
-            },
-            {
-                p: "Level",
-                a: 0x16,
-                d: 127
-            }
+            [
+                {
+                    p: "Mod Wave",
+                    a: 3,
+                    r: { min: 0, max: 4 },
+                    d: 1,
+                    td: (v) => ["Tri", "Sqr", "Sin", "Saw1", "Saw2"][v]
+                },
+                {
+                    p: "Mod Rate",
+                    a: 4,
+                    d: 60,
+                    td: (v) => `${InsertionValueConverter.rate1(v)} Hz`
+                },
+                {
+                    p: "Mod Depth",
+                    a: 5,
+                    d: 96
+                },
+                {
+                    p: "Low Gain",
+                    r: { min: 0x34, max: 0x4c },
+                    d: 0x40,
+                    a: 0x13,
+                    td: (v) => `${v - 64} dB`
+                },
+                {
+                    p: "Hi Gain",
+                    r: { min: 0x34, max: 0x4c },
+                    d: 0x40,
+                    a: 0x14,
+                    td: (v) => `${v - 64} dB`
+                },
+                {
+                    p: "Level",
+                    a: 0x16,
+                    d: 127
+                }
+            ]
         ]
     },
     {
         name: "Auto Pan",
         type: 0x01_26,
         params: [
-            {
-                p: "Mod Wave",
-                a: 3,
-                r: { min: 0, max: 4 },
-                d: 1,
-                td: (v) => ["Tri", "Sqr", "Sin", "Saw1", "Saw2"][v]
-            },
-            {
-                p: "Mod Rate",
-                a: 4,
-                d: 60,
-                td: (v) => `${InsertionValueConverter.rate1(v)} Hz`
-            },
-            {
-                p: "Mod Depth",
-                a: 5,
-                d: 96
-            },
-            {
-                p: "Low Gain",
-                r: { min: 0x34, max: 0x4c },
-                d: 0x40,
-                a: 0x13,
-                td: (v) => `${v - 64} dB`
-            },
-            {
-                p: "Hi Gain",
-                r: { min: 0x34, max: 0x4c },
-                d: 0x40,
-                a: 0x14,
-                td: (v) => `${v - 64} dB`
-            },
-            {
-                p: "Level",
-                a: 0x16,
-                d: 127
-            }
+            [
+                {
+                    p: "Mod Wave",
+                    a: 3,
+                    r: { min: 0, max: 4 },
+                    d: 1,
+                    td: (v) => ["Tri", "Sqr", "Sin", "Saw1", "Saw2"][v]
+                },
+                {
+                    p: "Mod Rate",
+                    a: 4,
+                    d: 60,
+                    td: (v) => `${InsertionValueConverter.rate1(v)} Hz`
+                },
+                {
+                    p: "Mod Depth",
+                    a: 5,
+                    d: 96
+                },
+                {
+                    p: "Low Gain",
+                    r: { min: 0x34, max: 0x4c },
+                    d: 0x40,
+                    a: 0x13,
+                    td: (v) => `${v - 64} dB`
+                },
+                {
+                    p: "Hi Gain",
+                    r: { min: 0x34, max: 0x4c },
+                    d: 0x40,
+                    a: 0x14,
+                    td: (v) => `${v - 64} dB`
+                },
+                {
+                    p: "Level",
+                    a: 0x16,
+                    d: 127
+                }
+            ]
         ]
     },
     {
         name: "PH / Auto Wah",
         type: 0x11_08,
         params: [
-            {
-                p: "PH:Manual",
-                d: 36,
-                a: 3,
-                td: (v) => `${InsertionValueConverter.manual(v)} Hz`
-            },
-            {
-                p: "PH:Rate",
-                d: 16,
-                a: 4,
-                td: (v) => `${InsertionValueConverter.rate1(v)} Hz`
-            },
-            {
-                p: "PH:Depth",
-                d: 64,
-                a: 5
-            },
-            {
-                p: "PH:Reso",
-                d: 16,
-                a: 6
-            },
-            {
-                p: "PH:Mix",
-                d: 64,
-                a: 7
-            },
-            {
-                p: "PH:Pan",
-                d: 1,
-                r: { min: 1, max: 127 },
-                td: (v) =>
-                    v > 64 ? `R${v - 64}` : v < 64 ? `L${64 - v}` : `0`,
-                a: 0x12
-            },
-            {
-                p: "PH:Level",
-                d: 127,
-                a: 0x13
-            },
+            [
+                {
+                    p: "PH:Manual",
+                    d: 36,
+                    a: 3,
+                    td: (v) => `${InsertionValueConverter.manual(v)} Hz`
+                },
+                {
+                    p: "PH:Rate",
+                    d: 16,
+                    a: 4,
+                    td: (v) => `${InsertionValueConverter.rate1(v)} Hz`
+                },
+                {
+                    p: "PH:Depth",
+                    d: 64,
+                    a: 5
+                },
+                {
+                    p: "PH:Reso",
+                    d: 16,
+                    a: 6
+                },
+                {
+                    p: "PH:Mix",
+                    d: 64,
+                    a: 7
+                },
+                {
+                    p: "PH:Pan",
+                    d: 1,
+                    r: { min: 1, max: 127 },
+                    td: (v) =>
+                        v > 64 ? `R${v - 64}` : v < 64 ? `L${64 - v}` : `0`,
+                    a: 0x12
+                },
+                {
+                    p: "PH:Level",
+                    d: 127,
+                    a: 0x13
+                }
+            ],
 
-            {
-                p: "AW:Filter",
-                a: 8,
-                r: { min: 0, max: 1 },
-                d: 1,
-                td: (v) => (v === 0 ? "LowPass" : "BandPass")
-            },
-            { p: "AW:Sens", a: 9, d: 0 },
-            { p: "AW:Manual", a: 0xa, d: 68 },
-            { p: "AW:Peak", a: 0xb, d: 62 },
-            {
-                p: "AW:Rate",
-                a: 0xc,
-                td: (v) => `${InsertionValueConverter.rate1(v).toString()} Hz`,
-                d: 40
-            },
-            { p: "AW:Depth", a: 0xd, d: 72 },
-            {
-                p: "AW:Polarity",
-                a: 0xe,
-                d: 1,
-                r: { min: 0, max: 1 },
-                td: (v) => (v === 0 ? "Down" : "Up")
-            },
-            {
-                p: "AW:Pan",
-                a: 0x14,
-                d: 127,
-                r: { min: 1, max: 127 },
-                td: (v) => (v > 64 ? `R${v - 64}` : v < 64 ? `L${64 - v}` : `0`)
-            },
-            {
-                p: "AW:Level",
-                a: 0x15,
-                d: 127
-            },
-            {
-                p: "Level",
-                a: 0x16,
-                d: 127
-            }
+            [
+                {
+                    p: "AW:Filter",
+                    a: 8,
+                    r: { min: 0, max: 1 },
+                    d: 1,
+                    td: (v) => (v === 0 ? "LowPass" : "BandPass")
+                },
+                { p: "AW:Sens", a: 9, d: 0 },
+                { p: "AW:Manual", a: 0xa, d: 68 },
+                { p: "AW:Peak", a: 0xb, d: 62 },
+                {
+                    p: "AW:Rate",
+                    a: 0xc,
+                    td: (v) =>
+                        `${InsertionValueConverter.rate1(v).toString()} Hz`,
+                    d: 40
+                },
+                { p: "AW:Depth", a: 0xd, d: 72 },
+                {
+                    p: "AW:Polarity",
+                    a: 0xe,
+                    d: 1,
+                    r: { min: 0, max: 1 },
+                    td: (v) => (v === 0 ? "Down" : "Up")
+                },
+                {
+                    p: "AW:Pan",
+                    a: 0x14,
+                    d: 127,
+                    r: { min: 1, max: 127 },
+                    td: (v) =>
+                        v > 64 ? `R${v - 64}` : v < 64 ? `L${64 - v}` : `0`
+                },
+                {
+                    p: "AW:Level",
+                    a: 0x15,
+                    d: 127
+                },
+                {
+                    p: "Level",
+                    a: 0x16,
+                    d: 127
+                }
+            ]
         ]
     }
-];
+] as const;

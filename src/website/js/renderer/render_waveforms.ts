@@ -366,7 +366,7 @@ function drawEFX(this: Renderer, channel: number) {
     const relativeY = waveHeight * y + waveHeight;
     let fontSize = waveHeight;
     ctx.font = `${fontSize}px monospace`;
-    const text = "EFX";
+    const text = this.efxText;
 
     const metrics = ctx.measureText(text);
 

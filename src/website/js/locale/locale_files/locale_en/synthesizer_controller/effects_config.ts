@@ -59,6 +59,12 @@ export const effectsConfig = {
         title: "Reverb configuration",
         description: "Configure how the reverb effect sounds.",
 
+        gain: {
+            title: "Gain: ",
+            description:
+                "Gain: This parameter sets the gain of the effect. Note that this WILL NOT be saved in the MIDI file if exported."
+        },
+
         level: {
             title: "Level: ",
             description: "Level: This parameter sets the amount of the effect."
@@ -105,6 +111,12 @@ export const effectsConfig = {
     chorus: {
         title: "Chorus configuration",
         description: "Configure how the chorus effects sounds.",
+
+        gain: {
+            title: "Gain: ",
+            description:
+                "Gain: This parameter sets the gain of the effect. Note that this WILL NOT be saved in the MIDI file if exported."
+        },
 
         level: {
             title: "Level: ",
@@ -164,6 +176,12 @@ export const effectsConfig = {
     delay: {
         title: "Delay configuration",
         description: "Configure how the delay effect sounds.",
+
+        gain: {
+            title: "Gain: ",
+            description:
+                "Gain: This parameter sets the gain of the effect. Note that this WILL NOT be saved in the MIDI file if exported."
+        },
 
         level: {
             title: "Level: ",

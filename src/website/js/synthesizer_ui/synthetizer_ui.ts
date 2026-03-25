@@ -1,4 +1,7 @@
-import { hideControllers, showControllers } from "./methods/hide_show_controllers.js";
+import {
+    hideControllers,
+    showControllers
+} from "./methods/hide_show_controllers.js";
 import { toggleDarkMode } from "./methods/toggle_dark_mode.js";
 import { setEventListeners } from "./methods/set_event_listeners.js";
 import { keybinds } from "../utils/keybinds.js";
@@ -24,19 +27,21 @@ import { Selector } from "./methods/synthui_selector.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
 import {
     type ChorusController,
-    chorusData,
+    chorusEffectData,
     type ChorusParams,
     type DelayController,
-    delayData,
+    delayEffectData,
     type DelayParams,
     type InsertionController,
+    insertionEffectData,
     type ReverbController,
-    reverbData,
+    reverbEffectData,
     type ReverbParams
 } from "./methods/effect_params.ts";
 import { createInsertionController } from "./methods/create_insertion_controller.ts";
 import { createEffectController } from "./methods/create_effect_controller.ts";
 import { appendNewController } from "./methods/append_new_controller.ts";
+import type { Renderer } from "../renderer/renderer.ts";
 
 export const MONO_ON = "<pre style='color: red;'>M</pre>";
 export const POLY_ON = "<pre>P</pre>";
@@ -79,7 +84,7 @@ export class SynthetizerUI {
     protected readonly keyboard: MIDIKeyboard;
     protected readonly locale: LocaleManager;
     protected readonly sequencer: Sequencer;
-
+    protected readonly renderer: Renderer;
     protected readonly voiceMeter: Meter;
     protected readonly volumeController: Meter;
     protected readonly panController: Meter;
@@ -104,7 +109,6 @@ export class SynthetizerUI {
     };
     protected currentInsertionEffect;
     protected insertionLock = false;
-
     protected ports: HTMLDivElement[] = [];
     protected portDescriptors: HTMLDivElement[] = [];
     protected readonly soloChannels = new Set<number>();
@@ -133,6 +137,7 @@ export class SynthetizerUI {
      * @param keyboard
      * @param synth
      * @param seq
+     * @param renderer
      */
     public constructor(
         colors: string[],
@@ -140,7 +145,8 @@ export class SynthetizerUI {
         localeManager: LocaleManager,
         keyboard: MIDIKeyboard,
         synth: Synthesizer,
-        seq: Sequencer
+        seq: Sequencer,
+        renderer: Renderer
     ) {
         this.channelColors = colors;
         const wrapper = element;
@@ -153,6 +159,7 @@ export class SynthetizerUI {
         this.keyboard = keyboard;
         this.synth = synth;
         this.sequencer = seq;
+        this.renderer = renderer;
 
         seq.eventHandler.addEvent("songChange", "synthui-song-change", () => {
             this.setOnlyUsedControllersVisible(this.showOnlyUsedEnabled);
@@ -586,19 +593,19 @@ export class SynthetizerUI {
             const reverbController =
                 (createEffectController<ReverbParams>).call(
                     this,
-                    reverbData,
+                    reverbEffectData,
                     LOCALE_PATH + "effectsConfig.reverb."
                 );
 
             const chorusController =
                 (createEffectController<ChorusParams>).call(
                     this,
-                    chorusData,
+                    chorusEffectData,
                     LOCALE_PATH + "effectsConfig.chorus."
                 );
             const delayController = (createEffectController<DelayParams>).call(
                 this,
-                delayData,
+                delayEffectData,
                 LOCALE_PATH + "effectsConfig.delay."
             );
 
@@ -938,12 +945,18 @@ export class SynthetizerUI {
 
                     // Hide all except the one we want
                     for (const [key, param] of fx.insertion.effects) {
-                        param.controllerWrapper.classList.toggle(
-                            "hidden",
-                            !(targetEffect === key)
-                        );
+                        for (const controllerGroup of param.controllerGroups) {
+                            controllerGroup.classList.toggle(
+                                "hidden",
+                                !(targetEffect === key)
+                            );
+                        }
                     }
                     fx.insertion.effectSelector.value = targetEffect.toString();
+                    this.renderer.efxText =
+                        insertionEffectData.find(
+                            (fx) => fx.type === targetEffect
+                        )?.name ?? "Thru";
 
                     // Reset its effects
                     for (const controller of this.currentInsertionEffect.controllers.values()) {
@@ -975,13 +988,13 @@ export class SynthetizerUI {
         if (e.parameter === "macro") {
             switch (e.effect) {
                 case "reverb": {
-                    const macro = reverbData.macros[e.value];
+                    const macro = reverbEffectData.macros[e.value];
                     const meters = fx.reverb;
                     for (const [param, value] of Object.entries(macro)) {
                         if (param === "name") {
                             continue;
                         }
-                        const params = reverbData.params.find(
+                        const params = reverbEffectData.params.find(
                             (p) => p.p === param
                         );
                         if (!params) {
@@ -994,13 +1007,13 @@ export class SynthetizerUI {
                 }
 
                 case "chorus": {
-                    const macro = chorusData.macros[e.value];
+                    const macro = chorusEffectData.macros[e.value];
                     const meters = fx.chorus;
                     for (const [param, value] of Object.entries(macro)) {
                         if (param === "name") {
                             continue;
                         }
-                        const params = chorusData.params.find(
+                        const params = chorusEffectData.params.find(
                             (p) => p.p === param
                         );
                         if (!params) {
@@ -1012,13 +1025,13 @@ export class SynthetizerUI {
                     return;
                 }
                 case "delay": {
-                    const macro = delayData.macros[e.value];
+                    const macro = delayEffectData.macros[e.value];
                     const meters = fx.delay;
                     for (const [param, value] of Object.entries(macro)) {
                         if (param === "name") {
                             continue;
                         }
-                        const params = delayData.params.find(
+                        const params = delayEffectData.params.find(
                             (p) => p.p === param
                         );
                         if (!params) {
@@ -1033,7 +1046,7 @@ export class SynthetizerUI {
         }
         switch (e.effect) {
             case "reverb": {
-                const param = reverbData.params.find(
+                const param = reverbEffectData.params.find(
                     (p) => p.p === e.parameter
                 );
                 if (!param) {
@@ -1044,7 +1057,7 @@ export class SynthetizerUI {
             }
 
             case "chorus": {
-                const param = chorusData.params.find(
+                const param = chorusEffectData.params.find(
                     (p) => p.p === e.parameter
                 );
                 if (!param) {
@@ -1054,7 +1067,9 @@ export class SynthetizerUI {
                 return;
             }
             case "delay": {
-                const param = delayData.params.find((p) => p.p === e.parameter);
+                const param = delayEffectData.params.find(
+                    (p) => p.p === e.parameter
+                );
                 if (!param) {
                     return;
                 }

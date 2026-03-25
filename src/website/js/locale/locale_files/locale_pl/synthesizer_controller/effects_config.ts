@@ -55,6 +55,12 @@ export const effectsConfig = {
         title: "Konfiguracja pogłosu",
         description: "Ustaw jak ma brzmieć efekt pogłosu.",
 
+        gain: {
+            title: "Głośność: ",
+            description:
+                "Głośność: Ten parameter ustawia głośność efektu. Ten parametr NIE BĘDZIE zapisany do pliku MIDI w przypadku jego eksportu."
+        },
+
         level: {
             title: "Poziom: ",
             description: "Poziom: Ten parametr ustawia ilość efektu."
@@ -101,6 +107,12 @@ export const effectsConfig = {
     chorus: {
         title: "Konfiguracja chóru",
         description: "Ustaw jak ma brzmieć efekt chóru.",
+
+        gain: {
+            title: "Głośność: ",
+            description:
+                "Głośność: Ten parameter ustawia głośność efektu. Ten parametr NIE BĘDZIE zapisany do pliku MIDI w przypadku jego eksportu."
+        },
 
         level: {
             title: "Poziom: ",
@@ -160,6 +172,12 @@ export const effectsConfig = {
     delay: {
         title: "Konfiguracja delay",
         description: "Ustaw jak ma brzmieć efekt delay.",
+
+        gain: {
+            title: "Głośność: ",
+            description:
+                "Głośność: Ten parameter ustawia głośność efektu. Ten parametr NIE BĘDZIE zapisany do pliku MIDI w przypadku jego eksportu."
+        },
 
         level: {
             title: "Poziom: ",

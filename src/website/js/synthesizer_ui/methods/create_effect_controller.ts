@@ -37,6 +37,25 @@ export function createEffectController<
     );
     wrapper.append(effectSubtitle);
 
+    // Gain
+    const gainWrapper = document.createElement("div");
+    wrapper.append(gainWrapper);
+    const gainLevel = new Meter({
+        locale: this.locale,
+        localePath: path + "gain",
+        initialAndDefault: 1,
+        min: 0,
+        max: 10,
+        transform: (value) => `${Math.floor(value * 100)}%`,
+        editable: true,
+        editCallback: (value) => {
+            const vRounded = Math.round(value * 100) / 100;
+            this.synth.setMasterParameter(data.gainName, vRounded);
+            gainLevel.update(vRounded);
+        }
+    });
+    gainWrapper.append(gainLevel.div);
+
     // Macro/lock wrapper
     const macroLockWrapper = document.createElement("div");
     macroLockWrapper.style.display = "flex";

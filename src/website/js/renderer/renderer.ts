@@ -75,26 +75,36 @@ export class Renderer {
      */
     public onRender?: () => unknown;
 
+    // Params
     public noteFallingTimeMs = 1000;
     public noteAfterTriggerTimeMs = 0;
     public lineThickness = ANALYSER_STROKE;
     public waveMultiplier = WAVE_MULTIPLIER;
-    public currentTimeSignature = "4/4";
-    public holdPedalIsDownText = "";
     public rendererMode: RendererMode = rendererModes.waveformsMode;
+
+    // Toggles
     public showHoldPedal = false;
     public renderNotes = true;
     public drawActiveNotes = true;
     public showVisualPitch = true;
     public renderDotDisplay = true;
+    public sideways = false;
+    public renderChannels = new Array<boolean>(16).fill(true);
+
     // Fft config
     public exponentialGain = true;
     public logarithmicFrequency = true;
     public dynamicGain = false;
-    public renderChannels = new Array<boolean>(16).fill(true);
+
+    // Offsets
     public timeOffset = 0;
     public notesOnScreen = 0;
-    public sideways = false;
+
+    // Strings
+    public currentTimeSignature = "4/4";
+    public holdPedalIsDownText = "";
+    public efxText = "EFX";
+
     public readonly updateFftSize = updateFftSize.bind(this);
     public readonly render = render.bind(this);
     /**

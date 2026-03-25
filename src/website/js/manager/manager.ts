@@ -434,7 +434,8 @@ export class Manager {
             this.localeManager,
             this.keyboard,
             this.synth,
-            this.seq
+            this.seq,
+            this.renderer
         );
 
         // Create a UI for music player mode

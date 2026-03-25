@@ -1,4 +1,7 @@
-import { type InsertionController, insertionData } from "./effect_params.ts";
+import {
+    type InsertionController,
+    insertionEffectData
+} from "./effect_params.ts";
 import { Meter } from "./synthui_meter.ts";
 import { LOCALE_PATH, SynthetizerUI } from "../synthetizer_ui.ts";
 import { sendAddress } from "./send_address.ts";
@@ -7,7 +10,7 @@ import { Ut } from "../../utils/other.js";
 export function createInsertionController(
     this: SynthetizerUI
 ): InsertionController {
-    const insertionEffects = insertionData;
+    const insertionEffects = insertionEffectData;
 
     const wrapper = document.createElement("div");
     wrapper.classList.add("effect_wrapper", "synthui_tab");
@@ -151,47 +154,51 @@ export function createInsertionController(
     // Parameters
     const params = new Map<
         number,
-        { controllerWrapper: HTMLElement; controllers: Map<number, Meter> }
+        { controllerGroups: HTMLElement[]; controllers: Map<number, Meter> }
     >();
     for (const insertionEffect of insertionEffects) {
-        const controllerWrapper = document.createElement("div");
-        controllerWrapper.classList.add("effect_wrapper_params");
-        Ut.hide(controllerWrapper);
-        wrapper.append(controllerWrapper);
         const controllers = new Map<number, Meter>();
-        for (const param of insertionEffect.params) {
-            // Prevent change!
-            const a = param.a;
-            const meter = new Meter({
-                rawText: param.p + ": ",
-                min: param.r?.min ?? 0,
-                max: param?.r?.max ?? 127,
-                initialAndDefault: param.d,
-                editable: true,
-                editCallback: (v) => {
-                    if (this.insertionLock) {
-                        this.synth.setMasterParameter(
-                            "insertionEffectLock",
-                            false
-                        );
-                    }
-                    sendAddress(this.synth, 0x40, 0x03, a, [Math.round(v)]);
-                    if (this.insertionLock) {
-                        this.synth.setMasterParameter(
-                            "insertionEffectLock",
-                            true
-                        );
-                    }
-                },
-                transform: param?.td
-            });
-            controllerWrapper.append(meter.div);
-            controllers.set(param.a, meter);
-        }
+        const controllerGroups = new Array<HTMLElement>();
+        for (const paramGroup of insertionEffect.params) {
+            const controllerGroup = document.createElement("div");
+            controllerGroup.classList.add("effect_wrapper_params");
+            Ut.hide(controllerGroup);
+            wrapper.append(controllerGroup);
+            controllerGroups.push(controllerGroup);
 
+            for (const param of paramGroup) {
+                // Prevent change!
+                const a = param.a;
+                const meter = new Meter({
+                    rawText: param.p + ": ",
+                    min: param.r?.min ?? 0,
+                    max: param?.r?.max ?? 127,
+                    initialAndDefault: param.d,
+                    editable: true,
+                    editCallback: (v) => {
+                        if (this.insertionLock) {
+                            this.synth.setMasterParameter(
+                                "insertionEffectLock",
+                                false
+                            );
+                        }
+                        sendAddress(this.synth, 0x40, 0x03, a, [Math.round(v)]);
+                        if (this.insertionLock) {
+                            this.synth.setMasterParameter(
+                                "insertionEffectLock",
+                                true
+                            );
+                        }
+                    },
+                    transform: param?.td
+                });
+                controllerGroup.append(meter.div);
+                controllers.set(param.a, meter);
+            }
+        }
         params.set(insertionEffect.type, {
             controllers,
-            controllerWrapper
+            controllerGroups: controllerGroups
         });
     }
 
