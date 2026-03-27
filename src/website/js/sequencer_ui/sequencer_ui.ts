@@ -27,7 +27,7 @@ import {
 } from "spessasynth_core";
 import type { Sequencer } from "spessasynth_lib";
 import { AssManager } from "../utils/ass_manager/ass_manager.ts";
-import type { InterfaceMode } from "../../server/saved_settings.ts";
+import type { InterfaceMode } from "../../../server/saved_settings.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
 import { showNotification } from "../notification/notification.ts";
 

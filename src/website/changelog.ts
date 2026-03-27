@@ -7,6 +7,7 @@ export const WHATS_NEW: string[] = [
     `Simplified Chinese Translation! (By 懒洋君)`,
     `Italian Translation! (By ItsFilyy)`,
     `Updated Japanese Translation! (by src3453)`,
+    `Automatic Local Edition updates!`,
     `New reverb!`,
     `New chorus!`,
     `Delay effect!`,

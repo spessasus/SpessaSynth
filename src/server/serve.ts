@@ -1,8 +1,13 @@
 import fs from "node:fs";
 import path from "node:path";
-import { packageJSON, soundfontsPath } from "./server.js";
 import type { ServerResponse } from "node:http";
 import type { LocalEditionConfig } from "./config_management.ts";
+
+import {
+    getCurrentVersion,
+    isSoundBank,
+    soundfontsPath
+} from "./server_utils.ts";
 
 export function serveSfont(path: string, res: ServerResponse) {
     const fileStream = fs.createReadStream(path);
@@ -28,16 +33,6 @@ export function serveSfont(path: string, res: ServerResponse) {
         fileStream.close();
         res.end();
     });
-}
-
-function isSoundBank(name: string): boolean {
-    const fName = name.toLowerCase();
-    return (
-        fName.endsWith("sf2") ||
-        fName.endsWith("sf3") ||
-        fName.endsWith("sfogg") ||
-        fName.endsWith("dls")
-    );
 }
 
 export async function serveSfontList(
@@ -96,7 +91,7 @@ export function serveStaticFile(
         serveSfont(filePath, res);
         return;
     }
-    
+
     let file;
     try {
         file = fs.readFileSync(filePath);
@@ -126,9 +121,7 @@ export function serveStaticFile(
 }
 
 export function getVersion(res: ServerResponse) {
-    const text = fs.readFileSync(packageJSON, "utf-8");
-    const jason = JSON.parse(text) as { version: string };
+    const v = getCurrentVersion();
     res.writeHead(200, { "Content-Type": "text/plain" });
-    res.end(jason.version);
-    return jason.version;
+    res.end(v);
 }

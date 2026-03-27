@@ -1,6 +1,6 @@
 import type { SpessaSynthSettings } from "../settings.ts";
 import type { localeList } from "../../locale/locale_files/locale_list.ts";
-import type { LayoutType } from "../../../server/saved_settings.ts";
+import type { LayoutType } from "../../../../server/saved_settings.ts";
 import { WorkerSynthesizer } from "spessasynth_lib";
 import { Ut } from "../../utils/other.js";
 

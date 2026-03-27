@@ -3,7 +3,7 @@ import { Manager } from "../manager/manager.js";
 import { showNotification } from "../notification/notification.js";
 import { LocaleManager } from "../locale/locale_manager.js";
 import type { LocaleCode } from "../locale/locale_files/locale_list.ts";
-import type { SavedSettings } from "../../server/saved_settings.ts";
+import type { SavedSettings } from "../../../server/saved_settings.ts";
 import { readSampleRateParam } from "../utils/sample_rate_param.ts";
 import { SpessaSynthLogging } from "spessasynth_core";
 

@@ -1,7 +1,7 @@
 import { midiControllers } from "spessasynth_core";
 import { handlePointers } from "./pointer_handling.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
-import type { InterfaceMode } from "../../server/saved_settings.ts";
+import type { InterfaceMode } from "../../../server/saved_settings.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
 
 /**

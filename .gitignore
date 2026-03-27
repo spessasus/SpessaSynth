@@ -4,7 +4,7 @@
 /local-dev/
 /local-edition-build/
 /src/spessasynth_lib/synthetizer/freeverb_unused/
-/src/website/server/config.json
+/src/server/config.json
 /server
 
 *~

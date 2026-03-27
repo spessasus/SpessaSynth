@@ -2,7 +2,7 @@ import { getSpan } from "../sliders.js";
 import { USE_MIDI_RANGE } from "../handlers/keyboard_handler.js";
 import type { SpessaSynthSettings } from "../settings.ts";
 import { fillWithDefaults } from "../../utils/fill_with_defaults.ts";
-import { DEFAULT_SAVED_SETTINGS } from "../../../server/saved_settings.ts";
+import { DEFAULT_SAVED_SETTINGS } from "../../../../server/saved_settings.ts";
 
 export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
     console.info("Loading settings!");

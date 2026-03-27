@@ -1,23 +1,27 @@
 import http from "node:http";
 import path from "node:path";
-import { getVersion, serveSettings, serveSfontList, serveStaticFile } from "./serve.js";
+import {
+    getVersion,
+    serveSettings,
+    serveSfontList,
+    serveStaticFile
+} from "./serve.js";
 import { openURL } from "./open.js";
 import { type SavedSettings } from "./saved_settings.ts";
 import { LocalEditionConfig } from "./config_management.ts";
-import { fileURLToPath } from "node:url";
+import { getCurrentVersion, rootDir, rootFile } from "./server_utils.ts";
+import { autoUpdate } from "./auto_update.ts";
 
 let PORT = 8181;
 const HOST = "0.0.0.0";
 
-// Don't use import.meta.dirname: https://github.com/spessasus/SpessaSynth
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-export const soundfontsPath = path.join(__dirname, "../soundfonts");
-export const packageJSON = path.join(__dirname, "../package.json");
-export const rootFile = path.join(
-    __dirname,
-    "../local-dev/local_edition_index.html"
+console.info(`\nSpessaSynth: Local Edition, version ${getCurrentVersion()}`);
+console.info(`Copyright (c) spessasus ${new Date().getFullYear()}`);
+console.info(
+    "This project is licensed under Apache-2.0 license, see LICENSE file for more details.\n"
 );
+
+await autoUpdate();
 
 const configManager = await LocalEditionConfig.initialize();
 
@@ -27,10 +31,7 @@ const server = http.createServer(async (req, res) => {
     }
     switch (req.url.split("?")[0]) {
         default: {
-            serveStaticFile(
-                res,
-                path.join(__dirname, "../local-dev/", req.url)
-            );
+            serveStaticFile(res, path.join(rootDir, "local-dev/", req.url));
             break;
         }
 
@@ -47,7 +48,6 @@ const server = http.createServer(async (req, res) => {
         case "/setlastsf2": {
             const urlParams = new URL(req.url, `http://${req.headers.host}`)
                 .searchParams;
-            
 
             configManager.config.lastUsedSf2 = urlParams.get("sfname");
             await configManager.flush();

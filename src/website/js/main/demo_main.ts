@@ -19,7 +19,7 @@ import type { MIDIFile } from "../utils/drop_file_handler.ts";
 import {
     DEFAULT_SAVED_SETTINGS,
     type SavedSettings
-} from "../../server/saved_settings.ts";
+} from "../../../server/saved_settings.ts";
 import { readSampleRateParam } from "../utils/sample_rate_param.ts";
 
 /**

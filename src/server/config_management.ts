@@ -1,7 +1,7 @@
 import path from "node:path";
 import fs from "node:fs/promises";
 import { type ConfigFile, DEFAULT_CONFIG_FILE } from "./saved_settings.ts";
-import { fillWithDefaults } from "../js/utils/fill_with_defaults.ts";
+import { fillWithDefaults } from "../website/js/utils/fill_with_defaults.ts";
 import { fileURLToPath } from "node:url";
 
 // Don't use import.meta.dirname: https://github.com/spessasus/SpessaSynth

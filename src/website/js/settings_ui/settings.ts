@@ -29,7 +29,7 @@ import type { SequencerUI } from "../sequencer_ui/sequencer_ui.ts";
 import type { MIDIKeyboard } from "../midi_keyboard/midi_keyboard.ts";
 import type { MusicModeUI } from "../music_mode_ui/music_mode_ui.ts";
 import type { LocaleManager } from "../locale/locale_manager.ts";
-import type { InterfaceMode } from "../../server/saved_settings.ts";
+import type { InterfaceMode } from "../../../server/saved_settings.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
 
 const TRANSITION_TIME = 0.2;

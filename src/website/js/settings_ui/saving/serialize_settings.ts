@@ -3,7 +3,7 @@ import type { SpessaSynthSettings } from "../settings.ts";
 import type {
     LayoutType,
     SavedSettings
-} from "../../../server/saved_settings.ts";
+} from "../../../../server/saved_settings.ts";
 import type { LocaleCode } from "../../locale/locale_files/locale_list.ts";
 
 /**
@@ -51,7 +51,7 @@ export function _serializeSettings(this: SpessaSynthSettings): SavedSettings {
         },
 
         midi: {
-            // Dont save these!
+            // Don't save these!
             input: null,
             output: null
         },
