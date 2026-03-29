@@ -91,6 +91,14 @@ export function render(this: Renderer, auto = true, force = false) {
         this.canvas.width,
         y
     );
+    if (this.showKeyboardMode) {
+        y += FONT_SIZE;
+        this.drawingContext.fillText(
+            this.keyboardModeText,
+            this.canvas.width,
+            y
+        );
+    }
 
     // Left side
     y = 5;

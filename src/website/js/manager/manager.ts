@@ -54,6 +54,7 @@ export class Manager {
     public seqUI?: SequencerUI;
     public sBankBuffer: ArrayBuffer;
     protected isExporting;
+    protected keyboardMode = false;
     protected readonly showAudioExportMenu = showAudioExportMenu.bind(this);
     /**
      * Extra sound bank upload tracking (for rendering audio and file name)
@@ -384,7 +385,7 @@ export class Manager {
             this.workerMode,
             window.SPESSASYNTH_VERSION
         );
-        this.renderer.render(true);
+        this.renderer.startRendering();
 
         let titleSwappedWithSettings = false;
         const checkResize = () => {
@@ -405,7 +406,7 @@ export class Manager {
                     title.parentElement?.insertBefore(title, settings);
                 }
             }
-            this.renderer?.render(false, true);
+            this.renderer?.renderOneFrame();
             const h = window.location.hostname;
             // Domain correction
             if (
@@ -478,7 +479,7 @@ export class Manager {
 
         // Transpose should also preview in pause mode #182
         this.synthUI.onTranspose = () => {
-            this.renderer?.render(false, true);
+            this.renderer?.renderOneFrame();
         };
 
         // Set up drop file handler
@@ -511,61 +512,83 @@ export class Manager {
         }, this.reloadSf.bind(this));
 
         // Add key presses
-        document.addEventListener("keydown", (e) => {
-            // Check for control
-            if (e.ctrlKey) {
-                // Do not interrupt control shortcuts
-                return;
-            }
-            switch (e.key.toLowerCase()) {
-                case keybinds.videoMode: {
-                    this.seqUI?.seqPause();
-                    const videoSource = window.prompt(
-                        "Video mode!\n Paste the link to the video source (leave blank to disable)\n" +
-                            "Note: the video will be available in console as 'video'",
-                        ""
-                    );
-                    if (videoSource === null) {
-                        return;
+        document.addEventListener(
+            "keydown",
+            (e) => {
+                // Check for control
+                if (e.ctrlKey || e.repeat) {
+                    // Do not interrupt control shortcuts
+                    e.stopImmediatePropagation();
+                    return;
+                }
+                const key = e.key.toLowerCase();
+                if (this.keyboardMode && key !== keybinds.keyboardMode) {
+                    e.stopImmediatePropagation();
+
+                    const note = keybinds.keyboardKeys[key];
+                    if (note) {
+                        this.synth?.noteOn(this.keyboard!.channel, note, 120);
                     }
-                    const video = document.createElement("video");
-                    video.src = videoSource;
-                    video.classList.add("secret_video");
-                    canvas.parentElement?.append(video);
-                    void video.play();
-                    // @ts-expect-error Globally accessible
-                    window.video = video;
-                    if (this.seq) {
-                        video.currentTime = Number.parseFloat(
-                            window.prompt(
-                                "Video offset to sync to midi, in seconds.",
-                                "0"
-                            ) ?? "0"
+                    return;
+                }
+                switch (key) {
+                    case keybinds.videoMode: {
+                        this.seqUI?.seqPause();
+                        const videoSource = window.prompt(
+                            "Video mode!\n Paste the link to the video source (leave blank to disable)\n" +
+                                "Note: the video will be available in console as 'video'",
+                            ""
                         );
-                        void video.play();
-                        this.seq.currentTime = 0;
-                        this.seq.play();
-                    }
-                    document.addEventListener("keydown", (e) => {
-                        if (e.key === " ") {
-                            if (video.paused) {
-                                void video.play();
-                            } else {
-                                video.pause();
-                            }
+                        if (videoSource === null) {
+                            return;
                         }
-                    });
+                        const video = document.createElement("video");
+                        video.src = videoSource;
+                        video.classList.add("secret_video");
+                        canvas.parentElement?.append(video);
+                        void video.play();
+                        // @ts-expect-error Globally accessible
+                        window.video = video;
+                        if (this.seq) {
+                            video.currentTime = Number.parseFloat(
+                                window.prompt(
+                                    "Video offset to sync to midi, in seconds.",
+                                    "0"
+                                ) ?? "0"
+                            );
+                            void video.play();
+                            this.seq.currentTime = 0;
+                            this.seq.play();
+                        }
+                        document.addEventListener("keydown", (e) => {
+                            if (e.key === " ") {
+                                if (video.paused) {
+                                    void video.play();
+                                } else {
+                                    video.pause();
+                                }
+                            }
+                        });
 
-                    break;
-                }
+                        break;
+                    }
 
-                case keybinds.sustainPedal: {
-                    this.renderer!.showHoldPedal = true;
-                    this.renderer!.render(false);
-                    this.keyboard!.setHoldPedal(true);
+                    case keybinds.sustainPedal: {
+                        this.renderer!.showHoldPedal = true;
+                        this.renderer!.renderOneFrame();
+                        this.keyboard!.setHoldPedal(true);
+                        break;
+                    }
+
+                    case keybinds.keyboardMode: {
+                        this.keyboardMode = !this.keyboardMode;
+                        this.renderer!.showKeyboardMode = this.keyboardMode;
+                        this.renderer!.renderOneFrame();
+                    }
                 }
-            }
-        });
+            },
+            true
+        );
 
         document.addEventListener("keyup", (e) => {
             // Check for control
@@ -573,10 +596,18 @@ export class Manager {
                 // Do not interrupt control shortcuts
                 return;
             }
-            switch (e.key.toLowerCase()) {
+            const key = e.key.toLowerCase();
+            if (this.keyboardMode) {
+                const note = keybinds.keyboardKeys[key];
+                if (note) {
+                    this.synth?.noteOff(this.keyboard!.channel, note);
+                }
+                return;
+            }
+            switch (key) {
                 case keybinds.sustainPedal: {
                     this.renderer!.showHoldPedal = false;
-                    this.renderer!.render(false);
+                    this.renderer!.renderOneFrame();
                     this.keyboard!.setHoldPedal(false);
                     break;
                 }
@@ -587,7 +618,7 @@ export class Manager {
             }
         });
 
-        this.renderer.render(false, true);
+        this.renderer.renderOneFrame();
         // This will resume the context on first user interaction
         void context.resume();
         // ANY TEST CODE FOR THE SYNTHESIZER GOES HERE

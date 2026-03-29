@@ -696,6 +696,7 @@ export class SynthetizerUI {
                         "blackMIDIMode",
                         !this.synth.getMasterParameter("blackMIDIMode")
                     );
+                    this.renderer.renderOneFrame();
                     break;
                 }
 

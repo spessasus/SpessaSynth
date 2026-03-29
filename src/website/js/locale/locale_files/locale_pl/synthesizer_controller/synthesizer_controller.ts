@@ -61,6 +61,7 @@ export const synthesizerControllerLocale = {
     },
 
     holdPedalDown: "Pedał podtrzymania naciśnięty (Shift)",
+    keyboardMode: "Granie na klawiaturze jest włączone",
     port: "Port {0} (kliknij aby zmienić widoczność)",
     channelController: channelControllerLocale,
     effectsConfig: effectsConfig,

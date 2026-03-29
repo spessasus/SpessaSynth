@@ -1,7 +1,10 @@
+import { getCurrentVersion } from "../server/server_utils.ts";
+
 export const INSTALL_INSTRUCTIONS = `
 +--------------------------------------------------+
  INSTALL INSTRUCTIONS FOR SPESSASYNTH LOCAL EDITION
  Build generated on: ${new Date().toISOString()}
+ Version: ${getCurrentVersion()}
 +--------------------------------------------------+
 
 Thank you for downloading SpessaSynth: Local Edition!

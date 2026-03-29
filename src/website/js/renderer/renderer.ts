@@ -84,6 +84,7 @@ export class Renderer {
 
     // Toggles
     public showHoldPedal = false;
+    public showKeyboardMode = false;
     public renderNotes = true;
     public drawActiveNotes = true;
     public showVisualPitch = true;
@@ -103,16 +104,17 @@ export class Renderer {
     // Strings
     public currentTimeSignature = "4/4";
     public holdPedalIsDownText = "";
+    public keyboardModeText = "";
     public efxText = "EFX";
 
     public readonly updateFftSize = updateFftSize.bind(this);
-    public readonly render = render.bind(this);
     /**
      * For XG/GS display matrix
      */
     public readonly displayMatrix = Array.from({ length: 16 }, () =>
         new Array<boolean>(16).fill(false)
     );
+    protected readonly render = render.bind(this);
     protected version: string;
     protected _notesFall = true;
     protected canvas: HTMLCanvasElement;
@@ -182,6 +184,11 @@ export class Renderer {
             this,
             "holdPedalIsDownText",
             "locale.synthesizerController.holdPedalDown"
+        );
+        locale.bindObjectProperty(
+            this,
+            "keyboardModeText",
+            "locale.synthesizerController.keyboardMode"
         );
 
         const ctx = this.canvas.getContext("2d");
@@ -331,6 +338,14 @@ export class Renderer {
         this._notesFall = val === "down";
     }
 
+    public startRendering() {
+        this.render();
+    }
+
+    public renderOneFrame() {
+        this.render(false, true);
+    }
+
     public updateDisplayMatrix(mode: SynthSystem) {
         this.showDisplayMatrix = mode;
         clearTimeout(this.displayMatrixTimeout);
@@ -339,7 +354,7 @@ export class Renderer {
         }, DISPLAY_MATRIX_TIMEOUT);
         // Many MIDI files do setup in silence, and the animations usually are presented then.
         // Spessasynth doesn't render if nothing is being played, so this bypasses that.
-        this.render(false, true);
+        this.renderOneFrame();
     }
 
     public setRendererMode(mode: RendererMode) {
@@ -352,7 +367,7 @@ export class Renderer {
         this.canvas.height = this.canvas.clientHeight;
         this.computeColors();
         this.updateFftSize();
-        this.render(false, true);
+        this.renderOneFrame();
     }
 
     public toggleDarkMode() {
@@ -390,7 +405,7 @@ export class Renderer {
         for (const n of this.noteTimes) {
             n.renderStartIndex = 0;
         }
-        this.render(false, true);
+        this.renderOneFrame();
     }
 
     protected computeColors() {
