@@ -19,6 +19,7 @@ const keyboardKeybinds: Record<string, number> = {
     p: 76,
     "[": 77,
     "=": 78,
+    "]": 79,
 
     // Bottom octave (asdf, zxcv)
     z: 48,
