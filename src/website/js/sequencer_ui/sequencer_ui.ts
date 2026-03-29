@@ -668,18 +668,7 @@ export class SequencerUI {
                 this.lyricsIndex = -1;
                 this.updateSongDisplayData();
                 // Disable loop if more than 1 song
-                // And hide buttons to switch songs
-                if (this.seq.songsAmount === 1) {
-                    this.setLoopState(true);
-                    Ut.hide(this.transportControls.nextSongButton);
-                    Ut.hide(this.transportControls.previousSongButton);
-                    Ut.hide(this.transportControls.shuffleButton);
-                } else {
-                    this.setLoopState(false);
-                    Ut.show(this.transportControls.nextSongButton);
-                    Ut.show(this.transportControls.previousSongButton);
-                    Ut.show(this.transportControls.shuffleButton);
-                }
+                this.setLoopState(this.seq.songsAmount === 1);
                 this.restoreDisplay();
 
                 let midiEncoding = data.getRMIDInfo("midiEncoding");
