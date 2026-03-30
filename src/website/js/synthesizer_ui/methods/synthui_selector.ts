@@ -85,6 +85,20 @@ export class Selector {
         this.lockCallback = lockCallback;
     }
 
+    public lockSelector(locked: boolean) {
+        if (this.locked === locked) {
+            return;
+        }
+        this.locked = !this.locked;
+        this.lockCallback?.(this.locked);
+        this.mainButton.classList.toggle("locked_selector");
+        if (this.presetLock) {
+            this.presetLock.innerHTML = this.locked
+                ? getLockSVG(ICON_SIZE)
+                : getUnlockSVG(ICON_SIZE);
+        }
+    }
+
     public showSelectionMenu() {
         if (!this.value) {
             return;
@@ -141,14 +155,9 @@ export class Selector {
         if (this.mainButton.classList.contains("voice_selector_light")) {
             presetLock.classList.add("voice_reset_light");
         }
-        presetLock.addEventListener("click", () => {
-            this.locked = !this.locked;
-            this.lockCallback?.(this.locked);
-            this.mainButton.classList.toggle("locked_selector");
-            presetLock.innerHTML = this.locked
-                ? getLockSVG(ICON_SIZE)
-                : getUnlockSVG(ICON_SIZE);
-        });
+        presetLock.addEventListener("click", () =>
+            this.lockSelector(!this.locked)
+        );
         searchWrapper.append(presetLock);
         this.presetLock = presetLock;
 

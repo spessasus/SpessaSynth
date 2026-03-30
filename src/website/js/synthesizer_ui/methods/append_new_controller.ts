@@ -521,12 +521,12 @@ export function appendNewController(
                 ALL_CHANNELS_OR_DIFFERENT_ACTION,
                 false
             );
-            presetSelector.mainButton.classList.remove("locked_selector");
         }
         this.synth.setDrums(
             channelNumber,
             !this.synth.channelProperties[channelNumber].isDrum
         );
+        presetSelector.lockSelector(true);
     });
     controller.append(drumsToggle);
 
