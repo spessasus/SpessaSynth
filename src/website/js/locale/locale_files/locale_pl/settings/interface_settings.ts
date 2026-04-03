@@ -23,6 +23,11 @@ export const interfaceSettings = {
         }
     },
 
+    backgroundImage: {
+        title: "Obrazek w tle",
+        description: "Ustaw obrazek w tle wizualizacji"
+    },
+
     synthReload: {
         chromium: "Przeładuj w trybie Chrome",
         worklet: "Przeładuj w trybie Worklet"

@@ -197,6 +197,9 @@ export const settingsHtml = `
             <option value='right' translate-path='locale.settings.interfaceSettings.layoutDirection.values.rightToLeft'></option>
         </select>
         
+        <label for='background_file_upload' class='file_upload' translate-path-title='locale.settings.interfaceSettings.backgroundImage'></label>
+        <input type="file" accept="image/*" id='background_file_upload'/>
+        
         
         <h3><a id='reload_synth'></></h3>
         

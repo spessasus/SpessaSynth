@@ -2,9 +2,14 @@
     width: 100%;
     filter: saturate(1.23);
     flex: 1;
-    background-size: cover;
     min-height: 0;
     z-index: 1;
+    --opacity: 0.8;
+    position: relative;
+    background-size: auto, cover;
+    background-position:
+        0 0,
+        center;
 }
 
 #note_canvas.sideways {
@@ -14,7 +19,8 @@
 }
 
 #note_canvas.light_mode {
-    background: linear-gradient(
+    --opacity: 0 !important;
+    background-image: linear-gradient(
         45deg,
         var(--top-buttons-color-start),
         var(--top-buttons-color-end)

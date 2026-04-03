@@ -240,16 +240,11 @@ export class Renderer {
                 }
                 this.calculateNoteTimes(await this.seq.getMIDI());
                 this.resetIndexes();
-                if (mid.rmidiInfo?.picture === undefined) {
-                    this.canvas.style.background = "";
-                } else {
-                    const blob = new Blob([mid.rmidiInfo.picture.buffer]);
-                    const url = URL.createObjectURL(blob);
-                    const opacity = this.canvas.classList.contains("light_mode")
-                        ? 0
-                        : 0.9;
-                    this.canvas.style.background = `linear-gradient(rgba(0, 0, 0, ${opacity}), rgba(0, 0, 0, ${opacity})), center center / cover url("${url}")`;
-                }
+                this.setBackground(
+                    mid.rmidiInfo?.picture
+                        ? new Blob([mid.rmidiInfo.picture])
+                        : undefined
+                );
             }
         );
 
@@ -286,12 +281,12 @@ export class Renderer {
         return this._stabilizeWaveforms;
     }
 
-    // noinspection JSUnusedGlobalSymbols
-
     public set stabilizeWaveforms(val: boolean) {
         this._stabilizeWaveforms = val;
         this.updateFftSize();
     }
+
+    // noinspection JSUnusedGlobalSymbols
 
     protected _keyRange = {
         min: 0,
@@ -336,6 +331,15 @@ export class Renderer {
 
     public set direction(val: "down" | "up") {
         this._notesFall = val === "down";
+    }
+
+    public setBackground(image: Blob | undefined) {
+        if (!image) {
+            this.canvas.style.backgroundImage = "";
+            return;
+        }
+        const url = URL.createObjectURL(image);
+        this.canvas.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, var(--opacity)), rgba(0, 0, 0, var(--opacity))), url("${url}")`;
     }
 
     public startRendering() {

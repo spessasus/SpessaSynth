@@ -63,6 +63,17 @@ export function _createInterfaceSettingsHandler(this: SpessaSynthSettings) {
         }
     });
 
+    const backgroundImage = document.querySelector<HTMLInputElement>(
+        "#background_file_upload"
+    )!;
+    backgroundImage.addEventListener("change", () => {
+        if (!backgroundImage?.files?.[0]) {
+            this.renderer.setBackground(undefined);
+            return;
+        }
+        this.renderer.setBackground(backgroundImage.files[0]);
+    });
+
     // Reload synth
     const anchor = document.querySelector<HTMLAnchorElement>("#reload_synth")!;
     const url = new URL(window.location.href);

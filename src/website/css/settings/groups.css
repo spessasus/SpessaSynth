@@ -26,6 +26,17 @@
     display: block;
 }
 
+.settings_group label.file_upload {
+    background: var(--top-color);
+    padding: 0.5rem;
+    border: solid 1px #333;
+    margin: 0.5rem auto;
+    cursor: pointer;
+    width: fit-content;
+    border-radius: var(--primary-border-radius);
+    font-size: 1.1rem;
+}
+
 .settings_group .error_message {
     color: red;
     max-width: 20ch;

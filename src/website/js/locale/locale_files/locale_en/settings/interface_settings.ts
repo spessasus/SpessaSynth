@@ -23,6 +23,11 @@ export const interfaceSettings = {
         }
     },
 
+    backgroundImage: {
+        title: "Background image",
+        description: "Set the background image for visualization"
+    },
+
     synthReload: {
         chromium: "Reload in Chrome mode",
         worklet: "Reload in Worklet mode"
