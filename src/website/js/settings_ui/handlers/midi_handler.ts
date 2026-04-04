@@ -99,6 +99,7 @@ export function _createMidiOutputHandler(
         if (!handler.outputs) {
             return;
         }
+        this.synthui.midiPort = undefined;
         for (const o of handler.outputs) {
             o[1].disconnect(this.seq);
         }
@@ -107,6 +108,9 @@ export function _createMidiOutputHandler(
         // A lot MIDIs space out the messages to not overflow the MIDI cables.
         // Spessasynth doesn't have this limitation.
         if (target) {
+            this.synthui.midiPort = {
+                send: target.port.send.bind(target.port)
+            };
             target.connect(this.seq);
             this.seq.skipToFirstNoteOn = false;
         } else {

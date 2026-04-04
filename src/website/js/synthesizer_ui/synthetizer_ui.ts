@@ -1,7 +1,4 @@
-import {
-    hideControllers,
-    showControllers
-} from "./methods/hide_show_controllers.js";
+import { hideControllers, showControllers } from "./methods/hide_show_controllers.js";
 import { toggleDarkMode } from "./methods/toggle_dark_mode.js";
 import { setEventListeners } from "./methods/set_event_listeners.js";
 import { keybinds } from "../utils/keybinds.js";
@@ -14,6 +11,7 @@ import {
     type EffectChangeCallback,
     type MIDIController,
     midiControllers,
+    midiMessageTypes,
     type PresetList,
     type PresetListEntry
 } from "spessasynth_core";
@@ -80,6 +78,9 @@ export class SynthetizerUI {
     public readonly channelColors: string[];
     public onProgramChange?: (channel: number) => unknown;
     public onTranspose?: () => unknown;
+    public midiPort?: {
+        send: (data: number[]) => unknown;
+    };
     protected readonly synth: Synthesizer;
     protected readonly keyboard: MIDIKeyboard;
     protected readonly locale: LocaleManager;
@@ -377,6 +378,19 @@ export class SynthetizerUI {
                 }
                 this.soloChannels.clear();
                 this.synth.resetControllers();
+                this.midiPort?.send([
+                    midiMessageTypes.systemExclusive, // Start of sysEx
+                    0x41, // Roland
+                    0x10, // Device ID (defaults to 16 on roland)
+                    0x42, // GS
+                    0x12, // Command ID (DT1)
+                    0x40, // System parameter - Address
+                    0x00, // Global parameter -  Address
+                    0x7f, // GS Change - Address
+                    0x00, // Turn on - Data
+                    0x41, // Checksum
+                    0xf7 // End of exclusive
+                ]);
             });
 
             // Show only used
