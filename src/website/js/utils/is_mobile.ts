@@ -1,4 +1,5 @@
 // noinspection RegExpRedundantEscape,JSDeprecatedSymbols,RegExpSingleCharAlternation
+/* eslint-disable no-useless-escape */
 
 function checkMobile() {
     let check = false;

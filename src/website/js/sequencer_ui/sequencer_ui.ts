@@ -918,7 +918,7 @@ export class SequencerUI {
         if (this.silencePlayer.playbackRate !== this.seq.playbackRate) {
             this.seq.playbackRate = this.silencePlayer.playbackRate;
         }
-        if (this.silencePlayer.loop != this.seq.loopCount > 0) {
+        if (this.silencePlayer.loop !== this.seq.loopCount > 0) {
             // Causes issues by looping the audio, triggering a user seek too early
             this.silencePlayer.loop = false;
         }
