@@ -55,47 +55,46 @@ export interface MeterOptions {
     transform?: (value: number) => string;
 }
 
-// Global tracking
-let currentMeter:
-    | {
-          m: Meter;
-          rect: DOMRect;
-          activeChange?: (isActive: boolean) => unknown;
-          editCallback: MeterCallbackFunction;
-          max: number;
-          min: number;
-      }
-    | undefined;
+interface CurrentMeter {
+    m: Meter;
+    rect: DOMRect;
+    activeChange?: (isActive: boolean) => unknown;
+    editCallback: MeterCallbackFunction;
+    max: number;
+    min: number;
+}
 
 if (!isMobile) {
     document.addEventListener("pointerleave", () => {
-        currentMeter?.activeChange?.(false);
-        currentMeter = undefined;
+        Meter.currentMeter?.activeChange?.(false);
+        Meter.currentMeter = undefined;
     });
     document.addEventListener("pointerup", () => {
-        currentMeter?.activeChange?.(false);
-        currentMeter = undefined;
+        Meter.currentMeter?.activeChange?.(false);
+        Meter.currentMeter = undefined;
     });
 
     document.addEventListener("pointermove", (e) => {
-        if (!currentMeter) {
+        if (!Meter.currentMeter) {
             return;
         }
-        const relativeLeft = currentMeter.rect.left;
-        const width = currentMeter.rect.width;
+        const relativeLeft = Meter.currentMeter.rect.left;
+        const width = Meter.currentMeter.rect.width;
         const relative = e.clientX - relativeLeft;
         const percentage = Math.max(0, Math.min(1, relative / width));
-        currentMeter.editCallback(
-            percentage * (currentMeter.max - currentMeter.min) +
-                currentMeter.min
+        Meter.currentMeter.editCallback(
+            percentage * (Meter.currentMeter.max - Meter.currentMeter.min) +
+                Meter.currentMeter.min
         );
-        if (!currentMeter.m.isLocked) {
-            currentMeter.m.toggleLock();
+        if (!Meter.currentMeter.m.isLocked) {
+            Meter.currentMeter.m.toggleLock();
         }
     });
 }
 
 export class Meter {
+    // Global tracking
+    public static currentMeter?: CurrentMeter;
     public readonly defaultValue;
     public isLocked = true;
     public readonly div: HTMLDivElement;
@@ -208,12 +207,12 @@ export class Meter {
                 this.div.addEventListener("pointerdown", (e) => {
                     e.preventDefault();
                     if (e.button === 0) {
-                        if (currentMeter) {
+                        if (Meter.currentMeter) {
                             return;
                         }
                         const rect = this.div.getBoundingClientRect();
                         activeChangeCallback?.(true);
-                        currentMeter = {
+                        Meter.currentMeter = {
                             m: this,
                             rect,
                             editCallback,
@@ -229,8 +228,8 @@ export class Meter {
                             Math.min(1, relative / width)
                         );
                         editCallback(percentage * (max - min) + min);
-                        if (!currentMeter.m.isLocked) {
-                            currentMeter.m.toggleLock();
+                        if (!Meter.currentMeter.m.isLocked) {
+                            Meter.currentMeter.m.toggleLock();
                         }
                     } else {
                         // Other, lock it

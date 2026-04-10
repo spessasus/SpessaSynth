@@ -101,7 +101,9 @@ export function setEventListeners(this: SynthetizerUI) {
             this.showControllerGroup(
                 this.groupSelector.value as ControllerGroupType
             );
-            this.hideControllers();
+            if (!this.isShown) {
+                this.hideControllers();
+            }
         }
     );
 }
