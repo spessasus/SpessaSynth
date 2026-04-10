@@ -69,7 +69,7 @@ export function renderSingleWaveform(
     this.drawingContext.strokeStyle = this.plainColors[channelNumber];
     this.drawingContext.fillStyle = this.plainColors[channelNumber];
 
-    let triggerPoint = 0;
+    let triggerPoint;
     let length = sampleCount;
     let renderStart = 0;
     let renderEnd = sampleCount;
@@ -86,16 +86,14 @@ export function renderSingleWaveform(
         // Pass 1: find the maximum in the last part of the waveform
         // TODO: optimize by using max function on a subarray when available
         const searchStart = Math.max(0, triggerPoint - halfLength);
-        let bestIndex;
         for (let i = triggerPoint; i >= searchStart; i--) {
             const value = waveform[i];
             if (value > max) {
                 max = value;
-                bestIndex = i;
             }
         }
         // Pass 2: find the maximum within a tolerance range around the first trigger point
-        bestIndex = triggerPoint;
+        let bestIndex = triggerPoint;
         triggerPoint = sampleCount - halfLength;
         const maximumTolerance = 0.04; // 4% tolerance for the second pass
         for (let i = triggerPoint; i >= searchStart; i--) {

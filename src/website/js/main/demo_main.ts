@@ -283,7 +283,7 @@ async function fetchFont(url: string | URL, callback: (p: number) => unknown) {
     }
     const size = Number.parseInt(response.headers.get("content-length") ?? "0");
     const reader = response.body.getReader();
-    let done = false;
+    let done;
     /**
      * No data array but chunks because gh pages sends the wrong size?
      */

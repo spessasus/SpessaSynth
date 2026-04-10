@@ -85,7 +85,7 @@ async function fetchFont(
     }
     const size = Number.parseInt(response.headers.get("content-length") ?? "0");
     const reader = response.body.getReader();
-    let done = false;
+    let done;
     let dataArray;
     try {
         dataArray = new Uint8Array(size);
@@ -217,8 +217,6 @@ document.onclick = async () => {
     await initManagerSF();
 };
 
-let soundBanks: { name: string; size: number }[] = [];
-
 const localeManager = new LocaleManager(
     navigator.language.split("-")[0].toLowerCase() as LocaleCode
 );
@@ -232,7 +230,9 @@ if (!r.ok) {
 }
 const sfSelector = document.querySelector<HTMLSelectElement>("#sf_selector")!;
 
-soundBanks = JSON.parse(await r.text()) as { name: string; size: number }[];
+const soundBanks: { name: string; size: number }[] = JSON.parse(
+    await r.text()
+) as { name: string; size: number }[];
 
 if (!(0 in soundBanks)) {
     titleMessage.textContent = "No files in the 'soundfonts' folder!";

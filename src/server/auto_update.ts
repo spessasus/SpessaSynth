@@ -77,7 +77,7 @@ async function downloadUpdate() {
         return;
     }
     const reader = fetched.body.getReader();
-    let done = false;
+    let done;
     const size = Number.parseInt(fetched.headers.get("content-length") ?? "0");
     console.info(`Downloading the new version (${size / 1000 ** 2} MB)`);
     const zipFile = new Uint8Array(size);
@@ -179,6 +179,6 @@ async function performLocaEditionUpdate() {
     await promise;
 
     // Prevent the current server from starting
-    // eslint-disable-next-line
+    // eslint-disable-next-line unicorn/no-process-exit
     process.exit(0);
 }

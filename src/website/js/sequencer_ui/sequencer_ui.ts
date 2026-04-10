@@ -1167,7 +1167,7 @@ export class SequencerUI {
                     matrix[rowNum][colNum++] =
                         ((syx[syxOffset + rowNum + 32] >> i) & 1) === 1;
                 }
-                matrix[rowNum][colNum++] =
+                matrix[rowNum][colNum] =
                     ((syx[syxOffset + 48 + rowNum] >> 4) & 1) === 1;
             }
             this.renderer.updateDisplayMatrix("gs");
