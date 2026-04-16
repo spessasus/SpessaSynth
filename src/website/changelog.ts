@@ -5,5 +5,6 @@ export const UPDATE_NAME = "v4.2.0 The Effects Update";
  */
 export const WHATS_NEW: string[] = [
     `Various audio engine bug fixes!`,
+    `Improved volEnv performance!`,
     `GeneralUser-GS updated to 2.0.3!`
 ] as const;
