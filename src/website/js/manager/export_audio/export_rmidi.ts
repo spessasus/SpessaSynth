@@ -266,7 +266,7 @@ export function _exportRMIDI(this: Manager) {
                     const exported = await writeRMIDI.call(this, {
                         bankID: this.soundBankID,
                         compressionQuality: quality,
-                        compress: compressed,
+                        compressionAction: compressed ? "compress" : "keep",
                         metadata: {
                             name: songTitle,
                             artist,
@@ -281,14 +281,14 @@ export function _exportRMIDI(this: Manager) {
                         writeEmbeddedSoundBank: true,
                         format: "sf2",
                         sequencerID: 0,
-                        decompress: false,
+                        software: "SpessaSynth",
                         writeDefaultModulators: true,
                         writeExtendedLimits: true,
                         bankOffset,
                         correctBankOffset: adjust,
                         progressFunction: (p) => {
                             message.textContent = modifyingSoundFont;
-                            progressDiv.style.width = `${(p.sampleIndex / p.sampleCount) * 100}%`;
+                            progressDiv.style.width = `${p * 100}%`;
                         }
                     });
 

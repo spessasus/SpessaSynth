@@ -200,7 +200,8 @@ export class Manager {
             trim: false,
             bankID: "main",
             writeEmbeddedSoundBank: false,
-            sequencerID: 0
+            sequencerID: 0,
+            software: "SpessaSynth"
         });
         this.saveBlob(new Blob([sf.binary]), sf.fileName);
     }

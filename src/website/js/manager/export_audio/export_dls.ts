@@ -35,15 +35,7 @@ export async function writeDLS(
         sf.trimSoundBank(mid);
     }
 
-    const b = await sf.writeDLS({
-        ...options,
-        progressFunction: async (sampleName, sampleIndex, sampleCount) =>
-            await options.progressFunction?.({
-                sampleCount,
-                sampleIndex,
-                sampleName
-            })
-    });
+    const b = sf.writeDLS(options);
     return {
         binary: b,
         fileName: sf.soundBankInfo.name + ".dls",
@@ -120,9 +112,10 @@ export function _exportDLS(this: Manager) {
                         trim: trimmed,
                         writeEmbeddedSoundBank: true,
                         sequencerID: 0,
+                        software: "SpessaSynth",
                         progressFunction: (p) => {
-                            const progress = p.sampleIndex / p.sampleCount;
-                            progressDiv.style.width = `${progress * 100}%`;
+                            progressDiv.style.width = `${p * 100}%`;
+                            console.log(p);
                         }
                     });
                     this.seq?.play();

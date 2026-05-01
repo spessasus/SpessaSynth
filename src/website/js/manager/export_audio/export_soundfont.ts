@@ -42,15 +42,38 @@ export async function writeSF2(
     const compressionFunction = (audioData: Float32Array, sampleRate: number) =>
         encodeVorbis(audioData, sampleRate, options.compressionQuality);
 
-    const b = await sf.writeSF2({
+    switch (options.compressionAction) {
+        case "keep":
+        default: {
+            // No action
+            break;
+        }
+
+        case "compress": {
+            if (!compressionFunction) {
+                throw new Error(
+                    `Compression enabled but no compression function has been provided! This should not happen, pleas report the bug!`
+                );
+            }
+            await sf.setSampleFormat({
+                compressionFunction,
+                format: "compressed",
+                progressFunction: options.progressFunction
+            });
+            break;
+        }
+
+        case "decompress": {
+            await sf.setSampleFormat({
+                format: "pcm",
+                progressFunction: options.progressFunction
+            });
+        }
+    }
+
+    const b = sf.writeSF2({
         ...options,
-        progressFunction: async (sampleName, sampleIndex, sampleCount) =>
-            await options.progressFunction?.({
-                sampleCount,
-                sampleIndex,
-                sampleName
-            }),
-        compressionFunction: compressionFunction
+        progressFunction: options.progressFunction
     });
     return {
         binary: b,
@@ -138,16 +161,15 @@ export function exportAndSaveSF2(this: Manager) {
                         {
                             bankID: this.soundBankID,
                             trim: trimmed,
-                            compress: compressed,
+                            compressionAction: compressed ? "compress" : "keep",
                             writeDefaultModulators: true,
                             writeExtendedLimits: true,
                             writeEmbeddedSoundBank: true,
-                            decompress: false,
+                            software: "SpessaSynth",
                             compressionQuality: quality,
                             progressFunction: (p) => {
-                                const progress = p.sampleIndex / p.sampleCount;
-                                progressDiv.style.width = `${progress * 100}%`;
-                                detailMessage.textContent = `${exportingMessage} ${Math.floor(progress * 100)}%`;
+                                progressDiv.style.width = `${p * 100}%`;
+                                detailMessage.textContent = `${exportingMessage} ${Math.floor(p * 100)}%`;
                             },
                             sequencerID: 0
                         }
