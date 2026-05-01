@@ -103,7 +103,7 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
     );
 
     // Create the initial synth channels
-    for (let i = 0; i < this.synth.channelsAmount; i++) {
+    for (let i = 0; i < this.synth.channelCount; i++) {
         createChannel();
     }
     keyboardControls.channelSelector.addEventListener("change", () => {
@@ -207,7 +207,7 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
                         return;
                     }
                 }
-                if (channelNumber < this.synth.channelsAmount) {
+                if (channelNumber < this.synth.channelCount) {
                     this.midiKeyboard.selectChannel(channelNumber);
                     keyboardControls.channelSelector.value =
                         channelNumber.toString();

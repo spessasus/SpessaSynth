@@ -205,7 +205,7 @@ export class Renderer {
             fftSize: this._analyserFftSize,
             smoothingTimeConstant: ANALYSER_SMOOTHING
         });
-        for (let i = 0; i < synth.channelsAmount; i++) {
+        for (let i = 0; i < synth.channelCount; i++) {
             // Create the analyzer
             const analyser = new AnalyserNode(synth.context, {
                 fftSize: this._analyserFftSize,

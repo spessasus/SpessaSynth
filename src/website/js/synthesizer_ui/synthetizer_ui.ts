@@ -1,4 +1,7 @@
-import { hideControllers, showControllers } from "./methods/hide_show_controllers.js";
+import {
+    hideControllers,
+    showControllers
+} from "./methods/hide_show_controllers.js";
 import { toggleDarkMode } from "./methods/toggle_dark_mode.js";
 import { setEventListeners } from "./methods/set_event_listeners.js";
 import { keybinds } from "../utils/keybinds.js";
@@ -679,7 +682,7 @@ export class SynthetizerUI {
         }
 
         // Create channel controllers
-        for (let i = 0; i < this.synth.channelsAmount; i++) {
+        for (let i = 0; i < this.synth.channelCount; i++) {
             appendNewController.call(this, i);
         }
         this.setEventListeners();
@@ -884,18 +887,18 @@ export class SynthetizerUI {
     }
 
     protected updateVoicesAmount() {
-        this.voiceMeter.update(this.synth.voicesAmount);
+        this.voiceMeter.update(this.synth.voiceCount);
 
         for (const [i, controller] of this.controllers.entries()) {
             // Update channel
-            const voices = this.synth.channelProperties[i]?.voicesAmount;
+            const voices = this.synth.channelProperties[i]?.voiceCount;
             if (voices === undefined) {
                 continue;
             }
             controller.voiceMeter.update(voices);
             controller.controller.classList.toggle(
                 "no_voices",
-                voices < 1 && this.synth.voicesAmount > 0
+                voices < 1 && this.synth.voiceCount > 0
             );
         }
     }

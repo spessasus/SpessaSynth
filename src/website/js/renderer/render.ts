@@ -11,7 +11,7 @@ let hasRenderedNoVoices = false;
 export function render(this: Renderer, auto = true, force = false) {
     const nothingToDo =
         (this.seq === undefined || this?.seq?.paused) &&
-        this.synth.voicesAmount === 0 &&
+        this.synth.voiceCount === 0 &&
         this.rendererMode === rendererModes.waveformsMode &&
         !force;
     let forceStraight = false;

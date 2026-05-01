@@ -439,10 +439,10 @@ export function appendNewController(
         }
         if (
             this.soloChannels.size === 0 ||
-            this.soloChannels.size >= this.synth.channelsAmount
+            this.soloChannels.size >= this.synth.channelCount
         ) {
             // No channels or all channels are soloed, unmute everything
-            for (let i = 0; i < this.synth.channelsAmount; i++) {
+            for (let i = 0; i < this.synth.channelCount; i++) {
                 this.controllers[i].soloButton.innerHTML =
                     getEmptyMicSvg(ICON_SIZE);
                 this.synth.muteChannel(
@@ -450,14 +450,14 @@ export function appendNewController(
                     this.controllers[i].muteButton.hasAttribute("is_muted")
                 );
             }
-            if (this.soloChannels.size >= this.synth.channelsAmount) {
+            if (this.soloChannels.size >= this.synth.channelCount) {
                 // All channels are soloed, return to normal
                 this.soloChannels.clear();
             }
             return;
         }
         // Unmute every solo channel and mute others
-        for (let i = 0; i < this.synth.channelsAmount; i++) {
+        for (let i = 0; i < this.synth.channelCount; i++) {
             if (this.soloChannels.has(i)) {
                 this.controllers[i].soloButton.innerHTML = getMicSvg(ICON_SIZE);
                 this.synth.muteChannel(
