@@ -29,12 +29,6 @@ export const rendererSettingsLocale = {
             "Cette option permet d'obtenir des formes d'ondes évoluant avec plus ou moins d'amplitude"
     },
 
-    toggleWaveformsRendering: {
-        title: "Visibilité des formes d'ondes",
-        description:
-            "Active ou non le rendu des formes d'ondes (les lignes colorées réagissant avec l'audio)"
-    },
-
     toggleNotesRendering: {
         title: "Visibilité des cascades",
         description:

@@ -279,67 +279,68 @@ export class SpessaSynthSettings {
                 renderingMode: document.querySelector<HTMLSelectElement>(
                     "#renderer_mode_selector"
                 )!,
-                noteTimeSlider:
+
+                lineThickness: document.querySelector<HTMLInputElement>(
+                    "#analyser_thickness_slider"
+                )!,
+                analyserFftSize: document.querySelector<HTMLInputElement>(
+                    "#analyser_fft_slider"
+                )!,
+                waveMultiplier: document.querySelector<HTMLInputElement>(
+                    "#wave_multiplier_slider"
+                )!,
+                noteFallingTime:
                     document.querySelector<HTMLInputElement>(
                         "#note_time_slider"
                     )!,
-                noteAfterTriggerTimeSlider:
-                    document.querySelector<HTMLInputElement>(
-                        "#note_after_time_slider"
-                    )!,
-                noteToggler:
+                noteAfterTriggerTime: document.querySelector<HTMLInputElement>(
+                    "#note_after_time_slider"
+                )!,
+
+                showPresetNames: document.querySelector<HTMLInputElement>(
+                    "#preset_names_toggler"
+                )!,
+                renderNotes:
                     document.querySelector<HTMLInputElement>("#note_toggler")!,
-                activeNoteToggler: document.querySelector<HTMLInputElement>(
+                drawActiveNotes: document.querySelector<HTMLInputElement>(
                     "#active_note_toggler"
                 )!,
-                visualPitchToggler: document.querySelector<HTMLInputElement>(
+                showVisualPitch: document.querySelector<HTMLInputElement>(
                     "#visual_pitch_toggler"
                 )!,
-                dotDisplayToggler: document.querySelector<HTMLInputElement>(
+                renderDotDisplay: document.querySelector<HTMLInputElement>(
                     "#dot_display_toggler"
                 )!,
-                stabilizeWaveformsToggler:
-                    document.querySelector<HTMLInputElement>(
-                        "#stabilize_waveforms_toggler"
-                    )!,
+                stabilizeWaveforms: document.querySelector<HTMLInputElement>(
+                    "#stabilize_waveforms_toggler"
+                )!,
 
-                exponentialGainToggler:
-                    document.querySelector<HTMLInputElement>(
-                        "#exponential_gain_toggler"
-                    )!,
-                dynamicGainToggler: document.querySelector<HTMLInputElement>(
+                exponentialGain: document.querySelector<HTMLInputElement>(
+                    "#exponential_gain_toggler"
+                )!,
+                dynamicGain: document.querySelector<HTMLInputElement>(
                     "#dynamic_gain_toggler"
                 )!,
-                logarithmicFrequencyToggler:
-                    document.querySelector<HTMLInputElement>(
-                        "#logarithmic_frequency_toggler"
-                    )!,
-
-                analyserThicknessSlider:
-                    document.querySelector<HTMLInputElement>(
-                        "#analyser_thickness_slider"
-                    )!,
-                analyserFftSlider: document.querySelector<HTMLInputElement>(
-                    "#analyser_fft_slider"
-                )!,
-                waveMultiplierSlizer: document.querySelector<HTMLInputElement>(
-                    "#wave_multiplier_slider"
+                logarithmicFrequency: document.querySelector<HTMLInputElement>(
+                    "#logarithmic_frequency_toggler"
                 )!
             },
 
             keyboard: {
-                channelSelector:
+                selectedChannel:
                     document.querySelector<HTMLSelectElement>(
                         "#channel_selector"
                     )!,
-                modeSelector:
-                    document.querySelector<HTMLInputElement>("#mode_selector")!,
-                sizeSelector: document.querySelector<HTMLSelectElement>(
+                mode: document.querySelector<HTMLInputElement>(
+                    "#mode_selector"
+                )!,
+                keyRange: document.querySelector<HTMLSelectElement>(
                     "#keyboard_size_selector"
                 )!,
-                showSelector:
-                    document.querySelector<HTMLInputElement>("#keyboard_show")!,
-                maxVelocitySelector: document.querySelector<HTMLInputElement>(
+                shown: document.querySelector<HTMLInputElement>(
+                    "#keyboard_show"
+                )!,
+                forceMaxVelocity: document.querySelector<HTMLInputElement>(
                     "#keyboard_force_max_velocity"
                 )!
             },

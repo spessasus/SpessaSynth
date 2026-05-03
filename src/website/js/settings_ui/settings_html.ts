@@ -76,6 +76,14 @@ export const settingsHtml = `
         </div>
         
         <div class='switch_label'>
+            <label for='preset_names_toggler' translate-path-title='locale.settings.rendererSettings.toggleDrawingPresetNames'></label>
+            <label class='switch'>
+                <input type='checkbox' id='preset_names_toggler'>
+                <span class='switch_slider'></span>
+            </label>
+        </div>
+        
+        <div class='switch_label'>
             <label for='note_toggler' translate-path-title='locale.settings.rendererSettings.toggleNotesRendering'></label>
             <label class='switch'>
                 <input type='checkbox' checked id='note_toggler'>

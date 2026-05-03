@@ -8,9 +8,6 @@ import type { LocaleCode } from "../../locale/locale_files/locale_list.ts";
 
 /**
  * Serializes settings into a nice object
- * @private
- * @returns {SavedSettings}
- * @this {SpessaSynthSettings}
  */
 export function _serializeSettings(this: SpessaSynthSettings): SavedSettings {
     // Ensure valid locale
@@ -22,12 +19,13 @@ export function _serializeSettings(this: SpessaSynthSettings): SavedSettings {
     return {
         renderer: {
             renderingMode: this.renderer.rendererMode,
-            noteFallingTimeMs: this.renderer.noteFallingTimeMs,
-            noteAfterTriggerTimeMs: this.renderer.noteAfterTriggerTimeMs,
+            noteFallingTime: this.renderer.noteFallingTime,
+            noteAfterTriggerTime: this.renderer.noteAfterTriggerTime,
             waveformThickness: this.renderer.lineThickness,
             sampleSize: this.renderer.analyserFftSize,
-            amplifier: this.renderer.waveMultiplier,
+            waveMultiplier: this.renderer.waveMultiplier,
             renderNotes: this.renderer.renderNotes,
+            showPresetNames: this.renderer.showPresetNames,
             drawActiveNotes: this.renderer.drawActiveNotes,
             showVisualPitch: this.renderer.showVisualPitch,
             renderDotDisplay: this.renderer.renderDotDisplay,
@@ -43,11 +41,10 @@ export function _serializeSettings(this: SpessaSynthSettings): SavedSettings {
             keyRange: this.midiKeyboard.keyRange,
             mode: this.midiKeyboard.mode,
             autoRange:
-                this.htmlControls.keyboard.sizeSelector.value ===
-                USE_MIDI_RANGE,
-            show: this.htmlControls.keyboard.showSelector.checked,
+                this.htmlControls.keyboard.keyRange.value === USE_MIDI_RANGE,
+            show: this.htmlControls.keyboard.shown.checked,
             forceMaxVelocity:
-                this.htmlControls.keyboard.maxVelocitySelector.checked
+                this.htmlControls.keyboard.forceMaxVelocity.checked
         },
 
         midi: {

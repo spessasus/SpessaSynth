@@ -1,4 +1,9 @@
-import { FONT_SIZE, Renderer, rendererModes } from "./renderer.js";
+import {
+    FONT_SIZE,
+    PRESET_NAMES_FONT_SIZE,
+    Renderer,
+    rendererModes
+} from "./renderer.js";
 import { drawNotes } from "./draw_notes.js";
 
 let hasRenderedNoVoices = false;
@@ -44,6 +49,45 @@ export function render(this: Renderer, auto = true, force = false) {
     if (!highPerf) {
         // Draw the individual analyzers
         this.renderWaveforms(forceStraight);
+        // Draw preset names
+        if (
+            this.showPresetNames &&
+            this.rendererMode !== rendererModes.spectrumSingleMode &&
+            this.rendererMode !== rendererModes.none
+        ) {
+            const waveWidth = this.canvas.width / 4;
+            const waveHeight = this.canvas.height / 4;
+            // Setup font
+            this.drawingContext.textBaseline = "top";
+            this.drawingContext.textAlign = "start";
+            this.drawingContext.font = `${PRESET_NAMES_FONT_SIZE}px monospace`;
+            this.drawingContext.fillStyle = "white";
+            const names = this.programTracker.presetNames;
+            const used = this.programTracker.usedChannels;
+            const usedParts = this.programTracker.usedParts;
+            // For every waveform
+            for (let part = 0; part < 16; part++) {
+                const x = part % 4;
+                const y = Math.floor(part / 4);
+                const relativeX = waveWidth * x;
+                let relativeY = waveHeight * y;
+                // Check for every channel that uses this waveform
+                for (let chan = part; chan < names.length; chan += 16) {
+                    // If used (by MIDI file) or currently active part (by something external)
+                    if (
+                        used.has(chan) ||
+                        (this.voicesPlaying[part] && !usedParts.has(part))
+                    ) {
+                        this.drawingContext.fillText(
+                            names[chan] ?? `CH ${part + 1}`,
+                            relativeX,
+                            relativeY
+                        );
+                        relativeY += PRESET_NAMES_FONT_SIZE;
+                    }
+                }
+            }
+        }
     }
 
     if (this.renderNotes && this.noteTimes) {
@@ -69,12 +113,12 @@ export function render(this: Renderer, auto = true, force = false) {
     const fps = 1000 / timeSinceLastFrame;
 
     // Draw note count and fps
-    this.drawingContext.textBaseline = "hanging";
+    this.drawingContext.textBaseline = "top";
     this.drawingContext.textAlign = "end";
     this.drawingContext.font = `${FONT_SIZE}px monospace`;
     this.drawingContext.fillStyle = "white";
 
-    let y = 5;
+    let y = 0;
     // App version
     this.drawingContext.fillText(this.version, this.canvas.width, y);
     y += FONT_SIZE;
@@ -101,27 +145,31 @@ export function render(this: Renderer, auto = true, force = false) {
     }
 
     // Left side
-    y = 5;
-    this.drawingContext.textAlign = "start";
-    // Engine mode
-    this.drawingContext.fillText(
-        this.workerMode ? "WORKER (CHROMIUM) MODE" : "WORKLET MODE",
-        0,
-        y
-    );
-    y += FONT_SIZE;
-
-    // Draw time signature and tempo (if note times are available)
-    if (this.seq.midiData) {
+    if (!this.showPresetNames) {
+        y = 0;
+        this.drawingContext.textAlign = "start";
+        // Engine mode
         this.drawingContext.fillText(
-            Math.round(this.seq.currentTempo * this.seq.playbackRate * 100) /
-                100 +
-                "BPM",
+            this.workerMode ? "WORKER (CHROMIUM) MODE" : "WORKLET MODE",
             0,
             y
         );
         y += FONT_SIZE;
-        this.drawingContext.fillText(this.currentTimeSignature, 0, y);
+
+        // Draw time signature and tempo (if note times are available)
+        if (this.seq.midiData) {
+            this.drawingContext.fillText(
+                Math.round(
+                    this.seq.currentTempo * this.seq.playbackRate * 100
+                ) /
+                    100 +
+                    "BPM",
+                0,
+                y
+            );
+            y += FONT_SIZE;
+            this.drawingContext.fillText(this.currentTimeSignature, 0, y);
+        }
     }
 
     // Show the hold pedal message
