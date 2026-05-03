@@ -145,31 +145,36 @@ export function render(this: Renderer, auto = true, force = false) {
     }
 
     // Left side
-    if (!this.showPresetNames) {
+    let yIncrement;
+
+    if (this.showPresetNames) {
+        yIncrement = -FONT_SIZE;
+        this.drawingContext.textBaseline = "bottom";
+        y = this.canvas.height;
+    } else {
+        yIncrement = FONT_SIZE;
         y = 0;
-        this.drawingContext.textAlign = "start";
-        // Engine mode
+    }
+    this.drawingContext.textAlign = "start";
+    // Engine mode
+    this.drawingContext.fillText(
+        this.workerMode ? "WORKER (CHROMIUM) MODE" : "WORKLET MODE",
+        0,
+        y
+    );
+    y += yIncrement;
+
+    // Draw time signature and tempo (if note times are available)
+    if (this.seq.midiData) {
         this.drawingContext.fillText(
-            this.workerMode ? "WORKER (CHROMIUM) MODE" : "WORKLET MODE",
+            Math.round(this.seq.currentTempo * this.seq.playbackRate * 100) /
+                100 +
+                "BPM",
             0,
             y
         );
-        y += FONT_SIZE;
-
-        // Draw time signature and tempo (if note times are available)
-        if (this.seq.midiData) {
-            this.drawingContext.fillText(
-                Math.round(
-                    this.seq.currentTempo * this.seq.playbackRate * 100
-                ) /
-                    100 +
-                    "BPM",
-                0,
-                y
-            );
-            y += FONT_SIZE;
-            this.drawingContext.fillText(this.currentTimeSignature, 0, y);
-        }
+        y += yIncrement;
+        this.drawingContext.fillText(this.currentTimeSignature, 0, y);
     }
 
     // Show the hold pedal message
