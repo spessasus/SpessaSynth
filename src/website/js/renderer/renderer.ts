@@ -19,9 +19,10 @@ import {
     type SynthSystem
 } from "spessasynth_core";
 import type { Sequencer } from "spessasynth_lib";
-import type { LocaleManager } from "../locale/locale_manager.ts";
+import { type LocaleManager } from "../locale/locale_manager.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
 import { drawDotMatrix } from "./draw_dot_matrix.ts";
+import { ProgramTracker } from "./program_tracker.ts";
 
 /**
  * Renderer.js
@@ -63,6 +64,7 @@ const GRADIENT_DARKEN = 0.5;
 export const STROKE_THICKNESS = 1;
 export const NOTE_MARGIN = 1;
 export const FONT_SIZE = 12;
+export const PRESET_NAMES_FONT_SIZE = 16;
 export const PRESSED_EFFECT_TIME = 0.6;
 
 // Limits
@@ -74,14 +76,18 @@ export class Renderer {
      * Called after a frame is rendered
      */
     public onRender?: () => unknown;
-
     // Params
-    public noteFallingTimeMs = 1000;
-    public noteAfterTriggerTimeMs = 0;
+    /**
+     * Milliseconds
+     */
+    public noteFallingTime = 1000;
+    /**
+     * Milliseconds
+     */
+    public noteAfterTriggerTime = 0;
     public lineThickness = ANALYSER_STROKE;
     public waveMultiplier = WAVE_MULTIPLIER;
     public rendererMode: RendererMode = rendererModes.waveformsMode;
-
     // Toggles
     public showHoldPedal = false;
     public showKeyboardMode = false;
@@ -91,22 +97,18 @@ export class Renderer {
     public renderDotDisplay = true;
     public sideways = false;
     public renderChannels = new Array<boolean>(16).fill(true);
-
     // Fft config
     public exponentialGain = true;
     public logarithmicFrequency = true;
     public dynamicGain = false;
-
     // Offsets
     public timeOffset = 0;
     public notesOnScreen = 0;
-
     // Strings
     public currentTimeSignature = "4/4";
     public holdPedalIsDownText = "";
     public keyboardModeText = "";
     public efxText = "EFX";
-
     public readonly updateFftSize = updateFftSize.bind(this);
     /**
      * For XG/GS display matrix
@@ -122,7 +124,9 @@ export class Renderer {
     protected plainColors: string[];
     protected synth: Synthesizer;
     protected seq: Sequencer;
+    protected readonly programTracker;
     protected readonly sampleBuffer = new Float32Array(32_768); // Max allowed by AnalyserNode
+    protected readonly voicesPlaying = new Array<boolean>(16).fill(false);
     protected channelAnalysers: AnalyserNode[] = [];
     protected bigAnalyser: AnalyserNode;
     protected channelColors: CanvasGradient[] = [];
@@ -171,6 +175,7 @@ export class Renderer {
     ) {
         this.synth = synth;
         this.seq = seq;
+        this.programTracker = new ProgramTracker(synth, seq);
         this.version = "v" + version;
         this.inputNode = inputNode;
         this.canvas = canvas;
@@ -258,6 +263,17 @@ export class Renderer {
                 }
             }
         );
+    }
+
+    protected _showPresetNames = true;
+
+    public get showPresetNames(): boolean {
+        return this._showPresetNames;
+    }
+
+    public set showPresetNames(value: boolean) {
+        this._showPresetNames = value;
+        this.renderOneFrame();
     }
 
     protected _renderBool = true;

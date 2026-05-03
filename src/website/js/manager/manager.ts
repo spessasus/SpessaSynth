@@ -474,7 +474,7 @@ export class Manager {
             // QoL: change the keyboard channel to the changed one when user changed it: adjust selector here
             this.keyboard?.selectChannel(channel);
 
-            this.settingsUI!.htmlControls.keyboard.channelSelector.value =
+            this.settingsUI!.htmlControls.keyboard.selectedChannel.value =
                 channel.toString();
         };
 

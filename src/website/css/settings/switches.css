@@ -1,11 +1,9 @@
 .switch_label {
     display: flex;
     justify-content: space-between;
-    margin-top: 1em;
 }
 
 .switch_label label {
-    margin-right: 1em;
     font-size: large;
 }
 

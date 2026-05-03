@@ -55,12 +55,6 @@ export const rendererSettingsLocale = {
             "Distribuisci le bande di frequenza in modo logaritmico, anziché lineare. Consigliato"
     },
 
-    toggleWaveformsRendering: {
-        title: "Abilita rendering forme d'onda",
-        description:
-            "Abilita il rendering delle forme d'onda dei canali (linee colorate che mostrano l'audio)"
-    },
-
     toggleNotesRendering: {
         title: "Abilita rendering note",
         description:

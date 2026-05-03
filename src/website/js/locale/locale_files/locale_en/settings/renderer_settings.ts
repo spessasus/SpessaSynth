@@ -55,32 +55,31 @@ export const rendererSettingsLocale = {
             "Spread the frequency bins in a logarithmic fashion, rather than linear. Recommended"
     },
 
-    toggleWaveformsRendering: {
-        title: "Enable waveforms rendering",
-        description:
-            "Enable rendering the channel waveforms (colorful lines showing audio)"
-    },
-
     toggleNotesRendering: {
-        title: "Enable notes rendering",
+        title: "Show notes",
         description:
             "Enable rendering of the falling notes when playing a MIDI file"
     },
 
     toggleDrawingActiveNotes: {
-        title: "Enable drawing active notes",
+        title: "Show active notes",
         description:
             "Enable notes lighting up and glowing when they get pressed"
     },
 
     toggleDrawingVisualPitch: {
-        title: "Enable drawing visual pitch",
+        title: "Show visual pitch",
         description:
             "Enable notes sliding left or right when the pitch wheel is applied"
     },
 
+    toggleDrawingPresetNames: {
+        title: "Show preset names",
+        description: "Enable showing current preset names for each waveform"
+    },
+
     toggleRenderingDotDisplay: {
-        title: "Enable drawing dot display",
+        title: "Show dot display",
         description: "Enable drawing the GS/XG Dot Display mesages"
     },
 

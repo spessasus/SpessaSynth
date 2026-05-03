@@ -18,11 +18,15 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
     let presetList: MIDIPatchNamed[] = [];
 
     const updateChannel = (channel: number) => {
-        const chan = channelTrackers[channel];
-        let preset = presetList.find(
-            (p) => p.bankMSB === chan.bankMSB && p.program === chan.program
-        );
-        preset ??= presetList[0];
+        const c = channelTrackers[channel];
+        const preset =
+            presetList.find(
+                (p) =>
+                    p.bankMSB === c.bankMSB &&
+                    p.program === c.program &&
+                    p.bankLSB === c.bankLSB &&
+                    p.isGMGSDrum === c.isGMGSDrum
+            ) ?? presetList[0];
         nameDisplays[channel].textContent = ": " + preset.name;
     };
 
@@ -67,7 +71,7 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
             ];
         option.style.color = "rgb(0, 0, 0)";
 
-        keyboardControls.channelSelector.append(option);
+        keyboardControls.selectedChannel.append(option);
         channelNumber++;
     };
 
@@ -106,20 +110,20 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
     for (let i = 0; i < this.synth.channelCount; i++) {
         createChannel();
     }
-    keyboardControls.channelSelector.addEventListener("change", () => {
+    keyboardControls.selectedChannel.addEventListener("change", () => {
         this.midiKeyboard.selectChannel(
-            Number.parseInt(keyboardControls.channelSelector.value)
+            Number.parseInt(keyboardControls.selectedChannel.value)
         );
     });
 
-    keyboardControls.sizeSelector.addEventListener("change", () => {
+    keyboardControls.keyRange.addEventListener("change", () => {
         if (this.musicMode.visible) {
             this.musicMode.setVisibility(
                 false,
                 document.querySelector("#keyboard_canvas_wrapper")!
             );
             setTimeout(() => {
-                if (keyboardControls.sizeSelector.value === USE_MIDI_RANGE) {
+                if (keyboardControls.keyRange.value === USE_MIDI_RANGE) {
                     this.autoKeyRange = true;
                     if (this?.seq?.midiData) {
                         this.midiKeyboard.keyRange = this.seq.midiData.keyRange;
@@ -129,12 +133,12 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
                     this.autoKeyRange = false;
                     this.midiKeyboard.keyRange =
                         this.keyboardSizes[
-                            keyboardControls.sizeSelector
+                            keyboardControls.keyRange
                                 .value as keyof typeof this.keyboardSizes
                         ];
                     this.renderer.keyRange =
                         this.keyboardSizes[
-                            keyboardControls.sizeSelector
+                            keyboardControls.keyRange
                                 .value as keyof typeof this.keyboardSizes
                         ];
                 }
@@ -142,7 +146,7 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
             }, 600);
             return;
         }
-        if (keyboardControls.sizeSelector.value === USE_MIDI_RANGE) {
+        if (keyboardControls.keyRange.value === USE_MIDI_RANGE) {
             this.autoKeyRange = true;
             if (this?.seq.midiData) {
                 this.midiKeyboard.keyRange = this.seq.midiData.keyRange;
@@ -152,12 +156,12 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
             this.autoKeyRange = false;
             this.midiKeyboard.keyRange =
                 this.keyboardSizes[
-                    keyboardControls.sizeSelector
+                    keyboardControls.keyRange
                         .value as keyof typeof this.keyboardSizes
                 ];
             this.renderer.keyRange =
                 this.keyboardSizes[
-                    keyboardControls.sizeSelector
+                    keyboardControls.keyRange
                         .value as keyof typeof this.keyboardSizes
                 ];
         }
@@ -209,7 +213,7 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
                 }
                 if (channelNumber < this.synth.channelCount) {
                     this.midiKeyboard.selectChannel(channelNumber);
-                    keyboardControls.channelSelector.value =
+                    keyboardControls.selectedChannel.value =
                         channelNumber.toString();
                 }
             }
@@ -217,7 +221,7 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
     );
 
     // Dark mode toggle
-    keyboardControls.modeSelector.addEventListener("click", () => {
+    keyboardControls.mode.addEventListener("click", () => {
         if (this.musicMode.visible) {
             this.musicMode.setVisibility(
                 false,
@@ -235,13 +239,13 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
     });
 
     // Keyboard show toggle
-    keyboardControls.showSelector.addEventListener("click", () => {
+    keyboardControls.shown.addEventListener("click", () => {
         this.midiKeyboard.shown = !this.midiKeyboard.shown;
         this.saveSettings();
     });
 
     // Keyboard max velocity
-    keyboardControls.maxVelocitySelector.addEventListener("click", () => {
+    keyboardControls.forceMaxVelocity.addEventListener("click", () => {
         this.midiKeyboard.forceMaxVelocity =
             !this.midiKeyboard.forceMaxVelocity;
         this.saveSettings();

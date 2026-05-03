@@ -17,8 +17,7 @@ export const rendererSettingsLocale = {
 
     noteAfterTriggerTime: {
         title: "触发后音符时间 (毫秒)",
-        description:
-            "音符被触发后下落的时间。零表示它们在底部触发"
+        description: "音符被触发后下落的时间。零表示它们在底部触发"
     },
 
     waveformThickness: {
@@ -45,38 +44,27 @@ export const rendererSettingsLocale = {
 
     toggleDynamicGain: {
         title: "启用动态增益",
-        description:
-            "自动调整增益，使最高点始终接触显示的顶部"
+        description: "自动调整增益，使最高点始终接触显示的顶部"
     },
 
     toggleLogarithmicFrequency: {
         title: "启用对数频率",
-        description:
-            "以对数方式分布频率柱，而非线性方式。推荐使用"
-    },
-
-    toggleWaveformsRendering: {
-        title: "启用波形渲染",
-        description:
-            "启用通道波形的渲染（显示音频的彩色线条）"
+        description: "以对数方式分布频率柱，而非线性方式。推荐使用"
     },
 
     toggleNotesRendering: {
         title: "启用音符渲染",
-        description:
-            "启用播放 MIDI 文件时下落音符的渲染"
+        description: "启用播放 MIDI 文件时下落音符的渲染"
     },
 
     toggleDrawingActiveNotes: {
         title: "启用绘制活动音符",
-        description:
-            "启用音符在被按下时发光和闪烁"
+        description: "启用音符在被按下时发光和闪烁"
     },
 
     toggleDrawingVisualPitch: {
         title: "启用绘制视觉音高",
-        description:
-            "启用在应用音高轮时音符向左或向右滑动"
+        description: "启用在应用音高轮时音符向左或向右滑动"
     },
 
     toggleRenderingDotDisplay: {

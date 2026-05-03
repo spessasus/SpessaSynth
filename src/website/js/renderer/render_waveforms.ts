@@ -54,6 +54,7 @@ export function renderSingleWaveform(
             break;
         }
     }
+    this.voicesPlaying[channelNumber] = voicesPlaying;
     if (!voicesPlaying) {
         // Draw a straight line
         straightLine();

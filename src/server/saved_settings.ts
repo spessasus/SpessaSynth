@@ -32,11 +32,12 @@ export interface SavedSettings {
             min: number;
             max: number;
         };
-        noteFallingTimeMs: number;
-        noteAfterTriggerTimeMs: number;
+        noteFallingTime: number;
+        noteAfterTriggerTime: number;
         drawActiveNotes: boolean;
         stabilizeWaveforms: boolean;
-        amplifier: number;
+        waveMultiplier: number;
+        showPresetNames: boolean;
         showVisualPitch: boolean;
         renderDotDisplay: boolean;
         sampleSize: number;
@@ -84,15 +85,16 @@ export const DEFAULT_SAVED_SETTINGS: SavedSettings = {
             min: 0,
             max: 127
         },
-        noteAfterTriggerTimeMs: 0,
-        noteFallingTimeMs: 1000,
+        noteAfterTriggerTime: 0,
+        noteFallingTime: 1000,
         drawActiveNotes: true,
         stabilizeWaveforms: true,
-        amplifier: 2,
+        waveMultiplier: 2,
         logarithmicFrequency: true,
         waveformThickness: 2,
         sampleSize: 1024,
         dynamicGain: false,
+        showPresetNames: true,
         showVisualPitch: true,
         renderDotDisplay: true,
         exponentialGain: true

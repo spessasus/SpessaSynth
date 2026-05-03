@@ -12,8 +12,8 @@ export const rendererSettingsLocale = {
 
     noteFallingTime: {
         title: "ノートの落下時間 (ミリ秒)",
-        description: //"How fast the notes fall (visually)"
-            "ノートの落下速度(視覚的)"
+        //"How fast the notes fall (visually)"
+        description: "ノートの落下速度(視覚的)"
     },
 
     noteAfterTriggerTime: {
@@ -32,7 +32,7 @@ export const rendererSettingsLocale = {
         title: "サンプルサイズ",
         description:
             //"How detailed the visualizations are (Note: high values might impact performance). Also note that high values will add a delay to the audio to sync the waveforms with the audio"
-            "ビジュアライゼーションの詳細度 (注: 高い値はパフォーマンスに影響を与える可能性があります)。" + 
+            "ビジュアライゼーションの詳細度 (注: 高い値はパフォーマンスに影響を与える可能性があります)。" +
             "また、高い値は、波形をオーディオと同期させるためにオーディオに遅延を追加することに注意してください"
     },
 
@@ -56,26 +56,17 @@ export const rendererSettingsLocale = {
 
     toggleLogarithmicFrequency: {
         title: "対数周波数を有効にする",
-        description:
-            "周波数分布を線形ではなく対数的に広げます。(推奨)"
-    },
-
-    toggleWaveformsRendering: {
-        title: "波形の描画を有効にする",
-        description:
-            "チャンネルの波形を描画する (音声を示すカラフルな線)"
+        description: "周波数分布を線形ではなく対数的に広げます。(推奨)"
     },
 
     toggleNotesRendering: {
         title: "ノートの描画を有効にする",
-        description:
-            "MIDIファイルを再生する際の落下ノートの描画を有効にする"
+        description: "MIDIファイルを再生する際の落下ノートの描画を有効にする"
     },
 
     toggleDrawingActiveNotes: {
         title: "アクティブノートの描画を有効にする",
-        description:
-            "ノートが押されたときに光り、輝くようにする"
+        description: "ノートが押されたときに光り、輝くようにする"
     },
 
     toggleDrawingVisualPitch: {

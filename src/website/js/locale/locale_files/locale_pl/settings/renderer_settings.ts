@@ -55,31 +55,31 @@ export const rendererSettingsLocale = {
             "Rozłóż częstotliwości w sposób logarytmiczny zamiast liniowego. Zalecane"
     },
 
-    toggleWaveformsRendering: {
-        title: "Włącz rysowanie fal",
-        description:
-            "Włącz rysowanie fal dźwiękowych (16-tu kolorowych linii z tyłu)"
-    },
-
     toggleNotesRendering: {
-        title: "Włącz rysowanie nut",
+        title: "Pokaż nuty",
         description:
             "Włącz rysowanie spadających nut podczas odtwarzania pliku MIDI"
     },
 
     toggleDrawingActiveNotes: {
-        title: "Włącz rysowanie aktywnych nut",
+        title: "Pokaż aktywne nuty",
         description: "Włącz efekt podświetlania się nut przy aktywacji"
     },
 
     toggleDrawingVisualPitch: {
-        title: "Włącz wizualizację wysokości tonu",
+        title: "Pokaż wysokość tonu",
         description:
             "Włącz przesuwanie nut w lewo lub w prawo gdy wysokość nut jest zmieniana"
     },
 
+    toggleDrawingPresetNames: {
+        title: "Pokaż nazwy instrumentów",
+        description:
+            "Włącz pokazywanie aktualnych nazw instrumentów dla każdego kształtu fali"
+    },
+
     toggleRenderingDotDisplay: {
-        title: "Włącz rysowanie obrazków XG/GS",
+        title: "Pokaż obrazki XG/GS",
         description: "Włącz rysowanie obrazków Dot Matrix w plikach MIDI XG/GS"
     },
 

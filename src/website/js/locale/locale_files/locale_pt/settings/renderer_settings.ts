@@ -25,12 +25,6 @@ export const rendererSettingsLocale = {
         description: "O quão vibrantes são as formas de onda"
     },
 
-    toggleWaveformsRendering: {
-        title: "Habilitar renderização de formas de onda",
-        description:
-            "Habilitar a renderização das formas de onda do canal (linhas coloridas mostrando o áudio)"
-    },
-
     toggleNotesRendering: {
         title: "Habilitar renderização de notas",
         description:

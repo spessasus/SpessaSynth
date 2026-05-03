@@ -24,8 +24,8 @@ export function computeNotePositions(
     const keyStep = canvasWidth / (keysAmount + 1); // Add one because it works
     const noteWidth = keyStep - NOTE_MARGIN * 2;
 
-    const fallingTime = this.noteFallingTimeMs / 1000;
-    const afterTime = this.noteAfterTriggerTimeMs / 1000;
+    const fallingTime = this.noteFallingTime / 1000;
+    const afterTime = this.noteAfterTriggerTime / 1000;
 
     const currentSeqTime = this.seq.currentHighResolutionTime - this.timeOffset;
     const currentStartTime = currentSeqTime - afterTime;
@@ -37,7 +37,7 @@ export function computeNotePositions(
      */
     const pitchBendXShift: number[] = [];
     for (const channel of this.synth.channelProperties) {
-        // Pitch range * (bend - 8192) / 8192)) * key width
+        // Pitch range * ((bend - 8192) / 8192) * key width
         if (this.showVisualPitch) {
             const bend = channel.pitchWheel - 8192; // -8192 to 8192
             const pixelShift =
