@@ -57,7 +57,6 @@ export class ProgramTracker {
             (e) => {
                 this.presetList = e;
                 this.updatePresetList();
-                console.log(this.presetList);
             }
         );
 
