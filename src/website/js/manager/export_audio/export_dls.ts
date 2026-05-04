@@ -1,8 +1,5 @@
 import { consoleColors } from "../../utils/console_colors.js";
-import {
-    closeNotification,
-    showNotification
-} from "../../notification/notification.js";
+import { closeNotification, showNotification } from "../../notification/notification.js";
 import type { Manager } from "../manager.ts";
 import { WorkerSynthesizer } from "spessasynth_lib";
 import { type BasicSoundBank, SoundBankLoader } from "spessasynth_core";
@@ -115,7 +112,6 @@ export function _exportDLS(this: Manager) {
                         software: "SpessaSynth",
                         progressFunction: (p) => {
                             progressDiv.style.width = `${p * 100}%`;
-                            console.log(p);
                         }
                     });
                     this.seq?.play();
