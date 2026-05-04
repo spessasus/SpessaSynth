@@ -202,7 +202,7 @@ async function demoInit(initLocale: LocaleCode) {
             );
         } catch (error) {
             console.error("Error loading bundled:", error);
-            soundFontBuffer = await BasicSoundBank.getSampleSoundBankFile();
+            soundFontBuffer = BasicSoundBank.getSampleSoundBankFile();
         }
 
         progressBar.style.width = "0";

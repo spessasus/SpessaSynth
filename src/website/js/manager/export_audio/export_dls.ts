@@ -32,7 +32,7 @@ export async function writeDLS(
     const sf = SoundBankLoader.fromArrayBuffer(sfBin);
 
     if (options.trim) {
-        sf.trimSoundBank(mid);
+        sf.trim(mid.getUsedProgramsAndKeys(sf));
     }
 
     const b = sf.writeDLS(options);

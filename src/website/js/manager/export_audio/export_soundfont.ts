@@ -36,7 +36,7 @@ export async function writeSF2(
     const sf = SoundBankLoader.fromArrayBuffer(sfBin);
 
     if (options.trim) {
-        sf.trimSoundBank(mid);
+        sf.trim(mid.getUsedProgramsAndKeys(sf));
     }
 
     const compressionFunction = (audioData: Float32Array, sampleRate: number) =>
