@@ -505,7 +505,7 @@ export class Manager {
                 this.showExportMenu.bind(this)
             );
             // If demo website, hide demo songs button
-            if (this.isLocalEdition) {
+            if (!this.isLocalEdition) {
                 document.querySelector<HTMLLabelElement>(
                     "#demo_song"
                 )!.style.display = "none";
