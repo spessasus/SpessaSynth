@@ -281,6 +281,7 @@ export function _exportRMIDI(this: Manager) {
                         writeEmbeddedSoundBank: true,
                         format: "sf2",
                         sequencerID: 0,
+                        applySnapshot: true,
                         software: "SpessaSynth",
                         writeDefaultModulators: true,
                         writeExtendedLimits: true,
