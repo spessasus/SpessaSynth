@@ -1,5 +1,5 @@
 import type { SpessaSynthSettings } from "../settings.ts";
-import type { MIDIPatch, MIDIPatchNamed } from "spessasynth_core";
+import type { MIDIPatch, MIDIPatchFull } from "spessasynth_core";
 
 export const USE_MIDI_RANGE = "midi range";
 
@@ -15,7 +15,7 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
 
     const channelTrackers: MIDIPatch[] = [];
 
-    let presetList: MIDIPatchNamed[] = [];
+    let presetList: MIDIPatchFull[] = [];
 
     const updateChannel = (channel: number) => {
         const c = channelTrackers[channel];

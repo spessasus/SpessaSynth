@@ -21,7 +21,12 @@ export function setEventListeners(this: SynthesizerUI) {
             this.controllers[e.channel].drumsToggle.innerHTML = e.isDrum
                 ? getDrumsSvg(32)
                 : getNoteSvg(32);
-            p.reload(e.isDrum ? this.drumPresets : this.melodicPresets);
+            const list = this.synth.midiChannels[e.channel].patch.isDrum
+                ? this.synth.midiParameters.system === "gs"
+                    ? this.gsDrumPresets
+                    : this.xgDrumPresets
+                : this.melodicPresets;
+            p.reload(list);
             p.set(e);
         }
     );

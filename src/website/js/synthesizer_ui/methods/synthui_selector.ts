@@ -1,22 +1,22 @@
 import { midiPatchNames } from "../../utils/patch_names.js";
 import { getLockSVG, getUnlockSVG } from "../../utils/icons.js";
-import { ICON_SIZE, LOCALE_PATH } from "../synthetizer_ui.js";
+import {
+    ICON_SIZE,
+    LOCALE_PATH,
+    type PresetListElement
+} from "../synthetizer_ui.js";
 import { isMobile } from "../../utils/is_mobile.js";
 import type { LocaleManager } from "../../manager/locale_manager.ts";
 import {
     type MIDIPatch,
-    MIDIPatchTools,
-    type PresetListEntry
+    type MIDIPatchFull,
+    MIDIPatchTools
 } from "spessasynth_core";
 
 /**
  * Syntui_selector.js
  * purpose: manages a single selector element for selecting the presets
  */
-
-interface PresetListElement extends PresetListEntry {
-    stringified: string;
-}
 
 export class Selector {
     public readonly mainButton: HTMLButtonElement;
@@ -45,7 +45,7 @@ export class Selector {
      * @param lockCallback
      */
     public constructor(
-        elements: PresetListEntry[],
+        elements: MIDIPatchFull[],
         locale: LocaleManager,
         descriptionPath: string,
         descriptionArgs: (string | number)[],
@@ -55,7 +55,7 @@ export class Selector {
         this.elements = elements.map((e) => {
             return {
                 ...e,
-                stringified: MIDIPatchTools.toNamedMIDIString(e)
+                stringified: MIDIPatchTools.toFullMIDIString(e)
             };
         });
         // The preset list may not be always available
@@ -310,14 +310,9 @@ export class Selector {
         this.mainButton.classList.toggle("voice_selector_light");
     }
 
-    public reload(elements: PresetListEntry[] = this.elements) {
+    public reload(elements: PresetListElement[] = this.elements) {
         if (this.elements !== elements) {
-            this.elements = elements.map((e) => {
-                return {
-                    ...e,
-                    stringified: MIDIPatchTools.toNamedMIDIString(e)
-                };
-            });
+            this.elements = elements;
         }
         if (this.elements.length > 0) {
             const firstEl = this.elements[0];
@@ -384,7 +379,7 @@ export class Selector {
         ) {
             return `${patch.program}. ${patch.name}`;
         }
-        return MIDIPatchTools.toNamedMIDIString(patch);
+        return `${MIDIPatchTools.toMIDIString(patch)} ${patch.name}`;
     }
 
     /**

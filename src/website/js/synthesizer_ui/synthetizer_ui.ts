@@ -1,7 +1,4 @@
-import {
-    hideControllers,
-    showControllers
-} from "./methods/hide_show_controllers.js";
+import { hideControllers, showControllers } from "./methods/hide_show_controllers.js";
 import { toggleDarkMode } from "./methods/toggle_dark_mode.js";
 import { setEventListeners } from "./methods/set_event_listeners.js";
 import { keybinds } from "../utils/keybinds.js";
@@ -14,8 +11,8 @@ import {
     type MIDIController,
     MIDIControllers,
     MIDIMessageTypes,
-    type PresetList,
-    type PresetListEntry
+    type MIDIPatchFull,
+    MIDIPatchTools
 } from "spessasynth_core";
 import type { Sequencer } from "spessasynth_lib";
 import type { LocaleManager } from "../manager/locale_manager.ts";
@@ -42,6 +39,10 @@ import { createInsertionController } from "./methods/create_insertion_controller
 import { createEffectController } from "./methods/create_effect_controller.ts";
 import { appendNewController } from "./methods/append_new_controller.ts";
 import type { Renderer } from "../renderer/renderer.ts";
+
+export interface PresetListElement extends MIDIPatchFull {
+    stringified: string;
+}
 
 export const MONO_ON = "<pre style='color: red;'>M</pre>";
 export const POLY_ON = "<pre>P</pre>";
@@ -153,9 +154,10 @@ export class SynthesizerUI {
      * For closing the effect window when closing the synthui.
      */
     protected effectsConfigWindow?: number;
-    protected melodicPresets: PresetList = [];
-    protected drumPresets: PresetList = [];
-    protected presetList: PresetList = [];
+    protected melodicPresets: PresetListElement[] = [];
+    protected gsDrumPresets: PresetListElement[] = [];
+    protected xgDrumPresets: PresetListElement[] = [];
+    protected presetList: PresetListElement[] = [];
     protected readonly hideControllers = hideControllers.bind(this);
     protected readonly showControllers = showControllers.bind(this);
     protected readonly setEventListeners = setEventListeners.bind(this);
@@ -838,38 +840,61 @@ export class SynthesizerUI {
         this.showCCs(controllerGroups[groupType]);
     }
 
-    protected updatePresetList(presetList: PresetList) {
+    protected updatePresetList(presetList: MIDIPatchFull[]) {
         this.presetList = presetList.map((p) => ({
             ...p,
+            stringified: MIDIPatchTools.toFullMIDIString(p),
             name: p.name.replace(/\d{3}:\d{3}/, "") // Remove those pesky "000:001"
         }));
 
         const presetListSorted = [...this.presetList].sort(
-            this.presetSort.bind(this)
+            MIDIPatchTools.compare.bind(MIDIPatchTools)
         );
         this.melodicPresets.length = 0;
-        this.drumPresets.length = 0;
+        this.xgDrumPresets.length = 0;
+        this.gsDrumPresets.length = 0;
         for (const preset of presetListSorted) {
             if (preset.isDrum) {
-                this.drumPresets.push(preset);
+                if (preset.isGMGSDrum) {
+                    this.gsDrumPresets.push(preset);
+                } else {
+                    this.xgDrumPresets.push(preset);
+                }
             } else {
                 this.melodicPresets.push(preset);
             }
         }
-
+        // Backfill missing drums
+        for (const preset of this.xgDrumPresets) {
+            if (!this.gsDrumPresets.some((p) => p.program === preset.program)) {
+                this.gsDrumPresets.push(preset);
+            }
+        }
+        for (const preset of this.gsDrumPresets) {
+            if (!this.xgDrumPresets.some((p) => p.program === preset.program)) {
+                this.xgDrumPresets.push(preset);
+            }
+        }
         if (this.melodicPresets.length === 0) {
             console.warn("No presets found. There may be unexpected behavior!");
         }
 
-        if (this.drumPresets.length === 0) {
-            this.drumPresets = this.melodicPresets;
-        } else if (this.melodicPresets.length === 0) {
-            this.melodicPresets = this.drumPresets;
+        if (this.melodicPresets.length === 0) {
+            this.melodicPresets = this.presetList;
+        }
+        if (this.xgDrumPresets.length === 0) {
+            this.xgDrumPresets = this.presetList;
+        }
+        if (this.gsDrumPresets.length === 0) {
+            this.gsDrumPresets = this.presetList;
         }
 
-        for (const [i, controller] of this.controllers.entries()) {
+        for (let i = 0; i < this.controllers.length; i++) {
+            const controller = this.controllers[i];
             const list = this.synth.midiChannels[i].patch.isDrum
-                ? this.drumPresets
+                ? this.synth.midiParameters.system === "gs"
+                    ? this.gsDrumPresets
+                    : this.xgDrumPresets
                 : this.melodicPresets;
             controller.preset.reload(list);
             if (list.length > 0) {
@@ -1089,28 +1114,5 @@ export class SynthesizerUI {
                 Ut.hide(controller.controllerMeters[cc]?.div);
             }
         }
-    }
-
-    private presetSort(a: PresetListEntry, b: PresetListEntry): number {
-        // Force drum presets to be last
-        if (a.isGMGSDrum && !b.isGMGSDrum) {
-            return 1;
-        }
-        if (!a.isGMGSDrum && b.isGMGSDrum) {
-            return -1;
-        }
-
-        // First, sort by program
-        if (a.program !== b.program) {
-            return a.program - b.program;
-        }
-
-        // Next, sort by bankMSB
-        if (a.bankMSB !== b.bankMSB) {
-            return a.bankMSB - b.bankMSB;
-        }
-
-        // Finally, sort by bankLSB
-        return a.bankLSB - b.bankLSB;
     }
 }

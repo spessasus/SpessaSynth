@@ -4,7 +4,7 @@ import {
 } from "../../notification/notification.js";
 import type { LocaleManager } from "../../manager/locale_manager.ts";
 import type { MIDIKeyboard } from "../../midi_keyboard/midi_keyboard.ts";
-import { type MIDIPatchNamed, MIDIPatchTools } from "spessasynth_core";
+import { type MIDIPatchFull, MIDIPatchTools } from "spessasynth_core";
 import type { Synthesizer } from "../../utils/synthesizer.ts";
 
 const LOCALE_PATH = "locale.synthesizerController.keyModifiers.";
@@ -51,7 +51,7 @@ async function doModifyKey(
     synth: Synthesizer,
     locale: LocaleManager,
     keyboard: MIDIKeyboard,
-    presetList: MIDIPatchNamed[]
+    presetList: MIDIPatchFull[]
 ) {
     const key = await getKey(locale, keyboard);
 
@@ -242,7 +242,7 @@ export function startKeyModifiersMenu(
     synth: Synthesizer,
     locale: LocaleManager,
     keyboard: MIDIKeyboard,
-    presetList: MIDIPatchNamed[]
+    presetList: MIDIPatchFull[]
 ) {
     showNotification(
         locale.getLocaleString(LOCALE_PATH + "mainTitle"),

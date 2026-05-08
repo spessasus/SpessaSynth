@@ -1,8 +1,4 @@
-import {
-    closeNotification,
-    type NotificationContent,
-    showNotification
-} from "../../notification/notification.js";
+import { closeNotification, type NotificationContent, showNotification } from "../../notification/notification.js";
 import { audioBufferToWav } from "spessasynth_lib";
 import { Ut } from "../../utils/other.js";
 import { consoleColors } from "../../utils/console_colors.js";
@@ -162,7 +158,7 @@ export async function renderAndExportAudioData(
                             normalizeAudio: false
                         }
                     );
-                    const fileName = `${channel + 1} - ${snapshot.midiChannels[i].patch.name}.wav`;
+                    const fileName = `${channel + 1} - ${snapshot.midiChannels[i]?.patch?.name ?? `Channel ${i + 1}`}.wav`;
                     this.saveBlob(
                         new Blob([audioOut], { type: "audio/wav" }),
                         fileName
@@ -204,7 +200,7 @@ export async function renderAndExportAudioData(
                     const audioOut = audioBufferToWav(channel, {
                         normalizeAudio: false
                     });
-                    const fileName = `${i + 1} - ${snapshot.midiChannels[i].patch.name}.wav`;
+                    const fileName = `${i + 1} - ${snapshot.midiChannels[i]?.patch?.name ?? `Channel ${i + 1}`}.wav`;
                     zipped.file(fileName, audioOut);
                     console.info(
                         `%cAdding file %c${fileName}%c to zip...`,

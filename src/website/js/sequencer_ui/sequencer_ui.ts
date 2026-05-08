@@ -771,6 +771,8 @@ export class SequencerUI {
             getPauseSvg(ICON_SIZE);
         this.silencePlayer.volume = 0.001;
         this.syncSilencePlayer();
+        // Ensure that the speed doesn't change on new song
+        this.silencePlayer.playbackRate = this.seq.playbackRate;
         void this.silencePlayer.play().then(() => {
             this.silencePlayer.volume = 0.000_01;
         });
@@ -1061,6 +1063,8 @@ export class SequencerUI {
             this.silencePlayer.src = URL.createObjectURL(
                 new Blob([buf], { type: "audio/wav" })
             );
+            // Ensure that the speed doesn't change on new song
+            this.silencePlayer.playbackRate = this.seq.playbackRate;
 
             const mid = this.seq.midiData;
             const artwork = new Array<MediaImage>();
