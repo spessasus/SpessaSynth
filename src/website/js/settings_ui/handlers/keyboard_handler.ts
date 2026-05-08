@@ -26,6 +26,7 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
                 p.bankLSB === c.bankLSB &&
                 p.isGMGSDrum === c.isGMGSDrum
         );
+        // https://github.com/spessasus/SpessaSynth/issues/219
         if (!preset) {
             return;
         }

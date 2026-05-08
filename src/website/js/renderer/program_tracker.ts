@@ -82,14 +82,17 @@ export class ProgramTracker {
                 c.bankMSB = e.bankMSB;
                 c.program = e.program;
                 c.isGMGSDrum = e.isGMGSDrum;
-                const preset =
-                    this.presetList.find(
-                        (p) =>
-                            p.bankMSB === c.bankMSB &&
-                            p.program === c.program &&
-                            p.bankLSB === c.bankLSB &&
-                            p.isGMGSDrum === c.isGMGSDrum
-                    ) ?? this.presetList[0];
+                const preset = this.presetList.find(
+                    (p) =>
+                        p.bankMSB === c.bankMSB &&
+                        p.program === c.program &&
+                        p.bankLSB === c.bankLSB &&
+                        p.isGMGSDrum === c.isGMGSDrum
+                );
+                // https://github.com/spessasus/SpessaSynth/issues/219
+                if (!preset) {
+                    return;
+                }
                 this.presetNames[e.channel] =
                     (preset.isDrum ? "(D) " : "") + preset.name;
             }
@@ -118,6 +121,7 @@ export class ProgramTracker {
                     p.bankLSB === c.bankLSB &&
                     p.isGMGSDrum === c.isGMGSDrum
             );
+            // https://github.com/spessasus/SpessaSynth/issues/219
             if (!preset) {
                 continue;
             }
