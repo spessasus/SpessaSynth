@@ -1,10 +1,6 @@
-import {
-    FONT_SIZE,
-    PRESET_NAMES_FONT_SIZE,
-    Renderer,
-    rendererModes
-} from "./renderer.js";
+import { FONT_SIZE, PRESET_NAMES_FONT_SIZE, Renderer, rendererModes } from "./renderer.js";
 import { drawNotes } from "./draw_notes.js";
+import { isMobile } from "../utils/is_mobile.ts";
 
 let hasRenderedNoVoices = false;
 
@@ -58,9 +54,13 @@ export function render(this: Renderer, auto = true, force = false) {
             const waveWidth = this.canvas.width / 4;
             const waveHeight = this.canvas.height / 4;
             // Setup font
+            // Scale down on mobile
+            const fontSize =
+                PRESET_NAMES_FONT_SIZE /
+                (isMobile ? window.devicePixelRatio : 1);
             this.drawingContext.textBaseline = "top";
             this.drawingContext.textAlign = "start";
-            this.drawingContext.font = `${PRESET_NAMES_FONT_SIZE}px monospace`;
+            this.drawingContext.font = `${fontSize}px monospace`;
             this.drawingContext.fillStyle = "white";
             const names = this.programTracker.presetNames;
             const used = this.programTracker.usedChannels;
@@ -79,11 +79,11 @@ export function render(this: Renderer, auto = true, force = false) {
                         (this.voicesPlaying[part] && !usedParts.has(part))
                     ) {
                         this.drawingContext.fillText(
-                            names[chan] ?? `CH ${part + 1}`,
+                            names[chan],
                             relativeX,
                             relativeY
                         );
-                        relativeY += PRESET_NAMES_FONT_SIZE;
+                        relativeY += fontSize;
                     }
                 }
             }
