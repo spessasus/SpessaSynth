@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 // Don't use import.meta.dirname: https://github.com/spessasus/SpessaSynth
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 // Allow running the .ts files in src/ directly
-const isDev = currentDir.includes("/src");
+const isDev = currentDir.includes(path.join("src", "server"));
 
 export const rootDir = isDev
     ? path.join(currentDir, "../..")
@@ -14,7 +14,8 @@ export const soundfontsPath = path.join(rootDir, "soundfonts");
 export const packageJSON = path.join(rootDir, "package.json");
 export const rootFile = path.join(
     rootDir,
-    "local-dev/local_edition_index.html"
+    "local-dev",
+    "local_edition_index.html"
 );
 
 export function getCurrentVersion() {
