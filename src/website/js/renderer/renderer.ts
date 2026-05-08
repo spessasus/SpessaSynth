@@ -19,7 +19,7 @@ import {
     SpessaSynthCoreUtils
 } from "spessasynth_core";
 import type { Sequencer } from "spessasynth_lib";
-import { type LocaleManager } from "../locale/locale_manager.ts";
+import { type LocaleManager } from "../manager/locale_manager.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
 import { drawDotMatrix } from "./draw_dot_matrix.ts";
 import { ProgramTracker } from "./program_tracker.ts";

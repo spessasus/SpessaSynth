@@ -6,13 +6,13 @@ import type {
 } from "./effect_params.ts";
 import { Meter } from "./synthui_meter.ts";
 import { sendAddress } from "./send_address.ts";
-import { LOCALE_PATH, SynthetizerUI } from "../synthetizer_ui.ts";
+import { LOCALE_PATH, SynthesizerUI } from "../synthetizer_ui.ts";
 import { Ut } from "../../utils/other.js";
 
 export function createEffectController<
     K extends DelayParams | ChorusParams | ReverbParams
 >(
-    this: SynthetizerUI,
+    this: SynthesizerUI,
     data: ParamType<K>,
     path: string
 ): Record<K, Meter> & {
@@ -41,14 +41,14 @@ export function createEffectController<
     const gainWrapper = document.createElement("div");
     wrapper.append(gainWrapper);
     const gainLevel = new Meter({
+        color: "",
         locale: this.locale,
         localePath: path + "gain",
-        initialAndDefault: 1,
+        def: 1,
         min: 0,
         max: 10,
         transform: (value) => `${Math.floor(value * 100)}%`,
-        editable: true,
-        editCallback: (value) => {
+        onEdit: (value) => {
             const vRounded = Math.round(value * 100) / 100;
             this.synth.setMasterParameter(data.gainName, vRounded);
             gainLevel.update(vRounded);
@@ -124,9 +124,8 @@ export function createEffectController<
             locale: this.locale,
             min: param.r?.min ?? 0,
             max: param?.r?.max ?? 127,
-            initialAndDefault: 0,
-            editable: true,
-            editCallback: (v) => {
+            def: 0,
+            onEdit: (v) => {
                 if (isEffectLocked) {
                     this.synth.setMasterParameter(data.lockName, false);
                 }

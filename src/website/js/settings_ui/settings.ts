@@ -18,17 +18,17 @@ import {
     _createMidiSettingsHandler
 } from "./handlers/midi_handler.js";
 import { _createKeyboardHandler } from "./handlers/keyboard_handler.js";
-import { localeList } from "../locale/locale_files/locale_list.js";
+import { localeList } from "../../locale/locale_list.js";
 import { keybinds } from "../utils/keybinds.js";
 import { handleSliders } from "./sliders.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { Renderer, rendererModes } from "../renderer/renderer.js";
 import { type Sequencer } from "spessasynth_lib";
-import type { SynthetizerUI } from "../synthesizer_ui/synthetizer_ui.ts";
+import type { SynthesizerUI } from "../synthesizer_ui/synthetizer_ui.ts";
 import type { SequencerUI } from "../sequencer_ui/sequencer_ui.ts";
 import type { MIDIKeyboard } from "../midi_keyboard/midi_keyboard.ts";
 import type { MusicModeUI } from "../music_mode_ui/music_mode_ui.ts";
-import type { LocaleManager } from "../locale/locale_manager.ts";
+import type { LocaleManager } from "../manager/locale_manager.ts";
 import type { InterfaceMode } from "../../../server/saved_settings.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
 
@@ -54,7 +54,7 @@ export class SpessaSynthSettings {
     protected readonly synth: Synthesizer;
     protected readonly seq: Sequencer;
     protected readonly midiKeyboard: MIDIKeyboard;
-    protected readonly synthui: SynthetizerUI;
+    protected readonly synthui: SynthesizerUI;
     protected readonly sequi: SequencerUI;
     protected readonly locale: LocaleManager;
     protected readonly musicMode: MusicModeUI;
@@ -108,7 +108,7 @@ export class SpessaSynthSettings {
         settingsWrapper: HTMLElement,
         synth: Synthesizer,
         seq: Sequencer,
-        sythui: SynthetizerUI,
+        sythui: SynthesizerUI,
         sequi: SequencerUI,
         renderer: Renderer,
         midiKeyboard: MIDIKeyboard,

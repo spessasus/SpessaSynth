@@ -1,17 +1,17 @@
 import {
-    type ControllerGroupType,
+    type ControllerGroup,
     MONO_ON,
     POLY_ON,
-    type SynthetizerUI
+    type SynthesizerUI
 } from "../synthetizer_ui.ts";
 import { MIDIControllers } from "spessasynth_core";
 import { appendNewController } from "./append_new_controller.ts";
 import { getDrumsSvg, getNoteSvg } from "../../utils/icons.ts";
 
 /**
- * @this {SynthetizerUI}
+ * @this {SynthesizerUI}
  */
-export function setEventListeners(this: SynthetizerUI) {
+export function setEventListeners(this: SynthesizerUI) {
     // Add event listeners
     this.synth.eventHandler.addEvent(
         "programChange",
@@ -21,7 +21,7 @@ export function setEventListeners(this: SynthetizerUI) {
             this.controllers[e.channel].drumsToggle.innerHTML = e.isDrum
                 ? getDrumsSvg(32)
                 : getNoteSvg(32);
-            p.reload(e.isDrum ? this.percussionList : this.instrumentList);
+            p.reload(e.isDrum ? this.drumPresets : this.melodicPresets);
             p.set(e);
         }
     );
@@ -98,7 +98,7 @@ export function setEventListeners(this: SynthetizerUI) {
         () => {
             appendNewController.call(this, this.controllers.length);
             this.showControllerGroup(
-                this.groupSelector.value as ControllerGroupType
+                this.groupSelector.value as ControllerGroup
             );
             if (!this.isShown) {
                 this.hideControllers();

@@ -3,7 +3,7 @@
  */
 function approxColor(progress: number): string {
     /**
-     * The colors may or may not come from audacity's spectogram view
+     * The colors may or may not come from audacity's spectrogram view
      */
     const samples: { t: number; r: number; g: number; b: number }[] = [
         { t: 0, r: 0, g: 0, b: 0 },

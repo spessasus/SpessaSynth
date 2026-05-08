@@ -202,7 +202,7 @@ export class AssManager {
                     );
                     if (!font) {
                         throw new Error(
-                            `ASS Subitle error: Invalid font: ${currentFontName}`
+                            `ASS Subtitle error: Invalid font: ${currentFontName}`
                         );
                     }
                     font.data += line;

@@ -1,6 +1,6 @@
 import { getContent } from "./get_content.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
-import type { LocaleManager } from "../locale/locale_manager.ts";
+import type { LocaleManager } from "../manager/locale_manager.ts";
 
 const NOTIFICATION_TIME = 13;
 

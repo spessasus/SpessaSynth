@@ -18,7 +18,7 @@ import {
     type PresetListEntry
 } from "spessasynth_core";
 import type { Sequencer } from "spessasynth_lib";
-import type { LocaleManager } from "../locale/locale_manager.ts";
+import type { LocaleManager } from "../manager/locale_manager.ts";
 import type { MIDIKeyboard } from "../midi_keyboard/midi_keyboard.ts";
 import { Meter } from "./methods/synthui_meter.ts";
 import { getEmptyMicSvg, getVolumeSvg } from "../utils/icons.ts";
@@ -47,18 +47,12 @@ export const MONO_ON = "<pre style='color: red;'>M</pre>";
 export const POLY_ON = "<pre>P</pre>";
 
 export const LOCALE_PATH = "locale.synthesizerController.";
-export type ControllerGroupType =
-    | "effects"
-    | "portamento"
-    | "volumeEnvelope"
-    | "filter";
 
 export interface ChannelController {
     controller: HTMLDivElement;
-    controllerMeters: Partial<Record<MIDIController, Meter>>;
+    controllerMeters: Partial<Record<ChannelControllerNumber, Meter>>;
     voiceMeter: Meter;
     pitchWheel: Meter;
-    transpose: Meter;
     preset: Selector;
     drumsToggle: HTMLDivElement;
     soloButton: HTMLDivElement;
@@ -70,12 +64,45 @@ export interface ChannelController {
 
 export const ICON_SIZE = 32;
 
+export const extraChannelControllers = {
+    transpose: 130,
+    gain: 131
+} as const;
+
+export type ChannelControllerNumber =
+    | MIDIController
+    | (typeof extraChannelControllers)[keyof typeof extraChannelControllers];
+
+const controllerGroups = {
+    effects: [
+        MIDIControllers.reverbDepth,
+        MIDIControllers.chorusDepth,
+        MIDIControllers.variationDepth
+    ],
+    volumeEnvelope: [
+        MIDIControllers.attackTime,
+        MIDIControllers.releaseTime,
+        MIDIControllers.decayTime
+    ],
+    filter: [MIDIControllers.brightness, MIDIControllers.filterResonance],
+    portamento: [
+        MIDIControllers.portamentoTime,
+        MIDIControllers.portamentoControl
+    ],
+    masterParameters: [
+        extraChannelControllers.transpose,
+        extraChannelControllers.gain
+    ]
+} as const;
+
+export type ControllerGroup = keyof typeof controllerGroups;
+
 /**
  * Synthesizer_ui.js
  * purpose: manages the graphical user interface for the synthesizer
  */
 
-export class SynthetizerUI {
+export class SynthesizerUI {
     public readonly toggleDarkMode = toggleDarkMode.bind(this);
     public readonly channelColors: string[];
     public onProgramChange?: (channel: number) => unknown;
@@ -126,8 +153,8 @@ export class SynthetizerUI {
      * For closing the effect window when closing the synthui.
      */
     protected effectsConfigWindow?: number;
-    protected instrumentList: PresetList = [];
-    protected percussionList: PresetList = [];
+    protected melodicPresets: PresetList = [];
+    protected drumPresets: PresetList = [];
     protected presetList: PresetList = [];
     protected readonly hideControllers = hideControllers.bind(this);
     protected readonly showControllers = showControllers.bind(this);
@@ -192,13 +219,13 @@ export class SynthetizerUI {
              */
             this.voiceMeter = new Meter({
                 color: "",
+                smooth: true,
                 localePath: LOCALE_PATH + "mainVoiceMeter",
                 locale: this.locale,
                 min: 0,
                 max: DEFAULT_GLOBAL_MASTER_PARAMETERS.voiceCap,
-                initialAndDefault: 0
+                def: 0
             });
-            this.voiceMeter.bar.classList.add("voice_meter_bar_smooth");
             this.voiceMeter.div.classList.add("main_controller_element");
 
             /**
@@ -206,18 +233,17 @@ export class SynthetizerUI {
              */
             this.volumeController = new Meter({
                 color: "",
+                smooth: true,
                 localePath: LOCALE_PATH + "mainVolumeMeter",
                 locale: this.locale,
                 min: 0,
                 max: 400,
-                initialAndDefault: 100,
-                editable: true,
-                editCallback: (v) => {
+                def: 100,
+                onEdit: (v) => {
                     this.synth.setMasterParameter("gain", Math.round(v) / 100);
                     this.volumeController.update(v);
                 }
             });
-            this.volumeController.bar.classList.add("voice_meter_bar_smooth");
             this.volumeController.div.classList.add("main_controller_element");
 
             /**
@@ -225,18 +251,17 @@ export class SynthetizerUI {
              */
             this.panController = new Meter({
                 color: "",
+                smooth: true,
                 localePath: LOCALE_PATH + "mainPanMeter",
                 locale: this.locale,
                 min: -1,
                 max: 1,
-                initialAndDefault: 0,
-                editable: true,
-                editCallback: (v) => {
+                def: 0,
+                onEdit: (v) => {
                     this.synth.setMasterParameter("pan", v);
                     this.panController.update(v);
                 }
             });
-            this.panController.bar.classList.add("voice_meter_bar_smooth");
             this.panController.div.classList.add("main_controller_element");
 
             /**
@@ -244,13 +269,13 @@ export class SynthetizerUI {
              */
             this.transposeController = new Meter({
                 color: "",
+                smooth: true,
                 localePath: LOCALE_PATH + "mainTransposeMeter",
                 locale: this.locale,
                 min: -12,
                 max: 12,
-                initialAndDefault: 0,
-                editable: true,
-                editCallback: (v) => {
+                def: 0,
+                onEdit: (v) => {
                     // Limit to half semitone precision
                     this.synth.setMasterParameter(
                         "pitchOffset",
@@ -263,9 +288,6 @@ export class SynthetizerUI {
                     this.setCCVisibilityStartingFrom(0, !active);
                 }
             });
-            this.transposeController.bar.classList.add(
-                "voice_meter_bar_smooth"
-            );
             this.transposeController.div.classList.add(
                 "main_controller_element"
             );
@@ -324,6 +346,9 @@ export class SynthetizerUI {
                 if (this.synth.masterParameters.insertionEffectLock) {
                     this.effectConfigs.insertion.toggleLock();
                 }
+                // Reset transpose
+                this.synth.setMasterParameter("pitchOffset", 0);
+                this.transposeController.update(0);
                 for (const [
                     channelNumber,
                     controller
@@ -353,7 +378,14 @@ export class SynthetizerUI {
                     }
                     // Transpose
                     ch.setMasterParameter("pitchOffset", 0);
-                    controller.transpose.update(0);
+                    controller.controllerMeters[
+                        extraChannelControllers.transpose
+                    ]?.update(0);
+                    // Gain
+                    ch.setMasterParameter("gain", 1);
+                    controller.controllerMeters[
+                        extraChannelControllers.gain
+                    ]?.update(1);
 
                     // Mute/solo
                     controller.soloButton.innerHTML = getEmptyMicSvg(ICON_SIZE);
@@ -418,12 +450,7 @@ export class SynthetizerUI {
                 LOCALE_PATH + "channelController.groupSelector.description"
             );
             // Create all the options
-            for (const option of [
-                "effects",
-                "volumeEnvelope",
-                "filter",
-                "portamento"
-            ]) {
+            for (const option of Object.keys(controllerGroups)) {
                 const optionElement = document.createElement("option");
                 optionElement.value = option;
                 this.locale.bindObjectProperty(
@@ -436,7 +463,7 @@ export class SynthetizerUI {
 
             groupSelector.addEventListener("change", () => {
                 this.showControllerGroup(
-                    groupSelector.value as ControllerGroupType
+                    groupSelector.value as ControllerGroup
                 );
             });
             this.groupSelector = groupSelector;
@@ -802,50 +829,13 @@ export class SynthetizerUI {
         }
     }
 
-    public showControllerGroup(groupType: ControllerGroupType) {
-        const effectControllers = [
-            MIDIControllers.reverbDepth,
-            MIDIControllers.chorusDepth,
-            MIDIControllers.variationDepth
-        ];
-        const envelopeControllers = [
-            MIDIControllers.attackTime,
-            MIDIControllers.releaseTime,
-            MIDIControllers.decayTime
-        ];
-        const filterControllers = [
-            MIDIControllers.brightness,
-            MIDIControllers.filterResonance
-        ];
-        const portamentoControllers = [
-            MIDIControllers.portamentoTime,
-            MIDIControllers.portamentoControl
-        ];
-
-        this.hideCCs(effectControllers);
-        this.hideCCs(portamentoControllers);
-        this.hideCCs(filterControllers);
-        this.hideCCs(envelopeControllers);
-        switch (groupType) {
-            case "effects": {
-                this.showCCs(effectControllers);
-                break;
-            }
-
-            case "volumeEnvelope": {
-                this.showCCs(envelopeControllers);
-                break;
-            }
-
-            case "filter": {
-                this.showCCs(filterControllers);
-                break;
-            }
-
-            case "portamento": {
-                this.showCCs(portamentoControllers);
-            }
+    public showControllerGroup(groupType: ControllerGroup) {
+        for (const cc of Object.values(
+            controllerGroups
+        ) as (readonly MIDIController[])[]) {
+            this.hideCCs(cc);
         }
+        this.showCCs(controllerGroups[groupType]);
     }
 
     protected updatePresetList(presetList: PresetList) {
@@ -853,23 +843,34 @@ export class SynthetizerUI {
             ...p,
             name: p.name.replace(/\d{3}:\d{3}/, "") // Remove those pesky "000:001"
         }));
-        this.instrumentList = presetList
-            .filter((p) => !p.isDrum)
-            .sort(this.presetSort.bind(this));
-        this.percussionList = presetList
-            .filter((p) => p.isDrum)
-            .sort(this.presetSort.bind(this));
 
-        if (this.percussionList.length === 0) {
-            this.percussionList = this.instrumentList;
-        } else if (this.instrumentList.length === 0) {
-            this.instrumentList = this.percussionList;
+        const presetListSorted = [...this.presetList].sort(
+            this.presetSort.bind(this)
+        );
+        this.melodicPresets.length = 0;
+        this.drumPresets.length = 0;
+        for (const preset of presetListSorted) {
+            if (preset.isDrum) {
+                this.drumPresets.push(preset);
+            } else {
+                this.melodicPresets.push(preset);
+            }
+        }
+
+        if (this.melodicPresets.length === 0) {
+            console.warn("No presets found. There may be unexpected behavior!");
+        }
+
+        if (this.drumPresets.length === 0) {
+            this.drumPresets = this.melodicPresets;
+        } else if (this.melodicPresets.length === 0) {
+            this.melodicPresets = this.drumPresets;
         }
 
         for (const [i, controller] of this.controllers.entries()) {
             const list = this.synth.midiChannels[i].patch.isDrum
-                ? this.percussionList
-                : this.instrumentList;
+                ? this.drumPresets
+                : this.melodicPresets;
             controller.preset.reload(list);
             if (list.length > 0) {
                 controller.preset.set(list[0]);
@@ -1074,7 +1075,7 @@ export class SynthetizerUI {
         }
     }
 
-    private showCCs(ccs: MIDIController[]) {
+    private showCCs(ccs: readonly ChannelControllerNumber[]) {
         for (const cc of ccs) {
             for (const controller of this.controllers) {
                 Ut.show(controller.controllerMeters[cc]?.div);
@@ -1082,7 +1083,7 @@ export class SynthetizerUI {
         }
     }
 
-    private hideCCs(ccs: MIDIController[]) {
+    private hideCCs(ccs: readonly ChannelControllerNumber[]) {
         for (const cc of ccs) {
             for (const controller of this.controllers) {
                 Ut.hide(controller.controllerMeters[cc]?.div);

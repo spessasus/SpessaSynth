@@ -117,7 +117,7 @@ The build files:
 - local-dev: Local Edition sources with sourcemaps. For development.
 - server: the Local Edition server. It is here so it can use the root "soundfonts" folder. This is what `npm start` invokes.
 
-[If you would like to help translate SpessaSynth, please read this guide (and thank you!)](src/website/js/locale/locale_files/README.md)
+[If you would like to help translate SpessaSynth, please read this guide (and thank you!)](src/website/locale/README.md)
 
 **If you like this project, consider giving it a star. It really helps out!**
 

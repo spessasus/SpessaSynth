@@ -1,10 +1,12 @@
 import {
     type ChannelController,
+    type ChannelControllerNumber,
+    extraChannelControllers,
     ICON_SIZE,
     LOCALE_PATH,
     MONO_ON,
     POLY_ON,
-    type SynthetizerUI
+    type SynthesizerUI
 } from "../synthetizer_ui.ts";
 import { ANIMATION_REFLOW_TIME } from "../../utils/animation_utils.ts";
 import { Meter } from "./synthui_meter.ts";
@@ -27,7 +29,7 @@ import { Selector } from "./synthui_selector.ts";
 import { sendAddress } from "./send_address.ts";
 
 export function appendNewController(
-    this: SynthetizerUI,
+    this: SynthesizerUI,
     channelNumber: number
 ) {
     let lastPortElement = this.ports[this.ports.length - 1];
@@ -68,7 +70,6 @@ export function appendNewController(
     }
 
     // Create channel controller
-    // Controller
     const controller = document.createElement("div");
     controller.classList.add("channel_controller");
     // Channel object
@@ -77,14 +78,14 @@ export function appendNewController(
     // Voice meter
     const voiceMeter = new Meter({
         color: this.channelColors[channelNumber % this.channelColors.length],
+        smooth: true,
         localePath: LOCALE_PATH + "channelController.voiceMeter",
         locale: this.locale,
         localeArgs: [channelNumber + 1],
         min: 0,
         max: 100,
-        initialAndDefault: 0
+        def: 0
     });
-    voiceMeter.bar.classList.add("voice_meter_bar_smooth");
     controller.append(voiceMeter.div);
 
     // Pitch wheel
@@ -95,9 +96,8 @@ export function appendNewController(
         localeArgs: [channelNumber + 1],
         min: -8192,
         max: 8191,
-        initialAndDefault: 0,
-        editable: true,
-        editCallback: (val) => {
+        def: 0,
+        onEdit: (val) => {
             val = Math.round(val) + 8192;
             this.synth.pitchWheel(channelNumber, val);
         }
@@ -119,7 +119,8 @@ export function appendNewController(
         }
     };
 
-    const controllerMeters: Partial<Record<MIDIController, Meter>> = {};
+    const controllerMeters: Partial<Record<ChannelControllerNumber, Meter>> =
+        {};
 
     const createCCMeterHelper = (
         ccNum: MIDIController,
@@ -135,16 +136,12 @@ export function appendNewController(
             localeArgs: [channelNumber + 1],
             min: 0,
             max: 127,
-            initialAndDefault: DEFAULT_MIDI_CONTROLLERS[ccNum] >> 7,
-            editable: true,
-            editCallback: (val) => {
+            def: DEFAULT_MIDI_CONTROLLERS[ccNum] >> 7,
+            onEdit: (val) => {
                 changeCCUserFunction(ccNum, Math.round(val), meter);
             },
-            lockCallback: allowLocking
-                ? () => ch.lockController(ccNum, true)
-                : undefined,
-            unlockCallback: allowLocking
-                ? () => ch.lockController(ccNum, false)
+            onLock: allowLocking
+                ? (isLocked) => ch.lockController(ccNum, isLocked)
                 : undefined
         });
         controllerMeters[ccNum] = meter;
@@ -237,9 +234,8 @@ export function appendNewController(
         localeArgs: [channelNumber + 1],
         min: 0,
         max: 127,
-        initialAndDefault: 0,
-        editable: true,
-        editCallback: (val) => {
+        def: 0,
+        onEdit: (val) => {
             const meterLocked = portamentoTime.isLocked;
             if (meterLocked) {
                 ch.lockController(MIDIControllers.portamentoTime, false);
@@ -260,13 +256,9 @@ export function appendNewController(
                 ch.lockController(MIDIControllers.portamentoOnOff, true);
             }
         },
-        lockCallback: () => {
-            ch.lockController(MIDIControllers.portamentoTime, true);
-            ch.lockController(MIDIControllers.portamentoOnOff, true);
-        },
-        unlockCallback: () => {
-            ch.lockController(MIDIControllers.portamentoTime, false);
-            ch.lockController(MIDIControllers.portamentoOnOff, false);
+        onLock: (isLocked) => {
+            ch.lockController(MIDIControllers.portamentoTime, isLocked);
+            ch.lockController(MIDIControllers.portamentoOnOff, isLocked);
         }
     });
     controllerMeters[MIDIControllers.portamentoTime] = portamentoTime;
@@ -290,18 +282,37 @@ export function appendNewController(
     // Transpose is not a cc, add it manually
     const transpose = new Meter({
         color: this.channelColors[channelNumber % this.channelColors.length],
+        smooth: true,
         localePath: LOCALE_PATH + "channelController.transposeMeter",
         locale: this.locale,
         localeArgs: [channelNumber + 1],
         min: -36,
         max: 36,
-        initialAndDefault: 0,
-        editable: true,
-        editCallback: (val) => {
+        def: 0,
+        onEdit: (val) => {
             val = Math.trunc(val);
             ch.setMasterParameter("pitchOffset", val);
             transpose.update(val);
             this.onTranspose?.();
+        }
+    });
+    controllerMeters[extraChannelControllers.transpose] = transpose;
+    controller.append(transpose.div);
+
+    // Gain is not a CC, add it manually
+    const gain = new Meter({
+        color: this.channelColors[channelNumber % this.channelColors.length],
+        smooth: true,
+        localePath: LOCALE_PATH + "channelController.gainMeter",
+        locale: this.locale,
+        localeArgs: [channelNumber + 1],
+        min: 0,
+        max: 5,
+        def: 1,
+        onEdit: (val) => {
+            val = Math.round(val * 100) / 100;
+            ch.setMasterParameter("gain", val);
+            gain.update(val);
         },
         activeChangeCallback: (active) => {
             // Do hide on multi-port files
@@ -311,7 +322,8 @@ export function appendNewController(
             this.setCCVisibilityStartingFrom(channelNumber + 1, !active);
         }
     });
-    controller.append(transpose.div);
+    controllerMeters[extraChannelControllers.gain] = gain;
+    controller.append(gain.div);
 
     // Preset controller
     const presetSelector = new Selector(
@@ -542,7 +554,6 @@ export function appendNewController(
         isHidingLocked: false,
         drumsToggle,
         voiceMeter,
-        transpose,
         soloButton,
         muteButton,
         polyMonoButton,

@@ -2,11 +2,11 @@ import {
     closeNotification,
     showNotification
 } from "../../notification/notification.js";
-import { SynthetizerUI } from "../synthetizer_ui.js";
+import { SynthesizerUI } from "../synthetizer_ui.js";
 import { startKeyModifiersMenu } from "./key_modifier_ui.js";
 import { Meter } from "./synthui_meter.ts";
 import { Ut } from "../../utils/other.js";
-import type { LocaleManager } from "../../locale/locale_manager.ts";
+import type { LocaleManager } from "../../manager/locale_manager.ts";
 import { type InterpolationType, InterpolationTypes } from "spessasynth_core";
 
 const LOCALE_PATH = "locale.synthesizerController.effectsConfig.misc.";
@@ -21,14 +21,14 @@ function toggleMeter(
 ) {
     let value = def;
     const meter = new Meter({
+        color: "",
         localePath: LOCALE_PATH + path,
         locale: locale,
-        initialAndDefault: def ? 1 : 0,
+        def: def ? 1 : 0,
         min: 0,
         max: 1,
         transform: (v) => (v === 1 ? ": " + yesNo.yes : ": " + yesNo.no),
-        editable: true,
-        editCallback: (v) => {
+        onEdit: (v) => {
             v = Math.round(v);
             if ((v === 1) === value) {
                 return;
@@ -84,7 +84,7 @@ function input(
 }
 
 export function createAdvancedConfiguration(
-    this: SynthetizerUI
+    this: SynthesizerUI
 ): HTMLDivElement {
     const wrapper = document.createElement("div");
     wrapper.classList.add("effect_wrapper", "synthui_tab");

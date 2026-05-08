@@ -2,7 +2,7 @@ import {
     closeNotification,
     showNotification
 } from "../../notification/notification.js";
-import type { LocaleManager } from "../../locale/locale_manager.ts";
+import type { LocaleManager } from "../../manager/locale_manager.ts";
 import type { MIDIKeyboard } from "../../midi_keyboard/midi_keyboard.ts";
 import { type MIDIPatchNamed, MIDIPatchTools } from "spessasynth_core";
 import type { Synthesizer } from "../../utils/synthesizer.ts";

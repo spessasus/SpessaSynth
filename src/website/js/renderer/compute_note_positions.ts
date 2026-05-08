@@ -59,10 +59,10 @@ export function computeNotePositions(
             (c.patch.isDrum ? 0 : t)
     );
     const notesToDraw = new Array<NoteToRender>();
-    for (const [channelNumder, channel] of this.noteTimes.entries()) {
+    for (const [channelNumber, channel] of this.noteTimes.entries()) {
         if (
             channel.renderStartIndex >= channel.notes.length ||
-            !this.renderChannels[channelNumder]
+            !this.renderChannels[channelNumber]
         ) {
             continue;
         }
@@ -114,7 +114,7 @@ export function computeNotePositions(
                     const correctedNote =
                         note.midiNote -
                         this.keyRange.min +
-                        transposeNoteShifts[channelNumder];
+                        transposeNoteShifts[channelNumber];
                     const noteX = keyStep * correctedNote + NOTE_MARGIN;
 
                     let finalX, finalY, finalWidth, finalHeight;
@@ -141,7 +141,7 @@ export function computeNotePositions(
                     if (renderImmediately) {
                         // Draw the notes right away, we don't care about the order
                         this.drawingContext.fillStyle =
-                            this.plainColors[channelNumder];
+                            this.plainColors[channelNumber];
                         this.drawingContext.fillRect(
                             finalX + STROKE_THICKNESS + NOTE_MARGIN,
                             finalY + STROKE_THICKNESS,
@@ -160,12 +160,12 @@ export function computeNotePositions(
                             // This note is not pressed
                             if (this.sideways) {
                                 color = this.drawActiveNotes
-                                    ? this.sidewaysDarkerColors[channelNumder]
-                                    : this.sidewaysChannelColors[channelNumder];
+                                    ? this.sidewaysDarkerColors[channelNumber]
+                                    : this.sidewaysChannelColors[channelNumber];
                             } else if (this.drawActiveNotes) {
-                                color = this.darkerColors[channelNumder];
+                                color = this.darkerColors[channelNumber];
                             } else {
-                                color = this.channelColors[channelNumder];
+                                color = this.channelColors[channelNumber];
                             }
                             notesToDraw.push({
                                 xPos: finalX,
@@ -182,15 +182,15 @@ export function computeNotePositions(
                             // This note is pressed
                             if (this.sideways) {
                                 if (this.showVisualPitch) {
-                                    finalY += pitchBendXShift[channelNumder];
+                                    finalY += pitchBendXShift[channelNumber];
                                 }
                                 color =
-                                    this.sidewaysChannelColors[channelNumder];
+                                    this.sidewaysChannelColors[channelNumber];
                             } else {
                                 if (this.showVisualPitch) {
-                                    finalX += pitchBendXShift[channelNumder];
+                                    finalX += pitchBendXShift[channelNumber];
                                 }
-                                color = this.channelColors[channelNumder];
+                                color = this.channelColors[channelNumber];
                             }
                             // Determine for how long the note has been pressed
                             const noteProgress = this.drawActiveNotes

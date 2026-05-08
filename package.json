@@ -9,6 +9,7 @@
         "start": "node src/build/start.ts",
         "build": "npm run test:types && npm run build:fast",
         "build:fast": "node src/build/build.ts",
+        "format": "prettier . --write",
         "debug": "src/build/enable_debug.sh",
         "release": "src/build/disable_debug.sh",
         "clean": "rm -rf dist; rm -rf local-dev; rm -rf server"

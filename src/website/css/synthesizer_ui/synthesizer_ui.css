@@ -2,13 +2,13 @@
 @import "voice_selector.css";
 @import "synthui_button.css";
 
-#synthetizer_controls {
+#synthesizer_controls {
     --voice-meter-height: 2.5em;
     --synthui-background: rgba(0, 0, 0, 0.8);
     --synthui-border-radius: var(--primary-border-radius);
 }
 
-#synthetizer_controls * {
+#synthesizer_controls * {
     user-select: none;
     -webkit-user-select: none;
     --synthui-margin: 0.2em;

@@ -4,7 +4,7 @@
  */
 
 import { isMobile } from "../../utils/is_mobile.js";
-import type { LocaleManager } from "../../locale/locale_manager.ts";
+import type { LocaleManager } from "../../manager/locale_manager.ts";
 
 export type MeterCallbackFunction = (clickedValue: number) => unknown;
 
@@ -13,7 +13,10 @@ export type MeterCallbackFunction = (clickedValue: number) => unknown;
  */
 export interface MeterOptions {
     /** The color in CSS */
-    color?: string;
+    color: string;
+
+    /** If the smooth glide class should be added */
+    smooth?: boolean;
 
     /** Locale path, will add .title and .description to it */
     localePath?: string;
@@ -34,19 +37,13 @@ export interface MeterOptions {
     max?: number;
 
     /** Initial value and default value */
-    initialAndDefault: number;
-
-    /** If the meter should be editable with mouse */
-    editable?: boolean;
+    def: number;
 
     /** Called when the value is edited */
-    editCallback?: MeterCallbackFunction;
+    onEdit?: MeterCallbackFunction;
 
-    /** Called when the meter gets locked */
-    lockCallback?: () => unknown;
-
-    /** Called when the meter gets unlocked */
-    unlockCallback?: () => unknown;
+    /** Called when the meter gets locked or unlocked */
+    onLock?: (isLocked: boolean) => unknown;
 
     /** When the isActive state changes */
     activeChangeCallback?: (isActive: boolean) => unknown;
@@ -59,7 +56,7 @@ interface CurrentMeter {
     m: Meter;
     rect: DOMRect;
     activeChange?: (isActive: boolean) => unknown;
-    editCallback: MeterCallbackFunction;
+    onEdit: MeterCallbackFunction;
     max: number;
     min: number;
 }
@@ -82,7 +79,7 @@ if (!isMobile) {
         const width = Meter.currentMeter.rect.width;
         const relative = e.clientX - relativeLeft;
         const percentage = Math.max(0, Math.min(1, relative / width));
-        Meter.currentMeter.editCallback(
+        Meter.currentMeter.onEdit(
             percentage * (Meter.currentMeter.max - Meter.currentMeter.min) +
                 Meter.currentMeter.min
         );
@@ -104,14 +101,14 @@ export class Meter {
     private readonly min;
     private isShown = false;
     private isVisualValueSet = true;
-    private readonly lockCallback;
-    private readonly unlockCallback;
+    private readonly onLock;
     private readonly text: HTMLParagraphElement;
     private readonly transform;
 
     /**
      * Creates a new meter
      * @param color the color in css
+     * @param smooth
      * @param localePath locale path, will add .title and .description to it
      * @param locale
      * @param localeArgs args for description
@@ -119,25 +116,22 @@ export class Meter {
      * @param max
      * @param min
      * @param initialAndDefault
-     * @param editable if the meter should be editable with mouse
-     * @param editCallback
-     * @param lockCallback
-     * @param unlockCallback
+     * @param onEdit
+     * @param onLock
      * @param activeChangeCallback - when the isActive state changes
      * @param transform - transform from the internal value into the displayed value
      */
     public constructor({
-        color = "",
+        color,
+        smooth,
         localePath,
         locale,
         localeArgs = [],
         min = 0,
         max = 100,
-        initialAndDefault,
-        editable = false,
-        editCallback,
-        lockCallback,
-        unlockCallback,
+        def,
+        onEdit,
+        onLock,
         activeChangeCallback,
         transform,
         rawText = ""
@@ -153,10 +147,9 @@ export class Meter {
         this.isShown = true;
         this.isVisualValueSet = true;
         this.isLocked = false;
-        this.lockCallback = lockCallback;
-        this.unlockCallback = unlockCallback;
+        this.onLock = onLock;
         this.transform = transform;
-        this.defaultValue = initialAndDefault;
+        this.defaultValue = def;
 
         this.div = document.createElement("div");
         this.div.classList.add("voice_meter", "controller_element");
@@ -176,6 +169,9 @@ export class Meter {
 
         this.bar = document.createElement("div");
         this.bar.classList.add("voice_meter_bar");
+        if (smooth) {
+            this.bar.classList.add("voice_meter_bar_smooth");
+        }
         this.bar.style.background = color;
         this.div.append(this.bar);
 
@@ -183,11 +179,7 @@ export class Meter {
         this.text.classList.add("voice_meter_text");
         this.div.append(this.text);
 
-        if (editable) {
-            if (editCallback === undefined) {
-                throw new Error("No editable function given!");
-            }
-
+        if (onEdit) {
             // Add mobile
             if (isMobile) {
                 this.div.addEventListener("click", (e) => {
@@ -200,7 +192,7 @@ export class Meter {
                         0,
                         Math.min(1, relative / width)
                     );
-                    editCallback(percentage * (max - min) + min);
+                    onEdit(percentage * (max - min) + min);
                     this.toggleLock();
                 });
             } else {
@@ -215,7 +207,7 @@ export class Meter {
                         Meter.currentMeter = {
                             m: this,
                             rect,
-                            editCallback,
+                            onEdit,
                             activeChange: activeChangeCallback,
                             min,
                             max
@@ -227,7 +219,7 @@ export class Meter {
                             0,
                             Math.min(1, relative / width)
                         );
-                        editCallback(percentage * (max - min) + min);
+                        onEdit(percentage * (max - min) + min);
                         if (!Meter.currentMeter.m.isLocked) {
                             Meter.currentMeter.m.toggleLock();
                         }
@@ -244,7 +236,7 @@ export class Meter {
 
             this.div.classList.add("editable");
         }
-        this.update(initialAndDefault);
+        this.update(def);
     }
 
     private _meterText = "";
@@ -259,18 +251,13 @@ export class Meter {
     }
 
     public toggleLock() {
-        if (this.lockCallback === undefined) {
+        if (this.onLock === undefined) {
             // No callback, it can't be locked
             return;
         }
-        if (this.isLocked) {
-            this.div.classList.remove("locked_meter");
-            this.unlockCallback?.();
-        } else {
-            this.div.classList.add("locked_meter");
-            this.lockCallback();
-        }
+        this.div.classList.toggle("locked_meter", !this.isLocked);
         this.isLocked = !this.isLocked;
+        this.onLock(this.isLocked);
     }
 
     public show() {

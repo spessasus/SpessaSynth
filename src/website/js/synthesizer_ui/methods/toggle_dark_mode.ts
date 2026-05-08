@@ -1,6 +1,6 @@
-import type { SynthetizerUI } from "../synthetizer_ui.ts";
+import type { SynthesizerUI } from "../synthetizer_ui.ts";
 
-export function toggleDarkMode(this: SynthetizerUI) {
+export function toggleDarkMode(this: SynthesizerUI) {
     this.uiDiv.classList.toggle("light_mode");
 
     for (const controller of this.controllers) {

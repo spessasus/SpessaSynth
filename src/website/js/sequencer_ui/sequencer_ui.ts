@@ -15,7 +15,7 @@ import { keybinds } from "../utils/keybinds.js";
 import { updateSongDisplayData } from "./update_song_display_data.js";
 import { sanitizeKarLyrics, setLyricsText } from "./lyrics.js";
 import { createSlider } from "../settings_ui/sliders.js";
-import type { LocaleManager } from "../locale/locale_manager.ts";
+import type { LocaleManager } from "../manager/locale_manager.ts";
 import type { MusicModeUI } from "../music_mode_ui/music_mode_ui.ts";
 import type { Renderer } from "../renderer/renderer.ts";
 import {

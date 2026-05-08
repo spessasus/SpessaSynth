@@ -9,10 +9,10 @@ import {
 import { Renderer } from "../renderer/renderer.js";
 
 import { SequencerUI } from "../sequencer_ui/sequencer_ui.js";
-import { SynthetizerUI } from "../synthesizer_ui/synthetizer_ui.js";
+import { SynthesizerUI } from "../synthesizer_ui/synthetizer_ui.js";
 import { SpessaSynthSettings } from "../settings_ui/settings.js";
 import { MusicModeUI } from "../music_mode_ui/music_mode_ui.js";
-import { LocaleManager } from "../locale/locale_manager.js";
+import { LocaleManager } from "./locale_manager.js";
 import { isMobile } from "../utils/is_mobile.js";
 import { keybinds } from "../utils/keybinds.js";
 import { showAudioExportMenu } from "./export_audio/export_audio.js";
@@ -85,7 +85,7 @@ export class Manager {
     ];
     private keyboard?: MIDIKeyboard;
     private renderer?: Renderer;
-    private synthUI?: SynthetizerUI;
+    private synthUI?: SynthesizerUI;
     private musicModeUI?: MusicModeUI;
     private settingsUI?: SpessaSynthSettings;
     private readonly context;
@@ -239,7 +239,7 @@ export class Manager {
             console.info("Transferring to worker directly...");
             await this.synth.soundBankManager.addSoundBank(sf, SOUND_BANK_ID);
         }
-        console.info("Sound bank reloaded succesfully.");
+        console.info("Sound bank reloaded successfully.");
     }
 
     private saveUrl(url: string, name: string) {
@@ -433,9 +433,9 @@ export class Manager {
         }
 
         // Set up synth UI
-        this.synthUI = new SynthetizerUI(
+        this.synthUI = new SynthesizerUI(
             this.channelColors,
-            document.querySelector("#synthetizer_controls")!,
+            document.querySelector("#synthesizer_controls")!,
             this.localeManager,
             this.keyboard,
             this.synth,

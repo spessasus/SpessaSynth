@@ -2,7 +2,7 @@ import { midiPatchNames } from "../../utils/patch_names.js";
 import { getLockSVG, getUnlockSVG } from "../../utils/icons.js";
 import { ICON_SIZE, LOCALE_PATH } from "../synthetizer_ui.js";
 import { isMobile } from "../../utils/is_mobile.js";
-import type { LocaleManager } from "../../locale/locale_manager.ts";
+import type { LocaleManager } from "../../manager/locale_manager.ts";
 import {
     type MIDIPatch,
     MIDIPatchTools,

@@ -209,7 +209,7 @@ export function renderBigFft(this: Renderer) {
     if (this.logarithmicFrequency) {
         const maxFrequencyInTable = this.synth.context.sampleRate / 2;
         let lastHeight = -Infinity;
-        let lastXpos = 0;
+        let lastXPos = 0;
         let width = 0;
         for (let i = 0; i < waveWidth; i++) {
             // Calculate the MIDI note (from the lowest piano note to the entire MIDI range)
@@ -233,12 +233,12 @@ export function renderBigFft(this: Renderer) {
             this.drawingContext.fillStyle = intensityColors[valueRemapped];
 
             this.drawingContext.fillRect(
-                lastXpos,
+                lastXPos,
                 relativeY,
                 width,
                 multiplier * height
             );
-            lastXpos = xPos;
+            lastXPos = xPos;
             width = 0;
             xPos += 1;
         }
