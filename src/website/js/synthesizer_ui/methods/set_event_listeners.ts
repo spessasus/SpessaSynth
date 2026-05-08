@@ -73,11 +73,22 @@ export function setEventListeners(this: SynthetizerUI) {
         "midiChannelChange",
         "synthui-midi-channel-change",
         (e) => {
-            if (e.parameter !== "pitchWheel") {
-                return;
+            switch (e.parameter) {
+                case "efxAssign": {
+                    this.controllers[
+                        e.channel
+                    ].insertionEffectButton.classList.toggle("red", e.value);
+
+                    break;
+                }
+
+                case "pitchWheel": {
+                    this.controllers[e.channel].pitchWheel.update(
+                        e.value - 8192
+                    );
+                    break;
+                }
             }
-            // Pitch wheel
-            this.controllers[e.channel].pitchWheel.update(e.value - 8192);
         }
     );
 

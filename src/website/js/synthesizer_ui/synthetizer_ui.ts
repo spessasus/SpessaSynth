@@ -1,7 +1,4 @@
-import {
-    hideControllers,
-    showControllers
-} from "./methods/hide_show_controllers.js";
+import { hideControllers, showControllers } from "./methods/hide_show_controllers.js";
 import { toggleDarkMode } from "./methods/toggle_dark_mode.js";
 import { setEventListeners } from "./methods/set_event_listeners.js";
 import { keybinds } from "../utils/keybinds.js";
@@ -975,20 +972,6 @@ export class SynthetizerUI {
                     fx.insertion.chorus.reset();
                     fx.insertion.delay.reset();
 
-                    break;
-                }
-
-                case -1: {
-                    this.controllers[
-                        e.value
-                    ].insertionEffectButton.classList.add("red");
-                    break;
-                }
-
-                case -2: {
-                    this.controllers[
-                        e.value
-                    ].insertionEffectButton.classList.remove("red");
                     break;
                 }
             }
