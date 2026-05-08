@@ -1,4 +1,9 @@
-import { FONT_SIZE, PRESET_NAMES_FONT_SIZE, Renderer, rendererModes } from "./renderer.js";
+import {
+    FONT_SIZE,
+    PRESET_NAMES_FONT_SIZE,
+    Renderer,
+    rendererModes
+} from "./renderer.js";
 import { drawNotes } from "./draw_notes.js";
 import { isMobile } from "../utils/is_mobile.ts";
 
