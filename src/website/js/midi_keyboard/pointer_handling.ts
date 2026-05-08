@@ -44,7 +44,17 @@ export function handlePointers(this: MIDIKeyboard) {
             if (!targetKey) {
                 continue;
             }
-            const midiNote = Number.parseInt(targetKey.id.replace("note", ""));
+            let midiNote = Number.parseInt(targetKey.id.replace("note", ""));
+            const ch = this.synth.midiChannels[this.channel];
+            if (!ch.patch.isDrum) {
+                midiNote -=
+                    Math.trunc(this.synth.masterParameters.pitchOffset) +
+                    this.synth.midiParameters.masterKeyShift;
+            }
+            midiNote -=
+                Math.trunc(ch.masterParameters.pitchOffset) +
+                ch.midiParameters.keyShift;
+
             currentlyTouchedKeys.add(midiNote);
             if (
                 Number.isNaN(midiNote) ||

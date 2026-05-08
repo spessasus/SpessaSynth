@@ -49,8 +49,8 @@ export async function renderAudioData(
 
         // SYNTH INIT
         const rendererSynth = new SpessaSynthProcessor(sampleRate, {
-            enableEventSystem: false,
-            enableEffects: !separated
+            eventsEnabled: false,
+            effectsEnabled: !separated
         });
         console.info("Parsing and loading the sound bank in the main thread.");
         const sf = SoundBankLoader.fromArrayBuffer(this.sBankBuffer);
@@ -75,7 +75,7 @@ export async function renderAudioData(
         console.info("Synthesizer initialized, applying snapshot.");
         // Apply snapshot
         const snapshot = await this.synth.getSnapshot();
-        snapshot.apply(rendererSynth);
+        rendererSynth.applySnapshot(snapshot);
         console.info("Synthesizer has been initialized.");
 
         // No voice cap (after restoring snapshot)

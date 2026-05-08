@@ -45,7 +45,7 @@ export function render(this: Renderer, auto = true, force = false) {
         );
     }
 
-    const highPerf = this.synth.getMasterParameter("blackMIDIMode");
+    const highPerf = this.synth.masterParameters.blackMIDIMode;
     if (!highPerf) {
         // Draw the individual analyzers
         this.renderWaveforms(forceStraight);

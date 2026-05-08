@@ -9,12 +9,11 @@ import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { Ut } from "../utils/other.js";
 import { closeNotification } from "../notification/notification.js";
 import {
-    ALL_CHANNELS_OR_DIFFERENT_ACTION,
-    DEFAULT_MASTER_PARAMETERS,
+    DEFAULT_GLOBAL_MASTER_PARAMETERS,
     type EffectChangeCallback,
     type MIDIController,
-    midiControllers,
-    midiMessageTypes,
+    MIDIControllers,
+    MIDIMessageTypes,
     type PresetList,
     type PresetListEntry
 } from "spessasynth_core";
@@ -81,6 +80,7 @@ export class SynthetizerUI {
     public readonly channelColors: string[];
     public onProgramChange?: (channel: number) => unknown;
     public onTranspose?: () => unknown;
+    public onMute: ((channel: number, isMuted: boolean) => unknown)[] = [];
     public midiPort?: {
         send: (data: number[]) => unknown;
     };
@@ -195,7 +195,7 @@ export class SynthetizerUI {
                 localePath: LOCALE_PATH + "mainVoiceMeter",
                 locale: this.locale,
                 min: 0,
-                max: DEFAULT_MASTER_PARAMETERS.voiceCap,
+                max: DEFAULT_GLOBAL_MASTER_PARAMETERS.voiceCap,
                 initialAndDefault: 0
             });
             this.voiceMeter.bar.classList.add("voice_meter_bar_smooth");
@@ -213,10 +213,7 @@ export class SynthetizerUI {
                 initialAndDefault: 100,
                 editable: true,
                 editCallback: (v) => {
-                    this.synth.setMasterParameter(
-                        "masterGain",
-                        Math.round(v) / 100
-                    );
+                    this.synth.setMasterParameter("gain", Math.round(v) / 100);
                     this.volumeController.update(v);
                 }
             });
@@ -235,7 +232,7 @@ export class SynthetizerUI {
                 initialAndDefault: 0,
                 editable: true,
                 editCallback: (v) => {
-                    this.synth.setMasterParameter("masterPan", v);
+                    this.synth.setMasterParameter("pan", v);
                     this.panController.update(v);
                 }
             });
@@ -256,7 +253,7 @@ export class SynthetizerUI {
                 editCallback: (v) => {
                     // Limit to half semitone precision
                     this.synth.setMasterParameter(
-                        "transposition",
+                        "pitchOffset",
                         Math.round(v * 2) / 2
                     );
                     this.transposeController.update(Math.round(v * 2) / 2);
@@ -315,76 +312,67 @@ export class SynthetizerUI {
                 // Unlock everything
                 this.synth.setMasterParameter("drumLock", false);
                 this.synth.setMasterParameter("customVibratoLock", false);
-                if (this.synth.getMasterParameter("reverbLock")) {
+                if (this.synth.masterParameters.reverbLock) {
                     this.effectConfigs.reverb.toggleLock();
                 }
-                if (this.synth.getMasterParameter("chorusLock")) {
+                if (this.synth.masterParameters.chorusLock) {
                     this.effectConfigs.chorus.toggleLock();
                 }
-                if (this.synth.getMasterParameter("delayLock")) {
+                if (this.synth.masterParameters.delayLock) {
                     this.effectConfigs.delay.toggleLock();
                 }
-                if (this.synth.getMasterParameter("insertionEffectLock")) {
+                if (this.synth.masterParameters.insertionEffectLock) {
                     this.effectConfigs.insertion.toggleLock();
                 }
-                for (const [number, channel] of this.controllers.entries()) {
-                    if (channel.pitchWheel.isLocked) {
-                        channel.pitchWheel.toggleLock();
+                for (const [
+                    channelNumber,
+                    controller
+                ] of this.controllers.entries()) {
+                    if (controller.pitchWheel.isLocked) {
+                        controller.pitchWheel.toggleLock();
                     }
                     // CCs
                     for (const meter of Object.values(
-                        channel.controllerMeters
+                        controller.controllerMeters
                     )) {
                         if (meter.isLocked) {
                             meter.toggleLock();
                         }
                     }
+                    const ch = this.synth.midiChannels[channelNumber];
                     // Program
                     if (
-                        channel.preset.mainButton.classList.contains(
+                        controller.preset.mainButton.classList.contains(
                             "locked_selector"
                         )
                     ) {
-                        this.synth.lockController(
-                            number,
-                            ALL_CHANNELS_OR_DIFFERENT_ACTION,
-                            false
-                        );
-                        channel.preset.mainButton.classList.remove(
+                        ch.setMasterParameter("presetLock", false);
+                        controller.preset.mainButton.classList.remove(
                             "locked_selector"
                         );
                     }
                     // Transpose
-                    this.synth.transposeChannel(number, 0, true);
-                    channel.transpose.update(0);
+                    ch.setMasterParameter("pitchOffset", 0);
+                    controller.transpose.update(0);
 
                     // Mute/solo
-                    channel.soloButton.innerHTML = getEmptyMicSvg(ICON_SIZE);
-                    channel.muteButton.innerHTML = getVolumeSvg(ICON_SIZE);
+                    controller.soloButton.innerHTML = getEmptyMicSvg(ICON_SIZE);
+                    controller.muteButton.innerHTML = getVolumeSvg(ICON_SIZE);
 
                     // Poly/mono
                     {
-                        this.synth.lockController(
-                            number,
-                            midiControllers.polyModeOn,
-                            false
-                        );
-                        this.synth.lockController(
-                            number,
-                            midiControllers.monoModeOn,
-                            false
-                        );
-                        channel.polyMonoButton.innerHTML = POLY_ON;
+                        ch.lockController(MIDIControllers.polyModeOn, false);
+                        ch.lockController(MIDIControllers.monoModeOn, false);
+                        controller.polyMonoButton.innerHTML = POLY_ON;
                     }
-
-                    this.synth.muteChannel(number, false);
+                    ch.setMasterParameter("isMuted", false);
                 }
                 this.soloChannels.clear();
                 this.synth.resetControllers();
                 this.midiPort?.send([
-                    midiMessageTypes.systemExclusive, // Start of sysEx
+                    MIDIMessageTypes.systemExclusive, // Start of sysEx
                     0x41, // Roland
-                    0x10, // Device ID (defaults to 16 on roland)
+                    0x10, // Device ID (defaults to 16 on Roland)
                     0x42, // GS
                     0x12, // Command ID (DT1)
                     0x40, // System parameter - Address
@@ -711,7 +699,7 @@ export class SynthetizerUI {
                     e.preventDefault();
                     this.synth.setMasterParameter(
                         "blackMIDIMode",
-                        !this.synth.getMasterParameter("blackMIDIMode")
+                        !this.synth.masterParameters.blackMIDIMode
                     );
                     this.renderer.renderOneFrame();
                     break;
@@ -816,22 +804,22 @@ export class SynthetizerUI {
 
     public showControllerGroup(groupType: ControllerGroupType) {
         const effectControllers = [
-            midiControllers.reverbDepth,
-            midiControllers.chorusDepth,
-            midiControllers.variationDepth
+            MIDIControllers.reverbDepth,
+            MIDIControllers.chorusDepth,
+            MIDIControllers.variationDepth
         ];
         const envelopeControllers = [
-            midiControllers.attackTime,
-            midiControllers.releaseTime,
-            midiControllers.decayTime
+            MIDIControllers.attackTime,
+            MIDIControllers.releaseTime,
+            MIDIControllers.decayTime
         ];
         const filterControllers = [
-            midiControllers.brightness,
-            midiControllers.filterResonance
+            MIDIControllers.brightness,
+            MIDIControllers.filterResonance
         ];
         const portamentoControllers = [
-            midiControllers.portamentoTime,
-            midiControllers.portamentoControl
+            MIDIControllers.portamentoTime,
+            MIDIControllers.portamentoControl
         ];
 
         this.hideCCs(effectControllers);
@@ -861,12 +849,15 @@ export class SynthetizerUI {
     }
 
     protected updatePresetList(presetList: PresetList) {
-        this.presetList = presetList;
+        this.presetList = presetList.map((p) => ({
+            ...p,
+            name: p.name.replace(/\d{3}:\d{3}/, "") // Remove those pesky "000:001"
+        }));
         this.instrumentList = presetList
-            .filter((p) => !p.isAnyDrums)
+            .filter((p) => !p.isDrum)
             .sort(this.presetSort.bind(this));
         this.percussionList = presetList
-            .filter((p) => p.isAnyDrums)
+            .filter((p) => p.isDrum)
             .sort(this.presetSort.bind(this));
 
         if (this.percussionList.length === 0) {
@@ -876,7 +867,7 @@ export class SynthetizerUI {
         }
 
         for (const [i, controller] of this.controllers.entries()) {
-            const list = this.synth.channelProperties[i].isDrum
+            const list = this.synth.midiChannels[i].patch.isDrum
                 ? this.percussionList
                 : this.instrumentList;
             controller.preset.reload(list);
@@ -891,7 +882,7 @@ export class SynthetizerUI {
 
         for (const [i, controller] of this.controllers.entries()) {
             // Update channel
-            const voices = this.synth.channelProperties[i]?.voiceCount;
+            const voices = this.synth.midiChannels[i]?.voiceCount;
             if (voices === undefined) {
                 continue;
             }

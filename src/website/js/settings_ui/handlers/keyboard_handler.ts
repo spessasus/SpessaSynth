@@ -19,14 +19,16 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
 
     const updateChannel = (channel: number) => {
         const c = channelTrackers[channel];
-        const preset =
-            presetList.find(
-                (p) =>
-                    p.bankMSB === c.bankMSB &&
-                    p.program === c.program &&
-                    p.bankLSB === c.bankLSB &&
-                    p.isGMGSDrum === c.isGMGSDrum
-            ) ?? presetList[0];
+        const preset = presetList.find(
+            (p) =>
+                p.bankMSB === c.bankMSB &&
+                p.program === c.program &&
+                p.bankLSB === c.bankLSB &&
+                p.isGMGSDrum === c.isGMGSDrum
+        );
+        if (!preset) {
+            return;
+        }
         nameDisplays[channel].textContent = ": " + preset.name;
     };
 
@@ -79,7 +81,10 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
         "presetListChange",
         "settings-preset-list-change",
         (e) => {
-            presetList = e;
+            presetList = e.map((p) => ({
+                ...p,
+                name: p.name.replace(/\d{3}:\d{3}/, "") // Remove those pesky "000:001"
+            }));
             updateChannels();
         }
     );
@@ -195,30 +200,25 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
     );
 
     // QoL: change selected channel if the given channel is muted
-    this.synth.eventHandler.addEvent(
-        "muteChannel",
-        "settings-keuboard-mute-channel",
-        (e) => {
-            if (e.isMuted && e.channel === this.midiKeyboard.channel) {
-                // Find the first non-selected channel
-                let channelNumber = 0;
-                while (this.synth.channelProperties[channelNumber].isMuted) {
-                    channelNumber++;
-                    if (
-                        this.synth.channelProperties[channelNumber] ===
-                        undefined
-                    ) {
-                        return;
-                    }
-                }
-                if (channelNumber < this.synth.channelCount) {
-                    this.midiKeyboard.selectChannel(channelNumber);
-                    keyboardControls.selectedChannel.value =
-                        channelNumber.toString();
+    this.synthui.onMute.push((channel, isMuted) => {
+        if (isMuted && channel === this.midiKeyboard.channel) {
+            // Find the first non-selected channel
+            let channelNumber = 0;
+            while (
+                this.synth.midiChannels[channelNumber].masterParameters.isMuted
+            ) {
+                channelNumber++;
+                if (this.synth.midiChannels[channelNumber] === undefined) {
+                    return;
                 }
             }
+            if (channelNumber < this.synth.channelCount) {
+                this.midiKeyboard.selectChannel(channelNumber);
+                keyboardControls.selectedChannel.value =
+                    channelNumber.toString();
+            }
         }
-    );
+    });
 
     // Dark mode toggle
     keyboardControls.mode.addEventListener("click", () => {

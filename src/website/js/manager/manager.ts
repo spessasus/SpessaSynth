@@ -167,7 +167,10 @@ export class Manager {
         }
         this.seq?.pause();
         const text = sf.slice(8, 12);
-        const header = util.readBytesAsString(new IndexedByteArray(text), 4);
+        const header = util.readBinaryStringIndexed(
+            new IndexedByteArray(text),
+            4
+        );
         const isDLS = header.toLowerCase() === "dls " && !this.isLocalEdition;
         await this.setSF(sf);
         if (isDLS) {
@@ -439,6 +442,11 @@ export class Manager {
             this.seq,
             this.renderer
         );
+
+        // Connect muting to renderer
+        this.synthUI.onMute.push((channel, isMuted) => {
+            this.renderer!.renderChannels[channel] = !isMuted;
+        }, this.keyboard.onMute.bind(this.keyboard));
 
         // Create a UI for music player mode
         this.musicModeUI = new MusicModeUI(

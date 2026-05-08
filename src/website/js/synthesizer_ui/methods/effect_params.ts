@@ -1,7 +1,7 @@
 import { Meter } from "./synthui_meter.ts";
 import type {
     EffectChangeCallback,
-    MasterParameterType
+    GlobalMasterParameter
 } from "spessasynth_core";
 import { InsertionValueConverter } from "./convert.ts";
 
@@ -63,8 +63,8 @@ export interface ParamType<K extends string> {
         r?: { min: number; max: number };
         td?: (v: number) => string;
     }[];
-    lockName: keyof MasterParameterType;
-    gainName: keyof MasterParameterType;
+    lockName: keyof GlobalMasterParameter;
+    gainName: keyof GlobalMasterParameter;
     macroAddress: number;
     macros: (Record<K, number> & { name: string })[];
 }

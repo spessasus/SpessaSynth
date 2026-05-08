@@ -377,9 +377,9 @@ export class Selector {
             patch = this.elements[0];
         }
         if (
-            patch.isAnyDrums ||
+            patch.isDrum ||
             this.elements.filter(
-                (e) => e.program === patch.program && !e.isAnyDrums
+                (e) => e.program === patch.program && !e.isDrum
             ).length < 2
         ) {
             return `${patch.program}. ${patch.name}`;
@@ -441,7 +441,7 @@ export class Selector {
             if (program !== lastProgram) {
                 lastProgram = program;
                 // Create the header (not for drums
-                if (!preset.isAnyDrums) {
+                if (!preset.isDrum) {
                     const headerRow = document.createElement("tr");
                     const header = document.createElement("th");
                     header.colSpan = 4;
@@ -457,7 +457,7 @@ export class Selector {
             if (preset.isGMGSDrum) {
                 bankLSBText = "GS";
                 bankMSBText = "DRUM";
-            } else if (preset.isAnyDrums) {
+            } else if (preset.isDrum) {
                 bankLSBText = "XG";
                 bankMSBText = "DRUM";
             } else {

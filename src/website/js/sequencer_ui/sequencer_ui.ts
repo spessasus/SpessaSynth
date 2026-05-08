@@ -22,8 +22,7 @@ import {
     audioToWav,
     type MIDIMessage,
     type MIDIMessageType,
-    midiMessageTypes,
-    SpessaSynthCoreUtils
+    MIDIMessageTypes
 } from "spessasynth_core";
 import type { Sequencer } from "spessasynth_lib";
 import { AssManager } from "../utils/ass_manager/ass_manager.ts";
@@ -53,9 +52,9 @@ const ZWSP = "\u200B";
 
 // Parser for turning MIDI status bytes into text
 const reversedMIDITypes = new Map<MIDIMessageType, string>();
-for (const key in midiMessageTypes) {
+for (const key in MIDIMessageTypes) {
     reversedMIDITypes.set(
-        midiMessageTypes[key as keyof typeof midiMessageTypes],
+        MIDIMessageTypes[key as keyof typeof MIDIMessageTypes],
         key.replaceAll(/([a-z])([A-Z])/g, "$1 $2")
     );
 }
@@ -678,7 +677,7 @@ export class SequencerUI {
                 }
                 if (midiEncoding) {
                     this.changeEncoding(midiEncoding);
-                    SpessaSynthCoreUtils.SpessaSynthInfo(
+                    console.info(
                         `Changing encoding via MENC to ${midiEncoding}`
                     );
                 }

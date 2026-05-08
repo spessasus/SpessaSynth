@@ -130,8 +130,8 @@ export async function renderAndExportAudioData(
         for (let i = 0; i < 16; i++) {
             // Check if all channels are muted
             let muted = true;
-            for (let j = i; j < snapshot.channelSnapshots.length; j += 16) {
-                if (!snapshot.channelSnapshots[j].isMuted) {
+            for (let j = i; j < snapshot.midiChannels.length; j += 16) {
+                if (!snapshot.midiChannels[j].masterParameters.isMuted) {
                     muted = false;
                     break;
                 }
@@ -162,7 +162,7 @@ export async function renderAndExportAudioData(
                             normalizeAudio: false
                         }
                     );
-                    const fileName = `${channel + 1} - ${snapshot.channelSnapshots[i].patch.name}.wav`;
+                    const fileName = `${channel + 1} - ${snapshot.midiChannels[i].patch.name}.wav`;
                     this.saveBlob(
                         new Blob([audioOut], { type: "audio/wav" }),
                         fileName
@@ -189,12 +189,10 @@ export async function renderAndExportAudioData(
                 for (const [i, channel] of renderedChannels.entries()) {
                     // Check if all channels are muted
                     let muted = true;
-                    for (
-                        let j = i;
-                        j < snapshot.channelSnapshots.length;
-                        j += 16
-                    ) {
-                        if (!snapshot.channelSnapshots[j].isMuted) {
+                    for (let j = i; j < snapshot.midiChannels.length; j += 16) {
+                        if (
+                            !snapshot.midiChannels[j].masterParameters.isMuted
+                        ) {
                             muted = false;
                             break;
                         }
@@ -206,7 +204,7 @@ export async function renderAndExportAudioData(
                     const audioOut = audioBufferToWav(channel, {
                         normalizeAudio: false
                     });
-                    const fileName = `${i + 1} - ${snapshot.channelSnapshots[i].patch.name}.wav`;
+                    const fileName = `${i + 1} - ${snapshot.midiChannels[i].patch.name}.wav`;
                     zipped.file(fileName, audioOut);
                     console.info(
                         `%cAdding file %c${fileName}%c to zip...`,

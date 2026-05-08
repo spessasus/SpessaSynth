@@ -7,7 +7,7 @@ import { startKeyModifiersMenu } from "./key_modifier_ui.js";
 import { Meter } from "./synthui_meter.ts";
 import { Ut } from "../../utils/other.js";
 import type { LocaleManager } from "../../locale/locale_manager.ts";
-import { type InterpolationType, interpolationTypes } from "spessasynth_core";
+import { type InterpolationType, InterpolationTypes } from "spessasynth_core";
 
 const LOCALE_PATH = "locale.synthesizerController.effectsConfig.misc.";
 const KEY_MODIFIERS_PATH = "locale.synthesizerController.keyModifiers.";
@@ -151,7 +151,7 @@ export function createAdvancedConfiguration(
              * Linear
              */
             const linear = document.createElement("option");
-            linear.value = interpolationTypes.linear.toString();
+            linear.value = InterpolationTypes.linear.toString();
             this.locale.bindObjectProperty(
                 linear,
                 "textContent",
@@ -163,7 +163,7 @@ export function createAdvancedConfiguration(
              * Nearest neighbor
              */
             const nearest = document.createElement("option");
-            nearest.value = interpolationTypes.nearestNeighbor.toString();
+            nearest.value = InterpolationTypes.nearestNeighbor.toString();
             this.locale.bindObjectProperty(
                 nearest,
                 "textContent",
@@ -175,7 +175,7 @@ export function createAdvancedConfiguration(
              * Cubic (default)
              */
             const cubic = document.createElement("option");
-            cubic.value = interpolationTypes.hermite.toString();
+            cubic.value = InterpolationTypes.hermite.toString();
             cubic.selected = true;
             this.locale.bindObjectProperty(
                 cubic,
@@ -254,7 +254,7 @@ export function createAdvancedConfiguration(
                     this.synth.setMasterParameter("voiceCap", cap);
                     this.voiceMeter.max = cap;
                 },
-                this.synth.getMasterParameter("voiceCap"),
+                this.synth.masterParameters.voiceCap,
                 1,
                 10_000
             )

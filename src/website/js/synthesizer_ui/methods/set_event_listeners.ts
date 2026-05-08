@@ -1,12 +1,12 @@
-import { getDrumsSvg, getNoteSvg } from "../../utils/icons.js";
 import {
     type ControllerGroupType,
     MONO_ON,
     POLY_ON,
     type SynthetizerUI
 } from "../synthetizer_ui.ts";
-import { midiControllers } from "spessasynth_core";
+import { MIDIControllers } from "spessasynth_core";
 import { appendNewController } from "./append_new_controller.ts";
+import { getDrumsSvg, getNoteSvg } from "../../utils/icons.ts";
 
 /**
  * @this {SynthetizerUI}
@@ -18,6 +18,10 @@ export function setEventListeners(this: SynthetizerUI) {
         "synthui-program-change",
         (e) => {
             const p = this.controllers[e.channel].preset;
+            this.controllers[e.channel].drumsToggle.innerHTML = e.isDrum
+                ? getDrumsSvg(32)
+                : getNoteSvg(32);
+            p.reload(e.isDrum ? this.percussionList : this.instrumentList);
             p.set(e);
         }
     );
@@ -40,17 +44,15 @@ export function setEventListeners(this: SynthetizerUI) {
         "controllerChange",
         "synthui-controller-change",
         (e) => {
-            const controller = e.controllerNumber;
-            const channel = e.channel;
-            const value = e.controllerValue;
+            const { controller, channel, value } = e;
             const con = this.controllers[channel];
             if (con === undefined) {
                 return;
             }
-            if (controller === midiControllers.monoModeOn) {
+            if (controller === MIDIControllers.monoModeOn) {
                 con.polyMonoButton.setAttribute("isPoly", "false");
                 con.polyMonoButton.innerHTML = MONO_ON;
-            } else if (controller === midiControllers.polyModeOn) {
+            } else if (controller === MIDIControllers.polyModeOn) {
                 con.polyMonoButton.setAttribute("isPoly", "true");
                 con.polyMonoButton.innerHTML = POLY_ON;
             }
@@ -68,28 +70,14 @@ export function setEventListeners(this: SynthetizerUI) {
     );
 
     this.synth.eventHandler.addEvent(
-        "pitchWheel",
-        "synthui-pitch-wheel",
+        "midiChannelChange",
+        "synthui-midi-channel-change",
         (e) => {
-            // Pitch wheel
-            this.controllers[e.channel].pitchWheel.update(e.pitch - 8192);
-        }
-    );
-
-    this.synth.eventHandler.addEvent(
-        "drumChange",
-        "synthui-drum-change",
-        (e) => {
-            this.controllers[e.channel].drumsToggle.innerHTML = e.isDrumChannel
-                ? getDrumsSvg(32)
-                : getNoteSvg(32);
-            const preset = this.controllers[e.channel].preset;
-            preset.reload(
-                e.isDrumChannel ? this.percussionList : this.instrumentList
-            );
-            if (preset.value) {
-                preset.set(preset.value);
+            if (e.parameter !== "pitchWheel") {
+                return;
             }
+            // Pitch wheel
+            this.controllers[e.channel].pitchWheel.update(e.value - 8192);
         }
     );
 

@@ -411,7 +411,7 @@ async function playDemoSong(song: DemoSong) {
             song.fileName
     );
     if (!song.fullMIDISupport) {
-        window.manager.synth.setMasterParameter("nprnParamLock", true);
+        window.manager.synth.setMasterParameter("nrpnParamLock", true);
         window.manager.synth.setMasterParameter("drumLock", true);
     }
     // noinspection JSCheckFunctionSignatures

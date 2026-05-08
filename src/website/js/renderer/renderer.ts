@@ -12,11 +12,11 @@ import {
     renderSingleWaveform,
     renderWaveforms
 } from "./render_waveforms.js";
-import { consoleColors } from "../utils/console_colors.js";
 import {
     BasicMIDI,
-    midiMessageTypes,
-    type SynthSystem
+    MIDIMessageTypes,
+    type MIDISystem,
+    SpessaSynthCoreUtils
 } from "spessasynth_core";
 import type { Sequencer } from "spessasynth_lib";
 import { type LocaleManager } from "../locale/locale_manager.ts";
@@ -157,7 +157,7 @@ export class Renderer {
     protected readonly inputNode: AudioNode;
     protected readonly workerMode: boolean;
     protected readonly sampleRateFactor: number;
-    protected showDisplayMatrix: SynthSystem | null = null;
+    protected showDisplayMatrix: MIDISystem | null = null;
     private displayMatrixTimeout = 0;
 
     /**
@@ -218,14 +218,6 @@ export class Renderer {
             });
             this.channelAnalysers.push(analyser);
         }
-
-        synth.eventHandler.addEvent(
-            "muteChannel",
-            "renderer-mute-channel",
-            (eventData) => {
-                this.renderChannels[eventData.channel] = !eventData.isMuted;
-            }
-        );
         this.updateFftSize();
         this.connectChannelAnalysers();
 
@@ -258,7 +250,7 @@ export class Renderer {
             "renderer-meta-event",
             (ev) => {
                 const event = ev.event;
-                if (event.statusByte === midiMessageTypes.timeSignature) {
+                if (event.statusByte === MIDIMessageTypes.timeSignature) {
                     this.currentTimeSignature = `${event.data[0]}/${Math.pow(2, event.data[1])}`;
                 }
             }
@@ -366,7 +358,7 @@ export class Renderer {
         this.render(false, true);
     }
 
-    public updateDisplayMatrix(mode: SynthSystem) {
+    public updateDisplayMatrix(mode: MIDISystem) {
         this.showDisplayMatrix = mode;
         clearTimeout(this.displayMatrixTimeout);
         this.displayMatrixTimeout = window.setTimeout(() => {
@@ -414,7 +406,7 @@ export class Renderer {
         });
         console.info(
             `%cFinished loading note times and ready to render the sequence!`,
-            consoleColors.info
+            SpessaSynthCoreUtils.ConsoleColors.info
         );
     }
 

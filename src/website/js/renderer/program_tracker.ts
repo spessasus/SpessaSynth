@@ -55,7 +55,10 @@ export class ProgramTracker {
             "presetListChange",
             "program-tracker-preset-list-change",
             (e) => {
-                this.presetList = e;
+                this.presetList = e.map((p) => ({
+                    ...p,
+                    name: p.name.replace(/\d{3}:\d{3}/, "") // Remove those pesky "000:001"
+                }));
                 this.updatePresetList();
             }
         );
@@ -88,7 +91,7 @@ export class ProgramTracker {
                             p.isGMGSDrum === c.isGMGSDrum
                     ) ?? this.presetList[0];
                 this.presetNames[e.channel] =
-                    (preset.isAnyDrums ? "(D) " : "") + preset.name;
+                    (preset.isDrum ? "(D) " : "") + preset.name;
             }
         );
     }
@@ -108,16 +111,17 @@ export class ProgramTracker {
     private updatePresetList() {
         for (let i = 0; i < this.channelTrackers.length; i++) {
             const c = this.channelTrackers[i];
-            const preset =
-                this.presetList.find(
-                    (p) =>
-                        p.bankMSB === c.bankMSB &&
-                        p.program === c.program &&
-                        p.bankLSB === c.bankLSB &&
-                        p.isGMGSDrum === c.isGMGSDrum
-                ) ?? this.presetList[0];
-            this.presetNames[i] =
-                (preset.isAnyDrums ? "(D) " : "") + preset.name;
+            const preset = this.presetList.find(
+                (p) =>
+                    p.bankMSB === c.bankMSB &&
+                    p.program === c.program &&
+                    p.bankLSB === c.bankLSB &&
+                    p.isGMGSDrum === c.isGMGSDrum
+            );
+            if (!preset) {
+                continue;
+            }
+            this.presetNames[i] = (preset.isDrum ? "(D) " : "") + preset.name;
         }
     }
 }

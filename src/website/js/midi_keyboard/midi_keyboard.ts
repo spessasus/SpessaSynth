@@ -1,4 +1,4 @@
-import { midiControllers } from "spessasynth_core";
+import { MIDIControllers } from "spessasynth_core";
 import { handlePointers } from "./pointer_handling.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import type { InterfaceMode } from "../../../server/saved_settings.ts";
@@ -48,38 +48,20 @@ export class MIDIKeyboard {
 
         // Connect the synth to keyboard
         this.synth.eventHandler.addEvent("noteOn", "keyboard-note-on", (e) => {
-            const noteShift = Math.trunc(
-                this.synth.channelProperties[e.channel].transposition
-            );
-            this.pressNote(e.midiNote + noteShift, e.channel, e.velocity);
+            this.pressNote(e.midiNote, e.channel, e.velocity);
         });
 
         this.synth.eventHandler.addEvent(
             "noteOff",
             "keyboard-note-off",
             (e) => {
-                const noteShift = Math.trunc(
-                    this.synth.channelProperties[e.channel].transposition
-                );
-                this.releaseNote(e.midiNote + noteShift, e.channel);
+                this.releaseNote(e.midiNote, e.channel);
             }
         );
 
         this.synth.eventHandler.addEvent("stopAll", "keyboard-stop-all", () => {
             this.clearNotes();
         });
-
-        this.synth.eventHandler.addEvent(
-            "muteChannel",
-            "keyboard-mute-channel",
-            (e) => {
-                if (e.isMuted) {
-                    for (let i = 0; i < 128; i++) {
-                        this.releaseNote(i, e.channel);
-                    }
-                }
-            }
-        );
     }
 
     protected _keyRange = {
@@ -122,18 +104,26 @@ export class MIDIKeyboard {
         this._shown = val;
     }
 
+    public onMute(muteChannel: number, is: boolean) {
+        if (is) {
+            for (let i = 0; i < 128; i++) {
+                this.releaseNote(i, muteChannel);
+            }
+        }
+    }
+
     public setHoldPedal(down: boolean) {
         if (down) {
             this.synth.controllerChange(
                 this.channel,
-                midiControllers.sustainPedal,
+                MIDIControllers.sustainPedal,
                 127
             );
             this.keyboard.style.filter = "brightness(0.5)";
         } else {
             this.synth.controllerChange(
                 this.channel,
-                midiControllers.sustainPedal,
+                MIDIControllers.sustainPedal,
                 0
             );
             this.keyboard.style.filter = "";

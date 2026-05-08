@@ -36,19 +36,27 @@ export function computeNotePositions(
      * Compute note pitch bend visual shift (for each channel)
      */
     const pitchBendXShift: number[] = [];
-    for (const channel of this.synth.channelProperties) {
+    for (const { midiParameters } of this.synth.midiChannels) {
         // Pitch range * ((bend - 8192) / 8192) * key width
         if (this.showVisualPitch) {
-            const bend = channel.pitchWheel - 8192; // -8192 to 8192
+            const bend = midiParameters.pitchWheel - 8192; // -8192 to 8192
             const pixelShift =
-                channel.pitchWheelRange * (bend / 8192) * keyStep;
+                midiParameters.pitchWheelRange * (bend / 8192) * keyStep;
             pitchBendXShift.push(pixelShift);
         } else {
             pitchBendXShift.push(0);
         }
     }
-    const transposeNoteShifts = this.synth.channelProperties.map((c) =>
-        this.showVisualPitch ? c.transposition : 0
+    const t =
+        this.synth.masterParameters.pitchOffset +
+        this.synth.midiParameters.masterKeyShift +
+        this.synth.midiParameters.masterTune / 100;
+    const transposeNoteShifts = this.synth.midiChannels.map(
+        (c) =>
+            c.masterParameters.pitchOffset +
+            c.midiParameters.keyShift +
+            c.midiParameters.fineTune / 100 +
+            (c.patch.isDrum ? 0 : t)
     );
     const notesToDraw = new Array<NoteToRender>();
     for (const [channelNumder, channel] of this.noteTimes.entries()) {
