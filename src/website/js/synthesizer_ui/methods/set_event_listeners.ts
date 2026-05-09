@@ -4,7 +4,7 @@ import {
     POLY_ON,
     type SynthesizerUI
 } from "../synthetizer_ui.ts";
-import { MIDIControllers } from "spessasynth_core";
+import { CONTROLLER_TABLE_SIZE, MIDIControllers } from "spessasynth_core";
 import { appendNewController } from "./append_new_controller.ts";
 import { getDrumsSvg, getNoteSvg } from "../../utils/icons.ts";
 
@@ -36,10 +36,11 @@ export function setEventListeners(this: SynthesizerUI) {
         "synthui-all-controller-reset",
         () => {
             for (const controller of this.controllers) {
-                for (const meter of Object.values(
-                    controller.controllerMeters
-                )) {
-                    meter.reset();
+                for (const [cc, meter] of controller.controllerMeters) {
+                    // Do not reset transpose and gain (master parameters)
+                    if (cc <= CONTROLLER_TABLE_SIZE) {
+                        meter.reset();
+                    }
                 }
             }
         }
@@ -61,7 +62,7 @@ export function setEventListeners(this: SynthesizerUI) {
                 con.polyMonoButton.setAttribute("isPoly", "true");
                 con.polyMonoButton.innerHTML = POLY_ON;
             }
-            const meter = con.controllerMeters[controller];
+            const meter = con.controllerMeters.get(controller);
             if (meter !== undefined) {
                 meter.update(value);
             }

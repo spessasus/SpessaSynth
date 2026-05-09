@@ -119,8 +119,7 @@ export function appendNewController(
         }
     };
 
-    const controllerMeters: Partial<Record<ChannelControllerNumber, Meter>> =
-        {};
+    const controllerMeters = new Map<ChannelControllerNumber, Meter>();
 
     const createCCMeterHelper = (
         ccNum: MIDIController,
@@ -144,7 +143,7 @@ export function appendNewController(
                 ? (isLocked) => ch.lockController(ccNum, isLocked)
                 : undefined
         });
-        controllerMeters[ccNum] = meter;
+        controllerMeters.set(ccNum, meter);
         return meter;
     };
 
@@ -261,7 +260,7 @@ export function appendNewController(
             ch.lockController(MIDIControllers.portamentoOnOff, isLocked);
         }
     });
-    controllerMeters[MIDIControllers.portamentoTime] = portamentoTime;
+    controllerMeters.set(MIDIControllers.portamentoTime, portamentoTime);
     controller.append(portamentoTime.div);
 
     // Portamento control
@@ -296,7 +295,7 @@ export function appendNewController(
             this.onTranspose?.();
         }
     });
-    controllerMeters[extraChannelControllers.transpose] = transpose;
+    controllerMeters.set(extraChannelControllers.transpose, transpose);
     controller.append(transpose.div);
 
     // Gain is not a CC, add it manually
@@ -322,7 +321,7 @@ export function appendNewController(
             this.setCCVisibilityStartingFrom(channelNumber + 1, !active);
         }
     });
-    controllerMeters[extraChannelControllers.gain] = gain;
+    controllerMeters.set(extraChannelControllers.gain, gain);
     controller.append(gain.div);
 
     // Preset controller

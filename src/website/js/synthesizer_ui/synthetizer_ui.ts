@@ -1,4 +1,7 @@
-import { hideControllers, showControllers } from "./methods/hide_show_controllers.js";
+import {
+    hideControllers,
+    showControllers
+} from "./methods/hide_show_controllers.js";
 import { toggleDarkMode } from "./methods/toggle_dark_mode.js";
 import { setEventListeners } from "./methods/set_event_listeners.js";
 import { keybinds } from "../utils/keybinds.js";
@@ -51,7 +54,7 @@ export const LOCALE_PATH = "locale.synthesizerController.";
 
 export interface ChannelController {
     controller: HTMLDivElement;
-    controllerMeters: Partial<Record<ChannelControllerNumber, Meter>>;
+    controllerMeters: Map<ChannelControllerNumber, Meter>;
     voiceMeter: Meter;
     pitchWheel: Meter;
     preset: Selector;
@@ -359,9 +362,7 @@ export class SynthesizerUI {
                         controller.pitchWheel.toggleLock();
                     }
                     // CCs
-                    for (const meter of Object.values(
-                        controller.controllerMeters
-                    )) {
+                    for (const meter of controller.controllerMeters.values()) {
                         if (meter.isLocked) {
                             meter.toggleLock();
                         }
@@ -380,14 +381,14 @@ export class SynthesizerUI {
                     }
                     // Transpose
                     ch.setMasterParameter("pitchOffset", 0);
-                    controller.controllerMeters[
-                        extraChannelControllers.transpose
-                    ]?.update(0);
+                    controller.controllerMeters
+                        .get(extraChannelControllers.transpose)
+                        ?.update(0);
                     // Gain
                     ch.setMasterParameter("gain", 1);
-                    controller.controllerMeters[
-                        extraChannelControllers.gain
-                    ]?.update(1);
+                    controller.controllerMeters
+                        .get(extraChannelControllers.gain)
+                        ?.update(1);
 
                     // Mute/solo
                     controller.soloButton.innerHTML = getEmptyMicSvg(ICON_SIZE);
@@ -1103,7 +1104,7 @@ export class SynthesizerUI {
     private showCCs(ccs: readonly ChannelControllerNumber[]) {
         for (const cc of ccs) {
             for (const controller of this.controllers) {
-                Ut.show(controller.controllerMeters[cc]?.div);
+                Ut.show(controller.controllerMeters.get(cc)?.div);
             }
         }
     }
@@ -1111,7 +1112,7 @@ export class SynthesizerUI {
     private hideCCs(ccs: readonly ChannelControllerNumber[]) {
         for (const cc of ccs) {
             for (const controller of this.controllers) {
-                Ut.hide(controller.controllerMeters[cc]?.div);
+                Ut.hide(controller.controllerMeters.get(cc)?.div);
             }
         }
     }
