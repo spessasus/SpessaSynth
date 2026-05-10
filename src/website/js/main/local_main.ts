@@ -5,7 +5,7 @@ import { LocaleManager } from "../manager/locale_manager.js";
 import type { LocaleCode } from "../../locale/locale_list.ts";
 import type { SavedSettings } from "../../../server/saved_settings.ts";
 import { readSampleRateParam } from "../utils/sample_rate_param.ts";
-import { SpessaSynthLog } from "spessasynth_core";
+import { SpessaLog } from "../../../../../spessasynth_core";
 
 declare global {
     // noinspection JSUnusedGlobalSymbols
@@ -51,7 +51,7 @@ window.savedSettings = new Promise((resolve) => {
 });
 
 window.isLocalEdition = true;
-SpessaSynthLog.setLogLevel(true, true, true);
+SpessaLog.setLogLevel(true, true, true);
 const titleMessage = document.querySelector<HTMLHeadingElement>("#title")!;
 const progressBar = document.querySelector<HTMLDivElement>("#progress_bar")!;
 const fileInput = document.querySelector<HTMLInputElement>("#midi_file_input")!;
