@@ -10,20 +10,8 @@ import {
 } from "../synthetizer_ui.ts";
 import { ANIMATION_REFLOW_TIME } from "../../utils/animation_utils.ts";
 import { Meter } from "./synthui_meter.ts";
-import {
-    DEFAULT_MIDI_CONTROLLERS,
-    DEFAULT_PERCUSSION,
-    type MIDIController,
-    MIDIControllers
-} from "spessasynth_core";
-import {
-    getDrumsSvg,
-    getEmptyMicSvg,
-    getMicSvg,
-    getMuteSvg,
-    getNoteSvg,
-    getVolumeSvg
-} from "../../utils/icons.ts";
+import { DEFAULT_MIDI_CONTROLLERS, DEFAULT_PERCUSSION, type MIDIController, MIDIControllers } from "spessasynth_core";
+import { getDrumsSvg, getEmptyMicSvg, getMicSvg, getMuteSvg, getNoteSvg, getVolumeSvg } from "../../utils/icons.ts";
 import { Ut } from "../../utils/other.js";
 import { Selector } from "./synthui_selector.ts";
 import { sendAddress } from "./send_address.ts";
@@ -156,7 +144,7 @@ export function appendNewController(
 
     // Expression controller
     const expression = createCCMeterHelper(
-        MIDIControllers.expressionController,
+        MIDIControllers.expression,
         "channelController.expressionMeter"
     );
     controller.append(expression.div);
