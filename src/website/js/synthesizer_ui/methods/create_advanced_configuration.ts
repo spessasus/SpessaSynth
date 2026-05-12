@@ -325,7 +325,7 @@ export function createAdvancedConfiguration(
                 "msgsCutoff",
                 (enable) => {
                     this.synth.setMasterParameter(
-                        "monophonicRetriggerMode",
+                        "monophonicRetrigger",
                         enable
                     );
                 },

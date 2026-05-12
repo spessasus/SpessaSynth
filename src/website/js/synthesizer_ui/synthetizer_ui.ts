@@ -281,12 +281,15 @@ export class SynthesizerUI {
                 max: 12,
                 def: 0,
                 onEdit: (v) => {
+                    const pitch = Math.round(v * 2) / 2;
+                    const keyShift = Math.trunc(pitch);
                     // Limit to half semitone precision
+                    this.synth.setMasterParameter("keyShift", keyShift);
                     this.synth.setMasterParameter(
-                        "pitchOffset",
-                        Math.round(v * 2) / 2
+                        "fineTune",
+                        (pitch - keyShift) * 100
                     );
-                    this.transposeController.update(Math.round(v * 2) / 2);
+                    this.transposeController.update(pitch);
                     this.onTranspose?.();
                 },
                 activeChangeCallback: (active) => {
@@ -352,7 +355,8 @@ export class SynthesizerUI {
                     this.effectConfigs.insertion.toggleLock();
                 }
                 // Reset transpose
-                this.synth.setMasterParameter("pitchOffset", 0);
+                this.synth.setMasterParameter("keyShift", 0);
+                this.synth.setMasterParameter("fineTune", 0);
                 this.transposeController.update(0);
                 for (const [
                     channelNumber,
@@ -379,8 +383,8 @@ export class SynthesizerUI {
                             "locked_selector"
                         );
                     }
-                    // Transpose
-                    ch.setMasterParameter("pitchOffset", 0);
+                    // Transpose (only key shift)
+                    ch.setMasterParameter("keyShift", 0);
                     controller.controllerMeters
                         .get(extraChannelControllers.transpose)
                         ?.update(0);

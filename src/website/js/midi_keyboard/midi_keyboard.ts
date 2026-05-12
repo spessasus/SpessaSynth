@@ -291,7 +291,10 @@ export class MIDIKeyboard {
      * @param velocity 0-127
      */
     public pressNote(midiNote: number, channel: number, velocity: number) {
-        const key = this.keys[midiNote - this._keyRange.min];
+        const actualNote = midiNote + this.getKeyOffset(channel);
+
+        const relativeKey = actualNote - this._keyRange.min;
+        const key = this.keys[relativeKey];
         if (key === undefined) {
             return;
         }
@@ -332,9 +335,7 @@ export class MIDIKeyboard {
             const spread = GLOW_PX * brightness;
             key.style.boxShadow = `${color} 0px 0px ${spread}px ${spread / 5}px`;
         }
-        this.keyColors[midiNote - this._keyRange.min].push(
-            this.channelColors[channel % 16]
-        );
+        this.keyColors[relativeKey].push(this.channelColors[channel % 16]);
     }
 
     /**
@@ -342,7 +343,8 @@ export class MIDIKeyboard {
      * @param channel 0-15
      */
     public releaseNote(midiNote: number, channel: number) {
-        const relativeKey = midiNote - this._keyRange.min;
+        const actualNote = midiNote + this.getKeyOffset(channel);
+        const relativeKey = actualNote - this._keyRange.min;
         const keyElement = this.keys[relativeKey];
         if (keyElement === undefined) {
             return;
@@ -379,6 +381,18 @@ export class MIDIKeyboard {
             key.style.boxShadow = "";
             this.keyColors[index] = [];
         }
+    }
+
+    protected getKeyOffset(channel: number) {
+        const ch = this.synth.midiChannels[channel];
+        return (
+            (ch.patch.isDrum
+                ? 0
+                : this.synth.midiParameters.keyShift +
+                  this.synth.masterParameters.keyShift) +
+            ch.midiParameters.keyShift +
+            ch.masterParameters.keyShift
+        );
     }
 
     protected userNoteOff(note: number) {
