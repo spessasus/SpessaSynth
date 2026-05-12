@@ -9,7 +9,7 @@ import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { Ut } from "../utils/other.js";
 import { closeNotification } from "../notification/notification.js";
 import {
-    DEFAULT_GLOBAL_MASTER_PARAMETERS,
+    DEFAULT_GLOBAL_SYSTEM_PARAMETERS,
     type EffectChangeCallback,
     type MIDIController,
     MIDIControllers,
@@ -228,7 +228,7 @@ export class SynthesizerUI {
                 localePath: LOCALE_PATH + "mainVoiceMeter",
                 locale: this.locale,
                 min: 0,
-                max: DEFAULT_GLOBAL_MASTER_PARAMETERS.voiceCap,
+                max: DEFAULT_GLOBAL_SYSTEM_PARAMETERS.voiceCap,
                 def: 0
             });
             this.voiceMeter.div.classList.add("main_controller_element");
@@ -245,7 +245,7 @@ export class SynthesizerUI {
                 max: 400,
                 def: 100,
                 onEdit: (v) => {
-                    this.synth.setMasterParameter("gain", Math.round(v) / 100);
+                    this.synth.setSystemParameter("gain", Math.round(v) / 100);
                     this.volumeController.update(v);
                 }
             });
@@ -263,7 +263,7 @@ export class SynthesizerUI {
                 max: 1,
                 def: 0,
                 onEdit: (v) => {
-                    this.synth.setMasterParameter("pan", v);
+                    this.synth.setSystemParameter("pan", v);
                     this.panController.update(v);
                 }
             });
@@ -284,8 +284,8 @@ export class SynthesizerUI {
                     const pitch = Math.round(v * 2) / 2;
                     const keyShift = Math.trunc(pitch);
                     // Limit to half semitone precision
-                    this.synth.setMasterParameter("keyShift", keyShift);
-                    this.synth.setMasterParameter(
+                    this.synth.setSystemParameter("keyShift", keyShift);
+                    this.synth.setSystemParameter(
                         "fineTune",
                         (pitch - keyShift) * 100
                     );
@@ -340,23 +340,23 @@ export class SynthesizerUI {
             );
             resetCCButton.addEventListener("click", () => {
                 // Unlock everything
-                this.synth.setMasterParameter("drumLock", false);
-                this.synth.setMasterParameter("customVibratoLock", false);
-                if (this.synth.masterParameters.reverbLock) {
+                this.synth.setSystemParameter("drumLock", false);
+                this.synth.setSystemParameter("customVibratoLock", false);
+                if (this.synth.systemParameters.reverbLock) {
                     this.effectConfigs.reverb.toggleLock();
                 }
-                if (this.synth.masterParameters.chorusLock) {
+                if (this.synth.systemParameters.chorusLock) {
                     this.effectConfigs.chorus.toggleLock();
                 }
-                if (this.synth.masterParameters.delayLock) {
+                if (this.synth.systemParameters.delayLock) {
                     this.effectConfigs.delay.toggleLock();
                 }
-                if (this.synth.masterParameters.insertionEffectLock) {
+                if (this.synth.systemParameters.insertionEffectLock) {
                     this.effectConfigs.insertion.toggleLock();
                 }
                 // Reset transpose
-                this.synth.setMasterParameter("keyShift", 0);
-                this.synth.setMasterParameter("fineTune", 0);
+                this.synth.setSystemParameter("keyShift", 0);
+                this.synth.setSystemParameter("fineTune", 0);
                 this.transposeController.update(0);
                 for (const [
                     channelNumber,
@@ -378,18 +378,18 @@ export class SynthesizerUI {
                             "locked_selector"
                         )
                     ) {
-                        ch.setMasterParameter("presetLock", false);
+                        ch.setSystemParameter("presetLock", false);
                         controller.preset.mainButton.classList.remove(
                             "locked_selector"
                         );
                     }
                     // Transpose (only key shift)
-                    ch.setMasterParameter("keyShift", 0);
+                    ch.setSystemParameter("keyShift", 0);
                     controller.controllerMeters
                         .get(extraChannelControllers.transpose)
                         ?.update(0);
                     // Gain
-                    ch.setMasterParameter("gain", 1);
+                    ch.setSystemParameter("gain", 1);
                     controller.controllerMeters
                         .get(extraChannelControllers.gain)
                         ?.update(1);
@@ -404,7 +404,7 @@ export class SynthesizerUI {
                         ch.lockController(MIDIControllers.monoModeOn, false);
                         controller.polyMonoButton.innerHTML = POLY_ON;
                     }
-                    ch.setMasterParameter("isMuted", false);
+                    ch.setSystemParameter("isMuted", false);
                 }
                 this.soloChannels.clear();
                 this.synth.resetControllers();
@@ -731,9 +731,9 @@ export class SynthesizerUI {
 
                 case keybinds.blackMidiMode: {
                     e.preventDefault();
-                    this.synth.setMasterParameter(
+                    this.synth.setSystemParameter(
                         "blackMIDIMode",
-                        !this.synth.masterParameters.blackMIDIMode
+                        !this.synth.systemParameters.blackMIDIMode
                     );
                     this.renderer.renderOneFrame();
                     break;

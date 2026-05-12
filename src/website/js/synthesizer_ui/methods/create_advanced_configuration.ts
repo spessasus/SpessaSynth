@@ -185,7 +185,7 @@ export function createAdvancedConfiguration(
             interpolation.append(cubic);
 
             interpolation.addEventListener("change", () => {
-                this.synth.setMasterParameter(
+                this.synth.setSystemParameter(
                     "interpolationType",
                     Number.parseInt(interpolation.value) as InterpolationType
                 );
@@ -251,10 +251,10 @@ export function createAdvancedConfiguration(
                 this.locale,
                 "voiceCap",
                 (cap) => {
-                    this.synth.setMasterParameter("voiceCap", cap);
+                    this.synth.setSystemParameter("voiceCap", cap);
                     this.voiceMeter.max = cap;
                 },
-                this.synth.masterParameters.voiceCap,
+                this.synth.systemParameters.voiceCap,
                 1,
                 10_000
             )
@@ -281,13 +281,13 @@ export function createAdvancedConfiguration(
                 "customVibrato",
                 (enable) => {
                     if (enable) {
-                        this.synth.setMasterParameter(
+                        this.synth.setSystemParameter(
                             "customVibratoLock",
                             false
                         );
                     } else {
                         this.synth.resetControllers();
-                        this.synth.setMasterParameter(
+                        this.synth.setSystemParameter(
                             "customVibratoLock",
                             true
                         );
@@ -306,10 +306,10 @@ export function createAdvancedConfiguration(
                 "drumEditing",
                 (enable) => {
                     if (enable) {
-                        this.synth.setMasterParameter("drumLock", false);
+                        this.synth.setSystemParameter("drumLock", false);
                     } else {
                         this.synth.resetControllers();
-                        this.synth.setMasterParameter("drumLock", true);
+                        this.synth.setSystemParameter("drumLock", true);
                         if (this.sequencer) {
                             this.sequencer.currentTime -= 0.1;
                         }
@@ -324,7 +324,7 @@ export function createAdvancedConfiguration(
                 this.locale,
                 "msgsCutoff",
                 (enable) => {
-                    this.synth.setMasterParameter(
+                    this.synth.setSystemParameter(
                         "monophonicRetrigger",
                         enable
                     );
@@ -339,7 +339,7 @@ export function createAdvancedConfiguration(
                 this.locale,
                 "blackMidiMode",
                 (enable) => {
-                    this.synth.setMasterParameter("blackMIDIMode", enable);
+                    this.synth.setSystemParameter("blackMIDIMode", enable);
                 },
                 false,
                 yesNo

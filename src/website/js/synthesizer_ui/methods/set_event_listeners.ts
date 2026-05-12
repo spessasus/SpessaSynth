@@ -76,7 +76,7 @@ export function setEventListeners(this: SynthesizerUI) {
     );
 
     this.synth.eventHandler.addEvent(
-        "midiChannelChange",
+        "channelMIDIParamChange",
         "synthui-midi-channel-change",
         (e) => {
             switch (e.parameter) {

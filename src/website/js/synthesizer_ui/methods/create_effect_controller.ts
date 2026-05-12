@@ -50,7 +50,7 @@ export function createEffectController<
         transform: (value) => `${Math.floor(value * 100)}%`,
         onEdit: (value) => {
             const vRounded = Math.round(value * 100) / 100;
-            this.synth.setMasterParameter(data.gainName, vRounded);
+            this.synth.setSystemParameter(data.gainName, vRounded);
             gainLevel.update(vRounded);
         }
     });
@@ -79,12 +79,12 @@ export function createEffectController<
     macroSelector.addEventListener("change", () => {
         const v = Number.parseInt(macroSelector.value);
         if (isEffectLocked) {
-            this.synth.setMasterParameter(data.lockName, false);
+            this.synth.setSystemParameter(data.lockName, false);
         }
 
         sendAddress(this.synth, 0x40, 0x01, a, [v]);
         if (isEffectLocked) {
-            this.synth.setMasterParameter(data.lockName, true);
+            this.synth.setSystemParameter(data.lockName, true);
         }
     });
     macroLockWrapper.append(macroSelector);
@@ -104,7 +104,7 @@ export function createEffectController<
     );
     const toggleLock = () => {
         isEffectLocked = !isEffectLocked;
-        this.synth.setMasterParameter(data.lockName, isEffectLocked);
+        this.synth.setSystemParameter(data.lockName, isEffectLocked);
         lock.style.color = isEffectLocked ? "red" : "";
     };
     lock.addEventListener("click", toggleLock);
@@ -127,11 +127,11 @@ export function createEffectController<
             def: 0,
             onEdit: (v) => {
                 if (isEffectLocked) {
-                    this.synth.setMasterParameter(data.lockName, false);
+                    this.synth.setSystemParameter(data.lockName, false);
                 }
                 sendAddress(this.synth, 0x40, 0x01, a, [Math.round(v)]);
                 if (isEffectLocked) {
-                    this.synth.setMasterParameter(data.lockName, true);
+                    this.synth.setSystemParameter(data.lockName, true);
                 }
             },
             transform: param?.td

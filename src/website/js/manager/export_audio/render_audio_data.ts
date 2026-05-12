@@ -79,7 +79,7 @@ export async function renderAudioData(
         console.info("Synthesizer has been initialized.");
 
         // No voice cap (after restoring snapshot)
-        rendererSynth.setMasterParameter("autoAllocateVoices", true);
+        rendererSynth.setSystemParameter("autoAllocateVoices", true);
 
         // Calculate the duration
         const parsedMid = await this.seq.getMIDI();

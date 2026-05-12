@@ -389,9 +389,9 @@ export class MIDIKeyboard {
             (ch.patch.isDrum
                 ? 0
                 : this.synth.midiParameters.keyShift +
-                  this.synth.masterParameters.keyShift) +
+                  this.synth.systemParameters.keyShift) +
             ch.midiParameters.keyShift +
-            ch.masterParameters.keyShift
+            ch.systemParameters.keyShift
         );
     }
 

@@ -256,7 +256,7 @@ async function demoInit(initLocale: LocaleCode) {
     };
     await window.manager.ready;
 
-    window.manager.synth?.setMasterParameter("voiceCap", voiceCap);
+    window.manager.synth?.setSystemParameter("voiceCap", voiceCap);
     window.manager.synth?.setLogLevel(false, false, false);
 
     if (fileInput.files?.[0]) {
@@ -411,8 +411,8 @@ async function playDemoSong(song: DemoSong) {
             song.fileName
     );
     if (!song.fullMIDISupport) {
-        window.manager.synth.setMasterParameter("nrpnParamLock", true);
-        window.manager.synth.setMasterParameter("drumLock", true);
+        window.manager.synth.setSystemParameter("nrpnParamLock", true);
+        window.manager.synth.setSystemParameter("drumLock", true);
     }
     // noinspection JSCheckFunctionSignatures
     await startMidi([new File([await r.arrayBuffer()], song.fileName)]);

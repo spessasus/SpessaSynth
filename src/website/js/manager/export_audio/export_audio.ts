@@ -1,4 +1,8 @@
-import { closeNotification, type NotificationContent, showNotification } from "../../notification/notification.js";
+import {
+    closeNotification,
+    type NotificationContent,
+    showNotification
+} from "../../notification/notification.js";
 import { audioBufferToWav } from "spessasynth_lib";
 import { Ut } from "../../utils/other.js";
 import { consoleColors } from "../../utils/console_colors.js";
@@ -127,7 +131,7 @@ export async function renderAndExportAudioData(
             // Check if all channels are muted
             let muted = true;
             for (let j = i; j < snapshot.midiChannels.length; j += 16) {
-                if (!snapshot.midiChannels[j].masterParameters.isMuted) {
+                if (!snapshot.midiChannels[j].systemParameters.isMuted) {
                     muted = false;
                     break;
                 }
@@ -187,7 +191,7 @@ export async function renderAndExportAudioData(
                     let muted = true;
                     for (let j = i; j < snapshot.midiChannels.length; j += 16) {
                         if (
-                            !snapshot.midiChannels[j].masterParameters.isMuted
+                            !snapshot.midiChannels[j].systemParameters.isMuted
                         ) {
                             muted = false;
                             break;

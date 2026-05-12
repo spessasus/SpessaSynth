@@ -290,7 +290,7 @@ export function appendNewController(
         def: 0,
         onEdit: (val) => {
             val = Math.trunc(val);
-            ch.setMasterParameter("keyShift", val);
+            ch.setSystemParameter("keyShift", val);
             transpose.update(val);
             this.onTranspose?.();
         }
@@ -310,7 +310,7 @@ export function appendNewController(
         def: 1,
         onEdit: (val) => {
             val = Math.round(val * 100) / 100;
-            ch.setMasterParameter("gain", val);
+            ch.setSystemParameter("gain", val);
             gain.update(val);
         },
         activeChangeCallback: (active) => {
@@ -331,7 +331,7 @@ export function appendNewController(
         LOCALE_PATH + "channelController.presetSelector",
         [channelNumber + 1],
         (patch) => {
-            ch.setMasterParameter("presetLock", false);
+            ch.setSystemParameter("presetLock", false);
             if (!patch.isGMGSDrum) {
                 this.synth.controllerChange(
                     channelNumber,
@@ -349,9 +349,9 @@ export function appendNewController(
                 this.onProgramChange(channelNumber);
             }
             presetSelector.mainButton.classList.add("locked_selector");
-            ch.setMasterParameter("presetLock", true);
+            ch.setSystemParameter("presetLock", true);
         },
-        (locked) => ch.setMasterParameter("presetLock", locked)
+        (locked) => ch.setSystemParameter("presetLock", locked)
     );
     controller.append(presetSelector.mainButton);
 
@@ -382,7 +382,7 @@ export function appendNewController(
                     getEmptyMicSvg(ICON_SIZE);
                 const isMuted =
                     this.controllers[i].muteButton.hasAttribute("is_muted");
-                this.synth.midiChannels[i].setMasterParameter(
+                this.synth.midiChannels[i].setSystemParameter(
                     "isMuted",
                     isMuted
                 );
@@ -403,7 +403,7 @@ export function appendNewController(
                 this.controllers[i].soloButton.innerHTML = getMicSvg(ICON_SIZE);
                 const isMuted =
                     this.controllers[i].muteButton.hasAttribute("is_muted");
-                this.synth.midiChannels[i].setMasterParameter(
+                this.synth.midiChannels[i].setSystemParameter(
                     "isMuted",
                     isMuted
                 );
@@ -413,7 +413,7 @@ export function appendNewController(
             } else {
                 this.controllers[i].soloButton.innerHTML =
                     getEmptyMicSvg(ICON_SIZE);
-                this.synth.midiChannels[i].setMasterParameter("isMuted", true);
+                this.synth.midiChannels[i].setSystemParameter("isMuted", true);
                 for (const m of this.onMute) {
                     m?.(i, true);
                 }
@@ -439,14 +439,14 @@ export function appendNewController(
             const canBeUnmuted =
                 this.soloChannels.size === 0 ||
                 this.soloChannels.has(channelNumber);
-            ch.setMasterParameter("isMuted", !canBeUnmuted);
+            ch.setSystemParameter("isMuted", !canBeUnmuted);
             muteButton.innerHTML = getVolumeSvg(ICON_SIZE);
             for (const m of this.onMute) {
                 m?.(channelNumber, !canBeUnmuted);
             }
         } else {
             // Mute
-            ch.setMasterParameter("isMuted", true);
+            ch.setSystemParameter("isMuted", true);
             muteButton.setAttribute("is_muted", "true");
             muteButton.innerHTML = getMuteSvg(ICON_SIZE);
             for (const m of this.onMute) {
@@ -471,7 +471,7 @@ export function appendNewController(
     drumsToggle.classList.add("controller_element", "mute_button");
     drumsToggle.addEventListener("click", () => {
         if (presetSelector.mainButton.classList.contains("locked_selector")) {
-            ch.setMasterParameter("presetLock", false);
+            ch.setSystemParameter("presetLock", false);
         }
         ch.setDrums(!ch.patch.isDrum);
         presetSelector.lockSelector(true);
@@ -532,7 +532,7 @@ export function appendNewController(
             1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 10, 11, 12, 13, 14, 15
         ][ch];
         if (this.insertionLock) {
-            this.synth.setMasterParameter("insertionEffectLock", false);
+            this.synth.setSystemParameter("insertionEffectLock", false);
         }
         sendAddress(
             this.synth,
@@ -543,7 +543,7 @@ export function appendNewController(
             offset
         );
         if (this.insertionLock) {
-            this.synth.setMasterParameter("insertionEffectLock", true);
+            this.synth.setSystemParameter("insertionEffectLock", true);
         }
     });
     controller.append(insertionEffectButton);

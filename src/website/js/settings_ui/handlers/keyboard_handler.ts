@@ -206,7 +206,7 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
             // Find the first non-selected channel
             let channelNumber = 0;
             while (
-                this.synth.midiChannels[channelNumber].masterParameters.isMuted
+                this.synth.midiChannels[channelNumber].systemParameters.isMuted
             ) {
                 channelNumber++;
                 if (this.synth.midiChannels[channelNumber] === undefined) {

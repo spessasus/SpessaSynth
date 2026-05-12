@@ -51,7 +51,7 @@ export function createInsertionController(
     effectSelector.addEventListener("change", () => {
         const v = Number.parseInt(effectSelector.value);
         if (this.insertionLock) {
-            this.synth.setMasterParameter("insertionEffectLock", false);
+            this.synth.setSystemParameter("insertionEffectLock", false);
         }
 
         const msb = (v >> 8) & 0x7f;
@@ -59,7 +59,7 @@ export function createInsertionController(
 
         sendAddress(this.synth, 0x40, 0x03, 0x00, [msb, lsb]);
         if (this.insertionLock) {
-            this.synth.setMasterParameter("insertionEffectLock", true);
+            this.synth.setSystemParameter("insertionEffectLock", true);
         }
     });
     typeLockWrapper.append(effectSelector);
@@ -79,7 +79,7 @@ export function createInsertionController(
     );
     const toggleLock = () => {
         this.insertionLock = !this.insertionLock;
-        this.synth.setMasterParameter(
+        this.synth.setSystemParameter(
             "insertionEffectLock",
             this.insertionLock
         );
@@ -103,11 +103,11 @@ export function createInsertionController(
         def: 40,
         onEdit: (v) => {
             if (this.insertionLock) {
-                this.synth.setMasterParameter("insertionEffectLock", false);
+                this.synth.setSystemParameter("insertionEffectLock", false);
             }
             sendAddress(this.synth, 0x40, 0x03, 0x17, [Math.round(v)]);
             if (this.insertionLock) {
-                this.synth.setMasterParameter("insertionEffectLock", true);
+                this.synth.setSystemParameter("insertionEffectLock", true);
             }
         }
     });
@@ -121,11 +121,11 @@ export function createInsertionController(
         def: 0,
         onEdit: (v) => {
             if (this.insertionLock) {
-                this.synth.setMasterParameter("insertionEffectLock", false);
+                this.synth.setSystemParameter("insertionEffectLock", false);
             }
             sendAddress(this.synth, 0x40, 0x03, 0x18, [Math.round(v)]);
             if (this.insertionLock) {
-                this.synth.setMasterParameter("insertionEffectLock", true);
+                this.synth.setSystemParameter("insertionEffectLock", true);
             }
         }
     });
@@ -139,11 +139,11 @@ export function createInsertionController(
         def: 0,
         onEdit: (v) => {
             if (this.insertionLock) {
-                this.synth.setMasterParameter("insertionEffectLock", false);
+                this.synth.setSystemParameter("insertionEffectLock", false);
             }
             sendAddress(this.synth, 0x40, 0x03, 0x19, [Math.round(v)]);
             if (this.insertionLock) {
-                this.synth.setMasterParameter("insertionEffectLock", true);
+                this.synth.setSystemParameter("insertionEffectLock", true);
             }
         }
     });
@@ -177,14 +177,14 @@ export function createInsertionController(
                     def: param.d,
                     onEdit: (v) => {
                         if (this.insertionLock) {
-                            this.synth.setMasterParameter(
+                            this.synth.setSystemParameter(
                                 "insertionEffectLock",
                                 false
                             );
                         }
                         sendAddress(this.synth, 0x40, 0x03, a, [Math.round(v)]);
                         if (this.insertionLock) {
-                            this.synth.setMasterParameter(
+                            this.synth.setSystemParameter(
                                 "insertionEffectLock",
                                 true
                             );

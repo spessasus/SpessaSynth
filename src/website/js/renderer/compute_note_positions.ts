@@ -52,14 +52,14 @@ export function computeNotePositions(
     // These apply to all the notes
     const s = this.synth;
     const t =
-        s.masterParameters.keyShift +
-        s.masterParameters.fineTune / 100 +
+        s.systemParameters.keyShift +
+        s.systemParameters.fineTune / 100 +
         s.midiParameters.keyShift +
         s.midiParameters.fineTune / 100;
     const transposeNoteShifts = this.synth.midiChannels.map(
         (c) =>
-            c.masterParameters.keyShift +
-            c.masterParameters.fineTune / 100 +
+            c.systemParameters.keyShift +
+            c.systemParameters.fineTune / 100 +
             c.midiParameters.keyShift +
             c.midiParameters.fineTune / 100 +
             (c.patch.isDrum ? 0 : t)
