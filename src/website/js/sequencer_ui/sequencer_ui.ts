@@ -228,10 +228,15 @@ export class SequencerUI {
                 this.encodingSelector = encodingSelector;
                 titleWrapper.append(encodingSelector);
 
+                // Text scroll wrapper
+                const textScrollWrapper = document.createElement("div");
+                textScrollWrapper.classList.add("lyrics_text_scroll");
+                mainLyricsDiv.append(textScrollWrapper);
+
                 // The actual text
                 const text = document.createElement("p");
                 text.classList.add("lyrics_text");
-                mainLyricsDiv.append(text);
+                textScrollWrapper.append(text);
 
                 // Display for other texts
                 const otherTextWrapper = document.createElement("details");

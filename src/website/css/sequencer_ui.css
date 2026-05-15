@@ -122,13 +122,16 @@
     visibility: visible !important;
 }
 
-.lyrics_text {
+.lyrics_text_scroll {
     scroll-behavior: smooth;
     overflow-y: auto;
     max-height: 80%;
-    margin-left: 3rem;
-    margin-right: 3rem;
     flex: 2;
+    padding-left: 3rem;
+    padding-right: 3rem;
+}
+
+.lyrics_text {
     font-style: italic;
 }
 
@@ -145,24 +148,32 @@
 }
 
 .lyrics details {
-    overflow: scroll;
+    overflow: auto;
 }
 
 .lyrics details summary {
-    position: fixed;
     width: 100%;
     text-align: center;
     cursor: pointer;
 }
 
 .lyrics details div {
-    margin-top: 2rem;
-    line-height: 2rem;
+    padding: 0.5rem;
+}
+
+.lyrics details span {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
 }
 
 .lyrics details pre,
 .lyrics details i {
     display: inline;
+}
+
+.lyrics details i {
+    text-align: end;
 }
 
 .lyrics .general_button {
