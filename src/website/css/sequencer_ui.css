@@ -1,7 +1,7 @@
 #sequencer_controls {
     width: 80%;
     position: relative;
-    margin: auto auto 2px;
+    margin: auto;
 
     --progress-bar-height: 2rem;
     --sequi-border-radius: var(--primary-border-radius);
@@ -27,7 +27,6 @@
     text-align: center;
     color: var(--font-color);
     margin: 0.5rem;
-    width: 100%;
 }
 
 #sequencer_controls #note_time:hover {

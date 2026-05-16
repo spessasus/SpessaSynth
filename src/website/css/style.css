@@ -101,6 +101,12 @@ html.no_scroll {
     --shadow-color: #fff;
 }
 
+.monospaced {
+    /* This keeps the jetbrains and regular monospace height the same */
+    font-size: 1rem;
+    font-family: "JetBrains Mono", "Monospaced", monospace;
+}
+
 a {
     text-decoration: none;
     color: #546fff;
@@ -117,10 +123,6 @@ a {
 }
 
 /*Bottom*/
-
-.bottom_part {
-    margin-top: 5px;
-}
 
 button {
     -webkit-user-select: none;

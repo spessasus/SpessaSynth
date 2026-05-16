@@ -181,6 +181,7 @@ export class SequencerUI {
             // Time
             this.progressTime = document.createElement("p");
             this.progressTime.id = "note_time";
+            this.progressTime.classList.add("monospaced");
             // It'll always be on top
             this.progressTime.addEventListener("click", (event) => {
                 event.preventDefault();
@@ -918,10 +919,10 @@ export class SequencerUI {
             this.progressBar.style.width = `${(seqTime / this.seq.duration) * 100}%`;
             const time = Ut.formatTime(seqTime);
             const total = Ut.formatTime(this.seq.duration);
-            this.progressTime.textContent = `${time.time} / ${total.time}`;
+            this.progressTime.textContent = `${time.time}/${total.time}`;
         } else {
             this.progressBar.style.width = "0%";
-            this.progressTime.textContent = "--:-- / --:--";
+            this.progressTime.textContent = "--:--/--:--";
         }
         if (this.requiresTextUpdate) {
             this.updateOtherTextEvents();
