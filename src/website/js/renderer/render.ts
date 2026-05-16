@@ -1,4 +1,9 @@
-import { FONT_SIZE, PRESET_NAMES_FONT_SIZE, Renderer, rendererModes } from "./renderer.js";
+import {
+    FONT_SIZE,
+    PRESET_NAMES_FONT_SIZE,
+    Renderer,
+    rendererModes
+} from "./renderer.js";
 import { drawNotes } from "./draw_notes.js";
 import { isMobile } from "../utils/is_mobile.ts";
 
@@ -39,6 +44,11 @@ export function render(this: Renderer, auto = true, force = false) {
             this.canvas.width,
             this.canvas.height
         );
+    }
+
+    // Draw dot matrix
+    if (this.renderDotDisplay && this.showDisplayMatrix !== null) {
+        this.drawDotMatrix();
     }
 
     const highPerf = this.synth.systemParameters.blackMIDIMode;
@@ -102,11 +112,6 @@ export function render(this: Renderer, auto = true, force = false) {
         }
     }
 
-    // Draw dot matrix
-    if (this.renderDotDisplay && this.showDisplayMatrix !== null) {
-        this.drawDotMatrix();
-    }
-
     // Calculate fps
     const timeSinceLastFrame = performance.now() - this.frameTimeStart;
     this.frameTimeStart = performance.now();
@@ -158,7 +163,7 @@ export function render(this: Renderer, auto = true, force = false) {
     this.drawingContext.textAlign = "start";
     // Engine mode
     this.drawingContext.fillText(
-        this.workerMode ? "WORKER (CHROMIUM) MODE" : "WORKLET MODE",
+        this.workerMode ? "WORKER (CHROMIUM) MODE" : "WORKLET (FIREFOX) MODE",
         0,
         y
     );

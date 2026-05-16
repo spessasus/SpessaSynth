@@ -673,6 +673,7 @@ export class SequencerUI {
                 // Disable loop if more than 1 song
                 this.setLoopState(this.seq.songCount === 1);
                 this.restoreDisplay();
+                this.renderer.clearRendererMatrix();
 
                 let midiEncoding = data.getRMIDInfo("midiEncoding");
                 if (data.embeddedSoundBankSize !== undefined) {

@@ -358,12 +358,17 @@ export class Renderer {
         this.render(false, true);
     }
 
+    public clearRendererMatrix() {
+        this.showDisplayMatrix = null;
+    }
+
     public updateDisplayMatrix(mode: MIDISystem) {
         this.showDisplayMatrix = mode;
         clearTimeout(this.displayMatrixTimeout);
-        this.displayMatrixTimeout = window.setTimeout(() => {
-            this.showDisplayMatrix = null;
-        }, DISPLAY_MATRIX_TIMEOUT);
+        this.displayMatrixTimeout = window.setTimeout(
+            this.clearRendererMatrix.bind(this),
+            DISPLAY_MATRIX_TIMEOUT
+        );
         // Many MIDI files do setup in silence, and the animations usually are presented then.
         // Spessasynth doesn't render if nothing is being played, so this bypasses that.
         this.renderOneFrame();
