@@ -56,10 +56,6 @@ optgroup {
     text-shadow: none !important;
 }
 
-pre {
-    font-family: monospace !important;
-}
-
 html,
 body {
     height: 100lvh;
@@ -101,9 +97,10 @@ html.no_scroll {
     --shadow-color: #fff;
 }
 
-.monospaced {
+.monospaced,
+pre {
     /* This keeps the jetbrains and regular monospace height the same */
-    font-size: 1rem;
+    font-size: 1em;
     font-family: "JetBrains Mono", "Monospaced", monospace;
 }
 
@@ -207,10 +204,6 @@ button {
 #whats_new_content li {
     text-align: left;
     padding: 0.2rem;
-}
-
-#whats_new_version {
-    font-family: "JetBrains Mono", monospace;
 }
 
 .loading a {

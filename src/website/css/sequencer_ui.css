@@ -7,6 +7,15 @@
     --sequi-border-radius: var(--primary-border-radius);
 }
 
+#sequencer_controls #note_progress_background {
+    border-radius: var(--progress-bar-height);
+    background: linear-gradient(90deg, #454545, #343434);
+    height: var(--progress-bar-height);
+    position: relative;
+    overflow: hidden;
+    margin: 0.5rem;
+}
+
 #sequencer_controls #note_progress {
     border-radius: var(--progress-bar-height);
     background: linear-gradient(185deg, #306, var(--primary-color));
@@ -21,12 +30,11 @@
 }
 
 #sequencer_controls #note_time {
-    position: relative;
+    position: absolute;
     font-size: calc(var(--progress-bar-height) * 0.8);
-    line-height: var(--progress-bar-height);
     text-align: center;
     color: var(--font-color);
-    margin: 0.5rem;
+    width: 100%;
 }
 
 #sequencer_controls #note_time:hover {
@@ -64,15 +72,6 @@
     border-radius: 0.2rem;
     padding: 0.2rem;
     width: 4rem;
-}
-
-#sequencer_controls #note_progress_background {
-    border-radius: var(--progress-bar-height);
-    background: linear-gradient(90deg, #454545, #343434);
-    height: var(--progress-bar-height);
-    position: absolute;
-    width: 100%;
-    overflow: hidden;
 }
 
 #sequencer_controls .note_progress_background_light {
