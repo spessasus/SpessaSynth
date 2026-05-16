@@ -158,19 +158,19 @@
     position: fixed;
 }
 
-.lyrics .other_text {
+.lyrics details div {
     margin-top: 2rem;
-    padding: 0.5rem;
+    padding: 1rem;
 }
 
-.lyrics .other_text span {
+.lyrics details span {
     display: flex;
     justify-content: space-between;
     align-items: start;
 }
 
-.lyrics .other_text pre,
-.lyrics .other_text i {
+.lyrics details pre,
+.lyrics details i {
     display: inline;
 }
 
