@@ -248,7 +248,6 @@ export class SequencerUI {
                 );
                 otherTextWrapper.append(sum);
                 const otherText = document.createElement("div");
-                otherText.textContent = "";
                 otherTextWrapper.append(otherText);
                 mainLyricsDiv.append(otherTextWrapper);
 
@@ -784,7 +783,7 @@ export class SequencerUI {
 
         // Show and start
         this.controls.style.display = "block";
-        this.updateSongDisplayData();
+        this.updateSongDisplayData(false);
         navigator.mediaSession.playbackState = "playing";
     }
 
@@ -833,11 +832,19 @@ export class SequencerUI {
     }
 
     protected updateOtherTextEvents() {
-        let text = "";
+        const children: HTMLElement[] = [];
+        let lastSpan: HTMLSpanElement | undefined;
         for (const raw of this.rawOtherTextEvents) {
-            text += `<span><pre>${reversedMIDITypes.get(raw.statusByte)}:</pre> <i>${this.decodeTextFix(raw.data.buffer)}</i></span><br>`;
+            lastSpan = document.createElement("span");
+            const pre = document.createElement("pre");
+            pre.textContent = reversedMIDITypes.get(raw.statusByte) + ":";
+            const i = document.createElement("i");
+            i.textContent = this.decodeTextFix(raw.data.buffer);
+            lastSpan.append(pre, i);
+            children.push(lastSpan);
         }
-        this.lyricsElement.text.other.innerHTML = text;
+        this.lyricsElement.text.other.replaceChildren(...children);
+        lastSpan?.scrollIntoView({ behavior: "smooth" });
     }
 
     protected setWakeLock() {

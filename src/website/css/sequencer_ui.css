@@ -155,24 +155,26 @@
     width: 100%;
     text-align: center;
     cursor: pointer;
+    position: fixed;
 }
 
-.lyrics details div {
+.lyrics .other_text {
+    margin-top: 2rem;
     padding: 0.5rem;
 }
 
-.lyrics details span {
+.lyrics .other_text span {
     display: flex;
     justify-content: space-between;
     align-items: start;
 }
 
-.lyrics details pre,
-.lyrics details i {
+.lyrics .other_text pre,
+.lyrics .other_text i {
     display: inline;
 }
 
-.lyrics details i {
+.lyrics .other_text i {
     text-align: end;
 }
 
