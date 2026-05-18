@@ -5,7 +5,7 @@ import { LocaleManager } from "../manager/locale_manager.js";
 import type { LocaleCode } from "../../locale/locale_list.ts";
 import type { SavedSettings } from "../../../server/saved_settings.ts";
 import { readSampleRateParam } from "../utils/sample_rate_param.ts";
-import { SpessaLog } from "../../../../../spessasynth_core";
+import { SpessaLog } from "spessasynth_core";
 
 declare global {
     // noinspection JSUnusedGlobalSymbols

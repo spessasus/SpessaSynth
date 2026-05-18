@@ -29,8 +29,12 @@ jobs:
             - name: Set up Node
               uses: actions/setup-node@v6
               with:
-                  node-version: lts/*
-                  cache: "npm"
+                  node-version: latest
+
+            - name: Show versions
+              run: |
+                  node -v
+                  npm -v
 
             - name: Install dependencies
               run: npm ci

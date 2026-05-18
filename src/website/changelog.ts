@@ -7,5 +7,6 @@ export const WHATS_NEW: string[] = [
     `Preset names show in the visualizer!`,
     `Big internal changes!`,
     `Better key transpose visualization!`,
+    `Broader MIDI support!`,
     `More bug fixes!`
 ] as const;
