@@ -31,20 +31,16 @@ export function setEventListeners(this: SynthesizerUI) {
         }
     );
 
-    this.synth.eventHandler.addEvent(
-        "allControllerReset",
-        "synthui-all-controller-reset",
-        () => {
-            for (const controller of this.controllers) {
-                for (const [cc, meter] of controller.controllerMeters) {
-                    // Do not reset transpose and gain (master parameters)
-                    if (cc <= CONTROLLER_TABLE_SIZE) {
-                        meter.reset();
-                    }
+    this.synth.eventHandler.addEvent("synthReset", "synthui-reset", () => {
+        for (const controller of this.controllers) {
+            for (const [cc, meter] of controller.controllerMeters) {
+                // Do not reset transpose and gain (system parameters)
+                if (cc <= CONTROLLER_TABLE_SIZE) {
+                    meter.reset();
                 }
             }
         }
-    );
+    });
 
     this.synth.eventHandler.addEvent(
         "controllerChange",

@@ -99,7 +99,7 @@ export const channelControllerLocale = {
         volumeEnvelope: "Obwiednia Głośności",
         filter: "Filtr",
         portamento: "Portamento",
-        masterParameters: "Parametry Główne"
+        systemParameters: "Parametry Główne"
     },
 
     transposeMeter: {

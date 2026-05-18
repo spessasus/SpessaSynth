@@ -93,7 +93,7 @@ const controllerGroups = {
         MIDIControllers.portamentoTime,
         MIDIControllers.portamentoControl
     ],
-    masterParameters: [
+    systemParameters: [
         extraChannelControllers.transpose,
         extraChannelControllers.gain
     ]

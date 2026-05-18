@@ -113,7 +113,7 @@ export const channelControllerLocale = {
         volumeEnvelope: "Vol. Envelope",
         filter: "Filter",
         portamento: "Portamento (glide)",
-        masterParameters: "Master Parameters"
+        systemParameters: "System Parameters"
     },
 
     presetSelector: {
