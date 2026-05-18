@@ -33,7 +33,7 @@ export async function autoUpdate() {
         return;
     }
     const onlineVersion =
-        ((await response.json()) as { version: string })?.version || "4.2.0";
+        ((await response.json()) as { version: string })?.version || "4.3.0";
     if (!isVersionNewer(onlineVersion, currentVersion)) {
         console.info("No updates found.");
         console.info("-------------");
