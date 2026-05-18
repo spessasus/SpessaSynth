@@ -77,7 +77,7 @@ export function renderSingleWaveform(
     if (this._stabilizeWaveforms) {
         // Fraction length
         length = sampleCount / STABILIZE_WAVEFORMS_FFT_MULTIPLIER;
-        if (this.synth.channelProperties[channelNumber].isDrum) {
+        if (this.synth.midiChannels[channelNumber].patch.isDrum) {
             length *= 2;
         }
         const halfLength = Math.floor(length / 2);
@@ -209,7 +209,7 @@ export function renderBigFft(this: Renderer) {
     if (this.logarithmicFrequency) {
         const maxFrequencyInTable = this.synth.context.sampleRate / 2;
         let lastHeight = -Infinity;
-        let lastXpos = 0;
+        let lastXPos = 0;
         let width = 0;
         for (let i = 0; i < waveWidth; i++) {
             // Calculate the MIDI note (from the lowest piano note to the entire MIDI range)
@@ -233,12 +233,12 @@ export function renderBigFft(this: Renderer) {
             this.drawingContext.fillStyle = intensityColors[valueRemapped];
 
             this.drawingContext.fillRect(
-                lastXpos,
+                lastXPos,
                 relativeY,
                 width,
                 multiplier * height
             );
-            lastXpos = xPos;
+            lastXPos = xPos;
             width = 0;
             xPos += 1;
         }
@@ -393,7 +393,7 @@ export function renderWaveforms(this: Renderer, forceStraightLine = false) {
         case rendererModes.filledWaveformsMode:
         case rendererModes.waveformsMode: {
             for (let i = 0; i < this.channelAnalysers.length; i++) {
-                if (this.synth.channelProperties[i].isEFX) {
+                if (this.synth.midiChannels[i].midiParameters.efxAssign) {
                     drawEFX.call(this, i);
                     continue;
                 }
@@ -410,7 +410,7 @@ export function renderWaveforms(this: Renderer, forceStraightLine = false) {
 
         case rendererModes.spectrumSplitMode: {
             for (let i = 0; i < this.channelAnalysers.length; i++) {
-                if (this.synth.channelProperties[i].isEFX) {
+                if (this.synth.midiChannels[i].midiParameters.efxAssign) {
                     drawEFX.call(this, i);
                     continue;
                 }

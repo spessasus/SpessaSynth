@@ -56,10 +56,6 @@ optgroup {
     text-shadow: none !important;
 }
 
-pre {
-    font-family: monospace !important;
-}
-
 html,
 body {
     height: 100lvh;
@@ -101,6 +97,13 @@ html.no_scroll {
     --shadow-color: #fff;
 }
 
+.monospaced,
+pre {
+    /* This keeps the jetbrains and regular monospace height the same */
+    font-size: 1em;
+    font-family: "JetBrains Mono", "Monospaced", monospace;
+}
+
 a {
     text-decoration: none;
     color: #546fff;
@@ -117,10 +120,6 @@ a {
 }
 
 /*Bottom*/
-
-.bottom_part {
-    margin-top: 5px;
-}
 
 button {
     -webkit-user-select: none;
@@ -205,10 +204,6 @@ button {
 #whats_new_content li {
     text-align: left;
     padding: 0.2rem;
-}
-
-#whats_new_version {
-    font-family: "JetBrains Mono", monospace;
 }
 
 .loading a {

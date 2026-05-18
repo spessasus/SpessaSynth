@@ -4,7 +4,7 @@ import type {
     LayoutType,
     SavedSettings
 } from "../../../../server/saved_settings.ts";
-import type { LocaleCode } from "../../locale/locale_files/locale_list.ts";
+import type { LocaleCode } from "../../../locale/locale_list.ts";
 
 /**
  * Serializes settings into a nice object

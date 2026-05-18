@@ -1,21 +1,20 @@
 import {
     type ChannelController,
+    type ChannelControllerNumber,
+    extraChannelControllers,
     ICON_SIZE,
     LOCALE_PATH,
     MONO_ON,
     POLY_ON,
-    type SynthetizerUI
+    type SynthesizerUI
 } from "../synthetizer_ui.ts";
 import { ANIMATION_REFLOW_TIME } from "../../utils/animation_utils.ts";
 import { Meter } from "./synthui_meter.ts";
 import {
-    ALL_CHANNELS_OR_DIFFERENT_ACTION,
+    DEFAULT_MIDI_CONTROLLERS,
     DEFAULT_PERCUSSION,
-    defaultMIDIControllerValues,
     type MIDIController,
-    midiControllers,
-    modulatorSources,
-    NON_CC_INDEX_OFFSET
+    MIDIControllers
 } from "spessasynth_core";
 import {
     getDrumsSvg,
@@ -30,7 +29,7 @@ import { Selector } from "./synthui_selector.ts";
 import { sendAddress } from "./send_address.ts";
 
 export function appendNewController(
-    this: SynthetizerUI,
+    this: SynthesizerUI,
     channelNumber: number
 ) {
     let lastPortElement = this.ports[this.ports.length - 1];
@@ -71,21 +70,22 @@ export function appendNewController(
     }
 
     // Create channel controller
-    // Controller
     const controller = document.createElement("div");
     controller.classList.add("channel_controller");
+    // Channel object
+    const ch = this.synth.midiChannels[channelNumber];
 
     // Voice meter
     const voiceMeter = new Meter({
         color: this.channelColors[channelNumber % this.channelColors.length],
+        smooth: true,
         localePath: LOCALE_PATH + "channelController.voiceMeter",
         locale: this.locale,
         localeArgs: [channelNumber + 1],
         min: 0,
         max: 100,
-        initialAndDefault: 0
+        def: 0
     });
-    voiceMeter.bar.classList.add("voice_meter_bar_smooth");
     controller.append(voiceMeter.div);
 
     // Pitch wheel
@@ -96,43 +96,11 @@ export function appendNewController(
         localeArgs: [channelNumber + 1],
         min: -8192,
         max: 8191,
-        initialAndDefault: 0,
-        editable: true,
-        editCallback: (val) => {
-            const meterLocked = pitchWheel.isLocked;
-            if (meterLocked) {
-                this.synth.lockController(
-                    channelNumber,
-                    (NON_CC_INDEX_OFFSET +
-                        modulatorSources.pitchWheel) as MIDIController,
-                    false
-                );
-            }
+        def: 0,
+        onEdit: (val) => {
             val = Math.round(val) + 8192;
             this.synth.pitchWheel(channelNumber, val);
-            if (meterLocked) {
-                this.synth.lockController(
-                    channelNumber,
-                    (NON_CC_INDEX_OFFSET +
-                        modulatorSources.pitchWheel) as MIDIController,
-                    true
-                );
-            }
-        },
-        lockCallback: () =>
-            this.synth.lockController(
-                channelNumber,
-                (NON_CC_INDEX_OFFSET +
-                    modulatorSources.pitchWheel) as MIDIController,
-                true
-            ),
-        unlockCallback: () =>
-            this.synth.lockController(
-                channelNumber,
-                (NON_CC_INDEX_OFFSET +
-                    modulatorSources.pitchWheel) as MIDIController,
-                false
-            )
+        }
     });
     controller.append(pitchWheel.div);
 
@@ -141,16 +109,17 @@ export function appendNewController(
         val: number,
         meter: Meter
     ): void => {
+        const ch = this.synth.midiChannels[channelNumber];
         if (meter.isLocked) {
-            this.synth.lockController(channelNumber, cc, false);
+            ch.lockController(cc, false);
             this.synth.controllerChange(channelNumber, cc, val);
-            this.synth.lockController(channelNumber, cc, true);
+            ch.lockController(cc, true);
         } else {
             this.synth.controllerChange(channelNumber, cc, val);
         }
     };
 
-    const controllerMeters: Partial<Record<MIDIController, Meter>> = {};
+    const controllerMeters = new Map<ChannelControllerNumber, Meter>();
 
     const createCCMeterHelper = (
         ccNum: MIDIController,
@@ -166,95 +135,91 @@ export function appendNewController(
             localeArgs: [channelNumber + 1],
             min: 0,
             max: 127,
-            initialAndDefault: defaultMIDIControllerValues[ccNum] >> 7,
-            editable: true,
-            editCallback: (val) => {
+            def: DEFAULT_MIDI_CONTROLLERS[ccNum] >> 7,
+            onEdit: (val) => {
                 changeCCUserFunction(ccNum, Math.round(val), meter);
             },
-            lockCallback: allowLocking
-                ? () => this.synth.lockController(channelNumber, ccNum, true)
-                : undefined,
-            unlockCallback: allowLocking
-                ? () => this.synth.lockController(channelNumber, ccNum, false)
+            onLock: allowLocking
+                ? (isLocked) => ch.lockController(ccNum, isLocked)
                 : undefined
         });
-        controllerMeters[ccNum] = meter;
+        controllerMeters.set(ccNum, meter);
         return meter;
     };
 
     // Pan controller
     const pan = createCCMeterHelper(
-        midiControllers.pan,
+        MIDIControllers.pan,
         "channelController.panMeter"
     );
     controller.append(pan.div);
 
     // Expression controller
     const expression = createCCMeterHelper(
-        midiControllers.expressionController,
+        MIDIControllers.expression,
         "channelController.expressionMeter"
     );
     controller.append(expression.div);
 
     // Volume controller
     const volume = createCCMeterHelper(
-        midiControllers.mainVolume,
+        MIDIControllers.mainVolume,
         "channelController.volumeMeter"
     );
     controller.append(volume.div);
 
     // Modulation wheel
     const modulation = createCCMeterHelper(
-        midiControllers.modulationWheel,
+        MIDIControllers.modulationWheel,
         "channelController.modulationWheelMeter"
     );
     controller.append(modulation.div);
 
     // Reverb
     const reverb = createCCMeterHelper(
-        midiControllers.reverbDepth,
+        MIDIControllers.reverbDepth,
         "channelController.reverbMeter"
     );
     controller.append(reverb.div);
 
     // Chorus
     const chorus = createCCMeterHelper(
-        midiControllers.chorusDepth,
+        MIDIControllers.chorusDepth,
         "channelController.chorusMeter"
     );
     controller.append(chorus.div);
 
     // Delay
     const delay = createCCMeterHelper(
-        midiControllers.variationDepth,
+        MIDIControllers.variationDepth,
         "channelController.delayMeter"
     );
     controller.append(delay.div);
 
     // Filter cutoff
     const filterCutoff = createCCMeterHelper(
-        midiControllers.brightness,
+        MIDIControllers.brightness,
         "channelController.filterMeter"
     );
     controller.append(filterCutoff.div);
 
     // Attack time
     const attackTime = createCCMeterHelper(
-        midiControllers.attackTime,
+        MIDIControllers.attackTime,
         "channelController.attackMeter"
     );
     controller.append(attackTime.div);
 
     // Release time
     const releaseTime = createCCMeterHelper(
-        midiControllers.releaseTime,
+        MIDIControllers.releaseTime,
         "channelController.releaseMeter"
     );
     controller.append(releaseTime.div);
 
     // Decay time
     const decayTime = createCCMeterHelper(
-        midiControllers.decayTime,
+        MIDIControllers.decayTime,
         "channelController.decayMeter"
     );
     controller.append(decayTime.div);
@@ -268,76 +233,39 @@ export function appendNewController(
         localeArgs: [channelNumber + 1],
         min: 0,
         max: 127,
-        initialAndDefault: 0,
-        editable: true,
-        editCallback: (val) => {
+        def: 0,
+        onEdit: (val) => {
             const meterLocked = portamentoTime.isLocked;
             if (meterLocked) {
-                this.synth.lockController(
-                    channelNumber,
-                    midiControllers.portamentoTime,
-                    false
-                );
-                this.synth.lockController(
-                    channelNumber,
-                    midiControllers.portamentoOnOff,
-                    false
-                );
+                ch.lockController(MIDIControllers.portamentoTime, false);
+                ch.lockController(MIDIControllers.portamentoOnOff, false);
             }
             this.synth.controllerChange(
                 channelNumber,
-                midiControllers.portamentoTime,
+                MIDIControllers.portamentoTime,
                 Math.round(val)
             );
             this.synth.controllerChange(
                 channelNumber,
-                midiControllers.portamentoOnOff,
+                MIDIControllers.portamentoOnOff,
                 val > 0 ? 127 : 0
             );
             if (meterLocked) {
-                this.synth.lockController(
-                    channelNumber,
-                    midiControllers.portamentoTime,
-                    true
-                );
-                this.synth.lockController(
-                    channelNumber,
-                    midiControllers.portamentoOnOff,
-                    true
-                );
+                ch.lockController(MIDIControllers.portamentoTime, true);
+                ch.lockController(MIDIControllers.portamentoOnOff, true);
             }
         },
-        lockCallback: () => {
-            this.synth.lockController(
-                channelNumber,
-                midiControllers.portamentoTime,
-                true
-            );
-            this.synth.lockController(
-                channelNumber,
-                midiControllers.portamentoOnOff,
-                true
-            );
-        },
-        unlockCallback: () => {
-            this.synth.lockController(
-                channelNumber,
-                midiControllers.portamentoTime,
-                false
-            );
-            this.synth.lockController(
-                channelNumber,
-                midiControllers.portamentoOnOff,
-                false
-            );
+        onLock: (isLocked) => {
+            ch.lockController(MIDIControllers.portamentoTime, isLocked);
+            ch.lockController(MIDIControllers.portamentoOnOff, isLocked);
         }
     });
-    controllerMeters[midiControllers.portamentoTime] = portamentoTime;
+    controllerMeters.set(MIDIControllers.portamentoTime, portamentoTime);
     controller.append(portamentoTime.div);
 
     // Portamento control
     const portamentoControl = createCCMeterHelper(
-        midiControllers.portamentoControl,
+        MIDIControllers.portamentoControl,
         "channelController.portamentoControlMeter",
         false // Don't allow locking portamento control
     );
@@ -345,7 +273,7 @@ export function appendNewController(
 
     // Resonance
     const filterResonance = createCCMeterHelper(
-        midiControllers.filterResonance,
+        MIDIControllers.filterResonance,
         "channelController.resonanceMeter"
     );
     controller.append(filterResonance.div);
@@ -353,18 +281,37 @@ export function appendNewController(
     // Transpose is not a cc, add it manually
     const transpose = new Meter({
         color: this.channelColors[channelNumber % this.channelColors.length],
+        smooth: true,
         localePath: LOCALE_PATH + "channelController.transposeMeter",
         locale: this.locale,
         localeArgs: [channelNumber + 1],
         min: -36,
         max: 36,
-        initialAndDefault: 0,
-        editable: true,
-        editCallback: (val) => {
-            val = Math.round(val);
-            this.synth.transposeChannel(channelNumber, val, true);
+        def: 0,
+        onEdit: (val) => {
+            val = Math.trunc(val);
+            ch.setSystemParameter("keyShift", val);
             transpose.update(val);
             this.onTranspose?.();
+        }
+    });
+    controllerMeters.set(extraChannelControllers.transpose, transpose);
+    controller.append(transpose.div);
+
+    // Gain is not a CC, add it manually
+    const gain = new Meter({
+        color: this.channelColors[channelNumber % this.channelColors.length],
+        smooth: true,
+        localePath: LOCALE_PATH + "channelController.gainMeter",
+        locale: this.locale,
+        localeArgs: [channelNumber + 1],
+        min: 0,
+        max: 5,
+        def: 1,
+        onEdit: (val) => {
+            val = Math.round(val * 100) / 100;
+            ch.setSystemParameter("gain", val);
+            gain.update(val);
         },
         activeChangeCallback: (active) => {
             // Do hide on multi-port files
@@ -374,7 +321,8 @@ export function appendNewController(
             this.setCCVisibilityStartingFrom(channelNumber + 1, !active);
         }
     });
-    controller.append(transpose.div);
+    controllerMeters.set(extraChannelControllers.gain, gain);
+    controller.append(gain.div);
 
     // Preset controller
     const presetSelector = new Selector(
@@ -383,20 +331,16 @@ export function appendNewController(
         LOCALE_PATH + "channelController.presetSelector",
         [channelNumber + 1],
         (patch) => {
-            this.synth.lockController(
-                channelNumber,
-                ALL_CHANNELS_OR_DIFFERENT_ACTION,
-                false
-            );
+            ch.setSystemParameter("presetLock", false);
             if (!patch.isGMGSDrum) {
                 this.synth.controllerChange(
                     channelNumber,
-                    midiControllers.bankSelect,
+                    MIDIControllers.bankSelect,
                     patch.bankMSB
                 );
                 this.synth.controllerChange(
                     channelNumber,
-                    midiControllers.bankSelectLSB,
+                    MIDIControllers.bankSelectLSB,
                     patch.bankLSB
                 );
             }
@@ -405,18 +349,9 @@ export function appendNewController(
                 this.onProgramChange(channelNumber);
             }
             presetSelector.mainButton.classList.add("locked_selector");
-            this.synth.lockController(
-                channelNumber,
-                ALL_CHANNELS_OR_DIFFERENT_ACTION,
-                true
-            );
+            ch.setSystemParameter("presetLock", true);
         },
-        (locked) =>
-            this.synth.lockController(
-                channelNumber,
-                ALL_CHANNELS_OR_DIFFERENT_ACTION,
-                locked
-            )
+        (locked) => ch.setSystemParameter("presetLock", locked)
     );
     controller.append(presetSelector.mainButton);
 
@@ -439,35 +374,49 @@ export function appendNewController(
         }
         if (
             this.soloChannels.size === 0 ||
-            this.soloChannels.size >= this.synth.channelsAmount
+            this.soloChannels.size >= this.synth.channelCount
         ) {
             // No channels or all channels are soloed, unmute everything
-            for (let i = 0; i < this.synth.channelsAmount; i++) {
+            for (let i = 0; i < this.synth.channelCount; i++) {
                 this.controllers[i].soloButton.innerHTML =
                     getEmptyMicSvg(ICON_SIZE);
-                this.synth.muteChannel(
-                    i,
-                    this.controllers[i].muteButton.hasAttribute("is_muted")
+                const isMuted =
+                    this.controllers[i].muteButton.hasAttribute("is_muted");
+                this.synth.midiChannels[i].setSystemParameter(
+                    "isMuted",
+                    isMuted
                 );
+
+                for (const m of this.onMute) {
+                    m?.(i, isMuted);
+                }
             }
-            if (this.soloChannels.size >= this.synth.channelsAmount) {
+            if (this.soloChannels.size >= this.synth.channelCount) {
                 // All channels are soloed, return to normal
                 this.soloChannels.clear();
             }
             return;
         }
         // Unmute every solo channel and mute others
-        for (let i = 0; i < this.synth.channelsAmount; i++) {
+        for (let i = 0; i < this.synth.channelCount; i++) {
             if (this.soloChannels.has(i)) {
                 this.controllers[i].soloButton.innerHTML = getMicSvg(ICON_SIZE);
-                this.synth.muteChannel(
-                    i,
-                    this.controllers[i].muteButton.hasAttribute("is_muted")
+                const isMuted =
+                    this.controllers[i].muteButton.hasAttribute("is_muted");
+                this.synth.midiChannels[i].setSystemParameter(
+                    "isMuted",
+                    isMuted
                 );
+                for (const m of this.onMute) {
+                    m?.(i, isMuted);
+                }
             } else {
                 this.controllers[i].soloButton.innerHTML =
                     getEmptyMicSvg(ICON_SIZE);
-                this.synth.muteChannel(i, true);
+                this.synth.midiChannels[i].setSystemParameter("isMuted", true);
+                for (const m of this.onMute) {
+                    m?.(i, true);
+                }
             }
         }
     });
@@ -490,13 +439,19 @@ export function appendNewController(
             const canBeUnmuted =
                 this.soloChannels.size === 0 ||
                 this.soloChannels.has(channelNumber);
-            this.synth.muteChannel(channelNumber, !canBeUnmuted);
+            ch.setSystemParameter("isMuted", !canBeUnmuted);
             muteButton.innerHTML = getVolumeSvg(ICON_SIZE);
+            for (const m of this.onMute) {
+                m?.(channelNumber, !canBeUnmuted);
+            }
         } else {
             // Mute
-            this.synth.muteChannel(channelNumber, true);
+            ch.setSystemParameter("isMuted", true);
             muteButton.setAttribute("is_muted", "true");
             muteButton.innerHTML = getMuteSvg(ICON_SIZE);
+            for (const m of this.onMute) {
+                m?.(channelNumber, true);
+            }
         }
     });
     controller.append(muteButton);
@@ -516,16 +471,9 @@ export function appendNewController(
     drumsToggle.classList.add("controller_element", "mute_button");
     drumsToggle.addEventListener("click", () => {
         if (presetSelector.mainButton.classList.contains("locked_selector")) {
-            this.synth.lockController(
-                channelNumber,
-                ALL_CHANNELS_OR_DIFFERENT_ACTION,
-                false
-            );
+            ch.setSystemParameter("presetLock", false);
         }
-        this.synth.setDrums(
-            channelNumber,
-            !this.synth.channelProperties[channelNumber].isDrum
-        );
+        ch.setDrums(!ch.patch.isDrum);
         presetSelector.lockSelector(true);
     });
     controller.append(drumsToggle);
@@ -542,42 +490,26 @@ export function appendNewController(
     polyMonoButton.classList.add("controller_element", "mute_button");
     polyMonoButton.setAttribute("isPoly", "true");
     polyMonoButton.addEventListener("click", () => {
-        this.synth.lockController(
-            channelNumber,
-            midiControllers.polyModeOn,
-            false
-        );
-        this.synth.lockController(
-            channelNumber,
-            midiControllers.monoModeOn,
-            false
-        );
+        ch.lockController(MIDIControllers.polyModeOn, false);
+        ch.lockController(MIDIControllers.monoModeOn, false);
         const isPoly = polyMonoButton.getAttribute("isPoly") === "true";
         if (isPoly) {
             this.synth.controllerChange(
                 channelNumber,
-                midiControllers.monoModeOn,
+                MIDIControllers.monoModeOn,
                 0
             );
             polyMonoButton.innerHTML = MONO_ON;
         } else {
             this.synth.controllerChange(
                 channelNumber,
-                midiControllers.polyModeOn,
+                MIDIControllers.polyModeOn,
                 0
             );
             polyMonoButton.innerHTML = POLY_ON;
         }
-        this.synth.lockController(
-            channelNumber,
-            midiControllers.polyModeOn,
-            true
-        );
-        this.synth.lockController(
-            channelNumber,
-            midiControllers.monoModeOn,
-            true
-        );
+        ch.lockController(MIDIControllers.polyModeOn, true);
+        ch.lockController(MIDIControllers.monoModeOn, true);
         polyMonoButton.setAttribute("isPoly", (!isPoly).toString());
     });
     controller.append(polyMonoButton);
@@ -600,7 +532,7 @@ export function appendNewController(
             1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 10, 11, 12, 13, 14, 15
         ][ch];
         if (this.insertionLock) {
-            this.synth.setMasterParameter("insertionEffectLock", false);
+            this.synth.setSystemParameter("insertionEffectLock", false);
         }
         sendAddress(
             this.synth,
@@ -611,7 +543,7 @@ export function appendNewController(
             offset
         );
         if (this.insertionLock) {
-            this.synth.setMasterParameter("insertionEffectLock", true);
+            this.synth.setSystemParameter("insertionEffectLock", true);
         }
     });
     controller.append(insertionEffectButton);
@@ -621,7 +553,6 @@ export function appendNewController(
         isHidingLocked: false,
         drumsToggle,
         voiceMeter,
-        transpose,
         soloButton,
         muteButton,
         polyMonoButton,

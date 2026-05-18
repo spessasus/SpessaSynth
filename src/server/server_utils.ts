@@ -20,7 +20,7 @@ export const rootFile = path.join(
 
 export function getCurrentVersion() {
     const text = fs.readFileSync(packageJSON, "utf-8");
-    return (JSON.parse(text) as { version: string })?.version || "4.2.0";
+    return (JSON.parse(text) as { version: string })?.version || "4.3.0";
 }
 
 export function isVersionNewer(newerThan: string, olderThan: string) {

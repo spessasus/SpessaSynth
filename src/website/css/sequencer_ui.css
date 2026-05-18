@@ -1,10 +1,19 @@
 #sequencer_controls {
     width: 80%;
     position: relative;
-    margin: auto auto 2px;
+    margin: auto;
 
     --progress-bar-height: 2rem;
     --sequi-border-radius: var(--primary-border-radius);
+}
+
+#sequencer_controls #note_progress_background {
+    border-radius: var(--progress-bar-height);
+    background: linear-gradient(90deg, #454545, #343434);
+    height: var(--progress-bar-height);
+    position: relative;
+    overflow: hidden;
+    margin: 0.5rem;
 }
 
 #sequencer_controls #note_progress {
@@ -21,12 +30,10 @@
 }
 
 #sequencer_controls #note_time {
-    position: relative;
+    position: absolute;
     font-size: calc(var(--progress-bar-height) * 0.8);
-    line-height: var(--progress-bar-height);
     text-align: center;
     color: var(--font-color);
-    margin: 0.5rem;
     width: 100%;
 }
 
@@ -65,15 +72,6 @@
     border-radius: 0.2rem;
     padding: 0.2rem;
     width: 4rem;
-}
-
-#sequencer_controls #note_progress_background {
-    border-radius: var(--progress-bar-height);
-    background: linear-gradient(90deg, #454545, #343434);
-    height: var(--progress-bar-height);
-    position: absolute;
-    width: 100%;
-    overflow: hidden;
 }
 
 #sequencer_controls .note_progress_background_light {
@@ -122,13 +120,16 @@
     visibility: visible !important;
 }
 
-.lyrics_text {
+.lyrics_text_scroll {
     scroll-behavior: smooth;
     overflow-y: auto;
     max-height: 80%;
-    margin-left: 3rem;
-    margin-right: 3rem;
     flex: 2;
+    padding-left: 3rem;
+    padding-right: 3rem;
+}
+
+.lyrics_text {
     font-style: italic;
 }
 
@@ -145,24 +146,34 @@
 }
 
 .lyrics details {
-    overflow: scroll;
+    overflow: auto;
 }
 
 .lyrics details summary {
-    position: fixed;
     width: 100%;
     text-align: center;
     cursor: pointer;
+    position: fixed;
 }
 
 .lyrics details div {
     margin-top: 2rem;
-    line-height: 2rem;
+    padding: 1rem;
+}
+
+.lyrics details span {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
 }
 
 .lyrics details pre,
 .lyrics details i {
     display: inline;
+}
+
+.lyrics .other_text i {
+    text-align: end;
 }
 
 .lyrics .general_button {

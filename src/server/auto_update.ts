@@ -33,7 +33,7 @@ export async function autoUpdate() {
         return;
     }
     const onlineVersion =
-        ((await response.json()) as { version: string })?.version || "4.2.0";
+        ((await response.json()) as { version: string })?.version || "4.3.0";
     if (!isVersionNewer(onlineVersion, currentVersion)) {
         console.info("No updates found.");
         console.info("-------------");
@@ -91,7 +91,7 @@ async function downloadUpdate() {
         done = readData.done;
         renderProgress(offset / size);
     } while (!done);
-    console.info(`\nDownloaded succesfully!`);
+    console.info(`\nDownloaded successfully!`);
     return zipFile;
 }
 
@@ -166,7 +166,7 @@ async function performLocaEditionUpdate() {
         configJson,
         { encoding: "utf-8" }
     );
-    console.info("Update succesful!");
+    console.info("Update successful!");
 
     // Run the new project
     const serverFilePath = path.resolve(rootDir, "server/server.js");

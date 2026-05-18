@@ -1,8 +1,5 @@
 import { consoleColors } from "../../utils/console_colors.js";
-import {
-    closeNotification,
-    showNotification
-} from "../../notification/notification.js";
+import { closeNotification, showNotification } from "../../notification/notification.js";
 import type { Manager } from "../manager.ts";
 import { WorkerSynthesizer } from "spessasynth_lib";
 import { type BasicSoundBank, SoundBankLoader } from "spessasynth_core";
@@ -32,18 +29,10 @@ export async function writeDLS(
     const sf = SoundBankLoader.fromArrayBuffer(sfBin);
 
     if (options.trim) {
-        sf.trimSoundBank(mid);
+        sf.trim(mid.getUsedProgramsAndKeys(sf));
     }
 
-    const b = await sf.writeDLS({
-        ...options,
-        progressFunction: async (sampleName, sampleIndex, sampleCount) =>
-            await options.progressFunction?.({
-                sampleCount,
-                sampleIndex,
-                sampleName
-            })
-    });
+    const b = sf.writeDLS(options);
     return {
         binary: b,
         fileName: sf.soundBankInfo.name + ".dls",
@@ -80,7 +69,7 @@ export function _exportDLS(this: Manager) {
                 ),
                 onClick: () => {
                     window.open(
-                        "https://github.com/spessasus/SpessaSynth/wiki/DLS-Conversion-Problem"
+                        "https://spessasus.github.io/spessasynth_core/extra/dls-conversion-problem/"
                     );
                 }
             },
@@ -120,9 +109,9 @@ export function _exportDLS(this: Manager) {
                         trim: trimmed,
                         writeEmbeddedSoundBank: true,
                         sequencerID: 0,
+                        software: "SpessaSynth",
                         progressFunction: (p) => {
-                            const progress = p.sampleIndex / p.sampleCount;
-                            progressDiv.style.width = `${progress * 100}%`;
+                            progressDiv.style.width = `${p * 100}%`;
                         }
                     });
                     this.seq?.play();

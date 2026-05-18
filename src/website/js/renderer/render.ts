@@ -5,6 +5,7 @@ import {
     rendererModes
 } from "./renderer.js";
 import { drawNotes } from "./draw_notes.js";
+import { isMobile } from "../utils/is_mobile.ts";
 
 let hasRenderedNoVoices = false;
 
@@ -16,7 +17,7 @@ let hasRenderedNoVoices = false;
 export function render(this: Renderer, auto = true, force = false) {
     const nothingToDo =
         (this.seq === undefined || this?.seq?.paused) &&
-        this.synth.voicesAmount === 0 &&
+        this.synth.voiceCount === 0 &&
         this.rendererMode === rendererModes.waveformsMode &&
         !force;
     let forceStraight = false;
@@ -45,7 +46,12 @@ export function render(this: Renderer, auto = true, force = false) {
         );
     }
 
-    const highPerf = this.synth.getMasterParameter("blackMIDIMode");
+    // Draw dot matrix
+    if (this.renderDotDisplay && this.showDisplayMatrix !== null) {
+        this.drawDotMatrix();
+    }
+
+    const highPerf = this.synth.systemParameters.blackMIDIMode;
     if (!highPerf) {
         // Draw the individual analyzers
         this.renderWaveforms(forceStraight);
@@ -58,9 +64,13 @@ export function render(this: Renderer, auto = true, force = false) {
             const waveWidth = this.canvas.width / 4;
             const waveHeight = this.canvas.height / 4;
             // Setup font
+            // Scale down on mobile
+            const fontSize =
+                PRESET_NAMES_FONT_SIZE /
+                (isMobile ? window.devicePixelRatio : 1);
             this.drawingContext.textBaseline = "top";
             this.drawingContext.textAlign = "start";
-            this.drawingContext.font = `${PRESET_NAMES_FONT_SIZE}px monospace`;
+            this.drawingContext.font = `${fontSize}px monospace`;
             this.drawingContext.fillStyle = "white";
             const names = this.programTracker.presetNames;
             const used = this.programTracker.usedChannels;
@@ -79,11 +89,11 @@ export function render(this: Renderer, auto = true, force = false) {
                         (this.voicesPlaying[part] && !usedParts.has(part))
                     ) {
                         this.drawingContext.fillText(
-                            names[chan] ?? `CH ${part + 1}`,
+                            names[chan],
                             relativeX,
                             relativeY
                         );
-                        relativeY += PRESET_NAMES_FONT_SIZE;
+                        relativeY += fontSize;
                     }
                 }
             }
@@ -100,11 +110,6 @@ export function render(this: Renderer, auto = true, force = false) {
         if (!highPerf) {
             drawNotes(notesToDraw, this.drawingContext, this.sideways);
         }
-    }
-
-    // Draw dot matrix
-    if (this.renderDotDisplay && this.showDisplayMatrix !== null) {
-        this.drawDotMatrix();
     }
 
     // Calculate fps
@@ -158,7 +163,7 @@ export function render(this: Renderer, auto = true, force = false) {
     this.drawingContext.textAlign = "start";
     // Engine mode
     this.drawingContext.fillText(
-        this.workerMode ? "WORKER (CHROMIUM) MODE" : "WORKLET MODE",
+        this.workerMode ? "WORKER (CHROMIUM) MODE" : "WORKLET (FIREFOX) MODE",
         0,
         y
     );

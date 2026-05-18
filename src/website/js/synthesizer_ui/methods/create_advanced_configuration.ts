@@ -2,12 +2,12 @@ import {
     closeNotification,
     showNotification
 } from "../../notification/notification.js";
-import { SynthetizerUI } from "../synthetizer_ui.js";
+import { SynthesizerUI } from "../synthetizer_ui.js";
 import { startKeyModifiersMenu } from "./key_modifier_ui.js";
 import { Meter } from "./synthui_meter.ts";
 import { Ut } from "../../utils/other.js";
-import type { LocaleManager } from "../../locale/locale_manager.ts";
-import { type InterpolationType, interpolationTypes } from "spessasynth_core";
+import type { LocaleManager } from "../../manager/locale_manager.ts";
+import { type InterpolationType, InterpolationTypes } from "spessasynth_core";
 
 const LOCALE_PATH = "locale.synthesizerController.effectsConfig.misc.";
 const KEY_MODIFIERS_PATH = "locale.synthesizerController.keyModifiers.";
@@ -21,14 +21,14 @@ function toggleMeter(
 ) {
     let value = def;
     const meter = new Meter({
+        color: "",
         localePath: LOCALE_PATH + path,
         locale: locale,
-        initialAndDefault: def ? 1 : 0,
+        def: def ? 1 : 0,
         min: 0,
         max: 1,
         transform: (v) => (v === 1 ? ": " + yesNo.yes : ": " + yesNo.no),
-        editable: true,
-        editCallback: (v) => {
+        onEdit: (v) => {
             v = Math.round(v);
             if ((v === 1) === value) {
                 return;
@@ -84,7 +84,7 @@ function input(
 }
 
 export function createAdvancedConfiguration(
-    this: SynthetizerUI
+    this: SynthesizerUI
 ): HTMLDivElement {
     const wrapper = document.createElement("div");
     wrapper.classList.add("effect_wrapper", "synthui_tab");
@@ -151,7 +151,7 @@ export function createAdvancedConfiguration(
              * Linear
              */
             const linear = document.createElement("option");
-            linear.value = interpolationTypes.linear.toString();
+            linear.value = InterpolationTypes.linear.toString();
             this.locale.bindObjectProperty(
                 linear,
                 "textContent",
@@ -163,7 +163,7 @@ export function createAdvancedConfiguration(
              * Nearest neighbor
              */
             const nearest = document.createElement("option");
-            nearest.value = interpolationTypes.nearestNeighbor.toString();
+            nearest.value = InterpolationTypes.nearestNeighbor.toString();
             this.locale.bindObjectProperty(
                 nearest,
                 "textContent",
@@ -175,7 +175,7 @@ export function createAdvancedConfiguration(
              * Cubic (default)
              */
             const cubic = document.createElement("option");
-            cubic.value = interpolationTypes.hermite.toString();
+            cubic.value = InterpolationTypes.hermite.toString();
             cubic.selected = true;
             this.locale.bindObjectProperty(
                 cubic,
@@ -185,7 +185,7 @@ export function createAdvancedConfiguration(
             interpolation.append(cubic);
 
             interpolation.addEventListener("change", () => {
-                this.synth.setMasterParameter(
+                this.synth.setSystemParameter(
                     "interpolationType",
                     Number.parseInt(interpolation.value) as InterpolationType
                 );
@@ -251,10 +251,10 @@ export function createAdvancedConfiguration(
                 this.locale,
                 "voiceCap",
                 (cap) => {
-                    this.synth.setMasterParameter("voiceCap", cap);
+                    this.synth.setSystemParameter("voiceCap", cap);
                     this.voiceMeter.max = cap;
                 },
-                this.synth.getMasterParameter("voiceCap"),
+                this.synth.systemParameters.voiceCap,
                 1,
                 10_000
             )
@@ -278,38 +278,13 @@ export function createAdvancedConfiguration(
         paramWrapper.append(
             toggleMeter(
                 this.locale,
-                "customVibrato",
-                (enable) => {
-                    if (enable) {
-                        this.synth.setMasterParameter(
-                            "customVibratoLock",
-                            false
-                        );
-                    } else {
-                        this.synth.resetControllers();
-                        this.synth.setMasterParameter(
-                            "customVibratoLock",
-                            true
-                        );
-                        if (this.sequencer) {
-                            this.sequencer.currentTime -= 0.1;
-                        }
-                    }
-                },
-                true,
-                yesNo
-            ).div
-        );
-        paramWrapper.append(
-            toggleMeter(
-                this.locale,
                 "drumEditing",
                 (enable) => {
                     if (enable) {
-                        this.synth.setMasterParameter("drumLock", false);
+                        this.synth.setSystemParameter("drumLock", false);
                     } else {
-                        this.synth.resetControllers();
-                        this.synth.setMasterParameter("drumLock", true);
+                        this.synth.reset();
+                        this.synth.setSystemParameter("drumLock", true);
                         if (this.sequencer) {
                             this.sequencer.currentTime -= 0.1;
                         }
@@ -324,8 +299,8 @@ export function createAdvancedConfiguration(
                 this.locale,
                 "msgsCutoff",
                 (enable) => {
-                    this.synth.setMasterParameter(
-                        "monophonicRetriggerMode",
+                    this.synth.setSystemParameter(
+                        "monophonicRetrigger",
                         enable
                     );
                 },
@@ -339,7 +314,7 @@ export function createAdvancedConfiguration(
                 this.locale,
                 "blackMidiMode",
                 (enable) => {
-                    this.synth.setMasterParameter("blackMIDIMode", enable);
+                    this.synth.setSystemParameter("blackMIDIMode", enable);
                 },
                 false,
                 yesNo

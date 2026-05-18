@@ -78,7 +78,7 @@ export function _createMidiInputHandler(
 }
 
 /**
- * Note that using sequi allows us to get the sequencer after it has been created
+ * Note that using seq ui allows us to get the sequencer after it has been created
  */
 export function _createMidiOutputHandler(
     this: SpessaSynthSettings,

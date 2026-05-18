@@ -1,0 +1,90 @@
+export const rendererSettingsLocale = {
+    title: "Ustawienia wizualizacji",
+
+    mode: {
+        title: "Tryb wizualizacji",
+        description: "Zmień tryb wizualizacji kanałów",
+        waveforms: "Kształt fali",
+        spectrumSplit: "Spektrum rozdzielone",
+        spectrum: "Spektrum",
+        filledWaveforms: "Wypełnione fale"
+    },
+
+    noteFallingTime: {
+        title: "Czas spadania nut (ms)",
+        description: "Jak szybko spadają z góry nuty (w milisekundach)"
+    },
+
+    noteAfterTriggerTime: {
+        title: "Czas po aktywacji nuty (ms)",
+        description:
+            "Jak długo nuty spadają po aktywacji. Zero oznacza, że aktywują się na dole."
+    },
+
+    waveformThickness: {
+        title: "Grubość lini fal (px)",
+        description: "Jak grube są linie fal dźwiękowych"
+    },
+
+    waveformSampleSize: {
+        title: "Rozmiar próbki",
+        description:
+            "Jak szczegółowe są wizualizacje (Uwaga: wysokie wartości mogą pogorszyć wydajność) Pamiętaj, że wysokie wartości dodadzą opóźnienie do dźwięku, aby zsynchronizować fale z dźwiękiem."
+    },
+
+    waveformAmplifier: {
+        title: "Wzmacniasz",
+        description: "Jak 'żywe' są wizualizacje. Kontroluje ich amplitudę"
+    },
+
+    toggleExponentialGain: {
+        title: "Wykładniczy przyrost",
+        description:
+            "Wyodrębnij różnice w głośności częstotliwości poprzez zastosowanie funkcji wykładniczej"
+    },
+
+    toggleDynamicGain: {
+        title: "Dynamiczny przyrost",
+        description:
+            "Automatycznie dostosuj przyrost aby najgłośniejsza częstotliwość zapełniała całą wysokość"
+    },
+
+    toggleLogarithmicFrequency: {
+        title: "Logarytmiczna częstotliwość",
+        description:
+            "Rozłóż częstotliwości w sposób logarytmiczny zamiast liniowego. Zalecane"
+    },
+
+    toggleNotesRendering: {
+        title: "Pokaż nuty",
+        description:
+            "Włącz rysowanie spadających nut podczas odtwarzania pliku MIDI"
+    },
+
+    toggleDrawingActiveNotes: {
+        title: "Pokaż aktywne nuty",
+        description: "Włącz efekt podświetlania się nut przy aktywacji"
+    },
+
+    toggleDrawingVisualPitch: {
+        title: "Pokaż wysokość tonu",
+        description:
+            "Włącz przesuwanie nut w lewo lub w prawo gdy wysokość nut jest zmieniana"
+    },
+
+    toggleDrawingPresetNames: {
+        title: "Pokaż nazwy instrumentów",
+        description:
+            "Włącz pokazywanie aktualnych nazw instrumentów dla każdego kształtu fali"
+    },
+
+    toggleRenderingDotDisplay: {
+        title: "Pokaż obrazki XG/GS",
+        description: "Włącz rysowanie obrazków Dot Matrix w plikach MIDI XG/GS"
+    },
+
+    toggleStabilizeWaveforms: {
+        title: "Włącz stabilizację fal",
+        description: "Włącz stabilizowanie fal dźwiękowych"
+    }
+};

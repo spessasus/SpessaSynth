@@ -44,7 +44,9 @@ export function handlePointers(this: MIDIKeyboard) {
             if (!targetKey) {
                 continue;
             }
-            const midiNote = Number.parseInt(targetKey.id.replace("note", ""));
+            const note = Number.parseInt(targetKey.id.replace("note", ""));
+            const midiNote = note - this.getKeyOffset(this.channel);
+
             currentlyTouchedKeys.add(midiNote);
             if (
                 Number.isNaN(midiNote) ||

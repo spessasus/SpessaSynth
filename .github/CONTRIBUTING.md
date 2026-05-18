@@ -11,7 +11,7 @@ Use the GitHub issue forms and please avoid using the "Blank" template unless ab
 
 ### Contributing a new translation
 
-Please see [submitting a translation](../src/website/js/locale/locale_files/README).
+Please see [submitting a translation](../src/website/locale/README).
 
 ### Contributing a patch/enhancement
 

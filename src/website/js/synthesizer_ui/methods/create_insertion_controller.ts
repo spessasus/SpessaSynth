@@ -3,12 +3,12 @@ import {
     insertionEffectData
 } from "./effect_params.ts";
 import { Meter } from "./synthui_meter.ts";
-import { LOCALE_PATH, SynthetizerUI } from "../synthetizer_ui.ts";
+import { LOCALE_PATH, SynthesizerUI } from "../synthetizer_ui.ts";
 import { sendAddress } from "./send_address.ts";
 import { Ut } from "../../utils/other.js";
 
 export function createInsertionController(
-    this: SynthetizerUI
+    this: SynthesizerUI
 ): InsertionController {
     const insertionEffects = insertionEffectData;
 
@@ -51,7 +51,7 @@ export function createInsertionController(
     effectSelector.addEventListener("change", () => {
         const v = Number.parseInt(effectSelector.value);
         if (this.insertionLock) {
-            this.synth.setMasterParameter("insertionEffectLock", false);
+            this.synth.setSystemParameter("insertionEffectLock", false);
         }
 
         const msb = (v >> 8) & 0x7f;
@@ -59,7 +59,7 @@ export function createInsertionController(
 
         sendAddress(this.synth, 0x40, 0x03, 0x00, [msb, lsb]);
         if (this.insertionLock) {
-            this.synth.setMasterParameter("insertionEffectLock", true);
+            this.synth.setSystemParameter("insertionEffectLock", true);
         }
     });
     typeLockWrapper.append(effectSelector);
@@ -79,7 +79,7 @@ export function createInsertionController(
     );
     const toggleLock = () => {
         this.insertionLock = !this.insertionLock;
-        this.synth.setMasterParameter(
+        this.synth.setSystemParameter(
             "insertionEffectLock",
             this.insertionLock
         );
@@ -95,55 +95,55 @@ export function createInsertionController(
         "global_insertion"
     );
     const reverb = new Meter({
+        color: "",
         locale: this.locale,
         localePath: LOCALE_PATH + "effectsConfig.insertion.sendLevelToReverb",
         min: 0,
         max: 127,
-        initialAndDefault: 40,
-        editable: true,
-        editCallback: (v) => {
+        def: 40,
+        onEdit: (v) => {
             if (this.insertionLock) {
-                this.synth.setMasterParameter("insertionEffectLock", false);
+                this.synth.setSystemParameter("insertionEffectLock", false);
             }
             sendAddress(this.synth, 0x40, 0x03, 0x17, [Math.round(v)]);
             if (this.insertionLock) {
-                this.synth.setMasterParameter("insertionEffectLock", true);
+                this.synth.setSystemParameter("insertionEffectLock", true);
             }
         }
     });
     effectSendsWrapper.append(reverb.div);
     const chorus = new Meter({
+        color: "",
         locale: this.locale,
         localePath: LOCALE_PATH + "effectsConfig.insertion.sendLevelToChorus",
         min: 0,
         max: 127,
-        initialAndDefault: 0,
-        editable: true,
-        editCallback: (v) => {
+        def: 0,
+        onEdit: (v) => {
             if (this.insertionLock) {
-                this.synth.setMasterParameter("insertionEffectLock", false);
+                this.synth.setSystemParameter("insertionEffectLock", false);
             }
             sendAddress(this.synth, 0x40, 0x03, 0x18, [Math.round(v)]);
             if (this.insertionLock) {
-                this.synth.setMasterParameter("insertionEffectLock", true);
+                this.synth.setSystemParameter("insertionEffectLock", true);
             }
         }
     });
     effectSendsWrapper.append(chorus.div);
     const delay = new Meter({
+        color: "",
         locale: this.locale,
         localePath: LOCALE_PATH + "effectsConfig.insertion.sendLevelToDelay",
         min: 0,
         max: 127,
-        initialAndDefault: 0,
-        editable: true,
-        editCallback: (v) => {
+        def: 0,
+        onEdit: (v) => {
             if (this.insertionLock) {
-                this.synth.setMasterParameter("insertionEffectLock", false);
+                this.synth.setSystemParameter("insertionEffectLock", false);
             }
             sendAddress(this.synth, 0x40, 0x03, 0x19, [Math.round(v)]);
             if (this.insertionLock) {
-                this.synth.setMasterParameter("insertionEffectLock", true);
+                this.synth.setSystemParameter("insertionEffectLock", true);
             }
         }
     });
@@ -170,21 +170,21 @@ export function createInsertionController(
                 // Prevent change!
                 const a = param.a;
                 const meter = new Meter({
+                    color: "",
                     rawText: param.p + ": ",
                     min: param.r?.min ?? 0,
                     max: param?.r?.max ?? 127,
-                    initialAndDefault: param.d,
-                    editable: true,
-                    editCallback: (v) => {
+                    def: param.d,
+                    onEdit: (v) => {
                         if (this.insertionLock) {
-                            this.synth.setMasterParameter(
+                            this.synth.setSystemParameter(
                                 "insertionEffectLock",
                                 false
                             );
                         }
                         sendAddress(this.synth, 0x40, 0x03, a, [Math.round(v)]);
                         if (this.insertionLock) {
-                            this.synth.setMasterParameter(
+                            this.synth.setSystemParameter(
                                 "insertionEffectLock",
                                 true
                             );

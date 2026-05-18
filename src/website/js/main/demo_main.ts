@@ -10,11 +10,11 @@ import {
     showNotification
 } from "../notification/notification.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
-import { LocaleManager } from "../locale/locale_manager.js";
+import { LocaleManager } from "../manager/locale_manager.js";
 
 import { BasicSoundBank } from "spessasynth_core";
 import { UPDATE_NAME, WHATS_NEW } from "../../changelog.js";
-import type { LocaleCode } from "../locale/locale_files/locale_list.ts";
+import type { LocaleCode } from "../../locale/locale_list.ts";
 import type { MIDIFile } from "../utils/drop_file_handler.ts";
 import {
     DEFAULT_SAVED_SETTINGS,
@@ -136,7 +136,7 @@ function changeIcon(html: string, disableAnimation = true) {
 async function saveSoundFontToIndexedDB(arr: ArrayBuffer) {
     const check = arr.slice(8, 12);
     const dec = new TextDecoder().decode(check).toLowerCase();
-    if (dec !== "sfbk" && dec !== "sfpl" && dec !== "dls ") {
+    if (dec !== "sfbk" && dec !== "sfpk" && dec !== "dls ") {
         console.warn("Not viable to save!");
         return;
     }
@@ -202,12 +202,12 @@ async function demoInit(initLocale: LocaleCode) {
             );
         } catch (error) {
             console.error("Error loading bundled:", error);
-            soundFontBuffer = await BasicSoundBank.getSampleSoundBankFile();
+            soundFontBuffer = BasicSoundBank.getSampleSoundBankFile();
         }
 
         progressBar.style.width = "0";
     } else {
-        console.info("Loaded the soundfont from the database succesfully");
+        console.info("Loaded the soundfont from the database successfully");
     }
     sfBuffer = soundFontBuffer;
     if (!loadedFromDb) {
@@ -256,7 +256,7 @@ async function demoInit(initLocale: LocaleCode) {
     };
     await window.manager.ready;
 
-    window.manager.synth?.setMasterParameter("voiceCap", voiceCap);
+    window.manager.synth?.setSystemParameter("voiceCap", voiceCap);
     window.manager.synth?.setLogLevel(false, false, false);
 
     if (fileInput.files?.[0]) {
@@ -411,8 +411,8 @@ async function playDemoSong(song: DemoSong) {
             song.fileName
     );
     if (!song.fullMIDISupport) {
-        window.manager.synth.setMasterParameter("nprnParamLock", true);
-        window.manager.synth.setMasterParameter("drumLock", true);
+        window.manager.synth.setSystemParameter("nrpnParamLock", true);
+        window.manager.synth.setSystemParameter("drumLock", true);
     }
     // noinspection JSCheckFunctionSignatures
     await startMidi([new File([await r.arrayBuffer()], song.fileName)]);

@@ -14,7 +14,7 @@ export default tseslint.config(
             eslintPluginUnicorn.configs.recommended,
             eslintConfigPrettier
         ],
-        files: ["**/*.{ts,tsx}"],
+        files: ["src/**/*.{ts,tsx}"],
         languageOptions: {
             ecmaVersion: "latest",
             globals: globals.browser,

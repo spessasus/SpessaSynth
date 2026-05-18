@@ -12,14 +12,14 @@ import {
     renderSingleWaveform,
     renderWaveforms
 } from "./render_waveforms.js";
-import { consoleColors } from "../utils/console_colors.js";
 import {
     BasicMIDI,
-    midiMessageTypes,
-    type SynthSystem
+    MIDIMessageTypes,
+    type MIDISystem,
+    SpessaSynthCoreUtils
 } from "spessasynth_core";
 import type { Sequencer } from "spessasynth_lib";
-import { type LocaleManager } from "../locale/locale_manager.ts";
+import { type LocaleManager } from "../manager/locale_manager.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
 import { drawDotMatrix } from "./draw_dot_matrix.ts";
 import { ProgramTracker } from "./program_tracker.ts";
@@ -157,7 +157,7 @@ export class Renderer {
     protected readonly inputNode: AudioNode;
     protected readonly workerMode: boolean;
     protected readonly sampleRateFactor: number;
-    protected showDisplayMatrix: SynthSystem | null = null;
+    protected showDisplayMatrix: MIDISystem | null = null;
     private displayMatrixTimeout = 0;
 
     /**
@@ -210,7 +210,7 @@ export class Renderer {
             fftSize: this._analyserFftSize,
             smoothingTimeConstant: ANALYSER_SMOOTHING
         });
-        for (let i = 0; i < synth.channelsAmount; i++) {
+        for (let i = 0; i < synth.channelCount; i++) {
             // Create the analyzer
             const analyser = new AnalyserNode(synth.context, {
                 fftSize: this._analyserFftSize,
@@ -218,14 +218,6 @@ export class Renderer {
             });
             this.channelAnalysers.push(analyser);
         }
-
-        synth.eventHandler.addEvent(
-            "muteChannel",
-            "renderer-mute-channel",
-            (eventData) => {
-                this.renderChannels[eventData.channel] = !eventData.isMuted;
-            }
-        );
         this.updateFftSize();
         this.connectChannelAnalysers();
 
@@ -258,7 +250,7 @@ export class Renderer {
             "renderer-meta-event",
             (ev) => {
                 const event = ev.event;
-                if (event.statusByte === midiMessageTypes.timeSignature) {
+                if (event.statusByte === MIDIMessageTypes.timeSignature) {
                     this.currentTimeSignature = `${event.data[0]}/${Math.pow(2, event.data[1])}`;
                 }
             }
@@ -366,12 +358,17 @@ export class Renderer {
         this.render(false, true);
     }
 
-    public updateDisplayMatrix(mode: SynthSystem) {
+    public clearRendererMatrix() {
+        this.showDisplayMatrix = null;
+    }
+
+    public updateDisplayMatrix(mode: MIDISystem) {
         this.showDisplayMatrix = mode;
         clearTimeout(this.displayMatrixTimeout);
-        this.displayMatrixTimeout = window.setTimeout(() => {
-            this.showDisplayMatrix = null;
-        }, DISPLAY_MATRIX_TIMEOUT);
+        this.displayMatrixTimeout = window.setTimeout(
+            this.clearRendererMatrix.bind(this),
+            DISPLAY_MATRIX_TIMEOUT
+        );
         // Many MIDI files do setup in silence, and the animations usually are presented then.
         // Spessasynth doesn't render if nothing is being played, so this bypasses that.
         this.renderOneFrame();
@@ -414,7 +411,7 @@ export class Renderer {
         });
         console.info(
             `%cFinished loading note times and ready to render the sequence!`,
-            consoleColors.info
+            SpessaSynthCoreUtils.ConsoleColors.info
         );
     }
 

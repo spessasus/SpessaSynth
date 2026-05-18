@@ -1,4 +1,4 @@
-import { midiControllers } from "spessasynth_core";
+import { MIDIControllers } from "spessasynth_core";
 import { handlePointers } from "./pointer_handling.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import type { InterfaceMode } from "../../../server/saved_settings.ts";
@@ -48,38 +48,20 @@ export class MIDIKeyboard {
 
         // Connect the synth to keyboard
         this.synth.eventHandler.addEvent("noteOn", "keyboard-note-on", (e) => {
-            const noteShift = Math.trunc(
-                this.synth.channelProperties[e.channel].transposition
-            );
-            this.pressNote(e.midiNote + noteShift, e.channel, e.velocity);
+            this.pressNote(e.midiNote, e.channel, e.velocity);
         });
 
         this.synth.eventHandler.addEvent(
             "noteOff",
             "keyboard-note-off",
             (e) => {
-                const noteShift = Math.trunc(
-                    this.synth.channelProperties[e.channel].transposition
-                );
-                this.releaseNote(e.midiNote + noteShift, e.channel);
+                this.releaseNote(e.midiNote, e.channel);
             }
         );
 
         this.synth.eventHandler.addEvent("stopAll", "keyboard-stop-all", () => {
             this.clearNotes();
         });
-
-        this.synth.eventHandler.addEvent(
-            "muteChannel",
-            "keyboard-mute-channel",
-            (e) => {
-                if (e.isMuted) {
-                    for (let i = 0; i < 128; i++) {
-                        this.releaseNote(i, e.channel);
-                    }
-                }
-            }
-        );
     }
 
     protected _keyRange = {
@@ -122,18 +104,26 @@ export class MIDIKeyboard {
         this._shown = val;
     }
 
+    public onMute(muteChannel: number, is: boolean) {
+        if (is) {
+            for (let i = 0; i < 128; i++) {
+                this.releaseNote(i, muteChannel);
+            }
+        }
+    }
+
     public setHoldPedal(down: boolean) {
         if (down) {
             this.synth.controllerChange(
                 this.channel,
-                midiControllers.sustainPedal,
+                MIDIControllers.sustainPedal,
                 127
             );
             this.keyboard.style.filter = "brightness(0.5)";
         } else {
             this.synth.controllerChange(
                 this.channel,
-                midiControllers.sustainPedal,
+                MIDIControllers.sustainPedal,
                 0
             );
             this.keyboard.style.filter = "";
@@ -301,7 +291,10 @@ export class MIDIKeyboard {
      * @param velocity 0-127
      */
     public pressNote(midiNote: number, channel: number, velocity: number) {
-        const key = this.keys[midiNote - this._keyRange.min];
+        const actualNote = midiNote + this.getKeyOffset(channel);
+
+        const relativeKey = actualNote - this._keyRange.min;
+        const key = this.keys[relativeKey];
         if (key === undefined) {
             return;
         }
@@ -342,9 +335,7 @@ export class MIDIKeyboard {
             const spread = GLOW_PX * brightness;
             key.style.boxShadow = `${color} 0px 0px ${spread}px ${spread / 5}px`;
         }
-        this.keyColors[midiNote - this._keyRange.min].push(
-            this.channelColors[channel % 16]
-        );
+        this.keyColors[relativeKey].push(this.channelColors[channel % 16]);
     }
 
     /**
@@ -352,7 +343,8 @@ export class MIDIKeyboard {
      * @param channel 0-15
      */
     public releaseNote(midiNote: number, channel: number) {
-        const relativeKey = midiNote - this._keyRange.min;
+        const actualNote = midiNote + this.getKeyOffset(channel);
+        const relativeKey = actualNote - this._keyRange.min;
         const keyElement = this.keys[relativeKey];
         if (keyElement === undefined) {
             return;
@@ -389,6 +381,18 @@ export class MIDIKeyboard {
             key.style.boxShadow = "";
             this.keyColors[index] = [];
         }
+    }
+
+    protected getKeyOffset(channel: number) {
+        const ch = this.synth.midiChannels[channel];
+        return (
+            (ch.patch.isDrum
+                ? 0
+                : this.synth.midiParameters.keyShift +
+                  this.synth.systemParameters.keyShift) +
+            ch.midiParameters.keyShift +
+            ch.systemParameters.keyShift
+        );
     }
 
     protected userNoteOff(note: number) {

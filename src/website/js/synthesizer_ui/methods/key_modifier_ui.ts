@@ -2,9 +2,9 @@ import {
     closeNotification,
     showNotification
 } from "../../notification/notification.js";
-import type { LocaleManager } from "../../locale/locale_manager.ts";
+import type { LocaleManager } from "../../manager/locale_manager.ts";
 import type { MIDIKeyboard } from "../../midi_keyboard/midi_keyboard.ts";
-import { type MIDIPatchNamed, MIDIPatchTools } from "spessasynth_core";
+import { type MIDIPatchFull, MIDIPatchTools } from "spessasynth_core";
 import type { Synthesizer } from "../../utils/synthesizer.ts";
 
 const LOCALE_PATH = "locale.synthesizerController.keyModifiers.";
@@ -51,7 +51,7 @@ async function doModifyKey(
     synth: Synthesizer,
     locale: LocaleManager,
     keyboard: MIDIKeyboard,
-    presetList: MIDIPatchNamed[]
+    presetList: MIDIPatchFull[]
 ) {
     const key = await getKey(locale, keyboard);
 
@@ -98,7 +98,7 @@ async function doModifyKey(
                 attributes: getInput(
                     "chan",
                     0,
-                    synth.channelsAmount - 1,
+                    synth.channelCount - 1,
                     keyboard.channel
                 )
             },
@@ -216,7 +216,7 @@ async function doRemoveModification(
                     type: "number",
                     value: keyboard.channel.toString(),
                     min: "0",
-                    max: (synth.channelsAmount - 1).toString()
+                    max: (synth.channelCount - 1).toString()
                 }
             },
             {
@@ -242,7 +242,7 @@ export function startKeyModifiersMenu(
     synth: Synthesizer,
     locale: LocaleManager,
     keyboard: MIDIKeyboard,
-    presetList: MIDIPatchNamed[]
+    presetList: MIDIPatchFull[]
 ) {
     showNotification(
         locale.getLocaleString(LOCALE_PATH + "mainTitle"),

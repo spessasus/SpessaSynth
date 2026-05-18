@@ -15,15 +15,14 @@ import { keybinds } from "../utils/keybinds.js";
 import { updateSongDisplayData } from "./update_song_display_data.js";
 import { sanitizeKarLyrics, setLyricsText } from "./lyrics.js";
 import { createSlider } from "../settings_ui/sliders.js";
-import type { LocaleManager } from "../locale/locale_manager.ts";
+import type { LocaleManager } from "../manager/locale_manager.ts";
 import type { MusicModeUI } from "../music_mode_ui/music_mode_ui.ts";
 import type { Renderer } from "../renderer/renderer.ts";
 import {
     audioToWav,
     type MIDIMessage,
     type MIDIMessageType,
-    midiMessageTypes,
-    SpessaSynthCoreUtils
+    MIDIMessageTypes
 } from "spessasynth_core";
 import type { Sequencer } from "spessasynth_lib";
 import { AssManager } from "../utils/ass_manager/ass_manager.ts";
@@ -53,9 +52,9 @@ const ZWSP = "\u200B";
 
 // Parser for turning MIDI status bytes into text
 const reversedMIDITypes = new Map<MIDIMessageType, string>();
-for (const key in midiMessageTypes) {
+for (const key in MIDIMessageTypes) {
     reversedMIDITypes.set(
-        midiMessageTypes[key as keyof typeof midiMessageTypes],
+        MIDIMessageTypes[key as keyof typeof MIDIMessageTypes],
         key.replaceAll(/([a-z])([A-Z])/g, "$1 $2")
     );
 }
@@ -172,7 +171,7 @@ export class SequencerUI {
 
         // Set up synth display event
         synth.eventHandler.addEvent(
-            "synthDisplay",
+            "displayMessage",
             "sequi-synth-display",
             this.synthDisplay.bind(this)
         );
@@ -229,10 +228,15 @@ export class SequencerUI {
                 this.encodingSelector = encodingSelector;
                 titleWrapper.append(encodingSelector);
 
+                // Text scroll wrapper
+                const textScrollWrapper = document.createElement("div");
+                textScrollWrapper.classList.add("lyrics_text_scroll");
+                mainLyricsDiv.append(textScrollWrapper);
+
                 // The actual text
                 const text = document.createElement("p");
                 text.classList.add("lyrics_text");
-                mainLyricsDiv.append(text);
+                textScrollWrapper.append(text);
 
                 // Display for other texts
                 const otherTextWrapper = document.createElement("details");
@@ -244,7 +248,6 @@ export class SequencerUI {
                 );
                 otherTextWrapper.append(sum);
                 const otherText = document.createElement("div");
-                otherText.textContent = "";
                 otherTextWrapper.append(otherText);
                 mainLyricsDiv.append(otherTextWrapper);
 
@@ -550,8 +553,8 @@ export class SequencerUI {
             controlsDiv.append(nextSongButton); // >|
 
             this.controls.append(progressBarBg);
-            progressBarBg.append(this.progressBar);
-            this.controls.append(this.progressTime);
+
+            progressBarBg.append(this.progressBar, this.progressTime);
             this.controls.append(playbackRateSliderWrapper);
             this.controls.append(controlsDiv);
 
@@ -668,8 +671,9 @@ export class SequencerUI {
                 this.lyricsIndex = -1;
                 this.updateSongDisplayData();
                 // Disable loop if more than 1 song
-                this.setLoopState(this.seq.songsAmount === 1);
+                this.setLoopState(this.seq.songCount === 1);
                 this.restoreDisplay();
+                this.renderer.clearRendererMatrix();
 
                 let midiEncoding = data.getRMIDInfo("midiEncoding");
                 if (data.embeddedSoundBankSize !== undefined) {
@@ -678,7 +682,7 @@ export class SequencerUI {
                 }
                 if (midiEncoding) {
                     this.changeEncoding(midiEncoding);
-                    SpessaSynthCoreUtils.SpessaSynthInfo(
+                    console.info(
                         `Changing encoding via MENC to ${midiEncoding}`
                     );
                 }
@@ -772,13 +776,15 @@ export class SequencerUI {
             getPauseSvg(ICON_SIZE);
         this.silencePlayer.volume = 0.001;
         this.syncSilencePlayer();
+        // Ensure that the speed doesn't change on new song
+        this.silencePlayer.playbackRate = this.seq.playbackRate;
         void this.silencePlayer.play().then(() => {
             this.silencePlayer.volume = 0.000_01;
         });
 
         // Show and start
         this.controls.style.display = "block";
-        this.updateSongDisplayData();
+        this.updateSongDisplayData(false);
         navigator.mediaSession.playbackState = "playing";
     }
 
@@ -827,11 +833,19 @@ export class SequencerUI {
     }
 
     protected updateOtherTextEvents() {
-        let text = "";
+        const children: HTMLElement[] = [];
+        let lastSpan: HTMLSpanElement | undefined;
         for (const raw of this.rawOtherTextEvents) {
-            text += `<span><pre>${reversedMIDITypes.get(raw.statusByte)}:</pre> <i>${this.decodeTextFix(raw.data.buffer)}</i></span><br>`;
+            lastSpan = document.createElement("span");
+            const pre = document.createElement("pre");
+            pre.textContent = reversedMIDITypes.get(raw.statusByte) + ":";
+            const i = document.createElement("i");
+            i.textContent = this.decodeTextFix(raw.data.buffer);
+            lastSpan.append(pre, i);
+            children.push(lastSpan);
         }
-        this.lyricsElement.text.other.innerHTML = text;
+        this.lyricsElement.text.other.replaceChildren(...children);
+        lastSpan?.scrollIntoView({ behavior: "smooth" });
     }
 
     protected setWakeLock() {
@@ -1062,6 +1076,8 @@ export class SequencerUI {
             this.silencePlayer.src = URL.createObjectURL(
                 new Blob([buf], { type: "audio/wav" })
             );
+            // Ensure that the speed doesn't change on new song
+            this.silencePlayer.playbackRate = this.seq.playbackRate;
 
             const mid = this.seq.midiData;
             const artwork = new Array<MediaImage>();

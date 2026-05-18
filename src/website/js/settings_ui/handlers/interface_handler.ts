@@ -1,5 +1,5 @@
 import type { SpessaSynthSettings } from "../settings.ts";
-import type { localeList } from "../../locale/locale_files/locale_list.ts";
+import type { localeList } from "../../../locale/locale_list.ts";
 import type { LayoutType } from "../../../../server/saved_settings.ts";
 import { WorkerSynthesizer } from "spessasynth_lib";
 import { Ut } from "../../utils/other.js";
@@ -26,7 +26,7 @@ export function _createInterfaceSettingsHandler(this: SpessaSynthSettings) {
     select.addEventListener("change", () => {
         if (select.value === "help-translate") {
             window.open(
-                "https://github.com/spessasus/SpessaSynth/blob/master/src/website/js/locale/locale_files/README.md"
+                "https://github.com/spessasus/SpessaSynth/blob/master/src/website/locale/README.md"
             );
             select.value = this.locale.localeCode || "en";
             return;

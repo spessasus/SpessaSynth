@@ -1,6 +1,6 @@
 import { createSlider } from "../settings_ui/sliders.js";
 import type { NotificationContent } from "./notification.ts";
-import type { LocaleManager } from "../locale/locale_manager.ts";
+import type { LocaleManager } from "../manager/locale_manager.ts";
 
 function applyTextContent(
     el: HTMLElement,

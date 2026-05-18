@@ -9,10 +9,10 @@ import {
 import { Renderer } from "../renderer/renderer.js";
 
 import { SequencerUI } from "../sequencer_ui/sequencer_ui.js";
-import { SynthetizerUI } from "../synthesizer_ui/synthetizer_ui.js";
+import { SynthesizerUI } from "../synthesizer_ui/synthetizer_ui.js";
 import { SpessaSynthSettings } from "../settings_ui/settings.js";
 import { MusicModeUI } from "../music_mode_ui/music_mode_ui.js";
-import { LocaleManager } from "../locale/locale_manager.js";
+import { LocaleManager } from "./locale_manager.js";
 import { isMobile } from "../utils/is_mobile.js";
 import { keybinds } from "../utils/keybinds.js";
 import { showAudioExportMenu } from "./export_audio/export_audio.js";
@@ -85,7 +85,7 @@ export class Manager {
     ];
     private keyboard?: MIDIKeyboard;
     private renderer?: Renderer;
-    private synthUI?: SynthetizerUI;
+    private synthUI?: SynthesizerUI;
     private musicModeUI?: MusicModeUI;
     private settingsUI?: SpessaSynthSettings;
     private readonly context;
@@ -167,7 +167,10 @@ export class Manager {
         }
         this.seq?.pause();
         const text = sf.slice(8, 12);
-        const header = util.readBytesAsString(new IndexedByteArray(text), 4);
+        const header = util.readBinaryStringIndexed(
+            new IndexedByteArray(text),
+            4
+        );
         const isDLS = header.toLowerCase() === "dls " && !this.isLocalEdition;
         await this.setSF(sf);
         if (isDLS) {
@@ -200,7 +203,8 @@ export class Manager {
             trim: false,
             bankID: "main",
             writeEmbeddedSoundBank: false,
-            sequencerID: 0
+            sequencerID: 0,
+            software: "SpessaSynth"
         });
         this.saveBlob(new Blob([sf.binary]), sf.fileName);
     }
@@ -235,7 +239,7 @@ export class Manager {
             console.info("Transferring to worker directly...");
             await this.synth.soundBankManager.addSoundBank(sf, SOUND_BANK_ID);
         }
-        console.info("Sound bank reloaded succesfully.");
+        console.info("Sound bank reloaded successfully.");
     }
 
     private saveUrl(url: string, name: string) {
@@ -429,15 +433,20 @@ export class Manager {
         }
 
         // Set up synth UI
-        this.synthUI = new SynthetizerUI(
+        this.synthUI = new SynthesizerUI(
             this.channelColors,
-            document.querySelector("#synthetizer_controls")!,
+            document.querySelector("#synthesizer_controls")!,
             this.localeManager,
             this.keyboard,
             this.synth,
             this.seq,
             this.renderer
         );
+
+        // Connect muting to renderer
+        this.synthUI.onMute.push((channel, isMuted) => {
+            this.renderer!.renderChannels[channel] = !isMuted;
+        }, this.keyboard.onMute.bind(this.keyboard));
 
         // Create a UI for music player mode
         this.musicModeUI = new MusicModeUI(
@@ -504,7 +513,7 @@ export class Manager {
                 this.showExportMenu.bind(this)
             );
             // If demo website, hide demo songs button
-            if (this.isLocalEdition) {
+            if (!this.isLocalEdition) {
                 document.querySelector<HTMLLabelElement>(
                     "#demo_song"
                 )!.style.display = "none";
