@@ -31,7 +31,7 @@ export function setEventListeners(this: SynthesizerUI) {
         }
     );
 
-    this.synth.eventHandler.addEvent("synthReset", "synthui-reset", () => {
+    this.synth.eventHandler.addEvent("reset", "synthui-reset", () => {
         for (const controller of this.controllers) {
             for (const [cc, meter] of controller.controllerMeters) {
                 // Do not reset transpose and gain (system parameters)
@@ -72,7 +72,7 @@ export function setEventListeners(this: SynthesizerUI) {
     );
 
     this.synth.eventHandler.addEvent(
-        "channelMIDIParamChange",
+        "channelParamChange",
         "synthui-midi-channel-change",
         (e) => {
             switch (e.parameter) {
@@ -95,7 +95,7 @@ export function setEventListeners(this: SynthesizerUI) {
     );
 
     this.synth.eventHandler.addEvent(
-        "newChannel",
+        "channelAdded",
         "synthui-new-channel",
         () => {
             appendNewController.call(this, this.controllers.length);

@@ -64,7 +64,7 @@ export class ProgramTracker {
         );
 
         this.synth.eventHandler.addEvent(
-            "newChannel",
+            "channelAdded",
             "program-tracker-new-channel",
             this.addChannelTracker.bind(this)
         );

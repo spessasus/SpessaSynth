@@ -93,7 +93,7 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
         presetList = this.synth.presetList;
     }
     this.synth.eventHandler.addEvent(
-        "newChannel",
+        "channelAdded",
         "settings-new-channel",
         () => {
             createChannel();
@@ -193,7 +193,7 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
 
     // Listen for new channels
     this.synth.eventHandler.addEvent(
-        "newChannel",
+        "channelAdded",
         "settings-new-channel",
         () => {
             createChannel();

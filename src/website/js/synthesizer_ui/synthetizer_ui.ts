@@ -407,7 +407,7 @@ export class SynthesizerUI {
                     ch.setSystemParameter("isMuted", false);
                 }
                 this.soloChannels.clear();
-                this.synth.resetControllers();
+                this.synth.reset();
                 this.midiPort?.send([
                     MIDIMessageTypes.systemExclusive, // Start of sysEx
                     0x41, // Roland

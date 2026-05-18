@@ -171,7 +171,7 @@ export class SequencerUI {
 
         // Set up synth display event
         synth.eventHandler.addEvent(
-            "synthDisplay",
+            "displayMessage",
             "sequi-synth-display",
             this.synthDisplay.bind(this)
         );

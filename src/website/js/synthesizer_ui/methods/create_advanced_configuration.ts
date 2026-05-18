@@ -286,7 +286,7 @@ export function createAdvancedConfiguration(
                             false
                         );
                     } else {
-                        this.synth.resetControllers();
+                        this.synth.reset();
                         this.synth.setSystemParameter(
                             "customVibratoLock",
                             true
@@ -308,7 +308,7 @@ export function createAdvancedConfiguration(
                     if (enable) {
                         this.synth.setSystemParameter("drumLock", false);
                     } else {
-                        this.synth.resetControllers();
+                        this.synth.reset();
                         this.synth.setSystemParameter("drumLock", true);
                         if (this.sequencer) {
                             this.sequencer.currentTime -= 0.1;
