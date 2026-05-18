@@ -43,11 +43,6 @@ export const effectsConfig = {
         drumEditing: {
             title: "Edycja perkusji",
             description: "Zezwól na edycję perkusji przy użyciu MIDI"
-        },
-
-        customVibrato: {
-            title: "Niestandardowe vibrato",
-            description: "Włącz niestandardowy efekt vibrato (NRPN)"
         }
     },
 

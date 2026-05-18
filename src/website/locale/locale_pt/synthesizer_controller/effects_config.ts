@@ -12,12 +12,6 @@ export const effectsConfig = {
                 "Ativa o Modo de Alto Desempenho, simplificando a aparência e eliminando as notas mais rapidamente"
         },
 
-        disableCustomVibrato: {
-            title: "Desativar vibrato personalizado",
-            description:
-                "Desativa permanentemente o vibrato personalizado (NRPN). Recarregue o site para reativá-lo"
-        },
-
         interpolation: {
             description: "Selecione o método de interpolação do sintetizador",
             linear: "Interpolação Linear",

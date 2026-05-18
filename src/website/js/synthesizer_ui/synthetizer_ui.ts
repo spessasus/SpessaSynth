@@ -341,7 +341,6 @@ export class SynthesizerUI {
             resetCCButton.addEventListener("click", () => {
                 // Unlock everything
                 this.synth.setSystemParameter("drumLock", false);
-                this.synth.setSystemParameter("customVibratoLock", false);
                 if (this.synth.systemParameters.reverbLock) {
                     this.effectConfigs.reverb.toggleLock();
                 }

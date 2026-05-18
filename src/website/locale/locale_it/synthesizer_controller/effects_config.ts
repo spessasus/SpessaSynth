@@ -34,12 +34,6 @@ export const effectsConfig = {
             title: "Limite voci",
             description:
                 "Il numero massimo di voci consentite contemporaneamente"
-        },
-
-        customVibrato: {
-            title: "Disabilita vibrato personalizzato",
-            description:
-                "Disabilita permanentemente il vibrato personalizzato (NRPN). Ricarica il sito per riattivarlo"
         }
     },
 

@@ -54,12 +54,6 @@ export const effectsConfig = {
             description:
                 //"Drum Editing: Allow editing drum instruments via MIDI system exclusive messages"
                 "ドラム編集: MIDIシステムエクスクルーシブメッセージを介してドラム楽器の編集を許可します"
-        },
-
-        customVibrato: {
-            title: "カスタムビブラート",
-            description:
-                "カスタムビブラート: NRPNを使ったカスタムビブラートを有効にします"
         }
     },
 

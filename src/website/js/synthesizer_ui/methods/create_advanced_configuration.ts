@@ -278,31 +278,6 @@ export function createAdvancedConfiguration(
         paramWrapper.append(
             toggleMeter(
                 this.locale,
-                "customVibrato",
-                (enable) => {
-                    if (enable) {
-                        this.synth.setSystemParameter(
-                            "customVibratoLock",
-                            false
-                        );
-                    } else {
-                        this.synth.reset();
-                        this.synth.setSystemParameter(
-                            "customVibratoLock",
-                            true
-                        );
-                        if (this.sequencer) {
-                            this.sequencer.currentTime -= 0.1;
-                        }
-                    }
-                },
-                true,
-                yesNo
-            ).div
-        );
-        paramWrapper.append(
-            toggleMeter(
-                this.locale,
                 "drumEditing",
                 (enable) => {
                     if (enable) {

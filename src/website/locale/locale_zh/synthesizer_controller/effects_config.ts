@@ -14,11 +14,6 @@ export const effectsConfig = {
                 "MSGS 音符截断: 立即截断同一键上的前一个音符，模拟 Microsoft GS 波表合成器"
         },
 
-        customVibrato: {
-            title: "禁用自定义颤音",
-            description: "永久禁用自定义 (NRPN) 颤音。重新加载网站以重新启用它"
-        },
-
         interpolation: {
             description: "选择合成器的插值方法",
             linear: "线性插值",
