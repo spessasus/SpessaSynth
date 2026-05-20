@@ -181,7 +181,7 @@ export function computeNotePositions(
                                 width: finalWidth,
                                 stroke: STROKE_THICKNESS,
                                 pressedProgress: 0, // Not pressed
-                                velocity: note.velocity, // VELOCITY IS MAPPED FROM 0 TO 1!
+                                velocity: note.velocity / 127,
                                 // If we ignore drawing active notes, draw those with regular colors
                                 color: color
                             });
@@ -213,7 +213,7 @@ export function computeNotePositions(
                                 width: finalWidth,
                                 stroke: STROKE_THICKNESS,
                                 pressedProgress: noteProgress,
-                                velocity: note.velocity,
+                                velocity: note.velocity / 127,
                                 color: color
                             });
                         }
