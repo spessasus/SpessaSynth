@@ -105,7 +105,12 @@ export const channelControllerLocale = {
     transposeMeter: {
         title: "Transpozycja: ",
         description:
-            "Transpozycja kanału: Aktualna transpozycja (przesunięcie klawiszy) kanału {0}. Ten parameter NIE BĘDZIE zapisany w pliku MIDI!"
+            "Transpozycja kanału: Aktualna transpozycja (przesunięcie klawiszy) kanału {0}."
+    },
+
+    fineTuneMeter: {
+        title: "Dostrajanie: ",
+        description: "Dostrajanie: Aktualne dostrajanie (w centach) kanału {0}."
     },
 
     gainMeter: {

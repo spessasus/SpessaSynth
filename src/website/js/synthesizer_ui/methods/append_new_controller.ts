@@ -298,6 +298,33 @@ export function appendNewController(
     controllerMeters.set(extraChannelControllers.transpose, transpose);
     controller.append(transpose.div);
 
+    // Fine tune is not a CC, add it manually
+    const fineTune = new Meter({
+        color: this.channelColors[channelNumber % this.channelColors.length],
+        smooth: true,
+        localePath: LOCALE_PATH + "channelController.fineTuneMeter",
+        locale: this.locale,
+        localeArgs: [channelNumber + 1],
+        min: -100,
+        max: 100,
+        def: 0,
+        onEdit: (val) => {
+            val = Math.round(val);
+            ch.setSystemParameter("fineTune", val);
+            fineTune.update(val);
+        },
+        activeChangeCallback: (active) => {
+            // Do hide on multi-port files
+            if (channelNumber >= 16) {
+                return;
+            }
+
+            this.setCCVisibilityStartingFrom(channelNumber + 1, !active);
+        }
+    });
+    controllerMeters.set(extraChannelControllers.fineTune, fineTune);
+    controller.append(fineTune.div);
+
     // Gain is not a CC, add it manually
     const gain = new Meter({
         color: this.channelColors[channelNumber % this.channelColors.length],
@@ -312,13 +339,6 @@ export function appendNewController(
             val = Math.round(val * 100) / 100;
             ch.setSystemParameter("gain", val);
             gain.update(val);
-        },
-        activeChangeCallback: (active) => {
-            // Do hide on multi-port files
-            if (channelNumber >= 16) {
-                return;
-            }
-            this.setCCVisibilityStartingFrom(channelNumber + 1, !active);
         }
     });
     controllerMeters.set(extraChannelControllers.gain, gain);

@@ -66,9 +66,15 @@ export const channelControllerLocale = {
     },
 
     transposeMeter: {
-        title: "Transpose: ",
+        title: "Key Shift: ",
         description:
-            "Channel Transpose: The current transposition (key shift) of channel {0}. This DOES NOT get saved in the MIDI file!"
+            "Key Shift: The current transposition (key shift) of channel {0}."
+    },
+
+    fineTuneMeter: {
+        title: "Fine Tune: ",
+        description:
+            "Fine Tune: The current fine tuning (in cents) of channel {0}."
     },
 
     gainMeter: {

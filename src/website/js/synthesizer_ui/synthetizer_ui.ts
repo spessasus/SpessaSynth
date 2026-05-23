@@ -1,7 +1,4 @@
-import {
-    hideControllers,
-    showControllers
-} from "./methods/hide_show_controllers.js";
+import { hideControllers, showControllers } from "./methods/hide_show_controllers.js";
 import { toggleDarkMode } from "./methods/toggle_dark_mode.js";
 import { setEventListeners } from "./methods/set_event_listeners.js";
 import { keybinds } from "../utils/keybinds.js";
@@ -70,7 +67,8 @@ export const ICON_SIZE = 32;
 
 export const extraChannelControllers = {
     transpose: 130,
-    gain: 131
+    gain: 131,
+    fineTune: 132
 } as const;
 
 export type ChannelControllerNumber =
@@ -95,6 +93,7 @@ const controllerGroups = {
     ],
     systemParameters: [
         extraChannelControllers.transpose,
+        extraChannelControllers.fineTune,
         extraChannelControllers.gain
     ]
 } as const;
@@ -386,6 +385,11 @@ export class SynthesizerUI {
                     ch.setSystemParameter("keyShift", 0);
                     controller.controllerMeters
                         .get(extraChannelControllers.transpose)
+                        ?.update(0);
+                    // Fine tune
+                    ch.setSystemParameter("fineTune", 0);
+                    controller.controllerMeters
+                        .get(extraChannelControllers.fineTune)
                         ?.update(0);
                     // Gain
                     ch.setSystemParameter("gain", 1);
