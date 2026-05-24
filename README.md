@@ -32,6 +32,14 @@ This is a repository for the web application, it used to be a monorepo containin
 </p>
 
 <h3 align='center'><a href='https://github.com/spessasus/SpessaSynth/wiki/How-To-Use-App'>Usage Guide</a></h3>
+
+<h3 align='center'>Supported Browsers</h2>
+
+- **Chromium-based:** such as Google Chrome, Microsoft Edge, Brave, Opera, etc.
+- **Gecko-based:** such as Mozilla Firefox, Floorp, Zen, Waterfox, Librewolf, etc.
+- **Chrome for Android/Chromebook**
+- **Firefox for Android**
+
 <h2 align='center'>Features</h2>
 
 - **Visualization of the played sequence:** with cool effects like visual pitch bend and note-on effects!
