@@ -38,6 +38,8 @@ export function setEventListeners(this: SynthesizerUI) {
                 if (cc <= CONTROLLER_TABLE_SIZE) {
                     meter.reset();
                 }
+                controller.polyMonoButton.setAttribute("isPoly", "true");
+                controller.polyMonoButton.innerHTML = POLY_ON;
             }
         }
     });
