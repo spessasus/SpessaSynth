@@ -1,4 +1,7 @@
-import { hideControllers, showControllers } from "./methods/hide_show_controllers.js";
+import {
+    hideControllers,
+    showControllers
+} from "./methods/hide_show_controllers.js";
 import { toggleDarkMode } from "./methods/toggle_dark_mode.js";
 import { setEventListeners } from "./methods/set_event_listeners.js";
 import { keybinds } from "../utils/keybinds.js";
@@ -6,6 +9,7 @@ import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { Ut } from "../utils/other.js";
 import { closeNotification } from "../notification/notification.js";
 import {
+    type ChannelSystemParameter,
     DEFAULT_GLOBAL_SYSTEM_PARAMETERS,
     type EffectChangeCallback,
     type MIDIController,
@@ -49,9 +53,13 @@ export const POLY_ON = "<pre>P</pre>";
 
 export const LOCALE_PATH = "locale.synthesizerController.";
 
+export type ChannelControllerKey =
+    | MIDIController
+    | keyof ChannelSystemParameter;
+
 export interface ChannelController {
     controller: HTMLDivElement;
-    controllerMeters: Map<ChannelControllerNumber, Meter>;
+    controllerMeters: Map<ChannelControllerKey, Meter>;
     voiceMeter: Meter;
     pitchWheel: Meter;
     preset: Selector;
@@ -65,17 +73,7 @@ export interface ChannelController {
 
 export const ICON_SIZE = 32;
 
-export const extraChannelControllers = {
-    transpose: 130,
-    gain: 131,
-    fineTune: 132
-} as const;
-
-export type ChannelControllerNumber =
-    | MIDIController
-    | (typeof extraChannelControllers)[keyof typeof extraChannelControllers];
-
-const controllerGroups = {
+const controllerGroups: Record<string, ChannelControllerKey[]> = {
     effects: [
         MIDIControllers.reverbDepth,
         MIDIControllers.chorusDepth,
@@ -91,11 +89,7 @@ const controllerGroups = {
         MIDIControllers.portamentoTime,
         MIDIControllers.portamentoControl
     ],
-    systemParameters: [
-        extraChannelControllers.transpose,
-        extraChannelControllers.fineTune,
-        extraChannelControllers.gain
-    ]
+    systemParameters: ["keyShift", "fineTune", "gain"]
 } as const;
 
 export type ControllerGroup = keyof typeof controllerGroups;
@@ -383,19 +377,13 @@ export class SynthesizerUI {
                     }
                     // Transpose (only key shift)
                     ch.setSystemParameter("keyShift", 0);
-                    controller.controllerMeters
-                        .get(extraChannelControllers.transpose)
-                        ?.update(0);
+                    controller.controllerMeters.get("keyShift")?.update(0);
                     // Fine tune
                     ch.setSystemParameter("fineTune", 0);
-                    controller.controllerMeters
-                        .get(extraChannelControllers.fineTune)
-                        ?.update(0);
+                    controller.controllerMeters.get("fineTune")?.reset();
                     // Gain
                     ch.setSystemParameter("gain", 1);
-                    controller.controllerMeters
-                        .get(extraChannelControllers.gain)
-                        ?.update(1);
+                    controller.controllerMeters.get("gain")?.reset();
 
                     // Mute/solo
                     controller.soloButton.innerHTML = getEmptyMicSvg(ICON_SIZE);
@@ -472,9 +460,7 @@ export class SynthesizerUI {
             }
 
             groupSelector.addEventListener("change", () => {
-                this.showControllerGroup(
-                    groupSelector.value as ControllerGroup
-                );
+                this.showControllerGroup(groupSelector.value);
             });
             this.groupSelector = groupSelector;
 
@@ -1108,7 +1094,7 @@ export class SynthesizerUI {
         }
     }
 
-    private showCCs(ccs: readonly ChannelControllerNumber[]) {
+    private showCCs(ccs: readonly ChannelControllerKey[]) {
         for (const cc of ccs) {
             for (const controller of this.controllers) {
                 Ut.show(controller.controllerMeters.get(cc)?.div);
@@ -1116,7 +1102,7 @@ export class SynthesizerUI {
         }
     }
 
-    private hideCCs(ccs: readonly ChannelControllerNumber[]) {
+    private hideCCs(ccs: readonly ChannelControllerKey[]) {
         for (const cc of ccs) {
             for (const controller of this.controllers) {
                 Ut.hide(controller.controllerMeters.get(cc)?.div);

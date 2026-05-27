@@ -1,7 +1,6 @@
 import {
     type ChannelController,
-    type ChannelControllerNumber,
-    extraChannelControllers,
+    type ChannelControllerKey,
     ICON_SIZE,
     LOCALE_PATH,
     MONO_ON,
@@ -107,10 +106,10 @@ export function appendNewController(
     const changeCCUserFunction = (
         cc: MIDIController,
         val: number,
-        meter: Meter
+        locked: boolean
     ): void => {
         const ch = this.synth.midiChannels[channelNumber];
-        if (meter.isLocked) {
+        if (locked) {
             ch.lockController(cc, false);
             this.synth.controllerChange(channelNumber, cc, val);
             ch.lockController(cc, true);
@@ -119,230 +118,232 @@ export function appendNewController(
         }
     };
 
-    const controllerMeters = new Map<ChannelControllerNumber, Meter>();
+    const controllerMeters = new Map<ChannelControllerKey, Meter>();
+
+    const addMeterToController = (key: ChannelControllerKey, meter: Meter) => {
+        controllerMeters.set(key, meter);
+        controller.append(meter.div);
+        return meter;
+    };
 
     const createCCMeterHelper = (
         ccNum: MIDIController,
         localePath: string,
         allowLocking = true
     ): Meter => {
-        const meter = new Meter({
+        return addMeterToController(
+            ccNum,
+            new Meter({
+                color: this.channelColors[
+                    channelNumber % this.channelColors.length
+                ],
+                localePath: LOCALE_PATH + localePath,
+                locale: this.locale,
+                localeArgs: [channelNumber + 1],
+                min: 0,
+                max: 127,
+                def: DEFAULT_MIDI_CONTROLLERS[ccNum] >> 7,
+                onEdit: (val, m) => {
+                    changeCCUserFunction(ccNum, Math.round(val), m.isLocked);
+                },
+                onLock: allowLocking
+                    ? (isLocked) => ch.lockController(ccNum, isLocked)
+                    : undefined
+            })
+        );
+    };
+
+    // Pan controller
+    createCCMeterHelper(MIDIControllers.pan, "channelController.panMeter");
+
+    // Expression controller
+    createCCMeterHelper(
+        MIDIControllers.expression,
+        "channelController.expressionMeter"
+    );
+
+    // Volume controller
+    createCCMeterHelper(
+        MIDIControllers.mainVolume,
+        "channelController.volumeMeter"
+    );
+
+    // Modulation wheel
+    createCCMeterHelper(
+        MIDIControllers.modulationWheel,
+        "channelController.modulationWheelMeter"
+    );
+
+    // Reverb
+    createCCMeterHelper(
+        MIDIControllers.reverbDepth,
+        "channelController.reverbMeter"
+    );
+
+    // Chorus
+    createCCMeterHelper(
+        MIDIControllers.chorusDepth,
+        "channelController.chorusMeter"
+    );
+
+    // Delay
+    createCCMeterHelper(
+        MIDIControllers.variationDepth,
+        "channelController.delayMeter"
+    );
+
+    // Filter cutoff
+    createCCMeterHelper(
+        MIDIControllers.brightness,
+        "channelController.filterMeter"
+    );
+
+    // Attack time
+    createCCMeterHelper(
+        MIDIControllers.attackTime,
+        "channelController.attackMeter"
+    );
+
+    // Release time
+    createCCMeterHelper(
+        MIDIControllers.releaseTime,
+        "channelController.releaseMeter"
+    );
+
+    // Decay time
+    createCCMeterHelper(
+        MIDIControllers.decayTime,
+        "channelController.decayMeter"
+    );
+
+    // Portamento time
+    // Custom control to set portamento on off as well
+    addMeterToController(
+        MIDIControllers.portamentoTime,
+        new Meter({
             color: this.channelColors[
                 channelNumber % this.channelColors.length
             ],
-            localePath: LOCALE_PATH + localePath,
+            localePath: LOCALE_PATH + "channelController.portamentoTimeMeter",
             locale: this.locale,
             localeArgs: [channelNumber + 1],
             min: 0,
             max: 127,
-            def: DEFAULT_MIDI_CONTROLLERS[ccNum] >> 7,
-            onEdit: (val) => {
-                changeCCUserFunction(ccNum, Math.round(val), meter);
+            def: 0,
+            onEdit: (val, meterLocked) => {
+                if (meterLocked) {
+                    ch.lockController(MIDIControllers.portamentoTime, false);
+                    ch.lockController(MIDIControllers.portamentoOnOff, false);
+                }
+                this.synth.controllerChange(
+                    channelNumber,
+                    MIDIControllers.portamentoTime,
+                    Math.round(val)
+                );
+                this.synth.controllerChange(
+                    channelNumber,
+                    MIDIControllers.portamentoOnOff,
+                    val > 0 ? 127 : 0
+                );
+                if (meterLocked) {
+                    ch.lockController(MIDIControllers.portamentoTime, true);
+                    ch.lockController(MIDIControllers.portamentoOnOff, true);
+                }
             },
-            onLock: allowLocking
-                ? (isLocked) => ch.lockController(ccNum, isLocked)
-                : undefined
-        });
-        controllerMeters.set(ccNum, meter);
-        return meter;
-    };
-
-    // Pan controller
-    const pan = createCCMeterHelper(
-        MIDIControllers.pan,
-        "channelController.panMeter"
-    );
-    controller.append(pan.div);
-
-    // Expression controller
-    const expression = createCCMeterHelper(
-        MIDIControllers.expression,
-        "channelController.expressionMeter"
-    );
-    controller.append(expression.div);
-
-    // Volume controller
-    const volume = createCCMeterHelper(
-        MIDIControllers.mainVolume,
-        "channelController.volumeMeter"
-    );
-    controller.append(volume.div);
-
-    // Modulation wheel
-    const modulation = createCCMeterHelper(
-        MIDIControllers.modulationWheel,
-        "channelController.modulationWheelMeter"
-    );
-    controller.append(modulation.div);
-
-    // Reverb
-    const reverb = createCCMeterHelper(
-        MIDIControllers.reverbDepth,
-        "channelController.reverbMeter"
-    );
-    controller.append(reverb.div);
-
-    // Chorus
-    const chorus = createCCMeterHelper(
-        MIDIControllers.chorusDepth,
-        "channelController.chorusMeter"
-    );
-    controller.append(chorus.div);
-
-    // Delay
-    const delay = createCCMeterHelper(
-        MIDIControllers.variationDepth,
-        "channelController.delayMeter"
-    );
-    controller.append(delay.div);
-
-    // Filter cutoff
-    const filterCutoff = createCCMeterHelper(
-        MIDIControllers.brightness,
-        "channelController.filterMeter"
-    );
-    controller.append(filterCutoff.div);
-
-    // Attack time
-    const attackTime = createCCMeterHelper(
-        MIDIControllers.attackTime,
-        "channelController.attackMeter"
-    );
-    controller.append(attackTime.div);
-
-    // Release time
-    const releaseTime = createCCMeterHelper(
-        MIDIControllers.releaseTime,
-        "channelController.releaseMeter"
-    );
-    controller.append(releaseTime.div);
-
-    // Decay time
-    const decayTime = createCCMeterHelper(
-        MIDIControllers.decayTime,
-        "channelController.decayMeter"
-    );
-    controller.append(decayTime.div);
-
-    // Portamento time
-    // Custom control to set portamento on off as well
-    const portamentoTime = new Meter({
-        color: this.channelColors[channelNumber % this.channelColors.length],
-        localePath: LOCALE_PATH + "channelController.portamentoTimeMeter",
-        locale: this.locale,
-        localeArgs: [channelNumber + 1],
-        min: 0,
-        max: 127,
-        def: 0,
-        onEdit: (val) => {
-            const meterLocked = portamentoTime.isLocked;
-            if (meterLocked) {
-                ch.lockController(MIDIControllers.portamentoTime, false);
-                ch.lockController(MIDIControllers.portamentoOnOff, false);
+            onLock: (isLocked) => {
+                ch.lockController(MIDIControllers.portamentoTime, isLocked);
+                ch.lockController(MIDIControllers.portamentoOnOff, isLocked);
             }
-            this.synth.controllerChange(
-                channelNumber,
-                MIDIControllers.portamentoTime,
-                Math.round(val)
-            );
-            this.synth.controllerChange(
-                channelNumber,
-                MIDIControllers.portamentoOnOff,
-                val > 0 ? 127 : 0
-            );
-            if (meterLocked) {
-                ch.lockController(MIDIControllers.portamentoTime, true);
-                ch.lockController(MIDIControllers.portamentoOnOff, true);
-            }
-        },
-        onLock: (isLocked) => {
-            ch.lockController(MIDIControllers.portamentoTime, isLocked);
-            ch.lockController(MIDIControllers.portamentoOnOff, isLocked);
-        }
-    });
-    controllerMeters.set(MIDIControllers.portamentoTime, portamentoTime);
-    controller.append(portamentoTime.div);
+        })
+    );
 
     // Portamento control
-    const portamentoControl = createCCMeterHelper(
+    createCCMeterHelper(
         MIDIControllers.portamentoControl,
         "channelController.portamentoControlMeter",
         false // Don't allow locking portamento control
     );
-    controller.append(portamentoControl.div);
 
     // Resonance
-    const filterResonance = createCCMeterHelper(
+    createCCMeterHelper(
         MIDIControllers.filterResonance,
         "channelController.resonanceMeter"
     );
-    controller.append(filterResonance.div);
 
     // Transpose is not a cc, add it manually
-    const transpose = new Meter({
-        color: this.channelColors[channelNumber % this.channelColors.length],
-        smooth: true,
-        localePath: LOCALE_PATH + "channelController.transposeMeter",
-        locale: this.locale,
-        localeArgs: [channelNumber + 1],
-        min: -36,
-        max: 36,
-        def: 0,
-        onEdit: (val) => {
-            val = Math.trunc(val);
-            ch.setSystemParameter("keyShift", val);
-            transpose.update(val);
-            this.onTranspose?.();
-        }
-    });
-    controllerMeters.set(extraChannelControllers.transpose, transpose);
-    controller.append(transpose.div);
+    addMeterToController(
+        "keyShift",
+        new Meter({
+            color: this.channelColors[
+                channelNumber % this.channelColors.length
+            ],
+            smooth: true,
+            localePath: LOCALE_PATH + "channelController.transposeMeter",
+            locale: this.locale,
+            localeArgs: [channelNumber + 1],
+            min: -36,
+            max: 36,
+            def: 0,
+            onEdit: (val, meter) => {
+                val = Math.trunc(val);
+                ch.setSystemParameter("keyShift", val);
+                meter.update(val);
+                this.onTranspose?.();
+            }
+        })
+    );
 
     // Fine tune is not a CC, add it manually
-    const fineTune = new Meter({
-        color: this.channelColors[channelNumber % this.channelColors.length],
-        smooth: true,
-        localePath: LOCALE_PATH + "channelController.fineTuneMeter",
-        locale: this.locale,
-        localeArgs: [channelNumber + 1],
-        min: -100,
-        max: 100,
-        def: 0,
-        onEdit: (val) => {
-            val = Math.round(val);
-            ch.setSystemParameter("fineTune", val);
-            fineTune.update(val);
-        },
-        activeChangeCallback: (active) => {
-            // Do hide on multi-port files
-            if (channelNumber >= 16) {
-                return;
-            }
+    addMeterToController(
+        "fineTune",
+        new Meter({
+            color: this.channelColors[
+                channelNumber % this.channelColors.length
+            ],
+            smooth: true,
+            localePath: LOCALE_PATH + "channelController.fineTuneMeter",
+            locale: this.locale,
+            localeArgs: [channelNumber + 1],
+            min: -100,
+            max: 100,
+            def: 0,
+            onEdit: (val, meter) => {
+                val = Math.round(val);
+                ch.setSystemParameter("fineTune", val);
+                meter.update(val);
+            },
+            activeChangeCallback: (active) => {
+                // Do hide on multi-port files
+                if (channelNumber >= 16) {
+                    return;
+                }
 
-            this.setCCVisibilityStartingFrom(channelNumber + 1, !active);
-        }
-    });
-    controllerMeters.set(extraChannelControllers.fineTune, fineTune);
-    controller.append(fineTune.div);
+                this.setCCVisibilityStartingFrom(channelNumber + 1, !active);
+            }
+        })
+    );
 
     // Gain is not a CC, add it manually
-    const gain = new Meter({
-        color: this.channelColors[channelNumber % this.channelColors.length],
-        smooth: true,
-        localePath: LOCALE_PATH + "channelController.gainMeter",
-        locale: this.locale,
-        localeArgs: [channelNumber + 1],
-        min: 0,
-        max: 5,
-        def: 1,
-        onEdit: (val) => {
-            val = Math.round(val * 100) / 100;
-            ch.setSystemParameter("gain", val);
-            gain.update(val);
-        }
-    });
-    controllerMeters.set(extraChannelControllers.gain, gain);
-    controller.append(gain.div);
+    addMeterToController(
+        "gain",
+        new Meter({
+            color: this.channelColors[
+                channelNumber % this.channelColors.length
+            ],
+            smooth: true,
+            localePath: LOCALE_PATH + "channelController.gainMeter",
+            locale: this.locale,
+            localeArgs: [channelNumber + 1],
+            min: 0,
+            max: 5,
+            def: 1,
+            onEdit: (val, meter) => {
+                val = Math.round(val * 100) / 100;
+                ch.setSystemParameter("gain", val);
+                meter.update(val);
+            }
+        })
+    );
 
     // Preset controller
     const presetSelector = new Selector(

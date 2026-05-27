@@ -1,10 +1,5 @@
-import {
-    type ControllerGroup,
-    MONO_ON,
-    POLY_ON,
-    type SynthesizerUI
-} from "../synthetizer_ui.ts";
-import { CONTROLLER_TABLE_SIZE, MIDIControllers } from "spessasynth_core";
+import { MONO_ON, POLY_ON, type SynthesizerUI } from "../synthetizer_ui.ts";
+import { MIDIControllers } from "spessasynth_core";
 import { appendNewController } from "./append_new_controller.ts";
 import { getDrumsSvg, getNoteSvg } from "../../utils/icons.ts";
 
@@ -35,7 +30,7 @@ export function setEventListeners(this: SynthesizerUI) {
         for (const controller of this.controllers) {
             for (const [cc, meter] of controller.controllerMeters) {
                 // Do not reset transpose and gain (system parameters)
-                if (cc <= CONTROLLER_TABLE_SIZE) {
+                if (typeof cc === "number") {
                     meter.reset();
                 }
                 controller.polyMonoButton.setAttribute("isPoly", "true");
@@ -101,9 +96,7 @@ export function setEventListeners(this: SynthesizerUI) {
         "synthui-new-channel",
         () => {
             appendNewController.call(this, this.controllers.length);
-            this.showControllerGroup(
-                this.groupSelector.value as ControllerGroup
-            );
+            this.showControllerGroup(this.groupSelector.value);
             if (!this.isShown) {
                 this.hideControllers();
             }

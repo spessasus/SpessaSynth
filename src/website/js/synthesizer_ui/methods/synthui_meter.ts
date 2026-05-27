@@ -6,7 +6,10 @@
 import { isMobile } from "../../utils/is_mobile.js";
 import type { LocaleManager } from "../../manager/locale_manager.ts";
 
-export type MeterCallbackFunction = (clickedValue: number) => unknown;
+export type MeterCallbackFunction = (
+    clickedValue: number,
+    meter: Meter
+) => unknown;
 
 /**
  * Options for creating a new Meter
@@ -75,16 +78,17 @@ if (!isMobile) {
         if (!Meter.currentMeter) {
             return;
         }
-        const relativeLeft = Meter.currentMeter.rect.left;
-        const width = Meter.currentMeter.rect.width;
+        const current = Meter.currentMeter;
+        const relativeLeft = current.rect.left;
+        const width = current.rect.width;
         const relative = e.clientX - relativeLeft;
         const percentage = Math.max(0, Math.min(1, relative / width));
-        Meter.currentMeter.onEdit(
-            percentage * (Meter.currentMeter.max - Meter.currentMeter.min) +
-                Meter.currentMeter.min
+        current.onEdit(
+            percentage * (current.max - current.min) + current.min,
+            current.m
         );
-        if (!Meter.currentMeter.m.isLocked) {
-            Meter.currentMeter.m.toggleLock();
+        if (!current.m.isLocked) {
+            current.m.toggleLock();
         }
     });
 }
@@ -192,7 +196,7 @@ export class Meter {
                         0,
                         Math.min(1, relative / width)
                     );
-                    onEdit(percentage * (max - min) + min);
+                    onEdit(percentage * (max - min) + min, this);
                     this.toggleLock();
                 });
             } else {
@@ -219,7 +223,7 @@ export class Meter {
                             0,
                             Math.min(1, relative / width)
                         );
-                        onEdit(percentage * (max - min) + min);
+                        onEdit(percentage * (max - min) + min, this);
                         if (!Meter.currentMeter.m.isLocked) {
                             Meter.currentMeter.m.toggleLock();
                         }
