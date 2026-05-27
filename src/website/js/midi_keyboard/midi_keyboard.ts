@@ -11,6 +11,11 @@ import type { Synthesizer } from "../utils/synthesizer.ts";
 
 const GLOW_PX = 20;
 
+interface PressedKey {
+    channel: number;
+    color: string;
+}
+
 export class MIDIKeyboard {
     /**
      * @param midiNote the MIDI note number that was pressed
@@ -28,7 +33,7 @@ export class MIDIKeyboard {
     protected channelColors: string[];
     protected keyboard: HTMLDivElement;
     protected keys: HTMLDivElement[] = [];
-    protected keyColors: string[][] = [];
+    protected activeNotes = new Map<number, PressedKey[]>();
     protected handlePointers = handlePointers.bind(this);
 
     /**
@@ -335,7 +340,15 @@ export class MIDIKeyboard {
             const spread = GLOW_PX * brightness;
             key.style.boxShadow = `${color} 0px 0px ${spread}px ${spread / 5}px`;
         }
-        this.keyColors[relativeKey].push(this.channelColors[channel % 16]);
+
+        if (!this.activeNotes.has(relativeKey)) {
+            this.activeNotes.set(relativeKey, []);
+        }
+
+        this.activeNotes.get(relativeKey)!.push({
+            channel,
+            color
+        });
     }
 
     /**
@@ -349,37 +362,42 @@ export class MIDIKeyboard {
         if (keyElement === undefined) {
             return;
         }
-        channel %= this.channelColors.length;
-        const pressedColors = this.keyColors[relativeKey];
-        if (!pressedColors) {
+        const active = this.activeNotes.get(relativeKey);
+        if (!active) {
             return;
         }
-        const channelColor = this.channelColors[channel];
-        for (let i = 0; i < pressedColors.length; i++) {
-            const color = pressedColors[i];
-            if (color === channelColor) {
-                pressedColors.splice(i, 1);
-                i--;
+
+        for (let i = active.length - 1; i >= 0; i--) {
+            const n = active[i];
+            if (n.channel === channel) {
+                // Delete this color
+                active.splice(i, 1);
+
+                // If there are no more playing notes on this key, release it
+                if (active.length === 0) {
+                    keyElement.classList.remove("pressed");
+                    keyElement.style.background = "";
+                    keyElement.style.boxShadow = "";
+                    return;
+                }
+
+                // Set color to the new top one
+                const newActive = active[active.length - 1];
+                keyElement.style.background = newActive.color;
+                if (this.mode === "dark") {
+                    keyElement.style.boxShadow = `0px 0px ${GLOW_PX}px ${newActive.color}`;
+                }
+                return;
             }
-        }
-        const color = pressedColors[pressedColors.length - 1] || "";
-        keyElement.style.background = color;
-        if (this.mode === "dark" && color !== "") {
-            keyElement.style.boxShadow = `0px 0px ${GLOW_PX}px ${color}`;
-        }
-        if (pressedColors.length === 0) {
-            keyElement.classList.remove("pressed");
-            keyElement.style.background = "";
-            keyElement.style.boxShadow = "";
         }
     }
 
     public clearNotes() {
-        for (const [index, key] of this.keys.entries()) {
+        for (const key of this.keys) {
             key.classList.remove("pressed");
             key.style.background = "";
             key.style.boxShadow = "";
-            this.keyColors[index] = [];
+            this.activeNotes.clear();
         }
     }
 
@@ -444,7 +462,6 @@ export class MIDIKeyboard {
             midiNote++
         ) {
             const keyElement = this._createKey(midiNote);
-            this.keyColors.push([]);
             this.keyboard.append(keyElement);
             this.keys.push(keyElement);
         }
