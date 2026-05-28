@@ -8,7 +8,7 @@ export const channelControllerLocale = {
     pitchBendMeter: {
         title: "Pitch: ",
         description:
-            "Pitch Wheel: The current pitch bend applied to channel {0}"
+            "Pitch Wheel: The current pitch bend applied to channel {0} (right-click to lock)"
     },
 
     panMeter: {

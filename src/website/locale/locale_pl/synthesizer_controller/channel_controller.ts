@@ -6,7 +6,8 @@ export const channelControllerLocale = {
 
     pitchBendMeter: {
         title: "Wysokość: ",
-        description: "Koło Wysokości: Aktualna wysokość tonu na kanale {0}"
+        description:
+            "Koło Wysokości: Aktualna wysokość tonu na kanale {0} (kliknij prawym aby zablokować)"
     },
 
     panMeter: {
