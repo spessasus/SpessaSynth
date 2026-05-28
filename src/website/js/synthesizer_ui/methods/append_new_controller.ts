@@ -9,20 +9,8 @@ import {
 } from "../synthetizer_ui.ts";
 import { ANIMATION_REFLOW_TIME } from "../../utils/animation_utils.ts";
 import { Meter } from "./synthui_meter.ts";
-import {
-    DEFAULT_MIDI_CONTROLLERS,
-    DEFAULT_PERCUSSION,
-    type MIDIController,
-    MIDIControllers
-} from "spessasynth_core";
-import {
-    getDrumsSvg,
-    getEmptyMicSvg,
-    getMicSvg,
-    getMuteSvg,
-    getNoteSvg,
-    getVolumeSvg
-} from "../../utils/icons.ts";
+import { DEFAULT_MIDI_CONTROLLERS, DEFAULT_PERCUSSION, type MIDIController, MIDIControllers } from "spessasynth_core";
+import { getDrumsSvg, getEmptyMicSvg, getMicSvg, getMuteSvg, getNoteSvg, getVolumeSvg } from "../../utils/icons.ts";
 import { Ut } from "../../utils/other.js";
 import { Selector } from "./synthui_selector.ts";
 import { sendAddress } from "./send_address.ts";
@@ -96,9 +84,20 @@ export function appendNewController(
         min: -8192,
         max: 8191,
         def: 0,
-        onEdit: (val) => {
+        onEdit: (val, meter) => {
+            if (meter.isLocked) {
+                ch.lockMIDIParameter("pitchWheel", false);
+            }
+
             val = Math.round(val) + 8192;
             this.synth.pitchWheel(channelNumber, val);
+
+            if (meter.isLocked) {
+                ch.lockMIDIParameter("pitchWheel", true);
+            }
+        },
+        onLock: (isLocked) => {
+            ch.lockMIDIParameter("pitchWheel", isLocked);
         }
     });
     controller.append(pitchWheel.div);
@@ -230,8 +229,8 @@ export function appendNewController(
             min: 0,
             max: 127,
             def: 0,
-            onEdit: (val, meterLocked) => {
-                if (meterLocked) {
+            onEdit: (val, meter) => {
+                if (meter.isLocked) {
                     ch.lockController(MIDIControllers.portamentoTime, false);
                     ch.lockController(MIDIControllers.portamentoOnOff, false);
                 }
@@ -245,7 +244,7 @@ export function appendNewController(
                     MIDIControllers.portamentoOnOff,
                     val > 0 ? 127 : 0
                 );
-                if (meterLocked) {
+                if (meter.isLocked) {
                     ch.lockController(MIDIControllers.portamentoTime, true);
                     ch.lockController(MIDIControllers.portamentoOnOff, true);
                 }
@@ -511,8 +510,6 @@ export function appendNewController(
     polyMonoButton.classList.add("controller_element", "mute_button");
     polyMonoButton.setAttribute("isPoly", "true");
     polyMonoButton.addEventListener("click", () => {
-        ch.lockController(MIDIControllers.polyModeOn, false);
-        ch.lockController(MIDIControllers.monoModeOn, false);
         const isPoly = polyMonoButton.getAttribute("isPoly") === "true";
         if (isPoly) {
             this.synth.controllerChange(
@@ -529,8 +526,6 @@ export function appendNewController(
             );
             polyMonoButton.innerHTML = POLY_ON;
         }
-        ch.lockController(MIDIControllers.polyModeOn, true);
-        ch.lockController(MIDIControllers.monoModeOn, true);
         polyMonoButton.setAttribute("isPoly", (!isPoly).toString());
     });
     controller.append(polyMonoButton);

@@ -391,8 +391,7 @@ export class SynthesizerUI {
 
                     // Poly/mono
                     {
-                        ch.lockController(MIDIControllers.polyModeOn, false);
-                        ch.lockController(MIDIControllers.monoModeOn, false);
+                        ch.lockMIDIParameter("polyMode", false);
                         controller.polyMonoButton.innerHTML = POLY_ON;
                     }
                     ch.setSystemParameter("isMuted", false);
