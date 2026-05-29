@@ -9,6 +9,7 @@ import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { Ut } from "../utils/other.js";
 import { closeNotification } from "../notification/notification.js";
 import {
+    type ChannelMIDIParameter,
     type ChannelSystemParameter,
     DEFAULT_GLOBAL_SYSTEM_PARAMETERS,
     type EffectChangeCallback,
@@ -55,13 +56,13 @@ export const LOCALE_PATH = "locale.synthesizerController.";
 
 export type ChannelControllerKey =
     | MIDIController
-    | keyof ChannelSystemParameter;
+    | keyof ChannelSystemParameter
+    | keyof ChannelMIDIParameter;
 
 export interface ChannelController {
     controller: HTMLDivElement;
     controllerMeters: Map<ChannelControllerKey, Meter>;
     voiceMeter: Meter;
-    pitchWheel: Meter;
     preset: Selector;
     drumsToggle: HTMLDivElement;
     soloButton: HTMLDivElement;
@@ -89,6 +90,7 @@ const controllerGroups: Record<string, ChannelControllerKey[]> = {
         MIDIControllers.portamentoTime,
         MIDIControllers.portamentoControl
     ],
+    velocitySense: ["velocitySenseDepth", "velocitySenseOffset"],
     systemParameters: ["keyShift", "fineTune", "gain"]
 } as const;
 
@@ -354,9 +356,6 @@ export class SynthesizerUI {
                     channelNumber,
                     controller
                 ] of this.controllers.entries()) {
-                    if (controller.pitchWheel.isLocked) {
-                        controller.pitchWheel.toggleLock();
-                    }
                     // CCs
                     for (const meter of controller.controllerMeters.values()) {
                         if (meter.isLocked) {

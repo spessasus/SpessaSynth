@@ -275,9 +275,11 @@ export class Meter {
                 )
             );
             this.bar.style.width = `${percentage * 100}%`;
-            this.text.textContent =
-                this._meterText +
-                (Math.round(this.currentValue * 100) / 100).toString();
+            const v = Math.round(this.currentValue * 100) / 100;
+            const transformed = this.transform
+                ? this.transform(v)
+                : v.toString();
+            this.text.textContent = this._meterText + transformed;
             this.isVisualValueSet = true;
         }
     }

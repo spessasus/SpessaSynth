@@ -94,12 +94,25 @@ export const channelControllerLocale = {
             "Kontrola Portamento: Numer klawisza początkowego do glissanda na kanale {0} (prawdopodobnie nie chcesz tego zablokować)"
     },
 
+    velocitySenseDepthMeter: {
+        title: "Czucie Nacisku: ",
+        description:
+            "Czucie Siły Nacisku: Jak czuły na siłę nacisku jest kanał {0} (kliknij prawym, aby zablokować)"
+    },
+
+    velocitySenseOffsetMeter: {
+        title: "Przesunięcie: ",
+        description:
+            "Przesunięcie Siły Nacisku: Absolutne przesunięcie siły nacisku klawisza na kanale {0} (kliknij prawym, aby zablokować)"
+    },
+
     groupSelector: {
         description: "Wybierz grupę kontrolerów MIDI do manipulacji",
         effects: "Efekty",
         volumeEnvelope: "Obwiednia Głośności",
         filter: "Filtr",
         portamento: "Portamento",
+        velocitySense: "Czułość Nacisku",
         systemParameters: "Parametry Główne"
     },
 
