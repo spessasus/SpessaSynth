@@ -9,6 +9,7 @@ import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import { Ut } from "../utils/other.js";
 import { closeNotification } from "../notification/notification.js";
 import {
+    type ChannelMIDIParameter,
     type ChannelSystemParameter,
     DEFAULT_GLOBAL_SYSTEM_PARAMETERS,
     type EffectChangeCallback,
@@ -55,13 +56,16 @@ export const LOCALE_PATH = "locale.synthesizerController.";
 
 export type ChannelControllerKey =
     | MIDIController
-    | keyof ChannelSystemParameter;
+    | keyof ChannelSystemParameter
+    | keyof ChannelMIDIParameter
+    // Separated because System and MIDI overlap otherwise
+    | "systemKeyShift"
+    | "systemFineTune";
 
 export interface ChannelController {
     controller: HTMLDivElement;
     controllerMeters: Map<ChannelControllerKey, Meter>;
     voiceMeter: Meter;
-    pitchWheel: Meter;
     preset: Selector;
     drumsToggle: HTMLDivElement;
     soloButton: HTMLDivElement;
@@ -89,7 +93,8 @@ const controllerGroups: Record<string, ChannelControllerKey[]> = {
         MIDIControllers.portamentoTime,
         MIDIControllers.portamentoControl
     ],
-    systemParameters: ["keyShift", "fineTune", "gain"]
+    velocitySense: ["velocitySenseDepth", "velocitySenseOffset"],
+    systemParameters: ["systemKeyShift", "systemFineTune", "gain"]
 } as const;
 
 export type ControllerGroup = keyof typeof controllerGroups;
@@ -354,9 +359,6 @@ export class SynthesizerUI {
                     channelNumber,
                     controller
                 ] of this.controllers.entries()) {
-                    if (controller.pitchWheel.isLocked) {
-                        controller.pitchWheel.toggleLock();
-                    }
                     // CCs
                     for (const meter of controller.controllerMeters.values()) {
                         if (meter.isLocked) {
@@ -377,10 +379,12 @@ export class SynthesizerUI {
                     }
                     // Transpose (only key shift)
                     ch.setSystemParameter("keyShift", 0);
-                    controller.controllerMeters.get("keyShift")?.update(0);
+                    controller.controllerMeters
+                        .get("systemKeyShift")
+                        ?.update(0);
                     // Fine tune
                     ch.setSystemParameter("fineTune", 0);
-                    controller.controllerMeters.get("fineTune")?.reset();
+                    controller.controllerMeters.get("systemFineTune")?.reset();
                     // Gain
                     ch.setSystemParameter("gain", 1);
                     controller.controllerMeters.get("gain")?.reset();
@@ -391,8 +395,7 @@ export class SynthesizerUI {
 
                     // Poly/mono
                     {
-                        ch.lockController(MIDIControllers.polyModeOn, false);
-                        ch.lockController(MIDIControllers.monoModeOn, false);
+                        ch.lockMIDIParameter("polyMode", false);
                         controller.polyMonoButton.innerHTML = POLY_ON;
                     }
                     ch.setSystemParameter("isMuted", false);

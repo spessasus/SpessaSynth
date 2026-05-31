@@ -1,5 +1,4 @@
 import { MONO_ON, POLY_ON, type SynthesizerUI } from "../synthetizer_ui.ts";
-import { MIDIControllers } from "spessasynth_core";
 import { appendNewController } from "./append_new_controller.ts";
 import { getDrumsSvg, getNoteSvg } from "../../utils/icons.ts";
 
@@ -33,8 +32,6 @@ export function setEventListeners(this: SynthesizerUI) {
                 if (typeof cc === "number") {
                     meter.reset();
                 }
-                controller.polyMonoButton.setAttribute("isPoly", "true");
-                controller.polyMonoButton.innerHTML = POLY_ON;
             }
         }
     });
@@ -47,13 +44,6 @@ export function setEventListeners(this: SynthesizerUI) {
             const con = this.controllers[channel];
             if (con === undefined) {
                 return;
-            }
-            if (controller === MIDIControllers.monoModeOn) {
-                con.polyMonoButton.setAttribute("isPoly", "false");
-                con.polyMonoButton.innerHTML = MONO_ON;
-            } else if (controller === MIDIControllers.polyModeOn) {
-                con.polyMonoButton.setAttribute("isPoly", "true");
-                con.polyMonoButton.innerHTML = POLY_ON;
             }
             const meter = con.controllerMeters.get(controller);
             if (meter !== undefined) {
@@ -73,6 +63,15 @@ export function setEventListeners(this: SynthesizerUI) {
         "synthui-midi-channel-change",
         (e) => {
             switch (e.parameter) {
+                default: {
+                    if (typeof e.value === "number") {
+                        this.controllers[e.channel].controllerMeters
+                            .get(e.parameter)
+                            ?.update(e.value);
+                    }
+                    break;
+                }
+
                 case "efxAssign": {
                     this.controllers[
                         e.channel
@@ -81,11 +80,19 @@ export function setEventListeners(this: SynthesizerUI) {
                     break;
                 }
 
-                case "pitchWheel": {
-                    this.controllers[e.channel].pitchWheel.update(
-                        e.value - 8192
-                    );
-                    break;
+                case "polyMode": {
+                    const { channel, value } = e;
+                    const con = this.controllers[channel];
+                    if (con === undefined) {
+                        return;
+                    }
+                    if (value) {
+                        con.polyMonoButton.setAttribute("isPoly", "true");
+                        con.polyMonoButton.innerHTML = POLY_ON;
+                    } else {
+                        con.polyMonoButton.setAttribute("isPoly", "false");
+                        con.polyMonoButton.innerHTML = MONO_ON;
+                    }
                 }
             }
         }

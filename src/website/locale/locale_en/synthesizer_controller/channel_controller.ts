@@ -8,7 +8,7 @@ export const channelControllerLocale = {
     pitchBendMeter: {
         title: "Pitch: ",
         description:
-            "Pitch Wheel: The current pitch bend applied to channel {0}"
+            "Pitch Wheel: The current pitch bend applied to channel {0} (right-click to lock)"
     },
 
     panMeter: {
@@ -113,12 +113,25 @@ export const channelControllerLocale = {
             "Portamento Control: Starting key number to glide from on channel {0} (you probably don't want to lock this)"
     },
 
+    velocitySenseDepthMeter: {
+        title: "Sense Depth: ",
+        description:
+            "Velocity Sense Depth: How sensitive velocity is on channel {0} (right-click to lock)"
+    },
+
+    velocitySenseOffsetMeter: {
+        title: "Sense Offset: ",
+        description:
+            "Velocity Sense Offset: Offset of velocity for channel {0} (right-click to lock)"
+    },
+
     groupSelector: {
         description: "Select the group of MIDI Controllers to manipulate",
         effects: "Effects",
         volumeEnvelope: "Vol. Envelope",
         filter: "Filter",
         portamento: "Portamento (glide)",
+        velocitySense: "Velocity Sense",
         systemParameters: "System Parameters"
     },
 

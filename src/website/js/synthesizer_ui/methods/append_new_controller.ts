@@ -10,10 +10,12 @@ import {
 import { ANIMATION_REFLOW_TIME } from "../../utils/animation_utils.ts";
 import { Meter } from "./synthui_meter.ts";
 import {
+    type ChannelMIDIParameter,
     DEFAULT_MIDI_CONTROLLERS,
     DEFAULT_PERCUSSION,
     type MIDIController,
-    MIDIControllers
+    MIDIControllers,
+    MIDIUtils
 } from "spessasynth_core";
 import {
     getDrumsSvg,
@@ -87,22 +89,6 @@ export function appendNewController(
     });
     controller.append(voiceMeter.div);
 
-    // Pitch wheel
-    const pitchWheel = new Meter({
-        color: this.channelColors[channelNumber % this.channelColors.length],
-        localePath: LOCALE_PATH + "channelController.pitchBendMeter",
-        locale: this.locale,
-        localeArgs: [channelNumber + 1],
-        min: -8192,
-        max: 8191,
-        def: 0,
-        onEdit: (val) => {
-            val = Math.round(val) + 8192;
-            this.synth.pitchWheel(channelNumber, val);
-        }
-    });
-    controller.append(pitchWheel.div);
-
     const changeCCUserFunction = (
         cc: MIDIController,
         val: number,
@@ -126,12 +112,55 @@ export function appendNewController(
         return meter;
     };
 
+    const createMIDIParamMeterHelper = (
+        param: keyof ChannelMIDIParameter,
+        localePath: string,
+        changeCallback: (val: number) => unknown,
+        def = 0,
+        min = 0,
+        max = 127,
+        allowLocking = true,
+        transform?: (value: number) => string
+    ) => {
+        addMeterToController(
+            param,
+            new Meter({
+                color: this.channelColors[
+                    channelNumber % this.channelColors.length
+                ],
+                localePath: LOCALE_PATH + localePath,
+                locale: this.locale,
+                localeArgs: [channelNumber + 1],
+                min,
+                max,
+                def,
+                onEdit: (val, meter) => {
+                    if (meter.isLocked) {
+                        ch.lockMIDIParameter(param, false);
+                    }
+
+                    changeCallback(val);
+
+                    if (meter.isLocked) {
+                        ch.lockMIDIParameter(param, true);
+                    }
+                },
+                onLock: allowLocking
+                    ? (isLocked) => {
+                          ch.lockMIDIParameter(param, isLocked);
+                      }
+                    : undefined,
+                transform
+            })
+        );
+    };
+
     const createCCMeterHelper = (
         ccNum: MIDIController,
         localePath: string,
         allowLocking = true
-    ): Meter => {
-        return addMeterToController(
+    ) => {
+        addMeterToController(
             ccNum,
             new Meter({
                 color: this.channelColors[
@@ -152,6 +181,21 @@ export function appendNewController(
             })
         );
     };
+
+    // Pitch wheel
+    createMIDIParamMeterHelper(
+        "pitchWheel",
+        "channelController.pitchBendMeter",
+        (val) => {
+            val = Math.round(val);
+            this.synth.pitchWheel(channelNumber, val);
+        },
+        8192,
+        0,
+        16_383,
+        true,
+        (value) => (value - 8192).toString()
+    );
 
     // Pan controller
     createCCMeterHelper(MIDIControllers.pan, "channelController.panMeter");
@@ -198,6 +242,12 @@ export function appendNewController(
         "channelController.filterMeter"
     );
 
+    // Filter resonance
+    createCCMeterHelper(
+        MIDIControllers.filterResonance,
+        "channelController.resonanceMeter"
+    );
+
     // Attack time
     createCCMeterHelper(
         MIDIControllers.attackTime,
@@ -230,8 +280,8 @@ export function appendNewController(
             min: 0,
             max: 127,
             def: 0,
-            onEdit: (val, meterLocked) => {
-                if (meterLocked) {
+            onEdit: (val, meter) => {
+                if (meter.isLocked) {
                     ch.lockController(MIDIControllers.portamentoTime, false);
                     ch.lockController(MIDIControllers.portamentoOnOff, false);
                 }
@@ -245,7 +295,7 @@ export function appendNewController(
                     MIDIControllers.portamentoOnOff,
                     val > 0 ? 127 : 0
                 );
-                if (meterLocked) {
+                if (meter.isLocked) {
                     ch.lockController(MIDIControllers.portamentoTime, true);
                     ch.lockController(MIDIControllers.portamentoOnOff, true);
                 }
@@ -264,15 +314,43 @@ export function appendNewController(
         false // Don't allow locking portamento control
     );
 
-    // Resonance
-    createCCMeterHelper(
-        MIDIControllers.filterResonance,
-        "channelController.resonanceMeter"
+    // Velocity Sense Depth
+    createMIDIParamMeterHelper(
+        "velocitySenseDepth",
+        "channelController.velocitySenseDepthMeter",
+        (val) => {
+            sendAddress(
+                this.synth,
+                0x40,
+                0x10 | MIDIUtils.channelToSyx(channelNumber % 16),
+                0x1a,
+                [Math.round(val)],
+                channelNumber - (channelNumber % 16)
+            );
+        },
+        64
+    );
+
+    // Velocity Sense Offset
+    createMIDIParamMeterHelper(
+        "velocitySenseOffset",
+        "channelController.velocitySenseOffsetMeter",
+        (val) => {
+            sendAddress(
+                this.synth,
+                0x40,
+                0x10 | MIDIUtils.channelToSyx(channelNumber % 16),
+                0x1b,
+                [Math.round(val)],
+                channelNumber - (channelNumber % 16)
+            );
+        },
+        64
     );
 
     // Transpose is not a cc, add it manually
     addMeterToController(
-        "keyShift",
+        "systemKeyShift",
         new Meter({
             color: this.channelColors[
                 channelNumber % this.channelColors.length
@@ -295,7 +373,7 @@ export function appendNewController(
 
     // Fine tune is not a CC, add it manually
     addMeterToController(
-        "fineTune",
+        "systemFineTune",
         new Meter({
             color: this.channelColors[
                 channelNumber % this.channelColors.length
@@ -511,8 +589,6 @@ export function appendNewController(
     polyMonoButton.classList.add("controller_element", "mute_button");
     polyMonoButton.setAttribute("isPoly", "true");
     polyMonoButton.addEventListener("click", () => {
-        ch.lockController(MIDIControllers.polyModeOn, false);
-        ch.lockController(MIDIControllers.monoModeOn, false);
         const isPoly = polyMonoButton.getAttribute("isPoly") === "true";
         if (isPoly) {
             this.synth.controllerChange(
@@ -529,8 +605,6 @@ export function appendNewController(
             );
             polyMonoButton.innerHTML = POLY_ON;
         }
-        ch.lockController(MIDIControllers.polyModeOn, true);
-        ch.lockController(MIDIControllers.monoModeOn, true);
         polyMonoButton.setAttribute("isPoly", (!isPoly).toString());
     });
     controller.append(polyMonoButton);
@@ -549,16 +623,13 @@ export function appendNewController(
         const isFX = !insertionEffectButton.classList.contains("red");
         const ch = channelNumber % 16;
         const offset = channelNumber - ch;
-        const chanAddress = [
-            1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 10, 11, 12, 13, 14, 15
-        ][ch];
         if (this.insertionLock) {
             this.synth.setSystemParameter("insertionEffectLock", false);
         }
         sendAddress(
             this.synth,
             0x40,
-            0x40 | chanAddress,
+            0x40 | MIDIUtils.channelToSyx(channelNumber),
             0x22,
             isFX ? [1] : [0],
             offset
@@ -579,8 +650,7 @@ export function appendNewController(
         polyMonoButton,
         insertionEffectButton,
         preset: presetSelector,
-        controllerMeters,
-        pitchWheel
+        controllerMeters
     };
     this.controllers.push(channelController);
     lastPortElement.append(channelController.controller);
