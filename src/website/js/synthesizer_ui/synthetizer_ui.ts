@@ -57,7 +57,10 @@ export const LOCALE_PATH = "locale.synthesizerController.";
 export type ChannelControllerKey =
     | MIDIController
     | keyof ChannelSystemParameter
-    | keyof ChannelMIDIParameter;
+    | keyof ChannelMIDIParameter
+    // Separated because System and MIDI overlap otherwise
+    | "systemKeyShift"
+    | "systemFineTune";
 
 export interface ChannelController {
     controller: HTMLDivElement;
@@ -91,7 +94,7 @@ const controllerGroups: Record<string, ChannelControllerKey[]> = {
         MIDIControllers.portamentoControl
     ],
     velocitySense: ["velocitySenseDepth", "velocitySenseOffset"],
-    systemParameters: ["keyShift", "fineTune", "gain"]
+    systemParameters: ["systemKeyShift", "systemFineTune", "gain"]
 } as const;
 
 export type ControllerGroup = keyof typeof controllerGroups;
@@ -376,10 +379,12 @@ export class SynthesizerUI {
                     }
                     // Transpose (only key shift)
                     ch.setSystemParameter("keyShift", 0);
-                    controller.controllerMeters.get("keyShift")?.update(0);
+                    controller.controllerMeters
+                        .get("systemKeyShift")
+                        ?.update(0);
                     // Fine tune
                     ch.setSystemParameter("fineTune", 0);
-                    controller.controllerMeters.get("fineTune")?.reset();
+                    controller.controllerMeters.get("systemFineTune")?.reset();
                     // Gain
                     ch.setSystemParameter("gain", 1);
                     controller.controllerMeters.get("gain")?.reset();

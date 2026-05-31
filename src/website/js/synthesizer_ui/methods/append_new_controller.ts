@@ -17,7 +17,14 @@ import {
     MIDIControllers,
     MIDIUtils
 } from "spessasynth_core";
-import { getDrumsSvg, getEmptyMicSvg, getMicSvg, getMuteSvg, getNoteSvg, getVolumeSvg } from "../../utils/icons.ts";
+import {
+    getDrumsSvg,
+    getEmptyMicSvg,
+    getMicSvg,
+    getMuteSvg,
+    getNoteSvg,
+    getVolumeSvg
+} from "../../utils/icons.ts";
 import { Ut } from "../../utils/other.js";
 import { Selector } from "./synthui_selector.ts";
 import { sendAddress } from "./send_address.ts";
@@ -343,7 +350,7 @@ export function appendNewController(
 
     // Transpose is not a cc, add it manually
     addMeterToController(
-        "keyShift",
+        "systemKeyShift",
         new Meter({
             color: this.channelColors[
                 channelNumber % this.channelColors.length
@@ -366,7 +373,7 @@ export function appendNewController(
 
     // Fine tune is not a CC, add it manually
     addMeterToController(
-        "fineTune",
+        "systemFineTune",
         new Meter({
             color: this.channelColors[
                 channelNumber % this.channelColors.length
