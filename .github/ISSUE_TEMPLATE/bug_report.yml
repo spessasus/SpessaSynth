@@ -58,7 +58,6 @@ body:
               - Linux
               - MacOS
               - Android
-              - iOS
               - Other (please specify in additional info)
       validations:
           required: false
@@ -68,12 +67,18 @@ body:
           label: Browser Engine
           description: Which browser are you using? This is very important!
           options:
-              - Chromium (Chrome, Edge, Brave, Opera, etc.)
-              - Gecko (Firefox, Librewolf, Waterfox, etc.)
-              - WebKit (Safari on MacOS, all browsers on iOs)
+              - Chromium (Google Chrome, Microsoft Edge, Brave, Opera, etc.)
+              - Gecko (Firefox, Zen Browser, Librewolf, etc.)
               - Other (please specify in additional info)
       validations:
           required: true
+    - type: input
+      id: browser_version
+      attributes:
+          label: Browser Version
+          description: What version of the browser are you using? This is very important!
+      validations:
+          required: false # Some users may not know how to find this
     - type: textarea
       attributes:
           label: Additional info

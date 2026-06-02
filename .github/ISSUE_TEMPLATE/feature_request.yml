@@ -11,7 +11,9 @@ body:
       id: problem
       attributes:
           label: Problem
-          description: Is your feature request related to a problem? Please describe.
+          description: What problem are you trying to solve? Describe the current behavior and why it's a problem.
+      validations:
+          required: true
     - type: textarea
       id: description
       attributes:
