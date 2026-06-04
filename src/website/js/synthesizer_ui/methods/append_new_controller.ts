@@ -623,9 +623,10 @@ export function appendNewController(
         const isFX = !insertionEffectButton.classList.contains("red");
         const ch = channelNumber % 16;
         const offset = channelNumber - ch;
-        if (this.insertionLock) {
-            this.synth.setSystemParameter("insertionEffectLock", false);
-        }
+        this.synth.midiChannels[channelNumber].lockMIDIParameter(
+            "efxAssign",
+            false
+        );
         sendAddress(
             this.synth,
             0x40,
@@ -634,9 +635,10 @@ export function appendNewController(
             isFX ? [1] : [0],
             offset
         );
-        if (this.insertionLock) {
-            this.synth.setSystemParameter("insertionEffectLock", true);
-        }
+        this.synth.midiChannels[channelNumber].lockMIDIParameter(
+            "efxAssign",
+            true
+        );
     });
     controller.append(insertionEffectButton);
 

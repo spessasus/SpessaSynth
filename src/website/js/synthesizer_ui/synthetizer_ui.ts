@@ -392,13 +392,17 @@ export class SynthesizerUI {
                     // Mute/solo
                     controller.soloButton.innerHTML = getEmptyMicSvg(ICON_SIZE);
                     controller.muteButton.innerHTML = getVolumeSvg(ICON_SIZE);
+                    ch.setSystemParameter("isMuted", false);
+                    this.renderer.renderChannels[channelNumber] = true;
+
+                    // EFX assign
+                    ch.lockMIDIParameter("efxAssign", false);
 
                     // Poly/mono
                     {
                         ch.lockMIDIParameter("polyMode", false);
                         controller.polyMonoButton.innerHTML = POLY_ON;
                     }
-                    ch.setSystemParameter("isMuted", false);
                 }
                 this.soloChannels.clear();
                 this.synth.reset();
