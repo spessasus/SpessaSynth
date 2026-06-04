@@ -1239,6 +1239,11 @@ export class SequencerUI {
         const isYamaha = syx[0] === 0x43;
         const isRoland = syx[0] === 0x41;
         if (
+            (isRoland &&
+                // Roland, PATCH NAME (Part of GS, not display)
+                syx[4] === 0x40 &&
+                syx[5] === 0x01 &&
+                syx[6] === 0x00) ||
             (isRoland && syx[5] === 0x00) || // Roland (and ensure display letters, not dot matrix
             (isYamaha && syx[3] === 0x06)
         ) {
