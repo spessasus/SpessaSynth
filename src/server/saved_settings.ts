@@ -1,8 +1,8 @@
+import type { LocaleCode } from "../website/locale/locale_list.ts";
 import {
     type RendererMode,
     rendererModes
-} from "../website/js/renderer/renderer.ts";
-import type { LocaleCode } from "../website/locale/locale_list.ts";
+} from "../website/js/renderer/renderer_modes.ts";
 
 export type LayoutType = "downwards" | "upwards" | "left" | "right";
 

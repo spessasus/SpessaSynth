@@ -1,5 +1,6 @@
-import { Renderer, rendererModes } from "./renderer.js";
+import { Renderer } from "./renderer.js";
 import { intensityColors } from "./colors.js";
+import { rendererModes } from "./renderer_modes.ts";
 
 export const STABILIZE_WAVEFORMS_FFT_MULTIPLIER = 4;
 const EXPONENTIAL_GAIN = Math.E;

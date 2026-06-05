@@ -1,7 +1,10 @@
 import { getSpan } from "../sliders.js";
-import { type RendererMode, rendererModes } from "../../renderer/renderer.js";
 import type { SpessaSynthSettings } from "../settings.ts";
 import { Ut } from "../../utils/other.js";
+import {
+    type RendererMode,
+    rendererModes
+} from "../../renderer/renderer_modes.ts";
 
 export function _setRendererMode(
     this: SpessaSynthSettings,

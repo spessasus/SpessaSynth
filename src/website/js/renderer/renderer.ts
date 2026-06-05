@@ -23,6 +23,7 @@ import { type LocaleManager } from "../manager/locale_manager.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
 import { drawDotMatrix } from "./draw_dot_matrix.ts";
 import { ProgramTracker } from "./program_tracker.ts";
+import { type RendererMode, rendererModes } from "./renderer_modes.ts";
 
 /**
  * Renderer.js
@@ -39,16 +40,6 @@ export interface NoteToRender {
     pressedProgress: number;
     velocity: number;
 }
-
-export const rendererModes = {
-    waveformsMode: 0,
-    spectrumSplitMode: 1,
-    spectrumSingleMode: 2,
-    filledWaveformsMode: 4,
-    none: 5
-};
-
-export type RendererMode = (typeof rendererModes)[keyof typeof rendererModes];
 
 const DISPLAY_MATRIX_TIMEOUT = 2880;
 

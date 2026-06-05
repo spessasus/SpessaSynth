@@ -22,7 +22,7 @@ import { localeList } from "../../locale/locale_list.js";
 import { keybinds } from "../utils/keybinds.js";
 import { handleSliders } from "./sliders.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
-import { Renderer, rendererModes } from "../renderer/renderer.js";
+import { Renderer } from "../renderer/renderer.js";
 import { type Sequencer } from "spessasynth_lib";
 import type { SynthesizerUI } from "../synthesizer_ui/synthetizer_ui.ts";
 import type { SequencerUI } from "../sequencer_ui/sequencer_ui.ts";
@@ -31,6 +31,7 @@ import type { MusicModeUI } from "../music_mode_ui/music_mode_ui.ts";
 import type { LocaleManager } from "../manager/locale_manager.ts";
 import type { InterfaceMode } from "../../../server/saved_settings.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
+import { rendererModes } from "../renderer/renderer_modes.ts";
 
 const TRANSITION_TIME = 0.2;
 
