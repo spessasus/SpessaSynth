@@ -47,6 +47,15 @@ body:
               3. See error...
       validations:
           required: true
+    - type: textarea
+      id: offending_files
+      attributes:
+          label: Offending MIDI / sound bank files
+          description: |
+              If the bug is related to a specific MIDI or sound bank files, please attach them here. 
+              Make sure to compress them to `.zip`.
+      validations:
+          required: false
     - type: dropdown
       id: os
       attributes:
