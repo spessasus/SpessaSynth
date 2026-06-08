@@ -1244,6 +1244,11 @@ export class SequencerUI {
                 syx[4] === 0x40 &&
                 syx[5] === 0x01 &&
                 syx[6] === 0x00) ||
+            (isRoland &&
+                // Roland, DRUM MAP NAME (Part of GS, not display)
+                syx[4] === 0x41 &&
+                (syx[5] & 0xf) === 0x0 &&
+                syx[6] === 0x00) ||
             (isRoland && syx[5] === 0x00) || // Roland (and ensure display letters, not dot matrix
             (isYamaha && syx[3] === 0x06)
         ) {
