@@ -541,47 +541,6 @@ export class Manager {
                     return;
                 }
                 switch (key) {
-                    case keybinds.videoMode: {
-                        this.seqUI?.seqPause();
-                        const videoSource = window.prompt(
-                            "Video mode!\n Paste the link to the video source (leave blank to disable)\n" +
-                                "Note: the video will be available in console as 'video'",
-                            ""
-                        );
-                        if (videoSource === null) {
-                            return;
-                        }
-                        const video = document.createElement("video");
-                        video.src = videoSource;
-                        video.classList.add("secret_video");
-                        canvas.parentElement?.append(video);
-                        void video.play();
-                        // @ts-expect-error Globally accessible
-                        window.video = video;
-                        if (this.seq) {
-                            video.currentTime = Number.parseFloat(
-                                window.prompt(
-                                    "Video offset to sync to midi, in seconds.",
-                                    "0"
-                                ) ?? "0"
-                            );
-                            void video.play();
-                            this.seq.currentTime = 0;
-                            this.seq.play();
-                        }
-                        document.addEventListener("keydown", (e) => {
-                            if (e.key === " ") {
-                                if (video.paused) {
-                                    void video.play();
-                                } else {
-                                    video.pause();
-                                }
-                            }
-                        });
-
-                        break;
-                    }
-
                     case keybinds.sustainPedal: {
                         this.renderer!.showHoldPedal = true;
                         this.renderer!.renderOneFrame();
