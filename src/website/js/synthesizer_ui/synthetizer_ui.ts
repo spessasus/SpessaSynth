@@ -71,7 +71,6 @@ export interface ChannelController {
     soloButton: HTMLDivElement;
     muteButton: HTMLDivElement;
     polyMonoButton: HTMLDivElement;
-    insertionEffectButton: HTMLDivElement;
     isHidingLocked: boolean;
 }
 
@@ -805,10 +804,15 @@ export class SynthesizerUI {
         if (!this.sequencer.midiData) {
             return;
         }
+        const insertionButtons = this.effectConfigs.insertion.efxAssignButtons;
         if (!enabled) {
             for (let i = 0; i < this.controllers.length; i++) {
                 this.setChannelControllerVisibility(i, true, true);
                 this.controllers[i].isHidingLocked = false;
+            }
+            // Remember about insertion buttons
+            for (const btn of insertionButtons) {
+                Ut.show(btn);
             }
             return;
         }
@@ -826,8 +830,10 @@ export class SynthesizerUI {
             if (usedChannels.has(i)) {
                 this.setChannelControllerVisibility(i, true, true);
                 this.controllers[i].isHidingLocked = false;
+                Ut.show(insertionButtons[i]);
             } else {
                 this.setChannelControllerVisibility(i, false, true);
+                Ut.hide(insertionButtons[i]);
             }
         }
     }

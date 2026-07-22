@@ -71,6 +71,11 @@
     }
 }
 
+.effect_wrapper_params.efx_assign {
+    margin: auto;
+    justify-content: space-around;
+}
+
 .synthui_port_group {
     transition: transform 0.3s ease;
     transform-origin: top center;
@@ -141,11 +146,12 @@
 }
 
 .mute_button {
+    --btn-border-color: #777;
     flex: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    border: #777 1px solid;
+    border: var(--btn-border-color) 1px solid;
     min-width: var(--voice-meter-height);
 }
 

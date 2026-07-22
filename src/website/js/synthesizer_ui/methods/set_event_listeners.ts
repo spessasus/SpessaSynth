@@ -73,10 +73,9 @@ export function setEventListeners(this: SynthesizerUI) {
                 }
 
                 case "efxAssign": {
-                    this.controllers[
+                    this.effectConfigs.insertion.efxAssignButtons[
                         e.channel
-                    ].insertionEffectButton.classList.toggle("red", e.value);
-
+                    ].classList.toggle("red", e.value);
                     break;
                 }
 
@@ -104,6 +103,7 @@ export function setEventListeners(this: SynthesizerUI) {
         () => {
             appendNewController.call(this, this.controllers.length);
             this.showControllerGroup(this.groupSelector.value);
+            this.effectConfigs.insertion.addNewChannel();
             if (!this.isShown) {
                 this.hideControllers();
             }

@@ -251,9 +251,15 @@ export const effectsConfig = {
     },
 
     insertion: {
-        title: "Insertion Effect configuration",
+        title: "Insertion Effect Configuration",
         description:
             "Select the Insertion Effect and configure how it should sound.",
+
+        activeChannels: {
+            title: "Active Channels",
+            description:
+                "Select which channels have the Insertion Effect enabled."
+        },
 
         sendLevelToReverb: {
             title: "Send Level To Reverb: ",

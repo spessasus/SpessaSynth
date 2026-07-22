@@ -99,7 +99,7 @@ export class Renderer {
     public currentTimeSignature = "4/4";
     public holdPedalIsDownText = "";
     public keyboardModeText = "";
-    public efxText = "EFX";
+    public efxText = "Thru";
     public readonly updateFftSize = updateFftSize.bind(this);
     /**
      * For XG/GS display matrix

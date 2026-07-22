@@ -249,6 +249,11 @@ export const effectsConfig = {
         title: "Konfiguracja efektu Insertion",
         description: "Wybierz efekt Insertion i ustaw, jak ma on brzmieć.",
 
+        activeChannels: {
+            title: "Aktywne kanały",
+            description: "Wybierz, które kanały mają włączony efekt Insertion."
+        },
+
         sendLevelToReverb: {
             title: "Poziom wysyłki do pogłosu: ",
             description:

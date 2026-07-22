@@ -609,39 +609,6 @@ export function appendNewController(
     });
     controller.append(polyMonoButton);
 
-    // Insertion Effect button
-    const insertionEffectButton = document.createElement("div");
-    insertionEffectButton.innerHTML = "<pre>Fx</pre>";
-    this.locale.bindObjectProperty(
-        insertionEffectButton,
-        "title",
-        LOCALE_PATH + "channelController.insertionEffectButton.description",
-        [channelNumber + 1]
-    );
-    insertionEffectButton.classList.add("controller_element", "mute_button");
-    insertionEffectButton.addEventListener("click", () => {
-        const isFX = !insertionEffectButton.classList.contains("red");
-        const ch = channelNumber % 16;
-        const offset = channelNumber - ch;
-        this.synth.midiChannels[channelNumber].lockMIDIParameter(
-            "efxAssign",
-            false
-        );
-        sendAddress(
-            this.synth,
-            0x40,
-            0x40 | MIDIUtils.channelToSyx(channelNumber),
-            0x22,
-            isFX ? [1] : [0],
-            offset
-        );
-        this.synth.midiChannels[channelNumber].lockMIDIParameter(
-            "efxAssign",
-            true
-        );
-    });
-    controller.append(insertionEffectButton);
-
     const channelController: ChannelController = {
         controller,
         isHidingLocked: false,
@@ -650,7 +617,6 @@ export function appendNewController(
         soloButton,
         muteButton,
         polyMonoButton,
-        insertionEffectButton,
         preset: presetSelector,
         controllerMeters
     };

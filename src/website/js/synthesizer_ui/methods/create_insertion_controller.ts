@@ -6,6 +6,7 @@ import { Meter } from "./synthui_meter.ts";
 import { LOCALE_PATH, SynthesizerUI } from "../synthetizer_ui.ts";
 import { sendAddress } from "./send_address.ts";
 import { Ut } from "../../utils/other.js";
+import { MIDIUtils } from "spessasynth_core";
 
 export function createInsertionController(
     this: SynthesizerUI
@@ -84,6 +85,10 @@ export function createInsertionController(
             this.insertionLock
         );
         lock.style.color = this.insertionLock ? "red" : "";
+        // Lock the buttons as well
+        for (const channel of this.synth.midiChannels) {
+            channel.lockMIDIParameter("efxAssign", this.insertionLock);
+        }
     };
     lock.addEventListener("click", toggleLock);
     typeLockWrapper.append(lock);
@@ -202,12 +207,114 @@ export function createInsertionController(
         });
     }
 
+    // -----------------
+    // EFX ASSIGN SECTION
+    // ------------------
+
+    // EFX assign title
+    const efxAssignTitle = document.createElement("h2");
+    this.locale.bindObjectProperty(
+        efxAssignTitle,
+        "textContent",
+        LOCALE_PATH + "effectsConfig.insertion.activeChannels.title"
+    );
+    wrapper.append(efxAssignTitle);
+
+    // EFX assign subtitle
+    const efxAssignSubtitle = document.createElement("h4");
+    this.locale.bindObjectProperty(
+        efxAssignSubtitle,
+        "textContent",
+        LOCALE_PATH + "effectsConfig.insertion.activeChannels.description"
+    );
+    wrapper.append(efxAssignSubtitle);
+
+    // EFX assign buttons
+    const efxAssignButtons = new Array<HTMLDivElement>();
+
+    // Wrapped, so the channel number stays as set
+    const createEFXAssign = (channelNumber: number) => {
+        // Create the button here
+        const efxAssign = document.createElement("div");
+        efxAssign.innerHTML = `<pre>${channelNumber + 1}</pre>`;
+        this.locale.bindObjectProperty(
+            efxAssign,
+            "title",
+            LOCALE_PATH + "channelController.insertionEffectButton.description",
+            [channelNumber + 1]
+        );
+        efxAssign.classList.add("controller_element", "mute_button");
+
+        // Style border after channel color
+        efxAssign.style.setProperty(
+            "--btn-border-color",
+            this.channelColors[channelNumber % 16]
+        );
+
+        efxAssign.addEventListener("click", () => {
+            const isFX = !efxAssign.classList.contains("red");
+            const ch = channelNumber % 16;
+            const offset = channelNumber - ch;
+            if (this.insertionLock) {
+                this.synth.midiChannels[channelNumber].lockMIDIParameter(
+                    "efxAssign",
+                    false
+                );
+            }
+            sendAddress(
+                this.synth,
+                0x40,
+                0x40 | MIDIUtils.channelToSyx(channelNumber),
+                0x22,
+                isFX ? [1] : [0],
+                offset
+            );
+            if (this.insertionLock) {
+                this.synth.midiChannels[channelNumber].lockMIDIParameter(
+                    "efxAssign",
+                    true
+                );
+            }
+        });
+        return efxAssign;
+    };
+
+    let channelNumber = 0;
+    let efxAssignWrapper: HTMLDivElement | null = null;
+    const addNewChannel = () => {
+        if (channelNumber % 16 === 0) {
+            // Add a new port (new row)
+            efxAssignWrapper = document.createElement("div");
+            efxAssignWrapper.classList.add(
+                "effect_wrapper_params",
+                "efx_assign"
+            );
+            wrapper.append(efxAssignWrapper);
+        }
+
+        // Sanity check
+        if (!efxAssignWrapper) {
+            return;
+        }
+
+        const efxAssign = createEFXAssign(channelNumber);
+        efxAssignWrapper.append(efxAssign);
+        efxAssignButtons.push(efxAssign);
+        channelNumber++;
+    };
+    // Create first 16 sends
+    for (let i = 0; i < 16; i++) {
+        addNewChannel();
+    }
+
     return {
         wrapper,
         effectSelector,
         reverb,
         chorus,
         delay,
+        efxAssignButtons,
+        addNewChannel,
         toggleLock,
         effects: params
     };

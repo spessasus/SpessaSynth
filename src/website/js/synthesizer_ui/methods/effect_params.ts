@@ -41,6 +41,8 @@ export interface InsertionController {
     delay: Meter;
     chorus: Meter;
     reverb: Meter;
+    addNewChannel: () => unknown;
+    efxAssignButtons: HTMLDivElement[];
     /**
      * Map<insertion type, {controllerWrapper: the wrapper of all the meters, controllers: Map<parameter address, Meter for that parameter>}>
      */
