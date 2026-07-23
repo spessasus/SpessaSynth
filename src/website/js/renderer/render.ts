@@ -116,7 +116,8 @@ export function render(this: Renderer, auto = true, force = false) {
     // Draw note count and fps
     this.drawingContext.textBaseline = "top";
     this.drawingContext.textAlign = "end";
-    this.drawingContext.font = `${FONT_SIZE}px monospace`;
+    // -1 to add some margin
+    this.drawingContext.font = `${FONT_SIZE - 1}px monospace`;
     this.drawingContext.fillStyle = "white";
 
     let y = 0;
@@ -133,6 +134,13 @@ export function render(this: Renderer, auto = true, force = false) {
     // Note count
     this.drawingContext.fillText(
         `${this.notesOnScreen} notes`,
+        this.canvas.width,
+        y
+    );
+    // MIDI system
+    y += FONT_SIZE;
+    this.drawingContext.fillText(
+        `${this.synth.midiParameters.system.toUpperCase()} MODE`,
         this.canvas.width,
         y
     );
