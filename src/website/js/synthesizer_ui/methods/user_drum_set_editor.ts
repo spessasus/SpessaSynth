@@ -268,6 +268,7 @@ export class UserDrumSetEditor {
                     );
                     key.selector.set(UserDrumSetEditor.paramToPatch(key.param));
                     key.changed = false;
+                    key.row.classList.remove("changed");
                 }
             }
 

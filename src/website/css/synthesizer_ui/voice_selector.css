@@ -8,6 +8,7 @@
     white-space: nowrap;
     overflow: hidden;
     line-height: 100%;
+    width: 100%;
 }
 
 select.voice_selector {
