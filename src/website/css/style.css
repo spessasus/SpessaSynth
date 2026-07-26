@@ -130,6 +130,11 @@ button {
     display: none !important;
 }
 
+.flex-wrap {
+    display: flex;
+    flex-wrap: wrap;
+}
+
 .secret_video {
     position: absolute;
     width: 100%;

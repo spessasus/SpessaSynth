@@ -6,6 +6,7 @@
     --voice-meter-height: 2.5em;
     --synthui-background: rgba(0, 0, 0, 0.8);
     --synthui-border-radius: var(--primary-border-radius);
+    --btn-border-color: #444;
 }
 
 #synthesizer_controls * {
@@ -40,6 +41,7 @@
     max-width: 70vw;
     margin: auto;
     justify-content: center;
+    max-height: 70vh;
 }
 
 .effect_wrapper h2 {
@@ -83,6 +85,23 @@
 
 .synthui_port_group.collapsed {
     transform: scale(1, 0);
+}
+
+.synthui_table_wrapper {
+    overflow-y: auto;
+    display: block;
+}
+
+.synthui_table_wrapper table {
+    width: 100%;
+}
+
+.synthui_table_wrapper td {
+    width: min-content;
+}
+
+.synthui_table_wrapper tr.changed * {
+    border-width: 4px;
 }
 
 .controller_element {
@@ -146,7 +165,6 @@
 }
 
 .mute_button {
-    --btn-border-color: #777;
     flex: 0;
     display: flex;
     justify-content: center;

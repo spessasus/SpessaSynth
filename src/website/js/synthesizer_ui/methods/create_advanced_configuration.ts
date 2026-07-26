@@ -130,7 +130,7 @@ export function createAdvancedConfiguration(
                     this.synth,
                     this.locale,
                     this.keyboard,
-                    this.presetList
+                    this.presets.full
                 )
             );
 

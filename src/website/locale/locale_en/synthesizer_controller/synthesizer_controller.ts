@@ -60,7 +60,8 @@ export const synthesizerControllerLocale = {
         chorus: "Chorus",
         delay: "Delay",
         insertion: "Insertion",
-        configuration: "Configuration"
+        configuration: "Configuration",
+        userDrumSet: "User Drum Set"
     },
 
     holdPedalDown: "Hold pedal is down (Shift)",

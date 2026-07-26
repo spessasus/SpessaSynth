@@ -1,6 +1,6 @@
 .synthui_button {
     background: #000;
-    border: 1px #333 solid;
+    border: 1px var(--btn-border-color) solid;
     margin: var(--synthui-margin);
     border-radius: var(--synthui-border-radius);
     font-size: 1em;
@@ -60,6 +60,7 @@
 }
 
 .synthui_input {
+    width: 100%;
     display: flex;
     gap: 1rem;
 }
