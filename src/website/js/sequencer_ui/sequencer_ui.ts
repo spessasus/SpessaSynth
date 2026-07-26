@@ -178,19 +178,6 @@ export class SequencerUI {
 
         // Create controls
         {
-            // Time
-            this.progressTime = document.createElement("p");
-            this.progressTime.id = "note_time";
-            // It'll always be on top
-            this.progressTime.addEventListener("click", (event) => {
-                event.preventDefault();
-                const barPosition = progressBarBg.getBoundingClientRect();
-                const x = event.clientX - barPosition.left;
-                const width = barPosition.width;
-
-                this.seq.currentTime = (x / width) * this.seq.duration;
-            });
-
             // Create lyrics
             {
                 // Main div
@@ -314,10 +301,23 @@ export class SequencerUI {
             const progressBarBg = document.createElement("div");
             progressBarBg.id = "note_progress_background";
             this.progressBarBackground = progressBarBg;
+            // Click time seek handler
+            progressBarBg.addEventListener("click", (event) => {
+                event.preventDefault();
+                const barPosition = progressBarBg.getBoundingClientRect();
+                const x = event.clientX - barPosition.left;
+                const width = barPosition.width;
+
+                this.seq.currentTime = (x / width) * this.seq.duration;
+            });
 
             // Foreground bar
             this.progressBar = document.createElement("div");
             this.progressBar.id = "note_progress";
+
+            // Time
+            this.progressTime = document.createElement("p");
+            this.progressTime.id = "note_time";
 
             // Control buttons
             const controlsDiv = document.createElement("div");

@@ -8,12 +8,17 @@
 }
 
 #sequencer_controls #note_progress_background {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
     border-radius: var(--progress-bar-height);
     background: linear-gradient(90deg, #454545, #343434);
     height: var(--progress-bar-height);
     position: relative;
     overflow: hidden;
     margin: 0.5rem;
+    cursor: pointer;
 }
 
 #sequencer_controls #note_progress {
@@ -23,6 +28,7 @@
     transition: width 100ms linear;
     position: absolute;
     left: 0;
+    pointer-events: none;
 }
 
 #sequencer_controls .note_progress_light {
@@ -30,15 +36,12 @@
 }
 
 #sequencer_controls #note_time {
-    position: absolute;
+    position: relative;
     font-size: calc(var(--progress-bar-height) * 0.8);
     text-align: center;
     color: var(--font-color);
-    width: 100%;
-}
-
-#sequencer_controls #note_time:hover {
-    cursor: pointer;
+    pointer-events: none;
+    user-select: none;
 }
 
 #sequencer_controls .control_buttons_wrapper {
