@@ -299,12 +299,11 @@ export const effectsConfig = {
 
         params: {
             key: {
-                title: "Key",
-                description: "The MIDI note number of the drum key."
+                title: "Key"
             },
 
             pitchCoarse: {
-                title: "Play Note",
+                title: "Note Pitch",
                 description: `Relative pitch tuning of the note on key {0}. 60 is unchanged.`
             },
             level: {
@@ -330,7 +329,7 @@ export const effectsConfig = {
             pan: {
                 title: "Pan",
                 description:
-                    "The panning of the note on key {0}, relative to channel. A value of 0 enables random pan for every note."
+                    "The panning of the note on key {0}, relative to channel. A value of 64 means no change and 0 enables random pan for every note."
             },
 
             reverbSend: {
