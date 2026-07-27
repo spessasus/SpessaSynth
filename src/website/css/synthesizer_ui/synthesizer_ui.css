@@ -38,7 +38,8 @@
 .effect_wrapper {
     display: flex;
     flex-direction: column;
-    max-width: 70vw;
+    /* Use vh so phones have max width*/
+    max-width: 120vh;
     margin: auto;
     justify-content: center;
     max-height: 70vh;
@@ -96,12 +97,12 @@
     width: 100%;
 }
 
-.synthui_table_wrapper td {
+.synthui_table_wrapper th {
     width: min-content;
 }
 
 .synthui_table_wrapper tr.changed * {
-    border-width: 4px;
+    border-color: var(--primary-color);
 }
 
 .controller_element {
@@ -143,9 +144,9 @@
 .light_mode .synthui_controller {
     background: linear-gradient(
         115deg,
-        rgb(200, 200, 200),
-        rgba(255, 255, 255),
-        rgba(200, 200, 200)
+        rgba(200, 200, 200, 0.5),
+        rgba(255, 255, 255, 0.5),
+        rgba(200, 200, 200, 0.5)
     ) !important;
 }
 

@@ -330,7 +330,7 @@ export const effectsConfig = {
             pan: {
                 title: "Pan",
                 description:
-                    "The panning of the note on key {0}, relative to channel. A value of 0 enabled random pan for every note."
+                    "The panning of the note on key {0}, relative to channel. A value of 0 enables random pan for every note."
             },
 
             reverbSend: {

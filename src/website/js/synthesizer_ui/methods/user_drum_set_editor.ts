@@ -27,10 +27,16 @@ const TABLE_CELLS = [
     "rxNoteOff"
 ];
 
-type NumericUserDrumParams = keyof Omit<
-    UserDrumSetParameter,
-    "rxNoteOff" | "rxNoteOn"
->;
+type BooleanKeys<T> = {
+    [K in keyof T]: T[K] extends boolean ? K : never;
+}[keyof T];
+
+type NumericKeys<T> = {
+    [K in keyof T]: T[K] extends number ? K : never;
+}[keyof T];
+
+type NumericUserDrumParams = NumericKeys<UserDrumSetParameter>;
+type BooleanUserInputParams = BooleanKeys<UserDrumSetParameter>;
 
 interface UserDrumSetKey {
     param: UserDrumSetParameter;
@@ -38,6 +44,7 @@ interface UserDrumSetKey {
     changed: boolean;
     row: HTMLTableRowElement;
     inputs: Partial<Record<NumericUserDrumParams, HTMLInputElement>>;
+    toggles: Partial<Record<BooleanUserInputParams, HTMLButtonElement>>;
 }
 
 interface UserDrumSet {
@@ -207,16 +214,34 @@ export class UserDrumSetEditor {
             (e) => {
                 const key = this.drumSets[e.drumSet].keys[e.midiNote];
                 key.param[e.parameter] = e.value as never;
-                if (!key.changed) {
-                    key.changed = true;
-                    key.row.classList.add("changed");
+                const isReallyChanged = !DrumParameterUtils.isUserDefault(
+                    key.param,
+                    e.midiNote
+                );
+                if (isReallyChanged !== key.changed) {
+                    key.changed = isReallyChanged;
+                    key.row.classList.toggle("changed", isReallyChanged);
                     this.updateVisibility();
                 }
+
                 if (
                     e.parameter === "program" ||
                     e.parameter === "sourceDrumSet"
                 ) {
                     key.selector.set(UserDrumSetEditor.paramToPatch(key.param));
+                } else if (
+                    e.parameter === "rxNoteOn" ||
+                    e.parameter === "rxNoteOff"
+                ) {
+                    const t = key.toggles[e.parameter];
+                    if (t) {
+                        t.classList.toggle("enabled_bg", e.value);
+                    }
+                } else {
+                    const i = key.inputs[e.parameter];
+                    if (i) {
+                        i.value = e.value.toString();
+                    }
                 }
             }
         );
@@ -390,6 +415,23 @@ export class UserDrumSetEditor {
                     "variationSend",
                     DrumParameterUtils.DEFAULT_USER_DATA[midiNote].variationSend
                 )
+            },
+            toggles: {
+                // Order is also important here!!!
+                rxNoteOn: this.getToggleInput(
+                    row,
+                    drumSet,
+                    midiNote,
+                    "rxNoteOn",
+                    DrumParameterUtils.DEFAULT_USER_DATA[midiNote].rxNoteOn
+                ),
+                rxNoteOff: this.getToggleInput(
+                    row,
+                    drumSet,
+                    midiNote,
+                    "rxNoteOff",
+                    DrumParameterUtils.DEFAULT_USER_DATA[midiNote].rxNoteOff
+                )
             }
         };
     }
@@ -427,6 +469,34 @@ export class UserDrumSetEditor {
         }
     }
 
+    private getToggleInput(
+        row: HTMLTableRowElement,
+        drumSet: number,
+        midiNote: number,
+        param: BooleanUserInputParams,
+        initial: boolean
+    ) {
+        const td = document.createElement("td");
+        this.locale.bindObjectProperty(
+            td,
+            "title",
+            this.path + "params." + param + ".description",
+            [midiNote]
+        );
+        const toggle = document.createElement("button");
+        toggle.classList.add("synthui_button", "synthui_input");
+        let active = initial;
+
+        toggle.classList.toggle("enabled_bg", initial);
+        toggle.addEventListener("click", () => {
+            active = !active;
+            this.updateUserDrumParam(drumSet, midiNote, param, active);
+        });
+        td.append(toggle);
+        row.append(td);
+        return toggle;
+    }
+
     private getNumberInput(
         row: HTMLTableRowElement,
         drumSet: number,
@@ -437,20 +507,28 @@ export class UserDrumSetEditor {
         max = 127
     ) {
         const td = document.createElement("td");
+        this.locale.bindObjectProperty(
+            td,
+            "title",
+            this.path + "params." + param + ".description",
+            [midiNote]
+        );
         const wrapper = document.createElement("button");
         wrapper.classList.add("synthui_button", "synthui_input");
         td.append(wrapper);
         const input = document.createElement("input");
-        this.locale.bindObjectProperty(
-            input,
-            "title",
-            this.path + "params." + param + ".description"
-        );
+
         input.type = "number";
         input.min = min.toString();
         input.max = max.toString();
         input.value = initial.toString();
-        input.addEventListener("keydown", (e) => e.stopPropagation());
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                input.dispatchEvent(new Event("change", { bubbles: true }));
+                input.blur();
+            }
+            e.stopPropagation();
+        });
         input.addEventListener("change", () => {
             let v = Number.parseInt(input.value);
             if (Number.isNaN(v)) {
