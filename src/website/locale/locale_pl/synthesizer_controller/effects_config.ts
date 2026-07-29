@@ -274,5 +274,91 @@ export const effectsConfig = {
                 "Poziom wysyłki do delay: Ten parametr ustawia ilość sygnału efektu wysyłanego do efektu delay. " +
                 "Wyższe wartości powodują wysłanie większej ilości sygnału."
         }
+    },
+
+    userDrumSet: {
+        title: "Edytor perkusji użytkownika",
+        description:
+            "Zmodyfikuj perkusję użytkownika według własnych preferencji, edytując poszczególne klawisze. Należy pamiętać, że działa ona tylko w trybie GS.",
+
+        selector: {
+            description: "Wybierz zestaw perkusji, który chcesz zmodyfikować."
+        },
+
+        showOnlyChanged: {
+            title: "Pokaż tylko zmiany",
+            description: "Pokaż tylko zmodyfikowane klawisze."
+        },
+
+        params: {
+            key: {
+                title: "Klawisz"
+            },
+
+            pitchCoarse: {
+                title: "Wysokość nuty",
+                description: `Względne strojenie wysokości dźwięku nuty na klawiszu {0}. 60 oznacza brak zmiany.`
+            },
+            level: {
+                title: "Poziom",
+                description:
+                    "Głośność nuty na klawiszu {0}, 120 oznacza brak zmiany."
+            },
+            assignGroup: {
+                title: "Grupa",
+                description:
+                    "Każdemu instrumentowi można nadać numer, a instrumenty o identycznym numerze " +
+                    "są traktowane jako grupa przypisań. Żadne dwa instrumenty z tej samej grupy przypisań " +
+                    "nie będą brzmieć jednocześnie. Jeśli podczas grania jednego instrumentu zostanie odebrana wiadomość MIDI " +
+                    "na odtworzenie innego instrumentu z tej samej grupy przypisań, pierwszy instrument " +
+                    "zostanie najpierw wyłączony. Jest to przydatny sposób, aby zapobiec jednoczesnemu brzmieniu " +
+                    "dwóch instrumentów, które normalnie nie grałyby razem. Na przykład, ponieważ oczywiste jest, " +
+                    "że hi-hat nie może jednocześnie wydawać dźwięku otwartego hi-hata i zamkniętego hi-hata, " +
+                    "te dwa dźwięki mogłyby być przypisane do tej samej grupy przypisań (tego samego numeru), " +
+                    "dzięki czemu nie brzmiałyby razem."
+            },
+
+            pan: {
+                title: "Stereo",
+                description:
+                    "Poziom stereo nuty na klawiszu {0}, względem kanału. Wartość 64 oznacza brak zmiany, a 0 włącza losową panoramę dla każdej nuty."
+            },
+
+            reverbSend: {
+                title: "Wysyłka do pogłosu",
+                description:
+                    "Poziom wysyłki do efektu pogłosu nuty na klawiszu {0}. Mnożnik kanału."
+            },
+            chorusSend: {
+                title: "Wysyłka do chóru",
+                description:
+                    "Poziom wysyłki do efektu chóru nuty na klawiszu {0}. Mnożnik kanału."
+            },
+            variationSend: {
+                // Variation is global name, delay is for GS
+                title: "Wysyłka do opóźnienia",
+                description:
+                    "Poziom wysyłki do efektu opóźnienia nuty na klawiszu {0}. Mnożnik kanału."
+            },
+            rxNoteOn: {
+                title: "Odb. Note On",
+                description:
+                    "Zezwala/zabrania odbierania wiadomości Note On na klawiszu {0}."
+            },
+            rxNoteOff: {
+                title: "Odb. Note Off",
+                description:
+                    "Jeśli włączone, nuty perkusji są natychmiast odcinane po odebraniu Note Off na klawiszu {0}."
+            },
+            preset: {
+                title: "Patch",
+                description: "Patch (instrument), którego użyje klawisz {0}."
+            },
+            sourceNoteNumber: {
+                title: "Źródłowy numer nuty",
+                description:
+                    "Numer nuty MIDI źródłowego zestawu perkusji. Nut {0} odtworzy dźwięk tej nuty z wybranego zestawu perkusji."
+            }
+        }
     }
 };

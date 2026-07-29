@@ -44,6 +44,7 @@ import { createInsertionController } from "./methods/create_insertion_controller
 import { createEffectController } from "./methods/create_effect_controller.ts";
 import { appendNewController } from "./methods/append_new_controller.ts";
 import type { Renderer } from "../renderer/renderer.ts";
+import { UserDrumSetEditor } from "./methods/user_drum_set_editor.ts";
 
 export interface PresetListElement extends MIDIPatchFull {
     stringified: string;
@@ -132,6 +133,7 @@ export class SynthesizerUI {
         delay: HTMLElement;
         insertion: HTMLElement;
         configuration: HTMLElement;
+        userDrumSet: HTMLElement;
     };
     protected readonly effectConfigs: {
         reverb: ReverbController;
@@ -154,10 +156,13 @@ export class SynthesizerUI {
      * For closing the effect window when closing the synthui.
      */
     protected effectsConfigWindow?: number;
-    protected melodicPresets: PresetListElement[] = [];
-    protected gsDrumPresets: PresetListElement[] = [];
-    protected xgDrumPresets: PresetListElement[] = [];
-    protected presetList: PresetListElement[] = [];
+    protected readonly presets = {
+        full: new Array<PresetListElement>(),
+        melodic: new Array<PresetListElement>(),
+        gsDrum: new Array<PresetListElement>(),
+        xgDrum: new Array<PresetListElement>()
+    };
+    protected readonly userDrumSetEditor;
     protected readonly hideControllers = hideControllers.bind(this);
     protected readonly showControllers = showControllers.bind(this);
     protected readonly setEventListeners = setEventListeners.bind(this);
@@ -349,6 +354,9 @@ export class SynthesizerUI {
                 }
                 if (this.synth.systemParameters.insertionEffectLock) {
                     this.effectConfigs.insertion.toggleLock();
+                }
+                if (this.synth.systemParameters.userDrumLock) {
+                    this.userDrumSetEditor.toggleLock();
                 }
                 // Reset transpose
                 this.synth.setSystemParameter("keyShift", 0);
@@ -546,6 +554,15 @@ export class SynthesizerUI {
                 );
                 tabSelector.append(insertion);
 
+                const userDrumSet = document.createElement("option");
+                userDrumSet.value = "userDrumSet";
+                this.locale.bindObjectProperty(
+                    userDrumSet,
+                    "textContent",
+                    LOCALE_PATH + "tabs.userDrumSet"
+                );
+                tabSelector.append(userDrumSet);
+
                 tabSelector.addEventListener("change", () => {
                     const selectedTab =
                         tabSelector.value as keyof typeof this.tabs;
@@ -555,8 +572,8 @@ export class SynthesizerUI {
                         Ut.hide(el);
                     }
                     // Hide group selector (and show only used) if needed
-                    Ut.toggle(groupSelector, selectedTab !== "channels");
-                    Ut.toggle(showOnlyUsedButton, selectedTab !== "channels");
+                    Ut.toggle(groupSelector, selectedTab === "channels");
+                    Ut.toggle(showOnlyUsedButton, selectedTab === "channels");
                     Ut.show(this.tabs[selectedTab]);
                 });
             }
@@ -655,6 +672,13 @@ export class SynthesizerUI {
             // Advanced configuration
             const configuration = createAdvancedConfiguration.call(this);
 
+            // User drum set
+            this.userDrumSetEditor = new UserDrumSetEditor(
+                this.synth,
+                this.locale,
+                LOCALE_PATH + "effectsConfig.userDrumSet."
+            );
+
             this.effectConfigs = {
                 reverb: reverbController,
                 chorus: chorusController,
@@ -668,7 +692,8 @@ export class SynthesizerUI {
                 delay: delayController.wrapper,
                 insertion: insertionController.wrapper,
                 channels: channelController,
-                configuration: configuration
+                configuration: configuration,
+                userDrumSet: this.userDrumSetEditor.wrapper
             };
 
             // Set the default macros
@@ -695,7 +720,8 @@ export class SynthesizerUI {
             this.mainControllerDiv.append(chorusController.wrapper);
             this.mainControllerDiv.append(delayController.wrapper);
             this.mainControllerDiv.append(insertionController.wrapper);
-            this.mainControllerDiv.append(this.tabs.configuration);
+            this.mainControllerDiv.append(configuration);
+            this.mainControllerDiv.append(this.userDrumSetEditor.wrapper);
         }
 
         // Create channel controllers
@@ -848,61 +874,64 @@ export class SynthesizerUI {
     }
 
     protected updatePresetList(presetList: MIDIPatchFull[]) {
-        this.presetList = presetList.map((p) => ({
+        const p = this.presets;
+        p.full = presetList.map((p) => ({
             ...p,
             stringified: MIDIPatchTools.toFullMIDIString(p),
             name: p.name.replace(/\d{3}:\d{3}/, "") // Remove those pesky "000:001"
         }));
 
-        const presetListSorted = [...this.presetList].sort(
+        const presetListSorted = [...p.full].sort(
             MIDIPatchTools.compare.bind(MIDIPatchTools)
         );
-        this.melodicPresets.length = 0;
-        this.xgDrumPresets.length = 0;
-        this.gsDrumPresets.length = 0;
+        p.melodic.length = 0;
+        p.xgDrum.length = 0;
+        p.gsDrum.length = 0;
         for (const preset of presetListSorted) {
             if (preset.isDrum) {
                 if (preset.isGMGSDrum) {
-                    this.gsDrumPresets.push(preset);
+                    p.gsDrum.push(preset);
                 } else {
-                    this.xgDrumPresets.push(preset);
+                    p.xgDrum.push(preset);
                 }
             } else {
-                this.melodicPresets.push(preset);
+                p.melodic.push(preset);
             }
         }
         // Backfill missing drums
-        for (const preset of this.xgDrumPresets) {
-            if (!this.gsDrumPresets.some((p) => p.program === preset.program)) {
-                this.gsDrumPresets.push(preset);
+        for (const preset of p.xgDrum) {
+            if (!p.gsDrum.some((p) => p.program === preset.program)) {
+                p.gsDrum.push(preset);
             }
         }
-        for (const preset of this.gsDrumPresets) {
-            if (!this.xgDrumPresets.some((p) => p.program === preset.program)) {
-                this.xgDrumPresets.push(preset);
+        for (const preset of p.gsDrum) {
+            if (!p.xgDrum.some((p) => p.program === preset.program)) {
+                p.xgDrum.push(preset);
             }
         }
-        if (this.melodicPresets.length === 0) {
+        if (p.melodic.length === 0) {
             console.warn("No presets found. There may be unexpected behavior!");
         }
 
-        if (this.melodicPresets.length === 0) {
-            this.melodicPresets = this.presetList;
+        if (p.melodic.length === 0) {
+            p.melodic = p.full;
         }
-        if (this.xgDrumPresets.length === 0) {
-            this.xgDrumPresets = this.presetList;
+        if (p.xgDrum.length === 0) {
+            p.xgDrum = p.full;
         }
-        if (this.gsDrumPresets.length === 0) {
-            this.gsDrumPresets = this.presetList;
+        if (p.gsDrum.length === 0) {
+            p.gsDrum = p.full;
         }
 
+        // Apply the updates
+        this.userDrumSetEditor.updateDrumList(p.gsDrum);
         for (let i = 0; i < this.controllers.length; i++) {
             const controller = this.controllers[i];
             const list = this.synth.midiChannels[i].patch.isDrum
                 ? this.synth.midiParameters.system === "gs"
-                    ? this.gsDrumPresets
-                    : this.xgDrumPresets
-                : this.melodicPresets;
+                    ? p.gsDrum
+                    : p.xgDrum
+                : p.melodic;
             controller.preset.reload(list);
             if (list.length > 0) {
                 controller.preset.set(list[0]);
