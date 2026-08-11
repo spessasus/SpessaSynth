@@ -3,6 +3,8 @@ export const sequencerControllerLocale = {
     nextSong: "Morceau suivant",
     loopThis: "Lire ce morceau en boucle",
     playPause: "Lecture / pause",
+    shuffle: "Lecture aléatoire",
+    playbackRate: "Vitesse de lecture",
     lyrics: {
         show: "Montrer les paroles",
         title: "Texte décodé",

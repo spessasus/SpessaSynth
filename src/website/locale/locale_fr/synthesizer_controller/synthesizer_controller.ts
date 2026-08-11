@@ -41,11 +41,30 @@ export const synthesizerControllerLocale = {
             "Réinitialise tous les contrôleurs à leur valeur par défaut"
     },
 
+    showOnlyUsed: {
+        title: "N'afficher que les canaux utilisés",
+        description:
+            "N'afficher que les canaux utilisés : N'afficher que les canaux utilisés dans le contrôleur du synthetiseur"
+    },
+
     helpButton: {
         title: "Aide",
         description: "Ouvre une page web pour afficher un guide"
     },
 
+    tabs: {
+        description: "Tabs: Select what to configure",
+        channels: "Canaux MIDI",
+        reverb: "Réverbération",
+        chorus: "Chorus",
+        delay: "Delai",
+        insertion: "Insertion",
+        configuration: "Configuration"
+    },
+
+    holdPedalDown: "La pédale de maintien est appuyée (Shift)",
+    keyboardMode: "La lecture sur le clavier est activée, appuyez sur ` pour la désactiver",
+    port: "Port {0} (clic pour changer la visibilité)",
     channelController: channelControllerLocale,
     effectsConfig: effectsConfig,
     keyModifiers: keyModifiers
