@@ -54,7 +54,7 @@ This is a repository for the web application, it used to be a monorepo containin
     - English
     - Polish
     - Japanese (translated by src3453)
-    - French (translated by Davy Triponney)
+    - French (translated by Davy Triponney & Samuel Louf)
     - Portuguese (translated by Lucas Gabriel)
     - Simplified Chinese (By 懒洋君)
     - Italian (By ItsFilyy)
