@@ -15,6 +15,8 @@ export const exportAudio = {
                 },
                 options: {
                     title: "Options de l'exportation WAV",
+                    description:
+                        "Exporter le MIDI actuel en WAV en appliquant toutes les modifications faites avec les contrôleurs du synthétiseur.",
                     confirm: "Exporter",
                     normalizeVolume: {
                         title: "Normaliser le volume",
@@ -38,7 +40,8 @@ export const exportAudio = {
                             "Pour sauvegarder chaque canal dans un fichier séparé, utile par exemple pour des affichage de type oscilloscope (cette option désactive la réverbération et l'effet de chorus)",
                         saving: {
                             title: "Fichiers des canaux",
-                            save: "Sauvegarder le canal {0}"
+                            save: "Sauvegarder le canal {0}",
+                            saveAll: "Tout enregistrer"
                         }
                     },
                     loopCount: {
@@ -49,6 +52,7 @@ export const exportAudio = {
                 },
                 exportMessage: {
                     message: "Exportation de l'audio en cours...",
+                    addingEffects: "Ajout des effets...",
                     estimated: "Temps restant :",
                     convertWav: "Conversion dans le format WAV..."
                 }
@@ -88,6 +92,10 @@ export const exportAudio = {
                         description:
                             "La qualité de la compression, une valeur haute augmentant la qualité du son mais aussi le poids du fichier"
                     }
+                },
+
+                exportMessage: {
+                    message: "Exportation de la banque de sons..."
                 }
             },
 
@@ -102,6 +110,10 @@ export const exportAudio = {
                         "L'exportation DLS est limitée et peut produire des fichiers corrompus avec des soundfonts lourdes et complexes.",
                     details: "Plus d'info",
                     confirm: "Continuer l'exportation"
+                },
+
+                exportMessage: {
+                    message: "Exportation de la banque de sons au format DLS..."
                 }
             },
 
@@ -125,6 +137,8 @@ export const exportAudio = {
 
                 options: {
                     title: "Options de l'exportation RMIDI",
+                    description:
+                        "Intégrer la banque de sons et le MIDI dans un fichier RMIDI et y appliquer toutes les modifications faites avec les contrôleurs du synthétiseur.",
                     confirm: "Exporter",
                     compress: {
                         title: "Compression",
@@ -183,6 +197,14 @@ export const exportAudio = {
             duration: {
                 title: "Durée :",
                 description: "La durée du morceau"
+            },
+            subject: {
+                title: "Sujet :",
+                description: "Le sujet du morceau"
+            },
+            software: {
+                title: "Logiciel :",
+                description: "Le logiciel utilisé pour créer le morceau"
             }
         }
     }

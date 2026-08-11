@@ -27,5 +27,11 @@ export const keyboardSettingsLocale = {
     show: {
         title: "Visibilité",
         description: "Montrer / cacher le clavier MIDI"
+    },
+
+    forceMaxVelocity: {
+        title: "Forcer l'intensité de la couleur",
+        description:
+            "Mettre la couleur à l'intensité maximale, peu importe la velocité de la note MIDI"
     }
 };
