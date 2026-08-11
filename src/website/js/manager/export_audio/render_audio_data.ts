@@ -71,7 +71,7 @@ export async function renderAudioData(
                 SOUND_BANK_ID
             ];
         }
-        await rendererSynth.processorInitialized;
+        await rendererSynth.ready;
         console.info("Synthesizer initialized, applying snapshot.");
         // Apply snapshot
         const snapshot = await this.synth.getSnapshot();
