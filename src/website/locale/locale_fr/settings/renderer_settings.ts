@@ -1,5 +1,15 @@
 export const rendererSettingsLocale = {
     title: "Configuration de l'affichage",
+
+    mode: {
+        title: "Style de visualisation",
+        description: "Changer le style de visualisation des canaux",
+        waveforms: "Ondes",
+        spectrumSplit: "Spectre séparé",
+        spectrum: "Spectre",
+        filledWaveforms: "Ondes remplies"
+    },
+
     noteFallingTime: {
         title: "Temps de descente des cascades (millisecondes)",
         description:
@@ -29,6 +39,24 @@ export const rendererSettingsLocale = {
             "Cette option permet d'obtenir des formes d'ondes évoluant avec plus ou moins d'amplitude"
     },
 
+    toggleExponentialGain: {
+        title: "Activer le gain exponentiel",
+        description:
+            "Rendre les diffécrences de gain plus visibles en utilisant une courbe exponentielle plutôt qu'une courbe linéraire pour la calculation de la hauteur"
+    },
+
+    toggleDynamicGain: {
+        title: "Activer le gain dynamique",
+        description:
+            "Ajuster le gain automatiquement pour que le point le plus haut touche toujours le haut de l'affichage"
+    },
+
+    toggleLogarithmicFrequency: {
+        title: "Afficher la fréquence logarithmique",
+        description:
+            "Étaler les fréquences de façon logarithmique plutôt que linéaire. Recommandé"
+    },
+
     toggleNotesRendering: {
         title: "Visibilité des cascades",
         description:
@@ -45,6 +73,16 @@ export const rendererSettingsLocale = {
         title: "Rendu visuel du pitch bend",
         description:
             "Active ou non le glissement vers la droite ou vers la gauche des notes lorsque le pitch bend est utilisé"
+    },
+
+    toggleDrawingPresetNames: {
+        title: "Afficher le nom des presets",
+        description: "Afficher le nom des presets de chaques ondes"
+    },
+
+    toggleRenderingDotDisplay: {
+        title: "Afficher les messages d'affichage",
+        description: "Afficher les messages d'affichage GS/XG"
     },
 
     toggleStabilizeWaveforms: {

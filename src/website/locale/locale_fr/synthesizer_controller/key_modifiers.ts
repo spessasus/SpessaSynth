@@ -37,6 +37,10 @@ export const keyModifiers = {
             description:
                 "Vélocité à utiliser pour cette note, ignorant la vélocité indiquée par les signaux MIDI. La valeur -1 désactive le forçage"
         },
+        gain: {
+            title: "Gain",
+            description: "Gain linéaire pour cette voix. Saisissez 1 pour ne pas le changer."
+        },
         preset: {
             title: "Forcer le preset",
             description: "Preset à utiliser pour cette note",
