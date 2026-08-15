@@ -33,12 +33,16 @@ export function updateFftSize(this: Renderer) {
  * Connect the 16 channels to their respective analyzers
  */
 export function connectChannelAnalysers(this: Renderer) {
-    this.synth.connectIndividualOutputs(this.channelAnalysers);
+    for (let i = 0; i < 16; i++) {
+        this.synth.connectChannel(this.channelAnalysers[i], i);
+    }
     this.inputNode.connect(this.bigAnalyser);
 }
 
 export function disconnectChannelAnalysers(this: Renderer) {
-    this.synth.disconnectIndividualOutputs(this.channelAnalysers);
+    for (let i = 0; i < 16; i++) {
+        this.synth.disconnectChannel(this.channelAnalysers[i], i);
+    }
     this.inputNode.disconnect(this.bigAnalyser);
     console.info("%cAnalysers disconnected!", consoleColors.recognized);
 }

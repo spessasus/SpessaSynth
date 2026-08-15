@@ -30,7 +30,8 @@ import { prepareExtraBankUpload } from "./extra_bank_handling.js";
 
 import { EXTRA_BANK_ID, SOUND_BANK_ID } from "./bank_id.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
-import { writeDLS } from "./export_audio/export_dls.ts"; // This enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
+import { writeDLS } from "./export_audio/export_dls.ts";
+import { URLParamUtils } from "../utils/url_params.ts"; // This enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
 
 // This enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
 document.body.classList.add("load");
@@ -47,7 +48,6 @@ export class Manager {
     public enableDebug;
     public readonly ready;
     public readonly localeManager;
-    public readonly workerMode;
     public synth?: Synthesizer;
     public seq?: Sequencer;
     public readonly showExportMenu = showExportMenu.bind(this);
@@ -83,6 +83,8 @@ export class Manager {
         "rgba(255, 192, 203, 1)", // Pink
         "rgba(255, 255, 0, 1)" // Yellow
     ];
+    private readonly workerMode: boolean;
+    private readonly convolverMode: boolean;
     private keyboard?: MIDIKeyboard;
     private renderer?: Renderer;
     private synthUI?: SynthesizerUI;
@@ -106,10 +108,10 @@ export class Manager {
         this.isExporting = false;
         this.sBankBuffer = sfBuffer;
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const mode = urlParams.get("mode");
-        this.workerMode = mode ? mode === "chromium" : "chrome" in window;
-
+        const backend = URLParamUtils.getParam(URLParamUtils.BACKEND);
+        this.workerMode = backend ? backend === "worker" : "chrome" in window;
+        // Anything set that's not an empty string means convolver
+        this.convolverMode = !!URLParamUtils.getParam(URLParamUtils.CONVOLVER);
         this.audioDelay = new DelayNode(context, {
             delayTime: 0
         });
@@ -257,7 +259,7 @@ export class Manager {
      * @param context
      * @private
      */
-    private async initializeSynth(context: BaseAudioContext) {
+    private async initializeSynth(context: AudioContext) {
         if (this.workerMode) {
             await WorkerSynthesizer.registerPlaybackWorklet(context);
             const worker = new Worker(new URL("worker.ts", import.meta.url), {
@@ -266,7 +268,10 @@ export class Manager {
 
             const synth = new WorkerSynthesizer(
                 context,
-                worker.postMessage.bind(worker)
+                worker.postMessage.bind(worker),
+                {
+                    convolverMode: this.convolverMode
+                }
             );
             // eslint-disable-next-line unicorn/prefer-add-event-listener
             worker.onmessage = (e) =>
@@ -278,7 +283,9 @@ export class Manager {
             await context.audioWorklet.addModule(
                 "./spessasynth_processor.min.js"
             );
-            return new WorkletSynthesizer(context);
+            return new WorkletSynthesizer(context, {
+                convolverMode: this.convolverMode
+            });
         }
     }
 

@@ -3,6 +3,7 @@ import type { localeList } from "../../../locale/locale_list.ts";
 import type { LayoutType } from "../../../../server/saved_settings.ts";
 import { WorkerSynthesizer } from "spessasynth_lib";
 import { Ut } from "../../utils/other.js";
+import { URLParamUtils } from "../../utils/url_params.ts";
 
 /**
  * @this {SpessaSynthSettings}
@@ -83,14 +84,14 @@ export function _createInterfaceSettingsHandler(this: SpessaSynthSettings) {
             "textContent",
             "locale.settings.interfaceSettings.synthReload.worklet"
         );
-        url.searchParams.set("mode", "worklet");
+        url.searchParams.set(URLParamUtils.BACKEND, "worklet");
     } else {
         this.locale.bindObjectProperty(
             anchor,
             "textContent",
             "locale.settings.interfaceSettings.synthReload.chromium"
         );
-        url.searchParams.set("mode", "chromium");
+        url.searchParams.set(URLParamUtils.BACKEND, "worker");
     }
 
     anchor.href = url.toString();

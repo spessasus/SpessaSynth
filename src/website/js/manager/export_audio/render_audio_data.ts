@@ -7,12 +7,13 @@ import {
 } from "spessasynth_core";
 import { EXTRA_BANK_ID, SOUND_BANK_ID } from "../bank_id.ts";
 
-type RenderAudioOptions =
-    NonNullable<
-        Parameters<typeof WorkerSynthesizer.prototype.renderAudio>[1]
-    > extends Partial<infer T>
-        ? T
-        : never;
+type RenderAudioOptions = (NonNullable<
+    Parameters<typeof WorkerSynthesizer.prototype.renderAudio>[1]
+> extends Partial<infer T>
+    ? T
+    : never) & {
+    separateChannels?: boolean;
+};
 
 const RENDER_BLOCKS_PER_PROGRESS = 256; // Blocks
 const BLOCK_SIZE = 128; // Samples
@@ -34,7 +35,13 @@ export async function renderAudioData(
     if (this.synth instanceof WorkerSynthesizer) {
         // Worker:
         // Render the audio in the worker thread using the built-in function
-        return this.synth.renderAudio(sampleRate, options);
+
+        if (options.separateChannels) {
+            const out = await this.synth.renderAudioSplit(sampleRate, options);
+            return out.channels;
+        }
+
+        return [await this.synth.renderAudio(sampleRate, options)];
     } else {
         // Worklet
         // Render in the main thread, then add effects in offline Audio Context.

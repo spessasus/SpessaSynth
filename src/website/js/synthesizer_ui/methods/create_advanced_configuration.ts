@@ -8,6 +8,7 @@ import { Meter } from "./synthui_meter.ts";
 import { Ut } from "../../utils/other.js";
 import type { LocaleManager } from "../../manager/locale_manager.ts";
 import { type InterpolationType, InterpolationTypes } from "spessasynth_core";
+import { URLParamUtils } from "../../utils/url_params.ts";
 
 const LOCALE_PATH = "locale.synthesizerController.effectsConfig.misc.";
 const KEY_MODIFIERS_PATH = "locale.synthesizerController.keyModifiers.";
@@ -214,14 +215,10 @@ export function createAdvancedConfiguration(
                                     this.locale.getLocaleString("locale.yes"),
                                 listeners: {
                                     click: () => {
-                                        const url = new URL(
-                                            window.location.href
-                                        );
-                                        url.searchParams.set(
-                                            "samplerate",
+                                        URLParamUtils.setParam(
+                                            URLParamUtils.SAMPLE_RATE,
                                             rate.toString()
                                         );
-                                        window.location.replace(url);
                                     }
                                 }
                             },
