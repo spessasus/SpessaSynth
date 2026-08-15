@@ -39,7 +39,8 @@ export const keyModifiers = {
         },
         gain: {
             title: "Gain",
-            description: "Gain linéaire pour cette voix. Saisissez 1 pour ne pas le changer."
+            description:
+                "Gain linéaire pour cette voix. Saisissez 1 pour ne pas le changer."
         },
         preset: {
             title: "Forcer le preset",

@@ -63,7 +63,8 @@ export const synthesizerControllerLocale = {
     },
 
     holdPedalDown: "La pédale de maintien est appuyée (Shift)",
-    keyboardMode: "La lecture sur le clavier est activée, appuyez sur ` pour la désactiver",
+    keyboardMode:
+        "La lecture sur le clavier est activée, appuyez sur ` pour la désactiver",
     port: "Port {0} (clic pour changer la visibilité)",
     channelController: channelControllerLocale,
     effectsConfig: effectsConfig,

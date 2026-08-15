@@ -229,7 +229,8 @@ export async function renderAndExportAudioData(
             {
                 display: "flex",
                 flexWrap: "wrap",
-                flexDirection: "row"
+                flexDirection: "row",
+                justifyContent: "center"
             }
         );
         n.div.style.width = "30rem";
