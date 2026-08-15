@@ -97,6 +97,7 @@ export async function renderAndExportAudioData(
     };
 
     // Rendering time!
+    // noinspection JSUnusedGlobalSymbols
     const renderedData = await renderAudioData.call(this, sampleRate, {
         extraTime: additionalTime,
         separateChannels,
@@ -112,9 +113,6 @@ export async function renderAndExportAudioData(
             }
         }
     });
-    setTimeout(() => {
-        this.seq?.play();
-    }, 500);
 
     if (separateChannels) {
         const snapshot = await this.synth.getSnapshot();

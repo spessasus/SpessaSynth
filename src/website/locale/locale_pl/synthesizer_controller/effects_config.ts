@@ -99,6 +99,23 @@ export const effectsConfig = {
         }
     },
 
+    convolver: {
+        title: "Konfiguracja pogłosu konwolucyjnego",
+        description: "Ustaw brzmienie pogłosu opartego na konwolucji.",
+        reloadConvolver: "Przeładuj w trybie konwolucji",
+        reloadNormal: "Przeładuj ze standardowym pogłosem SpessaSynth",
+        impulseResponse: {
+            title: "Wybierz dźwięk pogłosu",
+            description:
+                "Wybierz plik audio, który będzie używany jako odpowiedź impulsowa pogłosu konwolucyjnego.",
+            decodeError: {
+                title: "Nie można załadować tego pliku",
+                description:
+                    "Wybranego pliku nie można zdekodować jako dźwięku. Zachowano bieżącą konfigurację."
+            }
+        }
+    },
+
     chorus: {
         title: "Konfiguracja chóru",
         description: "Ustaw jak ma brzmieć efekt chóru.",

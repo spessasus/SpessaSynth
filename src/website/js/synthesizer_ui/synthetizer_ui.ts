@@ -45,6 +45,10 @@ import { createEffectController } from "./methods/create_effect_controller.ts";
 import { appendNewController } from "./methods/append_new_controller.ts";
 import type { Renderer } from "../renderer/renderer.ts";
 import { UserDrumSetEditor } from "./methods/user_drum_set_editor.ts";
+import {
+    createConvolverModeToggle,
+    createConvolverReverbController
+} from "./methods/create_convolver_reverb_controller.ts";
 
 export interface PresetListElement extends MIDIPatchFull {
     stringified: string;
@@ -647,6 +651,13 @@ export class SynthesizerUI {
                     reverbEffectData,
                     LOCALE_PATH + "effectsConfig.reverb."
                 );
+            reverbController.wrapper.append(
+                createConvolverModeToggle.call(this)
+            );
+            // Optional convolver, replaces standard reverb
+            const convolverReverbController = this.synth.convolverNode
+                ? createConvolverReverbController.call(this)
+                : undefined;
 
             const chorusController =
                 (createEffectController<ChorusParams>).call(
@@ -687,7 +698,7 @@ export class SynthesizerUI {
             };
 
             this.tabs = {
-                reverb: reverbController.wrapper,
+                reverb: convolverReverbController ?? reverbController.wrapper,
                 chorus: chorusController.wrapper,
                 delay: delayController.wrapper,
                 insertion: insertionController.wrapper,
@@ -716,7 +727,7 @@ export class SynthesizerUI {
                 parameter: "macro"
             });
             this.mainControllerDiv.append(channelController);
-            this.mainControllerDiv.append(reverbController.wrapper);
+            this.mainControllerDiv.append(this.tabs.reverb);
             this.mainControllerDiv.append(chorusController.wrapper);
             this.mainControllerDiv.append(delayController.wrapper);
             this.mainControllerDiv.append(insertionController.wrapper);

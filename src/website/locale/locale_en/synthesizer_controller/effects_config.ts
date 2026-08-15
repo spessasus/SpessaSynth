@@ -103,6 +103,23 @@ export const effectsConfig = {
         }
     },
 
+    convolver: {
+        title: "Convolver reverb configuration",
+        description: "Configure how the convolution-based reverb sounds.",
+        reloadConvolver: "Reload in Convolver mode",
+        reloadNormal: "Reload with standard SpessaSynth reverb",
+        impulseResponse: {
+            title: "Select impulse response",
+            description:
+                "Select an audio file to use as the convolver reverb impulse response.",
+            decodeError: {
+                title: "Could not decode impulse response",
+                description:
+                    "The selected file could not be decoded as audio. The current impulse response was kept."
+            }
+        }
+    },
+
     chorus: {
         title: "Chorus configuration",
         description: "Configure how the chorus effects sounds.",

@@ -65,6 +65,7 @@ export class Manager {
         offset: number;
         buffer: ArrayBuffer;
     };
+    protected readonly convolverMode: boolean;
     private readonly channelColors = [
         "rgba(255, 99, 71, 1)", // Tomato
         "rgba(255, 165, 0, 1)", // Orange
@@ -84,7 +85,6 @@ export class Manager {
         "rgba(255, 255, 0, 1)" // Yellow
     ];
     private readonly workerMode: boolean;
-    private readonly convolverMode: boolean;
     private keyboard?: MIDIKeyboard;
     private renderer?: Renderer;
     private synthUI?: SynthesizerUI;
