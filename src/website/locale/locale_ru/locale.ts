@@ -8,7 +8,7 @@ export const localeRussian = {
     localeName: "Русский",
     // Сообщение заголовка
     titleMessage: "SpessaSynth: Javascript-синтезатор SF2/DLS",
-    demoTitleMessage: "SpessaSynth: Онлайн-демо Javascript-синтезатора SF2/DLS",
+    demoTitleMessage: "SpessaSynth: Онлайн-демо JS-синтезатора SF2/DLS",
 
     synthInit: {
         genericLoading: "Загрузка...",
