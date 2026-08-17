@@ -450,7 +450,10 @@ export function appendNewController(
             presetSelector.mainButton.classList.add("locked_selector");
             ch.setSystemParameter("presetLock", true);
         },
-        (locked) => ch.setSystemParameter("presetLock", locked)
+        (locked) => {
+            ch.setSystemParameter("presetLock", locked);
+            console.trace("set preset lock to", locked);
+        }
     );
     controller.append(presetSelector.mainButton);
 
@@ -573,6 +576,7 @@ export function appendNewController(
             ch.setSystemParameter("presetLock", false);
         }
         ch.setDrums(!ch.patch.isDrum);
+        // Lock selector, this locks the preset lock automatically
         presetSelector.lockSelector(true);
     });
     controller.append(drumsToggle);
