@@ -84,12 +84,10 @@ export class Selector {
     }
 
     public lockSelector(locked: boolean) {
-        if (this.locked === locked) {
-            return;
-        }
-        this.locked = !this.locked;
+        // Double lock calls must be processed, see https://github.com/spessasus/SpessaSynth/issues/244
+        this.locked = locked;
         this.lockCallback?.(this.locked);
-        this.mainButton.classList.toggle("locked_selector");
+        this.mainButton.classList.toggle("locked_selector", locked);
         if (this.presetLock) {
             this.presetLock.innerHTML = this.locked
                 ? getLockSVG(ICON_SIZE)
