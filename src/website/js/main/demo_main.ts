@@ -20,7 +20,7 @@ import {
     DEFAULT_SAVED_SETTINGS,
     type SavedSettings
 } from "../../../server/saved_settings.ts";
-import { readSampleRateParam } from "../utils/sample_rate_param.ts";
+import { URLParamUtils } from "../utils/url_params.ts";
 
 /**
  * Demo_main.js
@@ -166,11 +166,17 @@ let context: AudioContext;
 async function demoInit(initLocale: LocaleCode) {
     // Initialize the locale management system. do it here because we want it ready before all js classes do their things
     const localeManager = new LocaleManager(initLocale);
+    const sampleRate = URLParamUtils.getSampleRate();
     try {
-        context = new AudioContext({
-            sampleRate: readSampleRateParam()
-        });
+        context = new AudioContext({ sampleRate });
     } catch (error) {
+        // Reload with a safe value if it isn't set
+        if (sampleRate !== URLParamUtils.DEFAULT_SAMPLE_RATE) {
+            URLParamUtils.setParam(
+                URLParamUtils.SAMPLE_RATE,
+                URLParamUtils.DEFAULT_SAMPLE_RATE.toString()
+            );
+        }
         changeIcon(getExclamationSvg(256));
         loadingMessage.textContent = localeManager.getLocaleString(
             "locale.synthInit.noWebAudio"

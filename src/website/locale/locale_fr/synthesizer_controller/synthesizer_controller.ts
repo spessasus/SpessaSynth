@@ -1,6 +1,5 @@
 import { channelControllerLocale } from "./channel_controller.js";
 import { effectsConfig } from "./effects_config.js";
-import { keyModifiers } from "./key_modifiers.js";
 
 export const synthesizerControllerLocale = {
     toggleButton: {
@@ -63,9 +62,9 @@ export const synthesizerControllerLocale = {
     },
 
     holdPedalDown: "La pédale de maintien est appuyée (Shift)",
-    keyboardMode: "La lecture sur le clavier est activée, appuyez sur ` pour la désactiver",
+    keyboardMode:
+        "La lecture sur le clavier est activée, appuyez sur ` pour la désactiver",
     port: "Port {0} (clic pour changer la visibilité)",
     channelController: channelControllerLocale,
-    effectsConfig: effectsConfig,
-    keyModifiers: keyModifiers
+    effectsConfig: effectsConfig
 };

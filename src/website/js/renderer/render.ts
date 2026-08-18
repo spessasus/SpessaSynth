@@ -173,6 +173,11 @@ export function render(this: Renderer, auto = true, force = false) {
     );
     y += yIncrement;
 
+    if (this.synth.convolverNode) {
+        this.drawingContext.fillText("CONVOLVER MODE", 0, y);
+        y += yIncrement;
+    }
+
     // Draw time signature and tempo (if note times are available)
     if (this.seq.midiData) {
         this.drawingContext.fillText(

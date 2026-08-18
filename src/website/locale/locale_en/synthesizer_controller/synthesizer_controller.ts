@@ -1,6 +1,5 @@
 import { channelControllerLocale } from "./channel_controller.js";
 import { effectsConfig } from "./effects_config.js";
-import { keyModifiers } from "./key_modifiers.js";
 
 export const synthesizerControllerLocale = {
     toggleButton: {
@@ -60,13 +59,13 @@ export const synthesizerControllerLocale = {
         chorus: "Chorus",
         delay: "Delay",
         insertion: "Insertion",
-        configuration: "Configuration"
+        configuration: "Configuration",
+        userDrumSet: "User Drum Set"
     },
 
     holdPedalDown: "Hold pedal is down (Shift)",
     keyboardMode: "Keyboard playback is on, press ` to disable",
     port: "Port {0} (click to toggle visibility)",
     channelController: channelControllerLocale,
-    effectsConfig: effectsConfig,
-    keyModifiers: keyModifiers
+    effectsConfig: effectsConfig
 };

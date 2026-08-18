@@ -33,7 +33,7 @@ export const effectsConfig = {
         msgsCutoff: {
             title: "Coupure de note MSGS",
             description:
-                "Coupure de note MSGS : Couper la note précédent si elle est identique à la nouvelle note, comme le synthétiseur \"Microsoft GS Wavetable Synthesizer\""
+                'Coupure de note MSGS : Couper la note précédent si elle est identique à la nouvelle note, comme le synthétiseur "Microsoft GS Wavetable Synthesizer"'
         },
 
         blackMidiMode: {

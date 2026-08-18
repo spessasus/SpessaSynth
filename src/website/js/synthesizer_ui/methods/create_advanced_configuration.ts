@@ -3,14 +3,13 @@ import {
     showNotification
 } from "../../notification/notification.js";
 import { SynthesizerUI } from "../synthetizer_ui.js";
-import { startKeyModifiersMenu } from "./key_modifier_ui.js";
 import { Meter } from "./synthui_meter.ts";
 import { Ut } from "../../utils/other.js";
 import type { LocaleManager } from "../../manager/locale_manager.ts";
 import { type InterpolationType, InterpolationTypes } from "spessasynth_core";
+import { URLParamUtils } from "../../utils/url_params.ts";
 
 const LOCALE_PATH = "locale.synthesizerController.effectsConfig.misc.";
-const KEY_MODIFIERS_PATH = "locale.synthesizerController.keyModifiers.";
 
 function toggleMeter(
     locale: LocaleManager,
@@ -110,33 +109,6 @@ export function createAdvancedConfiguration(
         paramWrapper.classList.add("effect_wrapper_params");
         wrapper.append(paramWrapper);
 
-        // Key modifiers
-        {
-            const keyModifierBuffon = document.createElement("div");
-            keyModifierBuffon.classList.add("synthui_button");
-            this.locale.bindObjectProperty(
-                keyModifierBuffon,
-                "textContent",
-                KEY_MODIFIERS_PATH + "button.title"
-            );
-            this.locale.bindObjectProperty(
-                keyModifierBuffon,
-                "title",
-                KEY_MODIFIERS_PATH + "button.description"
-            );
-
-            keyModifierBuffon.addEventListener("click", () =>
-                startKeyModifiersMenu(
-                    this.synth,
-                    this.locale,
-                    this.keyboard,
-                    this.presetList
-                )
-            );
-
-            paramWrapper.append(keyModifierBuffon);
-        }
-
         // Interpolation
         {
             const interpolation = document.createElement("select");
@@ -214,14 +186,10 @@ export function createAdvancedConfiguration(
                                     this.locale.getLocaleString("locale.yes"),
                                 listeners: {
                                     click: () => {
-                                        const url = new URL(
-                                            window.location.href
-                                        );
-                                        url.searchParams.set(
-                                            "samplerate",
+                                        URLParamUtils.setParam(
+                                            URLParamUtils.SAMPLE_RATE,
                                             rate.toString()
                                         );
-                                        window.location.replace(url);
                                     }
                                 }
                             },

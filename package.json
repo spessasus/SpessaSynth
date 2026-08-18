@@ -5,7 +5,7 @@
     "private": true,
     "scripts": {
         "perms": "chmod +x src/build/*",
-        "test:types": "eslint --cache && tsc -b",
+        "test:types": "eslint && tsc -b",
         "start": "node src/build/start.ts",
         "build": "npm run test:types && npm run build:fast",
         "build:fast": "node src/build/build.ts",
@@ -37,7 +37,7 @@
     },
     "dependencies": {
         "jszip": "^3.10.1",
-        "spessasynth_core": "latest",
-        "spessasynth_lib": "latest"
+        "spessasynth_core": "file:../spessasynth_core",
+        "spessasynth_lib": "file:../spessasynth_lib"
     }
 }

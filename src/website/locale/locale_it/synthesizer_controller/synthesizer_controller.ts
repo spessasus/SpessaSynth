@@ -1,6 +1,5 @@
 import { channelControllerLocale } from "./channel_controller.js";
 import { effectsConfig } from "./effects_config.js";
-import { keyModifiers } from "./key_modifiers.js";
 
 export const synthesizerControllerLocale = {
     toggleButton: {
@@ -55,6 +54,5 @@ export const synthesizerControllerLocale = {
     holdPedalDown: "Pedale sustain premuto (Shift)",
     port: "Porta {0} (clicca per mostrare/nascondere)",
     channelController: channelControllerLocale,
-    effectsConfig: effectsConfig,
-    keyModifiers: keyModifiers
+    effectsConfig: effectsConfig
 };
