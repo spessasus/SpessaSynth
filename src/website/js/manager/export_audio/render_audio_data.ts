@@ -25,12 +25,24 @@ type RenderAudioOptions = (NonNullable<
 const RENDER_BLOCKS_PER_PROGRESS = 256; // Blocks
 export const BLOCK_SIZE = 128; // Samples
 
+export interface RenderedAudioData {
+    /**
+     * The complete stereo output
+     */
+    output: AudioBuffer;
+    /**
+     * The dry per-channel outputs, used only for the separate channels export.
+     * Will be empty for regular render
+     */
+    visual: AudioBuffer[];
+}
+
 // Renders using the built-in function for worker and a custom one for worklet
 export async function renderAudioData(
     this: Manager,
     sampleRate: number,
     options: RenderAudioOptions
-): Promise<AudioBuffer[]> {
+): Promise<RenderedAudioData> {
     if (!this.synth) {
         throw new Error("Unexpected lack of the synthesizer!");
     }
@@ -42,11 +54,13 @@ export async function renderAudioData(
         // Render the audio in the worker thread using the built-in function
 
         if (options.separateChannels) {
-            const out = await this.synth.renderAudioSplit(sampleRate, options);
-            return out.channels;
+            return await this.synth.renderAudioSplit(sampleRate, options);
         }
 
-        return [await this.synth.renderAudio(sampleRate, options)];
+        return {
+            output: await this.synth.renderAudio(sampleRate, options),
+            visual: []
+        };
     }
 
     // Worklet
@@ -55,12 +69,10 @@ export async function renderAudioData(
     // Does not like copying 4GB buffers into the worklet thread.
     const { progressCallback, loopCount, extraTime, separateChannels } =
         options;
-    const effectsEnabled = !separateChannels && options.enableEffects;
-    const reverbCapture =
-        effectsEnabled && this.convolverMode ? new ReverbCapture() : undefined;
+    const reverbCapture = this.convolverMode ? new ReverbCapture() : undefined;
     const rendererSynth = new SpessaSynthProcessor(sampleRate, {
         eventsEnabled: false,
-        effectsEnabled,
+        effectsEnabled: true,
         reverbProcessor: reverbCapture
     });
     console.info("Parsing and loading the sound bank in the main thread.");
@@ -88,6 +100,8 @@ export async function renderAudioData(
 
     // No voice cap (after restoring snapshot)
     rendererSynth.setSystemParameter("autoAllocateVoices", true);
+    // Always with effects!
+    rendererSynth.setSystemParameter("effectsEnabled", true);
 
     // Calculate the duration
     const parsedMid = await this.seq.getMIDI();
@@ -111,58 +125,18 @@ export async function renderAudioData(
     rendererSeq.play();
     console.info("Sequencer has been initialized.");
 
-    if (separateChannels) {
-        return new Promise<AudioBuffer[]>((resolve) => {
-            const dry: StereoAudioChunk[] = Array.from({ length: 16 }, () => [
-                new Float32Array(sampleDuration),
-                new Float32Array(sampleDuration)
-            ]);
-            // Effect outputs (unused)
-            const dummy = new Float32Array(BLOCK_SIZE);
-            // Current sample rendered
-            let index = 0;
-            const renderQuantum = async () => {
-                for (let i = 0; i < RENDER_BLOCKS_PER_PROGRESS; i++) {
-                    const sampleCount = Math.min(
-                        BLOCK_SIZE,
-                        sampleDuration - index
-                    );
-                    // Render
-                    rendererSeq.processTick();
-                    rendererSynth.processSplit(
-                        dry,
-                        dummy,
-                        dummy,
-                        index,
-                        sampleCount
-                    );
-                    index += sampleCount;
-                    if (index >= sampleDuration) {
-                        // We now finished rendering
-                        resolve(
-                            dry.map((dryPair) =>
-                                makeAudioBuffer(dryPair, sampleRate)
-                            )
-                        );
-                        return;
-                    }
-                }
-
-                // Set timeout so the progress callback has a chance to execute.
-                await progressCallback?.(index / sampleDuration, 0);
-                setTimeout(renderQuantum);
-            };
-
-            void renderQuantum();
-            console.info("Rendering separate channels has started.");
-        });
-    }
-
-    return new Promise<AudioBuffer[]>((resolve) => {
+    return new Promise<RenderedAudioData>((resolve) => {
         const output: StereoAudioChunk = [
             new Float32Array(sampleDuration),
             new Float32Array(sampleDuration)
         ];
+        // Dry channel outputs for the separate channels export
+        const dry: StereoAudioChunk[] = separateChannels
+            ? Array.from({ length: 16 }, () => [
+                  new Float32Array(sampleDuration),
+                  new Float32Array(sampleDuration)
+              ])
+            : [];
         // Convolver outputs
         const convolverData: StereoAudioChunk | undefined = reverbCapture
             ? [
@@ -180,7 +154,13 @@ export async function renderAudioData(
                 );
                 // Render
                 rendererSeq.processTick();
-                rendererSynth.process(output[0], output[1], index, sampleCount);
+                rendererSynth.process(
+                    output[0],
+                    output[1],
+                    index,
+                    sampleCount,
+                    separateChannels ? dry : undefined
+                );
                 // Capture convolver and append
                 if (convolverData) {
                     const captured = reverbCapture!.capturedData.subarray(
@@ -196,27 +176,44 @@ export async function renderAudioData(
                     const buffer = makeAudioBuffer(output, sampleRate);
                     // If convolver mode is on, render it
                     const impulseResponse = this.synth!.convolverNode?.buffer;
-                    if (convolverData && impulseResponse) {
-                        await progressCallback?.(0, 1);
-                        console.info("Rendering convolver data has started");
-                        const convolved = await renderConvolverBuffer(
-                            convolverData,
-                            impulseResponse,
-                            sampleRate
-                        );
-                        mergeAudioBuffer(buffer, convolved);
-                        await progressCallback?.(1, 1);
-                    }
-                    resolve([buffer]);
+                    const finish = async () => {
+                        if (convolverData && impulseResponse) {
+                            console.info(
+                                "Rendering convolver data has started"
+                            );
+                            const convolved = await renderConvolverBuffer(
+                                convolverData,
+                                impulseResponse,
+                                sampleRate,
+                                (progress) => progressCallback?.(progress, 1)
+                            );
+                            mergeAudioBuffer(buffer, convolved);
+                            await progressCallback?.(1, 1);
+                        }
+                        resolve({
+                            output: buffer,
+                            visual: separateChannels
+                                ? dry.map((dryPair) =>
+                                      makeAudioBuffer(dryPair, sampleRate)
+                                  )
+                                : []
+                        });
+                    };
+                    void finish();
                     return;
                 }
             }
+
             // Set timeout so the progress callback has a chance to execute.
             await progressCallback?.(index / sampleDuration, 0);
             setTimeout(renderQuantum);
         };
 
         void renderQuantum();
-        console.info("Rendering with effects has started.");
+        console.info(
+            separateChannels
+                ? "Rendering separate channels has started."
+                : "Rendering with effects has started."
+        );
     });
 }

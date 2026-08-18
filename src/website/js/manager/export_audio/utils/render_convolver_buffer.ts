@@ -11,7 +11,8 @@ export type StereoAudioChunk = [
 export async function renderConvolverBuffer(
     convolverData: StereoAudioChunk,
     impulseResponse: AudioBuffer,
-    sampleRate: number
+    sampleRate: number,
+    progressCallback?: (progress: number) => void
 ) {
     const offline = new OfflineAudioContext({
         numberOfChannels: 2,
@@ -25,5 +26,20 @@ export async function renderConvolverBuffer(
     source.connect(convolver);
     convolver.connect(offline.destination);
     source.start(0);
-    return await offline.startRendering();
+
+    const totalTime = convolverData[0].length / sampleRate;
+    let progressTimer;
+
+    if (progressCallback && totalTime > 0) {
+        progressTimer = setInterval(() => {
+            progressCallback(Math.min(offline.currentTime / totalTime, 1));
+        }, 250);
+    }
+
+    const rendered = await offline.startRendering();
+
+    if (progressTimer) {
+        clearInterval(progressTimer);
+    }
+    return rendered;
 }
