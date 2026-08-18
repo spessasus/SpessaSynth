@@ -573,6 +573,7 @@ export function appendNewController(
             ch.setSystemParameter("presetLock", false);
         }
         ch.setDrums(!ch.patch.isDrum);
+        // Lock selector, this locks the preset lock automatically
         presetSelector.lockSelector(true);
     });
     controller.append(drumsToggle);
