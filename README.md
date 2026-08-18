@@ -59,6 +59,7 @@ This is a repository for the web application, it used to be a monorepo containin
     - Simplified Chinese (By 懒洋君)
     - Italian (By ItsFilyy)
     - Russian (By TGaming03)
+    - Georgian (By TGaming03)
     - Custom locale management system, created specifically for this project
 - **Description of buttons:** Hover over the buttons to see what they do!
 - **`Web MIDI API` support:** Use your physical MIDI devices!

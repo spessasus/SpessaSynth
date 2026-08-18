@@ -4,11 +4,12 @@ import { synthesizerControllerLocale } from "./synthesizer_controller/synthesize
 import { sequencerControllerLocale } from "./sequencer_controller.js";
 import { exportAudio } from "./export_audio.js";
 
-export const localeEnglish = {
+export const localeGeorgian = {
     localeName: "ქართული",
     // Title message
     titleMessage: "SpessaSynth: SF2/DLS Javascript სინთეზატორი",
-    demoTitleMessage: "SpessaSynth: SF2/DLS Javascript სინთეზატორის ონლაინ დემო",
+    demoTitleMessage:
+        "SpessaSynth: SF2/DLS Javascript სინთეზატორის ონლაინ დემო",
 
     synthInit: {
         genericLoading: "იტვირთება...",
@@ -34,7 +35,7 @@ export const localeEnglish = {
             description: "აირჩიეთ ხმის ბანკი (DLS/SF2/SF3)"
         },
         confirm: {
-            title: "დადასტურება,
+            title: "დადასტურება",
             description: "დაადასტურეთ და გამოიყენეთ დამატებითი ბანკი"
         },
         clear: {

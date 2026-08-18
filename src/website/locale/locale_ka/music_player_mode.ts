@@ -1,7 +1,3 @@
-/**
- * მუსიკალური პლეერის რეჟიმის ლოკალი
- * @type {{nothingPlaying: string, currentlyPlaying: string, nothingPlayingCopyright: string, toggleButton: {description: string, title: string}}}
- */
 export const musicPlayerModeLocale = {
     toggleButton: {
         title: "მუსიკის დამკვრელის რეჟიმის გადართვა",
