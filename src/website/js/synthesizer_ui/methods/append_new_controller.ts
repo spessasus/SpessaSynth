@@ -450,10 +450,7 @@ export function appendNewController(
             presetSelector.mainButton.classList.add("locked_selector");
             ch.setSystemParameter("presetLock", true);
         },
-        (locked) => {
-            ch.setSystemParameter("presetLock", locked);
-            console.trace("set preset lock to", locked);
-        }
+        (locked) => ch.setSystemParameter("presetLock", locked)
     );
     controller.append(presetSelector.mainButton);
 
