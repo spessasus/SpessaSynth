@@ -274,6 +274,9 @@ export class UserDrumSetEditor {
                 d.program < FIRST_USER_DRUM ||
                 d.program >= FIRST_USER_DRUM + DRUM_SET_COUNT
         );
+        if (availableDrums.length === 0) {
+            return;
+        }
         for (const selector of this.patchSelectors) {
             selector.reload(availableDrums);
             if (!selector.value) {
