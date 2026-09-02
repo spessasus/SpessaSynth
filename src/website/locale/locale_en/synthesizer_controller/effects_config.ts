@@ -31,6 +31,12 @@ export const effectsConfig = {
                 "Voice Cap: The maximum amount of voices allowed to play at once"
         },
 
+        customVibrato: {
+            title: "Custom Vibrato",
+            description:
+                "Custom Vibrato: Non-standard vibrato which may enhance some SC-88Pro MIDI files."
+        },
+
         msgsCutoff: {
             title: "MSGS Note Cutoff",
             description:
@@ -100,6 +106,23 @@ export const effectsConfig = {
             description:
                 "Pre-delay: This parameter sets the delay time until the reverberant sound is heard. " +
                 "Higher values result in a longer pre-delay time, simulating a larger reverberant space."
+        }
+    },
+
+    convolver: {
+        title: "Convolver reverb configuration",
+        description: "Configure how the convolution-based reverb sounds.",
+        reloadConvolver: "Reload in Convolver mode",
+        reloadNormal: "Reload with standard SpessaSynth reverb",
+        impulseResponse: {
+            title: "Select impulse response",
+            description:
+                "Select an audio file to use as the convolver reverb impulse response.",
+            decodeError: {
+                title: "Could not decode impulse response",
+                description:
+                    "The selected file could not be decoded as audio. The current impulse response was kept."
+            }
         }
     },
 
@@ -280,6 +303,93 @@ export const effectsConfig = {
             description:
                 "Send Level To Delay: Adjust the send level of the sound that comes after the insertion effect to Delay. " +
                 "Higher values result in more sound being sent."
+        }
+    },
+
+    userDrumSet: {
+        title: "User Drum Set Editor",
+        description:
+            "Customize a GS User Drum Set to your liking by editing every note individually. Please note that this only works in GS mode.",
+
+        selector: {
+            description: "Select the User Drum Set you wish to modify."
+        },
+
+        showOnlyChanged: {
+            title: "Show Only Changed",
+            description: "Show only the modified keys."
+        },
+
+        params: {
+            key: {
+                title: "Key"
+            },
+
+            pitchCoarse: {
+                title: "Note Pitch",
+                description: `Relative pitch tuning of the note on key {0}. 60 is unchanged.`
+            },
+            level: {
+                title: "Level",
+                description:
+                    "The volume of the note on key {0}, 120 is unchanged."
+            },
+            assignGroup: {
+                title: "Assign Group",
+                description:
+                    // Yoinked from sc 8850 manual
+                    "Each Instrument can be given a number, and instruments with the identical number " +
+                    "are treated as an Assign group. No two instruments of the same Assign group will " +
+                    "sound together. If while one instrument is sounding, a MIDI message is received to " +
+                    "play another instrument in the same Assign group, the first instrument will be " +
+                    "turned off first. This is a useful way to prevent two instruments from sounding" +
+                    " simultaneously that would not normally do so. For example, since it is obviously " +
+                    "impossible for a hi-hat to simultaneously produce both an open hi-hat sound and a " +
+                    "closed hi-hat sound, these two sounds could be set to the same Assign group (the " +
+                    "same number) so that they would not sound together."
+            },
+
+            pan: {
+                title: "Pan",
+                description:
+                    "The panning of the note on key {0}, relative to channel. A value of 64 means no change and 0 enables random pan for every note."
+            },
+
+            reverbSend: {
+                title: "Reverb Send",
+                description:
+                    "The Reverb Send Level of the note on key {0}. Multiplicative of channel."
+            },
+            chorusSend: {
+                title: "Chorus Send",
+                description:
+                    "The Chorus Send Level of the note on key {0}. Multiplicative of channel."
+            },
+            variationSend: {
+                // Variation is global name, delay is for GS
+                title: "Delay Send",
+                description:
+                    "The Delay Send Level of the note on key {0}. Multiplicative of channel."
+            },
+            rxNoteOn: {
+                title: "Rx. Note On",
+                description:
+                    "Allows/disallows reception of Note On messages on key {0}."
+            },
+            rxNoteOff: {
+                title: "Rx. Note Off",
+                description:
+                    "If enabled, drum notes instantly cut off when a Note Off is received on key {0}."
+            },
+            preset: {
+                title: "Preset",
+                description: "The preset key {0} will use."
+            },
+            sourceNoteNumber: {
+                title: "Source Note Number",
+                description:
+                    "The MIDI Note Number of the source drum set. Note {0} will play a sound on this note from the selected drum set."
+            }
         }
     }
 };

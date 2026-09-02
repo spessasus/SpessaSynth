@@ -1,6 +1,5 @@
 import { channelControllerLocale } from "./channel_controller.js";
 import { effectsConfig } from "./effects_config.js";
-import { keyModifiers } from "./key_modifiers.js";
 
 export const synthesizerControllerLocale = {
     toggleButton: {
@@ -69,6 +68,5 @@ export const synthesizerControllerLocale = {
         "Воспроизведение с клавиатуры включено, нажмите ` для отключения",
     port: "Порт {0} (нажмите, чтобы изменить видимость)",
     channelController: channelControllerLocale,
-    effectsConfig: effectsConfig,
-    keyModifiers: keyModifiers
+    effectsConfig: effectsConfig
 };

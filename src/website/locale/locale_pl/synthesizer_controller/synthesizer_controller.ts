@@ -1,6 +1,5 @@
 import { channelControllerLocale } from "./channel_controller.js";
 import { effectsConfig } from "./effects_config.js";
-import { keyModifiers } from "./key_modifiers.js";
 
 export const synthesizerControllerLocale = {
     toggleButton: {
@@ -65,6 +64,5 @@ export const synthesizerControllerLocale = {
         "Granie na klawiaturze jest włączone, naciśnij ` aby wyłączyć",
     port: "Port {0} (kliknij aby zmienić widoczność)",
     channelController: channelControllerLocale,
-    effectsConfig: effectsConfig,
-    keyModifiers: keyModifiers
+    effectsConfig: effectsConfig
 };

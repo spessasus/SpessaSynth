@@ -6,6 +6,7 @@ export const STABILIZE_WAVEFORMS_FFT_MULTIPLIER = 4;
 const EXPONENTIAL_GAIN = Math.E;
 const EXPONENTIAL_AGGRESSIVE = 3;
 const WAVE_GAIN = 0.7;
+const EFX_SCALE_FACTOR = 0.3;
 
 /**
  * @param channelNumber
@@ -370,16 +371,18 @@ function drawEFX(this: Renderer, channel: number) {
 
     const metrics = ctx.measureText(text);
 
-    const widthRatio = waveWidth / metrics.width;
-    const heightRatio = waveHeight / fontSize;
+    const actualWidth = waveWidth * EFX_SCALE_FACTOR;
+    const actualHeight = waveHeight * EFX_SCALE_FACTOR;
+    const widthRatio = actualWidth / metrics.width;
+    const heightRatio = actualHeight / fontSize;
 
     const scale = Math.min(widthRatio, heightRatio);
     fontSize = Math.floor(fontSize * scale);
 
     ctx.font = `${fontSize}px monospace`;
-    ctx.textBaseline = "middle";
-    ctx.textAlign = "center";
-    ctx.fillText(text, relativeX + waveWidth / 2, relativeY - waveHeight / 2);
+    ctx.textBaseline = "top";
+    ctx.textAlign = "end";
+    ctx.fillText(text, relativeX + waveWidth, relativeY - waveHeight);
 }
 
 export function renderWaveforms(this: Renderer, forceStraightLine = false) {
@@ -396,7 +399,6 @@ export function renderWaveforms(this: Renderer, forceStraightLine = false) {
             for (let i = 0; i < this.channelAnalysers.length; i++) {
                 if (this.synth.midiChannels[i].midiParameters.efxAssign) {
                     drawEFX.call(this, i);
-                    continue;
                 }
                 this.renderSingleWaveform(
                     i,
@@ -413,7 +415,6 @@ export function renderWaveforms(this: Renderer, forceStraightLine = false) {
             for (let i = 0; i < this.channelAnalysers.length; i++) {
                 if (this.synth.midiChannels[i].midiParameters.efxAssign) {
                     drawEFX.call(this, i);
-                    continue;
                 }
                 this.renderSingleFft(i, waveWidth, waveHeight);
             }
