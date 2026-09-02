@@ -265,6 +265,17 @@ export function createAdvancedConfiguration(
         paramWrapper.append(
             toggleMeter(
                 this.locale,
+                "customVibrato",
+                (enable) => {
+                    this.synth.setSystemParameter("customVibrato", enable);
+                },
+                false,
+                yesNo
+            ).div
+        );
+        paramWrapper.append(
+            toggleMeter(
+                this.locale,
                 "msgsCutoff",
                 (enable) => {
                     this.synth.setSystemParameter(

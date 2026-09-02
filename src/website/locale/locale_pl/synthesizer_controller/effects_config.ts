@@ -15,6 +15,12 @@ export const effectsConfig = {
                 "Przełącza tryb wysokiej wydajności, upraszczając wygląd i pogarszając jakość dźwięku"
         },
 
+        customVibrato: {
+            title: "Niestandardowe wibrato",
+            description:
+                "Niestandardowe wibrato: Niestandardowe wibrato, które może ulepszyć niektóre pliki MIDI dla SC-88Pro."
+        },
+
         msgsCutoff: {
             title: "Ucinanie nut MSGS",
             description:

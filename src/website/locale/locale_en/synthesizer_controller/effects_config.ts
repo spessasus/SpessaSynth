@@ -31,6 +31,12 @@ export const effectsConfig = {
                 "Voice Cap: The maximum amount of voices allowed to play at once"
         },
 
+        customVibrato: {
+            title: "Custom Vibrato",
+            description:
+                "Custom Vibrato: Non-standard vibrato which may enhance some SC-88Pro MIDI files."
+        },
+
         msgsCutoff: {
             title: "MSGS Note Cutoff",
             description:
