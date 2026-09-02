@@ -14,11 +14,24 @@ export class DropFileHandler {
         soundFontCallback: (arg0: ArrayBuffer) => unknown
     ) {
         const dragPrompt = document.querySelectorAll(".drop_prompt")[0];
+        let dragCounter = 0;
         document.body.addEventListener("dragover", (e) => {
             e.preventDefault();
+        });
+        document.body.addEventListener("dragenter", (e) => {
+            e.preventDefault();
+            dragCounter++;
             Ut.show(dragPrompt);
         });
+        document.body.addEventListener("dragleave", () => {
+            dragCounter--;
+            if (dragCounter <= 0) {
+                dragCounter = 0;
+                Ut.hide(dragPrompt);
+            }
+        });
         document.body.addEventListener("dragend", () => {
+            dragCounter = 0;
             Ut.hide(dragPrompt);
         });
 
@@ -27,6 +40,7 @@ export class DropFileHandler {
             (e) =>
                 void (async (e) => {
                     e.preventDefault();
+                    dragCounter = 0;
                     Ut.hide(dragPrompt);
                     if (!e.dataTransfer?.files[0]) {
                         return;
