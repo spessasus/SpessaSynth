@@ -6,11 +6,12 @@ import { _serializeSettings } from "./saving/serialize_settings.js";
 import {
     _changeLayout,
     _createInterfaceSettingsHandler
-} from "./handlers/interface_handler.js";ler.js";
-import { _toggleDarkMode } from "./handlers/toggle_dark_moimport {
+} from "./handlers/interface_handler.js";
+import { _toggleDarkMode } from "./handlers/toggle_dark_mode.ts";
+import {
     _createRendererHandler,
     _setRendererMode
-} from "./handlers/renderer_handler.js";rer_handler.js";
+} from "./handlers/renderer_handler.js";
 import {
     _createMidiInputHandler,
     _createMidiOutputHandler,
