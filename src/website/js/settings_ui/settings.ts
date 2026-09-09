@@ -6,12 +6,11 @@ import { _serializeSettings } from "./saving/serialize_settings.js";
 import {
     _changeLayout,
     _createInterfaceSettingsHandler
-} from "./handlers/interface_handler.js";
-import { _toggleDarkMode } from "./handlers/toggle_dark_mode.js";
-import {
+} from "./handlers/interface_handler.js";ler.js";
+import { _toggleDarkMode } from "./handlers/toggle_dark_moimport {
     _createRendererHandler,
     _setRendererMode
-} from "./handlers/renderer_handler.js";
+} from "./handlers/renderer_handler.js";rer_handler.js";
 import {
     _createMidiInputHandler,
     _createMidiOutputHandler,
@@ -349,6 +348,12 @@ export class SpessaSynthSettings {
             midi: {
                 outputSelector: document.querySelector<HTMLSelectElement>(
                     "#midi_output_selector"
+                )!,
+                portSelectors: document.querySelectorAll<HTMLSelectElement>(
+                    "#midi_port_selectors .midi_port_selector"
+                ),
+                portSelectorsWrapper: document.querySelector<HTMLDivElement>(
+                    "#midi_port_selectors"
                 )!,
                 inputSelector: document.querySelector<HTMLSelectElement>(
                     "#midi_input_selector"

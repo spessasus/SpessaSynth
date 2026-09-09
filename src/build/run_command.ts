@@ -8,6 +8,7 @@ const dirname = path.resolve(
 );
 
 export function runCommandSync(command: string, cwd?: string) {
+    console.info(command);
     const [cmd, ...args] = command.split(" ");
     const proc = child_process.spawnSync(cmd, args, {
         stdio: "inherit",
@@ -16,7 +17,7 @@ export function runCommandSync(command: string, cwd?: string) {
     });
 
     if (proc.status !== 0) {
-        console.error(`Process exited with code code ${proc.status}`);
+        console.error(`Process exited with code ${proc.status}`);
         // eslint-disable-next-line unicorn/no-process-exit
         process.exit(proc.status);
     }

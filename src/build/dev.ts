@@ -35,7 +35,7 @@ if (await directoryExists(CORE_DIR)) {
 }
 
 if (await directoryExists(LIB_DIR)) {
-    runCommandSync("npm  uninstall spessasynth_lib spessasynth_core");
+    runCommandSync("npm uninstall spessasynth_lib spessasynth_core");
     runCommandSync("npm install ../spessasynth_lib ../spessasynth_core");
     runCommandSync("npm uninstall spessasynth_core", LIB_DIR);
     runCommandSync("npm install ../spessasynth_core", LIB_DIR);

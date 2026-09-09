@@ -20,6 +20,7 @@ import {
     MIDIPatchTools
 } from "spessasynth_core";
 import type { Sequencer } from "spessasynth_lib";
+import { MIDIDeviceHandler } from "spessasynth_lib";
 import type { LocaleManager } from "../manager/locale_manager.ts";
 import type { MIDIKeyboard } from "../midi_keyboard/midi_keyboard.ts";
 import { Meter } from "./methods/synthui_meter.ts";
@@ -108,15 +109,21 @@ export type ControllerGroup = keyof typeof controllerGroups;
  * purpose: manages the graphical user interface for the synthesizer
  */
 
+type LibMIDIOutput =
+    typeof MIDIDeviceHandler.prototype.outputs extends Map<unknown, infer V>
+        ? V
+        : never;
+
 export class SynthesizerUI {
     public readonly toggleDarkMode = toggleDarkMode.bind(this);
     public readonly channelColors: string[];
     public onProgramChange?: (channel: number) => unknown;
     public onTranspose?: () => unknown;
     public onMute: ((channel: number, isMuted: boolean) => unknown)[] = [];
-    public midiPort?: {
-        send: (data: number[]) => unknown;
-    };
+    public outputPorts: {
+        primary?: LibMIDIOutput;
+        extra: (LibMIDIOutput | undefined)[];
+    } = { extra: [] };
     protected readonly synth: Synthesizer;
     protected readonly keyboard: MIDIKeyboard;
     protected readonly locale: LocaleManager;
@@ -417,7 +424,7 @@ export class SynthesizerUI {
                 }
                 this.soloChannels.clear();
                 this.synth.reset();
-                this.midiPort?.send([
+                this.outputPorts.primary?.port?.send([
                     MIDIMessageTypes.systemExclusive, // Start of sysEx
                     0x41, // Roland
                     0x10, // Device ID (defaults to 16 on Roland)
