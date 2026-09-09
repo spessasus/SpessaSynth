@@ -4,16 +4,14 @@
     "type": "module",
     "private": true,
     "scripts": {
-        "perms": "chmod +x src/build/*",
         "test:types": "eslint && tsc -b",
         "start": "node src/build/start.ts",
         "build": "npm run test:types && npm run build:fast",
         "build:fast": "node src/build/build.ts",
         "format": "prettier . --write",
-        "dev": "npm run perms; src/build/packed_libs.sh",
-        "debug": "npm run perms; src/build/enable_debug.sh",
-        "release": "npm run perms; src/build/disable_debug.sh",
-        "clean": "rm -rf dist; rm -rf local-dev; rm -rf server"
+        "dev": "node src/build/dev.ts",
+        "release": "node src/build/release.ts",
+        "clean": "node -e \"const fs=require('fs/promises'); Promise.all([fs.rm('dist',{recursive:true,force:true}), fs.rm('local-dev',{recursive:true,force:true}), fs.rm('server',{recursive:true,force:true})])\""
     },
     "devDependencies": {
         "@chialab/esbuild-plugin-meta-url": "^0.19.1",
