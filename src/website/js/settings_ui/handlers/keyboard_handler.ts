@@ -113,7 +113,10 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
     );
 
     // Create the initial synth channels
-    for (let i = 0; i < this.synth.channelCount; i++) {
+    for (const item of this.synth.midiChannels) {
+        // Apparently this is better off as a for-of loop even though we don't use the item
+        // Sure, eslint, whatever you say.
+        void item;
         createChannel();
     }
     keyboardControls.selectedChannel.addEventListener("change", () => {
@@ -177,13 +180,14 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
     this.seq.eventHandler.addEvent(
         "songChange",
         "settings-keyboard-handler-song-change",
-        (mid) => {
+        (e) => {
+            const { midiData } = e;
             if (this.autoKeyRange) {
-                this.midiKeyboard.keyRange = mid.keyRange;
-                this.renderer.keyRange = mid.keyRange;
+                this.midiKeyboard.keyRange = midiData.keyRange;
+                this.renderer.keyRange = midiData.keyRange;
             }
             if (
-                mid.rmidiInfo?.picture !== undefined && // Switch to music mode if picture available
+                midiData.rmidiInfo?.picture !== undefined && // Switch to music mode if picture available
                 !this.musicMode.visible
             ) {
                 this.toggleMusicPlayerMode();
@@ -213,7 +217,7 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
                     return;
                 }
             }
-            if (channelNumber < this.synth.channelCount) {
+            if (channelNumber < this.synth.midiChannels.length) {
                 this.midiKeyboard.selectChannel(channelNumber);
                 keyboardControls.selectedChannel.value =
                     channelNumber.toString();

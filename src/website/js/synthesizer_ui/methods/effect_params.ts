@@ -1,12 +1,12 @@
 import { Meter } from "./synthui_meter.ts";
 import type {
-    EffectChangeCallback,
+    EffectChangeEvent,
     GlobalSystemParameter
 } from "spessasynth_core";
 import { InsertionValueConverter } from "./convert.ts";
 
 export type ReverbParams = Exclude<
-    Extract<EffectChangeCallback, { effect: "reverb" }>["parameter"],
+    Extract<EffectChangeEvent, { effect: "reverb" }>["parameter"],
     "macro"
 >;
 export type ReverbController = Record<ReverbParams, Meter> & {
@@ -15,7 +15,7 @@ export type ReverbController = Record<ReverbParams, Meter> & {
     toggleLock: () => unknown;
 };
 export type ChorusParams = Exclude<
-    Extract<EffectChangeCallback, { effect: "chorus" }>["parameter"],
+    Extract<EffectChangeEvent, { effect: "chorus" }>["parameter"],
     "macro"
 >;
 export type ChorusController = Record<ChorusParams, Meter> & {
@@ -24,7 +24,7 @@ export type ChorusController = Record<ChorusParams, Meter> & {
     toggleLock: () => unknown;
 };
 export type DelayParams = Exclude<
-    Extract<EffectChangeCallback, { effect: "delay" }>["parameter"],
+    Extract<EffectChangeEvent, { effect: "delay" }>["parameter"],
     "macro"
 >;
 

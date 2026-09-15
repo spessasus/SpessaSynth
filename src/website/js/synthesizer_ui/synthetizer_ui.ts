@@ -12,7 +12,7 @@ import {
     type ChannelMIDIParameter,
     type ChannelSystemParameter,
     DEFAULT_GLOBAL_SYSTEM_PARAMETERS,
-    type EffectChangeCallback,
+    type EffectChangeEvent,
     type MIDIController,
     MIDIControllers,
     MIDIMessageTypes,
@@ -743,7 +743,7 @@ export class SynthesizerUI {
         }
 
         // Create channel controllers
-        for (let i = 0; i < this.synth.channelCount; i++) {
+        for (let i = 0; i < this.synth.midiChannels.length; i++) {
             appendNewController.call(this, i);
         }
         this.setEventListeners();
@@ -994,7 +994,7 @@ export class SynthesizerUI {
         }
     }
 
-    protected handleEffectChange(e: EffectChangeCallback) {
+    protected handleEffectChange(e: EffectChangeEvent) {
         const fx = this.effectConfigs;
         if (e.effect === "insertion") {
             switch (e.parameter) {
