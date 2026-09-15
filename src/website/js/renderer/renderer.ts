@@ -201,7 +201,8 @@ export class Renderer {
             fftSize: this._analyserFftSize,
             smoothingTimeConstant: ANALYSER_SMOOTHING
         });
-        for (let i = 0; i < synth.channelCount; i++) {
+        for (const item of synth.midiChannels) {
+            void item; // Eslint forces for-of
             // Create the analyzer
             const analyser = new AnalyserNode(synth.context, {
                 fftSize: this._analyserFftSize,
@@ -222,15 +223,15 @@ export class Renderer {
         this.seq.eventHandler.addEvent(
             "songChange",
             "renderer-song-change",
-            async (mid) => {
+            async (e) => {
                 if (!this.seq) {
                     throw new Error("What?");
                 }
                 this.calculateNoteTimes(await this.seq.getMIDI());
                 this.resetIndexes();
                 this.setBackground(
-                    mid.rmidiInfo?.picture
-                        ? new Blob([mid.rmidiInfo.picture])
+                    e.midiData.rmidiInfo?.picture
+                        ? new Blob([e.midiData.rmidiInfo.picture])
                         : undefined
                 );
             }

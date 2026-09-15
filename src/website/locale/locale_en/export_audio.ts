@@ -41,7 +41,8 @@ export const exportAudio = {
                         saving: {
                             title: "Channel files",
                             save: "Save channel {0}",
-                            saveAll: "Save all"
+                            saveAll: "Save all",
+                            saveFullMix: "Save full mix"
                         }
                     },
                     loopCount: {

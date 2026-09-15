@@ -61,7 +61,8 @@ export class MusicModeUI {
         this.seq.eventHandler.addEvent(
             "songChange",
             "player-js-song-change",
-            (mid) => {
+            (e) => {
+                const mid = e.midiData;
                 // Use file name if no copyright detected
                 const setInfoText = (
                     id: string,

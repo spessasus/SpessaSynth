@@ -666,7 +666,8 @@ export class SequencerUI {
         this.seq.eventHandler.addEvent(
             "songChange",
             "sequi-song-change",
-            (data) => {
+            (e) => {
+                const { midiData } = e;
                 this.synthDisplayMode.enabled = false;
                 this.lyricsIndex = -1;
                 this.updateSongDisplayData();
@@ -675,8 +676,8 @@ export class SequencerUI {
                 this.restoreDisplay();
                 this.renderer.clearRendererMatrix();
 
-                let midiEncoding = data.getRMIDInfo("midiEncoding");
-                if (data.embeddedSoundBankSize !== undefined) {
+                let midiEncoding = midiData.getRMIDInfo("midiEncoding");
+                if (midiData.embeddedSoundBankSize !== undefined) {
                     // RMID defaults to utf-8
                     midiEncoding = "utf-8";
                 }

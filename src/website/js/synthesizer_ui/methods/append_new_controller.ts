@@ -12,7 +12,7 @@ import { Meter } from "./synthui_meter.ts";
 import {
     type ChannelMIDIParameter,
     DEFAULT_MIDI_CONTROLLERS,
-    DEFAULT_PERCUSSION,
+    MIDI_DRUM_CHANNEL,
     type MIDIController,
     MIDIControllers,
     MIDIUtils
@@ -473,10 +473,10 @@ export function appendNewController(
         }
         if (
             this.soloChannels.size === 0 ||
-            this.soloChannels.size >= this.synth.channelCount
+            this.soloChannels.size >= this.synth.midiChannels.length
         ) {
             // No channels or all channels are soloed, unmute everything
-            for (let i = 0; i < this.synth.channelCount; i++) {
+            for (let i = 0; i < this.synth.midiChannels.length; i++) {
                 this.controllers[i].soloButton.innerHTML =
                     getEmptyMicSvg(ICON_SIZE);
                 const isMuted =
@@ -490,14 +490,14 @@ export function appendNewController(
                     m?.(i, isMuted);
                 }
             }
-            if (this.soloChannels.size >= this.synth.channelCount) {
+            if (this.soloChannels.size >= this.synth.midiChannels.length) {
                 // All channels are soloed, return to normal
                 this.soloChannels.clear();
             }
             return;
         }
         // Unmute every solo channel and mute others
-        for (let i = 0; i < this.synth.channelCount; i++) {
+        for (let i = 0; i < this.synth.midiChannels.length; i++) {
             if (this.soloChannels.has(i)) {
                 this.controllers[i].soloButton.innerHTML = getMicSvg(ICON_SIZE);
                 const isMuted =
@@ -558,7 +558,7 @@ export function appendNewController(
     // Drums toggle
     const drumsToggle = document.createElement("div");
     drumsToggle.innerHTML =
-        channelNumber === DEFAULT_PERCUSSION
+        channelNumber === MIDI_DRUM_CHANNEL
             ? getDrumsSvg(ICON_SIZE)
             : getNoteSvg(ICON_SIZE);
     this.locale.bindObjectProperty(

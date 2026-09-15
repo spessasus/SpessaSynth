@@ -4,7 +4,7 @@ import { showNotification } from "../notification/notification.js";
 import { LocaleManager } from "../manager/locale_manager.js";
 import type { LocaleCode } from "../../locale/locale_list.ts";
 import type { SavedSettings } from "../../../server/saved_settings.ts";
-import { readSampleRateParam } from "../utils/sample_rate_param.ts";
+import { URLParamUtils } from "../utils/url_params.ts";
 import { SpessaLog } from "spessasynth_core";
 
 declare global {
@@ -70,7 +70,21 @@ const v = await fetch("/getversion");
 window.SPESSASYNTH_VERSION = await v.text();
 
 let soundBankBufferCurrent: ArrayBuffer | undefined = undefined;
-const context = new AudioContext({ sampleRate: readSampleRateParam() });
+
+let context: AudioContext;
+const sampleRate = URLParamUtils.getSampleRate();
+try {
+    context = new AudioContext({ sampleRate });
+} catch (error) {
+    // Reload with a safe value if it isn't set
+    if (sampleRate !== URLParamUtils.DEFAULT_SAMPLE_RATE) {
+        URLParamUtils.setParam(
+            URLParamUtils.SAMPLE_RATE,
+            URLParamUtils.DEFAULT_SAMPLE_RATE.toString()
+        );
+    }
+    throw error;
+}
 
 let titleString = "TITLE STRING";
 

@@ -1,6 +1,5 @@
 .voice_selector {
-    border: #777 1px solid;
-    line-height: var(--voice-meter-height);
+    border: var(--btn-border-color) 1px solid;
     background: var(--synthui-background);
     font-size: 1em;
     font-weight: bold;
@@ -8,6 +7,8 @@
     text-align-last: center;
     white-space: nowrap;
     overflow: hidden;
+    line-height: 100%;
+    width: 100%;
 }
 
 select.voice_selector {

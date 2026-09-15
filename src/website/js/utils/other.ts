@@ -73,6 +73,6 @@ export class Ut {
         el: Element | undefined | null,
         show: boolean | undefined = undefined
     ) {
-        el?.classList?.toggle?.("hidden", show);
+        el?.classList?.toggle?.("hidden", !show);
     }
 }

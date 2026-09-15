@@ -25,7 +25,8 @@ export const interfaceSettings = {
 
     backgroundImage: {
         title: "Image en fond d'écran",
-        description: "Sélectionner l'image en fond d'écran pour la visualisation"
+        description:
+            "Sélectionner l'image en fond d'écran pour la visualisation"
     },
 
     synthReload: {
