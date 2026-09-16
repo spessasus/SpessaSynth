@@ -34,6 +34,7 @@
         "*.{html,json,md,yml,yaml,css}": "prettier --write"
     },
     "dependencies": {
+        "fflate": "^0.8.3",
         "jszip": "^3.10.1",
         "spessasynth_core": "file:../spessasynth_core",
         "spessasynth_lib": "file:../spessasynth_lib"

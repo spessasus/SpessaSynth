@@ -31,7 +31,8 @@ import { prepareExtraBankUpload } from "./extra_bank_handling.js";
 import { EXTRA_BANK_ID, SOUND_BANK_ID } from "./bank_id.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
 import { writeDLS } from "./export_audio/export_dls.ts";
-import { URLParamUtils } from "../utils/url_params.ts"; // This enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
+import { URLParamUtils } from "../utils/url_params.ts";
+import { decodeDefaultImpulseResponse } from "../reverb/compressed_reverb_decoder.ts"; // This enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
 
 // This enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
 document.body.classList.add("load");
@@ -352,6 +353,17 @@ export class Manager {
         // Create synth
         const synth = await this.initializeSynth(context);
         this.synth = synth;
+        if (this.synth.convolverNode) {
+            try {
+                this.synth.convolverNode.buffer =
+                    await decodeDefaultImpulseResponse(context);
+            } catch (error) {
+                console.warn(
+                    "Could not decode the default convolver impulse response!",
+                    error
+                );
+            }
+        }
 
         synth.connect(this.audioDelay);
         await synth.isReady;

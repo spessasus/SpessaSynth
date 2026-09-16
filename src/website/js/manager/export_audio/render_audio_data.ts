@@ -13,6 +13,7 @@ import {
 } from "./utils/render_convolver_buffer.ts";
 import { ReverbCapture } from "./utils/reverb_capture.ts";
 import { makeAudioBuffer } from "./utils/make_audio_buffer.ts";
+import { decodeDefaultImpulseResponse } from "../../reverb/compressed_reverb_decoder.ts";
 
 type RenderAudioOptions = (NonNullable<
     Parameters<typeof WorkerSynthesizer.prototype.renderAudio>[1]
@@ -174,8 +175,22 @@ export async function renderAudioData(
                 if (index >= sampleDuration) {
                     // We now finished rendering
                     const buffer = makeAudioBuffer(output, sampleRate);
-                    // If convolver mode is on, render it
-                    const impulseResponse = this.synth!.convolverNode?.buffer;
+                    // If convolver mode is on, render it.
+                    let impulseResponse =
+                        this.synth!.convolverNode?.buffer ?? null;
+                    if (convolverData && !impulseResponse) {
+                        try {
+                            impulseResponse =
+                                await decodeDefaultImpulseResponse(
+                                    this.synth!.context
+                                );
+                        } catch (error) {
+                            console.warn(
+                                "Could not decode the default convolver impulse response!",
+                                error
+                            );
+                        }
+                    }
                     const finish = async () => {
                         if (convolverData && impulseResponse) {
                             console.info(
