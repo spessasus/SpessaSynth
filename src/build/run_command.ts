@@ -17,7 +17,7 @@ export function runCommandSync(command: string, cwd?: string) {
     });
 
     if (proc.status !== 0) {
-        console.error(`Process exited with code ${proc.status}`);
+        console.error(`${command} exited with code ${proc.status}`);
         // eslint-disable-next-line unicorn/no-process-exit
         process.exit(proc.status);
     }

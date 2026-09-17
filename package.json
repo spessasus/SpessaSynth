@@ -38,5 +38,8 @@
         "jszip": "^3.10.1",
         "spessasynth_core": "file:../spessasynth_core",
         "spessasynth_lib": "file:../spessasynth_lib"
+    },
+    "allowScripts": {
+        "esbuild@0.28.1": true
     }
 }
