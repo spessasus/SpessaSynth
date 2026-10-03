@@ -74,7 +74,7 @@ export async function renderAudioData(
     const rendererSynth = new SpessaSynthProcessor(sampleRate, {
         eventsEnabled: false,
         effectsEnabled: true,
-        reverbProcessor: reverbCapture
+        gsReverbProcessor: reverbCapture
     });
     console.info("Parsing and loading the sound bank in the main thread.");
     const sf = SoundBankLoader.fromArrayBuffer(this.sBankBuffer);

@@ -21,7 +21,12 @@ import {
 import type { Sequencer } from "spessasynth_lib";
 import { type LocaleManager } from "../manager/locale_manager.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
-import { drawDotMatrix } from "./draw_dot_matrix.ts";
+import {
+    drawDotMatrix,
+    drawSC8850DotMatrix,
+    SC8850_MATRIX_HEIGHT,
+    SC8850_MATRIX_WIDTH
+} from "./draw_dot_matrix.ts";
 import { ProgramTracker } from "./program_tracker.ts";
 import { type RendererMode, rendererModes } from "./renderer_modes.ts";
 
@@ -86,6 +91,10 @@ export class Renderer {
     public drawActiveNotes = true;
     public showVisualPitch = true;
     public renderDotDisplay = true;
+    /**
+     * Forces a single frame to be rendered
+     */
+    public forceRenderOneFrame = false;
     public sideways = false;
     public renderChannels = new Array<boolean>(16).fill(true);
     // Fft config
@@ -106,6 +115,13 @@ export class Renderer {
      */
     public readonly displayMatrix = Array.from({ length: 16 }, () =>
         new Array<boolean>(16).fill(false)
+    );
+    /**
+     * For SC-8850 160x64 dot-matrix display
+     */
+    public readonly sc8850Matrix = Array.from(
+        { length: SC8850_MATRIX_HEIGHT },
+        () => new Array<boolean>(SC8850_MATRIX_WIDTH).fill(false)
     );
     protected readonly render = render.bind(this);
     protected version: string;
@@ -142,13 +158,20 @@ export class Renderer {
         disconnectChannelAnalysers.bind(this);
     protected readonly renderWaveforms = renderWaveforms.bind(this);
     protected readonly drawDotMatrix = drawDotMatrix.bind(this);
+    protected readonly drawSC8850DotMatrix = drawSC8850DotMatrix.bind(this);
     protected readonly renderSingleWaveform = renderSingleWaveform.bind(this);
     protected readonly renderSingleFft = renderSingleFft.bind(this);
     protected readonly renderBigFft = renderBigFft.bind(this);
     protected readonly inputNode: AudioNode;
     protected readonly workerMode: boolean;
     protected readonly sampleRateFactor: number;
-    protected showDisplayMatrix: MIDISystem | null = null;
+    /**
+     * `XG` for green
+     * `GS` for orange
+     * `sc8850` for high-res
+     * @protected
+     */
+    protected showDisplayMatrix: MIDISystem | "sc8850" | null = null;
     private displayMatrixTimeout = 0;
 
     /**
@@ -354,7 +377,7 @@ export class Renderer {
         this.showDisplayMatrix = null;
     }
 
-    public updateDisplayMatrix(mode: MIDISystem) {
+    public updateDisplayMatrix(mode: MIDISystem | "sc8850") {
         this.showDisplayMatrix = mode;
         clearTimeout(this.displayMatrixTimeout);
         this.displayMatrixTimeout = window.setTimeout(
@@ -363,7 +386,7 @@ export class Renderer {
         );
         // Many MIDI files do setup in silence, and the animations usually are presented then.
         // Spessasynth doesn't render if nothing is being played, so this bypasses that.
-        this.renderOneFrame();
+        this.forceRenderOneFrame = true;
     }
 
     public setRendererMode(mode: RendererMode) {

@@ -15,7 +15,8 @@ export function render(this: Renderer, auto = true, force = false) {
         (this.seq === undefined || this?.seq?.paused) &&
         this.synth.voiceCount === 0 &&
         this.rendererMode === rendererModes.waveformsMode &&
-        !force;
+        !force &&
+        !this.forceRenderOneFrame;
     let forceStraight = false;
     if (!this.renderBool || nothingToDo) {
         if (hasRenderedNoVoices) {
@@ -31,6 +32,7 @@ export function render(this: Renderer, auto = true, force = false) {
     } else {
         hasRenderedNoVoices = false;
     }
+    this.forceRenderOneFrame = false;
 
     if (auto) {
         requestAnimationFrame(() => this.render());
@@ -44,7 +46,12 @@ export function render(this: Renderer, auto = true, force = false) {
 
     // Draw dot matrix
     if (this.renderDotDisplay && this.showDisplayMatrix !== null) {
-        this.drawDotMatrix();
+        // 8850 is hi-res
+        if (this.showDisplayMatrix === "sc8850") {
+            this.drawSC8850DotMatrix();
+        } else {
+            this.drawDotMatrix();
+        }
     }
 
     const highPerf = this.synth.systemParameters.blackMIDIMode;
