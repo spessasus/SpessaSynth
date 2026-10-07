@@ -717,19 +717,19 @@ export class SynthesizerUI {
             // Set the default macros
             // Hall2 default
             this.handleEffectChange({
-                effect: "reverb",
+                effect: "gsReverb",
                 value: 4,
                 parameter: "macro"
             });
             // Chorus3 default
             this.handleEffectChange({
-                effect: "chorus",
+                effect: "gsChorus",
                 value: 3,
                 parameter: "macro"
             });
             // Delay1 default
             this.handleEffectChange({
-                effect: "delay",
+                effect: "gsDelay",
                 value: 0,
                 parameter: "macro"
             });
@@ -996,7 +996,7 @@ export class SynthesizerUI {
 
     protected handleEffectChange(e: EffectChangeEvent) {
         const fx = this.effectConfigs;
-        if (e.effect === "insertion") {
+        if (e.effect === "gsInsertion") {
             switch (e.parameter) {
                 default: {
                     const param = this.currentInsertionEffect.controllers.get(
@@ -1062,7 +1062,7 @@ export class SynthesizerUI {
         }
         if (e.parameter === "macro") {
             switch (e.effect) {
-                case "reverb": {
+                case "gsReverb": {
                     const macro = reverbEffectData.macros[e.value];
                     const meters = fx.reverb;
                     for (const [param, value] of Object.entries(macro)) {
@@ -1081,7 +1081,7 @@ export class SynthesizerUI {
                     return;
                 }
 
-                case "chorus": {
+                case "gsChorus": {
                     const macro = chorusEffectData.macros[e.value];
                     const meters = fx.chorus;
                     for (const [param, value] of Object.entries(macro)) {
@@ -1099,7 +1099,7 @@ export class SynthesizerUI {
                     meters.macro.value = e.value.toString();
                     return;
                 }
-                case "delay": {
+                case "gsDelay": {
                     const macro = delayEffectData.macros[e.value];
                     const meters = fx.delay;
                     for (const [param, value] of Object.entries(macro)) {
@@ -1120,7 +1120,7 @@ export class SynthesizerUI {
             }
         }
         switch (e.effect) {
-            case "reverb": {
+            case "gsReverb": {
                 const param = reverbEffectData.params.find(
                     (p) => p.p === e.parameter
                 );
@@ -1131,7 +1131,7 @@ export class SynthesizerUI {
                 return;
             }
 
-            case "chorus": {
+            case "gsChorus": {
                 const param = chorusEffectData.params.find(
                     (p) => p.p === e.parameter
                 );
@@ -1141,7 +1141,7 @@ export class SynthesizerUI {
                 fx.chorus[e.parameter].update(e.value);
                 return;
             }
-            case "delay": {
+            case "gsDelay": {
                 const param = delayEffectData.params.find(
                     (p) => p.p === e.parameter
                 );

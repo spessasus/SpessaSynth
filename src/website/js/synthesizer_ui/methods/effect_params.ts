@@ -6,7 +6,7 @@ import type {
 import { InsertionValueConverter } from "./convert.ts";
 
 export type ReverbParams = Exclude<
-    Extract<EffectChangeEvent, { effect: "reverb" }>["parameter"],
+    Extract<EffectChangeEvent, { effect: "gsReverb" }>["parameter"],
     "macro"
 >;
 export type ReverbController = Record<ReverbParams, Meter> & {
@@ -15,7 +15,7 @@ export type ReverbController = Record<ReverbParams, Meter> & {
     toggleLock: () => unknown;
 };
 export type ChorusParams = Exclude<
-    Extract<EffectChangeEvent, { effect: "chorus" }>["parameter"],
+    Extract<EffectChangeEvent, { effect: "gsChorus" }>["parameter"],
     "macro"
 >;
 export type ChorusController = Record<ChorusParams, Meter> & {
@@ -24,7 +24,7 @@ export type ChorusController = Record<ChorusParams, Meter> & {
     toggleLock: () => unknown;
 };
 export type DelayParams = Exclude<
-    Extract<EffectChangeEvent, { effect: "delay" }>["parameter"],
+    Extract<EffectChangeEvent, { effect: "gsDelay" }>["parameter"],
     "macro"
 >;
 
