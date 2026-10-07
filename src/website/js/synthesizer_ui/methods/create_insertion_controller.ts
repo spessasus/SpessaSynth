@@ -52,7 +52,7 @@ export function createInsertionController(
     effectSelector.addEventListener("change", () => {
         const v = Number.parseInt(effectSelector.value);
         if (this.insertionLock) {
-            this.synth.setSystemParameter("insertionEffectLock", false);
+            this.synth.setSystemParameter("gsInsertionLock", false);
         }
 
         const msb = (v >> 8) & 0x7f;
@@ -60,7 +60,7 @@ export function createInsertionController(
 
         sendAddress(this.synth, 0x40, 0x03, 0x00, [msb, lsb]);
         if (this.insertionLock) {
-            this.synth.setSystemParameter("insertionEffectLock", true);
+            this.synth.setSystemParameter("gsInsertionLock", true);
         }
     });
     typeLockWrapper.append(effectSelector);
@@ -80,10 +80,7 @@ export function createInsertionController(
     );
     const toggleLock = () => {
         this.insertionLock = !this.insertionLock;
-        this.synth.setSystemParameter(
-            "insertionEffectLock",
-            this.insertionLock
-        );
+        this.synth.setSystemParameter("gsInsertionLock", this.insertionLock);
         lock.style.color = this.insertionLock ? "red" : "";
         // Lock the buttons as well
         for (const channel of this.synth.midiChannels) {
@@ -108,11 +105,11 @@ export function createInsertionController(
         def: 40,
         onEdit: (v) => {
             if (this.insertionLock) {
-                this.synth.setSystemParameter("insertionEffectLock", false);
+                this.synth.setSystemParameter("gsInsertionLock", false);
             }
             sendAddress(this.synth, 0x40, 0x03, 0x17, [Math.round(v)]);
             if (this.insertionLock) {
-                this.synth.setSystemParameter("insertionEffectLock", true);
+                this.synth.setSystemParameter("gsInsertionLock", true);
             }
         }
     });
@@ -126,11 +123,11 @@ export function createInsertionController(
         def: 0,
         onEdit: (v) => {
             if (this.insertionLock) {
-                this.synth.setSystemParameter("insertionEffectLock", false);
+                this.synth.setSystemParameter("gsInsertionLock", false);
             }
             sendAddress(this.synth, 0x40, 0x03, 0x18, [Math.round(v)]);
             if (this.insertionLock) {
-                this.synth.setSystemParameter("insertionEffectLock", true);
+                this.synth.setSystemParameter("gsInsertionLock", true);
             }
         }
     });
@@ -144,11 +141,11 @@ export function createInsertionController(
         def: 0,
         onEdit: (v) => {
             if (this.insertionLock) {
-                this.synth.setSystemParameter("insertionEffectLock", false);
+                this.synth.setSystemParameter("gsInsertionLock", false);
             }
             sendAddress(this.synth, 0x40, 0x03, 0x19, [Math.round(v)]);
             if (this.insertionLock) {
-                this.synth.setSystemParameter("insertionEffectLock", true);
+                this.synth.setSystemParameter("gsInsertionLock", true);
             }
         }
     });
@@ -183,14 +180,14 @@ export function createInsertionController(
                     onEdit: (v) => {
                         if (this.insertionLock) {
                             this.synth.setSystemParameter(
-                                "insertionEffectLock",
+                                "gsInsertionLock",
                                 false
                             );
                         }
                         sendAddress(this.synth, 0x40, 0x03, a, [Math.round(v)]);
                         if (this.insertionLock) {
                             this.synth.setSystemParameter(
-                                "insertionEffectLock",
+                                "gsInsertionLock",
                                 true
                             );
                         }
@@ -264,7 +261,7 @@ export function createInsertionController(
             sendAddress(
                 this.synth,
                 0x40,
-                0x40 | MIDIUtils.channelToSyx(channelNumber),
+                0x40 | MIDIUtils.channelToGSPart(channelNumber),
                 0x22,
                 isFX ? [1] : [0],
                 offset

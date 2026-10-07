@@ -354,16 +354,16 @@ export class SynthesizerUI {
             resetCCButton.addEventListener("click", () => {
                 // Unlock everything
                 this.synth.setSystemParameter("drumLock", false);
-                if (this.synth.systemParameters.reverbLock) {
+                if (this.synth.systemParameters.gsReverbLock) {
                     this.effectConfigs.reverb.toggleLock();
                 }
-                if (this.synth.systemParameters.chorusLock) {
+                if (this.synth.systemParameters.gsChorusLock) {
                     this.effectConfigs.chorus.toggleLock();
                 }
-                if (this.synth.systemParameters.delayLock) {
+                if (this.synth.systemParameters.gsDelayLock) {
                     this.effectConfigs.delay.toggleLock();
                 }
-                if (this.synth.systemParameters.insertionEffectLock) {
+                if (this.synth.systemParameters.gsInsertionLock) {
                     this.effectConfigs.insertion.toggleLock();
                 }
                 if (this.synth.systemParameters.userDrumLock) {

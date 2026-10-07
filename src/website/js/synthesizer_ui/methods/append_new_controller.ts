@@ -322,7 +322,7 @@ export function appendNewController(
             sendAddress(
                 this.synth,
                 0x40,
-                0x10 | MIDIUtils.channelToSyx(channelNumber % 16),
+                0x10 | MIDIUtils.channelToGSPart(channelNumber % 16),
                 0x1a,
                 [Math.round(val)],
                 channelNumber - (channelNumber % 16)
@@ -339,7 +339,7 @@ export function appendNewController(
             sendAddress(
                 this.synth,
                 0x40,
-                0x10 | MIDIUtils.channelToSyx(channelNumber % 16),
+                0x10 | MIDIUtils.channelToGSPart(channelNumber % 16),
                 0x1b,
                 [Math.round(val)],
                 channelNumber - (channelNumber % 16)

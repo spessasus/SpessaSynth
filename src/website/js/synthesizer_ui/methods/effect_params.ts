@@ -80,7 +80,7 @@ export const reverbEffectData: ParamType<ReverbParams> = {
         { a: 0x33, p: "level" },
         { a: 0x32, p: "preLowpass", r: { min: 0, max: 7 } }
     ],
-    lockName: "reverbLock",
+    lockName: "gsReverbLock",
     gainName: "reverbGain",
     macroAddress: 0x30,
     macros: [
@@ -170,7 +170,7 @@ export const chorusEffectData: ParamType<ChorusParams> = {
         { a: 0x39, p: "preLowpass", r: { min: 0, max: 7 } }
     ],
     macroAddress: 0x38,
-    lockName: "chorusLock",
+    lockName: "gsChorusLock",
     gainName: "chorusGain",
     macros: [
         {
@@ -323,8 +323,8 @@ export const delayEffectData: ParamType<DelayParams> = {
         { a: 0x51, p: "preLowpass", r: { min: 0, max: 7 } }
     ],
     macroAddress: 0x50,
-    lockName: "delayLock",
-    gainName: "delayGain",
+    lockName: "gsDelayLock",
+    gainName: "gsDelayGain",
     macros: [
         {
             name: "Delay1",
