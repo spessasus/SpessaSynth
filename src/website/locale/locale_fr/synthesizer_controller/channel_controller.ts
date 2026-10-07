@@ -71,8 +71,7 @@ export const channelControllerLocale = {
 
     fineTuneMeter: {
         title: "Accordage : ",
-        description:
-            "Accordage : L'accordage (en centièmes) du canal {0}."
+        description: "Accordage : L'accordage (en centièmes) du canal {0}."
     },
 
     gainMeter: {

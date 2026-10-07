@@ -37,12 +37,13 @@ export class ProgramTracker {
             "songChange",
             "program-tracker-song-change",
             (e) => {
+                const { midiData } = e;
                 this.usedChannels.clear();
                 this.usedParts.clear();
-                for (const t of e.tracks) {
+                for (const t of midiData.tracks) {
                     const used = t.channels;
                     const port = t.port;
-                    const offset = e.portChannelOffsetMap[port];
+                    const offset = midiData.portChannelOffsetMap[port];
                     for (const v of used) {
                         this.usedParts.add(v);
                         this.usedChannels.add(v + offset);

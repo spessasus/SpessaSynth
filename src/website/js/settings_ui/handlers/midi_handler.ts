@@ -88,34 +88,71 @@ export function _createMidiOutputHandler(
         return;
     }
     const select = this.htmlControls.midi.outputSelector;
+    const ports = this.htmlControls.midi.portSelectors;
+    const extraPorts = this.synthui.outputPorts.extra;
+    const portWrapper = this.htmlControls.midi.portSelectorsWrapper;
+    Ut.hide(portWrapper);
+
+    // Add inputs to selects
     for (const output of handler.outputs.values()) {
         const option = document.createElement("option");
         option.value = output.id;
         option.textContent = output.name ?? output.manufacturer ?? "NO NAME";
         select.append(option);
     }
+    for (const port of ports) {
+        for (const output of handler.outputs.values()) {
+            const option = document.createElement("option");
+            option.value = output.id;
+            option.textContent =
+                output.name ?? output.manufacturer ?? "NO NAME";
+            port.append(option);
+        }
+    }
 
+    // Primary handle, switches between spessa and MIDI
     select.addEventListener("change", () => {
         if (!handler.outputs) {
             return;
         }
-        this.synthui.midiPort = undefined;
-        for (const o of handler.outputs) {
-            o[1].disconnect(this.seq);
-        }
+        this.synthui.outputPorts.primary?.disconnect(this.seq);
+        this.synthui.outputPorts.primary = undefined;
         const target = handler.outputs.get(select.value);
         // QoL: Disable skipping to first note-on for external MIDI playback
         // A lot MIDIs space out the messages to not overflow the MIDI cables.
         // Spessasynth doesn't have this limitation.
         if (target) {
-            this.synthui.midiPort = {
-                send: target.port.send.bind(target.port)
-            };
-            target.connect(this.seq);
+            this.synthui.outputPorts.primary = target;
+            target.connect(this.seq, 0);
             this.seq.skipToFirstNoteOn = false;
+            this.seq.externalMIDIPlayback = true;
+            Ut.show(portWrapper);
         } else {
             this.seq.skipToFirstNoteOn = true;
+            this.seq.externalMIDIPlayback = false;
+            Ut.hide(portWrapper);
         }
         this.saveSettings();
     });
+
+    // Extra ports handle
+
+    for (let p = 0; p < ports.length; p++) {
+        const port = ports[p];
+        // Primary is 0
+        const portNumber = p + 1;
+
+        port.addEventListener("change", () => {
+            if (!handler.outputs) {
+                return;
+            }
+            extraPorts[p]?.disconnect(this.seq);
+            extraPorts[p] = undefined;
+            const target = handler.outputs.get(port.value);
+            if (target) {
+                extraPorts[p] = target;
+                target.connect(this.seq, portNumber * 16);
+            }
+        });
+    }
 }

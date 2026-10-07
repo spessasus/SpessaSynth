@@ -666,7 +666,8 @@ export class SequencerUI {
         this.seq.eventHandler.addEvent(
             "songChange",
             "sequi-song-change",
-            (data) => {
+            (e) => {
+                const { midiData } = e;
                 this.synthDisplayMode.enabled = false;
                 this.lyricsIndex = -1;
                 this.updateSongDisplayData();
@@ -675,8 +676,8 @@ export class SequencerUI {
                 this.restoreDisplay();
                 this.renderer.clearRendererMatrix();
 
-                let midiEncoding = data.getRMIDInfo("midiEncoding");
-                if (data.embeddedSoundBankSize !== undefined) {
+                let midiEncoding = midiData.getRMIDInfo("midiEncoding");
+                if (midiData.embeddedSoundBankSize !== undefined) {
                     // RMID defaults to utf-8
                     midiEncoding = "utf-8";
                 }
@@ -1210,6 +1211,32 @@ export class SequencerUI {
         }
     }
 
+    private sc8850DotMatrixDisplay(syx: number[]) {
+        // SC-8850 dot matrix 160x64
+        const section = syx[5];
+        if (section > 15) {
+            return;
+        }
+        const syxOffset = 7;
+        const matrix = this.renderer.sc8850Matrix;
+
+        for (let rowNum = 0; rowNum < 4; rowNum++) {
+            for (let byte = 0; byte < 27; byte++) {
+                const data = syx[syxOffset + rowNum * 27 + byte];
+                for (let p = 0; p < 6; p++) {
+                    const colNum = byte * 6 + p;
+                    if (colNum >= 160) {
+                        continue;
+                    }
+
+                    matrix[section * 4 + rowNum][colNum] =
+                        ((data >> (5 - p)) & 1) === 1;
+                }
+            }
+        }
+        this.renderer.updateDisplayMatrix("sc8850");
+    }
+
     private enqueueDotMatrix(syx: number[]) {
         this.dotMatrixQueue.push(syx);
         if (!this.dotMatrixQueueActive) {
@@ -1238,6 +1265,12 @@ export class SequencerUI {
     private synthDisplay(syx: number[]) {
         const isYamaha = syx[0] === 0x43;
         const isRoland = syx[0] === 0x41;
+        if (isRoland && syx[2] === 0x45 && syx[4] === 0x20) {
+            // SC-8850 160x64 dot-matrix
+            // Checked first as section 0 would match the text display below
+            this.sc8850DotMatrixDisplay(syx);
+            return;
+        }
         if (
             (isRoland &&
                 // Roland, PATCH NAME (Part of GS, not display)

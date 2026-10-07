@@ -7,7 +7,7 @@ import {
     _changeLayout,
     _createInterfaceSettingsHandler
 } from "./handlers/interface_handler.js";
-import { _toggleDarkMode } from "./handlers/toggle_dark_mode.js";
+import { _toggleDarkMode } from "./handlers/toggle_dark_mode.ts";
 import {
     _createRendererHandler,
     _setRendererMode
@@ -349,6 +349,12 @@ export class SpessaSynthSettings {
             midi: {
                 outputSelector: document.querySelector<HTMLSelectElement>(
                     "#midi_output_selector"
+                )!,
+                portSelectors: document.querySelectorAll<HTMLSelectElement>(
+                    "#midi_port_selectors .midi_port_selector"
+                ),
+                portSelectorsWrapper: document.querySelector<HTMLDivElement>(
+                    "#midi_port_selectors"
                 )!,
                 inputSelector: document.querySelector<HTMLSelectElement>(
                     "#midi_input_selector"

@@ -97,13 +97,14 @@ export async function renderAndExportAudioData(
     };
 
     // Rendering time!
+    // noinspection JSUnusedGlobalSymbols
     const renderedData = await renderAudioData.call(this, sampleRate, {
         extraTime: additionalTime,
         separateChannels,
         loopCount,
         preserveSynthParams: true,
         sequencerID: 0,
-        enableEffects: !separateChannels,
+        enableEffects: true,
         progressCallback: (progress, stage) => {
             if (stage === 0) {
                 showProgress(progress, estimatedMessage);
@@ -112,14 +113,12 @@ export async function renderAndExportAudioData(
             }
         }
     });
-    setTimeout(() => {
-        this.seq?.play();
-    }, 500);
 
     if (separateChannels) {
         const snapshot = await this.synth.getSnapshot();
-        const renderedChannels = renderedData;
+        const { output, visual } = renderedData;
         const separatePath = `locale.exportAudio.formats.formats.wav.options.separateChannels.saving.`;
+        const outputName = `${this.seqUI?.currentSongTitle ?? "unnamed_song"}.wav`;
         const content: NotificationContent[] = [];
         const usedChannels = new Set();
         for (const t of parsedMid.tracks) {
@@ -156,12 +155,9 @@ export async function renderAndExportAudioData(
                     );
 
                     // Stereo
-                    const audioOut = audioBufferToWav(
-                        renderedChannels[channel],
-                        {
-                            normalizeAudio: false
-                        }
-                    );
+                    const audioOut = audioBufferToWav(visual[channel], {
+                        normalizeAudio: false
+                    });
                     const fileName = `${channel + 1} - ${snapshot.midiChannels[i]?.patch?.name ?? `Channel ${i + 1}`}.wav`;
                     this.saveBlob(
                         new Blob([audioOut], { type: "audio/wav" }),
@@ -173,55 +169,97 @@ export async function renderAndExportAudioData(
             };
             content.push(ct);
         }
-        content.push({
-            type: "button",
-            textContent: this.localeManager.getLocaleString(
-                separatePath + "saveAll"
-            ),
-            onClick: async (_n, target) => {
-                const text = target.textContent;
-                target.textContent = this.localeManager.getLocaleString(
-                    "locale.exportAudio.formats.formats.wav.exportMessage.convertWav"
-                );
-                await new Promise((r) => setTimeout(r, ANIMATION_REFLOW_TIME));
+        content.push(
+            {
+                type: "button",
+                textContent: this.localeManager.getLocaleString(
+                    separatePath + "saveFullMix"
+                ),
+                onClick: async (_n, target) => {
+                    const text = target.textContent;
+                    target.textContent = this.localeManager.getLocaleString(
+                        "locale.exportAudio.formats.formats.wav.exportMessage.convertWav"
+                    );
+                    await new Promise((r) =>
+                        setTimeout(r, ANIMATION_REFLOW_TIME)
+                    );
 
-                const zipped = new JSZip();
-                for (const [i, channel] of renderedChannels.entries()) {
-                    // Check if all channels are muted
-                    let muted = true;
-                    for (let j = i; j < snapshot.midiChannels.length; j += 16) {
-                        if (
-                            !snapshot.midiChannels[j].systemParameters.isMuted
-                        ) {
-                            muted = false;
-                            break;
-                        }
-                    }
-                    if (!usedChannels.has(i) || muted) {
-                        continue;
-                    }
                     // Stereo
-                    const audioOut = audioBufferToWav(channel, {
+                    const audioOut = audioBufferToWav(output, {
                         normalizeAudio: false
                     });
-                    const fileName = `${i + 1} - ${snapshot.midiChannels[i]?.patch?.name ?? `Channel ${i + 1}`}.wav`;
-                    zipped.file(fileName, audioOut);
-                    console.info(
-                        `%cAdding file %c${fileName}%c to zip...`,
-                        consoleColors.info,
-                        consoleColors.recognized,
-                        consoleColors.info
+                    this.saveBlob(
+                        new Blob([audioOut], { type: "audio/wav" }),
+                        outputName
                     );
+                    target.classList.add("green_button");
+                    target.textContent = text;
                 }
-                const zipFile = await zipped.generateAsync({ type: "blob" });
-                this.saveBlob(
-                    zipFile,
-                    `${this.seqUI?.currentSongTitle ?? "unnamed"}.zip`
-                );
-                target.classList.add("green_button");
-                target.textContent = text;
+            },
+            {
+                type: "button",
+                textContent: this.localeManager.getLocaleString(
+                    separatePath + "saveAll"
+                ),
+                onClick: async (_n, target) => {
+                    const text = target.textContent;
+                    target.textContent = this.localeManager.getLocaleString(
+                        "locale.exportAudio.formats.formats.wav.exportMessage.convertWav"
+                    );
+                    await new Promise((r) =>
+                        setTimeout(r, ANIMATION_REFLOW_TIME)
+                    );
+
+                    const zipped = new JSZip();
+                    for (const [i, channel] of visual.entries()) {
+                        // Check if all channels are muted
+                        let muted = true;
+                        for (
+                            let j = i;
+                            j < snapshot.midiChannels.length;
+                            j += 16
+                        ) {
+                            if (
+                                !snapshot.midiChannels[j].systemParameters
+                                    .isMuted
+                            ) {
+                                muted = false;
+                                break;
+                            }
+                        }
+                        if (!usedChannels.has(i) || muted) {
+                            continue;
+                        }
+                        // Stereo
+                        const audioOut = audioBufferToWav(channel, {
+                            normalizeAudio: false
+                        });
+                        const fileName = `${i + 1} - ${snapshot.midiChannels[i]?.patch?.name ?? `Channel ${i + 1}`}.wav`;
+                        zipped.file(fileName, audioOut);
+                        console.info(
+                            `%cAdding file %c${fileName}%c to zip...`,
+                            consoleColors.info,
+                            consoleColors.recognized,
+                            consoleColors.info
+                        );
+                    }
+                    // Add the full mix to the zip
+                    const outputFile = audioBufferToWav(output, {
+                        normalizeAudio: false
+                    });
+                    zipped.file(outputName, outputFile);
+                    const zipFile = await zipped.generateAsync({
+                        type: "blob"
+                    });
+                    this.saveBlob(
+                        zipFile,
+                        `${this.seqUI?.currentSongTitle ?? "unnamed"}.zip`
+                    );
+                    target.classList.add("green_button");
+                    target.textContent = text;
+                }
             }
-        });
+        );
         const n = showNotification(
             this.localeManager.getLocaleString(separatePath + "title"),
             content,
@@ -231,7 +269,8 @@ export async function renderAndExportAudioData(
             {
                 display: "flex",
                 flexWrap: "wrap",
-                flexDirection: "row"
+                flexDirection: "row",
+                justifyContent: "center"
             }
         );
         n.div.style.width = "30rem";
@@ -253,7 +292,7 @@ export async function renderAndExportAudioData(
             consoleColors.info,
             consoleColors.recognized
         );
-        const wav = audioBufferToWav(renderedData[0], {
+        const wav = audioBufferToWav(renderedData.output, {
             normalizeAudio,
             metadata: meta,
             loop

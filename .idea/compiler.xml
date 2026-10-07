@@ -2,5 +2,6 @@
 <project version="4">
   <component name="TypeScriptCompiler">
     <option name="useServicePoweredTypesEnabledManually" value="true" />
+    <option name="versionType" value="TS_GO_PROXY_RECOMMENDED_VERSION" />
   </component>
 </project>

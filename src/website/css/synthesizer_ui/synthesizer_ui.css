@@ -6,6 +6,7 @@
     --voice-meter-height: 2.5em;
     --synthui-background: rgba(0, 0, 0, 0.8);
     --synthui-border-radius: var(--primary-border-radius);
+    --btn-border-color: #444;
 }
 
 #synthesizer_controls * {
@@ -37,9 +38,11 @@
 .effect_wrapper {
     display: flex;
     flex-direction: column;
-    max-width: 70vw;
+    /* Use vh so phones have max width*/
+    max-width: 120vh;
     margin: auto;
     justify-content: center;
+    max-height: 70vh;
 }
 
 .effect_wrapper h2 {
@@ -85,6 +88,23 @@
     transform: scale(1, 0);
 }
 
+.synthui_table_wrapper {
+    overflow-y: auto;
+    display: block;
+}
+
+.synthui_table_wrapper table {
+    width: 100%;
+}
+
+.synthui_table_wrapper th {
+    width: min-content;
+}
+
+.synthui_table_wrapper tr.changed * {
+    border-color: var(--primary-color);
+}
+
 .controller_element {
     position: relative;
     height: var(--voice-meter-height);
@@ -124,9 +144,9 @@
 .light_mode .synthui_controller {
     background: linear-gradient(
         115deg,
-        rgb(200, 200, 200),
-        rgba(255, 255, 255),
-        rgba(200, 200, 200)
+        rgba(200, 200, 200, 0.5),
+        rgba(255, 255, 255, 0.5),
+        rgba(200, 200, 200, 0.5)
     ) !important;
 }
 
@@ -146,7 +166,6 @@
 }
 
 .mute_button {
-    --btn-border-color: #777;
     flex: 0;
     display: flex;
     justify-content: center;

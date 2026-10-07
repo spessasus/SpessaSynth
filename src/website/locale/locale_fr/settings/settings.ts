@@ -10,6 +10,6 @@ export const settingsLocale = {
     rendererSettings: rendererSettingsLocale,
     keyboardSettings: keyboardSettingsLocale,
     midiSettings: midiSettingsLocale,
-    
+
     interfaceSettings: interfaceSettings
 };

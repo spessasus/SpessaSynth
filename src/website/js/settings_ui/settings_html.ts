@@ -169,6 +169,22 @@ export const settingsHtml = `
         <select id='midi_output_selector'>
             <option value='-1' translate-path='locale.settings.midiSettings.midiOutput.disabled'></option>
         </select>
+        <div id='midi_port_selectors'>
+            <label for='midi_port_selector1' translate-path-title='locale.settings.midiSettings.midiOutput.port1'></label>
+            <select class='midi_port_selector' id='midi_output_selector1'>
+                <option value='-1' translate-path='locale.settings.midiSettings.midiOutput.doNotUse'></option>
+            </select>
+            
+            <label for='midi_port_selector2' translate-path-title='locale.settings.midiSettings.midiOutput.port2'></label>
+            <select class='midi_port_selector' id='midi_output_selector2'>
+                <option value='-1' translate-path='locale.settings.midiSettings.midiOutput.doNotUse'></option>
+            </select>
+            
+            <label for='midi_port_selector3' translate-path-title='locale.settings.midiSettings.midiOutput.port3'></label>
+            <select class='midi_port_selector' id='midi_output_selector3'>
+                <option value='-1' translate-path='locale.settings.midiSettings.midiOutput.doNotUse'></option>
+            </select>
+        </div>
         
         <h4 class='hover_reminder' translate-path-title='locale.settings.midiSettings.reminder'></h4>
     </div>

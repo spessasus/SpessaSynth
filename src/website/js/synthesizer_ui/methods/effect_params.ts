@@ -1,12 +1,12 @@
 import { Meter } from "./synthui_meter.ts";
 import type {
-    EffectChangeCallback,
+    EffectChangeEvent,
     GlobalSystemParameter
 } from "spessasynth_core";
 import { InsertionValueConverter } from "./convert.ts";
 
 export type ReverbParams = Exclude<
-    Extract<EffectChangeCallback, { effect: "reverb" }>["parameter"],
+    Extract<EffectChangeEvent, { effect: "gsReverb" }>["parameter"],
     "macro"
 >;
 export type ReverbController = Record<ReverbParams, Meter> & {
@@ -15,7 +15,7 @@ export type ReverbController = Record<ReverbParams, Meter> & {
     toggleLock: () => unknown;
 };
 export type ChorusParams = Exclude<
-    Extract<EffectChangeCallback, { effect: "chorus" }>["parameter"],
+    Extract<EffectChangeEvent, { effect: "gsChorus" }>["parameter"],
     "macro"
 >;
 export type ChorusController = Record<ChorusParams, Meter> & {
@@ -24,7 +24,7 @@ export type ChorusController = Record<ChorusParams, Meter> & {
     toggleLock: () => unknown;
 };
 export type DelayParams = Exclude<
-    Extract<EffectChangeCallback, { effect: "delay" }>["parameter"],
+    Extract<EffectChangeEvent, { effect: "gsDelay" }>["parameter"],
     "macro"
 >;
 
@@ -80,7 +80,7 @@ export const reverbEffectData: ParamType<ReverbParams> = {
         { a: 0x33, p: "level" },
         { a: 0x32, p: "preLowpass", r: { min: 0, max: 7 } }
     ],
-    lockName: "reverbLock",
+    lockName: "gsReverbLock",
     gainName: "reverbGain",
     macroAddress: 0x30,
     macros: [
@@ -170,7 +170,7 @@ export const chorusEffectData: ParamType<ChorusParams> = {
         { a: 0x39, p: "preLowpass", r: { min: 0, max: 7 } }
     ],
     macroAddress: 0x38,
-    lockName: "chorusLock",
+    lockName: "gsChorusLock",
     gainName: "chorusGain",
     macros: [
         {
@@ -323,8 +323,8 @@ export const delayEffectData: ParamType<DelayParams> = {
         { a: 0x51, p: "preLowpass", r: { min: 0, max: 7 } }
     ],
     macroAddress: 0x50,
-    lockName: "delayLock",
-    gainName: "delayGain",
+    lockName: "gsDelayLock",
+    gainName: "gsDelayGain",
     macros: [
         {
             name: "Delay1",

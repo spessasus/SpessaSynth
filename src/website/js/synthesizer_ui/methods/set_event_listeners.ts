@@ -17,9 +17,9 @@ export function setEventListeners(this: SynthesizerUI) {
                 : getNoteSvg(32);
             const list = this.synth.midiChannels[e.channel].patch.isDrum
                 ? this.synth.midiParameters.system === "gs"
-                    ? this.gsDrumPresets
-                    : this.xgDrumPresets
-                : this.melodicPresets;
+                    ? this.presets.gsDrum
+                    : this.presets.xgDrum
+                : this.presets.melodic;
             p.reload(list);
             p.set(e);
         }
@@ -34,6 +34,7 @@ export function setEventListeners(this: SynthesizerUI) {
                 }
             }
         }
+        this.userDrumSetEditor.reset();
     });
 
     this.synth.eventHandler.addEvent(
