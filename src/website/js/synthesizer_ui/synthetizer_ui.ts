@@ -22,7 +22,7 @@ import {
 import type { Sequencer } from "spessasynth_lib";
 import { MIDIDeviceHandler } from "spessasynth_lib";
 import type { LocaleManager } from "../manager/locale_manager.ts";
-import type { MIDIKeyboard } from "../midi_keyboard/midi_keyboard.ts";
+import type { LiveKeyboard } from "../canvas_keyboard/live/live_keyboard.ts";
 import { Meter } from "./methods/synthui_meter.ts";
 import { getEmptyMicSvg, getVolumeSvg } from "../utils/icons.ts";
 import { createAdvancedConfiguration } from "./methods/create_advanced_configuration.ts";
@@ -44,12 +44,12 @@ import {
 import { createInsertionController } from "./methods/create_insertion_controller.ts";
 import { createEffectController } from "./methods/create_effect_controller.ts";
 import { appendNewController } from "./methods/append_new_controller.ts";
-import type { Renderer } from "../renderer/renderer.ts";
 import { UserDrumSetEditor } from "./methods/user_drum_set_editor.ts";
 import {
     createConvolverModeToggle,
     createConvolverReverbController
 } from "./methods/create_convolver_reverb_controller.ts";
+import type { LiveRenderer } from "../renderer/live/live_renderer.ts";
 
 export interface PresetListElement extends MIDIPatchFull {
     stringified: string;
@@ -125,10 +125,10 @@ export class SynthesizerUI {
         extra: (LibMIDIOutput | undefined)[];
     } = { extra: [] };
     protected readonly synth: Synthesizer;
-    protected readonly keyboard: MIDIKeyboard;
+    protected readonly keyboard: LiveKeyboard;
     protected readonly locale: LocaleManager;
     protected readonly sequencer: Sequencer;
-    protected readonly renderer: Renderer;
+    protected readonly renderer;
     protected readonly voiceMeter: Meter;
     protected readonly volumeController: Meter;
     protected readonly panController: Meter;
@@ -192,10 +192,10 @@ export class SynthesizerUI {
         colors: string[],
         element: HTMLElement,
         localeManager: LocaleManager,
-        keyboard: MIDIKeyboard,
+        keyboard: LiveKeyboard,
         synth: Synthesizer,
         seq: Sequencer,
-        renderer: Renderer
+        renderer: LiveRenderer
     ) {
         this.channelColors = colors;
         const wrapper = element;

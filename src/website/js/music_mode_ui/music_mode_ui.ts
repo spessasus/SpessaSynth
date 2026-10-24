@@ -212,7 +212,7 @@ export class MusicModeUI {
         const playerDiv = this.mainDiv;
         if (visible) {
             // PREPARATION
-            // Renderer and keyboard
+            // BaseRenderer and keyboard
             keyboardCanvasWrapper.classList.add("out_animation");
             this.savedCKWrapperHeight = keyboardCanvasWrapper.clientHeight;
 

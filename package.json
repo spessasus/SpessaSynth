@@ -11,6 +11,7 @@
         "format": "prettier . --write",
         "dev": "node src/build/dev.ts",
         "release": "node src/build/release.ts",
+        "video": "tsx src/cli_video/index.ts",
         "clean": "node -e \"const fs=require('fs/promises'); Promise.all([fs.rm('dist',{recursive:true,force:true}), fs.rm('local-dev',{recursive:true,force:true}), fs.rm('server',{recursive:true,force:true})])\""
     },
     "devDependencies": {
@@ -23,6 +24,7 @@
         "eslint-plugin-unicorn": "^64.0.0",
         "globals": "^17.6.0",
         "prettier": "^3.8.3",
+        "skia-canvas": "^4.0.0",
         "typescript": "^6.0.3",
         "typescript-eslint": "^8.59.1"
     },
@@ -36,6 +38,7 @@
     "dependencies": {
         "fflate": "^0.8.3",
         "jszip": "^3.10.1",
+        "mediabunny": "^1.61.3",
         "spessasynth_core": "file:../spessasynth_core",
         "spessasynth_lib": "file:../spessasynth_lib"
     },

@@ -22,16 +22,16 @@ import { localeList } from "../../locale/locale_list.js";
 import { keybinds } from "../utils/keybinds.js";
 import { handleSliders } from "./sliders.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
-import { Renderer } from "../renderer/renderer.js";
 import { type Sequencer } from "spessasynth_lib";
 import type { SynthesizerUI } from "../synthesizer_ui/synthetizer_ui.ts";
 import type { SequencerUI } from "../sequencer_ui/sequencer_ui.ts";
-import type { MIDIKeyboard } from "../midi_keyboard/midi_keyboard.ts";
+import type { LiveKeyboard } from "../canvas_keyboard/live/live_keyboard.ts";
 import type { MusicModeUI } from "../music_mode_ui/music_mode_ui.ts";
 import type { LocaleManager } from "../manager/locale_manager.ts";
 import type { InterfaceMode } from "../../../server/saved_settings.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
-import { rendererModes } from "../renderer/renderer_modes.ts";
+import { rendererModes } from "../renderer/base/renderer_modes.ts";
+import type { LiveRenderer } from "../renderer/live/live_renderer.ts";
 
 const TRANSITION_TIME = 0.2;
 
@@ -51,10 +51,10 @@ const niceDelayLookupTable = {
 export class SpessaSynthSettings {
     public readonly htmlControls;
     protected readonly delay: DelayNode;
-    protected readonly renderer: Renderer;
+    protected readonly renderer;
     protected readonly synth: Synthesizer;
     protected readonly seq: Sequencer;
-    protected readonly midiKeyboard: MIDIKeyboard;
+    protected readonly midiKeyboard: LiveKeyboard;
     protected readonly synthui: SynthesizerUI;
     protected readonly sequi: SequencerUI;
     protected readonly locale: LocaleManager;
@@ -111,8 +111,8 @@ export class SpessaSynthSettings {
         seq: Sequencer,
         sythui: SynthesizerUI,
         sequi: SequencerUI,
-        renderer: Renderer,
-        midiKeyboard: MIDIKeyboard,
+        renderer: LiveRenderer,
+        midiKeyboard: LiveKeyboard,
         playerInfo: MusicModeUI,
         localeManager: LocaleManager,
         delayNode: DelayNode
@@ -441,11 +441,15 @@ export class SpessaSynthSettings {
         )[0] as HTMLDivElement;
         topPart.style.display = "";
         setTimeout(() => {
+            if (!this.topPartVisible) {
+                return;
+            }
             topPart.classList.remove("top_part_hidden");
+            // Force resize for the renderer to update
+            window.dispatchEvent(new CustomEvent("resize"));
         }, ANIMATION_REFLOW_TIME);
         showTopButton.classList.remove("shown");
         showTopButton.style.display = "none";
-        window.dispatchEvent(new CustomEvent("resize"));
     }
 
     public hideTopPart() {
@@ -459,7 +463,9 @@ export class SpessaSynthSettings {
         )[0] as HTMLDivElement;
         topPart.classList.add("top_part_hidden");
         setTimeout(() => {
-            topPart.style.display = "none";
+            if (!this.topPartVisible) {
+                topPart.style.display = "none";
+            }
         }, 200);
 
         // Show button to get it back

@@ -15,7 +15,7 @@
 import { DialogueEvent } from "./dialogue_event.js";
 import { keybinds } from "../keybinds.js";
 import type { Sequencer } from "spessasynth_lib";
-import type { Renderer } from "../../renderer/renderer.ts";
+import type { LiveRenderer } from "../../renderer/live/live_renderer.ts";
 
 const DEFAULT_RES_X = 384;
 const DEFAULT_RES_Y = 288;
@@ -100,7 +100,7 @@ export class AssManager {
     public constructor(
         seq: Sequencer,
         screen: HTMLDivElement,
-        renderer: Renderer
+        renderer: LiveRenderer
     ) {
         this.seq = seq;
         this.screen = screen;

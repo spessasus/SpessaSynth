@@ -17,7 +17,6 @@ import { sanitizeKarLyrics, setLyricsText } from "./lyrics.js";
 import { createSlider } from "../settings_ui/sliders.js";
 import type { LocaleManager } from "../manager/locale_manager.ts";
 import type { MusicModeUI } from "../music_mode_ui/music_mode_ui.ts";
-import type { Renderer } from "../renderer/renderer.ts";
 import {
     audioToWav,
     type MIDIMessage,
@@ -29,6 +28,7 @@ import { AssManager } from "../utils/ass_manager/ass_manager.ts";
 import type { InterfaceMode } from "../../../server/saved_settings.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
 import { showNotification } from "../notification/notification.ts";
+import type { LiveRenderer } from "../renderer/live/live_renderer.ts";
 
 /**
  * Sequencer_ui.js
@@ -44,8 +44,6 @@ const ICON_COLOR_L = "#333";
 const ICON_DISABLED_COLOR_L = "#ddd";
 
 const DEFAULT_ENCODING = "Shift_JIS";
-
-const DOT_MATRIX_QUEUE_DELAY_MS = 35;
 
 // Zero width space
 const ZWSP = "\u200B";
@@ -84,7 +82,7 @@ export class SequencerUI {
      */
     protected currentLyricsString: string[] = [];
     protected musicModeUI: MusicModeUI;
-    protected renderer: Renderer;
+    protected renderer;
     protected synth: Synthesizer;
     protected seq: Sequencer;
     protected mainTitleMessageDisplay: HTMLElement;
@@ -134,9 +132,7 @@ export class SequencerUI {
     protected silenceSeekLock = false;
 
     private displayTimeoutId: number | null = null;
-    private lastDotMatrixTime = 0;
     private dotMatrixQueue = new Array<number[]>();
-    private dotMatrixQueueActive = false;
 
     /**
      * Creates a new User Interface for the given MidiSequencer
@@ -151,7 +147,7 @@ export class SequencerUI {
         element: HTMLElement,
         locale: LocaleManager,
         musicMode: MusicModeUI,
-        renderer: Renderer,
+        renderer: LiveRenderer,
         synth: Synthesizer,
         seq: Sequencer
     ) {
@@ -1165,98 +1161,6 @@ export class SequencerUI {
         }
     }
 
-    private dotMatrixDisplay(syx: number[]) {
-        if (syx[0] === 0x41) {
-            // Roland Dot Matrix
-            const syxOffset = 7;
-            const matrix = this.renderer.displayMatrix;
-            for (let rowNum = 0; rowNum < 16; rowNum++) {
-                let colNum = 0;
-                for (let i = 4; i >= 0; i--) {
-                    matrix[rowNum][colNum++] =
-                        ((syx[syxOffset + rowNum] >> i) & 1) === 1;
-                }
-                for (let i = 4; i >= 0; i--) {
-                    matrix[rowNum][colNum++] =
-                        ((syx[syxOffset + rowNum + 16] >> i) & 1) === 1;
-                }
-                for (let i = 4; i >= 0; i--) {
-                    matrix[rowNum][colNum++] =
-                        ((syx[syxOffset + rowNum + 32] >> i) & 1) === 1;
-                }
-                matrix[rowNum][colNum] =
-                    ((syx[syxOffset + 48 + rowNum] >> 4) & 1) === 1;
-            }
-            this.renderer.updateDisplayMatrix("gs");
-        } else {
-            // Yamaha Display Bitmap
-            const syxOffset = 5;
-            const matrix = this.renderer.displayMatrix;
-            for (let rowNum = 0; rowNum < 16; rowNum++) {
-                let colNum = 0;
-                for (let i = 6; i >= 0; i--) {
-                    matrix[rowNum][colNum++] =
-                        ((syx[syxOffset + rowNum] >> i) & 1) === 1;
-                }
-                for (let i = 6; i >= 0; i--) {
-                    matrix[rowNum][colNum++] =
-                        ((syx[syxOffset + rowNum + 16] >> i) & 1) === 1;
-                }
-                for (let i = 6; i >= 5; i--) {
-                    matrix[rowNum][colNum++] =
-                        ((syx[syxOffset + rowNum + 32] >> i) & 1) === 1;
-                }
-            }
-            this.renderer.updateDisplayMatrix("xg");
-        }
-    }
-
-    private sc8850DotMatrixDisplay(syx: number[]) {
-        // SC-8850 dot matrix 160x64
-        const section = syx[5];
-        if (section > 15) {
-            return;
-        }
-        const syxOffset = 7;
-        const matrix = this.renderer.sc8850Matrix;
-
-        for (let rowNum = 0; rowNum < 4; rowNum++) {
-            for (let byte = 0; byte < 27; byte++) {
-                const data = syx[syxOffset + rowNum * 27 + byte];
-                for (let p = 0; p < 6; p++) {
-                    const colNum = byte * 6 + p;
-                    if (colNum >= 160) {
-                        continue;
-                    }
-
-                    matrix[section * 4 + rowNum][colNum] =
-                        ((data >> (5 - p)) & 1) === 1;
-                }
-            }
-        }
-        this.renderer.updateDisplayMatrix("sc8850");
-    }
-
-    private enqueueDotMatrix(syx: number[]) {
-        this.dotMatrixQueue.push(syx);
-        if (!this.dotMatrixQueueActive) {
-            this.processDotMatrixQueue();
-        }
-    }
-
-    private processDotMatrixQueue() {
-        const syx = this.dotMatrixQueue.shift();
-        if (!syx) {
-            this.dotMatrixQueueActive = false;
-            return;
-        }
-        this.dotMatrixQueueActive = true;
-        this.dotMatrixDisplay(syx);
-        setTimeout(
-            this.processDotMatrixQueue.bind(this),
-            DOT_MATRIX_QUEUE_DELAY_MS
-        );
-    }
     /**
      * Handle GS and XG synth display
      * @param syx
@@ -1264,13 +1168,8 @@ export class SequencerUI {
      */
     private synthDisplay(syx: number[]) {
         const isYamaha = syx[0] === 0x43;
-        const isRoland = syx[0] === 0x41;
-        if (isRoland && syx[2] === 0x45 && syx[4] === 0x20) {
-            // SC-8850 160x64 dot-matrix
-            // Checked first as section 0 would match the text display below
-            this.sc8850DotMatrixDisplay(syx);
-            return;
-        }
+        // Safeguard for GS and not display data
+        const isRoland = syx[0] === 0x41 && syx[2] === 0x42;
         if (
             (isRoland &&
                 // Roland, PATCH NAME (Part of GS, not display)
@@ -1282,7 +1181,7 @@ export class SequencerUI {
                 syx[4] === 0x41 &&
                 (syx[5] & 0xf) === 0x0 &&
                 syx[6] === 0x00) ||
-            (isRoland && syx[5] === 0x00) || // Roland (and ensure display letters, not dot matrix
+            (isRoland && syx[5] === 0x00) || // Roland (and ensure display letters, not dot matrix)
             (isYamaha && syx[3] === 0x06)
         ) {
             // Clear styles and apply monospace
@@ -1345,20 +1244,6 @@ export class SequencerUI {
                 this.synthDisplayMode.enabled = false;
                 this.restoreDisplay();
             }, 5000);
-        } else if (
-            (isRoland && syx[5] === 0x01) ||
-            (isYamaha && syx[3] === 0x07)
-        ) {
-            // Buffer messages into a queue if needed
-            if (
-                this.dotMatrixQueue.length > 0 ||
-                Math.abs(this.lastDotMatrixTime - this.synth.currentTime) < 0.01
-            ) {
-                this.enqueueDotMatrix(syx);
-                return;
-            }
-            this.lastDotMatrixTime = this.synth.currentTime;
-            this.dotMatrixDisplay(syx);
         }
     }
 }

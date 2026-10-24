@@ -142,6 +142,7 @@ The build files:
 - [Bootstrap Icons](https://icons.getbootstrap.com/) - for the icons
 - [fflate](https://github.com/101arrowz/fflate) - for the MIT DEFLATE implementation
 - [JSZip](https://github.com/Stuk/jszip) - for the ZIP creation library
+- [mediabunny](https://github.com/Vanilagy/mediabunny) - For the media toolkit
 - [foo_midi](https://github.com/stuerp/foo_midi) - for useful resources on XMF file format
 - [Composers](https://github.com/spessasus/spessasynth-demo-songs#readme) - for the demo songs
 - [Falcosoft](https://falcosoft.hu) - for help with the RMIDI format

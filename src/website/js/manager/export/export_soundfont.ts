@@ -1,0 +1,191 @@
+import { consoleColors } from "../../utils/console_colors.js";
+import {
+    closeNotification,
+    showNotification
+} from "../../notification/notification.js";
+import type { Manager } from "../manager.ts";
+import { WorkerSynthesizer } from "spessasynth_lib";
+import {
+    type BasicMIDI,
+    type BasicSoundBank,
+    SoundBankLoader
+} from "spessasynth_core";
+import { encodeVorbis } from "../../../../externals/encode_vorbis.ts";
+
+type writeSF2Options =
+    NonNullable<
+        Parameters<typeof WorkerSynthesizer.prototype.writeSF2>[0]
+    > extends Partial<infer T>
+        ? T
+        : never;
+
+export async function writeSF2(
+    this: Manager,
+    mid: BasicMIDI,
+    options: writeSF2Options
+): Promise<{ binary: ArrayBuffer; fileName: string; sf?: BasicSoundBank }> {
+    if (!this.synth || !this.seq) {
+        throw new Error("Unexpected error.");
+    }
+    if (this.synth instanceof WorkerSynthesizer) {
+        return this.synth.writeSF2(options);
+    }
+
+    const sfBin = mid.embeddedSoundBank ?? this.sBankBuffer;
+
+    const sf = SoundBankLoader.fromArrayBuffer(sfBin);
+
+    if (options.trim) {
+        sf.trim(mid.getUsedProgramsAndKeys(sf));
+    }
+
+    const compressionFunction = (audioData: Float32Array, sampleRate: number) =>
+        encodeVorbis(audioData, sampleRate, options.compressionQuality);
+
+    switch (options.compressionAction) {
+        case "keep":
+        default: {
+            // No action
+            break;
+        }
+
+        case "compress": {
+            if (!compressionFunction) {
+                throw new Error(
+                    `Compression enabled but no compression function has been provided! This should not happen, pleas report the bug!`
+                );
+            }
+            await sf.setSampleFormat({
+                compressionFunction,
+                format: "compressed",
+                progressFunction: options.progressFunction
+            });
+            break;
+        }
+
+        case "decompress": {
+            await sf.setSampleFormat({
+                format: "pcm",
+                progressFunction: options.progressFunction
+            });
+        }
+    }
+
+    const b = sf.writeSF2({
+        ...options,
+        progressFunction: options.progressFunction
+    });
+    return {
+        binary: b,
+        sf,
+        fileName:
+            sf.soundBankInfo.name +
+            (sf.soundBankInfo.version.major === 3 ? ".sf3" : ".sf2")
+    };
+}
+
+export function exportAndSaveSF2(this: Manager) {
+    const path = "locale.exportFile.formats.formats.soundfont.options.";
+    showNotification(
+        this.localeManager.getLocaleString(path + "title"),
+        [
+            {
+                type: "toggle",
+                translatePathTitle: path + "trim",
+                attributes: {
+                    "trim-toggle": "1",
+                    checked: "checked"
+                }
+            },
+            {
+                type: "toggle",
+                translatePathTitle: path + "compress",
+                attributes: {
+                    "compress-toggle": "1"
+                }
+            },
+            {
+                type: "range",
+                translatePathTitle: path + "quality",
+                attributes: {
+                    min: "0",
+                    max: "10",
+                    value: "5"
+                }
+            },
+            {
+                type: "button",
+                textContent: this.localeManager.getLocaleString(
+                    path + "confirm"
+                ),
+                onClick: async (n) => {
+                    if (!this.synth) {
+                        return;
+                    }
+                    const getEl = (q: string) => {
+                        const e = n.div.querySelector(q);
+                        return e as HTMLInputElement;
+                    };
+                    const trimmed = getEl("input[trim-toggle='1']").checked;
+                    const compressed = getEl(
+                        "input[compress-toggle='1']"
+                    ).checked;
+                    const quality =
+                        Number.parseInt(getEl("input[type='range']").value) /
+                        10;
+                    closeNotification(n.id);
+                    console.group(
+                        "%cExporting soundfont...",
+                        consoleColors.info
+                    );
+                    const exportingMessage = this.localeManager.getLocaleString(
+                        `locale.exportFile.formats.formats.soundfont.exportMessage.message`
+                    );
+                    const notification = showNotification(
+                        exportingMessage,
+                        [
+                            { type: "text", textContent: exportingMessage },
+                            { type: "progress" }
+                        ],
+                        9_999_999,
+                        false
+                    );
+                    const progressDiv = notification.div.querySelectorAll(
+                        ".notification_progress"
+                    )[0] as HTMLDivElement;
+                    const detailMessage =
+                        notification.div.querySelectorAll("p")[0];
+                    const exported = await writeSF2.call(
+                        this,
+                        await this.seq!.getMIDI(),
+                        {
+                            bankID: this.soundBankID,
+                            trim: trimmed,
+                            compressionAction: compressed ? "compress" : "keep",
+                            writeDefaultModulators: true,
+                            writeExtendedLimits: true,
+                            writeEmbeddedSoundBank: true,
+                            software: "SpessaSynth",
+                            compressionQuality: quality,
+                            progressFunction: (p) => {
+                                progressDiv.style.width = `${p * 100}%`;
+                                detailMessage.textContent = `${exportingMessage} ${Math.floor(p * 100)}%`;
+                            },
+                            sequencerID: 0
+                        }
+                    );
+                    this.seq?.play();
+                    this.saveBlob(
+                        new Blob([exported.binary]),
+                        exported.fileName
+                    );
+                    console.groupEnd();
+                    closeNotification(notification.id);
+                }
+            }
+        ],
+        99_999_999,
+        true,
+        this.localeManager
+    );
+}

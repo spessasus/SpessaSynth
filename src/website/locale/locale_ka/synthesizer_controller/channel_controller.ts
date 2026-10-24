@@ -1,8 +1,7 @@
 export const channelControllerLocale = {
     voiceMeter: {
         title: "ხმები: ",
-        description:
-            "ხმები: არხ {0}-ზე ამჟამად დაკრული ხმების რაოდენობა"
+        description: "ხმები: არხ {0}-ზე ამჟამად დაკრული ხმების რაოდენობა"
     },
 
     pitchBendMeter: {
@@ -136,7 +135,8 @@ export const channelControllerLocale = {
     },
 
     presetSelector: {
-        description: "შეცვალეთ პატჩის (ინსტრუმენტის) არხი, რომელსაც {0} იყენებს",
+        description:
+            "შეცვალეთ პატჩის (ინსტრუმენტის) არხი, რომელსაც {0} იყენებს",
         selectionPrompt: "ინსტრუმენტის შეცვლა არხისთვის {0}",
         searchPrompt: "ძიება..."
     },

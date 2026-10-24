@@ -135,16 +135,10 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
                 if (keyboardControls.keyRange.value === USE_MIDI_RANGE) {
                     this.autoKeyRange = true;
                     if (this?.seq?.midiData) {
-                        this.midiKeyboard.keyRange = this.seq.midiData.keyRange;
                         this.renderer.keyRange = this.seq.midiData.keyRange;
                     }
                 } else {
                     this.autoKeyRange = false;
-                    this.midiKeyboard.keyRange =
-                        this.keyboardSizes[
-                            keyboardControls.keyRange
-                                .value as keyof typeof this.keyboardSizes
-                        ];
                     this.renderer.keyRange =
                         this.keyboardSizes[
                             keyboardControls.keyRange
@@ -158,16 +152,10 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
         if (keyboardControls.keyRange.value === USE_MIDI_RANGE) {
             this.autoKeyRange = true;
             if (this?.seq.midiData) {
-                this.midiKeyboard.keyRange = this.seq.midiData.keyRange;
                 this.renderer.keyRange = this.seq.midiData.keyRange;
             }
         } else {
             this.autoKeyRange = false;
-            this.midiKeyboard.keyRange =
-                this.keyboardSizes[
-                    keyboardControls.keyRange
-                        .value as keyof typeof this.keyboardSizes
-                ];
             this.renderer.keyRange =
                 this.keyboardSizes[
                     keyboardControls.keyRange
@@ -183,7 +171,6 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
         (e) => {
             const { midiData } = e;
             if (this.autoKeyRange) {
-                this.midiKeyboard.keyRange = midiData.keyRange;
                 this.renderer.keyRange = midiData.keyRange;
             }
             if (

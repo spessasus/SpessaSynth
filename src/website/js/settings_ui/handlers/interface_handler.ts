@@ -100,7 +100,6 @@ export function _createInterfaceSettingsHandler(this: SpessaSynthSettings) {
 export function _changeLayout(this: SpessaSynthSettings, layout: LayoutType) {
     const wrapper = document.querySelector("#keyboard_canvas_wrapper")!;
     const canvas = document.querySelector("#note_canvas")!;
-    const keyboard = document.querySelector("#keyboard")!;
     switch (layout) {
         case "downwards": {
             wrapper.classList.remove(
@@ -109,10 +108,9 @@ export function _changeLayout(this: SpessaSynthSettings, layout: LayoutType) {
                 "right_to_left"
             );
 
-            canvas.classList.remove("sideways");
-            keyboard.classList.remove("sideways");
-            this.renderer.direction = "down";
-            this.renderer.sideways = false;
+            canvas.classList.remove("vertical");
+            this.renderer.notesFalling = true;
+            this.renderer.vertical = false;
             break;
         }
 
@@ -120,10 +118,9 @@ export function _changeLayout(this: SpessaSynthSettings, layout: LayoutType) {
             wrapper.classList.add("upwards");
             wrapper.classList.remove("left_to_right", "right_to_left");
 
-            canvas.classList.remove("sideways");
-            keyboard.classList.remove("sideways");
-            this.renderer.direction = "up";
-            this.renderer.sideways = false;
+            canvas.classList.remove("vertical");
+            this.renderer.notesFalling = false;
+            this.renderer.vertical = false;
             break;
         }
 
@@ -132,10 +129,9 @@ export function _changeLayout(this: SpessaSynthSettings, layout: LayoutType) {
             wrapper.classList.add("left_to_right");
             wrapper.classList.remove("right_to_left");
 
-            canvas.classList.add("sideways");
-            keyboard.classList.add("sideways");
-            this.renderer.direction = "up";
-            this.renderer.sideways = true;
+            canvas.classList.add("vertical");
+            this.renderer.notesFalling = false;
+            this.renderer.vertical = true;
             break;
         }
 
@@ -143,10 +139,9 @@ export function _changeLayout(this: SpessaSynthSettings, layout: LayoutType) {
             wrapper.classList.remove("upwards", "left_to_right");
             wrapper.classList.add("right_to_left");
 
-            canvas.classList.add("sideways");
-            keyboard.classList.add("sideways");
-            this.renderer.direction = "down";
-            this.renderer.sideways = true;
+            canvas.classList.add("vertical");
+            this.renderer.notesFalling = true;
+            this.renderer.vertical = true;
         }
     }
     this.renderer.updateSize();

@@ -4,7 +4,7 @@
  */
 import { USE_MIDI_RANGE } from "./handlers/keyboard_handler.js";
 
-import { rendererModes } from "../renderer/renderer_modes.ts";
+import { rendererModes } from "../renderer/base/renderer_modes.ts";
 
 // Translate-path: only innerText: translate-path-title: inner text by adding .title and title by adding .description
 export const settingsHtml = `

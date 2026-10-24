@@ -1,5 +1,4 @@
 @import "settings/settings.css";
-@import "keyboard/keyboard.css";
 /*DO NOT CHANGE POSITION OF THIS IMPORT*/
 @import "sequencer_ui.css";
 @import "music_mode_ui.css";
@@ -58,7 +57,7 @@ optgroup {
 
 html,
 body {
-    height: 100lvh;
+    height: 100dvh;
     width: 100%;
     background: black;
     overflow-x: clip;

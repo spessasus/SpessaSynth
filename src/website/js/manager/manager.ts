@@ -1,12 +1,10 @@
-import { MIDIKeyboard } from "../midi_keyboard/midi_keyboard.js";
+import type { LiveKeyboard } from "../canvas_keyboard/live/live_keyboard.ts";
 import {
     Sequencer,
     WebMIDILinkHandler,
     WorkerSynthesizer,
     WorkletSynthesizer
 } from "spessasynth_lib";
-
-import { Renderer } from "../renderer/renderer.js";
 
 import { SequencerUI } from "../sequencer_ui/sequencer_ui.js";
 import { SynthesizerUI } from "../synthesizer_ui/synthetizer_ui.js";
@@ -15,8 +13,9 @@ import { MusicModeUI } from "../music_mode_ui/music_mode_ui.js";
 import { LocaleManager } from "./locale_manager.js";
 import { isMobile } from "../utils/is_mobile.js";
 import { keybinds } from "../utils/keybinds.js";
-import { showAudioExportMenu } from "./export_audio/export_audio.js";
-import { showExportMenu } from "./export_audio/export_song.js";
+import { showAudioExportMenu } from "./export/export_audio.js";
+import { showVideoExportMenu } from "./export/video/export_video.js";
+import { showExportMenu } from "./export/export_file.js";
 import {
     closeNotification,
     showNotification
@@ -30,9 +29,11 @@ import { prepareExtraBankUpload } from "./extra_bank_handling.js";
 
 import { EXTRA_BANK_ID, SOUND_BANK_ID } from "./bank_id.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
-import { writeDLS } from "./export_audio/export_dls.ts";
+import { writeDLS } from "./export/export_dls.ts";
 import { URLParamUtils } from "../utils/url_params.ts";
-import { decodeDefaultImpulseResponse } from "../reverb/compressed_reverb_decoder.ts"; // This enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
+import { decodeDefaultImpulseResponse } from "../reverb/compressed_reverb_decoder.ts";
+import { LiveRenderer } from "../renderer/live/live_renderer.ts"; // This enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
+import { CHANNEL_COLORS } from "../renderer/base/channel_colors.ts";
 
 // This enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
 document.body.classList.add("load");
@@ -57,6 +58,7 @@ export class Manager {
     protected isExporting;
     protected keyboardMode = false;
     protected readonly showAudioExportMenu = showAudioExportMenu.bind(this);
+    protected readonly showVideoExportMenu = showVideoExportMenu.bind(this);
     /**
      * Extra sound bank upload tracking (for rendering audio and file name)
      * @protected
@@ -67,27 +69,15 @@ export class Manager {
         buffer: ArrayBuffer;
     };
     protected readonly convolverMode: boolean;
-    private readonly channelColors = [
-        "rgba(255, 99, 71, 1)", // Tomato
-        "rgba(255, 165, 0, 1)", // Orange
-        "rgba(255, 215, 0, 1)", // Gold
-        "rgba(50, 205, 50, 1)", // Limegreen
-        "rgba(60, 179, 113, 1)", // Mediumseagreen
-        "rgba(0, 128, 0, 1)", // Green
-        "rgba(0, 191, 255, 1)", // Deepskyblue
-        "rgba(65, 105, 225, 1)", // Royalblue
-        "rgba(138, 43, 226, 1)", // Blueviolet
-        "rgba(50, 120, 125, 1)", //'rgba(218, 112, 214, 1)', // percussion color
-        "rgba(255, 0, 255, 1)", // Magenta
-        "rgba(255, 20, 147, 1)", // Deeppink
-        "rgba(218, 112, 214, 1)", // Orchid
-        "rgba(240, 128, 128, 1)", // Lightcoral
-        "rgba(255, 192, 203, 1)", // Pink
-        "rgba(255, 255, 0, 1)" // Yellow
-    ];
+    protected renderer?: LiveRenderer;
+    private readonly channelColors = CHANNEL_COLORS;
+    private keyboard?: LiveKeyboard;
     private readonly workerMode: boolean;
-    private keyboard?: MIDIKeyboard;
-    private renderer?: Renderer;
+    private audioWorker?: Worker;
+    private soundBankCopyWaiter?: {
+        resolve: (buffer: ArrayBuffer) => void;
+        reject: (error: Error) => void;
+    };
     private synthUI?: SynthesizerUI;
     private musicModeUI?: MusicModeUI;
     private settingsUI?: SpessaSynthSettings;
@@ -223,6 +213,40 @@ export class Manager {
         );
     }
 
+    /**
+     * Copies a sound bank's binary buffer back from the audio worker (in chrome mode).
+     * Uploading a bank detaches the main thread's copy (making it unusable), so this restores
+     * usable buffer on demand without keeping a second copy around.
+     * @param bankID
+     */
+    public async getWorkerSoundBankCopy(bankID: string): Promise<ArrayBuffer> {
+        const worker = this.audioWorker;
+        if (!worker) {
+            throw new Error("Unexpected request without worker!");
+        }
+        if (this.soundBankCopyWaiter) {
+            throw new Error("A sound bank copy is already in progress.");
+        }
+        console.info("Copying the sound bank back from the worker...");
+        return await new Promise<ArrayBuffer>((resolve, reject) => {
+            this.soundBankCopyWaiter = {
+                resolve: (buffer) => {
+                    this.soundBankCopyWaiter = undefined;
+                    resolve(buffer);
+                },
+                reject: (error) => {
+                    this.soundBankCopyWaiter = undefined;
+                    reject(error);
+                }
+            };
+            worker.postMessage({
+                type: "getSoundBankCopy",
+                data: bankID,
+                channelNumber: -1
+            });
+        });
+    }
+
     protected saveBlob(blob: Blob, name: string) {
         const url = URL.createObjectURL(blob);
         this.saveUrl(url, name);
@@ -274,11 +298,37 @@ export class Manager {
                     convolverMode: this.convolverMode
                 }
             );
+            // Custom handling for worker sound bank copy
             // eslint-disable-next-line unicorn/prefer-add-event-listener
-            worker.onmessage = (e) =>
+            worker.onmessage = (e) => {
+                const data = e.data as {
+                    type?: string;
+                    data?: {
+                        bankID: string;
+                        buffer: ArrayBuffer | null;
+                    };
+                };
+                if (data?.type === "soundBankCopyResult") {
+                    const waiter = this.soundBankCopyWaiter;
+                    if (!waiter) {
+                        return;
+                    }
+                    if (!data.data?.buffer) {
+                        waiter.reject(
+                            new Error(
+                                `No sound bank with ID "${data?.data?.bankID}" is stored in the worker.`
+                            )
+                        );
+                        return;
+                    }
+                    waiter.resolve(data.data.buffer);
+                    return;
+                }
                 synth.handleWorkerMessage(
                     e.data as Parameters<typeof synth.handleWorkerMessage>[0]
                 );
+            };
+            this.audioWorker = worker;
             return synth;
         } else {
             await context.audioWorklet.addModule(
@@ -386,9 +436,6 @@ export class Manager {
         // noinspection JSCheckFunctionSignatures
         new WebMIDILinkHandler(this.synth);
 
-        // Set up keyboard
-        this.keyboard = new MIDIKeyboard(this.channelColors, this.synth);
-
         /**
          * Set up renderer
          */
@@ -398,7 +445,8 @@ export class Manager {
         canvas.width = window.innerWidth * window.devicePixelRatio;
         canvas.height = window.innerHeight * window.devicePixelRatio;
 
-        this.renderer = new Renderer(
+        // The new canvas keyboard is created by the renderer
+        this.renderer = new LiveRenderer(
             this.channelColors,
             this.synth,
             this.seq,
@@ -408,6 +456,7 @@ export class Manager {
             this.workerMode,
             window.SPESSASYNTH_VERSION
         );
+        this.keyboard = this.renderer.keyboard;
         this.renderer.startRendering();
 
         let titleSwappedWithSettings = false;
@@ -447,8 +496,8 @@ export class Manager {
 
         // If on mobile, switch to a 2 octave keyboard
         if (isMobile) {
+            // The new renderer automatically scales the keyboard
             this.renderer.keyRange = { min: 48, max: 72 };
-            this.keyboard.setKeyRange({ min: 48, max: 72 }, false);
         }
 
         // Set up synth UI
@@ -464,7 +513,7 @@ export class Manager {
 
         // Connect muting to renderer
         this.synthUI.onMute.push((channel, isMuted) => {
-            this.renderer!.renderChannels[channel] = !isMuted;
+            this.renderer?.setRenderPart(channel, !isMuted);
         }, this.keyboard.onMute.bind(this.keyboard));
 
         // Create a UI for music player mode

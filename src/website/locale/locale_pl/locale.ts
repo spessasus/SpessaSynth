@@ -2,7 +2,7 @@ import { settingsLocale } from "./settings/settings.js";
 import { musicPlayerModeLocale } from "./music_player_mode.js";
 import { synthesizerControllerLocale } from "./synthesizer_controller/synthesizer_controller.js";
 import { sequencerControllerLocale } from "./sequencer_controller.js";
-import { exportAudio } from "./export_audio.js";
+import { exportFile } from "./export_file.js";
 
 export const localePolish = {
     localeName: "Polski",
@@ -49,7 +49,7 @@ export const localePolish = {
         button: "Dodaj dodatkowy bank dźwięków"
     },
 
-    exportAudio: exportAudio,
+    exportFile: exportFile,
 
     yes: "Tak",
     no: "Nie",

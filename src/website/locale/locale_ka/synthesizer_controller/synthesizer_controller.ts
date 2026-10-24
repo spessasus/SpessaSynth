@@ -50,7 +50,8 @@ export const synthesizerControllerLocale = {
 
     helpButton: {
         title: "დახმარება",
-        description: "დახმარება: ხსნის გარე ვებსაიტს გამოყენების სახელმძღვანელოთი"
+        description:
+            "დახმარება: ხსნის გარე ვებსაიტს გამოყენების სახელმძღვანელოთი"
     },
 
     tabs: {

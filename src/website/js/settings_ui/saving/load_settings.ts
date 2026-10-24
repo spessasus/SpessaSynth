@@ -123,7 +123,6 @@ export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
 
     // Removed the selected channel because it's not something you want to save
     const range = keyboardValues.keyRange;
-    keyboard.setKeyRange(range, false);
     // Find the correct option for the size
     if (keyboardValues?.autoRange) {
         keyboardControls.keyRange.value = USE_MIDI_RANGE;
@@ -140,7 +139,7 @@ export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
     }
     // Keyboard theme
     if (keyboardValues.mode === "dark") {
-        keyboard.toggleMode(false);
+        keyboard.setMode("dark");
         this.htmlControls.keyboard.mode.checked = true;
     }
     // Keyboard show

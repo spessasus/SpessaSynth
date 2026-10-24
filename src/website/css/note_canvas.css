@@ -10,12 +10,13 @@
     background-position:
         0 0,
         center;
+    touch-action: none;
 }
 
-#note_canvas.sideways {
+#note_canvas.vertical {
     height: 100% !important;
     min-height: unset !important;
-    width: 0 !important; /*Chromium sideways layout fix*/
+    width: 100% !important;
 }
 
 #note_canvas.light_mode {
