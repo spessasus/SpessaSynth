@@ -407,8 +407,6 @@ export async function renderAndMuxVideo(
             if (f % 10 === 0) {
                 // Use the full progress bar
                 onProgress?.(f / totalFrames);
-                // UI refresh
-                await new Promise((r) => setTimeout(r, 0));
             }
         }
 
@@ -478,7 +476,6 @@ export async function renderAndMuxVideo(
             }
             if (encodedSamples % (chunkSize * 50) === 0) {
                 onProgress?.(0.85 + 0.15 * (encodedSamples / totalSamples));
-                await new Promise((r) => setTimeout(r, 0));
             }
         }
 

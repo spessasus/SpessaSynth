@@ -35,8 +35,6 @@ type RendererGlobalParams = Omit<VideoInitialParams["global"], "system">;
  *  so every frame is a deterministic function of the log.
  */
 export class OfflineRenderer extends BaseRenderer {
-    private readonly frameWidth: number;
-    private readonly frameHeight: number;
     private readonly eventLog: VideoSynthData;
     private readonly duration: number;
     private eventIndex = 0;
@@ -103,8 +101,6 @@ export class OfflineRenderer extends BaseRenderer {
             new BaseKeyboard(ctx, snapshot.keyboard),
             canvasFactory
         );
-        this.frameWidth = frameWidth;
-        this.frameHeight = frameHeight;
         this.eventLog = eventLog;
         this.duration = duration;
         this.playbackRate = snapshot.playbackRate;
@@ -314,13 +310,6 @@ export class OfflineRenderer extends BaseRenderer {
         }
         this.notesOnScreen = 0;
         this.renderFullFrame(t, t, false);
-        this.ctx.drawImage(
-            this.canvas,
-            0,
-            0,
-            this.frameWidth,
-            this.frameHeight
-        );
     }
 
     protected override renderBigSpectrum() {
