@@ -27,6 +27,7 @@ export const interfaceSettings = {
         title: "Background image",
         description: "Set the background image for visualization"
     },
+    chooseImage: "Choose image",
 
     synthReload: {
         chromium: "Reload in Chrome mode",

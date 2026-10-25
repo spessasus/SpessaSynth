@@ -27,6 +27,7 @@ export const interfaceSettings = {
         title: "Obrazek w tle",
         description: "Ustaw obrazek w tle wizualizacji"
     },
+    chooseImage: "Wybierz obraz",
 
     synthReload: {
         chromium: "Przeładuj w trybie Chrome",

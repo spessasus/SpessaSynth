@@ -6,6 +6,8 @@ import { interfaceSettings } from "./interface_settings.js";
 export const settingsLocale = {
     toggleButton: "Ustawienia",
     mainTitle: "Ustawienia programu",
+    searchPlaceholder: "Wyszukaj ustawienia...",
+    noResults: "Żadne ustawienia nie pasują do tego zapytania.",
 
     rendererSettings: rendererSettingsLocale,
     keyboardSettings: keyboardSettingsLocale,

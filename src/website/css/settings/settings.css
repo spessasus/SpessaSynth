@@ -5,21 +5,43 @@
 
 .settings_menu {
     --settings-border-radius: 1rem;
+    --primary-color: #510087;
+    --border-color: #6e00b7;
+    --settings-edge: #333;
+    --settings-surface: var(--top-color);
+    --settings-card: var(--top-buttons-color);
+    --settings-control: var(--top-color);
     position: absolute;
     top: 100%;
     right: 0;
-    min-width: 30%;
-    max-width: 100%;
-    min-height: 100%;
+    width: min(90vw, 88rem);
+    min-width: min(34rem, calc(100vw - 2rem));
+    max-height: min(88dvh, 64rem);
     z-index: 256;
     transform: scaleX(0);
-    background: var(--top-color);
+    background: var(--settings-surface);
+    border: 1px solid var(--settings-edge);
+    border-top: 0;
     transition: transform 0.2s ease;
     scroll-behavior: smooth;
     overflow-y: auto;
     display: none;
-    border-radius: 0 0 var(--settings-border-radius)
-        var(--settings-border-radius);
+    border-radius: 0 0 1.15rem 1.15rem;
+    box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.3);
+    padding: 1.25rem;
+}
+
+.settings_menu_light {
+    --primary-color: #a93bff;
+    --border-color: #510087;
+    box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.16);
+}
+
+.settings_menu > h1 {
+    margin: 0 0 1rem;
+    font-size: 1.35rem;
+    font-weight: 650;
+    letter-spacing: 0.01em;
 }
 
 .settings_menu_show {
@@ -33,11 +55,13 @@
 }
 
 .settings_menu select {
+    width: 100%;
     background: transparent;
-    border: solid 1px transparent; /*to keep the same size when adding one*/
-    font-size: larger;
-    border-radius: var(--settings-border-radius);
-    padding: 0.5rem;
+    border: solid 1px transparent;
+    font-size: 0.95rem;
+    border-radius: 0.65rem;
+    padding: 0.6rem 0.75rem;
+    text-align: center;
 }
 
 .settings_menu select option {
@@ -49,8 +73,8 @@
 .settings_menu select:hover {
     cursor: pointer;
     text-shadow: 0 0 5px white;
-    border: 1px solid var(--top-buttons-color-end);
     background: var(--top-buttons-color);
+    border-color: var(--top-buttons-color-end);
 }
 
 .settings_menu .hover_reminder {
@@ -62,4 +86,79 @@
 .settings_menu .hover_reminder:hover {
     cursor: pointer;
     text-shadow: 0 0 5px white;
+}
+
+@media (max-width: 700px) {
+    .settings_menu {
+        width: 100%;
+        min-width: 0;
+        max-height: 90dvh;
+        right: 0;
+        border-inline: 0;
+        border-radius: 0;
+        padding: 0.9rem;
+    }
+}
+
+.settings_header {
+    position: sticky;
+    top: -1.25rem;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+    margin: -1.25rem -1.25rem 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--settings-surface);
+    border-bottom: 1px solid var(--settings-edge);
+}
+
+.settings_header > h1 {
+    margin: 0;
+}
+
+.settings_search {
+    flex: 0 1 18rem;
+    min-width: 10rem;
+    padding: 0.55rem 0.75rem 0.55rem 2.2rem;
+    border: 1px solid var(--settings-edge);
+    background-repeat: no-repeat;
+    background-position: 0.7rem center;
+    background-size: 1rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E");
+    border-radius: 0.65rem;
+    background-color: var(--settings-control);
+    color: inherit;
+    text-align: start;
+    font: inherit;
+    font-size: 0.9rem;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.settings_search:focus {
+    outline: none;
+    border-color: var(--border-color);
+    box-shadow: 0 0 0 3px
+        color-mix(in srgb, var(--border-color) 35%, transparent);
+}
+
+.settings_menu .search_hidden {
+    display: none !important;
+}
+
+.settings_no_results {
+    text-align: center;
+    opacity: 0.7;
+}
+
+@media (max-width: 700px) {
+    .settings_header {
+        top: -0.9rem;
+        margin: -0.9rem -0.9rem 0.9rem;
+        padding: 0.8rem 0.9rem;
+    }
 }

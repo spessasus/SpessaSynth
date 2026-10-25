@@ -67,12 +67,19 @@ export function _createInterfaceSettingsHandler(this: SpessaSynthSettings) {
     const backgroundImage = document.querySelector<HTMLInputElement>(
         "#background_file_upload"
     )!;
+    const backgroundImageName =
+        document.querySelector<HTMLSpanElement>(".file_picker_name")!;
     backgroundImage.addEventListener("change", () => {
         if (!backgroundImage?.files?.[0]) {
             this.renderer.setBackground(undefined);
+            backgroundImageName.textContent = "";
+            backgroundImageName.removeAttribute("title");
             return;
         }
-        this.renderer.setBackground(backgroundImage.files[0]);
+        const file = backgroundImage.files[0];
+        this.renderer.setBackground(file);
+        backgroundImageName.textContent = file.name;
+        backgroundImageName.title = file.name;
     });
 
     // Reload synth

@@ -28,6 +28,7 @@ export const interfaceSettings = {
         description:
             "Sélectionner l'image en fond d'écran pour la visualisation"
     },
+    chooseImage: "Choisir une image",
 
     synthReload: {
         chromium: "Redémarrer SpessaSynth en mode Chrome",

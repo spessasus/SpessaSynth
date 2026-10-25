@@ -224,6 +224,62 @@ export class SpessaSynthSettings {
                 element.getAttribute("translate-path") ?? ""
             );
         }
+        for (const element of this.mainDiv.querySelectorAll(
+            "*[translate-path-placeholder]"
+        )) {
+            this.locale.bindObjectProperty(
+                element as HTMLInputElement,
+                "placeholder",
+                element.getAttribute("translate-path-placeholder") ?? ""
+            );
+        }
+
+        // Live search
+        // Hide settings and groups that do not match
+        const searchInput =
+            this.mainDiv.querySelector<HTMLInputElement>("#settings_search")!;
+        const noResults = this.mainDiv.querySelector<HTMLElement>(
+            ".settings_no_results"
+        )!;
+        const groups = [
+            ...this.mainDiv.querySelectorAll<HTMLElement>(".settings_group")
+        ];
+        searchInput.addEventListener("input", () => {
+            const query = searchInput.value.trim().toLowerCase();
+            let anyShown = false;
+            for (const group of groups) {
+                const heading = group.querySelector("h2")?.textContent ?? "";
+                const groupMatches = heading.toLowerCase().includes(query);
+                let shown = 0;
+                for (const setting of group.querySelectorAll<HTMLElement>(
+                    ".setting"
+                )) {
+                    const text = (
+                        (setting.textContent ?? "") +
+                        (setting.querySelector("label")?.title ?? "")
+                    ).toLowerCase();
+                    const match =
+                        query === "" || groupMatches || text.includes(query);
+                    setting.classList.toggle("search_hidden", !match);
+                    if (match) {
+                        shown++;
+                    }
+                }
+                group.classList.toggle("search_hidden", shown === 0);
+                anyShown ||= shown > 0;
+            }
+            // Show no settings message
+            noResults.classList.toggle("hidden", anyShown);
+        });
+        // Escape clears the query first (QoL)
+        searchInput.addEventListener("keydown", (e) => {
+            e.stopPropagation();
+            if (e.key === "Escape") {
+                searchInput.value = "";
+                searchInput.dispatchEvent(new Event("input"));
+            }
+        });
+
         for (const e of this.mainDiv.querySelectorAll(
             "*[translate-path-title]"
         )) {

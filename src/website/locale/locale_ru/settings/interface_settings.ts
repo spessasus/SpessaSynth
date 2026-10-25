@@ -27,6 +27,7 @@ export const interfaceSettings = {
         title: "Фоновое изображение",
         description: "Установить фоновое изображение для визуализации"
     },
+    chooseImage: "Выбрать изображение",
 
     synthReload: {
         chromium: "Перезагрузить в режиме Chrome",

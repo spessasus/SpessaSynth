@@ -27,6 +27,7 @@ export const interfaceSettings = {
         title: "ფონის სურათი",
         description: "ვიზუალიზაციისთვის ფონის სურათის დაყენება"
     },
+    chooseImage: "სურათის არჩევა",
 
     synthReload: {
         chromium: "Chrome რეჟიმში გადატვირთვა",
