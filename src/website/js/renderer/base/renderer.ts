@@ -222,6 +222,12 @@ export abstract class BaseRenderer<K extends BaseKeyboard = BaseKeyboard> {
      * letting animations stretch the axis along which the keys are spread
      */
     protected widthOffset = 0;
+    /**
+     * The maximum points in a single waveform stroke.
+     * Splitting the stroke is faster for software canvases,
+     * but slower for hardware accelerated ones.
+     */
+    protected waveformStrokeChunk = Infinity;
 
     protected readonly voicesPlaying = new Array<boolean>(16).fill(false);
     protected readonly colors = new Array<RendererColor>();

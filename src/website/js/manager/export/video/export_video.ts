@@ -6,7 +6,7 @@ import {
 import type { Manager } from "../../manager.ts";
 import { getVideoSettingsSnapshot } from "./snapshot_settings.ts";
 import { renderAudioData } from "../render_audio_data.ts";
-import { OfflineRenderer } from "../../../renderer/offline/offline_renderer.ts";
+import { getOfflineMIDIData } from "../../../renderer/offline/offline_renderer.ts";
 import { renderAndMuxVideo } from "./mux_video.ts";
 
 const LOCALE_PATH = `locale.exportFile.formats.formats.video.`;
@@ -309,20 +309,25 @@ export async function renderAndExportVideoData(
             0.2,
             this.localeManager.getLocaleString(messagePath + "renderingVideo")
         );
-        const offline = new OfflineRenderer(
+        const waveforms = rendered.visual
+            .slice(0, 16)
+            .map((buffer) => audioBufferToMono(buffer));
+        const rendererData = {
             snapshot,
-            rendered.visual
-                .slice(0, 16)
-                .map((buffer) => audioBufferToMono(buffer)),
-            rendered.visual[0]?.sampleRate ?? options.sampleRate,
-            rendered.eventLog,
-            rendered.duration,
-            rendered.loopCount ?? 0,
-            midi,
-            options.resolution.width,
-            options.resolution.height,
-            this.localeManager
-        );
+            waveforms,
+            waveformOffset: 0,
+            waveformLength: waveforms[0]?.length ?? 0,
+            sampleRate: rendered.visual[0]?.sampleRate ?? options.sampleRate,
+            eventLog: rendered.eventLog,
+            midi: getOfflineMIDIData(
+                midi,
+                rendered.loopCount ?? 0,
+                snapshot.playbackRate,
+                rendered.duration
+            ),
+            width: options.resolution.width,
+            height: options.resolution.height
+        };
         const blob = await renderAndMuxVideo(
             rendered.output,
             {
@@ -341,7 +346,7 @@ export async function renderAndExportVideoData(
                     );
                 }
             },
-            offline
+            rendererData
         );
         const extension = options.format === "mp4" ? "mp4" : "webm";
         this.saveBlob(

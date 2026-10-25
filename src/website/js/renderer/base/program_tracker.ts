@@ -109,6 +109,22 @@ export class ProgramTracker {
         }
     }
 
+    /**
+     * Sets the used channels and parts.
+     * @param channels The used channels.
+     * @param parts The used parts.
+     */
+    public setUsed(channels: Iterable<number>, parts: Iterable<number>) {
+        this.usedChannels.clear();
+        this.usedParts.clear();
+        for (const channel of channels) {
+            this.usedChannels.add(channel);
+        }
+        for (const part of parts) {
+            this.usedParts.add(part);
+        }
+    }
+
     public addChannelTracker() {
         this.ensureChannelTracker(this.channelTrackers.length);
         this.usedChannels.add(this.channelTrackers.length - 1);

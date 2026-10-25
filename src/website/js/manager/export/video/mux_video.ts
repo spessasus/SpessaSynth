@@ -9,7 +9,24 @@ import {
     type VideoCodec,
     WebMOutputFormat
 } from "mediabunny";
-import type { OfflineRenderer } from "../../../renderer/offline/offline_renderer.ts";
+import {
+    MAX_WAVEFORM_SAMPLES,
+    OfflineRenderer,
+    type OfflineRendererData
+} from "../../../renderer/offline/offline_renderer.ts";
+import {
+    callWaiters,
+    createVideoEncoder,
+    type EncoderState,
+    getEncoderError,
+    type RenderLane,
+    renderLaneFrame,
+    waitForEncoderQueue
+} from "./encoder_utils.ts";
+import type {
+    VideoLaneRequest,
+    VideoLaneResponse
+} from "./video_lane_worker.ts";
 
 export interface VideoMuxAndRenderOptions {
     format: "webm" | "mp4";
@@ -21,80 +38,72 @@ export interface VideoMuxAndRenderOptions {
     onProgress?: (fraction: number) => unknown;
 }
 
-interface EncoderState {
-    error: Error | null;
-    waiters: Set<() => void>;
-}
-
-function getEncoderError(value: unknown) {
-    if (value instanceof Error) {
-        return value;
-    }
-    if (typeof value === "string" && value.length > 0) {
-        return new Error(value);
-    }
-    return new Error("Video export error: encoder failed!");
-}
-
-function callWaiters(state: EncoderState) {
-    for (const waiter of state.waiters) {
-        waiter();
-    }
-    state.waiters.clear();
+interface PendingPacket {
+    segment: number;
+    packet: EncodedPacket;
+    meta?: EncodedVideoChunkMetadata;
 }
 
 /**
- * Waits until the encoder queue drains below `drainTo` threshold.
- * Prevents uncompressed raw frames from filling up the memory.
+ * Codecs that carry their parameters in-band,
+ * so packets from separate encoders can share one track.
  */
-async function waitForEncoderQueue(
-    encoder: VideoEncoder | AudioEncoder,
-    state: EncoderState,
-    maxQueue = 4,
-    drainTo = 2
-) {
-    const initialError = state.error;
-    if (initialError instanceof Error) {
-        throw initialError;
+const LANE_CODECS = new Set<VideoCodec>(["vp9", "av1", "vp8"]);
+/**
+ * More lanes did not help on a 16-thread CPU (Chromium VP9 already
+ * uses multiple threads per encoder, Firefox becomes draw-bound).
+ */
+const MAX_DEFAULT_LANES = 4;
+const THREADS_PER_LANE = 4;
+
+function getLaneCount(codec: VideoCodec) {
+    if (!LANE_CODECS.has(codec)) {
+        return 1;
     }
-    if (encoder.encodeQueueSize <= maxQueue) {
-        return;
-    }
-    while (encoder.encodeQueueSize > drainTo) {
-        const loopError = state.error;
-        if (loopError instanceof Error) {
-            throw loopError;
-        }
-        if (encoder.state === "closed") {
-            throw new Error("Encoder closed while draining queue");
-        }
-        await new Promise<void>((resolve) => {
-            state.waiters.add(resolve);
-        });
-    }
+    const threads = navigator.hardwareConcurrency || 1;
+    return Math.max(
+        1,
+        Math.min(MAX_DEFAULT_LANES, Math.floor(threads / THREADS_PER_LANE))
+    );
+}
+
+/**
+ * Rendering the lanes in workers draws them in parallel.
+ * Firefox is draw-bound and up to 1.85x faster with workers.
+ * Chromium is encoder-bound and ~6% slower, so it renders on the main thread.
+ */
+function shouldUseWorkers() {
+    return typeof Worker !== "undefined" && !("chrome" in window);
 }
 
 const VP9_LEVELS = [
-    { cap: 36_864, token: "10" },
-    { cap: 82_944, token: "11" },
-    { cap: 122_880, token: "20" },
-    { cap: 245_760, token: "21" },
-    { cap: 552_960, token: "30" },
-    { cap: 983_040, token: "31" },
-    { cap: 2_228_224, token: "40" },
-    { cap: 2_228_224, token: "41" },
-    { cap: 8_912_896, token: "50" },
-    { cap: 8_912_896, token: "51" },
-    { cap: 35_651_584, token: "60" },
-    { cap: 35_651_584, token: "61" }
+    { size: 36_864, rate: 829_440, token: "10" },
+    { size: 73_728, rate: 2_764_800, token: "11" },
+    { size: 122_880, rate: 4_608_000, token: "20" },
+    { size: 245_760, rate: 9_216_000, token: "21" },
+    { size: 552_960, rate: 20_736_000, token: "30" },
+    { size: 983_040, rate: 36_864_000, token: "31" },
+    { size: 2_228_224, rate: 83_558_400, token: "40" },
+    { size: 2_228_224, rate: 160_432_128, token: "41" },
+    { size: 8_912_896, rate: 311_951_360, token: "50" },
+    { size: 8_912_896, rate: 588_251_136, token: "51" },
+    { size: 8_912_896, rate: 1_176_502_272, token: "52" },
+    { size: 35_651_584, rate: 1_176_502_272, token: "60" },
+    { size: 35_651_584, rate: 2_353_004_544, token: "61" },
+    { size: 35_651_584, rate: 4_706_009_088, token: "62" }
 ];
 
 const AVC_LEVELS = [
-    { cap: 921_600, token: "1f" },
-    { cap: 2_073_600, token: "28" },
-    { cap: 2_073_600, token: "2a" },
-    { cap: 8_294_400, token: "33" },
-    { cap: 35_651_584, token: "34" }
+    { size: 3600, rate: 108_000, token: "1f" },
+    { size: 5120, rate: 216_000, token: "20" },
+    { size: 8192, rate: 245_760, token: "28" },
+    { size: 8704, rate: 522_240, token: "2a" },
+    { size: 22_080, rate: 589_824, token: "32" },
+    { size: 36_864, rate: 983_040, token: "33" },
+    { size: 36_864, rate: 2_073_600, token: "34" },
+    { size: 139_264, rate: 4_177_920, token: "3c" },
+    { size: 139_264, rate: 8_355_840, token: "3d" },
+    { size: 139_264, rate: 16_711_680, token: "3e" }
 ];
 
 async function getVideoCodec(
@@ -109,9 +118,16 @@ async function getVideoCodec(
             "WebCodecs video encoding is not supported in this browser."
         );
     }
+    // Levels limit both the frame size and the processing rate
     const samples = width * height;
-    const avcLevel = AVC_LEVELS.find((l) => l.cap >= samples)?.token ?? "34";
-    const vp9Level = VP9_LEVELS.find((l) => l.cap >= samples)?.token ?? "61";
+    const vp9Level =
+        VP9_LEVELS.find((l) => l.size >= samples && l.rate >= samples * fps)
+            ?.token ?? "62";
+    const macroblocks = Math.ceil(width / 16) * Math.ceil(height / 16);
+    const avcLevel =
+        AVC_LEVELS.find(
+            (l) => l.size >= macroblocks && l.rate >= macroblocks * fps
+        )?.token ?? "3e";
 
     const candidates: {
         codec: string;
@@ -168,7 +184,10 @@ async function getVideoCodec(
                 height,
                 bitrate,
                 framerate: fps,
-                hardwareAcceleration: hw
+                hardwareAcceleration: hw,
+                // The "quality" mode is several times slower in Firefox
+                // (For some reason)
+                latencyMode: "realtime"
             };
             let ok: boolean;
             try {
@@ -286,11 +305,14 @@ async function getAudioCodec(format: "webm" | "mp4", sampleRate: number) {
 /**
  * Muxes rendered frames at `width x height @ fps` with the rendered stereo
  * audio into a video blob.
+ * @param audio The rendered audio.
+ * @param options The video options.
+ * @param rendererData The data for the renderers, one is created per encoder lane.
  */
 export async function renderAndMuxVideo(
     audio: AudioBuffer,
     options: VideoMuxAndRenderOptions,
-    renderer: OfflineRenderer
+    rendererData: OfflineRendererData
 ) {
     const {
         format,
@@ -332,30 +354,324 @@ export async function renderAndMuxVideo(
     let muxTail = Promise.resolve();
     let muxError: Error | null = null;
 
-    const videoState: EncoderState = {
-        error: null,
-        waiters: new Set()
-    };
+    const frameDurationUs = 1_000_000 / fps;
+    // Every segment starts with a keyframe
+    const segmentFrames = Math.max(1, Math.round(fps * 5));
+    const segmentCount = Math.ceil(totalFrames / segmentFrames);
+    const laneCount = Math.min(
+        segmentCount,
+        getLaneCount(videoCodec.mediaBunnyCodec)
+    );
 
-    const videoEncoder = new VideoEncoder({
-        output: (chunk, meta) => {
-            const packet = EncodedPacket.fromEncodedChunk(chunk);
+    /**
+     * Encoded packets of each lane, waiting for their segment to be muxed.
+     */
+    const pending: PendingPacket[][] = Array.from(
+        { length: laneCount },
+        () => []
+    );
+
+    /**
+     * Sends the finished packets to the muxer in segment order.
+     * @param flushed If all encoders have been flushed.
+     */
+    let muxSegment = 0;
+    const muxPending = (flushed: boolean) => {
+        while (muxSegment < segmentCount) {
+            const lanePending = pending[muxSegment % laneCount];
+            const next = lanePending[0];
+            if (next === undefined) {
+                if (!flushed) {
+                    // The segment may not be finished yet
+                    return;
+                }
+                muxSegment++;
+                continue;
+            }
+            if (next.segment !== muxSegment) {
+                // The lane started its next segment, so this one is done
+                muxSegment++;
+                continue;
+            }
+            lanePending.shift();
             muxTail = muxTail
-                .then(() => videoSource.add(packet, meta))
+                .then(() => videoSource.add(next.packet, next.meta))
                 .catch((error: unknown) => {
                     muxError ??= getEncoderError(error);
                 });
-        },
-        error: (error) => {
-            videoState.error ??= getEncoderError(error);
-            callWaiters(videoState);
-            console.error(error);
         }
-    });
-    videoEncoder.addEventListener("dequeue", () => {
-        callWaiters(videoState);
-    });
-    videoEncoder.configure(videoCodec.config);
+    };
+
+    /**
+     * Maps an encoded chunk from the lane's timeline back to the video and queues it.
+     * @param laneIndex The lane that encoded the chunk.
+     * @param data The chunk data.
+     * @param type The chunk type.
+     * @param timestamp The lane timestamp, in microseconds.
+     * @param duration The duration, in microseconds.
+     * @param meta The encoder metadata.
+     */
+    const addLanePacket = (
+        laneIndex: number,
+        data: Uint8Array,
+        type: EncodedVideoChunkType,
+        timestamp: number,
+        duration: number | null,
+        meta?: EncodedVideoChunkMetadata
+    ) => {
+        const laneFrame = Math.round(timestamp / frameDurationUs);
+        const round = Math.floor(laneFrame / segmentFrames);
+        const segment = round * laneCount + laneIndex;
+        const frame = segment * segmentFrames + (laneFrame % segmentFrames);
+        pending[laneIndex].push({
+            segment,
+            packet: new EncodedPacket(
+                data,
+                type,
+                frame === laneFrame
+                    ? timestamp / 1e6
+                    : Math.round(frame * frameDurationUs) / 1e6,
+                (duration ?? 0) / 1e6
+            ),
+            // The track uses the decoder config of the first lane
+            meta: laneIndex === 0 ? meta : undefined
+        });
+        muxPending(false);
+    };
+
+    let framesDone = 0;
+    const addFramesDone = (frames: number) => {
+        const before = Math.floor(framesDone / 10);
+        framesDone += frames;
+        if (Math.floor(framesDone / 10) !== before) {
+            // Use the full progress bar
+            onProgress?.(framesDone / totalFrames);
+        }
+    };
+
+    /**
+     * Renders the lanes on this thread, one frame of each lane at a time,
+     * so all encoders stay busy.
+     */
+    const renderLanesInThread = async () => {
+        const lanes = Array.from(
+            { length: laneCount },
+            (_, laneIndex): RenderLane => {
+                const state: EncoderState = {
+                    error: null,
+                    waiters: new Set()
+                };
+                const encoder = createVideoEncoder(
+                    videoCodec.config,
+                    state,
+                    (chunk, meta) => {
+                        const data = new Uint8Array(chunk.byteLength);
+                        chunk.copyTo(data);
+                        addLanePacket(
+                            laneIndex,
+                            data,
+                            chunk.type,
+                            chunk.timestamp,
+                            chunk.duration,
+                            meta
+                        );
+                    }
+                );
+                return {
+                    renderer: new OfflineRenderer(rendererData),
+                    encoder,
+                    state,
+                    nextFrame: 0,
+                    encodedFrames: 0
+                };
+            }
+        );
+        try {
+            for (let round = 0; round < segmentCount; round += laneCount) {
+                for (let i = 0; i < segmentFrames; i++) {
+                    for (const [laneIndex, lane] of lanes.entries()) {
+                        const f = (round + laneIndex) * segmentFrames + i;
+                        if (f >= totalFrames) {
+                            continue;
+                        }
+                        await renderLaneFrame(lane, f, i === 0, fps);
+                        addFramesDone(1);
+                    }
+                }
+            }
+            await Promise.all(lanes.map((lane) => lane.encoder.flush()));
+            for (const lane of lanes) {
+                const finalVideoError = lane.state.error;
+                if (finalVideoError) {
+                    throw getEncoderError(finalVideoError);
+                }
+            }
+        } finally {
+            for (const lane of lanes) {
+                try {
+                    lane.encoder.close();
+                } catch {
+                    // Ignore
+                }
+            }
+        }
+    };
+
+    /**
+     * Slices the waveforms needed to draw a segment.
+     * @param segment The segment index.
+     */
+    const sliceSegment = (segment: number) => {
+        const firstFrame = segment * segmentFrames;
+        const lastFrame = Math.min(totalFrames, firstFrame + segmentFrames) - 1;
+        // The waveform of a frame ends at the frame time
+        const offset = Math.max(
+            0,
+            Math.floor((firstFrame / fps) * rendererData.sampleRate) -
+                MAX_WAVEFORM_SAMPLES
+        );
+        const end = Math.floor((lastFrame / fps) * rendererData.sampleRate);
+        return {
+            offset,
+            waveforms: rendererData.waveforms.map((w) => w.slice(offset, end))
+        };
+    };
+
+    /**
+     * Renders the lanes in workers, each worker draws and encodes one lane.
+     * The waveforms are sent per segment.
+     * @returns False if the workers could not start, nothing was encoded then.
+     */
+    const renderLanesInWorkers = async () => {
+        const workers: Worker[] = [];
+        try {
+            const finished = new Array<Promise<void>>();
+            const ready = new Array<Promise<void>>();
+            for (let laneIndex = 0; laneIndex < laneCount; laneIndex++) {
+                const worker = new Worker(
+                    new URL("video_lane_worker.ts", import.meta.url),
+                    { type: "module" }
+                );
+                workers.push(worker);
+                let onReady: () => void;
+                let onFail: (error: Error) => void;
+                ready.push(
+                    new Promise<void>((resolve, reject) => {
+                        onReady = resolve;
+                        onFail = reject;
+                    })
+                );
+                finished.push(
+                    new Promise<void>((resolve, reject) => {
+                        const fail = (error: Error) => {
+                            // Before ready, this rejects the start instead
+                            onFail(error);
+                            reject(error);
+                        };
+                        worker.addEventListener("error", (e) => {
+                            e.preventDefault();
+                            fail(new Error(`Video lane worker: ${e.message}`));
+                        });
+                        worker.addEventListener("messageerror", () => {
+                            fail(new Error("Video lane worker: bad message"));
+                        });
+                        worker.addEventListener(
+                            "message",
+                            (e: MessageEvent<VideoLaneResponse>) => {
+                                const message = e.data;
+                                switch (message.type) {
+                                    case "ready": {
+                                        onReady();
+                                        break;
+                                    }
+
+                                    case "segment": {
+                                        const slice = sliceSegment(
+                                            message.segment
+                                        );
+                                        worker.postMessage(
+                                            {
+                                                type: "segment",
+                                                segment: message.segment,
+                                                ...slice
+                                            } satisfies VideoLaneRequest,
+                                            slice.waveforms.map((w) => w.buffer)
+                                        );
+                                        break;
+                                    }
+
+                                    case "chunk": {
+                                        addLanePacket(
+                                            laneIndex,
+                                            new Uint8Array(message.data),
+                                            message.chunkType,
+                                            message.timestamp,
+                                            message.duration,
+                                            message.meta
+                                        );
+                                        break;
+                                    }
+
+                                    case "progress": {
+                                        addFramesDone(message.frames);
+                                        break;
+                                    }
+
+                                    case "done": {
+                                        resolve();
+                                        break;
+                                    }
+
+                                    case "error": {
+                                        fail(new Error(message.message));
+                                        break;
+                                    }
+                                }
+                            }
+                        );
+                    })
+                );
+                // Avoid unhandled rejections before they are awaited
+                finished[laneIndex].catch(() => {
+                    // Handled below
+                });
+                worker.postMessage({
+                    type: "init",
+                    renderer: {
+                        ...rendererData,
+                        waveforms: [],
+                        waveformOffset: 0
+                    },
+                    encoderConfig: videoCodec.config,
+                    laneIndex,
+                    laneCount,
+                    fps,
+                    segmentFrames,
+                    totalFrames
+                } satisfies VideoLaneRequest);
+            }
+            try {
+                await Promise.all(ready);
+            } catch (error) {
+                console.warn(
+                    "Video export: workers unavailable, rendering on the main thread.",
+                    error
+                );
+                return false;
+            }
+            for (const worker of workers) {
+                worker.postMessage({
+                    type: "start"
+                } satisfies VideoLaneRequest);
+            }
+            await Promise.all(finished);
+            return true;
+        } finally {
+            for (const worker of workers) {
+                worker.terminate();
+            }
+        }
+    };
 
     const audioState: EncoderState = {
         error: null,
@@ -382,33 +698,12 @@ export async function renderAndMuxVideo(
     });
     audioEncoder.configure(audioCodec.config);
 
-    const canvas = renderer.canvas;
-    const frameDurationUs = 1_000_000 / fps;
-    const keyFrameEvery = Math.max(1, Math.round(fps * 5));
     try {
-        for (let f = 0; f < totalFrames; f++) {
-            // Render and save frame
-            renderer.drawFrame(f / fps);
-            const frame = new VideoFrame(canvas, {
-                timestamp: Math.round(f * frameDurationUs),
-                duration: Math.round(frameDurationUs)
-            });
-            videoEncoder.encode(frame, {
-                keyFrame: f % keyFrameEvery === 0
-            });
-            frame.close();
-
-            // Throttle frame generation to match encoder consumption rate
-            // Without this, `encode()` queues faster than the encoder drains
-            // And raw frames eat up memory
-            if (videoEncoder.encodeQueueSize > 4) {
-                await waitForEncoderQueue(videoEncoder, videoState, 4, 2);
-            }
-            if (f % 10 === 0) {
-                // Use the full progress bar
-                onProgress?.(f / totalFrames);
-            }
+        const inWorkers = shouldUseWorkers() && (await renderLanesInWorkers());
+        if (!inWorkers) {
+            await renderLanesInThread();
         }
+        muxPending(true);
 
         const left = audio.getChannelData(0);
         const right =
@@ -479,12 +774,7 @@ export async function renderAndMuxVideo(
             }
         }
 
-        await videoEncoder.flush();
         await audioEncoder.flush();
-        const finalVideoError = videoState.error;
-        if (finalVideoError) {
-            throw getEncoderError(finalVideoError);
-        }
         const finalAudioError = audioState.error;
         if (finalAudioError) {
             throw getEncoderError(finalAudioError);
@@ -496,11 +786,6 @@ export async function renderAndMuxVideo(
             throw getEncoderError(finalMuxError);
         }
     } finally {
-        try {
-            videoEncoder.close();
-        } catch {
-            // Ignore
-        }
         try {
             audioEncoder.close();
         } catch {

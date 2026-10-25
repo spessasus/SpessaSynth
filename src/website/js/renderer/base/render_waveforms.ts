@@ -125,55 +125,73 @@ export function renderSingleWaveform(
 
     const dataLength = renderEnd - renderStart;
     const samplesPerPixel = dataLength / waveWidth;
+    const step = waveWidth / length;
 
+    const strokeChunk = filled ? Infinity : this.waveformStrokeChunk;
+    let points = 0;
+    const lineTo = (x: number, y: number) => {
+        this.ctx.lineTo(x, y);
+        if (++points >= strokeChunk) {
+            // Restart the stroke at this point
+            this.ctx.stroke();
+            this.ctx.beginPath();
+            this.ctx.moveTo(x, y);
+            points = 0;
+        }
+    };
+
+    this.ctx.beginPath();
     if (filled) {
-        const step = waveWidth / length;
-        let xPos = relativeX;
-        this.ctx.beginPath();
         this.ctx.moveTo(relativeX, relativeY);
+    }
+    if (samplesPerPixel >= 2) {
+        // Draw the lowest and the highest sample of every pixel column,
+        // In their original order and position, so the line looks like
+        // The full-resolution one at a fraction of the cost.
+        // Adding the first and last samples of the column would look even closer,
+        // But it makes Firefox drop canvas acceleration.
+        let i = renderStart;
+        while (i < renderEnd) {
+            const column = Math.floor((i - renderStart) * step);
+            let minIndex = i;
+            let maxIndex = i;
+            i++;
+            while (
+                i < renderEnd &&
+                Math.floor((i - renderStart) * step) === column
+            ) {
+                const value = waveform[i];
+                if (value < waveform[minIndex]) {
+                    minIndex = i;
+                } else if (value > waveform[maxIndex]) {
+                    maxIndex = i;
+                }
+                i++;
+            }
+            const first = Math.min(minIndex, maxIndex);
+            const second = Math.max(minIndex, maxIndex);
+            lineTo(
+                relativeX + (first - renderStart) * step,
+                relativeY + waveform[first] * multiplier
+            );
+            if (second !== first) {
+                lineTo(
+                    relativeX + (second - renderStart) * step,
+                    relativeY + waveform[second] * multiplier
+                );
+            }
+        }
+    } else {
+        let xPos = relativeX;
         for (let i = renderStart; i < renderEnd; i++) {
-            this.ctx.lineTo(xPos, relativeY + waveform[i] * multiplier);
+            lineTo(xPos, relativeY + waveform[i] * multiplier);
             xPos += step;
         }
-        this.ctx.lineTo(xPos, relativeY);
+    }
+    if (filled) {
+        this.ctx.lineTo(relativeX + dataLength * step, relativeY);
         this.ctx.fill();
     } else {
-        this.ctx.beginPath();
-        if (samplesPerPixel >= 2) {
-            for (let x = 0; x < waveWidth; x++) {
-                const start = Math.floor(x * samplesPerPixel + renderStart);
-                const end = Math.min(
-                    Math.floor(start + samplesPerPixel),
-                    renderEnd
-                );
-
-                let min = 1;
-                let max = -1;
-
-                for (let i = start; i < end; i++) {
-                    const value = waveform[i];
-                    if (value < min) {
-                        min = value;
-                    }
-                    if (value > max) {
-                        max = value;
-                    }
-                }
-
-                const yMin = min * multiplier + relativeY;
-                const yMax = max * multiplier + relativeY;
-                const xFinal = x + relativeX;
-                this.ctx.lineTo(xFinal, yMin);
-                this.ctx.lineTo(xFinal, yMax);
-            }
-        } else {
-            const step = waveWidth / length;
-            let xPos = relativeX;
-            for (let i = renderStart; i < renderEnd; i++) {
-                this.ctx.lineTo(xPos, relativeY + waveform[i] * multiplier);
-                xPos += step;
-            }
-        }
         this.ctx.stroke();
     }
 }

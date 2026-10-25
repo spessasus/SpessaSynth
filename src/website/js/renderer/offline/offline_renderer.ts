@@ -1,9 +1,9 @@
 import {
     BaseRenderer,
     browserCanvasFactory,
-    type RendererCanvasFactory,
-    type RendererLocaleBinder
+    type RendererCanvasFactory
 } from "../base/renderer.ts";
+import { ProgramTracker } from "../base/program_tracker.ts";
 import { BaseKeyboard } from "../../canvas_keyboard/base/base_keyboard.ts";
 import type { VideoSettingsSnapshot } from "../../manager/export/video/snapshot_settings.ts";
 import type { VideoInitialParams, VideoSynthData } from "./events.ts";
@@ -30,19 +30,159 @@ type RendererChannels = VideoInitialParams["channel"][number] & {
 type RendererGlobalParams = Omit<VideoInitialParams["global"], "system">;
 
 /**
+ * The maximum waveform length, in samples.
+ */
+export const MAX_WAVEFORM_SAMPLES = 32_768;
+
+/**
+ * The data the offline renderer needs from the sequenced MIDI.
+ */
+export interface OfflineMIDIData {
+    /**
+     * Note times in render time, for all loop iterations.
+     */
+    noteTimes: NoteTime[][];
+    usedChannels: Set<number>;
+    usedParts: Set<number>;
+}
+
+/**
+ * Everything needed to construct an offline renderer.
+ * Plain data, so it can be sent to a worker.
+ */
+export interface OfflineRendererData {
+    snapshot: VideoSettingsSnapshot;
+    /**
+     * Per-channel waveforms, starting at `waveformOffset`.
+     */
+    waveforms: Float32Array[];
+    /**
+     * The sample index of the first waveform sample.
+     */
+    waveformOffset: number;
+    /**
+     * The full length of the waveforms, in samples.
+     */
+    waveformLength: number;
+    sampleRate: number;
+    eventLog: VideoSynthData;
+    midi: OfflineMIDIData;
+    width: number;
+    height: number;
+}
+
+/**
+ * The locale is not needed, the texts come from the snapshot.
+ */
+const noLocale = {
+    bindObjectProperty: () => {
+        // Nothing to bind
+    }
+};
+
+/**
+ * Prepares the MIDI data for the offline renderer.
+ * Builds render-time note times from the sequenced MIDI, converting song
+ * time to render time and pasting copies for each loop iteration so the
+ * entire timeline is covered without per-frame time switching.
+ * @param midi The sequenced MIDI.
+ * @param loopCount The number of loop iterations.
+ * @param playbackRate The playback rate.
+ * @param duration The render duration, in seconds.
+ */
+export function getOfflineMIDIData(
+    midi: BasicMIDI,
+    loopCount: number,
+    playbackRate: number,
+    duration: number
+) {
+    const rate = playbackRate;
+    const firstNoteOffset = midi.midiTicksToSeconds(midi.firstNoteOn);
+    const loopStartSong = midi.midiTicksToSeconds(midi.loop.start);
+    const loopEndSong = midi.midiTicksToSeconds(midi.loop.end);
+    const songDuration = midi.duration;
+
+    const songTimeNotes = midi.getNoteTimes(0.02);
+
+    // Build the base note times in render time.
+    const baseNoteTimes: NoteTime[][] = [];
+    for (const channelNotes of songTimeNotes) {
+        const renderNotes: NoteTime[] = [];
+        for (const note of channelNotes) {
+            const renderStart = (note.start - firstNoteOffset) / rate;
+            renderNotes.push({
+                midiNote: note.midiNote,
+                start: renderStart,
+                length: note.length / rate,
+                velocity: note.velocity
+            });
+        }
+        baseNoteTimes.push(renderNotes);
+    }
+
+    // Paste the loop region notes for each loop.
+    if (loopCount > 0) {
+        // First playthrough ends at (songDuration - firstNoteOffset) / rate
+        // In render time, because the render time starts at the first note.
+        const firstPlayDuration = (songDuration - firstNoteOffset) / rate;
+        const loopDurationRender = (loopEndSong - loopStartSong) / rate;
+        const loopStartRender = (loopStartSong - firstNoteOffset) / rate;
+        const loopEndRender = (loopEndSong - firstNoteOffset) / rate;
+
+        for (let ch = 0; ch < 16; ch++) {
+            const notes = baseNoteTimes[ch];
+
+            const loopNotes = notes.filter(
+                (n) => n.start >= loopStartRender && n.start < loopEndRender
+            );
+
+            for (let i = 1; i <= loopCount; i++) {
+                const offset = firstPlayDuration + (i - 1) * loopDurationRender;
+                for (const note of loopNotes) {
+                    const pastedStart = note.start + offset;
+
+                    const pastedLength = Math.min(
+                        note.length,
+                        duration - pastedStart
+                    );
+                    if (pastedLength > 0) {
+                        notes.push({
+                            midiNote: note.midiNote,
+                            start: pastedStart,
+                            length: pastedLength,
+                            velocity: note.velocity
+                        });
+                    }
+                }
+            }
+            notes.sort((a, b) => a.start - b.start);
+        }
+    }
+
+    const tracker = new ProgramTracker();
+    tracker.updateUsedFromMIDI(midi);
+    return {
+        noteTimes: baseNoteTimes,
+        usedChannels: tracker.usedChannels,
+        usedParts: tracker.usedParts
+    };
+}
+
+/**
  *  Offline renderer for rendering videos. Replays the recorded single-stream
  *  event log through the shared interpreters with a forward-only cursor,
  *  so every frame is a deterministic function of the log.
  */
 export class OfflineRenderer extends BaseRenderer {
     private readonly eventLog: VideoSynthData;
-    private readonly duration: number;
     private eventIndex = 0;
     /**
      * Pending transposed keyboard notes, keyed by `channel:midiNote`.
      */
     private readonly keyboardPending = new Map<string, number[]>();
-    private readonly waveforms: Float32Array[];
+    private waveforms: Float32Array[];
+    private waveformOffset: number;
+    private readonly waveformLength: number;
     private readonly sampleRate: number;
     private readonly sampleCount: number;
     private readonly blackMIDIMode: boolean;
@@ -73,19 +213,11 @@ export class OfflineRenderer extends BaseRenderer {
     };
 
     public constructor(
-        snapshot: VideoSettingsSnapshot,
-        waveforms: Float32Array[],
-        sampleRate: number,
-        eventLog: VideoSynthData,
-        duration: number,
-        loopCount: number,
-        midi: BasicMIDI,
-        frameWidth: number,
-        frameHeight: number,
-        locale: RendererLocaleBinder,
+        data: OfflineRendererData,
         canvasFactory: RendererCanvasFactory = browserCanvasFactory
     ) {
-        const canvas = canvasFactory(frameWidth, frameHeight);
+        const snapshot = data.snapshot;
+        const canvas = canvasFactory(data.width, data.height);
         const ctx = canvas.getContext("2d");
         if (!ctx) {
             throw new Error("Failed to acquire drawing context.");
@@ -95,25 +227,31 @@ export class OfflineRenderer extends BaseRenderer {
             snapshot.keyboard.channelColors,
             canvas,
             ctx,
-            locale,
+            noLocale,
             false,
             snapshot.renderer.version,
             new BaseKeyboard(ctx, snapshot.keyboard),
             canvasFactory
         );
-        this.eventLog = eventLog;
-        this.duration = duration;
+        this.eventLog = data.eventLog;
         this.playbackRate = snapshot.playbackRate;
         this.blackMIDIMode = snapshot.renderer.blackMIDIMode;
 
-        this.programTracker.updateUsedFromMIDI(midi);
-
-        // Build note times, adjusting for playback rate
-        this.buildNoteTimes(midi, loopCount);
+        this.programTracker.setUsed(
+            data.midi.usedChannels,
+            data.midi.usedParts
+        );
+        this.noteTimes = data.midi.noteTimes.map((notes) => ({
+            notes,
+            renderStartIndex: 0
+        }));
 
         this.applySnapshot(snapshot.renderer);
         this.showFps = false;
         this.showEngineMode = false;
+        // Firefox draws offscreen canvases in software,
+        // Where splitting makes the waveforms 3x faster
+        this.waveformStrokeChunk = 64;
         this.timeOffset = 0;
         this.workerMode = false;
         this.version = snapshot.renderer.version;
@@ -152,20 +290,22 @@ export class OfflineRenderer extends BaseRenderer {
         // Preset names
         this.programTracker.loadPresetNames(initial.programs);
 
-        this.waveforms = waveforms;
-        this.sampleRate = sampleRate;
+        this.waveforms = data.waveforms;
+        this.waveformOffset = data.waveformOffset;
+        this.waveformLength = data.waveformLength;
+        this.sampleRate = data.sampleRate;
         const targetFft =
             snapshot.renderer.analyserFftSize *
             (snapshot.renderer.stabilizeWaveforms ? 4 : 1);
         const rateFactor = snapshot.renderer.sampleRate / 44_100;
         const fftSize = Math.min(
-            32_768,
+            MAX_WAVEFORM_SAMPLES,
             1 << (31 - Math.clz32(targetFft * rateFactor))
         );
         this.sampleCount = Math.max(
             1,
             Math.min(
-                32_768,
+                MAX_WAVEFORM_SAMPLES,
                 Math.round(
                     (fftSize * this.sampleRate) / snapshot.renderer.sampleRate
                 )
@@ -182,7 +322,56 @@ export class OfflineRenderer extends BaseRenderer {
      * @param t Time, in seconds.
      */
     public drawFrame(t: number) {
-        // Advance and process events
+        this.processEvents(t);
+        for (let ch = 0; ch < this.parts.length; ch++) {
+            this.loadWaveform(ch, t);
+        }
+        this.notesOnScreen = 0;
+        this.renderFullFrame(t, t, false);
+    }
+
+    /**
+     * Advances the state to a frame without drawing it.
+     * The following frames are then drawn the same as if this frame was drawn.
+     * @param t Time, in seconds.
+     */
+    public skipFrame(t: number) {
+        this.processEvents(t);
+        if (this.renderDotDisplay) {
+            this.dotMatrix.advance(t);
+        }
+        this.keyboard.pruneReleasedKeys(t);
+    }
+
+    /**
+     * Replaces the waveforms with a slice of them.
+     * It must contain the samples of the frames drawn until the next call.
+     * @param waveforms The per-channel waveform slices.
+     * @param offset The sample index of the first slice sample.
+     */
+    public setWaveforms(waveforms: Float32Array[], offset: number) {
+        this.waveforms = waveforms;
+        this.waveformOffset = offset;
+    }
+
+    protected override renderBigSpectrum() {
+        this.renderStraightWaveforms();
+    }
+
+    protected override renderSplitSpectrum() {
+        this.renderStraightWaveforms();
+    }
+
+    protected override clearFrame() {
+        this.ctx.fillStyle = "#000";
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    /**
+     * Processes the events up to the given time.
+     * @param t Time, in seconds.
+     */
+    private processEvents(t: number) {
         const events = this.eventLog.events;
         while (
             this.eventIndex < events.length &&
@@ -304,103 +493,6 @@ export class OfflineRenderer extends BaseRenderer {
                 }
             }
         }
-
-        for (let ch = 0; ch < this.parts.length; ch++) {
-            this.loadWaveform(ch, t);
-        }
-        this.notesOnScreen = 0;
-        this.renderFullFrame(t, t, false);
-    }
-
-    protected override renderBigSpectrum() {
-        this.renderStraightWaveforms();
-    }
-
-    protected override renderSplitSpectrum() {
-        this.renderStraightWaveforms();
-    }
-
-    protected override clearFrame() {
-        this.ctx.fillStyle = "#000";
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    }
-
-    /**
-     * Builds render-time note times from the sequenced MIDI, converting song
-     * time to render time and pasting copies for each loop iteration so the
-     * entire timeline is covered without per-frame time switching.
-     * @param midi The sequenced MIDI.
-     * @param loopCount The number of loop iterations.
-     */
-    private buildNoteTimes(midi: BasicMIDI, loopCount: number) {
-        const rate = this.playbackRate;
-        const firstNoteOffset = midi.midiTicksToSeconds(midi.firstNoteOn);
-        const loopStartSong = midi.midiTicksToSeconds(midi.loop.start);
-        const loopEndSong = midi.midiTicksToSeconds(midi.loop.end);
-        const songDuration = midi.duration;
-
-        const songTimeNotes = midi.getNoteTimes(0.02);
-
-        // Build the base note times in render time.
-        const baseNoteTimes: NoteTime[][] = [];
-        for (const channelNotes of songTimeNotes) {
-            const renderNotes: NoteTime[] = [];
-            for (const note of channelNotes) {
-                const renderStart = (note.start - firstNoteOffset) / rate;
-                renderNotes.push({
-                    midiNote: note.midiNote,
-                    start: renderStart,
-                    length: note.length / rate,
-                    velocity: note.velocity
-                });
-            }
-            baseNoteTimes.push(renderNotes);
-        }
-
-        // Paste the loop region notes for each loop.
-        if (loopCount > 0) {
-            // First playthrough ends at (songDuration - firstNoteOffset) / rate
-            // In render time, because the render time starts at the first note.
-            const firstPlayDuration = (songDuration - firstNoteOffset) / rate;
-            const loopDurationRender = (loopEndSong - loopStartSong) / rate;
-            const loopStartRender = (loopStartSong - firstNoteOffset) / rate;
-            const loopEndRender = (loopEndSong - firstNoteOffset) / rate;
-
-            for (let ch = 0; ch < 16; ch++) {
-                const notes = baseNoteTimes[ch];
-
-                const loopNotes = notes.filter(
-                    (n) => n.start >= loopStartRender && n.start < loopEndRender
-                );
-
-                for (let i = 1; i <= loopCount; i++) {
-                    const offset =
-                        firstPlayDuration + (i - 1) * loopDurationRender;
-                    for (const note of loopNotes) {
-                        const pastedStart = note.start + offset;
-
-                        const pastedLength = Math.min(
-                            note.length,
-                            this.duration - pastedStart
-                        );
-                        if (pastedLength > 0) {
-                            notes.push({
-                                midiNote: note.midiNote,
-                                start: pastedStart,
-                                length: pastedLength,
-                                velocity: note.velocity
-                            });
-                        }
-                    }
-                }
-                notes.sort((a, b) => a.start - b.start);
-            }
-        }
-
-        this.noteTimes = baseNoteTimes.map((notes) => ({
-            notes,
-            renderStartIndex: 0
-        }));
     }
 
     private renderStraightWaveforms() {
@@ -416,18 +508,24 @@ export class OfflineRenderer extends BaseRenderer {
         const start = end - this.sampleCount;
         const waveform = this.parts[ch].waveform;
         const data = this.waveforms[ch];
-        if (data === undefined || data.length === 0) {
+        if (data === undefined || this.waveformLength === 0) {
             waveform.fill(0);
             this.parts[ch].waveformLength = 0;
             return;
         }
-        const len = Math.min(this.sampleCount, data.length);
+        const len = Math.min(this.sampleCount, this.waveformLength);
         const sliceStart = Math.max(0, start);
-        const sliceEnd = Math.min(start + len, data.length);
+        const sliceEnd = Math.min(start + len, this.waveformLength);
         waveform.fill(0);
         if (sliceEnd > sliceStart) {
             const offset = sliceStart - start;
-            waveform.set(data.slice(sliceStart, sliceEnd), offset);
+            waveform.set(
+                data.subarray(
+                    sliceStart - this.waveformOffset,
+                    sliceEnd - this.waveformOffset
+                ),
+                offset
+            );
         }
         this.parts[ch].waveformLength = len;
     }

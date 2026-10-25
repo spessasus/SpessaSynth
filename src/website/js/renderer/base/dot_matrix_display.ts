@@ -98,10 +98,15 @@ export class DotMatrixDisplay {
         this.parseSyx(syx);
     }
 
-    public render(currentTime: number, width: number, height: number) {
+    /**
+     * Advances the message queue and the display timeout without drawing.
+     * @param currentTime The current time, in seconds.
+     * @returns True if a matrix should be drawn.
+     */
+    public advance(currentTime: number) {
         this.currentTime = currentTime;
         if (this.currentMatrixType === null) {
-            return;
+            return false;
         }
         if (this.nextQueueProcessTime <= currentTime) {
             this.processQueue();
@@ -109,6 +114,13 @@ export class DotMatrixDisplay {
         if (this.displayMatrixTimeout <= currentTime) {
             this.displayMatrixTimeout = 0;
             this.currentMatrixType = null;
+        }
+        return true;
+    }
+
+    public render(currentTime: number, width: number, height: number) {
+        if (!this.advance(currentTime)) {
+            return;
         }
         // 8850 is hi-res
         if (this.currentMatrixType === "sc8850") {

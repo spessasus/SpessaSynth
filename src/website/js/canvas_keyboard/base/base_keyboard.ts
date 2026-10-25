@@ -326,7 +326,15 @@ export class BaseKeyboard {
             this.drawKey(key.note, true, key.rect, time);
         }
 
-        // Prune released keys
+        this.pruneReleasedKeys(time);
+        this.ctx.restore();
+    }
+
+    /**
+     * Removes the released keys that finished their transition.
+     * @param time The current time.
+     */
+    public pruneReleasedKeys(time: number) {
         for (const [note, keys] of this.pressedKeys) {
             const remaining = keys.filter(
                 (key) =>
@@ -339,7 +347,6 @@ export class BaseKeyboard {
                 this.pressedKeys.set(note, remaining);
             }
         }
-        this.ctx.restore();
     }
 
     protected getFlatKeyRect(
