@@ -52,13 +52,14 @@ export const synthesizerControllerLocale = {
     },
 
     tabs: {
-        description: "Tabs: Select what to configure",
+        description: "Tabs: Sélectionnez ce que vous voulez configurer",
         channels: "Canaux MIDI",
         reverb: "Réverbération",
         chorus: "Chorus",
-        delay: "Delai",
+        delay: "Délai",
         insertion: "Insertion",
-        configuration: "Configuration"
+        configuration: "Configuration",
+        userDrumSet: "Set de batterie de l'utilisateur"
     },
 
     holdPedalDown: "La pédale de maintien est appuyée (Shift)",

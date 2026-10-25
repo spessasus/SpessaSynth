@@ -1,6 +1,6 @@
 export const exportFile = {
     button: {
-        title: "Export File",
+        title: "Exporter un Fichier",
         description: "Exporter la composition dans différents formats"
     },
 
@@ -63,6 +63,44 @@ export const exportFile = {
                     title: "MIDI (.mid)",
                     description:
                         "Exporter le fichier MIDI en incluant les modifications des contrôleurs et des instruments"
+                }
+            },
+
+            video: {
+                button: {
+                    title: "Vidéo (.webm, .mp4)",
+                    description:
+                        "Exporter une vidéo du morceau avec le rendu live et le clavier"
+                },
+                options: {
+                    title: "Options d'export vidéo",
+                    description:
+                        "Exporter une vidéo d'un rendu du fichier MIDI comme il est actuellement affiché sur la page.",
+                    confirm: "Exporter",
+                    format: {
+                        title: "Format",
+                        description:
+                            "Le format de la vidéo. MP4 est le plus répendu, mais aussi moins efficace."
+                    },
+                    resolution: {
+                        title: "Résolution",
+                        description:
+                            "La résolution de la vidéo. Sa valeur par défaut est la taille du canvas."
+                    },
+                    frameRate: {
+                        title: "Fréquence d'images",
+                        description:
+                            "Images par seconde, 15 à 240. Si vous ne savez pas ce que ça veut dire, choisissez 60."
+                    }
+                },
+                exportMessage: {
+                    message: "Exportation de la vidéo...",
+                    renderingAudio: "Rendu de l'audio en cours...",
+                    renderingVideo: "Rendu de la vidéo en cours...",
+                    invalidResolution: "Résolution invalide.",
+                    webCodecsMissing:
+                        "Ce navigateur ne peut pas exporter de vidéo. Utilisez la dernière version de Chrome ou de Firefox.",
+                    failed: "L'export vidéo à échoué! (consultez la console pour avoir plus de détails)."
                 }
             },
 
