@@ -7,6 +7,7 @@ export const effectsConfig = {
 
     misc: {
         title: "Configuration",
+        description: "Configurez différents aspects du synthetiseur.",
 
         interpolation: {
             description:
@@ -28,6 +29,12 @@ export const effectsConfig = {
             title: "Nombre de voix max.",
             description:
                 "Nombre de voix maximum : Le nombre maximum de voix pouvant exister en même temps"
+        },
+
+        customVibrato: {
+            title: "Vibrato personnalisé",
+            description:
+                "Vibrato personnalisé : Vibrato non-standard qui peut améliorer certains fichiers MIDI SC-88Pro."
         },
 
         msgsCutoff: {
@@ -99,6 +106,23 @@ export const effectsConfig = {
             description:
                 "Pre-delay: This parameter sets the delay time until the reverberant sound is heard. " +
                 "Higher values result in a longer pre-delay time, simulating a larger reverberant space."
+        }
+    },
+
+    convolver: {
+        title: "Configuration du convoluteur de réverbération",
+        description: "Configurez la façon dont la réverbération basée sur la convolution fonctionne",
+        reloadConvolver: "Redémarrer avec le mode convoluteur",
+        reloadNormal: "Redémarrer avec la réverbération standard de SpessaSynth",
+        impulseResponse: {
+            title: "Sélectionner la réponse impulsionnelle",
+            description:
+                "Sélectionner un fichier audio à utiliser en tant que réponse impulsionnelle du convoluteur de réverbération.",
+            decodeError: {
+                title: "SpessaSynth n'a pas pu décoder la réponse impulsionnelle",
+                description:
+                    "SpessaSynth n'a pas pu décoder le fichier sélectionné en tant qu'audio. La réponse impulsionnelle actuelle à été maintenue."
+            }
         }
     },
 
@@ -279,6 +303,95 @@ export const effectsConfig = {
             description:
                 "Send Level To Delay: Adjust the send level of the sound that comes after the insertion effect to Delay. " +
                 "Higher values result in more sound being sent."
+        }
+    },
+
+    userDrumSet: {
+        title: "Éditeur de set de batterie utilisateur",
+        description:
+            "Personnalisez un set de batterie utilisateur GS en éditant chaque note individuellement. Cela ne marche que dans le mode GS.",
+
+        selector: {
+            description: "Sélectionnez le set de batterie utilisateur que vous souhaitez éditer."
+        },
+
+        showOnlyChanged: {
+            title: "Ne montrer que les changements",
+            description: "Ne montrer que les touches ayant été modifiées."
+        },
+
+        params: {
+            key: {
+                title: "Touche"
+            },
+
+            pitchCoarse: {
+                title: "Hauteur de la note",
+                description: `L'accordage relatif de la hauteur de la note sur la touche {0}. 60 n'apporte pas de modifications.`
+            },
+            level: {
+                title: "Niveau sonore",
+                description:
+                    "Le volume de la note sur la touche {0}, 120 n'apporte pas de modifications."
+            },
+            assignGroup: {
+                title: "Assigner un groupe",
+                description:
+                    // Yoinked from french translation of the sc 8850 manual
+                    "Chaque Instrument peut être doté d'un numéro d'assignation, et les Instruments ayant le même numéro " +
+                    "sont considérés comme faisant partie du groupe d'assignation. Deux Instruments d'un même groupe " +
+                    "d'assignation ne peuvent pas jouer simultanément. Si, pendant qu'un des Instruments d'un groupe joue, un " +
+                    "message MIDI est reçu demandant de jouer un autre Instrument du même groupe d'assignation, le premier " +
+                    "Instrument sera coupé pour laisser la place au second. C'est une façon pratique d'empêcher deux " +
+                    "Instruments de jouer simultanément alors qu'ils ne le feraient normalement jamais. Par exemple, comme il " +
+                    "celui de charleston fermée, ces deux sons doivent être placés dans le même groupe d'assignation (le " +
+                    "même numéro) pour qu'ils ne puissent pas jouer ensemble. Les valeurs de \"Non\" et de 1 à 127 peuvent " +
+                    "être sélectionnées, mais les Instruments pour lesquels Non est sélectionné ne seront jamais coupés par " +
+                    "d'autres Instruments. En d'autres termes, les Instruments avec un réglage Non ne feront partie d'aucun " +
+                    "groupe d'assignation."
+            },
+
+            pan: {
+                title: "Balance",
+                description:
+                    "La balance de la note sur la touche {0}, relative au canal. 64 n'apporte aucune modification et 0 donne une balance aléatoire pour chaque note."
+            },
+            
+            reverbSend: {
+                title: "Envoi de réverbération",
+                description:
+                    "Le niveau d'envoi de réverbération de la note sur la touche {0}. Multiplicatif de celui du canal."
+            },
+            chorusSend: {
+                title: "Envoi de chorus",
+                description:
+                    "Le niveau d'envoi de chorus de la note sur la touche {0}. Multiplicatif de celui du canal."
+            },
+            variationSend: {
+                // Variation is global name, delay is for GS
+                title: "Envoi de délai",
+                description:
+                    "Le niveau d'envoi de délai de la note sur la touche {0}. Multiplicatif de celui du canal."
+            },
+            rxNoteOn: {
+                title: "Réception de Note On",
+                description:
+                    "Autorise ou interdit la réception des messages Note On sur la touche {0}."
+            },
+            rxNoteOff: {
+                title: "Réception de Note Off",
+                description:
+                    "Si cette option est activée, les notes de batterie sont immédiatement coupées lorsqu'un message Note Off est reçu sur la touche {0}."
+            },
+            preset: {
+                title: "Preset",
+                description: "Le preset que la touche {0} utilisera."
+            },
+            sourceNoteNumber: {
+                title: "Numéro de note source",
+                description:
+                    "Le numéro de note MIDI du set de batterie source. La note {0} jouera le son correspondant à ce numéro de note dans le set de batterie sélectionné."
+            }
         }
     }
 };
