@@ -8,7 +8,7 @@
         "start": "node src/build/start.ts",
         "build": "npm run test:types && npm run build:fast",
         "build:fast": "node src/build/build.ts",
-        "format": "prettier . --write",
+        "format": "prettier . --write --list-different",
         "dev": "node src/build/dev.ts",
         "release": "node src/build/release.ts",
         "video": "tsx src/cli_video/index.ts",
