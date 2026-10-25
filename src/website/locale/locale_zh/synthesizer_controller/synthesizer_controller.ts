@@ -34,9 +34,16 @@ export const synthesizerControllerLocale = {
         description: "MIDI 紧急停止: 立即停止所有发声"
     },
 
-    systemReset: {
-        title: "重置控制器",
-        description: "重置控制器: 将所有 MIDI 控制器重置为默认值"
+    gsReset: {
+        title: "GS 重置",
+        description:
+            "GS 重置: 将整个合成器重置为 Roland GS 模式并解锁所有控制器"
+    },
+
+    xgReset: {
+        title: "XG 重置",
+        description:
+            "XG 重置: 将整个合成器重置为 Yamaha XG 模式并解锁所有控制器"
     },
 
     showOnlyUsed: {

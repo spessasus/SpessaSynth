@@ -35,10 +35,16 @@ export const synthesizerControllerLocale = {
         description: "MIDI Panic: Stops all voices immediately"
     },
 
-    systemReset: {
-        title: "Reset Controllers",
+    gsReset: {
+        title: "GS Reset",
         description:
-            "Reset Controllers: Resets all MIDI controllers to their default values"
+            "GS Reset: Resets the entire synthesizer to Roland GS mode and unlocks all controllers"
+    },
+
+    xgReset: {
+        title: "XG Reset",
+        description:
+            "XG Reset: Resets the entire synthesizer to Yamaha XG mode and unlocks all controllers"
     },
 
     showOnlyUsed: {
@@ -55,12 +61,16 @@ export const synthesizerControllerLocale = {
     tabs: {
         description: "Tabs: Select what to configure",
         channels: "MIDI Channels",
-        reverb: "Reverb",
-        chorus: "Chorus",
-        delay: "Delay",
-        insertion: "Insertion",
+        gsReverb: "GS Reverb",
+        gsChorus: "GS Chorus",
+        gsDelay: "GS Delay",
+        gsInsertion: "GS Insertion",
+        xgReverb: "XG Reverb",
+        xgChorus: "XG Chorus",
+        xgVariation: "XG Variation",
+        xgInsertion: "XG Insertion",
         configuration: "Configuration",
-        userDrumSet: "User Drum Set"
+        gsUserDrumSet: "GS User Drum Set"
     },
 
     holdPedalDown: "Hold pedal is down (Shift)",

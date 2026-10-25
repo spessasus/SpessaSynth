@@ -57,7 +57,7 @@ export const effectsConfig = {
     },
 
     reverb: {
-        title: "Reverb configuration",
+        title: "GS Reverb Configuration",
         description: "Configure how the reverb effect sounds.",
 
         gain: {
@@ -127,7 +127,7 @@ export const effectsConfig = {
     },
 
     chorus: {
-        title: "Chorus configuration",
+        title: "GS Chorus Configuration",
         description: "Configure how the chorus effects sounds.",
 
         gain: {
@@ -192,7 +192,7 @@ export const effectsConfig = {
     },
 
     delay: {
-        title: "Delay configuration",
+        title: "GS Delay Configuration",
         description: "Configure how the delay effect sounds.",
 
         gain: {
@@ -274,7 +274,7 @@ export const effectsConfig = {
     },
 
     insertion: {
-        title: "Insertion Effect Configuration",
+        title: "GS Insertion Effect Configuration",
         description:
             "Select the Insertion Effect and configure how it should sound.",
 
@@ -306,8 +306,95 @@ export const effectsConfig = {
         }
     },
 
+    xg: {
+        reverb: {
+            title: "XG Reverb Configuration",
+            description:
+                "Select the Yamaha XG reverb type and configure how it should sound.",
+            return: {
+                title: "Return: ",
+                description:
+                    "Return: The output level of the effect. 64 is unity gain, 127 is +6dB."
+            },
+            pan: {
+                title: "Pan: ",
+                description: "Pan: The stereo position of the effect output."
+            }
+        },
+
+        chorus: {
+            title: "XG Chorus Configuration",
+            description:
+                "Select the Yamaha XG chorus type and configure how it should sound.",
+            return: {
+                title: "Return: ",
+                description:
+                    "Return: The output level of the effect. 64 is unity gain, 127 is +6dB."
+            },
+            pan: {
+                title: "Pan: ",
+                description: "Pan: The stereo position of the effect output."
+            },
+            sendToReverb: {
+                title: "Send To Reverb: ",
+                description:
+                    "Send To Reverb: The amount of the chorus output sent to the reverb. 64 is 100%."
+            }
+        },
+
+        variation: {
+            title: "XG Variation Configuration",
+            description:
+                "Select the Yamaha XG variation type and configure how it should sound. " +
+                "It works either as a system effect or as an insertion effect on a single part.",
+            return: {
+                title: "Return: ",
+                description:
+                    "Return: The output level of the effect. 64 is unity gain, 127 is +6dB."
+            },
+            pan: {
+                title: "Pan: ",
+                description: "Pan: The stereo position of the effect output."
+            },
+            sendToReverb: {
+                title: "Send To Reverb: ",
+                description:
+                    "Send To Reverb: The amount of the variation output sent to the reverb (system connection only). 64 is 100%."
+            },
+            sendToChorus: {
+                title: "Send To Chorus: ",
+                description:
+                    "Send To Chorus: The amount of the variation output sent to the chorus (system connection only). 64 is 100%."
+            },
+            connection: {
+                description:
+                    "Connection: Insertion processes a single part, System uses the Variation send of every channel.",
+                insertion: "Insertion",
+                system: "System"
+            },
+            partNumber: {
+                description:
+                    "Part: The part processed by the effect (insertion connection only).",
+                off: "Off"
+            }
+        },
+
+        insertion: {
+            title: "XG Insertion Configuration",
+            description:
+                "Select an insertion effect, its type and configure how it should sound. " +
+                "Each insertion effect processes a single part.",
+            block: "Insertion Effect {0}",
+            partNumber: {
+                description:
+                    "Part: The part processed by the insertion effect.",
+                off: "Off"
+            }
+        }
+    },
+
     userDrumSet: {
-        title: "User Drum Set Editor",
+        title: "GS User Drum Set Editor",
         description:
             "Customize a GS User Drum Set to your liking by editing every note individually. Please note that this only works in GS mode.",
 

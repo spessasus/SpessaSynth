@@ -58,7 +58,7 @@ export const effectsConfig = {
     },
 
     reverb: {
-        title: "リバーブ設定",
+        title: "GS リバーブ設定",
         //"Configure how the reverb effect sounds.",
         description: "リバーブの設定: リバーブエフェクトの音を構成します。",
 
@@ -111,7 +111,7 @@ export const effectsConfig = {
     },
 
     chorus: {
-        title: "コーラス設定",
+        title: "GS コーラス設定",
         description: "コーラスの設定: コーラスエフェクトの音を構成します。",
 
         level: {
@@ -171,7 +171,7 @@ export const effectsConfig = {
     },
 
     delay: {
-        title: "ディレイ設定",
+        title: "GS ディレイ設定",
         description: "ディレイエフェクトの音を構成します。",
 
         level: {
@@ -247,7 +247,7 @@ export const effectsConfig = {
     },
 
     insertion: {
-        title: "インサーションエフェクトの設定",
+        title: "GS インサーションエフェクトの設定",
         description:
             //"Select the Insertion Effect and configure how it should sound.",
             "インサーションエフェクトの選択と、エフェクトの音の構成を行います。",

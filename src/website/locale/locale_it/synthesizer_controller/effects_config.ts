@@ -38,12 +38,12 @@ export const effectsConfig = {
     },
 
     reverb: {
-        title: "Configurazione riverbero",
+        title: "Configurazione riverbero GS",
         description: "Configura il processore di riverbero"
     },
 
     chorus: {
-        title: "Configurazione chorus",
+        title: "Configurazione chorus GS",
         description: "Configura il processore di chorus"
     }
 };

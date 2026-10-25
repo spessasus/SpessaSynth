@@ -39,11 +39,16 @@ export const synthesizerControllerLocale = {
         description: "MIDIパニック: すべての音を即座に停止します"
     },
 
-    systemReset: {
-        title: "コントローラをリセット",
+    gsReset: {
+        title: "GSリセット",
         description:
-            //"Reset Controllers: Resets all MIDI controllers to their default values"
-            "コントローラーをリセット: すべてのMIDIコントローラーをデフォルト値にリセットします"
+            "GSリセット: シンセサイザー全体をRoland GSモードにリセットし、すべてのコントローラーのロックを解除します"
+    },
+
+    xgReset: {
+        title: "XGリセット",
+        description:
+            "XGリセット: シンセサイザー全体をYamaha XGモードにリセットし、すべてのコントローラーのロックを解除します"
     },
 
     showOnlyUsed: {
@@ -62,10 +67,14 @@ export const synthesizerControllerLocale = {
     tabs: {
         description: "タブ: 設定する項目を選択します",
         channels: "MIDIチャンネル",
-        reverb: "リバーブ設定",
-        chorus: "コーラス設定",
-        delay: "ディレイ設定",
-        insertion: "インサーションFX設定",
+        gsReverb: "GS リバーブ設定",
+        gsChorus: "GS コーラス設定",
+        gsDelay: "GS ディレイ設定",
+        gsInsertion: "GS インサーションFX設定",
+        xgReverb: "XG リバーブ設定",
+        xgChorus: "XG コーラス設定",
+        xgVariation: "XG バリエーション設定",
+        xgInsertion: "XG インサーションFX設定",
         configuration: "全般設定"
     },
 

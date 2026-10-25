@@ -34,10 +34,16 @@ export const synthesizerControllerLocale = {
         description: "Stoppe toutes les voix immédiatement"
     },
 
-    systemReset: {
-        title: "Réinitialisation du système",
+    gsReset: {
+        title: "Réinit. GS",
         description:
-            "Réinitialise tous les contrôleurs à leur valeur par défaut"
+            "Réinitialisation GS : réinitialise tout le synthétiseur en mode Roland GS et déverrouille tous les contrôleurs"
+    },
+
+    xgReset: {
+        title: "Réinit. XG",
+        description:
+            "Réinitialisation XG : réinitialise tout le synthétiseur en mode Yamaha XG et déverrouille tous les contrôleurs"
     },
 
     showOnlyUsed: {
@@ -54,10 +60,14 @@ export const synthesizerControllerLocale = {
     tabs: {
         description: "Tabs: Sélectionnez ce que vous voulez configurer",
         channels: "Canaux MIDI",
-        reverb: "Réverbération",
-        chorus: "Chorus",
-        delay: "Délai",
-        insertion: "Insertion",
+        gsReverb: "Réverbération GS",
+        gsChorus: "Chorus GS",
+        gsDelay: "Delai GS",
+        gsInsertion: "Insertion GS",
+        xgReverb: "Réverbération XG",
+        xgChorus: "Chorus XG",
+        xgVariation: "Variation XG",
+        xgInsertion: "Insertion XG",
         configuration: "Configuration",
         userDrumSet: "Set de batterie de l'utilisateur"
     },

@@ -50,7 +50,7 @@ export const effectsConfig = {
     },
 
     reverb: {
-        title: "Настройка реверберации",
+        title: "Настройка реверберации GS",
         description: "Настройка звучания эффекта реверберации.",
 
         gain: {
@@ -103,7 +103,7 @@ export const effectsConfig = {
     },
 
     chorus: {
-        title: "Настройка хоруса",
+        title: "Настройка хоруса GS",
         description: "Настройка звучания эффекта хоруса.",
 
         gain: {
@@ -168,7 +168,7 @@ export const effectsConfig = {
     },
 
     delay: {
-        title: "Настройка задержки",
+        title: "Настройка задержки GS",
         description: "Настройка звучания эффекта задержки.",
 
         gain: {
@@ -252,7 +252,7 @@ export const effectsConfig = {
     },
 
     insertion: {
-        title: "Настройка эффекта вставки",
+        title: "Настройка эффекта вставки GS",
         description: "Выберите эффект вставки и настройте его звучание.",
 
         activeChannels: {

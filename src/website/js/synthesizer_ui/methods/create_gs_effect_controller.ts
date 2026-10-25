@@ -1,19 +1,19 @@
 import type {
-    ChorusParams,
-    DelayParams,
-    ParamType,
-    ReverbParams
-} from "./effect_params.ts";
+    GSChorusParams,
+    GSDelayParams,
+    GSParamType,
+    GSReverbParams
+} from "./gs_effect_params.ts";
 import { Meter } from "./synthui_meter.ts";
 import { sendAddress } from "./send_address.ts";
 import { LOCALE_PATH, SynthesizerUI } from "../synthetizer_ui.ts";
 import { Ut } from "../../utils/other.js";
 
-export function createEffectController<
-    K extends DelayParams | ChorusParams | ReverbParams
+export function createGSEffectController<
+    K extends GSDelayParams | GSChorusParams | GSReverbParams
 >(
     this: SynthesizerUI,
-    data: ParamType<K>,
+    data: GSParamType<K>,
     path: string
 ): Record<K, Meter> & {
     wrapper: HTMLElement;

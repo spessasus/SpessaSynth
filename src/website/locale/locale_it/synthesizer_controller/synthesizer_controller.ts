@@ -34,10 +34,16 @@ export const synthesizerControllerLocale = {
         description: "MIDI Panic: Ferma tutte le voci immediatamente"
     },
 
-    systemReset: {
-        title: "Reimposta controller",
+    gsReset: {
+        title: "Reset GS",
         description:
-            "Reimposta controller: Ripristina tutti i controller MIDI ai loro valori predefiniti"
+            "Reset GS: Reimposta l'intero sintetizzatore in modalità Roland GS e sblocca tutti i controller"
+    },
+
+    xgReset: {
+        title: "Reset XG",
+        description:
+            "Reset XG: Reimposta l'intero sintetizzatore in modalità Yamaha XG e sblocca tutti i controller"
     },
 
     showOnlyUsed: {

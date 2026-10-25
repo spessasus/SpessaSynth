@@ -1,17 +1,17 @@
 import {
-    type InsertionController,
-    insertionEffectData
-} from "./effect_params.ts";
+    type GSInsertionController,
+    gsInsertionEffectData
+} from "./gs_effect_params.ts";
 import { Meter } from "./synthui_meter.ts";
 import { LOCALE_PATH, SynthesizerUI } from "../synthetizer_ui.ts";
 import { sendAddress } from "./send_address.ts";
 import { Ut } from "../../utils/other.js";
 import { MIDIUtils } from "spessasynth_core";
 
-export function createInsertionController(
+export function createGSInsertionController(
     this: SynthesizerUI
-): InsertionController {
-    const insertionEffects = insertionEffectData;
+): GSInsertionController {
+    const insertionEffects = gsInsertionEffectData;
 
     const wrapper = document.createElement("div");
     wrapper.classList.add("effect_wrapper", "synthui_tab");

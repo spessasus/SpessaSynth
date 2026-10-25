@@ -57,7 +57,7 @@ export const effectsConfig = {
     },
 
     reverb: {
-        title: "Configuration de la réverbération",
+        title: "Configuration de la réverbération GS",
         description: "Configure l'effet de réverbération",
 
         gain: {
@@ -111,9 +111,11 @@ export const effectsConfig = {
 
     convolver: {
         title: "Configuration du convoluteur de réverbération",
-        description: "Configurez la façon dont la réverbération basée sur la convolution fonctionne",
+        description:
+            "Configurez la façon dont la réverbération basée sur la convolution fonctionne",
         reloadConvolver: "Redémarrer avec le mode convoluteur",
-        reloadNormal: "Redémarrer avec la réverbération standard de SpessaSynth",
+        reloadNormal:
+            "Redémarrer avec la réverbération standard de SpessaSynth",
         impulseResponse: {
             title: "Sélectionner la réponse impulsionnelle",
             description:
@@ -127,7 +129,7 @@ export const effectsConfig = {
     },
 
     chorus: {
-        title: "Configuration du chorus",
+        title: "Configuration du chorus GS",
         description: "Configure l'effet de chorus",
 
         gain: {
@@ -192,7 +194,7 @@ export const effectsConfig = {
     },
 
     delay: {
-        title: "Delay configuration",
+        title: "GS Delay Configuration",
         description: "Configure how the delay effect sounds.",
 
         gain: {
@@ -274,7 +276,7 @@ export const effectsConfig = {
     },
 
     insertion: {
-        title: "Insertion Effect Configuration",
+        title: "GS Insertion Effect Configuration",
         description:
             "Select the Insertion Effect and configure how it should sound.",
 
@@ -312,7 +314,8 @@ export const effectsConfig = {
             "Personnalisez un set de batterie utilisateur GS en éditant chaque note individuellement. Cela ne marche que dans le mode GS.",
 
         selector: {
-            description: "Sélectionnez le set de batterie utilisateur que vous souhaitez éditer."
+            description:
+                "Sélectionnez le set de batterie utilisateur que vous souhaitez éditer."
         },
 
         showOnlyChanged: {
@@ -345,7 +348,7 @@ export const effectsConfig = {
                     "Instrument sera coupé pour laisser la place au second. C'est une façon pratique d'empêcher deux " +
                     "Instruments de jouer simultanément alors qu'ils ne le feraient normalement jamais. Par exemple, comme il " +
                     "celui de charleston fermée, ces deux sons doivent être placés dans le même groupe d'assignation (le " +
-                    "même numéro) pour qu'ils ne puissent pas jouer ensemble. Les valeurs de \"Non\" et de 1 à 127 peuvent " +
+                    'même numéro) pour qu\'ils ne puissent pas jouer ensemble. Les valeurs de "Non" et de 1 à 127 peuvent ' +
                     "être sélectionnées, mais les Instruments pour lesquels Non est sélectionné ne seront jamais coupés par " +
                     "d'autres Instruments. En d'autres termes, les Instruments avec un réglage Non ne feront partie d'aucun " +
                     "groupe d'assignation."
@@ -356,7 +359,7 @@ export const effectsConfig = {
                 description:
                     "La balance de la note sur la touche {0}, relative au canal. 64 n'apporte aucune modification et 0 donne une balance aléatoire pour chaque note."
             },
-            
+
             reverbSend: {
                 title: "Envoi de réverbération",
                 description:

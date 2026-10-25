@@ -230,10 +230,10 @@ export function appendNewController(
         "channelController.chorusMeter"
     );
 
-    // Delay
+    // Variation
     createCCMeterHelper(
         MIDIControllers.variationDepth,
-        "channelController.delayMeter"
+        "channelController.variationMeter"
     );
 
     // Filter cutoff

@@ -53,7 +53,7 @@ export const effectsConfig = {
     },
 
     reverb: {
-        title: "Konfiguracja pogłosu",
+        title: "Konfiguracja pogłosu GS",
         description: "Ustaw jak ma brzmieć efekt pogłosu.",
 
         gain: {
@@ -123,7 +123,7 @@ export const effectsConfig = {
     },
 
     chorus: {
-        title: "Konfiguracja chóru",
+        title: "Konfiguracja chóru GS",
         description: "Ustaw jak ma brzmieć efekt chóru.",
 
         gain: {
@@ -188,7 +188,7 @@ export const effectsConfig = {
     },
 
     delay: {
-        title: "Konfiguracja delay",
+        title: "Konfiguracja delay GS",
         description: "Ustaw jak ma brzmieć efekt delay.",
 
         gain: {
@@ -269,7 +269,7 @@ export const effectsConfig = {
     },
 
     insertion: {
-        title: "Konfiguracja efektu Insertion",
+        title: "Konfiguracja efektu Insertion GS",
         description: "Wybierz efekt Insertion i ustaw, jak ma on brzmieć.",
 
         activeChannels: {
@@ -300,7 +300,7 @@ export const effectsConfig = {
     },
 
     userDrumSet: {
-        title: "Edytor perkusji użytkownika",
+        title: "Edytor perkusji użytkownika GS",
         description:
             "Zmodyfikuj perkusję użytkownika według własnych preferencji, edytując poszczególne klawisze. Należy pamiętać, że działa ona tylko w trybie GS.",
 

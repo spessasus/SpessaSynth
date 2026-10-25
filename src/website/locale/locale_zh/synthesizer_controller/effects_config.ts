@@ -33,12 +33,12 @@ export const effectsConfig = {
         }
     },
     reverb: {
-        title: "混响配置",
+        title: "GS 混响配置",
         description: "配置混响处理器"
     },
 
     chorus: {
-        title: "合唱配置",
+        title: "GS 合唱配置",
         description: "配置合唱处理器"
     }
 };

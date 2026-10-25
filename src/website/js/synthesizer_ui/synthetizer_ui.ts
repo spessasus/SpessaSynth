@@ -17,7 +17,11 @@ import {
     MIDIControllers,
     MIDIMessageTypes,
     type MIDIPatchFull,
-    MIDIPatchTools
+    MIDIPatchTools,
+    MIDIUtils,
+    type XGChorusParameterMessage,
+    type XGInsertionParameterMessage,
+    type XGReverbParameterMessage
 } from "spessasynth_core";
 import type { Sequencer } from "spessasynth_lib";
 import { MIDIDeviceHandler } from "spessasynth_lib";
@@ -29,20 +33,28 @@ import { createAdvancedConfiguration } from "./methods/create_advanced_configura
 import { Selector } from "./methods/synthui_selector.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
 import {
-    type ChorusController,
-    chorusEffectData,
-    type ChorusParams,
-    type DelayController,
-    delayEffectData,
-    type DelayParams,
-    type InsertionController,
-    insertionEffectData,
-    type ReverbController,
-    reverbEffectData,
-    type ReverbParams
-} from "./methods/effect_params.ts";
-import { createInsertionController } from "./methods/create_insertion_controller.ts";
-import { createEffectController } from "./methods/create_effect_controller.ts";
+    type GSChorusController,
+    gsChorusEffectData,
+    type GSChorusParams,
+    type GSDelayController,
+    gsDelayEffectData,
+    type GSDelayParams,
+    type GSInsertionController,
+    gsInsertionEffectData,
+    type GSReverbController,
+    gsReverbEffectData,
+    type GSReverbParams
+} from "./methods/gs_effect_params.ts";
+import { createGSInsertionController } from "./methods/create_gs_insertion_controller.ts";
+import { createGSEffectController } from "./methods/create_gs_effect_controller.ts";
+import {
+    xgChorusData,
+    type XGController,
+    xgInsertionData,
+    xgReverbData,
+    xgVariationData
+} from "./methods/xg_effect_params.ts";
+import { createXGEffectController } from "./methods/create_xg_effect_controller.ts";
 import { appendNewController } from "./methods/append_new_controller.ts";
 import { UserDrumSetEditor } from "./methods/user_drum_set_editor.ts";
 import {
@@ -139,18 +151,26 @@ export class SynthesizerUI {
     protected controllers: ChannelController[] = [];
     protected readonly tabs: {
         channels: HTMLElement;
-        reverb: HTMLElement;
-        chorus: HTMLElement;
-        delay: HTMLElement;
-        insertion: HTMLElement;
+        gsReverb: HTMLElement;
+        gsChorus: HTMLElement;
+        gsDelay: HTMLElement;
+        gsInsertion: HTMLElement;
+        xgReverb: HTMLElement;
+        xgChorus: HTMLElement;
+        xgVariation: HTMLElement;
+        xgInsertion: HTMLElement;
         configuration: HTMLElement;
-        userDrumSet: HTMLElement;
+        gsUserDrumSet: HTMLElement;
     };
     protected readonly effectConfigs: {
-        reverb: ReverbController;
-        chorus: ChorusController;
-        delay: DelayController;
-        insertion: InsertionController;
+        reverb: GSReverbController;
+        chorus: GSChorusController;
+        delay: GSDelayController;
+        insertion: GSInsertionController;
+        xgReverb: XGController;
+        xgChorus: XGController;
+        xgVariation: XGController;
+        xgInsertion: XGController;
     };
     protected currentInsertionEffect;
     protected insertionLock = false;
@@ -334,24 +354,8 @@ export class SynthesizerUI {
                 this.synth.stopAll(true)
             );
 
-            // System reset button
-            const resetCCButton = document.createElement("button");
-            this.locale.bindObjectProperty(
-                resetCCButton,
-                "textContent",
-                LOCALE_PATH + "systemReset.title"
-            );
-            this.locale.bindObjectProperty(
-                resetCCButton,
-                "title",
-                LOCALE_PATH + "systemReset.description"
-            );
-
-            resetCCButton.classList.add(
-                "synthui_button",
-                "main_controller_element"
-            );
-            resetCCButton.addEventListener("click", () => {
+            // System reset buttons
+            const resetSynth = (system: "gs" | "xg") => {
                 // Unlock everything
                 this.synth.setSystemParameter("drumLock", false);
                 if (this.synth.systemParameters.gsReverbLock) {
@@ -365,6 +369,18 @@ export class SynthesizerUI {
                 }
                 if (this.synth.systemParameters.gsInsertionLock) {
                     this.effectConfigs.insertion.toggleLock();
+                }
+                if (this.synth.systemParameters.xgReverbLock) {
+                    this.effectConfigs.xgReverb.toggleLock();
+                }
+                if (this.synth.systemParameters.xgChorusLock) {
+                    this.effectConfigs.xgChorus.toggleLock();
+                }
+                if (this.synth.systemParameters.xgVariationLock) {
+                    this.effectConfigs.xgVariation.toggleLock();
+                }
+                if (this.synth.systemParameters.xgInsertionLock) {
+                    this.effectConfigs.xgInsertion.toggleLock();
                 }
                 if (this.synth.systemParameters.userDrumLock) {
                     this.userDrumSetEditor.toggleLock();
@@ -423,21 +439,35 @@ export class SynthesizerUI {
                     }
                 }
                 this.soloChannels.clear();
-                this.synth.reset();
+                const resetMessage = MIDIUtils.reset(0, system).data;
+                this.synth.systemExclusive(resetMessage);
                 this.outputPorts.primary?.port?.send([
-                    MIDIMessageTypes.systemExclusive, // Start of sysEx
-                    0x41, // Roland
-                    0x10, // Device ID (defaults to 16 on Roland)
-                    0x42, // GS
-                    0x12, // Command ID (DT1)
-                    0x40, // System parameter - Address
-                    0x00, // Global parameter -  Address
-                    0x7f, // GS Change - Address
-                    0x00, // Turn on - Data
-                    0x41, // Checksum
-                    0xf7 // End of exclusive
+                    MIDIMessageTypes.systemExclusive,
+                    ...resetMessage
                 ]);
-            });
+            };
+
+            const resetButtons = document.createElement("div");
+            resetButtons.classList.add(
+                "synthui_button_group",
+                "main_controller_element"
+            );
+            for (const system of ["gs", "xg"] as const) {
+                const resetButton = document.createElement("button");
+                this.locale.bindObjectProperty(
+                    resetButton,
+                    "textContent",
+                    LOCALE_PATH + `${system}Reset.title`
+                );
+                this.locale.bindObjectProperty(
+                    resetButton,
+                    "title",
+                    LOCALE_PATH + `${system}Reset.description`
+                );
+                resetButton.classList.add("synthui_button");
+                resetButton.addEventListener("click", () => resetSynth(system));
+                resetButtons.append(resetButton);
+            }
 
             // Show only used
             const showOnlyUsedButton = document.createElement("button");
@@ -526,53 +556,47 @@ export class SynthesizerUI {
                 );
                 tabSelector.append(configuration);
 
-                // Reverb
-                const reverb = document.createElement("option");
-                reverb.value = "reverb";
-                this.locale.bindObjectProperty(
-                    reverb,
-                    "textContent",
-                    LOCALE_PATH + "tabs.reverb"
+                // Effects, shown only for their system
+                const createEffectTabs = (names: string[], isXG: boolean) =>
+                    names.map((name) => {
+                        const option = document.createElement("option");
+                        option.value = name;
+                        this.locale.bindObjectProperty(
+                            option,
+                            "textContent",
+                            LOCALE_PATH + "tabs." + name
+                        );
+                        option.hidden =
+                            (this.synth.midiParameters.system === "xg") !==
+                            isXG;
+                        tabSelector.append(option);
+                        return option;
+                    });
+                const gsTabs = createEffectTabs(
+                    ["gsReverb", "gsChorus", "gsDelay", "gsInsertion"],
+                    false
                 );
-                tabSelector.append(reverb);
-
-                // Chorus
-                const chorus = document.createElement("option");
-                chorus.value = "chorus";
-                this.locale.bindObjectProperty(
-                    chorus,
-                    "textContent",
-                    LOCALE_PATH + "tabs.chorus"
+                const xgTabs = createEffectTabs(
+                    ["xgReverb", "xgChorus", "xgVariation", "xgInsertion"],
+                    true
                 );
-                tabSelector.append(chorus);
-
-                // Delay
-                const delay = document.createElement("option");
-                delay.value = "delay";
-                this.locale.bindObjectProperty(
-                    delay,
-                    "textContent",
-                    LOCALE_PATH + "tabs.delay"
+                gsTabs.push(...createEffectTabs(["gsUserDrumSet"], false));
+                // An open tab stays open, only the option gets hidden
+                this.synth.eventHandler.addEvent(
+                    "globalParamChange",
+                    "synthui-system-change",
+                    (e) => {
+                        if (e.parameter !== "system") {
+                            return;
+                        }
+                        for (const option of gsTabs) {
+                            option.hidden = e.value === "xg";
+                        }
+                        for (const option of xgTabs) {
+                            option.hidden = e.value !== "xg";
+                        }
+                    }
                 );
-                tabSelector.append(delay);
-
-                const insertion = document.createElement("option");
-                insertion.value = "insertion";
-                this.locale.bindObjectProperty(
-                    insertion,
-                    "textContent",
-                    LOCALE_PATH + "tabs.insertion"
-                );
-                tabSelector.append(insertion);
-
-                const userDrumSet = document.createElement("option");
-                userDrumSet.value = "userDrumSet";
-                this.locale.bindObjectProperty(
-                    userDrumSet,
-                    "textContent",
-                    LOCALE_PATH + "tabs.userDrumSet"
-                );
-                tabSelector.append(userDrumSet);
 
                 tabSelector.addEventListener("change", () => {
                     const selectedTab =
@@ -620,7 +644,7 @@ export class SynthesizerUI {
             controlsWrapper.append(this.transposeController.div);
             // Buttons
             controlsWrapper.append(midiPanicButton);
-            controlsWrapper.append(resetCCButton);
+            controlsWrapper.append(resetButtons);
 
             // MIDI Channel specific
             controlsWrapper.append(showOnlyUsedButton);
@@ -637,7 +661,7 @@ export class SynthesizerUI {
             ];
             this.mainButtons = [
                 midiPanicButton,
-                resetCCButton,
+                resetButtons,
                 showOnlyUsedButton,
                 tabSelector,
                 groupSelector,
@@ -653,9 +677,9 @@ export class SynthesizerUI {
         // Create tabs
         {
             const reverbController =
-                (createEffectController<ReverbParams>).call(
+                (createGSEffectController<GSReverbParams>).call(
                     this,
-                    reverbEffectData,
+                    gsReverbEffectData,
                     LOCALE_PATH + "effectsConfig.reverb."
                 );
             reverbController.wrapper.append(
@@ -667,19 +691,58 @@ export class SynthesizerUI {
                 : undefined;
 
             const chorusController =
-                (createEffectController<ChorusParams>).call(
+                (createGSEffectController<GSChorusParams>).call(
                     this,
-                    chorusEffectData,
+                    gsChorusEffectData,
                     LOCALE_PATH + "effectsConfig.chorus."
                 );
-            const delayController = (createEffectController<DelayParams>).call(
-                this,
-                delayEffectData,
-                LOCALE_PATH + "effectsConfig.delay."
-            );
+            const delayController =
+                (createGSEffectController<GSDelayParams>).call(
+                    this,
+                    gsDelayEffectData,
+                    LOCALE_PATH + "effectsConfig.delay."
+                );
 
-            const insertionController = createInsertionController.call(this);
+            const insertionController = createGSInsertionController.call(this);
             this.currentInsertionEffect = insertionController.effects.get(0)!;
+
+            const xgReverbController = createXGEffectController.call(
+                this,
+                xgReverbData,
+                (parameter, value) =>
+                    MIDIUtils.setXGReverbParameter(
+                        0,
+                        parameter as XGReverbParameterMessage["parameter"],
+                        value as number
+                    )
+            );
+            const xgChorusController = createXGEffectController.call(
+                this,
+                xgChorusData,
+                (parameter, value) =>
+                    MIDIUtils.setXGChorusParameter(
+                        0,
+                        parameter as XGChorusParameterMessage["parameter"],
+                        value as number
+                    )
+            );
+            const xgVariationController = createXGEffectController.call(
+                this,
+                xgVariationData,
+                (parameter, value) =>
+                    MIDIUtils.setXGVariationParameter(0, parameter, value)
+            );
+            const xgInsertionController = createXGEffectController.call(
+                this,
+                xgInsertionData,
+                (parameter, value, insertionNumber) =>
+                    MIDIUtils.setXGInsertionParameter(
+                        0,
+                        insertionNumber,
+                        parameter as XGInsertionParameterMessage["parameter"],
+                        value as number
+                    )
+            );
 
             const channelController = document.createElement("div");
             channelController.classList.add(
@@ -701,17 +764,25 @@ export class SynthesizerUI {
                 reverb: reverbController,
                 chorus: chorusController,
                 delay: delayController,
-                insertion: insertionController
+                insertion: insertionController,
+                xgReverb: xgReverbController,
+                xgChorus: xgChorusController,
+                xgVariation: xgVariationController,
+                xgInsertion: xgInsertionController
             };
 
             this.tabs = {
-                reverb: convolverReverbController ?? reverbController.wrapper,
-                chorus: chorusController.wrapper,
-                delay: delayController.wrapper,
-                insertion: insertionController.wrapper,
+                gsReverb: convolverReverbController ?? reverbController.wrapper,
+                gsChorus: chorusController.wrapper,
+                gsDelay: delayController.wrapper,
+                gsInsertion: insertionController.wrapper,
+                xgReverb: xgReverbController.wrapper,
+                xgChorus: xgChorusController.wrapper,
+                xgVariation: xgVariationController.wrapper,
+                xgInsertion: xgInsertionController.wrapper,
                 channels: channelController,
                 configuration: configuration,
-                userDrumSet: this.userDrumSetEditor.wrapper
+                gsUserDrumSet: this.userDrumSetEditor.wrapper
             };
 
             // Set the default macros
@@ -734,10 +805,14 @@ export class SynthesizerUI {
                 parameter: "macro"
             });
             this.mainControllerDiv.append(channelController);
-            this.mainControllerDiv.append(this.tabs.reverb);
+            this.mainControllerDiv.append(this.tabs.gsReverb);
             this.mainControllerDiv.append(chorusController.wrapper);
             this.mainControllerDiv.append(delayController.wrapper);
             this.mainControllerDiv.append(insertionController.wrapper);
+            this.mainControllerDiv.append(xgReverbController.wrapper);
+            this.mainControllerDiv.append(xgChorusController.wrapper);
+            this.mainControllerDiv.append(xgVariationController.wrapper);
+            this.mainControllerDiv.append(xgInsertionController.wrapper);
             this.mainControllerDiv.append(configuration);
             this.mainControllerDiv.append(this.userDrumSetEditor.wrapper);
         }
@@ -996,6 +1071,24 @@ export class SynthesizerUI {
 
     protected handleEffectChange(e: EffectChangeEvent) {
         const fx = this.effectConfigs;
+        switch (e.effect) {
+            case "xgReverb": {
+                fx.xgReverb.update(e.parameter, e.value, 0);
+                return;
+            }
+            case "xgChorus": {
+                fx.xgChorus.update(e.parameter, e.value, 0);
+                return;
+            }
+            case "xgVariation": {
+                fx.xgVariation.update(e.parameter, e.value, 0);
+                return;
+            }
+            case "xgInsertion": {
+                fx.xgInsertion.update(e.parameter, e.value, e.insertionNumber);
+                return;
+            }
+        }
         if (e.effect === "gsInsertion") {
             switch (e.parameter) {
                 default: {
@@ -1043,7 +1136,7 @@ export class SynthesizerUI {
                     }
                     fx.insertion.effectSelector.value = targetEffect.toString();
                     this.renderer.efxText =
-                        insertionEffectData.find(
+                        gsInsertionEffectData.find(
                             (fx) => fx.type === targetEffect
                         )?.name ?? "Thru";
 
@@ -1063,56 +1156,56 @@ export class SynthesizerUI {
         if (e.parameter === "macro") {
             switch (e.effect) {
                 case "gsReverb": {
-                    const macro = reverbEffectData.macros[e.value];
+                    const macro = gsReverbEffectData.macros[e.value];
                     const meters = fx.reverb;
                     for (const [param, value] of Object.entries(macro)) {
                         if (param === "name") {
                             continue;
                         }
-                        const params = reverbEffectData.params.find(
+                        const params = gsReverbEffectData.params.find(
                             (p) => p.p === param
                         );
                         if (!params) {
                             continue;
                         }
-                        meters[param as ReverbParams].update(value as number);
+                        meters[param as GSReverbParams].update(value as number);
                     }
                     meters.macro.value = e.value.toString();
                     return;
                 }
 
                 case "gsChorus": {
-                    const macro = chorusEffectData.macros[e.value];
+                    const macro = gsChorusEffectData.macros[e.value];
                     const meters = fx.chorus;
                     for (const [param, value] of Object.entries(macro)) {
                         if (param === "name") {
                             continue;
                         }
-                        const params = chorusEffectData.params.find(
+                        const params = gsChorusEffectData.params.find(
                             (p) => p.p === param
                         );
                         if (!params) {
                             continue;
                         }
-                        meters[param as ChorusParams].update(value as number);
+                        meters[param as GSChorusParams].update(value as number);
                     }
                     meters.macro.value = e.value.toString();
                     return;
                 }
                 case "gsDelay": {
-                    const macro = delayEffectData.macros[e.value];
+                    const macro = gsDelayEffectData.macros[e.value];
                     const meters = fx.delay;
                     for (const [param, value] of Object.entries(macro)) {
                         if (param === "name") {
                             continue;
                         }
-                        const params = delayEffectData.params.find(
+                        const params = gsDelayEffectData.params.find(
                             (p) => p.p === param
                         );
                         if (!params) {
                             continue;
                         }
-                        meters[param as DelayParams].update(value as number);
+                        meters[param as GSDelayParams].update(value as number);
                     }
                     meters.macro.value = e.value.toString();
                     return;
@@ -1121,7 +1214,7 @@ export class SynthesizerUI {
         }
         switch (e.effect) {
             case "gsReverb": {
-                const param = reverbEffectData.params.find(
+                const param = gsReverbEffectData.params.find(
                     (p) => p.p === e.parameter
                 );
                 if (!param) {
@@ -1132,7 +1225,7 @@ export class SynthesizerUI {
             }
 
             case "gsChorus": {
-                const param = chorusEffectData.params.find(
+                const param = gsChorusEffectData.params.find(
                     (p) => p.p === e.parameter
                 );
                 if (!param) {
@@ -1142,7 +1235,7 @@ export class SynthesizerUI {
                 return;
             }
             case "gsDelay": {
-                const param = delayEffectData.params.find(
+                const param = gsDelayEffectData.params.find(
                     (p) => p.p === e.parameter
                 );
                 if (!param) {

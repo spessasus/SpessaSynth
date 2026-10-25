@@ -81,3 +81,23 @@
 td .synthui_input input {
     width: 100%;
 }
+
+.synthui_button_group {
+    display: flex;
+    flex: 1;
+}
+
+.synthui_button_group .synthui_button {
+    margin: 0;
+}
+
+.synthui_button_group .synthui_button:not(:first-child) {
+    border-left: none;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.synthui_button_group .synthui_button:not(:last-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}

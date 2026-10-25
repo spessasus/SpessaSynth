@@ -5,36 +5,36 @@ import type {
 } from "spessasynth_core";
 import { InsertionValueConverter } from "./convert.ts";
 
-export type ReverbParams = Exclude<
+export type GSReverbParams = Exclude<
     Extract<EffectChangeEvent, { effect: "gsReverb" }>["parameter"],
     "macro"
 >;
-export type ReverbController = Record<ReverbParams, Meter> & {
+export type GSReverbController = Record<GSReverbParams, Meter> & {
     wrapper: HTMLElement;
     macro: HTMLSelectElement;
     toggleLock: () => unknown;
 };
-export type ChorusParams = Exclude<
+export type GSChorusParams = Exclude<
     Extract<EffectChangeEvent, { effect: "gsChorus" }>["parameter"],
     "macro"
 >;
-export type ChorusController = Record<ChorusParams, Meter> & {
+export type GSChorusController = Record<GSChorusParams, Meter> & {
     wrapper: HTMLElement;
     macro: HTMLSelectElement;
     toggleLock: () => unknown;
 };
-export type DelayParams = Exclude<
+export type GSDelayParams = Exclude<
     Extract<EffectChangeEvent, { effect: "gsDelay" }>["parameter"],
     "macro"
 >;
 
-export type DelayController = Record<DelayParams, Meter> & {
+export type GSDelayController = Record<GSDelayParams, Meter> & {
     wrapper: HTMLElement;
     macro: HTMLSelectElement;
     toggleLock: () => unknown;
 };
 
-export interface InsertionController {
+export interface GSInsertionController {
     wrapper: HTMLElement;
     effectSelector: HTMLSelectElement;
     toggleLock: () => unknown;
@@ -58,7 +58,7 @@ export interface InsertionController {
  * "r" - data range (optional, in sysEx data)
  * "td" - transform function from sysEx to displayed (optional)
  */
-export interface ParamType<K extends string> {
+export interface GSParamType<K extends string> {
     params: {
         a: number;
         p: K;
@@ -70,7 +70,7 @@ export interface ParamType<K extends string> {
     macroAddress: number;
     macros: (Record<K, number> & { name: string })[];
 }
-export const reverbEffectData: ParamType<ReverbParams> = {
+export const gsReverbEffectData: GSParamType<GSReverbParams> = {
     params: [
         { a: 0x31, p: "character", r: { min: 0, max: 7 } },
         { a: 0x34, p: "time" },
@@ -158,7 +158,7 @@ export const reverbEffectData: ParamType<ReverbParams> = {
         }
     ]
 };
-export const chorusEffectData: ParamType<ChorusParams> = {
+export const gsChorusEffectData: GSParamType<GSChorusParams> = {
     params: [
         { a: 0x3b, p: "feedback" },
         { a: 0x3c, p: "delay" },
@@ -278,7 +278,7 @@ const delayTimeSegments = [
     { start: 0x69, end: 0x74, timeStart: 500, resolution: 50 }
 ] as const;
 
-export const delayEffectData: ParamType<DelayParams> = {
+export const gsDelayEffectData: GSParamType<GSDelayParams> = {
     params: [
         {
             a: 0x52,
@@ -462,7 +462,7 @@ export const delayEffectData: ParamType<DelayParams> = {
     ]
 };
 
-interface InsertionEffect {
+interface GSInsertionEffect {
     // Type as 0xAA_BB (msb << 8 | lsb)
     type: number;
     // Name (e.g. "Thru")
@@ -483,7 +483,7 @@ interface InsertionEffect {
     }[][];
 }
 
-export const insertionEffectData: InsertionEffect[] = [
+export const gsInsertionEffectData: GSInsertionEffect[] = [
     { name: "Thru", params: [], type: 0x00_00 },
     {
         name: "Stereo-EQ",

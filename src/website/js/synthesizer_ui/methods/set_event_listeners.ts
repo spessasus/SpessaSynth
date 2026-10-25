@@ -105,6 +105,8 @@ export function setEventListeners(this: SynthesizerUI) {
             appendNewController.call(this, this.controllers.length);
             this.showControllerGroup(this.groupSelector.value);
             this.effectConfigs.insertion.addNewChannel();
+            this.effectConfigs.xgVariation.addNewChannel();
+            this.effectConfigs.xgInsertion.addNewChannel();
             if (!this.isShown) {
                 this.hideControllers();
             }

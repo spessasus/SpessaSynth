@@ -45,10 +45,10 @@ export const channelControllerLocale = {
             "Le niveau actuel de réverbération appliqué au canal {0} (clic droit pour verrouiller)"
     },
 
-    delayMeter: {
-        title: "Delai : ",
+    variationMeter: {
+        title: "Variation : ",
         description:
-            "Niveau de delai : Le niveau actuel de l'effet de délai appliqué sur le canal {0} (clic droit pour verouiller)"
+            "Niveau de variation : Le niveau actuel de l'effet de variation appliqué sur le canal {0} (clic droit pour verouiller)"
     },
 
     filterMeter: {
