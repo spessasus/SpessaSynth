@@ -312,7 +312,11 @@ export async function renderAndExportVideoData(
         const waveforms = rendered.visual
             .slice(0, 16)
             .map((buffer) => audioBufferToMono(buffer));
+        const backgroundImage = this.renderer?.backgroundImage;
         const rendererData = {
+            background: backgroundImage
+                ? await createImageBitmap(backgroundImage)
+                : undefined,
             snapshot,
             waveforms,
             waveformOffset: 0,

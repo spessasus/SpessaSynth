@@ -69,6 +69,10 @@ export interface OfflineRendererData {
     midi: OfflineMIDIData;
     width: number;
     height: number;
+    /**
+     * The background image, drawn to cover the frame under a dark overlay.
+     */
+    background?: ImageBitmap;
 }
 
 /**
@@ -186,6 +190,7 @@ export class OfflineRenderer extends BaseRenderer {
     private readonly sampleRate: number;
     private readonly sampleCount: number;
     private readonly blackMIDIMode: boolean;
+    private readonly background?: ImageBitmap;
     /**
      * Event-sourced tracked state: raw parameter values accumulated from the
      * log, recomposed into `parts` after every relevant event. Live keeps no
@@ -234,6 +239,7 @@ export class OfflineRenderer extends BaseRenderer {
             canvasFactory
         );
         this.eventLog = data.eventLog;
+        this.background = data.background;
         this.playbackRate = snapshot.playbackRate;
         this.blackMIDIMode = snapshot.renderer.blackMIDIMode;
 
@@ -364,7 +370,20 @@ export class OfflineRenderer extends BaseRenderer {
 
     protected override clearFrame() {
         this.ctx.fillStyle = "#000";
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        const { width, height } = this.canvas;
+        this.ctx.fillRect(0, 0, width, height);
+        const bg = this.background;
+        if (!bg) {
+            return;
+        }
+        // Equivalent of CSS "background-size: cover", centered
+        const scale = Math.max(width / bg.width, height / bg.height);
+        const w = bg.width * scale;
+        const h = bg.height * scale;
+        this.ctx.drawImage(bg, (width - w) / 2, (height - h) / 2, w, h);
+        // Same dim overlay as the live canvas
+        this.ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+        this.ctx.fillRect(0, 0, width, height);
     }
 
     /**

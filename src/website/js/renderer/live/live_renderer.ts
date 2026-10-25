@@ -27,6 +27,11 @@ export class LiveRenderer extends BaseRenderer<LiveKeyboard> {
      * Called after a frame is rendered
      */
     public onRender?: () => unknown;
+
+    /**
+     * The current background image, if any. Used by the video export.
+     */
+    public backgroundImage?: Blob;
     public readonly canvas: HTMLCanvasElement;
     protected synth: Synthesizer;
     protected seq: Sequencer;
@@ -348,6 +353,7 @@ export class LiveRenderer extends BaseRenderer<LiveKeyboard> {
     }
 
     public setBackground(image: Blob | undefined) {
+        this.backgroundImage = image;
         if (!image) {
             this.canvas.style.backgroundImage = "";
             return;
