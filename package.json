@@ -22,7 +22,7 @@
         "eslint": "^10.3.0",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-unicorn": "^64.0.0",
-        "globals": "^17.6.0",
+        "globals": "^17.13.0",
         "prettier": "^3.8.3",
         "skia-canvas": "^4.0.0",
         "typescript": "^6.0.3",
