@@ -30,7 +30,11 @@ function getThemeVariables(rules: CSSRuleList, names: Set<string>) {
             rule.selectorText.includes("[data-theme=")
         ) {
             for (const name of Array.from(rule.style)) {
-                if (name.startsWith("--")) {
+                // Note colors are not transitioned, the renderer picks them up directly
+                if (
+                    name.startsWith("--") &&
+                    !name.startsWith("--note-color-")
+                ) {
                     names.add(name);
                 }
             }

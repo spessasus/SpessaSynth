@@ -92,7 +92,7 @@ export class BaseKeyboard {
     protected currentTime = 0;
     private currentRadius = 0;
 
-    private readonly channelColors: number[][];
+    private channelColors = new Array<number[]>();
 
     public constructor(
         ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
@@ -103,10 +103,7 @@ export class BaseKeyboard {
             ...options,
             shown: options.shown ?? true
         };
-        this.channelColors = options.channelColors.map((c) => {
-            const rgbValues = c.replaceAll(/[^\d,]/g, "").split(",");
-            return rgbValues.map((v) => Number.parseInt(v));
-        });
+        this.setChannelColors(options.channelColors);
     }
 
     public get keyRange() {
@@ -160,6 +157,17 @@ export class BaseKeyboard {
             (this.vertical ? this.bounds.height : this.bounds.width) +
             this.widthOffset
         );
+    }
+
+    /**
+     * Sets the colors of the pressed keys for each channel.
+     */
+    public setChannelColors(colors: string[]) {
+        this.options.channelColors = colors;
+        this.channelColors = colors.map((c) => {
+            const rgbValues = c.replaceAll(/[^\d,]/g, "").split(",");
+            return rgbValues.map((v) => Number.parseInt(v));
+        });
     }
 
     public getSnapshot(): KeyboardOptions {

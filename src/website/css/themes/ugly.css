@@ -36,6 +36,22 @@
     --canvas-background-end: #ff00ff;
     --background-image-overlay: rgba(255, 0, 255, 0.5);
     --canvas-hud-text-color: #ffa500;
+    --note-color-0: rgb(255, 0, 0);
+    --note-color-1: rgb(0, 255, 0);
+    --note-color-2: rgb(0, 0, 255);
+    --note-color-3: rgb(255, 0, 255);
+    --note-color-4: rgb(0, 255, 255);
+    --note-color-5: rgb(255, 128, 0);
+    --note-color-6: rgb(128, 0, 255);
+    --note-color-7: rgb(128, 255, 0);
+    --note-color-8: rgb(255, 0, 128);
+    --note-color-9: rgb(0, 128, 0);
+    --note-color-10: rgb(0, 128, 255);
+    --note-color-11: rgb(128, 0, 0);
+    --note-color-12: rgb(128, 128, 0);
+    --note-color-13: rgb(255, 105, 180);
+    --note-color-14: rgb(0, 255, 128);
+    --note-color-15: rgb(165, 42, 42);
 
     /* sequencer controls */
     --icon-color: #ff4500;

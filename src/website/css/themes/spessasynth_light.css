@@ -35,6 +35,22 @@
     --canvas-background-end: #fff;
     --background-image-overlay: rgba(0, 0, 0, 0);
     --canvas-hud-text-color: #333;
+    --note-color-0: rgb(255, 99, 71);
+    --note-color-1: rgb(255, 165, 0);
+    --note-color-2: rgb(255, 215, 0);
+    --note-color-3: rgb(50, 205, 50);
+    --note-color-4: rgb(60, 179, 113);
+    --note-color-5: rgb(0, 128, 0);
+    --note-color-6: rgb(0, 191, 255);
+    --note-color-7: rgb(65, 105, 225);
+    --note-color-8: rgb(138, 43, 226);
+    --note-color-9: rgb(50, 120, 125); /* Percussion color */
+    --note-color-10: rgb(255, 0, 255);
+    --note-color-11: rgb(255, 20, 147);
+    --note-color-12: rgb(218, 112, 214);
+    --note-color-13: rgb(240, 128, 128);
+    --note-color-14: rgb(255, 192, 203);
+    --note-color-15: rgb(255, 255, 0);
 
     /* sequencer controls */
     --icon-color: #333;

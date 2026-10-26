@@ -1,3 +1,6 @@
+/**
+ * The default note colors, used when the theme does not provide any.
+ */
 export const CHANNEL_COLORS = [
     "rgba(255, 99, 71, 1)", // Tomato
     "rgba(255, 165, 0, 1)", // Orange
@@ -16,3 +19,11 @@ export const CHANNEL_COLORS = [
     "rgba(255, 192, 203, 1)", // Pink
     "rgba(255, 255, 0, 1)" // Yellow
 ];
+
+/**
+ * References to the theme's note colors for the interface elements.
+ * The renderer reads the actual values from the same variables.
+ */
+export const CHANNEL_COLOR_VARIABLES = CHANNEL_COLORS.map(
+    (_, i) => `var(--note-color-${i})`
+);

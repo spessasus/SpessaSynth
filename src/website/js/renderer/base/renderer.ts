@@ -509,7 +509,7 @@ export abstract class BaseRenderer<K extends BaseKeyboard = BaseKeyboard> {
     }
 
     /**
-     * Reads theme-controlled canvas colors from the CSS variables.
+     * Reads theme-controlled canvas and note colors from the CSS variables.
      * Re-reads only when the theme changes or during a theme color transition.
      */
     protected updateCanvasColors() {
@@ -540,6 +540,12 @@ export abstract class BaseRenderer<K extends BaseKeyboard = BaseKeyboard> {
             "--background-image-overlay",
             "rgba(0, 0, 0, 0.8)"
         );
+        // Note colors are excluded from the theme transition, so they switch instantly
+        const noteColors = this.colors.map((color, i) =>
+            readValue(`--note-color-${i}`, color.plain)
+        );
+        this.keyboard.setChannelColors(noteColors);
+        this.computeColors(noteColors);
     }
 
     protected calculateRenderArea() {

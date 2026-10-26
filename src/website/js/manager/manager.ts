@@ -33,7 +33,10 @@ import { writeDLS } from "./export/export_dls.ts";
 import { URLParamUtils } from "../utils/url_params.ts";
 import { decodeDefaultImpulseResponse } from "../reverb/compressed_reverb_decoder.ts";
 import { LiveRenderer } from "../renderer/live/live_renderer.ts"; // This enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
-import { CHANNEL_COLORS } from "../renderer/base/channel_colors.ts";
+import {
+    CHANNEL_COLOR_VARIABLES,
+    CHANNEL_COLORS
+} from "../renderer/base/channel_colors.ts";
 
 // This enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
 document.body.classList.add("load");
@@ -70,7 +73,6 @@ export class Manager {
     };
     protected readonly convolverMode: boolean;
     protected renderer?: LiveRenderer;
-    private readonly channelColors = CHANNEL_COLORS;
     private keyboard?: LiveKeyboard;
     private readonly workerMode: boolean;
     private audioWorker?: Worker;
@@ -447,7 +449,7 @@ export class Manager {
 
         // The new canvas keyboard is created by the renderer
         this.renderer = new LiveRenderer(
-            this.channelColors,
+            CHANNEL_COLORS,
             this.synth,
             this.seq,
             this.audioDelay,
@@ -502,7 +504,7 @@ export class Manager {
 
         // Set up synth UI
         this.synthUI = new SynthesizerUI(
-            this.channelColors,
+            CHANNEL_COLOR_VARIABLES,
             document.querySelector("#synthesizer_controls")!,
             this.localeManager,
             this.keyboard,
