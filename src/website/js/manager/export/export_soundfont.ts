@@ -11,6 +11,7 @@ import {
     SoundBankLoader
 } from "spessasynth_core";
 import { encodeVorbis } from "../../../../externals/encode_vorbis.ts";
+import { showOutOfMemoryWarning } from "./utils/show_out_of_memory_warning.ts";
 
 type writeSF2Options =
     NonNullable<
@@ -155,25 +156,35 @@ export function exportAndSaveSF2(this: Manager) {
                     )[0] as HTMLDivElement;
                     const detailMessage =
                         notification.div.querySelectorAll("p")[0];
-                    const exported = await writeSF2.call(
-                        this,
-                        await this.seq!.getMIDI(),
-                        {
-                            bankID: this.soundBankID,
-                            trim: trimmed,
-                            compressionAction: compressed ? "compress" : "keep",
-                            writeDefaultModulators: true,
-                            writeExtendedLimits: true,
-                            writeEmbeddedSoundBank: true,
-                            software: "SpessaSynth",
-                            compressionQuality: quality,
-                            progressFunction: (p) => {
-                                progressDiv.style.width = `${p * 100}%`;
-                                detailMessage.textContent = `${exportingMessage} ${Math.floor(p * 100)}%`;
-                            },
-                            sequencerID: 0
-                        }
-                    );
+                    let exported;
+                    try {
+                        exported = await writeSF2.call(
+                            this,
+                            await this.seq!.getMIDI(),
+                            {
+                                bankID: this.soundBankID,
+                                trim: trimmed,
+                                compressionAction: compressed
+                                    ? "compress"
+                                    : "keep",
+                                writeDefaultModulators: true,
+                                writeExtendedLimits: true,
+                                writeEmbeddedSoundBank: true,
+                                software: "SpessaSynth",
+                                compressionQuality: quality,
+                                progressFunction: (p) => {
+                                    progressDiv.style.width = `${p * 100}%`;
+                                    detailMessage.textContent = `${exportingMessage} ${Math.floor(p * 100)}%`;
+                                },
+                                sequencerID: 0
+                            }
+                        );
+                    } catch (error) {
+                        closeNotification(notification.id);
+                        console.groupEnd();
+                        showOutOfMemoryWarning(this.localeManager, error);
+                        return;
+                    }
                     this.seq?.play();
                     this.saveBlob(
                         new Blob([exported.binary]),

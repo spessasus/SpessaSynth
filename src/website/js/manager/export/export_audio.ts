@@ -12,6 +12,7 @@ import { type WaveMetadata } from "spessasynth_core";
 import JSZip from "jszip";
 import type { Manager } from "../manager.ts";
 import { renderAudioData } from "./render_audio_data.ts";
+import { showOutOfMemoryWarning } from "./utils/show_out_of_memory_warning.ts";
 
 const RENDER_AUDIO_TIME_INTERVAL = 250;
 
@@ -24,13 +25,13 @@ export async function renderAndExportAudioData(
     meta: Partial<WaveMetadata>,
     loopCount = 0
 ): Promise<void> {
-    this.isExporting = true;
     if (!this.seq?.midiData) {
         throw new Error("No sequencer active");
     }
     if (!this.synth) {
         return;
     }
+    this.isExporting = true;
 
     // Get locales
     const exportingMessage = this.localeManager.getLocaleString(
@@ -97,22 +98,30 @@ export async function renderAndExportAudioData(
     };
 
     // Rendering time!
-    // noinspection JSUnusedGlobalSymbols
-    const renderedData = await renderAudioData.call(this, sampleRate, {
-        extraTime: additionalTime,
-        separateChannels,
-        loopCount,
-        preserveSynthParams: true,
-        sequencerID: 0,
-        enableEffects: true,
-        progressCallback: (progress, stage) => {
-            if (stage === 0) {
-                showProgress(progress, estimatedMessage);
-            } else {
-                showProgress(progress, addingEffects);
+    let renderedData;
+    try {
+        // noinspection JSUnusedGlobalSymbols
+        renderedData = await renderAudioData.call(this, sampleRate, {
+            extraTime: additionalTime,
+            separateChannels,
+            loopCount,
+            preserveSynthParams: true,
+            sequencerID: 0,
+            enableEffects: true,
+            progressCallback: (progress, stage) => {
+                if (stage === 0) {
+                    showProgress(progress, estimatedMessage);
+                } else {
+                    showProgress(progress, addingEffects);
+                }
             }
-        }
-    });
+        });
+    } catch (error) {
+        closeNotification(notification.id);
+        this.isExporting = false;
+        showOutOfMemoryWarning(this.localeManager, error);
+        return;
+    }
 
     if (separateChannels) {
         const snapshot = await this.synth.getSnapshot();
@@ -281,7 +290,8 @@ export async function renderAndExportAudioData(
         // Let the browser show
         await new Promise((r) => setTimeout(r, ANIMATION_REFLOW_TIME));
 
-        const startOffset = parsedMid.midiTicksToSeconds(parsedMid.firstNoteOn);
+        const startOffset =
+            parsedMid.midiTicksToSeconds(parsedMid.firstNoteOn) / playbackRate;
         const loopStart = loopStartAbsolute - startOffset;
         const loopEnd = loopEndAbsolute - startOffset;
         const loop = { start: loopStart, end: loopEnd };

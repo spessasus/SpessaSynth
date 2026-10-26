@@ -178,8 +178,15 @@ export class AssManager {
         let currentFontName = "";
         let sectionContents: SubContent[] = [];
         for (const line of lines) {
-            if (line.startsWith("[") && !isSection) {
-                sectionName = line;
+            if (/^\[[^\]]+\]\s*$/.test(line)) {
+                // Sections do not have to be separated by an empty line
+                if (isSection) {
+                    this.subData.push(
+                        new SubSection(sectionName, sectionContents)
+                    );
+                    sectionContents = [];
+                }
+                sectionName = line.trim();
                 isSection = true;
             } else if (line.length === 0 && isSection) {
                 isSection = false;

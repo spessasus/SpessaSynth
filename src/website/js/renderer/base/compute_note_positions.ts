@@ -88,10 +88,14 @@ export function computeNotePositions(
                         ? canvasHeight - noteHeight - position + NOTE_MARGIN
                         : position + NOTE_MARGIN;
 
+                    const transposedNote =
+                        note.midiNote +
+                        part.transpose +
+                        (part.isDrum ? 0 : this.transpose);
                     // If the note out of range, skip
                     if (
-                        note.midiNote < keyRange.min ||
-                        note.midiNote > keyRange.max
+                        transposedNote < keyRange.min ||
+                        transposedNote > keyRange.max
                     ) {
                         if (noteIndex >= notes.length) {
                             break;
@@ -99,11 +103,7 @@ export function computeNotePositions(
                         note = notes[noteIndex];
                         continue;
                     }
-                    const correctedNote =
-                        note.midiNote -
-                        keyRange.min +
-                        part.transpose +
-                        (part.isDrum ? 0 : this.transpose);
+                    const correctedNote = transposedNote - keyRange.min;
                     const noteX =
                         keyStep * correctedNote + xOffset + NOTE_MARGIN;
 
@@ -213,7 +213,10 @@ export function computeNotePositions(
             channel.renderStartIndex = firstNoteIndex;
         }
     }
-    // Sort the notes from shortest to longest (draw order)
-    notesToDraw.sort((n1, n2) => n2.height - n1.height);
+    // Sort the notes from longest to shortest (draw order)
+    // The note length is the width in vertical mode
+    notesToDraw.sort((n1, n2) =>
+        this.vertical ? n2.width - n1.width : n2.height - n1.height
+    );
     return notesToDraw;
 }

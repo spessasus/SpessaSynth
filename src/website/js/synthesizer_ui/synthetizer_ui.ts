@@ -1,7 +1,4 @@
-import {
-    hideControllers,
-    showControllers
-} from "./methods/hide_show_controllers.js";
+import { hideControllers, showControllers } from "./methods/hide_show_controllers.js";
 import { setEventListeners } from "./methods/set_event_listeners.js";
 import { keybinds } from "../utils/keybinds.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
@@ -56,15 +53,16 @@ import {
 import { createXGEffectController } from "./methods/create_xg_effect_controller.ts";
 import { appendNewController } from "./methods/append_new_controller.ts";
 import { UserDrumSetEditor } from "./methods/user_drum_set_editor.ts";
+import type { LiveRenderer } from "../renderer/live/live_renderer.ts";
+
+ers.js";;;
 import {
     createConvolverModeToggle,
     createConvolverReverbController
-} from "./methods/create_convolver_reverb_controller.ts";
-import {
+} from "./methods/create_convolver_reverb_controllimport {
     createXGRouting,
-    getXGInsertionLabels
-} from "../renderer/base/xg_insertion_labels.ts";
-import type { LiveRenderer } from "../renderer/live/live_renderer.ts";
+    getXGInsertionLabels;
+} from; "../renderer/base/xg_insertion_labels.ts";tion_labels.ts";;;
 
 export interface PresetListElement extends MIDIPatchFull {
     stringified: string;
@@ -429,8 +427,11 @@ export class SynthesizerUI {
                     // Mute/solo
                     controller.soloButton.innerHTML = getEmptyMicSvg(ICON_SIZE);
                     controller.muteButton.innerHTML = getVolumeSvg(ICON_SIZE);
+                    controller.muteButton.removeAttribute("is_muted");
                     ch.setSystemParameter("isMuted", false);
-                    this.renderer.renderChannels[channelNumber] = true;
+                    for (const m of this.onMute) {
+                        m?.(channelNumber, false);
+                    }
 
                     // EFX assign
                     ch.lockMIDIParameter("efxAssign", false);
@@ -438,6 +439,10 @@ export class SynthesizerUI {
                     // Poly/mono
                     {
                         ch.lockMIDIParameter("polyMode", false);
+                        controller.polyMonoButton.setAttribute(
+                            "isPoly",
+                            "true"
+                        );
                         controller.polyMonoButton.innerHTML = POLY_ON;
                     }
                 }

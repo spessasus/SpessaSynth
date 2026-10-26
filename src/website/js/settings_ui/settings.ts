@@ -164,6 +164,7 @@ export class SpessaSynthSettings {
         // Add svg to show top button
         const showTopButton = document.querySelectorAll(".show_top_button")[0];
         showTopButton.innerHTML = getDownArrowSvg(20);
+        showTopButton.addEventListener("click", this.showTopPart.bind(this));
 
         const text = document.createElement("span");
         this.locale.bindObjectProperty(
@@ -180,9 +181,11 @@ export class SpessaSynthSettings {
 
         this.mainDiv = document.createElement("div");
         this.mainDiv.classList.add("settings_menu");
-        settingsButton.addEventListener("click", () =>
-            this.setVisibility(!this.visible)
-        );
+        settingsButton.addEventListener("click", () => {
+            // Do not hide on the document click that this click causes
+            this.hideOnDocClick = false;
+            this.setVisibility(!this.visible);
+        });
         settingsWrapper.append(this.mainDiv);
 
         musicModeButton.addEventListener(
@@ -533,23 +536,19 @@ export class SpessaSynthSettings {
             showTopButton.classList.add("shown");
         }, ANIMATION_REFLOW_TIME);
 
-        showTopButton.addEventListener("click", this.showTopPart.bind(this));
         window.dispatchEvent(new CustomEvent("resize"));
     }
 
     public setVisibility(visible: boolean) {
-        if (this.animationId) {
-            clearTimeout(this.animationId);
-        }
+        clearTimeout(this.animationId);
         if (visible) {
             this.mainDiv.style.display = "block";
-            setTimeout(() => {
+            this.animationId = window.setTimeout(() => {
                 document
                     .querySelectorAll(".top_part")[0]
                     .classList.add("settings_shown");
                 this.mainDiv.classList.add("settings_menu_show");
             }, ANIMATION_REFLOW_TIME);
-            this.hideOnDocClick = false;
         } else {
             document
                 .querySelectorAll(".top_part")[0]

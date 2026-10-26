@@ -21,13 +21,28 @@ export function sanitizeKarLyrics(eventData: Uint8Array): Uint8Array {
     return new Uint8Array(sanitized);
 }
 
+/**
+ * Fills a lyric span with the text, turning the newlines into line breaks.
+ * The text comes from the MIDI file, so it is never parsed as HTML.
+ */
+export function setLyricSpanText(span: HTMLSpanElement, lyric: string) {
+    const nodes = new Array<Node>();
+    for (const [i, line] of lyric.split(/\r?\n|\r/).entries()) {
+        if (i > 0) {
+            nodes.push(document.createElement("br"));
+        }
+        nodes.push(document.createTextNode(line));
+    }
+    span.replaceChildren(...nodes);
+}
+
 export function setLyricsText(this: SequencerUI, index: number) {
     // If there are no lyrics, there's one element:
     // ["No lyrics available"]
     if (
         this.currentLyricsString.length === 0 ||
         index < 0 ||
-        index > this.currentLyricsString.length
+        index >= this.lyricsElement.text.separateLyrics.length
     ) {
         return;
     }

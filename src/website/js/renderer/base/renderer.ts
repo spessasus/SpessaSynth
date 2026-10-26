@@ -401,6 +401,10 @@ export abstract class BaseRenderer<K extends BaseKeyboard = BaseKeyboard> {
     }
 
     public setRenderPart(part: number, render: boolean) {
+        // The notes are only tracked for the first 16 channels
+        if (part >= this.parts.length) {
+            return;
+        }
         this.parts[part].render = render;
         this.renderChannels[part] = render;
     }

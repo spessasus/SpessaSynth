@@ -22,8 +22,8 @@ export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
         savedSettings.interface.theme in themeList
             ? savedSettings.interface.theme
             : DEFAULT_THEME;
+    // The theme selector is filled in createHandlers, which selects this theme
     this.applyTheme(theme);
-    this.htmlControls.interface.themeSelector.value = theme;
 
     // Renderer
     const rendererControls = this.htmlControls.renderer;
@@ -138,13 +138,20 @@ export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
         this.autoKeyRange = true;
     } else {
         this.autoKeyRange = false;
-        keyboardControls.keyRange.value = Object.keys(this.keyboardSizes).find(
+        const size = Object.keys(this.keyboardSizes).find(
             (size) =>
                 this.keyboardSizes[size as keyof typeof this.keyboardSizes]
                     .min === range.min &&
                 this.keyboardSizes[size as keyof typeof this.keyboardSizes]
                     .max === range.max
-        )!;
+        );
+        if (size) {
+            keyboardControls.keyRange.value = size;
+        } else {
+            // No matching option, fall back to the full range
+            keyboardControls.keyRange.value = "full";
+            renderer.keyRange = this.keyboardSizes.full;
+        }
     }
     // Keyboard theme
     if (keyboardValues.mode === "dark") {
@@ -163,13 +170,9 @@ export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
         this.htmlControls.keyboard.forceMaxVelocity.checked = true;
     }
     // Interface
+    // The language selector is filled in createHandlers, which selects the current locale
     this.locale.changeGlobalLocale(savedSettings.interface.language, true);
 
-    // Using set timeout here fixes it for some reason
-    setTimeout(() => {
-        this.htmlControls.interface.languageSelector.value =
-            savedSettings.interface.language;
-    }, 100);
     this.htmlControls.interface.layoutSelector.value =
         savedSettings?.interface?.layout || "downwards";
     this.changeLayout(savedSettings?.interface?.layout || "downwards");

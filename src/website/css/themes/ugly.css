@@ -41,17 +41,17 @@
     --note-color-2: rgb(0, 0, 255);
     --note-color-3: rgb(255, 0, 255);
     --note-color-4: rgb(0, 255, 255);
-    --note-color-5: rgb(255, 128, 0);
-    --note-color-6: rgb(128, 0, 255);
-    --note-color-7: rgb(128, 255, 0);
-    --note-color-8: rgb(255, 0, 128);
-    --note-color-9: rgb(0, 128, 0);
-    --note-color-10: rgb(0, 128, 255);
-    --note-color-11: rgb(128, 0, 0);
-    --note-color-12: rgb(128, 128, 0);
-    --note-color-13: rgb(255, 105, 180);
-    --note-color-14: rgb(0, 255, 128);
-    --note-color-15: rgb(165, 42, 42);
+    --note-color-5: rgb(255, 124, 0);
+    --note-color-6: rgb(147, 0, 255);
+    --note-color-7: rgb(109, 255, 0);
+    --note-color-8: rgb(255, 0, 143);
+    --note-color-9: rgb(0, 136, 0);
+    --note-color-10: rgb(0, 132, 255);
+    --note-color-11: rgb(151, 0, 0);
+    --note-color-12: rgb(130, 130, 0);
+    --note-color-13: rgb(255, 96, 189);
+    --note-color-14: rgb(0, 255, 113);
+    --note-color-15: rgb(187, 36, 36);
 
     /* sequencer controls */
     --icon-color: #ff4500;

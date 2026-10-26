@@ -2,6 +2,7 @@ import http from "node:http";
 import path from "node:path";
 import {
     getVersion,
+    resolveRequestPath,
     serveSettings,
     serveSfontList,
     serveStaticFile
@@ -31,7 +32,10 @@ const server = http.createServer(async (req, res) => {
     }
     switch (req.url.split("?")[0]) {
         default: {
-            serveStaticFile(res, path.join(rootDir, "local-dev/", req.url));
+            serveStaticFile(
+                res,
+                resolveRequestPath(path.join(rootDir, "local-dev"), req.url)
+            );
             break;
         }
 
@@ -62,9 +66,16 @@ const server = http.createServer(async (req, res) => {
                 body += chunk.toString();
             });
             req.on("end", async () => {
-                configManager.config.settings = JSON.parse(
-                    body
-                ) as SavedSettings;
+                try {
+                    configManager.config.settings = JSON.parse(
+                        body
+                    ) as SavedSettings;
+                } catch {
+                    // An exception here would stop the server, prevent that.
+                    res.writeHead(400, { "Content-Type": "text/plain" });
+                    res.end("Invalid settings");
+                    return;
+                }
                 await configManager.flush();
                 res.writeHead(200, { "Content-Type": "text/plain" });
                 res.end("Settings saved");

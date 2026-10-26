@@ -1,6 +1,5 @@
 #note_canvas {
     width: 100%;
-    filter: saturate(1.23);
     flex: 1;
     min-height: 0;
     z-index: 1;

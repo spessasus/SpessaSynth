@@ -41,19 +41,7 @@ export function showExportMenu(this: Manager) {
                 translatePathTitle: path + "formats.soundfont.button",
                 onClick: (n) => {
                     closeNotification(n.id);
-                    try {
-                        exportAndSaveSF2.call(this);
-                    } catch (error) {
-                        console.error(error);
-                        showNotification("Warning", [
-                            {
-                                type: "text",
-                                textContent: this.localeManager.getLocaleString(
-                                    "locale.warnings.outOfMemory"
-                                )
-                            }
-                        ]);
-                    }
+                    exportAndSaveSF2.call(this);
                 }
             },
             {
@@ -61,19 +49,7 @@ export function showExportMenu(this: Manager) {
                 translatePathTitle: path + "formats.dls.button",
                 onClick: (n) => {
                     closeNotification(n.id);
-                    try {
-                        void _exportDLS.call(this);
-                    } catch (error) {
-                        console.error(error);
-                        showNotification("Warning", [
-                            {
-                                type: "text",
-                                textContent: this.localeManager.getLocaleString(
-                                    "locale.warnings.outOfMemory"
-                                )
-                            }
-                        ]);
-                    }
+                    _exportDLS.call(this);
                 }
             },
             {
@@ -81,19 +57,7 @@ export function showExportMenu(this: Manager) {
                 translatePathTitle: path + "formats.rmidi.button",
                 onClick: (n) => {
                     closeNotification(n.id);
-                    try {
-                        void _exportRMIDI.call(this);
-                    } catch (error) {
-                        console.error(error);
-                        showNotification("Warning", [
-                            {
-                                type: "text",
-                                textContent: this.localeManager.getLocaleString(
-                                    "locale.warnings.outOfMemory"
-                                )
-                            }
-                        ]);
-                    }
+                    _exportRMIDI.call(this);
                 }
             }
         ],

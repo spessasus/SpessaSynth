@@ -1,7 +1,11 @@
 import { MIDIControllers } from "spessasynth_core";
 import type { InterfaceMode } from "../../../../server/saved_settings.ts";
 import type { Synthesizer } from "../../utils/synthesizer.ts";
-import { BaseKeyboard, KEY_TRANSITION_SECONDS } from "../base/base_keyboard.ts";
+import {
+    BaseKeyboard,
+    clamp,
+    KEY_TRANSITION_SECONDS
+} from "../base/base_keyboard.ts";
 import type { RenderBounds } from "../../renderer/base/renderer.ts";
 import { isSharpMIDINote, SHARP_KEY_LENGTH_RATIO } from "../base/key_style.ts";
 import { isMobile } from "../../utils/is_mobile.ts";
@@ -277,6 +281,15 @@ export class LiveKeyboard extends BaseKeyboard {
         const layoutHeight = this.actualHeight;
         const slot = layoutWidth / count;
         const sharpRadius = layoutHeight * SHARP_KEY_LENGTH_RATIO;
+        // The velocity grows along the key length, at least 1 so it is not a note off
+        const getVelocity = () =>
+            isMobile
+                ? 127
+                : clamp(
+                      Math.floor((layoutY / Math.max(1, layoutHeight)) * 127),
+                      1,
+                      127
+                  );
 
         // Sharps are drawn above whites, so check them first.
         for (let note = range.max; note >= range.min; note--) {
@@ -298,9 +311,7 @@ export class LiveKeyboard extends BaseKeyboard {
             ) {
                 return {
                     note,
-                    velocity: isMobile
-                        ? 127
-                        : Math.floor((y / Math.max(1, layoutHeight)) * 127)
+                    velocity: getVelocity()
                 };
             }
         }
@@ -318,9 +329,7 @@ export class LiveKeyboard extends BaseKeyboard {
             ) {
                 return {
                     note,
-                    velocity: isMobile
-                        ? 127
-                        : Math.floor((y / Math.max(1, layoutHeight)) * 127)
+                    velocity: getVelocity()
                 };
             }
         }

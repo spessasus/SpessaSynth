@@ -160,6 +160,7 @@ export class Manager {
         if (sf === this.sBankBuffer) {
             return;
         }
+        const wasPlaying = this.seq?.paused === false;
         this.seq?.pause();
         const text = sf.slice(8, 12);
         const header = util.readBinaryStringIndexed(
@@ -174,8 +175,8 @@ export class Manager {
             }, 3000);
         }
 
-        // Resets controllers and resume
-        if (this.seq?.midiData) {
+        // Resets controllers and resume (only if the song was playing)
+        if (wasPlaying && this.seq?.midiData) {
             this.seq.currentTime -= 0.1;
             this.seqUI?.seqPlay();
         }
@@ -496,12 +497,6 @@ export class Manager {
         window.addEventListener("resize", checkResize.bind(this));
         window.addEventListener("orientationchange", checkResize.bind(this));
 
-        // If on mobile, switch to a 2 octave keyboard
-        if (isMobile) {
-            // The new renderer automatically scales the keyboard
-            this.renderer.keyRange = { min: 48, max: 72 };
-        }
-
         // Set up synth UI
         this.synthUI = new SynthesizerUI(
             CHANNEL_COLOR_VARIABLES,
@@ -570,18 +565,14 @@ export class Manager {
             this.play(data);
             let firstName = data[0].fileName;
             if (firstName.length > 20) {
-                firstName = firstName.slice(0, 21) + "...";
+                firstName = firstName.slice(0, 20) + "...";
             }
             // Set file name
             document.querySelector("#file_upload")!.textContent = firstName;
-            // Show export button
-            const exportButton =
-                document.querySelector<HTMLLabelElement>("#export_button")!;
-            exportButton.style.display = "flex";
-            exportButton.addEventListener(
-                "click",
-                this.showExportMenu.bind(this)
-            );
+            // Show export button (the click listener is added by the main script)
+            document.querySelector<HTMLLabelElement>(
+                "#export_button"
+            )!.style.display = "flex";
             // If demo website, hide demo songs button
             if (!this.isLocalEdition) {
                 document.querySelector<HTMLLabelElement>(
@@ -591,6 +582,12 @@ export class Manager {
         }, this.reloadSf.bind(this));
 
         // Add key presses
+        // Notes played with the computer keyboard, by key, so they can be released
+        // Even after the keyboard mode is turned off or the channel changes
+        const heldKeyNotes = new Map<
+            string,
+            { channel: number; note: number }
+        >();
         document.addEventListener(
             "keydown",
             (e) => {
@@ -600,13 +597,25 @@ export class Manager {
                     e.stopImmediatePropagation();
                     return;
                 }
+                // Let text fields receive their keys (this listener runs in the capture phase)
+                const target = e.target;
+                if (
+                    target instanceof HTMLTextAreaElement ||
+                    (target instanceof HTMLInputElement &&
+                        target.type !== "range" &&
+                        target.type !== "checkbox")
+                ) {
+                    return;
+                }
                 const key = e.key.toLowerCase();
                 if (this.keyboardMode && key !== keybinds.keyboardMode) {
                     e.stopImmediatePropagation();
 
                     const note = keybinds.keyboardKeys[key];
                     if (note) {
-                        this.synth?.noteOn(this.keyboard!.channel, note, 120);
+                        const channel = this.keyboard!.channel;
+                        this.synth?.noteOn(channel, note, 120);
+                        heldKeyNotes.set(key, { channel, note });
                     }
                     return;
                 }
@@ -629,17 +638,19 @@ export class Manager {
         );
 
         document.addEventListener("keyup", (e) => {
+            const key = e.key.toLowerCase();
+            // Always release held notes, so they do not get stuck
+            const held = heldKeyNotes.get(key);
+            if (held) {
+                heldKeyNotes.delete(key);
+                this.synth?.noteOff(held.channel, held.note);
+            }
             // Check for control
             if (e.ctrlKey) {
                 // Do not interrupt control shortcuts
                 return;
             }
-            const key = e.key.toLowerCase();
             if (this.keyboardMode) {
-                const note = keybinds.keyboardKeys[key];
-                if (note) {
-                    this.synth?.noteOff(this.keyboard!.channel, note);
-                }
                 return;
             }
             switch (key) {

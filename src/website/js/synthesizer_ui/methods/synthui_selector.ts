@@ -1,17 +1,9 @@
 import { midiPatchNames } from "../../utils/patch_names.js";
 import { getLockSVG, getUnlockSVG } from "../../utils/icons.js";
-import {
-    ICON_SIZE,
-    LOCALE_PATH,
-    type PresetListElement
-} from "../synthetizer_ui.js";
+import { ICON_SIZE, LOCALE_PATH, type PresetListElement } from "../synthetizer_ui.js";
 import { isMobile } from "../../utils/is_mobile.js";
 import type { LocaleManager } from "../../manager/locale_manager.ts";
-import {
-    type MIDIPatch,
-    type MIDIPatchFull,
-    MIDIPatchTools
-} from "spessasynth_core";
+import { type MIDIPatch, type MIDIPatchFull, MIDIPatchTools } from "spessasynth_core";
 
 /**
  * Syntui_selector.js
@@ -177,14 +169,12 @@ export class Selector {
                 return;
             }
             e.stopPropagation();
-            const text = searchInput.value;
-            const filtered = this.elements.filter(
-                (e) => e.stringified.search(new RegExp(text, "i")) >= 0
+            // Plain text search, the input is not a valid regex in general
+            const text = searchInput.value.toLowerCase();
+            const filtered = this.elements.filter((e) =>
+                e.stringified.toLowerCase().includes(text)
             );
-            if (
-                filtered.length === this.elements.length ||
-                filtered.length === 0
-            ) {
+            if (filtered.length === 0) {
                 return;
             }
             tableWrapper.replaceChildren();
@@ -209,7 +199,7 @@ export class Selector {
             }
             firstFiltered.classList.add("voice_selector_selected");
             selectedProgram = firstFiltered;
-        });
+        };)
 
         // Add basic key navigation
         searchInput.addEventListener("keydown", (e) => {
@@ -458,15 +448,15 @@ export class Selector {
             presetName.textContent = preset.name;
 
             const presetProgram = document.createElement("td");
-            presetName.classList.add("voice_selector_preset_program");
+            presetProgram.classList.add("voice_selector_preset_program");
             presetProgram.textContent = programText;
 
             const presetBankMSB = document.createElement("td");
-            presetName.classList.add("voice_selector_preset_program");
+            presetBankMSB.classList.add("voice_selector_preset_program");
             presetBankMSB.textContent = bankMSBText;
 
             const presetBankLSB = document.createElement("td");
-            presetName.classList.add("voice_selector_preset_program");
+            presetBankLSB.classList.add("voice_selector_preset_program");
             presetBankLSB.textContent = bankLSBText;
 
             row.append(presetBankLSB);

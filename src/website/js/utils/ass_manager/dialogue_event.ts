@@ -123,14 +123,14 @@ export class DialogueEvent {
         let animationDuration = 0;
         for (const chunk of this.text) {
             if (chunk.startsWith("{")) {
-                // Check if karaoke tag
-                const karaokeAnimation =
-                    chunk.startsWith(String.raw`{\K`) ||
-                    chunk.startsWith(String.raw`{\kf`);
-                if (!karaokeAnimation && !chunk.startsWith(String.raw`{\k`)) {
+                // Check if karaoke tag (\k, \K, \kf or \ko followed by the duration)
+                const karaoke = /^\{\\(kf|ko|k|K)(\d+)/.exec(chunk);
+                if (!karaoke) {
                     continue;
                 }
-                const duration = Number.parseInt(chunk.slice(3, -1)) / 100;
+                const karaokeAnimation =
+                    karaoke[1] === "K" || karaoke[1] === "kf";
+                const duration = Number.parseInt(karaoke[2]) / 100;
                 if (karaokeAnimation) {
                     animationDuration = duration;
                     isNextSpanAnimated = true;
@@ -409,16 +409,17 @@ export class DialogueEvent {
             // Check for collision
             if (!(subBottom <= top || thisBottom <= subtitleRect.top)) {
                 // Check if this.element can fit between parentRect.top and subtitleRect.top
-                if (subtitleRect.top - parentRect.top > height) {
-                    top -= subtitleRect.height;
-                    // Move up
-                    this.element.style.top = `${top}px`;
-                } else {
-                    top += subtitleRect.height;
-                    // Move down
-                    this.element.style.top = `${top}px`;
-                }
+                top =
+                    subtitleRect.top - parentRect.top > height
+                        ? // Move up
+                          subtitleRect.top - height
+                        : // Move down
+                          subBottom;
             }
+        }
+        // Shift with translate, so the alignment (top/bottom and transform) is kept
+        if (top !== thisRect.top) {
+            this.element.style.translate = `0 ${top - thisRect.top}px`;
         }
     }
 }

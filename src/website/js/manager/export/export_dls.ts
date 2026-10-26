@@ -6,6 +6,7 @@ import {
 import type { Manager } from "../manager.ts";
 import { WorkerSynthesizer } from "spessasynth_lib";
 import { type BasicSoundBank, SoundBankLoader } from "spessasynth_core";
+import { showOutOfMemoryWarning } from "./utils/show_out_of_memory_warning.ts";
 
 type writeDLSOptions =
     NonNullable<
@@ -107,16 +108,24 @@ export function _exportDLS(this: Manager) {
                     const progressDiv = notification.div.querySelectorAll(
                         ".notification_progress"
                     )[0] as HTMLDivElement;
-                    const exported = await writeDLS.call(this, {
-                        bankID: this.soundBankID,
-                        trim: trimmed,
-                        writeEmbeddedSoundBank: true,
-                        sequencerID: 0,
-                        software: "SpessaSynth",
-                        progressFunction: (p) => {
-                            progressDiv.style.width = `${p * 100}%`;
-                        }
-                    });
+                    let exported;
+                    try {
+                        exported = await writeDLS.call(this, {
+                            bankID: this.soundBankID,
+                            trim: trimmed,
+                            writeEmbeddedSoundBank: true,
+                            sequencerID: 0,
+                            software: "SpessaSynth",
+                            progressFunction: (p) => {
+                                progressDiv.style.width = `${p * 100}%`;
+                            }
+                        });
+                    } catch (error) {
+                        closeNotification(notification.id);
+                        console.groupEnd();
+                        showOutOfMemoryWarning(this.localeManager, error);
+                        return;
+                    }
                     this.seq?.play();
                     this.saveBlob(
                         new Blob([exported.binary], { type: "audio/dls" }),

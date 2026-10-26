@@ -769,9 +769,6 @@ export async function renderAndMuxVideo(
             if (audioEncoder.encodeQueueSize > 8) {
                 await waitForEncoderQueue(audioEncoder, audioState, 8, 4);
             }
-            if (encodedSamples % (chunkSize * 50) === 0) {
-                onProgress?.(0.85 + 0.15 * (encodedSamples / totalSamples));
-            }
         }
 
         await audioEncoder.flush();

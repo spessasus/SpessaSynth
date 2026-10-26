@@ -64,7 +64,7 @@ const KEY_PRESS_TAPER_RATIO = 0.12;
 // Overall strength multiplier for the pressed key deformation effect
 const KEY_PRESS_STRENGTH = 0.65;
 
-function clamp(value: number, min: number, max: number) {
+export function clamp(value: number, min: number, max: number) {
     return Math.max(min, Math.min(max, value));
 }
 

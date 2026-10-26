@@ -1,22 +1,11 @@
-import {
-    BaseRenderer,
-    browserCanvasFactory,
-    type RendererCanvasFactory
-} from "../base/renderer.ts";
-import {
-    createXGRouting,
-    getXGInsertionLabels
-} from "../base/xg_insertion_labels.ts";
+import { BaseRenderer, browserCanvasFactory, type RendererCanvasFactory } from "../base/renderer.ts";
+import { createXGRouting, getXGInsertionLabels } from "../base/xg_insertion_labels.ts";
 import { gsInsertionEffectData } from "../../synthesizer_ui/methods/gs_effect_params.ts";
 import { ProgramTracker } from "../base/program_tracker.ts";
 import { BaseKeyboard } from "../../canvas_keyboard/base/base_keyboard.ts";
 import type { VideoSettingsSnapshot } from "../../manager/export/video/snapshot_settings.ts";
 import type { VideoInitialParams, VideoSynthData } from "./events.ts";
-import {
-    type BasicMIDI,
-    MIDI_DRUM_CHANNEL,
-    type NoteTime
-} from "spessasynth_core";
+import { type BasicMIDI, MIDI_DRUM_CHANNEL, type NoteTime } from "spessasynth_core";
 
 /**
  * Tracked channel parameters used by the event replay. Only the parameters
@@ -109,7 +98,6 @@ export function getOfflineMIDIData(
     const firstNoteOffset = midi.midiTicksToSeconds(midi.firstNoteOn);
     const loopStartSong = midi.midiTicksToSeconds(midi.loop.start);
     const loopEndSong = midi.midiTicksToSeconds(midi.loop.end);
-    const songDuration = midi.duration;
 
     const songTimeNotes = midi.getNoteTimes(0.02);
 
@@ -131,9 +119,9 @@ export function getOfflineMIDIData(
 
     // Paste the loop region notes for each loop.
     if (loopCount > 0) {
-        // First playthrough ends at (songDuration - firstNoteOffset) / rate
-        // In render time, because the render time starts at the first note.
-        const firstPlayDuration = (songDuration - firstNoteOffset) / rate;
+        // The sequencer jumps back to the loop start when it reaches the loop end,
+        // So every iteration starts one loop duration after the previous one.
+        // Render time starts at the first note.
         const loopDurationRender = (loopEndSong - loopStartSong) / rate;
         const loopStartRender = (loopStartSong - firstNoteOffset) / rate;
         const loopEndRender = (loopEndSong - firstNoteOffset) / rate;
@@ -144,9 +132,15 @@ export function getOfflineMIDIData(
             const loopNotes = notes.filter(
                 (n) => n.start >= loopStartRender && n.start < loopEndRender
             );
+            // The notes after the loop end only play once all loops are done
+            for (const note of notes) {
+                if (note.start >= loopEndRender) {
+                    note.start += loopDurationRender * loopCount;
+                }
+            }
 
             for (let i = 1; i <= loopCount; i++) {
-                const offset = firstPlayDuration + (i - 1) * loopDurationRender;
+                const offset = i * loopDurationRender;
                 for (const note of loopNotes) {
                     const pastedStart = note.start + offset;
 

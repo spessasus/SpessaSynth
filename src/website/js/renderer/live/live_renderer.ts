@@ -39,6 +39,7 @@ export class LiveRenderer extends BaseRenderer<LiveKeyboard> {
     protected bigAnalyser: AnalyserNode;
     protected readonly inputNode: AudioNode;
     private hasRenderedNoVoices = false;
+    private backgroundURL?: string;
     private readonly sampleRateFactor;
 
     private rangeTransition?: {
@@ -204,8 +205,11 @@ export class LiveRenderer extends BaseRenderer<LiveKeyboard> {
         );
     }
 
+    /**
+     * The target range, even while the display range is still transitioning
+     */
     public override get keyRange() {
-        return super.keyRange;
+        return this.rangeTransition?.to ?? super.keyRange;
     }
 
     public override set keyRange(range: { min: number; max: number }) {
@@ -215,8 +219,11 @@ export class LiveRenderer extends BaseRenderer<LiveKeyboard> {
         const transition = this.rangeTransition;
 
         if (transition) {
-            const progress =
-                (time - transition.startTime) / RANGE_TRANSITION_SECONDS;
+            // The transition may have ended without a frame finishing it
+            const progress = Math.min(
+                1,
+                (time - transition.startTime) / RANGE_TRANSITION_SECONDS
+            );
             const easedProgress = easeOut(progress);
             const from = transition.from.max - transition.from.min + 1;
             const to = transition.to.max - transition.to.min + 1;
@@ -371,11 +378,16 @@ export class LiveRenderer extends BaseRenderer<LiveKeyboard> {
 
     public setBackground(image: Blob | undefined) {
         this.backgroundImage = image;
+        if (this.backgroundURL) {
+            URL.revokeObjectURL(this.backgroundURL);
+            this.backgroundURL = undefined;
+        }
         if (!image) {
             this.canvas.style.backgroundImage = "";
             return;
         }
         const url = URL.createObjectURL(image);
+        this.backgroundURL = url;
         this.canvas.style.backgroundImage = `linear-gradient(var(--background-image-overlay), var(--background-image-overlay)), url("${url}")`;
     }
 
@@ -516,9 +528,25 @@ export class LiveRenderer extends BaseRenderer<LiveKeyboard> {
         let xPos = 0;
         if (this.logarithmicFrequency) {
             const maxFrequencyInTable = this.synth.context.sampleRate / 2;
-            let lastHeight = -Infinity;
-            let lastXPos = 0;
-            let width = 0;
+            // Pixels that map to the same FFT bin are drawn as one bar
+            const drawRun = (start: number, end: number, sample: number) => {
+                if (sample <= 0) {
+                    return;
+                }
+                const value = sample / max;
+                const height = this.exponentialGain
+                    ? Math.pow(value, EXPONENTIAL_AGGRESSIVE)
+                    : value;
+                this.ctx.fillStyle = intensityColors[sample];
+                this.ctx.fillRect(
+                    start,
+                    relativeY,
+                    end - start,
+                    multiplier * height
+                );
+            };
+            let runStart = 0;
+            let runSample = 0;
             for (let i = 0; i < waveWidth; i++) {
                 // Calculate the MIDI note (from the lowest piano note to the entire MIDI range)
                 const midiNote = minNote + (i / waveWidth) * noteRange;
@@ -526,30 +554,14 @@ export class LiveRenderer extends BaseRenderer<LiveKeyboard> {
                 const fftIndex = Math.floor(
                     (targetFrequency / maxFrequencyInTable) * fftSize
                 );
-
-                if (waveform[fftIndex] === lastHeight && lastHeight > 0) {
-                    xPos += 1;
-                    width += 1;
-                    continue;
+                const sample = waveform[fftIndex] ?? 0;
+                if (sample !== runSample) {
+                    drawRun(runStart, i, runSample);
+                    runStart = i;
+                    runSample = sample;
                 }
-                lastHeight = waveform[fftIndex];
-                const value = lastHeight / max;
-                const height = this.exponentialGain
-                    ? Math.pow(value, EXPONENTIAL_AGGRESSIVE)
-                    : value;
-                const valueRemapped = value * max;
-                this.ctx.fillStyle = intensityColors[valueRemapped];
-
-                this.ctx.fillRect(
-                    lastXPos,
-                    relativeY,
-                    width,
-                    multiplier * height
-                );
-                lastXPos = xPos;
-                width = 0;
-                xPos += 1;
             }
+            drawRun(runStart, waveWidth, runSample);
         } else {
             const waveLength = waveform.length / 2;
             const step = waveWidth / waveLength;

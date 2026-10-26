@@ -7,6 +7,7 @@ import { ANIMATION_REFLOW_TIME } from "../../utils/animation_utils.js";
 import type { Manager } from "../manager.ts";
 import { WorkerSynthesizer } from "spessasynth_lib";
 import { writeSF2 } from "./export_soundfont.ts";
+import { showOutOfMemoryWarning } from "./utils/show_out_of_memory_warning.ts";
 
 type writeRMIDIOptions =
     NonNullable<
@@ -61,7 +62,10 @@ export function _exportRMIDI(this: Manager) {
 
     let pictureFile: File | undefined = undefined;
     if (mid.rmidiInfo.picture) {
-        pictureFile = new File([mid.rmidiInfo.picture], "cover.png");
+        // The type must start with "image/" or the confirm handler drops the picture
+        pictureFile = new File([mid.rmidiInfo.picture], "cover.png", {
+            type: "image/png"
+        });
     }
 
     const path = "locale.exportFile.formats.formats.rmidi.options.";
@@ -263,35 +267,43 @@ export function _exportRMIDI(this: Manager) {
                     }
 
                     // Export
-                    const exported = await writeRMIDI.call(this, {
-                        bankID: this.soundBankID,
-                        compressionQuality: quality,
-                        compressionAction: compressed ? "compress" : "keep",
-                        metadata: {
-                            name: songTitle,
-                            artist,
-                            album,
-                            picture: pictureBuffer,
-                            midiEncoding: this.seqUI!.encoding,
-                            comment,
-                            genre,
-                            copyright: copy
-                        },
-                        trim: true,
-                        writeEmbeddedSoundBank: true,
-                        format: "sf2",
-                        sequencerID: 0,
-                        applySnapshot: true,
-                        software: "SpessaSynth",
-                        writeDefaultModulators: true,
-                        writeExtendedLimits: true,
-                        bankOffset,
-                        correctBankOffset: adjust,
-                        progressFunction: (p) => {
-                            message.textContent = modifyingSoundFont;
-                            progressDiv.style.width = `${p * 100}%`;
-                        }
-                    });
+                    let exported;
+                    try {
+                        exported = await writeRMIDI.call(this, {
+                            bankID: this.soundBankID,
+                            compressionQuality: quality,
+                            compressionAction: compressed ? "compress" : "keep",
+                            metadata: {
+                                name: songTitle,
+                                artist,
+                                album,
+                                picture: pictureBuffer,
+                                midiEncoding: this.seqUI!.encoding,
+                                comment,
+                                genre,
+                                copyright: copy
+                            },
+                            trim: true,
+                            writeEmbeddedSoundBank: true,
+                            format: "sf2",
+                            sequencerID: 0,
+                            applySnapshot: true,
+                            software: "SpessaSynth",
+                            writeDefaultModulators: true,
+                            writeExtendedLimits: true,
+                            bankOffset,
+                            correctBankOffset: adjust,
+                            progressFunction: (p) => {
+                                message.textContent = modifyingSoundFont;
+                                progressDiv.style.width = `${p * 100}%`;
+                            }
+                        });
+                    } catch (error) {
+                        closeNotification(notification.id);
+                        console.groupEnd();
+                        showOutOfMemoryWarning(this.localeManager, error);
+                        return;
+                    }
 
                     this.saveBlob(new Blob([exported]), `${songTitle}.rmi`);
                     message.textContent = this.localeManager.getLocaleString(

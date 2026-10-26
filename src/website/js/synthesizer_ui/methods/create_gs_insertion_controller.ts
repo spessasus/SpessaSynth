@@ -261,7 +261,7 @@ export function createGSInsertionController(
             sendAddress(
                 this.synth,
                 0x40,
-                0x40 | MIDIUtils.channelToGSPart(channelNumber),
+                0x40 | MIDIUtils.channelToGSPart(ch),
                 0x22,
                 isFX ? [1] : [0],
                 offset

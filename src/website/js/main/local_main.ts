@@ -142,7 +142,7 @@ async function startMidi(midiFiles: FileList) {
     let fName;
     fName =
         midiFiles[0].name.length > 20
-            ? midiFiles[0].name.slice(0, 21) + "..."
+            ? midiFiles[0].name.slice(0, 20) + "..."
             : midiFiles[0].name;
     if (midiFiles.length > 1) {
         fName += ` and ${midiFiles.length - 1} others`;

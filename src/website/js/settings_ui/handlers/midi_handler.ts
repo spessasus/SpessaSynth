@@ -131,6 +131,12 @@ export function _createMidiOutputHandler(
             this.seq.skipToFirstNoteOn = true;
             this.seq.externalMIDIPlayback = false;
             Ut.hide(portWrapper);
+            // The extra ports are hidden, so disconnect them as well
+            for (let p = 0; p < ports.length; p++) {
+                extraPorts[p]?.disconnect(this.seq);
+                extraPorts[p] = undefined;
+                ports[p].selectedIndex = 0;
+            }
         }
         this.saveSettings();
     });

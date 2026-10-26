@@ -249,8 +249,8 @@ export class UserDrumSetEditor {
 
     private static paramToPatch(param: UserDrumSetParameter): MIDIPatch {
         return {
-            bankLSB: 0,
-            bankMSB: param.sourceDrumSet,
+            bankLSB: param.sourceDrumSet,
+            bankMSB: 0,
             program: param.program,
             isGMGSDrum: true
         };
@@ -295,6 +295,18 @@ export class UserDrumSetEditor {
                         key.param
                     );
                     key.selector.set(UserDrumSetEditor.paramToPatch(key.param));
+                    for (const [param, input] of Object.entries(key.inputs)) {
+                        input.value =
+                            key.param[
+                                param as NumericUserDrumParams
+                            ].toString();
+                    }
+                    for (const [param, toggle] of Object.entries(key.toggles)) {
+                        toggle.classList.toggle(
+                            "enabled_bg",
+                            key.param[param as BooleanUserInputParams]
+                        );
+                    }
                     key.changed = false;
                     key.row.classList.remove("changed");
                 }
@@ -337,11 +349,12 @@ export class UserDrumSetEditor {
                     "program",
                     patch.program
                 );
+                // The source drum set is the bank LSB of the source patch
                 this.updateUserDrumParam(
                     drumSet,
                     midiNote,
                     "sourceDrumSet",
-                    patch.program
+                    patch.bankLSB
                 );
             }
         );
@@ -488,11 +501,10 @@ export class UserDrumSetEditor {
         );
         const toggle = document.createElement("button");
         toggle.classList.add("synthui_button", "synthui_input");
-        let active = initial;
-
         toggle.classList.toggle("enabled_bg", initial);
         toggle.addEventListener("click", () => {
-            active = !active;
+            // The class follows the synthesizer state, including resets
+            const active = !toggle.classList.contains("enabled_bg");
             this.updateUserDrumParam(drumSet, midiNote, param, active);
         });
         td.append(toggle);

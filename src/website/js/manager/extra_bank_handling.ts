@@ -51,19 +51,25 @@ export function prepareExtraBankUpload(this: Manager) {
                                 getEl("input[type='number']").value
                             ) || 0;
                         const file = getEl("input[type='file']").files?.[0];
-                        if (!file) {
-                            return;
-                        }
                         if (!this.synth) {
                             return;
                         }
-                        const b = await file.arrayBuffer();
-                        this.extraBank = {
-                            // Copy as it gets transferred
-                            buffer: b.slice(),
-                            offset: bank,
-                            name: extraBankName
-                        };
+                        let b: ArrayBuffer;
+                        if (file) {
+                            b = await file.arrayBuffer();
+                            this.extraBank = {
+                                // Copy as it gets transferred
+                                buffer: b.slice(),
+                                offset: bank,
+                                name: extraBankName
+                            };
+                        } else if (this.extraBank) {
+                            // No new file, reload the current bank with the new offset
+                            b = this.extraBank.buffer.slice();
+                            this.extraBank.offset = bank;
+                        } else {
+                            return;
+                        }
                         // Add bank and rearrange
                         await this.synth?.soundBankManager.addSoundBank(
                             b,
@@ -103,6 +109,9 @@ export function prepareExtraBankUpload(this: Manager) {
         const input = i as HTMLInputElement;
         if (this.extraBank) {
             input.parentElement!.firstChild!.textContent = this.extraBank.name;
+            notification.div.querySelector<HTMLInputElement>(
+                "input[type='number']"
+            )!.value = this.extraBank.offset.toString();
         }
         input.addEventListener("input", () => {
             if (input?.files?.[0]) {

@@ -74,6 +74,9 @@ export class DotMatrixDisplay {
 
     public clear() {
         this.currentMatrixType = null;
+        // A queue left active would capture every later message
+        this.queue.length = 0;
+        this.queueActive = false;
     }
 
     public displayMessage(syx: number[]) {

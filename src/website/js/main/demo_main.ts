@@ -21,6 +21,7 @@ import {
     type SavedSettings
 } from "../../../server/saved_settings.ts";
 import { URLParamUtils } from "../utils/url_params.ts";
+import { isMobile } from "../utils/is_mobile.ts";
 
 /**
  * Demo_main.js
@@ -125,6 +126,18 @@ async function loadLastSoundFontFromDatabase(): Promise<
             });
         });
     });
+}
+
+/**
+ * Shows the sound bank parsing error.
+ * The message can contain text from the file, so it is never parsed as HTML.
+ */
+function showSoundFontError(element: HTMLElement, error: string) {
+    const pre = document.createElement("pre");
+    pre.style.fontFamily = "monospace";
+    pre.style.fontWeight = "bold";
+    pre.textContent = error;
+    element.replaceChildren("Error parsing soundfont: ", pre);
 }
 
 function changeIcon(html: string, disableAnimation = true) {
@@ -256,9 +269,9 @@ async function demoInit(initLocale: LocaleCode) {
                 };
             });
         } else {
-            titleMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold;'>${e}</pre>`;
+            showSoundFontError(titleMessage, e);
         }
-        loadingMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold;'>${e}</pre>`;
+        showSoundFontError(loadingMessage, e);
     };
     await window.manager.ready;
 
@@ -326,7 +339,7 @@ async function startMidi(midiFiles: FileList | File[]) {
     let fName;
     fName =
         midiFiles[0].name.length > 20
-            ? midiFiles[0].name.slice(0, 21) + "..."
+            ? midiFiles[0].name.slice(0, 20) + "..."
             : midiFiles[0].name;
     if (midiFiles.length > 1) {
         fName += ` and ${midiFiles.length - 1} others`;
@@ -374,7 +387,15 @@ window.saveSettings = saveSettings;
 
 // Load saved settings
 let savedJson = localStorage.getItem(localStorageName);
-savedJson ??= JSON.stringify(DEFAULT_SAVED_SETTINGS);
+if (savedJson === null) {
+    const defaults = structuredClone(DEFAULT_SAVED_SETTINGS);
+    // If on mobile, start with a two octave keyboard
+    if (isMobile) {
+        defaults.keyboard.keyRange = { min: 53, max: 77 };
+        defaults.renderer.keyRange = { min: 53, max: 77 };
+    }
+    savedJson = JSON.stringify(defaults);
+}
 const saved = JSON.parse(savedJson) as SavedSettings;
 if (saved !== null) {
     /**
@@ -495,7 +516,7 @@ sfInput.addEventListener("change", (e) => {
                 throw error;
             }
             window.manager.sfError = (e) => {
-                loadingMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold;'>${e}</pre>`;
+                showSoundFontError(loadingMessage, e);
                 changeIcon(getExclamationSvg(256));
                 console.error(e);
             };
@@ -515,7 +536,9 @@ sfInput.addEventListener("change", (e) => {
 
             // Wait to make sure that the animation has finished
             const elapsed = performance.now() / 1000 - parseStart;
-            await new Promise((r) => setTimeout(r, 1000 - elapsed));
+            await new Promise((r) =>
+                setTimeout(r, Math.max(0, (1 - elapsed) * 1000))
+            );
             // DONE
             changeIcon(getCheckSvg(256));
             loadingMessage.textContent =

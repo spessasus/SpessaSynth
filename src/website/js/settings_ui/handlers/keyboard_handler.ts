@@ -27,16 +27,10 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
                 p.isGMGSDrum === c.isGMGSDrum
         );
         // https://github.com/spessasus/SpessaSynth/issues/219
-        if (!preset) {
-            return;
-        }
-        nameDisplays[channel].textContent = ": " + preset.name;
+        nameDisplays[channel].textContent = ": " + (preset?.name ?? "UNKNOWN");
     };
 
     const updateChannels = () => {
-        if (!presetList) {
-            return;
-        }
         for (let channel = 0; channel < nameDisplays.length; channel++) {
             updateChannel(channel);
         }
@@ -78,27 +72,21 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
         channelNumber++;
     };
 
+    const setPresetList = (list: MIDIPatchFull[]) => {
+        presetList = list.map((p) => ({
+            ...p,
+            name: p.name.replace(/\d{3}:\d{3}/, "") // Remove those pesky "000:001"
+        }));
+        updateChannels();
+    };
     this.synth.eventHandler.addEvent(
         "presetListChange",
         "settings-preset-list-change",
-        (e) => {
-            presetList = e.map((p) => ({
-                ...p,
-                name: p.name.replace(/\d{3}:\d{3}/, "") // Remove those pesky "000:001"
-            }));
-            updateChannels();
-        }
+        setPresetList
     );
     if (this.synth.presetList.length > 0) {
-        presetList = this.synth.presetList;
+        setPresetList(this.synth.presetList);
     }
-    this.synth.eventHandler.addEvent(
-        "channelAdded",
-        "settings-new-channel",
-        () => {
-            createChannel();
-        }
-    );
     this.synth.eventHandler.addEvent(
         "programChange",
         "settings-program-change",

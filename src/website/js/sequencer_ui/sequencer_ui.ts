@@ -13,7 +13,11 @@ import {
 import { getSeqUIButton } from "./sequi_button.js";
 import { keybinds } from "../utils/keybinds.js";
 import { updateSongDisplayData } from "./update_song_display_data.js";
-import { sanitizeKarLyrics, setLyricsText } from "./lyrics.js";
+import {
+    sanitizeKarLyrics,
+    setLyricSpanText,
+    setLyricsText
+} from "./lyrics.js";
 import { createSlider } from "../settings_ui/sliders.js";
 import type { LocaleManager } from "../manager/locale_manager.ts";
 import type { MusicModeUI } from "../music_mode_ui/music_mode_ui.ts";
@@ -640,7 +644,7 @@ export class SequencerUI {
                     {
                         type: "text",
                         textContent: e.message,
-                        attributes: { className: "monospaced" }
+                        attributes: { class: "monospaced" }
                     }
                 ]
             );
@@ -843,8 +847,14 @@ export class SequencerUI {
     }
 
     protected changeEncoding(encoding: string) {
+        try {
+            this.decoder = new TextDecoder(encoding);
+        } catch (error) {
+            // The encoding can come from the file (MENC chunk)
+            console.warn(`Unsupported encoding ${encoding}:`, error);
+            return;
+        }
         this.encoding = encoding;
-        this.decoder = new TextDecoder(encoding);
         this.updateOtherTextEvents();
         this.decodeLyricData();
         // Update all spans with the new encoding
@@ -855,7 +865,7 @@ export class SequencerUI {
             if (this.currentLyricsString[index] === undefined) {
                 continue;
             }
-            span.textContent = this.currentLyricsString[index];
+            setLyricSpanText(span, this.currentLyricsString[index]);
         }
         this.lyricsElement.selector.value = encoding;
         this.updateSongDisplayData(false);
@@ -1009,7 +1019,7 @@ export class SequencerUI {
         this.lyricsElement.text.separateLyrics = [];
         for (const lyric of this.currentLyricsString) {
             const span = document.createElement("span");
-            span.innerHTML = lyric.replaceAll(/\r?\n|\r/g, "<br>");
+            setLyricSpanText(span, lyric);
             // Gray (not highlighted) text
             span.classList.add("lyrics_text_gray");
             this.lyricsElement.text.main.append(span);
@@ -1027,6 +1037,9 @@ export class SequencerUI {
                 noise[i] = Math.sin(p * (i / 80_000)) * 0.0001;
             }
             const buf = audioToWav([noise], 8000);
+            if (this.silencePlayer.src.startsWith("blob:")) {
+                URL.revokeObjectURL(this.silencePlayer.src);
+            }
             this.silencePlayer.src = URL.createObjectURL(
                 new Blob([buf], { type: "audio/wav" })
             );

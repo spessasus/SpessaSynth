@@ -36,22 +36,22 @@
     --canvas-background-end: #f8fbfd;
     --background-image-overlay: rgba(240, 245, 250, 0.35);
     --canvas-hud-text-color: #34485e;
-    --note-color-0: rgb(30, 136, 229);
-    --note-color-1: rgb(14, 165, 217);
-    --note-color-2: rgb(0, 172, 193);
-    --note-color-3: rgb(63, 111, 216);
-    --note-color-4: rgb(92, 107, 192);
-    --note-color-5: rgb(126, 87, 194);
-    --note-color-6: rgb(38, 166, 154);
-    --note-color-7: rgb(3, 155, 229);
-    --note-color-8: rgb(21, 101, 192);
-    --note-color-9: rgb(93, 122, 144);
-    --note-color-10: rgb(255, 112, 67);
-    --note-color-11: rgb(255, 160, 0);
-    --note-color-12: rgb(236, 64, 122);
-    --note-color-13: rgb(67, 160, 71);
-    --note-color-14: rgb(0, 131, 143);
-    --note-color-15: rgb(94, 155, 240);
+    --note-color-0: rgb(9, 140, 254);
+    --note-color-1: rgb(0, 172, 235);
+    --note-color-2: rgb(0, 180, 206);
+    --note-color-3: rgb(53, 112, 241);
+    --note-color-4: rgb(88, 106, 211);
+    --note-color-5: rgb(131, 83, 215);
+    --note-color-6: rgb(15, 172, 158);
+    --note-color-7: rgb(0, 161, 252);
+    --note-color-8: rgb(5, 103, 215);
+    --note-color-9: rgb(87, 123, 150);
+    --note-color-10: rgb(255, 106, 50);
+    --note-color-11: rgb(255, 158, 0);
+    --note-color-12: rgb(255, 55, 126);
+    --note-color-13: rgb(52, 166, 57);
+    --note-color-14: rgb(0, 137, 152);
+    --note-color-15: rgb(82, 157, 255);
 
     /* sequencer controls */
     --icon-color: #34485e;
