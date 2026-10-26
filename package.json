@@ -18,7 +18,7 @@
         "@chialab/esbuild-plugin-meta-url": "^0.19.1",
         "@eslint/js": "^10.0.1",
         "@types/node": "^26.6.5",
-        "esbuild": "^0.28.1",
+        "esbuild": "^0.28.2",
         "eslint": "^10.3.0",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-unicorn": "^64.0.0",
