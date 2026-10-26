@@ -54,7 +54,7 @@ export function _serializeSettings(this: SpessaSynthSettings): SavedSettings {
         },
 
         interface: {
-            mode: this.mode,
+            theme: this.theme,
             language: loc,
             layout: this.htmlControls.interface.layoutSelector
                 .value as LayoutType

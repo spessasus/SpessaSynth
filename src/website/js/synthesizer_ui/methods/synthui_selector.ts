@@ -149,9 +149,6 @@ export class Selector {
                 this.localeArgs
             );
             presetLock.classList.add("voice_reset");
-            if (this.mainButton.classList.contains("voice_selector_light")) {
-                presetLock.classList.add("voice_reset_light");
-            }
             presetLock.addEventListener("click", () =>
                 this.lockSelector(!this.locked)
             );
@@ -304,10 +301,6 @@ export class Selector {
         this.selectionMenu.remove();
         delete this.selectionMenu;
         this.isWindowShown = false;
-    }
-
-    public toggleMode() {
-        this.mainButton.classList.toggle("voice_selector_light");
     }
 
     public reload(elements: PresetListElement[] = this.elements) {

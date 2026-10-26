@@ -359,7 +359,7 @@ export class LiveRenderer extends BaseRenderer<LiveKeyboard> {
             return;
         }
         const url = URL.createObjectURL(image);
-        this.canvas.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, var(--opacity)), rgba(0, 0, 0, var(--opacity))), url("${url}")`;
+        this.canvas.style.backgroundImage = `linear-gradient(var(--background-image-overlay), var(--background-image-overlay)), url("${url}")`;
     }
 
     public setRendererMode(mode: RendererMode) {
@@ -466,10 +466,6 @@ export class LiveRenderer extends BaseRenderer<LiveKeyboard> {
 
     public renderOneFrame() {
         this.forceRenderOneFrame = true;
-    }
-
-    public toggleDarkMode() {
-        this.canvas.classList.toggle("light_mode");
     }
 
     protected resetIndexes() {

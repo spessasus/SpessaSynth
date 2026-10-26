@@ -7,11 +7,10 @@
 @import "note_canvas.css";
 @import "top_part.css";
 @import "keyboard_canvas_wrapper.css";
+@import "themes/themes.css";
 
-* {
+:root {
     /*global variables*/
-    --top-buttons-color-start: #222;
-    --top-buttons-color-end: #333;
     --top-buttons-color: linear-gradient(
         201deg,
         var(--top-buttons-color-start),
@@ -20,11 +19,8 @@
 
     --hide-top-duration: 0.2s;
 
-    --font-color: #ccc;
     --top-index: 32767;
 
-    --top-color-start: #101010;
-    --top-color-end: #212121;
     --top-color: linear-gradient(
         31deg,
         var(--top-color-start),
@@ -38,7 +34,9 @@
     --bouncy-transition: cubic-bezier(0.68, -0.55, 0.27, 1.55);
 
     --music-mode-transition: 0.5s ease;
+}
 
+* {
     /*global styles*/
     font-family: system-ui, "Noto Sans", "Open Sans", sans-serif;
     color: var(--font-color);
@@ -59,7 +57,7 @@ html,
 body {
     height: 100dvh;
     width: 100%;
-    background: black;
+    background: var(--background-color);
     overflow-x: clip;
     scrollbar-width: thin;
 }
@@ -79,21 +77,6 @@ html.no_scroll {
     display: flex;
     flex-direction: column;
     height: 100%;
-
-    /* theme colors */
-    --primary-color: #510087;
-    --border-color: #6e00b7;
-    --track-color: #333;
-    --track-border-color: #444;
-    --shadow-color: #000;
-}
-
-.spessasynth_main.light_mode {
-    --primary-color: #a93bff;
-    --border-color: #510087;
-    --track-color: #ccc;
-    --track-border-color: #444;
-    --shadow-color: #fff;
 }
 
 .monospaced,
@@ -105,16 +88,16 @@ pre {
 
 a {
     text-decoration: none;
-    color: #546fff;
+    color: var(--link-color);
 }
 
 ::-webkit-scrollbar {
-    background-color: #000;
+    background-color: var(--scrollbar-color);
     width: 0.3em;
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: #777;
+    background-color: var(--scrollbar-thumb-color);
     border-radius: 50px;
 }
 
@@ -150,7 +133,7 @@ button {
     width: 100%;
     height: 100%;
     z-index: var(--top-index);
-    background: rgba(0, 0, 0, 0.6);
+    background: var(--drop-overlay-color);
 }
 
 .loading {
@@ -202,7 +185,7 @@ button {
     padding: 0.5rem;
     border-radius: var(--primary-border-radius);
     background: var(--top-buttons-color);
-    border: solid 1px #444;
+    border: solid 1px var(--edge-strong-color);
 }
 
 #whats_new_content li {
@@ -211,7 +194,7 @@ button {
 }
 
 .loading a {
-    color: #cccccc;
+    color: var(--loading-link-color);
     font-weight: bolder;
 }
 
@@ -239,7 +222,7 @@ button {
     white-space: break-spaces;
     width: max-content;
     max-width: 100%;
-    background: rgba(0, 0, 0, 0.8);
+    background: var(--lyrics-backdrop-color);
     margin: 0;
 }
 

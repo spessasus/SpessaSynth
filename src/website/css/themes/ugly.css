@@ -1,0 +1,89 @@
+/*
+ * Ugly
+ * The best theme ever
+ */
+:root[data-theme="ugly"] {
+    /* general */
+    --background-color: #ff00ff;
+    --font-color: #ff8c00;
+    --text-glow-color: #00ff00;
+    --text-hover-color: #ffff00;
+    --link-color: #8000ff;
+    --accent-link-color: #00ffff;
+    --loading-link-color: #ff0000;
+    --scrollbar-color: #00ff40;
+    --scrollbar-thumb-color: #ff0080;
+
+    /* accents */
+    --primary-color: #ffee00;
+    --border-color: #00e5ff;
+    --track-color: #ff6a00;
+    --track-border-color: #7fff00;
+    --edge-color: #ff1493;
+    --edge-strong-color: #0000ff;
+
+    /* panels */
+    --top-color-start: #00ff55;
+    --top-color-end: #ff00aa;
+    --top-buttons-color-start: #ff9500;
+    --top-buttons-color-end: #00bfff;
+
+    /* top part */
+    --title-progress-color: #c8ff00;
+
+    /* note canvas */
+    --canvas-background-start: #ffff00;
+    --canvas-background-end: #ff00ff;
+    --background-image-overlay: rgba(255, 0, 255, 0.5);
+    --canvas-hud-text-color: #ffa500;
+
+    /* sequencer controls */
+    --icon-color: #ff4500;
+    --icon-disabled-color: #00ff7f;
+    --progress-background-start: #ff00ff;
+    --progress-background-end: #00ffff;
+    --progress-start: #ffff00;
+    --progress-end: #ff0000;
+
+    /* music player mode */
+    --music-mode-backdrop: brightness(1.2) saturate(4) hue-rotate(120deg)
+        blur(50px);
+
+    /* overlays */
+    --drop-overlay-color: rgba(0, 255, 0, 0.6);
+    --lyrics-backdrop-color: rgba(255, 255, 0, 0.8);
+
+    /* settings */
+    --settings-shadow-color: rgba(255, 0, 0, 0.6);
+    --settings-card-highlight: rgba(0, 255, 255, 0.35);
+    --settings-divider-color: rgba(255, 0, 0, 0.7);
+    --settings-subtle-divider-color: rgba(0, 0, 255, 0.5);
+
+    /* synthesizer controller */
+    --synthui-background-start: rgba(0, 255, 0, 0.85);
+    --synthui-background-middle: rgba(255, 0, 255, 0.85);
+    --synthui-background-end: rgba(255, 255, 0, 0.85);
+    --synthui-icon-color: #ff8800;
+    --synthui-button-background: #00e0ff;
+    --synthui-button-border-color: #ff0000;
+    --synthui-button-color: #00ffaa;
+    --synthui-button-text-shadow: 2px 2px 0 #ff00ff;
+    --synthui-button-hover-background: #ff0000;
+    --synthui-button-hover-color: #ff00ff;
+    --synthui-button-hover-text-shadow: 0 0 6px #ffff00;
+    --synthui-button-enabled-background: #ffff00;
+    --synthui-button-enabled-color: #ffc0cb;
+    --synthui-button-enabled-text-shadow: 0 0 6px #00ff00;
+    --voice-selector-background-start: rgba(255, 105, 0, 0.85);
+    --voice-selector-background-end: rgba(0, 255, 255, 0.85);
+    --voice-selector-border-color: #ffff00;
+    --voice-selector-color: #ff5ac8;
+    --voice-selector-hover-background: #00ff00;
+    --voice-selector-hover-color: #00ff55;
+    --voice-meter-text-color: #ffff66;
+    --voice-meter-text-shadow: 1px 1px 2px #ff00ff;
+
+    /* notifications */
+    --notification-shadow-color: rgba(255, 0, 0, 0.7);
+    --notification-separator-color: #00ff00;
+}

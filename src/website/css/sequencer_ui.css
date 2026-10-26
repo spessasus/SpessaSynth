@@ -13,7 +13,11 @@
     justify-content: center;
 
     border-radius: var(--progress-bar-height);
-    background: linear-gradient(90deg, #454545, #343434);
+    background: linear-gradient(
+        90deg,
+        var(--progress-background-start),
+        var(--progress-background-end)
+    );
     height: var(--progress-bar-height);
     position: relative;
     overflow: hidden;
@@ -23,16 +27,16 @@
 
 #sequencer_controls #note_progress {
     border-radius: var(--progress-bar-height);
-    background: linear-gradient(185deg, #306, var(--primary-color));
+    background: linear-gradient(
+        185deg,
+        var(--progress-start),
+        var(--progress-end)
+    );
     height: 100%;
     transition: width 100ms linear;
     position: absolute;
     left: 0;
     pointer-events: none;
-}
-
-#sequencer_controls .note_progress_light {
-    filter: brightness(3);
 }
 
 #sequencer_controls #note_time {
@@ -51,6 +55,7 @@
 }
 
 #sequencer_controls .control_buttons {
+    color: var(--icon-color);
     position: relative;
     display: flex;
     transition: all 0.1s ease;
@@ -75,10 +80,6 @@
     border-radius: 0.2rem;
     padding: 0.2rem;
     width: 4rem;
-}
-
-#sequencer_controls .note_progress_background_light {
-    background: linear-gradient(90deg, #ddd, #bbb) !important;
 }
 
 #sequencer_controls .lyrics {

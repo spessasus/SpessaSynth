@@ -1,9 +1,9 @@
 export const interfaceSettings = {
     title: "ინტერფეისის პარამეტრები",
 
-    toggleTheme: {
-        title: "მუქი თემის გამოყენება",
-        description: "ჩართეთ მუქი თემა ინტერფეისისთვის"
+    theme: {
+        title: "თემა",
+        description: "აირჩიეთ ინტერფეისის ფერის თემა"
     },
 
     selectLanguage: {

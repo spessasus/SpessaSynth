@@ -4,17 +4,27 @@ import type { LayoutType } from "../../../../server/saved_settings.ts";
 import { WorkerSynthesizer } from "spessasynth_lib";
 import { Ut } from "../../utils/other.js";
 import { URLParamUtils } from "../../utils/url_params.ts";
+import { type ThemeID, themeList } from "../../themes/theme_list.ts";
 
 /**
  * @this {SpessaSynthSettings}
  * @private
  */
 export function _createInterfaceSettingsHandler(this: SpessaSynthSettings) {
-    const button = this.htmlControls.interface.themeSelector;
-    button.addEventListener("click", () => {
-        this.toggleDarkMode();
+    const themeSelect = this.htmlControls.interface.themeSelector;
+    // Load up the themes
+    for (const [id, theme] of Object.entries(themeList)) {
+        const option = document.createElement("option");
+        option.value = id;
+        option.textContent = theme.name;
+        themeSelect.append(option);
+    }
+    themeSelect.value = this.theme;
+    themeSelect.addEventListener("change", () => {
+        this.applyTheme(themeSelect.value as ThemeID);
         this.saveSettings();
     });
+
     const select = this.htmlControls.interface.languageSelector;
     // Load up the languages
     for (const [code, locale] of Object.entries(this.locales)) {

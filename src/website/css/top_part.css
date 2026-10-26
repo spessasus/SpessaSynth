@@ -65,7 +65,7 @@ input[type="file"] {
 }
 
 #progress_bar {
-    background: #206;
+    background: var(--title-progress-color);
     display: block;
     position: absolute;
     width: 0;
@@ -112,7 +112,7 @@ input[type="file"] {
 
 .link a,
 .link svg * {
-    color: yellowgreen;
+    color: var(--accent-link-color);
 }
 
 .midi_and_sf_controller label:active,
@@ -122,7 +122,7 @@ input[type="file"] {
 }
 
 #sf_selector option {
-    background: #000;
+    background: var(--background-color);
     text-align: center;
 }
 

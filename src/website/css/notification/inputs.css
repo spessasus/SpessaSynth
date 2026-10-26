@@ -16,7 +16,7 @@ input[type="number"]::-webkit-inner-spin-button {
 .notification select {
     display: block;
     background: var(--top-buttons-color);
-    border: solid 1px #333;
+    border: solid 1px var(--edge-color);
     font-size: 1em;
     padding: var(--notification-border-radius);
     border-radius: var(--notification-border-radius);

@@ -1,9 +1,9 @@
 export const interfaceSettings = {
     title: "インターフェース設定",
 
-    toggleTheme: {
-        title: "ダークテーマを使用",
-        description: "インターフェースのダークテーマを有効にする"
+    theme: {
+        title: "テーマ",
+        description: "インターフェースのカラーテーマを選択"
     },
 
     selectLanguage: {

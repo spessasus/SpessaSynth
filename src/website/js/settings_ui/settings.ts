@@ -7,7 +7,7 @@ import {
     _changeLayout,
     _createInterfaceSettingsHandler
 } from "./handlers/interface_handler.js";
-import { _toggleDarkMode } from "./handlers/toggle_dark_mode.ts";
+import { _applyTheme } from "./handlers/apply_theme.ts";
 import {
     _createRendererHandler,
     _setRendererMode
@@ -28,7 +28,7 @@ import type { SequencerUI } from "../sequencer_ui/sequencer_ui.ts";
 import type { LiveKeyboard } from "../canvas_keyboard/live/live_keyboard.ts";
 import type { MusicModeUI } from "../music_mode_ui/music_mode_ui.ts";
 import type { LocaleManager } from "../manager/locale_manager.ts";
-import type { InterfaceMode } from "../../../server/saved_settings.ts";
+import { DEFAULT_THEME, type ThemeID } from "../themes/theme_list.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
 import { rendererModes } from "../renderer/base/renderer_modes.ts";
 import type { LiveRenderer } from "../renderer/live/live_renderer.ts";
@@ -45,7 +45,7 @@ const niceDelayLookupTable = {
 
 /**
  * Settings.js
- * purpose: manages the gui settings, controlling things like render settings, light mode, etc.
+ * purpose: manages the gui settings, controlling things like render settings, themes, etc.
  */
 
 export class SpessaSynthSettings {
@@ -66,14 +66,14 @@ export class SpessaSynthSettings {
         "5 octaves": { min: 36, max: 96 },
         "two octaves": { min: 53, max: 77 }
     };
-    protected mode: InterfaceMode = "dark";
+    protected theme: ThemeID = DEFAULT_THEME;
     protected autoKeyRange = false;
     protected readonly mainDiv;
     protected visible = false;
     protected animationId = -1;
     protected hideOnDocClick = true;
     protected topPartVisible = true;
-    protected readonly toggleDarkMode = _toggleDarkMode.bind(this);
+    protected readonly applyTheme = _applyTheme.bind(this);
     protected readonly createInterfaceSettingsHandler =
         _createInterfaceSettingsHandler.bind(this);
     protected readonly changeLayout = _changeLayout.bind(this);
@@ -118,7 +118,6 @@ export class SpessaSynthSettings {
         delayNode: DelayNode
     ) {
         this.delay = delayNode;
-        this.mode = "dark";
 
         this.synth = synth;
         this.seq = seq;
@@ -418,9 +417,10 @@ export class SpessaSynthSettings {
             },
 
             interface: {
-                themeSelector: document.querySelector<HTMLInputElement>(
-                    "#toggle_mode_button"
-                )!,
+                themeSelector:
+                    document.querySelector<HTMLSelectElement>(
+                        "#theme_selector"
+                    )!,
                 showControlsToggle: document.querySelector<HTMLInputElement>(
                     "#show_sequencer_controls_button"
                 )!,

@@ -2,7 +2,7 @@
 .notification_file_button {
     background: var(--top-color);
     padding: 0.5rem;
-    border: solid 1px #333;
+    border: solid 1px var(--edge-color);
     margin: 0.5rem;
     cursor: pointer;
     border-radius: var(--notification-border-radius);

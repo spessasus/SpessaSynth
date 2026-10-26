@@ -186,12 +186,6 @@ export class MusicModeUI {
         );
     }
 
-    public toggleDarkMode() {
-        this.mainDiv
-            .querySelectorAll(".player_info_wrapper")[0]
-            .classList.toggle("light_mode");
-    }
-
     public setTitle(title: string) {
         // Get the title
         const t = document.querySelector("#player_info_title");

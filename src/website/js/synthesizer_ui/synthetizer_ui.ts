@@ -2,7 +2,6 @@ import {
     hideControllers,
     showControllers
 } from "./methods/hide_show_controllers.js";
-import { toggleDarkMode } from "./methods/toggle_dark_mode.js";
 import { setEventListeners } from "./methods/set_event_listeners.js";
 import { keybinds } from "../utils/keybinds.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
@@ -127,7 +126,6 @@ type LibMIDIOutput =
         : never;
 
 export class SynthesizerUI {
-    public readonly toggleDarkMode = toggleDarkMode.bind(this);
     public readonly channelColors: string[];
     public onProgramChange?: (channel: number) => unknown;
     public onTranspose?: () => unknown;

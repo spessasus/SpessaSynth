@@ -1,0 +1,88 @@
+/*
+ * Purple
+ * Dark purple theme with pink and cyan accents.
+ */
+:root[data-theme="purple"] {
+    /* general */
+    --background-color: #08020f;
+    --font-color: #f2dcff;
+    --text-glow-color: #ff4fd8;
+    --text-hover-color: #fff0fb;
+    --link-color: #38e1ff;
+    --accent-link-color: #38e1ff;
+    --loading-link-color: #f2dcff;
+    --scrollbar-color: #08020f;
+    --scrollbar-thumb-color: #8a2f9e;
+
+    /* accents */
+    --primary-color: #a0157a;
+    --border-color: #ff3fa4;
+    --track-color: #2a1140;
+    --track-border-color: #4a1f6b;
+    --edge-color: #3a1656;
+    --edge-strong-color: #4a1f6b;
+
+    /* panels */
+    --top-color-start: #12051f;
+    --top-color-end: #2a0c3f;
+    --top-buttons-color-start: #2b0d45;
+    --top-buttons-color-end: #45145e;
+
+    /* top part */
+    --title-progress-color: #5c1470;
+
+    /* note canvas */
+    --canvas-background-start: #07010d;
+    --canvas-background-end: #1a0628;
+    --background-image-overlay: rgba(10, 2, 20, 0.78);
+    --canvas-hud-text-color: #fff0fb;
+
+    /* sequencer controls */
+    --icon-color: #f2dcff;
+    --icon-disabled-color: #4a2a5e;
+    --progress-background-start: #2f1146;
+    --progress-background-end: #1e0a30;
+    --progress-start: #ff8a3d;
+    --progress-end: #ff2e93;
+
+    /* music player mode */
+    --music-mode-backdrop: brightness(0.35) saturate(1.5) blur(50px);
+
+    /* overlays */
+    --drop-overlay-color: rgba(10, 2, 20, 0.65);
+    --lyrics-backdrop-color: rgba(0, 0, 0, 0.8);
+
+    /* settings */
+    --settings-shadow-color: rgba(255, 46, 147, 0.18);
+    --settings-card-highlight: rgba(255, 120, 220, 0.07);
+    --settings-divider-color: rgba(255, 160, 240, 0.09);
+    --settings-subtle-divider-color: rgba(255, 160, 240, 0.06);
+
+    /* synthesizer controller */
+    --synthui-background-start: rgba(18, 4, 32, 0.85);
+    --synthui-background-middle: rgba(36, 8, 52, 0.85);
+    --synthui-background-end: rgba(48, 8, 40, 0.85);
+    --synthui-icon-color: #f2dcff;
+    --synthui-button-background: #12051f;
+    --synthui-button-border-color: #4a1f6b;
+    --synthui-button-color: #f2dcff;
+    --synthui-button-text-shadow: none;
+    --synthui-button-hover-background: #2a0c3f;
+    --synthui-button-hover-color: #fff0fb;
+    --synthui-button-hover-text-shadow: 0 0 6px #ff4fd8;
+    --synthui-button-enabled-background: #3a0f4a;
+    --synthui-button-enabled-color: #fff0fb;
+    --synthui-button-enabled-text-shadow: 0 0 6px #38e1ff;
+    --voice-selector-background-start: rgba(58, 14, 80, 0.85);
+    --voice-selector-background-end: rgba(18, 5, 31, 0.85);
+    --voice-selector-border-color: #4a1f6b;
+    --voice-selector-color: #f2dcff;
+    --voice-selector-hover-background: #2a0c3f;
+    --voice-selector-hover-color: #fff0fb;
+    --voice-meter-text-color: #fff0fb;
+    --voice-meter-text-shadow: 1px 1px 2px #000;
+
+    /* notifications */
+    --notification-shadow-color: rgba(255, 46, 147, 0.4);
+    --notification-separator-color: #4a1f6b;
+}

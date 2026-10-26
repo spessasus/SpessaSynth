@@ -369,21 +369,39 @@ export class OfflineRenderer extends BaseRenderer {
     }
 
     protected override clearFrame() {
-        this.ctx.fillStyle = "#000";
-        const { width, height } = this.canvas;
-        this.ctx.fillRect(0, 0, width, height);
+        this.updateCanvasColors();
+        // Same 45 degree canvas background as the live canvas CSS
+        const gradient = this.ctx.createLinearGradient(
+            0,
+            this.canvas.height,
+            this.canvas.width,
+            0
+        );
+        gradient.addColorStop(0, this.canvasBackgroundStart);
+        gradient.addColorStop(1, this.canvasBackgroundEnd);
+        this.ctx.fillStyle = gradient;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         const bg = this.background;
         if (!bg) {
             return;
         }
         // Equivalent of CSS "background-size: cover", centered
-        const scale = Math.max(width / bg.width, height / bg.height);
+        const scale = Math.max(
+            this.canvas.width / bg.width,
+            this.canvas.height / bg.height
+        );
         const w = bg.width * scale;
         const h = bg.height * scale;
-        this.ctx.drawImage(bg, (width - w) / 2, (height - h) / 2, w, h);
+        this.ctx.drawImage(
+            bg,
+            (this.canvas.width - w) / 2,
+            (this.canvas.height - h) / 2,
+            w,
+            h
+        );
         // Same dim overlay as the live canvas
-        this.ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
-        this.ctx.fillRect(0, 0, width, height);
+        this.ctx.fillStyle = this.canvasOverlayColor;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
     /**

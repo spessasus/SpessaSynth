@@ -1,0 +1,88 @@
+/*
+ * Light Green
+ * Light theme with soft green panels and warm accents.
+ */
+:root[data-theme="light_green"] {
+    /* general */
+    --background-color: #f7f6ec;
+    --font-color: #33412a;
+    --text-glow-color: #b9d497;
+    --text-hover-color: #466335;
+    --link-color: #5a7d43;
+    --accent-link-color: #c46a2e;
+    --loading-link-color: #33412a;
+    --scrollbar-color: #edeadb;
+    --scrollbar-thumb-color: #a8c07d;
+
+    /* accents */
+    --primary-color: #93b56f;
+    --border-color: #5a7d43;
+    --track-color: #e3e4c9;
+    --track-border-color: #c2c49a;
+    --edge-color: #d9dbb8;
+    --edge-strong-color: #c5c79c;
+
+    /* panels */
+    --top-color-start: #e7ecd2;
+    --top-color-end: #f9f9ef;
+    --top-buttons-color-start: #eef1dc;
+    --top-buttons-color-end: #fbfcf4;
+
+    /* top part */
+    --title-progress-color: #c8d8a8;
+
+    /* note canvas */
+    --canvas-background-start: #eef0da;
+    --canvas-background-end: #fbfcf5;
+    --background-image-overlay: rgba(247, 246, 236, 0.4);
+    --canvas-hud-text-color: #3d4f30;
+
+    /* sequencer controls */
+    --icon-color: #3d4f30;
+    --icon-disabled-color: #cdd5b4;
+    --progress-background-start: #e2e6c8;
+    --progress-background-end: #d7dcb9;
+    --progress-start: #c4d59c;
+    --progress-end: #5a7d43;
+
+    /* music player mode */
+    --music-mode-backdrop: brightness(1.5) saturate(0.85) blur(50px);
+
+    /* overlays */
+    --drop-overlay-color: rgba(247, 246, 236, 0.75);
+    --lyrics-backdrop-color: rgba(0, 0, 0, 0.8);
+
+    /* settings */
+    --settings-shadow-color: rgba(90, 125, 67, 0.15);
+    --settings-card-highlight: rgba(255, 255, 255, 0.8);
+    --settings-divider-color: rgba(60, 80, 40, 0.09);
+    --settings-subtle-divider-color: rgba(60, 80, 40, 0.06);
+
+    /* synthesizer controller */
+    --synthui-background-start: rgba(238, 241, 220, 0.65);
+    --synthui-background-middle: rgba(251, 252, 244, 0.65);
+    --synthui-background-end: rgba(238, 241, 220, 0.65);
+    --synthui-icon-color: #3d4f30;
+    --synthui-button-background: #fbfcf4;
+    --synthui-button-border-color: #d9dbb8;
+    --synthui-button-color: #33412a;
+    --synthui-button-text-shadow: none;
+    --synthui-button-hover-background: #f0f3e2;
+    --synthui-button-hover-color: #466335;
+    --synthui-button-hover-text-shadow: 0 0 5px #c9dfa4;
+    --synthui-button-enabled-background: #e3ebcf;
+    --synthui-button-enabled-color: #3d5a2c;
+    --synthui-button-enabled-text-shadow: none;
+    --voice-selector-background-start: #eef1dc;
+    --voice-selector-background-end: #fbfcf4;
+    --voice-selector-border-color: #c5c79c;
+    --voice-selector-color: #33412a;
+    --voice-selector-hover-background: #fbfcf4;
+    --voice-selector-hover-color: #466335;
+    --voice-meter-text-color: #262f1f;
+    --voice-meter-text-shadow: 0 0 3px rgba(255, 255, 255, 0.8);
+
+    /* notifications */
+    --notification-shadow-color: rgba(90, 125, 67, 0.25);
+    --notification-separator-color: #d9dbb8;
+}

@@ -16,6 +16,7 @@ export function renderFullFrame(
     forceStraight: boolean
 ) {
     this.clearFrame();
+    this.updateCanvasColors();
     this.calculateRenderArea();
     if (
         this.colorRenderWidth !== this.width ||
@@ -59,7 +60,7 @@ export function renderFullFrame(
         this.ctx.textBaseline = "top";
         this.ctx.textAlign = "start";
         this.ctx.font = `${fontSize}px monospace`;
-        this.ctx.fillStyle = "white";
+        this.ctx.fillStyle = this.hudColor;
         const presetNames = this.programTracker.presetNames;
         // For every waveform
         for (let part = 0; part < 16; part++) {
@@ -106,7 +107,7 @@ export function renderFullFrame(
     this.ctx.textAlign = "end";
     // -1 to add some margin
     this.ctx.font = `${FONT_SIZE - 1}px monospace`;
-    this.ctx.fillStyle = "white";
+    this.ctx.fillStyle = this.hudColor;
 
     let y = 0;
     // App version

@@ -1,0 +1,18 @@
+/*
+ * Every theme is a set of variables applied to :root[data-theme="<id>"].
+ * To add a theme, copy one of the files below, change the id in the
+ * selector, import it here and register it in js/themes/theme_list.ts
+ */
+@import "spessasynth_dark.css";
+@import "spessasynth_light.css";
+@import "teal.css";
+@import "purple.css";
+@import "orange.css";
+@import "dark_blue.css";
+@import "dark_green.css";
+@import "grayscale.css";
+@import "pink.css";
+@import "light_blue.css";
+@import "light_green.css";
+@import "sepia.css";
+@import "ugly.css";

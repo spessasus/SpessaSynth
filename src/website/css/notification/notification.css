@@ -20,7 +20,7 @@
     position: absolute;
     background: var(--top-color);
     color: var(--font-color);
-    border: solid 1px #333;
+    border: solid 1px var(--edge-color);
     border-radius: var(--notification-border-radius);
     display: flex;
     justify-content: center;
@@ -36,7 +36,7 @@
     opacity: 0;
     animation-duration: 0.5s;
     animation-fill-mode: forwards;
-    box-shadow: #333 0 0 10px;
+    box-shadow: var(--notification-shadow-color) 0 0 10px;
     width: max-content;
     max-width: 100%;
 }
@@ -50,7 +50,7 @@
     width: 100%;
     display: flex;
     justify-content: space-between;
-    border-bottom: solid 1px #555;
+    border-bottom: solid 1px var(--notification-separator-color);
     align-items: center;
 }
 

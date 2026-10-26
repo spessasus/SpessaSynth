@@ -3,6 +3,7 @@ import { USE_MIDI_RANGE } from "../handlers/keyboard_handler.js";
 import type { SpessaSynthSettings } from "../settings.ts";
 import { fillWithDefaults } from "../../utils/fill_with_defaults.ts";
 import { DEFAULT_SAVED_SETTINGS } from "../../../../server/saved_settings.ts";
+import { DEFAULT_THEME, themeList } from "../../themes/theme_list.ts";
 
 export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
     console.info("Loading settings!");
@@ -161,12 +162,8 @@ export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
         this.htmlControls.interface.languageSelector.value =
             savedSettings.interface.language;
     }, 100);
-    if (savedSettings?.interface?.mode === "light") {
-        this.toggleDarkMode();
-        this.htmlControls.interface.themeSelector.checked = false;
-    } else {
-        this.htmlControls.interface.themeSelector.checked = true;
-    }
+    const theme = savedSettings.interface.theme;
+    this.applyTheme(theme in themeList ? theme : DEFAULT_THEME);
 
     this.htmlControls.interface.layoutSelector.value =
         savedSettings?.interface?.layout || "downwards";

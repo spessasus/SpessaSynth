@@ -25,7 +25,6 @@ import {
 } from "spessasynth_core";
 import type { Sequencer } from "spessasynth_lib";
 import { AssManager } from "../utils/ass_manager/ass_manager.ts";
-import type { InterfaceMode } from "../../../server/saved_settings.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
 import { showNotification } from "../notification/notification.ts";
 import type { LiveRenderer } from "../renderer/live/live_renderer.ts";
@@ -36,12 +35,6 @@ import type { LiveRenderer } from "../renderer/live/live_renderer.ts";
  */
 
 const ICON_SIZE = 32;
-
-const ICON_COLOR = "#ccc";
-const ICON_DISABLED_COLOR = "#555";
-
-const ICON_COLOR_L = "#333";
-const ICON_DISABLED_COLOR_L = "#ddd";
 
 const DEFAULT_ENCODING = "Shift_JIS";
 
@@ -62,8 +55,6 @@ export class SequencerUI {
     public currentSongTitle = "";
     public encoding = DEFAULT_ENCODING;
     protected wakeLock?: WakeLockSentinel;
-    protected iconColor = ICON_COLOR;
-    protected iconDisabledColor = ICON_DISABLED_COLOR;
     protected controls: HTMLElement;
     protected decoder = new TextDecoder(this.encoding);
     /**
@@ -74,7 +65,6 @@ export class SequencerUI {
     protected requiresTextUpdate = false;
     protected lastTimeUpdate = 0;
     protected rawOtherTextEvents: MIDIMessage[] = [];
-    protected mode: InterfaceMode = "dark";
     protected locale: LocaleManager;
     protected currentLyrics: MIDIMessage[] = [];
     /**
@@ -90,7 +80,6 @@ export class SequencerUI {
         enabled: false,
         currentEncodedText: new Uint8Array(0)
     };
-    protected requiresThemeUpdate = false;
     protected progressTime: HTMLParagraphElement;
     protected encodingSelector: HTMLSelectElement;
     protected lyricsElement: {
@@ -105,7 +94,6 @@ export class SequencerUI {
         };
         selector: HTMLSelectElement;
     };
-    protected progressBarBackground: HTMLDivElement;
     protected progressBar: HTMLDivElement;
     protected readonly transportControls: {
         previousSongButton: HTMLDivElement;
@@ -296,7 +284,6 @@ export class SequencerUI {
             // Background bar
             const progressBarBg = document.createElement("div");
             progressBarBg.id = "note_progress_background";
-            this.progressBarBackground = progressBarBg;
             // Click time seek handler
             progressBarBg.addEventListener("click", (event) => {
                 event.preventDefault();
@@ -689,13 +676,6 @@ export class SequencerUI {
             }
         );
 
-        if (this.requiresThemeUpdate && this.mode === "light") {
-            // Change to dark and then switch
-            this.mode = "dark";
-            this.toggleDarkMode();
-        }
-        // Otherwise, we're already dark
-
         // Media session
         this.silencePlayer = new Audio();
         // Default
@@ -741,29 +721,6 @@ export class SequencerUI {
         // Hide for now
         this.controls.style.display = "none";
         this.setSliderInterval();
-    }
-
-    public toggleDarkMode() {
-        if (this.mode === "dark") {
-            this.mode = "light";
-            this.iconColor = ICON_COLOR_L;
-            this.iconDisabledColor = ICON_DISABLED_COLOR_L;
-        } else {
-            this.mode = "dark";
-            this.iconColor = ICON_COLOR;
-            this.iconDisabledColor = ICON_DISABLED_COLOR;
-        }
-        if (!this.seq.midiData) {
-            this.requiresThemeUpdate = true;
-            return;
-        }
-        this.progressBar.classList.toggle("note_progress_light");
-        this.progressBarBackground.classList.toggle(
-            "note_progress_background_light"
-        );
-        this.lyricsElement.mainDiv.classList.toggle("lyrics_light");
-        this.lyricsElement.titleWrapper.classList.toggle("lyrics_light");
-        this.lyricsElement.selector.classList.toggle("lyrics_light");
     }
 
     public seqPlay() {
@@ -1145,19 +1102,19 @@ export class SequencerUI {
     }
 
     protected enableIcon(icon: HTMLElement) {
-        icon.firstElementChild!.setAttribute("fill", this.iconColor);
-        if (icon.firstElementChild!.getAttribute("stroke")) {
-            icon.firstElementChild!.setAttribute("stroke", this.iconColor);
-        }
+        this.setIconColor(icon, "var(--icon-color)");
     }
 
     protected disableIcon(icon: HTMLElement) {
-        icon.firstElementChild?.setAttribute("fill", this.iconDisabledColor);
-        if (icon.firstElementChild!.getAttribute("stroke")) {
-            icon.firstElementChild!.setAttribute(
-                "stroke",
-                this.iconDisabledColor
-            );
+        this.setIconColor(icon, "var(--icon-disabled-color)");
+    }
+
+    protected setIconColor(icon: HTMLElement, color: string) {
+        // Inline style so the theme variables apply (SVG attributes do not support them)
+        const svg = icon.firstElementChild as SVGElement;
+        svg.style.fill = color;
+        if (svg.getAttribute("stroke")) {
+            svg.style.stroke = color;
         }
     }
 

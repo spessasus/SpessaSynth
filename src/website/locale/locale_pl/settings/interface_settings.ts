@@ -1,9 +1,9 @@
 export const interfaceSettings = {
     title: "Ustawienia interfejsu",
 
-    toggleTheme: {
-        title: "Włącz ciemny motyw",
-        description: "Włącz ciemny motyw programu"
+    theme: {
+        title: "Motyw",
+        description: "Wybierz motyw programu"
     },
 
     selectLanguage: {

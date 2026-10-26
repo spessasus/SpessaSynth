@@ -248,6 +248,11 @@ export abstract class BaseRenderer<K extends BaseKeyboard = BaseKeyboard> {
     protected currentTempo = 120;
     protected playbackRate = 1;
     protected transpose = 0;
+    // Theme-controlled canvas colors, refreshed by updateCanvasColors
+    protected hudColor = "#fff";
+    protected canvasBackgroundStart = "#000";
+    protected canvasBackgroundEnd = "#000";
+    protected canvasOverlayColor = "rgba(0, 0, 0, 0.8)";
     protected readonly parts = Array.from(
         { length: 16 },
         // eslint-disable-next-line unicorn/consistent-function-scoping
@@ -261,6 +266,8 @@ export abstract class BaseRenderer<K extends BaseKeyboard = BaseKeyboard> {
             render: true
         })
     );
+    private canvasColorTheme = "";
+    private canvasColorTransitioning = false;
 
     /**
      * Creates a new midi renderer for rendering notes visually.
@@ -499,6 +506,40 @@ export abstract class BaseRenderer<K extends BaseKeyboard = BaseKeyboard> {
      */
     protected clearFrame() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    /**
+     * Reads theme-controlled canvas colors from the CSS variables.
+     * Re-reads only when the theme changes or during a theme color transition.
+     */
+    protected updateCanvasColors() {
+        if (typeof document === "undefined") {
+            return;
+        }
+        const root = document.documentElement;
+        const isTransitioning = root.style.length > 0;
+        const theme = root.dataset.theme ?? "";
+        if (
+            theme === this.canvasColorTheme &&
+            isTransitioning === this.canvasColorTransitioning
+        ) {
+            return;
+        }
+        this.canvasColorTheme = theme;
+        this.canvasColorTransitioning = isTransitioning;
+        const style = getComputedStyle(root);
+        const readValue = (name: string, fallback: string) =>
+            style.getPropertyValue(name).trim() || fallback;
+        this.hudColor = readValue("--canvas-hud-text-color", "#fff");
+        this.canvasBackgroundStart = readValue(
+            "--canvas-background-start",
+            "#000"
+        );
+        this.canvasBackgroundEnd = readValue("--canvas-background-end", "#000");
+        this.canvasOverlayColor = readValue(
+            "--background-image-overlay",
+            "rgba(0, 0, 0, 0.8)"
+        );
     }
 
     protected calculateRenderArea() {

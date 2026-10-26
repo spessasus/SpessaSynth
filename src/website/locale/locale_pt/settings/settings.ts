@@ -17,9 +17,9 @@ export const settingsLocale = {
     interfaceSettings: {
         title: "Configurações da Interface",
 
-        toggleTheme: {
-            title: "Usar tema escuro",
-            description: "Ativar o tema escuro para a interface"
+        theme: {
+            title: "Tema",
+            description: "Escolher o tema de cores da interface"
         },
 
         selectLanguage: {

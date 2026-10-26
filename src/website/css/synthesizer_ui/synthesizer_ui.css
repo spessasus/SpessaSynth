@@ -4,9 +4,8 @@
 
 #synthesizer_controls {
     --voice-meter-height: 2.5em;
-    --synthui-background: rgba(0, 0, 0, 0.8);
     --synthui-border-radius: var(--primary-border-radius);
-    --btn-border-color: #444;
+    --btn-border-color: var(--edge-strong-color);
 }
 
 #synthesizer_controls * {
@@ -122,15 +121,20 @@
 }
 
 .synthui_port_descriptor:hover {
-    color: #fff;
-    text-shadow: 0 0 5px white;
+    color: var(--text-hover-color);
+    text-shadow: 0 0 5px var(--text-glow-color);
 }
 
 .synthui_controller {
     left: 0;
     display: none;
     position: absolute;
-    background: var(--synthui-background);
+    background: linear-gradient(
+        115deg,
+        var(--synthui-background-start),
+        var(--synthui-background-middle),
+        var(--synthui-background-end)
+    );
     backdrop-filter: blur(0.3rem);
     top: 100%;
     border-radius: 0 0 1em 1em;
@@ -139,15 +143,6 @@
     width: 100%;
     z-index: 127;
     padding: 0.5em;
-}
-
-.light_mode .synthui_controller {
-    background: linear-gradient(
-        115deg,
-        rgba(200, 200, 200, 0.5),
-        rgba(255, 255, 255, 0.5),
-        rgba(200, 200, 200, 0.5)
-    ) !important;
 }
 
 .synthui_controller_show {
@@ -183,8 +178,8 @@
     color: red;
 }
 
-.mute_button_light * {
-    color: black;
+.mute_button * {
+    color: var(--synthui-icon-color);
 }
 
 .mute_button > * {

@@ -215,12 +215,10 @@ export const settingsHtml = `
     
     <div class='settings_group'>
         <h2 translate-path='locale.settings.interfaceSettings.title'></h2>
-        <div class='switch_label setting'>
-            <label translate-path-title='locale.settings.interfaceSettings.toggleTheme'></label>
-            <label class='switch'>
-                <input type='checkbox' checked id='toggle_mode_button'>
-                <span class='switch_slider'></span>
-            </label>
+        <div class='setting setting_select'><label for='theme_selector' translate-path-title='locale.settings.interfaceSettings.theme'></label>
+        <select id='theme_selector'>
+        <!-- will be added via javascript -->
+        </select>
         </div>
         
         <div class='switch_label setting'>

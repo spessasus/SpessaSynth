@@ -1,9 +1,9 @@
 export const interfaceSettings = {
     title: "Impostazioni interfaccia",
 
-    toggleTheme: {
-        title: "Usa tema scuro",
-        description: "Abilita il tema scuro per l'interfaccia"
+    theme: {
+        title: "Tema",
+        description: "Scegli il tema di colori dell'interfaccia"
     },
 
     selectLanguage: {

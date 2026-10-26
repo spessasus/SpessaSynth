@@ -5,9 +5,7 @@
 
 .settings_menu {
     --settings-border-radius: 1rem;
-    --primary-color: #510087;
-    --border-color: #6e00b7;
-    --settings-edge: #333;
+    --settings-edge: var(--edge-color);
     --settings-surface: var(--top-color);
     --settings-card: var(--top-buttons-color);
     --settings-control: var(--top-color);
@@ -27,14 +25,8 @@
     overflow-y: auto;
     display: none;
     border-radius: 0 0 1.15rem 1.15rem;
-    box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.3);
+    box-shadow: 0 1rem 2.5rem var(--settings-shadow-color);
     padding: 1.25rem;
-}
-
-.settings_menu_light {
-    --primary-color: #a93bff;
-    --border-color: #510087;
-    box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.16);
 }
 
 .settings_menu > h1 {
@@ -72,7 +64,7 @@
 
 .settings_menu select:hover {
     cursor: pointer;
-    text-shadow: 0 0 5px white;
+    text-shadow: 0 0 5px var(--text-glow-color);
     background: var(--top-buttons-color);
     border-color: var(--top-buttons-color-end);
 }
@@ -85,7 +77,7 @@
 
 .settings_menu .hover_reminder:hover {
     cursor: pointer;
-    text-shadow: 0 0 5px white;
+    text-shadow: 0 0 5px var(--text-glow-color);
 }
 
 @media (max-width: 700px) {

@@ -1,9 +1,9 @@
 export const interfaceSettings = {
     title: "Interface settings",
 
-    toggleTheme: {
-        title: "Use dark theme",
-        description: "Enable the dark theme for the interface"
+    theme: {
+        title: "Theme",
+        description: "Choose the color theme of the interface"
     },
 
     selectLanguage: {
