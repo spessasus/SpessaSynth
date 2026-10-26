@@ -60,6 +60,10 @@ import {
     createConvolverModeToggle,
     createConvolverReverbController
 } from "./methods/create_convolver_reverb_controller.ts";
+import {
+    createXGRouting,
+    getXGInsertionLabels
+} from "../renderer/base/xg_insertion_labels.ts";
 import type { LiveRenderer } from "../renderer/live/live_renderer.ts";
 
 export interface PresetListElement extends MIDIPatchFull {
@@ -172,6 +176,7 @@ export class SynthesizerUI {
     };
     protected currentInsertionEffect;
     protected insertionLock = false;
+    protected readonly xgRouting = createXGRouting();
     protected ports: HTMLDivElement[] = [];
     protected portDescriptors: HTMLDivElement[] = [];
     protected readonly soloChannels = new Set<number>();
@@ -1067,6 +1072,13 @@ export class SynthesizerUI {
         }
     }
 
+    protected updateXGInsertionLabels() {
+        const labels = getXGInsertionLabels(this.xgRouting);
+        for (const [channel, label] of labels.entries()) {
+            this.renderer.setXGInsertion(channel, label);
+        }
+    }
+
     protected handleEffectChange(e: EffectChangeEvent) {
         const fx = this.effectConfigs;
         switch (e.effect) {
@@ -1080,10 +1092,38 @@ export class SynthesizerUI {
             }
             case "xgVariation": {
                 fx.xgVariation.update(e.parameter, e.value, 0);
+                const variation = this.xgRouting.variation;
+                switch (e.parameter) {
+                    case "partNumber": {
+                        variation.part = e.value;
+                        break;
+                    }
+                    case "type": {
+                        variation.type = e.value;
+                        break;
+                    }
+                    case "connection": {
+                        variation.insertionMode = e.value === "insertion";
+                        break;
+                    }
+                    default: {
+                        return;
+                    }
+                }
+                this.updateXGInsertionLabels();
                 return;
             }
             case "xgInsertion": {
                 fx.xgInsertion.update(e.parameter, e.value, e.insertionNumber);
+                const block = this.xgRouting.insertions[e.insertionNumber];
+                if (e.parameter === "partNumber") {
+                    block.part = e.value;
+                } else if (e.parameter === "type") {
+                    block.type = e.value;
+                } else {
+                    return;
+                }
+                this.updateXGInsertionLabels();
                 return;
             }
         }

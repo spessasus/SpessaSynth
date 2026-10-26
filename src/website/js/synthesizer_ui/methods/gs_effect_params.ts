@@ -1,4 +1,4 @@
-import { Meter } from "./synthui_meter.ts";
+import type { Meter } from "./synthui_meter.ts";
 import type {
     EffectChangeEvent,
     GlobalSystemParameter

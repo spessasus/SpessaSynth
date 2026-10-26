@@ -317,6 +317,12 @@ export class LiveRenderer extends BaseRenderer<LiveKeyboard> {
         return this.synth.systemParameters.blackMIDIMode;
     }
 
+    public setXGInsertion(channel: number, text: string) {
+        if (channel < this.parts.length) {
+            this.parts[channel].xgInsertion = text;
+        }
+    }
+
     // Live_renderer.ts
     public updateFftSize() {
         for (const channelAnalyser of this.channelAnalysers) {
@@ -650,7 +656,7 @@ export class LiveRenderer extends BaseRenderer<LiveKeyboard> {
         const waveWidth = this.width / 4;
         const waveHeight = this.height / 4;
         for (let i = 0; i < this.channelAnalysers.length; i++) {
-            if (this.synth.midiChannels[i].midiParameters.efxAssign) {
+            if (this.parts[i].efxAssign || this.parts[i].xgInsertion) {
                 this.drawEFX(i);
             }
             this.renderSingleFft(i, waveWidth, waveHeight);

@@ -213,6 +213,7 @@ export async function renderAudioData(
                 case "noteOff":
                 case "channelParamChange":
                 case "globalParamChange":
+                case "effectChange":
                 case "displayMessage":
                 case "programChange": {
                     eventLog!.events.push({

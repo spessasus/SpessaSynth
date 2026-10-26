@@ -104,6 +104,10 @@ interface RendererPart {
     transpose: number;
     isDrum: boolean;
     efxAssign: boolean;
+    /**
+     * The XG insertion label, empty if none are routed to this part.
+     */
+    xgInsertion: string;
     waveform: Float32Array;
     waveformLength: number;
     render: boolean;
@@ -261,6 +265,7 @@ export abstract class BaseRenderer<K extends BaseKeyboard = BaseKeyboard> {
             transpose: 0,
             isDrum: i % 16 === MIDI_DRUM_CHANNEL,
             efxAssign: false,
+            xgInsertion: "",
             waveform: new Float32Array(32_768),
             waveformLength: 1024,
             render: true
@@ -711,25 +716,45 @@ export abstract class BaseRenderer<K extends BaseKeyboard = BaseKeyboard> {
         const y = Math.floor(channel / 4);
         const waveWidth = this.width / 4;
         const waveHeight = this.height / 4;
-        const relativeX = waveWidth * x;
-        const relativeY = waveHeight * y + waveHeight;
-        let fontSize = waveHeight;
-        ctx.font = `${fontSize}px monospace`;
-        const text = this.texts.efxName;
+        const right = waveWidth * x + waveWidth;
+        const top = waveHeight * y;
+        const part = this.parts[channel];
+        const text = part.efxAssign ? this.texts.efxName : part.xgInsertion;
 
-        const metrics = ctx.measureText(text);
+        // Measure at a reference size, the text width scales linearly with the font size
+        const referenceSize = waveHeight;
+        ctx.font = `${referenceSize}px monospace`;
+        const maxWidth = waveWidth * EFX_SCALE_FACTOR;
+        const maxHeight = waveHeight * EFX_SCALE_FACTOR;
 
-        const actualWidth = waveWidth * EFX_SCALE_FACTOR;
-        const actualHeight = waveHeight * EFX_SCALE_FACTOR;
-        const widthRatio = actualWidth / metrics.width;
-        const heightRatio = actualHeight / fontSize;
+        // XG labels join multiple effects with "+"
+        // Stack them one per line if
+        // That allows a larger font than a single line
+        const singleLineSize = Math.min(
+            (maxWidth / ctx.measureText(text).width) * referenceSize,
+            maxHeight
+        );
+        const lines = text.split("+");
+        let widestLine = 0;
+        for (const line of lines) {
+            widestLine = Math.max(widestLine, ctx.measureText(line).width);
+        }
+        const stackedSize = Math.min(
+            (maxWidth / widestLine) * referenceSize,
+            maxHeight / lines.length
+        );
 
-        const scale = Math.min(widthRatio, heightRatio);
-        fontSize = Math.floor(fontSize * scale);
-
-        ctx.font = `${fontSize}px monospace`;
         ctx.textBaseline = "top";
         ctx.textAlign = "end";
-        ctx.fillText(text, relativeX + waveWidth, relativeY - waveHeight);
+        if (stackedSize > singleLineSize) {
+            const fontSize = Math.floor(stackedSize);
+            ctx.font = `${fontSize}px monospace`;
+            for (let i = 0; i < lines.length; i++) {
+                ctx.fillText(lines[i], right, top + i * fontSize);
+            }
+        } else {
+            ctx.font = `${Math.floor(singleLineSize)}px monospace`;
+            ctx.fillText(text, right, top);
+        }
     }
 }

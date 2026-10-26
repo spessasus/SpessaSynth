@@ -3,6 +3,11 @@ import {
     browserCanvasFactory,
     type RendererCanvasFactory
 } from "../base/renderer.ts";
+import {
+    createXGRouting,
+    getXGInsertionLabels
+} from "../base/xg_insertion_labels.ts";
+import { gsInsertionEffectData } from "../../synthesizer_ui/methods/gs_effect_params.ts";
 import { ProgramTracker } from "../base/program_tracker.ts";
 import { BaseKeyboard } from "../../canvas_keyboard/base/base_keyboard.ts";
 import type { VideoSettingsSnapshot } from "../../manager/export/video/snapshot_settings.ts";
@@ -210,6 +215,8 @@ export class OfflineRenderer extends BaseRenderer {
             efxAssign: false
         })
     );
+    // The render synthesizer is fresh, so every block starts with its defaults
+    private readonly xgRouting = createXGRouting();
     private readonly globalParams: RendererGlobalParams = {
         systemKeyShift: 0,
         systemFineTune: 0,
@@ -274,6 +281,7 @@ export class OfflineRenderer extends BaseRenderer {
         global.midiKeyShift = initial.global.midiKeyShift;
         global.midiFineTune = initial.global.midiFineTune;
         this.system = initial.global.system;
+        this.texts.efxName = "Thru";
         // Channels
         for (let ch = 0; ch < this.parts.length; ch++) {
             const state = this.channels[ch];
@@ -511,6 +519,60 @@ export class OfflineRenderer extends BaseRenderer {
                     }
                     break;
                 }
+                case "effectChange": {
+                    const data = e.data;
+                    switch (data.effect) {
+                        case "gsInsertion": {
+                            if (data.parameter === 0) {
+                                this.texts.efxName =
+                                    gsInsertionEffectData.find(
+                                        (fx) => fx.type === data.value
+                                    )?.name ?? "Thru";
+                            }
+                            break;
+                        }
+                        case "xgInsertion": {
+                            const block =
+                                this.xgRouting.insertions[data.insertionNumber];
+                            if (data.parameter === "partNumber") {
+                                block.part = data.value;
+                            } else if (data.parameter === "type") {
+                                block.type = data.value;
+                            } else {
+                                break;
+                            }
+                            this.updateXGLabels();
+                            break;
+                        }
+                        case "xgVariation": {
+                            const variation = this.xgRouting.variation;
+                            switch (data.parameter) {
+                                case "partNumber": {
+                                    variation.part = data.value;
+                                    break;
+                                }
+                                case "type": {
+                                    variation.type = data.value;
+                                    break;
+                                }
+                                case "connection": {
+                                    variation.insertionMode =
+                                        data.value === "insertion";
+                                    break;
+                                }
+                                default: {
+                                    break;
+                                }
+                            }
+                            this.updateXGLabels();
+                            break;
+                        }
+                        default: {
+                            break;
+                        }
+                    }
+                    break;
+                }
                 case "programChange": {
                     const data = e.data;
                     if (data.channel >= 0 && data.channel < 16) {
@@ -573,6 +635,13 @@ export class OfflineRenderer extends BaseRenderer {
     private updateGlobalState() {
         for (let ch = 0; ch < this.parts.length; ch++) {
             this.updatePartState(ch);
+        }
+    }
+
+    private updateXGLabels() {
+        const labels = getXGInsertionLabels(this.xgRouting);
+        for (const [channel, label] of labels.entries()) {
+            this.parts[channel].xgInsertion = label;
         }
     }
 

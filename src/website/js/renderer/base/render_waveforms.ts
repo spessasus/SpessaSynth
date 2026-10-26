@@ -208,7 +208,7 @@ export function renderWaveforms(this: BaseRenderer, forceStraightLine = false) {
             const waveWidth = this.width / 4;
             const waveHeight = this.height / 4;
             for (let i = 0; i < this.parts.length; i++) {
-                if (this.parts[i].efxAssign) {
+                if (this.parts[i].efxAssign || this.parts[i].xgInsertion) {
                     this.drawEFX(i);
                 }
                 this.renderSingleWaveform(
