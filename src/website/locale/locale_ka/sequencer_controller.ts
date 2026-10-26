@@ -1,7 +1,7 @@
 export const sequencerControllerLocale = {
     previousSong: "წინა სიმღერა",
     nextSong: "შემდეგი სიმღერა",
-    loopThis: "გაიმეორეთ ეს სიმღერა რიპ-რიპში.",
+    loopThis: "გაიმეორე ეს სიმღერა",
     playPause: "დაკვრა/პაუზა",
     shuffle: "სიმღერების არევა",
     playbackRate: "დაკვრის სიჩქარე",
@@ -14,8 +14,8 @@ export const sequencerControllerLocale = {
         },
 
         subtitles: {
-            title: "ASS სუბტიტრების ატვირთვა",
-            description: "ატვირთეთ თქვენი საკუთარი სუბტიტრები (.ass) ფორმატში"
+            title: "Upload ASS subtitles",
+            description: "ატვირთეთ თქვენი სუბტიტრები (.ass) ფორმატში"
         }
     }
 };

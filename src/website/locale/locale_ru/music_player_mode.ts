@@ -4,11 +4,11 @@
  */
 export const musicPlayerModeLocale = {
     toggleButton: {
-        title: "Переключить режим муз. проигрывателя",
+        title: "Переключить режим музыкального проигрывателя",
         description:
-            "Переключает упрощённый интерфейс, скрывая клавиатуру и визуализацию нот"
+            "Переключить упрощённый интерфейс, скрыв клавиатуру и визуализацию нот"
     },
     currentlyPlaying: "Сейчас играет:",
-    nothingPlaying: "Ничего не играет",
-    nothingPlayingCopyright: "Загрузите MIDI!"
+    nothingPlaying: "Ничего не воспроизводится",
+    nothingPlayingCopyright: "Загрузите MIDI-файл!"
 };

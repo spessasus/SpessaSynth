@@ -3,18 +3,18 @@ export const interfaceSettings = {
 
     theme: {
         title: "თემა",
-        description: "აირჩიეთ ინტერფეისის ფერის თემა"
+        description: "აირჩიეთ ინტერფეისის ფერების თემა"
     },
 
     selectLanguage: {
         title: "ენა",
         description: "პროგრამის ენის შეცვლა",
-        helpTranslate: "თარგმნეთ SpessaSynth"
+        helpTranslate: "SpessaSynth-ის თარგმნა"
     },
 
     layoutDirection: {
         title: "განლაგების მიმართულება",
-        description: "რენდერერისა და კლავიატურის განლაგების მიმართულება",
+        description: "ვიზუალიზატორისა და კლავიატურის განლაგების მიმართულება",
         values: {
             downwards: "ქვემოთ",
             upwards: "ზემოთ",
@@ -30,22 +30,22 @@ export const interfaceSettings = {
     chooseImage: "სურათის არჩევა",
 
     synthReload: {
-        chromium: "Chrome რეჟიმში გადატვირთვა",
-        worklet: "გადატვირთვა Worklet რეჟიმში"
+        chromium: "Chrome-ის რეჟიმში გადატვირთვა",
+        worklet: "Worklet-ის რეჟიმში გადატვირთვა"
     },
 
     reminder: {
-        title: "იცოდით, რომ დამატებითი ინფორმაციის მისაღებად შეგიძლიათ პარამეტრებზე მაუსის გადატანა?",
-        description: "როგორც ეს!"
+        title: "იცოდით, რომ პარამეტრებზე კურსორის მიტანით დამატებითი ინფორმაციის მიღება შეგიძლიათ?",
+        description: "მაგალითად, ამ პარამეტრზე!"
     },
 
     useFirefox: {
-        firefox: "Firefox-ის ვებ-ბრაუზერი",
-        recommended: "რეკომენდებულია საუკეთესო შესრულებისთვის."
+        firefox: "Firefox ბრაუზერი",
+        recommended: "საუკეთესო წარმადობისთვის მისი გამოყენება განსაკუთრებით რეკომენდებულია."
     },
 
     showControls: {
-        title: "მართვის საშუალებების ჩვენება",
-        description: "ტრანსპორტირების კონტროლის ღილაკების ჩვენება"
+        title: "მართვის ელემენტების ჩვენება",
+        description: "დაკვრის მართვის ღილაკების ჩვენება"
     }
 };

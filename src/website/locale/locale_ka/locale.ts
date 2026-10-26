@@ -6,33 +6,32 @@ import { exportFile } from "./export_file.js";
 
 export const localeGeorgian = {
     localeName: "ქართული",
-    // Title message
-    titleMessage: "SpessaSynth: SF2/DLS Javascript სინთეზატორი",
-    demoTitleMessage:
-        "SpessaSynth: SF2/DLS Javascript სინთეზატორის ონლაინ დემო",
+    // სათაური
+    titleMessage: "SpessaSynth: SF2/DLS JavaScript სინთეზატორი",
+    demoTitleMessage: "SpessaSynth: SF2/DLS JavaScript სინთეზატორის ონლაინ დემო",
 
     synthInit: {
         genericLoading: "იტვირთება...",
         loadingSoundfont: "SoundFont იტვირთება...",
-        loadingBundledSoundfont: "იტვირთება შეფუთული SoundFont...",
-        startingSynthesizer: "სინთეზატორის გაშვება...",
-        savingSoundfont: "SoundFont-ის შენახვა ხელახალი გამოყენებისთვის...",
-        noWebAudio: "თქვენი ბრაუზერი არ უჭერს მხარს ვებ აუდიოს.",
+        loadingBundledSoundfont: "ჩაშენებული SoundFont იტვირთება...",
+        startingSynthesizer: "სინთეზატორი ეშვება...",
+        savingSoundfont: "SoundFont ხელახლა გამოყენებისთვის ინახება...",
+        noWebAudio: "თქვენი ბრაუზერი Web Audio-ს არ უჭერს მხარს.",
         done: "მზადაა!"
     },
 
-    // Top bar buttons
-    midiUploadButton: "ატვირთეთ თქვენი MIDI ფაილები",
+    // ზედა პანელის ღილაკები
+    midiUploadButton: "ატვირთეთ MIDI ფაილები",
 
     extraBank: {
         title: "დამატებითი ბანკის არჩევა",
         offset: {
             title: "ბანკის წანაცვლება",
-            description: "ბანკის წანაცვლება დამატებითი ბანკისთვის"
+            description: "დამატებითი ბანკის წანაცვლება"
         },
         file: {
-            title: "ხმის ბანკი",
-            description: "აირჩიეთ ხმის ბანკი (DLS/SF2/SF3)"
+            title: "ხმოვანი ბანკი",
+            description: "აირჩიეთ ხმოვანი ბანკი (DLS/SF2/SF3)"
         },
         confirm: {
             title: "დადასტურება",
@@ -40,9 +39,9 @@ export const localeGeorgian = {
         },
         clear: {
             title: "გასუფთავება",
-            description: "დამატებითი ბანკის გასუფთავება"
+            description: "წაშალეთ დამატებითი ბანკი"
         },
-        button: "დამატებითი ხმის ბანკის დამატება"
+        button: "დამატებითი ხმოვანი ბანკის დამატება"
     },
 
     exportFile: exportFile,
@@ -52,43 +51,43 @@ export const localeGeorgian = {
     no: "არა",
     none: "არცერთი",
 
-    demoSoundfontUploadButton: "ატვირთეთ საუნდშრიფტი",
+    demoSoundfontUploadButton: "SoundFont-ის ატვირთვა",
     demoGithubPage: "პროექტის გვერდი",
-    discord: "შემოგვიერთდით Discord სერვერზე!",
+    discord: "შემოუერთდით Discord სერვერს!",
     soundfontEditor: "SF2/DLS რედაქტორი",
     demoDownload: {
         main: "ჩამოტვირთვა",
         downloadLocal: {
-            title: "ჩამოტვირთეთ ადგილობრივი ვერსია",
+            title: "ლოკალური ვერსიის ჩამოტვირთვა",
             description:
-                "ჩამოტვირთეთ SpessaSynth: Local Edition თქვენს კომპიუტერზე ოფლაინ რეჟიმში გამოსაყენებლად"
+                "ჩამოტვირთეთ SpessaSynth: Local Edition, რათა პროგრამა კომპიუტერზე ინტერნეტის გარეშეც გამოიყენოთ"
         }
     },
-    demoSongButton: "დემო სიმღერა",
+    demoSongButton: "სადემონსტრაციო კომპოზიცია",
     credits: "ავტორები",
-    dropPrompt: "ფაილები აქ ჩააგდეთ...",
+    dropPrompt: "გადმოიტანეთ ფაილები აქ...",
 
     warnings: {
         outOfMemory:
-            "თქვენს ბრაუზერს მეხსიერება ამოეწურა. განიხილეთ Firefox-ის ან SF3 soundfont-ის გამოყენება. (შეცდომისთვის იხილეთ კონსოლი).",
+            "ბრაუზერს მეხსიერება აღარ ჰყოფნის. სცადეთ Firefox-ის ან SF3 ფორმატის SoundFont-ის გამოყენება. შეცდომის დეტალები იხილეთ კონსოლში.",
         noMidiSupport:
-            "MIDI პორტები არ არის აღმოჩენილი, ეს ფუნქცია გამორთული იქნება.",
+            "MIDI პორტები ვერ მოიძებნა. ეს ფუნქცია გაითიშება.",
         warning: "გაფრთხილება",
         invalidMidiFile: "არასწორი MIDI ფაილი:"
     },
     hideTopBar: {
-        title: "ზედა ზოლის დამალვა",
+        title: "ზედა პანელის დამალვა",
         description:
-            "უფრო შეუფერხებელი გამოცდილების უზრუნველსაყოფად, ზედა (სათაურის) ზოლის დამალვა"
+            "დამალეთ ზედა სათაურის პანელი, რათა ინტერფეისი უფრო ერთიანი იყოს"
     },
 
     convertDls: {
-        title: "DLS კონვერტაცია",
+        title: "DLS-ის გარდაქმნა",
         message:
-            "გსურთ DLS-ის SF2-ად გადაკეთება მხოლოდ SF2-თან თავსებადი პროგრამებისთვის?"
+            "გსურთ DLS-ის SF2 ფორმატში გარდაქმნა, რათა ის მხოლოდ SF2-ის მხარდამჭერ პროგრამებში გამოიყენოთ?"
     },
 
-    // All translations split up
+    // დანარჩენი თარგმანები ცალკეულ ფაილებშია
     musicPlayerMode: musicPlayerModeLocale,
     settings: settingsLocale,
     synthesizerController: synthesizerControllerLocale,

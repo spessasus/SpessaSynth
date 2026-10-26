@@ -6,9 +6,9 @@ import { exportFile } from "./export_file.js";
 
 export const localeRussian = {
     localeName: "Русский",
-    // Сообщение заголовка
-    titleMessage: "SpessaSynth: Javascript-синтезатор SF2/DLS",
-    demoTitleMessage: "SpessaSynth: Онлайн-демо JS-синтезатора SF2/DLS",
+    // Заголовки
+    titleMessage: "SpessaSynth: JavaScript-синтезатор SF2/DLS",
+    demoTitleMessage: "SpessaSynth: онлайн-демонстрация JavaScript-синтезатора SF2/DLS",
 
     synthInit: {
         genericLoading: "Загрузка...",
@@ -27,11 +27,11 @@ export const localeRussian = {
         title: "Выбор дополнительного банка",
         offset: {
             title: "Смещение банка",
-            description: "Смещение банка для дополнительного банка"
+            description: "Смещение для дополнительного банка"
         },
         file: {
-            title: "Банк звуков",
-            description: "Выберите банк звуков (DLS/SF2/SF3)"
+            title: "Звуковой банк",
+            description: "Выберите звуковой банк (DLS/SF2/SF3)"
         },
         confirm: {
             title: "Подтвердить",
@@ -39,9 +39,9 @@ export const localeRussian = {
         },
         clear: {
             title: "Очистить",
-            description: "Очистить дополнительный банк"
+            description: "Удалить дополнительный банк"
         },
-        button: "Добавить дополнительный банк звуков"
+        button: "Добавить дополнительный звуковой банк"
     },
 
     exportFile: exportFile,
@@ -60,7 +60,7 @@ export const localeRussian = {
         downloadLocal: {
             title: "Скачать локальную версию",
             description:
-                "Скачать SpessaSynth: Local Edition для использования в автономном режиме на компьютере"
+                "Скачайте SpessaSynth: Local Edition, чтобы использовать программу на компьютере без подключения к интернету"
         }
     },
     demoSongButton: "Демонстрационная композиция",
@@ -69,24 +69,25 @@ export const localeRussian = {
 
     warnings: {
         outOfMemory:
-            "В браузере закончилась память. Попробуйте использовать Firefox или SoundFont в формате SF3. (Подробности смотрите в консоли.)",
-        noMidiSupport: "Порты MIDI не обнаружены, эта функция будет отключена.",
+            "В браузере закончилась доступная память. Попробуйте использовать Firefox или SoundFont в формате SF3. Подробности смотрите в консоли.",
+        noMidiSupport:
+            "Порты MIDI не обнаружены. Эта функция будет отключена.",
         warning: "Предупреждение",
-        invalidMidiFile: "Недействительный MIDI-файл:"
+        invalidMidiFile: "Недопустимый MIDI-файл:"
     },
     hideTopBar: {
         title: "Скрыть верхнюю панель",
         description:
-            "Скрыть верхнюю панель (с заголовком) для более удобной работы"
+            "Скрыть верхнюю панель с заголовком, чтобы интерфейс выглядел более целостным"
     },
 
     convertDls: {
         title: "Преобразование DLS",
         message:
-            "Хотите преобразовать DLS в SF2 для использования с программами, поддерживающими только SF2?"
+            "Хотите преобразовать DLS в SF2 для использования в программах, поддерживающих только SF2?"
     },
 
-    // Все переводы разделены по категориям
+    // Переводы разделены по файлам
     musicPlayerMode: musicPlayerModeLocale,
     settings: settingsLocale,
     synthesizerController: synthesizerControllerLocale,
