@@ -17,6 +17,14 @@ export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
         DEFAULT_SAVED_SETTINGS
     );
 
+    // Apply the theme first, as changing between dark and light overrides drawActiveNotes
+    const theme =
+        savedSettings.interface.theme in themeList
+            ? savedSettings.interface.theme
+            : DEFAULT_THEME;
+    this.applyTheme(theme);
+    this.htmlControls.interface.themeSelector.value = theme;
+
     // Renderer
     const rendererControls = this.htmlControls.renderer;
     const renderer = this.renderer;
@@ -162,9 +170,6 @@ export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
         this.htmlControls.interface.languageSelector.value =
             savedSettings.interface.language;
     }, 100);
-    const theme = savedSettings.interface.theme;
-    this.applyTheme(theme in themeList ? theme : DEFAULT_THEME);
-
     this.htmlControls.interface.layoutSelector.value =
         savedSettings?.interface?.layout || "downwards";
     this.changeLayout(savedSettings?.interface?.layout || "downwards");

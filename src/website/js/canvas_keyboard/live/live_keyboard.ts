@@ -133,6 +133,14 @@ export class LiveKeyboard extends BaseKeyboard {
         );
     }
 
+    /**
+     * The mode the keyboard is at or is transitioning to.
+     * Differs from mode while the sweep animation is still running.
+     */
+    public get targetMode() {
+        return this.modeTransition?.to ?? this.mode;
+    }
+
     public override render(bounds: RenderBounds, time: number) {
         if (this.needsAnimation(time)) {
             this.drawAt(time);

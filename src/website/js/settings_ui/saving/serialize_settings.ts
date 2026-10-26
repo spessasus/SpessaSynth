@@ -39,7 +39,7 @@ export function _serializeSettings(this: SpessaSynthSettings): SavedSettings {
         keyboard: {
             selectedChannel: this.midiKeyboard.channel,
             keyRange: this.midiKeyboard.keyRange,
-            mode: this.midiKeyboard.mode,
+            mode: this.midiKeyboard.targetMode,
             autoRange:
                 this.htmlControls.keyboard.keyRange.value === USE_MIDI_RANGE,
             show: this.htmlControls.keyboard.shown.checked,
