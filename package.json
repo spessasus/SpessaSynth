@@ -39,8 +39,8 @@
         "fflate": "^0.8.3",
         "jszip": "^3.10.1",
         "mediabunny": "^1.61.3",
-        "spessasynth_core": "file:../spessasynth_core",
-        "spessasynth_lib": "file:../spessasynth_lib"
+        "spessasynth_core": "latest",
+        "spessasynth_lib": "latest"
     },
     "allowScripts": {
         "esbuild@0.28.1": true
