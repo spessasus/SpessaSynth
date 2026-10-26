@@ -6,9 +6,10 @@ import { exportFile } from "./export_file.js";
 
 export const localeGeorgian = {
     localeName: "ქართული",
-    // სათაური
+    // Სათაური
     titleMessage: "SpessaSynth: SF2/DLS JavaScript სინთეზატორი",
-    demoTitleMessage: "SpessaSynth: SF2/DLS JavaScript სინთეზატორის ონლაინ დემო",
+    demoTitleMessage:
+        "SpessaSynth: SF2/DLS JavaScript სინთეზატორის ონლაინ დემო",
 
     synthInit: {
         genericLoading: "იტვირთება...",
@@ -20,7 +21,7 @@ export const localeGeorgian = {
         done: "მზადაა!"
     },
 
-    // ზედა პანელის ღილაკები
+    // Ზედა პანელის ღილაკები
     midiUploadButton: "ატვირთეთ MIDI ფაილები",
 
     extraBank: {
@@ -70,8 +71,7 @@ export const localeGeorgian = {
     warnings: {
         outOfMemory:
             "ბრაუზერს მეხსიერება აღარ ჰყოფნის. სცადეთ Firefox-ის ან SF3 ფორმატის SoundFont-ის გამოყენება. შეცდომის დეტალები იხილეთ კონსოლში.",
-        noMidiSupport:
-            "MIDI პორტები ვერ მოიძებნა. ეს ფუნქცია გაითიშება.",
+        noMidiSupport: "MIDI პორტები ვერ მოიძებნა. ეს ფუნქცია გაითიშება.",
         warning: "გაფრთხილება",
         invalidMidiFile: "არასწორი MIDI ფაილი:"
     },
@@ -87,7 +87,7 @@ export const localeGeorgian = {
             "გსურთ DLS-ის SF2 ფორმატში გარდაქმნა, რათა ის მხოლოდ SF2-ის მხარდამჭერ პროგრამებში გამოიყენოთ?"
     },
 
-    // დანარჩენი თარგმანები ცალკეულ ფაილებშია
+    // Დანარჩენი თარგმანები ცალკეულ ფაილებშია
     musicPlayerMode: musicPlayerModeLocale,
     settings: settingsLocale,
     synthesizerController: synthesizerControllerLocale,

@@ -7,7 +7,7 @@ export const synthesizerControllerLocale = {
         description: "სინთეზატორის კონტროლერის ჩვენება"
     },
 
-    // ინდიკატორები
+    // Ინდიკატორები
     mainVoiceMeter: {
         title: "ხმები: ",
         description: "ამჟამად დაკრული ხმების საერთო რაოდენობა"
@@ -29,10 +29,11 @@ export const synthesizerControllerLocale = {
             "ტრანსპოზიცია: სინთეზატორის ტონალობის შეცვლა ნახევარტონებით"
     },
 
-    // ღილაკები
+    // Ღილაკები
     midiPanic: {
         title: "MIDI-ის დაუყოვნებელი შეჩერება",
-        description: "MIDI-ის დაუყოვნებელი შეჩერება: ყველა ხმის მყისიერად შეწყვეტა"
+        description:
+            "MIDI-ის დაუყოვნებელი შეჩერება: ყველა ხმის მყისიერად შეწყვეტა"
     },
 
     gsReset: {
@@ -55,7 +56,8 @@ export const synthesizerControllerLocale = {
 
     helpButton: {
         title: "დახმარება",
-        description: "დახმარება: გამოყენების სახელმძღვანელოს შემცველი გარე ვებსაიტის გახსნა"
+        description:
+            "დახმარება: გამოყენების სახელმძღვანელოს შემცველი გარე ვებსაიტის გახსნა"
     },
 
     tabs: {
