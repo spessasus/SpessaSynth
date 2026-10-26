@@ -1,4 +1,7 @@
-import { hideControllers, showControllers } from "./methods/hide_show_controllers.js";
+import {
+    hideControllers,
+    showControllers
+} from "./methods/hide_show_controllers.js";
 import { setEventListeners } from "./methods/set_event_listeners.js";
 import { keybinds } from "../utils/keybinds.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
@@ -54,15 +57,14 @@ import { createXGEffectController } from "./methods/create_xg_effect_controller.
 import { appendNewController } from "./methods/append_new_controller.ts";
 import { UserDrumSetEditor } from "./methods/user_drum_set_editor.ts";
 import type { LiveRenderer } from "../renderer/live/live_renderer.ts";
-
-ers.js";;;
 import {
     createConvolverModeToggle,
     createConvolverReverbController
-} from "./methods/create_convolver_reverb_controllimport {
+} from "./methods/create_convolver_reverb_controller.ts";
+import {
     createXGRouting,
-    getXGInsertionLabels;
-} from; "../renderer/base/xg_insertion_labels.ts";tion_labels.ts";;;
+    getXGInsertionLabels
+} from "../renderer/base/xg_insertion_labels.ts";
 
 export interface PresetListElement extends MIDIPatchFull {
     stringified: string;

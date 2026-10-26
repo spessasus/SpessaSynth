@@ -11,7 +11,6 @@ import { SynthesizerUI } from "../synthesizer_ui/synthetizer_ui.js";
 import { SpessaSynthSettings } from "../settings_ui/settings.js";
 import { MusicModeUI } from "../music_mode_ui/music_mode_ui.js";
 import { LocaleManager } from "./locale_manager.js";
-import { isMobile } from "../utils/is_mobile.js";
 import { keybinds } from "../utils/keybinds.js";
 import { showAudioExportMenu } from "./export/export_audio.js";
 import { showVideoExportMenu } from "./export/video/export_video.js";
@@ -462,25 +461,8 @@ export class Manager {
         this.keyboard = this.renderer.keyboard;
         this.renderer.startRendering();
 
-        let titleSwappedWithSettings = false;
         const checkResize = () => {
             this?.renderer?.updateSize();
-            if (isMobile) {
-                if (window.innerWidth / window.innerHeight > 1) {
-                    if (!titleSwappedWithSettings) {
-                        const title = document.querySelector("#title_wrapper")!;
-                        const settings =
-                            document.querySelector("#settings_div")!;
-                        titleSwappedWithSettings = true;
-                        title.parentElement?.insertBefore(settings, title);
-                    }
-                } else if (titleSwappedWithSettings) {
-                    const title = document.querySelector("#title_wrapper")!;
-                    const settings = document.querySelector("#settings_div")!;
-                    titleSwappedWithSettings = false;
-                    title.parentElement?.insertBefore(title, settings);
-                }
-            }
             this.renderer?.renderOneFrame();
             const h = window.location.hostname;
             // Domain correction

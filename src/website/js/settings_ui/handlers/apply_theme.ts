@@ -127,6 +127,8 @@ export function _applyTheme(this: SpessaSynthSettings, theme: ThemeID) {
 
     const startTime = performance.now() / 1000;
     const step = () => {
+        // Repaint the canvas even when the renderer is idle
+        this.renderer.renderOneFrame();
         const progress = Math.min(
             (performance.now() / 1000 - startTime) / TRANSITION_TIME,
             1

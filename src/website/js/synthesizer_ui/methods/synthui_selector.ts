@@ -1,9 +1,17 @@
 import { midiPatchNames } from "../../utils/patch_names.js";
 import { getLockSVG, getUnlockSVG } from "../../utils/icons.js";
-import { ICON_SIZE, LOCALE_PATH, type PresetListElement } from "../synthetizer_ui.js";
+import {
+    ICON_SIZE,
+    LOCALE_PATH,
+    type PresetListElement
+} from "../synthetizer_ui.js";
 import { isMobile } from "../../utils/is_mobile.js";
 import type { LocaleManager } from "../../manager/locale_manager.ts";
-import { type MIDIPatch, type MIDIPatchFull, MIDIPatchTools } from "spessasynth_core";
+import {
+    type MIDIPatch,
+    type MIDIPatchFull,
+    MIDIPatchTools
+} from "spessasynth_core";
 
 /**
  * Syntui_selector.js
@@ -199,7 +207,7 @@ export class Selector {
             }
             firstFiltered.classList.add("voice_selector_selected");
             selectedProgram = firstFiltered;
-        };)
+        });
 
         // Add basic key navigation
         searchInput.addEventListener("keydown", (e) => {

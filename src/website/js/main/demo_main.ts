@@ -212,11 +212,16 @@ async function demoInit(initLocale: LocaleCode) {
             "locale.synthInit.loadingBundledSoundfont"
         );
         loadingMessage.textContent = sFontLoadMessage;
+        progressBar.classList.add("active");
         try {
             soundFontBuffer = await fetchFont(
                 `soundfonts/${SF_NAME}`,
                 (percent: number) => {
                     loadingMessage.textContent = `${sFontLoadMessage} ${percent}%`;
+                    progressBar.style.setProperty(
+                        "--progress",
+                        `${percent / 100}`
+                    );
                 }
             );
         } catch (error) {
@@ -224,7 +229,7 @@ async function demoInit(initLocale: LocaleCode) {
             soundFontBuffer = BasicSoundBank.getSampleSoundBankFile();
         }
 
-        progressBar.style.width = "0";
+        progressBar.classList.remove("active");
     } else {
         console.info("Loaded the soundfont from the database successfully");
     }

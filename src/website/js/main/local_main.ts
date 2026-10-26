@@ -167,6 +167,7 @@ const initManagerSF = async () => {
         return;
     }
     titleMessage.textContent = "Initializing...";
+    progressBar.classList.add("active", "indeterminate");
     if (window.manager) {
         await window.manager.reloadSf(soundBankBufferCurrent);
     } else {
@@ -190,6 +191,7 @@ const initManagerSF = async () => {
 
     synthReady = true;
     titleMessage.textContent = titleString;
+    progressBar.classList.remove("active", "indeterminate");
 };
 
 /**
@@ -197,16 +199,18 @@ const initManagerSF = async () => {
  */
 async function replaceFont(fontName: string) {
     titleMessage.textContent = "Loading soundfont...";
+    progressBar.style.setProperty("--progress", "0");
+    progressBar.classList.add("active");
     const data = await fetchFont(fontName, (percent) => {
-        progressBar.style.width = `${(percent / 100) * titleMessage.offsetWidth}px`;
+        progressBar.style.setProperty("--progress", `${percent / 100}`);
         console.info(`Loading sound bank: ${percent}%`);
     });
 
     titleMessage.textContent = "Parsing soundfont...";
     soundBankBufferCurrent = data;
-    progressBar.style.width = "0";
     // Prompt the user to click if needed
     if (context.state === "suspended") {
+        progressBar.classList.remove("active");
         titleMessage.textContent = "Press anywhere to start the app";
         return;
     }
