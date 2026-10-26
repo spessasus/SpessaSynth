@@ -48,8 +48,8 @@ const KEYBOARD_HEIGHT_MULTIPLIER = 9.2;
 const KEY_BORDER_RADIUS_RATIO = 0.038;
 // Minimum key corner border radius in pixels
 const MIN_KEY_BORDER_RADIUS_PX = 1;
-// Needed because otherwise they show at the very top
-const WHITE_KEY_Y_OFFSET = 1;
+// Create a gap at the top
+const KEY_Y_OFFSET = 1;
 
 // Horizontal reach ratio for white keys between two black keys
 const WHITE_KEY_BETWEEN_REACH_RATIO = 0.95;
@@ -315,9 +315,11 @@ export class BaseKeyboard {
                     note,
                     rect: {
                         x: layoutIndex * keyWidth,
-                        y: 0,
+                        y: KEY_Y_OFFSET,
                         width: keyWidth,
-                        height: this.actualHeight * SHARP_KEY_LENGTH_RATIO
+                        height:
+                            this.actualHeight * SHARP_KEY_LENGTH_RATIO -
+                            KEY_Y_OFFSET
                     }
                 });
             } else {
@@ -382,9 +384,9 @@ export class BaseKeyboard {
         }
         return {
             x: start,
-            y: WHITE_KEY_Y_OFFSET,
+            y: KEY_Y_OFFSET,
             width: end - start,
-            height: this.actualHeight - WHITE_KEY_Y_OFFSET
+            height: this.actualHeight - KEY_Y_OFFSET
         };
     }
 

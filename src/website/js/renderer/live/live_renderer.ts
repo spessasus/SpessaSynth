@@ -78,6 +78,17 @@ export class LiveRenderer extends BaseRenderer<LiveKeyboard> {
         // All data has been adjusted for 44.1kHz, correct it here
         this.sampleRateFactor = synth.context.sampleRate / 44_100;
 
+        // The layout can resize the canvas without a window resize (for example the sequencer UI showing)
+        // Ensure that the keyboard size stays constant.
+        new ResizeObserver(() => {
+            if (
+                this.canvas.width !== this.canvas.clientWidth ||
+                this.canvas.height !== this.canvas.clientHeight
+            ) {
+                this.updateSize();
+            }
+        }).observe(canvas);
+
         // Seed the program tracker with the current preset list
         this.programTracker.presetListChange(synth.presetList);
 
