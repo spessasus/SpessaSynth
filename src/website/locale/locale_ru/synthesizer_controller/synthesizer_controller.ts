@@ -10,7 +10,7 @@ export const synthesizerControllerLocale = {
     // Индикаторы
     mainVoiceMeter: {
         title: "Голоса: ",
-        description: "Общее количество голосов, воспроизводимых в данный момент"
+        description: "Общее количество звучащих в данный момент голосов"
     },
 
     mainVolumeMeter: {
@@ -20,63 +20,64 @@ export const synthesizerControllerLocale = {
 
     mainPanMeter: {
         title: "Панорама: ",
-        description: "Текущая стереопанорама синтезатора"
+        description: "Текущее положение общей стереопанорамы синтезатора"
     },
 
     mainTransposeMeter: {
         title: "Транспонирование: ",
         description:
-            "Транспонирование: изменяет высоту тона синтезатора (в полутонах или клавишах)"
+            "Транспонирование: изменение тональности синтезатора в полутонах"
     },
 
     // Кнопки
     midiPanic: {
-        title: "MIDI Panic",
-        description: "MIDI Panic: немедленно останавливает все голоса"
+        title: "Экстренная остановка MIDI",
+        description:
+            "Экстренная остановка MIDI: немедленно прекращает звучание всех голосов"
     },
 
     gsReset: {
         title: "Сброс GS",
         description:
-            "Сброс GS: сбрасывает весь синтезатор в режим Roland GS и разблокирует все контроллеры"
+            "Сброс GS: переключает весь синтезатор в режим Roland GS и разблокирует все контроллеры"
     },
 
     xgReset: {
         title: "Сброс XG",
         description:
-            "Сброс XG: сбрасывает весь синтезатор в режим Yamaha XG и разблокирует все контроллеры"
+            "Сброс XG: переключает весь синтезатор в режим Yamaha XG и разблокирует все контроллеры"
     },
 
     showOnlyUsed: {
         title: "Показывать только используемые",
         description:
-            "Показывать только используемые MIDI-каналы в контроллере синтезатора"
+            "Показывать только используемые: отображать в контроллере синтезатора только MIDI-каналы, которые используются"
     },
 
     helpButton: {
-        title: "Помощь",
+        title: "Справка",
         description:
-            "Помощь: открывает внешний веб-сайт с руководством по использованию"
+            "Справка: открыть внешний сайт с руководством по использованию"
     },
 
     tabs: {
-        description: "Вкладки: выберите, что настроить",
+        description: "Вкладки: выберите параметр для настройки",
         channels: "MIDI-каналы",
         gsReverb: "Реверберация GS",
-        gsChorus: "Хорус GS",
+        gsChorus: "Хор GS",
         gsDelay: "Задержка GS",
-        gsInsertion: "Вставка GS",
+        gsInsertion: "Эффекты вставки GS",
         xgReverb: "Реверберация XG",
-        xgChorus: "Хорус XG",
+        xgChorus: "Хор XG",
         xgVariation: "Вариация XG",
-        xgInsertion: "Вставка XG",
-        configuration: "Конфигурация"
+        xgInsertion: "Эффекты вставки XG",
+        configuration: "Конфигурация",
+        gsUserDrumSet: "Пользовательский набор ударных GS"
     },
 
     holdPedalDown: "Педаль удержания нажата (Shift)",
-    keyboardMode:
-        "Воспроизведение с клавиатуры включено, нажмите ` для отключения",
-    port: "Порт {0} (нажмите, чтобы изменить видимость)",
+    keyboardMode: "Режим игры на клавиатуре включён. Нажмите `, чтобы отключить",
+    port: "Порт {0} (нажмите, чтобы переключить видимость)",
     channelController: channelControllerLocale,
     effectsConfig: effectsConfig
 };

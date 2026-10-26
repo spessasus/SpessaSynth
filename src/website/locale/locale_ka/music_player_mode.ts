@@ -1,10 +1,14 @@
+/**
+ * Locale for music player mode
+ * @type {{nothingPlaying: string, currentlyPlaying: string, nothingPlayingCopyright: string, toggleButton: {description: string, title: string}}}
+ */
 export const musicPlayerModeLocale = {
     toggleButton: {
-        title: "მუსიკის დამკვრელის რეჟიმის გადართვა",
+        title: "მუსიკალური პლეერის რეჟიმის გადართვა",
         description:
-            "გამარტივებული ინტერფეისის ვერსიის გადართვა, კლავიატურისა და ნოტების ვიზუალიზაციის დამალვა"
+            "გადართეთ ინტერფეისის გამარტივებულ ვერსიაზე, რაც დამალავს კლავიატურასა და ნოტების ვიზუალიზაციას"
     },
-    currentlyPlaying: "ამჟამად თამაშობენ:",
+    currentlyPlaying: "ამჟამად უკრავს:",
     nothingPlaying: "არაფერი უკრავს",
     nothingPlayingCopyright: "ატვირთეთ MIDI!"
 };

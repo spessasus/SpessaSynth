@@ -6,6 +6,8 @@ import { interfaceSettings } from "./interface_settings.js";
 export const settingsLocale = {
     toggleButton: "პარამეტრები",
     mainTitle: "პროგრამის პარამეტრები",
+    searchPlaceholder: "პარამეტრების ძიება...",
+    noResults: "ძიების შესაბამისი პარამეტრები ვერ მოიძებნა.",
 
     rendererSettings: rendererSettingsLocale,
     keyboardSettings: keyboardSettingsLocale,

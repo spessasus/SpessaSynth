@@ -1,6 +1,5 @@
 import { channelControllerLocale } from "./channel_controller.js";
 import { effectsConfig } from "./effects_config.js";
-import { keyModifiers } from "./key_modifiers.js";
 
 export const synthesizerControllerLocale = {
     toggleButton: {
@@ -8,44 +7,44 @@ export const synthesizerControllerLocale = {
         description: "სინთეზატორის კონტროლერის ჩვენება"
     },
 
-    // Meters
+    // ინდიკატორები
     mainVoiceMeter: {
         title: "ხმები: ",
         description: "ამჟამად დაკრული ხმების საერთო რაოდენობა"
     },
 
     mainVolumeMeter: {
-        title: "მოცულობა: ",
-        description: "სინთეზატორის მიმდინარე მთავარი ხმის მოცულობა"
+        title: "ხმის დონე: ",
+        description: "სინთეზატორის მთავარი ხმის მიმდინარე დონე"
     },
 
     mainPanMeter: {
-        title: "პანორამირება: ",
-        description: "სინთეზატორის მიმდინარე მთავარი სტერეო პანორამირება"
+        title: "პანორამა: ",
+        description: "სინთეზატორის მთავარი სტერეოპოზიცია"
     },
 
     mainTransposeMeter: {
-        title: "კლავიშის ცვლა:: ",
+        title: "ტრანსპოზიცია: ",
         description:
-            "ტრანსპოზიცია: სინთეზატორის ტრანსპოზიცია (ნახევრადონებში ან ტონალობაში)"
+            "ტრანსპოზიცია: სინთეზატორის ტონალობის შეცვლა ნახევარტონებით"
     },
 
-    // Buttons
+    // ღილაკები
     midiPanic: {
-        title: "MIDI პანიკა",
-        description: "MIDI პანიკა: ყველა ხმის დაუყოვნებლივ შეჩერება"
+        title: "MIDI-ის დაუყოვნებელი შეჩერება",
+        description: "MIDI-ის დაუყოვნებელი შეჩერება: ყველა ხმის მყისიერად შეწყვეტა"
     },
 
     gsReset: {
-        title: "GS გადატვირთვა",
+        title: "GS-ის გადატვირთვა",
         description:
-            "GS გადატვირთვა: მთლიანი სინთეზატორის Roland GS რეჟიმში გადატვირთვა და ყველა კონტროლერის განბლოკვა"
+            "GS-ის გადატვირთვა: მთელი სინთეზატორის Roland GS რეჟიმზე დაბრუნება და ყველა კონტროლერის განბლოკვა"
     },
 
     xgReset: {
-        title: "XG გადატვირთვა",
+        title: "XG-ის გადატვირთვა",
         description:
-            "XG გადატვირთვა: მთლიანი სინთეზატორის Yamaha XG რეჟიმში გადატვირთვა და ყველა კონტროლერის განბლოკვა"
+            "XG-ის გადატვირთვა: მთელი სინთეზატორის Yamaha XG რეჟიმზე დაბრუნება და ყველა კონტროლერის განბლოკვა"
     },
 
     showOnlyUsed: {
@@ -56,28 +55,27 @@ export const synthesizerControllerLocale = {
 
     helpButton: {
         title: "დახმარება",
-        description:
-            "დახმარება: ხსნის გარე ვებსაიტს გამოყენების სახელმძღვანელოთი"
+        description: "დახმარება: გამოყენების სახელმძღვანელოს შემცველი გარე ვებსაიტის გახსნა"
     },
 
     tabs: {
-        description: "ჩანართები: აირჩიეთ კონფიგურაციისთვის",
+        description: "ჩანართები: აირჩიეთ, რისი კონფიგურაცია გსურთ",
         channels: "MIDI არხები",
         gsReverb: "GS რევერბერაცია",
-        gsChorus: "GS გუნდი",
-        gsDelay: "GS შეფერხება",
-        gsInsertion: "GS ჩასმა",
+        gsChorus: "GS ქორუსი",
+        gsDelay: "GS დაყოვნება",
+        gsInsertion: "GS ჩასმის ეფექტი",
         xgReverb: "XG რევერბერაცია",
-        xgChorus: "XG გუნდი",
+        xgChorus: "XG ქორუსი",
         xgVariation: "XG ვარიაცია",
-        xgInsertion: "XG ჩასმა",
-        configuration: "კონფიგურაცია"
+        xgInsertion: "XG ჩასმის ეფექტი",
+        configuration: "კონფიგურაცია",
+        gsUserDrumSet: "GS მომხმარებლის დასარტყამი ნაკრები"
     },
 
-    holdPedalDown: "პედალის დაჭერა დაჭერილია (Shift)",
-    keyboardMode: "კლავიატურით დაკვრა ჩართულია, გამოსართავად დააჭირეთ `-ს",
-    port: "პორტი {0} (დააწკაპუნეთ ხილვადობის გადასართავად)",
+    holdPedalDown: "დამჭერი პედალი დაჭერილია (Shift)",
+    keyboardMode: "კლავიატურით დაკვრა ჩართულია. გამოსართავად დააჭირეთ ` ღილაკს",
+    port: "პორტი {0} (ხილვადობის შესაცვლელად დააწკაპუნეთ)",
     channelController: channelControllerLocale,
-    effectsConfig: effectsConfig,
-    keyModifiers: keyModifiers
+    effectsConfig: effectsConfig
 };
