@@ -1,9 +1,9 @@
 export const interfaceSettings = {
     title: "Configuration de l'interface",
 
-    toggleTheme: {
-        title: "Thème sombre",
-        description: "Active ou non le thème sombre pour l'interface"
+    theme: {
+        title: "Thème",
+        description: "Choisit le thème de couleurs de l'interface"
     },
 
     selectLanguage: {
@@ -25,8 +25,10 @@ export const interfaceSettings = {
 
     backgroundImage: {
         title: "Image en fond d'écran",
-        description: "Sélectionner l'image en fond d'écran pour la visualisation"
+        description:
+            "Sélectionner l'image en fond d'écran pour la visualisation"
     },
+    chooseImage: "Choisir une image",
 
     synthReload: {
         chromium: "Redémarrer SpessaSynth en mode Chrome",

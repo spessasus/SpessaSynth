@@ -1,9 +1,9 @@
 export const interfaceSettings = {
     title: "界面设置",
 
-    toggleTheme: {
-        title: "使用深色主题",
-        description: "为界面启用深色主题"
+    theme: {
+        title: "主题",
+        description: "选择界面的配色主题"
     },
 
     selectLanguage: {

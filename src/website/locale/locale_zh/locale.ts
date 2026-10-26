@@ -2,7 +2,7 @@ import { settingsLocale } from "./settings/settings.js";
 import { musicPlayerModeLocale } from "./music_player_mode.js";
 import { synthesizerControllerLocale } from "./synthesizer_controller/synthesizer_controller.js";
 import { sequencerControllerLocale } from "./sequencer_controller.js";
-import { exportAudio } from "./export_audio.js";
+import { exportFile } from "./export_file.js";
 
 export const localeChinese = {
     localeName: "中文",
@@ -44,7 +44,7 @@ export const localeChinese = {
         button: "添加额外音色库"
     },
 
-    exportAudio: exportAudio,
+    exportFile: exportFile,
 
     error: "错误",
     yes: "是",

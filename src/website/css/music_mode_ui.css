@@ -33,13 +33,9 @@
     border-radius: 1rem;
     align-items: center;
     max-width: 90%;
-    backdrop-filter: brightness(0.3) blur(50px);
+    backdrop-filter: var(--music-mode-backdrop);
     flex-wrap: wrap;
     justify-content: center;
-}
-
-.player_info_wrapper.light_mode {
-    backdrop-filter: brightness(1.8) blur(50px) !important;
 }
 
 .player_info_note_icon {

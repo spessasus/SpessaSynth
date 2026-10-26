@@ -2,7 +2,11 @@ import type { LocaleCode } from "../website/locale/locale_list.ts";
 import {
     type RendererMode,
     rendererModes
-} from "../website/js/renderer/renderer_modes.ts";
+} from "../website/js/renderer/base/renderer_modes.ts";
+import {
+    DEFAULT_THEME,
+    type ThemeID
+} from "../website/js/themes/theme_list.ts";
 
 export type LayoutType = "downwards" | "upwards" | "left" | "right";
 
@@ -51,7 +55,7 @@ export interface SavedSettings {
         input: null | string;
     };
     interface: {
-        mode: InterfaceMode;
+        theme: ThemeID;
         language: LocaleCode;
         layout: LayoutType;
     };
@@ -72,7 +76,7 @@ export const DEFAULT_SAVED_SETTINGS: SavedSettings = {
     interface: {
         layout: "downwards",
         language: "en",
-        mode: "dark"
+        theme: DEFAULT_THEME
     },
     midi: {
         output: null,

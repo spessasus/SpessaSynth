@@ -13,11 +13,14 @@ import {
 import { getSeqUIButton } from "./sequi_button.js";
 import { keybinds } from "../utils/keybinds.js";
 import { updateSongDisplayData } from "./update_song_display_data.js";
-import { sanitizeKarLyrics, setLyricsText } from "./lyrics.js";
+import {
+    sanitizeKarLyrics,
+    setLyricSpanText,
+    setLyricsText
+} from "./lyrics.js";
 import { createSlider } from "../settings_ui/sliders.js";
 import type { LocaleManager } from "../manager/locale_manager.ts";
 import type { MusicModeUI } from "../music_mode_ui/music_mode_ui.ts";
-import type { Renderer } from "../renderer/renderer.ts";
 import {
     audioToWav,
     type MIDIMessage,
@@ -26,9 +29,9 @@ import {
 } from "spessasynth_core";
 import type { Sequencer } from "spessasynth_lib";
 import { AssManager } from "../utils/ass_manager/ass_manager.ts";
-import type { InterfaceMode } from "../../../server/saved_settings.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
 import { showNotification } from "../notification/notification.ts";
+import type { LiveRenderer } from "../renderer/live/live_renderer.ts";
 
 /**
  * Sequencer_ui.js
@@ -37,15 +40,7 @@ import { showNotification } from "../notification/notification.ts";
 
 const ICON_SIZE = 32;
 
-const ICON_COLOR = "#ccc";
-const ICON_DISABLED_COLOR = "#555";
-
-const ICON_COLOR_L = "#333";
-const ICON_DISABLED_COLOR_L = "#ddd";
-
 const DEFAULT_ENCODING = "Shift_JIS";
-
-const DOT_MATRIX_QUEUE_DELAY_MS = 35;
 
 // Zero width space
 const ZWSP = "\u200B";
@@ -64,8 +59,6 @@ export class SequencerUI {
     public currentSongTitle = "";
     public encoding = DEFAULT_ENCODING;
     protected wakeLock?: WakeLockSentinel;
-    protected iconColor = ICON_COLOR;
-    protected iconDisabledColor = ICON_DISABLED_COLOR;
     protected controls: HTMLElement;
     protected decoder = new TextDecoder(this.encoding);
     /**
@@ -76,7 +69,6 @@ export class SequencerUI {
     protected requiresTextUpdate = false;
     protected lastTimeUpdate = 0;
     protected rawOtherTextEvents: MIDIMessage[] = [];
-    protected mode: InterfaceMode = "dark";
     protected locale: LocaleManager;
     protected currentLyrics: MIDIMessage[] = [];
     /**
@@ -84,7 +76,7 @@ export class SequencerUI {
      */
     protected currentLyricsString: string[] = [];
     protected musicModeUI: MusicModeUI;
-    protected renderer: Renderer;
+    protected renderer;
     protected synth: Synthesizer;
     protected seq: Sequencer;
     protected mainTitleMessageDisplay: HTMLElement;
@@ -92,7 +84,6 @@ export class SequencerUI {
         enabled: false,
         currentEncodedText: new Uint8Array(0)
     };
-    protected requiresThemeUpdate = false;
     protected progressTime: HTMLParagraphElement;
     protected encodingSelector: HTMLSelectElement;
     protected lyricsElement: {
@@ -107,7 +98,6 @@ export class SequencerUI {
         };
         selector: HTMLSelectElement;
     };
-    protected progressBarBackground: HTMLDivElement;
     protected progressBar: HTMLDivElement;
     protected readonly transportControls: {
         previousSongButton: HTMLDivElement;
@@ -134,9 +124,7 @@ export class SequencerUI {
     protected silenceSeekLock = false;
 
     private displayTimeoutId: number | null = null;
-    private lastDotMatrixTime = 0;
     private dotMatrixQueue = new Array<number[]>();
-    private dotMatrixQueueActive = false;
 
     /**
      * Creates a new User Interface for the given MidiSequencer
@@ -151,7 +139,7 @@ export class SequencerUI {
         element: HTMLElement,
         locale: LocaleManager,
         musicMode: MusicModeUI,
-        renderer: Renderer,
+        renderer: LiveRenderer,
         synth: Synthesizer,
         seq: Sequencer
     ) {
@@ -300,7 +288,6 @@ export class SequencerUI {
             // Background bar
             const progressBarBg = document.createElement("div");
             progressBarBg.id = "note_progress_background";
-            this.progressBarBackground = progressBarBg;
             // Click time seek handler
             progressBarBg.addEventListener("click", (event) => {
                 event.preventDefault();
@@ -657,7 +644,7 @@ export class SequencerUI {
                     {
                         type: "text",
                         textContent: e.message,
-                        attributes: { className: "monospaced" }
+                        attributes: { class: "monospaced" }
                     }
                 ]
             );
@@ -666,7 +653,8 @@ export class SequencerUI {
         this.seq.eventHandler.addEvent(
             "songChange",
             "sequi-song-change",
-            (data) => {
+            (e) => {
+                const { midiData } = e;
                 this.synthDisplayMode.enabled = false;
                 this.lyricsIndex = -1;
                 this.updateSongDisplayData();
@@ -675,8 +663,8 @@ export class SequencerUI {
                 this.restoreDisplay();
                 this.renderer.clearRendererMatrix();
 
-                let midiEncoding = data.getRMIDInfo("midiEncoding");
-                if (data.embeddedSoundBankSize !== undefined) {
+                let midiEncoding = midiData.getRMIDInfo("midiEncoding");
+                if (midiData.embeddedSoundBankSize !== undefined) {
                     // RMID defaults to utf-8
                     midiEncoding = "utf-8";
                 }
@@ -691,13 +679,6 @@ export class SequencerUI {
                 this.subtitleManager.init();
             }
         );
-
-        if (this.requiresThemeUpdate && this.mode === "light") {
-            // Change to dark and then switch
-            this.mode = "dark";
-            this.toggleDarkMode();
-        }
-        // Otherwise, we're already dark
 
         // Media session
         this.silencePlayer = new Audio();
@@ -744,29 +725,6 @@ export class SequencerUI {
         // Hide for now
         this.controls.style.display = "none";
         this.setSliderInterval();
-    }
-
-    public toggleDarkMode() {
-        if (this.mode === "dark") {
-            this.mode = "light";
-            this.iconColor = ICON_COLOR_L;
-            this.iconDisabledColor = ICON_DISABLED_COLOR_L;
-        } else {
-            this.mode = "dark";
-            this.iconColor = ICON_COLOR;
-            this.iconDisabledColor = ICON_DISABLED_COLOR;
-        }
-        if (!this.seq.midiData) {
-            this.requiresThemeUpdate = true;
-            return;
-        }
-        this.progressBar.classList.toggle("note_progress_light");
-        this.progressBarBackground.classList.toggle(
-            "note_progress_background_light"
-        );
-        this.lyricsElement.mainDiv.classList.toggle("lyrics_light");
-        this.lyricsElement.titleWrapper.classList.toggle("lyrics_light");
-        this.lyricsElement.selector.classList.toggle("lyrics_light");
     }
 
     public seqPlay() {
@@ -889,8 +847,14 @@ export class SequencerUI {
     }
 
     protected changeEncoding(encoding: string) {
+        try {
+            this.decoder = new TextDecoder(encoding);
+        } catch (error) {
+            // The encoding can come from the file (MENC chunk)
+            console.warn(`Unsupported encoding ${encoding}:`, error);
+            return;
+        }
         this.encoding = encoding;
-        this.decoder = new TextDecoder(encoding);
         this.updateOtherTextEvents();
         this.decodeLyricData();
         // Update all spans with the new encoding
@@ -901,7 +865,7 @@ export class SequencerUI {
             if (this.currentLyricsString[index] === undefined) {
                 continue;
             }
-            span.textContent = this.currentLyricsString[index];
+            setLyricSpanText(span, this.currentLyricsString[index]);
         }
         this.lyricsElement.selector.value = encoding;
         this.updateSongDisplayData(false);
@@ -1055,7 +1019,7 @@ export class SequencerUI {
         this.lyricsElement.text.separateLyrics = [];
         for (const lyric of this.currentLyricsString) {
             const span = document.createElement("span");
-            span.innerHTML = lyric.replaceAll(/\r?\n|\r/g, "<br>");
+            setLyricSpanText(span, lyric);
             // Gray (not highlighted) text
             span.classList.add("lyrics_text_gray");
             this.lyricsElement.text.main.append(span);
@@ -1073,6 +1037,9 @@ export class SequencerUI {
                 noise[i] = Math.sin(p * (i / 80_000)) * 0.0001;
             }
             const buf = audioToWav([noise], 8000);
+            if (this.silencePlayer.src.startsWith("blob:")) {
+                URL.revokeObjectURL(this.silencePlayer.src);
+            }
             this.silencePlayer.src = URL.createObjectURL(
                 new Blob([buf], { type: "audio/wav" })
             );
@@ -1148,88 +1115,22 @@ export class SequencerUI {
     }
 
     protected enableIcon(icon: HTMLElement) {
-        icon.firstElementChild!.setAttribute("fill", this.iconColor);
-        if (icon.firstElementChild!.getAttribute("stroke")) {
-            icon.firstElementChild!.setAttribute("stroke", this.iconColor);
-        }
+        this.setIconColor(icon, "var(--icon-color)");
     }
 
     protected disableIcon(icon: HTMLElement) {
-        icon.firstElementChild?.setAttribute("fill", this.iconDisabledColor);
-        if (icon.firstElementChild!.getAttribute("stroke")) {
-            icon.firstElementChild!.setAttribute(
-                "stroke",
-                this.iconDisabledColor
-            );
+        this.setIconColor(icon, "var(--icon-disabled-color)");
+    }
+
+    protected setIconColor(icon: HTMLElement, color: string) {
+        // Inline style so the theme variables apply (SVG attributes do not support them)
+        const svg = icon.firstElementChild as SVGElement;
+        svg.style.fill = color;
+        if (svg.getAttribute("stroke")) {
+            svg.style.stroke = color;
         }
     }
 
-    private dotMatrixDisplay(syx: number[]) {
-        if (syx[0] === 0x41) {
-            // Roland Dot Matrix
-            const syxOffset = 7;
-            const matrix = this.renderer.displayMatrix;
-            for (let rowNum = 0; rowNum < 16; rowNum++) {
-                let colNum = 0;
-                for (let i = 4; i >= 0; i--) {
-                    matrix[rowNum][colNum++] =
-                        ((syx[syxOffset + rowNum] >> i) & 1) === 1;
-                }
-                for (let i = 4; i >= 0; i--) {
-                    matrix[rowNum][colNum++] =
-                        ((syx[syxOffset + rowNum + 16] >> i) & 1) === 1;
-                }
-                for (let i = 4; i >= 0; i--) {
-                    matrix[rowNum][colNum++] =
-                        ((syx[syxOffset + rowNum + 32] >> i) & 1) === 1;
-                }
-                matrix[rowNum][colNum] =
-                    ((syx[syxOffset + 48 + rowNum] >> 4) & 1) === 1;
-            }
-            this.renderer.updateDisplayMatrix("gs");
-        } else {
-            // Yamaha Display Bitmap
-            const syxOffset = 5;
-            const matrix = this.renderer.displayMatrix;
-            for (let rowNum = 0; rowNum < 16; rowNum++) {
-                let colNum = 0;
-                for (let i = 6; i >= 0; i--) {
-                    matrix[rowNum][colNum++] =
-                        ((syx[syxOffset + rowNum] >> i) & 1) === 1;
-                }
-                for (let i = 6; i >= 0; i--) {
-                    matrix[rowNum][colNum++] =
-                        ((syx[syxOffset + rowNum + 16] >> i) & 1) === 1;
-                }
-                for (let i = 6; i >= 5; i--) {
-                    matrix[rowNum][colNum++] =
-                        ((syx[syxOffset + rowNum + 32] >> i) & 1) === 1;
-                }
-            }
-            this.renderer.updateDisplayMatrix("xg");
-        }
-    }
-
-    private enqueueDotMatrix(syx: number[]) {
-        this.dotMatrixQueue.push(syx);
-        if (!this.dotMatrixQueueActive) {
-            this.processDotMatrixQueue();
-        }
-    }
-
-    private processDotMatrixQueue() {
-        const syx = this.dotMatrixQueue.shift();
-        if (!syx) {
-            this.dotMatrixQueueActive = false;
-            return;
-        }
-        this.dotMatrixQueueActive = true;
-        this.dotMatrixDisplay(syx);
-        setTimeout(
-            this.processDotMatrixQueue.bind(this),
-            DOT_MATRIX_QUEUE_DELAY_MS
-        );
-    }
     /**
      * Handle GS and XG synth display
      * @param syx
@@ -1237,7 +1138,8 @@ export class SequencerUI {
      */
     private synthDisplay(syx: number[]) {
         const isYamaha = syx[0] === 0x43;
-        const isRoland = syx[0] === 0x41;
+        // Safeguard for GS and not display data
+        const isRoland = syx[0] === 0x41 && syx[2] === 0x42;
         if (
             (isRoland &&
                 // Roland, PATCH NAME (Part of GS, not display)
@@ -1249,7 +1151,7 @@ export class SequencerUI {
                 syx[4] === 0x41 &&
                 (syx[5] & 0xf) === 0x0 &&
                 syx[6] === 0x00) ||
-            (isRoland && syx[5] === 0x00) || // Roland (and ensure display letters, not dot matrix
+            (isRoland && syx[5] === 0x00) || // Roland (and ensure display letters, not dot matrix)
             (isYamaha && syx[3] === 0x06)
         ) {
             // Clear styles and apply monospace
@@ -1312,20 +1214,6 @@ export class SequencerUI {
                 this.synthDisplayMode.enabled = false;
                 this.restoreDisplay();
             }, 5000);
-        } else if (
-            (isRoland && syx[5] === 0x01) ||
-            (isYamaha && syx[3] === 0x07)
-        ) {
-            // Buffer messages into a queue if needed
-            if (
-                this.dotMatrixQueue.length > 0 ||
-                Math.abs(this.lastDotMatrixTime - this.synth.currentTime) < 0.01
-            ) {
-                this.enqueueDotMatrix(syx);
-                return;
-            }
-            this.lastDotMatrixTime = this.synth.currentTime;
-            this.dotMatrixDisplay(syx);
         }
     }
 }

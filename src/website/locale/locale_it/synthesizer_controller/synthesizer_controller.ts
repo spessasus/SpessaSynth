@@ -1,6 +1,5 @@
 import { channelControllerLocale } from "./channel_controller.js";
 import { effectsConfig } from "./effects_config.js";
-import { keyModifiers } from "./key_modifiers.js";
 
 export const synthesizerControllerLocale = {
     toggleButton: {
@@ -35,10 +34,16 @@ export const synthesizerControllerLocale = {
         description: "MIDI Panic: Ferma tutte le voci immediatamente"
     },
 
-    systemReset: {
-        title: "Reimposta controller",
+    gsReset: {
+        title: "Reset GS",
         description:
-            "Reimposta controller: Ripristina tutti i controller MIDI ai loro valori predefiniti"
+            "Reset GS: Reimposta l'intero sintetizzatore in modalità Roland GS e sblocca tutti i controller"
+    },
+
+    xgReset: {
+        title: "Reset XG",
+        description:
+            "Reset XG: Reimposta l'intero sintetizzatore in modalità Yamaha XG e sblocca tutti i controller"
     },
 
     showOnlyUsed: {
@@ -55,6 +60,5 @@ export const synthesizerControllerLocale = {
     holdPedalDown: "Pedale sustain premuto (Shift)",
     port: "Porta {0} (clicca per mostrare/nascondere)",
     channelController: channelControllerLocale,
-    effectsConfig: effectsConfig,
-    keyModifiers: keyModifiers
+    effectsConfig: effectsConfig
 };

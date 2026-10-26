@@ -1,19 +1,18 @@
 {
     "name": "SpessaSynth",
-    "version": "4.3.14",
+    "version": "4.4.0",
     "type": "module",
     "private": true,
     "scripts": {
-        "perms": "chmod +x src/build/*",
-        "test:types": "eslint --cache && tsc -b",
+        "test:types": "eslint && tsc -b",
         "start": "node src/build/start.ts",
         "build": "npm run test:types && npm run build:fast",
         "build:fast": "node src/build/build.ts",
-        "format": "prettier . --write",
-        "dev": "npm run perms; src/build/packed_libs.sh",
-        "debug": "npm run perms; src/build/enable_debug.sh",
-        "release": "npm run perms; src/build/disable_debug.sh",
-        "clean": "rm -rf dist; rm -rf local-dev; rm -rf server"
+        "format": "prettier . --write --list-different",
+        "dev": "node src/build/dev.ts",
+        "release": "node src/build/release.ts",
+        "video": "tsx src/cli_video/index.ts",
+        "clean": "node -e \"const fs=require('fs/promises'); Promise.all([fs.rm('dist',{recursive:true,force:true}), fs.rm('local-dev',{recursive:true,force:true}), fs.rm('server',{recursive:true,force:true})])\""
     },
     "devDependencies": {
         "@chialab/esbuild-plugin-meta-url": "^0.19.1",
@@ -25,6 +24,7 @@
         "eslint-plugin-unicorn": "^64.0.0",
         "globals": "^17.6.0",
         "prettier": "^3.8.3",
+        "skia-canvas": "^4.0.0",
         "typescript": "^6.0.3",
         "typescript-eslint": "^8.59.1"
     },
@@ -36,8 +36,13 @@
         "*.{html,json,md,yml,yaml,css}": "prettier --write"
     },
     "dependencies": {
+        "fflate": "^0.8.3",
         "jszip": "^3.10.1",
-        "spessasynth_core": "latest",
-        "spessasynth_lib": "latest"
+        "mediabunny": "^1.61.3",
+        "spessasynth_core": "file:../spessasynth_core",
+        "spessasynth_lib": "file:../spessasynth_lib"
+    },
+    "allowScripts": {
+        "esbuild@0.28.1": true
     }
 }

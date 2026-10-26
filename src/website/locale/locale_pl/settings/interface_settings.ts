@@ -1,9 +1,9 @@
 export const interfaceSettings = {
     title: "Ustawienia interfejsu",
 
-    toggleTheme: {
-        title: "Włącz ciemny motyw",
-        description: "Włącz ciemny motyw programu"
+    theme: {
+        title: "Motyw",
+        description: "Wybierz motyw programu"
     },
 
     selectLanguage: {
@@ -27,6 +27,7 @@ export const interfaceSettings = {
         title: "Obrazek w tle",
         description: "Ustaw obrazek w tle wizualizacji"
     },
+    chooseImage: "Wybierz obraz",
 
     synthReload: {
         chromium: "Przeładuj w trybie Chrome",

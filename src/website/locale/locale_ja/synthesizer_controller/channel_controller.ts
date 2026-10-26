@@ -45,10 +45,10 @@ export const channelControllerLocale = {
             "リバーブレベル: チャンネル{0}に適用された現在のリバーブ効果のレベル (右クリックでロック)"
     },
 
-    delayMeter: {
-        title: "ディレイ: ",
+    variationMeter: {
+        title: "バリエーション: ",
         description:
-            "ディレイレベル: チャンネル{0}に適用された現在のディレイ効果のレベル (右クリックでロック)"
+            "バリエーションレベル: チャンネル{0}に適用された現在のバリエーション効果のレベル (右クリックでロック)"
     },
 
     filterMeter: {

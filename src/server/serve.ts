@@ -10,9 +10,15 @@ import {
 } from "./server_utils.ts";
 
 export function serveSfont(path: string, res: ServerResponse) {
+    let size;
+    try {
+        size = fs.statSync(path).size;
+    } catch {
+        res.writeHead(404);
+        res.end("Soundfont not found");
+        return;
+    }
     const fileStream = fs.createReadStream(path);
-
-    const size = fs.statSync(path).size;
 
     fileStream.on("error", (error) => {
         if ("code" in error && error.code === "ENOENT") {
@@ -66,16 +72,32 @@ export function serveSettings(res: ServerResponse, config: LocalEditionConfig) {
     res.end(JSON.stringify(config.config.settings));
 }
 
+export function resolveRequestPath(directory: string, url: string) {
+    // Filter out the something.js?hash=5637f
+    let decoded;
+    try {
+        decoded = decodeURIComponent(url.split("?")[0]);
+    } catch {
+        return;
+    }
+    const root = path.resolve(directory);
+    const filePath = path.resolve(root, "." + decoded);
+    // The server is reachable from the network, never serve files outside the directory
+    if (filePath !== root && !filePath.startsWith(root + path.sep)) {
+        return;
+    }
+    return filePath;
+}
+
 export function serveStaticFile(
     res: ServerResponse,
-    filePath: string,
+    filePath: string | undefined,
     mimeType?: string
 ) {
-    filePath = decodeURIComponent(filePath);
-    // Filter out the something.js?hash=5637f
-    const questionMark = filePath.split("?");
-    if (questionMark.length === 2) {
-        filePath = questionMark[0];
+    if (filePath === undefined) {
+        res.writeHead(400);
+        res.end("Invalid path");
+        return;
     }
     if (
         filePath.toLowerCase().endsWith(".sf3") ||
@@ -97,14 +119,15 @@ export function serveStaticFile(
         file = fs.readFileSync(filePath);
     } catch {
         console.warn("Not found for", filePath);
-        res.writeHead(404);
+        // The path is not echoed back, as it comes from the request
+        res.writeHead(404, { "Content-Type": "text/html" });
         res.end(`
 <html lang='en'>
     <head>
         <meta http-equiv='Refresh' content='0; URL=/' /><title>Not found</title>
     </head>
     <body>
-    <h1><pre>${filePath}</pre> not Found!</h1>
+    <h1>Not Found!</h1>
 </body>
 </html>`);
         return;

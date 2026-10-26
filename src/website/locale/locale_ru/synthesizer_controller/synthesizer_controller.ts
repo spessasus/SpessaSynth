@@ -1,6 +1,5 @@
 import { channelControllerLocale } from "./channel_controller.js";
 import { effectsConfig } from "./effects_config.js";
-import { keyModifiers } from "./key_modifiers.js";
 
 export const synthesizerControllerLocale = {
     toggleButton: {
@@ -36,10 +35,16 @@ export const synthesizerControllerLocale = {
         description: "MIDI Panic: немедленно останавливает все голоса"
     },
 
-    systemReset: {
-        title: "Сброс контроллеров",
+    gsReset: {
+        title: "Сброс GS",
         description:
-            "Сброс контроллеров: сбрасывает все MIDI-контроллеры до значений по умолчанию"
+            "Сброс GS: сбрасывает весь синтезатор в режим Roland GS и разблокирует все контроллеры"
+    },
+
+    xgReset: {
+        title: "Сброс XG",
+        description:
+            "Сброс XG: сбрасывает весь синтезатор в режим Yamaha XG и разблокирует все контроллеры"
     },
 
     showOnlyUsed: {
@@ -57,10 +62,14 @@ export const synthesizerControllerLocale = {
     tabs: {
         description: "Вкладки: выберите, что настроить",
         channels: "MIDI-каналы",
-        reverb: "Реверберация",
-        chorus: "Хорус",
-        delay: "Задержка",
-        insertion: "Вставка",
+        gsReverb: "Реверберация GS",
+        gsChorus: "Хорус GS",
+        gsDelay: "Задержка GS",
+        gsInsertion: "Вставка GS",
+        xgReverb: "Реверберация XG",
+        xgChorus: "Хорус XG",
+        xgVariation: "Вариация XG",
+        xgInsertion: "Вставка XG",
         configuration: "Конфигурация"
     },
 
@@ -69,6 +78,5 @@ export const synthesizerControllerLocale = {
         "Воспроизведение с клавиатуры включено, нажмите ` для отключения",
     port: "Порт {0} (нажмите, чтобы изменить видимость)",
     channelController: channelControllerLocale,
-    effectsConfig: effectsConfig,
-    keyModifiers: keyModifiers
+    effectsConfig: effectsConfig
 };

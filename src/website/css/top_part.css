@@ -1,20 +1,84 @@
 /*Top*/
 .top_part {
     --top-part-border-radius: 1.5rem;
+    --top-part-gap: 1rem;
+    --top-part-side-width: 21rem;
     position: relative;
     background: var(--top-color);
     border-radius: 0 0 var(--top-part-border-radius)
         var(--top-part-border-radius);
-    padding: 3px;
-    display: flex;
-    flex-wrap: wrap;
-    align-content: space-around;
-    justify-content: space-around;
+    padding: 0.35rem 1.25rem 0.5rem;
+    /* Equal side columns keep the title centered, not like before */
+    display: grid;
+    grid-template-columns:
+        minmax(var(--top-part-side-width), 1fr)
+        auto
+        minmax(var(--top-part-side-width), 1fr);
+    grid-template-areas: "synth title settings";
     align-items: center;
+    column-gap: var(--top-part-gap);
     z-index: 50;
     transform-origin: top;
     transform: scaleY(1);
     transition: var(--hide-top-duration) ease;
+}
+
+#synthesizer_controls {
+    grid-area: synth;
+    justify-self: start;
+}
+
+#title_wrapper {
+    grid-area: title;
+    min-width: 0;
+    text-align: center;
+}
+
+#settings_div {
+    grid-area: settings;
+    justify-self: end;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Not enough room for three columns: controls on top, title below */
+@media (max-width: 1280px) {
+    .top_part {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-areas:
+            "synth settings"
+            "title title";
+    }
+}
+
+/* Mobile: one column, side controls compacted into rows */
+@media (max-width: 700px) {
+    .top_part {
+        --top-part-gap: 0.25rem;
+        padding-inline: 0.5rem;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+            "synth"
+            "title"
+            "settings";
+    }
+
+    #synthesizer_controls,
+    #settings_div {
+        justify-self: center;
+    }
+
+    #settings_div {
+        flex-flow: row wrap;
+        justify-content: center;
+        gap: 0.2rem 1.25rem;
+    }
+
+    #settings_div .seamless_button {
+        margin: 0;
+        font-size: 1rem;
+    }
 }
 
 .top_part * {
@@ -55,41 +119,84 @@ input[type="file"] {
 #title {
     user-select: text;
     position: relative;
-    z-index: 1;
-    margin: 0.2em auto;
-    display: block;
-    line-height: 100%;
+    margin: 0.15em 0 0;
+    line-height: 1.1;
     font-weight: normal;
     text-shadow: 0 0 5px var(--font-color);
-    font-size: 2rem;
+    font-size: clamp(1.5rem, 1rem + 1.2vw, 2rem);
+    overflow-wrap: anywhere;
 }
 
+/* Thin loading line under the title. Width follows --progress (0 to 1). Very elegant! */
 #progress_bar {
-    background: #206;
-    display: block;
+    --progress: 0;
+    position: relative;
+    width: min(22rem, 70%);
+    height: 3px;
+    margin: 0.45rem auto 0.2rem;
+    border-radius: 3px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--border-color) 20%, transparent);
+    opacity: 0;
+    transform: scaleX(0.6);
+    transition:
+        opacity 0.4s ease,
+        transform 0.4s var(--bouncy-transition);
+}
+
+#progress_bar.active {
+    opacity: 1;
+    transform: scaleX(1);
+    box-shadow: 0 0 10px
+        color-mix(in srgb, var(--border-color) 45%, transparent);
+}
+
+#progress_bar::after {
+    content: "";
     position: absolute;
-    width: 0;
-    height: 2.1em;
-    border-radius: var(--primary-border-radius);
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 0.4em;
-    padding-top: 5px;
-    padding-bottom: 5px;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 0;
-    transition: width ease 0.5s;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+        90deg,
+        var(--title-progress-color),
+        var(--border-color) 70%,
+        var(--text-glow-color)
+    );
+    transform-origin: left;
+    transform: scaleX(var(--progress));
+    transition: transform 0.25s ease-out;
+}
+
+/* Unknown duration (parsing, initializing): a sweeping highlight. */
+#progress_bar.indeterminate::after {
+    width: 35%;
+    transform: none;
+    animation: progress_sweep 1.2s ease-in-out infinite;
+}
+
+@keyframes progress_sweep {
+    from {
+        translate: -100%;
+    }
+    to {
+        translate: 290%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #progress_bar.indeterminate::after {
+        width: 100%;
+        animation: none;
+        opacity: 0.6;
+    }
 }
 
 .midi_and_sf_controller {
     position: relative;
     display: flex;
-    width: fit-content;
-    margin: auto auto 5px;
     flex-wrap: wrap;
-    justify-content: space-around;
+    justify-content: center;
+    margin: 0 auto;
 }
 .midi_and_sf_controller label,
 .midi_and_sf_controller a {
@@ -112,7 +219,7 @@ input[type="file"] {
 
 .link a,
 .link svg * {
-    color: yellowgreen;
+    color: var(--accent-link-color);
 }
 
 .midi_and_sf_controller label:active,
@@ -122,7 +229,7 @@ input[type="file"] {
 }
 
 #sf_selector option {
-    background: #000;
+    background: var(--background-color);
     text-align: center;
 }
 

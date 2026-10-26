@@ -1,4 +1,4 @@
-import { MIDIKeyboard } from "../midi_keyboard/midi_keyboard.js";
+import type { LiveKeyboard } from "../canvas_keyboard/live/live_keyboard.ts";
 import {
     Sequencer,
     WebMIDILinkHandler,
@@ -6,17 +6,15 @@ import {
     WorkletSynthesizer
 } from "spessasynth_lib";
 
-import { Renderer } from "../renderer/renderer.js";
-
 import { SequencerUI } from "../sequencer_ui/sequencer_ui.js";
 import { SynthesizerUI } from "../synthesizer_ui/synthetizer_ui.js";
 import { SpessaSynthSettings } from "../settings_ui/settings.js";
 import { MusicModeUI } from "../music_mode_ui/music_mode_ui.js";
 import { LocaleManager } from "./locale_manager.js";
-import { isMobile } from "../utils/is_mobile.js";
 import { keybinds } from "../utils/keybinds.js";
-import { showAudioExportMenu } from "./export_audio/export_audio.js";
-import { showExportMenu } from "./export_audio/export_song.js";
+import { showAudioExportMenu } from "./export/export_audio.js";
+import { showVideoExportMenu } from "./export/video/export_video.js";
+import { showExportMenu } from "./export/export_file.js";
 import {
     closeNotification,
     showNotification
@@ -30,7 +28,14 @@ import { prepareExtraBankUpload } from "./extra_bank_handling.js";
 
 import { EXTRA_BANK_ID, SOUND_BANK_ID } from "./bank_id.ts";
 import type { Synthesizer } from "../utils/synthesizer.ts";
-import { writeDLS } from "./export_audio/export_dls.ts"; // This enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
+import { writeDLS } from "./export/export_dls.ts";
+import { URLParamUtils } from "../utils/url_params.ts";
+import { decodeDefaultImpulseResponse } from "../reverb/compressed_reverb_decoder.ts";
+import { LiveRenderer } from "../renderer/live/live_renderer.ts"; // This enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
+import {
+    CHANNEL_COLOR_VARIABLES,
+    CHANNEL_COLORS
+} from "../renderer/base/channel_colors.ts";
 
 // This enables transitions on the body because if we enable them during loading time, it flash-bangs us with white
 document.body.classList.add("load");
@@ -47,7 +52,6 @@ export class Manager {
     public enableDebug;
     public readonly ready;
     public readonly localeManager;
-    public readonly workerMode;
     public synth?: Synthesizer;
     public seq?: Sequencer;
     public readonly showExportMenu = showExportMenu.bind(this);
@@ -56,6 +60,7 @@ export class Manager {
     protected isExporting;
     protected keyboardMode = false;
     protected readonly showAudioExportMenu = showAudioExportMenu.bind(this);
+    protected readonly showVideoExportMenu = showVideoExportMenu.bind(this);
     /**
      * Extra sound bank upload tracking (for rendering audio and file name)
      * @protected
@@ -65,26 +70,15 @@ export class Manager {
         offset: number;
         buffer: ArrayBuffer;
     };
-    private readonly channelColors = [
-        "rgba(255, 99, 71, 1)", // Tomato
-        "rgba(255, 165, 0, 1)", // Orange
-        "rgba(255, 215, 0, 1)", // Gold
-        "rgba(50, 205, 50, 1)", // Limegreen
-        "rgba(60, 179, 113, 1)", // Mediumseagreen
-        "rgba(0, 128, 0, 1)", // Green
-        "rgba(0, 191, 255, 1)", // Deepskyblue
-        "rgba(65, 105, 225, 1)", // Royalblue
-        "rgba(138, 43, 226, 1)", // Blueviolet
-        "rgba(50, 120, 125, 1)", //'rgba(218, 112, 214, 1)', // percussion color
-        "rgba(255, 0, 255, 1)", // Magenta
-        "rgba(255, 20, 147, 1)", // Deeppink
-        "rgba(218, 112, 214, 1)", // Orchid
-        "rgba(240, 128, 128, 1)", // Lightcoral
-        "rgba(255, 192, 203, 1)", // Pink
-        "rgba(255, 255, 0, 1)" // Yellow
-    ];
-    private keyboard?: MIDIKeyboard;
-    private renderer?: Renderer;
+    protected readonly convolverMode: boolean;
+    protected renderer?: LiveRenderer;
+    private keyboard?: LiveKeyboard;
+    private readonly workerMode: boolean;
+    private audioWorker?: Worker;
+    private soundBankCopyWaiter?: {
+        resolve: (buffer: ArrayBuffer) => void;
+        reject: (error: Error) => void;
+    };
     private synthUI?: SynthesizerUI;
     private musicModeUI?: MusicModeUI;
     private settingsUI?: SpessaSynthSettings;
@@ -106,10 +100,10 @@ export class Manager {
         this.isExporting = false;
         this.sBankBuffer = sfBuffer;
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const mode = urlParams.get("mode");
-        this.workerMode = mode ? mode === "chromium" : "chrome" in window;
-
+        const backend = URLParamUtils.getParam(URLParamUtils.BACKEND);
+        this.workerMode = backend ? backend === "worker" : "chrome" in window;
+        // Anything set that's not an empty string means convolver
+        this.convolverMode = !!URLParamUtils.getParam(URLParamUtils.CONVOLVER);
         this.audioDelay = new DelayNode(context, {
             delayTime: 0
         });
@@ -165,6 +159,7 @@ export class Manager {
         if (sf === this.sBankBuffer) {
             return;
         }
+        const wasPlaying = this.seq?.paused === false;
         this.seq?.pause();
         const text = sf.slice(8, 12);
         const header = util.readBinaryStringIndexed(
@@ -179,8 +174,8 @@ export class Manager {
             }, 3000);
         }
 
-        // Resets controllers and resume
-        if (this.seq?.midiData) {
+        // Resets controllers and resume (only if the song was playing)
+        if (wasPlaying && this.seq?.midiData) {
             this.seq.currentTime -= 0.1;
             this.seqUI?.seqPlay();
         }
@@ -220,6 +215,40 @@ export class Manager {
         );
     }
 
+    /**
+     * Copies a sound bank's binary buffer back from the audio worker (in chrome mode).
+     * Uploading a bank detaches the main thread's copy (making it unusable), so this restores
+     * usable buffer on demand without keeping a second copy around.
+     * @param bankID
+     */
+    public async getWorkerSoundBankCopy(bankID: string): Promise<ArrayBuffer> {
+        const worker = this.audioWorker;
+        if (!worker) {
+            throw new Error("Unexpected request without worker!");
+        }
+        if (this.soundBankCopyWaiter) {
+            throw new Error("A sound bank copy is already in progress.");
+        }
+        console.info("Copying the sound bank back from the worker...");
+        return await new Promise<ArrayBuffer>((resolve, reject) => {
+            this.soundBankCopyWaiter = {
+                resolve: (buffer) => {
+                    this.soundBankCopyWaiter = undefined;
+                    resolve(buffer);
+                },
+                reject: (error) => {
+                    this.soundBankCopyWaiter = undefined;
+                    reject(error);
+                }
+            };
+            worker.postMessage({
+                type: "getSoundBankCopy",
+                data: bankID,
+                channelNumber: -1
+            });
+        });
+    }
+
     protected saveBlob(blob: Blob, name: string) {
         const url = URL.createObjectURL(blob);
         this.saveUrl(url, name);
@@ -257,7 +286,7 @@ export class Manager {
      * @param context
      * @private
      */
-    private async initializeSynth(context: BaseAudioContext) {
+    private async initializeSynth(context: AudioContext) {
         if (this.workerMode) {
             await WorkerSynthesizer.registerPlaybackWorklet(context);
             const worker = new Worker(new URL("worker.ts", import.meta.url), {
@@ -266,19 +295,50 @@ export class Manager {
 
             const synth = new WorkerSynthesizer(
                 context,
-                worker.postMessage.bind(worker)
+                worker.postMessage.bind(worker),
+                {
+                    convolverMode: this.convolverMode
+                }
             );
+            // Custom handling for worker sound bank copy
             // eslint-disable-next-line unicorn/prefer-add-event-listener
-            worker.onmessage = (e) =>
+            worker.onmessage = (e) => {
+                const data = e.data as {
+                    type?: string;
+                    data?: {
+                        bankID: string;
+                        buffer: ArrayBuffer | null;
+                    };
+                };
+                if (data?.type === "soundBankCopyResult") {
+                    const waiter = this.soundBankCopyWaiter;
+                    if (!waiter) {
+                        return;
+                    }
+                    if (!data.data?.buffer) {
+                        waiter.reject(
+                            new Error(
+                                `No sound bank with ID "${data?.data?.bankID}" is stored in the worker.`
+                            )
+                        );
+                        return;
+                    }
+                    waiter.resolve(data.data.buffer);
+                    return;
+                }
                 synth.handleWorkerMessage(
                     e.data as Parameters<typeof synth.handleWorkerMessage>[0]
                 );
+            };
+            this.audioWorker = worker;
             return synth;
         } else {
             await context.audioWorklet.addModule(
                 "./spessasynth_processor.min.js"
             );
-            return new WorkletSynthesizer(context);
+            return new WorkletSynthesizer(context, {
+                convolverMode: this.convolverMode
+            });
         }
     }
 
@@ -345,6 +405,17 @@ export class Manager {
         // Create synth
         const synth = await this.initializeSynth(context);
         this.synth = synth;
+        if (this.synth.convolverNode) {
+            try {
+                this.synth.convolverNode.buffer =
+                    await decodeDefaultImpulseResponse(context);
+            } catch (error) {
+                console.warn(
+                    "Could not decode the default convolver impulse response!",
+                    error
+                );
+            }
+        }
 
         synth.connect(this.audioDelay);
         await synth.isReady;
@@ -367,9 +438,6 @@ export class Manager {
         // noinspection JSCheckFunctionSignatures
         new WebMIDILinkHandler(this.synth);
 
-        // Set up keyboard
-        this.keyboard = new MIDIKeyboard(this.channelColors, this.synth);
-
         /**
          * Set up renderer
          */
@@ -379,8 +447,9 @@ export class Manager {
         canvas.width = window.innerWidth * window.devicePixelRatio;
         canvas.height = window.innerHeight * window.devicePixelRatio;
 
-        this.renderer = new Renderer(
-            this.channelColors,
+        // The new canvas keyboard is created by the renderer
+        this.renderer = new LiveRenderer(
+            CHANNEL_COLORS,
             this.synth,
             this.seq,
             this.audioDelay,
@@ -389,27 +458,11 @@ export class Manager {
             this.workerMode,
             window.SPESSASYNTH_VERSION
         );
+        this.keyboard = this.renderer.keyboard;
         this.renderer.startRendering();
 
-        let titleSwappedWithSettings = false;
         const checkResize = () => {
             this?.renderer?.updateSize();
-            if (isMobile) {
-                if (window.innerWidth / window.innerHeight > 1) {
-                    if (!titleSwappedWithSettings) {
-                        const title = document.querySelector("#title_wrapper")!;
-                        const settings =
-                            document.querySelector("#settings_div")!;
-                        titleSwappedWithSettings = true;
-                        title.parentElement?.insertBefore(settings, title);
-                    }
-                } else if (titleSwappedWithSettings) {
-                    const title = document.querySelector("#title_wrapper")!;
-                    const settings = document.querySelector("#settings_div")!;
-                    titleSwappedWithSettings = false;
-                    title.parentElement?.insertBefore(title, settings);
-                }
-            }
             this.renderer?.renderOneFrame();
             const h = window.location.hostname;
             // Domain correction
@@ -426,15 +479,9 @@ export class Manager {
         window.addEventListener("resize", checkResize.bind(this));
         window.addEventListener("orientationchange", checkResize.bind(this));
 
-        // If on mobile, switch to a 2 octave keyboard
-        if (isMobile) {
-            this.renderer.keyRange = { min: 48, max: 72 };
-            this.keyboard.setKeyRange({ min: 48, max: 72 }, false);
-        }
-
         // Set up synth UI
         this.synthUI = new SynthesizerUI(
-            this.channelColors,
+            CHANNEL_COLOR_VARIABLES,
             document.querySelector("#synthesizer_controls")!,
             this.localeManager,
             this.keyboard,
@@ -445,7 +492,7 @@ export class Manager {
 
         // Connect muting to renderer
         this.synthUI.onMute.push((channel, isMuted) => {
-            this.renderer!.renderChannels[channel] = !isMuted;
+            this.renderer?.setRenderPart(channel, !isMuted);
         }, this.keyboard.onMute.bind(this.keyboard));
 
         // Create a UI for music player mode
@@ -500,18 +547,14 @@ export class Manager {
             this.play(data);
             let firstName = data[0].fileName;
             if (firstName.length > 20) {
-                firstName = firstName.slice(0, 21) + "...";
+                firstName = firstName.slice(0, 20) + "...";
             }
             // Set file name
             document.querySelector("#file_upload")!.textContent = firstName;
-            // Show export button
-            const exportButton =
-                document.querySelector<HTMLLabelElement>("#export_button")!;
-            exportButton.style.display = "flex";
-            exportButton.addEventListener(
-                "click",
-                this.showExportMenu.bind(this)
-            );
+            // Show export button (the click listener is added by the main script)
+            document.querySelector<HTMLLabelElement>(
+                "#export_button"
+            )!.style.display = "flex";
             // If demo website, hide demo songs button
             if (!this.isLocalEdition) {
                 document.querySelector<HTMLLabelElement>(
@@ -521,6 +564,12 @@ export class Manager {
         }, this.reloadSf.bind(this));
 
         // Add key presses
+        // Notes played with the computer keyboard, by key, so they can be released
+        // Even after the keyboard mode is turned off or the channel changes
+        const heldKeyNotes = new Map<
+            string,
+            { channel: number; note: number }
+        >();
         document.addEventListener(
             "keydown",
             (e) => {
@@ -530,13 +579,25 @@ export class Manager {
                     e.stopImmediatePropagation();
                     return;
                 }
+                // Let text fields receive their keys (this listener runs in the capture phase)
+                const target = e.target;
+                if (
+                    target instanceof HTMLTextAreaElement ||
+                    (target instanceof HTMLInputElement &&
+                        target.type !== "range" &&
+                        target.type !== "checkbox")
+                ) {
+                    return;
+                }
                 const key = e.key.toLowerCase();
                 if (this.keyboardMode && key !== keybinds.keyboardMode) {
                     e.stopImmediatePropagation();
 
                     const note = keybinds.keyboardKeys[key];
                     if (note) {
-                        this.synth?.noteOn(this.keyboard!.channel, note, 120);
+                        const channel = this.keyboard!.channel;
+                        this.synth?.noteOn(channel, note, 120);
+                        heldKeyNotes.set(key, { channel, note });
                     }
                     return;
                 }
@@ -559,17 +620,19 @@ export class Manager {
         );
 
         document.addEventListener("keyup", (e) => {
+            const key = e.key.toLowerCase();
+            // Always release held notes, so they do not get stuck
+            const held = heldKeyNotes.get(key);
+            if (held) {
+                heldKeyNotes.delete(key);
+                this.synth?.noteOff(held.channel, held.note);
+            }
             // Check for control
             if (e.ctrlKey) {
                 // Do not interrupt control shortcuts
                 return;
             }
-            const key = e.key.toLowerCase();
             if (this.keyboardMode) {
-                const note = keybinds.keyboardKeys[key];
-                if (note) {
-                    this.synth?.noteOff(this.keyboard!.channel, note);
-                }
                 return;
             }
             switch (key) {

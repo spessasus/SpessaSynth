@@ -57,14 +57,12 @@ export const rendererSettingsLocale = {
 
     toggleNotesRendering: {
         title: "შენიშვნების ჩვენება",
-        description:
-            "MIDI ფაილის დაკვრისას დაცემული ნოტების რენდერინგის ჩართვა"
+        description: "MIDI ფაილის დაკვრისას დაცემული ნოტების რენდერინგის ჩართვა"
     },
 
     toggleDrawingActiveNotes: {
         title: "აქტიური შენიშვნების ჩვენება",
-        description:
-            "ჩართეთ ნოტების განათება და მოციმციმე დაჭერისას"
+        description: "ჩართეთ ნოტების განათება და მოციმციმე დაჭერისას"
     },
 
     toggleDrawingVisualPitch: {
@@ -75,7 +73,8 @@ export const rendererSettingsLocale = {
 
     toggleDrawingPresetNames: {
         title: "წინასწარ დაყენებული სახელების ჩვენება",
-        description: "ჩართეთ თითოეული ტალღის ფორმის მიმდინარე წინასწარ განსაზღვრული სახელების ჩვენება"
+        description:
+            "ჩართეთ თითოეული ტალღის ფორმის მიმდინარე წინასწარ განსაზღვრული სახელების ჩვენება"
     },
 
     toggleRenderingDotDisplay: {

@@ -1,6 +1,5 @@
 import { channelControllerLocale } from "./channel_controller.js";
 import { effectsConfig } from "./effects_config.js";
-import { keyModifiers } from "./key_modifiers.js";
 
 export const synthesizerControllerLocale = {
     toggleButton: {
@@ -35,9 +34,16 @@ export const synthesizerControllerLocale = {
         description: "Zatrzymuje wszystkie dźwięki"
     },
 
-    systemReset: {
-        title: "Reset systemu",
-        description: "Resetuje wszystkie kontrolery do ich domyślnych wartości"
+    gsReset: {
+        title: "Reset GS",
+        description:
+            "Reset GS: Resetuje cały syntezator do trybu Roland GS i odblokowuje wszystkie kontrolery"
+    },
+
+    xgReset: {
+        title: "Reset XG",
+        description:
+            "Reset XG: Resetuje cały syntezator do trybu Yamaha XG i odblokowuje wszystkie kontrolery"
     },
 
     helpButton: {
@@ -53,10 +59,14 @@ export const synthesizerControllerLocale = {
     tabs: {
         description: "Karty: Wybierz, co chcesz skonfigurować",
         channels: "Kanały MIDI",
-        reverb: "Pogłos",
-        chorus: "Chór",
-        delay: "Delay",
-        insertion: "Insertion",
+        gsReverb: "Pogłos GS",
+        gsChorus: "Chór GS",
+        gsDelay: "Delay GS",
+        gsInsertion: "Insertion GS",
+        xgReverb: "Pogłos XG",
+        xgChorus: "Chór XG",
+        xgVariation: "Wariacja XG",
+        xgInsertion: "Insertion XG",
         configuration: "Konfiguracja"
     },
 
@@ -65,6 +75,5 @@ export const synthesizerControllerLocale = {
         "Granie na klawiaturze jest włączone, naciśnij ` aby wyłączyć",
     port: "Port {0} (kliknij aby zmienić widoczność)",
     channelController: channelControllerLocale,
-    effectsConfig: effectsConfig,
-    keyModifiers: keyModifiers
+    effectsConfig: effectsConfig
 };

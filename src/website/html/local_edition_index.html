@@ -83,10 +83,10 @@
                 <div id="synthesizer_controls"></div>
 
                 <div id="title_wrapper">
-                    <div id="progress_bar"></div>
                     <h1 id="title" translate-path="locale.titleMessage">
                         SpessaSynth: SoundFont2/DLS JavaScript Synthetizer
                     </h1>
+                    <div id="progress_bar"></div>
                     <noscript
                         ><h1>
                             SpessaSynth requires JavaScript to work.
@@ -100,16 +100,16 @@
                             >Upload your MIDI files</label
                         >
                         <input
-                            accept=".mid, .smf, .rmi, audio/midi, .kar, .xmf, .mxmf"
+                            accept=".mid, .smf, .rmi, audio/midi, .kar, .xmf, .mxmf, .mod, .xm, .s3m"
                             id="midi_file_input"
                             multiple
                             type="file"
-                        /><br />
+                        />
 
                         <label
                             id="export_button"
                             style="display: none"
-                            translate-path-title="locale.exportAudio.button"
+                            translate-path-title="locale.exportFile.button"
                             >Export audio</label
                         >
 
@@ -251,7 +251,6 @@
 
             <div id="keyboard_canvas_wrapper">
                 <canvas id="note_canvas"></canvas>
-                <div id="keyboard"></div>
             </div>
             <div id="player_info"></div>
 

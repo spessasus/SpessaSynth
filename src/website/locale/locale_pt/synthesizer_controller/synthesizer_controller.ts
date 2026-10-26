@@ -38,9 +38,16 @@ export const synthesizerControllerLocale = {
         description: "Para todas as vozes imediatamente"
     },
 
-    systemReset: {
-        title: "Reiniciar Sistema",
-        description: "Redefine todos os controladores para seus valores padrão"
+    gsReset: {
+        title: "Reiniciar GS",
+        description:
+            "Reinicia todo o sintetizador no modo Roland GS e desbloqueia todos os controladores"
+    },
+
+    xgReset: {
+        title: "Reiniciar XG",
+        description:
+            "Reinicia todo o sintetizador no modo Yamaha XG e desbloqueia todos os controladores"
     },
 
     helpButton: {

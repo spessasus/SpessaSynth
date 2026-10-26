@@ -27,16 +27,10 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
                 p.isGMGSDrum === c.isGMGSDrum
         );
         // https://github.com/spessasus/SpessaSynth/issues/219
-        if (!preset) {
-            return;
-        }
-        nameDisplays[channel].textContent = ": " + preset.name;
+        nameDisplays[channel].textContent = ": " + (preset?.name ?? "UNKNOWN");
     };
 
     const updateChannels = () => {
-        if (!presetList) {
-            return;
-        }
         for (let channel = 0; channel < nameDisplays.length; channel++) {
             updateChannel(channel);
         }
@@ -78,27 +72,21 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
         channelNumber++;
     };
 
+    const setPresetList = (list: MIDIPatchFull[]) => {
+        presetList = list.map((p) => ({
+            ...p,
+            name: p.name.replace(/\d{3}:\d{3}/, "") // Remove those pesky "000:001"
+        }));
+        updateChannels();
+    };
     this.synth.eventHandler.addEvent(
         "presetListChange",
         "settings-preset-list-change",
-        (e) => {
-            presetList = e.map((p) => ({
-                ...p,
-                name: p.name.replace(/\d{3}:\d{3}/, "") // Remove those pesky "000:001"
-            }));
-            updateChannels();
-        }
+        setPresetList
     );
     if (this.synth.presetList.length > 0) {
-        presetList = this.synth.presetList;
+        setPresetList(this.synth.presetList);
     }
-    this.synth.eventHandler.addEvent(
-        "channelAdded",
-        "settings-new-channel",
-        () => {
-            createChannel();
-        }
-    );
     this.synth.eventHandler.addEvent(
         "programChange",
         "settings-program-change",
@@ -113,7 +101,10 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
     );
 
     // Create the initial synth channels
-    for (let i = 0; i < this.synth.channelCount; i++) {
+    for (const item of this.synth.midiChannels) {
+        // Apparently this is better off as a for-of loop even though we don't use the item
+        // Sure, eslint, whatever you say.
+        void item;
         createChannel();
     }
     keyboardControls.selectedChannel.addEventListener("change", () => {
@@ -132,16 +123,10 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
                 if (keyboardControls.keyRange.value === USE_MIDI_RANGE) {
                     this.autoKeyRange = true;
                     if (this?.seq?.midiData) {
-                        this.midiKeyboard.keyRange = this.seq.midiData.keyRange;
                         this.renderer.keyRange = this.seq.midiData.keyRange;
                     }
                 } else {
                     this.autoKeyRange = false;
-                    this.midiKeyboard.keyRange =
-                        this.keyboardSizes[
-                            keyboardControls.keyRange
-                                .value as keyof typeof this.keyboardSizes
-                        ];
                     this.renderer.keyRange =
                         this.keyboardSizes[
                             keyboardControls.keyRange
@@ -155,16 +140,10 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
         if (keyboardControls.keyRange.value === USE_MIDI_RANGE) {
             this.autoKeyRange = true;
             if (this?.seq.midiData) {
-                this.midiKeyboard.keyRange = this.seq.midiData.keyRange;
                 this.renderer.keyRange = this.seq.midiData.keyRange;
             }
         } else {
             this.autoKeyRange = false;
-            this.midiKeyboard.keyRange =
-                this.keyboardSizes[
-                    keyboardControls.keyRange
-                        .value as keyof typeof this.keyboardSizes
-                ];
             this.renderer.keyRange =
                 this.keyboardSizes[
                     keyboardControls.keyRange
@@ -177,13 +156,13 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
     this.seq.eventHandler.addEvent(
         "songChange",
         "settings-keyboard-handler-song-change",
-        (mid) => {
+        (e) => {
+            const { midiData } = e;
             if (this.autoKeyRange) {
-                this.midiKeyboard.keyRange = mid.keyRange;
-                this.renderer.keyRange = mid.keyRange;
+                this.renderer.keyRange = midiData.keyRange;
             }
             if (
-                mid.rmidiInfo?.picture !== undefined && // Switch to music mode if picture available
+                midiData.rmidiInfo?.picture !== undefined && // Switch to music mode if picture available
                 !this.musicMode.visible
             ) {
                 this.toggleMusicPlayerMode();
@@ -213,7 +192,7 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
                     return;
                 }
             }
-            if (channelNumber < this.synth.channelCount) {
+            if (channelNumber < this.synth.midiChannels.length) {
                 this.midiKeyboard.selectChannel(channelNumber);
                 keyboardControls.selectedChannel.value =
                     channelNumber.toString();

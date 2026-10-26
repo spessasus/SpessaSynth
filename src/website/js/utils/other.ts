@@ -29,7 +29,10 @@ export class Ut {
             ".kar",
             ".rmi",
             ".xmf",
-            ".mxmf"
+            ".mxmf",
+            ".mod",
+            ".xm",
+            ".s3m"
         ];
 
         // Loop through extensions and remove them, case-insensitive
@@ -73,6 +76,6 @@ export class Ut {
         el: Element | undefined | null,
         show: boolean | undefined = undefined
     ) {
-        el?.classList?.toggle?.("hidden", show);
+        el?.classList?.toggle?.("hidden", !show);
     }
 }

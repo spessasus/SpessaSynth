@@ -1,11 +1,13 @@
-export const UPDATE_NAME = "v4.3.0 The General Update";
+export const UPDATE_NAME = "v4.4.0 The XG Update";
 
 /**
  * Note to self: make sure to update this
  */
 export const WHATS_NEW: string[] = [
-    `Fixed GS port B missing error!`,
-    `Fixed extremely short SF2 loops!`,
-    `Fixed drums on not writing to files!`,
-    `Georgian translation by TGaming03!`
+    `Full Yamaha XG effects, with a new GUI!`,
+    `GS User Drum Set support!`,
+    `Play tracker modules: MOD, XM and S3M!`,
+    `Export the visualization to a video (WebM or MP4)!`,
+    `Brand new themes, with matching note colors!`,
+    `Redesigned settings menu!`
 ] as const;

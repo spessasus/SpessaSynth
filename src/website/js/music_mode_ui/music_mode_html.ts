@@ -16,35 +16,35 @@ export const musicModeInnerHTML = `
                 </div>
                 
                 <div class='player_info_detail_element hidden'>
-                    <b translate-path-title='locale.exportAudio.formats.metadata.artist'></b><i id='player_info_artist'></i>
+                    <b translate-path-title='locale.exportFile.formats.metadata.artist'></b><i id='player_info_artist'></i>
                 </div>
                 
                 <div class='player_info_detail_element hidden'>
-                    <b translate-path-title='locale.exportAudio.formats.metadata.album'></b><i id='player_info_album'></i>
+                    <b translate-path-title='locale.exportFile.formats.metadata.album'></b><i id='player_info_album'></i>
                 </div>
                 
                 <div class='player_info_detail_element hidden'>
-                    <b translate-path-title='locale.exportAudio.formats.metadata.genre'></b><i id='player_info_genre'></i>
+                    <b translate-path-title='locale.exportFile.formats.metadata.genre'></b><i id='player_info_genre'></i>
                 </div>
                 
                 <div class='player_info_detail_element hidden'>
-                    <b translate-path-title='locale.exportAudio.formats.metadata.creationDate'></b><i id='player_info_creation'></i>
+                    <b translate-path-title='locale.exportFile.formats.metadata.creationDate'></b><i id='player_info_creation'></i>
                 </div>
                 
                 <div class='player_info_detail_element hidden'>
-                    <b translate-path-title='locale.exportAudio.formats.metadata.subject'></b><i id='player_info_subject'></i>
+                    <b translate-path-title='locale.exportFile.formats.metadata.subject'></b><i id='player_info_subject'></i>
                 </div>
                 
                 <div class='player_info_detail_element hidden'>
-                    <b translate-path-title='locale.exportAudio.formats.metadata.software'></b><i id='player_info_software'></i>
+                    <b translate-path-title='locale.exportFile.formats.metadata.software'></b><i id='player_info_software'></i>
                 </div>
                 
                 <div class='player_info_detail_element hidden'>
-                    <b translate-path-title='locale.exportAudio.formats.metadata.comment'></b><i id='player_info_comment'></i>
+                    <b translate-path-title='locale.exportFile.formats.metadata.comment'></b><i id='player_info_comment'></i>
                 </div>
                 
                 <div class='player_info_detail_element hidden'>
-                    <b translate-path-title='locale.exportAudio.formats.metadata.duration'></b><i id='player_info_time'></i>
+                    <b translate-path-title='locale.exportFile.formats.metadata.duration'></b><i id='player_info_time'></i>
                 </div>
                 
                 <div class='player_info_detail_element hidden'>

@@ -20,12 +20,12 @@ export const effectsConfig = {
         }
     },
     reverb: {
-        title: "Configuração do Reverb",
+        title: "Configuração do Reverb GS",
         description: "Configure o processador de reverb"
     },
 
     chorus: {
-        title: "Configuração do Chorus",
+        title: "Configuração do Chorus GS",
         description: "Configure o processador de chorus"
     }
 };

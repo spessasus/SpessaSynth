@@ -25,7 +25,6 @@ export class Selector {
     private elements: PresetListElement[];
     private elementsToTable?: Map<HTMLTableRowElement, PresetListElement>;
     private readonly locale;
-    private readonly localePath;
     private readonly localeArgs;
 
     private readonly editCallback;
@@ -72,7 +71,6 @@ export class Selector {
             descriptionArgs
         );
         this.locale = locale;
-        this.localePath = descriptionPath;
         this.localeArgs = descriptionArgs;
 
         this.reload();
@@ -117,7 +115,7 @@ export class Selector {
         this.locale.bindObjectProperty(
             selectionTitle,
             "textContent",
-            this.localePath + ".selectionPrompt",
+            LOCALE_PATH + "channelController.presetSelector.selectionPrompt",
             this.localeArgs
         );
         selectionWindow.append(selectionTitle);
@@ -133,31 +131,30 @@ export class Selector {
         this.locale.bindObjectProperty(
             searchInput,
             "placeholder",
-            this.localePath + ".searchPrompt"
+            LOCALE_PATH + "channelController.presetSelector.searchPrompt"
         );
         searchWrapper.append(searchInput);
         searchInput.addEventListener("keydown", (e) => e.stopPropagation());
 
         // Preset lock button
-        const presetLock = document.createElement("div");
-        presetLock.innerHTML = this.locked
-            ? getLockSVG(ICON_SIZE)
-            : getUnlockSVG(ICON_SIZE);
-        this.locale.bindObjectProperty(
-            presetLock,
-            "title",
-            LOCALE_PATH + "channelController.presetReset.description",
-            this.localeArgs
-        );
-        presetLock.classList.add("voice_reset");
-        if (this.mainButton.classList.contains("voice_selector_light")) {
-            presetLock.classList.add("voice_reset_light");
+        if (this.lockCallback) {
+            const presetLock = document.createElement("div");
+            presetLock.innerHTML = this.locked
+                ? getLockSVG(ICON_SIZE)
+                : getUnlockSVG(ICON_SIZE);
+            this.locale.bindObjectProperty(
+                presetLock,
+                "title",
+                LOCALE_PATH + "channelController.presetReset.description",
+                this.localeArgs
+            );
+            presetLock.classList.add("voice_reset");
+            presetLock.addEventListener("click", () =>
+                this.lockSelector(!this.locked)
+            );
+            searchWrapper.append(presetLock);
+            this.presetLock = presetLock;
         }
-        presetLock.addEventListener("click", () =>
-            this.lockSelector(!this.locked)
-        );
-        searchWrapper.append(presetLock);
-        this.presetLock = presetLock;
 
         // Add the table, wrapper first
         const tableWrapper = document.createElement("div");
@@ -180,14 +177,12 @@ export class Selector {
                 return;
             }
             e.stopPropagation();
-            const text = searchInput.value;
-            const filtered = this.elements.filter(
-                (e) => e.stringified.search(new RegExp(text, "i")) >= 0
+            // Plain text search, the input is not a valid regex in general
+            const text = searchInput.value.toLowerCase();
+            const filtered = this.elements.filter((e) =>
+                e.stringified.toLowerCase().includes(text)
             );
-            if (
-                filtered.length === this.elements.length ||
-                filtered.length === 0
-            ) {
+            if (filtered.length === 0) {
                 return;
             }
             tableWrapper.replaceChildren();
@@ -235,8 +230,10 @@ export class Selector {
                         return;
                     }
                     this.editCallback?.(newVal);
-                    this.locked = true;
-                    presetLock.innerHTML = getLockSVG(ICON_SIZE);
+                    if (this.presetLock) {
+                        this.locked = true;
+                        this.presetLock.innerHTML = getLockSVG(ICON_SIZE);
+                    }
                     this.hideSelectionMenu();
                     break;
                 }
@@ -302,10 +299,6 @@ export class Selector {
         this.selectionMenu.remove();
         delete this.selectionMenu;
         this.isWindowShown = false;
-    }
-
-    public toggleMode() {
-        this.mainButton.classList.toggle("voice_selector_light");
     }
 
     public reload(elements: PresetListElement[] = this.elements) {
@@ -463,15 +456,15 @@ export class Selector {
             presetName.textContent = preset.name;
 
             const presetProgram = document.createElement("td");
-            presetName.classList.add("voice_selector_preset_program");
+            presetProgram.classList.add("voice_selector_preset_program");
             presetProgram.textContent = programText;
 
             const presetBankMSB = document.createElement("td");
-            presetName.classList.add("voice_selector_preset_program");
+            presetBankMSB.classList.add("voice_selector_preset_program");
             presetBankMSB.textContent = bankMSBText;
 
             const presetBankLSB = document.createElement("td");
-            presetName.classList.add("voice_selector_preset_program");
+            presetBankLSB.classList.add("voice_selector_preset_program");
             presetBankLSB.textContent = bankLSBText;
 
             row.append(presetBankLSB);

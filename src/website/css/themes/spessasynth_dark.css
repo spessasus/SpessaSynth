@@ -1,0 +1,106 @@
+/*
+ * SpessaSynth Dark
+ * This is the default theme. It also applies to :root so it acts as
+ * the fallback for any variable that another theme does not define.
+ */
+:root,
+:root[data-theme="spessasynth_dark"] {
+    /* general */
+    --background-color: #000;
+    --font-color: #ccc;
+    --text-glow-color: #fff;
+    --text-hover-color: #fff;
+    --link-color: #546fff;
+    --accent-link-color: #9acd32;
+    --loading-link-color: #ccc;
+    --scrollbar-color: #000;
+    --scrollbar-thumb-color: #777;
+
+    /* accents */
+    --primary-color: #510087;
+    --border-color: #6e00b7;
+    --track-color: #333;
+    --track-border-color: #444;
+    --edge-color: #333;
+    --edge-strong-color: #444;
+
+    /* panels */
+    --top-color-start: #101010;
+    --top-color-end: #212121;
+    --top-buttons-color-start: #222;
+    --top-buttons-color-end: #333;
+
+    /* top part */
+    --title-progress-color: #206;
+
+    /* note canvas */
+    --canvas-background-start: #000;
+    --canvas-background-end: #000;
+    --background-image-overlay: rgba(0, 0, 0, 0.8);
+    --canvas-hud-text-color: #fff;
+    --note-color-0: rgb(255, 92, 57);
+    --note-color-1: rgb(255, 163, 0);
+    --note-color-2: rgb(255, 217, 0);
+    --note-color-3: rgb(25, 215, 25);
+    --note-color-4: rgb(40, 186, 105);
+    --note-color-5: rgb(0, 136, 0);
+    --note-color-6: rgb(0, 199, 255);
+    --note-color-7: rgb(56, 105, 253);
+    --note-color-8: rgb(152, 35, 255);
+    --note-color-9: rgb(37, 123, 129); /* Percussion color */
+    --note-color-10: rgb(255, 0, 255);
+    --note-color-11: rgb(255, 6, 163);
+    --note-color-12: rgb(235, 105, 231);
+    --note-color-13: rgb(255, 123, 123);
+    --note-color-14: rgb(255, 189, 202);
+    --note-color-15: rgb(255, 255, 0);
+
+    /* sequencer controls */
+    --icon-color: #ccc;
+    --icon-disabled-color: #555;
+    --progress-background-start: #454545;
+    --progress-background-end: #343434;
+    --progress-start: #306;
+    --progress-end: #510087;
+
+    /* music player mode */
+    --music-mode-backdrop: brightness(0.3) blur(50px);
+
+    /* overlays */
+    --drop-overlay-color: rgba(0, 0, 0, 0.6);
+    --lyrics-backdrop-color: rgba(0, 0, 0, 0.8);
+
+    /* settings */
+    --settings-shadow-color: rgba(0, 0, 0, 0.3);
+    --settings-card-highlight: rgba(255, 255, 255, 0.035);
+    --settings-divider-color: rgba(255, 255, 255, 0.07);
+    --settings-subtle-divider-color: rgba(255, 255, 255, 0.045);
+
+    /* synthesizer controller */
+    --synthui-background-start: rgba(0, 0, 0, 0.8);
+    --synthui-background-middle: rgba(0, 0, 0, 0.8);
+    --synthui-background-end: rgba(0, 0, 0, 0.8);
+    --synthui-icon-color: #ccc;
+    --synthui-button-background: #000;
+    --synthui-button-border-color: #444;
+    --synthui-button-color: #ccc;
+    --synthui-button-text-shadow: none;
+    --synthui-button-hover-background: #111;
+    --synthui-button-hover-color: #fff;
+    --synthui-button-hover-text-shadow: 0 0 5px #fff;
+    --synthui-button-enabled-background: #111;
+    --synthui-button-enabled-color: #fff;
+    --synthui-button-enabled-text-shadow: 0 0 5px #fff;
+    --voice-selector-background-start: rgba(0, 0, 0, 0.8);
+    --voice-selector-background-end: rgba(0, 0, 0, 0.8);
+    --voice-selector-border-color: #444;
+    --voice-selector-color: #ccc;
+    --voice-selector-hover-background: #111;
+    --voice-selector-hover-color: #fff;
+    --voice-meter-text-color: #ccc;
+    --voice-meter-text-shadow: 1px 1px 2px #000;
+
+    /* notifications */
+    --notification-shadow-color: #333;
+    --notification-separator-color: #555;
+}

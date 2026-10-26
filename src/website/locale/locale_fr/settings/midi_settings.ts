@@ -10,7 +10,23 @@ export const midiSettingsLocale = {
     midiOutput: {
         title: "Sortie MIDI",
         description: "Le port utilisé pour jouer les fichiers MIDI",
-        disabled: "Utilisation de SpessaSynth"
+        disabled: "Utilisation de SpessaSynth",
+        doNotUse: "Ne pas utiliser",
+        port1: {
+            title: "Port MIDI 1",
+            description:
+                "Le premier port pour un fichier MIDI multi-port (canaux 16-31)"
+        },
+        port2: {
+            title: "Port MIDI 2",
+            description:
+                "Le deuxième port pour un fichier MIDI multi-port (canaux 32-47)"
+        },
+        port3: {
+            title: "Port MIDI 3",
+            description:
+                "Le troisième port pour un fichier MIDI multi-port (canaux 48-64)"
+        }
     },
 
     reminder: {

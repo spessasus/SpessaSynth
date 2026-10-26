@@ -1,0 +1,104 @@
+/*
+ * Light Blue
+ * Light theme with cool blue-gray panels and blue accents.
+ */
+:root[data-theme="light_blue"] {
+    /* general */
+    --background-color: #eef3f8;
+    --font-color: #263445;
+    --text-glow-color: #a9d4ff;
+    --text-hover-color: #1f5fa0;
+    --link-color: #2f6fb8;
+    --accent-link-color: #2f8f80;
+    --loading-link-color: #263445;
+    --scrollbar-color: #e3ebf3;
+    --scrollbar-thumb-color: #9fb4c9;
+
+    /* accents */
+    --primary-color: #6fa3d8;
+    --border-color: #2f5f94;
+    --track-color: #d3dfeb;
+    --track-border-color: #9fb4c9;
+    --edge-color: #c9d6e3;
+    --edge-strong-color: #b7c7d8;
+
+    /* panels */
+    --top-color-start: #d5e1ec;
+    --top-color-end: #f4f8fb;
+    --top-buttons-color-start: #e1eaf3;
+    --top-buttons-color-end: #fff;
+
+    /* top part */
+    --title-progress-color: #c2d8ee;
+
+    /* note canvas */
+    --canvas-background-start: #e2eaf2;
+    --canvas-background-end: #f8fbfd;
+    --background-image-overlay: rgba(240, 245, 250, 0.35);
+    --canvas-hud-text-color: #34485e;
+    --note-color-0: rgb(9, 140, 254);
+    --note-color-1: rgb(0, 172, 235);
+    --note-color-2: rgb(0, 180, 206);
+    --note-color-3: rgb(53, 112, 241);
+    --note-color-4: rgb(88, 106, 211);
+    --note-color-5: rgb(131, 83, 215);
+    --note-color-6: rgb(15, 172, 158);
+    --note-color-7: rgb(0, 161, 252);
+    --note-color-8: rgb(5, 103, 215);
+    --note-color-9: rgb(87, 123, 150);
+    --note-color-10: rgb(255, 106, 50);
+    --note-color-11: rgb(255, 158, 0);
+    --note-color-12: rgb(255, 55, 126);
+    --note-color-13: rgb(52, 166, 57);
+    --note-color-14: rgb(0, 137, 152);
+    --note-color-15: rgb(82, 157, 255);
+
+    /* sequencer controls */
+    --icon-color: #34485e;
+    --icon-disabled-color: #c5d2df;
+    --progress-background-start: #dbe5ee;
+    --progress-background-end: #c8d6e3;
+    --progress-start: #a8d8f0;
+    --progress-end: #4a86c5;
+
+    /* music player mode */
+    --music-mode-backdrop: brightness(1.7) saturate(0.8) blur(50px);
+
+    /* overlays */
+    --drop-overlay-color: rgba(240, 245, 250, 0.75);
+    --lyrics-backdrop-color: rgba(0, 0, 0, 0.8);
+
+    /* settings */
+    --settings-shadow-color: rgba(30, 60, 100, 0.14);
+    --settings-card-highlight: rgba(255, 255, 255, 0.8);
+    --settings-divider-color: rgba(20, 50, 90, 0.09);
+    --settings-subtle-divider-color: rgba(20, 50, 90, 0.06);
+
+    /* synthesizer controller */
+    --synthui-background-start: rgba(205, 220, 235, 0.6);
+    --synthui-background-middle: rgba(250, 252, 255, 0.6);
+    --synthui-background-end: rgba(205, 220, 235, 0.6);
+    --synthui-icon-color: #34485e;
+    --synthui-button-background: #fbfdff;
+    --synthui-button-border-color: #c9d6e3;
+    --synthui-button-color: #263445;
+    --synthui-button-text-shadow: none;
+    --synthui-button-hover-background: #eaf2fa;
+    --synthui-button-hover-color: #1f5fa0;
+    --synthui-button-hover-text-shadow: 0 0 5px #a9d4ff;
+    --synthui-button-enabled-background: #dce9f6;
+    --synthui-button-enabled-color: #1f5fa0;
+    --synthui-button-enabled-text-shadow: none;
+    --voice-selector-background-start: #d6e2ee;
+    --voice-selector-background-end: #fbfdff;
+    --voice-selector-border-color: #9fb4c9;
+    --voice-selector-color: #263445;
+    --voice-selector-hover-background: #fbfdff;
+    --voice-selector-hover-color: #1f5fa0;
+    --voice-meter-text-color: #1c2836;
+    --voice-meter-text-shadow: 0 0 3px rgba(255, 255, 255, 0.8);
+
+    /* notifications */
+    --notification-shadow-color: rgba(30, 60, 100, 0.25);
+    --notification-separator-color: #c9d6e3;
+}

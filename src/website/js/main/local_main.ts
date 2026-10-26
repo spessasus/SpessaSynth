@@ -4,7 +4,7 @@ import { showNotification } from "../notification/notification.js";
 import { LocaleManager } from "../manager/locale_manager.js";
 import type { LocaleCode } from "../../locale/locale_list.ts";
 import type { SavedSettings } from "../../../server/saved_settings.ts";
-import { readSampleRateParam } from "../utils/sample_rate_param.ts";
+import { URLParamUtils } from "../utils/url_params.ts";
 import { SpessaLog } from "spessasynth_core";
 
 declare global {
@@ -70,7 +70,21 @@ const v = await fetch("/getversion");
 window.SPESSASYNTH_VERSION = await v.text();
 
 let soundBankBufferCurrent: ArrayBuffer | undefined = undefined;
-const context = new AudioContext({ sampleRate: readSampleRateParam() });
+
+let context: AudioContext;
+const sampleRate = URLParamUtils.getSampleRate();
+try {
+    context = new AudioContext({ sampleRate });
+} catch (error) {
+    // Reload with a safe value if it isn't set
+    if (sampleRate !== URLParamUtils.DEFAULT_SAMPLE_RATE) {
+        URLParamUtils.setParam(
+            URLParamUtils.SAMPLE_RATE,
+            URLParamUtils.DEFAULT_SAMPLE_RATE.toString()
+        );
+    }
+    throw error;
+}
 
 let titleString = "TITLE STRING";
 
@@ -128,7 +142,7 @@ async function startMidi(midiFiles: FileList) {
     let fName;
     fName =
         midiFiles[0].name.length > 20
-            ? midiFiles[0].name.slice(0, 21) + "..."
+            ? midiFiles[0].name.slice(0, 20) + "..."
             : midiFiles[0].name;
     if (midiFiles.length > 1) {
         fName += ` and ${midiFiles.length - 1} others`;
@@ -153,6 +167,7 @@ const initManagerSF = async () => {
         return;
     }
     titleMessage.textContent = "Initializing...";
+    progressBar.classList.add("active", "indeterminate");
     if (window.manager) {
         await window.manager.reloadSf(soundBankBufferCurrent);
     } else {
@@ -176,6 +191,7 @@ const initManagerSF = async () => {
 
     synthReady = true;
     titleMessage.textContent = titleString;
+    progressBar.classList.remove("active", "indeterminate");
 };
 
 /**
@@ -183,16 +199,18 @@ const initManagerSF = async () => {
  */
 async function replaceFont(fontName: string) {
     titleMessage.textContent = "Loading soundfont...";
+    progressBar.style.setProperty("--progress", "0");
+    progressBar.classList.add("active");
     const data = await fetchFont(fontName, (percent) => {
-        progressBar.style.width = `${(percent / 100) * titleMessage.offsetWidth}px`;
+        progressBar.style.setProperty("--progress", `${percent / 100}`);
         console.info(`Loading sound bank: ${percent}%`);
     });
 
     titleMessage.textContent = "Parsing soundfont...";
     soundBankBufferCurrent = data;
-    progressBar.style.width = "0";
     // Prompt the user to click if needed
     if (context.state === "suspended") {
+        progressBar.classList.remove("active");
         titleMessage.textContent = "Press anywhere to start the app";
         return;
     }

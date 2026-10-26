@@ -3,17 +3,28 @@ import type { localeList } from "../../../locale/locale_list.ts";
 import type { LayoutType } from "../../../../server/saved_settings.ts";
 import { WorkerSynthesizer } from "spessasynth_lib";
 import { Ut } from "../../utils/other.js";
+import { URLParamUtils } from "../../utils/url_params.ts";
+import { type ThemeID, themeList } from "../../themes/theme_list.ts";
 
 /**
  * @this {SpessaSynthSettings}
  * @private
  */
 export function _createInterfaceSettingsHandler(this: SpessaSynthSettings) {
-    const button = this.htmlControls.interface.themeSelector;
-    button.addEventListener("click", () => {
-        this.toggleDarkMode();
+    const themeSelect = this.htmlControls.interface.themeSelector;
+    // Load up the themes
+    for (const [id, theme] of Object.entries(themeList)) {
+        const option = document.createElement("option");
+        option.value = id;
+        option.textContent = theme.name;
+        themeSelect.append(option);
+    }
+    themeSelect.value = this.theme;
+    themeSelect.addEventListener("change", () => {
+        this.applyTheme(themeSelect.value as ThemeID);
         this.saveSettings();
     });
+
     const select = this.htmlControls.interface.languageSelector;
     // Load up the languages
     for (const [code, locale] of Object.entries(this.locales)) {
@@ -66,12 +77,19 @@ export function _createInterfaceSettingsHandler(this: SpessaSynthSettings) {
     const backgroundImage = document.querySelector<HTMLInputElement>(
         "#background_file_upload"
     )!;
+    const backgroundImageName =
+        document.querySelector<HTMLSpanElement>(".file_picker_name")!;
     backgroundImage.addEventListener("change", () => {
         if (!backgroundImage?.files?.[0]) {
             this.renderer.setBackground(undefined);
+            backgroundImageName.textContent = "";
+            backgroundImageName.removeAttribute("title");
             return;
         }
-        this.renderer.setBackground(backgroundImage.files[0]);
+        const file = backgroundImage.files[0];
+        this.renderer.setBackground(file);
+        backgroundImageName.textContent = file.name;
+        backgroundImageName.title = file.name;
     });
 
     // Reload synth
@@ -83,14 +101,14 @@ export function _createInterfaceSettingsHandler(this: SpessaSynthSettings) {
             "textContent",
             "locale.settings.interfaceSettings.synthReload.worklet"
         );
-        url.searchParams.set("mode", "worklet");
+        url.searchParams.set(URLParamUtils.BACKEND, "worklet");
     } else {
         this.locale.bindObjectProperty(
             anchor,
             "textContent",
             "locale.settings.interfaceSettings.synthReload.chromium"
         );
-        url.searchParams.set("mode", "chromium");
+        url.searchParams.set(URLParamUtils.BACKEND, "worker");
     }
 
     anchor.href = url.toString();
@@ -99,7 +117,6 @@ export function _createInterfaceSettingsHandler(this: SpessaSynthSettings) {
 export function _changeLayout(this: SpessaSynthSettings, layout: LayoutType) {
     const wrapper = document.querySelector("#keyboard_canvas_wrapper")!;
     const canvas = document.querySelector("#note_canvas")!;
-    const keyboard = document.querySelector("#keyboard")!;
     switch (layout) {
         case "downwards": {
             wrapper.classList.remove(
@@ -108,10 +125,9 @@ export function _changeLayout(this: SpessaSynthSettings, layout: LayoutType) {
                 "right_to_left"
             );
 
-            canvas.classList.remove("sideways");
-            keyboard.classList.remove("sideways");
-            this.renderer.direction = "down";
-            this.renderer.sideways = false;
+            canvas.classList.remove("vertical");
+            this.renderer.notesFalling = true;
+            this.renderer.vertical = false;
             break;
         }
 
@@ -119,10 +135,9 @@ export function _changeLayout(this: SpessaSynthSettings, layout: LayoutType) {
             wrapper.classList.add("upwards");
             wrapper.classList.remove("left_to_right", "right_to_left");
 
-            canvas.classList.remove("sideways");
-            keyboard.classList.remove("sideways");
-            this.renderer.direction = "up";
-            this.renderer.sideways = false;
+            canvas.classList.remove("vertical");
+            this.renderer.notesFalling = false;
+            this.renderer.vertical = false;
             break;
         }
 
@@ -131,10 +146,9 @@ export function _changeLayout(this: SpessaSynthSettings, layout: LayoutType) {
             wrapper.classList.add("left_to_right");
             wrapper.classList.remove("right_to_left");
 
-            canvas.classList.add("sideways");
-            keyboard.classList.add("sideways");
-            this.renderer.direction = "up";
-            this.renderer.sideways = true;
+            canvas.classList.add("vertical");
+            this.renderer.notesFalling = false;
+            this.renderer.vertical = true;
             break;
         }
 
@@ -142,10 +156,9 @@ export function _changeLayout(this: SpessaSynthSettings, layout: LayoutType) {
             wrapper.classList.remove("upwards", "left_to_right");
             wrapper.classList.add("right_to_left");
 
-            canvas.classList.add("sideways");
-            keyboard.classList.add("sideways");
-            this.renderer.direction = "down";
-            this.renderer.sideways = true;
+            canvas.classList.add("vertical");
+            this.renderer.notesFalling = true;
+            this.renderer.vertical = true;
         }
     }
     this.renderer.updateSize();

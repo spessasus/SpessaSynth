@@ -35,17 +35,13 @@
     top: 0;
     width: 100%;
     text-align: center;
-    text-shadow: 1px 1px 2px #000;
+    color: var(--voice-meter-text-color);
+    text-shadow: var(--voice-meter-text-shadow);
     -webkit-user-select: none;
     user-select: none;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.light_mode .voice_meter .voice_meter_text {
-    color: black;
-    text-shadow: none;
 }
 
 .locked_meter {

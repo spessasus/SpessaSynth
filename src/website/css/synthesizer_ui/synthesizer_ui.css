@@ -4,8 +4,8 @@
 
 #synthesizer_controls {
     --voice-meter-height: 2.5em;
-    --synthui-background: rgba(0, 0, 0, 0.8);
     --synthui-border-radius: var(--primary-border-radius);
+    --btn-border-color: var(--edge-strong-color);
 }
 
 #synthesizer_controls * {
@@ -37,9 +37,11 @@
 .effect_wrapper {
     display: flex;
     flex-direction: column;
-    max-width: 70vw;
+    /* Use vh so phones have max width*/
+    max-width: 120vh;
     margin: auto;
     justify-content: center;
+    max-height: 70vh;
 }
 
 .effect_wrapper h2 {
@@ -85,6 +87,23 @@
     transform: scale(1, 0);
 }
 
+.synthui_table_wrapper {
+    overflow-y: auto;
+    display: block;
+}
+
+.synthui_table_wrapper table {
+    width: 100%;
+}
+
+.synthui_table_wrapper th {
+    width: min-content;
+}
+
+.synthui_table_wrapper tr.changed * {
+    border-color: var(--primary-color);
+}
+
 .controller_element {
     position: relative;
     height: var(--voice-meter-height);
@@ -102,15 +121,20 @@
 }
 
 .synthui_port_descriptor:hover {
-    color: #fff;
-    text-shadow: 0 0 5px white;
+    color: var(--text-hover-color);
+    text-shadow: 0 0 5px var(--text-glow-color);
 }
 
 .synthui_controller {
     left: 0;
     display: none;
     position: absolute;
-    background: var(--synthui-background);
+    background: linear-gradient(
+        115deg,
+        var(--synthui-background-start),
+        var(--synthui-background-middle),
+        var(--synthui-background-end)
+    );
     backdrop-filter: blur(0.3rem);
     top: 100%;
     border-radius: 0 0 1em 1em;
@@ -119,15 +143,6 @@
     width: 100%;
     z-index: 127;
     padding: 0.5em;
-}
-
-.light_mode .synthui_controller {
-    background: linear-gradient(
-        115deg,
-        rgb(200, 200, 200),
-        rgba(255, 255, 255),
-        rgba(200, 200, 200)
-    ) !important;
 }
 
 .synthui_controller_show {
@@ -146,7 +161,6 @@
 }
 
 .mute_button {
-    --btn-border-color: #777;
     flex: 0;
     display: flex;
     justify-content: center;
@@ -164,8 +178,8 @@
     color: red;
 }
 
-.mute_button_light * {
-    color: black;
+.mute_button * {
+    color: var(--synthui-icon-color);
 }
 
 .mute_button > * {

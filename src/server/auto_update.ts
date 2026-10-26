@@ -80,17 +80,26 @@ async function downloadUpdate() {
     let done;
     const size = Number.parseInt(fetched.headers.get("content-length") ?? "0");
     console.info(`Downloading the new version (${size / 1000 ** 2} MB)`);
-    const zipFile = new Uint8Array(size);
+    // Collect the chunks, the content length may be missing or wrong
+    const chunks = new Array<Uint8Array>();
     let offset = 0;
     do {
         const readData = await reader.read();
         if (readData.value) {
-            zipFile.set(readData.value, offset);
+            chunks.push(readData.value);
             offset += readData.value.length;
         }
         done = readData.done;
-        renderProgress(offset / size);
+        if (size > 0) {
+            renderProgress(Math.min(1, offset / size));
+        }
     } while (!done);
+    const zipFile = new Uint8Array(offset);
+    let written = 0;
+    for (const chunk of chunks) {
+        zipFile.set(chunk, written);
+        written += chunk.length;
+    }
     console.info(`\nDownloaded successfully!`);
     return zipFile;
 }
@@ -156,6 +165,12 @@ async function performLocaEditionUpdate() {
             rootDir,
             fileName.replace(`${LOCAL_EDITION_ZIP_FOLDER_NAME}/`, "./")
         );
+        // Safety check:
+        // Never write outside the installation
+        if (!realPath.startsWith(path.resolve(rootDir) + path.sep)) {
+            console.warn("Skipping invalid path in the update:", fileName);
+            continue;
+        }
         await fs.mkdir(path.dirname(realPath), { recursive: true });
         await fs.writeFile(realPath, await file.async("uint8array"));
     }

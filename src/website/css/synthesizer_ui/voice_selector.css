@@ -1,35 +1,30 @@
 .voice_selector {
-    border: #777 1px solid;
-    line-height: var(--voice-meter-height);
-    background: var(--synthui-background);
+    border: var(--voice-selector-border-color) 1px solid;
+    background: linear-gradient(
+        170deg,
+        var(--voice-selector-background-start),
+        var(--voice-selector-background-end)
+    );
+    color: var(--voice-selector-color);
     font-size: 1em;
     font-weight: bold;
     min-width: 8em;
     text-align-last: center;
     white-space: nowrap;
     overflow: hidden;
+    line-height: 100%;
+    width: 100%;
 }
 
 select.voice_selector {
     text-overflow: ellipsis;
 }
 
-.voice_selector_light {
-    border: #111 1px solid;
-    background: linear-gradient(170deg, #bbb, #fff);
-    color: black;
-}
-
 .voice_selector:hover {
     cursor: pointer;
-    background: #111;
-    color: #fff;
-    text-shadow: 0 0 5px white;
-}
-
-.voice_selector_light:hover {
-    background: #fff;
-    color: #444;
+    background: var(--voice-selector-hover-background);
+    color: var(--voice-selector-hover-color);
+    text-shadow: 0 0 5px var(--text-glow-color);
 }
 
 .selector_options:hover {
@@ -45,7 +40,7 @@ select.voice_selector {
     display: flex;
     justify-content: center;
     align-items: center;
-    border: solid 1px #333;
+    border: solid 1px var(--edge-color);
     background: var(--top-color);
     padding: var(--primary-border-radius);
     border-radius: var(--primary-border-radius);
@@ -63,8 +58,8 @@ select.voice_selector {
     transform: scale(1.1) rotate(5deg);
 }
 
-.voice_reset_light * {
-    color: black;
+.voice_reset * {
+    color: var(--synthui-icon-color);
 }
 
 .voice_selector_wrapper {
@@ -99,7 +94,7 @@ select.voice_selector {
 }
 
 .voice_selector_window input {
-    border: solid 1px #333;
+    border: solid 1px var(--edge-color);
     font-size: 1rem;
     margin: 0.1rem;
     padding: var(--primary-border-radius);

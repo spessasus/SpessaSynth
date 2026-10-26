@@ -1,9 +1,9 @@
 export const interfaceSettings = {
     title: "Настройки интерфейса",
 
-    toggleTheme: {
-        title: "Использовать тёмную тему",
-        description: "Включить тёмную тему интерфейса"
+    theme: {
+        title: "Тема",
+        description: "Выберите цветовую тему интерфейса"
     },
 
     selectLanguage: {
@@ -27,6 +27,7 @@ export const interfaceSettings = {
         title: "Фоновое изображение",
         description: "Установить фоновое изображение для визуализации"
     },
+    chooseImage: "Выбрать изображение",
 
     synthReload: {
         chromium: "Перезагрузить в режиме Chrome",

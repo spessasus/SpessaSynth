@@ -112,9 +112,11 @@ export function showNotification(
     notification.classList.add("notification");
     notification.innerHTML = `
     <div class='top'>
-        <h2 class='notification_title'>${title}</h2>
+        <h2 class='notification_title'></h2>
         <span class='close_btn'>×</span>
     </div>`;
+    // The title can contain text from files, so it is never parsed as HTML
+    notification.querySelector(".notification_title")!.textContent = title;
     const contentWrapper: HTMLElement = document.createElement("div");
     contentWrapper.classList.add("notification_content");
 

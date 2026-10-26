@@ -1,6 +1,5 @@
 import { channelControllerLocale } from "./channel_controller.js";
 import { effectsConfig } from "./effects_config.js";
-import { keyModifiers } from "./key_modifiers.js";
 
 export const synthesizerControllerLocale = {
     toggleButton: {
@@ -36,10 +35,16 @@ export const synthesizerControllerLocale = {
         description: "MIDI Panic: Stops all voices immediately"
     },
 
-    systemReset: {
-        title: "Reset Controllers",
+    gsReset: {
+        title: "GS Reset",
         description:
-            "Reset Controllers: Resets all MIDI controllers to their default values"
+            "GS Reset: Resets the entire synthesizer to Roland GS mode and unlocks all controllers"
+    },
+
+    xgReset: {
+        title: "XG Reset",
+        description:
+            "XG Reset: Resets the entire synthesizer to Yamaha XG mode and unlocks all controllers"
     },
 
     showOnlyUsed: {
@@ -56,17 +61,21 @@ export const synthesizerControllerLocale = {
     tabs: {
         description: "Tabs: Select what to configure",
         channels: "MIDI Channels",
-        reverb: "Reverb",
-        chorus: "Chorus",
-        delay: "Delay",
-        insertion: "Insertion",
-        configuration: "Configuration"
+        gsReverb: "GS Reverb",
+        gsChorus: "GS Chorus",
+        gsDelay: "GS Delay",
+        gsInsertion: "GS Insertion",
+        xgReverb: "XG Reverb",
+        xgChorus: "XG Chorus",
+        xgVariation: "XG Variation",
+        xgInsertion: "XG Insertion",
+        configuration: "Configuration",
+        gsUserDrumSet: "GS User Drum Set"
     },
 
     holdPedalDown: "Hold pedal is down (Shift)",
     keyboardMode: "Keyboard playback is on, press ` to disable",
     port: "Port {0} (click to toggle visibility)",
     channelController: channelControllerLocale,
-    effectsConfig: effectsConfig,
-    keyModifiers: keyModifiers
+    effectsConfig: effectsConfig
 };

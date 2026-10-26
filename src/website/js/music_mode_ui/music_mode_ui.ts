@@ -18,6 +18,7 @@ export class MusicModeUI {
     protected locale: LocaleManager;
     protected seq: Sequencer;
     protected savedCKWrapperHeight = 0;
+    private coverURL?: string;
 
     /**
      * Creates a new class for displaying information about the current file.
@@ -61,7 +62,8 @@ export class MusicModeUI {
         this.seq.eventHandler.addEvent(
             "songChange",
             "player-js-song-change",
-            (mid) => {
+            (e) => {
+                const mid = e.midiData;
                 // Use file name if no copyright detected
                 const setInfoText = (
                     id: string,
@@ -72,6 +74,8 @@ export class MusicModeUI {
                     if (!el) {
                         throw new Error(`Invalid music mode element ID: ${id}`);
                     }
+                    // The previous text may have been scrolling
+                    el.classList.remove("marquee");
                     // If new lines, split up into multiple spans and only then apply marquee
                     const lines = text.trim().split("\n");
                     if (lines.length > 1) {
@@ -168,6 +172,10 @@ export class MusicModeUI {
                 if (!bg) {
                     throw new Error("Unexpected lack of background image.");
                 }
+                if (this.coverURL) {
+                    URL.revokeObjectURL(this.coverURL);
+                    this.coverURL = undefined;
+                }
                 // Add album cover if available
                 if (mid.rmidiInfo.picture === undefined) {
                     svg.style.display = "";
@@ -179,16 +187,11 @@ export class MusicModeUI {
                 img.style.display = "";
                 const pic = new Blob([mid.rmidiInfo.picture.buffer]);
                 const url = URL.createObjectURL(pic);
+                this.coverURL = url;
                 img.src = url;
                 bg.style.setProperty("--bg-image", `url('${url}')`);
             }
         );
-    }
-
-    public toggleDarkMode() {
-        this.mainDiv
-            .querySelectorAll(".player_info_wrapper")[0]
-            .classList.toggle("light_mode");
     }
 
     public setTitle(title: string) {
@@ -211,7 +214,7 @@ export class MusicModeUI {
         const playerDiv = this.mainDiv;
         if (visible) {
             // PREPARATION
-            // Renderer and keyboard
+            // BaseRenderer and keyboard
             keyboardCanvasWrapper.classList.add("out_animation");
             this.savedCKWrapperHeight = keyboardCanvasWrapper.clientHeight;
 

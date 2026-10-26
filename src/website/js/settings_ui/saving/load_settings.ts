@@ -3,6 +3,7 @@ import { USE_MIDI_RANGE } from "../handlers/keyboard_handler.js";
 import type { SpessaSynthSettings } from "../settings.ts";
 import { fillWithDefaults } from "../../utils/fill_with_defaults.ts";
 import { DEFAULT_SAVED_SETTINGS } from "../../../../server/saved_settings.ts";
+import { DEFAULT_THEME, themeList } from "../../themes/theme_list.ts";
 
 export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
     console.info("Loading settings!");
@@ -15,6 +16,14 @@ export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
         savedSettingsPartial,
         DEFAULT_SAVED_SETTINGS
     );
+
+    // Apply the theme first, as changing between dark and light overrides drawActiveNotes
+    const theme =
+        savedSettings.interface.theme in themeList
+            ? savedSettings.interface.theme
+            : DEFAULT_THEME;
+    // The theme selector is filled in createHandlers, which selects this theme
+    this.applyTheme(theme);
 
     // Renderer
     const rendererControls = this.htmlControls.renderer;
@@ -123,24 +132,30 @@ export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
 
     // Removed the selected channel because it's not something you want to save
     const range = keyboardValues.keyRange;
-    keyboard.setKeyRange(range, false);
     // Find the correct option for the size
     if (keyboardValues?.autoRange) {
         keyboardControls.keyRange.value = USE_MIDI_RANGE;
         this.autoKeyRange = true;
     } else {
         this.autoKeyRange = false;
-        keyboardControls.keyRange.value = Object.keys(this.keyboardSizes).find(
+        const size = Object.keys(this.keyboardSizes).find(
             (size) =>
                 this.keyboardSizes[size as keyof typeof this.keyboardSizes]
                     .min === range.min &&
                 this.keyboardSizes[size as keyof typeof this.keyboardSizes]
                     .max === range.max
-        )!;
+        );
+        if (size) {
+            keyboardControls.keyRange.value = size;
+        } else {
+            // No matching option, fall back to the full range
+            keyboardControls.keyRange.value = "full";
+            renderer.keyRange = this.keyboardSizes.full;
+        }
     }
     // Keyboard theme
     if (keyboardValues.mode === "dark") {
-        keyboard.toggleMode(false);
+        keyboard.setMode("dark");
         this.htmlControls.keyboard.mode.checked = true;
     }
     // Keyboard show
@@ -155,19 +170,8 @@ export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
         this.htmlControls.keyboard.forceMaxVelocity.checked = true;
     }
     // Interface
+    // The language selector is filled in createHandlers, which selects the current locale
     this.locale.changeGlobalLocale(savedSettings.interface.language, true);
-
-    // Using set timeout here fixes it for some reason
-    setTimeout(() => {
-        this.htmlControls.interface.languageSelector.value =
-            savedSettings.interface.language;
-    }, 100);
-    if (savedSettings?.interface?.mode === "light") {
-        this.toggleDarkMode();
-        this.htmlControls.interface.themeSelector.checked = false;
-    } else {
-        this.htmlControls.interface.themeSelector.checked = true;
-    }
 
     this.htmlControls.interface.layoutSelector.value =
         savedSettings?.interface?.layout || "downwards";

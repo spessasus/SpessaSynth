@@ -1,28 +1,23 @@
 #note_canvas {
     width: 100%;
-    filter: saturate(1.23);
     flex: 1;
     min-height: 0;
     z-index: 1;
-    --opacity: 0.8;
     position: relative;
+    background-image: linear-gradient(
+        45deg,
+        var(--canvas-background-start),
+        var(--canvas-background-end)
+    );
     background-size: auto, cover;
     background-position:
         0 0,
         center;
+    touch-action: none;
 }
 
-#note_canvas.sideways {
+#note_canvas.vertical {
     height: 100% !important;
     min-height: unset !important;
-    width: 0 !important; /*Chromium sideways layout fix*/
-}
-
-#note_canvas.light_mode {
-    --opacity: 0 !important;
-    background-image: linear-gradient(
-        45deg,
-        var(--top-buttons-color-start),
-        var(--top-buttons-color-end)
-    );
+    width: 100% !important;
 }

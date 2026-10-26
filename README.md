@@ -21,6 +21,10 @@ This is a repository for the web application, it used to be a monorepo containin
 <img src="https://github.com/user-attachments/assets/42f5cf2d-0b5b-492d-8929-064d55d8c11f" alt="SpessaSynth promotional image" width="75%">
 </p>
 
+<h3 align='center'>v4.4.0 The XG Update is here!</h3>
+<p align='center'>Featuring full Yamaha XG effects with a new GUI, GS User Drum Sets, video export, a modular theme system,
+and a redesigned settings menu!</p>
+
 <h2 align="center"><a href="https://spessasus.github.io/SpessaSynth/">Online Version (no download needed!)</a></h2>
 
 <!--suppress HtmlUnknownAnchorTarget -->
@@ -43,6 +47,11 @@ This is a repository for the web application, it used to be a monorepo containin
 <h2 align='center'>Features</h2>
 
 - **Visualization of the played sequence:** with cool effects like visual pitch bend and note-on effects!
+- **Video export:** Render the visualization, keyboard and audio to WebM or MP4!
+- **Full Yamaha XG and GS effects:** Control reverb, chorus, delay and insertion effects from the GUI!
+- **GS User Drum Set support:** Custom drum kits configured by MIDI files play and render correctly!
+- **Themes:** Choose from many dark and light themes, with matching note colors!
+- **Redesigned settings menu:** Easier to navigate and customize!
 - **Playable keyboard with various sizes:** mobile friendly!
 - **Integrated controller for the synthesizer with numerous options:** Edit instruments, controllers, and more!
 - **MIDI Lyrics support:** Karaoke!
@@ -67,6 +76,7 @@ This is a repository for the web application, it used to be a monorepo containin
 - **Numerous exporting options:**
     - Render the MIDI file (modified or unmodified) to .wav
     - Render each channel as a separate .wav file
+    - Render the visualization to a video (.webm or .mp4)
     - Export the modified MIDI file to .mid
     - Export the trimmed SoundFont to .sf2
     - Export a DLS file to .sf2
@@ -142,6 +152,7 @@ The build files:
 - [Bootstrap Icons](https://icons.getbootstrap.com/) - for the icons
 - [fflate](https://github.com/101arrowz/fflate) - for the MIT DEFLATE implementation
 - [JSZip](https://github.com/Stuk/jszip) - for the ZIP creation library
+- [mediabunny](https://github.com/Vanilagy/mediabunny) - For the media toolkit
 - [foo_midi](https://github.com/stuerp/foo_midi) - for useful resources on XMF file format
 - [Composers](https://github.com/spessasus/spessasynth-demo-songs#readme) - for the demo songs
 - [Falcosoft](https://falcosoft.hu) - for help with the RMIDI format

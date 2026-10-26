@@ -4,7 +4,7 @@ import { Ut } from "../../utils/other.js";
 import {
     type RendererMode,
     rendererModes
-} from "../../renderer/renderer_modes.ts";
+} from "../../renderer/base/renderer_modes.ts";
 
 export function _setRendererMode(
     this: SpessaSynthSettings,
@@ -21,6 +21,8 @@ export function _setRendererMode(
     )!;
     Ut.show(generalAnalyserSettings);
     this.renderer.setRendererMode(mode);
+    // The delay depends on the renderer mode
+    this.setTimeDelay(this.renderer.analyserFftSize);
     if (mode === rendererModes.none) {
         Ut.hide(freqSettings);
         Ut.hide(waveformSettings);

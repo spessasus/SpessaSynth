@@ -31,6 +31,12 @@ export const effectsConfig = {
                 "Voice Cap: The maximum amount of voices allowed to play at once"
         },
 
+        customVibrato: {
+            title: "Custom Vibrato",
+            description:
+                "Custom Vibrato: Non-standard vibrato which may enhance some SC-88Pro MIDI files."
+        },
+
         msgsCutoff: {
             title: "MSGS Note Cutoff",
             description:
@@ -51,7 +57,7 @@ export const effectsConfig = {
     },
 
     reverb: {
-        title: "Reverb configuration",
+        title: "GS Reverb Configuration",
         description: "Configure how the reverb effect sounds.",
 
         gain: {
@@ -103,8 +109,25 @@ export const effectsConfig = {
         }
     },
 
+    convolver: {
+        title: "Convolver reverb configuration",
+        description: "Configure how the convolution-based reverb sounds.",
+        reloadConvolver: "Reload in Convolver mode",
+        reloadNormal: "Reload with standard SpessaSynth reverb",
+        impulseResponse: {
+            title: "Select impulse response",
+            description:
+                "Select an audio file to use as the convolver reverb impulse response.",
+            decodeError: {
+                title: "Could not decode impulse response",
+                description:
+                    "The selected file could not be decoded as audio. The current impulse response was kept."
+            }
+        }
+    },
+
     chorus: {
-        title: "Chorus configuration",
+        title: "GS Chorus Configuration",
         description: "Configure how the chorus effects sounds.",
 
         gain: {
@@ -169,7 +192,7 @@ export const effectsConfig = {
     },
 
     delay: {
-        title: "Delay configuration",
+        title: "GS Delay Configuration",
         description: "Configure how the delay effect sounds.",
 
         gain: {
@@ -251,7 +274,7 @@ export const effectsConfig = {
     },
 
     insertion: {
-        title: "Insertion Effect Configuration",
+        title: "GS Insertion Effect Configuration",
         description:
             "Select the Insertion Effect and configure how it should sound.",
 
@@ -280,6 +303,180 @@ export const effectsConfig = {
             description:
                 "Send Level To Delay: Adjust the send level of the sound that comes after the insertion effect to Delay. " +
                 "Higher values result in more sound being sent."
+        }
+    },
+
+    xg: {
+        reverb: {
+            title: "XG Reverb Configuration",
+            description:
+                "Select the Yamaha XG reverb type and configure how it should sound.",
+            return: {
+                title: "Return: ",
+                description:
+                    "Return: The output level of the effect. 64 is unity gain, 127 is +6dB."
+            },
+            pan: {
+                title: "Pan: ",
+                description: "Pan: The stereo position of the effect output."
+            }
+        },
+
+        chorus: {
+            title: "XG Chorus Configuration",
+            description:
+                "Select the Yamaha XG chorus type and configure how it should sound.",
+            return: {
+                title: "Return: ",
+                description:
+                    "Return: The output level of the effect. 64 is unity gain, 127 is +6dB."
+            },
+            pan: {
+                title: "Pan: ",
+                description: "Pan: The stereo position of the effect output."
+            },
+            sendToReverb: {
+                title: "Send To Reverb: ",
+                description:
+                    "Send To Reverb: The amount of the chorus output sent to the reverb. 64 is 100%."
+            }
+        },
+
+        variation: {
+            title: "XG Variation Configuration",
+            description:
+                "Select the Yamaha XG variation type and configure how it should sound. " +
+                "It works either as a system effect or as an insertion effect on a single part.",
+            return: {
+                title: "Return: ",
+                description:
+                    "Return: The output level of the effect. 64 is unity gain, 127 is +6dB."
+            },
+            pan: {
+                title: "Pan: ",
+                description: "Pan: The stereo position of the effect output."
+            },
+            sendToReverb: {
+                title: "Send To Reverb: ",
+                description:
+                    "Send To Reverb: The amount of the variation output sent to the reverb (system connection only). 64 is 100%."
+            },
+            sendToChorus: {
+                title: "Send To Chorus: ",
+                description:
+                    "Send To Chorus: The amount of the variation output sent to the chorus (system connection only). 64 is 100%."
+            },
+            connection: {
+                description:
+                    "Connection: Insertion processes a single part, System uses the Variation send of every channel.",
+                insertion: "Insertion",
+                system: "System"
+            },
+            partNumber: {
+                description:
+                    "Part: The part processed by the effect (insertion connection only).",
+                off: "Off"
+            }
+        },
+
+        insertion: {
+            title: "XG Insertion Configuration",
+            description:
+                "Select an insertion effect, its type and configure how it should sound. " +
+                "Each insertion effect processes a single part.",
+            block: "Insertion Effect {0}",
+            partNumber: {
+                description:
+                    "Part: The part processed by the insertion effect.",
+                off: "Off"
+            }
+        }
+    },
+
+    userDrumSet: {
+        title: "GS User Drum Set Editor",
+        description:
+            "Customize a GS User Drum Set to your liking by editing every note individually. Please note that this only works in GS mode.",
+
+        selector: {
+            description: "Select the User Drum Set you wish to modify."
+        },
+
+        showOnlyChanged: {
+            title: "Show Only Changed",
+            description: "Show only the modified keys."
+        },
+
+        params: {
+            key: {
+                title: "Key"
+            },
+
+            pitchCoarse: {
+                title: "Note Pitch",
+                description: `Relative pitch tuning of the note on key {0}. 60 is unchanged.`
+            },
+            level: {
+                title: "Level",
+                description:
+                    "The volume of the note on key {0}, 120 is unchanged."
+            },
+            assignGroup: {
+                title: "Assign Group",
+                description:
+                    // Yoinked from sc 8850 manual
+                    "Each Instrument can be given a number, and instruments with the identical number " +
+                    "are treated as an Assign group. No two instruments of the same Assign group will " +
+                    "sound together. If while one instrument is sounding, a MIDI message is received to " +
+                    "play another instrument in the same Assign group, the first instrument will be " +
+                    "turned off first. This is a useful way to prevent two instruments from sounding" +
+                    " simultaneously that would not normally do so. For example, since it is obviously " +
+                    "impossible for a hi-hat to simultaneously produce both an open hi-hat sound and a " +
+                    "closed hi-hat sound, these two sounds could be set to the same Assign group (the " +
+                    "same number) so that they would not sound together."
+            },
+
+            pan: {
+                title: "Pan",
+                description:
+                    "The panning of the note on key {0}, relative to channel. A value of 64 means no change and 0 enables random pan for every note."
+            },
+
+            reverbSend: {
+                title: "Reverb Send",
+                description:
+                    "The Reverb Send Level of the note on key {0}. Multiplicative of channel."
+            },
+            chorusSend: {
+                title: "Chorus Send",
+                description:
+                    "The Chorus Send Level of the note on key {0}. Multiplicative of channel."
+            },
+            variationSend: {
+                // Variation is global name, delay is for GS
+                title: "Delay Send",
+                description:
+                    "The Delay Send Level of the note on key {0}. Multiplicative of channel."
+            },
+            rxNoteOn: {
+                title: "Rx. Note On",
+                description:
+                    "Allows/disallows reception of Note On messages on key {0}."
+            },
+            rxNoteOff: {
+                title: "Rx. Note Off",
+                description:
+                    "If enabled, drum notes instantly cut off when a Note Off is received on key {0}."
+            },
+            preset: {
+                title: "Preset",
+                description: "The preset key {0} will use."
+            },
+            sourceNoteNumber: {
+                title: "Source Note Number",
+                description:
+                    "The MIDI Note Number of the source drum set. Note {0} will play a sound on this note from the selected drum set."
+            }
         }
     }
 };

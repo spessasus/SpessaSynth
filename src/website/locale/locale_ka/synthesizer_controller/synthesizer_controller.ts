@@ -36,10 +36,16 @@ export const synthesizerControllerLocale = {
         description: "MIDI პანიკა: ყველა ხმის დაუყოვნებლივ შეჩერება"
     },
 
-    systemReset: {
-        title: "კონტროლერების გადატვირთვა",
+    gsReset: {
+        title: "GS გადატვირთვა",
         description:
-            "კონტროლერების გადატვირთვა: ყველა MIDI კონტროლერის ნაგულისხმევ მნიშვნელობებზე დაბრუნება"
+            "GS გადატვირთვა: მთლიანი სინთეზატორის Roland GS რეჟიმში გადატვირთვა და ყველა კონტროლერის განბლოკვა"
+    },
+
+    xgReset: {
+        title: "XG გადატვირთვა",
+        description:
+            "XG გადატვირთვა: მთლიანი სინთეზატორის Yamaha XG რეჟიმში გადატვირთვა და ყველა კონტროლერის განბლოკვა"
     },
 
     showOnlyUsed: {
@@ -50,16 +56,21 @@ export const synthesizerControllerLocale = {
 
     helpButton: {
         title: "დახმარება",
-        description: "დახმარება: ხსნის გარე ვებსაიტს გამოყენების სახელმძღვანელოთი"
+        description:
+            "დახმარება: ხსნის გარე ვებსაიტს გამოყენების სახელმძღვანელოთი"
     },
 
     tabs: {
         description: "ჩანართები: აირჩიეთ კონფიგურაციისთვის",
         channels: "MIDI არხები",
-        reverb: "რევერბერაცია",
-        chorus: "გუნდი",
-        delay: "შეფერხება",
-        insertion: "ჩასმა",
+        gsReverb: "GS რევერბერაცია",
+        gsChorus: "GS გუნდი",
+        gsDelay: "GS შეფერხება",
+        gsInsertion: "GS ჩასმა",
+        xgReverb: "XG რევერბერაცია",
+        xgChorus: "XG გუნდი",
+        xgVariation: "XG ვარიაცია",
+        xgInsertion: "XG ჩასმა",
         configuration: "კონფიგურაცია"
     },
 

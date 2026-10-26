@@ -20,7 +20,7 @@
 
 .seamless_button:hover {
     cursor: pointer;
-    text-shadow: 0 0 5px white;
+    text-shadow: 0 0 5px var(--text-glow-color);
 }
 
 .gear {

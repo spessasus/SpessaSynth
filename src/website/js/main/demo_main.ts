@@ -20,7 +20,8 @@ import {
     DEFAULT_SAVED_SETTINGS,
     type SavedSettings
 } from "../../../server/saved_settings.ts";
-import { readSampleRateParam } from "../utils/sample_rate_param.ts";
+import { URLParamUtils } from "../utils/url_params.ts";
+import { isMobile } from "../utils/is_mobile.ts";
 
 /**
  * Demo_main.js
@@ -127,6 +128,18 @@ async function loadLastSoundFontFromDatabase(): Promise<
     });
 }
 
+/**
+ * Shows the sound bank parsing error.
+ * The message can contain text from the file, so it is never parsed as HTML.
+ */
+function showSoundFontError(element: HTMLElement, error: string) {
+    const pre = document.createElement("pre");
+    pre.style.fontFamily = "monospace";
+    pre.style.fontWeight = "bold";
+    pre.textContent = error;
+    element.replaceChildren("Error parsing soundfont: ", pre);
+}
+
 function changeIcon(html: string, disableAnimation = true) {
     const icon = loading.querySelectorAll(".loading_icon")[0] as HTMLElement;
     icon.innerHTML = html;
@@ -166,11 +179,17 @@ let context: AudioContext;
 async function demoInit(initLocale: LocaleCode) {
     // Initialize the locale management system. do it here because we want it ready before all js classes do their things
     const localeManager = new LocaleManager(initLocale);
+    const sampleRate = URLParamUtils.getSampleRate();
     try {
-        context = new AudioContext({
-            sampleRate: readSampleRateParam()
-        });
+        context = new AudioContext({ sampleRate });
     } catch (error) {
+        // Reload with a safe value if it isn't set
+        if (sampleRate !== URLParamUtils.DEFAULT_SAMPLE_RATE) {
+            URLParamUtils.setParam(
+                URLParamUtils.SAMPLE_RATE,
+                URLParamUtils.DEFAULT_SAMPLE_RATE.toString()
+            );
+        }
         changeIcon(getExclamationSvg(256));
         loadingMessage.textContent = localeManager.getLocaleString(
             "locale.synthInit.noWebAudio"
@@ -193,11 +212,16 @@ async function demoInit(initLocale: LocaleCode) {
             "locale.synthInit.loadingBundledSoundfont"
         );
         loadingMessage.textContent = sFontLoadMessage;
+        progressBar.classList.add("active");
         try {
             soundFontBuffer = await fetchFont(
                 `soundfonts/${SF_NAME}`,
                 (percent: number) => {
                     loadingMessage.textContent = `${sFontLoadMessage} ${percent}%`;
+                    progressBar.style.setProperty(
+                        "--progress",
+                        `${percent / 100}`
+                    );
                 }
             );
         } catch (error) {
@@ -205,7 +229,7 @@ async function demoInit(initLocale: LocaleCode) {
             soundFontBuffer = BasicSoundBank.getSampleSoundBankFile();
         }
 
-        progressBar.style.width = "0";
+        progressBar.classList.remove("active");
     } else {
         console.info("Loaded the soundfont from the database successfully");
     }
@@ -250,9 +274,9 @@ async function demoInit(initLocale: LocaleCode) {
                 };
             });
         } else {
-            titleMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold;'>${e}</pre>`;
+            showSoundFontError(titleMessage, e);
         }
-        loadingMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold;'>${e}</pre>`;
+        showSoundFontError(loadingMessage, e);
     };
     await window.manager.ready;
 
@@ -320,7 +344,7 @@ async function startMidi(midiFiles: FileList | File[]) {
     let fName;
     fName =
         midiFiles[0].name.length > 20
-            ? midiFiles[0].name.slice(0, 21) + "..."
+            ? midiFiles[0].name.slice(0, 20) + "..."
             : midiFiles[0].name;
     if (midiFiles.length > 1) {
         fName += ` and ${midiFiles.length - 1} others`;
@@ -368,7 +392,15 @@ window.saveSettings = saveSettings;
 
 // Load saved settings
 let savedJson = localStorage.getItem(localStorageName);
-savedJson ??= JSON.stringify(DEFAULT_SAVED_SETTINGS);
+if (savedJson === null) {
+    const defaults = structuredClone(DEFAULT_SAVED_SETTINGS);
+    // If on mobile, start with a two octave keyboard
+    if (isMobile) {
+        defaults.keyboard.keyRange = { min: 53, max: 77 };
+        defaults.renderer.keyRange = { min: 53, max: 77 };
+    }
+    savedJson = JSON.stringify(defaults);
+}
 const saved = JSON.parse(savedJson) as SavedSettings;
 if (saved !== null) {
     /**
@@ -489,7 +521,7 @@ sfInput.addEventListener("change", (e) => {
                 throw error;
             }
             window.manager.sfError = (e) => {
-                loadingMessage.innerHTML = `Error parsing soundfont: <pre style='font-family: monospace; font-weight: bold;'>${e}</pre>`;
+                showSoundFontError(loadingMessage, e);
                 changeIcon(getExclamationSvg(256));
                 console.error(e);
             };
@@ -509,7 +541,9 @@ sfInput.addEventListener("change", (e) => {
 
             // Wait to make sure that the animation has finished
             const elapsed = performance.now() / 1000 - parseStart;
-            await new Promise((r) => setTimeout(r, 1000 - elapsed));
+            await new Promise((r) =>
+                setTimeout(r, Math.max(0, (1 - elapsed) * 1000))
+            );
             // DONE
             changeIcon(getCheckSvg(256));
             loadingMessage.textContent =

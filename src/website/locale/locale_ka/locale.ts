@@ -2,7 +2,7 @@ import { settingsLocale } from "./settings/settings.js";
 import { musicPlayerModeLocale } from "./music_player_mode.js";
 import { synthesizerControllerLocale } from "./synthesizer_controller/synthesizer_controller.js";
 import { sequencerControllerLocale } from "./sequencer_controller.js";
-import { exportAudio } from "./export_audio.js";
+import { exportFile } from "./export_file.js";
 
 export const localeGeorgian = {
     localeName: "ქართული",
@@ -45,7 +45,7 @@ export const localeGeorgian = {
         button: "დამატებითი ხმის ბანკის დამატება"
     },
 
-    exportAudio: exportAudio,
+    exportFile: exportFile,
 
     error: "შეცდომა",
     yes: "დიახ",

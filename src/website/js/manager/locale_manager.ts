@@ -28,10 +28,12 @@ export class LocaleManager {
      * Creates a new locale manager, responsible for managing and binding text values, then changing them when the locale changes.
      */
     public constructor(initialLocale: LocaleCode) {
-        this.locale = (localeList[initialLocale] ??
-            localeList[DEFAULT_LOCALE]) as Partial<CompleteLocaleTypedef>;
+        this.localeCode =
+            initialLocale in localeList ? initialLocale : DEFAULT_LOCALE;
+        this.locale = localeList[
+            this.localeCode
+        ] as Partial<CompleteLocaleTypedef>;
         this.fallbackLocale = localeList[DEFAULT_LOCALE];
-        this.localeCode = initialLocale;
     }
 
     /**
@@ -86,7 +88,6 @@ export class LocaleManager {
      * @param force If the locale should be applied even to changed values.
      */
     public changeGlobalLocale(newLocale: LocaleCode, force = false) {
-        document.documentElement.lang = newLocale;
         const newLocaleObject = localeList[
             newLocale
         ] as Partial<CompleteLocaleTypedef>;
@@ -94,6 +95,7 @@ export class LocaleManager {
             console.warn(`Locale ${newLocale} not found. Not switching.`);
             return;
         }
+        document.documentElement.lang = newLocale;
         this.localeCode = newLocale;
         console.info("Changing locale to", newLocaleObject.localeName);
         if (!force) {
