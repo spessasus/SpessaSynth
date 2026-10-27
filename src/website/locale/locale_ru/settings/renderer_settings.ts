@@ -57,14 +57,12 @@ export const rendererSettingsLocale = {
 
     toggleNotesRendering: {
         title: "Показывать ноты",
-        description:
-            "Отображать падающие ноты при воспроизведении MIDI-файла"
+        description: "Отображать падающие ноты при воспроизведении MIDI-файла"
     },
 
     toggleDrawingActiveNotes: {
         title: "Показывать активные ноты",
-        description:
-            "Подсвечивать ноты и добавлять свечение при нажатии"
+        description: "Подсвечивать ноты и добавлять свечение при нажатии"
     },
 
     toggleDrawingVisualPitch: {
@@ -81,8 +79,7 @@ export const rendererSettingsLocale = {
 
     toggleRenderingDotDisplay: {
         title: "Показывать точечный дисплей",
-        description:
-            "Отображать сообщения точечного дисплея GS/XG"
+        description: "Отображать сообщения точечного дисплея GS/XG"
     },
 
     toggleStabilizeWaveforms: {

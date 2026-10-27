@@ -76,7 +76,8 @@ export const synthesizerControllerLocale = {
     },
 
     holdPedalDown: "Педаль удержания нажата (Shift)",
-    keyboardMode: "Режим игры на клавиатуре включён. Нажмите `, чтобы отключить",
+    keyboardMode:
+        "Режим игры на клавиатуре включён. Нажмите `, чтобы отключить",
     port: "Порт {0} (нажмите, чтобы переключить видимость)",
     channelController: channelControllerLocale,
     effectsConfig: effectsConfig

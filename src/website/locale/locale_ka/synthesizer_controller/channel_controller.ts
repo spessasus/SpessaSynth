@@ -1,8 +1,7 @@
 export const channelControllerLocale = {
     voiceMeter: {
         title: "ხმები: ",
-        description:
-            "ხმები: ამჟამად არხზე {0} დაკრული ხმების რაოდენობა"
+        description: "ხმები: ამჟამად არხზე {0} დაკრული ხმების რაოდენობა"
     },
 
     pitchBendMeter: {
@@ -136,13 +135,15 @@ export const channelControllerLocale = {
     },
 
     presetSelector: {
-        description: "შეცვალეთ არხის {0} მიერ გამოყენებული პრესეტი (ინსტრუმენტი)",
+        description:
+            "შეცვალეთ არხის {0} მიერ გამოყენებული პრესეტი (ინსტრუმენტი)",
         selectionPrompt: "შეცვალეთ ინსტრუმენტი არხისთვის {0}",
         searchPrompt: "ძიება..."
     },
 
     presetReset: {
-        description: "განბლოკეთ არხი {0}, რათა პროგრამების შეცვლა შესაძლებელი გახდეს"
+        description:
+            "განბლოკეთ არხი {0}, რათა პროგრამების შეცვლა შესაძლებელი გახდეს"
     },
 
     soloButton: {

@@ -1,8 +1,7 @@
 export const channelControllerLocale = {
     voiceMeter: {
         title: "Голоса: ",
-        description:
-            "Голоса: текущее количество звучащих голосов на канале {0}"
+        description: "Голоса: текущее количество звучащих голосов на канале {0}"
     },
 
     pitchBendMeter: {
@@ -67,8 +66,7 @@ export const channelControllerLocale = {
 
     transposeMeter: {
         title: "Сдвиг тональности: ",
-        description:
-            "Сдвиг тональности: текущее транспонирование канала {0}."
+        description: "Сдвиг тональности: текущее транспонирование канала {0}."
     },
 
     fineTuneMeter: {

@@ -1,11 +1,22 @@
-import { BaseRenderer, browserCanvasFactory, type RendererCanvasFactory } from "../base/renderer.ts";
-import { createXGRouting, getXGInsertionLabels } from "../base/xg_insertion_labels.ts";
+import {
+    BaseRenderer,
+    browserCanvasFactory,
+    type RendererCanvasFactory
+} from "../base/renderer.ts";
+import {
+    createXGRouting,
+    getXGInsertionLabels
+} from "../base/xg_insertion_labels.ts";
 import { gsInsertionEffectData } from "../../synthesizer_ui/methods/gs_effect_params.ts";
 import { ProgramTracker } from "../base/program_tracker.ts";
 import { BaseKeyboard } from "../../canvas_keyboard/base/base_keyboard.ts";
 import type { VideoSettingsSnapshot } from "../../manager/export/video/snapshot_settings.ts";
 import type { VideoInitialParams, VideoSynthData } from "./events.ts";
-import { type BasicMIDI, MIDI_DRUM_CHANNEL, type NoteTime } from "spessasynth_core";
+import {
+    type BasicMIDI,
+    MIDI_DRUM_CHANNEL,
+    type NoteTime
+} from "spessasynth_core";
 
 /**
  * Tracked channel parameters used by the event replay. Only the parameters

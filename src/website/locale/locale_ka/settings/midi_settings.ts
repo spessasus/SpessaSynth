@@ -14,18 +14,15 @@ export const midiSettingsLocale = {
         doNotUse: "არ გამოიყენო",
         port1: {
             title: "MIDI პორტი 1",
-            description:
-                "მრავალპორტიანი MIDI ფაილის პორტი 1 (არხები 16–31)"
+            description: "მრავალპორტიანი MIDI ფაილის პორტი 1 (არხები 16–31)"
         },
         port2: {
             title: "MIDI პორტი 2",
-            description:
-                "მრავალპორტიანი MIDI ფაილის პორტი 2 (არხები 32–47)"
+            description: "მრავალპორტიანი MIDI ფაილის პორტი 2 (არხები 32–47)"
         },
         port3: {
             title: "MIDI პორტი 3",
-            description:
-                "მრავალპორტიანი MIDI ფაილის პორტი 3 (არხები 48–64)"
+            description: "მრავალპორტიანი MIDI ფაილის პორტი 3 (არხები 48–64)"
         }
     },
 

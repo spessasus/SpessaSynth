@@ -14,18 +14,15 @@ export const midiSettingsLocale = {
         doNotUse: "Не использовать",
         port1: {
             title: "Порт MIDI 1",
-            description:
-                "Порт 1 для многопортового MIDI-файла (каналы 16–31)"
+            description: "Порт 1 для многопортового MIDI-файла (каналы 16–31)"
         },
         port2: {
             title: "Порт MIDI 2",
-            description:
-                "Порт 2 для многопортового MIDI-файла (каналы 32–47)"
+            description: "Порт 2 для многопортового MIDI-файла (каналы 32–47)"
         },
         port3: {
             title: "Порт MIDI 3",
-            description:
-                "Порт 3 для многопортового MIDI-файла (каналы 48–64)"
+            description: "Порт 3 для многопортового MIDI-файла (каналы 48–64)"
         }
     },
 

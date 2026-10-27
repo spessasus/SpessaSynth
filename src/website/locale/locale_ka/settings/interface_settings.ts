@@ -41,7 +41,8 @@ export const interfaceSettings = {
 
     useFirefox: {
         firefox: "Firefox ბრაუზერი",
-        recommended: "საუკეთესო წარმადობისთვის მისი გამოყენება განსაკუთრებით რეკომენდებულია."
+        recommended:
+            "საუკეთესო წარმადობისთვის მისი გამოყენება განსაკუთრებით რეკომენდებულია."
     },
 
     showControls: {

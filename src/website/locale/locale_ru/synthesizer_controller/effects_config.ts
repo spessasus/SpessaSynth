@@ -68,8 +68,7 @@ export const effectsConfig = {
 
         level: {
             title: "Уровень: ",
-            description:
-                "Уровень: этот параметр задаёт интенсивность эффекта."
+            description: "Уровень: этот параметр задаёт интенсивность эффекта."
         },
 
         preLowpass: {
@@ -112,8 +111,7 @@ export const effectsConfig = {
 
     convolver: {
         title: "Настройка свёрточной реверберации",
-        description:
-            "Настройка звучания реверберации на основе свёртки.",
+        description: "Настройка звучания реверберации на основе свёртки.",
         reloadConvolver: "Перезагрузить в режиме свёрточной реверберации",
         reloadNormal: "Перезагрузить со стандартной реверберацией SpessaSynth",
         impulseResponse: {
@@ -140,8 +138,7 @@ export const effectsConfig = {
 
         level: {
             title: "Уровень: ",
-            description:
-                "Уровень: этот параметр задаёт интенсивность эффекта."
+            description: "Уровень: этот параметр задаёт интенсивность эффекта."
         },
 
         preLowpass: {
@@ -206,8 +203,7 @@ export const effectsConfig = {
 
         level: {
             title: "Уровень: ",
-            description:
-                "Уровень: этот параметр задаёт интенсивность эффекта."
+            description: "Уровень: этот параметр задаёт интенсивность эффекта."
         },
 
         preLowpass: {
@@ -281,8 +277,7 @@ export const effectsConfig = {
 
     insertion: {
         title: "Настройка эффекта вставки GS",
-        description:
-            "Выберите эффект вставки и настройте его звучание.",
+        description: "Выберите эффект вставки и настройте его звучание.",
 
         activeChannels: {
             title: "Активные каналы",
@@ -324,8 +319,7 @@ export const effectsConfig = {
             },
             pan: {
                 title: "Панорама: ",
-                description:
-                    "Панорама: положение эффекта в стереополе."
+                description: "Панорама: положение эффекта в стереополе."
             }
         },
 
@@ -340,8 +334,7 @@ export const effectsConfig = {
             },
             pan: {
                 title: "Панорама: ",
-                description:
-                    "Панорама: положение эффекта в стереополе."
+                description: "Панорама: положение эффекта в стереополе."
             },
             sendToReverb: {
                 title: "Отправка в реверберацию: ",
@@ -362,8 +355,7 @@ export const effectsConfig = {
             },
             pan: {
                 title: "Панорама: ",
-                description:
-                    "Панорама: положение эффекта в стереополе."
+                description: "Панорама: положение эффекта в стереополе."
             },
             sendToReverb: {
                 title: "Отправка в реверберацию: ",
@@ -395,8 +387,7 @@ export const effectsConfig = {
                 "Каждый эффект вставки обрабатывает одну партию.",
             block: "Эффект вставки {0}",
             partNumber: {
-                description:
-                    "Партия: партия, обрабатываемая эффектом вставки.",
+                description: "Партия: партия, обрабатываемая эффектом вставки.",
                 off: "Отключено"
             }
         }
@@ -414,8 +405,7 @@ export const effectsConfig = {
 
         showOnlyChanged: {
             title: "Показывать только изменённые",
-            description:
-                "Показывать только изменённые клавиши."
+            description: "Показывать только изменённые клавиши."
         },
 
         params: {

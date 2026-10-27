@@ -8,7 +8,8 @@ export const localeRussian = {
     localeName: "Русский",
     // Заголовки
     titleMessage: "SpessaSynth: JavaScript-синтезатор SF2/DLS",
-    demoTitleMessage: "SpessaSynth: онлайн-демонстрация JavaScript-синтезатора SF2/DLS",
+    demoTitleMessage:
+        "SpessaSynth: онлайн-демонстрация JavaScript-синтезатора SF2/DLS",
 
     synthInit: {
         genericLoading: "Загрузка...",
@@ -70,8 +71,7 @@ export const localeRussian = {
     warnings: {
         outOfMemory:
             "В браузере закончилась доступная память. Попробуйте использовать Firefox или SoundFont в формате SF3. Подробности смотрите в консоли.",
-        noMidiSupport:
-            "Порты MIDI не обнаружены. Эта функция будет отключена.",
+        noMidiSupport: "Порты MIDI не обнаружены. Эта функция будет отключена.",
         warning: "Предупреждение",
         invalidMidiFile: "Недопустимый MIDI-файл:"
     },
