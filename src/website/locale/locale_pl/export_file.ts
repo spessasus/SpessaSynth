@@ -9,15 +9,25 @@ export const exportFile = {
         formats: {
             wav: {
                 button: {
-                    title: "Audio WAV (.wav)",
+                    title: "Audio (.wav, .ogg, .mp3)",
                     description:
-                        "Eksportuj utwór ze zmianami jako plik audio .wav"
+                        "Eksportuj utwór ze zmianami jako plik audio .wav, .ogg lub .mp3"
                 },
                 options: {
                     title: "Opcje eksportu audio",
                     description:
-                        "Eksportuj MIDI jako WAV, uwzględniając wszystkie modyfikacje wykonane w kontrolerze.",
+                        "Eksportuj MIDI jako audio, uwzględniając wszystkie modyfikacje wykonane w kontrolerze.",
                     confirm: "Eksportuj",
+                    format: {
+                        title: "Format",
+                        description:
+                            "Format pliku audio. WAV jest bezstratny, Ogg Vorbis i MP3 są skompresowane i znacznie mniejsze. Pętle są zapisywane tylko w WAV i Ogg Vorbis."
+                    },
+                    bitrate: {
+                        title: "Bitrate",
+                        description:
+                            "Przepływność kompresji. Wyższa jest lepsza, ale daje większe pliki."
+                    },
                     normalizeVolume: {
                         title: "Normalizuj głośność",
                         description:
@@ -53,7 +63,7 @@ export const exportFile = {
                     message: "Eksportowanie audio...",
                     addingEffects: "Dodawanie efektów...",
                     estimated: "Pozostało:",
-                    convertWav: "Konwertowanie do wav..."
+                    convertWav: "Kodowanie audio..."
                 }
             },
 

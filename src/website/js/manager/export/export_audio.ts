@@ -3,18 +3,137 @@ import {
     type NotificationContent,
     showNotification
 } from "../../notification/notification.js";
-import { audioBufferToWav } from "spessasynth_lib";
+import { audioBufferToWav, type LibWaveWriteOptions } from "spessasynth_lib";
 import { Ut } from "../../utils/other.js";
 import { consoleColors } from "../../utils/console_colors.js";
 
 import { ANIMATION_REFLOW_TIME } from "../../utils/animation_utils.js";
 import { type WaveMetadata } from "spessasynth_core";
 import JSZip from "jszip";
+import {
+    BufferSource,
+    BufferTarget,
+    Conversion,
+    Input,
+    type MetadataTags,
+    MP3,
+    Mp3OutputFormat,
+    OGG,
+    OggOutputFormat,
+    Output
+} from "mediabunny";
 import type { Manager } from "../manager.ts";
 import { renderAudioData } from "./render_audio_data.ts";
 import { showOutOfMemoryWarning } from "./utils/show_out_of_memory_warning.ts";
+import {
+    BITRATE_VORBIS_QUALITY,
+    type CompressedBitrate,
+    encodeCompressedAudio
+} from "./utils/encode_compressed_audio.ts";
 
 const RENDER_AUDIO_TIME_INTERVAL = 250;
+
+const FORMATS = {
+    wav: "WAV",
+    ogg: "Ogg Vorbis",
+    mp3: "MP3"
+};
+
+const BITRATES = Object.fromEntries(
+    Object.keys(BITRATE_VORBIS_QUALITY).map((b) => [b, `${b} kbps`])
+);
+const DEFAULT_BITRATE: CompressedBitrate = 192;
+// -1 dBFS
+const COMPRESSED_NORMALIZE_PEAK = 10 ** (-1 / 20);
+
+type AudioExportFormat = keyof typeof FORMATS;
+
+/**
+ * Encodes the audio buffer in the given format.
+ * Metadata is written to all formats, loop points only to WAV and Ogg Vorbis.
+ */
+async function encodeAudio(
+    buffer: AudioBuffer,
+    format: AudioExportFormat,
+    bitrate: CompressedBitrate,
+    wavOptions: Partial<LibWaveWriteOptions>,
+    progressCallback?: (progress: number) => unknown
+) {
+    if (format === "wav") {
+        // Use lib's function
+        return audioBufferToWav(buffer, wavOptions);
+    }
+    const channels = new Array<Float32Array>();
+    for (let i = 0; i < Math.min(2, buffer.numberOfChannels); i++) {
+        channels.push(buffer.getChannelData(i));
+    }
+    let gain = 1;
+    if (wavOptions.normalizeAudio) {
+        let peak = 0;
+        for (const channel of channels) {
+            for (const sample of channel) {
+                const abs = Math.abs(sample);
+                if (abs > peak) {
+                    peak = abs;
+                }
+            }
+        }
+        // Lossy codecs overshoot the original normalization,
+        // We need to leave headroom to avoid clipping on decode
+        gain = peak > 0 ? COMPRESSED_NORMALIZE_PEAK / peak : 1;
+    }
+    const encoded = await encodeCompressedAudio(
+        format,
+        channels,
+        buffer.sampleRate,
+        { bitrate },
+        gain,
+        progressCallback
+    );
+
+    // The encoders don't write tags, so copy the encoded packets into a new file with them
+    // Use media bunny library to put the tags in
+    const { metadata, loop } = wavOptions;
+    const tags: MetadataTags = { ...metadata };
+    if (format === "ogg" && loop) {
+        // De facto standard loop comments
+        // (RPG Maker, vgmstream...), in samples
+        const loopStart = Math.max(
+            0,
+            Math.floor(loop.start * buffer.sampleRate)
+        );
+        const loopEnd = Math.floor(loop.end * buffer.sampleRate);
+        if (loopEnd > loopStart) {
+            tags.raw = {
+                LOOPSTART: loopStart.toString(),
+                LOOPLENGTH: (loopEnd - loopStart).toString()
+            };
+        }
+    }
+    const output = new Output({
+        format:
+            format === "ogg" ? new OggOutputFormat() : new Mp3OutputFormat(),
+        target: new BufferTarget()
+    });
+    const conversion = await Conversion.init({
+        input: new Input({
+            source: new BufferSource(encoded),
+            formats: [OGG, MP3]
+        }),
+        output,
+        tags,
+        showWarnings: false
+    });
+    if (!conversion.isValid) {
+        throw new Error(
+            `Could not write the ${format} file: ${conversion.discardedTracks.map((t) => t.reason).join(", ")}`
+        );
+    }
+    await conversion.execute();
+    return new Blob([output.target.buffer!], {
+        type: format === "ogg" ? "audio/ogg" : "audio/mpeg"
+    });
+}
 
 export async function renderAndExportAudioData(
     this: Manager,
@@ -23,7 +142,9 @@ export async function renderAndExportAudioData(
     additionalTime = 2,
     separateChannels = false,
     meta: Partial<WaveMetadata>,
-    loopCount = 0
+    loopCount = 0,
+    format: AudioExportFormat = "wav",
+    bitrate = DEFAULT_BITRATE
 ): Promise<void> {
     if (!this.seq?.midiData) {
         throw new Error("No sequencer active");
@@ -127,7 +248,7 @@ export async function renderAndExportAudioData(
         const snapshot = await this.synth.getSnapshot();
         const { output, visual } = renderedData;
         const separatePath = `locale.exportFile.formats.formats.wav.options.separateChannels.saving.`;
-        const outputName = `${this.seqUI?.currentSongTitle ?? "unnamed_song"}.wav`;
+        const outputName = `${this.seqUI?.currentSongTitle ?? "unnamed_song"}.${format}`;
         const content: NotificationContent[] = [];
         const usedChannels = new Set();
         for (const t of parsedMid.tracks) {
@@ -164,14 +285,14 @@ export async function renderAndExportAudioData(
                     );
 
                     // Stereo
-                    const audioOut = audioBufferToWav(visual[channel], {
-                        normalizeAudio: false
-                    });
-                    const fileName = `${channel + 1} - ${snapshot.midiChannels[i]?.patch?.name ?? `Channel ${i + 1}`}.wav`;
-                    this.saveBlob(
-                        new Blob([audioOut], { type: "audio/wav" }),
-                        fileName
+                    const audioOut = await encodeAudio(
+                        visual[channel],
+                        format,
+                        bitrate,
+                        { normalizeAudio: false }
                     );
+                    const fileName = `${channel + 1} - ${snapshot.midiChannels[i]?.patch?.name ?? `Channel ${i + 1}`}.${format}`;
+                    this.saveBlob(audioOut, fileName);
                     target.classList.add("green_button");
                     target.textContent = text;
                 }
@@ -194,13 +315,13 @@ export async function renderAndExportAudioData(
                     );
 
                     // Stereo
-                    const audioOut = audioBufferToWav(output, {
-                        normalizeAudio: false
-                    });
-                    this.saveBlob(
-                        new Blob([audioOut], { type: "audio/wav" }),
-                        outputName
+                    const audioOut = await encodeAudio(
+                        output,
+                        format,
+                        bitrate,
+                        { normalizeAudio: false }
                     );
+                    this.saveBlob(audioOut, outputName);
                     target.classList.add("green_button");
                     target.textContent = text;
                 }
@@ -240,10 +361,13 @@ export async function renderAndExportAudioData(
                             continue;
                         }
                         // Stereo
-                        const audioOut = audioBufferToWav(channel, {
-                            normalizeAudio: false
-                        });
-                        const fileName = `${i + 1} - ${snapshot.midiChannels[i]?.patch?.name ?? `Channel ${i + 1}`}.wav`;
+                        const audioOut = await encodeAudio(
+                            channel,
+                            format,
+                            bitrate,
+                            { normalizeAudio: false }
+                        );
+                        const fileName = `${i + 1} - ${snapshot.midiChannels[i]?.patch?.name ?? `Channel ${i + 1}`}.${format}`;
                         zipped.file(fileName, audioOut);
                         console.info(
                             `%cAdding file %c${fileName}%c to zip...`,
@@ -253,9 +377,12 @@ export async function renderAndExportAudioData(
                         );
                     }
                     // Add the full mix to the zip
-                    const outputFile = audioBufferToWav(output, {
-                        normalizeAudio: false
-                    });
+                    const outputFile = await encodeAudio(
+                        output,
+                        format,
+                        bitrate,
+                        { normalizeAudio: false }
+                    );
                     zipped.file(outputName, outputFile);
                     const zipFile = await zipped.generateAsync({
                         type: "blob"
@@ -284,9 +411,10 @@ export async function renderAndExportAudioData(
         );
         n.div.style.width = "30rem";
     } else {
-        detailMessage.textContent = this.localeManager.getLocaleString(
+        const convertMessage = this.localeManager.getLocaleString(
             "locale.exportFile.formats.formats.wav.exportMessage.convertWav"
         );
+        detailMessage.textContent = convertMessage;
         // Let the browser show
         await new Promise((r) => setTimeout(r, ANIMATION_REFLOW_TIME));
 
@@ -302,14 +430,20 @@ export async function renderAndExportAudioData(
             consoleColors.info,
             consoleColors.recognized
         );
-        const wav = audioBufferToWav(renderedData.output, {
-            normalizeAudio,
-            metadata: meta,
-            loop
-        });
+        const encoded = await encodeAudio(
+            renderedData.output,
+            format,
+            bitrate,
+            {
+                normalizeAudio,
+                metadata: meta,
+                loop
+            },
+            (progress) => showProgress(progress, convertMessage, false)
+        );
         this.saveBlob(
-            wav,
-            `${this.seqUI!.currentSongTitle || "unnamed_song"}.wav`
+            encoded,
+            `${this.seqUI!.currentSongTitle || "unnamed_song"}.${format}`
         );
     }
     closeNotification(notification.id);
@@ -334,6 +468,22 @@ export function showAudioExportMenu(this: Manager) {
             ),
             attributes: {
                 style: "max-width: 30ch; font-style: italic"
+            }
+        },
+        {
+            type: "select",
+            translatePathTitle: wavPath + "format",
+            selectOptions: FORMATS,
+            attributes: {
+                "audio-format": "1"
+            }
+        },
+        {
+            type: "select",
+            translatePathTitle: wavPath + "bitrate",
+            selectOptions: BITRATES,
+            attributes: {
+                "audio-bitrate": "1"
             }
         },
         {
@@ -440,6 +590,14 @@ export function showAudioExportMenu(this: Manager) {
                 const album = getEl("input[name='album']").value;
                 const title = getEl("input[name='song_title']").value;
                 const genre = getEl("input[name='genre']").value;
+                const format = n.div.querySelector<HTMLSelectElement>(
+                    "select[audio-format]"
+                )!.value as AudioExportFormat;
+                const bitrate = Number.parseInt(
+                    n.div.querySelector<HTMLSelectElement>(
+                        "select[audio-bitrate]"
+                    )!.value
+                ) as CompressedBitrate;
                 const metadata: Partial<WaveMetadata> = {
                     artist: artist.length > 0 ? artist : undefined,
                     album: album.length > 0 ? album : undefined,
@@ -454,17 +612,37 @@ export function showAudioExportMenu(this: Manager) {
                     Number.parseInt(additionalTime),
                     separateChannels,
                     metadata,
-                    Number.parseInt(loopCount)
+                    Number.parseInt(loopCount),
+                    format,
+                    bitrate
                 );
             }
         }
     ];
 
-    showNotification(
+    const notification = showNotification(
         this.localeManager.getLocaleString(wavPath + "title"),
         WAV_OPTIONS,
         9_999_999,
         true,
         this.localeManager
     );
+    // Bitrate only applies to compressed formats,
+    // Hide it for WAV
+    const formatSelect = notification.div.querySelector<HTMLSelectElement>(
+        "select[audio-format]"
+    )!;
+    const bitrateSelect = notification.div.querySelector<HTMLSelectElement>(
+        "select[audio-bitrate]"
+    )!;
+    bitrateSelect.value = DEFAULT_BITRATE.toString();
+    const bitrateWrapper = bitrateSelect.closest<HTMLElement>(
+        ".notification_input_wrapper"
+    )!;
+    const updateBitrateVisibility = () => {
+        bitrateWrapper.style.display =
+            formatSelect.value === "wav" ? "none" : "";
+    };
+    formatSelect.addEventListener("change", updateBitrateVisibility);
+    updateBitrateVisibility();
 }

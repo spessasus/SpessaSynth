@@ -9,15 +9,25 @@ export const exportFile = {
         formats: {
             wav: {
                 button: {
-                    title: "WAV audio (.wav)",
+                    title: "Audio (.wav, .ogg, .mp3)",
                     description:
-                        "Export the song with modifications as a .wav audio file"
+                        "Export the song with modifications as a .wav, .ogg or .mp3 audio file"
                 },
                 options: {
-                    title: "WAV export options",
+                    title: "Audio export options",
                     description:
-                        "Export the current MIDI file as WAV applying all the modifications made via the synthesizer controller.",
+                        "Export the current MIDI file as audio applying all the modifications made via the synthesizer controller.",
                     confirm: "Export",
+                    format: {
+                        title: "Format",
+                        description:
+                            "Audio file format. WAV is lossless, Ogg Vorbis and MP3 are compressed and much smaller. Loop points are only written to WAV and Ogg Vorbis."
+                    },
+                    bitrate: {
+                        title: "Bitrate",
+                        description:
+                            "Compression bitrate. Higher is better but produces larger files."
+                    },
                     normalizeVolume: {
                         title: "Normalize volume",
                         description:
@@ -51,10 +61,10 @@ export const exportFile = {
                     }
                 },
                 exportMessage: {
-                    message: "Exporting WAV audio...",
+                    message: "Exporting audio...",
                     addingEffects: "Adding effects...",
                     estimated: "Remaining:",
-                    convertWav: "Converting to wav..."
+                    convertWav: "Encoding audio..."
                 }
             },
 
