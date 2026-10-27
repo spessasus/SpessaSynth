@@ -70,7 +70,7 @@
 }
 
 .settings_menu .hover_reminder {
-    width: 25ch;
+    width: min(25ch, 100%);
     white-space: wrap;
     margin: 1rem auto 0 auto;
 }

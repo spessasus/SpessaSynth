@@ -14,7 +14,7 @@ export const settingsHtml = `
 </div>
 <p class='settings_no_results hidden' translate-path='locale.settings.noResults'></p>
 <div class='settings_groups_parent'>
-    <div class='settings_group'>
+    <div class='settings_group settings_group_wide'>
         <h2 translate-path='locale.settings.rendererSettings.title'></h2>
         
         <div class='setting setting_select'>
