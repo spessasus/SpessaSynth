@@ -312,15 +312,10 @@ export class UserDrumSetEditor {
                 }
             }
 
-            // Ensure that resetting unlocked user drum commits the reset to channels for consistent UI
-            for (const channel of this.synth.midiChannels.filter(
-                (c) =>
-                    c.patch.isGMGSDrum &&
-                    c.patch.program >= FIRST_USER_DRUM &&
-                    c.patch.program < FIRST_USER_DRUM + DRUM_SET_COUNT
-            )) {
-                this.updateDrumsOnChannel(channel);
-            }
+            // Do not touch the channels here: this runs on the synth's reset event,
+            // Which is emitted before the channels are reset (and arrives asynchronously from the worker).
+            // Re-sending the user drum program change would override
+            // The channel reset and keep the user drum selected.
             this.updateVisibility();
         }
     }
