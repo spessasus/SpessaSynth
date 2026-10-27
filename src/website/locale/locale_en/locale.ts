@@ -64,6 +64,9 @@ export const localeEnglish = {
         }
     },
     demoSongButton: "Demo Song",
+    demoSongPlay: "Play",
+    demoSongRemoval:
+        "If your song is on this list and you would like it removed, please email spesekspesek@gmail.com and it will be taken down. The songs are not stored in the SpessaSynth repository, they are hosted at https://github.com/spessasus/spessasynth-demo-songs/",
     credits: "Credits",
     dropPrompt: "Drop files here...",
 

@@ -1,14 +1,29 @@
 .notification button,
 .notification_file_button {
-    background: var(--top-color);
-    padding: 0.5rem;
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.5rem;
+    padding: 0.5rem 1.1rem;
     border: solid 1px var(--edge-color);
-    margin: 0.5rem;
-    cursor: pointer;
-    border-radius: var(--notification-border-radius);
+    border-radius: var(--notification-control-radius);
+    background: var(--top-buttons-color);
+    color: inherit;
+    font: inherit;
     font-size: var(--notification-font-size);
-    min-width: fit-content;
-    transition: transform 0.1s ease;
+    cursor: pointer;
+    transition:
+        border-color 0.15s ease,
+        filter 0.15s ease,
+        transform 0.1s ease;
+}
+
+.notification button:hover,
+.notification_file_button:hover {
+    border-color: var(--border-color);
+    filter: brightness(1.2);
 }
 
 .notification button:active,
@@ -16,7 +31,160 @@
     transform: scale(var(--active-scale));
 }
 
+.notification_file_button::before {
+    content: "";
+    flex: none;
+    width: 1.1rem;
+    height: 1.1rem;
+    background: currentColor;
+    mask: var(--icon-image) center / contain no-repeat;
+    -webkit-mask: var(--icon-image) center / contain no-repeat;
+    --icon-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12'/%3E%3C/svg%3E");
+}
+
 .notification .green_button {
-    color: green;
-    border-color: green;
+    color: color-mix(in srgb, green 65%, var(--font-color));
+    border-color: color-mix(in srgb, green 70%, transparent);
+    background: color-mix(in srgb, green 14%, var(--top-color));
+}
+
+.notification .notification_list_item {
+    flex: 1 1 100%;
+    justify-content: flex-start;
+    gap: 0.75rem;
+    min-height: 2.75rem;
+    border-color: transparent;
+    background: transparent;
+    text-align: start;
+}
+
+.notification .notification_list_item::before {
+    content: "";
+    flex: none;
+    width: 0.8rem;
+    height: 0.8rem;
+    background: currentColor;
+    opacity: 0.45;
+    mask: var(--icon-image) center / contain no-repeat;
+    -webkit-mask: var(--icon-image) center / contain no-repeat;
+    --icon-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 3.5v17a1 1 0 0 0 1.5.86l14-8.5a1 1 0 0 0 0-1.72l-14-8.5A1 1 0 0 0 6 3.5z'/%3E%3C/svg%3E");
+    transition: opacity 0.15s ease;
+}
+
+.notification .notification_list_item:hover {
+    border-color: var(--edge-color);
+    background: var(--top-buttons-color);
+    filter: none;
+}
+
+.notification .notification_list_item:hover::before {
+    opacity: 1;
+}
+
+.notification .notification_list_item:active {
+    transform: scale(0.99);
+}
+
+.notification_list {
+    display: flex;
+    flex: 1 1 100%;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.notification_list_entry {
+    border: 1px solid transparent;
+    border-radius: var(--notification-control-radius);
+    transition:
+        background-color 0.25s ease,
+        border-color 0.25s ease;
+}
+
+.notification_list .notification_list_item {
+    width: 100%;
+}
+
+.notification .notification_list_item::before {
+    transition:
+        opacity 0.15s ease,
+        transform 0.3s var(--notification-ease);
+}
+
+.notification_list_entry.open {
+    border-color: var(--edge-color);
+    background: var(--top-buttons-color);
+}
+
+.notification_list_entry.open .notification_list_item {
+    border-color: transparent;
+    background: transparent;
+    font-weight: 600;
+}
+
+.notification_list_entry.open .notification_list_item::before {
+    opacity: 1;
+    transform: rotate(90deg);
+}
+
+.notification_list_details {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.35s var(--notification-ease);
+}
+
+.notification_list_entry.open > .notification_list_details {
+    grid-template-rows: 1fr;
+}
+
+.notification_list_details > div {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    min-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.notification_list_entry.open > .notification_list_details > div {
+    opacity: 1;
+    transition: opacity 0.3s ease 0.1s;
+}
+
+.notification .notification_list_details p {
+    padding: 0 1.1rem 0 2.65rem;
+    color: color-mix(in srgb, var(--font-color) 78%, transparent);
+    font-size: 0.95rem;
+    white-space: pre-line;
+}
+
+.notification .notification_list_details button {
+    margin: 0 0.75rem 0.75rem;
+}
+
+.notification_input_wrapper .notification_file_button {
+    min-width: 2.5rem;
+    max-width: 14rem;
+    height: 2.3rem;
+    min-height: 0;
+    padding: 0 0.7rem;
+}
+
+.notification_file_name {
+    overflow: hidden;
+    font-size: 0.9rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.notification_file_name:empty {
+    display: none;
+}
+
+@media (max-width: 700px) {
+    .notification_content > button {
+        flex: 1 1 auto;
+    }
 }

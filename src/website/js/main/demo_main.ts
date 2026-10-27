@@ -6,7 +6,6 @@ import {
 } from "../utils/icons.js";
 import {
     closeNotification,
-    type NotificationContent,
     showNotification
 } from "../notification/notification.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
@@ -573,15 +572,6 @@ demoSongButton.addEventListener("click", async () => {
     if (!window.manager) {
         throw new Error("Unexpected lack of manager!");
     }
-    const contents: NotificationContent[] = [
-        {
-            type: "button",
-            textContent: "Bundled SoundFont Credits",
-            onClick: () => {
-                window.open("https://schristiancollins.com/generaluser.php");
-            }
-        }
-    ];
     titleMessage.textContent = window.manager.localeManager.getLocaleString(
         "locale.synthInit.genericLoading"
     );
@@ -593,55 +583,90 @@ demoSongButton.addEventListener("click", async () => {
         // eslint-disable-next-line unicorn/no-await-expression-member
         .text();
     const songsJSON = JSON.parse(songs) as DemoSong[];
-    for (const song of songsJSON) {
-        contents.push({
-            type: "button",
-            textContent: song.name,
-            onClick: (n) => {
-                if (!window.manager) {
-                    throw new Error("Unexpected lack of manager!");
+    const manager = window.manager;
+    const notification = showNotification(
+        manager.localeManager.getLocaleString("locale.demoSongButton"),
+        [
+            {
+                type: "button",
+                textContent: "Bundled SoundFont Credits",
+                onClick: () => {
+                    window.open(
+                        "https://schristiancollins.com/generaluser.php"
+                    );
                 }
-                closeNotification(n.id);
-                showNotification(
-                    window.manager.localeManager.getLocaleString(
-                        "locale.credits"
-                    ),
-                    [
-                        {
-                            type: "text",
-                            textContent: song.credits.replace("\n", "\r\n\r\n"),
-                            attributes: { style: "white-space: pre-line;" }
-                        },
-                        {
-                            type: "button",
-                            textContent: "Ok",
-                            onClick: (n) => {
-                                closeNotification(n.id);
-                            }
-                        }
-                    ],
-                    999_999,
-                    true,
-                    undefined,
-                    undefined,
-                    async () => {
-                        await playDemoSong(song);
-                    }
-                );
+            }
+        ],
+        999_999
+    );
+
+    // Each song expands to show its credits and a play button
+    const list = document.createElement("div");
+    list.classList.add("notification_list");
+    for (const [index, song] of songsJSON.entries()) {
+        const entry = document.createElement("div");
+        entry.classList.add("notification_list_entry");
+        entry.style.setProperty("--i", index.toString());
+
+        const header = document.createElement("button");
+        header.classList.add("notification_list_item");
+        header.textContent = song.name;
+        header.setAttribute("aria-expanded", "false");
+
+        // The collapsed details stay out of the tab order
+        const details = document.createElement("div");
+        details.classList.add("notification_list_details");
+        details.inert = true;
+        const detailsBody = document.createElement("div");
+        const credits = document.createElement("p");
+        credits.textContent = song.credits.replace("\n", "\r\n\r\n");
+        const playButton = document.createElement("button");
+        playButton.classList.add("green_button");
+        manager.localeManager.bindObjectProperty(
+            playButton,
+            "textContent",
+            "locale.demoSongPlay"
+        );
+        playButton.addEventListener("click", async () => {
+            closeNotification(notification.id);
+            await playDemoSong(song);
+        });
+        detailsBody.append(credits);
+        detailsBody.append(playButton);
+        details.append(detailsBody);
+
+        header.addEventListener("click", () => {
+            const opening = !entry.classList.contains("open");
+            for (const other of list.querySelectorAll<HTMLElement>(
+                ".notification_list_entry.open"
+            )) {
+                other.classList.remove("open");
+                other
+                    .querySelector(".notification_list_item")
+                    ?.setAttribute("aria-expanded", "false");
+                other.querySelector<HTMLElement>(
+                    ".notification_list_details"
+                )!.inert = true;
+            }
+            if (opening) {
+                entry.classList.add("open");
+                header.setAttribute("aria-expanded", "true");
+                details.inert = false;
             }
         });
-    }
 
-    showNotification(
-        window.manager.localeManager.getLocaleString("locale.demoSongButton"),
-        contents,
-        999_999,
-        true,
-        undefined,
-        {
-            overflowY: "scroll",
-            flexWrap: "nowrap",
-            maxHeight: "80vh"
-        }
+        entry.append(header);
+        entry.append(details);
+        list.append(entry);
+    }
+    const removalNote = document.createElement("p");
+    removalNote.classList.add("notification_description");
+    manager.localeManager.bindObjectProperty(
+        removalNote,
+        "textContent",
+        "locale.demoSongRemoval"
     );
+    notification.div
+        .querySelector(".notification_content")!
+        .prepend(removalNote, list);
 });

@@ -1,8 +1,18 @@
-.notification_input_wrapper {
+.notification_input_wrapper,
+.notification_slider_wrapper,
+.notification_switch_wrapper {
     display: flex;
-    justify-content: space-between;
+    flex: 1 1 100%;
     align-items: center;
-    margin: 0.5rem;
+    justify-content: space-between;
+    gap: 0.5rem 1.25rem;
+    min-height: 3.1rem;
+    padding: 0.35rem 0;
+    border-bottom: 1px solid var(--settings-subtle-divider-color);
+}
+
+.notification_content > :is(div, label):nth-last-child(1) {
+    border-bottom-color: transparent;
 }
 
 input[type="number"]::-webkit-outer-spin-button,
@@ -15,28 +25,39 @@ input[type="number"]::-webkit-inner-spin-button {
 .notification input[type="text"],
 .notification select {
     display: block;
-    background: var(--top-buttons-color);
+    min-width: 0;
+    width: 6rem;
+    height: 2.3rem;
+    padding: 0 0.7rem;
     border: solid 1px var(--edge-color);
-    font-size: 1em;
-    padding: var(--notification-border-radius);
-    border-radius: var(--notification-border-radius);
-    width: 5rem;
+    border-radius: var(--notification-control-radius);
+    background: var(--top-buttons-color);
+    color: inherit;
+    font: inherit;
+    font-size: var(--notification-font-size);
+    text-align: end;
     -moz-appearance: textfield;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
 }
 
 .notification input[type="text"],
 .notification select {
     width: auto !important;
+    text-align: start;
 }
 
-.notification_slider_wrapper {
-    display: flex;
-    justify-content: space-between;
-    margin: 0.5rem;
+.notification input[type="text"] {
+    min-width: 13rem;
 }
 
-.notification_slider_wrapper label {
-    margin-right: 2rem;
+.notification input:focus-visible,
+.notification select:focus-visible {
+    outline: none;
+    border-color: var(--border-color);
+    box-shadow: 0 0 0 3px
+        color-mix(in srgb, var(--border-color) 35%, transparent);
 }
 
 .notification_slider_wrapper .settings_visual_wrapper {
@@ -44,5 +65,21 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 .notification_slider_wrapper .settings_slider_wrapper {
+    flex: 1 1 12rem;
+    gap: 0.9rem;
     width: auto !important;
+    max-width: 20rem;
+}
+
+/* The current value */
+.notification_slider_wrapper .settings_slider_wrapper > span {
+    min-width: 2ch;
+    font-variant-numeric: tabular-nums;
+    text-align: end;
+}
+
+@media (max-width: 700px) {
+    .notification_slider_wrapper .settings_slider_wrapper {
+        max-width: none;
+    }
 }

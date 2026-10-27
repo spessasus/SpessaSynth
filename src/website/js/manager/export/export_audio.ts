@@ -467,7 +467,7 @@ export function showAudioExportMenu(this: Manager) {
                 wavPath + "description"
             ),
             attributes: {
-                style: "max-width: 30ch; font-style: italic"
+                class: "notification_description"
             }
         },
         {

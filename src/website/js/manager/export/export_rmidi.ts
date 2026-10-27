@@ -79,7 +79,7 @@ export function _exportRMIDI(this: Manager) {
                     path + "description"
                 ),
                 attributes: {
-                    style: "max-width: 30ch; font-style: italic"
+                    class: "notification_description"
                 }
             },
             {

@@ -202,43 +202,43 @@ export const exportFile = {
         },
         metadata: {
             songTitle: {
-                title: "სათაური:",
+                title: "სათაური",
                 description: "კომპოზიციის სათაური"
             },
             album: {
-                title: "ალბომი:",
+                title: "ალბომი",
                 description: "ალბომი, რომელშიც კომპოზიცია შედის"
             },
             artist: {
-                title: "შემსრულებელი:",
+                title: "შემსრულებელი",
                 description: "კომპოზიციის შემსრულებელი"
             },
             albumCover: {
-                title: "ალბომის ყდა:",
+                title: "ალბომის ყდა",
                 description: "კომპოზიციის ალბომის ყდა"
             },
             creationDate: {
-                title: "შექმნის თარიღი:",
+                title: "შექმნის თარიღი",
                 description: "კომპოზიციის შექმნის თარიღი"
             },
             genre: {
-                title: "ჟანრი:",
+                title: "ჟანრი",
                 description: "კომპოზიციის ჟანრი"
             },
             comment: {
-                title: "კომენტარი:",
+                title: "კომენტარი",
                 description: "კომენტარი კომპოზიციის შესახებ"
             },
             duration: {
-                title: "ხანგრძლივობა:",
+                title: "ხანგრძლივობა",
                 description: "კომპოზიციის ხანგრძლივობა"
             },
             subject: {
-                title: "თემა:",
+                title: "თემა",
                 description: "კომპოზიციის თემა"
             },
             software: {
-                title: "პროგრამა:",
+                title: "პროგრამა",
                 description:
                     "პროგრამა, რომელიც კომპოზიციის შესაქმნელად გამოიყენეს"
             }

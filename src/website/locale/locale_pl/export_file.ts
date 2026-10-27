@@ -203,43 +203,43 @@ export const exportFile = {
         },
         metadata: {
             songTitle: {
-                title: "Tytuł:",
+                title: "Tytuł",
                 description: "Tytuł utworu"
             },
             album: {
-                title: "Album:",
+                title: "Album",
                 description: "Album utworu"
             },
             artist: {
-                title: "Twórca:",
+                title: "Twórca",
                 description: "Twórca utworu"
             },
             albumCover: {
-                title: "Okładka albumu:",
+                title: "Okładka albumu",
                 description: "Okładka albumu utworu"
             },
             creationDate: {
-                title: "Stworzono:",
+                title: "Stworzono",
                 description: "Data stworzenia utworu"
             },
             genre: {
-                title: "Gatunek:",
+                title: "Gatunek",
                 description: "Gatunek utworu"
             },
             comment: {
-                title: "Komentarz:",
+                title: "Komentarz",
                 description: "Komentarz do utworu"
             },
             duration: {
-                title: "Czas trwania:",
+                title: "Czas trwania",
                 description: "Czas trwania utworu"
             },
             subject: {
-                title: "Temat:",
+                title: "Temat",
                 description: "Temat utworu"
             },
             software: {
-                title: "Oprogramowanie:",
+                title: "Oprogramowanie",
                 description: "Oprogramowanie, które służyło do nagrania utworu"
             }
         }

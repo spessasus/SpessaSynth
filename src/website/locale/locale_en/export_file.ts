@@ -156,7 +156,7 @@ export const exportFile = {
                     message:
                         "DLS export is limited and may produce broken files with large and complex SoundFonts.",
                     details: "More info",
-                    confirm: "Export anyways"
+                    confirm: "Export anyway"
                 },
 
                 exportMessage: {
@@ -212,43 +212,43 @@ export const exportFile = {
         },
         metadata: {
             songTitle: {
-                title: "Title:",
+                title: "Title",
                 description: "The song's title"
             },
             album: {
-                title: "Album:",
+                title: "Album",
                 description: "The song's album"
             },
             artist: {
-                title: "Artist:",
+                title: "Artist",
                 description: "The song's artist"
             },
             albumCover: {
-                title: "Album cover:",
+                title: "Album cover",
                 description: "The song's album cover"
             },
             creationDate: {
-                title: "Created:",
+                title: "Created",
                 description: "The song's creation date"
             },
             genre: {
-                title: "Genre:",
+                title: "Genre",
                 description: "The song's genre"
             },
             comment: {
-                title: "Comment:",
+                title: "Comment",
                 description: "The song's comment"
             },
             duration: {
-                title: "Duration:",
+                title: "Duration",
                 description: "The song's duration"
             },
             subject: {
-                title: "Subject:",
+                title: "Subject",
                 description: "The song's subject"
             },
             software: {
-                title: "Software:",
+                title: "Software",
                 description: "The software used to write the song"
             }
         }

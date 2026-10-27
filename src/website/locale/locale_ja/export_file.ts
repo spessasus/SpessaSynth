@@ -179,43 +179,43 @@ export const exportFile = {
         },
         metadata: {
             songTitle: {
-                title: "タイトル:",
+                title: "タイトル",
                 description: "曲のタイトル"
             },
             album: {
-                title: "アルバム:",
+                title: "アルバム",
                 description: "曲のアルバム名"
             },
             artist: {
-                title: "アーティスト:",
+                title: "アーティスト",
                 description: "曲のアーティスト"
             },
             albumCover: {
-                title: "アルバムカバー:",
+                title: "アルバムカバー",
                 description: "曲のアルバムカバー画像"
             },
             creationDate: {
-                title: "作成日:",
+                title: "作成日",
                 description: "曲の作成日"
             },
             genre: {
-                title: "ジャンル:",
+                title: "ジャンル",
                 description: "曲のジャンル"
             },
             comment: {
-                title: "コメント:",
+                title: "コメント",
                 description: "曲のコメント"
             },
             duration: {
-                title: "再生時間:",
+                title: "再生時間",
                 description: "曲の再生時間"
             },
             subject: {
-                title: "件名:",
+                title: "件名",
                 description: "曲の件名"
             },
             software: {
-                title: "ソフトウェア:",
+                title: "ソフトウェア",
                 description: "曲の作成に使用されたソフトウェア"
             }
         }

@@ -94,12 +94,18 @@ export function getContent(
             file.type = "file";
             const fileButton = document.createElement("label");
             fileButton.classList.add("notification_file_button");
-            applyTextContent(fileButton, content, locale);
+            const fileName = document.createElement("span");
+            fileName.classList.add("notification_file_name");
+            file.addEventListener("change", () => {
+                fileName.textContent = file.files?.[0]?.name ?? "";
+                fileButton.title = fileName.textContent;
+            });
 
             const fileLabel = document.createElement("label");
             applyTextContent(fileLabel, content, locale);
 
             applyAttributes(content, [fileButton, file, fileLabel]);
+            fileButton.append(fileName);
             fileButton.append(file);
             fileWrapper.append(fileLabel);
             fileWrapper.append(fileButton);
@@ -126,7 +132,15 @@ export function getContent(
             const label = document.createElement("label");
             applyAttributes(content, [range, label]);
             applyTextContent(label, content, locale);
-            const slider = createSlider(range, false);
+            const slider = createSlider(range);
+            // Keep the value next to the slider up to date
+            const sliderInput =
+                slider.querySelector<HTMLInputElement>(".settings_slider")!;
+            const valueSpan = slider.querySelector("span")!;
+            sliderInput.addEventListener("input", () => {
+                valueSpan.textContent =
+                    sliderInput.value + (range.getAttribute("units") ?? "");
+            });
             const wrapper = document.createElement("div");
             wrapper.classList.add("notification_slider_wrapper");
             wrapper.append(label);

@@ -159,43 +159,43 @@ export const exportFile = {
         },
         metadata: {
             songTitle: {
-                title: "标题:",
+                title: "标题",
                 description: "歌曲的标题"
             },
             album: {
-                title: "专辑:",
+                title: "专辑",
                 description: "歌曲的专辑"
             },
             artist: {
-                title: "艺术家:",
+                title: "艺术家",
                 description: "歌曲的艺术家"
             },
             albumCover: {
-                title: "专辑封面:",
+                title: "专辑封面",
                 description: "歌曲的专辑封面"
             },
             creationDate: {
-                title: "创建日期:",
+                title: "创建日期",
                 description: "歌曲的创建日期"
             },
             genre: {
-                title: "流派:",
+                title: "流派",
                 description: "歌曲的流派"
             },
             comment: {
-                title: "评论:",
+                title: "评论",
                 description: "歌曲的评论"
             },
             duration: {
-                title: "时长:",
+                title: "时长",
                 description: "歌曲的时长"
             },
             subject: {
-                title: "主题:",
+                title: "主题",
                 description: "歌曲的主题"
             },
             software: {
-                title: "软件:",
+                title: "软件",
                 description: "用于创作歌曲的软件"
             }
         }

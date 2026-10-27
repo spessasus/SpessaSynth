@@ -55,7 +55,7 @@ export function showVideoExportMenu(this: Manager) {
                 optionsPath + "description"
             ),
             attributes: {
-                style: "max-width: 30ch; font-style: italic"
+                class: "notification_description"
             }
         },
         {

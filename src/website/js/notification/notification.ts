@@ -3,6 +3,11 @@ import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
 import type { LocaleManager } from "../manager/locale_manager.ts";
 
 const NOTIFICATION_TIME = 13;
+// Longer notifications are practically permanent,
+// So they show no countdown
+const MAX_COUNTDOWN_TIME = 120;
+// Matches the transitions in notification.css
+const CLOSE_ANIMATION_TIME = 500;
 
 let notificationCounter = 0;
 const notifications: Record<
@@ -113,7 +118,7 @@ export function showNotification(
     notification.innerHTML = `
     <div class='top'>
         <h2 class='notification_title'></h2>
-        <span class='close_btn'>×</span>
+        <span class='close_btn' role='button' tabindex='0'></span>
     </div>`;
     // The title can contain text from files, so it is never parsed as HTML
     notification.querySelector(".notification_title")!.textContent = title;
@@ -126,8 +131,9 @@ export function showNotification(
         }
     }
     notification.append(contentWrapper);
-    for (const content of contents) {
+    for (const [index, content] of contents.entries()) {
         const element = getContent(content, locale);
+        element.style.setProperty("--i", index.toString());
         if (content.onClick) {
             element.addEventListener("click", () =>
                 content.onClick?.(
@@ -139,32 +145,67 @@ export function showNotification(
         contentWrapper.append(element);
     }
 
-    const closeButton = notification.querySelectorAll(
-        ".close_btn"
-    )[0] as HTMLElement;
+    const closeButton = notification.querySelector<HTMLElement>(".close_btn")!;
     if (allowClosing) {
         closeButton.addEventListener("click", () => {
             closeNotification(notificationID);
+        });
+        closeButton.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                closeNotification(notificationID);
+            }
         });
     } else {
         closeButton.style.display = "none";
     }
 
+    const record: (typeof notifications)[number] = {
+        div: notification,
+        timeout: 0,
+        onclose: onclose
+    };
+    notifications[notificationID] = record;
+
+    // Only notifications that actually expire get a countdown.
+    // Hovering one pauses it so there is time to read (QoL)
+    let remaining = time * 1000 + ANIMATION_REFLOW_TIME;
+    let startedAt = 0;
+    const startTimer = () => {
+        startedAt = Date.now();
+        record.timeout = window.setTimeout(() => {
+            closeNotification(notificationID);
+        }, remaining);
+    };
+    startTimer();
+    if (time <= MAX_COUNTDOWN_TIME) {
+        const rail = document.createElement("div");
+        rail.classList.add("notification_timer");
+        notification.style.setProperty("--life", `${time}s`);
+        notification.append(rail);
+        notification.addEventListener("mouseenter", () => {
+            if (notifications[notificationID] === undefined) {
+                return;
+            }
+            clearTimeout(record.timeout);
+            remaining -= Date.now() - startedAt;
+            notification.classList.add("paused");
+        });
+        notification.addEventListener("mouseleave", () => {
+            if (notifications[notificationID] === undefined) {
+                return;
+            }
+            notification.classList.remove("paused");
+            startTimer();
+        });
+    }
+
+    document.querySelector(".notification_field")!.append(notification);
+    // The notification starts collapsed to zero height, so the ones below slide
+    notification.style.setProperty("--h", `${notification.offsetHeight}px`);
     setTimeout(() => {
         notification.classList.add("drop");
     }, ANIMATION_REFLOW_TIME);
-    const timeoutID = window.setTimeout(
-        () => {
-            closeNotification(notificationID);
-        },
-        time * 1000 + ANIMATION_REFLOW_TIME
-    );
-    document.querySelectorAll(".notification_field")[0].append(notification);
-    notifications[notificationID] = {
-        div: notification,
-        timeout: timeoutID,
-        onclose: onclose
-    };
     return {
         div: notification,
         id: notificationID
@@ -177,9 +218,12 @@ export function closeNotification(id: number) {
     }
     const notificationEl = notifications[id];
     const notification = notificationEl.div;
-    clearTimeout(notifications[id].timeout);
+    clearTimeout(notificationEl.timeout);
+    // Collapse to the current height, so the notifications below slide up
+    notification.style.setProperty("--h", `${notification.offsetHeight}px`);
     notification.classList.remove("drop");
-    setTimeout(() => notification.remove(), 500);
+    notification.classList.add("closing");
+    setTimeout(() => notification.remove(), CLOSE_ANIMATION_TIME);
     if (notificationEl.onclose) {
         notificationEl.onclose();
     }

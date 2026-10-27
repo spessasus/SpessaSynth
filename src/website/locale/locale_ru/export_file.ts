@@ -202,43 +202,43 @@ export const exportFile = {
         },
         metadata: {
             songTitle: {
-                title: "Название:",
+                title: "Название",
                 description: "Название композиции"
             },
             album: {
-                title: "Альбом:",
+                title: "Альбом",
                 description: "Альбом, к которому относится композиция"
             },
             artist: {
-                title: "Исполнитель:",
+                title: "Исполнитель",
                 description: "Исполнитель композиции"
             },
             albumCover: {
-                title: "Обложка альбома:",
+                title: "Обложка альбома",
                 description: "Обложка альбома композиции"
             },
             creationDate: {
-                title: "Дата создания:",
+                title: "Дата создания",
                 description: "Дата создания композиции"
             },
             genre: {
-                title: "Жанр:",
+                title: "Жанр",
                 description: "Жанр композиции"
             },
             comment: {
-                title: "Комментарий:",
+                title: "Комментарий",
                 description: "Комментарий к композиции"
             },
             duration: {
-                title: "Длительность:",
+                title: "Длительность",
                 description: "Длительность композиции"
             },
             subject: {
-                title: "Тема:",
+                title: "Тема",
                 description: "Тема композиции"
             },
             software: {
-                title: "Программа:",
+                title: "Программа",
                 description: "Программа, использованная для создания композиции"
             }
         }

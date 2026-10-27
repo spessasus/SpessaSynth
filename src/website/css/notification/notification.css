@@ -5,76 +5,218 @@
 @import "toggles.css";
 
 .notification_field {
-    position: absolute;
-    padding: 0;
-    width: 100%;
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: var(--top-index);
     display: flex;
-    margin: 1rem 0 0;
-    align-items: baseline;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    max-height: 100dvh;
+    padding: 1rem 1rem 1.5rem;
+    overflow-y: auto;
+    scrollbar-width: none;
+    pointer-events: none;
 }
 
 .notification {
-    --notification-border-radius: var(--primary-border-radius);
-    --notification-font-size: 1.3rem;
-    position: absolute;
+    --notification-border-radius: 1.15rem;
+    --notification-control-radius: 0.65rem;
+    --notification-gap: 0.75rem;
+    --notification-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --notification-spring: cubic-bezier(0.34, 1.32, 0.64, 1);
+    --notification-font-size: 1rem;
+    --h: 0px;
+    position: relative;
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    width: max-content;
+    min-width: min(22rem, 100%);
+    max-width: min(36rem, 100%);
+    max-height: calc(100dvh - 2rem);
+    margin-bottom: calc(-1 * var(--h));
+    overflow: hidden;
     background: var(--top-color);
     color: var(--font-color);
-    border: solid 1px var(--edge-color);
+    border: 1px solid var(--edge-color);
     border-radius: var(--notification-border-radius);
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    align-items: center;
-    font-size: large;
-    z-index: var(--top-index);
-    left: 50%;
-    transform: translate(-50%, -5rem);
-    transition:
-        transform 0.5s ease,
-        opacity 0.5s ease;
+    box-shadow:
+        0 1.25rem 3rem -0.75rem var(--settings-shadow-color),
+        0 0 0 1px var(--notification-shadow-color),
+        inset 0 1px var(--settings-card-highlight);
+    pointer-events: auto;
     opacity: 0;
-    animation-duration: 0.5s;
-    animation-fill-mode: forwards;
-    box-shadow: var(--notification-shadow-color) 0 0 10px;
-    width: max-content;
-    max-width: 100%;
+    filter: blur(6px);
+    transform: translateY(-2rem) scale(0.94);
+    transform-origin: top center;
+    transition:
+        opacity 0.35s ease,
+        filter 0.45s var(--notification-ease),
+        transform 0.65s var(--notification-spring),
+        margin-bottom 0.55s var(--notification-ease);
 }
 
 .notification.drop {
     opacity: 1;
-    transform: translate(-50%, 0);
+    filter: none;
+    transform: none;
+    margin-bottom: var(--notification-gap);
+}
+
+.notification.closing {
+    pointer-events: none;
+    transform: translateY(-1rem) scale(0.96);
+    transition:
+        opacity 0.25s ease,
+        filter 0.3s ease,
+        transform 0.35s var(--notification-ease),
+        margin-bottom 0.45s var(--notification-ease) 0.05s;
+}
+
+.notification.drop .top > *,
+.notification.drop .notification_content > * {
+    animation: notification_item_in 0.55s var(--notification-ease) backwards;
+    animation-delay: 0.1s;
+}
+
+/* Set by the script */
+.notification.drop .notification_content > * {
+    animation-delay: calc(0.18s + min(var(--i, 0), 10) * 0.045s);
+}
+
+.notification.drop .notification_content > .notification_list {
+    animation: none;
+}
+
+.notification.drop .notification_list > * {
+    animation: notification_item_in 0.55s var(--notification-ease) backwards;
+    animation-delay: calc(0.18s + min(var(--i, 0), 14) * 0.035s);
+}
+
+@keyframes notification_item_in {
+    from {
+        opacity: 0;
+        transform: translateY(0.6rem);
+    }
 }
 
 .notification .top {
-    width: 100%;
     display: flex;
-    justify-content: space-between;
-    border-bottom: solid 1px var(--notification-separator-color);
+    flex: none;
     align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.55rem 0.6rem 0.55rem 1.25rem;
+    border-bottom: 1px solid var(--settings-divider-color);
 }
 
 .notification h2 {
+    flex: 1;
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 650;
+    line-height: 1.3;
     text-align: start;
-    line-height: 2rem;
-    margin: 1rem;
-}
-
-.notification_content {
-    margin: 1rem;
-    min-width: 90%;
-    display: flex;
-    flex-wrap: wrap;
-    flex-direction: column;
+    overflow-wrap: anywhere;
 }
 
 .notification .close_btn {
-    text-align: end;
-    font-weight: bolder;
-    font-size: 2rem;
-    margin-right: 1rem;
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    font-size: 0;
+    cursor: pointer;
+    transition:
+        background-color 0.15s ease,
+        box-shadow 0.15s ease,
+        color 0.15s ease;
+}
+
+.notification .close_btn::before {
+    content: "";
+    width: 0.85rem;
+    height: 0.85rem;
+    background: currentColor;
+    mask: var(--icon-image) center / contain no-repeat;
+    -webkit-mask: var(--icon-image) center / contain no-repeat;
+    --icon-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M5 5l14 14M19 5L5 19'/%3E%3C/svg%3E");
 }
 
 .notification .close_btn:hover {
-    cursor: pointer;
+    background: var(--settings-divider-color);
+    color: var(--text-hover-color);
+    box-shadow:
+        0 0 0 1px var(--border-color),
+        0 0 0.75rem color-mix(in srgb, var(--border-color) 55%, transparent);
+}
+
+.notification .close_btn:focus-visible,
+.notification button:focus-visible,
+.notification_file_button:focus-within {
+    outline: 2px solid var(--border-color);
+    outline-offset: 2px;
+}
+
+.notification_content {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    min-height: 0;
+    padding: 1rem 1.25rem 1.25rem;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb-color) transparent;
+}
+
+.notification_timer {
+    position: absolute;
+    inset: auto 0 0;
+    height: 3px;
+    background: var(--border-color);
+    transform-origin: left;
+    animation: notification_timer var(--life) linear forwards;
+}
+
+.notification.paused .notification_timer {
+    animation-play-state: paused;
+}
+
+@keyframes notification_timer {
+    to {
+        transform: scaleX(0);
+    }
+}
+
+.notification:has(.notification_progress) {
+    width: min(46rem, 100%);
+    max-width: 100%;
+}
+
+.notification:has(.notification_progress) .notification_content {
+    gap: 0.75rem;
+    padding: 1.5rem 1.75rem 1.75rem;
+}
+
+@media (max-width: 700px) {
+    .notification_field {
+        padding: 0.5rem 0.5rem 1rem;
+    }
+
+    .notification {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .notification_content {
+        padding: 0.9rem;
+    }
+
+    .notification:has(.notification_progress) .notification_content {
+        padding: 1.1rem;
+    }
 }
