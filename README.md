@@ -148,7 +148,7 @@ The build files:
 - [Meltysynth](https://github.com/sinshu/meltysynth) - for the initial low-pass filter implementation
 - [RecordingBlogs](https://www.recordingblogs.com/) - for detailed explanations on MIDI messages
 - [stbvorbis.js](https://github.com/hajimehoshi/stbvorbis.js) - for the Vorbis decoder
-- [sl-web-ogg](https://github.com/erikh2000/sl-web-ogg) - for the Ogg Vorbis encoder
+- [wasm-media-encoders](https://github.com/arseneyr/wasm-media-encoders) - for the Ogg Vorbis encoder
 - [Bootstrap Icons](https://icons.getbootstrap.com/) - for the icons
 - [fflate](https://github.com/101arrowz/fflate) - for the MIT DEFLATE implementation
 - [JSZip](https://github.com/Stuk/jszip) - for the ZIP creation library

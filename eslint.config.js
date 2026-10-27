@@ -5,7 +5,7 @@ import eslintConfigPrettier from "eslint-config-prettier/flat";
 import eslint from "@eslint/js";
 
 export default tseslint.config(
-    { ignores: ["dist", "src/externals/sl-web-ogg"] },
+    { ignores: ["dist"] },
     {
         extends: [
             eslint.configs.recommended,

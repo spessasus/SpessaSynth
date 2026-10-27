@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 import type { SynthCoreConfig } from "spessasynth_lib";
 import { WorkerSynthesizerCore } from "spessasynth_lib";
-import { encodeVorbis } from "../../../externals/encode_vorbis.ts";
+import { encodeVorbis } from "./export/utils/encode_vorbis.ts";
 
 let workerSynthCore: WorkerSynthesizerCore;
 

@@ -40,7 +40,8 @@
         "jszip": "^3.10.2",
         "mediabunny": "^1.61.3",
         "spessasynth_core": "latest",
-        "spessasynth_lib": "latest"
+        "spessasynth_lib": "latest",
+        "wasm-media-encoders": "^0.7.0"
     },
     "allowScripts": {
         "esbuild@0.28.1": true

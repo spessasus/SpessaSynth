@@ -10,7 +10,7 @@ import {
     type BasicSoundBank,
     SoundBankLoader
 } from "spessasynth_core";
-import { encodeVorbis } from "../../../../externals/encode_vorbis.ts";
+import { encodeVorbis } from "./utils/encode_vorbis.ts";
 import { showOutOfMemoryWarning } from "./utils/show_out_of_memory_warning.ts";
 
 type writeSF2Options =

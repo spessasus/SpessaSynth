@@ -27,11 +27,8 @@
         "verbatimModuleSyntax": true,
         "noEmit": true,
         "allowImportingTsExtensions": true,
-        "types": ["node"],
-        "paths": {
-            "sl-web-ogg": ["./externals/sl-web-ogg/dist/index.min.js"]
-        }
+        "types": ["node"]
     },
-    "include": ["src", "src/externals/encode_vorbis.ts"],
+    "include": ["src"],
     "exclude": ["node_modules", "dist", "local-dev", "server"]
 }
