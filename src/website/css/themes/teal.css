@@ -64,6 +64,10 @@
     /* music player mode */
     --music-mode-backdrop: brightness(0.35) saturate(1.3) blur(50px);
 
+    --music-mode-art-start: #1fb5a3;
+    --music-mode-art-end: #062030;
+    --music-mode-art-icon: #c9fff4;
+
     /* overlays */
     --drop-overlay-color: rgba(2, 8, 16, 0.65);
     --lyrics-backdrop-color: rgba(0, 0, 0, 0.8);

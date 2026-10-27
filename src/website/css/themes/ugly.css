@@ -65,6 +65,10 @@
     --music-mode-backdrop: brightness(1.2) saturate(4) hue-rotate(120deg)
         blur(50px);
 
+    --music-mode-art-start: #ffee00;
+    --music-mode-art-end: #ff00aa;
+    --music-mode-art-icon: #00e5ff;
+
     /* overlays */
     --drop-overlay-color: rgba(0, 255, 0, 0.6);
     --lyrics-backdrop-color: rgba(255, 255, 0, 0.8);

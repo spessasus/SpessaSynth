@@ -76,20 +76,14 @@ export class MusicModeUI {
                     }
                     // The previous text may have been scrolling
                     el.classList.remove("marquee");
-                    // If new lines, split up into multiple spans and only then apply marquee
-                    const lines = text.trim().split("\n");
-                    if (lines.length > 1) {
-                        Ut.show(el?.parentElement);
-                        el.innerHTML = "";
-                        for (const line of lines) {
-                            const textWrap = document.createElement("span");
-                            textWrap.textContent = line;
-                            el.append(textWrap);
-                            el.append(document.createElement("br"));
-                        }
-                        if (el.lastChild) {
-                            el.lastChild.remove();
-                        }
+                    const isMultiline = text.trim().includes("\n");
+                    el.parentElement?.classList.toggle(
+                        "multiline",
+                        isMultiline
+                    );
+                    if (isMultiline) {
+                        Ut.show(el.parentElement);
+                        el.textContent = text.trim();
                         return;
                     }
 
@@ -166,6 +160,9 @@ export class MusicModeUI {
                 // Image
                 const svg = this.mainDiv.querySelectorAll("svg")[0];
                 const img = this.mainDiv.querySelectorAll("img")[0];
+                const art = this.mainDiv.querySelector(
+                    ".player_info_note_icon"
+                )!;
                 const bg = document.querySelector<HTMLImageElement>(
                     "#player_info_background_image"
                 );
@@ -180,11 +177,13 @@ export class MusicModeUI {
                 if (mid.rmidiInfo.picture === undefined) {
                     svg.style.display = "";
                     img.style.display = "none";
-                    bg.style.setProperty("--bg-image", "undefined");
+                    bg.style.removeProperty("--bg-image");
+                    art.classList.remove("has_cover");
                     return;
                 }
                 svg.style.display = "none";
                 img.style.display = "";
+                art.classList.add("has_cover");
                 const pic = new Blob([mid.rmidiInfo.picture.buffer]);
                 const url = URL.createObjectURL(pic);
                 this.coverURL = url;

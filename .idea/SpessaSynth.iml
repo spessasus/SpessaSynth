@@ -8,6 +8,8 @@
       <excludeFolder url="file://$MODULE_DIR$/venv" />
       <excludeFolder url="file://$MODULE_DIR$/disabled_sf2s" />
       <excludeFolder url="file://$MODULE_DIR$/.idea/dictionaries" />
+      <excludeFolder url="file://$MODULE_DIR$/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/soundfonts" />
       <excludeFolder url="file://$MODULE_DIR$/soundfonts/.ark-.ZIyEGv" />
       <excludeFolder url="file://$MODULE_DIR$/soundfonts/.ark-.hcTDoq" />
       <excludeFolder url="file://$MODULE_DIR$/soundfonts/FluidR3Mono" />

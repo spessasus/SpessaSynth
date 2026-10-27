@@ -10,5 +10,6 @@ export const WHATS_NEW: string[] = [
     `Export the visualization to a video (WebM or MP4)!`,
     `Brand new themes, with matching note colors!`,
     `Redesigned settings menu!`,
+    `Music Mode redesign!`,
     "MP3 and OGG export!"
 ] as const;

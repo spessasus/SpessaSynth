@@ -4,12 +4,13 @@ export const musicModeInnerHTML = `
         <div id='player_info_background_image'></div>
         <div class='player_info_wrapper'>
             <div class='player_info_note_icon'>
-                ${getDoubleNoteSvg("100%")}
+                ${getDoubleNoteSvg("45%")}
                 <img src='' alt='' style='display: none;'>
             </div>
             <div class='player_info_details_wrapper'>
-                <p style='font-size: small;'><i translate-path='locale.musicPlayerMode.currentlyPlaying'></i></p>
-                <h2  id='player_info_title' translate-path='locale.musicPlayerMode.nothingPlaying'></h2>
+                <p class='player_info_eyebrow'><i translate-path='locale.musicPlayerMode.currentlyPlaying'></i></p>
+                <h2 id='player_info_title' translate-path='locale.musicPlayerMode.nothingPlaying'></h2>
+                <div class='player_info_rows'>
                 
                 <div class='player_info_detail_element'>
                     <i id='player_info_detail' translate-path='locale.musicPlayerMode.nothingPlayingCopyright'></i>
@@ -49,6 +50,7 @@ export const musicModeInnerHTML = `
                 
                 <div class='player_info_detail_element hidden'>
                     <pre id='player_info_file_name'></pre>
+                </div>
                 </div>
             </div>
         </div>`;
