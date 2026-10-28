@@ -286,7 +286,7 @@ export async function renderAndExportVideoData(
             enableEffects: true,
             progressCallback: (progress) => {
                 setProgress(
-                    progress * 0.2,
+                    progress,
                     this.localeManager.getLocaleString(
                         messagePath + "renderingAudio"
                     )
@@ -306,7 +306,7 @@ export async function renderAndExportVideoData(
         );
 
         setProgress(
-            0.2,
+            0,
             this.localeManager.getLocaleString(messagePath + "renderingVideo")
         );
         const waveforms = rendered.visual
@@ -343,7 +343,7 @@ export async function renderAndExportVideoData(
                 normalizeAudio: options.normalizeAudio,
                 onProgress: (fraction) => {
                     setProgress(
-                        0.2 + 0.8 * fraction,
+                        fraction,
                         this.localeManager.getLocaleString(
                             messagePath + "renderingVideo"
                         )
