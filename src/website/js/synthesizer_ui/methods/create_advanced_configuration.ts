@@ -291,6 +291,18 @@ export function createAdvancedConfiguration(
         paramWrapper.append(
             toggleMeter(
                 this.locale,
+                "msgsKeyShift",
+                (enable) => {
+                    this.synth.setSystemParameter("pitchBasedKeyShift", enable);
+                },
+                false,
+                yesNo
+            ).div
+        );
+
+        paramWrapper.append(
+            toggleMeter(
+                this.locale,
                 "blackMidiMode",
                 (enable) => {
                     this.synth.setSystemParameter("blackMIDIMode", enable);

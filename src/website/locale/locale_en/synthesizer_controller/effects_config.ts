@@ -43,6 +43,12 @@ export const effectsConfig = {
                 "MSGS Note Cutoff: Immediately cuts off the previous note on the same key, emulating the Microsoft GS Wavetable Synthesizer"
         },
 
+        msgsKeyShift: {
+            title: "MSGS Key Shift",
+            description:
+                "MSGS Key Shift: Force pitch samples instead of applying a real key shift, emulating the Microsoft GS Wavetable Synthesizer"
+        },
+
         blackMidiMode: {
             title: "Black MIDI Mode",
             description:
