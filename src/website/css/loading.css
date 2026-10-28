@@ -1,0 +1,417 @@
+.loading {
+    --loading-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --loading-spring: cubic-bezier(0.34, 1.32, 0.64, 1);
+    position: fixed;
+    inset: 0;
+    z-index: var(--top-index);
+    display: grid;
+    place-items: center;
+    padding: clamp(0.75rem, 3vw, 2rem);
+    overflow: hidden;
+    background: var(--background-color);
+    color: var(--font-color);
+    cursor: wait;
+    transition: transform 0.4s var(--loading-ease);
+}
+
+.loading.done {
+    transform: translateY(-100%);
+    pointer-events: none;
+    transition: transform 0.7s ease 0.2s;
+}
+
+.loading::before,
+.loading::after {
+    content: "";
+    position: fixed;
+    inset: -25%;
+    pointer-events: none;
+    filter: blur(3rem);
+    will-change: transform;
+}
+
+.loading::before {
+    background:
+        radial-gradient(
+            38% 42% at 28% 32%,
+            color-mix(in srgb, var(--primary-color) 38%, transparent),
+            transparent 70%
+        ),
+        radial-gradient(
+            30% 34% at 72% 68%,
+            color-mix(in srgb, var(--border-color) 24%, transparent),
+            transparent 70%
+        );
+    animation:
+        loading_glow_a 16s ease-in-out infinite alternate,
+        loading_glow_pulse 9s ease-in-out infinite alternate;
+}
+
+.loading::after {
+    background:
+        radial-gradient(
+            34% 38% at 70% 28%,
+            color-mix(in srgb, var(--border-color) 22%, transparent),
+            transparent 70%
+        ),
+        radial-gradient(
+            36% 36% at 30% 74%,
+            color-mix(in srgb, var(--primary-color) 32%, transparent),
+            transparent 70%
+        );
+    animation:
+        loading_glow_b 19s ease-in-out infinite alternate,
+        loading_glow_pulse 11s ease-in-out -5s infinite alternate;
+}
+
+.loading_card {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    width: min(34rem, 100%);
+    max-height: calc(100dvh - clamp(1.5rem, 6vw, 4rem));
+    margin: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    background: var(--top-color);
+    border: 1px solid var(--edge-color);
+    border-radius: 1.15rem;
+    box-shadow:
+        0 1.25rem 3rem -0.75rem var(--settings-shadow-color),
+        0 0 0 1px var(--notification-shadow-color),
+        inset 0 1px var(--settings-card-highlight);
+    animation: loading_card_in 0.65s var(--loading-spring) backwards;
+}
+
+.loading_top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 1.25rem;
+    border-bottom: 1px solid var(--settings-divider-color);
+}
+
+.loading_app_name {
+    font-size: 1.1rem;
+    font-weight: 650;
+    line-height: 1.3;
+}
+
+.loading_version {
+    flex: none;
+    padding: 0.15rem 0.65rem;
+    border: 1px solid var(--edge-color);
+    border-radius: 999px;
+    background: var(--top-buttons-color);
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.loading_version:empty {
+    display: none;
+}
+
+.loading_status {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    column-gap: 0.85rem;
+    row-gap: 1rem;
+    padding: 1.25rem;
+}
+
+.loading_icon {
+    display: none;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid var(--edge-color);
+    border-radius: 50%;
+    background: var(--top-buttons-color);
+}
+
+.loading_icon svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.loading[data-state="done"] .loading_icon,
+.loading[data-state="error"] .loading_icon {
+    display: grid;
+    animation: loading_icon_in 0.5s var(--loading-spring) backwards;
+}
+
+.loading[data-state="done"] .loading_icon {
+    color: color-mix(in srgb, green 65%, var(--font-color));
+    border-color: color-mix(in srgb, green 70%, transparent);
+    background: color-mix(in srgb, green 14%, var(--top-color));
+}
+
+.loading[data-state="error"] .loading_icon {
+    color: color-mix(in srgb, red 65%, var(--font-color));
+    border-color: color-mix(in srgb, red 70%, transparent);
+    background: color-mix(in srgb, red 14%, var(--top-color));
+}
+
+#loading_message {
+    grid-column: 2;
+    min-width: 0;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+    text-align: start;
+    overflow-wrap: anywhere;
+}
+
+.loading[data-state="loading"] #loading_message {
+    grid-column: 1 / -1;
+}
+
+#loading_message pre {
+    max-height: 6rem;
+    margin: 0.5rem 0 0;
+    overflow: auto;
+    font-size: 0.8rem;
+    font-weight: 400;
+    text-align: start;
+    white-space: pre-wrap;
+}
+
+.loading_bar_row {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.loading_bar {
+    --progress: 0;
+    position: relative;
+    flex: 1;
+    height: 1.25rem;
+    overflow: hidden;
+    border: 1px solid var(--track-border-color);
+    border-radius: 1.25rem;
+    background: var(--track-color);
+    box-sizing: border-box;
+}
+
+.loading_bar_fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: calc(var(--progress) * 100%);
+    overflow: hidden;
+    border-radius: inherit;
+    background: linear-gradient(
+        90deg,
+        var(--primary-color),
+        var(--border-color)
+    );
+    transition: width 0.3s linear;
+}
+
+.loading_bar_fill::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        100deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.25) 50%,
+        transparent 70%
+    );
+    background-size: 250% 100%;
+    animation: loading_sheen 2.4s linear infinite;
+}
+
+.loading_bar.indeterminate .loading_bar_fill {
+    width: 35%;
+    transition: none;
+    animation: loading_sweep 1.4s ease-in-out infinite;
+}
+
+.loading[data-state="error"] .loading_bar_fill {
+    background: color-mix(in srgb, red 55%, var(--track-color));
+}
+
+.loading[data-state="done"] .loading_bar_fill::after,
+.loading[data-state="error"] .loading_bar_fill::after {
+    animation: none;
+    opacity: 0;
+}
+
+.loading_percent {
+    flex: none;
+    min-width: 3.5ch;
+    font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+    text-align: end;
+}
+
+.loading_percent:empty {
+    display: none;
+}
+
+.whats_new_wrapper {
+    padding: 1rem 1.25rem 1.1rem;
+    border-top: 1px solid var(--settings-divider-color);
+}
+
+.whats_new_wrapper h2 {
+    margin: 0 0 0.6rem;
+    font-size: 1rem;
+    font-weight: 650;
+    line-height: 1.3;
+    text-align: start;
+}
+
+#whats_new_content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+#whats_new_content li {
+    position: relative;
+    padding-inline-start: 1.1rem;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    text-align: start;
+    overflow-wrap: anywhere;
+    color: color-mix(in srgb, var(--font-color) 80%, transparent);
+    animation: loading_item_in 0.55s var(--loading-ease) backwards;
+    animation-delay: calc(0.2s + min(var(--i, 0), 10) * 0.045s);
+}
+
+#whats_new_content li::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: 0.1rem;
+    top: 0.55em;
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: var(--border-color);
+}
+
+.loading_bottom {
+    padding: 0.85rem 1.25rem 1rem;
+    border-top: 1px solid var(--settings-divider-color);
+    font-size: 0.8rem;
+    line-height: 1.5;
+    text-align: start;
+    color: color-mix(in srgb, var(--font-color) 75%, transparent);
+}
+
+.loading_bottom h3,
+.loading_bottom h4,
+.loading_bottom p {
+    margin: 0;
+    font-size: inherit;
+    font-weight: inherit;
+    text-align: inherit;
+}
+
+.loading_bottom a {
+    color: var(--loading-link-color);
+    font-weight: 600;
+    text-decoration: none;
+    text-underline-offset: 0.15em;
+    transition: filter 0.15s ease;
+}
+
+.loading_bottom a:hover {
+    text-decoration: underline;
+    filter: brightness(1.2);
+}
+
+@keyframes loading_glow_a {
+    from {
+        transform: translate(-12%, -8%) rotate(0deg) scale(0.95);
+    }
+    to {
+        transform: translate(12%, 9%) rotate(55deg) scale(1.2);
+    }
+}
+
+@keyframes loading_glow_b {
+    from {
+        transform: translate(11%, 8%) rotate(0deg) scale(1.15);
+    }
+    to {
+        transform: translate(-12%, -10%) rotate(-65deg) scale(0.9);
+    }
+}
+
+@keyframes loading_glow_pulse {
+    from {
+        opacity: 0.35;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes loading_card_in {
+    from {
+        opacity: 0;
+        filter: blur(6px);
+        transform: translateY(-2rem) scale(0.94);
+    }
+}
+
+@keyframes loading_item_in {
+    from {
+        opacity: 0;
+        transform: translateY(0.6rem);
+    }
+}
+
+@keyframes loading_icon_in {
+    from {
+        opacity: 0;
+        transform: scale(0.6);
+    }
+}
+
+@keyframes loading_sheen {
+    from {
+        background-position: 150% 0;
+    }
+    to {
+        background-position: -100% 0;
+    }
+}
+
+@keyframes loading_sweep {
+    from {
+        translate: -100% 0;
+    }
+    to {
+        translate: 290% 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .loading::before,
+    .loading::after,
+    .loading_card,
+    #whats_new_content li,
+    .loading_icon,
+    .loading_bar_fill::after {
+        animation: none !important;
+    }
+
+    .loading_bar.indeterminate .loading_bar_fill {
+        width: 100%;
+        opacity: 0.5;
+        animation: none;
+    }
+}
