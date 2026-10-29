@@ -597,6 +597,9 @@ demoSongButton.addEventListener("click", async () => {
         .text();
     const songsJSON = JSON.parse(songs) as DemoSong[];
     const manager = window.manager;
+    titleMessage.textContent = manager.localeManager.getLocaleString(
+        "locale.demoTitleMessage"
+    );
     const notification = showNotification(
         manager.localeManager.getLocaleString("locale.demoSongButton"),
         [
