@@ -1,5 +1,7 @@
 import type { SpessaSynthSettings } from "../settings.ts";
 import type { MIDIPatch, MIDIPatchFull } from "spessasynth_core";
+import { Ut } from "../../utils/other.js";
+import { getSpan } from "../sliders.js";
 
 export const USE_MIDI_RANGE = "midi range";
 
@@ -228,6 +230,28 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
     keyboardControls.forceMaxVelocity.addEventListener("click", () => {
         this.midiKeyboard.forceMaxVelocity =
             !this.midiKeyboard.forceMaxVelocity;
+        this.saveSettings();
+    });
+
+    // Keyboard glow, the intensity is only shown when enabled
+    keyboardControls.glow.addEventListener("click", () => {
+        this.midiKeyboard.glow = keyboardControls.glow.checked;
+        if (keyboardControls.glow.checked) {
+            Ut.show(keyboardControls.glowSettings);
+        } else {
+            Ut.hide(keyboardControls.glowSettings);
+        }
+        this.saveSettings();
+    });
+
+    // Keyboard glow intensity
+    keyboardControls.glowIntensity.addEventListener("input", () => {
+        this.midiKeyboard.glowIntensity =
+            Number.parseInt(keyboardControls.glowIntensity.value) / 100;
+        getSpan(keyboardControls.glowIntensity).textContent =
+            `${keyboardControls.glowIntensity.value}%`;
+    });
+    keyboardControls.glowIntensity.addEventListener("change", () => {
         this.saveSettings();
     });
 }

@@ -28,6 +28,8 @@ export interface SavedSettings {
         autoRange: boolean;
         show: boolean;
         forceMaxVelocity: boolean;
+        glow: boolean;
+        glowIntensity: number;
     };
     renderer: {
         renderNotes: boolean;
@@ -67,6 +69,8 @@ export const DEFAULT_SAVED_SETTINGS: SavedSettings = {
         selectedChannel: 0,
         show: true,
         forceMaxVelocity: false,
+        glow: false,
+        glowIntensity: 1,
         autoRange: false,
         keyRange: {
             max: 127,

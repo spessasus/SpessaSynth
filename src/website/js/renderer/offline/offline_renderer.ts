@@ -247,7 +247,7 @@ export class OfflineRenderer extends BaseRenderer {
             noLocale,
             false,
             snapshot.renderer.version,
-            new BaseKeyboard(ctx, snapshot.keyboard),
+            new BaseKeyboard(ctx, snapshot.keyboard, canvasFactory),
             canvasFactory
         );
         this.eventLog = data.eventLog;

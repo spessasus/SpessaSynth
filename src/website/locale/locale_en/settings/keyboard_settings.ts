@@ -33,5 +33,15 @@ export const keyboardSettingsLocale = {
         title: "Force full color",
         description:
             "Force full color intensity, regardless of the MIDI note-on velocity"
+    },
+
+    glow: {
+        title: "Enable glow",
+        description: "Make the pressed keys glow"
+    },
+
+    glowIntensity: {
+        title: "Glow intensity",
+        description: "The brightness and reach of the pressed key glow"
     }
 };

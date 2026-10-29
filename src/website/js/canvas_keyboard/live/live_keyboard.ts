@@ -53,6 +53,8 @@ export class LiveKeyboard extends BaseKeyboard {
             channelColors,
             mode: "light",
             forceMaxVelocity: false,
+            glow: false,
+            glowIntensity: 1,
             vertical: false,
             shown: true
         });

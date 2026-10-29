@@ -32,5 +32,15 @@ export const keyboardSettingsLocale = {
     forceMaxVelocity: {
         title: "Wymuś pełny kolor",
         description: "Wymuś pełen kolor klawiszy podczas nacisku"
+    },
+
+    glow: {
+        title: "Włącz poświatę",
+        description: "Naciśnięte klawisze świecą"
+    },
+
+    glowIntensity: {
+        title: "Intensywność poświaty",
+        description: "Jasność i zasięg poświaty naciśniętych klawiszy"
     }
 };

@@ -4,6 +4,7 @@ import type { SpessaSynthSettings } from "../settings.ts";
 import { fillWithDefaults } from "../../utils/fill_with_defaults.ts";
 import { DEFAULT_SAVED_SETTINGS } from "../../../../server/saved_settings.ts";
 import { DEFAULT_THEME, themeList } from "../../themes/theme_list.ts";
+import { Ut } from "../../utils/other.js";
 
 export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
     console.info("Loading settings!");
@@ -169,6 +170,21 @@ export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
         keyboard.forceMaxVelocity = true;
         this.htmlControls.keyboard.forceMaxVelocity.checked = true;
     }
+
+    // Keyboard glow
+    keyboard.glow = keyboardValues.glow;
+    keyboardControls.glow.checked = keyboardValues.glow;
+    if (keyboardValues.glow) {
+        Ut.show(keyboardControls.glowSettings);
+    }
+
+    // Keyboard glow intensity
+    const glowPercent = Math.round(keyboardValues.glowIntensity * 100);
+    keyboard.glowIntensity = keyboardValues.glowIntensity;
+    keyboardControls.glowIntensity.value = glowPercent.toString();
+    keyboardControls.glowIntensity.dispatchEvent(new CustomEvent("input"));
+    getSpan(keyboardControls.glowIntensity).textContent = `${glowPercent}%`;
+
     // Interface
     // The language selector is filled in createHandlers, which selects the current locale
     this.locale.changeGlobalLocale(savedSettings.interface.language, true);

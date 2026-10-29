@@ -170,6 +170,21 @@ export const settingsHtml = `
                 <span class='switch_slider'></span>
             </label>
         </div>
+
+        <div class='switch_label setting'>
+            <label translate-path-title='locale.settings.keyboardSettings.glow'></label>
+            <label class='switch'>
+                <input type='checkbox' id='keyboard_glow'>
+                <span class='switch_slider'></span>
+            </label>
+        </div>
+
+        <div id='keyboard_glow_settings' class='hidden'>
+            <div class='setting setting_slider_row'>
+            <label translate-path-title='locale.settings.keyboardSettings.glowIntensity'></label>
+            <spessarange min='10' max='300' value='100' class='settings_slider' input_id='keyboard_glow_intensity' units='%'></spessarange>
+            </div>
+        </div>
     </div>
     
     

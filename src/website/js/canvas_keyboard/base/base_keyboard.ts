@@ -15,13 +15,20 @@ import {
     SHARP_KEY_GRADIENT_ANGLE_DEGREES,
     SHARP_KEY_LENGTH_RATIO
 } from "./key_style.ts";
-import type { RenderBounds } from "../../renderer/base/renderer.ts";
+import type {
+    RenderBounds,
+    RendererCanvasFactory
+} from "../../renderer/base/renderer.ts";
+
+type Context2D = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
 
 export interface KeyboardOptions {
     keyRange: { min: number; max: number };
     channelColors: string[];
     mode: InterfaceMode;
     forceMaxVelocity: boolean;
+    glow: boolean;
+    glowIntensity: number;
     vertical: boolean;
     shown: boolean;
 }
@@ -107,14 +114,26 @@ export class BaseKeyboard {
      * Their glow is drawn above all keys
      */
     private readonly glows = new Array<KeyGlow>();
+    private readonly canvasFactory: RendererCanvasFactory;
+    /**
+     * Each glow is blurred into this layer once, then the layer is stacked for intensity,
+     * As blurring is far more expensive than copying the result.
+     */
+    private glowLayer?: {
+        canvas: HTMLCanvasElement | OffscreenCanvas;
+        ctx: Context2D;
+    };
 
     private channelColors = new Array<number[]>();
 
     public constructor(
-        ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
-        options: KeyboardOptions
+        ctx: Context2D,
+        options: KeyboardOptions,
+        canvasFactory: RendererCanvasFactory = (width, height) =>
+            new OffscreenCanvas(width, height)
     ) {
         this.ctx = ctx;
+        this.canvasFactory = canvasFactory;
         this.options = {
             ...options,
             shown: options.shown ?? true
@@ -153,6 +172,24 @@ export class BaseKeyboard {
 
     public set forceMaxVelocity(force: boolean) {
         this.options.forceMaxVelocity = force;
+        this.drawAt(this.currentTime);
+    }
+
+    public get glow() {
+        return this.options.glow;
+    }
+
+    public set glow(glow: boolean) {
+        this.options.glow = glow;
+        this.drawAt(this.currentTime);
+    }
+
+    public get glowIntensity() {
+        return this.options.glowIntensity;
+    }
+
+    public set glowIntensity(intensity: number) {
+        this.options.glowIntensity = intensity;
         this.drawAt(this.currentTime);
     }
 
@@ -357,28 +394,13 @@ export class BaseKeyboard {
         // Glow goes above all keys and may reach outside the keyboard
         const keyTransform = this.ctx.getTransform();
         this.ctx.restore();
-        this.ctx.setTransform(keyTransform);
-        const visibleLength = this.vertical ? height : width;
-        // Glows are in the key drawing order, so the sharp key glow is on top
-        for (const glow of this.glows) {
-            const start = glow.rect.x + this.xOffset;
-            if (start + glow.rect.width < 0 || start > visibleLength) {
-                // Not visible
-                continue;
-            }
-            // Sharp keys cover parts of the flat key, so they are not glowing
-            const covering = glow.sharp
-                ? []
-                : sharps.filter(
-                      (s) =>
-                          s.note === glow.note - 1 || s.note === glow.note + 1
-                  );
-            this.drawGlow(glow, covering);
+        this.ctx.restore();
+        if (this.glows.length > 0) {
+            this.drawGlowLayer(sharps, keyTransform);
+            this.glows.length = 0;
         }
-        this.glows.length = 0;
 
         this.pruneReleasedKeys(time);
-        this.ctx.restore();
     }
 
     /**
@@ -503,9 +525,10 @@ export class BaseKeyboard {
                     0,
                     1
                 );
-                if (this.mode === "dark") {
+                if (this.options.glow) {
                     // Squared, like MIDI velocity to gain mapping
-                    const glow = brightness * brightness;
+                    const glow =
+                        brightness * brightness * this.options.glowIntensity;
                     this.glows.push({
                         note,
                         sharp,
@@ -538,14 +561,19 @@ export class BaseKeyboard {
     }
 
     /**
-     * Draws only the glow around the visible part of a pressed key,
-     * without covering the key itself.
+     * Draws the glow around the visible part of a pressed key.
+     * The key itself is filled too, which is invisible as it has the same color.
+     * Not clipping the key out avoids jagged edges, as clips are not always antialiased.
+     * @param ctx The glow layer.
      * @param glow The glowing key.
      * @param covering The rectangles of the keys drawn above this key.
+     * @param alpha The opacity of this glow in the layer.
      */
     private drawGlow(
+        ctx: Context2D,
         glow: KeyGlow,
-        covering: { note: number; rect: KeyRect }[]
+        covering: { note: number; rect: KeyRect }[],
+        alpha: number
     ) {
         const { raise, taper } = this.pressDeformation(glow.rect, glow.tilt);
         // The sides of a pressed key move inwards linearly towards the bottom
@@ -554,70 +582,131 @@ export class BaseKeyboard {
         const keyRight = glow.rect.x + glow.rect.width;
 
         const visibleKeyPath = () => {
-            this.pressedKeyPath(glow.rect, glow.tilt);
+            this.pressedKeyPath(ctx, glow.rect, glow.tilt);
             for (const { rect } of covering) {
                 const top = rect.y;
                 const bottom = rect.y + rect.height;
                 const coverRight = rect.x + rect.width;
-                this.ctx.moveTo(
-                    Math.max(rect.x, glow.rect.x + inset(top)),
-                    top
-                );
-                this.ctx.lineTo(
+                ctx.moveTo(Math.max(rect.x, glow.rect.x + inset(top)), top);
+                ctx.lineTo(
                     Math.max(rect.x, glow.rect.x + inset(bottom)),
                     bottom
                 );
-                this.ctx.lineTo(
+                ctx.lineTo(
                     Math.min(coverRight, keyRight - inset(bottom)),
                     bottom
                 );
-                this.ctx.lineTo(
-                    Math.min(coverRight, keyRight - inset(top)),
-                    top
-                );
-                this.ctx.closePath();
+                ctx.lineTo(Math.min(coverRight, keyRight - inset(top)), top);
+                ctx.closePath();
             }
         };
 
-        this.ctx.save();
-        // Clip out the visible key shape so that only the halo remains
+        ctx.save();
+        ctx.shadowColor = glow.color;
+        ctx.shadowBlur = glow.blur;
+        ctx.fillStyle = glow.color;
+        ctx.globalAlpha = alpha;
         visibleKeyPath();
-        this.counterClockwiseRect(-1e5, -1e5, 2e5, 2e5);
-        this.ctx.clip();
-        // Pressed covering keys have their own color and glow, keep them clear
-        for (const key of this.glows) {
-            if (covering.some((c) => c.note === key.note)) {
-                this.pressedKeyPath(key.rect, key.tilt);
-                this.counterClockwiseRect(-1e5, -1e5, 2e5, 2e5);
-                this.ctx.clip();
-            }
+        ctx.fill();
+        if (glow.sharp) {
+            // Sharp glows come after the flat ones
+            // An opaque body keeps the flat key glow off the pressed sharp key
+            ctx.shadowColor = "transparent";
+            ctx.globalAlpha = 1;
+            ctx.fill();
         }
-        this.ctx.shadowColor = glow.color;
-        this.ctx.shadowBlur = glow.blur;
-        this.ctx.fillStyle = glow.color;
-        visibleKeyPath();
-        for (let left = glow.intensity; left > 0; left--) {
-            this.ctx.globalAlpha = Math.min(1, left);
-            this.ctx.fill();
-        }
-        this.ctx.restore();
+        ctx.restore();
     }
 
-    private counterClockwiseRect(
-        x: number,
-        y: number,
-        width: number,
-        height: number
+    /**
+     * Blurs every glow once into the glow layer,
+     * Then stacks the layer onto the canvas to reach the requested intensity.
+     * @param sharps The sharp keys, which cover parts of the flat keys.
+     * @param keyTransform The transform the keys were drawn with.
+     */
+    private drawGlowLayer(
+        sharps: { note: number; rect: KeyRect }[],
+        keyTransform: DOMMatrix
     ) {
-        this.ctx.moveTo(x, y);
-        this.ctx.lineTo(x, y + height);
-        this.ctx.lineTo(x + width, y + height);
-        this.ctx.lineTo(x + width, y);
-        this.ctx.closePath();
+        const { width, height } = this.ctx.canvas;
+        if (
+            this.glowLayer?.canvas.width !== width ||
+            this.glowLayer.canvas.height !== height
+        ) {
+            const canvas = this.canvasFactory(width, height);
+            const ctx = canvas.getContext("2d");
+            if (!ctx) {
+                return;
+            }
+            this.glowLayer = { canvas, ctx };
+        }
+        const layer = this.glowLayer.ctx;
+
+        let maxBlur = 0;
+        let maxIntensity = 0;
+        for (const glow of this.glows) {
+            maxBlur = Math.max(maxBlur, glow.blur);
+            maxIntensity = Math.max(maxIntensity, glow.intensity);
+        }
+        const margin = Math.ceil(maxBlur * 2);
+        const x = Math.max(0, Math.floor(this.bounds.x) - margin);
+        const y = Math.max(0, Math.floor(this.bounds.y) - margin);
+        const regionWidth =
+            Math.min(
+                width,
+                Math.ceil(this.bounds.x + this.bounds.width) + margin
+            ) - x;
+        const regionHeight =
+            Math.min(
+                height,
+                Math.ceil(this.bounds.y + this.bounds.height) + margin
+            ) - y;
+        if (regionWidth <= 0 || regionHeight <= 0 || maxIntensity <= 0) {
+            return;
+        }
+
+        layer.setTransform(1, 0, 0, 1, 0, 0);
+        layer.clearRect(x, y, regionWidth, regionHeight);
+        layer.setTransform(keyTransform);
+
+        const copies = Math.ceil(maxIntensity);
+        const visibleLength = this.vertical
+            ? this.bounds.height
+            : this.bounds.width;
+        // Glows are in the key drawing order, so the sharp key glow is on top
+        for (const glow of this.glows) {
+            const start = glow.rect.x + this.xOffset;
+            if (start + glow.rect.width < 0 || start > visibleLength) {
+                // Not visible
+                continue;
+            }
+            // Sharp keys cover parts of the flat key, so they are not glowing
+            const covering = glow.sharp
+                ? []
+                : sharps.filter(
+                      (s) =>
+                          s.note === glow.note - 1 || s.note === glow.note + 1
+                  );
+            this.drawGlow(layer, glow, covering, glow.intensity / copies);
+        }
+
+        for (let i = 0; i < copies; i++) {
+            this.ctx.drawImage(
+                this.glowLayer.canvas,
+                x,
+                y,
+                regionWidth,
+                regionHeight,
+                x,
+                y,
+                regionWidth,
+                regionHeight
+            );
+        }
     }
 
     private drawPressedKey(rect: KeyRect, tilt: number) {
-        this.pressedKeyPath(rect, tilt);
+        this.pressedKeyPath(this.ctx, rect, tilt);
         this.ctx.fill();
     }
 
@@ -633,19 +722,19 @@ export class BaseKeyboard {
         };
     }
 
-    private pressedKeyPath(rect: KeyRect, tilt: number) {
+    private pressedKeyPath(ctx: Context2D, rect: KeyRect, tilt: number) {
         const r = this.currentRadius;
         const { raise, taper } = this.pressDeformation(rect, tilt);
         const outerY = rect.y + rect.height - raise;
         const left = rect.x + taper;
         const right = rect.x + rect.width - taper;
 
-        this.ctx.beginPath();
+        ctx.beginPath();
         // Top left
-        this.ctx.moveTo(rect.x, rect.y);
+        ctx.moveTo(rect.x, rect.y);
         // Top right
-        this.ctx.lineTo(rect.x + rect.width, rect.y);
-        this.ctx.lineTo(rect.x + rect.width, rect.y);
+        ctx.lineTo(rect.x + rect.width, rect.y);
+        ctx.lineTo(rect.x + rect.width, rect.y);
 
         // Bottom right, rounded
         const p2PrevDx = rect.x + rect.width - right;
@@ -659,8 +748,8 @@ export class BaseKeyboard {
         const c2BeforeY = outerY + p2PrevDy * p2PrevScale;
         const c2AfterX = right + p2NextDx * p2NextScale;
         const c2AfterY = outerY;
-        this.ctx.lineTo(c2BeforeX, c2BeforeY);
-        this.ctx.quadraticCurveTo(right, outerY, c2AfterX, c2AfterY);
+        ctx.lineTo(c2BeforeX, c2BeforeY);
+        ctx.quadraticCurveTo(right, outerY, c2AfterX, c2AfterY);
 
         // Bottom left, rounded
         const p3PrevDx = right - left;
@@ -674,13 +763,13 @@ export class BaseKeyboard {
         const c3BeforeY = outerY;
         const c3AfterX = left + p3NextDx * p3NextScale;
         const c3AfterY = outerY + p3NextDy * p3NextScale;
-        this.ctx.lineTo(c3BeforeX, c3BeforeY);
-        this.ctx.quadraticCurveTo(left, outerY, c3AfterX, c3AfterY);
+        ctx.lineTo(c3BeforeX, c3BeforeY);
+        ctx.quadraticCurveTo(left, outerY, c3AfterX, c3AfterY);
 
         // Corner 0: close back to top-left (rect.x, rect.y), radius = 0
-        this.ctx.lineTo(rect.x, rect.y);
-        this.ctx.quadraticCurveTo(rect.x, rect.y, rect.x, rect.y);
-        this.ctx.closePath();
+        ctx.lineTo(rect.x, rect.y);
+        ctx.quadraticCurveTo(rect.x, rect.y, rect.x, rect.y);
+        ctx.closePath();
     }
 
     private drawRoundedKey(rect: KeyRect) {

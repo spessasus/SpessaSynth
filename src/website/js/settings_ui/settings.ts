@@ -401,6 +401,15 @@ export class SpessaSynthSettings {
                 )!,
                 forceMaxVelocity: document.querySelector<HTMLInputElement>(
                     "#keyboard_force_max_velocity"
+                )!,
+                glow: document.querySelector<HTMLInputElement>(
+                    "#keyboard_glow"
+                )!,
+                glowIntensity: document.querySelector<HTMLInputElement>(
+                    "#keyboard_glow_intensity"
+                )!,
+                glowSettings: document.querySelector<HTMLDivElement>(
+                    "#keyboard_glow_settings"
                 )!
             },
 
