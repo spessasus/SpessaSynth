@@ -76,15 +76,16 @@
         <link href="./favicon.ico" rel="icon" type="image/png" />
         <noscript>
             <style>
+                .loading_icon .bi-hourglass {
+                    display: none !important;
+                }
+
+                /*noinspection CssUnusedSymbol*/
                 .loading_icon {
-                    display: grid !important;
-                    color: #ffcc00 !important;
                     animation: none !important;
                 }
 
-                .loading_bar_row,
-                #loading_message,
-                .whats_new_wrapper {
+                #loading_message {
                     display: none !important;
                 }
             </style>
@@ -92,92 +93,80 @@
     </head>
     <body>
         <!-- loading -->
-        <div class="loading" data-state="loading">
-            <div class="loading_card">
-                <div class="loading_top">
-                    <span class="loading_app_name">SpessaSynth</span>
-                    <span class="loading_version" id="update_title"></span>
-                </div>
-
-                <div class="loading_status" role="status">
-                    <div class="loading_icon">
-                        <noscript>
-                            <svg
-                                class="bi bi-exclamation-triangle"
-                                fill="currentColor"
-                                height="256"
-                                viewBox="0 0 16 16"
-                                width="256"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <path
-                                    d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06.1.1 0 0 1-.066.017H1.146a.1.1 0 0 1-.066-.017.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057m1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z"
-                                />
-                                <path
-                                    d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"
-                                />
-                            </svg>
-                        </noscript>
-                    </div>
-                    <noscript
-                        ><h1>
-                            Spessasynth requires JavaScript to work. Please turn
-                            it on.
-                        </h1></noscript
+        <div class="loading">
+            <h1 id="update_title"></h1>
+            <div class="loading_icon">
+                <svg
+                    class="bi bi-hourglass"
+                    fill="currentColor"
+                    height="256"
+                    viewBox="0 0 16 16"
+                    width="256"
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+                    <path
+                        d="M2 1.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-1v1a4.5 4.5 0 0 1-2.557 4.06c-.29.139-.443.377-.443.59v.7c0 .213.154.451.443.59A4.5 4.5 0 0 1 12.5 13v1h1a.5.5 0 0 1 0 1h-11a.5.5 0 1 1 0-1h1v-1a4.5 4.5 0 0 1 2.557-4.06c.29-.139.443-.377.443-.59v-.7c0-.213-.154-.451-.443-.59A4.5 4.5 0 0 1 3.5 3V2h-1a.5.5 0 0 1-.5-.5m2.5.5v1a3.5 3.5 0 0 0 1.989 3.158c.533.256 1.011.791 1.011 1.491v.702c0 .7-.478 1.235-1.011 1.491A3.5 3.5 0 0 0 4.5 13v1h7v-1a3.5 3.5 0 0 0-1.989-3.158C8.978 9.586 8.5 9.052 8.5 8.351v-.702c0-.7.478-1.235 1.011-1.491A3.5 3.5 0 0 0 11.5 3V2z"
+                    />
+                </svg>
+                <noscript>
+                    <svg
+                        class="bi bi-exclamation-triangle"
+                        fill="currentColor"
+                        height="256"
+                        viewBox="0 0 16 16"
+                        width="256"
+                        xmlns="http://www.w3.org/2000/svg"
                     >
-                    <h1 id="loading_message">Loading...</h1>
-                    <div class="loading_bar_row">
-                        <div
-                            class="loading_bar indeterminate"
-                            id="loading_bar"
-                            role="progressbar"
-                        >
-                            <span class="loading_bar_fill"></span>
-                        </div>
-                        <span
-                            class="loading_percent"
-                            id="loading_percent"
-                        ></span>
-                    </div>
-                </div>
-
-                <div class="whats_new_wrapper">
-                    <h2 id="whats_new">
-                        What's new in
-                        <span class="monospaced" id="whats_new_version"
-                            >v4.4.0</span
-                        >
-                        ?
-                    </h2>
-                    <ul id="whats_new_content"></ul>
-                </div>
-
-                <div class="loading_bottom">
-                    <h3>
-                        Powered by
-                        <a
-                            href="https://github.com/spessasus/spessasynth_core"
-                            target="_blank"
-                            >spessasynth_core</a
-                        >
-                        and
-                        <a
-                            href="https://github.com/spessasus/spessasynth_lib"
-                            target="_blank"
-                            >spessasynth_lib</a
-                        >
-                    </h3>
-                    <h4>Created by spessasus</h4>
-                    <p>
-                        The bundled sound bank is
-                        <a
-                            href="https://www.schristiancollins.com/generaluser"
-                            target="_blank"
-                            >General User GS by S. Christian Collins</a
-                        >
-                        (30MB)
-                    </p>
-                </div>
+                        <path
+                            d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06.1.1 0 0 1-.066.017H1.146a.1.1 0 0 1-.066-.017.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057m1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z"
+                        />
+                        <path
+                            d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"
+                        />
+                    </svg>
+                </noscript>
+            </div>
+            <noscript
+                ><h1>
+                    Spessasynth requires JavaScript to work. Please turn it on.
+                </h1></noscript
+            >
+            <h1 id="loading_message">Loading...</h1>
+            <div class="whats_new_wrapper">
+                <h2 id="whats_new">
+                    What's new in
+                    <span class="monospaced" id="whats_new_version"
+                        >v4.3.0</span
+                    >
+                    ?
+                </h2>
+                <ul id="whats_new_content"></ul>
+            </div>
+            <div class="loading_bottom">
+                <h3>
+                    Powered by
+                    <a
+                        href="https://github.com/spessasus/spessasynth_core"
+                        target="_blank"
+                        >spessasynth_core</a
+                    >
+                    and
+                    <a
+                        href="https://github.com/spessasus/spessasynth_lib"
+                        target="_blank"
+                        >spessasynth_lib</a
+                    >
+                </h3>
+                <h4>Created by spessasus</h4>
+                <p>
+                    The bundled sound bank is
+                    <a
+                        href="https://www.schristiancollins.com/generaluser"
+                        target="_blank"
+                        >General User GS by S. Christian Collins</a
+                    >
+                    (30MB)
+                </p>
             </div>
         </div>
 
@@ -193,6 +182,7 @@
                     <h1 id="title" translate-path="locale.demoTitleMessage">
                         SpessaSynth SF2/DLS JavaScript Synthesizer
                     </h1>
+                    <div id="progress_bar"></div>
                     <noscript
                         ><h1>
                             SpessaSynth requires JavaScript to work.

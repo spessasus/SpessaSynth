@@ -8,7 +8,6 @@
 @import "top_part.css";
 @import "keyboard_canvas_wrapper.css";
 @import "themes/themes.css";
-@import "loading.css";
 
 :root {
     /*global variables*/
@@ -137,6 +136,72 @@ button {
     background: var(--drop-overlay-color);
 }
 
+.loading {
+    flex-direction: column;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    z-index: var(--top-index);
+    left: 0;
+    background: var(--top-color);
+    transition: all 1s var(--bouncy-transition);
+    cursor: wait;
+}
+
+.loading #update_title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 1rem;
+    font-weight: normal;
+    font-style: italic;
+}
+
+.loading .loading_icon {
+    max-width: 100%;
+    max-height: 100%;
+    margin: 1em;
+    animation: spin 1s ease-in-out infinite;
+}
+
+.loading h1 {
+    margin-bottom: 3rem;
+}
+
+.loading_bottom {
+    position: absolute;
+    bottom: 1rem;
+}
+
+.loading_bottom * {
+    margin-bottom: 0.5rem;
+}
+
+.loading .whats_new_wrapper {
+    margin: 1rem;
+    padding: 0.5rem;
+    border-radius: var(--primary-border-radius);
+    background: var(--top-buttons-color);
+    border: solid 1px var(--edge-strong-color);
+}
+
+#whats_new_content li {
+    text-align: left;
+    padding: 0.2rem;
+}
+
+.loading a {
+    color: var(--loading-link-color);
+    font-weight: bolder;
+}
+
+.loading.done {
+    transform: translateY(-100%);
+}
+
 .ass_renderer_field {
     width: 100%;
     height: 100%;
@@ -169,4 +234,13 @@ button {
 .ass_renderer_element span {
     font-family: inherit;
     font-size: inherit;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }

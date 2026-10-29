@@ -1,5 +1,9 @@
 import { Manager } from "../manager/manager.js";
-import { getCheckSvg, getExclamationSvg } from "../utils/icons.js";
+import {
+    getCheckSvg,
+    getExclamationSvg,
+    getHourglassSvg
+} from "../utils/icons.js";
 import {
     closeNotification,
     showNotification
@@ -17,36 +21,12 @@ import {
 } from "../../../server/saved_settings.ts";
 import { URLParamUtils } from "../utils/url_params.ts";
 import { isMobile } from "../utils/is_mobile.ts";
-import { themeList } from "../themes/theme_list.ts";
 
 /**
  * Demo_main.js
  * purpose: main script for the demo, loads the soundfont and passes it to the manager.js
  */
 const SF_NAME = "GeneralUserGS.sf3";
-
-// How long to hide the loading after
-const LOADING_EXIT_MS = 1100;
-
-// Added 1 to force a reset (v4.2.0)
-const localStorageName = "spessasynth-settings-1";
-
-// Read the saved settings first so the loading screen uses the saved theme from the start
-let savedJson = localStorage.getItem(localStorageName);
-if (savedJson === null) {
-    const defaults = structuredClone(DEFAULT_SAVED_SETTINGS);
-    // If on mobile, start with a two octave keyboard
-    if (isMobile) {
-        defaults.keyboard.keyRange = { min: 53, max: 77 };
-        defaults.renderer.keyRange = { min: 53, max: 77 };
-    }
-    savedJson = JSON.stringify(defaults);
-}
-const saved = JSON.parse(savedJson) as SavedSettings;
-const savedTheme = saved?.interface?.theme;
-if (savedTheme && savedTheme in themeList) {
-    document.documentElement.dataset.theme = savedTheme;
-}
 
 const titleMessage = document.querySelector<HTMLElement>("#title")!;
 const fileInput = document.querySelector<HTMLInputElement>("#midi_file_input")!;
@@ -59,8 +39,6 @@ const exportButton = document.querySelector<HTMLElement>("#export_button")!;
 const loading = document.querySelectorAll<HTMLElement>(".loading")[0];
 
 const loadingMessage = document.querySelector<HTMLElement>("#loading_message")!;
-const loadingBar = document.querySelector<HTMLElement>("#loading_bar")!;
-const loadingPercent = document.querySelector<HTMLElement>("#loading_percent")!;
 const fileUpload = document.querySelector<HTMLLabelElement>("#file_upload")!;
 const sfUpload = document.querySelector<HTMLInputElement>("#sf_upload")!;
 
@@ -73,6 +51,9 @@ window.SPESSASYNTH_VERSION = packageJson.version || "UNKNOWN";
 // Remove the old files
 fileInput.value = "";
 fileInput.focus();
+
+// Added 1 to force a reset (v4.2.0)
+const localStorageName = "spessasynth-settings-1";
 
 // IndexedDB stuff
 const dbName = "spessasynth-db";
@@ -90,10 +71,9 @@ if (updateTitle) {
 const whatsNew = document.querySelector("#whats_new_content");
 if (whatsNew) {
     whatsNew.innerHTML = "";
-    for (const [index, w] of WHATS_NEW.entries()) {
+    for (const w of WHATS_NEW) {
         const li = document.createElement("li");
         li.textContent = w;
-        li.style.setProperty("--i", index.toString());
         whatsNew.append(li);
     }
     const whatsNewVer = document.querySelector("#whats_new_version");
@@ -159,39 +139,10 @@ function showSoundFontError(element: HTMLElement, error: string) {
     element.replaceChildren("Error parsing soundfont: ", pre);
 }
 
-/**
- * Updates the loading meter.
- */
-function setLoadingProgress(percent?: number) {
-    if (percent === undefined || !Number.isFinite(percent)) {
-        loadingBar.classList.add("indeterminate");
-        loadingBar.removeAttribute("aria-valuenow");
-        loadingPercent.textContent = "";
-        return;
-    }
-    const clamped = Math.max(0, Math.min(100, Math.round(percent)));
-    loadingBar.classList.remove("indeterminate");
-    loadingBar.style.setProperty("--progress", `${clamped / 100}`);
-    loadingBar.setAttribute("aria-valuenow", clamped.toString());
-    loadingPercent.textContent = `${clamped}%`;
-}
-
-/**
- * Switches the loading screen between its loading, done and error states.
- */
-function setLoadingState(state: "loading" | "done" | "error") {
-    loading.dataset.state = state;
-    const icon = loading.querySelector<HTMLElement>(".loading_icon")!;
-    if (state === "done") {
-        icon.innerHTML = getCheckSvg(48);
-        setLoadingProgress(100);
-    } else if (state === "error") {
-        icon.innerHTML = getExclamationSvg(48);
-        setLoadingProgress(0);
-    } else {
-        icon.replaceChildren();
-        setLoadingProgress();
-    }
+function changeIcon(html: string, disableAnimation = true) {
+    const icon = loading.querySelectorAll(".loading_icon")[0] as HTMLElement;
+    icon.innerHTML = html;
+    icon.style.animation = disableAnimation ? "none" : "";
 }
 
 async function saveSoundFontToIndexedDB(arr: ArrayBuffer) {
@@ -227,7 +178,6 @@ let context: AudioContext;
 async function demoInit(initLocale: LocaleCode) {
     // Initialize the locale management system. do it here because we want it ready before all js classes do their things
     const localeManager = new LocaleManager(initLocale);
-    setLoadingState("loading");
     const sampleRate = URLParamUtils.getSampleRate();
     try {
         context = new AudioContext({ sampleRate });
@@ -239,7 +189,7 @@ async function demoInit(initLocale: LocaleCode) {
                 URLParamUtils.DEFAULT_SAMPLE_RATE.toString()
             );
         }
-        setLoadingState("error");
+        changeIcon(getExclamationSvg(256));
         loadingMessage.textContent = localeManager.getLocaleString(
             "locale.synthInit.noWebAudio"
         );
@@ -254,15 +204,23 @@ async function demoInit(initLocale: LocaleCode) {
     if (soundFontBuffer === undefined) {
         console.warn("Failed to load from db, fetching online instead");
         loadedFromDb = false;
-        loadingMessage.textContent = localeManager.getLocaleString(
+        const progressBar = document.querySelector<HTMLElement>(
+            "#progress_bar"
+        )! as HTMLDivElement;
+        const sFontLoadMessage = localeManager.getLocaleString(
             "locale.synthInit.loadingBundledSoundfont"
         );
-        setLoadingProgress(0);
+        loadingMessage.textContent = sFontLoadMessage;
+        progressBar.classList.add("active");
         try {
             soundFontBuffer = await fetchFont(
                 `soundfonts/${SF_NAME}`,
                 (percent: number) => {
-                    setLoadingProgress(percent);
+                    loadingMessage.textContent = `${sFontLoadMessage} ${percent}%`;
+                    progressBar.style.setProperty(
+                        "--progress",
+                        `${percent / 100}`
+                    );
                 }
             );
         } catch (error) {
@@ -270,7 +228,7 @@ async function demoInit(initLocale: LocaleCode) {
             soundFontBuffer = BasicSoundBank.getSampleSoundBankFile();
         }
 
-        setLoadingProgress();
+        progressBar.classList.remove("active");
     } else {
         console.info("Loaded the soundfont from the database successfully");
     }
@@ -299,7 +257,7 @@ async function demoInit(initLocale: LocaleCode) {
     );
     window.manager = new Manager(context, sfBuffer, localeManager);
     window.manager.sfError = (e) => {
-        setLoadingState("error");
+        changeIcon(getExclamationSvg(256));
         if (loadedFromDb) {
             console.warn("Invalid soundfont in the database. Resetting.");
             // Restore to default
@@ -334,7 +292,7 @@ async function demoInit(initLocale: LocaleCode) {
         });
     }
 
-    setLoadingState("done");
+    changeIcon(getCheckSvg(256));
     loadingMessage.textContent = localeManager.getLocaleString(
         "locale.synthInit.done"
     );
@@ -431,6 +389,18 @@ window.rememberVoiceCap = (cap: number) => {
 // Expose the save function
 window.saveSettings = saveSettings;
 
+// Load saved settings
+let savedJson = localStorage.getItem(localStorageName);
+if (savedJson === null) {
+    const defaults = structuredClone(DEFAULT_SAVED_SETTINGS);
+    // If on mobile, start with a two octave keyboard
+    if (isMobile) {
+        defaults.keyboard.keyRange = { min: 53, max: 77 };
+        defaults.renderer.keyRange = { min: 53, max: 77 };
+    }
+    savedJson = JSON.stringify(defaults);
+}
+const saved = JSON.parse(savedJson) as SavedSettings;
 if (saved !== null) {
     /**
      * Reads the settings
@@ -494,7 +464,7 @@ setTimeout(() => {
     loading.style.display = "none";
     document.body.classList.remove("no_scroll");
     document.documentElement.classList.remove("no_scroll");
-}, LOADING_EXIT_MS);
+}, 1000);
 sfInput.addEventListener("change", (e) => {
     const target = e.target as HTMLInputElement;
     const file = target.files?.[0];
@@ -516,7 +486,7 @@ sfInput.addEventListener("change", (e) => {
                 throw new Error("Unexpected lack of manager!");
             }
             loading.classList.remove("done");
-            setLoadingState("loading");
+            changeIcon(getHourglassSvg(256), false);
             loadingMessage.textContent =
                 window.manager.localeManager.getLocaleString(
                     "locale.synthInit.loadingSoundfont"
@@ -532,7 +502,7 @@ sfInput.addEventListener("change", (e) => {
                     window.manager.localeManager.getLocaleString(
                         "locale.warnings.outOfMemory"
                     );
-                setLoadingState("error");
+                changeIcon(getExclamationSvg(256));
                 showNotification(
                     window.manager.localeManager.getLocaleString(
                         "locale.warnings.warning"
@@ -551,7 +521,7 @@ sfInput.addEventListener("change", (e) => {
             }
             window.manager.sfError = (e) => {
                 showSoundFontError(loadingMessage, e);
-                setLoadingState("error");
+                changeIcon(getExclamationSvg(256));
                 console.error(e);
             };
 
@@ -574,7 +544,7 @@ sfInput.addEventListener("change", (e) => {
                 setTimeout(r, Math.max(0, (1 - elapsed) * 1000))
             );
             // DONE
-            setLoadingState("done");
+            changeIcon(getCheckSvg(256));
             loadingMessage.textContent =
                 window.manager.localeManager.getLocaleString(
                     "locale.synthInit.done"
@@ -586,7 +556,7 @@ sfInput.addEventListener("change", (e) => {
                 loading.style.display = "none";
                 document.body.classList.remove("no_scroll");
                 document.documentElement.classList.remove("no_scroll");
-            }, LOADING_EXIT_MS);
+            }, 1000);
         })();
     }, ANIMATION_REFLOW_TIME);
 });
