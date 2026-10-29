@@ -21,6 +21,7 @@ import {
 } from "../../../server/saved_settings.ts";
 import { URLParamUtils } from "../utils/url_params.ts";
 import { isMobile } from "../utils/is_mobile.ts";
+import { themeList } from "../themes/theme_list.ts";
 
 /**
  * Demo_main.js
@@ -408,6 +409,18 @@ if (saved !== null) {
     window.savedSettings = new Promise((resolve) => {
         resolve(saved);
     });
+}
+// Apply the saved theme right away so the loading screen already uses it
+if (saved?.interface?.theme in themeList) {
+    document.documentElement.dataset.theme = saved.interface.theme;
+    document
+        .querySelector('meta[name="theme-color"]')
+        ?.setAttribute(
+            "content",
+            getComputedStyle(document.documentElement).getPropertyValue(
+                "--top-color-end"
+            )
+        );
 }
 // Get locale from saved settings or browser: "en-US" will turn into just "en"
 const initLocale: LocaleCode = saved?.interface?.language
