@@ -65,17 +65,11 @@ export class MusicModeUI {
             (e) => {
                 const mid = e.midiData;
                 // Use file name if no copyright detected
-                const setInfoText = (
-                    id: string,
-                    text: string,
-                    enableMarquee = true
-                ) => {
+                const setInfoText = (id: string, text: string) => {
                     const el = document.querySelector("#" + id);
                     if (!el) {
                         throw new Error(`Invalid music mode element ID: ${id}`);
                     }
-                    // The previous text may have been scrolling
-                    el.classList.remove("marquee");
                     const isMultiline = text.trim().includes("\n");
                     el.parentElement?.classList.toggle(
                         "multiline",
@@ -89,17 +83,7 @@ export class MusicModeUI {
 
                     if (text.length > 0) {
                         Ut.show(el?.parentElement);
-                        el.innerHTML = "";
-                        // Add scroll if needed
-                        if (text.length > 30 && enableMarquee) {
-                            el.classList.add("marquee");
-
-                            const textWrap = document.createElement("span");
-                            textWrap.textContent = text;
-                            el.append(textWrap);
-                        } else {
-                            el.textContent = text;
-                        }
+                        el.textContent = text;
                     } else {
                         Ut.hide(el?.parentElement);
                     }
@@ -123,7 +107,7 @@ export class MusicModeUI {
                 );
 
                 // File name
-                setInfoText("player_info_file_name", mid.fileName ?? "", false);
+                setInfoText("player_info_file_name", mid.fileName ?? "");
 
                 // Embedded things
                 // Add album and artist meta

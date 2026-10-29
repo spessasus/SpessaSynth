@@ -178,27 +178,6 @@
     white-space: pre-wrap;
 }
 
-.marquee {
-    overflow: hidden;
-    max-width: 30ch;
-    white-space: nowrap;
-}
-
-.marquee span {
-    white-space: nowrap;
-    padding-left: 100%;
-    animation: 15s linear infinite marquee;
-}
-
-@keyframes marquee {
-    0% {
-        transform: translateX(0);
-    }
-    100% {
-        transform: translateX(-100%);
-    }
-}
-
 .player_info_show {
     transform: translateX(0%) !important;
 }
@@ -217,12 +196,5 @@
     .player_info_details_wrapper {
         flex: 1 1 auto;
         width: 100%;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .marquee span {
-        animation: none;
-        padding-left: 0;
     }
 }
