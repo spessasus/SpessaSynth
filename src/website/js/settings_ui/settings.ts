@@ -552,12 +552,15 @@ export class SpessaSynthSettings {
         clearTimeout(this.animationId);
         if (visible) {
             this.mainDiv.style.display = "block";
-            this.mainDiv.style.maxHeight = `${Math.max(
-                240,
-                window.innerHeight -
-                    this.mainDiv.getBoundingClientRect().top -
-                    8
-            )}px`;
+            this.mainDiv.style.maxHeight =
+                getComputedStyle(this.mainDiv).overflowY === "visible"
+                    ? ""
+                    : `${Math.max(
+                          240,
+                          window.innerHeight -
+                              this.mainDiv.getBoundingClientRect().top -
+                              8
+                      )}px`;
             this.animationId = window.setTimeout(() => {
                 document
                     .querySelectorAll(".top_part")[0]

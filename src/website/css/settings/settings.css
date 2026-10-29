@@ -84,7 +84,8 @@
     .settings_menu {
         width: 100%;
         min-width: 0;
-        max-height: 90dvh;
+        max-height: none;
+        overflow: visible;
         right: 0;
         border-inline: 0;
         border-radius: 0;
@@ -149,7 +150,7 @@
 
 @media (max-width: 700px) {
     .settings_header {
-        top: -0.9rem;
+        top: 0;
         margin: -0.9rem -0.9rem 0.9rem;
         padding: 0.8rem 0.9rem;
     }
