@@ -5,6 +5,7 @@ import {
     DARK_KEY_GRADIENT_ANGLE_DEGREES,
     isSharpMIDINote,
     KEYBOARD_BACKGROUND_COLOR,
+    KEYBOARD_GLOW_INTENSITY,
     KEYBOARD_GLOW_PX,
     LIGHT_FLAT_KEY_GRADIENT,
     LIGHT_KEY_COLOR_VALUE,
@@ -30,6 +31,16 @@ interface KeyRect {
     y: number;
     width: number;
     height: number;
+}
+
+interface KeyGlow {
+    note: number;
+    sharp: boolean;
+    rect: KeyRect;
+    tilt: number;
+    color: string;
+    blur: number;
+    intensity: number;
 }
 
 interface PressedKey {
@@ -91,6 +102,11 @@ export class BaseKeyboard {
     protected yOffset = 0;
     protected currentTime = 0;
     private currentRadius = 0;
+    /**
+     * Pressed keys collected during the key pass,
+     * Their glow is drawn above all keys
+     */
+    private readonly glows = new Array<KeyGlow>();
 
     private channelColors = new Array<number[]>();
 
@@ -274,17 +290,19 @@ export class BaseKeyboard {
             return;
         }
 
-        // Clip to render bounds
         this.ctx.save();
         this.ctx.translate(bounds.x, bounds.y);
-        this.ctx.beginPath();
-        this.ctx.rect(0, 0, width, height);
-        this.ctx.clip();
 
         // Clear render area
         this.ctx.clearRect(0, 0, width, height);
         this.ctx.fillStyle = KEYBOARD_BACKGROUND_COLOR;
         this.ctx.fillRect(0, 0, width, height);
+
+        // Clip the render bounds
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.rect(0, 0, width, height);
+        this.ctx.clip();
 
         // Draw in horizontal keyboard coordinates, then rotate into the bounds.
         if (this.vertical) {
@@ -335,6 +353,29 @@ export class BaseKeyboard {
         for (const key of sharps) {
             this.drawKey(key.note, true, key.rect, time);
         }
+
+        // Glow goes above all keys and may reach outside the keyboard
+        const keyTransform = this.ctx.getTransform();
+        this.ctx.restore();
+        this.ctx.setTransform(keyTransform);
+        const visibleLength = this.vertical ? height : width;
+        // Glows are in the key drawing order, so the sharp key glow is on top
+        for (const glow of this.glows) {
+            const start = glow.rect.x + this.xOffset;
+            if (start + glow.rect.width < 0 || start > visibleLength) {
+                // Not visible
+                continue;
+            }
+            // Sharp keys cover parts of the flat key, so they are not glowing
+            const covering = glow.sharp
+                ? []
+                : sharps.filter(
+                      (s) =>
+                          s.note === glow.note - 1 || s.note === glow.note + 1
+                  );
+            this.drawGlow(glow, covering);
+        }
+        this.glows.length = 0;
 
         this.pruneReleasedKeys(time);
         this.ctx.restore();
@@ -457,21 +498,26 @@ export class BaseKeyboard {
 
                 const alpha = rgbaValues[3] ?? 1;
                 const color = `rgba(${newRGBValues.join(", ")}, ${alpha})`;
-                this.ctx.save();
+                const tilt = clamp(
+                    (time - press.pressTime) / KEY_TRANSITION_SECONDS,
+                    0,
+                    1
+                );
                 if (this.mode === "dark") {
-                    this.ctx.shadowColor = color;
-                    this.ctx.shadowBlur = KEYBOARD_GLOW_PX * brightness;
+                    // Squared, like MIDI velocity to gain mapping
+                    const glow = brightness * brightness;
+                    this.glows.push({
+                        note,
+                        sharp,
+                        rect,
+                        tilt,
+                        color,
+                        blur: KEYBOARD_GLOW_PX * glow,
+                        intensity: KEYBOARD_GLOW_INTENSITY * glow
+                    });
                 }
                 this.ctx.fillStyle = color;
-                this.drawPressedKey(
-                    rect,
-                    clamp(
-                        (time - press.pressTime) / KEY_TRANSITION_SECONDS,
-                        0,
-                        1
-                    )
-                );
-                this.ctx.restore();
+                this.drawPressedKey(rect, tilt);
                 return;
             } else {
                 const latest = presses[presses.length - 1];
@@ -491,12 +537,105 @@ export class BaseKeyboard {
         this.drawRoundedKey(rect);
     }
 
+    /**
+     * Draws only the glow around the visible part of a pressed key,
+     * without covering the key itself.
+     * @param glow The glowing key.
+     * @param covering The rectangles of the keys drawn above this key.
+     */
+    private drawGlow(
+        glow: KeyGlow,
+        covering: { note: number; rect: KeyRect }[]
+    ) {
+        const { raise, taper } = this.pressDeformation(glow.rect, glow.tilt);
+        // The sides of a pressed key move inwards linearly towards the bottom
+        const inset = (y: number) =>
+            (taper * (y - glow.rect.y)) / (glow.rect.height - raise);
+        const keyRight = glow.rect.x + glow.rect.width;
+
+        const visibleKeyPath = () => {
+            this.pressedKeyPath(glow.rect, glow.tilt);
+            for (const { rect } of covering) {
+                const top = rect.y;
+                const bottom = rect.y + rect.height;
+                const coverRight = rect.x + rect.width;
+                this.ctx.moveTo(
+                    Math.max(rect.x, glow.rect.x + inset(top)),
+                    top
+                );
+                this.ctx.lineTo(
+                    Math.max(rect.x, glow.rect.x + inset(bottom)),
+                    bottom
+                );
+                this.ctx.lineTo(
+                    Math.min(coverRight, keyRight - inset(bottom)),
+                    bottom
+                );
+                this.ctx.lineTo(
+                    Math.min(coverRight, keyRight - inset(top)),
+                    top
+                );
+                this.ctx.closePath();
+            }
+        };
+
+        this.ctx.save();
+        // Clip out the visible key shape so that only the halo remains
+        visibleKeyPath();
+        this.counterClockwiseRect(-1e5, -1e5, 2e5, 2e5);
+        this.ctx.clip();
+        // Pressed covering keys have their own color and glow, keep them clear
+        for (const key of this.glows) {
+            if (covering.some((c) => c.note === key.note)) {
+                this.pressedKeyPath(key.rect, key.tilt);
+                this.counterClockwiseRect(-1e5, -1e5, 2e5, 2e5);
+                this.ctx.clip();
+            }
+        }
+        this.ctx.shadowColor = glow.color;
+        this.ctx.shadowBlur = glow.blur;
+        this.ctx.fillStyle = glow.color;
+        visibleKeyPath();
+        for (let left = glow.intensity; left > 0; left--) {
+            this.ctx.globalAlpha = Math.min(1, left);
+            this.ctx.fill();
+        }
+        this.ctx.restore();
+    }
+
+    private counterClockwiseRect(
+        x: number,
+        y: number,
+        width: number,
+        height: number
+    ) {
+        this.ctx.moveTo(x, y);
+        this.ctx.lineTo(x, y + height);
+        this.ctx.lineTo(x + width, y + height);
+        this.ctx.lineTo(x + width, y);
+        this.ctx.closePath();
+    }
+
     private drawPressedKey(rect: KeyRect, tilt: number) {
+        this.pressedKeyPath(rect, tilt);
+        this.ctx.fill();
+    }
+
+    /**
+     * How far the bottom edge rises and the sides move inwards for a pressed key.
+     */
+    private pressDeformation(rect: KeyRect, tilt: number) {
+        return {
+            raise:
+                rect.height * KEY_PRESS_RAISE_RATIO * KEY_PRESS_STRENGTH * tilt,
+            taper:
+                rect.width * KEY_PRESS_TAPER_RATIO * KEY_PRESS_STRENGTH * tilt
+        };
+    }
+
+    private pressedKeyPath(rect: KeyRect, tilt: number) {
         const r = this.currentRadius;
-        const raise =
-            rect.height * KEY_PRESS_RAISE_RATIO * KEY_PRESS_STRENGTH * tilt;
-        const taper =
-            rect.width * KEY_PRESS_TAPER_RATIO * KEY_PRESS_STRENGTH * tilt;
+        const { raise, taper } = this.pressDeformation(rect, tilt);
         const outerY = rect.y + rect.height - raise;
         const left = rect.x + taper;
         const right = rect.x + rect.width - taper;
@@ -542,7 +681,6 @@ export class BaseKeyboard {
         this.ctx.lineTo(rect.x, rect.y);
         this.ctx.quadraticCurveTo(rect.x, rect.y, rect.x, rect.y);
         this.ctx.closePath();
-        this.ctx.fill();
     }
 
     private drawRoundedKey(rect: KeyRect) {

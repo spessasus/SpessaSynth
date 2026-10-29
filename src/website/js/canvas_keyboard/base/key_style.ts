@@ -1,5 +1,9 @@
 export const OCTAVE = 12;
+// Glow radius at max velocity
 export const KEYBOARD_GLOW_PX = 20;
+// Glow intensity at max velocity
+// Values above 1 stack the glow
+export const KEYBOARD_GLOW_INTENSITY = 1.5;
 
 export const KEYBOARD_BACKGROUND_COLOR = "black";
 export const SHARP_KEY_GRADIENT = ["#222", "black"] as const;
