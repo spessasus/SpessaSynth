@@ -146,6 +146,9 @@ button {
     height: 100%;
     z-index: var(--top-index);
     left: 0;
+    padding: 1rem 1rem 7rem;
+    box-sizing: border-box;
+    overflow-y: auto;
     background: var(--top-color);
     transition: all 1s var(--bouncy-transition);
     cursor: wait;
@@ -156,41 +159,83 @@ button {
     left: 50%;
     transform: translateX(-50%);
     top: 1rem;
+    font-size: 1.75rem;
     font-weight: normal;
-    font-style: italic;
+    color: color-mix(in srgb, var(--font-color) 85%, transparent);
 }
 
 .loading .loading_icon {
-    max-width: 100%;
-    max-height: 100%;
-    margin: 1em;
-    animation: spin 1s ease-in-out infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 7rem;
+    height: 7rem;
+    margin: 0 0 1.25rem;
+    border-radius: 1.5rem;
+    background: var(--top-color);
+    border: 1px solid var(--edge-color);
+    box-shadow:
+        0 1.25rem 3rem -0.75rem var(--settings-shadow-color),
+        inset 0 1px var(--settings-card-highlight);
+}
+
+.loading .loading_icon svg {
+    width: 3.75rem;
+    height: 3.75rem;
+}
+
+.loading .loading_icon .bi-hourglass {
+    width: 3.75rem;
+    height: 3.75rem;
+    animation: spin 1.6s var(--bouncy-transition) infinite;
 }
 
 .loading h1 {
-    margin-bottom: 3rem;
+    margin: 0 0 1.5rem;
+    font-size: 1.5rem;
 }
 
 .loading_bottom {
     position: absolute;
     bottom: 1rem;
+    left: 0;
+    right: 0;
+    padding: 0 1rem;
+    text-align: center;
+    color: color-mix(in srgb, var(--font-color) 70%, transparent);
 }
 
 .loading_bottom * {
-    margin-bottom: 0.5rem;
+    margin: 0 0 0.35rem;
+    font-size: 0.85rem;
+    font-weight: normal;
 }
 
 .loading .whats_new_wrapper {
-    margin: 1rem;
-    padding: 0.5rem;
-    border-radius: var(--primary-border-radius);
-    background: var(--top-buttons-color);
-    border: solid 1px var(--edge-strong-color);
+    width: min(30rem, 100%);
+    box-sizing: border-box;
+    padding: 1rem 1.25rem;
+    border-radius: 1.15rem;
+    background: var(--top-color);
+    border: 1px solid var(--edge-color);
+    box-shadow:
+        0 1.25rem 3rem -0.75rem var(--settings-shadow-color),
+        inset 0 1px var(--settings-card-highlight);
+}
+
+.loading .whats_new_wrapper h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+}
+
+#whats_new_content {
+    margin: 0;
+    padding-left: 1.25rem;
 }
 
 #whats_new_content li {
     text-align: left;
-    padding: 0.2rem;
+    padding: 0.2rem 0;
 }
 
 .loading a {
