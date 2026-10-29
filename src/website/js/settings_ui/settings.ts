@@ -22,6 +22,7 @@ import { localeList } from "../../locale/locale_list.js";
 import { keybinds } from "../utils/keybinds.js";
 import { handleSliders } from "./sliders.js";
 import { ANIMATION_REFLOW_TIME } from "../utils/animation_utils.js";
+import { isMobile } from "../utils/is_mobile.ts";
 import { type Sequencer } from "spessasynth_lib";
 import type { SynthesizerUI } from "../synthesizer_ui/synthetizer_ui.ts";
 import type { SequencerUI } from "../sequencer_ui/sequencer_ui.ts";
@@ -160,6 +161,28 @@ export class SpessaSynthSettings {
             "locale.hideTopBar.description"
         );
         settingsWrapper.append(hideTopButton);
+
+        // Phones have no F11, so give them a way to enter fullscreen!
+        if (isMobile && document.fullscreenEnabled) {
+            const fullscreenButton = document.createElement("div");
+            fullscreenButton.classList.add("seamless_button");
+            this.locale.bindObjectProperty(
+                fullscreenButton,
+                "innerText",
+                "locale.fullscreen.title"
+            );
+            this.locale.bindObjectProperty(
+                fullscreenButton,
+                "title",
+                "locale.fullscreen.description"
+            );
+            fullscreenButton.addEventListener("click", () => {
+                void (document.fullscreenElement === null
+                    ? document.documentElement.requestFullscreen()
+                    : document.exitFullscreen());
+            });
+            settingsWrapper.append(fullscreenButton);
+        }
 
         // Add svg to show top button
         const showTopButton = document.querySelectorAll(".show_top_button")[0];

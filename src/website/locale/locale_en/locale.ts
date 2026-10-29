@@ -83,6 +83,10 @@ export const localeEnglish = {
         description:
             "Hide the top (title) bar to provide a more seamless experience"
     },
+    fullscreen: {
+        title: "Fullscreen",
+        description: "Toggle fullscreen mode"
+    },
 
     convertDls: {
         title: "DLS Conversion",

@@ -86,6 +86,10 @@ export const localePolish = {
         description:
             "Ukryj pasek tytułowy w celu poprawy widoczności na pionowych ekranach"
     },
+    fullscreen: {
+        title: "Pełny ekran",
+        description: "Przełącz tryb pełnoekranowy"
+    },
 
     convertDls: {
         title: "Konwersja DLS",
