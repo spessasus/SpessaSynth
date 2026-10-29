@@ -356,6 +356,10 @@ export class OfflineRenderer extends BaseRenderer {
      */
     public skipFrame(t: number) {
         this.processEvents(t);
+        // The skipped waveforms are not available, so the history is stale
+        for (const trigger of this.waveformTriggers) {
+            trigger.reset();
+        }
         if (this.renderDotDisplay) {
             this.dotMatrix.advance(t);
         }

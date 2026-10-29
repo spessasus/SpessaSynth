@@ -53,6 +53,8 @@ export function renderSingleWaveform(
     }
     this.voicesPlaying[channelNumber] = voicesPlaying;
     if (!voicesPlaying) {
+        // The next sound does not have to look like the last one
+        this.waveformTriggers[channelNumber].reset();
         // Draw a straight line
         straightLine();
         return;
@@ -68,8 +70,9 @@ export function renderSingleWaveform(
     this.ctx.strokeStyle = color;
     this.ctx.fillStyle = color;
 
-    let triggerPoint;
     let length = sampleCount;
+    // The fractional sample index drawn at the left edge
+    let windowStart = 0;
     let renderStart = 0;
     let renderEnd = sampleCount;
     if (this._stabilizeWaveforms) {
@@ -78,49 +81,14 @@ export function renderSingleWaveform(
         if (this.parts[channelNumber].isDrum) {
             length *= 2;
         }
-        const halfLength = Math.floor(length / 2);
-        triggerPoint = sampleCount - halfLength;
-        let max = -Infinity;
-        // Multi-pass trigger point detection
-        // Pass 1: find the maximum in the last part of the waveform
-        // TODO: optimize by using max function on a subarray when available
-        const searchStart = Math.max(0, triggerPoint - halfLength);
-        for (let i = triggerPoint; i >= searchStart; i--) {
-            const value = waveform[i];
-            if (value > max) {
-                max = value;
-            }
-        }
-        // Pass 2: find the maximum within a tolerance range around the first trigger point
-        let bestIndex = triggerPoint;
-        triggerPoint = sampleCount - halfLength;
-        const maximumTolerance = 0.04; // 4% tolerance for the second pass
-        for (let i = triggerPoint; i >= searchStart; i--) {
-            const value = waveform[i];
-            if (value > max * (1 - maximumTolerance)) {
-                bestIndex = i;
-                break;
-            }
-        }
-        triggerPoint = bestIndex;
-        // Pass 3: find the zero crossing after the trigger point
-        const zeroCrossEnd = Math.max(triggerPoint - Math.floor(halfLength), 0);
-        let sum = 0;
-        for (let i = 0; i < sampleCount; i++) {
-            sum += waveform[i];
-        }
-        const waveformAverage = sum / sampleCount;
-        // Look for the average to remove DC offset
-        for (let i = triggerPoint; i >= zeroCrossEnd; i--) {
-            // Reverse search for zero crossing
-            if (waveform[i] <= waveformAverage) {
-                // Zero crossing detected
-                triggerPoint = i;
-                break;
-            }
-        }
-        renderStart = Math.max(0, triggerPoint - halfLength);
-        renderEnd = Math.min(triggerPoint + halfLength, sampleCount);
+        const triggerPoint = this.waveformTriggers[channelNumber].findTrigger(
+            waveform,
+            sampleCount,
+            length
+        );
+        windowStart = triggerPoint - Math.floor(length / 2);
+        renderStart = Math.max(0, Math.floor(windowStart));
+        renderEnd = Math.min(Math.ceil(windowStart + length), sampleCount);
     }
 
     const dataLength = renderEnd - renderStart;
@@ -152,13 +120,13 @@ export function renderSingleWaveform(
         // But it makes Firefox drop canvas acceleration.
         let i = renderStart;
         while (i < renderEnd) {
-            const column = Math.floor((i - renderStart) * step);
+            const column = Math.floor((i - windowStart) * step);
             let minIndex = i;
             let maxIndex = i;
             i++;
             while (
                 i < renderEnd &&
-                Math.floor((i - renderStart) * step) === column
+                Math.floor((i - windowStart) * step) === column
             ) {
                 const value = waveform[i];
                 if (value < waveform[minIndex]) {
@@ -171,25 +139,28 @@ export function renderSingleWaveform(
             const first = Math.min(minIndex, maxIndex);
             const second = Math.max(minIndex, maxIndex);
             lineTo(
-                relativeX + (first - renderStart) * step,
+                relativeX + (first - windowStart) * step,
                 relativeY + waveform[first] * multiplier
             );
             if (second !== first) {
                 lineTo(
-                    relativeX + (second - renderStart) * step,
+                    relativeX + (second - windowStart) * step,
                     relativeY + waveform[second] * multiplier
                 );
             }
         }
     } else {
-        let xPos = relativeX;
+        let xPos = relativeX + (renderStart - windowStart) * step;
         for (let i = renderStart; i < renderEnd; i++) {
             lineTo(xPos, relativeY + waveform[i] * multiplier);
             xPos += step;
         }
     }
     if (filled) {
-        this.ctx.lineTo(relativeX + dataLength * step, relativeY);
+        this.ctx.lineTo(
+            relativeX + (renderEnd - windowStart) * step,
+            relativeY
+        );
         this.ctx.fill();
     } else {
         this.ctx.stroke();

@@ -16,6 +16,7 @@ import { DotMatrixDisplay } from "./dot_matrix_display.ts";
 import { BaseKeyboard } from "../../canvas_keyboard/base/base_keyboard.ts";
 import { OCTAVE } from "../../canvas_keyboard/base/key_style.ts";
 import { ProgramTracker } from "./program_tracker.ts";
+import { WaveformTrigger } from "./waveform_trigger.ts";
 
 /**
  * BaseRenderer.js
@@ -270,6 +271,14 @@ export abstract class BaseRenderer<K extends BaseKeyboard = BaseKeyboard> {
             waveformLength: 1024,
             render: true
         })
+    );
+    /**
+     * The oscilloscope trigger of each part, which keeps the waveform history.
+     */
+    protected readonly waveformTriggers = Array.from(
+        { length: 16 },
+        // eslint-disable-next-line unicorn/consistent-function-scoping
+        () => new WaveformTrigger()
     );
     private canvasColorTheme = "";
     private canvasColorTransitioning = false;
