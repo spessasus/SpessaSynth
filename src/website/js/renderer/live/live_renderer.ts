@@ -1,4 +1,5 @@
 import { ANALYSER_SMOOTHING, BaseRenderer } from "../base/renderer.ts";
+import { RGBAOpacity } from "../../utils/calculate_rgb.js";
 import type { Synthesizer } from "../../utils/synthesizer.ts";
 import type { Sequencer } from "spessasynth_lib";
 import type { LocaleManager } from "../../manager/locale_manager.ts";
@@ -39,6 +40,15 @@ export class LiveRenderer extends BaseRenderer<LiveKeyboard> {
     protected bigAnalyser: AnalyserNode;
     protected readonly inputNode: AudioNode;
     private hasRenderedNoVoices = false;
+    private readonly fftGradients = new Array<
+        | {
+              color: string;
+              top: number;
+              height: number;
+              gradient: CanvasGradient;
+          }
+        | undefined
+    >();
     private backgroundURL?: string;
     private readonly sampleRateFactor;
 
@@ -580,13 +590,17 @@ export class LiveRenderer extends BaseRenderer<LiveKeyboard> {
 
     /**
      * @param channelNumber
-     * @param waveHeight
-     * @param waveWidth
+     * @param relativeX Starting X position of this cell
+     * @param relativeY Top Y position of this cell (spectrum draws upward from bottom)
+     * @param cellWidth Width of this cell
+     * @param cellHeight Height of this cell
      */
     protected renderSingleFft(
         channelNumber: number,
-        waveWidth: number,
-        waveHeight: number
+        relativeX: number,
+        relativeY: number,
+        cellWidth: number,
+        cellHeight: number
     ) {
         const analyser = this.channelAnalysers[channelNumber];
         const fftSize = analyser.frequencyBinCount;
@@ -596,29 +610,51 @@ export class LiveRenderer extends BaseRenderer<LiveKeyboard> {
             return;
         }
 
-        const x = channelNumber % 4;
-        const y = Math.floor(channelNumber / 4);
-        const relativeX = waveWidth * x;
-        const relativeY = waveHeight * y + waveHeight;
-        const multiplier = (0.8 + this.waveMultiplier / 10) * -waveHeight;
+        const bottomY = relativeY + cellHeight;
+        const multiplier = (0.8 + this.waveMultiplier / 10) * -cellHeight;
         const max = this.dynamicGain
             ? Math.max.apply(undefined, waveform as unknown as number[])
             : 255;
 
+        // Gradient color
+        const color = this.colors[channelNumber].plain;
+        let cached = this.fftGradients[channelNumber];
+        if (
+            cached?.color !== color ||
+            cached.top !== relativeY ||
+            cached.height !== cellHeight
+        ) {
+            const gradient = this.ctx.createLinearGradient(
+                relativeX,
+                relativeY,
+                relativeX,
+                bottomY + cellHeight * 0.5
+            );
+            gradient.addColorStop(0, color);
+            gradient.addColorStop(1, RGBAOpacity(color, 0));
+            cached = {
+                color,
+                top: relativeY,
+                height: cellHeight,
+                gradient
+            };
+            this.fftGradients[channelNumber] = cached;
+        }
+
         // Draw
-        this.ctx.fillStyle = this.colors[channelNumber].gradient;
+        this.ctx.fillStyle = cached.gradient;
         let xPos = relativeX;
         this.ctx.beginPath();
-        this.ctx.moveTo(xPos, relativeY);
+        this.ctx.moveTo(xPos, bottomY);
 
         if (this.logarithmicFrequency) {
             const minNote = 21;
             const noteRange = 88;
             let lastHeight = -Infinity;
             const maxFrequencyInTable = this.synth.context.sampleRate / 2;
-            for (let i = 0; i < waveWidth; i++) {
+            for (let i = 0; i < cellWidth; i++) {
                 // Calculate the MIDI note (from the lowest piano note to the entire MIDI range)
-                const midiNote = minNote + (i / waveWidth) * noteRange;
+                const midiNote = minNote + (i / cellWidth) * noteRange;
                 const targetFrequency = 440 * Math.pow(2, (midiNote - 69) / 12);
                 const fftIndex = Math.floor(
                     (targetFrequency / maxFrequencyInTable) * fftSize
@@ -635,43 +671,62 @@ export class LiveRenderer extends BaseRenderer<LiveKeyboard> {
                 if (this.exponentialGain) {
                     this.ctx.lineTo(
                         xPos,
-                        relativeY +
-                            Math.pow(value, EXPONENTIAL_GAIN) * multiplier
+                        bottomY + Math.pow(value, EXPONENTIAL_GAIN) * multiplier
                     );
                 } else {
-                    this.ctx.lineTo(xPos, relativeY + value * multiplier);
+                    this.ctx.lineTo(xPos, bottomY + value * multiplier);
                 }
 
                 xPos += 1;
             }
         } else {
-            const step = waveWidth / waveform.length;
+            const step = cellWidth / waveform.length;
             for (const sample of waveform) {
                 const value = sample / max;
                 if (this.exponentialGain) {
                     this.ctx.lineTo(
                         xPos,
-                        relativeY +
-                            Math.pow(value, EXPONENTIAL_GAIN) * multiplier
+                        bottomY + Math.pow(value, EXPONENTIAL_GAIN) * multiplier
                     );
                 } else {
-                    this.ctx.lineTo(xPos, relativeY + value * multiplier);
+                    this.ctx.lineTo(xPos, bottomY + value * multiplier);
                 }
                 xPos += step;
             }
         }
-        this.ctx.lineTo(relativeX + waveWidth, relativeY);
+        this.ctx.lineTo(relativeX + cellWidth, bottomY);
         this.ctx.fill();
     }
 
     protected renderSplitSpectrum() {
-        const waveWidth = this.width / 4;
-        const waveHeight = this.height / 4;
-        for (let i = 0; i < this.channelAnalysers.length; i++) {
-            if (this.parts[i].efxAssign || this.parts[i].xgInsertion) {
-                this.drawEFX(i);
+        const { channels, columns, rows } = this.getWaveformGrid();
+        const cellHeight = this.height / rows;
+
+        const channelCount = channels.length;
+        for (let gridIdx = 0; gridIdx < channelCount; gridIdx++) {
+            const channel = channels[gridIdx];
+            const row = Math.floor(gridIdx / columns);
+            const globalRowStart = row * columns;
+            const globalRowEnd = Math.min((row + 1) * columns, channelCount);
+            const itemsInRow = globalRowEnd - globalRowStart;
+            const cellWidth = this.width / itemsInRow;
+            const colInRow = gridIdx - globalRowStart;
+            const relativeX = colInRow * cellWidth;
+            const relativeY = row * cellHeight;
+
+            if (
+                this.parts[channel].efxAssign ||
+                this.parts[channel].xgInsertion
+            ) {
+                this.drawEFX(channel);
             }
-            this.renderSingleFft(i, waveWidth, waveHeight);
+            this.renderSingleFft(
+                channel,
+                relativeX,
+                relativeY,
+                cellWidth,
+                cellHeight
+            );
         }
     }
 

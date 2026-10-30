@@ -19,24 +19,41 @@ export function _setRendererMode(
     const generalAnalyserSettings = document.querySelector(
         "#renderer_analyser_settings"
     )!;
+    const renderOnlyUsedSetting = document
+        .querySelector("#render_only_used_toggler")!
+        .closest(".setting")!;
     Ut.show(generalAnalyserSettings);
     this.renderer.setRendererMode(mode);
     // The delay depends on the renderer mode
     this.setTimeDelay(this.renderer.analyserFftSize);
-    if (mode === rendererModes.none) {
-        Ut.hide(freqSettings);
-        Ut.hide(waveformSettings);
-        Ut.hide(generalAnalyserSettings);
-    } else if (
-        mode === rendererModes.waveformsMode ||
-        mode === rendererModes.filledWaveformsMode
-    ) {
-        // Show appropriate settings
-        Ut.show(waveformSettings);
-        Ut.hide(freqSettings);
-    } else {
-        Ut.hide(waveformSettings);
-        Ut.show(freqSettings);
+    switch (mode) {
+        case rendererModes.none: {
+            Ut.hide(freqSettings);
+            Ut.hide(waveformSettings);
+            Ut.hide(generalAnalyserSettings);
+            Ut.hide(renderOnlyUsedSetting);
+            break;
+        }
+        case rendererModes.waveformsMode:
+        case rendererModes.filledWaveformsMode: {
+            // Show appropriate settings
+            Ut.show(waveformSettings);
+            Ut.hide(freqSettings);
+            Ut.show(renderOnlyUsedSetting);
+            break;
+        }
+        case rendererModes.spectrumSplitMode: {
+            Ut.hide(waveformSettings);
+            Ut.show(freqSettings);
+            Ut.show(renderOnlyUsedSetting);
+            break;
+        }
+        default: {
+            Ut.hide(waveformSettings);
+            Ut.show(freqSettings);
+            Ut.hide(renderOnlyUsedSetting);
+            break;
+        }
     }
 }
 
@@ -151,6 +168,12 @@ export function _createRendererHandler(this: SpessaSynthSettings) {
     // Stabilize waveforms
     rendererControls.stabilizeWaveforms.addEventListener("click", () => {
         this.renderer.stabilizeWaveforms = !this.renderer.stabilizeWaveforms;
+        this.saveSettings();
+    });
+
+    // Render only used
+    rendererControls.renderOnlyUsed.addEventListener("click", () => {
+        this.renderer.renderOnlyUsed = !this.renderer.renderOnlyUsed;
         this.saveSettings();
     });
 

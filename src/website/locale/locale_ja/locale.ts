@@ -24,7 +24,7 @@ export const localeJapanese = {
     },
 
     // Top bar buttons
-    midiUploadButton: "MIDIファイルをアップロード",
+    songUploadLocale: "曲をアップロード",
 
     extraBank: {
         title: "追加バンクの選択",

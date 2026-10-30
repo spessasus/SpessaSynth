@@ -30,7 +30,7 @@ export const localePortuguese = {
     },
 
     // Top bar buttons
-    midiUploadButton: "Envie seus arquivos MIDI",
+    songUploadLocale: "Envie suas músicas",
 
     exportFile: exportFile,
 

@@ -51,6 +51,7 @@ export interface SavedSettings {
         dynamicGain: boolean;
         exponentialGain: boolean;
         logarithmicFrequency: boolean;
+        renderOnlyUsed: boolean;
     };
     midi: {
         output: null | string;
@@ -105,7 +106,8 @@ export const DEFAULT_SAVED_SETTINGS: SavedSettings = {
         showPresetNames: true,
         showVisualPitch: true,
         renderDotDisplay: true,
-        exponentialGain: true
+        exponentialGain: true,
+        renderOnlyUsed: false
     }
 };
 export const DEFAULT_CONFIG_FILE: ConfigFile = {

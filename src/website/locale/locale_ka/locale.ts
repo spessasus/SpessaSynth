@@ -22,7 +22,7 @@ export const localeGeorgian = {
     },
 
     // Ზედა პანელის ღილაკები
-    midiUploadButton: "ატვირთეთ MIDI ფაილები",
+    songUploadLocale: "ატვირთეთ კომპოზიციები",
 
     extraBank: {
         title: "დამატებითი ბანკის არჩევა",

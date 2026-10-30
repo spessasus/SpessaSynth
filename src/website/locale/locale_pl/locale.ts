@@ -22,7 +22,7 @@ export const localePolish = {
     },
 
     // Top bar buttons
-    midiUploadButton: "Wgraj Twoje pliki MIDI",
+    songUploadLocale: "Wgraj Twoje utwory",
     midiRenderButton: {
         title: "Eksportuj audio",
         description: "Zapisz audio do pliku WAV lub MIDI"

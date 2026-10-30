@@ -21,7 +21,7 @@ export const localeEnglish = {
     },
 
     // Top bar buttons
-    midiUploadButton: "Upload your MIDI files",
+    songUploadLocale: "Upload your songs",
 
     extraBank: {
         title: "Extra bank selection",

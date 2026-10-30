@@ -39,8 +39,8 @@
         "fflate": "^0.8.3",
         "jszip": "^3.10.2",
         "mediabunny": "^1.61.3",
-        "spessasynth_core": "latest",
-        "spessasynth_lib": "latest",
+        "spessasynth_core": "file:../spessasynth_core",
+        "spessasynth_lib": "file:../spessasynth_lib",
         "wasm-media-encoders": "^0.7.0"
     },
     "allowScripts": {

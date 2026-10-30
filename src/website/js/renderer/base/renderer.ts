@@ -1,7 +1,11 @@
 import { calculateRGB, RGBAOpacity } from "../../utils/calculate_rgb.js";
 import { renderFullFrame } from "./render.js";
 import { computeNotePositions } from "./compute_note_positions.js";
-import { renderSingleWaveform, renderWaveforms } from "./render_waveforms.js";
+import {
+    calculateGridDimensions,
+    renderSingleWaveform,
+    renderWaveforms
+} from "./render_waveforms.js";
 import {
     BasicMIDI,
     MIDI_DRUM_CHANNEL,
@@ -45,6 +49,7 @@ export interface RendererSnapshot {
     drawActiveNotes: boolean;
     showVisualPitch: boolean;
     renderDotDisplay: boolean;
+    renderOnlyUsed: boolean;
     stabilizeWaveforms: boolean;
     dynamicGain: boolean;
     exponentialGain: boolean;
@@ -171,6 +176,7 @@ export abstract class BaseRenderer<K extends BaseKeyboard = BaseKeyboard> {
     public drawActiveNotes = true;
     public showVisualPitch = true;
     public renderDotDisplay = true;
+    public renderOnlyUsed = false;
     public showFps = true;
     public showEngineMode = true;
     public vertical = false;
@@ -385,6 +391,51 @@ export abstract class BaseRenderer<K extends BaseKeyboard = BaseKeyboard> {
         this.rendererMode = mode;
     }
 
+    public getWaveformGrid(): {
+        channels: number[];
+        columns: number;
+        rows: number;
+    } {
+        const usedPartsSize = this.programTracker.usedParts.size;
+        let channels: number[];
+        if (
+            (this.rendererMode === rendererModes.waveformsMode ||
+                this.rendererMode === rendererModes.filledWaveformsMode ||
+                this.rendererMode === rendererModes.spectrumSplitMode) &&
+            this.renderOnlyUsed &&
+            usedPartsSize > 0
+        ) {
+            channels = Array.from(this.programTracker.usedParts).sort(
+                (a, b) => a - b
+            );
+        } else {
+            channels = [];
+            for (let i = 0; i < this.parts.length; i++) {
+                channels.push(i);
+            }
+        }
+
+        const dims = calculateGridDimensions(channels.length);
+        const columns = dims[0];
+        const rows = dims[1];
+
+        // Ensure drums land in the last row when it's partial
+        // So they are wide
+        const channelCount = channels.length;
+        const lastRowFull = channelCount % columns === 0;
+        if (!lastRowFull) {
+            const firstIndexInLastRow = (rows - 1) * columns;
+            const drumIndex = channels.indexOf(MIDI_DRUM_CHANNEL);
+            if (drumIndex !== -1 && drumIndex < firstIndexInLastRow) {
+                const swapChannel = channels[firstIndexInLastRow];
+                channels[firstIndexInLastRow] = 9;
+                channels[drumIndex] = swapChannel;
+            }
+        }
+
+        return { channels, columns, rows };
+    }
+
     public calculateNoteTimes(mid: BasicMIDI) {
         const MIN_NOTE_TIME = 0.02;
         const times = mid.getNoteTimes(MIN_NOTE_TIME);
@@ -430,6 +481,7 @@ export abstract class BaseRenderer<K extends BaseKeyboard = BaseKeyboard> {
             drawActiveNotes: this.drawActiveNotes,
             showVisualPitch: this.showVisualPitch,
             renderDotDisplay: this.renderDotDisplay,
+            renderOnlyUsed: this.renderOnlyUsed,
             stabilizeWaveforms: this.stabilizeWaveforms,
             dynamicGain: this.dynamicGain,
             exponentialGain: this.exponentialGain,
@@ -460,6 +512,7 @@ export abstract class BaseRenderer<K extends BaseKeyboard = BaseKeyboard> {
         this.drawActiveNotes = snapshot.drawActiveNotes;
         this.showVisualPitch = snapshot.showVisualPitch;
         this.renderDotDisplay = snapshot.renderDotDisplay;
+        this.renderOnlyUsed = snapshot.renderOnlyUsed;
         this.stabilizeWaveforms = snapshot.stabilizeWaveforms;
         this.dynamicGain = snapshot.dynamicGain;
         this.exponentialGain = snapshot.exponentialGain;

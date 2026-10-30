@@ -21,7 +21,7 @@ export const localeChinese = {
     },
 
     // Top bar buttons
-    midiUploadButton: "上传您的 MIDI 文件",
+    songUploadLocale: "上传您的歌曲",
 
     extraBank: {
         title: "额外音色库选择",

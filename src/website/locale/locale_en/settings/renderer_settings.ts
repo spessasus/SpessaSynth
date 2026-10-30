@@ -86,5 +86,11 @@ export const rendererSettingsLocale = {
     toggleStabilizeWaveforms: {
         title: "Stabilize waveforms",
         description: "Enable oscilloscope triggering"
+    },
+
+    toggleRenderOnlyUsed: {
+        title: "Render only used",
+        description:
+            "Show only waveforms for channels that are used in the current MIDI"
     }
 };

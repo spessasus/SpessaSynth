@@ -604,10 +604,22 @@ export class OfflineRenderer extends BaseRenderer {
     }
 
     private renderStraightWaveforms() {
-        const waveWidth = this.width / 4;
-        const waveHeight = this.height / 4;
+        const columns = 4;
+        const rows = 4;
+        const cellWidth = this.width / columns;
+        const cellHeight = this.height / rows;
         for (let ch = 0; ch < this.parts.length; ch++) {
-            this.renderSingleWaveform(ch, true, waveWidth, waveHeight);
+            const x = ch % columns;
+            const y = Math.floor(ch / columns);
+            this.renderSingleWaveform(
+                ch,
+                x * cellWidth,
+                y * cellHeight,
+                cellWidth,
+                cellHeight,
+                true,
+                false
+            );
         }
     }
 

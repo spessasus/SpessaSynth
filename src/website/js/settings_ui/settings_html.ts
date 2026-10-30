@@ -61,6 +61,13 @@ export const settingsHtml = `
                     <span class='switch_slider'></span>
                 </label>
             </div>
+            <div class='switch_label setting'>
+                <label for='render_only_used_toggler' translate-path-title='locale.settings.rendererSettings.toggleRenderOnlyUsed'></label>
+                <label class='switch'>
+                    <input type='checkbox' id='render_only_used_toggler'>
+                    <span class='switch_slider'></span>
+                </label>
+            </div>
         </div>
         
         <div id='renderer_frequency_settings' class='hidden'>

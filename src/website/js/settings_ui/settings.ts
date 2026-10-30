@@ -396,6 +396,9 @@ export class SpessaSynthSettings {
                 stabilizeWaveforms: document.querySelector<HTMLInputElement>(
                     "#stabilize_waveforms_toggler"
                 )!,
+                renderOnlyUsed: document.querySelector<HTMLInputElement>(
+                    "#render_only_used_toggler"
+                )!,
 
                 exponentialGain: document.querySelector<HTMLInputElement>(
                     "#exponential_gain_toggler"

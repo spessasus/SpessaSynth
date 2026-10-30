@@ -22,7 +22,7 @@ export const localeRussian = {
     },
 
     // Кнопки верхней панели
-    midiUploadButton: "Загрузить MIDI-файлы",
+    songUploadLocale: "Загрузить песни",
 
     extraBank: {
         title: "Выбор дополнительного банка",

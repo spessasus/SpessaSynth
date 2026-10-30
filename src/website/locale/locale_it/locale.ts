@@ -24,7 +24,7 @@ export const localeItalian = {
     },
 
     // Top bar buttons
-    midiUploadButton: "Carica i tuoi file MIDI",
+    songUploadLocale: "Carica i tuoi brani",
 
     extraBank: {
         title: "Selezione bank aggiuntivo",

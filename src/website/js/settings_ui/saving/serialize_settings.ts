@@ -33,6 +33,7 @@ export function _serializeSettings(this: SpessaSynthSettings): SavedSettings {
             dynamicGain: this.renderer.dynamicGain,
             exponentialGain: this.renderer.exponentialGain,
             logarithmicFrequency: this.renderer.logarithmicFrequency,
+            renderOnlyUsed: this.renderer.renderOnlyUsed,
             keyRange: this.renderer.keyRange
         },
 

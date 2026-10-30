@@ -5,37 +5,54 @@ export const STABILIZE_WAVEFORMS_FFT_MULTIPLIER = 4;
 
 const WAVE_GAIN = 0.7;
 
+// Tuned like corrscope kinda
+export function calculateGridDimensions(count: number): [number, number] {
+    if (count <= 0) {
+        return [4, 4];
+    }
+
+    // Sqrt = NxN
+    const sqrt = Math.round(Math.sqrt(count));
+    if (sqrt * sqrt === count) {
+        return [sqrt, sqrt];
+    }
+
+    const maxRows = Math.ceil(Math.sqrt(count)) + 1;
+    const cols = Math.ceil(count / maxRows);
+    const rows = Math.ceil(count / cols);
+    return [cols, rows];
+}
+
 /**
  * @param channelNumber
- * @param waveHeight
- * @param waveWidth
+ * @param relativeX
+ * @param relativeY
+ * @param cellWidth
+ * @param cellHeight
  * @param forceStraightLine
  * @param filled filled waveform mode
  */
 export function renderSingleWaveform(
     this: BaseRenderer,
     channelNumber: number,
+    relativeX: number,
+    relativeY: number,
+    cellWidth: number,
+    cellHeight: number,
     forceStraightLine: boolean,
-    waveWidth: number,
-    waveHeight: number,
-    filled = false
+    filled: boolean
 ) {
-    const x = channelNumber % 4;
-    const y = Math.floor(channelNumber / 4);
     const straightLine = () => {
         if (filled) {
             // No straight line for the filled mode
             return;
         }
-        const waveWidth = this.width / 4;
-        const waveHeight = this.height / 4;
-        const relativeX = waveWidth * x;
-        const relativeY = waveHeight * y + waveHeight / 2;
+        const centerY = relativeY + cellHeight / 2;
         this.ctx.lineWidth = this.lineThickness;
         this.ctx.strokeStyle = this.colors[channelNumber].plain;
         this.ctx.beginPath();
-        this.ctx.moveTo(relativeX, relativeY);
-        this.ctx.lineTo(relativeX + waveWidth, relativeY);
+        this.ctx.moveTo(relativeX, centerY);
+        this.ctx.lineTo(relativeX + cellWidth, centerY);
         this.ctx.stroke();
     };
     if (forceStraightLine) {
@@ -60,9 +77,8 @@ export function renderSingleWaveform(
         return;
     }
 
-    const relativeX = waveWidth * x;
-    const relativeY = waveHeight * y + waveHeight / 2;
-    const multiplier = this.waveMultiplier * WAVE_GAIN * waveHeight;
+    const centerY = relativeY + cellHeight / 2;
+    const multiplier = this.waveMultiplier * WAVE_GAIN * cellHeight;
 
     // Draw
     this.ctx.lineWidth = this.lineThickness;
@@ -92,8 +108,8 @@ export function renderSingleWaveform(
     }
 
     const dataLength = renderEnd - renderStart;
-    const samplesPerPixel = dataLength / waveWidth;
-    const step = waveWidth / length;
+    const samplesPerPixel = dataLength / cellWidth;
+    const step = cellWidth / length;
 
     const strokeChunk = filled ? Infinity : this.waveformStrokeChunk;
     let points = 0;
@@ -110,7 +126,7 @@ export function renderSingleWaveform(
 
     this.ctx.beginPath();
     if (filled) {
-        this.ctx.moveTo(relativeX, relativeY);
+        this.ctx.moveTo(relativeX, centerY);
     }
     if (samplesPerPixel >= 2) {
         // Draw the lowest and the highest sample of every pixel column,
@@ -140,27 +156,24 @@ export function renderSingleWaveform(
             const second = Math.max(minIndex, maxIndex);
             lineTo(
                 relativeX + (first - windowStart) * step,
-                relativeY + waveform[first] * multiplier
+                centerY + waveform[first] * multiplier
             );
             if (second !== first) {
                 lineTo(
                     relativeX + (second - windowStart) * step,
-                    relativeY + waveform[second] * multiplier
+                    centerY + waveform[second] * multiplier
                 );
             }
         }
     } else {
         let xPos = relativeX + (renderStart - windowStart) * step;
         for (let i = renderStart; i < renderEnd; i++) {
-            lineTo(xPos, relativeY + waveform[i] * multiplier);
+            lineTo(xPos, centerY + waveform[i] * multiplier);
             xPos += step;
         }
     }
     if (filled) {
-        this.ctx.lineTo(
-            relativeX + (renderEnd - windowStart) * step,
-            relativeY
-        );
+        this.ctx.lineTo(relativeX + (renderEnd - windowStart) * step, centerY);
         this.ctx.fill();
     } else {
         this.ctx.stroke();
@@ -176,18 +189,42 @@ export function renderWaveforms(this: BaseRenderer, forceStraightLine = false) {
 
         case rendererModes.filledWaveformsMode:
         case rendererModes.waveformsMode: {
-            const waveWidth = this.width / 4;
-            const waveHeight = this.height / 4;
-            for (let i = 0; i < this.parts.length; i++) {
-                if (this.parts[i].efxAssign || this.parts[i].xgInsertion) {
-                    this.drawEFX(i);
+            const { channels, columns, rows } = this.getWaveformGrid();
+            const cellHeight = this.height / rows;
+            const filled =
+                this.rendererMode === rendererModes.filledWaveformsMode;
+
+            const channelCount = channels.length;
+            for (let gridIdx = 0; gridIdx < channelCount; gridIdx++) {
+                const channel = channels[gridIdx];
+                const row = Math.floor(gridIdx / columns);
+                const globalRowStart = row * columns;
+                const globalRowEnd = Math.min(
+                    (row + 1) * columns,
+                    channelCount
+                );
+                const itemsInRow = globalRowEnd - globalRowStart;
+                // The actual width per cell in this row (stretch to fill)
+                const cellWidth = this.width / itemsInRow;
+                // Position within the row
+                const colInRow = gridIdx - globalRowStart;
+                const relativeX = colInRow * cellWidth;
+                const relativeY = row * cellHeight;
+
+                if (
+                    this.parts[channel].efxAssign ||
+                    this.parts[channel].xgInsertion
+                ) {
+                    this.drawEFX(channel);
                 }
                 this.renderSingleWaveform(
-                    i,
+                    channel,
+                    relativeX,
+                    relativeY,
+                    cellWidth,
+                    cellHeight,
                     forceStraightLine,
-                    waveWidth,
-                    waveHeight,
-                    this.rendererMode === rendererModes.filledWaveformsMode
+                    filled
                 );
             }
             return;

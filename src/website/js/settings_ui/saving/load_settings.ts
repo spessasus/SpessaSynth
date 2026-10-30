@@ -108,6 +108,11 @@ export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
     renderer.stabilizeWaveforms = stabilize;
     rendererControls.stabilizeWaveforms.checked = stabilize;
 
+    // Render only used
+    const renderOnlyUsed = rendererValues.renderOnlyUsed;
+    renderer.renderOnlyUsed = renderOnlyUsed;
+    rendererControls.renderOnlyUsed.checked = renderOnlyUsed;
+
     // Dynamic gain
     const dynamic = rendererValues.dynamicGain;
     renderer.dynamicGain = dynamic;

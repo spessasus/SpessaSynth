@@ -48,8 +48,6 @@ export function renderFullFrame(
         this.rendererMode !== rendererModes.spectrumSingleMode &&
         this.rendererMode !== rendererModes.none
     ) {
-        const waveWidth = this.width / 4;
-        const waveHeight = this.height / 4;
         // Setup font
         // Scale down on mobile
         const devicePixelRatio =
@@ -62,12 +60,21 @@ export function renderFullFrame(
         this.ctx.font = `${fontSize}px monospace`;
         this.ctx.fillStyle = this.hudColor;
         const presetNames = this.programTracker.presetNames;
-        // For every waveform
-        for (let part = 0; part < 16; part++) {
-            const x = part % 4;
-            const y = Math.floor(part / 4);
-            const relativeX = waveWidth * x;
-            let relativeY = waveHeight * y;
+
+        const { channels, columns, rows } = this.getWaveformGrid();
+        const cellHeight = this.height / rows;
+        const channelCount = channels.length;
+
+        for (let gridIdx = 0; gridIdx < channelCount; gridIdx++) {
+            const part = channels[gridIdx];
+            const row = Math.floor(gridIdx / columns);
+            const globalRowStart = row * columns;
+            const globalRowEnd = Math.min((row + 1) * columns, channelCount);
+            const itemsInRow = globalRowEnd - globalRowStart;
+            const cellWidth = this.width / itemsInRow;
+            const colInRow = gridIdx - globalRowStart;
+            const relativeX = colInRow * cellWidth;
+            let relativeY = row * cellHeight;
             // Check for every channel that uses this waveform
             for (let chan = part; chan < presetNames.length; chan += 16) {
                 // If used (by MIDI file) or currently active part (by something external)
