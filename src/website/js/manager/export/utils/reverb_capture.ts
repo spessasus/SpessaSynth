@@ -1,5 +1,5 @@
 // Copied from spessasynth_lib
-import type { GSReverbProcessor } from "spessasynth_core";
+import type { GSReverbParameter, GSReverbProcessor } from "spessasynth_core";
 import { BLOCK_SIZE } from "../render_audio_data.ts";
 
 export class ReverbCapture implements GSReverbProcessor {
@@ -20,6 +20,15 @@ export class ReverbCapture implements GSReverbProcessor {
             preLowpass: this.preLowpass,
             time: this.time
         };
+    }
+
+    public applySnapshot(snapshot: GSReverbParameter) {
+        this.character = snapshot.character;
+        this.delayFeedback = snapshot.delayFeedback;
+        this.level = snapshot.level;
+        this.preDelayTime = snapshot.preDelayTime;
+        this.preLowpass = snapshot.preLowpass;
+        this.time = snapshot.time;
     }
 
     public process(

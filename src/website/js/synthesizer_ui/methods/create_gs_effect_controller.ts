@@ -5,16 +5,17 @@ import type {
     GSReverbParams
 } from "./gs_effect_params.ts";
 import { Meter } from "./synthui_meter.ts";
-import { sendAddress } from "./send_address.ts";
 import { LOCALE_PATH, SynthesizerUI } from "../synthetizer_ui.ts";
 import { Ut } from "../../utils/other.js";
+import type { MIDIMessage } from "spessasynth_core";
 
 export function createGSEffectController<
     K extends GSDelayParams | GSChorusParams | GSReverbParams
 >(
     this: SynthesizerUI,
     data: GSParamType<K>,
-    path: string
+    path: string,
+    getMessage: (parameter: K | "macro", value: number) => MIDIMessage
 ): Record<K, Meter> & {
     wrapper: HTMLElement;
     macro: HTMLSelectElement;
@@ -63,29 +64,27 @@ export function createGSEffectController<
     wrapper.append(macroLockWrapper);
 
     let isEffectLocked = false;
+    const send = (parameter: K | "macro", value: number) => {
+        if (isEffectLocked) {
+            this.synth.setSystemParameter(data.lockName, false);
+        }
+        this.synth.systemExclusive(getMessage(parameter, value).data);
+        if (isEffectLocked) {
+            this.synth.setSystemParameter(data.lockName, true);
+        }
+    };
 
     // Macro
     const macroSelector = document.createElement("select");
     macroSelector.classList.add("synthui_button");
-    for (let i = 0; i < data.macros.length; i++) {
-        const macro = data.macros[i];
+    for (const [i, name] of data.macros.entries()) {
         const opt = document.createElement("option");
-        opt.textContent = macro.name;
+        opt.textContent = name;
         opt.value = i.toString();
         macroSelector.append(opt);
     }
-    const a = data.macroAddress;
-
     macroSelector.addEventListener("change", () => {
-        const v = Number.parseInt(macroSelector.value);
-        if (isEffectLocked) {
-            this.synth.setSystemParameter(data.lockName, false);
-        }
-
-        sendAddress(this.synth, 0x40, 0x01, a, [v]);
-        if (isEffectLocked) {
-            this.synth.setSystemParameter(data.lockName, true);
-        }
+        send("macro", Number.parseInt(macroSelector.value));
     });
     macroLockWrapper.append(macroSelector);
 
@@ -116,8 +115,6 @@ export function createGSEffectController<
     wrapper.append(paramWrapper);
     const r: Partial<Record<K, Meter>> = {};
     for (const param of data.params) {
-        // Prevent change!
-        const a = param.a;
         const meter = new Meter({
             color: "",
             localePath: path + param.p,
@@ -126,13 +123,7 @@ export function createGSEffectController<
             max: param?.r?.max ?? 127,
             def: 0,
             onEdit: (v) => {
-                if (isEffectLocked) {
-                    this.synth.setSystemParameter(data.lockName, false);
-                }
-                sendAddress(this.synth, 0x40, 0x01, a, [Math.round(v)]);
-                if (isEffectLocked) {
-                    this.synth.setSystemParameter(data.lockName, true);
-                }
+                send(param.p, Math.round(v));
             },
             transform: param?.td
         });

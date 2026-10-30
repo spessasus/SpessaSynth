@@ -27,7 +27,6 @@ import {
 } from "../../utils/icons.ts";
 import { Ut } from "../../utils/other.js";
 import { Selector } from "./synthui_selector.ts";
-import { sendAddress } from "./send_address.ts";
 
 export function appendNewController(
     this: SynthesizerUI,
@@ -314,19 +313,32 @@ export function appendNewController(
         false // Don't allow locking portamento control
     );
 
+    // These parameters can only be set via GS system exclusive
+    const sendGSChannelParameter = (
+        param: "velocitySenseDepth" | "velocitySenseOffset",
+        value: number
+    ) => {
+        const portChannel = channelNumber % 16;
+        for (const message of MIDIUtils.setChannelMIDIParameter(
+            0,
+            portChannel,
+            "gs",
+            param,
+            value
+        )) {
+            this.synth.systemExclusive(
+                message.data,
+                channelNumber - portChannel
+            );
+        }
+    };
+
     // Velocity Sense Depth
     createMIDIParamMeterHelper(
         "velocitySenseDepth",
         "channelController.velocitySenseDepthMeter",
         (val) => {
-            sendAddress(
-                this.synth,
-                0x40,
-                0x10 | MIDIUtils.channelToGSPart(channelNumber % 16),
-                0x1a,
-                [Math.round(val)],
-                channelNumber - (channelNumber % 16)
-            );
+            sendGSChannelParameter("velocitySenseDepth", Math.round(val));
         },
         64
     );
@@ -336,14 +348,7 @@ export function appendNewController(
         "velocitySenseOffset",
         "channelController.velocitySenseOffsetMeter",
         (val) => {
-            sendAddress(
-                this.synth,
-                0x40,
-                0x10 | MIDIUtils.channelToGSPart(channelNumber % 16),
-                0x1b,
-                [Math.round(val)],
-                channelNumber - (channelNumber % 16)
-            );
+            sendGSChannelParameter("velocitySenseOffset", Math.round(val));
         },
         64
     );

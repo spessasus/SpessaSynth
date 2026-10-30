@@ -532,7 +532,7 @@ export class OfflineRenderer extends BaseRenderer {
                     const data = e.data;
                     switch (data.effect) {
                         case "gsInsertion": {
-                            if (data.parameter === 0) {
+                            if (data.parameter === "type") {
                                 this.texts.efxName =
                                     gsInsertionEffectData.find(
                                         (fx) => fx.type === data.value

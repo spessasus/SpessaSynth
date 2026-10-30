@@ -4,14 +4,28 @@ import {
 } from "./gs_effect_params.ts";
 import { Meter } from "./synthui_meter.ts";
 import { LOCALE_PATH, SynthesizerUI } from "../synthetizer_ui.ts";
-import { sendAddress } from "./send_address.ts";
 import { Ut } from "../../utils/other.js";
-import { MIDIUtils } from "spessasynth_core";
+import { type GSInsertionParameterMessage, MIDIUtils } from "spessasynth_core";
 
 export function createGSInsertionController(
     this: SynthesizerUI
 ): GSInsertionController {
     const insertionEffects = gsInsertionEffectData;
+
+    const send = (
+        parameter: GSInsertionParameterMessage["parameter"],
+        value: number
+    ) => {
+        if (this.insertionLock) {
+            this.synth.setSystemParameter("gsInsertionLock", false);
+        }
+        this.synth.systemExclusive(
+            MIDIUtils.setGSInsertionParameter(0, parameter, value).data
+        );
+        if (this.insertionLock) {
+            this.synth.setSystemParameter("gsInsertionLock", true);
+        }
+    };
 
     const wrapper = document.createElement("div");
     wrapper.classList.add("effect_wrapper", "synthui_tab");
@@ -50,18 +64,7 @@ export function createGSInsertionController(
         effectSelector.append(opt);
     }
     effectSelector.addEventListener("change", () => {
-        const v = Number.parseInt(effectSelector.value);
-        if (this.insertionLock) {
-            this.synth.setSystemParameter("gsInsertionLock", false);
-        }
-
-        const msb = (v >> 8) & 0x7f;
-        const lsb = v & 0x7f;
-
-        sendAddress(this.synth, 0x40, 0x03, 0x00, [msb, lsb]);
-        if (this.insertionLock) {
-            this.synth.setSystemParameter("gsInsertionLock", true);
-        }
+        send("type", Number.parseInt(effectSelector.value));
     });
     typeLockWrapper.append(effectSelector);
 
@@ -104,13 +107,7 @@ export function createGSInsertionController(
         max: 127,
         def: 40,
         onEdit: (v) => {
-            if (this.insertionLock) {
-                this.synth.setSystemParameter("gsInsertionLock", false);
-            }
-            sendAddress(this.synth, 0x40, 0x03, 0x17, [Math.round(v)]);
-            if (this.insertionLock) {
-                this.synth.setSystemParameter("gsInsertionLock", true);
-            }
+            send("sendLevelToReverb", Math.round(v));
         }
     });
     effectSendsWrapper.append(reverb.div);
@@ -122,13 +119,7 @@ export function createGSInsertionController(
         max: 127,
         def: 0,
         onEdit: (v) => {
-            if (this.insertionLock) {
-                this.synth.setSystemParameter("gsInsertionLock", false);
-            }
-            sendAddress(this.synth, 0x40, 0x03, 0x18, [Math.round(v)]);
-            if (this.insertionLock) {
-                this.synth.setSystemParameter("gsInsertionLock", true);
-            }
+            send("sendLevelToChorus", Math.round(v));
         }
     });
     effectSendsWrapper.append(chorus.div);
@@ -140,13 +131,7 @@ export function createGSInsertionController(
         max: 127,
         def: 0,
         onEdit: (v) => {
-            if (this.insertionLock) {
-                this.synth.setSystemParameter("gsInsertionLock", false);
-            }
-            sendAddress(this.synth, 0x40, 0x03, 0x19, [Math.round(v)]);
-            if (this.insertionLock) {
-                this.synth.setSystemParameter("gsInsertionLock", true);
-            }
+            send("sendLevelToDelay", Math.round(v));
         }
     });
     effectSendsWrapper.append(delay.div);
@@ -169,8 +154,6 @@ export function createGSInsertionController(
             controllerGroups.push(controllerGroup);
 
             for (const param of paramGroup) {
-                // Prevent change!
-                const a = param.a;
                 const meter = new Meter({
                     color: "",
                     rawText: param.p + ": ",
@@ -178,24 +161,13 @@ export function createGSInsertionController(
                     max: param?.r?.max ?? 127,
                     def: param.d,
                     onEdit: (v) => {
-                        if (this.insertionLock) {
-                            this.synth.setSystemParameter(
-                                "gsInsertionLock",
-                                false
-                            );
-                        }
-                        sendAddress(this.synth, 0x40, 0x03, a, [Math.round(v)]);
-                        if (this.insertionLock) {
-                            this.synth.setSystemParameter(
-                                "gsInsertionLock",
-                                true
-                            );
-                        }
+                        // Effect parameter 0 is at address 3
+                        send(param.a - 3, Math.round(v));
                     },
                     transform: param?.td
                 });
                 controllerGroup.append(meter.div);
-                controllers.set(param.a, meter);
+                controllers.set(param.a - 3, meter);
             }
         }
         params.set(insertionEffect.type, {
@@ -258,14 +230,15 @@ export function createGSInsertionController(
                     false
                 );
             }
-            sendAddress(
-                this.synth,
-                0x40,
-                0x40 | MIDIUtils.channelToGSPart(ch),
-                0x22,
-                isFX ? [1] : [0],
-                offset
-            );
+            for (const message of MIDIUtils.setChannelMIDIParameter(
+                0,
+                ch,
+                "gs",
+                "efxAssign",
+                isFX
+            )) {
+                this.synth.systemExclusive(message.data, offset);
+            }
             if (this.insertionLock) {
                 this.synth.midiChannels[channelNumber].lockMIDIParameter(
                     "efxAssign",
