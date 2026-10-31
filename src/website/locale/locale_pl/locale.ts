@@ -69,6 +69,9 @@ export const localePolish = {
         }
     },
     demoSongButton: "Piosenka demo",
+    demoSongPlay: "Odtwórz",
+    demoSongRemoval:
+        "Jeśli twoja piosenka znajduje się na tej liście i chcesz ją usunąć, napisz na adres spesekspesek@gmail.com, a zostanie usunięta. Piosenki nie są przechowywane w repozytorium SpessaSynth, są hostowane pod adresem https://github.com/spessasus/spessasynth-demo-songs/",
     credits: "Twórcy",
     dropPrompt: "Upuść pliki tutaj...",
 

@@ -86,5 +86,10 @@ export const rendererSettingsLocale = {
     toggleStabilizeWaveforms: {
         title: "Włącz stabilizację fal",
         description: "Włącz stabilizowanie fal dźwiękowych"
+    },
+
+    toggleRenderOnlyUsed: {
+        title: "Renderuj tylko używane",
+        description: "Pokazuj tylko fale dla kanałów używanych w aktualnym MIDI"
     }
 };

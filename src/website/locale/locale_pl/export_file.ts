@@ -118,6 +118,9 @@ export const exportFile = {
                     title: "SoundFont (.sf2, .sf3)",
                     description: "Eksportuj SoundFont"
                 },
+                exportMessage: {
+                    message: "Eksportowanie SoundFonta..."
+                },
 
                 options: {
                     title: "Opcje eksportu SoundFont",
@@ -152,6 +155,9 @@ export const exportFile = {
                         "Eksport do formatu DLS jest ograniczony i może utworzyć uszkodzone pliki.",
                     details: "Więcej informacji",
                     confirm: "Eksportuj i tak"
+                },
+                exportMessage: {
+                    message: "Eksportowanie DLS..."
                 }
             },
 

@@ -67,7 +67,8 @@ export const synthesizerControllerLocale = {
         xgChorus: "Chór XG",
         xgVariation: "Wariacja XG",
         xgInsertion: "Insertion XG",
-        configuration: "Konfiguracja"
+        configuration: "Konfiguracja",
+        gsUserDrumSet: "Perkusja GS użytkownika"
     },
 
     holdPedalDown: "Pedał podtrzymania naciśnięty (Shift)",

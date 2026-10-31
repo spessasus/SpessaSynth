@@ -372,15 +372,10 @@ export const effectsConfig = {
                 description:
                     "Send To Chorus: The amount of the variation output sent to the chorus (system connection only). 64 is 100%."
             },
-            connection: {
-                description:
-                    "Connection: Insertion processes a single part, System uses the Variation send of every channel.",
-                insertion: "Insertion",
-                system: "System"
-            },
             partNumber: {
                 description:
-                    "Part: The part processed by the effect (insertion connection only).",
+                    "Part: The part processed by the effect. System uses the Variation send of every channel.",
+                system: "System",
                 off: "Off"
             }
         },

@@ -8,15 +8,12 @@ import { Meter } from "./synthui_meter.ts";
 import { LOCALE_PATH, type SynthesizerUI } from "../synthetizer_ui.ts";
 import { Ut } from "../../utils/other.js";
 import type { MIDIMessage, XGVariationConnection } from "spessasynth_core";
+import { ProgramTracker } from "../../renderer/base/program_tracker.ts";
 
 /**
  * A single effect block in the controller: a type selector with its parameters.
  */
 interface XGEffectSection {
-    /**
-     * Only for the variation and insertion blocks, 127 is off.
-     */
-    partSelector?: HTMLSelectElement;
     /**
      * Map<parameter number, Meter> for the currently selected type.
      */
@@ -25,6 +22,14 @@ interface XGEffectSection {
      * Shows the parameters of the given type with their default values.
      */
     setType: (type: number) => unknown;
+    /**
+     * Sets the processed part, only used by the blocks with a part number.
+     */
+    setPart: (part: number) => unknown;
+    /**
+     * Updates the part selector and the Dry/Wet visibility to the current connection.
+     */
+    refresh: () => unknown;
 }
 
 /**
@@ -42,6 +47,7 @@ export function createXGEffectController(
     ) => MIDIMessage
 ): XGController {
     let isLocked = false;
+    let isSystemConnection = false;
     const send = (
         parameter: XGParameter | "connection",
         value: number | XGVariationConnection,
@@ -100,32 +106,6 @@ export function createXGEffectController(
     };
     lock.addEventListener("click", toggleLock);
 
-    // Connection (variation only)
-    let connectionSelector: HTMLSelectElement | undefined;
-    if (data.hasConnection) {
-        connectionSelector = document.createElement("select");
-        connectionSelector.classList.add("synthui_button");
-        this.locale.bindObjectProperty(
-            connectionSelector,
-            "title",
-            data.localePath + "connection.description"
-        );
-        for (const connection of ["insertion", "system"] as const) {
-            const opt = document.createElement("option");
-            opt.value = connection;
-            this.locale.bindObjectProperty(
-                opt,
-                "textContent",
-                data.localePath + `connection.${connection}`
-            );
-            connectionSelector.append(opt);
-        }
-        const selector = connectionSelector;
-        selector.addEventListener("change", () =>
-            send("connection", selector.value as XGVariationConnection)
-        );
-    }
-
     // Shared parameters
     const sharedMeters = new Map<XGParameter, Meter>();
     if (data.shared.length > 0) {
@@ -152,22 +132,55 @@ export function createXGEffectController(
         wrapper.append(sharedWrapper);
     }
 
-    // Effect blocks
-    const partSelectors: HTMLSelectElement[] = [];
+    // Add channel trackers
+    // The same way as the keyboard channel selector
+    const tracker = new ProgramTracker();
+    tracker.presetListChange(this.synth.presetList);
+    const channelNames = new Array<{ channel: number; display: HTMLElement }>();
+    const getChannelName = (channel: number) =>
+        tracker.presetNames[channel] || "UNKNOWN";
+
     const addPartOption = (selector: HTMLSelectElement, channel: number) => {
         const opt = document.createElement("option");
         opt.value = channel.toString();
+        const channelLabel = document.createElement("span");
         this.locale.bindObjectProperty(
-            opt,
+            channelLabel,
             "textContent",
             "locale.settings.keyboardSettings.selectedChannel.channelOption",
             [channel + 1]
         );
+        const nameDisplay = document.createElement("span");
+        nameDisplay.textContent = ": " + getChannelName(channel);
+        channelNames.push({ channel, display: nameDisplay });
+        opt.append(channelLabel, nameDisplay);
         opt.style.background = this.channelColors[channel % 16];
         opt.style.color = "rgb(0, 0, 0)";
-        // Keep "off" at the end
-        selector.lastElementChild?.before(opt);
+        selector.append(opt);
     };
+
+    const updateChannelNames = () => {
+        for (const entry of channelNames) {
+            entry.display.textContent = ": " + getChannelName(entry.channel);
+        }
+    };
+
+    this.synth.eventHandler.addEvent(
+        "programChange",
+        `xg-effect-program-change-${data.lockName}`,
+        (e) => {
+            tracker.programChange(e);
+            updateChannelNames();
+        }
+    );
+    this.synth.eventHandler.addEvent(
+        "presetListChange",
+        `xg-effect-preset-list-change-${data.lockName}`,
+        (e) => {
+            tracker.presetListChange(e);
+            updateChannelNames();
+        }
+    );
 
     const typeWrapper = document.createElement("div");
     typeWrapper.style.display = "flex";
@@ -201,7 +214,11 @@ export function createXGEffectController(
         typeWrapper.append(blockSelector);
     }
 
-    const sections: XGEffectSection[] = [];
+    const partSelectors: HTMLSelectElement[] = [];
+    // The index of the next channel to add
+    let channelCount = this.synth.midiChannels.length;
+
+    const sections = new Array<XGEffectSection>();
     for (
         let insertionNumber = 0;
         insertionNumber < data.blockCount;
@@ -223,6 +240,7 @@ export function createXGEffectController(
 
         // Part number
         let partSelector: HTMLSelectElement | undefined;
+        let part = 127;
         if (data.hasPartNumber) {
             const selector = document.createElement("select");
             selector.classList.add("synthui_button");
@@ -231,6 +249,16 @@ export function createXGEffectController(
                 "title",
                 data.localePath + "partNumber.description"
             );
+            if (data.hasConnection) {
+                const system = document.createElement("option");
+                system.value = "system";
+                this.locale.bindObjectProperty(
+                    system,
+                    "textContent",
+                    data.localePath + "partNumber.system"
+                );
+                selector.append(system);
+            }
             const off = document.createElement("option");
             off.value = "127";
             this.locale.bindObjectProperty(
@@ -242,14 +270,21 @@ export function createXGEffectController(
             for (let i = 0; i < this.synth.midiChannels.length; i++) {
                 addPartOption(selector, i);
             }
-            selector.value = "127";
-            selector.addEventListener("change", () =>
+            selector.addEventListener("change", () => {
+                if (selector.value === "system") {
+                    send("connection", "system");
+                    return;
+                }
+                // Leaving the system connection switches back to insertion first
+                if (isSystemConnection) {
+                    send("connection", "insertion");
+                }
                 send(
                     "partNumber",
                     Number.parseInt(selector.value),
                     insertionNumber
-                )
-            );
+                );
+            });
             typeWrapper.append(selector);
             partSelectors.push(selector);
             partSelector = selector;
@@ -270,6 +305,21 @@ export function createXGEffectController(
         blockElements.push(elements);
 
         const controllers = new Map<number, Meter>();
+        const refresh = () => {
+            if (partSelector) {
+                partSelector.value = isSystemConnection
+                    ? "system"
+                    : part.toString();
+                // Unknown channel??
+                if (partSelector.selectedIndex === -1) {
+                    partSelector.value = "127";
+                }
+            }
+            // The Dry/Wet only applies to the insertion connection
+            if (data.hasConnection) {
+                Ut.toggle(controllers.get(9)?.div, !isSystemConnection);
+            }
+        };
         const setType = (type: number) => {
             // Resolve like the synthesizer does
             const effect =
@@ -296,36 +346,30 @@ export function createXGEffectController(
                 paramWrapper.append(meter.div);
                 controllers.set(index, meter);
             }
+            refresh();
         };
         setType(data.defaultType);
 
-        sections.push({ partSelector, controllers, setType });
+        sections.push({
+            controllers,
+            setType,
+            setPart: (value) => {
+                part = value;
+                refresh();
+            },
+            refresh
+        });
     }
 
-    // The part number and Dry/Wet only apply in the insertion connection
-    const updateConnectionVisibility = () => {
-        const section = sections[0];
-        if (!connectionSelector || !section) {
-            return;
-        }
-        const isInsertion = connectionSelector.value === "insertion";
-        Ut.toggle(section.partSelector, isInsertion);
-        Ut.toggle(section.controllers.get(9)?.div, isInsertion);
-    };
-    if (connectionSelector) {
-        connectionSelector.addEventListener(
-            "change",
-            updateConnectionVisibility
-        );
-        typeWrapper.append(connectionSelector);
-        updateConnectionVisibility();
-    }
     typeWrapper.append(lock);
 
     const addNewChannel = () => {
+        tracker.addChannelTracker();
+        tracker.presetListChange(this.synth.presetList);
         for (const selector of partSelectors) {
-            addPartOption(selector, selector.options.length - 1);
+            addPartOption(selector, channelCount);
         }
+        channelCount++;
     };
 
     const update = (
@@ -334,9 +378,9 @@ export function createXGEffectController(
         insertionNumber: number
     ) => {
         if (parameter === "connection") {
-            if (connectionSelector) {
-                connectionSelector.value = value.toString();
-                updateConnectionVisibility();
+            isSystemConnection = value === "system";
+            for (const section of sections) {
+                section.refresh();
             }
             return;
         }
@@ -350,20 +394,11 @@ export function createXGEffectController(
         switch (parameter) {
             case "type": {
                 section.setType(value);
-                updateConnectionVisibility();
                 return;
             }
 
             case "partNumber": {
-                const selector = section.partSelector;
-                if (!selector) {
-                    return;
-                }
-                selector.value = value.toString();
-                // Unknown channel
-                if (selector.selectedIndex === -1) {
-                    selector.value = "127";
-                }
+                section.setPart(value);
                 return;
             }
 

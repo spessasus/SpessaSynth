@@ -27,6 +27,12 @@ export const effectsConfig = {
                 "Emuluje zachowanie Microsoft GS Wavetable Synthesizer'a, które od razu ucina poprzednią nutę na tym samym klawiszu"
         },
 
+        msgsKeyShift: {
+            title: "Przesunięcie klawiszy MSGS",
+            description:
+                "Przesunięcie klawiszy MSGS: Wymuś próbki wysokości zamiast stosowania prawdziwego przesunięcia klawiszy, emulując Microsoft GS Wavetable Synthesizer'a"
+        },
+
         interpolation: {
             description: "Wybierz metodę interpolacji",
             linear: "Interpolacja liniowa",
@@ -296,6 +302,87 @@ export const effectsConfig = {
             description:
                 "Poziom wysyłki do delay: Ten parametr ustawia ilość sygnału efektu wysyłanego do efektu delay. " +
                 "Wyższe wartości powodują wysłanie większej ilości sygnału."
+        }
+    },
+
+    xg: {
+        reverb: {
+            title: "Konfiguracja pogłosu XG",
+            description:
+                "Wybierz typ pogłosu Yamaha XG i skonfiguruj jego brzmienie.",
+            return: {
+                title: "Powrót: ",
+                description:
+                    "Powrót: Poziom wyjściowy efektu. 64 to standardowa głośność, 127 to +6dB."
+            },
+            pan: {
+                title: "Panorama: ",
+                description: "Panorama: Położenie stereo wyjścia efektu."
+            }
+        },
+
+        chorus: {
+            title: "Konfiguracja chóru XG",
+            description:
+                "Wybierz typ chóru Yamaha XG i skonfiguruj jego brzmienie.",
+            return: {
+                title: "Powrót: ",
+                description:
+                    "Powrót: Poziom wyjściowy efektu. 64 to standardowa głośność, 127 to +6dB."
+            },
+            pan: {
+                title: "Panorama: ",
+                description: "Panorama: Położenie stereo wyjścia efektu."
+            },
+            sendToReverb: {
+                title: "Wysyłka do pogłosu: ",
+                description:
+                    "Wysyłka do pogłosu: Ilość sygnału chóru wysyłana do pogłosu. 64 to 100%."
+            }
+        },
+
+        variation: {
+            title: "Konfiguracja Variation XG",
+            description:
+                "Wybierz typ Variation Yamaha XG i skonfiguruj jego brzmienie. " +
+                "Działa jako efekt systemowy lub jako efekt wstawki na pojedynczej partii.",
+            return: {
+                title: "Powrót: ",
+                description:
+                    "Powrót: Poziom wyjściowy efektu. 64 to standardowa głośność, 127 to +6dB."
+            },
+            pan: {
+                title: "Panorama: ",
+                description: "Panorama: Położenie stereo wyjścia efektu."
+            },
+            sendToReverb: {
+                title: "Wysyłka do pogłosu: ",
+                description:
+                    "Wysyłka do pogłosu: Ilość sygnału Variation wysyłana do pogłosu (tylko w trybie systemowym). 64 to 100%."
+            },
+            sendToChorus: {
+                title: "Wysyłka do chóru: ",
+                description:
+                    "Wysyłka do chóru: Ilość sygnału Variation wysyłana do chóru (tylko w trybie systemowym). 64 to 100%."
+            },
+            partNumber: {
+                description:
+                    'Kanał: Kanał przetwarzana przez efekt. "System" używa wysyłki Variation każdego kanału.',
+                system: "System",
+                off: "Wyłączony"
+            }
+        },
+
+        insertion: {
+            title: "Konfiguracja efektu Insertion XG",
+            description:
+                "Wybierz efekt Insertion, jego typ i skonfiguruj jego brzmienie. " +
+                "Każdy efekt Insertion przetwarza pojedynczą partię.",
+            block: "Efekt Insertion {0}",
+            partNumber: {
+                description: "Kanał: Kanał przetwarzana przez efekt wstawki.",
+                off: "Wyłączony"
+            }
         }
     },
 
