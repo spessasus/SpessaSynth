@@ -256,12 +256,12 @@ export class LiveKeyboard extends BaseKeyboard {
         const x =
             ((event.clientX - rect.left) /
                 Math.max(MIN_POINTER_DIMENSION_PX, rect.width)) *
-                this.canvas.width -
+                this.canvas.clientWidth -
             this.bounds.x;
         const y =
             ((event.clientY - rect.top) /
                 Math.max(MIN_POINTER_DIMENSION_PX, rect.height)) *
-                this.canvas.height -
+                this.canvas.clientHeight -
             this.bounds.y;
         return this.checkKeyNumber(x, y);
     }

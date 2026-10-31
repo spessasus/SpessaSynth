@@ -383,6 +383,18 @@ export abstract class BaseRenderer<K extends BaseKeyboard = BaseKeyboard> {
         this._stabilizeWaveforms = v;
     }
 
+    private get actualWidth() {
+        return "clientWidth" in this.canvas
+            ? this.canvas.clientWidth
+            : this.canvas.width;
+    }
+
+    private get actualHeight() {
+        return "clientHeight" in this.canvas
+            ? this.canvas.clientHeight
+            : this.canvas.height;
+    }
+
     public clearRendererMatrix() {
         this.dotMatrix.clear();
     }
@@ -576,7 +588,7 @@ export abstract class BaseRenderer<K extends BaseKeyboard = BaseKeyboard> {
      * Abstracted for offline to paint a background.
      */
     protected clearFrame() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.clearRect(0, 0, this.actualWidth, this.actualHeight);
     }
 
     /**
@@ -621,55 +633,58 @@ export abstract class BaseRenderer<K extends BaseKeyboard = BaseKeyboard> {
 
     protected calculateRenderArea() {
         this.keyboard.vertical = this.vertical;
+        const cssWidth = this.actualWidth;
+        const cssHeight = this.actualHeight;
+
         if (!this.keyboard.shown) {
             // Keyboard is not there
             this.keyboardBounds = { x: 0, y: 0, width: 0, height: 0 };
             this.bounds = {
                 x: 0,
                 y: 0,
-                width: this.canvas.width,
-                height: this.canvas.height
+                width: cssWidth,
+                height: cssHeight
             };
             return;
         }
 
         if (this.vertical) {
             const width = Math.min(
-                this.canvas.width,
-                this.keyboard.getCurrentHeight(this.canvas.height)
+                cssWidth,
+                this.keyboard.getCurrentHeight(cssHeight)
             );
             const keyboardOnLeft = !this.notesFall;
             this.keyboardBounds = {
-                x: keyboardOnLeft ? 0 : this.canvas.width - width,
+                x: keyboardOnLeft ? 0 : cssWidth - width,
                 y: 0,
                 width,
-                height: this.canvas.height
+                height: cssHeight
             };
             this.bounds = {
                 x: keyboardOnLeft ? width : 0,
                 y: 0,
-                width: this.canvas.width - width,
-                height: this.canvas.height
+                width: cssWidth - width,
+                height: cssHeight
             };
             return;
         }
 
         const height = Math.min(
-            this.canvas.height,
-            this.keyboard.getCurrentHeight(this.canvas.width)
+            cssHeight,
+            this.keyboard.getCurrentHeight(cssWidth)
         );
         const keyboardOnTop = !this.notesFall;
         this.keyboardBounds = {
             x: 0,
-            y: keyboardOnTop ? 0 : this.canvas.height - height,
-            width: this.canvas.width,
+            y: keyboardOnTop ? 0 : cssHeight - height,
+            width: cssWidth,
             height
         };
         this.bounds = {
             x: 0,
             y: keyboardOnTop ? height : 0,
-            width: this.canvas.width,
-            height: this.canvas.height - height
+            width: cssWidth,
+            height: cssHeight - height
         };
     }
 

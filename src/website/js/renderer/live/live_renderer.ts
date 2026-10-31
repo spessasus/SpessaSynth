@@ -407,8 +407,11 @@ export class LiveRenderer extends BaseRenderer<LiveKeyboard> {
     }
 
     public updateSize() {
-        this.canvas.width = this.canvas.clientWidth;
-        this.canvas.height = this.canvas.clientHeight;
+        const dpr = window.devicePixelRatio || 1;
+        const rect = this.canvas.getBoundingClientRect();
+        this.canvas.width = Math.round(rect.width * dpr);
+        this.canvas.height = Math.round(rect.height * dpr);
+        this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         this.computeColors(this.colors.map((c) => c.plain));
         this.updateFftSize();
         this.renderOneFrame();
