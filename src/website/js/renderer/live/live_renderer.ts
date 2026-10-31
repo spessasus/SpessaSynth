@@ -721,7 +721,13 @@ export class LiveRenderer extends BaseRenderer<LiveKeyboard> {
                 this.parts[channel].efxAssign ||
                 this.parts[channel].xgInsertion
             ) {
-                this.drawEFX(channel);
+                this.drawEFX(
+                    channel,
+                    relativeX,
+                    relativeY,
+                    cellWidth,
+                    cellHeight
+                );
             }
             this.renderSingleFft(
                 channel,

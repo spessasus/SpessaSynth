@@ -420,6 +420,17 @@ export abstract class BaseRenderer<K extends BaseKeyboard = BaseKeyboard> {
             channels = Array.from(this.programTracker.usedParts).sort(
                 (a, b) => a - b
             );
+            // Include channels that have EFX labels even if they have no notes
+            for (let i = 0; i < this.parts.length; i++) {
+                const part = this.parts[i];
+                if (
+                    (part.efxAssign || part.xgInsertion) &&
+                    !channels.includes(i)
+                ) {
+                    channels.push(i);
+                    channels.sort((a, b) => a - b);
+                }
+            }
         } else {
             channels = [];
             for (let i = 0; i < this.parts.length; i++) {
@@ -790,15 +801,19 @@ export abstract class BaseRenderer<K extends BaseKeyboard = BaseKeyboard> {
     protected abstract renderSplitSpectrum(): void;
     protected abstract renderBigSpectrum(): void;
 
-    protected drawEFX(channel: number) {
+    protected drawEFX(
+        channel: number,
+        relativeX: number,
+        relativeY: number,
+        cellWidth: number,
+        cellHeight: number
+    ) {
         const ctx = this.ctx;
         ctx.fillStyle = this.colors[channel].darker;
-        const x = channel % 4;
-        const y = Math.floor(channel / 4);
-        const waveWidth = this.width / 4;
-        const waveHeight = this.height / 4;
-        const right = waveWidth * x + waveWidth;
-        const top = waveHeight * y;
+        const waveWidth = cellWidth;
+        const waveHeight = cellHeight;
+        const right = relativeX + waveWidth;
+        const top = relativeY;
         const part = this.parts[channel];
         const text = part.efxAssign ? this.texts.efxName : part.xgInsertion;
 

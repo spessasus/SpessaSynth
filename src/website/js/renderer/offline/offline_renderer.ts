@@ -611,10 +611,15 @@ export class OfflineRenderer extends BaseRenderer {
         for (let ch = 0; ch < this.parts.length; ch++) {
             const x = ch % columns;
             const y = Math.floor(ch / columns);
+            const relativeX = x * cellWidth;
+            const relativeY = y * cellHeight;
+            if (this.parts[ch].efxAssign || this.parts[ch].xgInsertion) {
+                this.drawEFX(ch, relativeX, relativeY, cellWidth, cellHeight);
+            }
             this.renderSingleWaveform(
                 ch,
-                x * cellWidth,
-                y * cellHeight,
+                relativeX,
+                relativeY,
                 cellWidth,
                 cellHeight,
                 true,

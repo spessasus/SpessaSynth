@@ -215,7 +215,13 @@ export function renderWaveforms(this: BaseRenderer, forceStraightLine = false) {
                     this.parts[channel].efxAssign ||
                     this.parts[channel].xgInsertion
                 ) {
-                    this.drawEFX(channel);
+                    this.drawEFX(
+                        channel,
+                        relativeX,
+                        relativeY,
+                        cellWidth,
+                        cellHeight
+                    );
                 }
                 this.renderSingleWaveform(
                     channel,
