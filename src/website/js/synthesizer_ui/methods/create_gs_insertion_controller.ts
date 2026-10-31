@@ -76,9 +76,8 @@ export function createGSInsertionController(
         "textContent",
         LOCALE_PATH + "effectsConfig.toggleLock.title"
     );
-    this.locale.bindObjectProperty(
+    this.locale.bindTooltip(
         lock,
-        "title",
         LOCALE_PATH + "effectsConfig.toggleLock.description"
     );
     const toggleLock = () => {
@@ -206,9 +205,8 @@ export function createGSInsertionController(
         // Create the button here
         const efxAssign = document.createElement("div");
         efxAssign.innerHTML = `<pre>${channelNumber + 1}</pre>`;
-        this.locale.bindObjectProperty(
+        this.locale.bindTooltip(
             efxAssign,
-            "title",
             LOCALE_PATH + "channelController.insertionEffectButton.description",
             [channelNumber + 1]
         );

@@ -57,11 +57,7 @@ function input(
         "textContent",
         LOCALE_PATH + pathTitle + ".title"
     );
-    locale.bindObjectProperty(
-        wrapperDiv,
-        "title",
-        LOCALE_PATH + pathTitle + ".description"
-    );
+    locale.bindTooltip(wrapperDiv, LOCALE_PATH + pathTitle + ".description");
     const input = document.createElement("input");
     input.type = "number";
     input.min = min.toString();
@@ -114,11 +110,7 @@ export function createAdvancedConfiguration(
             const interpolation = document.createElement("select");
             interpolation.classList.add("synthui_button");
             const INTERP_PATH = LOCALE_PATH + "interpolation.";
-            this.locale.bindObjectProperty(
-                interpolation,
-                "title",
-                INTERP_PATH + "description"
-            );
+            this.locale.bindTooltip(interpolation, INTERP_PATH + "description");
             /**
              * Linear
              */

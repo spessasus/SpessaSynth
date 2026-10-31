@@ -462,9 +462,8 @@ export function appendNewController(
     // Solo button
     const soloButton = document.createElement("div");
     soloButton.innerHTML = getEmptyMicSvg(ICON_SIZE);
-    this.locale.bindObjectProperty(
+    this.locale.bindTooltip(
         soloButton,
-        "title",
         LOCALE_PATH + "channelController.soloButton.description",
         [channelNumber + 1]
     );
@@ -529,9 +528,8 @@ export function appendNewController(
     // Mute button
     const muteButton = document.createElement("div");
     muteButton.innerHTML = getVolumeSvg(ICON_SIZE);
-    this.locale.bindObjectProperty(
+    this.locale.bindTooltip(
         muteButton,
-        "title",
         LOCALE_PATH + "channelController.muteButton.description",
         [channelNumber + 1]
     );
@@ -566,9 +564,8 @@ export function appendNewController(
         channelNumber === MIDI_DRUM_CHANNEL
             ? getDrumsSvg(ICON_SIZE)
             : getNoteSvg(ICON_SIZE);
-    this.locale.bindObjectProperty(
+    this.locale.bindTooltip(
         drumsToggle,
-        "title",
         LOCALE_PATH + "channelController.drumToggleButton.description",
         [channelNumber + 1]
     );
@@ -586,9 +583,8 @@ export function appendNewController(
     // Poly/mono button
     const polyMonoButton = document.createElement("div");
     polyMonoButton.innerHTML = POLY_ON;
-    this.locale.bindObjectProperty(
+    this.locale.bindTooltip(
         polyMonoButton,
-        "title",
         LOCALE_PATH + "channelController.polyMonoButton.description",
         [channelNumber + 1]
     );

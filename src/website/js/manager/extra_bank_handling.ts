@@ -9,11 +9,7 @@ export function prepareExtraBankUpload(this: Manager) {
     let extraBankName = "";
     const extra =
         document.querySelector<HTMLLabelElement>("#extra_bank_button")!;
-    this.localeManager.bindObjectProperty(
-        extra,
-        "title",
-        "locale.extraBank.button"
-    );
+    this.localeManager.bindTooltip(extra, "locale.extraBank.button");
     extra.addEventListener("click", () => {
         const notification = showNotification(
             this.localeManager.getLocaleString("locale.extraBank.title"),

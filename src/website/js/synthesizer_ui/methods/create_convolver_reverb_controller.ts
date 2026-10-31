@@ -121,9 +121,8 @@ export function createConvolverReverbController(this: SynthesizerUI) {
         "textContent",
         LOCALE_PATH + "effectsConfig.convolver.impulseResponse.title"
     );
-    this.locale.bindObjectProperty(
+    this.locale.bindTooltip(
         impulseLabel,
-        "title",
         LOCALE_PATH + "effectsConfig.convolver.impulseResponse.description"
     );
     wrapper.append(impulseLabel);

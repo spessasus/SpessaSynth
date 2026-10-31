@@ -64,9 +64,8 @@ export class Selector {
 
         this.mainButton = document.createElement("button");
         this.mainButton.classList.add("voice_selector", "controller_element");
-        locale.bindObjectProperty(
+        locale.bindTooltip(
             this.mainButton,
-            "title",
             descriptionPath + ".description",
             descriptionArgs
         );
@@ -142,9 +141,8 @@ export class Selector {
             presetLock.innerHTML = this.locked
                 ? getLockSVG(ICON_SIZE)
                 : getUnlockSVG(ICON_SIZE);
-            this.locale.bindObjectProperty(
+            this.locale.bindTooltip(
                 presetLock,
-                "title",
                 LOCALE_PATH + "channelController.presetReset.description",
                 this.localeArgs
             );

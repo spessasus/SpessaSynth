@@ -94,9 +94,8 @@ export function createXGEffectController(
         "textContent",
         LOCALE_PATH + "effectsConfig.toggleLock.title"
     );
-    this.locale.bindObjectProperty(
+    this.locale.bindTooltip(
         lock,
-        "title",
         LOCALE_PATH + "effectsConfig.toggleLock.description"
     );
     const toggleLock = () => {
@@ -244,9 +243,8 @@ export function createXGEffectController(
         if (data.hasPartNumber) {
             const selector = document.createElement("select");
             selector.classList.add("synthui_button");
-            this.locale.bindObjectProperty(
+            this.locale.bindTooltip(
                 selector,
-                "title",
                 data.localePath + "partNumber.description"
             );
             if (data.hasConnection) {

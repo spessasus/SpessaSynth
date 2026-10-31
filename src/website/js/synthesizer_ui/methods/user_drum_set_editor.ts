@@ -115,9 +115,8 @@ export class UserDrumSetEditor {
                 "textContent",
                 LOCALE_PATH + "effectsConfig.toggleLock.title"
             );
-            this.locale.bindObjectProperty(
+            this.locale.bindTooltip(
                 lock,
-                "title",
                 LOCALE_PATH + "effectsConfig.toggleLock.description"
             );
             const toggleLock = () => {
@@ -137,9 +136,8 @@ export class UserDrumSetEditor {
                 "textContent",
                 path + "showOnlyChanged.title"
             );
-            this.locale.bindObjectProperty(
+            this.locale.bindTooltip(
                 showOnlyChanged,
-                "title",
                 path + "showOnlyChanged.description"
             );
             showOnlyChanged.addEventListener("click", () => {
@@ -155,9 +153,8 @@ export class UserDrumSetEditor {
             // Drum Set Selector
             this.drumSetSelector = document.createElement("select");
             this.drumSetSelector.classList.add("synthui_button");
-            localeManager.bindObjectProperty(
+            localeManager.bindTooltip(
                 this.drumSetSelector,
-                "title",
                 path + "selector.description"
             );
             controlRow.append(this.drumSetSelector);
@@ -488,9 +485,8 @@ export class UserDrumSetEditor {
         initial: boolean
     ) {
         const td = document.createElement("td");
-        this.locale.bindObjectProperty(
+        this.locale.bindTooltip(
             td,
-            "title",
             this.path + "params." + param + ".description",
             [midiNote]
         );
@@ -517,9 +513,8 @@ export class UserDrumSetEditor {
         max = 127
     ) {
         const td = document.createElement("td");
-        this.locale.bindObjectProperty(
+        this.locale.bindTooltip(
             td,
-            "title",
             this.path + "params." + param + ".description",
             [midiNote]
         );

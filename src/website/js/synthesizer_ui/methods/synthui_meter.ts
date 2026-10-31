@@ -163,9 +163,8 @@ export class Meter {
             this.div.classList.add("default_color");
         }
         if (locale) {
-            locale.bindObjectProperty(
+            locale.bindTooltip(
                 this.div,
-                "title",
                 localePath + ".description",
                 localeArgs
             );

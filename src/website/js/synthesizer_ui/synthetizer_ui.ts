@@ -343,9 +343,8 @@ export class SynthesizerUI {
                 "textContent",
                 LOCALE_PATH + "midiPanic.title"
             );
-            this.locale.bindObjectProperty(
+            this.locale.bindTooltip(
                 midiPanicButton,
-                "title",
                 LOCALE_PATH + "midiPanic.description"
             );
 
@@ -469,9 +468,8 @@ export class SynthesizerUI {
                     "textContent",
                     LOCALE_PATH + `${system}Reset.title`
                 );
-                this.locale.bindObjectProperty(
+                this.locale.bindTooltip(
                     resetButton,
-                    "title",
                     LOCALE_PATH + `${system}Reset.description`
                 );
                 resetButton.classList.add("synthui_button");
@@ -486,9 +484,8 @@ export class SynthesizerUI {
                 "textContent",
                 LOCALE_PATH + "showOnlyUsed.title"
             );
-            this.locale.bindObjectProperty(
+            this.locale.bindTooltip(
                 showOnlyUsedButton,
-                "title",
                 LOCALE_PATH + "showOnlyUsed.description"
             );
             showOnlyUsedButton.classList.add(
@@ -507,9 +504,8 @@ export class SynthesizerUI {
                 "synthui_button",
                 "main_controller_element"
             );
-            this.locale.bindObjectProperty(
+            this.locale.bindTooltip(
                 groupSelector,
-                "title",
                 LOCALE_PATH + "channelController.groupSelector.description"
             );
             // Create all the options
@@ -538,9 +534,8 @@ export class SynthesizerUI {
                 "synthui_button"
             );
 
-            this.locale.bindObjectProperty(
+            this.locale.bindTooltip(
                 tabSelector,
-                "title",
                 LOCALE_PATH + "tabs.description"
             );
 
@@ -638,9 +633,8 @@ export class SynthesizerUI {
                 "textContent",
                 LOCALE_PATH + "toggleButton.title"
             );
-            this.locale.bindObjectProperty(
+            this.locale.bindTooltip(
                 showControllerButton,
-                "title",
                 LOCALE_PATH + "toggleButton.description"
             );
             showControllerButton.classList.add("synthui_button");

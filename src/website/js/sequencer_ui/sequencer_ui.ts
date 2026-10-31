@@ -262,9 +262,8 @@ export class SequencerUI {
                     "textContent",
                     "locale.sequencerController.lyrics.subtitles.title"
                 );
-                this.locale.bindObjectProperty(
+                this.locale.bindTooltip(
                     subtitleUpload,
-                    "title",
                     "locale.sequencerController.lyrics.subtitles.description"
                 );
                 mainLyricsDiv.append(subtitleUpload);
@@ -315,9 +314,8 @@ export class SequencerUI {
                 "Play/Pause",
                 getPauseSvg(ICON_SIZE)
             );
-            this.locale.bindObjectProperty(
+            this.locale.bindTooltip(
                 playPauseButton,
-                "title",
                 "locale.sequencerController.playPause"
             );
             const togglePlayback = () => {
@@ -337,9 +335,8 @@ export class SequencerUI {
                 "Previous song",
                 getBackwardSvg(ICON_SIZE)
             );
-            this.locale.bindObjectProperty(
+            this.locale.bindTooltip(
                 previousSongButton,
-                "title",
                 "locale.sequencerController.previousSong"
             );
             previousSongButton.addEventListener("click", () =>
@@ -351,9 +348,8 @@ export class SequencerUI {
                 "Next song",
                 getForwardSvg(ICON_SIZE)
             );
-            this.locale.bindObjectProperty(
+            this.locale.bindTooltip(
                 nextSongButton,
-                "title",
                 "locale.sequencerController.nextSong"
             );
             nextSongButton.addEventListener("click", () =>
@@ -365,9 +361,8 @@ export class SequencerUI {
                 "Loop this",
                 getLoopSvg(ICON_SIZE)
             );
-            this.locale.bindObjectProperty(
+            this.locale.bindTooltip(
                 loopButton,
-                "title",
                 "locale.sequencerController.loopThis"
             );
             const toggleLoop = () => {
@@ -380,9 +375,8 @@ export class SequencerUI {
                 "Shuffle songs",
                 getShuffleSvg(ICON_SIZE)
             );
-            this.locale.bindObjectProperty(
+            this.locale.bindTooltip(
                 shuffleButton,
-                "title",
                 "locale.sequencerController.shuffle"
             );
             shuffleButton.addEventListener("click", () => {
@@ -402,9 +396,8 @@ export class SequencerUI {
             );
             const playbackRateSliderWrapper = document.createElement("div");
             {
-                this.locale.bindObjectProperty(
+                this.locale.bindTooltip(
                     playbackRateButton,
-                    "title",
                     "locale.sequencerController.playbackRate"
                 );
 
@@ -502,9 +495,8 @@ export class SequencerUI {
                 "Show lyrics",
                 getTextSvg(ICON_SIZE)
             );
-            this.locale.bindObjectProperty(
+            this.locale.bindTooltip(
                 textButton,
-                "title",
                 "locale.sequencerController.lyrics.show"
             );
             this.disableIcon(textButton);

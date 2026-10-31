@@ -11,6 +11,7 @@ import { SynthesizerUI } from "../synthesizer_ui/synthetizer_ui.js";
 import { SpessaSynthSettings } from "../settings_ui/settings.js";
 import { MusicModeUI } from "../music_mode_ui/music_mode_ui.js";
 import { LocaleManager } from "./locale_manager.js";
+import { Tooltip } from "../tooltip/tooltip.js";
 import { keybinds } from "../utils/keybinds.js";
 import { showAudioExportMenu } from "./export/export_audio.js";
 import { showVideoExportMenu } from "./export/video/export_video.js";
@@ -364,9 +365,8 @@ export class Manager {
         for (const element of document.querySelectorAll<HTMLElement>(
             "*[translate-path-description]"
         )) {
-            this.localeManager.bindObjectProperty(
+            this.localeManager.bindTooltip(
                 element,
-                "title",
                 element.getAttribute("translate-path-description") ?? ""
             );
         }
@@ -391,12 +391,14 @@ export class Manager {
                 "textContent",
                 element.getAttribute("translate-path-title") + ".title"
             );
-            this.localeManager.bindObjectProperty(
+            this.localeManager.bindTooltip(
                 element,
-                "title",
                 element.getAttribute("translate-path-title") + ".description"
             );
         }
+
+        // Show the descriptions as styled tooltips
+        new Tooltip();
 
         if (this.enableDebug) {
             console.warn("DEBUG ENABLED! DEBUGGING ENABLED!!");

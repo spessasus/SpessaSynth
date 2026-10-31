@@ -96,9 +96,8 @@ export function createGSEffectController<
         "textContent",
         LOCALE_PATH + "effectsConfig.toggleLock.title"
     );
-    this.locale.bindObjectProperty(
+    this.locale.bindTooltip(
         lock,
-        "title",
         LOCALE_PATH + "effectsConfig.toggleLock.description"
     );
     const toggleLock = () => {

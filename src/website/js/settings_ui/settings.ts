@@ -141,9 +141,8 @@ export class SpessaSynthSettings {
             "innerText",
             "locale.musicPlayerMode.toggleButton.title"
         );
-        this.locale.bindObjectProperty(
+        this.locale.bindTooltip(
             musicModeButton,
-            "title",
             "locale.musicPlayerMode.toggleButton.description"
         );
         settingsWrapper.append(musicModeButton);
@@ -155,11 +154,7 @@ export class SpessaSynthSettings {
             "innerText",
             "locale.hideTopBar.title"
         );
-        this.locale.bindObjectProperty(
-            hideTopButton,
-            "title",
-            "locale.hideTopBar.description"
-        );
+        this.locale.bindTooltip(hideTopButton, "locale.hideTopBar.description");
         settingsWrapper.append(hideTopButton);
 
         // Phones have no F11, so give them a way to enter fullscreen!
@@ -171,9 +166,8 @@ export class SpessaSynthSettings {
                 "innerText",
                 "locale.fullscreen.title"
             );
-            this.locale.bindObjectProperty(
+            this.locale.bindTooltip(
                 fullscreenButton,
-                "title",
                 "locale.fullscreen.description"
             );
             fullscreenButton.addEventListener("click", () => {
@@ -316,11 +310,7 @@ export class SpessaSynthSettings {
                 "textContent",
                 path + ".title"
             );
-            this.locale.bindObjectProperty(
-                element,
-                "title",
-                path + ".description"
-            );
+            this.locale.bindTooltip(element, path + ".description");
 
             // For labels, also apply the "title" to elements that the label is for
             if (element.tagName === "LABEL") {
@@ -330,9 +320,8 @@ export class SpessaSynthSettings {
                         "#" + forId
                     );
                     if (forElement) {
-                        this.locale.bindObjectProperty(
+                        this.locale.bindTooltip(
                             forElement,
-                            "title",
                             path + ".description"
                         );
                     }

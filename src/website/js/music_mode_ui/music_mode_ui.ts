@@ -50,9 +50,8 @@ export class MusicModeUI {
                 "textContent",
                 el.getAttribute("translate-path-title") + ".title"
             );
-            localeManager.bindObjectProperty(
+            localeManager.bindTooltip(
                 el as HTMLElement,
-                "title",
                 el.getAttribute("translate-path-title") + ".description"
             );
         }

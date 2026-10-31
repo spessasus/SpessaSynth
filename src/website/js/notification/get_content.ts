@@ -22,9 +22,8 @@ function applyTextContent(
             content.translatePathTitle + ".title",
             content?.translatePathTitleProps
         );
-        locale.bindObjectProperty(
+        locale.bindTooltip(
             el,
-            "title",
             content.translatePathTitle + ".description",
             content?.translatePathTitleProps
         );

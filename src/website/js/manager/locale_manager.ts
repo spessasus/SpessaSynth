@@ -83,6 +83,25 @@ export class LocaleManager {
     }
 
     /**
+     * Binds an element's tooltip text to a locale path. The tooltip is shown by the custom tooltip module.
+     * @param element The element that shows the tooltip on hover.
+     * @param localePath The locale path to the description, written as JS object path, starts with "locale."
+     * @param formattingArguments Optional arguments if the locale uses formatting ("{0} {1}") etc.
+     */
+    public bindTooltip(
+        element: HTMLElement,
+        localePath: string,
+        formattingArguments: (string | number)[] = []
+    ) {
+        this.bindObjectProperty(
+            element.dataset,
+            "tooltip",
+            localePath,
+            formattingArguments
+        );
+    }
+
+    /**
      * Changes the global locale and all bound text.
      * @param newLocale
      * @param force If the locale should be applied even to changed values.
