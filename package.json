@@ -26,7 +26,7 @@
         "prettier": "^3.8.3",
         "skia-canvas": "^4.0.0",
         "typescript": "^6.0.3",
-        "typescript-eslint": "^8.59.1"
+        "typescript-eslint": "^8.72.1"
     },
     "lint-staged": {
         "*.{ts,js}": [
