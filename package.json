@@ -38,7 +38,7 @@
     "dependencies": {
         "fflate": "^0.8.3",
         "jszip": "^3.10.2",
-        "mediabunny": "^1.61.3",
+        "mediabunny": "^1.64.0",
         "spessasynth_core": "latest",
         "spessasynth_lib": "latest",
         "wasm-media-encoders": "^0.7.0"
