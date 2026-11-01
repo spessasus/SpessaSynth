@@ -9,7 +9,7 @@ export const WHATS_NEW: string[] = [
     `Play tracker modules: MOD, XM and S3M!`,
     `Export the visualization to a video (WebM or MP4)!`,
     `Brand new themes, with matching note colors!`,
-    `Redesigned settings menu!`,
-    `Music Mode redesign!`,
-    "MP3 and OGG export!"
+    `Redesigned many interfaces!`,
+    "MP3 and OGG export!",
+    `Keyboard themes!`
 ] as const;

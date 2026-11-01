@@ -2,6 +2,10 @@ import type { SpessaSynthSettings } from "../settings.ts";
 import type { MIDIPatch, MIDIPatchFull } from "spessasynth_core";
 import { Ut } from "../../utils/other.js";
 import { getSpan } from "../sliders.js";
+import {
+    type KeyboardThemeID,
+    keyboardThemes
+} from "../../canvas_keyboard/base/keyboard_themes.ts";
 
 export const USE_MIDI_RANGE = "midi range";
 
@@ -202,21 +206,29 @@ export function _createKeyboardHandler(this: SpessaSynthSettings) {
         }
     });
 
-    // Dark mode toggle
-    keyboardControls.mode.addEventListener("click", () => {
+    // Keyboard themes
+    for (const [id, theme] of Object.entries(keyboardThemes)) {
+        const option = document.createElement("option");
+        option.value = id;
+        option.textContent = theme.name;
+        keyboardControls.theme.append(option);
+    }
+    keyboardControls.theme.value = this.midiKeyboard.targetTheme;
+    keyboardControls.theme.addEventListener("change", () => {
+        const theme = keyboardControls.theme.value as KeyboardThemeID;
         if (this.musicMode.visible) {
             this.musicMode.setVisibility(
                 false,
                 document.querySelector("#keyboard_canvas_wrapper")!
             );
             setTimeout(() => {
-                this.midiKeyboard.toggleMode();
+                this.midiKeyboard.changeTheme(theme);
                 this.saveSettings();
                 this.renderer.updateSize();
             }, 600);
             return;
         }
-        this.midiKeyboard.toggleMode();
+        this.midiKeyboard.changeTheme(theme);
         this.saveSettings();
     });
 

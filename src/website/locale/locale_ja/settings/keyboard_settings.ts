@@ -19,11 +19,6 @@ export const keyboardSettingsLocale = {
         twoOctaves: "2オクターブ"
     },
 
-    toggleTheme: {
-        title: "ダークテーマを使用",
-        description: "ダークテーマのMIDIキーボードを使用する"
-    },
-
     show: {
         title: "表示",
         description: "MIDIキーボードの表示/非表示"

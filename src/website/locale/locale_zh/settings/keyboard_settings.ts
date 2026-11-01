@@ -18,11 +18,6 @@ export const keyboardSettingsLocale = {
         twoOctaves: "两个八度"
     },
 
-    toggleTheme: {
-        title: "使用深色主题",
-        description: "使用深色 MIDI 键盘主题"
-    },
-
     show: {
         title: "显示",
         description: "显示/隐藏 MIDI 键盘"

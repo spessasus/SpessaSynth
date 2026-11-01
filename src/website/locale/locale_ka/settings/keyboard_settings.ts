@@ -19,11 +19,6 @@ export const keyboardSettingsLocale = {
         twoOctaves: "ორი ოქტავა"
     },
 
-    toggleTheme: {
-        title: "მუქი თემის გამოყენება",
-        description: "MIDI კლავიატურის მუქი თემის გამოყენება"
-    },
-
     show: {
         title: "ჩვენება",
         description: "MIDI კლავიატურის ჩვენება/დამალვა"

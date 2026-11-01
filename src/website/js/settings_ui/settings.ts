@@ -405,8 +405,8 @@ export class SpessaSynthSettings {
                     document.querySelector<HTMLSelectElement>(
                         "#channel_selector"
                     )!,
-                mode: document.querySelector<HTMLInputElement>(
-                    "#mode_selector"
+                theme: document.querySelector<HTMLSelectElement>(
+                    "#keyboard_theme_selector"
                 )!,
                 keyRange: document.querySelector<HTMLSelectElement>(
                     "#keyboard_size_selector"

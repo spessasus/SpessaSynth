@@ -155,12 +155,10 @@ export const settingsHtml = `
         </select>
         </div>
         
-        <div class='switch_label setting'>
-            <label translate-path-title='locale.settings.keyboardSettings.toggleTheme'></label>
-            <label class='switch'>
-                <input type='checkbox' id='mode_selector'>
-                <span class='switch_slider'></span>
-            </label>
+        <div class='setting setting_select'><label for='keyboard_theme_selector' translate-path-title='locale.settings.keyboardSettings.theme'></label>
+        <select id='keyboard_theme_selector'>
+        <!-- will be added via javascript -->
+        </select>
         </div>
         <div class='switch_label setting'>
             <label translate-path-title='locale.settings.keyboardSettings.show'></label>

@@ -42,7 +42,7 @@ export function _serializeSettings(this: SpessaSynthSettings): SavedSettings {
             // The keyboard holds the display range, which is wider during a transition
             // Save the actual one
             keyRange: this.renderer.keyRange,
-            mode: this.midiKeyboard.targetMode,
+            theme: this.midiKeyboard.targetTheme,
             autoRange:
                 this.htmlControls.keyboard.keyRange.value === USE_MIDI_RANGE,
             show: this.htmlControls.keyboard.shown.checked,

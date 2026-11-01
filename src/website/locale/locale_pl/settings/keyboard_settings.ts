@@ -19,11 +19,6 @@ export const keyboardSettingsLocale = {
         useSongKeyRange: "Użyj zakresu utworu"
     },
 
-    toggleTheme: {
-        title: "Włącz ciemny motyw",
-        description: "Włącz ciemny motyw wbudowanego pianina"
-    },
-
     show: {
         title: "Pokaż",
         description: "Pokaż/ukryj pianino"

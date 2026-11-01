@@ -1,5 +1,4 @@
 import { MIDIControllers } from "spessasynth_core";
-import type { InterfaceMode } from "../../../../server/saved_settings.ts";
 import type { Synthesizer } from "../../utils/synthesizer.ts";
 import {
     BaseKeyboard,
@@ -7,7 +6,9 @@ import {
     KEY_TRANSITION_SECONDS
 } from "../base/base_keyboard.ts";
 import type { RenderBounds } from "../../renderer/base/renderer.ts";
-import { isSharpMIDINote, SHARP_KEY_LENGTH_RATIO } from "../base/key_style.ts";
+import { isSharpMIDINote } from "../base/key_style.ts";
+import type { KeyboardThemeID } from "../base/keyboard_themes.ts";
+import { DEFAULT_KEYBOARD_THEME } from "../base/keyboard_themes.ts";
 import { isMobile } from "../../utils/is_mobile.ts";
 
 const MIN_POINTER_DIMENSION_PX = 1;
@@ -36,9 +37,8 @@ export class LiveKeyboard extends BaseKeyboard {
         { note: number; rawNote: number }
     >();
     private readonly canvas: HTMLCanvasElement;
-    private modeTransition?: {
-        from: InterfaceMode;
-        to: InterfaceMode;
+    private themeTransition?: {
+        to: KeyboardThemeID;
         startTime: number;
     };
 
@@ -51,7 +51,7 @@ export class LiveKeyboard extends BaseKeyboard {
         super(ctx, {
             keyRange: { min: 0, max: 127 },
             channelColors,
-            mode: "light",
+            theme: DEFAULT_KEYBOARD_THEME,
             forceMaxVelocity: false,
             glow: false,
             glowIntensity: 1,
@@ -140,11 +140,11 @@ export class LiveKeyboard extends BaseKeyboard {
     }
 
     /**
-     * The mode the keyboard is at or is transitioning to.
-     * Differs from mode while the sweep animation is still running.
+     * The theme the keyboard is at or is transitioning to.
+     * Differs from themeId while the sweep animation is still running.
      */
-    public get targetMode() {
-        return this.modeTransition?.to ?? this.mode;
+    public get targetTheme() {
+        return this.themeTransition?.to ?? this.themeId;
     }
 
     public override render(bounds: RenderBounds, time: number) {
@@ -155,7 +155,7 @@ export class LiveKeyboard extends BaseKeyboard {
     }
 
     public override drawAt(time: number) {
-        this.updateModeTransition(time);
+        this.updateThemeTransition(time);
         super.drawAt(time);
         this.forceRenderOneFrame = true;
     }
@@ -182,16 +182,28 @@ export class LiveKeyboard extends BaseKeyboard {
             }
         }
 
-        return !!this.modeTransition;
+        return !!this.themeTransition;
     }
 
-    public override toggleMode() {
-        this.modeTransition = {
-            from: this.mode,
-            to: this.mode === "light" ? "dark" : "light",
+    /**
+     * Changes the theme with the sweep animation.
+     */
+    public changeTheme(theme: KeyboardThemeID) {
+        if (theme === this.targetTheme) {
+            return;
+        }
+        this.themeTransition = {
+            to: theme,
             startTime: this.now()
         };
         this.drawAt(this.now());
+    }
+
+    public override setTheme(theme: KeyboardThemeID) {
+        // Instant changes cancel the running animation (like restore)
+        this.themeTransition = undefined;
+        this.yOffset = 0;
+        super.setTheme(theme);
     }
 
     public selectChannel(channel: number) {
@@ -222,8 +234,8 @@ export class LiveKeyboard extends BaseKeyboard {
         }
     }
 
-    private updateModeTransition(time: number) {
-        const transition = this.modeTransition;
+    private updateThemeTransition(time: number) {
+        const transition = this.themeTransition;
         if (!transition) {
             return;
         }
@@ -233,10 +245,10 @@ export class LiveKeyboard extends BaseKeyboard {
 
         if (progress >= 0.5) {
             // The keyboard is swept out of view, so switch the theme silently.
-            this.options.mode = transition.to;
+            this.options.theme = transition.to;
         }
         if (progress >= 1) {
-            this.modeTransition = undefined;
+            this.themeTransition = undefined;
             this.yOffset = 0;
             return;
         }
@@ -282,7 +294,7 @@ export class LiveKeyboard extends BaseKeyboard {
         const layoutWidth = this.actualWidth;
         const layoutHeight = this.actualHeight;
         const slot = layoutWidth / count;
-        const sharpRadius = layoutHeight * SHARP_KEY_LENGTH_RATIO;
+        const sharpRadius = layoutHeight * this.theme.sharpLength;
         // The velocity grows along the key length, at least 1 so it is not a note off
         const getVelocity = () =>
             isMobile

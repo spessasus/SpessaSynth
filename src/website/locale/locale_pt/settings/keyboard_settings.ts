@@ -23,11 +23,6 @@ export const keyboardSettingsLocale = {
         twoOctaves: "Duas oitavas"
     },
 
-    toggleTheme: {
-        title: "Usar tema escuro",
-        description: "Usar o tema escuro do teclado MIDI"
-    },
-
     show: {
         title: "Mostrar",
         description: "Mostrar/ocultar o teclado MIDI"

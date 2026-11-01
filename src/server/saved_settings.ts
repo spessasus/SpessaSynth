@@ -4,13 +4,15 @@ import {
     rendererModes
 } from "../website/js/renderer/base/renderer_modes.ts";
 import {
+    DEFAULT_KEYBOARD_THEME,
+    type KeyboardThemeID
+} from "../website/js/canvas_keyboard/base/keyboard_themes.ts";
+import {
     DEFAULT_THEME,
     type ThemeID
 } from "../website/js/themes/theme_list.ts";
 
 export type LayoutType = "downwards" | "upwards" | "left" | "right";
-
-export type InterfaceMode = "light" | "dark";
 
 export interface ConfigFile {
     lastUsedSf2: string | null;
@@ -23,7 +25,7 @@ export interface SavedSettings {
             min: number;
             max: number;
         };
-        mode: InterfaceMode;
+        theme: KeyboardThemeID;
         selectedChannel: number;
         autoRange: boolean;
         show: boolean;
@@ -66,7 +68,7 @@ export interface SavedSettings {
 
 export const DEFAULT_SAVED_SETTINGS: SavedSettings = {
     keyboard: {
-        mode: "light",
+        theme: DEFAULT_KEYBOARD_THEME,
         selectedChannel: 0,
         show: true,
         forceMaxVelocity: false,

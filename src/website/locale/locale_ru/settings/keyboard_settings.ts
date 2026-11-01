@@ -19,11 +19,6 @@ export const keyboardSettingsLocale = {
         twoOctaves: "Две октавы"
     },
 
-    toggleTheme: {
-        title: "Использовать тёмную тему",
-        description: "Использовать тёмную тему MIDI-клавиатуры"
-    },
-
     show: {
         title: "Отображение",
         description: "Показать или скрыть MIDI-клавиатуру"

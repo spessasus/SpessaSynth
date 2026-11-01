@@ -19,11 +19,6 @@ export const keyboardSettingsLocale = {
         twoOctaves: "2 octaves"
     },
 
-    toggleTheme: {
-        title: "Thème sombre",
-        description: "Utiliser le thème sombre du clavier MIDI"
-    },
-
     show: {
         title: "Visibilité",
         description: "Montrer / cacher le clavier MIDI"

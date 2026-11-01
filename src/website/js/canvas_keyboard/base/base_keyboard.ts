@@ -1,20 +1,9 @@
-import type { InterfaceMode } from "../../../../server/saved_settings.ts";
 import {
-    DARK_FLAT_KEY_GRADIENT,
-    DARK_KEY_COLOR_VALUE,
-    DARK_KEY_GRADIENT_ANGLE_DEGREES,
     isSharpMIDINote,
-    KEYBOARD_BACKGROUND_COLOR,
     KEYBOARD_GLOW_INTENSITY,
-    KEYBOARD_GLOW_PX,
-    LIGHT_FLAT_KEY_GRADIENT,
-    LIGHT_KEY_COLOR_VALUE,
-    LIGHT_KEY_GRADIENT_ANGLE_DEGREES,
-    SHARP_KEY_COLOR_VALUE,
-    SHARP_KEY_GRADIENT,
-    SHARP_KEY_GRADIENT_ANGLE_DEGREES,
-    SHARP_KEY_LENGTH_RATIO
+    KEYBOARD_GLOW_PX
 } from "./key_style.ts";
+import { type KeyboardThemeID, keyboardThemes } from "./keyboard_themes.ts";
 import type {
     RenderBounds,
     RendererCanvasFactory
@@ -25,7 +14,7 @@ type Context2D = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
 export interface KeyboardOptions {
     keyRange: { min: number; max: number };
     channelColors: string[];
-    mode: InterfaceMode;
+    theme: KeyboardThemeID;
     forceMaxVelocity: boolean;
     glow: boolean;
     glowIntensity: number;
@@ -109,6 +98,7 @@ export class BaseKeyboard {
     protected yOffset = 0;
     protected currentTime = 0;
     private currentRadius = 0;
+    private currentKeyWidth = 0;
     /**
      * Pressed keys collected during the key pass,
      * Their glow is drawn above all keys
@@ -145,8 +135,12 @@ export class BaseKeyboard {
         return { ...this.options.keyRange };
     }
 
-    public get mode() {
-        return this.options.mode;
+    public get themeId() {
+        return this.options.theme;
+    }
+
+    public get theme() {
+        return keyboardThemes[this.options.theme];
     }
 
     public get vertical() {
@@ -249,16 +243,12 @@ export class BaseKeyboard {
         this.drawAt(this.currentTime);
     }
 
-    public setMode(mode: InterfaceMode) {
-        if (mode === this.options.mode) {
+    public setTheme(theme: KeyboardThemeID) {
+        if (theme === this.options.theme) {
             return;
         }
-        this.options.mode = mode;
+        this.options.theme = theme;
         this.drawAt(this.currentTime);
-    }
-
-    public toggleMode() {
-        this.setMode(this.options.mode === "light" ? "dark" : "light");
     }
 
     public pressKey(
@@ -332,7 +322,7 @@ export class BaseKeyboard {
 
         // Clear render area
         this.ctx.clearRect(0, 0, width, height);
-        this.ctx.fillStyle = KEYBOARD_BACKGROUND_COLOR;
+        this.ctx.fillStyle = this.theme.background;
         this.ctx.fillRect(0, 0, width, height);
 
         // Clip the render bounds
@@ -358,6 +348,7 @@ export class BaseKeyboard {
             Math.min(width, height) * KEY_BORDER_RADIUS_RATIO
         );
 
+        this.currentKeyWidth = keyWidth;
         // Sharps are drawn after flats to appear on top
         const sharps: { note: number; rect: KeyRect }[] = [];
 
@@ -368,21 +359,21 @@ export class BaseKeyboard {
             if (isSharpMIDINote(note)) {
                 sharps.push({
                     note,
-                    rect: {
+                    rect: this.applyGap({
                         x: layoutIndex * keyWidth,
                         y: KEY_Y_OFFSET,
                         width: keyWidth,
                         height:
-                            this.actualHeight * SHARP_KEY_LENGTH_RATIO -
+                            this.actualHeight * this.theme.sharpLength -
                             KEY_Y_OFFSET
-                    }
+                    })
                 });
             } else {
                 // Draw right away
                 this.drawKey(
                     note,
                     false,
-                    this.getFlatKeyRect(note, center, keyWidth),
+                    this.applyGap(this.getFlatKeyRect(note, center, keyWidth)),
                     time
                 );
             }
@@ -453,22 +444,18 @@ export class BaseKeyboard {
         };
     }
 
+    private applyGap(rect: KeyRect): KeyRect {
+        const gap = this.theme.gap * this.currentKeyWidth;
+        return {
+            ...rect,
+            x: rect.x + gap / 2,
+            width: Math.max(1, rect.width - gap)
+        };
+    }
+
     private drawKey(note: number, sharp: boolean, rect: KeyRect, time: number) {
-        const mode = this.mode;
-        let startColor, endColor;
-        if (sharp) {
-            [startColor, endColor] = SHARP_KEY_GRADIENT;
-        } else {
-            [startColor, endColor] =
-                mode === "dark"
-                    ? DARK_FLAT_KEY_GRADIENT
-                    : LIGHT_FLAT_KEY_GRADIENT;
-        }
-        const angle = sharp
-            ? SHARP_KEY_GRADIENT_ANGLE_DEGREES
-            : mode === "dark"
-              ? DARK_KEY_GRADIENT_ANGLE_DEGREES
-              : LIGHT_KEY_GRADIENT_ANGLE_DEGREES;
+        const style = sharp ? this.theme.black : this.theme.white;
+        const { gradient: colors, angle, rest } = style;
 
         // Create gradient
         const angleRad = (angle * Math.PI) / 180;
@@ -486,8 +473,9 @@ export class BaseKeyboard {
             centerX + directionX * halfLength,
             centerY + directionY * halfLength
         );
-        gradient.addColorStop(0, startColor);
-        gradient.addColorStop(1, endColor);
+        for (const [i, color] of colors.entries()) {
+            gradient.addColorStop(i / Math.max(1, colors.length - 1), color);
+        }
         this.ctx.fillStyle = gradient;
 
         const presses = this.pressedKeys.get(note);
@@ -503,20 +491,11 @@ export class BaseKeyboard {
                     ? 1
                     : Math.max(0, Math.min(1, press.velocity / 127));
 
-                const unpressedColor = sharp
-                    ? SHARP_KEY_COLOR_VALUE
-                    : mode === "light"
-                      ? LIGHT_KEY_COLOR_VALUE
-                      : DARK_KEY_COLOR_VALUE;
-
                 const rgbaValues = this.channelColors[press.channel % 16];
 
                 const newRGBValues = rgbaValues
                     .slice(0, 3)
-                    .map(
-                        (v) =>
-                            unpressedColor + (v - unpressedColor) * brightness
-                    );
+                    .map((v, i) => rest[i] + (v - rest[i]) * brightness);
 
                 const alpha = rgbaValues[3] ?? 1;
                 const color = `rgba(${newRGBValues.join(", ")}, ${alpha})`;
@@ -540,7 +519,7 @@ export class BaseKeyboard {
                     });
                 }
                 this.ctx.fillStyle = color;
-                this.drawPressedKey(rect, tilt);
+                this.drawStyledKey(rect, tilt, sharp);
                 return;
             } else {
                 const latest = presses[presses.length - 1];
@@ -550,14 +529,14 @@ export class BaseKeyboard {
                         const tilt =
                             (latest.releaseStartTilt ?? 1) *
                             (1 - clamp(elapsed / KEY_TRANSITION_SECONDS, 0, 1));
-                        this.drawPressedKey(rect, tilt);
+                        this.drawStyledKey(rect, tilt, sharp);
                         return;
                     }
                 }
             }
         }
         // Not pressed
-        this.drawRoundedKey(rect);
+        this.drawStyledKey(rect, 0, sharp);
     }
 
     /**
@@ -582,7 +561,7 @@ export class BaseKeyboard {
         const keyRight = glow.rect.x + glow.rect.width;
 
         const visibleKeyPath = () => {
-            this.pressedKeyPath(ctx, glow.rect, glow.tilt);
+            this.keyPath(ctx, glow.rect, glow.tilt, glow.sharp);
             for (const { rect } of covering) {
                 const top = rect.y;
                 const bottom = rect.y + rect.height;
@@ -705,93 +684,90 @@ export class BaseKeyboard {
         }
     }
 
-    private drawPressedKey(rect: KeyRect, tilt: number) {
-        this.pressedKeyPath(this.ctx, rect, tilt);
+    private drawStyledKey(rect: KeyRect, tilt: number, sharp: boolean) {
+        const style = sharp ? this.theme.black : this.theme.white;
+        this.keyPath(this.ctx, rect, tilt, sharp);
         this.ctx.fill();
+        if (style.gloss > 0) {
+            const gloss = this.ctx.createLinearGradient(
+                0,
+                rect.y,
+                0,
+                rect.y + rect.height * 0.55
+            );
+            gloss.addColorStop(0, `rgba(255, 255, 255, ${style.gloss})`);
+            gloss.addColorStop(1, "rgba(255, 255, 255, 0)");
+            this.ctx.save();
+            this.ctx.fillStyle = gloss;
+            this.ctx.fill();
+            this.ctx.restore();
+        }
+        if (style.outline) {
+            this.ctx.save();
+            this.ctx.strokeStyle = style.outline.color;
+            this.ctx.lineWidth = style.outline.width * this.currentKeyWidth;
+            this.ctx.stroke();
+            this.ctx.restore();
+        }
     }
 
     /**
      * How far the bottom edge rises and the sides move inwards for a pressed key.
      */
     private pressDeformation(rect: KeyRect, tilt: number) {
+        const strength = KEY_PRESS_STRENGTH * this.theme.pressDepth * tilt;
         return {
-            raise:
-                rect.height * KEY_PRESS_RAISE_RATIO * KEY_PRESS_STRENGTH * tilt,
-            taper:
-                rect.width * KEY_PRESS_TAPER_RATIO * KEY_PRESS_STRENGTH * tilt
+            raise: rect.height * KEY_PRESS_RAISE_RATIO * strength,
+            taper: rect.width * KEY_PRESS_TAPER_RATIO * strength
         };
     }
 
-    private pressedKeyPath(ctx: Context2D, rect: KeyRect, tilt: number) {
-        const r = this.currentRadius;
+    private keyPath(
+        ctx: Context2D,
+        rect: KeyRect,
+        tilt: number,
+        sharp: boolean
+    ) {
+        const style = sharp ? this.theme.black : this.theme.white;
         const { raise, taper } = this.pressDeformation(rect, tilt);
         const outerY = rect.y + rect.height - raise;
         const left = rect.x + taper;
         const right = rect.x + rect.width - taper;
+        const top = this.currentRadius * style.topRadius;
+        const bottom = this.currentRadius * style.radius;
 
+        const points = [
+            [rect.x, rect.y, top],
+            [rect.x + rect.width, rect.y, top],
+            [right, outerY, bottom],
+            [left, outerY, bottom]
+        ];
         ctx.beginPath();
-        // Top left
-        ctx.moveTo(rect.x, rect.y);
-        // Top right
-        ctx.lineTo(rect.x + rect.width, rect.y);
-        ctx.lineTo(rect.x + rect.width, rect.y);
-
-        // Bottom right, rounded
-        const p2PrevDx = rect.x + rect.width - right;
-        const p2PrevDy = rect.y - outerY;
-        const p2PrevLen = Math.hypot(p2PrevDx, p2PrevDy);
-        const p2NextDx = left - right;
-        const p2NextLen = Math.abs(p2NextDx);
-        const p2PrevScale = r / Math.max(1, p2PrevLen);
-        const p2NextScale = r / Math.max(1, p2NextLen);
-        const c2BeforeX = right + p2PrevDx * p2PrevScale;
-        const c2BeforeY = outerY + p2PrevDy * p2PrevScale;
-        const c2AfterX = right + p2NextDx * p2NextScale;
-        const c2AfterY = outerY;
-        ctx.lineTo(c2BeforeX, c2BeforeY);
-        ctx.quadraticCurveTo(right, outerY, c2AfterX, c2AfterY);
-
-        // Bottom left, rounded
-        const p3PrevDx = right - left;
-        const p3PrevLen = Math.abs(p3PrevDx);
-        const p3NextDx = rect.x - left;
-        const p3NextDy = rect.y - outerY;
-        const p3NextLen = Math.hypot(p3NextDx, p3NextDy);
-        const p3PrevScale = r / Math.max(1, p3PrevLen);
-        const p3NextScale = r / Math.max(1, p3NextLen);
-        const c3BeforeX = left + p3PrevDx * p3PrevScale;
-        const c3BeforeY = outerY;
-        const c3AfterX = left + p3NextDx * p3NextScale;
-        const c3AfterY = outerY + p3NextDy * p3NextScale;
-        ctx.lineTo(c3BeforeX, c3BeforeY);
-        ctx.quadraticCurveTo(left, outerY, c3AfterX, c3AfterY);
-
-        // Corner 0: close back to top-left (rect.x, rect.y), radius = 0
-        ctx.lineTo(rect.x, rect.y);
-        ctx.quadraticCurveTo(rect.x, rect.y, rect.x, rect.y);
+        for (const [i, [x, y, r]] of points.entries()) {
+            const [prevX, prevY] =
+                points[(i + points.length - 1) % points.length];
+            const [nextX, nextY] = points[(i + 1) % points.length];
+            // Round the corner by cutting into both edges and curving through the corner
+            const prevLength = Math.hypot(prevX - x, prevY - y);
+            const nextLength = Math.hypot(nextX - x, nextY - y);
+            const prevCut =
+                Math.min(r, prevLength / 2) / Math.max(1, prevLength);
+            const nextCut =
+                Math.min(r, nextLength / 2) / Math.max(1, nextLength);
+            const beforeX = x + (prevX - x) * prevCut;
+            const beforeY = y + (prevY - y) * prevCut;
+            if (i === 0) {
+                ctx.moveTo(beforeX, beforeY);
+            } else {
+                ctx.lineTo(beforeX, beforeY);
+            }
+            ctx.quadraticCurveTo(
+                x,
+                y,
+                x + (nextX - x) * nextCut,
+                y + (nextY - y) * nextCut
+            );
+        }
         ctx.closePath();
-    }
-
-    private drawRoundedKey(rect: KeyRect) {
-        const r = this.currentRadius;
-        this.ctx.beginPath();
-        this.ctx.moveTo(rect.x, rect.y);
-        this.ctx.lineTo(rect.x + rect.width, rect.y);
-        this.ctx.lineTo(rect.x + rect.width, rect.y + rect.height - r);
-        this.ctx.quadraticCurveTo(
-            rect.x + rect.width,
-            rect.y + rect.height,
-            rect.x + rect.width - r,
-            rect.y + rect.height
-        );
-        this.ctx.lineTo(rect.x + r, rect.y + rect.height);
-        this.ctx.quadraticCurveTo(
-            rect.x,
-            rect.y + rect.height,
-            rect.x,
-            rect.y + rect.height - r
-        );
-        this.ctx.closePath();
-        this.ctx.fill();
     }
 }

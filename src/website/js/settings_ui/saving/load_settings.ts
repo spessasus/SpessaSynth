@@ -5,6 +5,10 @@ import { fillWithDefaults } from "../../utils/fill_with_defaults.ts";
 import { DEFAULT_SAVED_SETTINGS } from "../../../../server/saved_settings.ts";
 import { DEFAULT_THEME, themeList } from "../../themes/theme_list.ts";
 import { Ut } from "../../utils/other.js";
+import {
+    DEFAULT_KEYBOARD_THEME,
+    keyboardThemes
+} from "../../canvas_keyboard/base/keyboard_themes.ts";
 
 export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
     console.info("Loading settings!");
@@ -160,10 +164,12 @@ export async function _loadSettings(this: SpessaSynthSettings): Promise<void> {
         }
     }
     // Keyboard theme
-    if (keyboardValues.mode === "dark") {
-        keyboard.setMode("dark");
-        this.htmlControls.keyboard.mode.checked = true;
-    }
+    const keyboardTheme =
+        keyboardValues.theme in keyboardThemes
+            ? keyboardValues.theme
+            : DEFAULT_KEYBOARD_THEME;
+    keyboard.setTheme(keyboardTheme);
+    keyboardControls.theme.value = keyboardTheme;
     // Keyboard show
     if (!keyboardValues.show) {
         keyboard.shown = false;

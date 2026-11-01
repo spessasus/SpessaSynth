@@ -19,9 +19,10 @@ export const keyboardSettingsLocale = {
         twoOctaves: "Two octaves"
     },
 
-    toggleTheme: {
-        title: "Use dark theme",
-        description: "Use the dark MIDI keyboard theme"
+    theme: {
+        title: "Keyboard theme",
+        description:
+            "The look of the MIDI keyboard, independent of the interface theme"
     },
 
     show: {
