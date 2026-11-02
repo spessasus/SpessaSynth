@@ -129,6 +129,19 @@ if (unformatted) {
     // eslint-disable-next-line unicorn/no-process-exit
     process.exit(1);
 }
+const goMod = await fs.readFile(path.resolve(EXE_DIR, "go.mod"), "utf8");
+const canonicalGoMod = runSync("go", ["mod", "edit", "-print"], {
+    cwd: EXE_DIR,
+    shell: false,
+    capture: true
+});
+if (goMod !== canonicalGoMod) {
+    console.error(
+        "src/executable/go.mod is not formatted, run go mod edit -fmt in src/executable"
+    );
+    // eslint-disable-next-line unicorn/no-process-exit
+    process.exit(1);
+}
 runSync("go", ["vet", "./..."], { cwd: EXE_DIR, shell: false });
 runSync("go", ["tool", "staticcheck", "./..."], { cwd: EXE_DIR, shell: false });
 runSync("go", ["test", "./..."], { cwd: EXE_DIR, shell: false });

@@ -7,5 +7,6 @@ export default {
         "go tool staticcheck ./...",
         "go test ./..."
     ],
+    "go.mod": () => "go mod edit -fmt",
     "*.{mjs,md}": "prettier --write"
 };
