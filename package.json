@@ -1,6 +1,6 @@
 {
     "name": "SpessaSynth",
-    "version": "4.4.2",
+    "version": "4.4.3",
     "type": "module",
     "private": true,
     "scripts": {
@@ -12,7 +12,9 @@
         "dev": "node src/build/dev.ts",
         "release": "node src/build/release.ts",
         "video": "tsx src/cli_video/index.ts",
-        "clean": "node -e \"const fs=require('fs/promises'); Promise.all([fs.rm('dist',{recursive:true,force:true}), fs.rm('local-dev',{recursive:true,force:true}), fs.rm('server',{recursive:true,force:true})])\""
+        "clean": "node -e \"const fs=require('fs/promises'); Promise.all([fs.rm('dist',{recursive:true,force:true}), fs.rm('local-dev',{recursive:true,force:true}), fs.rm('server',{recursive:true,force:true})])\"",
+        "prepare": "husky",
+        "build:binary": "node src/build/build_binary.ts"
     },
     "devDependencies": {
         "@chialab/esbuild-plugin-meta-url": "^0.19.2",
@@ -23,6 +25,8 @@
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-unicorn": "^64.0.0",
         "globals": "^17.13.0",
+        "husky": "^9.1.7",
+        "lint-staged": "^17.6.0",
         "prettier": "^3.9.10",
         "skia-canvas": "^4.0.0",
         "typescript": "^6.0.3",
@@ -44,6 +48,6 @@
         "wasm-media-encoders": "^0.7.0"
     },
     "allowScripts": {
-        "esbuild@0.28.1": true
+        "esbuild@0.28.2": true
     }
 }

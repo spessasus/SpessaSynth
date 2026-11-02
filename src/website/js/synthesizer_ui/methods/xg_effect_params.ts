@@ -41,10 +41,7 @@ export interface XGEffectType {
  * The common parameters of the XG system effects.
  */
 export type XGSharedParameter =
-    | "return"
-    | "pan"
-    | "sendToReverb"
-    | "sendToChorus";
+    "return" | "pan" | "sendToReverb" | "sendToChorus";
 
 /**
  * All the parameters that the XG effect blocks can receive.

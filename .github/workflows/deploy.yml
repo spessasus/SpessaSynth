@@ -6,6 +6,11 @@ on:
         branches: ["master"]
 
     workflow_dispatch:
+        inputs:
+            deploy:
+                description: "Deploy to GitHub Pages"
+                type: boolean
+                default: true
 
 permissions:
     contents: read
@@ -31,10 +36,17 @@ jobs:
               with:
                   node-version: 24
 
+            - name: Set up Go
+              uses: actions/setup-go@v7
+              with:
+                  go-version-file: src/executable/go.mod
+                  cache-dependency-path: src/executable/go.sum
+
             - name: Show versions
               run: |
                   node -v
                   npm -v
+                  go version
 
             - name: Install dependencies
               run: npm ci
@@ -42,14 +54,20 @@ jobs:
             - name: Build
               run: npm run build
 
+            - name: Build the standalone executables
+              run: npm run build:binary
+
             - name: Setup Pages
+              if: github.event_name != 'workflow_dispatch' || inputs.deploy
               uses: actions/configure-pages@v6
 
             - name: Upload artifact
+              if: github.event_name != 'workflow_dispatch' || inputs.deploy
               uses: actions/upload-pages-artifact@v5
               with:
                   # Upload dist folder
                   path: "./dist"
             - name: Deploy to GitHub Pages
+              if: github.event_name != 'workflow_dispatch' || inputs.deploy
               id: deployment
               uses: actions/deploy-pages@v5

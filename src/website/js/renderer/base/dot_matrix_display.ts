@@ -50,8 +50,7 @@ export class DotMatrixDisplay {
 
     private readonly sc8850Canvas: HTMLCanvasElement | OffscreenCanvas;
     private readonly sc8850Ctx:
-        | CanvasRenderingContext2D
-        | OffscreenCanvasRenderingContext2D;
+        CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
 
     public constructor(
         context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,

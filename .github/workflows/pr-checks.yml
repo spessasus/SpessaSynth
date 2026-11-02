@@ -25,8 +25,17 @@ jobs:
                   node-version: 24
                   cache: npm
 
+            - name: Setup Go
+              uses: actions/setup-go@v7
+              with:
+                  go-version-file: src/executable/go.mod
+                  cache-dependency-path: src/executable/go.sum
+
             - name: Install dependencies
               run: npm ci
 
             - name: Test types and build
               run: npm run build
+
+            - name: Build the standalone executables
+              run: npm run build:binary

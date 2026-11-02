@@ -2,10 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 import type { ServerResponse } from "node:http";
 import type { LocalEditionConfig } from "./config_management.ts";
+import { APP_ID, type VersionInfo } from "./api.ts";
 
 import {
     getCurrentVersion,
-    isSoundBank,
+    isSafeBankName,
     soundfontsPath
 } from "./server_utils.ts";
 
@@ -47,7 +48,7 @@ export async function serveSfontList(
 ) {
     const fileNames = fs
         .readdirSync(soundfontsPath)
-        .filter((fName) => isSoundBank(fName));
+        .filter((fName) => isSafeBankName(fName));
 
     if (config.config.lastUsedSf2) {
         if (fileNames.includes(config.config.lastUsedSf2)) {
@@ -99,22 +100,6 @@ export function serveStaticFile(
         res.end("Invalid path");
         return;
     }
-    if (
-        filePath.toLowerCase().endsWith(".sf3") ||
-        filePath.toLowerCase().endsWith(".sf2") ||
-        filePath.toLowerCase().endsWith(".sf4") ||
-        filePath.toLowerCase().endsWith(".sfogg") ||
-        filePath.toLowerCase().endsWith(".dls")
-    ) {
-        filePath = path.join(
-            path.dirname(filePath),
-            "../soundfonts",
-            path.basename(filePath)
-        );
-        serveSfont(filePath, res);
-        return;
-    }
-
     let file;
     try {
         file = fs.readFileSync(filePath);
@@ -145,7 +130,12 @@ export function serveStaticFile(
 }
 
 export function getVersion(res: ServerResponse) {
-    const v = getCurrentVersion();
-    res.writeHead(200, { "Content-Type": "text/plain" });
-    res.end(v);
+    const info: VersionInfo = {
+        app: APP_ID,
+        version: getCurrentVersion(),
+        binary: false,
+        platform: process.platform
+    };
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify(info));
 }

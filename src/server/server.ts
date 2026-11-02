@@ -4,13 +4,21 @@ import {
     getVersion,
     resolveRequestPath,
     serveSettings,
+    serveSfont,
     serveSfontList,
     serveStaticFile
 } from "./serve.js";
 import { openURL } from "./open.js";
 import { type SavedSettings } from "./saved_settings.ts";
 import { LocalEditionConfig } from "./config_management.ts";
-import { getCurrentVersion, rootDir, rootFile } from "./server_utils.ts";
+import {
+    getCurrentVersion,
+    isSafeBankName,
+    rootDir,
+    rootFile,
+    soundfontsPath
+} from "./server_utils.ts";
+import { API, type LastUsedSoundBankBody, PAGE_HEADER } from "./api.ts";
 import { autoUpdate } from "./auto_update.ts";
 
 let PORT = 8181;
@@ -26,11 +34,58 @@ await autoUpdate();
 
 const configManager = await LocalEditionConfig.initialize();
 
+function readBody(req: http.IncomingMessage) {
+    return new Promise<string>((resolve, reject) => {
+        let body = "";
+        req.on("data", (chunk: Buffer) => {
+            body += chunk.toString();
+        });
+        req.on("end", () => resolve(body));
+        req.on("error", reject);
+    });
+}
+
+function sendText(res: http.ServerResponse, status: number, text: string) {
+    res.writeHead(status, { "Content-Type": "text/plain" });
+    res.end(text);
+}
+
 const server = http.createServer(async (req, res) => {
     if (!req.url) {
         return;
     }
-    switch (req.url.split("?")[0]) {
+    const pathname = req.url.split("?")[0];
+    const method = req.method ?? "GET";
+
+    // State-changing requests must come from the page, see PAGE_HEADER
+    if (
+        method !== "GET" &&
+        method !== "HEAD" &&
+        !req.headers[PAGE_HEADER.toLowerCase()]
+    ) {
+        sendText(res, 403, `Missing ${PAGE_HEADER} header`);
+        return;
+    }
+
+    if (method === "GET" && pathname.startsWith(API.soundBanks + "/")) {
+        let name;
+        try {
+            name = decodeURIComponent(
+                pathname.slice(API.soundBanks.length + 1)
+            );
+        } catch {
+            sendText(res, 400, "Invalid sound bank name");
+            return;
+        }
+        if (!isSafeBankName(name)) {
+            sendText(res, 400, "Invalid sound bank name");
+            return;
+        }
+        serveSfont(path.join(soundfontsPath, name), res);
+        return;
+    }
+
+    switch (`${method} ${pathname}`) {
         default: {
             serveStaticFile(
                 res,
@@ -39,56 +94,60 @@ const server = http.createServer(async (req, res) => {
             break;
         }
 
-        case "/": {
+        case "GET /": {
             serveStaticFile(res, rootFile, "text/html");
             break;
         }
 
-        case "/soundfonts": {
+        case `GET ${API.soundBanks}`: {
             await serveSfontList(res, configManager);
             break;
         }
 
-        case "/setlastsf2": {
-            const urlParams = new URL(req.url, `http://${req.headers.host}`)
-                .searchParams;
-
-            configManager.config.lastUsedSf2 = urlParams.get("sfname");
+        case `PUT ${API.lastUsedSoundBank}`: {
+            let name: unknown;
+            try {
+                name = (
+                    JSON.parse(
+                        await readBody(req)
+                    ) as Partial<LastUsedSoundBankBody>
+                ).name;
+            } catch {
+                // An exception here would stop the server, prevent that.
+                sendText(res, 400, "Invalid body");
+                return;
+            }
+            if (typeof name !== "string" || !isSafeBankName(name)) {
+                sendText(res, 400, "Invalid sound bank name");
+                return;
+            }
+            configManager.config.lastUsedSf2 = name;
             await configManager.flush();
-            res.writeHead(200, { "Content-Type": "text/plain" });
-            res.end("Soundfont updated");
+            sendText(res, 200, "Sound bank updated");
             break;
         }
 
-        case "/savesettings": {
-            let body = "";
-            req.on("data", (chunk: number) => {
-                body += chunk.toString();
-            });
-            req.on("end", async () => {
-                try {
-                    configManager.config.settings = JSON.parse(
-                        body
-                    ) as SavedSettings;
-                } catch {
-                    // An exception here would stop the server, prevent that.
-                    res.writeHead(400, { "Content-Type": "text/plain" });
-                    res.end("Invalid settings");
-                    return;
-                }
-                await configManager.flush();
-                res.writeHead(200, { "Content-Type": "text/plain" });
-                res.end("Settings saved");
-            });
+        case `PUT ${API.settings}`: {
+            try {
+                configManager.config.settings = JSON.parse(
+                    await readBody(req)
+                ) as SavedSettings;
+            } catch {
+                // An exception here would stop the server, prevent that.
+                sendText(res, 400, "Invalid settings");
+                return;
+            }
+            await configManager.flush();
+            sendText(res, 200, "Settings saved");
             break;
         }
 
-        case "/getsettings": {
+        case `GET ${API.settings}`: {
             serveSettings(res, configManager);
             break;
         }
 
-        case "/getversion": {
+        case `GET ${API.version}`: {
             getVersion(res);
             break;
         }

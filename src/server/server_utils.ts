@@ -40,6 +40,16 @@ export function isVersionNewer(newerThan: string, olderThan: string) {
     return false;
 }
 
+export function isSafeBankName(name: string) {
+    return (
+        name.length > 0 &&
+        !name.includes("/") &&
+        !name.includes("\\") &&
+        name !== ".." &&
+        isSoundBank(name)
+    );
+}
+
 export function isSoundBank(name: string): boolean {
     const fName = name.toLowerCase();
     return (

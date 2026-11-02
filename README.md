@@ -28,7 +28,13 @@ and a redesigned settings menu!</p>
 <h2 align="center"><a href="https://spessasus.github.io/SpessaSynth/">Online Version (no download needed!)</a></h2>
 
 <!--suppress HtmlUnknownAnchorTarget -->
-<h2 align="center"><a href='https://spessasus.github.io/SpessaSynth/SpessaSynth-LocalEdition.zip'>Download Local Edition</a></h2>
+<h2 align="center"><a href='#local-edition'>Download Local Edition</a></h2>
+<p align="center">
+<a href='https://spessasus.github.io/SpessaSynth/SpessaSynth-win-x64.zip'>Windows</a> ·
+<a href='https://spessasus.github.io/SpessaSynth/SpessaSynth-linux-x64.tar.gz'>Linux x64</a> ·
+<a href='https://spessasus.github.io/SpessaSynth/SpessaSynth-linux-arm64.tar.gz'>Linux ARM64</a> ·
+<a href='https://spessasus.github.io/SpessaSynth/SpessaSynth-LocalEdition.zip'>ZIP (needs Node.js)</a>
+</p>
 
 <h2 align="center">Made with SpessaSynth</h2>
 <p align="center">
@@ -109,13 +115,49 @@ MARKDOWN VERSION
 ### Local Edition
 
 _SpessaSynth: Local Edition_ comes with easier soundfont management than the demo version,
-also allowing to use it offline! [You can download it here.](https://spessasus.github.io/SpessaSynth/SpessaSynth-LocalEdition.zip)
+also allowing to use it offline!
 
 > [!IMPORTANT]
 > Firefox is recommended due to Chromium's 4GB memory limit.
 > A decent computer is also recommended for high-polyphony sound banks.
 
 [Recommended high-quality SoundFont for Local Edition](https://musical-artifacts.com/artifacts/1176)
+
+#### Standalone version (Windows and Linux)
+
+SpessaSynth now comes as native executables in addition to the old Node.js version!
+
+Download the file for your system from the links at the top (or the Download button on the website),
+unpack it and start `SpessaSynth`. Nothing else needs to be installed!
+It opens in your browser and closes by itself once you close its last tab,
+fully automatically!
+
+- **First start:** if you have no sound banks yet, SpessaSynth can download the default GeneralUser GS for you.
+- **Sound banks and settings** are kept in a folder for your user:
+    - Windows: `%LOCALAPPDATA%\SpessaSynth`
+    - Linux: `~/.local/share/SpessaSynth` (or `$XDG_DATA_HOME/SpessaSynth`)
+- **Portable mode:** create a folder named `data` next to the executable and everything is kept there instead.
+  The `SPESSASYNTH_HOME` environment variable picks any other folder.
+- **Automatic updates:** SpessaSynth checks for a new version on start and asks before updating itself.
+  Set `"autoUpdate": true` in `config.json` to update without asking,
+  or `"checkForUpdates": false` (or start it with `--no-update-check`) to turn the check off.
+- **Other devices on your network:** start it with `--lan`. It then keeps running until you close its window.
+
+> [!WARNING]
+>
+> **Windows** may show a SmartScreen warning since the executable is not signed.
+> Choose "More info", then "Run anyway".
+>
+> **Linux:** some file managers do not start programs on double-click. Run `./SpessaSynth` from a terminal once,
+> or use `./SpessaSynth --install-launcher` (or the button in the sound bank folder menu) to add it to your
+> applications menu.
+>
+> macOS is not supported by the standalone version yet. Use the ZIP version there.
+
+#### ZIP version (needs Node.js)
+
+[The ZIP version](https://spessasus.github.io/SpessaSynth/SpessaSynth-LocalEdition.zip) runs anywhere Node.js does.
+It keeps its sound banks in its own `soundfonts` folder.
 
 ### Building from source
 
@@ -136,6 +178,9 @@ The build files:
 - dist: the online demo along with the bundled Local edition ZIP for downloading. This is what's hosted on GH pages.
 - local-dev: Local Edition sources with sourcemaps. For development.
 - server: the Local Edition server. It is here so it can use the root "soundfonts" folder. This is what `npm start` invokes.
+
+`npm run build:binary` builds the standalone executables into `dist/` as well. It needs [Go](https://go.dev/),
+see `src/executable/go.mod` for the version.
 
 [If you would like to help translate SpessaSynth, please read this guide (and thank you!)](src/website/locale/README.md)
 

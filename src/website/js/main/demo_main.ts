@@ -22,6 +22,7 @@ import {
 import { URLParamUtils } from "../utils/url_params.ts";
 import { isMobile } from "../utils/is_mobile.ts";
 import { themeList } from "../themes/theme_list.ts";
+import { prepareDownloadDialog } from "./demo_download.ts";
 
 /**
  * Demo_main.js
@@ -178,6 +179,7 @@ let context: AudioContext;
 async function demoInit(initLocale: LocaleCode) {
     // Initialize the locale management system. do it here because we want it ready before all js classes do their things
     const localeManager = new LocaleManager(initLocale);
+    prepareDownloadDialog(downloadButton, localeManager);
     const sampleRate = URLParamUtils.getSampleRate();
     try {
         context = new AudioContext({ sampleRate });

@@ -10,8 +10,7 @@ const PRESSED_EFFECT_OPACITY = 0.5;
 export function drawNotes(
     notesToDraw: NoteToRender[],
     drawingContext:
-        | CanvasRenderingContext2D
-        | OffscreenCanvasRenderingContext2D,
+        CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
     sideways: boolean
 ) {
     // Render the pressed effect first

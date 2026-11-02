@@ -210,8 +210,7 @@ export abstract class BaseRenderer<K extends BaseKeyboard = BaseKeyboard> {
      */
     protected notesFall = true;
     protected readonly ctx:
-        | CanvasRenderingContext2D
-        | OffscreenCanvasRenderingContext2D;
+        CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
     protected bounds: Readonly<RenderBounds> = {
         x: 0,
         y: 0,

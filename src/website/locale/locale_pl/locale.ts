@@ -3,6 +3,7 @@ import { musicPlayerModeLocale } from "./music_player_mode.js";
 import { synthesizerControllerLocale } from "./synthesizer_controller/synthesizer_controller.js";
 import { sequencerControllerLocale } from "./sequencer_controller.js";
 import { exportFile } from "./export_file.js";
+import { localEditionLocale } from "./local_edition.ts";
 
 export const localePolish = {
     localeName: "Polski",
@@ -51,6 +52,8 @@ export const localePolish = {
 
     exportFile: exportFile,
 
+    localEdition: localEditionLocale,
+
     yes: "Tak",
     no: "Nie",
     error: "Błąd",
@@ -65,8 +68,17 @@ export const localePolish = {
         downloadLocal: {
             title: "Pobierz Edycję Lokalną",
             description:
-                "Pobierz SpessaSynth: Edycja Lokalna aby używać jej na swoim komputerze bez internetu"
-        }
+                "Pobierz SpessaSyntha: Edycja Lokalna aby używać jej na swoim komputerze bez internetu"
+        },
+        dialogTitle: "Pobierz SpessaSyntha",
+        dialogMessage:
+            "Używaj SpessaSyntha na swoim komputerze bez internetu. Rozpakuj pobrany plik i uruchom SpessaSyntha, otworzy się w przeglądarce. Nie trzeba niczego więcej instalować!",
+        windows: "Windows (x64)",
+        linuxX64: "Linux (x64)",
+        linuxArm64: "Linux (ARM64)",
+        zip: "Edycja Lokalna ZIP (wymaga Node.js)",
+        withSize: "{0}, {1} MB",
+        recommended: "{0} (zalecane)"
     },
     demoSongButton: "Piosenka demo",
     demoSongPlay: "Odtwórz",

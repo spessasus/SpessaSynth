@@ -79,3 +79,8 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk!/src/website/public/
+
+# Web files copied in for the executable build
+/src/executable/web/*
+!/src/executable/web/README.txt
+/src/executable/*.syso

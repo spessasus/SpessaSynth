@@ -3,6 +3,7 @@ import { musicPlayerModeLocale } from "./music_player_mode.js";
 import { synthesizerControllerLocale } from "./synthesizer_controller/synthesizer_controller.js";
 import { sequencerControllerLocale } from "./sequencer_controller.js";
 import { exportFile } from "./export_file.js";
+import { localEditionLocale } from "./local_edition.ts";
 
 export const localeEnglish = {
     localeName: "English",
@@ -46,6 +47,8 @@ export const localeEnglish = {
 
     exportFile: exportFile,
 
+    localEdition: localEditionLocale,
+
     error: "Error",
     yes: "Yes",
     no: "No",
@@ -61,7 +64,16 @@ export const localeEnglish = {
             title: "Download Local Edition",
             description:
                 "Download SpessaSynth: Local Edition to use offline on your computer"
-        }
+        },
+        dialogTitle: "Download SpessaSynth",
+        dialogMessage:
+            "Use SpessaSynth offline on your computer. Unpack the download and start SpessaSynth, it opens in your browser. Nothing else needs to be installed!",
+        windows: "Windows (x64)",
+        linuxX64: "Linux (x64)",
+        linuxArm64: "Linux (ARM64)",
+        zip: "Local Edition ZIP (needs Node.js)",
+        withSize: "{0}, {1} MB",
+        recommended: "{0} (recommended)"
     },
     demoSongButton: "Demo Song",
     demoSongPlay: "Play",
