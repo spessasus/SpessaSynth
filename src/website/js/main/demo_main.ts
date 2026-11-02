@@ -116,8 +116,7 @@ async function loadLastSoundFontFromDatabase(): Promise<
 
             request.addEventListener("success", () => {
                 const result = request.result as
-                    | { data: ArrayBuffer }
-                    | undefined;
+                    { data: ArrayBuffer } | undefined;
                 if (!result) {
                     resolve(undefined);
                     return;
@@ -149,8 +148,8 @@ function changeIcon(html: string, disableAnimation = true) {
 async function saveSoundFontToIndexedDB(arr: ArrayBuffer) {
     const check = arr.slice(8, 12);
     const dec = new TextDecoder().decode(check).toLowerCase();
-    if (dec !== "sfbk" && dec !== "sfpk" && dec !== "dls ") {
-        console.warn("Not viable to save!");
+    if (dec !== "sfbk" && dec !== "sfpk" && dec !== "dls " && dec !== "sfen") {
+        console.warn(`Not saving file. Unknown fourcc ${dec}`);
         return;
     }
     return new Promise<void>((solve) => {
