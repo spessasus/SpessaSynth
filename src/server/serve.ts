@@ -102,6 +102,7 @@ export function serveStaticFile(
     if (
         filePath.toLowerCase().endsWith(".sf3") ||
         filePath.toLowerCase().endsWith(".sf2") ||
+        filePath.toLowerCase().endsWith(".sf4") ||
         filePath.toLowerCase().endsWith(".sfogg") ||
         filePath.toLowerCase().endsWith(".dls")
     ) {

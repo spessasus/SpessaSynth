@@ -45,6 +45,7 @@ export function isSoundBank(name: string): boolean {
     return (
         fName.endsWith("sf2") ||
         fName.endsWith("sf3") ||
+        fName.endsWith("sf4") ||
         fName.endsWith("sfogg") ||
         fName.endsWith("dls")
     );
