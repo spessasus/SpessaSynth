@@ -15,7 +15,7 @@
         "clean": "node -e \"const fs=require('fs/promises'); Promise.all([fs.rm('dist',{recursive:true,force:true}), fs.rm('local-dev',{recursive:true,force:true}), fs.rm('server',{recursive:true,force:true})])\""
     },
     "devDependencies": {
-        "@chialab/esbuild-plugin-meta-url": "^0.19.1",
+        "@chialab/esbuild-plugin-meta-url": "^0.19.2",
         "@eslint/js": "^10.0.1",
         "@types/node": "^26.6.5",
         "esbuild": "^0.28.2",
