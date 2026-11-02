@@ -147,8 +147,11 @@ function changeIcon(html: string, disableAnimation = true) {
 }
 
 async function saveSoundFontToIndexedDB(arr: ArrayBuffer) {
-    const check = arr.slice(8, 12);
-    const dec = new TextDecoder().decode(check).toLowerCase();
+    const d = new TextDecoder();
+    const fourcc = arr.slice(0, 4);
+    const offset = d.decode(fourcc) === "RIFF" ? 8 : 12;
+    const check = arr.slice(offset, offset + 4);
+    const dec = d.decode(check).toLowerCase();
     if (dec !== "sfbk" && dec !== "sfpk" && dec !== "dls " && dec !== "sfen") {
         console.warn(`Not saving file. Unknown fourcc ${dec}`);
         return;
