@@ -1733,7 +1733,7 @@ export const gsInsertionEffectData: GSInsertionEffect[] = [
     },
     {
         type: 0x02_00,
-        name: "OD → Chorus",
+        name: "OD -> Chorus",
         desc: "This effect connects an overdrive and a chorus in series.",
         params: [
             [
@@ -1781,7 +1781,7 @@ export const gsInsertionEffectData: GSInsertionEffect[] = [
     },
     {
         type: 0x02_01,
-        name: "OD → Flanger",
+        name: "OD -> Flanger",
         desc: "This effect connects an overdrive and a flanger in series.",
         params: [
             [
@@ -1836,7 +1836,7 @@ export const gsInsertionEffectData: GSInsertionEffect[] = [
     },
     {
         type: 0x02_02,
-        name: "OD → Delay",
+        name: "OD -> Delay",
         desc: "This effect connects an overdrive and a delay in series.",
         params: [
             [
@@ -1890,7 +1890,7 @@ export const gsInsertionEffectData: GSInsertionEffect[] = [
     },
     {
         type: 0x02_03,
-        name: "DS → Chorus",
+        name: "DS -> Chorus",
         desc: "This effect connects a distortion and a chorus in series.",
         params: [
             [
@@ -1938,7 +1938,7 @@ export const gsInsertionEffectData: GSInsertionEffect[] = [
     },
     {
         type: 0x02_04,
-        name: "DS → Flanger",
+        name: "DS -> Flanger",
         desc: "This effect connects a distortion and a flanger in series.",
         params: [
             [
@@ -1993,7 +1993,7 @@ export const gsInsertionEffectData: GSInsertionEffect[] = [
     },
     {
         type: 0x02_05,
-        name: "DS → Delay",
+        name: "DS -> Delay",
         desc: "This effect connects a distortion and a delay in series.",
         params: [
             [
@@ -2047,7 +2047,7 @@ export const gsInsertionEffectData: GSInsertionEffect[] = [
     },
     {
         type: 0x02_06,
-        name: "EH → Chorus",
+        name: "EH -> Chorus",
         desc: "This effect connects an enhancer and a chorus in series.",
         params: [
             [
@@ -2081,7 +2081,7 @@ export const gsInsertionEffectData: GSInsertionEffect[] = [
     },
     {
         type: 0x02_07,
-        name: "EH → Flanger",
+        name: "EH -> Flanger",
         desc: "This effect connects an enhancer and a flanger in series.",
         params: [
             [
@@ -2122,7 +2122,7 @@ export const gsInsertionEffectData: GSInsertionEffect[] = [
     },
     {
         type: 0x02_08,
-        name: "EH → Delay",
+        name: "EH -> Delay",
         desc: "This effect connects an enhancer and a delay in series.",
         params: [
             [
@@ -2162,7 +2162,7 @@ export const gsInsertionEffectData: GSInsertionEffect[] = [
     },
     {
         type: 0x02_09,
-        name: "Cho → Delay",
+        name: "Cho -> Delay",
         desc: "This effect connects a chorus and a delay unit in series.",
         params: [
             [
@@ -2204,7 +2204,7 @@ export const gsInsertionEffectData: GSInsertionEffect[] = [
     },
     {
         type: 0x02_0a,
-        name: "FL → Delay",
+        name: "FL -> Delay",
         desc: "This effect connects a flanger and a delay in series.",
         params: [
             [
@@ -2253,7 +2253,7 @@ export const gsInsertionEffectData: GSInsertionEffect[] = [
     },
     {
         type: 0x02_0b,
-        name: "Cho → Flanger",
+        name: "Cho -> Flanger",
         desc: "This effect connects a chorus and a flanger in series.",
         params: [
             [

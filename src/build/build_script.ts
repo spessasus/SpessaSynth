@@ -1,5 +1,6 @@
 import path from "node:path";
 import fs from "node:fs/promises";
+import crypto from "node:crypto";
 import * as esbuild from "esbuild";
 import metaUrlPlugin from "@chialab/esbuild-plugin-meta-url";
 import JSZip from "jszip";
@@ -100,7 +101,14 @@ export async function buildSpessaSynth() {
     const serverInput = path.resolve(SERVER_SRC_DIR, "server.ts");
     const stylesInput = path.resolve(WEBSITE_SRC_DIR, "css/style.css");
 
+    const workletHash = crypto
+        .createHash("sha256")
+        .update(await fs.readFile(WORKLET_PATH))
+        .digest("hex")
+        .slice(0, 8);
+
     const regularOptions: esbuild.BuildOptions = {
+        define: { SPESSASYNTH_WORKLET_HASH: JSON.stringify(workletHash) },
         minify: true,
         bundle: true,
         treeShaking: true,

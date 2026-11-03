@@ -48,6 +48,9 @@ document.body.classList.add("load");
 
 const ENABLE_DEBUG = false;
 
+// Replaced by esbuild with the worklet file hash, see src/build/build_script.ts
+declare const SPESSASYNTH_WORKLET_HASH: string;
+
 export class Manager {
     public sfError?: (err: string) => unknown;
     public enableDebug;
@@ -335,7 +338,7 @@ export class Manager {
             return synth;
         } else {
             await context.audioWorklet.addModule(
-                "./spessasynth_processor.min.js"
+                `spessasynth_processor.min.js?hash=${SPESSASYNTH_WORKLET_HASH}`
             );
             return new WorkletSynthesizer(context, {
                 convolverMode: this.convolverMode
