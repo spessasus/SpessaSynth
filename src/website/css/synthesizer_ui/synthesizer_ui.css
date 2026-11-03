@@ -40,8 +40,9 @@
     /* Use vh so phones have max width*/
     max-width: 120vh;
     margin: auto;
-    justify-content: center;
+    justify-content: safe center;
     max-height: 70vh;
+    overflow-y: auto;
 }
 
 .effect_wrapper h2 {
@@ -50,6 +51,12 @@
 
 .effect_wrapper h4 {
     font-style: italic;
+}
+
+.effect_wrapper .effect_description {
+    font-style: italic;
+    font-size: 0.9em;
+    margin-top: 0;
 }
 
 .effect_wrapper > * {

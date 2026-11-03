@@ -1145,13 +1145,17 @@ export class SynthesizerUI {
         if (e.effect === "gsInsertion") {
             switch (e.parameter) {
                 default: {
-                    const param = this.currentInsertionEffect.controllers.get(
-                        e.parameter
-                    );
-                    if (!param) {
-                        return;
+                    if (typeof e.parameter === "number") {
+                        const param =
+                            this.currentInsertionEffect.controllers.get(
+                                e.parameter
+                            );
+                        if (!param) {
+                            return;
+                        }
+                        param.update(e.value);
                     }
-                    param.update(e.value);
+
                     break;
                 }
 

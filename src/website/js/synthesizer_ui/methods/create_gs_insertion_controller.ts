@@ -92,6 +92,18 @@ export function createGSInsertionController(
     lock.addEventListener("click", toggleLock);
     typeLockWrapper.append(lock);
 
+    // Effect description
+    const effectDescription = document.createElement("p");
+    effectDescription.classList.add("effect_description");
+    const updateEffectDescription = () => {
+        const v = Number.parseInt(effectSelector.value);
+        const effect = insertionEffects.find((fx) => fx.type === v);
+        effectDescription.textContent = effect?.desc ?? "";
+    };
+    updateEffectDescription();
+    effectSelector.addEventListener("change", updateEffectDescription);
+    wrapper.append(effectDescription);
+
     // Effect sends
     const effectSendsWrapper = document.createElement("div");
     effectSendsWrapper.classList.add(

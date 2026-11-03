@@ -5,6 +5,7 @@ export const UPDATE_NAME = "v4.4.0 The XG Update";
  */
 export const WHATS_NEW: string[] = [
     `Full Yamaha XG effects, with a new GUI!`,
+    `GS Insertion Effects!`,
     `GS User Drum Set support!`,
     `Play tracker modules: MOD, XM and S3M!`,
     `Export the visualization to a video (WebM or MP4)!`,
