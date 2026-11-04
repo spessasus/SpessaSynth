@@ -18,7 +18,9 @@ export const effectsConfig = {
                 "キュービックはリニアと同程度の品質で、CPU使用率もリニアより少し低いです。",
             linear: "リニア(線形補間)",
             nearestNeighbor: "ニアレストネイバー(最近傍補間)",
-            cubic: "キュービック(三次補間)"
+            cubic: "キュービック(三次補間)",
+            sinc32: "シンク補間(32ポイント)",
+            sinc128: "シンク補間(128ポイント、非常に重い)"
         },
 
         sampleRate: {

@@ -148,6 +148,30 @@ export function createAdvancedConfiguration(
             );
             interpolation.append(cubic);
 
+            /**
+             * Sinc 32-point
+             */
+            const sinc32 = document.createElement("option");
+            sinc32.value = InterpolationTypes.sinc32.toString();
+            this.locale.bindObjectProperty(
+                sinc32,
+                "textContent",
+                INTERP_PATH + "sinc32"
+            );
+            interpolation.append(sinc32);
+
+            /**
+             * Sinc 128-point (meant for offline rendering)
+             */
+            const sinc128 = document.createElement("option");
+            sinc128.value = InterpolationTypes.sinc128.toString();
+            this.locale.bindObjectProperty(
+                sinc128,
+                "textContent",
+                INTERP_PATH + "sinc128"
+            );
+            interpolation.append(sinc128);
+
             interpolation.addEventListener("change", () => {
                 this.synth.setSystemParameter(
                     "interpolationType",

@@ -16,7 +16,9 @@ export const effectsConfig = {
             description: "Selecione o método de interpolação do sintetizador",
             linear: "Interpolação Linear",
             nearestNeighbor: "Vizinho mais próximo",
-            cubic: "Interpolação Cúbica"
+            cubic: "Interpolação Cúbica",
+            sinc32: "Interpolação Sinc (32 pontos)",
+            sinc128: "Interpolação Sinc (128 pontos, muito lenta)"
         }
     },
     reverb: {

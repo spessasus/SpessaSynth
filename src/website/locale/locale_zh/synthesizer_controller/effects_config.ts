@@ -18,7 +18,9 @@ export const effectsConfig = {
             description: "选择合成器的插值方法",
             linear: "线性插值",
             nearestNeighbor: "最近邻插值",
-            cubic: "三次插值"
+            cubic: "三次插值",
+            sinc32: "Sinc插值(32点)",
+            sinc128: "Sinc插值(128点,极慢)"
         },
 
         sampleRate: {

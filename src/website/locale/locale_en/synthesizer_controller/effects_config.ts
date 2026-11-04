@@ -14,7 +14,9 @@ export const effectsConfig = {
                 "Interpolation: Select the synthesizer's interpolation method",
             linear: "Linear Interpolation",
             nearestNeighbor: "Nearest neighbor",
-            cubic: "Cubic Interpolation"
+            cubic: "Cubic Interpolation",
+            sinc32: "Sinc Interpolation (32-point)",
+            sinc128: "Sinc Interpolation (128-point, very slow)"
         },
 
         sampleRate: {

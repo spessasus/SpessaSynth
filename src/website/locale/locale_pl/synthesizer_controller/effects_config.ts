@@ -37,7 +37,9 @@ export const effectsConfig = {
             description: "Wybierz metodę interpolacji",
             linear: "Interpolacja liniowa",
             nearestNeighbor: "Najbliższy sąsiad",
-            cubic: "Interpolacja Sześcienna"
+            cubic: "Interpolacja Sześcienna",
+            sinc32: "Interpolacja Sinc (32 punkty)",
+            sinc128: "Interpolacja Sinc (128 punktów, bardzo wolna)"
         },
 
         sampleRate: {
