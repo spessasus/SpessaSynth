@@ -18,6 +18,16 @@ import {
  * purpose: manages a single selector element for selecting the presets
  */
 
+function drumBankLabel(patch: MIDIPatchFull) {
+    if (!patch.isDrum) {
+        return undefined;
+    }
+    if (patch.isGMGSDrum) {
+        return patch.bankMSB === 0 ? "GS" : undefined;
+    }
+    return patch.bankMSB === 120 ? "GM2" : "XG";
+}
+
 export class Selector {
     public readonly mainButton: HTMLButtonElement;
     // Shown on the  selector
@@ -360,15 +370,16 @@ export class Selector {
             }
             patch = this.elements[0];
         }
+        // Drum kits of one program are told apart by the bank too, so they follow the same rule
         if (
-            patch.isDrum ||
             this.elements.filter(
-                (e) => e.program === patch.program && !e.isDrum
+                (e) => e.program === patch.program && e.isDrum === patch.isDrum
             ).length < 2
         ) {
             return `${patch.program}. ${patch.name}`;
         }
-        return `${MIDIPatchTools.toMIDIString(patch)} ${patch.name}`;
+        const msb = drumBankLabel(patch) ?? patch.bankMSB;
+        return `${patch.bankLSB}:${msb}:${patch.program} ${patch.name}`;
     }
 
     /**
@@ -435,19 +446,6 @@ export class Selector {
                 }
             }
             const programText = preset.program.toString().padStart(3, "0");
-            const msbString = preset.bankMSB.toString().padStart(3, "0");
-            const lsbString = preset.bankLSB.toString().padStart(3, "0");
-            let bankLSBText: string, bankMSBText: string;
-            if (preset.isGMGSDrum) {
-                bankLSBText = "GS";
-                bankMSBText = "DRUM";
-            } else if (preset.isDrum) {
-                bankLSBText = "XG";
-                bankMSBText = "DRUM";
-            } else {
-                bankMSBText = msbString;
-                bankLSBText = lsbString;
-            }
 
             const presetName = document.createElement("td");
             presetName.classList.add("voice_selector_preset_name");
@@ -459,11 +457,15 @@ export class Selector {
 
             const presetBankMSB = document.createElement("td");
             presetBankMSB.classList.add("voice_selector_preset_program");
-            presetBankMSB.textContent = bankMSBText;
+            presetBankMSB.textContent =
+                drumBankLabel(preset) ??
+                preset.bankMSB.toString().padStart(3, "0");
 
             const presetBankLSB = document.createElement("td");
             presetBankLSB.classList.add("voice_selector_preset_program");
-            presetBankLSB.textContent = bankLSBText;
+            presetBankLSB.textContent = preset.bankLSB
+                .toString()
+                .padStart(3, "0");
 
             row.append(presetBankLSB);
             row.append(presetBankMSB);

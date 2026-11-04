@@ -436,18 +436,23 @@ export function appendNewController(
         [channelNumber + 1],
         (patch) => {
             ch.setSystemParameter("presetLock", false);
-            if (!patch.isGMGSDrum) {
+            // GS drum kits are told apart by the bank too,
+            // But outside GS the MSB is the drum flag, so only the LSB is sent there
+            if (
+                !patch.isGMGSDrum ||
+                this.synth.midiParameters.system === "gs"
+            ) {
                 this.synth.controllerChange(
                     channelNumber,
                     MIDIControllers.bankSelect,
                     patch.bankMSB
                 );
-                this.synth.controllerChange(
-                    channelNumber,
-                    MIDIControllers.bankSelectLSB,
-                    patch.bankLSB
-                );
             }
+            this.synth.controllerChange(
+                channelNumber,
+                MIDIControllers.bankSelectLSB,
+                patch.bankLSB
+            );
             this.synth.programChange(channelNumber, patch.program);
             if (this.onProgramChange) {
                 this.onProgramChange(channelNumber);
