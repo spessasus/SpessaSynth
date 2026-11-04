@@ -34,9 +34,22 @@ export type GSDelayController = Record<GSDelayParams, Meter> & {
     toggleLock: () => unknown;
 };
 
+export type GSEqualizerParams = Extract<
+    EffectChangeEvent,
+    { effect: "gsEqualizer" }
+>["parameter"];
+
+export type GSEqualizerController = Record<GSEqualizerParams, Meter> & {
+    wrapper: HTMLElement;
+    toggleLock: () => unknown;
+    addNewChannel: () => unknown;
+    eqEnabledButtons: HTMLDivElement[];
+};
+
 export interface GSInsertionController {
     wrapper: HTMLElement;
     effectSelector: HTMLSelectElement;
+    sendEQSwitch: HTMLButtonElement;
     toggleLock: () => unknown;
     delay: Meter;
     chorus: Meter;
@@ -184,6 +197,35 @@ export const gsDelayEffectData: GSParamType<GSDelayParams> = {
         "Pan Repeat"
     ]
 };
+
+// 64 is 0 dB, each step is 1 dB
+const eqGain = (v: number) => {
+    const db = v - 64;
+    return `${db > 0 ? "+" : ""}${db} dB`;
+};
+
+/**
+ * SC-8850 manual p.236
+ * "d" - default value
+ */
+export const gsEqualizerEffectData: (GSParamType<GSEqualizerParams>["params"][number] & {
+    d: number;
+})[] = [
+    {
+        p: "lowFrequency",
+        r: { min: 0, max: 1 },
+        d: 0,
+        td: (v) => (v === 0 ? "200 Hz" : "400 Hz")
+    },
+    { p: "lowGain", r: { min: 0x34, max: 0x4c }, d: 0x40, td: eqGain },
+    {
+        p: "highFrequency",
+        r: { min: 0, max: 1 },
+        d: 0,
+        td: (v) => (v === 0 ? "3 kHz" : "6 kHz")
+    },
+    { p: "highGain", r: { min: 0x34, max: 0x4c }, d: 0x40, td: eqGain }
+];
 
 interface GSInsertionEffect {
     // Type as 0xAA_BB (msb << 8 | lsb)

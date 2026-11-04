@@ -276,6 +276,45 @@ export const effectsConfig = {
         }
     },
 
+    equalizer: {
+        title: "Konfiguracja korektora GS",
+        description:
+            "Dostosuj barwę dźwięku za pomocą dwupasmowego korektora półkowego. " +
+            "Przechodzi przez niego tylko suchy sygnał, pogłos, chór i delay nie.",
+
+        activeChannels: {
+            title: "Aktywne kanały",
+            description:
+                "Wybierz, które kanały przechodzą przez korektor. " +
+                "Kanały z efektem Insertion używają zamiast tego jego przełącznika Wysyłki do korektora.",
+            channelButton: "Przełącz korektor na kanale {0}"
+        },
+
+        lowFrequency: {
+            title: "Częstotliwość niska: ",
+            description:
+                "Częstotliwość niska: Ten parametr ustawia częstotliwość półki niskich tonów, 200 Hz lub 400 Hz."
+        },
+
+        lowGain: {
+            title: "Wzmocnienie niskie: ",
+            description:
+                "Wzmocnienie niskie: Ten parametr ustawia podbicie lub obcięcie niskich tonów, od -12 dB do +12 dB."
+        },
+
+        highFrequency: {
+            title: "Częstotliwość wysoka: ",
+            description:
+                "Częstotliwość wysoka: Ten parametr ustawia częstotliwość półki wysokich tonów, 3 kHz lub 6 kHz."
+        },
+
+        highGain: {
+            title: "Wzmocnienie wysokie: ",
+            description:
+                "Wzmocnienie wysokie: Ten parametr ustawia podbicie lub obcięcie wysokich tonów, od -12 dB do +12 dB."
+        }
+    },
+
     insertion: {
         title: "Konfiguracja efektu Insertion GS",
         description: "Wybierz efekt Insertion i ustaw, jak ma on brzmieć.",
@@ -304,6 +343,13 @@ export const effectsConfig = {
             description:
                 "Poziom wysyłki do delay: Ten parametr ustawia ilość sygnału efektu wysyłanego do efektu delay. " +
                 "Wyższe wartości powodują wysłanie większej ilości sygnału."
+        },
+
+        sendEQSwitch: {
+            title: "Wysyłka do korektora",
+            description:
+                "Wysyłka do korektora: Przepuszcza sygnał efektu Insertion przez korektor. " +
+                "Zmiana typu efektu włącza ją ponownie."
         }
     },
 

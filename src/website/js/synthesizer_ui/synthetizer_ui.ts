@@ -38,6 +38,8 @@ import {
     type GSDelayController,
     gsDelayEffectData,
     type GSDelayParams,
+    type GSEqualizerController,
+    gsEqualizerEffectData,
     type GSInsertionController,
     gsInsertionEffectData,
     type GSReverbController,
@@ -46,6 +48,7 @@ import {
 } from "./methods/gs_effect_params.ts";
 import { createGSInsertionController } from "./methods/create_gs_insertion_controller.ts";
 import { createGSEffectController } from "./methods/create_gs_effect_controller.ts";
+import { createGSEqualizerController } from "./methods/create_gs_equalizer_controller.ts";
 import {
     xgChorusData,
     type XGController,
@@ -156,6 +159,7 @@ export class SynthesizerUI {
         gsReverb: HTMLElement;
         gsChorus: HTMLElement;
         gsDelay: HTMLElement;
+        gsEqualizer: HTMLElement;
         gsInsertion: HTMLElement;
         xgReverb: HTMLElement;
         xgChorus: HTMLElement;
@@ -168,6 +172,7 @@ export class SynthesizerUI {
         reverb: GSReverbController;
         chorus: GSChorusController;
         delay: GSDelayController;
+        equalizer: GSEqualizerController;
         insertion: GSInsertionController;
         xgReverb: XGController;
         xgChorus: XGController;
@@ -368,6 +373,9 @@ export class SynthesizerUI {
                 }
                 if (this.synth.systemParameters.gsDelayLock) {
                     this.effectConfigs.delay.toggleLock();
+                }
+                if (this.synth.systemParameters.gsEqualizerLock) {
+                    this.effectConfigs.equalizer.toggleLock();
                 }
                 if (this.synth.systemParameters.gsInsertionLock) {
                     this.effectConfigs.insertion.toggleLock();
@@ -578,7 +586,13 @@ export class SynthesizerUI {
                         return option;
                     });
                 const gsTabs = createEffectTabs(
-                    ["gsReverb", "gsChorus", "gsDelay", "gsInsertion"],
+                    [
+                        "gsReverb",
+                        "gsChorus",
+                        "gsDelay",
+                        "gsEqualizer",
+                        "gsInsertion"
+                    ],
                     false
                 );
                 const xgTabs = createEffectTabs(
@@ -713,6 +727,8 @@ export class SynthesizerUI {
                         MIDIUtils.setGSDelayParameter(0, parameter, value)
                 );
 
+            const equalizerController = createGSEqualizerController.call(this);
+
             const insertionController = createGSInsertionController.call(this);
             this.currentInsertionEffect = insertionController.effects.get(0)!;
 
@@ -774,6 +790,7 @@ export class SynthesizerUI {
                 reverb: reverbController,
                 chorus: chorusController,
                 delay: delayController,
+                equalizer: equalizerController,
                 insertion: insertionController,
                 xgReverb: xgReverbController,
                 xgChorus: xgChorusController,
@@ -785,6 +802,7 @@ export class SynthesizerUI {
                 gsReverb: convolverReverbController ?? reverbController.wrapper,
                 gsChorus: chorusController.wrapper,
                 gsDelay: delayController.wrapper,
+                gsEqualizer: equalizerController.wrapper,
                 gsInsertion: insertionController.wrapper,
                 xgReverb: xgReverbController.wrapper,
                 xgChorus: xgChorusController.wrapper,
@@ -821,11 +839,19 @@ export class SynthesizerUI {
                         value: snapshot.gsDelayProcessor[p]
                     });
                 }
+                for (const { p } of gsEqualizerEffectData) {
+                    this.handleEffectChange({
+                        effect: "gsEqualizer",
+                        parameter: p,
+                        value: snapshot.gsEqualizerProcessor[p]
+                    });
+                }
             });
             this.mainControllerDiv.append(channelController);
             this.mainControllerDiv.append(this.tabs.gsReverb);
             this.mainControllerDiv.append(chorusController.wrapper);
             this.mainControllerDiv.append(delayController.wrapper);
+            this.mainControllerDiv.append(equalizerController.wrapper);
             this.mainControllerDiv.append(insertionController.wrapper);
             this.mainControllerDiv.append(xgReverbController.wrapper);
             this.mainControllerDiv.append(xgChorusController.wrapper);
@@ -1142,6 +1168,10 @@ export class SynthesizerUI {
                 return;
             }
         }
+        if (e.effect === "gsEqualizer") {
+            fx.equalizer[e.parameter].update(e.value);
+            return;
+        }
         if (e.effect === "gsInsertion") {
             switch (e.parameter) {
                 default: {
@@ -1170,6 +1200,14 @@ export class SynthesizerUI {
                 }
                 case "sendLevelToDelay": {
                     fx.insertion.delay.update(e.value);
+                    break;
+                }
+
+                case "sendEQSwitch": {
+                    fx.insertion.sendEQSwitch.classList.toggle(
+                        "enabled",
+                        e.value
+                    );
                     break;
                 }
 
@@ -1204,6 +1242,8 @@ export class SynthesizerUI {
                     fx.insertion.reverb.reset();
                     fx.insertion.chorus.reset();
                     fx.insertion.delay.reset();
+                    // The type change turns the send EQ switch back on
+                    fx.insertion.sendEQSwitch.classList.add("enabled");
 
                     break;
                 }

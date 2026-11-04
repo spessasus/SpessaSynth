@@ -80,6 +80,13 @@ export function setEventListeners(this: SynthesizerUI) {
                     break;
                 }
 
+                case "eqEnabled": {
+                    this.effectConfigs.equalizer.eqEnabledButtons[
+                        e.channel
+                    ]?.classList.toggle("red", e.value);
+                    break;
+                }
+
                 case "polyMode": {
                     const { channel, value } = e;
                     const con = this.controllers[channel];
@@ -105,6 +112,7 @@ export function setEventListeners(this: SynthesizerUI) {
             appendNewController.call(this, this.controllers.length);
             this.showControllerGroup(this.groupSelector.value);
             this.effectConfigs.insertion.addNewChannel();
+            this.effectConfigs.equalizer.addNewChannel();
             this.effectConfigs.xgVariation.addNewChannel();
             this.effectConfigs.xgInsertion.addNewChannel();
             if (!this.isShown) {

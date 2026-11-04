@@ -281,6 +281,45 @@ export const effectsConfig = {
         }
     },
 
+    equalizer: {
+        title: "GS Equalizer Configuration",
+        description:
+            "Adjust the tone with the two-band shelving equalizer. " +
+            "Only the dry sound passes through it, the reverb, chorus and delay do not.",
+
+        activeChannels: {
+            title: "Active Channels",
+            description:
+                "Select which channels pass through the equalizer. " +
+                "Channels with the Insertion Effect use its Send To EQ switch instead.",
+            channelButton: "Toggle equalizer on channel {0}"
+        },
+
+        lowFrequency: {
+            title: "Low Frequency: ",
+            description:
+                "Low Frequency: This parameter sets the frequency of the low range shelf, 200 Hz or 400 Hz."
+        },
+
+        lowGain: {
+            title: "Low Gain: ",
+            description:
+                "Low Gain: This parameter sets the amount of boost or cut for the low frequency range, from -12 dB to +12 dB."
+        },
+
+        highFrequency: {
+            title: "High Frequency: ",
+            description:
+                "High Frequency: This parameter sets the frequency of the high range shelf, 3 kHz or 6 kHz."
+        },
+
+        highGain: {
+            title: "High Gain: ",
+            description:
+                "High Gain: This parameter sets the amount of boost or cut for the high frequency range, from -12 dB to +12 dB."
+        }
+    },
+
     insertion: {
         title: "GS Insertion Effect Configuration",
         description:
@@ -311,6 +350,13 @@ export const effectsConfig = {
             description:
                 "Send Level To Delay: Adjust the send level of the sound that comes after the insertion effect to Delay. " +
                 "Higher values result in more sound being sent."
+        },
+
+        sendEQSwitch: {
+            title: "Send To EQ",
+            description:
+                "Send To EQ: Route the insertion effect output through the equalizer. " +
+                "Changing the effect type turns it back on."
         }
     },
 

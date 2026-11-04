@@ -14,7 +14,7 @@ export function createGSInsertionController(
 
     const send = (
         parameter: GSInsertionParameterMessage["parameter"],
-        value: number
+        value: number | boolean
     ) => {
         if (this.insertionLock) {
             this.synth.setSystemParameter("gsInsertionLock", false);
@@ -91,6 +91,23 @@ export function createGSInsertionController(
     };
     lock.addEventListener("click", toggleLock);
     typeLockWrapper.append(lock);
+
+    // Send EQ switch, on by default
+    const sendEQSwitch = document.createElement("button");
+    sendEQSwitch.classList.add("synthui_button", "enabled");
+    this.locale.bindObjectProperty(
+        sendEQSwitch,
+        "textContent",
+        LOCALE_PATH + "effectsConfig.insertion.sendEQSwitch.title"
+    );
+    this.locale.bindTooltip(
+        sendEQSwitch,
+        LOCALE_PATH + "effectsConfig.insertion.sendEQSwitch.description"
+    );
+    sendEQSwitch.addEventListener("click", () => {
+        send("sendEQSwitch", !sendEQSwitch.classList.contains("enabled"));
+    });
+    typeLockWrapper.append(sendEQSwitch);
 
     // Effect description
     const effectDescription = document.createElement("p");
@@ -290,6 +307,7 @@ export function createGSInsertionController(
     return {
         wrapper,
         effectSelector,
+        sendEQSwitch,
         reverb,
         chorus,
         delay,

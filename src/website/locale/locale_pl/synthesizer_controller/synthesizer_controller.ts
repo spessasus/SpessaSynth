@@ -62,6 +62,7 @@ export const synthesizerControllerLocale = {
         gsReverb: "Pogłos GS",
         gsChorus: "Chór GS",
         gsDelay: "Delay GS",
+        gsEqualizer: "Korektor GS",
         gsInsertion: "Insertion GS",
         xgReverb: "Pogłos XG",
         xgChorus: "Chór XG",
