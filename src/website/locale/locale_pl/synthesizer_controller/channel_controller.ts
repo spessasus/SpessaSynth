@@ -82,6 +82,24 @@ export const channelControllerLocale = {
             "Czas Wybrzmiewania: Aktualny czas wybrzmiewania (szybkość) kanału {0} (kliknij prawym, aby zablokować)"
     },
 
+    vibratoRateMeter: {
+        title: "Tempo Vibrato: ",
+        description:
+            "Tempo Vibrato: Aktualne tempo (szybkość) vibrato kanału {0} (kliknij prawym, aby zablokować)"
+    },
+
+    vibratoDepthMeter: {
+        title: "Głębia Vibrato: ",
+        description:
+            "Głębia Vibrato: Aktualna głębia vibrato kanału {0} (kliknij prawym, aby zablokować)"
+    },
+
+    vibratoDelayMeter: {
+        title: "Opóźnienie Vibrato: ",
+        description:
+            "Opóźnienie Vibrato: Aktualne opóźnienie vibrato kanału {0} (kliknij prawym, aby zablokować)"
+    },
+
     portamentoTimeMeter: {
         title: "Czas Porta.: ",
         description:
@@ -111,6 +129,7 @@ export const channelControllerLocale = {
         effects: "Efekty",
         volumeEnvelope: "Obwiednia Głośności",
         filter: "Filtr",
+        vibrato: "Vibrato",
         portamento: "Portamento",
         velocitySense: "Czułość Nacisku",
         systemParameters: "Parametry Główne"

@@ -55,7 +55,8 @@ export class DropFileHandler {
                         // Check for RIFF
                         const riff = buf.slice(0, 4);
                         const decoder = new TextDecoder();
-                        if (decoder.decode(riff) === "RIFF") {
+                        const fourcc = decoder.decode(riff);
+                        if (fourcc === "RIFF" || fourcc === "RIFS") {
                             // Riff, check if RMID, otherwise soundfont
                             const rmid = buf.slice(8, 12);
                             if (decoder.decode(rmid) === "RMID") {

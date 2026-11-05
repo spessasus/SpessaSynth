@@ -113,6 +113,11 @@ const controllerGroups: Record<string, ChannelControllerKey[]> = {
         MIDIControllers.decayTime
     ],
     filter: [MIDIControllers.brightness, MIDIControllers.filterResonance],
+    vibrato: [
+        MIDIControllers.vibratoRate,
+        MIDIControllers.vibratoDepth,
+        MIDIControllers.vibratoDelay
+    ],
     portamento: [
         MIDIControllers.portamentoTime,
         MIDIControllers.portamentoControl

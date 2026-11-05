@@ -265,6 +265,24 @@ export function appendNewController(
         "channelController.decayMeter"
     );
 
+    // Vibrato rate
+    createCCMeterHelper(
+        MIDIControllers.vibratoRate,
+        "channelController.vibratoRateMeter"
+    );
+
+    // Vibrato depth
+    createCCMeterHelper(
+        MIDIControllers.vibratoDepth,
+        "channelController.vibratoDepthMeter"
+    );
+
+    // Vibrato delay
+    createCCMeterHelper(
+        MIDIControllers.vibratoDelay,
+        "channelController.vibratoDelayMeter"
+    );
+
     // Portamento time
     // Custom control to set portamento on off as well
     addMeterToController(

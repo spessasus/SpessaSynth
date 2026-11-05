@@ -101,6 +101,24 @@ export const channelControllerLocale = {
             "Decay Time: The current decay time (speed) of channel {0} (right-click to lock)"
     },
 
+    vibratoRateMeter: {
+        title: "Vibrato Rate: ",
+        description:
+            "Vibrato Rate: The current vibrato rate (speed) of channel {0} (right-click to lock)"
+    },
+
+    vibratoDepthMeter: {
+        title: "Vibrato Depth: ",
+        description:
+            "Vibrato Depth: The current vibrato depth of channel {0} (right-click to lock)"
+    },
+
+    vibratoDelayMeter: {
+        title: "Vibrato Delay: ",
+        description:
+            "Vibrato Delay: The current vibrato delay of channel {0} (right-click to lock)"
+    },
+
     portamentoTimeMeter: {
         title: "Porta Time: ",
         description:
@@ -130,6 +148,7 @@ export const channelControllerLocale = {
         effects: "Effects",
         volumeEnvelope: "Vol. Envelope",
         filter: "Filter",
+        vibrato: "Vibrato",
         portamento: "Portamento (glide)",
         velocitySense: "Velocity Sense",
         systemParameters: "System Parameters"
