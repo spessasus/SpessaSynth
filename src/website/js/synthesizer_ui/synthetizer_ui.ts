@@ -58,6 +58,7 @@ import {
 } from "./methods/xg_effect_params.ts";
 import { createXGEffectController } from "./methods/create_xg_effect_controller.ts";
 import { appendNewController } from "./methods/append_new_controller.ts";
+import { PresetListView } from "./methods/preset_list_view.ts";
 import { UserDrumSetEditor } from "./methods/user_drum_set_editor.ts";
 import type { LiveRenderer } from "../renderer/live/live_renderer.ts";
 import {
@@ -1021,9 +1022,9 @@ export class SynthesizerUI {
         const presetListSorted = [...p.full].sort(
             MIDIPatchTools.compare.bind(MIDIPatchTools)
         );
-        p.melodic.length = 0;
-        p.xgDrum.length = 0;
-        p.gsDrum.length = 0;
+        p.melodic = new Array<PresetListElement>();
+        p.xgDrum = new Array<PresetListElement>();
+        p.gsDrum = new Array<PresetListElement>();
         for (const preset of presetListSorted) {
             if (preset.isDrum) {
                 if (preset.isGMGSDrum) {
@@ -1073,6 +1074,15 @@ export class SynthesizerUI {
             if (list.length > 0) {
                 controller.preset.set(list[0]);
             }
+        }
+        const lists = [
+            p.melodic,
+            this.synth.midiParameters.system === "gs" ? p.gsDrum : p.xgDrum
+        ];
+        for (const list of lists) {
+            setTimeout(() => {
+                PresetListView.for(list, this.locale).prepare();
+            }, 100);
         }
     }
 

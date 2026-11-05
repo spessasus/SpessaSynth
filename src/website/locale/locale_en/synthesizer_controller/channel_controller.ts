@@ -138,7 +138,12 @@ export const channelControllerLocale = {
     presetSelector: {
         description: "Change the patch (instrument) channel {0} is using",
         selectionPrompt: "Change instrument for channel {0}",
-        searchPrompt: "Search..."
+        searchPrompt: "Search...",
+        filterToggle: "Show or hide the bank and program filters",
+        columnBankMSB: "Bank MSB",
+        columnBankLSB: "Bank LSB",
+        columnProgram: "Program",
+        columnName: "Name"
     },
 
     presetReset: {

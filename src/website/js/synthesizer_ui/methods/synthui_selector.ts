@@ -1,11 +1,11 @@
-import { midiPatchNames } from "../../utils/patch_names.js";
-import { getLockSVG, getUnlockSVG } from "../../utils/icons.js";
+import { getFilterSvg, getLockSVG, getUnlockSVG } from "../../utils/icons.js";
 import {
     ICON_SIZE,
     LOCALE_PATH,
     type PresetListElement
 } from "../synthetizer_ui.js";
 import { isMobile } from "../../utils/is_mobile.js";
+import { drumBankLabel, PresetListView } from "./preset_list_view.ts";
 import type { LocaleManager } from "../../manager/locale_manager.ts";
 import {
     type MIDIPatch,
@@ -18,22 +18,18 @@ import {
  * purpose: manages a single selector element for selecting the presets
  */
 
-function drumBankLabel(patch: MIDIPatchFull) {
-    if (!patch.isDrum) {
-        return undefined;
-    }
-    if (patch.isGMGSDrum) {
-        return patch.bankMSB === 0 ? "GS" : undefined;
-    }
-    return patch.bankMSB === 120 ? "GM2" : "XG";
-}
+// Remembered between windows
+let filtersShown = false;
 
 export class Selector {
     public readonly mainButton: HTMLButtonElement;
     // Shown on the  selector
     public value?: PresetListElement;
     private elements: PresetListElement[];
-    private elementsToTable?: Map<HTMLTableRowElement, PresetListElement>;
+    private view?: PresetListView;
+    // The view shown in the open window
+    private menuView?: PresetListView;
+    private selectedRow?: HTMLTableRowElement;
     private readonly locale;
     private readonly localeArgs;
 
@@ -164,61 +160,70 @@ export class Selector {
             this.presetLock = presetLock;
         }
 
-        // Add the table, wrapper first
+        // Add the table, it is built once per preset list
+        const view = this.getView();
+        selectionWindow.append(view.header);
         const tableWrapper = document.createElement("div");
         tableWrapper.classList.add("voice_selector_table_wrapper");
         selectionWindow.append(tableWrapper);
 
-        // Add the table
-        const table = this.generateTable(
-            tableWrapper,
-            this.elements,
-            this.value
-        );
+        this.menuView = view;
+        view.onPick = (preset) => this.pickPreset(preset);
+        tableWrapper.append(view.table);
+        this.selectRow(this.findRow(view, this.value), false);
 
         /**
          * Add search function
          */
-        let selectedProgram = table.querySelector(".voice_selector_selected")!;
-        searchInput.addEventListener("input", (e) => {
+        const applySearch = () => {
             if (!this.value) {
                 return;
             }
-            e.stopPropagation();
-            // Plain text search, the input is not a valid regex in general
-            const text = searchInput.value.toLowerCase();
-            const filtered = this.elements.filter((e) =>
-                e.stringified.toLowerCase().includes(text)
-            );
-            if (filtered.length === 0) {
+            if (view.search(searchInput.value) === 0) {
+                this.selectRow(undefined, false);
                 return;
             }
-            tableWrapper.replaceChildren();
-            const filteredTable = this.generateTable(
-                tableWrapper,
-                filtered,
-                this.value
-            );
             // If the already selected preset is not on the new list, select the first one
-            const alreadySelected = filteredTable.querySelector(
-                ".voice_selector_selected"
-            );
-            if (alreadySelected) {
-                selectedProgram = alreadySelected;
+            if (this.selectedRow?.isConnected) {
                 return;
             }
-            const firstFiltered = filteredTable.querySelector(
-                ".voice_selector_option"
+            this.selectRow(
+                view.table.querySelector<HTMLTableRowElement>(
+                    ".voice_selector_option"
+                ) ?? undefined,
+                false
             );
-            if (!firstFiltered) {
-                return;
-            }
-            firstFiltered.classList.add("voice_selector_selected");
-            selectedProgram = firstFiltered;
+        };
+        searchInput.addEventListener("input", (e) => {
+            e.stopPropagation();
+            applySearch();
         });
+        view.onFilterChange = applySearch;
+        view.setFiltersShown(filtersShown);
+
+        // Filter toggle
+        const filterToggle = document.createElement("div");
+        filterToggle.innerHTML = getFilterSvg(ICON_SIZE);
+        this.locale.bindTooltip(
+            filterToggle,
+            LOCALE_PATH + "channelController.presetSelector.filterToggle",
+            this.localeArgs
+        );
+        filterToggle.classList.add("voice_reset");
+        filterToggle.classList.toggle("voice_selector_toggled", filtersShown);
+        filterToggle.addEventListener("click", () => {
+            filtersShown = !filtersShown;
+            filterToggle.classList.toggle(
+                "voice_selector_toggled",
+                filtersShown
+            );
+            view.setFiltersShown(filtersShown);
+            applySearch();
+        });
+        searchWrapper.append(filterToggle);
 
         // Add basic key navigation
-        searchInput.addEventListener("keydown", (e) => {
+        const onKey = (e: KeyboardEvent) => {
             switch (e.key) {
                 case "Escape": {
                     this.hideSelectionMenu();
@@ -227,64 +232,36 @@ export class Selector {
 
                 // When enter pressed, select the selected preset
                 case "Enter": {
-                    const newVal = this.elementsToTable?.get(
-                        selectedProgram as HTMLTableRowElement
-                    );
-                    if (!newVal) {
-                        return;
-                    }
-                    if (this.value === newVal) {
-                        this.hideSelectionMenu();
-                        return;
-                    }
-                    this.editCallback?.(newVal);
-                    if (this.presetLock) {
-                        this.locked = true;
-                        this.presetLock.innerHTML = getLockSVG(ICON_SIZE);
-                    }
-                    this.hideSelectionMenu();
-                    break;
-                }
-
-                case "ArrowDown": {
-                    let nextEl = selectedProgram.nextElementSibling;
-                    while (nextEl) {
-                        if (
-                            nextEl.classList.contains("voice_selector_option")
-                        ) {
-                            selectedProgram.classList.remove(
-                                "voice_selector_selected"
-                            );
-                            nextEl.classList.add("voice_selector_selected");
-                            selectedProgram = nextEl;
-                            return;
-                        }
-                        nextEl = nextEl.nextElementSibling;
+                    const newVal = view.presetOf(this.selectedRow ?? null);
+                    if (newVal) {
+                        this.pickPreset(newVal);
                     }
                     break;
                 }
 
+                case "ArrowDown":
                 case "ArrowUp": {
-                    let previousEl = selectedProgram.previousElementSibling;
-                    while (previousEl) {
-                        if (
-                            previousEl.classList.contains(
-                                "voice_selector_option"
-                            )
-                        ) {
-                            selectedProgram.classList.remove(
-                                "voice_selector_selected"
-                            );
-                            previousEl.classList.add("voice_selector_selected");
-                            selectedProgram = previousEl;
+                    const down = e.key === "ArrowDown";
+                    let next = this.selectedRow
+                        ? down
+                            ? this.selectedRow.nextElementSibling
+                            : this.selectedRow.previousElementSibling
+                        : null;
+                    while (next) {
+                        if (next.classList.contains("voice_selector_option")) {
+                            this.selectRow(next as HTMLTableRowElement, true);
                             return;
                         }
-                        previousEl = previousEl.previousElementSibling;
+                        next = down
+                            ? next.nextElementSibling
+                            : next.previousElementSibling;
                     }
                     break;
                 }
             }
-        });
+        };
+        searchInput.addEventListener("keydown", onKey);
+        view.onKey = onKey;
 
         selectionWindow.addEventListener("click", (e) => {
             e.stopPropagation();
@@ -295,6 +272,7 @@ export class Selector {
             this.hideSelectionMenu();
         });
         this.isWindowShown = true;
+        this.selectRow(this.selectedRow, false);
         if (!isMobile) {
             searchInput.focus();
         }
@@ -307,6 +285,16 @@ export class Selector {
         this.selectionMenu.remove();
         delete this.selectionMenu;
         this.isWindowShown = false;
+        // Leave it clean for the next window
+        if (this.menuView) {
+            this.menuView.onPick = undefined;
+            this.menuView.onFilterChange = undefined;
+            this.menuView.onKey = undefined;
+            this.menuView.resetSearch();
+            this.selectedRow?.classList.remove("voice_selector_selected");
+        }
+        this.selectedRow = undefined;
+        this.menuView = undefined;
     }
 
     public reload(elements: PresetListElement[] = this.elements) {
@@ -331,35 +319,8 @@ export class Selector {
         this.reload();
         this.mainButton.textContent = this.getString(patch);
 
-        if (this.isWindowShown && this.selectionMenu) {
-            // Remove the old selected class
-            const oldSelected = this.selectionMenu.querySelectorAll(
-                ".voice_selector_selected"
-            )[0];
-            if (oldSelected !== undefined) {
-                oldSelected.classList.remove("voice_selector_selected");
-            }
-            const table = this.selectionMenu.querySelectorAll(
-                ".voice_selector_table"
-            )[0] as HTMLTableElement;
-            // Find the newly selected class
-            for (const row of table.rows) {
-                if (row.cells.length === 1) {
-                    continue;
-                }
-                const patch = this.elementsToTable?.get(row);
-                if (!patch) {
-                    continue;
-                }
-                if (patch === this.value) {
-                    row.classList.add("voice_selector_selected");
-                    row.scrollIntoView({
-                        behavior: "smooth",
-                        block: "center",
-                        inline: "center"
-                    });
-                }
-            }
+        if (this.isWindowShown && this.menuView === this.getView()) {
+            this.selectRow(this.menuView.rowOf(patch), true);
         }
     }
 
@@ -370,110 +331,55 @@ export class Selector {
             }
             patch = this.elements[0];
         }
-        // Drum kits of one program are told apart by the bank too, so they follow the same rule
-        if (
-            this.elements.filter(
-                (e) => e.program === patch.program && e.isDrum === patch.isDrum
-            ).length < 2
-        ) {
+        if (!this.getView().isProgramAmbiguous(patch)) {
             return `${patch.program}. ${patch.name}`;
         }
         const msb = drumBankLabel(patch) ?? patch.bankMSB;
         return `${patch.bankLSB}:${msb}:${patch.program} ${patch.name}`;
     }
 
-    /**
-     * Generates the instrument table for displaying
-     * @param wrapper the wrapper
-     * @param elements
-     * @param selectedPatch
-     */
-    private generateTable(
-        wrapper: HTMLElement,
-        elements: PresetListElement[],
-        selectedPatch: PresetListElement
-    ) {
-        this.elementsToTable = new Map<
-            HTMLTableRowElement,
-            PresetListElement
-        >();
-        const table = document.createElement("table");
-        table.classList.add("voice_selector_table");
-
-        let lastProgram = -20;
-        for (const preset of elements) {
-            const row = document.createElement("tr");
-            const program = preset.program;
-            row.classList.add("voice_selector_option");
-            this.elementsToTable.set(row, preset);
-
-            if (MIDIPatchTools.matches(selectedPatch, preset)) {
-                row.classList.add("voice_selector_selected");
-                setTimeout(() => {
-                    row.scrollIntoView({
-                        behavior: "instant",
-                        block: "center",
-                        inline: "center"
-                    });
-                }, 20);
-            }
-
-            row.addEventListener("click", () => {
-                const newVal = preset;
-                if (this.value === newVal) {
-                    this.hideSelectionMenu();
-                    return;
-                }
-                this.editCallback?.(newVal);
-                this.locked = true;
-                if (this.presetLock) {
-                    this.presetLock.innerHTML = getLockSVG(ICON_SIZE);
-                }
-                this.hideSelectionMenu();
-            });
-
-            // Create a new group
-            if (program !== lastProgram) {
-                lastProgram = program;
-                // Create the header (not for drums
-                if (!preset.isDrum) {
-                    const headerRow = document.createElement("tr");
-                    const header = document.createElement("th");
-                    header.colSpan = 4;
-                    header.textContent = midiPatchNames[lastProgram];
-                    headerRow.append(header);
-                    table.append(headerRow);
-                }
-            }
-            const programText = preset.program.toString().padStart(3, "0");
-
-            const presetName = document.createElement("td");
-            presetName.classList.add("voice_selector_preset_name");
-            presetName.textContent = preset.name;
-
-            const presetProgram = document.createElement("td");
-            presetProgram.classList.add("voice_selector_preset_program");
-            presetProgram.textContent = programText;
-
-            const presetBankMSB = document.createElement("td");
-            presetBankMSB.classList.add("voice_selector_preset_program");
-            presetBankMSB.textContent =
-                drumBankLabel(preset) ??
-                preset.bankMSB.toString().padStart(3, "0");
-
-            const presetBankLSB = document.createElement("td");
-            presetBankLSB.classList.add("voice_selector_preset_program");
-            presetBankLSB.textContent = preset.bankLSB
-                .toString()
-                .padStart(3, "0");
-
-            row.append(presetBankLSB);
-            row.append(presetBankMSB);
-            row.append(presetProgram);
-            row.append(presetName);
-            table.append(row);
+    private getView() {
+        if (this.view?.elements !== this.elements) {
+            this.view = PresetListView.for(this.elements, this.locale);
         }
-        wrapper.append(table);
-        return table;
+        return this.view;
+    }
+
+    private findRow(view: PresetListView, patch: PresetListElement) {
+        return (
+            view.rowOf(patch) ??
+            view.rowOf(
+                view.elements.find((e) => MIDIPatchTools.matches(patch, e))!
+            )
+        );
+    }
+
+    private selectRow(row: HTMLTableRowElement | undefined, smooth: boolean) {
+        if (row !== this.selectedRow) {
+            this.selectedRow?.classList.remove("voice_selector_selected");
+            this.selectedRow = row;
+        }
+        if (!row) {
+            return;
+        }
+        row.classList.add("voice_selector_selected");
+        if (this.isWindowShown || smooth) {
+            row.scrollIntoView({
+                behavior: smooth ? "smooth" : "instant",
+                block: "center",
+                inline: "center"
+            });
+        }
+    }
+
+    private pickPreset(preset: PresetListElement) {
+        if (this.value !== preset) {
+            this.editCallback?.(preset);
+            this.locked = true;
+            if (this.presetLock) {
+                this.presetLock.innerHTML = getLockSVG(ICON_SIZE);
+            }
+        }
+        this.hideSelectionMenu();
     }
 }
