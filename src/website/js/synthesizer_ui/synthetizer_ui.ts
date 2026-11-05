@@ -283,7 +283,7 @@ export class SynthesizerUI {
                 localePath: LOCALE_PATH + "mainVolumeMeter",
                 locale: this.locale,
                 min: 0,
-                max: 400,
+                max: 1000,
                 def: 100,
                 onEdit: (v) => {
                     this.synth.setSystemParameter("gain", Math.round(v) / 100);
