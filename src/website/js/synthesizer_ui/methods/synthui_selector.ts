@@ -78,7 +78,9 @@ export class Selector {
         this.locale = locale;
         this.localeArgs = descriptionArgs;
 
-        this.reload();
+        if (this.value) {
+            this.mainButton.textContent = this.getString(this.value);
+        }
 
         this.mainButton.addEventListener("click", () => {
             this.showSelectionMenu();
@@ -297,10 +299,13 @@ export class Selector {
         this.menuView = undefined;
     }
 
-    public reload(elements: PresetListElement[] = this.elements) {
-        if (this.elements !== elements) {
-            this.elements = elements;
+    public reload(elements: PresetListElement[]) {
+        // Called on every program change,
+        // The same list needs no update
+        if (this.elements === elements) {
+            return;
         }
+        this.elements = elements;
         if (this.elements.length > 0) {
             const firstEl = this.elements[0];
             this.mainButton.textContent = this.getString(firstEl);
@@ -316,8 +321,10 @@ export class Selector {
             return;
         }
         this.value = patch;
-        this.reload();
-        this.mainButton.textContent = this.getString(patch);
+        const text = this.getString(patch);
+        if (this.mainButton.textContent !== text) {
+            this.mainButton.textContent = text;
+        }
 
         if (this.isWindowShown && this.menuView === this.getView()) {
             this.selectRow(this.menuView.rowOf(patch), true);

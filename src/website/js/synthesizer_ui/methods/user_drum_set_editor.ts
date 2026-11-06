@@ -287,6 +287,9 @@ export class UserDrumSetEditor {
             for (const drumSet of this.drumSets) {
                 for (let i = 0; i < drumSet.keys.length; i++) {
                     const key = drumSet.keys[i];
+                    if (!key.changed) {
+                        continue;
+                    }
                     DrumParameterUtils.copyIntoUser(
                         DrumParameterUtils.DEFAULT_USER_DATA[i],
                         key.param

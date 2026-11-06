@@ -313,6 +313,6 @@ export class Meter {
     }
 
     public reset() {
-        this.update(this.defaultValue, true);
+        this.update(this.defaultValue);
     }
 }

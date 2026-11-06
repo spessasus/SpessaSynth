@@ -135,7 +135,7 @@ export function createXGEffectController(
     // The same way as the keyboard channel selector
     const tracker = new ProgramTracker();
     tracker.presetListChange(this.synth.presetList);
-    const channelNames = new Array<{ channel: number; display: HTMLElement }>();
+    const channelNames = new Array<HTMLElement[]>();
     const getChannelName = (channel: number) =>
         tracker.presetNames[channel] || "UNKNOWN";
 
@@ -151,16 +151,19 @@ export function createXGEffectController(
         );
         const nameDisplay = document.createElement("span");
         nameDisplay.textContent = ": " + getChannelName(channel);
-        channelNames.push({ channel, display: nameDisplay });
+        (channelNames[channel] ??= []).push(nameDisplay);
         opt.append(channelLabel, nameDisplay);
         opt.style.background = this.channelColors[channel % 16];
         opt.style.color = "rgb(0, 0, 0)";
         selector.append(opt);
     };
 
-    const updateChannelNames = () => {
-        for (const entry of channelNames) {
-            entry.display.textContent = ": " + getChannelName(entry.channel);
+    const updateChannelName = (channel: number) => {
+        const text = ": " + getChannelName(channel);
+        for (const display of channelNames[channel] ?? []) {
+            if (display.textContent !== text) {
+                display.textContent = text;
+            }
         }
     };
 
@@ -169,7 +172,7 @@ export function createXGEffectController(
         `xg-effect-program-change-${data.lockName}`,
         (e) => {
             tracker.programChange(e);
-            updateChannelNames();
+            updateChannelName(e.channel);
         }
     );
     this.synth.eventHandler.addEvent(
@@ -177,7 +180,9 @@ export function createXGEffectController(
         `xg-effect-preset-list-change-${data.lockName}`,
         (e) => {
             tracker.presetListChange(e);
-            updateChannelNames();
+            for (let i = 0; i < channelNames.length; i++) {
+                updateChannelName(i);
+            }
         }
     );
 
@@ -303,6 +308,7 @@ export function createXGEffectController(
         blockElements.push(elements);
 
         const controllers = new Map<number, Meter>();
+        let currentEffect: (typeof data.types)[number] | undefined;
         const refresh = () => {
             if (partSelector) {
                 partSelector.value = isSystemConnection
@@ -327,6 +333,15 @@ export function createXGEffectController(
             if (!effect) {
                 return;
             }
+            // Resets send the type again, rebuilding the same meters is slow!
+            if (effect === currentEffect) {
+                for (const meter of controllers.values()) {
+                    meter.reset();
+                }
+                refresh();
+                return;
+            }
+            currentEffect = effect;
             effectSelector.value = effect.type.toString();
             controllers.clear();
             paramWrapper.replaceChildren();

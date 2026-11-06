@@ -12,9 +12,14 @@ export function setEventListeners(this: SynthesizerUI) {
         "synthui-program-change",
         (e) => {
             const p = this.controllers[e.channel].preset;
-            this.controllers[e.channel].drumsToggle.innerHTML = e.isDrum
-                ? getDrumsSvg(32)
-                : getNoteSvg(32);
+            const drumsToggle = this.controllers[e.channel].drumsToggle;
+            const icon = e.isDrum ? "drums" : "note";
+            if (drumsToggle.dataset.icon !== icon) {
+                drumsToggle.dataset.icon = icon;
+                drumsToggle.innerHTML = e.isDrum
+                    ? getDrumsSvg(32)
+                    : getNoteSvg(32);
+            }
             const list = this.synth.midiChannels[e.channel].patch.isDrum
                 ? this.synth.midiParameters.system === "gs"
                     ? this.presets.gsDrum
