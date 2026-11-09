@@ -188,7 +188,7 @@ button {
 .loading .loading_icon .bi-hourglass {
     width: 3.75rem;
     height: 3.75rem;
-    animation: spin 1.6s var(--bouncy-transition) infinite;
+    animation: spin 1s linear infinite;
 }
 
 .loading h1 {
