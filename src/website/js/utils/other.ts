@@ -32,7 +32,8 @@ export class Ut {
             ".mxmf",
             ".mod",
             ".xm",
-            ".s3m"
+            ".s3m",
+            ".it"
         ];
 
         // Loop through extensions and remove them, case-insensitive
