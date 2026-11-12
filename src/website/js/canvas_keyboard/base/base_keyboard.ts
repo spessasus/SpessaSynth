@@ -322,8 +322,6 @@ export class BaseKeyboard {
 
         // Clear render area
         this.ctx.clearRect(0, 0, width, height);
-        this.ctx.fillStyle = this.theme.background;
-        this.ctx.fillRect(0, 0, width, height);
 
         // Clip the render bounds
         this.ctx.save();
@@ -336,8 +334,16 @@ export class BaseKeyboard {
             this.ctx.translate(width, 0);
             this.ctx.rotate(Math.PI / 2);
         }
-        // Apply offsets
-        this.ctx.translate(this.xOffset, this.yOffset);
+        this.ctx.translate(0, this.yOffset);
+        this.ctx.fillStyle = this.theme.background;
+        this.ctx.fillRect(
+            0,
+            0,
+            this.vertical ? height : width,
+            this.actualHeight
+        );
+        // Apply the remaining offset
+        this.ctx.translate(this.xOffset, 0);
 
         const range = this.options.keyRange;
         const keyCount = range.max - range.min + 1;

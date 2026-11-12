@@ -414,7 +414,7 @@ export class LiveRenderer extends BaseRenderer<LiveKeyboard> {
         this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         this.computeColors(this.colors.map((c) => c.plain));
         this.updateFftSize();
-        this.renderOneFrame();
+        this.drawFrame(this.hasRenderedNoVoices);
     }
 
     /**
@@ -478,28 +478,7 @@ export class LiveRenderer extends BaseRenderer<LiveKeyboard> {
 
         requestAnimationFrame(() => this.render());
 
-        this.updateRangeTransition(performance.now() / 1000);
-
-        if (
-            this.rendererMode === rendererModes.waveformsMode ||
-            this.rendererMode === rendererModes.filledWaveformsMode
-        ) {
-            for (let i = 0; i < this.parts.length; i++) {
-                const analyzer = this.channelAnalysers[i];
-                const part = this.parts[i];
-                analyzer.getFloatTimeDomainData(
-                    part.waveform as Float32Array<ArrayBuffer>
-                );
-                part.waveformLength = analyzer.fftSize;
-            }
-        }
-        this.renderFullFrame(
-            performance.now() / 1000,
-            this.seq.currentHighResolutionTime,
-            forceStraight
-        );
-
-        this.onRender?.();
+        this.drawFrame(forceStraight);
     }
 
     public startRendering() {
@@ -737,6 +716,34 @@ export class LiveRenderer extends BaseRenderer<LiveKeyboard> {
                 cellHeight
             );
         }
+    }
+
+    /**
+     * Draws a frame right now, without queueing anything
+     */
+    private drawFrame(forceStraight: boolean) {
+        this.updateRangeTransition(performance.now() / 1000);
+
+        if (
+            this.rendererMode === rendererModes.waveformsMode ||
+            this.rendererMode === rendererModes.filledWaveformsMode
+        ) {
+            for (let i = 0; i < this.parts.length; i++) {
+                const analyzer = this.channelAnalysers[i];
+                const part = this.parts[i];
+                analyzer.getFloatTimeDomainData(
+                    part.waveform as Float32Array<ArrayBuffer>
+                );
+                part.waveformLength = analyzer.fftSize;
+            }
+        }
+        this.renderFullFrame(
+            performance.now() / 1000,
+            this.seq.currentHighResolutionTime,
+            forceStraight
+        );
+
+        this.onRender?.();
     }
 
     private updateRangeTransition(time: number) {
