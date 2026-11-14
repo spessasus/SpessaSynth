@@ -3,6 +3,12 @@ import { rendererModes } from "./renderer_modes.ts";
 
 export const STABILIZE_WAVEFORMS_FFT_MULTIPLIER = 4;
 
+/**
+ * The default sample size setting, and the minimum trigger window length.
+ * Smaller sample sizes crop the middle of this window, to keep stabilization.
+ */
+export const TRIGGER_WINDOW_SAMPLE_SIZE = 1024;
+
 const WAVE_GAIN = 0.7;
 
 // Tuned like corrscope kinda
@@ -93,14 +99,24 @@ export function renderSingleWaveform(
     let renderEnd = sampleCount;
     if (this._stabilizeWaveforms) {
         // Fraction length
-        length = sampleCount / STABILIZE_WAVEFORMS_FFT_MULTIPLIER;
-        if (this.parts[channelNumber].isDrum) {
+        length = Math.min(
+            sampleCount / STABILIZE_WAVEFORMS_FFT_MULTIPLIER,
+            this.waveformDisplayLength
+        );
+        const isDrum = this.parts[channelNumber].isDrum;
+        if (isDrum) {
             length *= 2;
         }
+        // The trigger uses at least the default sample size window,
+        // Smaller sizes crop the middle of it to stay stable for lower frequencies.
+        const triggerLength = Math.max(
+            length,
+            Math.min(sampleCount, this.waveformTriggerWindow)
+        );
         const triggerPoint = this.waveformTriggers[channelNumber].findTrigger(
             waveform,
             sampleCount,
-            length
+            triggerLength
         );
         windowStart = triggerPoint - Math.floor(length / 2);
         renderStart = Math.max(0, Math.floor(windowStart));

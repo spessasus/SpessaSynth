@@ -4,7 +4,8 @@ import { computeNotePositions } from "./compute_note_positions.js";
 import {
     calculateGridDimensions,
     renderSingleWaveform,
-    renderWaveforms
+    renderWaveforms,
+    TRIGGER_WINDOW_SAMPLE_SIZE
 } from "./render_waveforms.js";
 import {
     BasicMIDI,
@@ -238,6 +239,14 @@ export abstract class BaseRenderer<K extends BaseKeyboard = BaseKeyboard> {
      * but slower for hardware accelerated ones.
      */
     protected waveformStrokeChunk = Infinity;
+    /**
+     * The number of samples to display for each waveform, before the drum multiplier.
+     */
+    protected waveformDisplayLength = 1024;
+    /**
+     * The minimum trigger search window, in samples of the waveform buffer.
+     */
+    protected waveformTriggerWindow = TRIGGER_WINDOW_SAMPLE_SIZE;
 
     protected readonly voicesPlaying = new Array<boolean>(16).fill(false);
     protected readonly colors = new Array<RendererColor>();

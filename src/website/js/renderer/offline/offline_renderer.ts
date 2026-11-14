@@ -9,6 +9,10 @@ import {
 } from "../base/xg_insertion_labels.ts";
 import { gsInsertionEffectData } from "../../synthesizer_ui/methods/gs_effect_params.ts";
 import { ProgramTracker } from "../base/program_tracker.ts";
+import {
+    STABILIZE_WAVEFORMS_FFT_MULTIPLIER,
+    TRIGGER_WINDOW_SAMPLE_SIZE
+} from "../base/render_waveforms.ts";
 import { BaseKeyboard } from "../../canvas_keyboard/base/base_keyboard.ts";
 import type { VideoSettingsSnapshot } from "../../manager/export/video/snapshot_settings.ts";
 import type { VideoInitialParams, VideoSynthData } from "./events.ts";
@@ -313,22 +317,46 @@ export class OfflineRenderer extends BaseRenderer {
         this.waveformOffset = data.waveformOffset;
         this.waveformLength = data.waveformLength;
         this.sampleRate = data.sampleRate;
+        const stabilized = snapshot.renderer.stabilizeWaveforms;
         const targetFft =
             snapshot.renderer.analyserFftSize *
-            (snapshot.renderer.stabilizeWaveforms ? 4 : 1);
+            (stabilized ? STABILIZE_WAVEFORMS_FFT_MULTIPLIER : 1);
         const rateFactor = snapshot.renderer.sampleRate / 44_100;
-        const fftSize = Math.min(
+        const outputRateFactor = this.sampleRate / snapshot.renderer.sampleRate;
+        const toOutputSamples = (fftSize: number) =>
+            Math.max(
+                1,
+                Math.min(
+                    MAX_WAVEFORM_SAMPLES,
+                    Math.round(fftSize * outputRateFactor)
+                )
+            );
+        const displayFftSize = Math.min(
             MAX_WAVEFORM_SAMPLES,
             1 << (31 - Math.clz32(targetFft * rateFactor))
         );
-        this.sampleCount = Math.max(
+        const displaySampleCount = toOutputSamples(displayFftSize);
+        this.waveformDisplayLength = stabilized
+            ? displaySampleCount / STABILIZE_WAVEFORMS_FFT_MULTIPLIER
+            : displaySampleCount;
+        const bufferFftSize = stabilized
+            ? Math.min(
+                  MAX_WAVEFORM_SAMPLES,
+                  1 <<
+                      (31 -
+                          Math.clz32(
+                              Math.max(
+                                  targetFft,
+                                  TRIGGER_WINDOW_SAMPLE_SIZE *
+                                      STABILIZE_WAVEFORMS_FFT_MULTIPLIER
+                              ) * rateFactor
+                          ))
+              )
+            : displayFftSize;
+        this.sampleCount = toOutputSamples(bufferFftSize);
+        this.waveformTriggerWindow = Math.max(
             1,
-            Math.min(
-                MAX_WAVEFORM_SAMPLES,
-                Math.round(
-                    (fftSize * this.sampleRate) / snapshot.renderer.sampleRate
-                )
-            )
+            Math.round(TRIGGER_WINDOW_SAMPLE_SIZE * outputRateFactor)
         );
     }
 

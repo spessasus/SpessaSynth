@@ -3,7 +3,10 @@ import { RGBAOpacity } from "../../utils/calculate_rgb.js";
 import type { Synthesizer } from "../../utils/synthesizer.ts";
 import type { Sequencer } from "spessasynth_lib";
 import type { LocaleManager } from "../../manager/locale_manager.ts";
-import { STABILIZE_WAVEFORMS_FFT_MULTIPLIER } from "../base/render_waveforms.ts";
+import {
+    STABILIZE_WAVEFORMS_FFT_MULTIPLIER,
+    TRIGGER_WINDOW_SAMPLE_SIZE
+} from "../base/render_waveforms.ts";
 import { consoleColors } from "../../utils/console_colors.ts";
 import { type RendererMode, rendererModes } from "../base/renderer_modes.ts";
 import { intensityColors } from "../base/colors.ts";
@@ -342,10 +345,28 @@ export class LiveRenderer extends BaseRenderer<LiveKeyboard> {
 
     // Live_renderer.ts
     public updateFftSize() {
+        const fft = this._analyserFftSize;
+        const stabilized = this.stabilizeWaveforms;
+        const displayFft = Math.min(
+            32_768,
+            // Nearest factor of 2
+            1 <<
+                (31 -
+                    Math.clz32(
+                        fft *
+                            (stabilized
+                                ? STABILIZE_WAVEFORMS_FFT_MULTIPLIER
+                                : 1) *
+                            this.sampleRateFactor
+                    ))
+        );
+        this.waveformDisplayLength = stabilized
+            ? displayFft / STABILIZE_WAVEFORMS_FFT_MULTIPLIER
+            : displayFft;
         for (const channelAnalyser of this.channelAnalysers) {
-            const fft = this._analyserFftSize;
-            const targetFFT = this.stabilizeWaveforms
-                ? fft * STABILIZE_WAVEFORMS_FFT_MULTIPLIER
+            const targetFFT = stabilized
+                ? Math.max(fft, TRIGGER_WINDOW_SAMPLE_SIZE) *
+                  STABILIZE_WAVEFORMS_FFT_MULTIPLIER
                 : fft;
 
             channelAnalyser.fftSize = Math.min(
