@@ -6,6 +6,7 @@ import type { Manager } from "../manager.ts";
 import { _exportDLS } from "./export_dls.ts";
 import { _exportRMIDI } from "./export_rmidi.ts";
 import { exportAndSaveSF2 } from "./export_soundfont.ts";
+import { exportAndSaveSFe } from "./export_sfe.ts";
 
 export function showExportMenu(this: Manager) {
     const path = "locale.exportFile.formats.";
@@ -42,6 +43,14 @@ export function showExportMenu(this: Manager) {
                 onClick: (n) => {
                     closeNotification(n.id);
                     exportAndSaveSF2.call(this);
+                }
+            },
+            {
+                type: "button",
+                translatePathTitle: path + "formats.sfe.button",
+                onClick: (n) => {
+                    closeNotification(n.id);
+                    exportAndSaveSFe.call(this);
                 }
             },
             {

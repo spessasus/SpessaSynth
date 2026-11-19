@@ -11,6 +11,15 @@ export class ReverbCapture implements GSReverbProcessor {
     public time = 0;
     public readonly capturedData = new Float32Array(BLOCK_SIZE);
 
+    public reset() {
+        this.character = 0;
+        this.delayFeedback = 0;
+        this.level = 64;
+        this.preDelayTime = 0;
+        this.preLowpass = 0;
+        this.time = 0;
+    }
+
     public getSnapshot() {
         return {
             character: this.character,

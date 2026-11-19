@@ -30,7 +30,7 @@ async function writeRMIDI(
     if (!this.seq.midiData) {
         throw new Error("No MIDI is loaded!");
     }
-    if (!(opts.format === "sf2")) {
+    if (opts.format === "dls") {
         throw new Error("DLS RMIDI write is not implemented here.");
     }
     const snapshot = await this.synth.getSnapshot();

@@ -146,6 +146,26 @@ export const exportFile = {
                 }
             },
 
+            sfe: {
+                button: {
+                    title: "SFe (.sf4)",
+                    description:
+                        "Export the SoundFont as SpessaSynth SFe, an extended SoundFont2 format"
+                },
+
+                options: {
+                    title: "SFe export options",
+                    message:
+                        "SFe keeps features that SF2 cannot store, like extra generators, modulators and bank LSB. " +
+                        "Note that SpessaSynth is currently the only software that can read these files.",
+                    confirm: "Export"
+                },
+
+                exportMessage: {
+                    message: "Exporting SFe..."
+                }
+            },
+
             dls: {
                 button: {
                     title: "DLS (.dls)",
