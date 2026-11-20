@@ -7,6 +7,7 @@ import { ANIMATION_REFLOW_TIME } from "../../utils/animation_utils.js";
 import type { Manager } from "../manager.ts";
 import { WorkerSynthesizer } from "spessasynth_lib";
 import { writeSF2 } from "./export_soundfont.ts";
+import { writeSFe } from "./export_sfe.ts";
 import { showOutOfMemoryWarning } from "./utils/show_out_of_memory_warning.ts";
 
 type writeRMIDIOptions =
@@ -36,7 +37,10 @@ async function writeRMIDI(
     const snapshot = await this.synth.getSnapshot();
     const mid = await this.seq.getMIDI();
     mid.applySnapshot(snapshot);
-    const sfBin = await writeSF2.call(this, mid, opts);
+    const sfBin =
+        opts.format === "sfe"
+            ? await writeSFe.call(this, { ...opts, rf64: false }, mid)
+            : await writeSF2.call(this, mid, opts);
     if (!sfBin.sf) {
         throw new Error("Unexpected error.");
     }
@@ -68,6 +72,10 @@ export function _exportRMIDI(this: Manager) {
         });
     }
 
+    // A converted tracker module embeds an SFe bank.
+    // Its resonance boost needs the SFe-only gain generator, so default to SFe for it
+    const embeddedIsSFe = mid.embeddedSoundBankIsSFe;
+
     const path = "locale.exportFile.formats.formats.rmidi.options.";
     const metadataPath = "locale.exportFile.formats.metadata.";
     const n = showNotification(
@@ -80,6 +88,27 @@ export function _exportRMIDI(this: Manager) {
                 ),
                 attributes: {
                     class: "notification_description"
+                }
+            },
+            {
+                type: "select",
+                translatePathTitle: path + "bankFormat",
+                selectOptions: {
+                    sf2: "SF2",
+                    sfe: "SFe"
+                },
+                attributes: {
+                    "bank-format": "1"
+                }
+            },
+            {
+                type: "text",
+                textContent: this.localeManager.getLocaleString(
+                    path + "sfeHint"
+                ),
+                attributes: {
+                    class: "notification_description",
+                    "sfe-hint": "1"
                 }
             },
             {
@@ -184,6 +213,8 @@ export function _exportRMIDI(this: Manager) {
                         const e = n.div.querySelector(q);
                         return e as HTMLInputElement;
                     };
+                    const bankFormat = getEl("select[bank-format]").value as
+                        "sf2" | "sfe";
                     const compressed = getEl(
                         "input[compress-toggle='1']"
                     ).checked;
@@ -269,10 +300,8 @@ export function _exportRMIDI(this: Manager) {
                     // Export
                     let exported;
                     try {
-                        exported = await writeRMIDI.call(this, {
+                        const common = {
                             bankID: this.soundBankID,
-                            compressionQuality: quality,
-                            compressionAction: compressed ? "compress" : "keep",
                             metadata: {
                                 name: songTitle,
                                 artist,
@@ -285,19 +314,34 @@ export function _exportRMIDI(this: Manager) {
                             },
                             trim: true,
                             writeEmbeddedSoundBank: true,
-                            format: "sf2",
                             sequencerID: 0,
                             applySnapshot: true,
                             software: "SpessaSynth",
-                            writeDefaultModulators: true,
-                            writeExtendedLimits: true,
                             bankOffset,
                             correctBankOffset: adjust,
-                            progressFunction: (p) => {
+                            progressFunction: (p: number) => {
                                 message.textContent = modifyingSoundFont;
                                 progressDiv.style.width = `${p * 100}%`;
                             }
-                        });
+                        };
+                        exported = await writeRMIDI.call(
+                            this,
+                            bankFormat === "sfe"
+                                ? {
+                                      ...common,
+                                      format: "sfe"
+                                  }
+                                : {
+                                      ...common,
+                                      format: "sf2",
+                                      compressionQuality: quality,
+                                      compressionAction: compressed
+                                          ? "compress"
+                                          : "keep",
+                                      writeDefaultModulators: true,
+                                      writeExtendedLimits: true
+                                  }
+                        );
                     } catch (error) {
                         closeNotification(notification.id);
                         console.groupEnd();
@@ -327,6 +371,30 @@ export function _exportRMIDI(this: Manager) {
     // Adjust for the normal bank only
     getEl("input[name='adjust']").checked =
         mid.embeddedSoundBankSize === undefined;
+
+    // Compression only applies to SF2, hide it and show the hint for SFe
+    const formatSelect = n.div.querySelector<HTMLSelectElement>(
+        "select[bank-format]"
+    )!;
+    const sfeOnlyHint = getEl("p[sfe-hint]");
+    const sf2Only = [
+        getEl("input[compress-toggle='1']").closest<HTMLElement>(
+            ".notification_switch_wrapper"
+        )!,
+        getEl("input[type='range']").closest<HTMLElement>(
+            ".notification_slider_wrapper"
+        )!
+    ];
+    const updateFormat = () => {
+        const sfe = formatSelect.value === "sfe";
+        sfeOnlyHint.style.display = sfe ? "" : "none";
+        for (const el of sf2Only) {
+            el.style.display = sfe ? "none" : "";
+        }
+    };
+    formatSelect.value = embeddedIsSFe ? "sfe" : "sf2";
+    formatSelect.addEventListener("change", updateFormat);
+    updateFormat();
 
     const input = getEl("input[type='file']");
     input.addEventListener("input", () => {

@@ -5,7 +5,11 @@ import {
 } from "../../notification/notification.js";
 import type { Manager } from "../manager.ts";
 import { WorkerSynthesizer } from "spessasynth_lib";
-import { type BasicSoundBank, SoundBankLoader } from "spessasynth_core";
+import {
+    type BasicMIDI,
+    type BasicSoundBank,
+    SoundBankLoader
+} from "spessasynth_core";
 import { showOutOfMemoryWarning } from "./utils/show_out_of_memory_warning.ts";
 
 type writeSFeOptions =
@@ -17,7 +21,8 @@ type writeSFeOptions =
 
 export async function writeSFe(
     this: Manager,
-    options: writeSFeOptions
+    options: writeSFeOptions,
+    midi?: BasicMIDI
 ): Promise<{ binary: ArrayBuffer; fileName: string; sf?: BasicSoundBank }> {
     if (!this.synth || !this.seq) {
         throw new Error("Unexpected error.");
@@ -26,7 +31,8 @@ export async function writeSFe(
         return this.synth.writeSFe(options);
     }
 
-    const mid = await this.seq.getMIDI();
+    // The RMIDI export passes its MIDI with the synthesizer snapshot applied, so trimming keeps those presets
+    const mid = midi ?? (await this.seq.getMIDI());
 
     const sfBin = mid.embeddedSoundBank ?? this.sBankBuffer;
 

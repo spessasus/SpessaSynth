@@ -207,6 +207,13 @@ export const exportFile = {
                     description:
                         "Embed the current SoundFont + MIDI as RMIDI and apply all the modifications made via the synthesizer controller.",
                     confirm: "Export",
+                    bankFormat: {
+                        title: "Sound bank format",
+                        description:
+                            "The format of the embedded sound bank. SF2 works everywhere. SFe keeps everything the bank holds, such as the resonance boost of converted tracker modules, but only SFe-capable players can read it."
+                    },
+                    sfeHint:
+                        "Only SFe-capable players (such as SpessaSynth) can read the embedded bank.",
                     compress: {
                         title: "Compress",
                         description:
