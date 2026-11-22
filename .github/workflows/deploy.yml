@@ -22,10 +22,7 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    deploy:
-        environment:
-            name: github-pages
-            url: ${{ steps.deployment.outputs.page_url }}
+    build:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
@@ -67,7 +64,15 @@ jobs:
               with:
                   # Upload dist folder
                   path: "./dist"
+
+    deploy:
+        needs: build
+        if: github.event_name != 'workflow_dispatch' || inputs.deploy
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+        runs-on: ubuntu-latest
+        steps:
             - name: Deploy to GitHub Pages
-              if: github.event_name != 'workflow_dispatch' || inputs.deploy
               id: deployment
               uses: actions/deploy-pages@v5
