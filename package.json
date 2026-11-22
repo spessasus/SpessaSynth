@@ -4,17 +4,18 @@
     "type": "module",
     "private": true,
     "scripts": {
-        "test:types": "eslint && tsc -b",
-        "start": "node src/build/start.ts",
-        "build": "npm run test:types && npm run build:fast",
+        "build": "npm run check && npm run build:fast",
+        "build:binary": "node src/build/build_binary.ts",
         "build:fast": "node src/build/build.ts",
-        "format": "prettier . --write --list-different",
-        "dev": "node src/build/dev.ts",
-        "release": "node src/build/release.ts",
-        "video": "tsx src/cli_video/index.ts",
+        "check": "npm run lint && node node_modules/typescript7/bin/tsc -b",
         "clean": "node -e \"const fs=require('fs/promises'); Promise.all([fs.rm('dist',{recursive:true,force:true}), fs.rm('local-dev',{recursive:true,force:true}), fs.rm('server',{recursive:true,force:true})])\"",
+        "deps:local": "node src/build/deps_local.ts",
+        "deps:npm": "node src/build/deps_npm.ts",
+        "format": "prettier . --write --list-different",
+        "format:check": "prettier --check .",
+        "lint": "eslint",
         "prepare": "husky",
-        "build:binary": "node src/build/build_binary.ts"
+        "start": "node src/build/start.ts"
     },
     "devDependencies": {
         "@chialab/esbuild-plugin-meta-url": "^0.19.2",
@@ -30,7 +31,8 @@
         "prettier": "^3.9.10",
         "skia-canvas": "^4.0.0",
         "typescript": "^6.0.3",
-        "typescript-eslint": "^8.72.1"
+        "typescript-eslint": "^8.72.1",
+        "typescript7": "npm:typescript@^7.0.2"
     },
     "lint-staged": {
         "*.{ts,js}": [
@@ -46,6 +48,12 @@
         "spessasynth_core": "latest",
         "spessasynth_lib": "latest",
         "wasm-media-encoders": "^0.7.0"
+    },
+    "engines": {
+        "node": ">=24"
+    },
+    "overrides": {
+        "minimatch": "^11.0.4"
     },
     "allowScripts": {
         "esbuild@0.28.2": true

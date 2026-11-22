@@ -1,7 +1,7 @@
 import { runCommandSync } from "./run_command.ts";
 
 console.info(
-    "⚠️  Release mode: switching SpessaSynth back to published package versions."
+    "📦  Registry dependencies: switching spessasynth_core and spessasynth_lib to the npm versions, then building SpessaSynth."
 );
 
 runCommandSync("npm uninstall spessasynth_lib spessasynth_core");
@@ -12,5 +12,5 @@ runCommandSync("npm install");
 runCommandSync("npm run build");
 
 console.info(
-    "✅  SpessaSynth release build completed using registry package versions."
+    "✅  SpessaSynth built against the npm versions of spessasynth_core and spessasynth_lib."
 );

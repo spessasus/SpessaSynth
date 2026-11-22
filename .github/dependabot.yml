@@ -9,3 +9,7 @@ updates:
       schedule:
           interval: "monthly"
       open-pull-requests-limit: 5
+    - package-ecosystem: "gomod"
+      directory: "/src/executable"
+      schedule:
+          interval: "monthly"

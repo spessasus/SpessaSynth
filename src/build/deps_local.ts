@@ -21,7 +21,7 @@ async function directoryExists(dir: string) {
 }
 
 console.info(
-    "🪲  Enabling debug mode, installing dependencies from the local machine."
+    "🪲  Local dependencies: building ../spessasynth_core, linking it into ../spessasynth_lib (this changes lib's package.json), building lib, then linking both here and building SpessaSynth."
 );
 
 await fs.access(REPO_ROOT);
@@ -48,5 +48,5 @@ if (await directoryExists(LIB_DIR)) {
 
 runCommandSync("npm run build:fast");
 console.info(
-    "✅  SpessaSynth dev build completed using the local library setup."
+    "✅  SpessaSynth built against the local spessasynth_core and spessasynth_lib."
 );
